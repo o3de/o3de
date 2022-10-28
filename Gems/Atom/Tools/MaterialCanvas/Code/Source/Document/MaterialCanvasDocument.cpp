@@ -110,16 +110,11 @@ namespace MaterialCanvas
     MaterialCanvasDocument::~MaterialCanvasDocument()
     {
         MaterialCanvasDocumentRequestBus::Handler::BusDisconnect();
-
         GraphCanvas::SceneNotificationBus::Handler::BusDisconnect();
-
-        // Stop listening for GraphController notifications for this graph.
         GraphModelIntegration::GraphControllerNotificationBus::Handler::BusDisconnect();
 
-        GraphModelIntegration::GraphManagerRequestBus::Broadcast(
-            &GraphModelIntegration::GraphManagerRequests::DeleteGraphController, m_graphId);
+        DestroyGraph();
 
-        m_graph.reset();
         m_graphId = GraphCanvas::GraphId();
         delete m_sceneEntity;
         m_sceneEntity = {};
@@ -186,7 +181,7 @@ namespace MaterialCanvas
                     // There are currently no indicators for material canvas nodes.
                     return nullptr;
                 };
-                objects.push_back(AZStd::move(objectInfo));
+                objects.emplace_back(AZStd::move(objectInfo));
             }
         }
 
@@ -453,14 +448,15 @@ namespace MaterialCanvas
 
     void MaterialCanvasDocument::BuildEditablePropertyGroups()
     {
-        m_groups.clear();
-
         // Sort nodes according to their connection so they appear in a consistent order in the inspector
         GraphModel::NodePtrList selectedNodes;
         GraphModelIntegration::GraphControllerRequestBus::EventResult(
             selectedNodes, m_graphId, &GraphModelIntegration::GraphControllerRequests::GetSelectedNodes);
 
         SortNodesInExecutionOrder(selectedNodes);
+
+        m_groups.clear();
+        m_groups.reserve(selectedNodes.size());
 
         for (const auto& currentNode : selectedNodes)
         {
@@ -470,6 +466,8 @@ namespace MaterialCanvas
                 continue;
             }
 
+            const auto& nodeConfig = dynamicNode->GetConfig();
+
             // Create a new property group and set up the header to match the node
             AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup> group;
             group.reset(aznew AtomToolsFramework::DynamicPropertyGroup);
@@ -478,8 +476,12 @@ namespace MaterialCanvas
                 AZStd::string::format("Node%u %s", currentNode->GetId(), currentNode->GetTitle()));
             group->m_description = currentNode->GetSubTitle();
 
-            // Visit all of the slots in the order that they will be displayed on the node
-            const auto& nodeConfig = dynamicNode->GetConfig();
+            group->m_properties.reserve(
+                dynamicNode->GetConfig().m_propertySlots.size() +
+                dynamicNode->GetConfig().m_inputSlots.size() +
+                dynamicNode->GetConfig().m_outputSlots.size());
+
+            // Visit all of the slots in the order to find in the configuration to add properties to the container for the inspector.
             AtomToolsFramework::VisitDynamicNodeSlotConfigs(
                 nodeConfig,
                 [&](const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig)
@@ -511,7 +513,7 @@ namespace MaterialCanvas
                                 return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
                             };
 
-                            group->m_properties.push_back(AtomToolsFramework::DynamicProperty(propertyConfig));
+                            group->m_properties.emplace_back(AZStd::move(propertyConfig));
                         }
                     }
                 });
@@ -560,19 +562,47 @@ namespace MaterialCanvas
     {
         if (auto v = AZStd::any_cast<const AZ::Color>(&slotValue))
         {
-            return AZStd::string::format("float4(%g, %g, %g, %g)", v->GetR(), v->GetG(), v->GetB(), v->GetA());
+            return AZStd::string::format("{%g, %g, %g, %g}", v->GetR(), v->GetG(), v->GetB(), v->GetA());
         }
         if (auto v = AZStd::any_cast<const AZ::Vector4>(&slotValue))
         {
-            return AZStd::string::format("float4(%g, %g, %g, %g)", v->GetX(), v->GetY(), v->GetZ(), v->GetW());
+            return AZStd::string::format("{%g, %g, %g, %g}", v->GetX(), v->GetY(), v->GetZ(), v->GetW());
         }
         if (auto v = AZStd::any_cast<const AZ::Vector3>(&slotValue))
         {
-            return AZStd::string::format("float3(%g, %g, %g)", v->GetX(), v->GetY(), v->GetZ());
+            return AZStd::string::format("{%g, %g, %g}", v->GetX(), v->GetY(), v->GetZ());
         }
         if (auto v = AZStd::any_cast<const AZ::Vector2>(&slotValue))
         {
-            return AZStd::string::format("float2(%g, %g)", v->GetX(), v->GetY());
+            return AZStd::string::format("{%g, %g}", v->GetX(), v->GetY());
+        }
+        if (auto v = AZStd::any_cast<const AZStd::array<AZ::Vector3, 3>>(&slotValue))
+        {
+            const auto& value = *v;
+            return AZStd::string::format(
+                "{%g, %g, %g, %g, %g, %g, %g, %g, %g}",
+                value[0].GetX(), value[0].GetY(), value[0].GetZ(),
+                value[1].GetX(), value[1].GetY(), value[1].GetZ(),
+                value[2].GetX(), value[2].GetY(), value[2].GetZ());
+        }
+        if (auto v = AZStd::any_cast<const AZStd::array<AZ::Vector4, 3>>(&slotValue))
+        {
+            const auto& value = *v;
+            return AZStd::string::format(
+                "{%g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g}",
+                value[0].GetX(), value[0].GetY(), value[0].GetZ(), value[0].GetW(),
+                value[1].GetX(), value[1].GetY(), value[1].GetZ(), value[1].GetW(),
+                value[2].GetX(), value[2].GetY(), value[2].GetZ(), value[2].GetW());
+        }
+        if (auto v = AZStd::any_cast<const AZStd::array<AZ::Vector4, 4>>(&slotValue))
+        {
+            const auto& value = *v;
+            return AZStd::string::format(
+                "{%g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g}",
+                value[0].GetX(), value[0].GetY(), value[0].GetZ(), value[0].GetW(),
+                value[1].GetX(), value[1].GetY(), value[1].GetZ(), value[1].GetW(),
+                value[2].GetX(), value[2].GetY(), value[2].GetZ(), value[2].GetW(),
+                value[3].GetX(), value[3].GetY(), value[3].GetZ(), value[3].GetW());
         }
         if (auto v = AZStd::any_cast<const float>(&slotValue))
         {

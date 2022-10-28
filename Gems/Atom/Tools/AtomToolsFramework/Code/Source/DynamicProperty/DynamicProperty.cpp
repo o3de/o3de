@@ -334,11 +334,26 @@ namespace AtomToolsFramework
     template<typename AttributeValueType>
     void DynamicProperty::ApplyRangeEditDataAttributes()
     {
-        AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::Min, &DynamicProperty::GetMin<AttributeValueType>);
-        AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::Max, &DynamicProperty::GetMax<AttributeValueType>);
-        AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::SoftMin, &DynamicProperty::GetSoftMin<AttributeValueType>);
-        AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::SoftMax, &DynamicProperty::GetSoftMax<AttributeValueType>);
-        AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::Step, &DynamicProperty::GetStep<AttributeValueType>);
+        if (m_config.m_min.is<AttributeValueType>())
+        {
+            AddEditDataAttribute(AZ::Edit::Attributes::Min, AZStd::any_cast<AttributeValueType>(m_config.m_min));
+        }
+        if (m_config.m_max.is<AttributeValueType>())
+        {
+            AddEditDataAttribute(AZ::Edit::Attributes::Max, AZStd::any_cast<AttributeValueType>(m_config.m_max));
+        }
+        if (m_config.m_softMin.is<AttributeValueType>())
+        {
+            AddEditDataAttribute(AZ::Edit::Attributes::SoftMin, AZStd::any_cast<AttributeValueType>(m_config.m_softMin));
+        }
+        if (m_config.m_softMax.is<AttributeValueType>())
+        {
+            AddEditDataAttribute(AZ::Edit::Attributes::SoftMax, AZStd::any_cast<AttributeValueType>(m_config.m_softMax));
+        }
+        if (m_config.m_step.is<AttributeValueType>())
+        {
+            AddEditDataAttribute(AZ::Edit::Attributes::Step, AZStd::any_cast<AttributeValueType>(m_config.m_step));
+        }
     }
 
     template<typename AttributeValueType>
@@ -349,44 +364,6 @@ namespace AtomToolsFramework
         {
             m_editData.m_elementId = AZ::Edit::UIHandlers::Slider;
         }
-    }
-
-    template<typename AttributeValueType>
-    AttributeValueType DynamicProperty::GetMin() const
-    {
-        return m_config.m_min.is<AttributeValueType>() ? AZStd::any_cast<AttributeValueType>(m_config.m_min)
-                                                       : std::numeric_limits<AttributeValueType>::lowest();
-    }
-
-    template<typename AttributeValueType>
-    AttributeValueType DynamicProperty::GetMax() const
-    {
-        return m_config.m_max.is<AttributeValueType>() ? AZStd::any_cast<AttributeValueType>(m_config.m_max)
-                                                       : std::numeric_limits<AttributeValueType>::max();
-    }
-
-    template<typename AttributeValueType>
-    AttributeValueType DynamicProperty::GetSoftMin() const
-    {
-        return m_config.m_softMin.is<AttributeValueType>() ? AZStd::any_cast<AttributeValueType>(m_config.m_softMin)
-                                                           : GetMin<AttributeValueType>();
-    }
-
-    template<typename AttributeValueType>
-    AttributeValueType DynamicProperty::GetSoftMax() const
-    {
-        return m_config.m_softMax.is<AttributeValueType>() ? AZStd::any_cast<AttributeValueType>(m_config.m_softMax)
-                                                           : GetMax<AttributeValueType>();
-    }
-
-    template<typename AttributeValueType>
-    AttributeValueType DynamicProperty::GetStep() const
-    {
-        if (m_config.m_step.is<AttributeValueType>())
-        {
-            return AZStd::any_cast<AttributeValueType>(m_config.m_step);
-        }
-        return m_config.m_step.is<float>() ? aznumeric_cast<AttributeValueType>(0.001f) : aznumeric_cast<AttributeValueType>(1.0f);
     }
 
     void DynamicProperty::ApplyVectorLabels()

@@ -27,8 +27,10 @@ set(FILES
     Include/Atom/RPI.Edit/Material/MaterialFunctorSourceData.h
     Include/Atom/RPI.Edit/Material/MaterialFunctorSourceDataSerializer.h
     Include/Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h
+    Include/Atom/RPI.Edit/Material/MaterialPipelineSourceData.h
     Include/Atom/RPI.Edit/Material/MaterialUtils.h
     Include/Atom/RPI.Edit/ResourcePool/ResourcePoolSourceData.h
+    Include/Atom/RPI.Edit/Shader/ShaderOptionValuesSourceData.h
     Include/Atom/RPI.Edit/Shader/ShaderSourceData.h
     Include/Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h
     Include/Atom/RPI.Edit/Shader/ShaderVariantAssetCreator.h
@@ -46,6 +48,7 @@ set(FILES
     Source/RPI.Edit/Material/MaterialFunctorSourceData.cpp
     Source/RPI.Edit/Material/MaterialFunctorSourceDataSerializer.cpp
     Source/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.cpp
+    Source/RPI.Edit/Material/MaterialPipelineSourceData.cpp
     Source/RPI.Edit/Material/MaterialUtils.cpp
     Source/RPI.Edit/Shader/ShaderSourceData.cpp
     Source/RPI.Edit/Shader/ShaderVariantListSourceData.cpp

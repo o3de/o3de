@@ -5,15 +5,22 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef FILEMONITORUNITTESTS_H
-#define FILEMONITORUNITTESTS_H
-#include "UnitTestRunner.h"
 
-class FileWatcherUnitTestRunner
-    : public UnitTestRun
+#pragma once
+
+#include <native/unittests/AssetProcessorUnitTests.h>
+
+class FileWatcherUnitTest
+    : public QObject
+    , public UnitTest::AssetProcessorUnitTestBase
 {
-public:
-    virtual void StartTest() override;
-};
+    Q_OBJECT
 
-#endif // FILEMONITORUNITTESTS_H
+public:
+    void SetUp() override;
+    void TearDown() override;
+
+protected:
+    AZStd::unique_ptr<FileWatcher> m_fileWatcher;
+    QString m_assetRootPath;
+};

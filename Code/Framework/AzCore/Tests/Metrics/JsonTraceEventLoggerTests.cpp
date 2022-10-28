@@ -178,7 +178,7 @@ namespace UnitTest
             AZStd::fixed_string<32> idString;
             AZStd::to_string(idString, threadIndex);
 
-            ResultOutcome resultOutcome(AZ::Metrics::IEventLogger::ErrorString("Uninitialized"));
+            ResultOutcome resultOutcome(AZStd::unexpect, AZ::Metrics::IEventLogger::ErrorString("Uninitialized"));
             {
                 // Record Duration Begin and End Events
                 AZ::Metrics::DurationArgs durationArgs;
@@ -377,7 +377,7 @@ namespace Benchmark
             AZStd::to_string(idString, idValue);
 
             using ResultOutcome = AZ::Metrics::IEventLogger::ResultOutcome;
-            [[maybe_unused]] ResultOutcome resultOutcome(AZ::Metrics::IEventLogger::ErrorString("Uninitialized"));
+            [[maybe_unused]] ResultOutcome resultOutcome(AZStd::unexpect, AZ::Metrics::IEventLogger::ErrorString("Uninitialized"));
             {
                 // Record Duration Begin and End Events
                 AZ::Metrics::DurationArgs durationArgs;

@@ -17,7 +17,7 @@
 #include <AzCore/std/parallel/atomic.h>
 #include <ScriptCanvas/Data/Data.h>
 
-#include "BehaviorContextObjectPtr.h"
+#include <ScriptCanvas/Data/BehaviorContextObjectPtr.h>
 
 namespace AZ
 {

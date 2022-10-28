@@ -94,10 +94,22 @@ namespace WhiteBox
                         return Api::MeshFaceCount(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle));
                     })
                 ->Method(
+                    "MeshVertexCount",
+                    [](WhiteBoxMeshHandle* whiteBoxMeshHandle)
+                    {
+                        return Api::MeshVertexCount(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle));
+                    })
+                ->Method(
                     "FacePolygonHandle",
                     [](WhiteBoxMeshHandle* whiteBoxMeshHandle, const Api::FaceHandle faceHandle)
                     {
                         return Api::FacePolygonHandle(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle), faceHandle);
+                    })
+                ->Method(
+                    "FaceVertexHandles",
+                    [](WhiteBoxMeshHandle* whiteBoxMeshHandle, const Api::FaceHandle faceHandle)
+                    {
+                        return Api::FaceVertexHandles(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle), faceHandle);
                     })
                 ->Method(
                     "AddVertex",

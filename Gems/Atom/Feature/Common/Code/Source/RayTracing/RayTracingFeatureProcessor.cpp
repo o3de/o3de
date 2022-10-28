@@ -220,6 +220,7 @@ namespace AZ
 
                 // add material textures
                 subMesh.m_baseColor.StoreToFloat4(materialInfo.m_baseColor.data());
+                subMesh.m_emissiveColor.StoreToFloat4(materialInfo.m_emissiveColor.data());
                 materialInfo.m_metallicFactor = subMesh.m_metallicFactor;
                 materialInfo.m_roughnessFactor = subMesh.m_roughnessFactor;
                 materialInfo.m_textureFlags = subMesh.m_textureFlags;
@@ -229,7 +230,8 @@ namespace AZ
                     m_materialTextures.AddResource(subMesh.m_baseColorImageView.get()),
                     m_materialTextures.AddResource(subMesh.m_normalImageView.get()),
                     m_materialTextures.AddResource(subMesh.m_metallicImageView.get()),
-                    m_materialTextures.AddResource(subMesh.m_roughnessImageView.get())
+                    m_materialTextures.AddResource(subMesh.m_roughnessImageView.get()),
+                    m_materialTextures.AddResource(subMesh.m_emissiveImageView.get())
                 });
             }
 
@@ -290,7 +292,8 @@ namespace AZ
                     m_materialTextures.RemoveResource(subMesh.m_normalImageView.get());
                     m_materialTextures.RemoveResource(subMesh.m_metallicImageView.get());
                     m_materialTextures.RemoveResource(subMesh.m_roughnessImageView.get());
-                    
+                    m_materialTextures.RemoveResource(subMesh.m_emissiveImageView.get());
+
                     if (globalIndex < m_subMeshes.size() - 1)
                     {
                         // the subMesh we're removing is in the middle of the global lists, remove by swapping the last element to its position in the list

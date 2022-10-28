@@ -21,6 +21,8 @@ set(FILES
     Source/EngineInfo.cpp
     Source/FormLineEditWidget.h
     Source/FormLineEditWidget.cpp
+    Source/FormLineEditTagsWidget.h
+    Source/FormLineEditTagsWidget.cpp
     Source/FormBrowseEditWidget.h
     Source/FormBrowseEditWidget.cpp
     Source/FormComboBoxWidget.h

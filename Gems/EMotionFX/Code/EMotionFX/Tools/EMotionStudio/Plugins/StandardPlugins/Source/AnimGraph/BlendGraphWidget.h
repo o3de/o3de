@@ -14,7 +14,7 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphModel.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodeGraphWidget.h>
-#include <GraphCanvas/Widgets/NodePalette/TreeItems/IconDecoratedNodePaletteTreeItem.h>
+#include <GraphCanvas/Widgets/NodePalette/TreeItems/DraggableNodePaletteTreeItem.h>
 #include <GraphCanvas/Widgets/GraphCanvasMimeEvent.h>
 #include <MCore/Source/CommandGroup.h>
 #endif
@@ -37,20 +37,30 @@ namespace EMStudio
     class BlendGraphMimeEvent : public GraphCanvas::GraphCanvasMimeEvent
     {
     public:
-        explicit BlendGraphMimeEvent(QString typeString, QString namePrefix);
+        AZ_RTTI(BlendGraphMimeEvent, "{AA7C8960-C7BA-4F26-B52B-97CF4AC3CB39}", GraphCanvas::GraphCanvasMimeEvent);
+        AZ_CLASS_ALLOCATOR(BlendGraphMimeEvent, AZ::SystemAllocator, 0);
+        static void Reflect(AZ::ReflectContext* context);
+
+        BlendGraphMimeEvent() = default;
+        BlendGraphMimeEvent(AZStd::string_view typeString, AZStd::string_view namePrefix);
+
         bool ExecuteEvent(const AZ::Vector2& sceneMousePosition, AZ::Vector2& sceneDropPosition, const AZ::EntityId& sceneId) override;
 
-        QString GetTypeString() const;
-        QString GetNamePrefix() const;
+        AZStd::string GetTypeString() const;
+        AZStd::string GetNamePrefix() const;
+
+        static constexpr const char* BlendGraphMimeEventType = "animgraph/node-palette-mime-event";
+
     private:
-        QString m_typeString;
-        QString m_namePrefix;
+        AZStd::string m_typeString;
+        AZStd::string m_namePrefix;
     };
 
-    class BlendGraphNodePaletteTreeItem : public GraphCanvas::IconDecoratedNodePaletteTreeItem
+    class BlendGraphNodePaletteTreeItem : public GraphCanvas::DraggableNodePaletteTreeItem
     {
     public:
-        BlendGraphNodePaletteTreeItem(AZStd::string_view name, const QString& typeString, GraphCanvas::EditorId editorId, const AZ::Color& color);
+        BlendGraphNodePaletteTreeItem(
+            const AZStd::string_view name, const QString& typeString, GraphCanvas::EditorId editorId, const AZ::Color& color);
         BlendGraphMimeEvent* CreateMimeEvent() const override;
 
         void SetTypeString(const QString& typeString);
@@ -95,7 +105,7 @@ namespace EMStudio
 
         void DeleteSelectedItems(NodeGraph* nodeGraph);
 
-        static bool OnEnterDropEvent(QDragEnterEvent* event, EMotionFX::AnimGraphNode* currentNode, NodeGraph* activeGraph);
+        static bool OnEnterDropEvent(QDragEnterEvent* event, EMotionFX::AnimGraphNode* currentNode);
 
         // checks if the currently shown graph is a state machine
         bool CheckIfIsStateMachine();
@@ -103,8 +113,6 @@ namespace EMStudio
         // context menu shared function (definitions in ContextMenu.cpp)
         void AddNodeGroupSubmenu(QMenu* menu, EMotionFX::AnimGraph* animGraph, const AZStd::vector<EMotionFX::AnimGraphNode*>& selectedNodes);
         void AddPreviewMotionSubmenu(QMenu* menu, AnimGraphActionManager* actionManager, const EMotionFX::AnimGraphNode* selectedNode);
-        void AddAnimGraphObjectCategoryMenu(AnimGraphPlugin* plugin, QMenu* parentMenu,
-            EMotionFX::AnimGraphObject::ECategory category, EMotionFX::AnimGraphObject* focusedGraphObject);
         void AddCategoryToNodePalette(EMotionFX::AnimGraphNode::ECategory category, GraphCanvas::NodePaletteTreeItem* rootNode,
             EMotionFX::AnimGraphObject* focusedGraphObject);
 
@@ -137,6 +145,7 @@ namespace EMStudio
     public slots:
         void DeleteSelectedItems();
         void OnContextMenuCreateNode(const BlendGraphMimeEvent* event);
+        void CreateNodeFromMimeEvent(const BlendGraphMimeEvent* event, const QPoint& location);
         void OnNodeGroupSelected();
         void EnableSelectedTransitions()                    { SetSelectedTransitionsEnabled(true); }
         void DisableSelectedTransitions()                   { SetSelectedTransitionsEnabled(false); }

@@ -106,10 +106,6 @@ namespace MaterialCanvas
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
 
-    MaterialCanvasMainWindow::~MaterialCanvasMainWindow()
-    {
-    }
-
     void MaterialCanvasMainWindow::OnDocumentOpened(const AZ::Uuid& documentId)
     {
         Base::OnDocumentOpened(documentId);

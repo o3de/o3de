@@ -75,7 +75,7 @@ os.environ['SETTINGS_MODULE_FOR_DYNACONF'] = PATH_DCCSIG_SETTINGS.as_posix()
 from DccScriptingInterface.globals import *
 
 # temproary force enable these during development
-#DCCSI_GDEBUG = True
+DCCSI_GDEBUG = True
 DCCSI_DEV_MODE = True
 
 # enable this if you are having difficulty with debugging
@@ -106,7 +106,7 @@ import DccScriptingInterface.config as dccsi_core_config
 # from DccScriptingInterface.config import ConfigClass
 # dccsi_config = ConfigClass(config_name='dccsi', auto_set=True)
 # for now, use the legacy code, until CoreConfig class is complete
-_settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=False,
+_settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=True,
                                                        enable_o3de_pyside2=False,
                                                        set_env=True)
 
@@ -169,19 +169,6 @@ import az_qt_helpers
 
 # additional DCCsi imports that utilize PySide2
 from DccScriptingInterface.azpy.shared.ui.samples import SampleUI
-# -------------------------------------------------------------------------
-
-
-# ---- dccsi app modules --------------------------------------------------
-# Blender
-from DccScriptingInterface.Tools.DCC.Blender.config import blender_config
-import DccScriptingInterface.Tools.DCC.Blender.start as blender_start
-
-# Wing
-from DccScriptingInterface.Tools.IDE.Wing.config import wing_config
-import DccScriptingInterface.Tools.IDE.Wing.start as wing_start
-
-# Maya, not implemented yet
 # -------------------------------------------------------------------------
 
 
@@ -292,7 +279,19 @@ def start_service(py_file: Path = None,
 def click_action_start_blender() -> start_service:
     """Start Blender DCC application"""
     _LOGGER.debug(f'Clicked: click_action_start_blender')
-    py_file = Path(blender_config.settings.PATH_DCCSI_TOOLS_DCC_BLENDER, 'start.py').resolve()
+    from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_TOOLS_DCC_BLENDER
+    py_file = Path(PATH_DCCSI_TOOLS_DCC_BLENDER, 'start.py').resolve()
+    return start_service(py_file)
+# -------------------------------------------------------------------------
+
+
+# - slot ------------------------------------------------------------------
+@Slot()
+def click_action_start_maya() -> start_service:
+    """Start Maya DCC application"""
+    _LOGGER.debug(f'Clicked: click_action_start_maya')
+    from DccScriptingInterface.Tools.DCC.Maya import PATH_DCCSI_TOOLS_DCC_MAYA
+    py_file = Path(PATH_DCCSI_TOOLS_DCC_MAYA, 'start.py').resolve()
     return start_service(py_file)
 # -------------------------------------------------------------------------
 
@@ -302,7 +301,8 @@ def click_action_start_blender() -> start_service:
 def click_action_start_wing() -> start_service:
     """Start Wing IDE"""
     _LOGGER.debug(f'Clicked: click_action_start_wing')
-    py_file = Path(wing_config.settings.PATH_DCCSI_TOOLS_IDE_WING, 'start.py').resolve()
+    from DccScriptingInterface.Tools.IDE.Wing import PATH_DCCSI_TOOLS_IDE_WING
+    py_file = Path(PATH_DCCSI_TOOLS_IDE_WING, 'start.py').resolve()
     return start_service(py_file)
 # -------------------------------------------------------------------------
 
@@ -358,6 +358,11 @@ def bootstrap_Editor():
     action_start_blender = add_action(parent=dccsi_dcc_menu,
                                       title="Blender",
                                       action_slot = click_action_start_blender)
+
+    # Editor MenuBar, Studio Tools > DCC > Maya
+    action_start_maya = add_action(parent=dccsi_dcc_menu,
+                                   title="Maya",
+                                   action_slot = click_action_start_maya)
 
     # Editor MenuBar, Studio Tools > IDE
     # nest a menu with hooks to start python IDE tools like Wing

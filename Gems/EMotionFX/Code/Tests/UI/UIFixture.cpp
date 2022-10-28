@@ -19,7 +19,7 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterWindow.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditDialog.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditWidget.h>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
@@ -432,14 +432,14 @@ namespace EMotionFX
         EMStudio::ParameterWindow* parameterWindow = m_animGraphPlugin->GetParameterWindow();
         parameterWindow->OnAddParameter();
 
-        EMStudio::ParameterCreateEditDialog* paramDialog = parameterWindow->findChild< EMStudio::ParameterCreateEditDialog*>();
-        ASSERT_TRUE(paramDialog);
+        auto paramWidget = qobject_cast<EMStudio::ParameterCreateEditWidget*>(FindTopLevelWidget("ParameterCreateEditWidget"));
+        ASSERT_TRUE(paramWidget);
 
-        const AZStd::unique_ptr<EMotionFX::Parameter>& param = paramDialog->GetParameter();
+        const AZStd::unique_ptr<EMotionFX::Parameter>& param = paramWidget->GetParameter();
         param->SetName(name);
         const size_t numParams = m_animGraphPlugin->GetActiveAnimGraph()->GetNumParameters();
 
-        QPushButton* createButton = paramDialog->findChild<QPushButton*>("EMFX.ParameterCreateEditDialog.CreateApplyButton");
+        QPushButton* createButton = paramWidget->findChild<QPushButton*>("EMFX.ParameterCreateEditWidget.CreateApplyButton");
         QTest::mouseClick(createButton, Qt::LeftButton);
 
         ASSERT_EQ(m_animGraphPlugin->GetActiveAnimGraph()->GetNumParameters(), numParams + 1);
