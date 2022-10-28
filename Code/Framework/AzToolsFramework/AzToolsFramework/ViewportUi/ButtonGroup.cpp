@@ -37,7 +37,7 @@ namespace AzToolsFramework::ViewportUi::Internal
             {
             case Button::State::Selected:
                 ClearHighlightedButton();
-            [[fallthrough]];
+                [[fallthrough]];
             default:
                 buttonEntry->second->m_state = disabled ? Button::State::Disabled : Button::State::Deselected;
                 break;
