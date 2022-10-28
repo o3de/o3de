@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -11,12 +10,11 @@
 /* Global styles                                                 */
 /* ============================================================= */
 
-
 *
 {
     background-color: transparent;
-    color: white;
-    font-family: "Open Sans";
+    color: $Color;
+    font-family: "$FontFamily";
     font-weight: 400;
 }
 
@@ -26,7 +24,7 @@ QTreeView
 {
     /* give a background color to views without parent (completer popups)
        it is reset to transparent in the next setting for views with a parent */
-    background-color: #444444;
+    background-color: $BackgroundColor;
 }
 
 QWidget > QTableView,
@@ -44,17 +42,17 @@ QWidget > QTreeView
 .QFrame[frameShape="5"],
 .QFrame[frameShape="6"]
 {
-    background-color: #444444;
+    background-color: $BackgroundColor;
 }
 
 QMainWindow:separator
 {
-    background-color: #111111;
+    background-color: $SeparatorColor;
 }
 
 QMainWindow::separator:hover
 {
-    background-color: #1E70EB;
+    background-color: $SeparatorHoveredColor;
 }
 
 QMainWindow,
@@ -62,7 +60,7 @@ QDialog,
 QDockWidget
 {
     color: #cccccc;
-    background-color: #444444;
+    background-color: $BackgroundColor;
 }
 
 QTextEdit,
@@ -73,13 +71,13 @@ QSpinBox,
 QDoubleSpinBox,
 QComboBox
 {
-    background-color: #CCCCCC;
+    background-color: $InputBackgroundColor;
     color: black;
-    font-family: "Open Sans";
+    font-family: $FontFamily;
     border-radius: 2px;
     border-width: 0px;
     border-color: #e9e9e9;
-    font-size: 12px;
+    font-size: $FontSize;
     line-height: 16px;
 }
 
@@ -87,7 +85,7 @@ QTextEdit,
 QPlainText,
 QPlainTextEdit
 {
-    background-color: #E9E9E9;
+    background-color: $InputBackgroundColor;
     color: #545454;
     margin: 2px;
     border-width: 0px;

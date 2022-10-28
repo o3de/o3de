@@ -1438,12 +1438,8 @@ AZ::EntityId SandboxIntegrationManager::ContextMenu_NewLayer()
     const AZStd::string name = AZStd::string::format("Layer%d", objectCount + 1);
 
     // Make sure the color is created fully opaque.
-    static QColor newLayerDefaultColor = GetIEditor()->GetColorByName("NewLayerDefaultColor");
-    AZ::Color newLayerColor(
-        aznumeric_cast<float>(newLayerDefaultColor.redF()),
-        aznumeric_cast<float>(newLayerDefaultColor.greenF()),
-        aznumeric_cast<float>(newLayerDefaultColor.blueF()),
-        aznumeric_cast<float>(newLayerDefaultColor.alphaF()));
+    AZ::Color newLayerColor;
+    newLayerColor.SetA(1.0f);
 
     AZ::EntityId newEntityId = AzToolsFramework::Layers::EditorLayerComponent::CreateLayerEntity(
         name, newLayerColor, AzToolsFramework::Layers::LayerProperties::SaveFormat::Xml);

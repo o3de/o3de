@@ -24,39 +24,35 @@ namespace AzQtComponents
     class AZ_QT_COMPONENTS_API ToolButton
     {
     public:
-        //! Style configuration for the ToolButton class.
-        struct Config
-        {
-            int buttonIconSize;                     //!< The default size of button icons in pixels.
-            int defaultButtonMargin;                //!< Margin around ToolButton controls, in pixels. All directions get the same margin.
-            int menuIndicatorWidth;                 //!< Width of the menu indicator arrow in pixels.
-            QColor checkedStateBackgroundColor;     //!< Background color for checkable ToolButtons set to the checked state.
-            QString menuIndicatorIcon;              //!< Path to the indicator icon. Svg images recommended.
-            QSize menuIndicatorIconSize;            //!< Size of the indicator icon. Size must be proportional to the icon's ratio.
-        };
-
-        //! Sets the ToolButton style configuration.
-        //! @param settings The settings object to load the configuration from.
-        //! @return The new configuration of the ToolButton.
-        static Config loadConfig(QSettings& settings);
-        //! Gets the default ToolButton style configuration.
-        static Config defaultConfig();
+        static void initialize();
 
     private:
         friend class Style;
 
-        static bool polish(Style* style, QWidget* widget, const Config& config);
+        static bool polish(Style* style, QWidget* widget);
 
-        static int buttonIconSize(const Style* style, const QStyleOption* option, const QWidget* widget, const Config& config);
-        static int buttonMargin(const Style* style, const QStyleOption* option, const QWidget* widget, const Config& config);
-        static int menuButtonIndicatorWidth(const Style* style, const QStyleOption* option, const QWidget* widget, const Config& config);
+        static int buttonIconSize(const Style* style, const QStyleOption* option, const QWidget* widget);
+        static int buttonMargin(const Style* style, const QStyleOption* option, const QWidget* widget);
+        static int menuButtonIndicatorWidth(const Style* style, const QStyleOption* option, const QWidget* widget);
 
-        static QSize sizeFromContents(const Style* style, QStyle::ContentsType type, const QStyleOption* option, const QSize& contentSize, const QWidget* widget, const Config& config);
+        static QSize sizeFromContents(const Style* style, QStyle::ContentsType type, const QStyleOption* option, const QSize& contentSize, const QWidget* widget);
 
-        static QRect subControlRect(const Style* style, const QStyleOptionComplex* option, QStyle::SubControl subControl, const QWidget* widget, const Config& config);
+        static QRect subControlRect(const Style* style, const QStyleOptionComplex* option, QStyle::SubControl subControl, const QWidget* widget);
 
-        static bool drawToolButton(const Style* style, const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget, const Config& config);
-        static bool drawIndicatorArrowDown(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const Config& config);
+        static bool drawToolButton(const Style* style, const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget);
+        static bool drawIndicatorArrowDown(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget);
 
+        //! The default size of button icons in pixels.
+        inline static int s_buttonIconSize = 16;
+        //! Margin around ToolButton controls, in pixels. All directions get the same margin.
+        inline static int s_defaultButtonMargin = 1;
+        //! Width of the menu indicator arrow in pixels.
+        inline static int s_menuIndicatorWidth = 10;
+        //! Background color for checkable ToolButtons set to the checked state.
+        inline static QColor s_checkedStateBackgroundColor = QStringLiteral("#1E70EB");
+        //! Path to the indicator icon. Svg images recommended.
+        inline static QString s_menuIndicatorIcon = QStringLiteral(":/stylesheet/img/UI20/menu-indicator.svg");
+        //! Size of the indicator icon. Size must be proportional to the icon's ratio.
+        inline static QSize s_menuIndicatorIconSize = QSize(6, 3);
     };
 } // namespace AzQtComponents

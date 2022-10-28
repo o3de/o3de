@@ -19,30 +19,24 @@
    when we customize the background colors and styles here. Also,
    there's literally no way to get the colors and styling info out
    of the stylesheet.
-
-   Below is the configuration of the text colors for the
-   PushButtons and the font size, which can be done here in the
-   stylesheet.
-
-   Everything else can be configured via PushButton.ini
    ============================================================= */
 
 QPushButton
 {
-    color: #ffffff;
-    font-family: "Open Sans";
+    color: $ButtonColor;
+    font-family: "$FontFamily";
     font-size: 12px;
 }
 
 QPushButton:hover,
 QPushButton:pressed
 {
-    color: #FFFFFF;
+    color: $ButtonHoveredColor;
 }
 
 QPushButton:disabled
 {
-    color: #999999;
+    color: $ButtonDisabledColor;
 }
 
 QPushButton:flat
@@ -56,19 +50,19 @@ QPushButton:default,
 QToolButton::menu-indicator,
 QToolButton.SmallIcon::menu-indicator
 {
-    color: #FFFFFF;
+    color: $ButtonPrimaryColor;
 }
 
 QPushButton.Primary:disabled,
 QPushButton:default:disabled,
 QToolButton.SmallIcon:disabled::menu-indicator
 {
-    color: #BBBBBB;
+    color: $ButtonPrimaryDisabledColor;
 }
 
 QPushButton.SmallIcon
 {
-    margin: 0px;
+    margin: 0;
 }
 
 /* Utility classes for shared styling */

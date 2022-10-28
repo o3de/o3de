@@ -791,11 +791,6 @@ float CEditorImpl::GetTerrainElevation(float x, float y)
     return terrainElevation;
 }
 
-const QColor& CEditorImpl::GetColorByName(const QString& name)
-{
-    return m_QtApplication->GetColorByName(name);
-}
-
 void CEditorImpl::SetSelectedRegion(const AABB& box)
 {
     m_selectedRegion = box;

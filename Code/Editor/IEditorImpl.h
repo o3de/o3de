@@ -158,7 +158,6 @@ public:
     IIconManager* GetIconManager() override;
     float GetTerrainElevation(float x, float y) override;
     Editor::EditorQtApplication* GetEditorQtApplication() override { return m_QtApplication; }
-    const QColor& GetColorByName(const QString& name) override;
 
     //////////////////////////////////////////////////////////////////////////
     IMovieSystem* GetMovieSystem() override

@@ -10,20 +10,22 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzQtComponents/Components/StyleManager.h>
-#include <QTextStream>
+
 #include <QApplication>
-#include <QPalette>
+#include <QDebug>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have dll-interface to be used by clients of class 'QFileInfo'
 #include <QDir>
 AZ_POP_DISABLE_WARNING
-#include <QString>
 #include <QFile>
 #include <QFontDatabase>
+#include <QJsonDocument>
 #include <QStyleFactory>
+#include <QPalette>
 #include <QPointer>
+#include <QString>
 #include <QStyle>
+#include <QTextStream>
 #include <QWidget>
-#include <QDebug>
 
 #include <QtWidgets/private/qstylesheetstyle_p.h>
 
@@ -36,6 +38,7 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzQtComponents
 {
+    constexpr AZStd::string_view StylesheetVariablesKey = "theme_properties";
 
     constexpr QStringView g_styleSheetRelativePath {u"Code/Framework/AzQtComponents/AzQtComponents/Components/Widgets"};
     constexpr QStringView g_styleSheetResourcePath {u":AzQtComponents/Widgets"};
@@ -47,8 +50,42 @@ namespace AzQtComponents
     static QStyle* createBaseStyle()
     {
         return QStyleFactory::create("Fusion");
-
     }
+
+    bool StyleManager::IsStylePropertyDefined(const char* propertyKey) const
+    {
+        return (m_themeProperties.contains(propertyKey));
+    };
+
+    QString StyleManager::GetStylePropertyAsString(const char* propertyKey) const
+    {
+        if (m_themeProperties.contains(propertyKey))
+        {
+            return m_themeProperties.value(propertyKey);
+        }
+
+        return QString();
+    };
+
+    int StyleManager::GetStylePropertyAsInteger(const char* propertyKey) const
+    {
+        if (m_themeProperties.contains(propertyKey))
+        {
+            return m_themeProperties.value(propertyKey).toInt();
+        }
+
+        return int();
+    };
+
+    QColor StyleManager::GetStylePropertyAsColor(const char* propertyKey) const
+    {
+        if (m_themeProperties.contains(propertyKey))
+        {
+            return QColor(m_themeProperties.value(propertyKey));
+        }
+
+        return QColor();
+    };
 
     void StyleManager::addSearchPaths(const QString& searchPrefix, const QString& pathOnDisk, const QString& qrcPrefix,
         const AZ::IO::PathView& engineRootPath)
@@ -91,7 +128,7 @@ namespace AzQtComponents
 
         connect(widget, &QObject::destroyed, s_instance, &StyleManager::stopTrackingWidget, Qt::UniqueConnection);
 
-        widget->setStyleSheet(styleSheet);
+        widget->setStyleSheet(s_instance->m_stylesheetPreprocessor->ProcessStyleSheet(styleSheet));
 
         return true;
     }
@@ -141,6 +178,8 @@ namespace AzQtComponents
 
     StyleManager::~StyleManager()
     {
+        AZ::Interface<StyleManagerInterface>::Unregister(this);
+
         delete m_stylesheetPreprocessor;
         s_instance = nullptr;
 
@@ -149,6 +188,20 @@ namespace AzQtComponents
             delete m_style.data();
             m_style.clear();
             m_styleSheetStyle = nullptr;
+        }
+    }
+
+    void StyleManager::InitializeThemeProperties([[maybe_unused]] QFileSystemWatcher* watcher, const QString& filePath)
+    {
+        if (QFile::exists(filePath))
+        {
+            QFile themeFile;
+            themeFile.setFileName(filePath);
+            if (themeFile.open(QFile::ReadOnly))
+            {
+                QString loadedThemeFile = themeFile.readAll();
+                LoadThemeProperties(loadedThemeFile);
+            }
         }
     }
 
@@ -173,6 +226,9 @@ namespace AzQtComponents
         defaultFont.setPixelSize(12);
         QApplication::setFont(defaultFont);
 
+        AZ::Interface<StyleManagerInterface>::Register(this);
+        m_stylesheetPreprocessor->Initialize();
+
         m_titleBarOverdrawHandler = TitleBarOverdrawHandler::createHandler(application, this);
 
         // The window decoration wrappers require the titlebar overdraw handler
@@ -180,6 +236,8 @@ namespace AzQtComponents
         // titlebar overdraw handler has been initialized.
         m_autoCustomWindowDecorations = new AutoCustomWindowDecorations(this);
         m_autoCustomWindowDecorations->setMode(AutoCustomWindowDecorations::Mode_AnyWindow);
+
+        InitializeThemeProperties(nullptr, "D:\\GitRepos\\O3DE\\o3de\\Code\\Framework\\AzQtComponents\\AzQtComponents\\Themes\\O3DE_Light\\o3de_light.json");
 
         // Style is chained as: Style -> QStyleSheetStyle -> native, meaning any CSS limitation can be tackled in Style.cpp
         m_styleSheetStyle = new QStyleSheetStyle(createBaseStyle());
@@ -256,10 +314,39 @@ namespace AzQtComponents
         }
     }
 
+    void StyleManager::LoadThemeProperties(const QString& jsonString)
+    {
+        QJsonDocument doc = QJsonDocument::fromJson(jsonString.toUtf8());
+        QJsonObject rootObject = doc.object();
+
+        // TODO: warn and do something if theme json file is invalid.
+
+        // load in the stylesheet variables
+        if (rootObject.contains(StylesheetVariablesKey.data()))
+        {
+            LoadThemePropertiesRecursively("", rootObject.value(StylesheetVariablesKey.data()).toObject());
+        }
+    }
+
+    void StyleManager::LoadThemePropertiesRecursively(const QString prefix, const QJsonObject& jsonObject)
+    {
+        for (const QString& key : jsonObject.keys())
+        {
+            if (jsonObject[key].isObject())
+            {
+                LoadThemePropertiesRecursively(prefix + key, jsonObject[key].toObject());
+            }
+            else
+            {
+                m_themeProperties[prefix + key] = jsonObject[key].toString();
+            }
+        }
+    }
+
     void StyleManager::refresh()
     {
         const auto globalStyleSheet = m_stylesheetCache->loadStyleSheet(g_globalStyleSheetName.toString());
-        m_styleSheetStyle->setGlobalSheet(globalStyleSheet);
+        m_styleSheetStyle->setGlobalSheet(s_instance->m_stylesheetPreprocessor->ProcessStyleSheet(globalStyleSheet));
 
         // Iterate widgets and update the stylesheet (the base style has already been set)
         auto i = m_widgetToStyleSheetMap.constBegin();
@@ -276,11 +363,6 @@ namespace AzQtComponents
         QFont titleBarFont("Open Sans");
         titleBarFont.setPixelSize(18);
         QApplication::setFont(titleBarFont, "QMdiSubWindowTitleBar");
-    }
-
-    const QColor& StyleManager::getColorByName(const QString& name)
-    {
-        return m_stylesheetPreprocessor->GetColorByName(name);
     }
 } // namespace AzQtComponents
 
