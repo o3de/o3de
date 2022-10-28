@@ -84,6 +84,27 @@ namespace
             emit ViewportInfoStatusUpdated(aznumeric_cast<int>(state));
         }
     };
+
+    // simple override of QMenu that does not respond to keyboard events
+    // note: this prevents the menu from being prematurely closed
+    class IgnoreKeyboardMenu : public QMenu
+    {
+    public:
+        IgnoreKeyboardMenu(QWidget* parent = nullptr)
+            : QMenu(parent)
+        {
+        }
+
+    private:
+        void keyPressEvent(QKeyEvent* event) override
+        {
+            // regular escape key handling
+            if (event->key() == Qt::Key_Escape)
+            {
+                QMenu::keyPressEvent(event);
+            }
+        }
+    };
 } // end anonymous namespace
 
 CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
@@ -164,7 +185,7 @@ CViewportTitleDlg::~CViewportTitleDlg()
 void CViewportTitleDlg::SetupCameraDropdownMenu()
 {
     // Setup the camera dropdown menu
-    QMenu* cameraMenu = new QMenu(this);
+    auto cameraMenu = new IgnoreKeyboardMenu(this);
     cameraMenu->addMenu(GetFovMenu());
     m_ui->m_cameraMenu->setMenu(cameraMenu);
     m_ui->m_cameraMenu->setPopupMode(QToolButton::InstantPopup);
@@ -187,6 +208,22 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
 
     QObject::connect(
         m_cameraSpinBox,
+        &AzQtComponents::DoubleSpinBox::editingFinished,
+        [this]
+        {
+            m_cameraSpinBox->clearFocus();
+        });
+
+    QObject::connect(
+        cameraMenu,
+        &QMenu::aboutToHide,
+        [this]
+        {
+            m_cameraSpinBox->clearFocus();
+        });
+
+    QObject::connect(
+        m_cameraSpinBox,
         QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged),
         [](const double value)
         {
@@ -194,6 +231,7 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
         });
 
     QHBoxLayout* cameraSpeedLayout = new QHBoxLayout;
+    cameraSpeedLayout->setContentsMargins(QMargins(16, 0, 16, 0));
     cameraSpeedLayout->addWidget(cameraSpeedLabel);
     cameraSpeedLayout->addWidget(m_cameraSpinBox);
     cameraSpeedContainer->setLayout(cameraSpeedLayout);
@@ -320,26 +358,6 @@ void CViewportTitleDlg::SetupHelpersButton()
 
 void CViewportTitleDlg::SetupOverflowMenu()
 {
-    // simple override of QMenu that does not respond to keyboard events
-    // note: this prevents the menu from being prematurely closed
-    class IgnoreKeyboardMenu : public QMenu
-    {
-    public:
-        IgnoreKeyboardMenu(QWidget *parent = nullptr) : QMenu(parent)
-        {
-        }
-
-    private:
-        void keyPressEvent(QKeyEvent* event) override
-        {
-            // regular escape key handling
-            if (event->key() == Qt::Key_Escape)
-            {
-                QMenu::keyPressEvent(event);
-            }
-        }
-    };
-
     // setup the overflow menu
     auto* overflowMenu = new IgnoreKeyboardMenu(this);
     overflowMenu->setMinimumWidth(MiniumOverflowMenuWidth);
