@@ -19,6 +19,7 @@ namespace AZ::DocumentPropertyEditor
     public:
         virtual ~RowSortAdapter();
         void SetSortActive(bool active);
+        void InvalidateSort();
 
     protected:
         Dom::Value GenerateContents() override;
@@ -68,7 +69,6 @@ namespace AZ::DocumentPropertyEditor
         void HandleReset() override;
         void HandleDomChange(const Dom::Patch& patch) override;
 
-        void InvalidateSort();
         void GenerateFullTree();
         void PopulateChildren(const Dom::Value& value, SortInfoNode* sortInfo);
 

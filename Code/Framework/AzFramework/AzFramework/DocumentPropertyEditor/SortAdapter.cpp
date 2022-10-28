@@ -145,7 +145,7 @@ namespace AZ::DocumentPropertyEditor
 
             // sort the source child before copying it
             auto sortedChild = GetSortedValue(sourceValue[nextInSort], *nextSortedIter);
-            sortedValue[nextIndex] = sourceValue[nextInSort];
+            sortedValue[nextIndex] = sortedChild;
         }
 
         return sortedValue;
