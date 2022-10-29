@@ -79,7 +79,7 @@ namespace AZ::DocumentPropertyEditor
             }
 
             // <apm> remove this!
-            NotifyResetDocument(DocumentResetType::HardReset);
+            HandleReset();
         }
         else
         {
