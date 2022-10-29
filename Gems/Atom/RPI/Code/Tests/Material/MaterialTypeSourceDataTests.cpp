@@ -1922,7 +1922,7 @@ namespace UnitTest
         EXPECT_EQ(material.GetPropertyLayout().m_propertiesOld.size(), 2);
         EXPECT_EQ(material.GetPropertyLayout().m_propertyGroups.size(), 0);
 
-        material.ConvertToNewDataFormat();
+        material.UpgradeLegacyFormat();
         
         // After conversion to the new format, the data is in the new place
         EXPECT_EQ(material.GetPropertyLayout().m_groupsOld.size(), 0);

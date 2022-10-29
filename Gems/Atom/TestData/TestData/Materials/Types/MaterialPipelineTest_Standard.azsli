@@ -5,6 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+    
+#if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
 
 #include <Atom/Features/SrgSemantics.azsli>
 
@@ -13,24 +15,9 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     float3 m_baseColor;
     float m_metallic;
     float m_roughness;
-    float m_animationSpeed;
-    float m_amplitude;
-    float m_frequency;
+    float m_clearCoatFactor;
+    float m_clearCoatRoughness;
 }
-
-void MaterialFunction_AdjustVertexData(in float3 positionLS, inout VertexData vertexData)
-{
-    float amount = sin(3.14159 * 2 * (SceneSrg::m_time * MaterialSrg::m_animationSpeed + (positionLS.x + positionLS.y + positionLS.z) * MaterialSrg::m_frequency)) * MaterialSrg::m_amplitude;
-
-    float3 dir = normalize(positionLS);
-
-    positionLS += dir * amount;
-
-    vertexData.positionWS = LocalSpaceToWorldSpace(positionLS);
-}
-#define MaterialFunction_AdjustVertexData_DEFINED 1
-
-#if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
 
 void MaterialFunction_AdjustSurface(inout Surface surface)
 {
@@ -39,6 +26,16 @@ void MaterialFunction_AdjustSurface(inout Surface surface)
     float metallic = MaterialSrg::m_metallic;
     float specularF0Factor = 0.5f;
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
+    
+#if ENABLE_CLEAR_COAT
+    if(o_clearCoat_feature_enabled)
+    {
+        surface.clearCoat.factor = MaterialSrg::m_clearCoatFactor;
+        surface.clearCoat.roughness = MaterialSrg::m_clearCoatRoughness;
+        surface.clearCoat.normal = surface.normal;
+        ApplyClearCoatToSpecularF0(surface.specularF0, surface.clearCoat.factor);
+    }
+#endif
 }
 #define MaterialFunction_AdjustSurface_DEFINED 1
 

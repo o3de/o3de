@@ -549,7 +549,7 @@ namespace UnitTest
 
         MaterialSourceData material;
         LoadTestDataFromJson(material, inputJson);
-        material.ConvertToNewDataFormat();
+        material.UpgradeLegacyFormat();
 
         MaterialSourceData expectedMaterial;
         expectedMaterial.m_materialType = "test.materialtype";
@@ -1212,7 +1212,7 @@ namespace UnitTest
         // This test is the same as CreateMaterialAssetFromSourceData_MultiLevelDataInheritance except it uses the old format
         // where material property values in the .material file were nested, with properties listed under a group object,
         // rather than using a flat list of property values.
-        // Basically, we are making sure that MaterialSourceData::ConvertToNewDataFormat() is getting called.
+        // Basically, we are making sure that MaterialSourceData::UpgradeLegacyFormat() is getting called.
 
         const AZStd::string simpleMaterialTypeJson = R"(
             {
