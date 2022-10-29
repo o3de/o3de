@@ -58,20 +58,7 @@ bool buttonHasMenu(Button* button)
 void PushButton::initialize()
 {
     auto styleManagerInterface = AZ::Interface<StyleManagerInterface>::Get();
-    AZ_Assert(styleManagerInterface, "ToolButton - could not get StyleManagerInterface on ToolButton initialization.");
-
-    if (styleManagerInterface->IsStylePropertyDefined("ButtonFrameHeight"))
-    {
-        s_buttonFrameHeight = styleManagerInterface->GetStylePropertyAsInteger("ButtonFrameHeight");
-    }
-    if (styleManagerInterface->IsStylePropertyDefined("ButtonFrameRadius"))
-    {
-        s_buttonFrameRadius = styleManagerInterface->GetStylePropertyAsInteger("ButtonFrameRadius");
-    }
-    if (styleManagerInterface->IsStylePropertyDefined("ButtonFrameMargin"))
-    {
-        s_buttonFrameMargin = styleManagerInterface->GetStylePropertyAsInteger("ButtonFrameMargin");
-    }
+    AZ_Assert(styleManagerInterface, "ToolButton - could not get StyleManagerInterface on PushButton initialization.");
 
     if (styleManagerInterface->IsStylePropertyDefined("ButtonFrameHeight"))
     {
@@ -308,11 +295,7 @@ QSize PushButton::sizeFromContents(const Style* style, QStyle::ContentsType type
     QSize sz = style->QProxyStyle::sizeFromContents(type, option, size, widget);
 
     const QPushButton* pushButton = qobject_cast<const QPushButton*>(widget);
-    if (style->hasClass(widget, g_smallIconClass))
-    {
-        sz.setHeight(s_buttonFrameHeight);
-    }
-    else if (pushButton && !pushButton->isFlat())
+    if (style->hasClass(widget, g_smallIconClass) || (pushButton && !pushButton->isFlat()))
     {
         sz.setHeight(s_buttonFrameHeight);
     }

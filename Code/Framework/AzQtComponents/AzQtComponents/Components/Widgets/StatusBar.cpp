@@ -7,8 +7,11 @@
  */
 
 #include <AzQtComponents/Components/Widgets/StatusBar.h>
-#include <AzQtComponents/Components/ConfigHelpers.h>
+
 #include <AzCore/Casting/numeric_cast.h>
+
+#include <AzQtComponents/Components/ConfigHelpers.h>
+#include <AzQtComponents/Components/StyleManagerInterface.h>
 
 #include <QPainter>
 #include <QSettings>
@@ -18,29 +21,26 @@
 namespace AzQtComponents
 {
 
-StatusBar::Config StatusBar::loadConfig(QSettings& settings)
+void StatusBar::initialize()
 {
-    Config config = defaultConfig();
+    auto styleManagerInterface = AZ::Interface<StyleManagerInterface>::Get();
+    AZ_Assert(styleManagerInterface, "ToolButton - could not get StyleManagerInterface on ToolButton initialization.");
 
-    ConfigHelpers::read<QColor>(settings, QStringLiteral("BackgroundColor"), config.backgroundColor);
-    ConfigHelpers::read<QColor>(settings, QStringLiteral("BorderColor"), config.borderColor);
-    ConfigHelpers::read<qreal>(settings, QStringLiteral("BorderWidth"), config.borderWidth);
-
-    return config;
+    if (styleManagerInterface->IsStylePropertyDefined("BackgroundColor"))
+    {
+        s_backgroundColor = styleManagerInterface->GetStylePropertyAsColor("BackgroundColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("SeparatorColor"))
+    {
+        s_borderColor = styleManagerInterface->GetStylePropertyAsInteger("SeparatorColor");
+    }
+    if (styleManagerInterface->IsStylePropertyDefined("SeparatorThickness"))
+    {
+        s_borderWidth = styleManagerInterface->GetStylePropertyAsInteger("SeparatorThickness");
+    }
 }
 
-StatusBar::Config StatusBar::defaultConfig()
-{
-    Config config;
-
-    config.backgroundColor = QColor(QStringLiteral("#444444"));
-    config.borderColor = QColor(QStringLiteral("#111111"));
-    config.borderWidth = 2;
-
-    return config;
-}
-
-bool StatusBar::drawPanelStatusBar(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const Config& config)
+bool StatusBar::drawPanelStatusBar(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget)
 {
     Q_UNUSED(style);
 
@@ -53,15 +53,15 @@ bool StatusBar::drawPanelStatusBar(const Style* style, const QStyleOption* optio
     painter->save();
 
     painter->setPen(Qt::NoPen);
-    painter->setBrush(config.backgroundColor);
+    painter->setBrush(s_backgroundColor);
 
     painter->drawRect(option->rect);
 
-    painter->setPen({config.borderColor, config.borderWidth});
+    painter->setPen({ s_borderColor, s_borderWidth });
     painter->setBrush(Qt::NoBrush);
 
     auto line = QLine(option->rect.topLeft(), option->rect.topRight());
-    const int offset = aznumeric_cast<int>(config.borderWidth * 0.5);
+    const int offset = aznumeric_cast<int>(s_borderWidth * 0.5);
     line.translate(0, offset);
     painter->drawLine(line);
 

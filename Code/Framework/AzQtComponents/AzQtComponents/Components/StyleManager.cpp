@@ -338,6 +338,8 @@ namespace AzQtComponents
             }
             else
             {
+                AZ_TracePrintf(
+                    "THEME LOADING", "%s - %s\n", (prefix + key).toUtf8().constData(), jsonObject[key].toString().toUtf8().constData());
                 m_themeProperties[prefix + key] = jsonObject[key].toString();
             }
         }
