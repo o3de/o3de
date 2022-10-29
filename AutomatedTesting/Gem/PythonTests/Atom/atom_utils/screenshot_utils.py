@@ -5,6 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 import azlmbr.atom
+import azlmbr.utils
 import azlmbr.legacy.general as general
 
 from editor_python_test_tools.editor_test_helper import EditorTestHelper
@@ -91,7 +92,6 @@ class ScreenshotHelper(object):
                 frames_waited = frames_waited + 1
         general.log(f"(waited {frames_waited} frames)")
 
-
 def take_screenshot_game_mode(screenshot_name, entity_name=None):
     """
     Enters game mode & takes a screenshot, then exits game mode after.
@@ -102,8 +102,13 @@ def take_screenshot_game_mode(screenshot_name, entity_name=None):
     general.enter_game_mode()
     helper.wait_for_condition(lambda: general.is_in_game_mode(), 2.0)
     general.log(f"{entity_name}_test: Entered game mode: {general.is_in_game_mode()}")
-    ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking(f"{screenshot_name}.ppm")
+    ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking(f"{screenshot_name}.png")
     general.idle_wait(1.0)
     general.exit_game_mode()
     helper.wait_for_condition(lambda: not general.is_in_game_mode(), 2.0)
     general.log(f"{entity_name}_test: Exit game mode: {not general.is_in_game_mode()}")
+
+def compare_screenshots(imageA, imageB):
+    result = azlmbr.atom.FrameCaptureTestRequestBus(
+        azlmbr.bus.Broadcast, "CompareScreenshots", imageA, imageB, 0.01)
+    return result
