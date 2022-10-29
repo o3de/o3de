@@ -12,6 +12,7 @@
 		"FontSize": "12px",
 		"Separator":
 		{
+			"Thickness": "2",
 			"Color": "#A2A2A2",
 			"HoveredColor": "#1E70EB"
 		},
@@ -41,28 +42,39 @@
 		{
 			"Frame":
 			{
-				"Height": 24,
-				"Radius": 4,
-				"Margin": 8
+				"Height": "24",
+				"Radius": "4",
+				"Margin": "8"
 			},
 			"":
 			{
 				"":
 				{
+					"BackgroundGradientStartColor": "#777777",
+					"BackgroundGradientEndColor": "#666666",
 					"Color": "#FFFFFF"
 				},
 				"Hovered":
 				{
+					"BackgroundGradientStartColor": "#888888",
+					"BackgroundGradientEndColor": "#777777",
 					"Color": "#FFFFFF"
 				},
 				"Disabled":
 				{
+					"BackgroundGradientStartColor": "#666666",
+					"BackgroundGradientEndColor": "#666666",
 					"Color": "#BBBBBB"
 				},
 				"Focused":
 				{
-					"BorderThickness": 1,
+					"BorderThickness": "1",
 					"BorderColor": "#4B8CEF"
+				},
+				"Sunken":
+				{
+					"BackgroundGradientStartColor": "#444444",
+					"BackgroundGradientEndColor": "#444444"
 				}
 			},
 			"Primary":
@@ -71,7 +83,7 @@
 				{
 					"BackgroundGradientStartColor": "#0095F2",
 					"BackgroundGradientEndColor": "#1E70EB",
-					"BorderThickness": 1,
+					"BorderThickness": "1",
 					"BorderColor": "#3D000000",
 					"Color": "#FFFFFF"
 				},
@@ -85,13 +97,13 @@
 				{
 					"BackgroundGradientStartColor": "#2A4875",
 					"BackgroundGradientEndColor": "#2A4875",
-					"BorderThickness": 1,
+					"BorderThickness": "1",
 					"BorderColor": "#3D000000",
 					"Color": "#999999"
 				},
 				"Focused":
 				{
-					"BorderThickness": 1,
+					"BorderThickness": "1",
 					"BorderColor": "#4B8CEF"
 				},
 				"Sunken":
@@ -100,12 +112,30 @@
 					"BackgroundGradientEndColor": "#1E70EB"
 				}
 			},
+			"Border":
+			{
+				"":
+				{
+					"Thickness": "1",
+					"Color": "#3D000000"
+				},
+				"Disabled":
+				{
+					"Thickness": "1",
+					"Color": "#3D000000"
+				},
+				"Focused":
+				{
+					"Thickness": "1",
+					"Color": "#4B8CEF"
+				}
+			},
 			"Icon":
 			{
-				"Size": 16,
-				"Margin": 1,
+				"Size": "16",
+				"Margin": "1",
 				"MenuIndicatorIcon": ":/stylesheet/img/UI20/menu-indicator.svg",
-				"MenuIndicatorWidth": 10,
+				"MenuIndicatorWidth": "10",
 				"CheckedStateBackgroundColor": "#1E70EB",
 				"":
 				{
@@ -126,10 +156,10 @@
 			},
 			"SmallIcon":
 			{
-				"Width": 24,
+				"Width": "24",
 				"Arrow":
 				{
-					"Width": 10,
+					"Width": "10",
 					"":
 					{
 						"Color": "#FFFFFF"
@@ -142,10 +172,9 @@
 			},
 			"Dropdown":
 			{
-				
 				"IndicatorArrowDown": ":/stylesheet/img/UI20/dropdown-button-arrow.svg",
-				"MenuIndicatorWidth": 16,
-				"MenuIndicatorPadding": 4
+				"MenuIndicatorWidth": "16",
+				"MenuIndicatorPadding": "4"
 			}
 		},
 		"Input":

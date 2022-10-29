@@ -117,7 +117,6 @@ namespace AzQtComponents
         TitleBar::Config titleBarConfig;
         Menu::Config menuConfig;
         DockBarButton::Config dockBarButtonConfig;
-        StatusBar::Config statusBarConfig;
         DragAndDrop::Config dragAndDropConfig;
         ToolBar::Config toolBarConfig;
         TreeView::Config treeViewConfig;
@@ -186,12 +185,12 @@ namespace AzQtComponents
         loadConfig<TitleBar::Config, TitleBar>(this, &m_data->watcher, &m_data->titleBarConfig, "TitleBarConfig.ini");
         loadConfig<Menu::Config, Menu>(this, &m_data->watcher, &m_data->menuConfig, "MenuConfig.ini");
         loadConfig<DockBarButton::Config, DockBarButton>(this, &m_data->watcher, &m_data->dockBarButtonConfig, "DockBarButtonConfig.ini");
-        loadConfig<StatusBar::Config, StatusBar>(this, &m_data->watcher, &m_data->statusBarConfig, "StatusBarConfig.ini");
         loadConfig<DragAndDrop::Config, DragAndDrop>(this, &m_data->watcher, &m_data->dragAndDropConfig, "DragAndDropConfig.ini");
         loadConfig<ToolBar::Config, ToolBar>(this, &m_data->watcher, &m_data->toolBarConfig, "ToolBarConfig.ini");
         loadConfig<TreeView::Config, TreeView>(this, &m_data->watcher, &m_data->treeViewConfig, "TreeViewConfig.ini");
 
         PushButton::initialize();
+        StatusBar::initialize();
         ToolButton::initialize();
 
         VectorElement::initStaticVars(m_data->spinBoxConfig.labelSize);
@@ -676,7 +675,7 @@ namespace AzQtComponents
 
             case PE_PanelStatusBar:
             {
-                if (StatusBar::drawPanelStatusBar(this, option, painter, widget, m_data->statusBarConfig))
+                if (StatusBar::drawPanelStatusBar(this, option, painter, widget))
                 {
                     return;
                 }
