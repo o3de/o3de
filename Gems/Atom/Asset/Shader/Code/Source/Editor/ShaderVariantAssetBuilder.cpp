@@ -1142,46 +1142,61 @@ namespace AZ
                 }
             }
 
-            if (shaderVariantInfo.m_enableRegisterAnalysis && creationContext.m_shaderPlatformInterface.GetAPIName().GetStringView() == "vulkan")
+            if (shaderVariantInfo.m_enableRegisterAnalysis)
             {
-                AZ::IO::FixedMaxPath projectBuildPath = AZ::Utils::GetExecutableDirectory();
-                projectBuildPath = projectBuildPath.RemoveFilename(); // profile
-                projectBuildPath = projectBuildPath.RemoveFilename(); // bin
-
-                AZ::IO::FixedMaxPath spirvPath(AZStd::string_view(creationContext.m_tempDirPath));
-                spirvPath /= AZ::IO::FixedMaxPathString::format(
-                    "%s_vulkan_%u.spirv.bin", creationContext.m_shaderStemNamePrefix.c_str(), shaderVariantInfo.m_stableId);
-
-                AZStd::string rgaCommand = AZStd::string::format(
-                    "-s vk-spv-offline --isa ./disassem_%u.txt --livereg ./livereg_%u.txt --asic %s",
-                    shaderVariantInfo.m_stableId,
-                    shaderVariantInfo.m_stableId,
-                    shaderVariantInfo.m_asic.c_str());
-
-                AZStd::string RgaPath;
-                if (creationContext.m_platformInfo.m_identifier == "pc")
+                if (creationContext.m_shaderPlatformInterface.GetAPIName().GetStringView() == "vulkan")
                 {
-                    RgaPath = "\\_deps\\rga-src\\rga.exe";
+                    AZ::IO::FixedMaxPath projectBuildPath = AZ::Utils::GetExecutableDirectory();
+                    projectBuildPath = projectBuildPath.RemoveFilename(); // profile
+                    projectBuildPath = projectBuildPath.RemoveFilename(); // bin
+
+                    AZ::IO::FixedMaxPath spirvPath(AZStd::string_view(creationContext.m_tempDirPath));
+                    spirvPath /= AZ::IO::FixedMaxPathString::format(
+                        "%s_vulkan_%u.spirv.bin", creationContext.m_shaderStemNamePrefix.c_str(), shaderVariantInfo.m_stableId);
+
+                    AZStd::string rgaCommand = AZStd::string::format(
+                        "-s vk-spv-offline --isa ./disassem_%u.txt --livereg ./livereg_%u.txt --asic %s",
+                        shaderVariantInfo.m_stableId,
+                        shaderVariantInfo.m_stableId,
+                        shaderVariantInfo.m_asic.c_str());
+
+                    AZStd::string RgaPath;
+                    if (creationContext.m_platformInfo.m_identifier == "pc")
+                    {
+                        RgaPath = "\\_deps\\rga-src\\rga.exe";
+                    }
+                    else
+                    {
+                        RgaPath = "/_deps/rga-src/rga";
+                    }
+
+                    AZStd::string command = AZStd::string::format(
+                        "%s%s %s %s", projectBuildPath.c_str(), RgaPath.c_str(), rgaCommand.c_str(), spirvPath.c_str());
+                    AZ_TracePrintf(ShaderVariantAssetBuilderName, "Rga command %s\n", command.c_str());
+
+                    AZStd::vector<AZStd::string> fullCommand;
+                    fullCommand.push_back(command);
+                    AZStd::string failMessage;
+                    if (!LaunchRadeonGPUAnalyzer(fullCommand, creationContext.m_tempDirPath, failMessage))
+                    {
+                        return AZ::Failure(failMessage);
+                    }
+
+                    // add rga output to the by product list
+                    outputByproducts->m_intermediatePaths.insert(
+                        AZStd::string::format("./%s_disassem_%u_frag.txt", shaderVariantInfo.m_asic.c_str(), shaderVariantInfo.m_stableId));
+                    outputByproducts->m_intermediatePaths.insert(
+                        AZStd::string::format("./%s_livereg_%u_frag.txt", shaderVariantInfo.m_asic.c_str(), shaderVariantInfo.m_stableId));
                 }
                 else
                 {
-                    RgaPath = "/_deps/rga-src/rga";
+                    AZ_Warning(
+                        ShaderVariantAssetBuilderName,
+                        false,
+                        "Current platform is %s, register analysis is only available on Vulkan for now.",
+                        creationContext.m_shaderPlatformInterface.GetAPIName().GetCStr());
                 }
-
-                AZStd::string command = AZStd::string::format("%s%s %s %s", projectBuildPath.c_str(), RgaPath.c_str(), rgaCommand.c_str(), spirvPath.c_str());
-                AZ_TracePrintf(ShaderVariantAssetBuilderName, "Rga command %s\n", command.c_str());
-
-                AZStd::vector<AZStd::string> fullCommand;
-                fullCommand.push_back(command);
-                AZStd::string failMessage;
-                if (!LaunchRadeonGPUAnalyzer(fullCommand, creationContext.m_tempDirPath, failMessage))
-                {
-                    return AZ::Failure(failMessage);
-                }
-
-                // add rga output to the by product list
-                outputByproducts->m_intermediatePaths.insert(AZStd::string::format("./%s_disassem_%u_frag.txt", shaderVariantInfo.m_asic.c_str(), shaderVariantInfo.m_stableId));
-                outputByproducts->m_intermediatePaths.insert(AZStd::string::format("./%s_livereg_%u_frag.txt", shaderVariantInfo.m_asic.c_str(), shaderVariantInfo.m_stableId));
+                
             }
 
             Data::Asset<RPI::ShaderVariantAsset> shaderVariantAsset;
