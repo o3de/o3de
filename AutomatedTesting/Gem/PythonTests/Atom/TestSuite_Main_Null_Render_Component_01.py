@@ -33,7 +33,6 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_DepthOfFieldAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_DepthOfFieldAdded as test_module
 
-    @pytest.mark.skip(reason="GHI# 12253 Failing in undo/redo intermittently")
     @pytest.mark.test_case_id("C36525659")
     class AtomEditorComponents_DiffuseProbeGridAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_DiffuseProbeGridAdded as test_module

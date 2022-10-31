@@ -2501,12 +2501,13 @@ namespace AzToolsFramework
             return found && succeeded;
         }
 
-        bool AssetDatabaseConnection::QueryJobInfoBySourceName(const char* sourceName, jobInfoHandler handler, AZ::Uuid builderGuid, const char* jobKey, const char* platform, AssetSystem::JobStatus status)
+        bool AssetDatabaseConnection::QueryJobInfoBySourceNameScanFolderId(const char* sourceName, AZ::s64 scanfolderId, jobInfoHandler handler, AZ::Uuid builderGuid, const char* jobKey, const char* platform, AssetSystem::JobStatus status)
         {
             SourceDatabaseEntry source;
 
             bool found = false;
-            bool succeeded = QuerySourceBySourceName(sourceName,
+            bool succeeded = QuerySourceBySourceNameScanFolderID(
+                sourceName, scanfolderId,
                     [&](SourceDatabaseEntry& entry)
                     {
                         found = true;

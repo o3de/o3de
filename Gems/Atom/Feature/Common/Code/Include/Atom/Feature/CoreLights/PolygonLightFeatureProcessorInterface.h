@@ -27,11 +27,15 @@ namespace AZ
 
             // Standard RGB Color, except the red sign bit is used to store if points {0, 1, 2} create concave or
             // convex edges. This is used in the shader to determine directionality.
-            AZStd::array<float, 3> m_rgbIntensityNits = { { 0.0f, 0.0f, 0.0f } };
+            AZStd::array<float, 3> m_rgbIntensityNits = { 0.0f, 0.0f, 0.0f };
 
             // Inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
             // Negative sign bit used to indicate if the light emits both directions.
             float m_invAttenuationRadiusSquared = 0.0f;
+
+            AZStd::array<float, 3> m_direction = { 0.0f, 0.0f, 0.0f };
+
+            float m_padding = 0.0f;
 
             // Convenience functions for setting start / end index.
 
