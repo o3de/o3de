@@ -21,7 +21,7 @@
 #include <Vegetation/InstanceData.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
-#include "../VegetationProfiler.h"
+#include <VegetationProfiler.h>
 
 AZ_DECLARE_BUDGET(Vegetation);
 
