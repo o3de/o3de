@@ -33,10 +33,7 @@ namespace AssetProcessor
             : AssetProcessorManager(config, parent)
         {}
 
-        friend class AssetProcessorManagerUnitTests_ScanFolders;
         friend class AssetProcessorManagerUnitTests;
-        friend class AssetProcessorManagerUnitTests_JobKeys;
-        friend class AssetProcessorManagerUnitTests_JobDependencies_Fingerprint;
 
     public:
         using GetRelativeProductPathFromFullSourceOrProductPathRequest = AzFramework::AssetSystem::GetRelativeProductPathFromFullSourceOrProductPathRequest;
@@ -65,6 +62,10 @@ namespace AssetProcessor
 
         AssetBuilderSDK::AssetBuilderDesc m_assetBuilderDesc;
     };
+
+    AssetProcessorManagerUnitTests::~AssetProcessorManagerUnitTests()
+    {
+    }
 
     void AssetProcessorManagerUnitTests::SetUp()
     {
@@ -1876,7 +1877,6 @@ namespace AssetProcessor
 
 
         // let events bubble through:
-        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
         QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
 
         // setup complete.  now RENAME that folder.

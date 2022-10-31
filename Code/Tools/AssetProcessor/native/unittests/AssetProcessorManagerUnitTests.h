@@ -23,6 +23,9 @@ namespace AssetProcessor
         Q_OBJECT
 
     protected:
+        AssetProcessorManagerUnitTests() = default;
+        ~AssetProcessorManagerUnitTests();
+
         void SetUp() override;
         void TearDown() override;
 
