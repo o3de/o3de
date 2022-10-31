@@ -165,7 +165,7 @@ namespace AssetProcessor
                     QTableWidgetItem* rowName = new QTableWidgetItem(productEntry.m_productName.c_str());
                     if (IsProductOutputFlagSet(productEntry, AssetBuilderSDK::ProductOutputFlags::CachedAsset))
                     {
-                        rowName->setIcon(QIcon(":/Delete.png"));
+                        rowName->setIcon(QIcon(":/cached_asset_item.png"));
                     }
                     m_ui->IntermediateAssetsTable->setItem(intermediateAssetCount, 1, rowName);
                     ++intermediateAssetCount;
@@ -189,7 +189,7 @@ namespace AssetProcessor
                     QTableWidgetItem* rowName = new QTableWidgetItem(productEntry.m_productName.c_str());
                     if (IsProductOutputFlagSet(productEntry, AssetBuilderSDK::ProductOutputFlags::CachedAsset))
                     {
-                        rowName->setIcon(QIcon(":/Delete.png"));
+                        rowName->setIcon(QIcon(":/cached_asset_item.png"));
                     }
                     m_ui->productTable->setItem(productCount, 1, rowName);
                     ++productCount;
