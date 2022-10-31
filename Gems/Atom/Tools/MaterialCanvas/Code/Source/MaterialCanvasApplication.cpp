@@ -119,19 +119,19 @@ namespace MaterialCanvas
         // Recognized settings will need special controls for selecting files or editing large blocks of text without taking up much real
         // estate in the property editor.
         AZ::Edit::ElementData editData;
-        editData.m_elementId = AZ_CRC_CE("MultiLineString");
+        editData.m_elementId = AZ_CRC_CE("MultilineStringDialog");
         m_dynamicNodeManager->RegisterEditDataForSetting("instructions", editData);
         m_dynamicNodeManager->RegisterEditDataForSetting("materialInputs", editData);
 
         editData = {};
-        editData.m_elementId = AZ_CRC_CE("FilePathString");
+        editData.m_elementId = AZ_CRC_CE("StringFilePath");
         AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Title"), AZStd::string("Template File"));
         AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Extensions"),
             AZStd::vector<AZStd::string>{ "azsl", "azsli", "material", "materialtype", "shader" });
         m_dynamicNodeManager->RegisterEditDataForSetting("templatePaths", editData);
 
         editData = {};
-        editData.m_elementId = AZ_CRC_CE("FilePathString");
+        editData.m_elementId = AZ_CRC_CE("StringFilePath");
         AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Title"), AZStd::string("Include File"));
         AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Extensions"), AZStd::vector<AZStd::string>{ "azsli" });
         m_dynamicNodeManager->RegisterEditDataForSetting("includePaths", editData);

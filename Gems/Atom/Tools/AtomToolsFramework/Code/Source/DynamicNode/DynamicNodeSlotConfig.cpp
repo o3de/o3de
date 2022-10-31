@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/string/regex.h>
 
 namespace AtomToolsFramework
 { 
@@ -28,6 +29,8 @@ namespace AtomToolsFramework
                 ->Field("displayName", &DynamicNodeSlotConfig::m_displayName)
                 ->Field("description", &DynamicNodeSlotConfig::m_description)
                 ->Field("supportedDataTypes", &DynamicNodeSlotConfig::m_supportedDataTypes)
+                ->Field("supportedDataTypeRegex", &DynamicNodeSlotConfig::m_supportedDataTypeRegex)
+                ->Field("defaultDataType", &DynamicNodeSlotConfig::m_defaultDataType)
                 ->Field("defaultValue", &DynamicNodeSlotConfig::m_defaultValue)
                 ->Field("supportsEditingOnNode", &DynamicNodeSlotConfig::m_supportsEditingOnNode)
                 ->Field("settings", &DynamicNodeSlotConfig::m_settings)
@@ -39,17 +42,17 @@ namespace AtomToolsFramework
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->SetDynamicEditDataProvider(&DynamicNodeSlotConfig::GetDynamicEditData)
-                    ->DataElement(AZ_CRC_CE("MultiLineString"), &DynamicNodeSlotConfig::m_name, "Name", "Unique name used to identify individual slots on a node.")
-                    ->DataElement(AZ_CRC_CE("MultiLineString"), &DynamicNodeSlotConfig::m_displayName, "Display Name", "User friendly title of the slot that will appear on the node UI.")
-                    ->DataElement(AZ_CRC_CE("MultiLineString"), &DynamicNodeSlotConfig::m_description, "Description", "Detailed description of the node, its purpose, and behavior that will appear in tooltips and other UI.")
-                    ->DataElement(AZ_CRC_CE("MultiSelectStringVector"), &DynamicNodeSlotConfig::m_supportedDataTypes, "Data Types", "Container of names of data types that can be assigned to this slot. Output and property slots will be created using the first recognized data type in the container.")
-                        ->Attribute(AZ_CRC_CE("MultiSelectOptions"), &GetRegisteredDataTypeNames)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &DynamicNodeSlotConfig::ClearDefaultValueIfInvalid)
-                        ->Attribute(AZ::Edit::Attributes::ClearNotify, &DynamicNodeSlotConfig::ClearDefaultValueIfInvalid)
-                        ->Attribute(AZ::Edit::Attributes::AddNotify, &DynamicNodeSlotConfig::ClearDefaultValueIfInvalid)
-                        ->Attribute(AZ::Edit::Attributes::RemoveNotify, &DynamicNodeSlotConfig::ClearDefaultValueIfInvalid)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)
-                        ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
+                    ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeSlotConfig::m_name, "Name", "Unique name used to identify individual slots on a node.")
+                    ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeSlotConfig::m_displayName, "Display Name", "User friendly title of the slot that will appear on the node UI.")
+                    ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeSlotConfig::m_description, "Description", "Detailed description of the node, its purpose, and behavior that will appear in tooltips and other UI.")
+                    ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeSlotConfig::m_supportedDataTypeRegex, "Supported Data Type Regex", "Regular expression to search for data types compatible with this slot.")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &DynamicNodeSlotConfig::ValidateDataTypes)
+                        ->Attribute(AZ::Edit::Attributes::ClearNotify, &DynamicNodeSlotConfig::ValidateDataTypes)
+                    ->DataElement(AZ_CRC_CE("MultiStringSelectDelimited"), &DynamicNodeSlotConfig::m_defaultDataType, "Default Data Type", "Name of the default data type for this slot. If this is not specified the default data type will fall back to the first supported data type.")
+                        ->Attribute(AZ_CRC_CE("Options"), &DynamicNodeSlotConfig::GetSupportedDataTypeNames)
+                        ->Attribute(AZ_CRC_CE("SingleSelect"), true)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &DynamicNodeSlotConfig::ValidateDataTypes)
+                        ->Attribute(AZ::Edit::Attributes::ClearNotify, &DynamicNodeSlotConfig::ValidateDataTypes)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_defaultValue, "Default Value", "The initial value of an input or property slot that has no incoming connection.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->ElementAttribute(AZ::Edit::Attributes::NameLabelOverride, "Default Value")
@@ -63,12 +66,6 @@ namespace AtomToolsFramework
                         ->ElementAttribute(AZ::Edit::Attributes::ClearNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                         ->ElementAttribute(AZ::Edit::Attributes::AddNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                         ->ElementAttribute(AZ::Edit::Attributes::RemoveNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "Select Default Value")
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Select Default Value")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &DynamicNodeSlotConfig::SelectDefaultValue)
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "Clear Default Value")
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Clear Default Value")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &DynamicNodeSlotConfig::ClearDefaultValue)
                     ;
             }
         }
@@ -86,6 +83,8 @@ namespace AtomToolsFramework
                 ->Property("defaultValue", BehaviorValueProperty(&DynamicNodeSlotConfig::m_defaultValue))
                 ->Property("defaultValue", BehaviorValueProperty(&DynamicNodeSlotConfig::m_defaultValue))
                 ->Property("supportedDataTypes", BehaviorValueProperty(&DynamicNodeSlotConfig::m_supportedDataTypes))
+                ->Property("supportedDataTypeRegex", BehaviorValueProperty(&DynamicNodeSlotConfig::m_supportedDataTypeRegex))
+                ->Property("defaultDataType", BehaviorValueProperty(&DynamicNodeSlotConfig::m_defaultDataType))
                 ->Property("supportsEditingOnNode", BehaviorValueProperty(&DynamicNodeSlotConfig::m_supportsEditingOnNode))
                 ->Property("settings", BehaviorValueProperty(&DynamicNodeSlotConfig::m_settings))
                 ;
@@ -97,75 +96,127 @@ namespace AtomToolsFramework
         const AZStd::string& displayName,
         const AZStd::string& description,
         const AZStd::any& defaultValue,
-        const AZStd::vector<AZStd::string>& supportedDataTypes,
+        const AZStd::string& supportedDataTypeRegex,
         const DynamicNodeSettingsMap& settings)
         : m_name(name)
         , m_displayName(displayName)
         , m_description(description)
         , m_defaultValue(defaultValue)
-        , m_supportedDataTypes(supportedDataTypes)
+        , m_supportedDataTypeRegex(supportedDataTypeRegex)
         , m_settings(settings)
     {
     }
 
-    AZ::Crc32 DynamicNodeSlotConfig::SelectDefaultValue()
+    AZ::Crc32 DynamicNodeSlotConfig::ValidateDataTypes()
     {
-        AZStd::vector<AZStd::string> selections;
-        if (GetStringListFromDialog(selections, m_supportedDataTypes, "Select Default Value", false))
+        // Replace supported data types set with regular expression
+        if (!m_supportedDataTypes.empty())
         {
+            m_supportedDataTypeRegex.clear();
+            AZ::StringFunc::Join(m_supportedDataTypeRegex, m_supportedDataTypes, "|");
+            m_supportedDataTypes.clear();
+        }
+
+        const GraphModel::DataTypeList supportedDataTypes = GetSupportedDataTypes();
+        if (supportedDataTypes.empty())
+        {
+            m_defaultDataType.clear();
             m_defaultValue.clear();
-
-            GraphModel::DataTypeList registeredDataTypes;
-            DynamicNodeManagerRequestBus::BroadcastResult(
-                registeredDataTypes, &DynamicNodeManagerRequestBus::Events::GetRegisteredDataTypes);
-
-            for (const auto& dataType : registeredDataTypes)
-            {
-                for (const auto& selection : selections)
-                {
-                    if (dataType->GetDisplayName() == selection)
-                    {
-                        m_defaultValue = dataType->GetDefaultValue();
-                        return AZ::Edit::PropertyRefreshLevels::EntireTree;
-                    }
-                }
-            }
-
             return AZ::Edit::PropertyRefreshLevels::EntireTree;
         }
 
-        return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
-    }
+        // Find the registered data types corresponding to the selected default value and default data type.
+        auto defaultValueItr = AZStd::find_if(supportedDataTypes.begin(), supportedDataTypes.end(), [&](const auto& dataType) {
+            return dataType->IsSupportedValue(m_defaultValue);
+        });
+        auto defaultTypeItr = AZStd::find_if(supportedDataTypes.begin(), supportedDataTypes.end(), [&](const auto& dataType) {
+            return dataType->GetDisplayName() == m_defaultDataType;
+        });
 
-    AZ::Crc32 DynamicNodeSlotConfig::ClearDefaultValue()
-    {
-        m_defaultValue.clear();
-        return AZ::Edit::PropertyRefreshLevels::EntireTree;
-    }
-
-    AZ::Crc32 DynamicNodeSlotConfig::ClearDefaultValueIfInvalid()
-    {
-        GraphModel::DataTypeList registeredDataTypes;
-        DynamicNodeManagerRequestBus::BroadcastResult(registeredDataTypes, &DynamicNodeManagerRequestBus::Events::GetRegisteredDataTypes);
-
-        for (const auto& dataType : registeredDataTypes)
+        // If the default data type is not set or does not match any of the supported types then assign it to the same type as the default
+        // value or the first registered data type.
+        if (defaultTypeItr == supportedDataTypes.end())
         {
-            for (const auto& selection : m_supportedDataTypes)
+            if (defaultValueItr != supportedDataTypes.end())
             {
-                if (dataType->GetDisplayName() == selection && dataType->GetTypeUuid() == m_defaultValue.type())
-                {
-                    return AZ::Edit::PropertyRefreshLevels::EntireTree;
-                }
+                m_defaultDataType = (*defaultValueItr)->GetDisplayName();
+                defaultTypeItr = defaultValueItr;
+            }
+            else
+            {
+                m_defaultDataType = supportedDataTypes.front()->GetDisplayName();
+                defaultTypeItr = supportedDataTypes.begin();
             }
         }
 
-        ClearDefaultValue();
+        // Finally, if the default value does not match the default data type then reset it.
+        if (defaultTypeItr != defaultValueItr)
+        {
+            m_defaultValue = (*defaultTypeItr)->GetDefaultValue();
+        }
+
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
-    AZStd::vector<AZStd::string> DynamicNodeSlotConfig::GetSelectedDataTypesVec() const
+    AZStd::any DynamicNodeSlotConfig::GetDefaultValue() const
     {
-        return m_supportedDataTypes;
+        const GraphModel::DataTypeList supportedDataTypes = GetSupportedDataTypes();
+        for (const auto& dataType : supportedDataTypes)
+        {
+            if (dataType->IsSupportedValue(m_defaultValue))
+            {
+                return m_defaultValue;
+            }
+        }
+        return !supportedDataTypes.empty() ? supportedDataTypes.front()->GetDefaultValue() : AZStd::any();
+    }
+
+    AZStd::string DynamicNodeSlotConfig::GetDefaultDataTypeName() const
+    {
+        const GraphModel::DataTypeList supportedDataTypes = GetSupportedDataTypes();
+        for (const auto& dataType : supportedDataTypes)
+        {
+            if (dataType->GetDisplayName() == m_defaultDataType)
+            {
+                return m_defaultDataType;
+            }
+        }
+        return !supportedDataTypes.empty() ? supportedDataTypes.front()->GetDisplayName() : AZStd::string();
+    }
+
+    GraphModel::DataTypePtr DynamicNodeSlotConfig::GetDefaultDataType() const
+    {
+        const GraphModel::DataTypeList supportedDataTypes = GetSupportedDataTypes();
+        for (const auto& dataType : supportedDataTypes)
+        {
+            if (dataType->GetDisplayName() == m_defaultDataType)
+            {
+                return dataType;
+            }
+        }
+        return !supportedDataTypes.empty() ? supportedDataTypes.front() : GraphModel::DataTypePtr();
+    }
+
+    AZStd::vector<AZStd::string> DynamicNodeSlotConfig::GetSupportedDataTypeNames() const
+    {
+        AZStd::vector<AZStd::string> dataTypeNames;
+        for (const auto& dataType : GetSupportedDataTypes())
+        {
+            dataTypeNames.push_back(dataType->GetDisplayName());
+        }
+        return dataTypeNames;
+    }
+
+    GraphModel::DataTypeList DynamicNodeSlotConfig::GetSupportedDataTypes() const
+    {
+        GraphModel::DataTypeList supportedDataTypes;
+        if (!m_supportedDataTypeRegex.empty())
+        {
+            DynamicNodeManagerRequestBus::BroadcastResult(supportedDataTypes, &DynamicNodeManagerRequestBus::Events::GetRegisteredDataTypes);
+            AZStd::regex supportedDataTypeRegex(m_supportedDataTypeRegex, AZStd::regex::flag_type::icase);
+            AZStd::erase_if(supportedDataTypes, [&](const auto& dataType) { return !AZStd::regex_match(dataType->GetDisplayName(), supportedDataTypeRegex); });
+        }
+        return supportedDataTypes;
     }
 
     const AZ::Edit::ElementData* DynamicNodeSlotConfig::GetDynamicEditData(

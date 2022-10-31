@@ -13,9 +13,10 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/any.h>
+#include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
+#include <GraphModel/Model/DataType.h>
 
 namespace AtomToolsFramework
 {
@@ -34,10 +35,17 @@ namespace AtomToolsFramework
             const AZStd::string& displayName,
             const AZStd::string& description,
             const AZStd::any& defaultValue,
-            const AZStd::vector<AZStd::string>& supportedDataTypes,
+            const AZStd::string& supportedDataTypeRegex,
             const DynamicNodeSettingsMap& settings);
         DynamicNodeSlotConfig() = default;
         ~DynamicNodeSlotConfig() = default;
+
+        AZ::Crc32 ValidateDataTypes();
+        AZStd::any GetDefaultValue() const;
+        AZStd::string GetDefaultDataTypeName() const;
+        GraphModel::DataTypePtr GetDefaultDataType() const;
+        AZStd::vector<AZStd::string> GetSupportedDataTypeNames() const;
+        GraphModel::DataTypeList GetSupportedDataTypes() const;
 
         //! Unique name or ID of a slot
         AZStd::string m_name = "untitled";
@@ -48,18 +56,17 @@ namespace AtomToolsFramework
         //! The default value associated with a slot
         AZStd::any m_defaultValue;
         //! Names of all supported data types that a slot can connect to
-        AZStd::vector<AZStd::string> m_supportedDataTypes;
+        AZStd::set<AZStd::string> m_supportedDataTypes;
+        //! Names of all supported data types that a slot can connect to
+        AZStd::string m_supportedDataTypeRegex;
+        //! Name of the default data type from the set of supported data types if no value is assigned
+        AZStd::string m_defaultDataType;
         //! Container of generic or application specific settings for a slot
         DynamicNodeSettingsMap m_settings;
         //! Specifies whether or not UI will be displayed for editing the slot value on the node
         bool m_supportsEditingOnNode = true;
 
     private:
-        AZ::Crc32 SelectDefaultValue();
-        AZ::Crc32 ClearDefaultValue();
-        AZ::Crc32 ClearDefaultValueIfInvalid();
-        AZStd::vector<AZStd::string> GetSelectedDataTypesVec() const;
-
         static const AZ::Edit::ElementData* GetDynamicEditData(const void* handlerPtr, const void* elementPtr, const AZ::Uuid& elementType);
     };
 } // namespace AtomToolsFramework
