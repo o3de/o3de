@@ -710,7 +710,7 @@ class MultiTestSuite(object):
         """
         Handles reportings and unknown test results after test runs.
         :param collected_test_data: The TestData from calling collected_test_data()
-        :param results: A list or dict of Result objects
+        :param results: A list of dicts of Result objects
         :param workspace: The LyTestTools Workspace object
         :param test_spec: The test class that should be a subclass of SingleTest
         """
