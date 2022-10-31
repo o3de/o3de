@@ -1547,7 +1547,7 @@ bool ApplicationManagerBase::Activate()
 
 bool ApplicationManagerBase::PostActivate()
 {
-    m_connectionManager->LoadConnections();
+    QMetaObject::invokeMethod(m_connectionManager.get(), "LoadConnections", Qt::BlockingQueuedConnection);
 
     InitializeInternalBuilders();
 

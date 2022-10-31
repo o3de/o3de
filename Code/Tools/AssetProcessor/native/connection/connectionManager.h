@@ -77,8 +77,6 @@ public:
     Q_INVOKABLE unsigned int addUserConnection();
     Q_INVOKABLE void removeConnection(unsigned int connectionId);
     unsigned int GetConnectionId(QString ipaddress, int port);
-    void SaveConnections(QString settingPrefix = ""); // settingPrefix allowed for testing purposes.
-    void LoadConnections(QString settingPrefix = ""); // settingPrefix allowed for testing purposes.
 
     void RegisterService(unsigned int type, regFunc func) override;
 
@@ -115,6 +113,9 @@ Q_SIGNALS:
     void FirstTimeAddedToRejctedList(QString ipAddress);
 
 public Q_SLOTS:
+    void SaveConnections(QString settingPrefix = ""); // settingPrefix allowed for testing purposes.
+    void LoadConnections(QString settingPrefix = ""); // settingPrefix allowed for testing purposes.
+
     void SendMessageToService(unsigned int connId, unsigned int type, unsigned int serial, QByteArray payload);
     void QuitRequested();
     void RemoveConnectionFromMap(unsigned int connectionId);
