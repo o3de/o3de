@@ -896,9 +896,15 @@ namespace AssetProcessor
     {
         AddDefaultJob();
 
+        auto& config = m_appManager->m_platformConfig;
+        config->AddScanFolder(AssetProcessor::ScanFolderInfo{m_defaultScanFolder.m_scanFolder.c_str(),
+            m_defaultScanFolder.m_displayName.c_str(), m_defaultScanFolder.m_portableKey.c_str(),
+            false, true, {} , 0, m_defaultScanFolder.m_scanFolderID});
+
         // Try retrieving jobs by source name
         JobDatabaseEntryContainer jobs;
-        EXPECT_TRUE(m_connection.GetJobsBySourceName(AssetProcessor::SourceAssetReference(m_defaultSource.m_scanFolderPK, m_defaultSource.m_sourceName.c_str()), jobs));
+        EXPECT_TRUE(m_connection.GetJobsBySourceName(AssetProcessor::SourceAssetReference(
+            m_defaultSource.m_scanFolderPK, m_defaultSource.m_sourceName.c_str()), jobs));
         EXPECT_EQ(jobs.size(), 1);
         EXPECT_TRUE(JobsContainJobID(jobs, m_defaultJob.m_jobID));
         EXPECT_TRUE(JobsContainJobKey(jobs, m_defaultJob.m_jobKey.c_str()));
