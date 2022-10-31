@@ -61,7 +61,14 @@ namespace AssetProcessor
                     if (jobDepedencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::Order || jobDepedencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::OrderOnce)
                     {
                         const AssetBuilderSDK::JobDependency& jobDependency = jobDepedencyInternal.m_jobDependency;
-                        QueueElementID elementId(jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str(), jobDependency.m_platformIdentifier.c_str(), jobDependency.m_jobKey.c_str());
+                        AZ_Assert(
+                            AZ::IO::PathView(jobDependency.m_sourceFile.m_sourceFileDependencyPath).IsAbsolute(),
+                            "Dependency path %s is not an absolute path",
+                            jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str());
+                        QueueElementID elementId(
+                            SourceAssetReference(jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str()),
+                            jobDependency.m_platformIdentifier.c_str(),
+                            jobDependency.m_jobKey.c_str());
 
                         if (m_sourceModel->isInFlight(elementId) || m_sourceModel->isInQueue(elementId))
                         {
@@ -90,7 +97,7 @@ namespace AssetProcessor
         if (anyPendingJob && m_sourceModel->jobsInFlight() == 0 && !waitingOnCatalog)
         {
             AZ_Warning(AssetProcessor::DebugChannel, false, " Cyclic job order dependency detected. Processing job (%s, %s, %s, %s) to unblock.",
-                anyPendingJob->GetJobEntry().m_pathRelativeToWatchFolder.toUtf8().data(), anyPendingJob->GetJobKey().toUtf8().data(),
+                anyPendingJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str(), anyPendingJob->GetJobKey().toUtf8().data(),
                 anyPendingJob->GetJobEntry().m_platformInfo.m_identifier.c_str(), anyPendingJob->GetBuilderGuid().ToString<AZStd::string>().c_str());
             return anyPendingJob;
         }
@@ -197,8 +204,8 @@ namespace AssetProcessor
         {
             return priorityLeft > priorityRight;
         }
-        
-        if (leftJob->GetJobEntry().m_databaseSourceName == rightJob->GetJobEntry().m_databaseSourceName)
+
+        if (leftJob->GetJobEntry().m_sourceAssetReference == rightJob->GetJobEntry().m_sourceAssetReference)
         {
             // If there are two jobs for the same source, then sort by job run key.
             return leftJob->GetJobEntry().m_jobRunKey < rightJob->GetJobEntry().m_jobRunKey;
@@ -207,7 +214,7 @@ namespace AssetProcessor
         // if we get all the way down here it means we're dealing with two assets which are not
         // in any compile groups, not a priority platform, not a priority type, priority platform, etc.
         // we can arrange these any way we want, but must pick at least a stable order.
-        return leftJob->GetJobEntry().m_databaseSourceName < rightJob->GetJobEntry().m_databaseSourceName;
+        return leftJob->GetJobEntry().GetAbsoluteSourcePath() < rightJob->GetJobEntry().GetAbsoluteSourcePath();
     }
 
     void RCQueueSortModel::AssetProcessorPlatformConnected(const AZStd::string platform)

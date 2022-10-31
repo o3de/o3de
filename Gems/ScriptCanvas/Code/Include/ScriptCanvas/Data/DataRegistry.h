@@ -9,9 +9,10 @@
 #pragma once
 
 #include <AzCore/Module/Environment.h>
-#include <ScriptCanvas/Data/Traits.h>
 #include <AzCore/std/utils.h>
 #include <AzCore/RTTI/ReflectContext.h>
+
+#include <ScriptCanvas/Data/Traits.h>
 
 namespace ScriptCanvas
 {

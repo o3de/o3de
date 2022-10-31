@@ -99,6 +99,7 @@ namespace AZ
                     ->Field("name", &ShaderAsset::m_name)
                     ->Field("pipelineStateType", &ShaderAsset::m_pipelineStateType)
                     ->Field("shaderOptionGroupLayout", &ShaderAsset::m_shaderOptionGroupLayout)
+                    ->Field("defaultShaderOptionValueOverrides", &ShaderAsset::m_defaultShaderOptionValueOverrides)
                     ->Field("drawListName", &ShaderAsset::m_drawListName)
                     ->Field("shaderAssetBuildTimestamp", &ShaderAsset::m_buildTimestamp)
                     ->Field("perAPIShaderData", &ShaderAsset::m_perAPIShaderData)
@@ -128,6 +129,15 @@ namespace AZ
             return m_shaderOptionGroupLayout.get();
         }
 
+        ShaderOptionGroup ShaderAsset::GetDefaultShaderOptions() const
+        {
+            // The m_shaderOptionGroupLayout has default values for each shader option, these come from shader source code.
+            // The ShaderAsset can override these with its own default values, these come from the .shader file.
+            ShaderOptionGroup shaderOptionGroup{m_shaderOptionGroupLayout, m_defaultShaderOptionValueOverrides};
+            shaderOptionGroup.SetUnspecifiedToDefaultValues();
+            return shaderOptionGroup;
+        }
+
         const Name& ShaderAsset::GetDrawListName() const
         {
             return m_drawListName;
@@ -142,7 +152,6 @@ namespace AZ
         {
             m_status = AssetStatus::Ready;
         }
-
 
         SupervariantIndex ShaderAsset::GetSupervariantIndex(const AZ::Name& supervariantName) const
         {

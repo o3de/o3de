@@ -213,7 +213,7 @@ namespace AzToolsFramework
         void ComponentModeCollection::BeginComponentMode()
         {
             m_selectedComponentModeIndex = 0;
-            m_componentMode = true;
+            m_componentModeState = ComponentModeState::Active;
             m_adding = false;
 
             // notify listeners the editor has entered ComponentMode - listeners may
@@ -287,6 +287,10 @@ namespace AzToolsFramework
                 componentModeCommand.release();
             }
 
+            // Change our state from "Active" to "Stopping", so that any code that executes during deactivation that checks to see
+            // if component mode is active will see that it is not.
+            m_componentModeState = ComponentModeState::Stopping;
+
             // notify listeners the editor has left ComponentMode - listeners may
             // wish to modify state to indicate this (e.g. appearance, functionality etc.)
             m_viewportEditorModeTracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Component);
@@ -305,8 +309,10 @@ namespace AzToolsFramework
             m_activeComponentTypes.clear();
             m_viewportUiHandlers.clear();
 
-            m_componentMode = false;
             m_selectedComponentModeIndex = 0;
+
+            // Finished stopping component mode, so transition to a "Stopped" state.
+            m_componentModeState = ComponentModeState::Stopped;
         }
 
         void ComponentModeCollection::Refresh(const AZ::EntityComponentIdPair& entityComponentIdPair)

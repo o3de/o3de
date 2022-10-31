@@ -210,8 +210,7 @@ namespace Terrain
         };
 
         // AZ::RPI::SceneNotificationBus overrides...
-        void OnRenderPipelineAdded(AZ::RPI::RenderPipelinePtr pipeline) override;
-        void OnRenderPipelinePassesChanged(AZ::RPI::RenderPipeline* renderPipeline) override;
+        void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, AZ::RPI::SceneNotification::RenderPipelineChangeType changeType) override;
 
         // AzFramework::Terrain::TerrainDataNotificationBus overrides...
         void OnTerrainDataCreateEnd() override;

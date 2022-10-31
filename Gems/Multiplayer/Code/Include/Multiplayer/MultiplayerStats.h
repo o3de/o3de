@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <AzCore/Time/ITime.h>
-#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/Time/ITime.h>
 #include <Multiplayer/MultiplayerTypes.h>
 
 namespace AzNetworking
@@ -20,11 +20,22 @@ namespace AzNetworking
 
 namespace Multiplayer
 {
+    enum MultiplayerGroupIds
+    {
+        MultiplayerGroup_Networking = 101
+    };
+
+    enum MultiplayerStatIds
+    {
+        MultiplayerStat_EntityCount = 1001,
+        MultiplayerStat_FrameTime
+    };
+
     struct MultiplayerStats
     {
-        uint64_t m_entityCount = 0;
-        uint64_t m_clientConnectionCount = 0;
-        uint64_t m_serverConnectionCount = 0;
+        AZ::u64 m_entityCount = 0;
+        AZ::u64 m_clientConnectionCount = 0;
+        AZ::u64 m_serverConnectionCount = 0;
 
         uint64_t m_recordMetricIndex = 0;
         AZ::TimeMs m_totalHistoryTimeMs = AZ::Time::ZeroTimeMs;
@@ -57,6 +68,7 @@ namespace Multiplayer
         void RecordPropertyReceived(NetComponentId netComponentId, PropertyIndex propertyId, uint32_t totalBytes);
         void RecordRpcSent(AZ::EntityId entityId, const char* entityName, NetComponentId netComponentId, RpcIndex rpcId, uint32_t totalBytes);
         void RecordRpcReceived(AZ::EntityId entityId, const char* entityName, NetComponentId netComponentId, RpcIndex rpcId, uint32_t totalBytes);
+        void RecordFrameTime(AZ::TimeUs networkFrameTime);
         void TickStats(AZ::TimeMs metricFrameTimeMs);
 
         Metric CalculateComponentPropertyUpdateSentMetrics(NetComponentId netComponentId) const;

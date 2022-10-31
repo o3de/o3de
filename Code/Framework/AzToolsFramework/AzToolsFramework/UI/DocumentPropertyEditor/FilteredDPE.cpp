@@ -25,7 +25,7 @@ namespace AzToolsFramework
             &QLineEdit::textChanged,
             [=](const QString& filterText)
             {
-                m_filterAdapter->SetFilterString(filterText);
+                m_filterAdapter->SetFilterString(filterText.toUtf8().data());
             });
     }
 

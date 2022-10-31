@@ -17,8 +17,53 @@ set(FILES
     Asset/MockLoadAssetCatalogAndHandler.h
     Asset/TestAssetTypes.h
     AssetJsonSerializerTests.cpp
-    EBus/EBusSharedDispatchMutexTests.cpp
-    EBus/ScheduledEventTests.cpp
+    AZStd/Algorithms.cpp
+    AZStd/Allocators.cpp
+    AZStd/Atomics.cpp
+    AZStd/Any.cpp
+    AZStd/Bitset.cpp
+    AZStd/Charconv.cpp
+    AZStd/ConceptsTests.cpp
+    AZStd/CreateDestroy.cpp
+    AZStd/ConcurrentAllocators.cpp
+    AZStd/ConcurrentContainers.cpp
+    AZStd/ChronoTests.cpp
+    AZStd/DequeAndSimilar.cpp
+    AZStd/Examples.cpp
+    AZStd/ExpectedTests.cpp
+    AZStd/FunctionalBasic.cpp
+    AZStd/FunctorsBind.cpp
+    AZStd/Hashed.cpp
+    AZStd/Invoke.cpp
+    AZStd/Iterators.cpp
+    AZStd/Lists.cpp
+    AZStd/ListsFixed.cpp
+    AZStd/ListsIntrusive.cpp
+    AZStd/LockFreeQueues.cpp
+    AZStd/LockFreeStacks.cpp
+    AZStd/LockTests.cpp
+    AZStd/Math.cpp
+    AZStd/Numeric.cpp
+    AZStd/Ordered.cpp
+    AZStd/Optional.cpp
+    AZStd/Pair.cpp
+    AZStd/Parallel.cpp
+    AZStd/RangesAlgorithmBenchmarks.cpp
+    AZStd/RangesAlgorithmTests.cpp
+    AZStd/RangesTests.cpp
+    AZStd/RangesUtilityTests.cpp
+    AZStd/RangesViewTests.cpp
+    AZStd/ScopedLockTests.cpp
+    AZStd/SetsIntrusive.cpp
+    AZStd/SmartPtr.cpp
+    AZStd/SpanTests.cpp
+    AZStd/String.cpp
+    AZStd/TypeTraits.cpp
+    AZStd/Tuple.cpp
+    AZStd/UserTypes.h
+    AZStd/Variant.cpp
+    AZStd/VariantSerialization.cpp
+    AZStd/VectorAndArray.cpp
     AssetManager.cpp
     AttributeDomInteropTests.cpp
     TestCatalog.h
@@ -30,8 +75,24 @@ set(FILES
     Console/LoggerSystemComponentTests.cpp
     Console/ConsoleTests.cpp
     Date/DateFormatTests.cpp
+    Debug/PerformanceCollectorTests.cpp
+    Debug/Trace.cpp
     Debug.cpp
     DLL.cpp
+    DOM/DomFixtures.cpp
+    DOM/DomFixtures.h
+    DOM/DomJsonTests.cpp
+    DOM/DomJsonBenchmarks.cpp
+    DOM/DomPathTests.cpp
+    DOM/DomPathBenchmarks.cpp
+    DOM/DomPatchTests.cpp
+    DOM/DomPatchBenchmarks.cpp
+    DOM/DomValueTests.cpp
+    DOM/DomValueBenchmarks.cpp
+    DOM/DomPrefixTreeTests.cpp
+    DOM/DomPrefixTreeBenchmarks.cpp
+    EBus/EBusSharedDispatchMutexTests.cpp
+    EBus/ScheduledEventTests.cpp
     EBus.cpp
     EntityIdTests.cpp
     EntityTests.cpp
@@ -48,100 +109,6 @@ set(FILES
     FixedWidthIntegers.cpp
     GenericStreamMock.h
     GenericStreamTests.cpp
-    Memory.cpp
-    Metrics/EventLoggerFactoryTests.cpp
-    Metrics/JsonTraceEventLoggerTests.cpp
-    Module.cpp
-    ModuleTestBus.h
-    OrderedEventBenchmarks.cpp
-    OrderedEventTests.cpp
-    Outcome.cpp
-    Patching.cpp
-    RemappableId.cpp
-    Rtti.cpp
-    Script.cpp
-    ScriptMath.cpp
-    Serialization.cpp
-    SerializeContextFixture.h
-    Slice.cpp
-    State.cpp
-    Statistics.cpp
-    StatisticalProfilerBenchmarks.cpp
-    StatisticalProfilerHelpers.h
-    StatisticalProfilerTests.cpp
-    StreamerTests.cpp
-    StringFunc.cpp
-    SystemFileTest.cpp
-    SystemFileStreamTest.cpp
-    TaskTests.cpp
-    TickBusTest.cpp
-    UUIDTests.cpp
-    XML.cpp
-    Debug/Trace.cpp
-    Name/NameJsonSerializerTests.cpp
-    Name/NameBenchmarks.cpp
-    Name/NameTests.cpp
-    RTTI/TypeSafeIntegralTests.cpp
-    Settings/CommandLineTests.cpp
-    Settings/ConfigurableStackTests.cpp
-    Settings/SettingsRegistryTests.cpp
-    Settings/SettingsRegistryConsoleUtilsTests.cpp
-    Settings/SettingsRegistryMergeUtilsTests.cpp
-    Settings/SettingsRegistryOriginTrackerTests.cpp
-    Settings/SettingsRegistryScriptUtilsTests.cpp
-    Settings/SettingsRegistryVisitorUtilsTests.cpp
-    Streamer/BlockCacheTests.cpp
-    Streamer/DedicatedCacheTests.cpp
-    Streamer/FullDecompressorTests.cpp
-    Streamer/IStreamerMock.h
-    Streamer/IStreamerTypesMock.h
-    Streamer/ReadSplitterTests.cpp
-    Streamer/SchedulerTests.cpp
-    Streamer/StreamStackEntryConformityTests.h
-    Streamer/StreamStackEntryMock.h
-    Streamer/StreamStackEntryTests.cpp
-    Serialization/Json/ArraySerializerTests.cpp
-    Serialization/Json/AnySerializerTests.cpp
-    Serialization/Json/BaseJsonSerializerFixture.h
-    Serialization/Json/BaseJsonSerializerTests.cpp
-    Serialization/Json/BasicContainerSerializerTests.cpp
-    Serialization/Json/BoolSerializerTests.cpp
-    Serialization/Json/ByteStreamSerializerTests.cpp
-    Serialization/Json/ColorSerializerTests.cpp
-    Serialization/Json/DoubleSerializerTests.cpp
-    Serialization/Json/IntSerializerTests.cpp
-    Serialization/Json/JsonRegistrationContextTests.cpp
-    Serialization/Json/JsonSerializationMetadataTests.cpp
-    Serialization/Json/JsonSerializationResultTests.cpp
-    Serialization/Json/JsonSerializationTests.h
-    Serialization/Json/JsonSerializationTests.cpp
-    Serialization/Json/JsonSerializationUtilsTests.cpp
-    Serialization/Json/JsonSerializerConformityTests.h
-    Serialization/Json/JsonSerializerMock.h
-    Serialization/Json/MapSerializerTests.cpp
-    Serialization/Json/MathVectorSerializerTests.cpp
-    Serialization/Json/MathMatrixSerializerTests.cpp
-    Serialization/Json/PathSerializerTests.cpp
-    Serialization/Json/SmartPointerSerializerTests.cpp
-    Serialization/Json/StringSerializerTests.cpp
-    Serialization/Json/TestCases.h
-    Serialization/Json/TestCases_Base.h
-    Serialization/Json/TestCases_Base.cpp
-    Serialization/Json/TestCases_Classes.h
-    Serialization/Json/TestCases_Classes.cpp
-    Serialization/Json/TestCases_Compare.cpp
-    Serialization/Json/TestCases_Enum.cpp
-    Serialization/Json/TestCases_Importing.cpp
-    Serialization/Json/TestCases_Patching.cpp
-    Serialization/Json/TestCases_Pointers.h
-    Serialization/Json/TestCases_Pointers.cpp
-    Serialization/Json/TestCases_TypeId.cpp
-    Serialization/Json/TransformSerializerTests.cpp
-    Serialization/Json/TupleSerializerTests.cpp
-    Serialization/Json/UnorderedSetSerializerTests.cpp
-    Serialization/Json/UnsupportedTypesSerializerTests.cpp
-    Serialization/Json/UuidSerializerTests.cpp
-    Time/TimeTests.cpp
     Math/AabbTests.cpp
     Math/CapsuleTests.cpp
     Math/ColorTests.cpp
@@ -149,6 +116,7 @@ set(FILES
     Math/CrcTestsCompileTimeLiterals.h
     Math/FrustumTests.cpp
     Math/FrustumPerformanceTests.cpp
+    Math/HemisphereTests.cpp
     Math/IntersectionPerformanceTests.cpp
     Math/IntersectionTestHelpers.cpp
     Math/IntersectionTestHelpers.h
@@ -195,64 +163,100 @@ set(FILES
     Memory/HphaSchemaErrorDetection.cpp
     Memory/LeakDetection.cpp
     Memory/MallocSchema.cpp
-    AZStd/Algorithms.cpp
-    AZStd/Allocators.cpp
-    AZStd/Atomics.cpp
-    AZStd/Any.cpp
-    AZStd/Bitset.cpp
-    AZStd/Charconv.cpp
-    AZStd/ConceptsTests.cpp
-    AZStd/CreateDestroy.cpp
-    AZStd/ConcurrentAllocators.cpp
-    AZStd/ConcurrentContainers.cpp
-    AZStd/ChronoTests.cpp
-    AZStd/DequeAndSimilar.cpp
-    AZStd/Examples.cpp
-    AZStd/FunctionalBasic.cpp
-    AZStd/FunctorsBind.cpp
-    AZStd/Hashed.cpp
-    AZStd/Invoke.cpp
-    AZStd/Iterators.cpp
-    AZStd/Lists.cpp
-    AZStd/ListsFixed.cpp
-    AZStd/ListsIntrusive.cpp
-    AZStd/LockFreeQueues.cpp
-    AZStd/LockFreeStacks.cpp
-    AZStd/LockTests.cpp
-    AZStd/Math.cpp
-    AZStd/Numeric.cpp
-    AZStd/Ordered.cpp
-    AZStd/Optional.cpp
-    AZStd/Pair.cpp
-    AZStd/Parallel.cpp
-    AZStd/RangesAlgorithmBenchmarks.cpp
-    AZStd/RangesAlgorithmTests.cpp
-    AZStd/RangesTests.cpp
-    AZStd/RangesUtilityTests.cpp
-    AZStd/RangesViewTests.cpp
-    AZStd/ScopedLockTests.cpp
-    AZStd/SetsIntrusive.cpp
-    AZStd/SmartPtr.cpp
-    AZStd/SpanTests.cpp
-    AZStd/String.cpp
-    AZStd/TypeTraits.cpp
-    AZStd/Tuple.cpp
-    AZStd/UserTypes.h
-    AZStd/Variant.cpp
-    AZStd/VariantSerialization.cpp
-    AZStd/VectorAndArray.cpp
-    DOM/DomFixtures.cpp
-    DOM/DomFixtures.h
-    DOM/DomJsonTests.cpp
-    DOM/DomJsonBenchmarks.cpp
-    DOM/DomPathTests.cpp
-    DOM/DomPathBenchmarks.cpp
-    DOM/DomPatchTests.cpp
-    DOM/DomPatchBenchmarks.cpp
-    DOM/DomValueTests.cpp
-    DOM/DomValueBenchmarks.cpp
-    DOM/DomPrefixTreeTests.cpp
-    DOM/DomPrefixTreeBenchmarks.cpp
+    Memory.cpp
+    Metrics/EventLoggerFactoryTests.cpp
+    Metrics/EventLoggerUtilsTests.cpp
+    Metrics/JsonTraceEventLoggerTests.cpp
+    Module.cpp
+    ModuleTestBus.h
+    Name/NameJsonSerializerTests.cpp
+    Name/NameBenchmarks.cpp
+    Name/NameTests.cpp
+    OrderedEventBenchmarks.cpp
+    OrderedEventTests.cpp
+    Outcome.cpp
+    Patching.cpp
+    RemappableId.cpp
+    RTTI/TypeSafeIntegralTests.cpp
+    Rtti.cpp
+    Script.cpp
+    ScriptMath.cpp
+    Serialization/Json/ArraySerializerTests.cpp
+    Serialization/Json/AnySerializerTests.cpp
+    Serialization/Json/BaseJsonSerializerFixture.h
+    Serialization/Json/BaseJsonSerializerTests.cpp
+    Serialization/Json/BasicContainerSerializerTests.cpp
+    Serialization/Json/BoolSerializerTests.cpp
+    Serialization/Json/ByteStreamSerializerTests.cpp
+    Serialization/Json/ColorSerializerTests.cpp
+    Serialization/Json/DoubleSerializerTests.cpp
+    Serialization/Json/IntSerializerTests.cpp
+    Serialization/Json/JsonRegistrationContextTests.cpp
+    Serialization/Json/JsonSerializationMetadataTests.cpp
+    Serialization/Json/JsonSerializationResultTests.cpp
+    Serialization/Json/JsonSerializationTests.h
+    Serialization/Json/JsonSerializationTests.cpp
+    Serialization/Json/JsonSerializationUtilsTests.cpp
+    Serialization/Json/JsonSerializerConformityTests.h
+    Serialization/Json/JsonSerializerMock.h
+    Serialization/Json/MapSerializerTests.cpp
+    Serialization/Json/MathVectorSerializerTests.cpp
+    Serialization/Json/MathMatrixSerializerTests.cpp
+    Serialization/Json/PathSerializerTests.cpp
+    Serialization/Json/SmartPointerSerializerTests.cpp
+    Serialization/Json/StringSerializerTests.cpp
+    Serialization/Json/TestCases.h
+    Serialization/Json/TestCases_Base.h
+    Serialization/Json/TestCases_Base.cpp
+    Serialization/Json/TestCases_Classes.h
+    Serialization/Json/TestCases_Classes.cpp
+    Serialization/Json/TestCases_Compare.cpp
+    Serialization/Json/TestCases_Enum.cpp
+    Serialization/Json/TestCases_Importing.cpp
+    Serialization/Json/TestCases_Patching.cpp
+    Serialization/Json/TestCases_Pointers.h
+    Serialization/Json/TestCases_Pointers.cpp
+    Serialization/Json/TestCases_TypeId.cpp
+    Serialization/Json/TransformSerializerTests.cpp
+    Serialization/Json/TupleSerializerTests.cpp
+    Serialization/Json/UnorderedSetSerializerTests.cpp
+    Serialization/Json/UnsupportedTypesSerializerTests.cpp
+    Serialization/Json/UuidSerializerTests.cpp
+    Serialization.cpp
+    SerializeContextFixture.h
+    Settings/CommandLineTests.cpp
+    Settings/ConfigurableStackTests.cpp
+    Settings/SettingsRegistryTests.cpp
+    Settings/SettingsRegistryConsoleUtilsTests.cpp
+    Settings/SettingsRegistryMergeUtilsTests.cpp
+    Settings/SettingsRegistryOriginTrackerTests.cpp
+    Settings/SettingsRegistryScriptUtilsTests.cpp
+    Settings/SettingsRegistryVisitorUtilsTests.cpp
+    Slice.cpp
+    State.cpp
+    Statistics.cpp
+    StatisticalProfilerBenchmarks.cpp
+    StatisticalProfilerHelpers.h
+    StatisticalProfilerTests.cpp
+    Streamer/BlockCacheTests.cpp
+    Streamer/DedicatedCacheTests.cpp
+    Streamer/FullDecompressorTests.cpp
+    Streamer/IStreamerMock.h
+    Streamer/IStreamerTypesMock.h
+    Streamer/ReadSplitterTests.cpp
+    Streamer/SchedulerTests.cpp
+    Streamer/StreamStackEntryConformityTests.h
+    Streamer/StreamStackEntryMock.h
+    Streamer/StreamStackEntryTests.cpp
+    StreamerTests.cpp
+    StringFunc.cpp
+    SystemFileTest.cpp
+    SystemFileStreamTest.cpp
+    TaskTests.cpp
+    TickBusTest.cpp
+    Time/TimeTests.cpp
+    UUIDTests.cpp
+    XML.cpp
 )
 
 # Prevent the following files from being grouped in UNITY builds
