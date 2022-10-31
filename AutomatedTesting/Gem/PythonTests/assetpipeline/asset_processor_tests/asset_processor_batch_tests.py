@@ -196,6 +196,8 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
         # Copying test assets to project folder and deleting them from cache to make sure APBatch will process them
         asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], os.path.join("TestAssets", "single_working_prefab"))
+        source_asset = os.listdir(asset_processor.project_test_source_folder())[0]
+        asset_path = os.path.join(asset_processor.project_test_source_folder(), source_asset)
 
         # Calling AP first time and checking whether desired assets were processed
         batch_success, output = asset_processor.batch_process(capture_output=True)
@@ -205,16 +207,13 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         assert not missing_assets, 'Following assets were not found in cache {}. AP Batch Output {}'.format(
             missing_assets, output)
 
-        # Appending a newline to source prefab
-        source_asset = os.listdir(asset_processor.project_test_source_folder())[0]
-        asset_path = os.path.join(asset_processor.project_test_source_folder(), source_asset)
-        os.chmod(asset_path, stat.S_IWRITE)
-        with open(asset_path, 'a') as source_file:
-            source_file.write('\n')
-            source_file.close()
+        # Copy a file with a slight change in it, so the asset will be re-processed.
+        shutil.copyfile(os.path.join(ap_setup_fixture["tests_dir"], "assets", "TestAssets", "single_working_prefab_override", "working_prefab.prefab"), asset_path)
 
         # Reprocessing and getting number of successfully processed assets from output
         batch_success, output = asset_processor.batch_process(capture_output=True)
+        for output_line in output:
+            logger.info(f"{output_line}\n")
         # Checking the number of jobs is equal to 1
         num_processed_assets = asset_processor_utils.get_num_processed_assets(output)
         assert num_processed_assets == 1, \
