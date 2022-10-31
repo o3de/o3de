@@ -50,6 +50,26 @@ float Pow5(float x)
 {
     return x * Pow4(x);
 }
+float Pow6(float x)
+{
+    x *= x;
+    return x * x * x;
+}
+float Pow7(float x)
+{
+    return x * Pow6(x);
+}
+float Pow8(float x)
+{
+    x *= x;
+    x *= x;
+    return x * x;
+}
+float Pow9(float x)
+{
+    x = x * x * x;
+    return x * x * x;
+}
 
 // ---------- Min & Max -----------
 
