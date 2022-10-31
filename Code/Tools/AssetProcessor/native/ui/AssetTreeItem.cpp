@@ -153,9 +153,9 @@ namespace AssetProcessor
             return QVariant();
         }
 
-        if(column == aznumeric_cast<int>(AssetTreeColumns::AssetCount) && m_data->m_isFolder)
+        if(column == aznumeric_cast<int>(AssetTreeColumns::AssetCount))
         {
-            return m_totalAssetCount;
+            return m_data->m_isFolder ? QString::number(m_totalAssetCount) : "-";
         }
 
         return m_data->GetDataForColumn(column);
