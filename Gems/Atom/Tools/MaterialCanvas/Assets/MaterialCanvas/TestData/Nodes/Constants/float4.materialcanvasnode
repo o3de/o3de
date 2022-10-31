@@ -6,7 +6,7 @@
         "id": "{643F25FA-FB10-4AF6-9657-2E1BDC2AC219}",
         "category": "Constants",
         "title": "Float4 Constant",
-        "propertySlots": [
+        "inputSlots": [
             {
                 "name": "inValue",
                 "displayName": "Value",
@@ -32,6 +32,58 @@
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue;"
+                    ]
+                }
+            },
+            {
+                "name": "outX",
+                "displayName": "X",
+                "description": "X",
+                "supportedDataTypes": [
+                    "float"
+                ],
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.x;"
+                    ]
+                }
+            },
+            {
+                "name": "outY",
+                "displayName": "Y",
+                "description": "Y",
+                "supportedDataTypes": [
+                    "float"
+                ],
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.y;"
+                    ]
+                }
+            },
+            {
+                "name": "outZ",
+                "displayName": "Z",
+                "description": "Z",
+                "supportedDataTypes": [
+                    "float"
+                ],
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.z;"
+                    ]
+                }
+            },
+            {
+                "name": "outW",
+                "displayName": "W",
+                "description": "W",
+                "supportedDataTypes": [
+                    "float"
+                ],
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.w;"
                     ]
                 }
             }

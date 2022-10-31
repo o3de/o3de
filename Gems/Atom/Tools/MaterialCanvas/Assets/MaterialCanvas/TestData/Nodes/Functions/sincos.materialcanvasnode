@@ -8,9 +8,9 @@
         "title": "sincos",
         "settings": {
             "instructions": [
-                "float4 NODEID_outValue1 = float4(0, 0, 0, 0);",
-                "float4 NODEID_outValue2 = float4(0, 0, 0, 0);",
-                "sincos(NODEID_inValue, NODEID_outValue1, NODEID_outValue2);"
+                "float4 NODEID_outSin = float4(0, 0, 0, 0);",
+                "float4 NODEID_outCos = float4(0, 0, 0, 0);",
+                "sincos(NODEID_inValue, NODEID_outSin, NODEID_outCos);"
             ]
         },
         "inputSlots": [
@@ -43,9 +43,9 @@
         ],
         "outputSlots": [
             {
-                "name": "outValue1",
-                "displayName": "Value1",
-                "description": "Value1",
+                "name": "outSin",
+                "displayName": "Sin",
+                "description": "Sin",
                 "supportedDataTypes": [
                     "float4"
                 ],
@@ -60,9 +60,9 @@
                 }
             },
             {
-                "name": "outValue2",
-                "displayName": "Value2",
-                "description": "Value2",
+                "name": "outCos",
+                "displayName": "Cos",
+                "description": "Cos",
                 "supportedDataTypes": [
                     "float4"
                 ],
