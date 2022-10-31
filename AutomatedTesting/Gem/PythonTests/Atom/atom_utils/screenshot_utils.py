@@ -102,7 +102,7 @@ def take_screenshot_game_mode(screenshot_name, entity_name=None):
     general.enter_game_mode()
     helper.wait_for_condition(lambda: general.is_in_game_mode(), 2.0)
     general.log(f"{entity_name}_test: Entered game mode: {general.is_in_game_mode()}")
-    ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking(f"{screenshot_name}.png")
+    ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking(f"{screenshot_name}.ppm")
     general.idle_wait(1.0)
     general.exit_game_mode()
     helper.wait_for_condition(lambda: not general.is_in_game_mode(), 2.0)
