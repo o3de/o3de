@@ -6,7 +6,6 @@
  *
  */
 
-#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <Prefab/Overrides/PrefabOverrideTestFixture.h>
 
 namespace UnitTest
@@ -17,52 +16,72 @@ namespace UnitTest
 
         m_prefabOverridePublicInterface = AZ::Interface<PrefabOverridePublicInterface>::Get();
         ASSERT_TRUE(m_prefabOverridePublicInterface);
+
+        m_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
+        ASSERT_TRUE(m_prefabFocusPublicInterface);
+
+        m_settingsRegistryInterface = AZ::SettingsRegistry::Get();
+        ASSERT_TRUE(m_settingsRegistryInterface);
     }
 
-    AZStd::pair<AZ::EntityId, AZ::EntityId> PrefabOverrideTestFixture::CreateEntityInNestedPrefab()
+    void PrefabOverrideTestFixture::CreateEntityInNestedPrefab(
+        AZ::EntityId& newEntityId, AZ::EntityId& parentContainerId, AZ::EntityId& grandparentContainerId)
     {
         AZ::EntityId entityToBePutUnderPrefabId = CreateEntityUnderRootPrefab("EntityUnderPrefab");
 
-        // Rather than hardcode a path, use a path from settings registry since that will work on all platforms.
-        AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
-        AZ::IO::FixedMaxPath path;
-        registry->Get(path.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        AZ::IO::Path path;
+        m_settingsRegistryInterface->Get(path.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
 
         AZ::EntityId nestedPrefabContainerId = CreatePrefab(AzToolsFramework::EntityIdList{ entityToBePutUnderPrefabId }, path);
 
         // Append '1' to the path so that there is no path collision when creating another prefab.
-        AZ::EntityId prefabContainerId = CreatePrefab(AzToolsFramework::EntityIdList{ nestedPrefabContainerId }, path.Append("1"));
+        grandparentContainerId = CreatePrefab(AzToolsFramework::EntityIdList{ nestedPrefabContainerId }, path.Append("1"));
 
-        AZ::EntityId nestedPrefabEntityId;
-        InstanceOptionalReference prefabInstance = m_instanceEntityMapperInterface->FindOwningInstance(prefabContainerId);
+        InstanceOptionalReference prefabInstance = m_instanceEntityMapperInterface->FindOwningInstance(grandparentContainerId);
         EXPECT_TRUE(prefabInstance.has_value());
 
         // Fetch the id of the entity within the nested prefab as it changes after putting it in a prefab.
         prefabInstance->get().GetNestedInstances(
-            [&nestedPrefabEntityId](AZStd::unique_ptr<Instance>& nestedInstance)
+            [&newEntityId, &parentContainerId](AZStd::unique_ptr<Instance>& nestedInstance)
             {
                 nestedInstance->GetEntities(
-                    [&nestedPrefabEntityId](const AZStd::unique_ptr<AZ::Entity>& entity)
+                    [&newEntityId](const AZStd::unique_ptr<AZ::Entity>& entity)
                     {
-                        nestedPrefabEntityId = entity->GetId();
+                        newEntityId = entity->GetId();
                         return true;
                     });
+                parentContainerId = nestedInstance->GetContainerEntityId();
             });
-
-        return AZStd::pair(nestedPrefabEntityId, prefabContainerId);
     }
 
-    void PrefabOverrideTestFixture::CreateAndValidateOverride(AZ::EntityId entityId)
+    void PrefabOverrideTestFixture::CreateAndValidateOverride(AZ::EntityId entityId, AZ::EntityId ancestorEntityId)
     {
-        // Validate that there are no override present upon prefab creation.
+        m_prefabFocusPublicInterface->FocusOnOwningPrefab(ancestorEntityId);
+
+        // Validate that there are no override present on the entity.
         ASSERT_FALSE(m_prefabOverridePublicInterface->AreOverridesPresent(entityId));
 
-        // Modify the transform component. Since the focus will be on the root prefab by default, this becomes an override.
+        // Modify the transform component.
         AZ::TransformBus::Event(entityId, &AZ::TransformInterface::SetWorldX, 10.0f);
         m_prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_undoStack->GetTop());
 
         // Validate that override is present on the entity.
         EXPECT_TRUE(m_prefabOverridePublicInterface->AreOverridesPresent(entityId));
+    }
+
+    void PrefabOverrideTestFixture::CreateAndValidateTemplateEdit(AZ::EntityId entityId)
+    {
+        m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
+
+        // Validate that there are no override present on the entity.
+        ASSERT_FALSE(m_prefabOverridePublicInterface->AreOverridesPresent(entityId));
+
+        // Modify the transform component.
+        AZ::TransformBus::Event(entityId, &AZ::TransformInterface::SetWorldX, 10.0f);
+        m_prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_undoStack->GetTop());
+
+        // Validate that override is present on the entity.
+        EXPECT_FALSE(m_prefabOverridePublicInterface->AreOverridesPresent(entityId));
     }
 
 } // namespace UnitTest

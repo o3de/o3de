@@ -13,21 +13,28 @@ namespace UnitTest
 {
     using PrefabOverridePublicInterfaceTest = PrefabOverrideTestFixture;
 
-    TEST_F(PrefabOverridePublicInterfaceTest, AreOverridesPresentWorksWithParentOverride)
+    TEST_F(PrefabOverridePublicInterfaceTest, AreOverridesPresentWorksWithOverrideFromImmediateParent)
     {
-        AZStd::pair<AZ::EntityId, AZ::EntityId> nestedEntityParentPrefabPair = CreateEntityInNestedPrefab();
-
-        auto* prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
-        ASSERT_TRUE(prefabFocusPublicInterface != nullptr);
-        prefabFocusPublicInterface->FocusOnOwningPrefab(nestedEntityParentPrefabPair.second);
+        AZ::EntityId newEntityId, parentContainerId, grandparentContainerId;
+        CreateEntityInNestedPrefab(newEntityId, parentContainerId, grandparentContainerId);
         
-        CreateAndValidateOverride(nestedEntityParentPrefabPair.first);
+        CreateAndValidateOverride(newEntityId, grandparentContainerId);
     }
 
-    TEST_F(PrefabOverridePublicInterfaceTest, AreOverridesPresentWorksWithGrandParentOverride)
+    TEST_F(PrefabOverridePublicInterfaceTest, AreOverridesPresentWorksWithOverrideFromLevel)
     {
         // By default, the focus exists on the level prefab. So, we don't need to explicitly set focus here.
-        AZStd::pair<AZ::EntityId, AZ::EntityId> nestedEntityParentPrefabPair = CreateEntityInNestedPrefab();
-        CreateAndValidateOverride(nestedEntityParentPrefabPair.first);
+        AZ::EntityId newEntityId, parentContainerId, grandparentContainerId;
+        CreateEntityInNestedPrefab(newEntityId, parentContainerId, grandparentContainerId);
+        AZ::EntityId levelContainerId = m_prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetContainerEntityId();
+        CreateAndValidateOverride(newEntityId, levelContainerId);
+    }
+
+    TEST_F(PrefabOverridePublicInterfaceTest, AreOverridesPresentReturnsFalseWhenNoOverride)
+    {
+        AZ::EntityId newEntityId, parentContainerId, grandparentContainerId;
+        CreateEntityInNestedPrefab(newEntityId, parentContainerId, grandparentContainerId);
+
+        CreateAndValidateTemplateEdit(newEntityId);
     }
 } // namespace UnitTest
