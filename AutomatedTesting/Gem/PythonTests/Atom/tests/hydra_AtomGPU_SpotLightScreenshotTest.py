@@ -87,7 +87,8 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
     15. Enter game mode and take a screenshot then exit game mode.
     16. Change the Light component Enable shadow and Shadowmap size property values then move Spot Light entity.
     17. Enter game mode and take a screenshot then exit game mode.
-    18. Look for errors.
+    18. Compare the screenshots to golden images.
+    19. Look for errors.
 
     :return: None
     """
@@ -102,7 +103,9 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
 
     from Atom.atom_utils.atom_constants import AtomComponentProperties, LIGHT_TYPES
     from Atom.atom_utils.atom_component_helper import (
-        initial_viewport_setup, create_basic_atom_rendering_scene, enter_exit_game_mode_take_screenshot)
+        initial_viewport_setup, create_basic_atom_rendering_scene, enter_exit_game_mode_take_screenshot, compare_screenshot_to_golden_image)
+
+    from Atom.atom_utils.screenshot_utils import FOLDER_PATH
 
     DEGREE_RADIAN_FACTOR = 0.0174533
 
@@ -121,13 +124,24 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
         # Setup: Runs the create_basic_atom_rendering_scene() function to setup the test scene.
         create_basic_atom_rendering_scene()
 
+        # Setup: Define the screenshot names
         screenshot_names = [
-            "SpotLight_1.ppm",
-            "SpotLight_2.ppm",
-            "SpotLight_3.ppm",
-            "SpotLight_4.ppm",
-            "SpotLight_5.ppm",
-            "SpotLight_6.ppm"
+            "SpotLight_1.png",
+            "SpotLight_2.png",
+            "SpotLight_3.png",
+            "SpotLight_4.png",
+            "SpotLight_5.png",
+            "SpotLight_6.png"
+        ]
+
+        # Setup: Set the threshold of how different screenshots are from golden images.
+        screenshot_thresholds = [
+            0.02,
+            0.02,
+            0.02,
+            0.02,
+            0.02,
+            0.02
         ]
 
         # Test steps begin.
@@ -244,13 +258,12 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
         # 17. Enter game mode and take a screenshot then exit game mode.
         enter_exit_game_mode_take_screenshot(screenshot_names[5], Tests.enter_game_mode, Tests.exit_game_mode)
 
-        # 18. Compare screenshots to golden images.
-        diffThreshold = 0.02
-        for screenshot_name in screenshot_names:
+        # 18. Compare the screenshots to golden images.
+        for screenshot_name, screenshot_threshold in zip(screenshot_names, screenshot_thresholds):
             compResult = compare_screenshot_to_golden_image(FOLDER_PATH, screenshot_name, screenshot_name)
             Report.result(("Screenshot comparison succeeded.", "Screenshot comparison failed."), compResult.result_code == azlmbr.utils.ImageDiffResultCode_Success)
             if compResult.result_code == azlmbr.utils.ImageDiffResultCode_Success:
-                Report.result((f"{screenshot_name} diff score {compResult.diff_score} under threshold {diffThreshold}.", f"{screenshot_name} diff score {compResult.diff_score} over threshold {diffThreshold}."), compResult.diff_score < diffThreshold)
+                Report.result((f"{screenshot_name} diff score {compResult.diff_score} under threshold {screenshot_threshold}.", f"{screenshot_name} diff score {compResult.diff_score} over threshold {screenshot_threshold}."), compResult.diff_score < screenshot_threshold)
 
         # 19. Look for errors.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)

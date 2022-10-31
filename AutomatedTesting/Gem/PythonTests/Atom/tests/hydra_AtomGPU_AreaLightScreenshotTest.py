@@ -67,7 +67,8 @@ def AtomGPU_LightComponent_AreaLightScreenshotsMatchGoldenImages():
     13. Set the Light type property to Point (sphere) instead of Spot (disk) for the Light component.
     14. Enter game mode and take a screenshot then exit game mode.
     15. Delete the Area Light entity.
-    16. Look for errors.
+    16. Compare the screenshots to golden images.
+    17. Look for errors.
 
     :return: None
     """
@@ -101,12 +102,22 @@ def AtomGPU_LightComponent_AreaLightScreenshotsMatchGoldenImages():
         # Setup: Runs the create_basic_atom_rendering_scene() function to setup the test scene.
         create_basic_atom_rendering_scene()
 
+        # Setup: Define the screenshot names
         screenshot_names = [
-            "AreaLight_1.ppm",
-            "AreaLight_2.ppm",
-            "AreaLight_3.ppm",
-            "AreaLight_4.ppm",
-            "AreaLight_5.ppm",
+            "AreaLight_1.png",
+            "AreaLight_2.png",
+            "AreaLight_3.png",
+            "AreaLight_4.png",
+            "AreaLight_5.png",
+        ]
+
+        # Setup: Set the threshold of how different screenshots are from golden images.
+        screenshot_thresholds = [
+            0.02,
+            0.02,
+            0.02,
+            0.02,
+            0.02
         ]
 
         # Test steps begin.
@@ -197,12 +208,11 @@ def AtomGPU_LightComponent_AreaLightScreenshotsMatchGoldenImages():
         Report.result(Tests.area_light_entity_deleted, not area_light_entity.exists())
 
         # 16. Compare screenshots to golden images.
-        diffThreshold = 0.02
-        for screenshot_name in screenshot_names:
+        for screenshot_name, screenshot_threshold in zip(screenshot_names, screenshot_thresholds):
             compResult = compare_screenshot_to_golden_image(FOLDER_PATH, screenshot_name, screenshot_name)
             Report.result(("Screenshot comparison succeeded.", "Screenshot comparison failed."), compResult.result_code == azlmbr.utils.ImageDiffResultCode_Success)
             if compResult.result_code == azlmbr.utils.ImageDiffResultCode_Success:
-                Report.result((f"{screenshot_name} diff score {compResult.diff_score} under threshold {diffThreshold}.", f"{screenshot_name} diff score {compResult.diff_score} over threshold {diffThreshold}."), compResult.diff_score < diffThreshold)
+                Report.result((f"{screenshot_name} diff score {compResult.diff_score} under threshold {screenshot_threshold}.", f"{screenshot_name} diff score {compResult.diff_score} over threshold {screenshot_threshold}."), compResult.diff_score < screenshot_threshold)
 
         # 17. Look for errors.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)

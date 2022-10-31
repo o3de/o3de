@@ -108,7 +108,8 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
     19. Create a Camera Entity as a child entity of the Default Level Entity then add a Camera component.
     20. Set the Camera Entity rotation value and set the Camera component Field of View value.
     21. Enter/Exit game mode taking screenshot.
-    22. Look for errors.
+    22. Compare the screenshots to golden images.
+    23. Look for errors.
 
     :return: None
     """
@@ -125,10 +126,12 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
 
     from Atom.atom_utils.atom_constants import AtomComponentProperties
     from Atom.atom_utils.atom_component_helper import initial_viewport_setup
-    from Atom.atom_utils.atom_component_helper import enter_exit_game_mode_take_screenshot
+    from Atom.atom_utils.atom_component_helper import (
+        enter_exit_game_mode_take_screenshot, compare_screenshot_to_golden_image)
+
+    from Atom.atom_utils.screenshot_utils import FOLDER_PATH
 
     DEGREE_RADIAN_FACTOR = 0.0174533
-    SCREENSHOT_NAME = "AtomBasicLevelSetup"
 
     with Tracer() as error_tracer:
         # Test setup begins.
@@ -140,6 +143,16 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
         search_filter = azlmbr.entity.SearchFilter()
         all_entities = azlmbr.entity.SearchBus(azlmbr.bus.Broadcast, "SearchEntities", search_filter)
         azlmbr.editor.ToolsApplicationRequestBus(azlmbr.bus.Broadcast, "DeleteEntities", all_entities)
+
+        # Setup: Define the screenshot names
+        screenshot_names = [
+            "AtomBasicLevelSetup.png"
+        ]
+
+        # Setup: Set the threshold of how different screenshots are from golden images.
+        screenshot_thresholds = [
+            0.01
+        ]
 
         # Test steps begin.
         # 1. Close error windows and display helpers then update the viewport size.
@@ -299,9 +312,16 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
             AtomComponentProperties.camera('Field of view')) == camera_fov_value)
 
         # 21. Enter/Exit game mode taking screenshot.
-        enter_exit_game_mode_take_screenshot(f"{SCREENSHOT_NAME}.ppm", Tests.enter_game_mode, Tests.exit_game_mode)
+        enter_exit_game_mode_take_screenshot(screenshot_names[0], Tests.enter_game_mode, Tests.exit_game_mode)
 
-        # 22. Look for errors.
+        # 22. Compare the screenshots to golden images.
+        for screenshot_name, screenshot_threshold in zip(screenshot_names, screenshot_thresholds):
+            compResult = compare_screenshot_to_golden_image(FOLDER_PATH, screenshot_name, screenshot_name)
+            Report.result(("Screenshot comparison succeeded.", "Screenshot comparison failed."), compResult.result_code == azlmbr.utils.ImageDiffResultCode_Success)
+            if compResult.result_code == azlmbr.utils.ImageDiffResultCode_Success:
+                Report.result((f"{screenshot_name} diff score {compResult.diff_score} under threshold {screenshot_threshold}.", f"{screenshot_name} diff score {compResult.diff_score} over threshold {screenshot_threshold}."), compResult.diff_score < screenshot_threshold)
+
+        # 23. Look for errors.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
