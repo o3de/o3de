@@ -122,12 +122,12 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
         create_basic_atom_rendering_scene()
 
         screenshot_names = [
-            "SpotLight_1.png",
-            "SpotLight_2.png",
-            "SpotLight_3.png",
-            "SpotLight_4.png",
-            "SpotLight_5.png",
-            "SpotLight_6.png"
+            "SpotLight_1.ppm",
+            "SpotLight_2.ppm",
+            "SpotLight_3.ppm",
+            "SpotLight_4.ppm",
+            "SpotLight_5.ppm",
+            "SpotLight_6.ppm"
         ]
 
         # Test steps begin.

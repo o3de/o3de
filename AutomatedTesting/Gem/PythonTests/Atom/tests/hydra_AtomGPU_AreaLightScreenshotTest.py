@@ -102,11 +102,11 @@ def AtomGPU_LightComponent_AreaLightScreenshotsMatchGoldenImages():
         create_basic_atom_rendering_scene()
 
         screenshot_names = [
-            "AreaLight_1.png",
-            "AreaLight_2.png",
-            "AreaLight_3.png",
-            "AreaLight_4.png",
-            "AreaLight_5.png",
+            "AreaLight_1.ppm",
+            "AreaLight_2.ppm",
+            "AreaLight_3.ppm",
+            "AreaLight_4.ppm",
+            "AreaLight_5.ppm",
         ]
 
         # Test steps begin.
