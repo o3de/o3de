@@ -482,11 +482,11 @@ namespace AzToolsFramework
             auto createRootSpawnableResult = m_playInEditorData.m_assetsCache.CreateInMemorySpawnableAsset(m_rootInstance->GetTemplateId(), AzFramework::Spawnable::DefaultMainSpawnableName, true);
             if (createRootSpawnableResult.IsSuccess())
             {
-                // make sure that PRE_NOTIFY assets get their notify before we activate, so that we can preserve the order of 
+                // make sure that PRE_NOTIFY assets get their notify before we activate, so that we can preserve the order of
                 // (load asset) -> (notify) -> (init) -> (activate)
                 AZ::Data::AssetManager::Instance().DispatchEvents();
 
-                AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable = createRootSpawnableResult.GetValue();
+                AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable = createRootSpawnableResult.GetValue().get();
                 m_playInEditorData.m_entities.Reset(rootSpawnable);
 
                 AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
@@ -651,7 +651,7 @@ namespace AzToolsFramework
         return AZ::SliceComponent::SliceInstanceAddress();
     }
 
-   
+
     AZ::Data::AssetId UnimplementedSliceEntityOwnershipService::CurrentlyInstantiatingSlice()
     {
         AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");

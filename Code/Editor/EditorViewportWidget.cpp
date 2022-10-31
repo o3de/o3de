@@ -835,7 +835,7 @@ void EditorViewportWidget::SetViewportId(int id)
     }
     auto viewportContext = m_renderViewport->GetViewportContext();
     m_defaultViewportContextName = viewportContext->GetName();
-    m_defaultView = viewportContext->GetDefaultView();
+    m_defaultViewGroup = viewportContext->GetViewGroup();
     QBoxLayout* layout = new QBoxLayout(QBoxLayout::Direction::TopToBottom, this);
     layout->setContentsMargins(QMargins());
     layout->addWidget(m_renderViewport);
@@ -1810,9 +1810,9 @@ void EditorViewportWidget::SetFOV(float fov)
     }
     else
     {
-        auto m = m_defaultView->GetViewToClipMatrix();
+        auto m = m_defaultViewGroup->GetView()->GetViewToClipMatrix();
         AZ::SetPerspectiveMatrixFOV(m, fov, aznumeric_cast<float>(width()) / aznumeric_cast<float>(height()));
-        m_defaultView->SetViewToClipMatrix(m);
+        m_defaultViewGroup->GetView()->SetViewToClipMatrix(m);
     }
 }
 
@@ -1827,7 +1827,7 @@ float EditorViewportWidget::GetFOV() const
     }
     else
     {
-        return AZ::GetPerspectiveMatrixFOV(m_defaultView->GetViewToClipMatrix());
+        return AZ::GetPerspectiveMatrixFOV(m_defaultViewGroup->GetView()->GetViewToClipMatrix());
     }
 }
 
@@ -1895,7 +1895,7 @@ void EditorViewportWidget::SetDefaultCamera()
     if (auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get())
     {
         const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-        atomViewportRequests->PushView(contextName, m_defaultView);
+        atomViewportRequests->PushViewGroup(contextName, m_defaultViewGroup);
     }
 
     // check to see if we have an existing last known location for this level
@@ -1923,9 +1923,9 @@ void EditorViewportWidget::SetDefaultCamera()
 
 void EditorViewportWidget::SetDefaultCameraNearFar()
 {
-    auto viewToClip = m_defaultView->GetViewToClipMatrix();
+    auto viewToClip = m_defaultViewGroup->GetView()->GetViewToClipMatrix();
     AZ::SetPerspectiveMatrixNearFar(viewToClip, SandboxEditor::CameraDefaultNearPlaneDistance(), SandboxEditor::CameraDefaultFarPlaneDistance());
-    m_defaultView->SetViewToClipMatrix(viewToClip);
+    m_defaultViewGroup->GetView()->SetViewToClipMatrix(viewToClip);
 }
 
 
@@ -2393,7 +2393,7 @@ void EditorViewportWidget::SetAsActiveViewport()
         if (viewportContext)
         {
             // Remove the old viewport's camera from the stack, as it's no longer the owning viewport
-            viewportContextManager->PopView(defaultContextName, viewportContext->GetDefaultView());
+            viewportContextManager->PopViewGroup(defaultContextName, viewportContext->GetViewGroup());
             viewportContextManager->RenameViewportContext(viewportContext, m_pPrimaryViewport->m_defaultViewportContextName);
         }
     }
@@ -2406,7 +2406,7 @@ void EditorViewportWidget::SetAsActiveViewport()
         {
             // Push our camera onto the default viewport's view stack to preserve camera state continuity
             // Other views can still be pushed on top of our view for e.g. game mode
-            viewportContextManager->PushView(defaultContextName, viewportContext->GetDefaultView());
+            viewportContextManager->PushViewGroup(defaultContextName, viewportContext->GetViewGroup());
             viewportContextManager->RenameViewportContext(viewportContext, defaultContextName);
         }
     }

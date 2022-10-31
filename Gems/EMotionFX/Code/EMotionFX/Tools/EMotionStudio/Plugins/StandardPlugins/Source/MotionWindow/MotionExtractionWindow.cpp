@@ -335,7 +335,9 @@ namespace EMStudio
 
             m_rootMotionExtractionWidget->ClearInstances();
             m_extractRootMotionCheck->setChecked(false);
-            if (numMotions == 1)
+
+            // When multi selection, use the first motion in the selection list to build the reflection widget.
+            if (numMotions >= 1)
             {
                 const EMotionFX::Motion* curMotion = selectionList.GetMotion(0);
 
@@ -433,9 +435,9 @@ namespace EMStudio
         const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
         const size_t numSelectedMotions = selectionList.GetNumSelectedMotions();
 
-        if (numSelectedMotions == 1)
+        for (size_t motionIndex = 0; motionIndex < numSelectedMotions; ++motionIndex)
         {
-            EMotionFX::Motion* curMotion = selectionList.GetMotion(0);
+            EMotionFX::Motion* curMotion = selectionList.GetMotion(motionIndex);
             AZStd::shared_ptr<EMotionFX::RootMotionExtractionData> rootMotionDataPtr = curMotion->GetRootMotionExtractionData();
             if (!rootMotionDataPtr && m_extractRootMotionCheck->isChecked())
             {
@@ -463,10 +465,23 @@ namespace EMStudio
     {
         const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
         const size_t numSelectedMotions = selectionList.GetNumSelectedMotions();
+        EMotionFX::RootMotionExtractionData* firstMotionRootExtractionData = nullptr;
 
-        if (numSelectedMotions == 1)
+        for (size_t motionIndex = 0; motionIndex < numSelectedMotions; ++motionIndex)
         {
-            EMotionFX::Motion* curMotion = selectionList.GetMotion(0);
+            EMotionFX::Motion* curMotion = selectionList.GetMotion(motionIndex);
+
+            // When multi selected, take the first motion's root motion data and copy it to other selected motions.
+            if (motionIndex == 0)
+            {
+                firstMotionRootExtractionData = curMotion->GetRootMotionExtractionData().get();
+            }
+            else
+            {
+                auto curMotionRootExtractionData =
+                    firstMotionRootExtractionData ? AZStd::make_shared<EMotionFX::RootMotionExtractionData>(*firstMotionRootExtractionData) : nullptr;
+                curMotion->SetRootMotionExtractionData(curMotionRootExtractionData);
+            }
             GetMainWindow()->GetFileManager()->SaveMotion(curMotion->GetID());
         }
     }

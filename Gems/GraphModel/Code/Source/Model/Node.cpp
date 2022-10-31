@@ -60,6 +60,33 @@ namespace GraphModel
     {
         RegisterSlots();
 
+        // Moving slots between input data slot and property slot containers in case the layout of the slot definitions change.
+        for (const auto& def : m_inputDataSlotDefinitions)
+        {
+            for (const auto& slot : m_propertySlots)
+            {
+                if (def->GetName() == slot.first.m_name)
+                {
+                    m_inputDataSlots.insert(slot);
+                    m_propertySlots.erase(slot.first);
+                    break;
+                }
+            }
+        }
+
+        for (const auto& def : m_propertySlotDefinitions)
+        {
+            for (const auto& slot : m_inputDataSlots)
+            {
+                if (def->GetName() == slot.first.m_name)
+                {
+                    m_propertySlots.insert(slot);
+                    m_inputDataSlots.erase(slot.first);
+                    break;
+                }
+            }
+        }
+
         // Make sure the loaded Slot data aligns with the Node's input slot descriptions
         SyncAndSetupSlots(m_propertySlots, m_propertySlotDefinitions);
         SyncAndSetupSlots(m_inputDataSlots, m_inputDataSlotDefinitions);

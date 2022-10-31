@@ -115,7 +115,7 @@ namespace AZ
             if (parentMaterialPath.empty())
             {
                 parentMaterialPath = materialTypePath;
-                parentJobKey = MaterialTypeBuilder::JobKey;
+                parentJobKey = MaterialTypeBuilder::FinalStageJobKey;
             }
 
             // Register dependency on the parent material source file so we can load it and use it's data to build this variant material.
