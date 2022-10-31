@@ -11,7 +11,7 @@
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypeRegex": "color",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[14]?",
                 "defaultDataType": "color",
                 "defaultValue": {
                     "$type": "Color",

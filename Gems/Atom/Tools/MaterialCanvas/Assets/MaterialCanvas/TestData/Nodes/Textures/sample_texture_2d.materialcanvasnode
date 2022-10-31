@@ -85,7 +85,7 @@
                 "name": "inUV",
                 "displayName": "UV",
                 "description": "UV",
-                "supportedDataTypeRegex": "color|float[1-4]?",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
                 "defaultDataType": "float",
                 "defaultValue": {
                     "$type": "float",

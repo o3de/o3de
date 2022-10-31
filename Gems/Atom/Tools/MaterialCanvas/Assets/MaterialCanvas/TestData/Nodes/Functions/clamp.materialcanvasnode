@@ -11,7 +11,7 @@
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypeRegex": "color|float[1-4]?",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
                 "defaultDataType": "float4",
                 "defaultValue": {
                     "$type": "Vector4",
@@ -32,7 +32,7 @@
                 "name": "inMin",
                 "displayName": "Min",
                 "description": "Min",
-                "supportedDataTypeRegex": "color|float[1-4]?",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
                 "defaultDataType": "float4",
                 "defaultValue": {
                     "$type": "Vector4",
@@ -53,7 +53,7 @@
                 "name": "inMax",
                 "displayName": "Max",
                 "description": "Max",
-                "supportedDataTypeRegex": "color|float[1-4]?",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
                 "defaultDataType": "float4",
                 "defaultValue": {
                     "$type": "Vector4",

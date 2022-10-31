@@ -409,7 +409,8 @@ namespace MaterialCanvas
         GraphModel::GraphPtr graph = AZStd::make_shared<GraphModel::Graph>(m_graphContext);
         AZ::Utils::LoadObjectFromStreamInPlace(undoGraphStateStream, *graph.get());
 
-        m_modified = true;        CreateGraph(graph);
+        m_modified = true;
+        CreateGraph(graph);
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
         QueueCompileGraph();
@@ -615,6 +616,10 @@ namespace MaterialCanvas
         if (auto v = AZStd::any_cast<const unsigned int>(&slotValue))
         {
             return AZStd::string::format("%u", *v);
+        }
+        if (auto v = AZStd::any_cast<const bool>(&slotValue))
+        {
+            return AZStd::string::format("%u", *v ? 1 : 0);
         }
         return AZStd::string();
     }

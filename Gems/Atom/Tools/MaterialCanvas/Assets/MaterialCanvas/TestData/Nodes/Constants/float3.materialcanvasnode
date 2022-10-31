@@ -11,7 +11,7 @@
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypeRegex": "color|float[134]?",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
                 "defaultDataType": "float3",
                 "defaultValue": {
                     "$type": "Vector3",

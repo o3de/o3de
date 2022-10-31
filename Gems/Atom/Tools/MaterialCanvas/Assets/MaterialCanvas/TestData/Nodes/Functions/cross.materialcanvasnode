@@ -11,12 +11,11 @@
                 "name": "inValue1",
                 "displayName": "Value1",
                 "description": "Value1",
-                "supportedDataTypeRegex": "color|float[1-4]?",
-                "defaultDataType": "float4",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
+                "defaultDataType": "float3",
                 "defaultValue": {
-                    "$type": "Vector4",
+                    "$type": "Vector3",
                     "Value": [
-                        0.0,
                         0.0,
                         0.0,
                         0.0
@@ -32,12 +31,11 @@
                 "name": "inValue2",
                 "displayName": "Value2",
                 "description": "Value2",
-                "supportedDataTypeRegex": "color|float[1-4]?",
-                "defaultDataType": "float4",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
+                "defaultDataType": "float3",
                 "defaultValue": {
-                    "$type": "Vector4",
+                    "$type": "Vector3",
                     "Value": [
-                        0.0,
                         0.0,
                         0.0,
                         0.0
@@ -55,11 +53,11 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypeRegex": "float4",
-                "defaultDataType": "float4",
+                "supportedDataTypeRegex": "float3",
+                "defaultDataType": "float3",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = cross(NODEID_inValue1, NODEID_inValue2);"
+                        "SLOTTYPE NODEID_SLOTNAME = cross((float3)NODEID_inValue1, (float3)NODEID_inValue2);"
                     ]
                 }
             }

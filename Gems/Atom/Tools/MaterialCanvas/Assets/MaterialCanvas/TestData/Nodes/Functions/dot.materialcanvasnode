@@ -11,7 +11,7 @@
                 "name": "inValue1",
                 "displayName": "Value1",
                 "description": "Value1",
-                "supportedDataTypeRegex": "color|float[1-4]?",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
                 "defaultDataType": "float4",
                 "defaultValue": {
                     "$type": "Vector4",
@@ -32,7 +32,7 @@
                 "name": "inValue2",
                 "displayName": "Value2",
                 "description": "Value2",
-                "supportedDataTypeRegex": "color|float[1-4]?",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
                 "defaultDataType": "float4",
                 "defaultValue": {
                     "$type": "Vector4",
@@ -55,8 +55,8 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypeRegex": "float4",
-                "defaultDataType": "float4",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = dot(NODEID_inValue1, NODEID_inValue2);"
