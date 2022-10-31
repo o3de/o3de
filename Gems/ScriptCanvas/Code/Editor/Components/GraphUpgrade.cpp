@@ -9,7 +9,7 @@
 
 #include <Editor/Include/ScriptCanvas/Components/GraphUpgrade.h>
 #include <Editor/Include/ScriptCanvas/Components/EditorGraph.h>
-
+#include <Editor/Include/ScriptCanvas/Components/NodeReplacementSystem.h>
 #include <Editor/Nodes/NodeDisplayUtils.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
 #include <GraphCanvas/Components/SceneBus.h>
@@ -435,6 +435,14 @@ namespace ScriptCanvasEditor
         for (auto& node : sm->m_deprecatedNodes)
         {
             ScriptCanvas::NodeReplacementConfiguration nodeConfig = node->GetReplacementNodeConfiguration();
+            // fallback to node replacement system, once fully migrated, all replacement config should come from replacement system
+            if (!nodeConfig.IsValid())
+            {
+                auto replacementId = ScriptCanvasEditor::NodeReplacementSystem::GenerateReplacementId(node);
+                ScriptCanvasEditor::NodeReplacementRequestBus::BroadcastResult(
+                    nodeConfig, &ScriptCanvasEditor::NodeReplacementRequests::GetNodeReplacementConfiguration, replacementId);
+            }
+
             if (nodeConfig.IsValid())
             {
                 ScriptCanvas::NodeUpdateSlotReport nodeUpdateSlotReport;

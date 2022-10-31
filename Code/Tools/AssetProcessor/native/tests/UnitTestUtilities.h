@@ -109,4 +109,34 @@ namespace UnitTests
         MOCK_CONST_METHOD0(GetExecutableFolder, const char* ());
         MOCK_CONST_METHOD1(QueryApplicationType, void(AZ::ApplicationTypeQuery&));
     };
+
+    struct MockPathConversion : AZ::Interface<AssetProcessor::IPathConversion>::Registrar
+    {
+        MockPathConversion(const char* scanfolder = "c:/somepath")
+        {
+            m_scanFolderInfo = AssetProcessor::ScanFolderInfo{ scanfolder, "scanfolder", "scanfolder", true, true, { AssetBuilderSDK::PlatformInfo{ "pc", {} } }, 0, 1 };
+        }
+
+        bool ConvertToRelativePath(QString fullFileName, QString& databaseSourceName, QString& scanFolderName) const override
+        {
+            scanFolderName = m_scanFolderInfo.ScanPath();
+            databaseSourceName = fullFileName.mid(scanFolderName.size() + 1);
+
+            return true;
+        }
+
+        //! given a full file name (assumed already fed through the normalization funciton), return the first matching scan folder
+        const AssetProcessor::ScanFolderInfo* GetScanFolderForFile(const QString& /*fullFileName*/) const override
+        {
+            return &m_scanFolderInfo;
+        }
+
+        const AssetProcessor::ScanFolderInfo* GetScanFolderById(AZ::s64 /*id*/) const override
+        {
+            return &m_scanFolderInfo;
+        }
+
+    private:
+        AssetProcessor::ScanFolderInfo m_scanFolderInfo;
+    };
 }
