@@ -112,6 +112,7 @@ namespace AZ
                     ->Field("version", &MaterialTypeSourceData::m_version)
                     ->Field("versionUpdates", &MaterialTypeSourceData::m_versionUpdates)
                     ->Field("propertyLayout", &MaterialTypeSourceData::m_propertyLayout)
+                    ->Field("materialShaderCode", &MaterialTypeSourceData::m_materialShaderCode)
                     ->Field("shaders", &MaterialTypeSourceData::m_shaderCollection)
                     ->Field("functors", &MaterialTypeSourceData::m_materialFunctorSourceData)
                     ->Field("uvNameMap", &MaterialTypeSourceData::m_uvNameMap)
@@ -804,9 +805,19 @@ namespace AZ
             return true;
         }
 
+        bool MaterialTypeSourceData::IsAbstractFormat() const
+        {
+            return !m_materialShaderCode.empty() && m_shaderCollection.empty();
+        }
 
         Outcome<Data::Asset<MaterialTypeAsset>> MaterialTypeSourceData::CreateMaterialTypeAsset(Data::AssetId assetId, AZStd::string_view materialTypeSourceFilePath, bool elevateWarnings) const
         {
+            if (IsAbstractFormat())
+            {
+                AZ_Assert(false, "This material type is not structured for creating a MaterialTypeAsset. It can only be used to generate an intermediate material type for further processing. See MaterialTypeBuilder.");
+                return Failure();
+            }
+
             MaterialTypeAssetCreator materialTypeAssetCreator;
             materialTypeAssetCreator.SetElevateWarnings(elevateWarnings);
             materialTypeAssetCreator.Begin(assetId);

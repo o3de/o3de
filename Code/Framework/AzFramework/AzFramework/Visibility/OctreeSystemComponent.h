@@ -51,6 +51,8 @@ namespace AzFramework
         //! @{
         void Enumerate(const AZ::Aabb& aabb, const IVisibilityScene::EnumerateCallback& callback) const;
         void Enumerate(const AZ::Sphere& sphere, const IVisibilityScene::EnumerateCallback& callback) const;
+        void Enumerate(const AZ::Hemisphere& hemisphere, const IVisibilityScene::EnumerateCallback& callback) const;
+        void Enumerate(const AZ::Capsule& capsule, const IVisibilityScene::EnumerateCallback& callback) const;
         void Enumerate(const AZ::Frustum& frustum, const IVisibilityScene::EnumerateCallback& callback) const;
         //! @}
 
@@ -106,6 +108,8 @@ namespace AzFramework
         void RemoveEntry(VisibilityEntry& entry) override;
         void Enumerate(const AZ::Aabb& aabb, const IVisibilityScene::EnumerateCallback& callback) const override;
         void Enumerate(const AZ::Sphere& sphere, const IVisibilityScene::EnumerateCallback& callback) const override;
+        void Enumerate(const AZ::Hemisphere& hemisphere, const IVisibilityScene::EnumerateCallback& callback) const override;
+        void Enumerate(const AZ::Capsule& capsule, const IVisibilityScene::EnumerateCallback& callback) const override;
         void Enumerate(const AZ::Frustum& frustum, const IVisibilityScene::EnumerateCallback& callback) const override;
         void EnumerateNoCull(const IVisibilityScene::EnumerateCallback& callback) const override;
         uint32_t GetEntryCount() const override;

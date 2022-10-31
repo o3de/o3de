@@ -61,10 +61,20 @@ namespace AZ
             //! renamed via AZ::RPI::ViewportContextRequests::Get()->RenameViewportContext(...).
             AZ::Name GetName() const;
 
+            //! Gets the view group associated with this ViewportContext.
+            //! Alternatively, use AZ::RPI::ViewportContextRequests::Get()->GetCurrentViewGroup().
+            ViewGroupPtr GetViewGroup();
+            ConstViewGroupPtr GetViewGroup() const;
+
             //! Gets the default view associated with this ViewportContext.
-            //! Alternatively, use  AZ::RPI::ViewportContextRequests::Get()->GetCurrentView().
+            //! Alternatively, use AZ::RPI::ViewportContextRequests::Get()->GetCurrentViewGroup()->GetView().
             ViewPtr GetDefaultView();
             ConstViewPtr GetDefaultView() const;
+
+            //! Gets the stereoscopic view associated with this ViewportContext.
+            //! Alternatively, use AZ::RPI::ViewportContextRequests::Get()->GetCurrentViewGroup()->GetView(AZ::RPI::ViewType).
+            ViewPtr GetStereoscopicView(AZ::RPI::ViewType viewType);
+            ConstViewPtr GetStereoscopicView(AZ::RPI::ViewType viewType) const;
 
             //! Gets the current size of the viewport.
             //! This value is cached and updated on-demand, so may be efficiently queried.
@@ -77,9 +87,7 @@ namespace AZ
 
             // SceneNotificationBus interface overrides...
             //! Ensures our default view remains set when our scene's render pipelines are modified.
-            void OnRenderPipelineAdded(RenderPipelinePtr pipeline) override;
-            //! Ensures our default view remains set when our scene's render pipelines are modified.
-            void OnRenderPipelineRemoved(RenderPipeline* pipeline) override;
+            void OnRenderPipelineChanged(RenderPipeline* pipeline, SceneNotification::RenderPipelineChangeType changeType) override;
             //! OnBeginPrepareRender is forwarded to our RenderTick notification to allow subscribers to do rendering.
             void OnBeginPrepareRender() override;
             //! OnEndPrepareRender is forwarded to our WaitForRender notification to wait for any pending work
@@ -135,7 +143,7 @@ namespace AZ
 
             // Used by the manager to set the current default camera.
             void UpdateContextPipelineView(uint32_t viewIndex);
-            void SetDefaultViewGroup(ViewGroupPtr viewGroup);
+            void SetViewGroup(ViewGroupPtr viewGroup);
 
             // Ensures our render pipeline's default camera matches ours.
             void UpdatePipelineView(uint32_t viewIndex);

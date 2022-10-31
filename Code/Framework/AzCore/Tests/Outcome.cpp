@@ -211,7 +211,7 @@ namespace UnitTest
                 AZ::Outcome<KnowThyself, Error> outcome = AZ::Success(lvalue);
                 AZ_TEST_ASSERT(outcome.IsSuccess());
                 AZ_TEST_ASSERT(outcome.GetValue().m_id == 5);
-                AZ_TEST_ASSERT(outcome.GetValue().m_originalState == KnowThyself::State::CopyConstructor);
+                AZ_TEST_ASSERT(outcome.GetValue().m_state == KnowThyself::State::CopyConstructor);
                 AZ_TEST_ASSERT(lvalue.m_state != KnowThyself::State::StolenFrom);
             }
 
@@ -221,7 +221,7 @@ namespace UnitTest
                 AZ::Outcome<int, KnowThyself> outcome = AZ::Failure(lvalue);
                 AZ_TEST_ASSERT(!outcome.IsSuccess());
                 AZ_TEST_ASSERT(outcome.GetError().m_id == 5);
-                AZ_TEST_ASSERT(outcome.GetError().m_originalState == KnowThyself::State::CopyConstructor);
+                AZ_TEST_ASSERT(outcome.GetError().m_state == KnowThyself::State::CopyConstructor);
             }
 
             { // test error move constructor

@@ -346,13 +346,11 @@ namespace EMStudio
     }
 
 
-    QPoint NodeGraphWidget::SnapLocalToGrid(const QPoint& inPoint, uint32 cellSize) const
+    QPoint NodeGraphWidget::SnapLocalToGrid(const QPoint& inPoint) const
     {
-        MCORE_UNUSED(cellSize);
-
         QPoint snapped;
-        snapped.setX(inPoint.x() - aznumeric_cast<int>(MCore::Math::FMod(aznumeric_cast<float>(inPoint.x()), 10.0f)));
-        snapped.setY(inPoint.y() - aznumeric_cast<int>(MCore::Math::FMod(aznumeric_cast<float>(inPoint.y()), 10.0f)));
+        snapped.setX(inPoint.x() - inPoint.x() % s_snapCellSize);
+        snapped.setY(inPoint.y() - inPoint.y() % s_snapCellSize);
         return snapped;
     }
 
@@ -373,7 +371,7 @@ namespace EMStudio
             QPoint oldTopRight = m_moveNode->GetRect().topRight();
             QPoint scaledMouseDelta = (mousePos - m_mouseLastPos) * (1.0f / m_activeGraph->GetScale());
             QPoint unSnappedTopRight = oldTopRight + scaledMouseDelta;
-            QPoint snappedTopRight = SnapLocalToGrid(unSnappedTopRight, 10);
+            QPoint snappedTopRight = SnapLocalToGrid(unSnappedTopRight);
             snapDelta = snappedTopRight - unSnappedTopRight;
         }
 

@@ -14,6 +14,7 @@ set(FILES
     Include/Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h
     Include/Atom/Feature/ColorGrading/LutResolution.h
     Include/Atom/Feature/CoreLights/CoreLightsConstants.h
+    Include/Atom/Feature/CoreLights/LightCommon.h
     Include/Atom/Feature/CubeMapCapture/CubeMapCaptureFeatureProcessorInterface.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformPass.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformLutPass.h
@@ -82,6 +83,13 @@ set(FILES
     Source/CoreLights/DiskLightFeatureProcessor.cpp
     Source/CoreLights/EsmShadowmapsPass.h
     Source/CoreLights/EsmShadowmapsPass.cpp
+    Source/CoreLights/LightCullingPass.cpp
+    Source/CoreLights/LightCullingPass.h
+    Source/CoreLights/LightCullingTilePreparePass.cpp
+    Source/CoreLights/LightCullingTilePreparePass.h
+    Source/CoreLights/LightCullingRemap.cpp
+    Source/CoreLights/LightCullingRemap.h
+    Source/CoreLights/LightCullingConstants.h
     Source/CoreLights/LtcCommon.h
     Source/CoreLights/LtcCommon.cpp
     Source/CoreLights/PointLightFeatureProcessor.h
@@ -102,13 +110,6 @@ set(FILES
     Source/CoreLights/ShadowmapAtlas.cpp
     Source/CoreLights/ShadowmapPass.h
     Source/CoreLights/ShadowmapPass.cpp
-    Source/CoreLights/LightCullingPass.cpp
-    Source/CoreLights/LightCullingPass.h
-    Source/CoreLights/LightCullingTilePreparePass.cpp
-    Source/CoreLights/LightCullingTilePreparePass.h
-    Source/CoreLights/LightCullingRemap.cpp
-    Source/CoreLights/LightCullingRemap.h
-    Source/CoreLights/LightCullingConstants.h
     Source/Checkerboard/CheckerboardColorResolvePass.cpp
     Source/Checkerboard/CheckerboardColorResolvePass.h
     Source/Checkerboard/CheckerboardPass.cpp

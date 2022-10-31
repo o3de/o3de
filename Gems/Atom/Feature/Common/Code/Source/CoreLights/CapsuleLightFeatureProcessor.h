@@ -8,9 +8,10 @@
 
 #pragma once
 
+#include <AzCore/Math/Capsule.h>
 #include <Atom/Feature/CoreLights/CapsuleLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
-#include <Atom/Feature/Utils/IndexedDataVector.h>
+#include <Atom/Feature/Utils/MultiIndexedDataVector.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 
 namespace AZ
@@ -55,10 +56,13 @@ namespace AZ
         private:
             CapsuleLightFeatureProcessor(const CapsuleLightFeatureProcessor&) = delete;
 
+            void UpdateBounds(LightHandle handle);
+
             static constexpr const char* FeatureProcessorName = "CapsuleLightFeatureProcessor";
 
-            IndexedDataVector<CapsuleLightData> m_capsuleLightData;
+            MultiIndexedDataVector<CapsuleLightData, AZ::Capsule> m_lightData;
             GpuBufferHandler m_lightBufferHandler;
+            RHI::Handle<uint32_t> m_lightMeshFlag;
             bool m_deviceBufferNeedsUpdate = false;
         };
     } // namespace Render
