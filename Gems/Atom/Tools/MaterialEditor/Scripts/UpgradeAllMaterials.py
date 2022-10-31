@@ -12,6 +12,10 @@ import azlmbr.paths
 import collections
 
 def main():
+    paths = azlmbr.atomtools.util.GetPathsInSourceFoldersMatchingWildcard('*.material')
+    for path in paths.copy():
+        if 'cache' in path.lower():
+            paths.remove(path)
 
     documentId = azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(azlmbr.bus.Broadcast, 'CreateDocumentFromTypeName', 'Material')
 
@@ -19,7 +23,7 @@ def main():
         print("The material document could not be opened")
         return
 
-    for path in azlmbr.atomtools.util.GetPathsInSourceFoldersMatchingWildcard('*.material'):
+    for path in paths:
         if azlmbr.atomtools.util.IsDocumentPathEditable(path):
             if azlmbr.atomtools.AtomToolsDocumentRequestBus(azlmbr.bus.Event, 'Open', documentId, path):
                 azlmbr.atomtools.AtomToolsDocumentRequestBus(azlmbr.bus.Event, 'Save', documentId)

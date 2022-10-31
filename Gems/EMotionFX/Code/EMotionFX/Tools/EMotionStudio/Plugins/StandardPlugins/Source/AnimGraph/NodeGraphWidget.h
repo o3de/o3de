@@ -60,7 +60,9 @@ namespace EMStudio
 
         QPoint LocalToGlobal(const QPoint& inPoint) const;
         QPoint GlobalToLocal(const QPoint& inPoint) const;
-        QPoint SnapLocalToGrid(const QPoint& inPoint, uint32 cellSize = 10) const;
+
+        static constexpr uint32 s_snapCellSize = 10;
+        QPoint SnapLocalToGrid(const QPoint& inPoint) const;
 
         void CalcSelectRect(QRect& outRect);
 

@@ -1656,6 +1656,14 @@ namespace AZ
         }
     }
 
+    float Intersect::PointSegmentDistanceSq(const Vector3& point, const Vector3& segmentStart, const Vector3& segmentEnd)
+    {
+        float proportion;
+        Vector3 closestPointOnCapsuleAxis;
+        Intersect::ClosestPointSegment(point, segmentStart, segmentEnd, proportion, closestPointOnCapsuleAxis);
+        return closestPointOnCapsuleAxis.GetDistanceSq(point);
+    }
+
 #if 0
 //////////////////////////////////////////////////////////////////////////
 // TEST AABB/RAY TEST using slopes

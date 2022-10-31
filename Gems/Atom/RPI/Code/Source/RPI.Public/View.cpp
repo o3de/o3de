@@ -82,9 +82,12 @@ namespace AZ
 
         void View::SetDrawListMask(const RHI::DrawListMask& drawListMask)
         {
-            m_drawListMask = drawListMask;
-            m_drawListContext.Shutdown();
-            m_drawListContext.Init(m_drawListMask);
+            if (m_drawListMask != drawListMask)
+            {
+                m_drawListMask = drawListMask;
+                m_drawListContext.Shutdown();
+                m_drawListContext.Init(m_drawListMask);
+            }
         }
 
         void View::Reset()
