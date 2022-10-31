@@ -212,10 +212,14 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
         # Reprocessing and getting number of successfully processed assets from output
         batch_success, output = asset_processor.batch_process(capture_output=True)
-        for output_line in output:
-            logger.info(f"{output_line}\n")
         # Checking the number of jobs is equal to 1
         num_processed_assets = asset_processor_utils.get_num_processed_assets(output)
+
+        # Print the output if the test is going to fail, to make it easier to debug.        
+        if num_processed_assets != 1:
+            for output_line in output:
+                logger.info(f"{output_line}\n")
+
         assert num_processed_assets == 1, \
             f'Wrong number of successfully processed assets found in output. Expected: 1 Found: {num_processed_assets}'
 
