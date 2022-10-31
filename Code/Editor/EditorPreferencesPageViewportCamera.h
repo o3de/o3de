@@ -82,7 +82,7 @@ private:
         void Initialize();
 
     private:
-        bool m_resetButton = false;
+        bool m_resetButton = false; // required for positioning in edit context, otherwise unused
     };
 
     struct CameraInputSettings
@@ -110,7 +110,7 @@ private:
         void Initialize();
 
     private:
-        bool m_resetButton = false;
+        bool m_resetButton = false; // required for positioning in edit context, otherwise unused
     };
 
     CameraMovementSettings m_cameraMovementSettings;

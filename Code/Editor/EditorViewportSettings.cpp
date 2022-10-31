@@ -63,7 +63,7 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraDefaultStartingYaw = "/Amazon/Preferences/Editor/Camera/DefaultStartingYaw";
     constexpr AZStd::string_view CameraNearPlaneDistanceSetting = "/Amazon/Preferences/Editor/Camera/NearPlaneDistance";
     constexpr AZStd::string_view CameraFarPlaneDistanceSetting = "/Amazon/Preferences/Editor/Camera/FarPlaneDistance";
-    constexpr AZStd::string_view CameraFovSetting = "/Amazon/Preferences/Editor/Camera/FovDegrees";
+    constexpr AZStd::string_view CameraFovDegreesSetting = "/Amazon/Preferences/Editor/Camera/FovDegrees";
 
     struct EditorViewportSettingsCallbacksImpl : public EditorViewportSettingsCallbacks
     {
@@ -112,7 +112,7 @@ namespace SandboxEditor
                 m_perspectiveNotifyEventHandler = registry->RegisterNotifier(
                     [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
                     {
-                        if (IsPathAncestorDescendantOrEqual(CameraFovSetting, notifyEventArgs.m_jsonKeyPath))
+                        if (IsPathAncestorDescendantOrEqual(CameraFovDegreesSetting, notifyEventArgs.m_jsonKeyPath))
                         {
                             m_perspectiveChanged.Signal(CameraDefaultFovRadians());
                         }
@@ -646,12 +646,12 @@ namespace SandboxEditor
 
     float CameraDefaultFovDegrees()
     {
-        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFovSetting, aznumeric_cast<double>(60.0)));
+        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFovDegreesSetting, aznumeric_cast<double>(60.0)));
     }
 
     void SetCameraDefaultFovDegrees(float fovDegrees)
     {
-        AzToolsFramework::SetRegistry(CameraFovSetting, aznumeric_cast<double>(fovDegrees));
+        AzToolsFramework::SetRegistry(CameraFovDegreesSetting, aznumeric_cast<double>(fovDegrees));
     }
 
     void ResetCameraSpeedScale()
