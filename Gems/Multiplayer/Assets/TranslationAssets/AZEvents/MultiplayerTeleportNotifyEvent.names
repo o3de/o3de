@@ -11,7 +11,7 @@
                 {
                     "base": "teleportToPosition",
                     "details": {
-                        "name": "teleportToPosition"
+                        "name": "Teleport To Position"
                     }
                 },
                 {

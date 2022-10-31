@@ -12,11 +12,11 @@
                     "base": "IncrementResetCount",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Increment Reset Count"
+                        "tooltip": "When signaled, this will invoke Increment Reset Count."
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Increment Reset Count is invoked"
+                        "tooltip": "Signaled after Increment Reset Count is invoked."
                     },
                     "details": {
                         "name": "Increment Reset Count"

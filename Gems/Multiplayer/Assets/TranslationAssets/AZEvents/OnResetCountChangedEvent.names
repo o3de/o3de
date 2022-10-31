@@ -11,7 +11,7 @@
                 {
                     "base": "New uint8_t",
                     "details": {
-                        "name": "New uint8_t"
+                        "name": "Reset Count"
                     }
                 },
                 {
