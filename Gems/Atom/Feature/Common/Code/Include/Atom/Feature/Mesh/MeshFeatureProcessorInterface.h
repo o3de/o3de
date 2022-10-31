@@ -22,6 +22,14 @@ namespace AZ
 {
     namespace Render
     {
+        AZ_CVAR(bool,
+            r_enablePerMeshShaderOptionFlags,
+            false,
+            nullptr,
+            AZ::ConsoleFunctorFlags::Null,
+            "Enable allowing systems to set shader options on a per-mesh basis."
+        );
+
         class ModelDataInstance;
         
         //! Settings to apply to a mesh handle when acquiring it for the first time

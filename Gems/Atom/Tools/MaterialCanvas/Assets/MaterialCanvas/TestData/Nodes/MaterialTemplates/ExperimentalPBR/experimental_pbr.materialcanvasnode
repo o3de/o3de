@@ -37,18 +37,16 @@
                 "description": "Position Offset",
                 "supportedDataTypes": [
                     "float",
-                    "float2",
                     "float3",
                     "float4",
                     "color"
                 ],
                 "defaultValue": {
-                    "$type": "Vector4",
+                    "$type": "Vector3",
                     "Value": [
                         0.0,
                         0.0,
-                        0.0,
-                        1.0
+                        0.0
                     ]
                 },
                 "settings": {
@@ -63,15 +61,13 @@
                 "description": "Base Color",
                 "supportedDataTypes": [
                     "float",
-                    "float2",
                     "float3",
                     "float4",
                     "color"
                 ],
                 "defaultValue": {
-                    "$type": "Vector4",
+                    "$type": "Vector3",
                     "Value": [
-                        1.0,
                         1.0,
                         1.0,
                         1.0
@@ -152,19 +148,38 @@
                 "description": "Emissive",
                 "supportedDataTypes": [
                     "float",
+                    "float3",
+                    "float4",
+                    "color"
+                ],
+                "defaultValue": {
+                    "$type": "Vector3",
+                    "Value": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inAlpha",
+                "displayName": "Alpha",
+                "description": "Alpha",
+                "supportedDataTypes": [
+                    "float",
                     "float2",
                     "float3",
                     "float4",
                     "color"
                 ],
                 "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        1.0
-                    ]
+                    "$type": "float",
+                    "Value": 1.0
                 },
                 "settings": {
                     "instructions": [

@@ -85,6 +85,12 @@ namespace AtomToolsFramework
         //! Save all modified documents
         virtual bool SaveAllModifiedDocuments() = 0;
 
+        //! Queues request to reopen modified documents.
+        virtual bool QueueReopenModifiedDocuments() = 0;
+
+        //! Process requests to reopen modified documents.
+        virtual bool ReopenModifiedDocuments() = 0;
+
         //! Get number of allocated documents
         virtual AZ::u32 GetDocumentCount() const = 0;
 

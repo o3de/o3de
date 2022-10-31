@@ -152,10 +152,13 @@ namespace AZ::Render
 
         if (m_updateRootPassQuery)
         {
-            if (auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass())
+            if (auto currentPipeline = viewportContext->GetCurrentPipeline())
             {
-                rootPass->SetPipelineStatisticsQueryEnabled(displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo);
-                m_updateRootPassQuery = false;
+                if (auto rootPass = currentPipeline->GetRootPass())
+                {
+                    rootPass->SetPipelineStatisticsQueryEnabled(displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo);
+                    m_updateRootPassQuery = false;
+                }
             }
         }
 
@@ -244,6 +247,10 @@ namespace AZ::Render
     void AtomViewportDisplayInfoSystemComponent::DrawPassInfo()
     {
         AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
+        if (!viewportContext->GetCurrentPipeline())
+        {
+            return;
+        }
         auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass();
         const RPI::PipelineStatisticsResult stats = rootPass->GetLatestPipelineStatisticsResult();
 

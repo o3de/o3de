@@ -81,7 +81,7 @@ namespace AZ
 
 
                 ViewPtrStack& associatedViews = GetOrCreateViewStackForContext(contextName);
-                viewportContext->SetDefaultViewGroup(associatedViews.back());
+                viewportContext->SetViewGroup(associatedViews.back());
                 onSizeChanged(viewportContext->GetViewportSize());
             }
 
@@ -228,140 +228,53 @@ namespace AZ
             return GetViewportContextByName(m_defaultViewportContextName);
         }
 
-        bool ViewportContextManager::EraseView(const Name& contextName, ViewPtr view)
-        {
-            ViewPtrStack& associatedViews = GetOrCreateViewStackForContext(contextName);
-
-            auto FindView = [view](ViewGroupPtr vertexGroup)
-            {
-                return vertexGroup->IsViewInGroup(view);
-            };
-
-            if (auto foundIt = AZStd::find_if(associatedViews.begin(), associatedViews.end(), FindView);
-                foundIt != associatedViews.end())
-            {
-                associatedViews.erase(foundIt);
-                return true;
-            }
-            return false;
-        }
-
-        bool ViewportContextManager::EraseViewGroup(const Name& contextName, ViewGroupPtr viewGroup)
-        {
-            ViewPtrStack& associatedViews = GetOrCreateViewStackForContext(contextName);
-
-            auto FindViewGroup = [viewGroup](ViewGroupPtr vertexGroup)
-            {
-                return vertexGroup->IsViewGroupViewsSame(viewGroup);
-            };
-
-            if (auto foundIt = AZStd::find_if(associatedViews.begin(), associatedViews.end(), FindViewGroup);
-                foundIt != associatedViews.end())
-            {
-                associatedViews.erase(foundIt);
-                return true;
-            }
-            return false;
-        }
-
-        void ViewportContextManager::PushView(const Name& context, ViewPtr view)
-        {
-            {
-                AZStd::lock_guard lock(m_containerMutex);
-                AZ_Assert(view, "Attempted to push a null view to context \"%s\"", context.GetCStr());
-                AZ_Assert((view->GetUsageFlags() & View::UsageFlags::UsageCamera) != 0, "Attempted to register a non-camera view to context \"%s\", ensure the view is flagged with UsageCamera", context.GetCStr());
-
-                // Remove from its existing position, if any, before re-adding below
-                EraseView(context, view);
-    
-                ViewPtrStack& associatedViews = GetOrCreateViewStackForContext(context);
-                ViewGroupPtr viewGroup = AZStd::make_shared<ViewGroup>();
-                viewGroup->Init(ViewGroup::Descriptor{ nullptr, nullptr });
-                viewGroup->SetView(view);
-
-                //Todo: Remove this when we can disable XR pipeline if the attached main view is null.
-                //Until then we create dummy views for now.
-                viewGroup->CreateStereoscopicViews(context);
-                associatedViews.push_back(viewGroup);
-            }
-
-            UpdateViewForContext(context);
-        }
-        
-        void ViewportContextManager::PushView(const Name& contextName, ViewGroupPtr viewGroup)
+        void ViewportContextManager::PushViewGroup(const Name& contextName, ViewGroupPtr viewGroup)
         {
             {
                 AZStd::lock_guard lock(m_containerMutex);
                 AZ_Assert(viewGroup->GetNumViews() > 0, "Attempted to push a null view to context \"%s\"", contextName.GetCStr());
 
-                // Remove from its existing position, if any, before re-adding below
-                EraseView(contextName, viewGroup->GetView(ViewType::Default));
-
                 ViewPtrStack& associatedViews = GetOrCreateViewStackForContext(contextName);
+
+                // Remove from its existing position, if any, before re-adding below at the top of the stack
+                AZStd::erase(associatedViews, viewGroup);
+
                 associatedViews.push_back(viewGroup);
             }
             UpdateViewForContext(contextName);
         }
         
-        bool ViewportContextManager::PopView(const Name& context, ViewPtr view)
+        bool ViewportContextManager::PopViewGroup(const Name& contextName, ViewGroupPtr viewGroup)
         {
             {
                 AZStd::lock_guard lock(m_containerMutex);
                 
-                auto viewStackIt = m_viewportViews.find(context);
+                auto viewStackIt = m_viewportViews.find(contextName);
                 if (viewStackIt == m_viewportViews.end())
                 {
                     return false;
                 }
                 ViewPtrStack& associatedViews = viewStackIt->second;
-                if (view == associatedViews[0]->GetView(ViewType::Default))
+                AZ_Assert(!associatedViews.empty(), "There are no associated views for context %s", contextName.GetCStr());
+                if (viewGroup == associatedViews[0])
                 {
-                    AZ_Assert(false, "Attempted to pop the root view for context \"%s\"", context.GetCStr());
+                    AZ_Error("ViewportContextManager", false, "Attempted to pop the root view for context \"%s\"", contextName.GetCStr());
                     return false;
                 }
 
-                // Remove view group which contains this view
-                bool viewErased = EraseView(context, view);
-                if (!viewErased)
+                // Remove the view group
+                const size_t eraseCount = AZStd::erase(associatedViews, viewGroup);
+                if (eraseCount == 0)
                 {
                     return false;
                 }
             }
             
-            UpdateViewForContext(context);
-            return true;
-        }
-        
-        bool ViewportContextManager::PopView(const Name& context, ViewGroupPtr viewGroup)
-        {
-            {
-                AZStd::lock_guard lock(m_containerMutex);
-                
-                auto viewStackIt = m_viewportViews.find(context);
-                if (viewStackIt == m_viewportViews.end())
-                {
-                    return false;
-                }
-                ViewPtrStack& associatedViews = viewStackIt->second;
-                if (viewGroup->GetView(ViewType::Default) == associatedViews[0]->GetView(ViewType::Default))
-                {
-                    AZ_Assert(false, "Attempted to pop the root view for context \"%s\"", context.GetCStr());
-                    return false;
-                }
-
-                // Remove view group with same views
-                bool viewGroupErased = EraseViewGroup(context, viewGroup);
-                if (!viewGroupErased)
-                {
-                    return false;
-                }
-            }
-            
-            UpdateViewForContext(context);
+            UpdateViewForContext(contextName);
             return true;
         }
 
-        ViewPtr ViewportContextManager::GetCurrentView(const Name& context) const
+        ViewPtr ViewportContextManager::GetCurrentView(const Name& context)
         {
             AZStd::lock_guard lock(m_containerMutex);
 
@@ -383,7 +296,7 @@ namespace AZ
             return {};
         }
 
-        ViewPtr ViewportContextManager::GetCurrentStereoscopicView(const Name& context, ViewType viewType) const
+        ViewPtr ViewportContextManager::GetCurrentStereoscopicView(const Name& context, ViewType viewType)
         {
             AZStd::lock_guard lock(m_containerMutex);
 
@@ -423,7 +336,7 @@ namespace AZ
                 ViewportContextPtr viewportContext = viewportData.second.context.lock();
                 if (viewportContext && viewportContext->GetName() == context)
                 {
-                    viewportContext->SetDefaultViewGroup(currentViewGroup);
+                    viewportContext->SetViewGroup(currentViewGroup);
 
                     ViewportContextIdNotificationBus::Event(
                         viewportContext->GetId(),

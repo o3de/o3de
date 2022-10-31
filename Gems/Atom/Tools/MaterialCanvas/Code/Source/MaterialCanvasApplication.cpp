@@ -70,6 +70,13 @@ namespace MaterialCanvas
     {
         Base::Reflect(context);
         MaterialCanvasDocument::Reflect(context);
+
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serialize->RegisterGenericType<AZStd::array<AZ::Vector3, 3>>();
+            serialize->RegisterGenericType<AZStd::array<AZ::Vector4, 3>>();
+            serialize->RegisterGenericType<AZStd::array<AZ::Vector4, 4>>();
+        }
     }
 
     const char* MaterialCanvasApplication::GetCurrentConfigurationName() const
@@ -96,9 +103,12 @@ namespace MaterialCanvas
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("int"), int32_t{}, "int"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("uint"), uint32_t{}, "uint"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float"), float{}, "float"),
-            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float2"), AZ::Vector2::CreateZero(), "float2"),
-            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float3"), AZ::Vector3::CreateZero(), "float3"),
-            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float4"), AZ::Vector4::CreateZero(), "float4"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float2"), AZ::Vector2{}, "float2"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float3"), AZ::Vector3{}, "float3"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float4"), AZ::Vector4{}, "float4"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float3x3"), AZStd::array<AZ::Vector3, 3>{}, "float3x3"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float4x3"), AZStd::array<AZ::Vector4, 3>{}, "float4x3"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float4x4"), AZStd::array<AZ::Vector4, 4>{}, "float4x4"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("color"), AZ::Color::CreateOne(), "color"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("string"), AZStd::string{}, "string"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("image"), AZ::Data::Asset<AZ::RPI::StreamingImageAsset>{}, "image"),
