@@ -1922,7 +1922,7 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
     menu.addAction("Reprocess Source Asset", this, [this, &item]()
     {
         QString pathToSource = FindAbsoluteFilePath(item);
-        m_guiApplicationManager->GetAssetProcessorManager()->RequestReprocess(pathToSource);
+        QMetaObject::invokeMethod(m_guiApplicationManager->GetAssetProcessorManager(), "RequestReprocess", Qt::QueuedConnection, Q_ARG(QString, pathToSource));
     });
 
     // Only completed items will be available in the assets tab.
@@ -2293,7 +2293,7 @@ void MainWindow::BuildSourceAssetTreeContextMenu(QMenu& menu, const AssetProcess
     QAction* reprocessAssetAction = menu.addAction(sourceAssetTreeItem.getChildCount() ? reprocessFolder : reprocessFile, this, [&]()
     {
         AZ::Outcome<QString> pathToSource = GetAbsolutePathToSource(sourceAssetTreeItem);
-        m_guiApplicationManager->GetAssetProcessorManager()->RequestReprocess(pathToSource.GetValue());
+        QMetaObject::invokeMethod(m_guiApplicationManager->GetAssetProcessorManager(), "RequestReprocess", Qt::QueuedConnection, Q_ARG(QString, pathToSource.GetValue()));
     });
 
     QString reprocessFolderTip{ tr("Put the source assets in the selected folder back in the processing queue") };
@@ -2401,7 +2401,7 @@ void MainWindow::ShowProductAssetContextMenu(const QPoint& pos)
                 QString reprocessSource{ scanfolder.m_scanFolder.c_str() };
                 reprocessSource.append("/");
                 reprocessSource.append(sourceEntry.m_sourceName.c_str());
-                m_guiApplicationManager->GetAssetProcessorManager()->RequestReprocess(reprocessSource);
+                QMetaObject::invokeMethod(m_guiApplicationManager->GetAssetProcessorManager(), "RequestReprocess", Qt::QueuedConnection, Q_ARG(QString, reprocessSource));
                 return false; // Don't keep iterating
             });
             return false; // Don't keep iterating
