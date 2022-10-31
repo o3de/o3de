@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME ScriptCanvasMultiplayer.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         scriptcanvas_multiplayer_files.cmake
@@ -28,7 +28,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME ScriptCanvasMultiplayer ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         scriptcanvas_multiplayer_shared_files.cmake
@@ -39,12 +39,12 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
-            Gem::ScriptCanvasMultiplayer.Static
+            Gem::${gem_name}.Static
 )
 
 # By default, the above module is used by all application types, however, the module depends at runtime to ScriptCanvas
 # and the dependency needs to be different per application type
-ly_create_alias(NAME ScriptCanvasMultiplayer.Clients  NAMESPACE Gem TARGETS Gem::ScriptCanvasMultiplayer Gem::ScriptCanvas)
-ly_create_alias(NAME ScriptCanvasMultiplayer.Servers  NAMESPACE Gem TARGETS Gem::ScriptCanvasMultiplayer Gem::ScriptCanvas)
-ly_create_alias(NAME ScriptCanvasMultiplayer.Tools    NAMESPACE Gem TARGETS Gem::ScriptCanvasMultiplayer Gem::ScriptCanvas.Editor)
-ly_create_alias(NAME ScriptCanvasMultiplayer.Builders NAMESPACE Gem TARGETS Gem::ScriptCanvasMultiplayer Gem::ScriptCanvas.Editor)
+ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name} Gem::ScriptCanvas)
+ly_create_alias(NAME ${gem_name}.Servers  NAMESPACE Gem TARGETS Gem::${gem_name} Gem::ScriptCanvas)
+ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name} Gem::ScriptCanvas.Editor)
+ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name} Gem::ScriptCanvas.Editor)
