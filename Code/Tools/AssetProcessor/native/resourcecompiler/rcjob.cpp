@@ -548,10 +548,10 @@ namespace AssetProcessor
                                 }
                                 else
                                 {
-                                    AZStd::for_each(result.m_outputProducts.begin(), result.m_outputProducts.end(), [](auto& product)
+                                    for (auto& product : result.m_outputProducts)
                                     {
                                         product.m_outputFlags |= AssetBuilderSDK::ProductOutputFlags::CachedAsset;
-                                    });
+                                    }
                                 }
                             }
                         }
@@ -574,10 +574,10 @@ namespace AssetProcessor
 
                             if (operationResult)
                             {
-                                AZStd::for_each(result.m_outputProducts.begin(), result.m_outputProducts.end(), [](auto& product)
+                                for (auto& product : result.m_outputProducts)
                                 {
                                     product.m_outputFlags |= AssetBuilderSDK::ProductOutputFlags::CachedAsset;
-                                });
+                                }
                             }
 
                             runProcessJob = !operationResult;
