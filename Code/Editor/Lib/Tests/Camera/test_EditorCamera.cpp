@@ -15,6 +15,7 @@
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <EditorModularViewportCameraComposer.h>
 #include <EditorViewportSettings.h>
+#include <Tests/Utils/Printers.h>
 
 #include <GotoPositionDlg.h>
 
