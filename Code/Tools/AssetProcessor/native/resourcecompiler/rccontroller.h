@@ -67,6 +67,8 @@ namespace AssetProcessor
 
         ///! JobStarted will notify with a path name relative to the watch folder it was found in (not the database sourcename column)
         void JobStarted(QString inputFile, QString platform);
+        //! JobStatusChanged will notify when a JobEntry status changes along with the current escalation value and whether or not the job is marked critical
+        //! if the status is InProgress (otherwise escalation/critical are default)
         void JobStatusChanged(JobEntry entry, AzToolsFramework::AssetSystem::JobStatus status, int escalation, bool critical);
         void JobsInQueuePerPlatform(QString platform, int jobs);
         void ActiveJobsCountChanged(unsigned int jobs); // This is the count of jobs which are either queued or inflight
