@@ -28,7 +28,6 @@ namespace AtomToolsFramework
                 ->Field("name", &DynamicNodeSlotConfig::m_name)
                 ->Field("displayName", &DynamicNodeSlotConfig::m_displayName)
                 ->Field("description", &DynamicNodeSlotConfig::m_description)
-                ->Field("supportedDataTypes", &DynamicNodeSlotConfig::m_supportedDataTypes)
                 ->Field("supportedDataTypeRegex", &DynamicNodeSlotConfig::m_supportedDataTypeRegex)
                 ->Field("defaultDataType", &DynamicNodeSlotConfig::m_defaultDataType)
                 ->Field("defaultValue", &DynamicNodeSlotConfig::m_defaultValue)
@@ -82,7 +81,6 @@ namespace AtomToolsFramework
                 ->Property("displayName", BehaviorValueProperty(&DynamicNodeSlotConfig::m_displayName))
                 ->Property("defaultValue", BehaviorValueProperty(&DynamicNodeSlotConfig::m_defaultValue))
                 ->Property("defaultValue", BehaviorValueProperty(&DynamicNodeSlotConfig::m_defaultValue))
-                ->Property("supportedDataTypes", BehaviorValueProperty(&DynamicNodeSlotConfig::m_supportedDataTypes))
                 ->Property("supportedDataTypeRegex", BehaviorValueProperty(&DynamicNodeSlotConfig::m_supportedDataTypeRegex))
                 ->Property("defaultDataType", BehaviorValueProperty(&DynamicNodeSlotConfig::m_defaultDataType))
                 ->Property("supportsEditingOnNode", BehaviorValueProperty(&DynamicNodeSlotConfig::m_supportsEditingOnNode))
@@ -109,15 +107,7 @@ namespace AtomToolsFramework
 
     AZ::Crc32 DynamicNodeSlotConfig::ValidateDataTypes()
     {
-        // Replace supported data types set with regular expression
-        if (!m_supportedDataTypes.empty())
-        {
-            m_supportedDataTypeRegex.clear();
-            AZ::StringFunc::Join(m_supportedDataTypeRegex, m_supportedDataTypes, "|");
-            m_supportedDataTypes.clear();
-        }
-
-        const GraphModel::DataTypeList supportedDataTypes = GetSupportedDataTypes();
+        const auto& supportedDataTypes = GetSupportedDataTypes();
         if (supportedDataTypes.empty())
         {
             m_defaultDataType.clear();
@@ -160,7 +150,7 @@ namespace AtomToolsFramework
 
     AZStd::any DynamicNodeSlotConfig::GetDefaultValue() const
     {
-        const GraphModel::DataTypeList supportedDataTypes = GetSupportedDataTypes();
+        const auto& supportedDataTypes = GetSupportedDataTypes();
         for (const auto& dataType : supportedDataTypes)
         {
             if (dataType->IsSupportedValue(m_defaultValue))
@@ -173,7 +163,7 @@ namespace AtomToolsFramework
 
     AZStd::string DynamicNodeSlotConfig::GetDefaultDataTypeName() const
     {
-        const GraphModel::DataTypeList supportedDataTypes = GetSupportedDataTypes();
+        const auto& supportedDataTypes = GetSupportedDataTypes();
         for (const auto& dataType : supportedDataTypes)
         {
             if (dataType->GetDisplayName() == m_defaultDataType)
@@ -186,7 +176,7 @@ namespace AtomToolsFramework
 
     GraphModel::DataTypePtr DynamicNodeSlotConfig::GetDefaultDataType() const
     {
-        const GraphModel::DataTypeList supportedDataTypes = GetSupportedDataTypes();
+        const auto& supportedDataTypes = GetSupportedDataTypes();
         for (const auto& dataType : supportedDataTypes)
         {
             if (dataType->GetDisplayName() == m_defaultDataType)

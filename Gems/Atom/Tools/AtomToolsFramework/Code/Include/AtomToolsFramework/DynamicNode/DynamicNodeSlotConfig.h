@@ -55,9 +55,7 @@ namespace AtomToolsFramework
         AZStd::string m_description;
         //! The default value associated with a slot
         AZStd::any m_defaultValue;
-        //! Names of all supported data types that a slot can connect to
-        AZStd::set<AZStd::string> m_supportedDataTypes;
-        //! Names of all supported data types that a slot can connect to
+        //! Regular expression for identifying the names of data types this slot can hold and connect to
         AZStd::string m_supportedDataTypeRegex;
         //! Name of the default data type from the set of supported data types if no value is assigned
         AZStd::string m_defaultDataType;
