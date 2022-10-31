@@ -474,7 +474,7 @@ case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ Upp
 {% elif HandleOn == 'Autonomous' %}
             if (m_controller)
             {
-                AZ_Assert(GetNetBindComponent()->GetNetEntityRole() == Multiplayer::NetEntityRole::Autonomous, "Entity proxy does not have autonomy");
+                AZ_Assert(GetNetBindComponent()->IsNetEntityRoleAutonomous(), "Entity proxy does not have autonomy");
                 m_controller->Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection{{ PrintRpcParameters(', ', rpcParamList) }});
 {%            if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
                 m_controller->Get{{ UpperFirst(Property.attrib['Name']) }}Event().Signal({{ PrintRpcParameters('', rpcParamList) }});
@@ -1030,9 +1030,9 @@ m_{{ LowerFirst(Service.attrib['Name']) }} = FindComponent<{{ Service.attrib['Na
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
 {%      if Property.attrib['ExposeToEditor'] | booleanTrue %}
 {%          if Property.attrib['IsRewindable']|booleanTrue %}
-->DataElement(AZ::Edit::UIHandlers::Default, &{{ ClassName }}::m_{{ LowerFirst(Property.attrib['Name']) }}Reflect, "{{ UpperFirst(Property.attrib['Name']) }}", "{{ Property.attrib['Desc'] }}")
+->DataElement(AZ::Edit::UIHandlers::Default, &{{ ClassName }}::m_{{ LowerFirst(Property.attrib['Name']) }}Reflect, "{{ UpperFirst(Property.attrib['Name']) | camelToHuman }}", "{{ Property.attrib['Desc'] }}")
 {%          else %}
-->DataElement(AZ::Edit::UIHandlers::Default, &{{ ClassName }}::m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ UpperFirst(Property.attrib['Name']) }}", "{{ Property.attrib['Desc'] }}")
+->DataElement(AZ::Edit::UIHandlers::Default, &{{ ClassName }}::m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ UpperFirst(Property.attrib['Name']) | camelToHuman }}", "{{ Property.attrib['Desc'] }}")
 {%          endif %}
 {%      endif %}
 {% endcall -%}
@@ -1066,7 +1066,7 @@ m_{{ LowerFirst(Property.attrib['Name']) }} = m_{{ LowerFirst(Property.attrib['N
 {% macro DefineArchetypePropertyEditReflection(Component, ClassName) %}
 {% call(Property) AutoComponentMacros.ParseArchetypeProperties(Component) %}
 {%      if Property.attrib['ExposeToEditor'] | booleanTrue %}
-->DataElement(AZ::Edit::UIHandlers::Default, &{{ ClassName }}::m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ UpperFirst(Property.attrib['Name']) }}", "{{ Property.attrib['Desc'] }}")
+->DataElement(AZ::Edit::UIHandlers::Default, &{{ ClassName }}::m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ UpperFirst(Property.attrib['Name']) | camelToHuman }}", "{{ Property.attrib['Desc'] }}")
 {%      endif %}
 {%      if Property.attrib['Suffix'] %}
 ->Attribute(AZ::Edit::Attributes::Suffix, " {{ Property.attrib['Suffix'] }}")

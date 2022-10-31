@@ -8,9 +8,9 @@
         "title": "clamp",
         "inputSlots": [
             {
-                "name": "inValue1",
-                "displayName": "Value1",
-                "description": "Value1",
+                "name": "inValue",
+                "displayName": "Value",
+                "description": "Value",
                 "supportedDataTypes": [
                     "float",
                     "float2",
@@ -34,9 +34,9 @@
                 }
             },
             {
-                "name": "inValue2",
-                "displayName": "Value2",
-                "description": "Value2",
+                "name": "inMin",
+                "displayName": "Min",
+                "description": "Min",
                 "supportedDataTypes": [
                     "float",
                     "float2",
@@ -60,9 +60,9 @@
                 }
             },
             {
-                "name": "inValue3",
-                "displayName": "Value3",
-                "description": "Value3",
+                "name": "inMax",
+                "displayName": "Max",
+                "description": "Max",
                 "supportedDataTypes": [
                     "float",
                     "float2",
@@ -105,7 +105,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = clamp(NODEID_inValue1, NODEID_inValue2, NODEID_inValue3);"
+                        "SLOTTYPE NODEID_SLOTNAME = clamp(NODEID_inValue, NODEID_inMin, NODEID_inMax);"
                     ]
                 }
             }

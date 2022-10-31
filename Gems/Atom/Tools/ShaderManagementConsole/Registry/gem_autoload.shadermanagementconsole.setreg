@@ -1,6 +1,13 @@
 {
     "O3DE": {
         "Gems": {
+            "PythonCoverage": {
+                "Targets": {
+                    "PythonCoverage.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
             "LyShine": {
                 "Targets": {
                     "LyShine.Editor": {

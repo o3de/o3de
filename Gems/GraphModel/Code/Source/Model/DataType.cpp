@@ -97,11 +97,6 @@ namespace GraphModel
 
     bool DataType::IsSupportedValue(const AZStd::any& value) const
     {
-        if (m_valueValidator)
-        {
-            return m_valueValidator(value);
-        }
-
-        return IsSupportedType(value.type());
+        return IsSupportedType(value.type()) && (!m_valueValidator || m_valueValidator(value));
     }
 } // namespace GraphModel

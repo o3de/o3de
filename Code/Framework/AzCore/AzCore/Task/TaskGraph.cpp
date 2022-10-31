@@ -81,9 +81,11 @@ namespace AZ
     {
         if (m_retained && m_compiledTaskGraph)
         {
+            Internal::CompiledTaskGraphTracker& eventTracker = TaskExecutor::Instance().GetEventTracker();
             // This job graph has already finished and we are potentially responsible for its destruction
-            if (m_compiledTaskGraph->Release() == 0)
+            if (m_compiledTaskGraph->Release(eventTracker) == 0)
             {
+                eventTracker.WriteEventInfo(m_compiledTaskGraph, Internal::CTGEvent::Deallocated, "TaskGraph::~TaskGraph");
                 azdestroy(m_compiledTaskGraph);
             }
         }
@@ -94,6 +96,8 @@ namespace AZ
         AZ_Assert(!m_submitted, "Cannot reset task graph %s while it is in flight", m_label);
         if (m_compiledTaskGraph)
         {
+            Internal::CompiledTaskGraphTracker& eventTracker = TaskExecutor::Instance().GetEventTracker();
+            eventTracker.WriteEventInfo(m_compiledTaskGraph, Internal::CTGEvent::Deallocated, "TaskGraph::Reset");
             azdestroy(m_compiledTaskGraph);
             m_compiledTaskGraph = nullptr;
         }
@@ -110,8 +114,10 @@ namespace AZ
         {
             if (waitEvent)
             {
+                Internal::CompiledTaskGraphTracker& eventTracker = TaskExecutor::Instance().GetEventTracker();
                 // TaskGraphEvent asserts if it has a wait count of 0, increment it before signaling.
                 waitEvent->IncWaitCount();
+                eventTracker.WriteEventInfo(nullptr, Internal::CTGEvent::Signalled, "TaskGraph::Submit empty graph");
                 waitEvent->Signal();
             }
             return;
@@ -121,9 +127,11 @@ namespace AZ
 
     void TaskGraph::SubmitOnExecutor(TaskExecutor& executor, TaskGraphEvent* waitEvent)
     {
+        Internal::CompiledTaskGraphTracker& eventTracker = executor.GetEventTracker();
         if (!m_compiledTaskGraph)
         {
             m_compiledTaskGraph = aznew CompiledTaskGraph(AZStd::move(m_tasks), m_links, m_linkCount, m_retained ? this : nullptr, m_label);
+            eventTracker.WriteEventInfo(m_compiledTaskGraph, Internal::CTGEvent::Allocated, "SubmitOnExecutor");
         }
 
         m_compiledTaskGraph->m_waitEvent = waitEvent;
@@ -134,6 +142,7 @@ namespace AZ
             m_compiledTaskGraph->m_tasks[i].Init();
         }
 
+        eventTracker.WriteEventInfo(m_compiledTaskGraph, Internal::CTGEvent::Submitted, "SubmitOnExecutor");
         executor.Submit(*m_compiledTaskGraph, waitEvent);
 
         if (m_retained)

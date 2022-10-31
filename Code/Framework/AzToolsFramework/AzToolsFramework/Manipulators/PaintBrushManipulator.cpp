@@ -163,16 +163,6 @@ namespace AzToolsFramework
                 return true;
             }
         }
-        else if (mouseInteraction.m_mouseEvent == AzToolsFramework::ViewportInteraction::MouseEvent::DoubleClick)
-        {
-            if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
-            {
-                // Swallow up double-click events so that the default component mode behavior doesn't detect it and try
-                // to leave component mode. It's too easy to double-click by accident when painting, so double-clicking
-                // to exit just doesn't work well.
-                return true;
-            }
-        }
 
         return false;
     }

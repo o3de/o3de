@@ -100,7 +100,7 @@ void AssetProcessorManagerTest::SetUp()
 
     AssetUtilities::ResetAssetRoot();
 
-    m_assetRootDir = QDir(m_data->m_databaseLocationListener.GetAssetRootDir().c_str());
+    m_assetRootDir = QDir(m_databaseLocationListener.GetAssetRootDir().c_str());
     m_scopeDir = AZStd::make_unique<UnitTestUtils::ScopedDir>();
     m_scopeDir->Setup(m_assetRootDir.path());
 
@@ -231,8 +231,7 @@ TEST_F(AssetProcessorManagerTest, UnitTestForGettingJobInfoBySourceUUIDSuccess)
     QString watchFolder = m_assetRootDir.absoluteFilePath("subfolder1");
 
     JobEntry entry;
-    entry.m_watchFolderPath = watchFolder;
-    entry.m_databaseSourceName = entry.m_pathRelativeToWatchFolder = relFileName;
+    entry.m_sourceAssetReference = AssetProcessor::SourceAssetReference(watchFolder, relFileName);
     entry.m_jobKey = "txt";
     entry.m_platformInfo = { "pc", {"host", "renderer", "desktop"} };
     entry.m_jobRunKey = 1;
@@ -293,8 +292,7 @@ TEST_F(AssetProcessorManagerTest, WarningsAndErrorsReported_SuccessfullySavedToD
     QString watchFolder = m_assetRootDir.absoluteFilePath("subfolder1");
 
     JobEntry entry;
-    entry.m_watchFolderPath = watchFolder;
-    entry.m_databaseSourceName = entry.m_pathRelativeToWatchFolder = relFileName;
+    entry.m_sourceAssetReference = AssetProcessor::SourceAssetReference(watchFolder, relFileName);
     entry.m_jobKey = "txt";
     entry.m_platformInfo = { "pc", {"host", "renderer", "desktop"} };
     entry.m_jobRunKey = 1;
@@ -354,9 +352,9 @@ TEST_F(AssetProcessorManagerTest, DeleteFolder_SignalsDeleteOfContainedFiles)
     m_assetProcessorManager->m_stateData->SetSource(sourceEntry);
 
     int count = 0;
-    auto connection = QObject::connect(m_assetProcessorManager.get(), &AssetProcessorManager::SourceDeleted, [&count](QString file)
+    auto connection = QObject::connect(m_assetProcessorManager.get(), &AssetProcessorManager::SourceDeleted, [&count](const SourceAssetReference& file)
         {
-            if (file.compare(folderPathNoScanfolder, Qt::CaseInsensitive) == 0)
+            if (QString(file.RelativePath().c_str()).compare(folderPathNoScanfolder, Qt::CaseInsensitive) == 0)
             {
                 count++;
             }
@@ -404,14 +402,12 @@ TEST_F(AssetProcessorManagerTest, UnitTestForCancelledJob)
     QString absPath(m_assetRootDir.absoluteFilePath("subfolder1/assetProcessorManagerTest.txt"));
     JobEntry entry;
 
-    entry.m_watchFolderPath = m_assetRootDir.absolutePath();
-    entry.m_databaseSourceName = entry.m_pathRelativeToWatchFolder = relFileName;
-
+    entry.m_sourceAssetReference = AssetProcessor::SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1"), relFileName);
     entry.m_jobKey = "txt";
     entry.m_platformInfo = { "pc", {"host", "renderer", "desktop"} };
     entry.m_jobRunKey = 1;
 
-    AZ::Uuid sourceUUID = AssetUtilities::CreateSafeSourceUUIDFromName(entry.m_databaseSourceName.toUtf8().data());
+    AZ::Uuid sourceUUID = AssetUtilities::CreateSafeSourceUUIDFromName(relFileName.toUtf8().constData());
     bool sourceFound = false;
 
     //Checking the response of the APM when we cancel a job in progress
@@ -2400,6 +2396,7 @@ TEST_F(PathDependencyTest, MixedPathDependencies_Deferred_ResolveCorrectly)
 void MultiplatformPathDependencyTest::SetUp()
 {
     AssetProcessorManagerTest::SetUp();
+    m_config = nullptr; // Make sure to clear this out first so the existing config can cleanup before we allocate the new one
     m_config.reset(new AssetProcessor::PlatformConfiguration());
     m_config->EnablePlatform({ "pc", { "host", "renderer", "desktop" } }, true);
     m_config->EnablePlatform({ "provo",{ "console" } }, true);
@@ -2879,14 +2876,13 @@ void SourceFileDependenciesTest::SetupData(
     }
 
     // construct the dummy job to feed to the database updater function:
-    job.m_sourceFileInfo.m_databasePath = "assetProcessorManagerTest.txt";
-    job.m_sourceFileInfo.m_pathRelativeToScanFolder = "assetProcessorManagerTest.txt";
+    job.m_sourceFileInfo.m_sourceAssetReference = AssetProcessor::SourceAssetReference(m_absPath);
     job.m_sourceFileInfo.m_scanFolder = m_scanFolder;
-    job.m_sourceFileInfo.m_uuid = AssetUtilities::CreateSafeSourceUUIDFromName(job.m_sourceFileInfo.m_databasePath.toUtf8().data());
+    job.m_sourceFileInfo.m_uuid = AssetUtilities::CreateSafeSourceUUIDFromName(job.m_sourceFileInfo.m_sourceAssetReference.RelativePath().c_str());
 
     if (primeMap)
     {
-        m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[job.m_sourceFileInfo.m_uuid] = { m_watchFolderPath, job.m_sourceFileInfo.m_databasePath, job.m_sourceFileInfo.m_databasePath };
+        m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[job.m_sourceFileInfo.m_uuid] = job.m_sourceFileInfo.m_sourceAssetReference;
     }
 
     for (const auto& sourceFileDependency : sourceFileDependencies)
@@ -3112,11 +3108,10 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_MissingF
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_dependsOnFile2_Source, QString("tempdata\n")));
     // now that B exists, we pretend a job came in to process B. (it doesn't require dependencies to be declared)
     // note that we have to "prime" the map with the UUIDs to the source info for this to work:
-    m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfB] = { m_watchFolderPath, "b.txt", "b.txt" };
+    m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfB] = SourceAssetReference(m_watchFolderPath, "b.txt");
 
     AssetProcessorManager::JobToProcessEntry job2;
-    job2.m_sourceFileInfo.m_databasePath = "b.txt";
-    job2.m_sourceFileInfo.m_pathRelativeToScanFolder = "b.txt";
+    job2.m_sourceFileInfo.m_sourceAssetReference = AssetProcessor::SourceAssetReference(m_watchFolderPath, "b.txt");
     job2.m_sourceFileInfo.m_scanFolder = m_scanFolder;
     job2.m_sourceFileInfo.m_uuid = m_uuidOfB;
 
@@ -3140,11 +3135,10 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_MissingF
     // now make d exist too and pretend a job came in to process it:
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_dependsOnFile2_Job, QString("tempdata\n"))); // create file D
     AssetProcessorManager::JobToProcessEntry job3;
-    job3.m_sourceFileInfo.m_databasePath = "d.txt";
-    job3.m_sourceFileInfo.m_pathRelativeToScanFolder = "d.txt";
+    job3.m_sourceFileInfo.m_sourceAssetReference = AssetProcessor::SourceAssetReference(m_watchFolderPath, "d.txt");
     job3.m_sourceFileInfo.m_scanFolder = m_scanFolder;
     job3.m_sourceFileInfo.m_uuid = m_uuidOfD;
-    m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfD] = { m_watchFolderPath, "d.txt", "d.txt" };
+    m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfD] = SourceAssetReference{ m_watchFolderPath, "d.txt" };
 
     m_assetProcessorManager.get()->UpdateSourceFileDependenciesDatabase(job3);
 
@@ -3175,11 +3169,10 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_MissingF
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_dependsOnFile1_Source, QString("tempdata\n")));
     // now that A exists, we pretend a job came in to process a. (it doesn't require dependencies to be declared)
     AssetProcessorManager::JobToProcessEntry job2;
-    job2.m_sourceFileInfo.m_databasePath = "a.txt";
-    job2.m_sourceFileInfo.m_pathRelativeToScanFolder = "a.txt";
+    job2.m_sourceFileInfo.m_sourceAssetReference = AssetProcessor::SourceAssetReference(m_watchFolderPath, "a.txt");
     job2.m_sourceFileInfo.m_scanFolder = m_scanFolder;
     job2.m_sourceFileInfo.m_uuid = m_uuidOfA;
-    m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfA] = { m_watchFolderPath, "a.txt", "a.txt" };
+    m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfA] = SourceAssetReference{ m_watchFolderPath, "a.txt" };
 
     m_assetProcessorManager.get()->UpdateSourceFileDependenciesDatabase(job2);
 
@@ -3201,11 +3194,10 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_MissingF
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_dependsOnFile1_Job, QString("tempdata\n")));
     AZ::Uuid uuidOfC = AssetUtilities::CreateSafeSourceUUIDFromName("c.txt");
     AssetProcessorManager::JobToProcessEntry job3;
-    job3.m_sourceFileInfo.m_databasePath = "c.txt";
-    job3.m_sourceFileInfo.m_pathRelativeToScanFolder = "c.txt";
+    job3.m_sourceFileInfo.m_sourceAssetReference = AssetProcessor::SourceAssetReference(m_watchFolderPath, "c.txt");
     job3.m_sourceFileInfo.m_scanFolder = m_scanFolder;
     job3.m_sourceFileInfo.m_uuid = uuidOfC;
-    m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfC] = { m_watchFolderPath, "c.txt", "c.txt" };
+    m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfC] = SourceAssetReference{ m_watchFolderPath, "c.txt" };
 
     m_assetProcessorManager.get()->UpdateSourceFileDependenciesDatabase(job3);
 
@@ -3276,7 +3268,10 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_JobAndSo
     EXPECT_THAT(
         actualDependencies,
         ::testing::UnorderedElementsAre(
-            "a.txt", m_uuidOfA.ToFixedString(false, false).c_str(), "b.txt", m_uuidOfB.ToFixedString(false, false).c_str()));
+            "a.txt",
+            m_uuidOfA.ToFixedString(false, false).c_str(),
+            "b.txt",
+            m_uuidOfB.ToFixedString(false, false).c_str()));
 }
 
 TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_SourceDependenciesDuplicatedWildcard)
@@ -3291,7 +3286,33 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_SourceDe
 
     auto actualDependencies = GetDependencyList();
 
-    EXPECT_THAT(actualDependencies, ::testing::UnorderedElementsAre("a.txt", "a.t%t", m_uuidOfB.ToFixedString(false, false).c_str()));
+    EXPECT_THAT(
+        actualDependencies,
+        ::testing::UnorderedElementsAre(
+            "a.txt",
+            "a.t%t",
+            m_uuidOfB.ToFixedString(false, false).c_str()));
+}
+
+TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_AbsolutePathIsPreserved)
+{
+    QDir tempPath(m_assetRootDir.path());
+    QString absPath = tempPath.absoluteFilePath("subfolder1/a.txt");
+
+    AssetProcessor::AssetProcessorManager::JobToProcessEntry job;
+    SetupData(
+        {
+            MakeSourceDependency(absPath.toUtf8().constData()),
+        },
+        {},
+        true,
+        true,
+        true,
+        job);
+
+    auto actualDependencies = GetDependencyList();
+
+    EXPECT_THAT(actualDependencies, ::testing::UnorderedElementsAre(absPath.toUtf8().constData()));
 }
 
 TEST_F(AssetProcessorManagerTest, JobDependencyOrderOnce_MultipleJobs_EmitOK)
@@ -3354,10 +3375,10 @@ TEST_F(AssetProcessorManagerTest, JobDependencyOrderOnce_MultipleJobs_EmitOK)
 
     // Although we have processed a.dummy first, APM should send us notification of b.dummy job first and than of a.dummy job
     EXPECT_EQ(jobDetails.size(), 2);
-    EXPECT_EQ(jobDetails[0].m_jobEntry.m_databaseSourceName, secondRelSourceFile);
-    EXPECT_EQ(jobDetails[1].m_jobEntry.m_databaseSourceName, relSourceFileName);
+    EXPECT_EQ(jobDetails[0].m_jobEntry.m_sourceAssetReference.AbsolutePath().c_str(), secondSourceFile);
+    EXPECT_EQ(jobDetails[1].m_jobEntry.m_sourceAssetReference.AbsolutePath().c_str(), sourceFileName);
     EXPECT_EQ(jobDetails[1].m_jobDependencyList.size(), 1); // there should only be one job dependency
-    EXPECT_EQ(jobDetails[1].m_jobDependencyList[0].m_jobDependency.m_sourceFile.m_sourceFileDependencyPath, secondRelSourceFile); // there should only be one job dependency
+    EXPECT_EQ(jobDetails[1].m_jobDependencyList[0].m_jobDependency.m_sourceFile.m_sourceFileDependencyPath, secondSourceFile.toUtf8().constData()); // there should only be one job dependency
 
     // Process jobs in APM
     auto destination = jobDetails[0].m_cachePath;
@@ -3390,7 +3411,7 @@ TEST_F(AssetProcessorManagerTest, JobDependencyOrderOnce_MultipleJobs_EmitOK)
     QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, secondSourceFile));
     ASSERT_TRUE(BlockUntilIdle(5000));
     EXPECT_EQ(jobDetails.size(), 1);
-    EXPECT_EQ(jobDetails[0].m_jobEntry.m_databaseSourceName, secondRelSourceFile);
+    EXPECT_STREQ(jobDetails[0].m_jobEntry.m_sourceAssetReference.AbsolutePath().c_str(), secondSourceFile.toUtf8().constData());
 
     jobDetails.clear();
     m_isIdling = false;
@@ -3399,7 +3420,7 @@ TEST_F(AssetProcessorManagerTest, JobDependencyOrderOnce_MultipleJobs_EmitOK)
     QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, sourceFileName));
     ASSERT_TRUE(BlockUntilIdle(5000));
     EXPECT_EQ(jobDetails.size(), 1);
-    EXPECT_EQ(jobDetails[0].m_jobEntry.m_databaseSourceName, relSourceFileName);
+    EXPECT_EQ(jobDetails[0].m_jobEntry.m_sourceAssetReference.AbsolutePath().c_str(), sourceFileName);
     EXPECT_EQ(jobDetails[0].m_jobDependencyList.size(), 0); // there should not be any job dependency since APM has already processed b.dummy before
 
     m_isIdling = false;
@@ -3414,7 +3435,7 @@ TEST_F(AssetProcessorManagerTest, JobDependencyOrderOnce_MultipleJobs_EmitOK)
     QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, secondSourceFile));
     ASSERT_TRUE(BlockUntilIdle(5000));
     EXPECT_EQ(jobDetails.size(), 1);
-    EXPECT_EQ(jobDetails[0].m_jobEntry.m_databaseSourceName, secondRelSourceFile);
+    EXPECT_EQ(jobDetails[0].m_jobEntry.m_sourceAssetReference.AbsolutePath().c_str(), secondSourceFile);
 
     responseB.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
     m_isIdling = false;
@@ -3430,10 +3451,10 @@ TEST_F(AssetProcessorManagerTest, JobDependencyOrderOnce_MultipleJobs_EmitOK)
     QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, secondSourceFile));
     ASSERT_TRUE(BlockUntilIdle(5000));
     EXPECT_EQ(jobDetails.size(), 2);
-    EXPECT_EQ(jobDetails[0].m_jobEntry.m_databaseSourceName, secondRelSourceFile);
-    EXPECT_EQ(jobDetails[1].m_jobEntry.m_databaseSourceName, relSourceFileName);
+    EXPECT_EQ(jobDetails[0].m_jobEntry.m_sourceAssetReference.AbsolutePath().c_str(), secondSourceFile);
+    EXPECT_EQ(jobDetails[1].m_jobEntry.m_sourceAssetReference.AbsolutePath().c_str(), sourceFileName);
     EXPECT_EQ(jobDetails[1].m_jobDependencyList.size(), 1); // there should only be one job dependency
-    EXPECT_EQ(jobDetails[1].m_jobDependencyList[0].m_jobDependency.m_sourceFile.m_sourceFileDependencyPath, secondRelSourceFile); // there should only be one job dependency
+    EXPECT_STREQ(jobDetails[1].m_jobDependencyList[0].m_jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str(), secondSourceFile.toUtf8().constData()); // there should only be one job dependency
 }
 
 TEST_F(AssetProcessorManagerTest, SourceFile_With_NonASCII_Characters_Fail_Job_OK)
@@ -3469,8 +3490,7 @@ TEST_F(AssetProcessorManagerTest, SourceFile_With_NonASCII_Characters_Fail_Job_O
 
     ASSERT_TRUE(BlockUntilIdle(5000));
     EXPECT_EQ(failedjobDetails.m_autoFail, true);
-    QDir dir(failedjobDetails.m_jobEntry.m_watchFolderPath);
-    EXPECT_EQ(dir.absoluteFilePath(failedjobDetails.m_jobEntry.m_pathRelativeToWatchFolder), absPath);
+    EXPECT_EQ(failedjobDetails.m_jobEntry.GetAbsoluteSourcePath(), absPath);
 
     // folder delete notification
     folderPathDir.removeRecursively();
@@ -3506,7 +3526,7 @@ TEST_F(AssetProcessorManagerTest, SourceFileProcessFailure_ClearsFingerprint)
 
     for(const auto& processResult : processResults)
     {
-        AZStd::string file = (processResult.m_jobEntry.m_databaseSourceName + ".arc1").toUtf8().constData();
+        AZStd::string file = (processResult.m_jobEntry.m_sourceAssetReference.RelativePath().Native() + ".arc1");
 
         // Create the file on disk
         ASSERT_TRUE(UnitTestUtils::CreateDummyFile((processResult.m_cachePath / file).AsPosix().c_str(), "products."));
@@ -3764,8 +3784,7 @@ TEST_F(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_WildcardM
     // construct the dummy job to feed to the database updater function:
     AZ::Uuid wildcardTestUuid = AssetUtilities::CreateSafeSourceUUIDFromName("wildcardTest.txt");
     AssetProcessorManager::JobToProcessEntry job;
-    job.m_sourceFileInfo.m_databasePath = "wildcardTest.txt";
-    job.m_sourceFileInfo.m_pathRelativeToScanFolder = "wildcardTest.txt";
+    job.m_sourceFileInfo.m_sourceAssetReference = AssetProcessor::SourceAssetReference(absPath);
     job.m_sourceFileInfo.m_scanFolder = scanFolder;
     job.m_sourceFileInfo.m_uuid = wildcardTestUuid;
 
@@ -4217,6 +4236,8 @@ TEST_F(ChainJobDependencyTest, TestChainDependency_Multi)
         capturedDetails.clear();
     }
 
+    QDir tempPath(m_assetRootDir.path());
+
     // Run through the dependencies in reverse order
     // Each one should trigger a job for every file in front of it
     // Ex: 3 triggers -> 2 -> 1 -> 0
@@ -4229,13 +4250,14 @@ TEST_F(ChainJobDependencyTest, TestChainDependency_Multi)
 
         if (i > 0)
         {
-            ASSERT_EQ(capturedDetails[0].m_jobDependencyList[0].m_jobDependency.m_sourceFile.m_sourceFileDependencyPath, AZStd::string::format("%d.txt", i - 1));
+            QString absPath(tempPath.absoluteFilePath(AZStd::string::format("subfolder1/%d.txt", i - 1).c_str()));
+            ASSERT_EQ(capturedDetails[0].m_jobDependencyList[0].m_jobDependency.m_sourceFile.m_sourceFileDependencyPath, absPath.toUtf8().constData());
 
             capturedDetails.clear();
         }
     }
 
-    // Wait for the file compiled event and trigger OnddedToCatalog with a delay, this is what causes rccontroller to process out of order
+    // Wait for the file compiled event and trigger OnAddedToCatalog with a delay, this is what causes rccontroller to process out of order
     AZStd::vector<JobEntry> finishedJobs;
     QObject::connect(m_data->m_rcController.get(), &RCController::FileCompiled, [this, &finishedJobs](JobEntry entry, AssetBuilderSDK::ProcessJobResponse response)
         {
@@ -4267,7 +4289,7 @@ TEST_F(ChainJobDependencyTest, TestChainDependency_Multi)
     // Test that the jobs completed in the correct order (captureDetails has the correct ordering)
     for(int i = 0; i < capturedDetails.size(); ++i)
     {
-        ASSERT_STREQ(capturedDetails[i].m_jobEntry.m_databaseSourceName.toUtf8().constData(), finishedJobs[i].m_databaseSourceName.toUtf8().constData());
+        ASSERT_EQ(capturedDetails[i].m_jobEntry.m_sourceAssetReference, finishedJobs[i].m_sourceAssetReference);
     }
 }
 
@@ -4299,8 +4321,7 @@ TEST_F(MetadataFileTest, MetadataFile_SourceFileExtensionDifferentCase)
     UnitTestUtils::CreateDummyFile(absPath, "dummy");
 
     JobEntry entry;
-    entry.m_watchFolderPath = watchFolder;
-    entry.m_databaseSourceName = entry.m_pathRelativeToWatchFolder = relFileName;
+    entry.m_sourceAssetReference = AssetProcessor::SourceAssetReference(watchFolder,relFileName);
     entry.m_jobKey = "txt";
     entry.m_platformInfo = { "pc", {"host", "renderer", "desktop"} };
     entry.m_jobRunKey = 1;
@@ -4333,7 +4354,7 @@ TEST_F(MetadataFileTest, MetadataFile_SourceFileExtensionDifferentCase)
     m_assetProcessorManager->AssessAddedFile(m_assetRootDir.absoluteFilePath(metadataFile));
 
     ASSERT_TRUE(BlockUntilIdle(5000));
-    ASSERT_EQ(jobDetails.m_jobEntry.m_pathRelativeToWatchFolder, relFileName);
+    ASSERT_EQ(jobDetails.m_jobEntry.m_sourceAssetReference.AbsolutePath().c_str(), absPath);
 }
 
 AZStd::vector<AZStd::string> QStringListToVector(const QStringList& qstringList)

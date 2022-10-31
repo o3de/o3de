@@ -7,10 +7,6 @@
 
 #pragma once
 
-#include <../Materials/Types/MaterialInputs/RoughnessInput.azsli>
-#include <../Materials/Types/MaterialInputs/MetallicInput.azsli>
-#include <../Materials/Types/MaterialInputs/SpecularInput.azsli>
-#include <../Materials/Types/MaterialInputs/NormalInput.azsli>
 #include <TerrainSrg.azsli>
 #include <TerrainMaterialSrg.azsli>
 #include <Atom/Features/PBR/Lights/ReflectionProbeData.azsli>

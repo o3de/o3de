@@ -102,7 +102,8 @@ namespace AZ
             }
 
             // Load Draw SRG...
-            m_drawSrg = m_shader->CreateDefaultDrawSrg();
+            const bool compileDrawSrg = false; // The SRG will be compiled in CompileResources()
+            m_drawSrg = m_shader->CreateDefaultDrawSrg(compileDrawSrg);
 
             RHI::DispatchDirect dispatchArgs;
             dispatchArgs.m_totalNumberOfThreadsX = passData->m_totalNumberOfThreadsX;
