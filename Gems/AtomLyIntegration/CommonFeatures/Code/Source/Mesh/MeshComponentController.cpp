@@ -32,6 +32,8 @@ namespace AZ
 {
     namespace Render
     {
+        static AZ::Name s_CLOTH_DATA_Name = AZ::Name::FromStringLiteral("CLOTH_DATA", AZ::Interface<AZ::NameDictionary>::Get());
+
         namespace Internal
         {
             struct MeshComponentNotificationBusHandler final
@@ -362,7 +364,7 @@ namespace AZ
                 const AZStd::span<const AZ::RPI::ModelLodAsset::Mesh> meshes = lodAsset->GetMeshes();
                 for (const AZ::RPI::ModelLodAsset::Mesh& mesh : meshes)
                 {
-                    if (mesh.GetSemanticBufferAssetView(AZ::Name("CLOTH_DATA")) != nullptr)
+                    if (mesh.GetSemanticBufferAssetView(s_CLOTH_DATA_Name) != nullptr)
                     {
                         return true;
                     }
