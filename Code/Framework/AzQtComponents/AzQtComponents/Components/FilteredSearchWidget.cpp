@@ -20,29 +20,28 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <QApplication>
-#include <QMenu>
-#include <QLabel>
-#include <QVBoxLayout>
+#include <QDesktopWidget>
 #include <QHBoxLayout>
+#include <QKeyEvent>
+#include <QLabel>
+#include <QLineEdit>
 #include <QMenu>
-#include <QTreeView>
-#include <QSortFilterProxyModel>
-#include <QStandardItemModel>
-#include <QStandardItem>
+#include <QMenu>
+#include <QPainter>
+#include <QPushButton>
 #include <QScopedValueRollback>
 #include <QScreen>
-#include <QDesktopWidget>
-#include <QTimer>
 #include <QSettings>
-#include <QPushButton>
-#include <QToolButton>
-#include <QLineEdit>
-
-#include <QStyledItemDelegate>
-#include <QPainter>
+#include <QSortFilterProxyModel>
+#include <QStandardItem>
+#include <QStandardItemModel>
 #include <QStyle>
-
+#include <QStyledItemDelegate>
 #include <QTextDocument>
+#include <QTimer>
+#include <QToolButton>
+#include <QTreeView>
+#include <QVBoxLayout>
 
 Q_DECLARE_METATYPE(AZ::Uuid);
 
@@ -178,6 +177,8 @@ namespace AzQtComponents
         textSearch->setClearButtonEnabled(true);
         LineEdit::applySearchStyle(textSearch);
         connect(textSearch, &QLineEdit::textChanged, this, &SearchTypeSelector::FilterTextChanged);
+        connect(this, &QMenu::aboutToShow, textSearch, qOverload<>(&QWidget::setFocus));
+        textSearch->installEventFilter(this);
 
         m_searchLayout->addWidget(textSearch);
 
@@ -192,6 +193,7 @@ namespace AzQtComponents
         m_tree->setMinimumSize(QSize(0, 1));
         m_tree->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
         m_tree->setSelectionBehavior(QAbstractItemView::SelectRows);
+        m_tree->installEventFilter(this);
 
         itemLayout->addWidget(m_tree);
 
@@ -231,6 +233,44 @@ namespace AzQtComponents
         maximizeGeometryToFitScreen();
 
         QMenu::showEvent(e);
+    }
+
+    bool SearchTypeSelector::eventFilter(QObject* obj, QEvent* event)
+    {
+        // Focus the first visible item if pressing down from the search field
+        if (obj == m_searchField && event->type() == QEvent::KeyPress)
+        {
+            auto* keyEvent = static_cast<QKeyEvent*>(event);
+            if (keyEvent->key() == Qt::Key_Down && keyEvent->modifiers() == Qt::NoModifier)
+            {
+                if (const QModelIndex firstVisibleIdx = m_tree->indexAt({ 0, 0 });
+                    firstVisibleIdx.isValid())
+                {
+                    m_tree->setFocus();
+                    m_tree->setCurrentIndex(firstVisibleIdx);
+                    return true;
+                }
+            }
+        }
+
+        // Focus the search field when pressing up if the first item is selected
+        if (obj == m_tree && event->type() == QEvent::KeyPress)
+        {
+            auto* keyEvent = static_cast<QKeyEvent*>(event);
+            if (keyEvent->key() == Qt::Key_Up && keyEvent->modifiers() == Qt::NoModifier)
+            {
+                const QModelIndex firstItem = m_tree->model()->index(0,0);
+                const bool isFirstSelected = m_tree->selectionModel()->selectedIndexes().contains(firstItem);
+                if (isFirstSelected)
+                {
+                    m_searchField->setFocus();
+                    m_tree->clearSelection();
+                    return true;
+                }
+            }
+        }
+
+        return QMenu::eventFilter(obj, event);
     }
 
     void SearchTypeSelector::initItem(QStandardItem* item, const SearchTypeFilter& filter, int unfilteredDataIndex)
