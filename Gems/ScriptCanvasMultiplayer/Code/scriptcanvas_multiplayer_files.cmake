@@ -6,8 +6,6 @@
 #
 #
 
-get_property(scriptcanvas_gem_root GLOBAL PROPERTY "@GEMROOT:ScriptCanvas@")
-
 set(FILES
     Source/ScriptCanvasMultiplayerSystemComponent.cpp
     Source/ScriptCanvasMultiplayerSystemComponent.h
