@@ -50,7 +50,7 @@ namespace AzToolsFramework
              * @return An outcome object with an entityId of the new prefab's container entity;
              *  on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual CreatePrefabResult CreatePrefabAndSaveTemplateInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
+            virtual CreatePrefabResult CreatePrefabInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
 
             /**
              * Create a prefab out of the entities provided, at the path provided, and keep it in memory.
