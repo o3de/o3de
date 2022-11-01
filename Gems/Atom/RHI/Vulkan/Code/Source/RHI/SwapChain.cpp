@@ -32,15 +32,8 @@ namespace AZ
     {
         static bool IsDefaultSwapChainNeeded()
         {
-#if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
-            const bool isDefaultSwapChainNeeded = true;
-#else
-            // On non-host platforms do not create the default swapchain image if an XR system is present
-            // since it's not used.
-            const bool xrSystemRegistered = (RHI::RHISystemInterface::Get()->GetXRSystem() != nullptr);
-            const bool isDefaultSwapChainNeeded = !xrSystemRegistered;
-#endif
-            return isDefaultSwapChainNeeded;
+            auto* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
+            return !xrSystem || xrSystem->IsDefaultRenderPipelineNeeded();
         }
 
         RHI::Ptr<SwapChain> SwapChain::Create()

@@ -38,25 +38,6 @@
                     ]
                 }
             }
-        ],
-        "outputSlots": [
-            {
-                "name": "outValue",
-                "displayName": "Value",
-                "description": "Value",
-                "supportedDataTypes": [
-                    "float4"
-                ],
-                "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                }
-            }
         ]
     }
 }
