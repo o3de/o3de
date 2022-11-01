@@ -36,7 +36,7 @@ import logging as _logging
 # -------------------------------------------------------------------------
 # global scope
 _DCCSI_SLUG = 'DccScriptingInterface'
-_MODULENAME = 'DCCsi.editor.scripts.bootstrap'
+_MODULENAME = 'DCCsi.Editor.Scripts.bootstrap'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 

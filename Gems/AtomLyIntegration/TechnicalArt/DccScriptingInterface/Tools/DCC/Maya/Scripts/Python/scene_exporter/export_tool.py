@@ -86,7 +86,7 @@ class SceneExporter(QtWidgets.QWidget):
 
         # Setup Help Menu
         self.menuBar = QtWidgets.QMenuBar(self) # HelpMenu wants menuBar
-        self.help_menu = HelpMenu(self, 'Help...', HELP_URL)
+        self.help_menu = HelpMenu(self, 'Tool Help...', HELP_URL)
 
         self.task_button_container = QtWidgets.QHBoxLayout()
         self.task_button_container.setAlignment(QtCore.Qt.AlignLeft)
