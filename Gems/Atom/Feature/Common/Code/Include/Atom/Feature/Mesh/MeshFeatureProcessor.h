@@ -232,9 +232,6 @@ namespace AZ
             bool m_forceRebuildDrawPackets = false;
             bool m_reportShaderOptionFlags = false;
             bool m_enablePerMeshShaderOptionFlags = false;
-
-            // list of ModelDataInstances that need an ObjectSrg update in OnBeginPrepareRender
-            AZStd::vector<ModelDataInstance*> m_objectSrgUpdateList;
         };
     } // namespace Render
 } // namespace AZ
