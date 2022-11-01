@@ -6,8 +6,8 @@
  *
  */
 
-#include "native/utilities/BuilderConfigurationManager.h"
-#include <native/unittests/UnitTestRunner.h>
+#include <native/utilities/BuilderConfigurationManager.h>
+#include <native/unittests/UnitTestUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
 
