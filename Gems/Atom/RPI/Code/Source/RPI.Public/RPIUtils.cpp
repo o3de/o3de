@@ -107,27 +107,30 @@ namespace AZ
 
             float ScaleValue(float value, float origMin, float origMax, float scaledMin, float scaledMax)
             {
+                // This method assumes that origMin <= value <= origMax. Since this is a private helper method only
+                // used by ScaleSNorm8Value and ScaleSNorm16Value below, we'll avoid using asserts to verify the
+                // condition in the interest of performance in assert-enabled builds.
                 return ((value - origMin) / (origMax - origMin)) * (scaledMax - scaledMin) + scaledMin;
             }
 
-            float ScaleSNorm8Value(float value)
+            float ScaleSNorm8Value(int8_t value)
             {
                 // Scale the value from AZ::s8 min/max to -1 to 1
                 // We need to treat -128 and -127 the same, so that we get a symmetric
                 // range of -127 to 127 with complementary scaled values of -1 to 1
-                constexpr float signedMax = static_cast<float>(std::numeric_limits<AZ::s8>::max());
+                constexpr float signedMax = static_cast<float>(AZStd::numeric_limits<int8_t>::max());
                 constexpr float signedMin = -signedMax;
-                return ScaleValue(AZStd::max(value, signedMin), signedMin, signedMax, -1.0f, 1.0f);
+                return ScaleValue(AZStd::max(aznumeric_cast<float>(value), signedMin), signedMin, signedMax, -1.0f, 1.0f);
             }
 
-            float ScaleSNorm16Value(float value)
+            float ScaleSNorm16Value(int16_t value)
             {
                 // Scale the value from AZ::s16 min/max to -1 to 1
                 // We need to treat -32768 and -32767 the same, so that we get a symmetric
                 // range of -32767 to 32767 with complementary scaled values of -1 to 1
-                constexpr float signedMax = static_cast<float>(std::numeric_limits<AZ::s16>::max());
+                constexpr float signedMax = static_cast<float>(AZStd::numeric_limits<int16_t>::max());
                 constexpr float signedMin = -signedMax;
-                return ScaleValue(AZStd::max(value, signedMin), signedMin, signedMax, -1.0f, 1.0f);
+                return ScaleValue(AZStd::max(aznumeric_cast<float>(value), signedMin), signedMin, signedMax, -1.0f, 1.0f);
             }
 
             // Pre-compute a lookup table for converting SRGB gamma to linear
@@ -140,7 +143,7 @@ namespace AZ
 
                 for (size_t i = 0; i < lookupTable.array_size; ++i)
                 {
-                    float srgbValue = i / static_cast<float>(std::numeric_limits<AZ::u8>::max());
+                    float srgbValue = i / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max());
                     lookupTable[i] = AZ::Color::ConvertSrgbGammaToLinear(srgbValue);
                 }
 
@@ -249,7 +252,7 @@ namespace AZ
                 case AZ::RHI::Format::R8G8B8A8_UNORM:
                 case AZ::RHI::Format::A8B8G8R8_UNORM:
                     {
-                        return mem[indices.first + componentIndex] / static_cast<float>(std::numeric_limits<AZ::u8>::max());
+                        return mem[indices.first + componentIndex] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max());
                     }
                 case AZ::RHI::Format::R8_UNORM_SRGB:
                 case AZ::RHI::Format::R8G8_UNORM_SRGB:
@@ -274,7 +277,7 @@ namespace AZ
                 case AZ::RHI::Format::R16G16B16A16_UNORM:
                     {
                         auto actualMem = reinterpret_cast<const AZ::u16*>(mem);
-                        return actualMem[indices.first + componentIndex] / static_cast<float>(std::numeric_limits<AZ::u16>::max());
+                        return actualMem[indices.first + componentIndex] / static_cast<float>(AZStd::numeric_limits<AZ::u16>::max());
                     }
                 case AZ::RHI::Format::R16_SNORM:
                 case AZ::RHI::Format::R16G16_SNORM:
@@ -322,35 +325,35 @@ namespace AZ
                 {
                 case AZ::RHI::Format::R8_UNORM:
                     {
-                        return AZ::Color(mem[indices.first] / static_cast<float>(std::numeric_limits<AZ::u8>::max()), 0.0f, 0.0f, 1.0f);
+                        return AZ::Color(mem[indices.first] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()), 0.0f, 0.0f, 1.0f);
                     }
                 case AZ::RHI::Format::A8_UNORM:
                     {
-                        return AZ::Color(0.0f, 0.0f, 0.0f, mem[indices.first] / static_cast<float>(std::numeric_limits<AZ::u8>::max()));
+                        return AZ::Color(0.0f, 0.0f, 0.0f, mem[indices.first] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()));
                     }
                 case AZ::RHI::Format::R8G8_UNORM:
                     {
                         return AZ::Color(
-                            mem[indices.first + 0] / static_cast<float>(std::numeric_limits<AZ::u8>::max()),
-                            mem[indices.first + 1] / static_cast<float>(std::numeric_limits<AZ::u8>::max()),
+                            mem[indices.first + 0] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()),
+                            mem[indices.first + 1] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()),
                             0.0f,
                             1.0f);
                     }
                 case AZ::RHI::Format::R8G8B8A8_UNORM:
                     {
                         return AZ::Color(
-                            mem[indices.first + 0] / static_cast<float>(std::numeric_limits<AZ::u8>::max()),
-                            mem[indices.first + 1] / static_cast<float>(std::numeric_limits<AZ::u8>::max()),
-                            mem[indices.first + 2] / static_cast<float>(std::numeric_limits<AZ::u8>::max()),
-                            mem[indices.first + 3] / static_cast<float>(std::numeric_limits<AZ::u8>::max()));
+                            mem[indices.first + 0] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()),
+                            mem[indices.first + 1] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()),
+                            mem[indices.first + 2] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()),
+                            mem[indices.first + 3] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()));
                     }
                 case AZ::RHI::Format::A8B8G8R8_UNORM:
                     {
                         return AZ::Color(
-                            mem[indices.first + 3] / static_cast<float>(std::numeric_limits<AZ::u8>::max()),
-                            mem[indices.first + 2] / static_cast<float>(std::numeric_limits<AZ::u8>::max()),
-                            mem[indices.first + 1] / static_cast<float>(std::numeric_limits<AZ::u8>::max()),
-                            mem[indices.first + 0] / static_cast<float>(std::numeric_limits<AZ::u8>::max()));
+                            mem[indices.first + 3] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()),
+                            mem[indices.first + 2] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()),
+                            mem[indices.first + 1] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()),
+                            mem[indices.first + 0] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()));
                     }
                 case AZ::RHI::Format::R8_UNORM_SRGB:
                     {
@@ -414,14 +417,14 @@ namespace AZ
                     {
                         auto actualMem = reinterpret_cast<const AZ::u16*>(mem);
                         return AZ::Color(
-                            actualMem[indices.first] / static_cast<float>(std::numeric_limits<AZ::u16>::max()), 0.0f, 0.0f, 1.0f);
+                            actualMem[indices.first] / static_cast<float>(AZStd::numeric_limits<AZ::u16>::max()), 0.0f, 0.0f, 1.0f);
                     }
                 case AZ::RHI::Format::R16G16_UNORM:
                     {
                         auto actualMem = reinterpret_cast<const AZ::u16*>(mem);
                         return AZ::Color(
-                            actualMem[indices.first + 0] / static_cast<float>(std::numeric_limits<AZ::u16>::max()),
-                            actualMem[indices.first + 1] / static_cast<float>(std::numeric_limits<AZ::u16>::max()),
+                            actualMem[indices.first + 0] / static_cast<float>(AZStd::numeric_limits<AZ::u16>::max()),
+                            actualMem[indices.first + 1] / static_cast<float>(AZStd::numeric_limits<AZ::u16>::max()),
                             0.0f,
                             1.0f);
                     }
@@ -429,10 +432,10 @@ namespace AZ
                     {
                         auto actualMem = reinterpret_cast<const AZ::u16*>(mem);
                         return AZ::Color(
-                            actualMem[indices.first + 0] / static_cast<float>(std::numeric_limits<AZ::u16>::max()),
-                            actualMem[indices.first + 1] / static_cast<float>(std::numeric_limits<AZ::u16>::max()),
-                            actualMem[indices.first + 2] / static_cast<float>(std::numeric_limits<AZ::u16>::max()),
-                            actualMem[indices.first + 3] / static_cast<float>(std::numeric_limits<AZ::u16>::max()));
+                            actualMem[indices.first + 0] / static_cast<float>(AZStd::numeric_limits<AZ::u16>::max()),
+                            actualMem[indices.first + 1] / static_cast<float>(AZStd::numeric_limits<AZ::u16>::max()),
+                            actualMem[indices.first + 2] / static_cast<float>(AZStd::numeric_limits<AZ::u16>::max()),
+                            actualMem[indices.first + 3] / static_cast<float>(AZStd::numeric_limits<AZ::u16>::max()));
                     }
                 case AZ::RHI::Format::R16_SNORM:
                     {
@@ -528,14 +531,14 @@ namespace AZ
                 case AZ::RHI::Format::R8G8_UINT:
                 case AZ::RHI::Format::R8G8B8A8_UINT:
                     {
-                        return mem[indices.first + componentIndex] / static_cast<AZ::u32>(std::numeric_limits<AZ::u8>::max());
+                        return mem[indices.first + componentIndex] / static_cast<AZ::u32>(AZStd::numeric_limits<AZ::u8>::max());
                     }
                 case AZ::RHI::Format::R16_UINT:
                 case AZ::RHI::Format::R16G16_UINT:
                 case AZ::RHI::Format::R16G16B16A16_UINT:
                     {
                         auto actualMem = reinterpret_cast<const AZ::u16*>(mem);
-                        return actualMem[indices.first + componentIndex] / static_cast<AZ::u32>(std::numeric_limits<AZ::u16>::max());
+                        return actualMem[indices.first + componentIndex] / static_cast<AZ::u32>(AZStd::numeric_limits<AZ::u16>::max());
                     }
                 case AZ::RHI::Format::R32_UINT:
                 case AZ::RHI::Format::R32G32_UINT:
@@ -560,14 +563,14 @@ namespace AZ
                 case AZ::RHI::Format::R8G8_SINT:
                 case AZ::RHI::Format::R8G8B8A8_SINT:
                     {
-                        return mem[indices.first + componentIndex] / static_cast<AZ::s32>(std::numeric_limits<AZ::s8>::max());
+                        return mem[indices.first + componentIndex] / static_cast<AZ::s32>(AZStd::numeric_limits<AZ::s8>::max());
                     }
                 case AZ::RHI::Format::R16_SINT:
                 case AZ::RHI::Format::R16G16_SINT:
                 case AZ::RHI::Format::R16G16B16A16_SINT:
                     {
                         auto actualMem = reinterpret_cast<const AZ::s16*>(mem);
-                        return actualMem[indices.first + componentIndex] / static_cast<AZ::s32>(std::numeric_limits<AZ::s16>::max());
+                        return actualMem[indices.first + componentIndex] / static_cast<AZ::s32>(AZStd::numeric_limits<AZ::s16>::max());
                     }
                 case AZ::RHI::Format::R32_SINT:
                 case AZ::RHI::Format::R32G32_SINT:
