@@ -54,11 +54,11 @@ namespace UnitTest
             });
     }
 
-    void PrefabOverrideTestFixture::CreateAndValidateOverride(AZ::EntityId entityId, AZ::EntityId ancestorEntityId)
+    void PrefabOverrideTestFixture::CreateAndValidateEditEntityOverride(AZ::EntityId entityId, AZ::EntityId ancestorEntityId)
     {
         m_prefabFocusPublicInterface->FocusOnOwningPrefab(ancestorEntityId);
 
-        // Validate that there are no override present on the entity.
+        // Validate that there are no overrides present on the entity.
         ASSERT_FALSE(m_prefabOverridePublicInterface->AreOverridesPresent(entityId));
 
         // Modify the transform component.
@@ -69,18 +69,18 @@ namespace UnitTest
         EXPECT_TRUE(m_prefabOverridePublicInterface->AreOverridesPresent(entityId));
     }
 
-    void PrefabOverrideTestFixture::CreateAndValidateTemplateEdit(AZ::EntityId entityId)
+    void PrefabOverrideTestFixture::EditEntityAndValidateNoOverride(AZ::EntityId entityId)
     {
         m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
 
-        // Validate that there are no override present on the entity.
+        // Validate that there are no overrides present on the entity.
         ASSERT_FALSE(m_prefabOverridePublicInterface->AreOverridesPresent(entityId));
 
         // Modify the transform component.
         AZ::TransformBus::Event(entityId, &AZ::TransformInterface::SetWorldX, 10.0f);
         m_prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_undoStack->GetTop());
 
-        // Validate that override is present on the entity.
+        // Validate that overrides are still not present on the entity since the edit went to the template DOM directly.
         EXPECT_FALSE(m_prefabOverridePublicInterface->AreOverridesPresent(entityId));
     }
 

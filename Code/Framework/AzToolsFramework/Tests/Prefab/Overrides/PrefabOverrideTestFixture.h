@@ -36,11 +36,11 @@ namespace UnitTest
         //! This will make the edit become an override.
         //! @param entityId The id of entity to modify.
         //! @param ancestorEntityId The id of an ancestor entity to use for focusing on its owning prefab.
-        void CreateAndValidateOverride(AZ::EntityId entityId, AZ::EntityId ancestorEntityId);
+        void CreateAndValidateEditEntityOverride(AZ::EntityId entityId, AZ::EntityId ancestorEntityId);
 
         //! Focuses on the owning instance of the entity id and modifies it, which makes this a template edit.
         //! @param entityId The Id of the entity to modify.
-        void CreateAndValidateTemplateEdit(AZ::EntityId entityId);
+        void EditEntityAndValidateNoOverride(AZ::EntityId entityId);
 
         PrefabOverridePublicInterface* m_prefabOverridePublicInterface = nullptr;
         PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;

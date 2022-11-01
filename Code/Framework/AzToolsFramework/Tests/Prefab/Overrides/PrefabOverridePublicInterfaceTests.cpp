@@ -18,16 +18,15 @@ namespace UnitTest
         AZ::EntityId newEntityId, parentContainerId, grandparentContainerId;
         CreateEntityInNestedPrefab(newEntityId, parentContainerId, grandparentContainerId);
         
-        CreateAndValidateOverride(newEntityId, grandparentContainerId);
+        CreateAndValidateEditEntityOverride(newEntityId, grandparentContainerId);
     }
 
     TEST_F(PrefabOverridePublicInterfaceTest, AreOverridesPresentWorksWithOverrideFromLevel)
     {
-        // By default, the focus exists on the level prefab. So, we don't need to explicitly set focus here.
         AZ::EntityId newEntityId, parentContainerId, grandparentContainerId;
         CreateEntityInNestedPrefab(newEntityId, parentContainerId, grandparentContainerId);
         AZ::EntityId levelContainerId = m_prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetContainerEntityId();
-        CreateAndValidateOverride(newEntityId, levelContainerId);
+        CreateAndValidateEditEntityOverride(newEntityId, levelContainerId);
     }
 
     TEST_F(PrefabOverridePublicInterfaceTest, AreOverridesPresentReturnsFalseWhenNoOverride)
@@ -35,6 +34,6 @@ namespace UnitTest
         AZ::EntityId newEntityId, parentContainerId, grandparentContainerId;
         CreateEntityInNestedPrefab(newEntityId, parentContainerId, grandparentContainerId);
 
-        CreateAndValidateTemplateEdit(newEntityId);
+        EditEntityAndValidateNoOverride(newEntityId);
     }
 } // namespace UnitTest
