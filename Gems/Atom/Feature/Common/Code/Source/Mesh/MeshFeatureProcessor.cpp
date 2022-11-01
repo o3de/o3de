@@ -283,7 +283,7 @@ namespace AZ
             if (meshHandle.IsValid())
             {
                 meshHandle->m_meshLoader.reset();
-                meshHandle->DeInit();
+                meshHandle->DeInit(m_rayTracingFeatureProcessor);
                 m_transformService->ReleaseObjectId(meshHandle->m_objectId);
 
                 AZStd::concurrency_check_scope scopeCheck(m_meshDataChecker);
@@ -354,9 +354,9 @@ namespace AZ
                 if (meshHandle->m_model)
                 {
                     Data::Instance<RPI::Model> model = meshHandle->m_model;
-                    meshHandle->DeInit();
+                    meshHandle->DeInit(m_rayTracingFeatureProcessor);
                     meshHandle->m_materialAssignments = materials;
-                    meshHandle->Init(model);
+                    meshHandle->Init(model, m_rayTracingFeatureProcessor);
                 }
                 else
                 {
@@ -514,7 +514,7 @@ namespace AZ
                 if (rayTracingEnabled && !meshHandle->m_descriptor.m_isRayTracingEnabled)
                 {
                     // add to ray tracing
-                    meshHandle->SetRayTracingData();
+                    meshHandle->SetRayTracingData(m_rayTracingFeatureProcessor);
                 }
                 else if (!rayTracingEnabled && meshHandle->m_descriptor.m_isRayTracingEnabled)
                 {
@@ -566,7 +566,7 @@ namespace AZ
                     // now add if it's visible
                     if (visible)
                     {
-                        meshHandle->SetRayTracingData();
+                        meshHandle->SetRayTracingData(m_rayTracingFeatureProcessor);
                     }
                 }
             }
@@ -745,8 +745,9 @@ namespace AZ
             
             if (model)
             {
-                m_parent->RemoveRayTracingData();
-                m_parent->Init(model);
+                RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_parent->m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
+                m_parent->RemoveRayTracingData(rayTracingFeatureProcessor);
+                m_parent->Init(model, rayTracingFeatureProcessor);
                 m_modelChangedEvent.Signal(AZStd::move(model));
             }
             else
@@ -805,7 +806,7 @@ namespace AZ
             }
         }
 
-        void ModelDataInstance::DeInit()
+        void ModelDataInstance::DeInit(RayTracingFeatureProcessor* rayTracingFeatureProcessor)
         {
             m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
 
@@ -818,7 +819,7 @@ namespace AZ
                 }
             }
 
-            RemoveRayTracingData();
+            RemoveRayTracingData(rayTracingFeatureProcessor);
 
             m_drawPacketListsByLod.clear();
             m_materialAssignments.clear();
@@ -826,7 +827,7 @@ namespace AZ
             m_model = {};
         }
 
-        void ModelDataInstance::Init(Data::Instance<RPI::Model> model)
+        void ModelDataInstance::Init(Data::Instance<RPI::Model> model, RayTracingFeatureProcessor* rayTracingFeatureProcessor)
         {
             m_model = model;
             const size_t modelLodCount = m_model->GetLodCount();
@@ -855,7 +856,7 @@ namespace AZ
 
             if (m_visible && m_descriptor.m_isRayTracingEnabled)
             {
-                SetRayTracingData();
+                SetRayTracingData(rayTracingFeatureProcessor);
             }
 
             m_aabb = model->GetModelAsset()->GetAabb();
@@ -953,16 +954,15 @@ namespace AZ
             }
         }
 
-        void ModelDataInstance::SetRayTracingData()
+        void ModelDataInstance::SetRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor)
         {
-            RemoveRayTracingData();
+            RemoveRayTracingData(rayTracingFeatureProcessor);
 
             if (!m_model)
             {
                 return;
             }
 
-            RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
             if (!rayTracingFeatureProcessor)
             {
                 return;
@@ -1396,10 +1396,9 @@ namespace AZ
             subMesh.m_irradianceColor.SetA(opacity);
         }
 
-        void ModelDataInstance::RemoveRayTracingData()
+        void ModelDataInstance::RemoveRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor)
         {
             // remove from ray tracing
-            RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
             if (rayTracingFeatureProcessor)
             {
                 rayTracingFeatureProcessor->RemoveMesh(m_rayTracingUuid);
@@ -1657,7 +1656,8 @@ namespace AZ
         {
             if (m_visible && m_descriptor.m_isRayTracingEnabled)
             {
-                SetRayTracingData();
+                RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
+                SetRayTracingData(rayTracingFeatureProcessor);
             }
         }
     } // namespace Render

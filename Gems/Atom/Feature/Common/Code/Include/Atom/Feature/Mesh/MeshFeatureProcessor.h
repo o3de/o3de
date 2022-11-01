@@ -79,11 +79,11 @@ namespace AZ
                 ModelDataInstance* m_parent = nullptr;
             };
 
-            void DeInit();
-            void Init(Data::Instance<RPI::Model> model);
+            void DeInit(RayTracingFeatureProcessor* rayTracingFeatureProcessor);
+            void Init(Data::Instance<RPI::Model> model, RayTracingFeatureProcessor* rayTracingFeatureProcessor);
             void BuildDrawPacketList(size_t modelLodIndex);
-            void SetRayTracingData();
-            void RemoveRayTracingData();
+            void SetRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor);
+            void RemoveRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor);
             void SetIrradianceData(RayTracingFeatureProcessor::SubMesh& subMesh,
                     const Data::Instance<RPI::Material> material, const Data::Instance<RPI::Image> baseColorImage);
             void SetSortKey(RHI::DrawItemSortKey sortKey);
