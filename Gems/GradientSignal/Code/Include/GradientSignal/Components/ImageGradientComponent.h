@@ -62,7 +62,8 @@ namespace GradientSignal
     enum class SamplingType : AZ::u8
     {
         Point,                  //! Point sampling just queries the X,Y point as specified (Default)
-        Bilinear                //! Apply a bilinear filter to the image data
+        Bilinear,               //! Apply a bilinear filter to the image data
+        Bicubic,                //! Apply a bicubic filter to the image data
     };
 
     class ImageGradientConfig
@@ -193,6 +194,8 @@ namespace GradientSignal
         void SetupDefaultMultiplierAndOffset();
         void SetupAutoScaleMultiplierAndOffset();
         void SetupManualScaleMultiplierAndOffset();
+        void Get4x4Neighborhood(uint32_t x, uint32_t y, AZStd::array<AZStd::array<float, 4>, 4>& values) const;
+        float GetClampedValue(int32_t x, int32_t y) const;
         float GetValueForSamplingType(SamplingType samplingType, AZ::u32 x0, AZ::u32 y0, float pixelX, float pixelY) const;
 
         float GetTilingX() const override;
@@ -211,6 +214,8 @@ namespace GradientSignal
         float m_multiplier = 1.0f;
         float m_offset = 0.0f;
         AZ::u32 m_currentMipIndex = 0;
+        int32_t m_maxX = 0;
+        int32_t m_maxY = 0;
         SamplingType m_currentSamplingType = SamplingType::Point;
 
         //! Cached information for our loaded image data.
