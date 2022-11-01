@@ -304,7 +304,8 @@ namespace GradientSignal
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldFromLocal, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
 
-        m_brushManipulator = AzToolsFramework::PaintBrushManipulator::MakeShared(worldFromLocal, entityComponentIdPair);
+        m_brushManipulator = AzToolsFramework::PaintBrushManipulator::MakeShared(
+            worldFromLocal, entityComponentIdPair, AzToolsFramework::PaintBrushColorMode::Greyscale);
         Refresh();
 
         m_brushManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
@@ -374,7 +375,7 @@ namespace GradientSignal
         }
     }
 
-    void EditorImageGradientComponentMode::OnPaintStrokeBegin(float intensity, float opacity)
+    void EditorImageGradientComponentMode::OnPaintStrokeBegin(const AZ::Color& color)
     {
         BeginUndoBatch();
 
@@ -386,8 +387,8 @@ namespace GradientSignal
             return;
         }
 
-        m_paintStrokeData.m_intensity = intensity;
-        m_paintStrokeData.m_opacity = opacity;
+        m_paintStrokeData.m_intensity = color.GetR();
+        m_paintStrokeData.m_opacity = color.GetA();
 
         m_paintStrokeData.m_metersPerPixelX = 1.0f / imagePixelsPerMeter.GetX();
         m_paintStrokeData.m_metersPerPixelY = 1.0f / imagePixelsPerMeter.GetY();
