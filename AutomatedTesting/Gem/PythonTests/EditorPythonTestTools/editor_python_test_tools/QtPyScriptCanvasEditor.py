@@ -34,7 +34,6 @@ class QtPyScriptCanvasEditor(QtPyCommon):
         self.node_inspector = QtPyScriptCanvasNodeInspector(self)
         self.menu_bar = self.sc_editor.findChild(QtWidgets.QMenuBar)
 
-
     def trigger_undo_action(self) -> None:
         """
         function for commanding the sc editor to perform an undo action

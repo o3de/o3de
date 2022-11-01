@@ -7,10 +7,11 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 We are deprecating this file and moving the constants to area specific files. See the EditorPythonTestTools > consts
 folder for more info
 """
-import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_entity_utils import EditorEntity
 import azlmbr.scriptcanvas as scriptcanvas
 from enum import Enum
 import azlmbr.math as math
+from consts.scripting import (SCRIPT_CANVAS_UI)
 
 import azlmbr.bus as bus
 import azlmbr.editor as editor
@@ -36,15 +37,15 @@ class VariableState(Enum):
 class ScriptCanvasComponent:
 
     def __init__(self):
-        self.hydra_entity = None
+        self.editor_entity = None
         self.sc_component = None
 
-    def __init__(self, hydra_entity: hydra.Entity, sc_file_path: str):
-        self.hydra_entity = None
+    def __init__(self, editor_entity: EditorEntity, sc_file_path: str):
+        self.editor_entity = None
         self.sc_component = None
-        self.setup_SC_component_existing_entity(hydra_entity, sc_file_path)
+        self.setup_SC_component_existing_entity(editor_entity, sc_file_path)
 
-    def setup_SC_component_new_entity(self, hydra_entity_name: str, sc_file_path: str,
+    def setup_SC_component_new_entity(self, entity_name: str, sc_file_path: str,
                                       position=math.Vector3(512.0, 512.0, 32.0)) -> None:
         """
         Function for constructing the SCComponent object. This will make a new entity, add a script canvas component and
@@ -58,13 +59,14 @@ class ScriptCanvasComponent:
         """
         sourcehandle = scriptcanvas.SourceHandleFromPath(sc_file_path)
 
-        self.hydra_entity = hydra.Entity(hydra_entity_name)
-        self.hydra_entity.create_entity(position, ["Script Canvas"])
+        self.editor_entity = EditorEntity.create_editor_entity_at(position, entity_name)
+        self.editor_entity.add_components([SCRIPT_CANVAS_UI])
 
-        self.sc_component = self.hydra_entity.components[0]
-        hydra.set_component_property_value(self.sc_component, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
+        self.sc_component = self.editor_entity.get_components_of_type([SCRIPT_CANVAS_UI])[0]
+        self.sc_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
 
-    def setup_SC_component_existing_entity(self, hydra_entity: hydra.Entity, sc_file_path: str) -> None:
+    def setup_SC_component_existing_entity(self, editor_entity: EditorEntity, sc_file_path: str,
+                                           sc_component_index=0) -> None:
         """
         Function for constructing the SCComponent object. This uses an existing entity and loads a new script canvas
         file into the source handle value
@@ -76,10 +78,10 @@ class ScriptCanvasComponent:
         """
         sourcehandle = scriptcanvas.SourceHandleFromPath(sc_file_path)
 
-        self.hydra_entity = hydra_entity
-        self.sc_component = self.hydra_entity.components[0]
+        self.editor_entity = editor_entity
+        self.sc_component = self.editor_entity.get_components_of_type([SCRIPT_CANVAS_UI])[sc_component_index]
 
-        hydra.set_component_property_value(self.sc_component, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
+        self.sc_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
 
     def set_variable_value(self, variable_name: str, variable_state: VariableState, variable_value) -> None:
         """
@@ -96,10 +98,10 @@ class ScriptCanvasComponent:
         """
         component_property_path = self.__make_variable_component_property_path(variable_name, variable_state)
         print(variable_value)
-        hydra.set_component_property_value(self.sc_component, component_property_path, variable_value)
+        self.sc_component.set_component_property_value(component_property_path, variable_value)
 
         #validate the change
-        set_value = hydra.get_component_property_value(self.sc_component, component_property_path)
+        set_value = self.sc_component.get_component_property_value(component_property_path)
         assert set_value == variable_value, f"Component variable {variable_name} was not set properly"
 
     def __make_variable_component_property_path(self, variable_name: str, variable_state: VariableState) -> str:
@@ -125,7 +127,7 @@ class ScriptCanvasComponent:
         component_property_path += variable_name
 
         # test to see if this is a valid path
-        valid_path = hydra.get_component_property_value(self.sc_component, component_property_path) is not None
+        valid_path = self.sc_component.get_component_property_value(component_property_path) is not None
         assert valid_path, "Path to variable was invalid! Check use/unused state or variable name"
 
         return component_property_path

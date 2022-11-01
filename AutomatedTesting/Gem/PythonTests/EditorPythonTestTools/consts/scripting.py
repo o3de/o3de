@@ -44,6 +44,8 @@ Different from window/tab names because they do not have spaces
 """
 NODE_PALETTE_QT = "NodePalette"
 NODE_INSPECTOR_QT = "NodeInspector"
+PROPERTY_EDITOR_QT = "PropertyEditor"
+INITIAL_VALUE_SOURCE_QT = "Initial Value Source"
 TREE_VIEW_QT = "treeView"
 VARIABLE_PALETTE_QT = "variablePalette"
 VARIABLE_MANAGER_QT = "VariableManager"

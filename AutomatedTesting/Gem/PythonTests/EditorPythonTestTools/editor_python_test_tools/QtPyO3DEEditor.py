@@ -16,7 +16,7 @@ from consts.asset_editor import (ASSET_EDITOR_UI)
 from consts.scripting import (SCRIPT_CANVAS_UI)
 from consts.general import (WAIT_TIME_SEC_3)
 import azlmbr.math as math
-import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_entity_utils import EditorEntity
 
 class Tests():
     script_canvas_editor_opened = ("Script Canvas Editor opened successfully", "Failed to open Script Canvas Editor")
@@ -93,19 +93,11 @@ class QtPyO3DEEditor(QtPyCommon):
 
         assert result, "Failed to close Asset Editor"
 
-    def make_new_hydra_entity(self, entity_name: str, component_list: list, position=math.Vector3(512.0, 512.0, 32.0)) -> hydra.Entity:
+    def make_new_editor_entity(self, entity_name: str, component_list: list, position=math.Vector3(512.0, 512.0, 32.0)) \
+            -> EditorEntity:
 
-        hydra_entity = hydra.Entity(entity_name)
-        hydra_entity.create_entity(position, component_list)
+        editor_entity = EditorEntity.create_editor_entity_at(position, entity_name)
+        editor_entity.add_components(component_list)
 
-        return hydra_entity
-
-    def open_base_level(self) -> None:
-        """
-        function to open a clean slate level in editor. saves client an import requirement
-
-        returns None
-        """
-
-        hydra.open_base_level()
+        return editor_entity
 

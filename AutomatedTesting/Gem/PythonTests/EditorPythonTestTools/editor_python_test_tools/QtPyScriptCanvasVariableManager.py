@@ -41,16 +41,6 @@ class QtPyScriptCanvasVariableManager():
         self.variable_manager = sc_editor.sc_editor.findChild(QtWidgets.QDockWidget, VARIABLE_MANAGER_QT)
         self.variable_types = self.get_basic_variable_types()
 
-    def __validate_new_variable(self, new_variable_type: str) -> None:
-        """
-        function for checking the provided variable type for validity
-
-        returns: None
-        """
-        assert type(new_variable_type) is str, "Wrong parameter type provided. new_variable_type was not str"
-        assert new_variable_type in VARIABLE_TYPES_DICT, \
-            "Wrong type provided. new_variable_type is not a valid type"
-
     def create_new_variable(self, variable_name: str, new_variable_type: str) -> QtCore.QItemSelection:
         """
         Function for adding a new variable to the variable manager's list
@@ -61,7 +51,29 @@ class QtPyScriptCanvasVariableManager():
         returns: Item selection reference for the newly created variable
         """
         self.__validate_new_variable(new_variable_type)
+        self.__click_on_add_variable_button()
+        self.__select_variable_type_from_create_menu(new_variable_type)
+        graph_vars_page = self.__set_new_variable_name(variable_name)
+        selection = self.__get_variable_selection_index(graph_vars_page)
 
+        return selection
+
+    def __validate_new_variable(self, new_variable_type: str) -> None:
+        """
+        function for checking the provided variable type validity
+
+        returns: None
+        """
+        assert type(new_variable_type) is str, "Wrong parameter type provided. new_variable_type was not str"
+        assert new_variable_type in VARIABLE_TYPES_DICT, \
+            "Wrong type provided. new_variable_type is not a valid type"
+
+    def __click_on_add_variable_button(self) -> None:
+        """
+        helper function for adding a new variable. Clicks on the 'Create Variable' button and waits for the UI to render
+
+        returns None
+        """
         add_new_variable_button = self.variable_manager.findChild(QtWidgets.QPushButton, ADD_BUTTON_QT)
         add_new_variable_button.click()  # Click on Create Variable button
 
@@ -69,25 +81,48 @@ class QtPyScriptCanvasVariableManager():
             lambda: self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT) is not None),
             WAIT_TIME_SEC_3)
 
+    def __select_variable_type_from_create_menu(self, new_variable_type: str) -> None:
+        """
+        helper function for adding a new variable. selects the desired variable type from the menu that renders after
+        the create variable button is clicked. waits for the UI to respond after making a selection
+
+        params: The type of variable to create as a string. ie "Boolean"
+
+        returns none
+        """
+
         # Select variable type
         table_view = self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT)
         variable_entry = pyside_utils.find_child_by_pattern(table_view, new_variable_type)
-
-        # todo
-        # maybe put these 3 steps into a helper function
-        # maybe assert here ?
 
         # Click on it to create variable and wait 1 second for the UI to respond
         pyside_utils.item_view_index_mouse_click(table_view, variable_entry)
         helper.wait_for_condition(lambda: True is False, WAIT_TIME_SEC_1)
 
+    def __set_new_variable_name(self, new_variable_name: str):
+
+        """
+        helper function for adding a new variable. sets the new variable's name. waits for the UI to respond afterwards
+
+        returns Qwidget with the graph variables that have been created
+        """
+
         # Set the new variable's name. Wait 1 second for the UI to respond
         graph_vars_page = self.variable_manager.findChild(QtWidgets.QWidget, GRAPH_VARIABLES_PAGE_QT)
         line_edit = graph_vars_page.findChild(QtWidgets.QLineEdit, "")
-        line_edit.insert(variable_name)
+        line_edit.insert(new_variable_name)
         helper.wait_for_condition(lambda: True is False, WAIT_TIME_SEC_1)
 
-        # Store our selection so we can return it. Clear the selection and wait 1 second for the UI to respond
+        return graph_vars_page
+
+    def __get_variable_selection_index(self, graph_vars_page: QtWidgets.QWidget):
+        """
+        helper function for adding a new variable. gets the index object from the created graph variables widget then
+        emulates clicking somewhere else on the UI to remove focus from the graph variables . waits for the UI to
+        respond afterwards.
+
+        returns selection Qobject
+        """
         selection_model = graph_vars_page.findChild(QtCore.QItemSelectionModel)
         selection = selection_model.selection()
         selection_model.clear()
@@ -104,7 +139,6 @@ class QtPyScriptCanvasVariableManager():
         returns None
 
         """
-
         graph_vars_page = self.variable_manager.findChild(QtWidgets.QWidget, GRAPH_VARIABLES_PAGE_QT)
         selection_model = graph_vars_page.findChild(QtCore.QItemSelectionModel)
         selection_model.select(item_selection, QtCore.QItemSelectionModel.Select)
@@ -170,4 +204,3 @@ class QtPyScriptCanvasVariableManager():
         pinned_toggle_state_after = helper.wait_for_condition(lambda: pinned_toggle.data(Qt.DecorationRole) is None,
                                                               WAIT_TIME_SEC_3)
         assert pinned_toggle_state_before != pinned_toggle_state_after, "Variable pin not successfully toggled"
-        

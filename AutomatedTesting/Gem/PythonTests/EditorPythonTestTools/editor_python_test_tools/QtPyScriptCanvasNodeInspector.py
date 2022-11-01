@@ -12,9 +12,8 @@ Object to house all the Qt Objects and behavior used in testing the script canva
 from editor_python_test_tools.utils import TestHelper as helper
 from PySide2 import QtWidgets, QtTest, QtCore
 import pyside_utils
-from consts.scripting import (NODE_PALETTE_QT, TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT,
-                              NODE_PALETTE_CLEAR_BUTTON_QT)
-from consts.general import (WAIT_TIME_SEC_1, WAIT_TIME_SEC_3)
+from consts.scripting import (PROPERTY_EDITOR_QT, INITIAL_VALUE_SOURCE_QT)
+from consts.general import (WAIT_TIME_SEC_1)
 from enum import IntEnum
 
 class BooleanCheckBoxValues(IntEnum): # get a better name for this
@@ -102,8 +101,9 @@ class QtPyScriptCanvasNodeInspector:
 
         """
         # local variables aren't all necessary but extracting them makes getting to the data easier to understand
-        variable_property_editor_frame = self.node_inspector.findChild(QtWidgets.QFrame, "PropertyEditor")
-        variable_initial_value_source_frame = variable_property_editor_frame.findChild(QtWidgets.QFrame, "Initial Value Source")
+        variable_property_editor_frame = self.node_inspector.findChild(QtWidgets.QFrame, PROPERTY_EDITOR_QT)
+        variable_initial_value_source_frame = variable_property_editor_frame.findChild(QtWidgets.QFrame,
+                                                                                       INITIAL_VALUE_SOURCE_QT)
         value_initial_source_combo_box = variable_initial_value_source_frame.findChild(QtWidgets.QComboBox, "")
 
         value_initial_source_combo_box.setCurrentIndex(value_source)
