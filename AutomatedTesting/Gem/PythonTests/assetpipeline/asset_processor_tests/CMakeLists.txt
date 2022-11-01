@@ -224,8 +224,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
     
     ly_add_pytest(
-        NAME AssetPipelineTests.asset_processor_gui_tests_Sandbox
-        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_gui_tests.py
+        NAME AssetPipelineTests.asset_processor_gui_tests_2_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_gui_tests_2.py
         EXCLUDE_TEST_RUN_TARGET_FROM_IDE
         TEST_SUITE sandbox
         PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
