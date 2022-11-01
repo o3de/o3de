@@ -252,14 +252,14 @@ namespace EMotionFX
         newFrame->setWindowFlags(Qt::FramelessWindowHint | Qt::Popup);
         newFrame->setFixedWidth(this->width());
         newFrame->move({ this->mapToGlobal({ 0, 0 }) });
-        m_treeView = new QTreeView(newFrame);
-        m_treeView->setModel(model);
+        auto* treeView = new QTreeView(newFrame);
+        treeView->setModel(model);
         // hide header for dropdown-style, single-column, tree
-        m_treeView->header()->hide();
-        connect(m_treeView, &QTreeView::clicked, this, &AddCollidersButton::OnAddColliderActionTriggered);
-        m_treeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        treeView->header()->hide();
+        connect(treeView, &QTreeView::clicked, this, &AddCollidersButton::OnAddColliderActionTriggered);
+        treeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
         newFrame->setLayout(new QVBoxLayout);
-        newFrame->layout()->addWidget(m_treeView);
+        newFrame->layout()->addWidget(treeView);
 
         AZStd::string actionName;
         auto sections = QList<QPair<PhysicsSetup::ColliderConfigType, QString>>{{PhysicsSetup::ColliderConfigType::Cloth, "Cloth"},
@@ -267,7 +267,6 @@ namespace EMotionFX
         for (const auto& s : sections)
         {
             auto& configType = s.first;
-            //contextMenu->addSection(s.second);
             auto* sectionItem = new QStandardItem{ s.second.toStdString().c_str() };
 
             for (auto& typeId : m_supportedColliderTypes)
@@ -283,11 +282,14 @@ namespace EMotionFX
 
         auto ragdollItem = new QStandardItem{ "Ragdoll" };
         model->appendRow(ragdollItem);
-        // TODO ragdollItem.setData(  something something , somethingRagdoll )
-        // connect(newFrame, something, newFrame, QFrame::deleteLater)
+        ragdollItem->setData(PhysicsSetup::ColliderConfigType::Ragdoll, ItemRoles::ConfigType);
 
+        // todo copy from other collider type
+        // todo paste (if there is a copied collider)
+
+        connect(treeView, &QTreeView::clicked, newFrame, &QFrame::deleteLater);
+        treeView->expandAll();
         newFrame->setFixedWidth(width());
-        m_treeView->expandAll();
         newFrame->show();
     }
 
@@ -306,10 +308,12 @@ namespace EMotionFX
         auto configType = static_cast<PhysicsSetup::ColliderConfigType>(index.data(ItemRoles::ConfigType).toInt());
         auto colliderType = AZ::TypeId{index.data(ItemRoles::TypeId).toString().toStdString().c_str()};
 
-        // TODO
-        // if ( == Ragdoll)
-        // AddToRagdoll()
-        // return
+        if (configType == PhysicsSetup::ColliderConfigType::Ragdoll)
+        {
+            emit AddToRagdoll();
+            return;
+        }
+
         emit AddCollider(configType, colliderType);
     }
 
