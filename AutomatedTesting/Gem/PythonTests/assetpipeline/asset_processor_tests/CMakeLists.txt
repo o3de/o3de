@@ -145,6 +145,116 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             AZ::AssetProcessor
     )
 
+    ly_add_pytest(
+        NAME AssetPipelineTests.Batch_2_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_tests_2.py
+        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+        TEST_SUITE sandbox
+        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
+        RUNTIME_DEPENDENCIES       
+            AZ::AssetProcessorBatch
+            AZ::AssetProcessor
+    )
+
+    ly_add_pytest(
+        NAME AssetPipelineTests.ScriptCanvasAssetProcessorTests_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/ScriptCanvasAssetProcessorTests.py
+        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+        TEST_SUITE sandbox
+        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
+        RUNTIME_DEPENDENCIES       
+            AZ::AssetProcessorBatch
+            AZ::AssetProcessor
+        COMPONENT
+            ScriptCanvas
+    )
+    
+    ly_add_pytest(
+        NAME AssetPipelineTests.asset_builder_tests_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_builder_tests.py
+        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+        TEST_SUITE sandbox
+        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
+        RUNTIME_DEPENDENCIES       
+            AZ::AssetProcessor
+    )
+    
+    ly_add_pytest(
+        NAME AssetPipelineTests.asset_processor_batch_periodic_serial_tests_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_periodic_serial_tests.py
+        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+        TEST_SERIAL
+        TEST_SUITE sandbox
+        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
+        RUNTIME_DEPENDENCIES       
+            AZ::AssetProcessorBatch
+    )
+    
+    ly_add_pytest(
+        NAME AssetPipelineTests.asset_processor_batch_dependency_tests_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_dependency_tests.py
+        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+        TEST_SUITE sandbox
+        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
+        RUNTIME_DEPENDENCIES       
+            AZ::AssetProcessorBatch
+            AZ::AssetProcessor
+    )
+    
+    ly_add_pytest(
+        NAME AssetPipelineTests.asset_processor_batch_dependency_tests2_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_dependency_tests2.py
+        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+        TEST_SUITE sandbox
+        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
+        RUNTIME_DEPENDENCIES       
+            AZ::AssetProcessorBatch
+            AZ::AssetProcessor
+    )
+    
+    ly_add_pytest(
+        NAME AssetPipelineTests.asset_processor_gui_tests_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_gui_tests.py
+        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+        TEST_SUITE sandbox
+        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
+        RUNTIME_DEPENDENCIES       
+            AZ::AssetProcessorBatch
+            AZ::AssetProcessor
+    )
+    
+    ly_add_pytest(
+        NAME AssetPipelineTests.asset_processor_gui_tests_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_gui_tests.py
+        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+        TEST_SUITE sandbox
+        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
+        RUNTIME_DEPENDENCIES       
+            AZ::AssetProcessorBatch
+            AZ::AssetProcessor
+    )
+    
+    ly_add_pytest(
+        NAME AssetPipelineTests.asset_relocator_tests_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_relocator_tests.py
+        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+        TEST_SUITE sandbox
+        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
+        RUNTIME_DEPENDENCIES       
+            AZ::AssetProcessorBatch
+    )
+    
+    ly_add_pytest(
+        NAME AssetPipelineTests.asset_processor_cache_server_Sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_cache_server.py
+        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+        TEST_SUITE sandbox
+        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
+        RUNTIME_DEPENDENCIES       
+            AZ::AssetProcessorBatch
+            AZ::AssetProcessor
+    )
+
 ## Non-Linux Tests ##
 
     set(SUPPORTED_PLATFORMS "Windows" "Mac")
