@@ -9,7 +9,6 @@
 #pragma once
 
 #include <Atom/Features/SrgSemantics.azsli>
-#include <../Materials/Types/MaterialInputs/BaseColorInput.azsli>
 
 ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
 {

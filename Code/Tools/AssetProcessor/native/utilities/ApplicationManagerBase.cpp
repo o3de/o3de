@@ -132,7 +132,7 @@ ApplicationServer* ApplicationManagerBase::GetApplicationServer() const
     return m_applicationServer;
 }
 
-void ApplicationManagerBase::InitAssetProcessorManager()
+void ApplicationManagerBase::InitAssetProcessorManager(AZStd::vector<ApplicationManagerBase::APCommandLineSwitch>& commandLineInfo)
 {
     AssetProcessor::ThreadController<AssetProcessor::AssetProcessorManager>* assetProcessorHelper = new AssetProcessor::ThreadController<AssetProcessor::AssetProcessorManager>();
 
@@ -151,34 +151,20 @@ void ApplicationManagerBase::InitAssetProcessorManager()
     const AzFramework::CommandLine* commandLine = nullptr;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
 
-    struct APCommandLineSwitch
-    {
-        APCommandLineSwitch(const char* switchTitle, const char* helpText)
-            : m_switch(switchTitle)
-            , m_helpText(helpText)
-        {
-
-        }
-        const char* m_switch;
-        const char* m_helpText;
-    };
-
-    const APCommandLineSwitch Command_waitOnLaunch("waitOnLaunch", "Briefly pauses Asset Processor during initializiation. Useful if you want to attach a debugger.");
-    const APCommandLineSwitch Command_zeroAnalysisMode("zeroAnalysisMode", "Enables using file modification time when examining source assets for processing.");
-    const APCommandLineSwitch Command_enableQueryLogging("enableQueryLogging", "Enables logging database queries.");
-    const APCommandLineSwitch Command_dependencyScanPattern("dependencyScanPattern", "Scans assets that match the given pattern for missing product dependencies.");
-    const APCommandLineSwitch Command_dsp("dsp", Command_dependencyScanPattern.m_helpText);
-    const APCommandLineSwitch Command_fileDependencyScanPattern("fileDependencyScanPattern", "Used with dependencyScanPattern to farther filter the scan.");
-    const APCommandLineSwitch Command_fdsp("fdsp", Command_fileDependencyScanPattern.m_helpText);
-    const APCommandLineSwitch Command_additionalScanFolders("additionalScanFolders", "Used with dependencyScanPattern to farther filter the scan.");
-    const APCommandLineSwitch Command_dependencyScanMaxIteration("dependencyScanMaxIteration", "Used to limit the number of recursive searches per line when running dependencyScanPattern.");
-    const APCommandLineSwitch Command_warningLevel("warningLevel", "Configure the error and warning reporting level for AssetProcessor. Pass in 1 for fatal errors, 2 for fatal errors and warnings.");
-    const APCommandLineSwitch Command_acceptInput("acceptInput", "Enable external control messaging via the ControlRequestHandler, used with automated tests.");
-    const APCommandLineSwitch Command_debugOutput("debugOutput", "When enabled, builders that support it will output debug information as product assets. Used primarily with scene files.");
-    const APCommandLineSwitch Command_truncatefingerprint("truncatefingerprint", "Truncates the fingerprint used for processed assets. Useful if you plan to compress product assets to share on another machine because some compression formats like zip will truncate file mod timestamps.");
-    const APCommandLineSwitch Command_reprocessFileList("reprocessFileList", "Reprocesses files in the passed in newline separated text file.");
-    const APCommandLineSwitch Command_help("help", "Displays this message.");
-    const APCommandLineSwitch Command_h("h", Command_help.m_helpText);
+    const APCommandLineSwitch Command_waitOnLaunch(commandLineInfo, "waitOnLaunch", "Briefly pauses Asset Processor during initializiation. Useful if you want to attach a debugger.");
+    const APCommandLineSwitch Command_zeroAnalysisMode(commandLineInfo, "zeroAnalysisMode", "Enables using file modification time when examining source assets for processing.");
+    const APCommandLineSwitch Command_enableQueryLogging(commandLineInfo, "enableQueryLogging", "Enables logging database queries.");
+    const APCommandLineSwitch Command_dependencyScanPattern(commandLineInfo, "dependencyScanPattern", "Scans assets that match the given pattern for missing product dependencies.");
+    const APCommandLineSwitch Command_dsp(commandLineInfo, "dsp", Command_dependencyScanPattern.m_helpText);
+    const APCommandLineSwitch Command_fileDependencyScanPattern(commandLineInfo, "fileDependencyScanPattern", "Used with dependencyScanPattern to farther filter the scan.");
+    const APCommandLineSwitch Command_fdsp(commandLineInfo, "fdsp", Command_fileDependencyScanPattern.m_helpText);
+    const APCommandLineSwitch Command_additionalScanFolders(commandLineInfo, "additionalScanFolders", "Used with dependencyScanPattern to farther filter the scan.");
+    const APCommandLineSwitch Command_dependencyScanMaxIteration(commandLineInfo, "dependencyScanMaxIteration", "Used to limit the number of recursive searches per line when running dependencyScanPattern.");
+    const APCommandLineSwitch Command_warningLevel(commandLineInfo, "warningLevel", "Configure the error and warning reporting level for AssetProcessor. Pass in 1 for fatal errors, 2 for fatal errors and warnings.");
+    const APCommandLineSwitch Command_acceptInput(commandLineInfo, "acceptInput", "Enable external control messaging via the ControlRequestHandler, used with automated tests.");
+    const APCommandLineSwitch Command_debugOutput(commandLineInfo, "debugOutput", "When enabled, builders that support it will output debug information as product assets. Used primarily with scene files.");
+    const APCommandLineSwitch Command_truncatefingerprint(commandLineInfo, "truncatefingerprint", "Truncates the fingerprint used for processed assets. Useful if you plan to compress product assets to share on another machine because some compression formats like zip will truncate file mod timestamps.");
+    const APCommandLineSwitch Command_reprocessFileList(commandLineInfo, "reprocessFileList", "Reprocesses files in the passed in newline separated text file.");
 
     if (commandLine->HasSwitch(Command_waitOnLaunch.m_switch))
     {
@@ -281,6 +267,25 @@ void ApplicationManagerBase::InitAssetProcessorManager()
 
         AssetUtilities::SetTruncateFingerprintTimestamp(precision);
     }
+}
+
+void ApplicationManagerBase::HandleCommandLineHelp(AZStd::vector<ApplicationManagerBase::APCommandLineSwitch>& commandLineInfo)
+{
+    const AzFramework::CommandLine* commandLine = nullptr;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
+    if (!commandLine)
+    {
+        AZ_TracePrintf(
+            "AssetProcessor",
+            "Asset Processor Command Line information not available, help cannot be printed. This is an application initialization problem "
+            "and should be resolved in code.\n");
+        return;
+    }
+    const APCommandLineSwitch Command_help(commandLineInfo, "help", "Displays this message.");
+    const APCommandLineSwitch Command_h(commandLineInfo, "h", Command_help.m_helpText);
+
+    // The regset command line flag is checked elsewhere, but handled here to make the help text complete.
+    const APCommandLineSwitch Command_regset(commandLineInfo, "regset", "Set the given registry key to the given value.");
 
     if (commandLine->HasSwitch(Command_help.m_switch) || commandLine->HasSwitch(Command_h.m_switch))
     {
@@ -288,23 +293,10 @@ void ApplicationManagerBase::InitAssetProcessorManager()
         // that includes help output, but right now the AssetProcessor just checks strings
         // via HasSwitch. This means this help output has to be updated manually.
         AZ_TracePrintf("AssetProcessor", "Asset Processor Command Line Flags:\n");
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_waitOnLaunch.m_switch, Command_waitOnLaunch.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_zeroAnalysisMode.m_switch, Command_zeroAnalysisMode.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_enableQueryLogging.m_switch, Command_enableQueryLogging.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_dependencyScanPattern.m_switch, Command_dependencyScanPattern.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_dsp.m_switch, Command_dsp.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_fileDependencyScanPattern.m_switch, Command_fileDependencyScanPattern.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_fdsp.m_switch, Command_fdsp.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_additionalScanFolders.m_switch, Command_additionalScanFolders.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_dependencyScanMaxIteration.m_switch, Command_dependencyScanMaxIteration.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_warningLevel.m_switch, Command_warningLevel.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_acceptInput.m_switch, Command_acceptInput.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_debugOutput.m_switch, Command_debugOutput.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_truncatefingerprint.m_switch, Command_truncatefingerprint.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_reprocessFileList.m_switch, Command_reprocessFileList.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_help.m_switch, Command_help.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_h.m_switch, Command_h.m_helpText);
-        AZ_TracePrintf("AssetProcessor", "\tregset : set the given registry key to the given value.\n");
+        for ([[maybe_unused]] const auto& command : commandLineInfo)
+        {
+            AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", command.m_switch, command.m_helpText);
+        }
     }
 }
 
@@ -578,6 +570,9 @@ void ApplicationManagerBase::InitConnectionManager()
     [[maybe_unused]] bool result = QObject::connect(GetAssetCatalog(), &AssetProcessor::AssetCatalog::SendAssetMessage, connectionAndChangeMessagesThreadContext, forwardMessageFunction, Qt::QueuedConnection);
     AZ_Assert(result, "Failed to connect to AssetCatalog signal");
 
+    result = QObject::connect(m_connectionManager, &ConnectionManager::ConnectionReady, GetAssetCatalog(), &AssetProcessor::AssetCatalog::OnConnect, Qt::QueuedConnection);
+    AZ_Assert(result, "Failed to connect to AssetCatalog signal");
+
     //Application manager related stuff
 
     // The AssetCatalog has to be rebuilt on connection, so we force the incoming connection messages to be serialized as they connect to the ApplicationManagerBase
@@ -603,7 +598,7 @@ void ApplicationManagerBase::InitConnectionManager()
     result = QObject::connect(GetRCController(), &AssetProcessor::RCController::FileCompiled, this,
             [](AssetProcessor::JobEntry entry, AssetBuilderSDK::ProcessJobResponse /*response*/)
             {
-                AssetNotificationMessage message(entry.m_pathRelativeToWatchFolder.toUtf8().constData(), AssetNotificationMessage::JobCompleted, AZ::Data::s_invalidAssetType, entry.m_platformInfo.m_identifier.c_str());
+                AssetNotificationMessage message(entry.m_sourceAssetReference.RelativePath().c_str(), AssetNotificationMessage::JobCompleted, AZ::Data::s_invalidAssetType, entry.m_platformInfo.m_identifier.c_str());
                 EBUS_EVENT(AssetProcessor::ConnectionBus, SendPerPlatform, 0, message, QString::fromUtf8(entry.m_platformInfo.m_identifier.c_str()));
             }
             );
@@ -612,7 +607,7 @@ void ApplicationManagerBase::InitConnectionManager()
     result = QObject::connect(GetRCController(), &AssetProcessor::RCController::FileFailed, this,
             [](AssetProcessor::JobEntry entry)
             {
-                AssetNotificationMessage message(entry.m_pathRelativeToWatchFolder.toUtf8().constData(), AssetNotificationMessage::JobFailed, AZ::Data::s_invalidAssetType, entry.m_platformInfo.m_identifier.c_str());
+                AssetNotificationMessage message(entry.m_sourceAssetReference.RelativePath().c_str(), AssetNotificationMessage::JobFailed, AZ::Data::s_invalidAssetType, entry.m_platformInfo.m_identifier.c_str());
                 EBUS_EVENT(AssetProcessor::ConnectionBus, SendPerPlatform, 0, message, QString::fromUtf8(entry.m_platformInfo.m_identifier.c_str()));
             }
             );
@@ -1281,14 +1276,14 @@ void ApplicationManagerBase::ShutdownBuilderManager()
     }
 }
 
-bool ApplicationManagerBase::InitAssetDatabase()
+bool ApplicationManagerBase::InitAssetDatabase(bool ignoreFutureAssetDBVersionError)
 {
     AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler::BusConnect();
 
     // create or upgrade the asset database here, so that it is already good for the rest of the application and the rest
     // of the application does not have to worry about a failure to upgrade or create it.
     AssetProcessor::AssetDatabaseConnection database;
-    if (!database.OpenDatabase())
+    if (!database.OpenDatabase(ignoreFutureAssetDBVersionError))
     {
         return false;
     }
@@ -1415,7 +1410,16 @@ bool ApplicationManagerBase::Activate()
         return false;
     }
 
-    if (!InitAssetDatabase())
+    const AzFramework::CommandLine* commandLine = nullptr;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
+
+    AZStd::vector<APCommandLineSwitch> commandLineInfo;
+    const APCommandLineSwitch Command_ignoreFutureDBError(commandLineInfo, "ignoreFutureAssetDatabaseVersionError", "When not set, if the Asset Processor encounters an Asset Database "
+        "with a future version, it will emit an error and shut down. When set, instead it will print the error as a log and erase the Asset Database, then it will proceed to initialize. "
+        "This is intended for use with automated builds, and shouldn't be used by individuals. If an individual finds they want to use this flag frequently, the team should "
+        "examine their workflows to determine why some team members encounter issues with future versioned Asset Databases.");
+
+    if (!InitAssetDatabase(commandLine->HasSwitch(Command_ignoreFutureDBError.m_switch)))
     {
         // AssetDatabaseConnection::OpenDatabase reports any errors it encounters.
         return false;
@@ -1436,7 +1440,8 @@ bool ApplicationManagerBase::Activate()
     InitBuilderConfiguration();
     PopulateApplicationDependencies();
 
-    InitAssetProcessorManager();
+    InitAssetProcessorManager(commandLineInfo);
+    HandleCommandLineHelp(commandLineInfo);
     AssetBuilderSDK::InitializeSerializationContext();
     AssetBuilderSDK::InitializeBehaviorContext();
     AssetBuilder::InitializeSerializationContext();

@@ -108,7 +108,7 @@ void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingDat
         float3 p3 = posToLight +  left +  up;
 
         bool useFastApproximation = (light.m_flags & QuadLightFlag::UseFastApproximation) > 0;
-        if (!useFastApproximation)
+        if (!useFastApproximation && o_enableQuadLightLTC)
         {
             float3 p[4] = {p0, p1, p2, p3};
             
@@ -122,7 +122,7 @@ void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingDat
             lightingData.diffuseLighting += surface.albedo * diffuse * intensity;
             lightingData.specularLighting += specular * intensity;
         }
-        else
+        else if (useFastApproximation && o_enableQuadLightApprox)
         {
             // Calculate solid angle of light
             float solidAngle = RectangleSolidAngle(p0, p1, p2, p3);
@@ -262,19 +262,21 @@ void ApplyQuadLights(Surface surface, inout LightingData lightingData)
 
 #if ENABLE_QUAD_LIGHTS
 
-        ViewSrg::QuadLight light = ViewSrg::m_quadLights[currLightIndex];
-        
-    #if ENABLE_AREA_LIGHT_VALIDATION
-        if (o_area_light_validation)
+        if (o_enableQuadLightApprox || o_enableQuadLightLTC)
         {
-            ValidateQuadLight(light, surface, lightingData);
+            ViewSrg::QuadLight light = ViewSrg::m_quadLights[currLightIndex];
+            
+#if ENABLE_AREA_LIGHT_VALIDATION
+            if (o_area_light_validation)
+            {
+                ValidateQuadLight(light, surface, lightingData);
+            }
+            else
+#endif
+            {
+                ApplyQuadLight(light, surface, lightingData);
+            }
         }
-        else
-    #endif
-        {
-            ApplyQuadLight(light, surface, lightingData);
-        }
-
 #endif
     }
 }

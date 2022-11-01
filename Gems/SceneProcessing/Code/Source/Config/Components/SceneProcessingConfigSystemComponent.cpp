@@ -177,9 +177,23 @@ namespace AZ
                 AZStd::string value;
                 registry->Get(value, args.m_jsonKeyPath);
                 auto fullPath = fileIO->ResolvePath(value.c_str());
-                if (!fullPath || !fileIO->Exists(fullPath->c_str()))
+                if (!fullPath)
                 {
-                    AZ_Warning("SceneProcessing", false, "Could not resolve script path %s", value.c_str());
+                    AZ_Warning("SceneProcessing", false,
+                        "FileIO could not resolve default builder script path %s for pattern key " AZ_STRING_FORMAT,
+                        value.c_str(),
+                        AZ_STRING_ARG(args.m_jsonKeyPath));
+
+                    return VisitResponse::Continue;
+                }
+                else if (!fileIO->Exists(fullPath->c_str()))
+                {
+                    AZ_Warning("SceneProcessing", false,
+                        "The full script path %s does not exist when resolving default scene building script name %s for key " AZ_STRING_FORMAT,
+                        fullPath->c_str(),
+                        value.c_str(),
+                        AZ_STRING_ARG(args.m_jsonKeyPath));
+
                     return VisitResponse::Continue;
                 }
                 AZ::SceneAPI::Events::ScriptConfig scriptConfig;

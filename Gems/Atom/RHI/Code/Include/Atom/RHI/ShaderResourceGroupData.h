@@ -337,7 +337,23 @@ namespace AZ
                 // command list submission time.
             }
 
-            bool isValidType = true;
+            auto checkImageType = [&imageDescriptor, &shaderInputImage, arrayIndex](ImageDimension expected)
+            {
+                if (imageDescriptor.m_dimension != expected)
+                {
+                    AZ_UNUSED(shaderInputImage);
+                    AZ_UNUSED(arrayIndex);
+                    AZ_Error("ShaderResourceGroupData", false,
+                        "Image Input '%s[%d]': The image is %dD but the shader expected %dD",
+                        shaderInputImage.m_name.GetCStr(),
+                        arrayIndex,
+                        static_cast<int>(imageDescriptor.m_dimension),
+                        static_cast<int>(expected));
+                    return false;
+                }
+                return true;
+            };
+
             switch (shaderInputImage.m_type)
             {
             case ShaderInputImageType::Unknown:
@@ -346,45 +362,78 @@ namespace AZ
 
             case ShaderInputImageType::Image1DArray:
             case ShaderInputImageType::Image1D:
-                isValidType &= (imageDescriptor.m_dimension == ImageDimension::Image1D);
+                if (!checkImageType(ImageDimension::Image1D))
+                {
+                    return false;
+                }
                 break;
 
             case ShaderInputImageType::SubpassInput:
-                isValidType &= (imageDescriptor.m_dimension == ImageDimension::Image2D);
+                if (!checkImageType(ImageDimension::Image2D))
+                {
+                    return false;
+                }
                 break;
 
             case ShaderInputImageType::Image2DArray:
             case ShaderInputImageType::Image2D:
-                isValidType &= (imageDescriptor.m_dimension == ImageDimension::Image2D);
-                isValidType &= (imageDescriptor.m_multisampleState.m_samples == 1);
+                if (!checkImageType(ImageDimension::Image2D))
+                {
+                    return false;
+                }
+                if (imageDescriptor.m_multisampleState.m_samples != 1)
+                {
+                    AZ_Error("ShaderResourceGroupData", false,
+                        "Image Input '%s[%d]': The image has multisample count %u but the shader expected 1.",
+                        shaderInputImage.m_name.GetCStr(),
+                        arrayIndex,
+                        imageDescriptor.m_multisampleState.m_samples);
+                    return false;
+                }
                 break;
 
             case ShaderInputImageType::Image2DMultisample:
             case ShaderInputImageType::Image2DMultisampleArray:
-                isValidType &= (imageDescriptor.m_dimension == ImageDimension::Image2D);
-                isValidType &= (imageDescriptor.m_multisampleState.m_samples > 1);
+                if (!checkImageType(ImageDimension::Image2D))
+                {
+                    return false;
+                }
+                if (imageDescriptor.m_multisampleState.m_samples <= 1)
+                {
+                    AZ_Error("ShaderResourceGroupData", false,
+                        "Image Input '%s[%d]': The image has multisample count %u but the shader expected more than 1.",
+                        shaderInputImage.m_name.GetCStr(),
+                        arrayIndex,
+                        imageDescriptor.m_multisampleState.m_samples);
+                    return false;
+                }
                 break;
 
             case ShaderInputImageType::Image3D:
-                isValidType &= (imageDescriptor.m_dimension == ImageDimension::Image3D);
+                if (!checkImageType(ImageDimension::Image3D))
+                {
+                    return false;
+                }
                 break;
 
             case ShaderInputImageType::ImageCube:
             case ShaderInputImageType::ImageCubeArray:
-                isValidType &= (imageDescriptor.m_dimension == ImageDimension::Image2D);
-                isValidType &= (imageViewDescriptor.m_isCubemap != 0);
+                if (!checkImageType(ImageDimension::Image2D))
+                {
+                    return false;
+                }
+                if (imageViewDescriptor.m_isCubemap == 0)
+                {
+                    AZ_Error("ShaderResourceGroupData", false,
+                        "Image Input '%s[%d]': The shader expected a cubemap.",
+                        shaderInputImage.m_name.GetCStr(),
+                        arrayIndex);
+                    return false;
+                }
                 break;
 
             default:
                 AZ_Assert(false, "Image Input '%s[%d]': Invalid image type!", shaderInputImage.m_name.GetCStr(), arrayIndex);
-                return false;
-            }
-
-            if (!isValidType)
-            {
-                AZ_Error("ShaderResourceGroupData", false,
-                    "Image Input '%s[%d]': Does not match expected type '%s'",
-                    shaderInputImage.m_name.GetCStr(), arrayIndex, GetShaderInputTypeName(shaderInputImage.m_type));
                 return false;
             }
 

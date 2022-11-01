@@ -47,6 +47,7 @@
 void initUiCanvasEditorResources()
 {
     Q_INIT_RESOURCE(UiCanvasEditor);
+    Q_INIT_RESOURCE(UiAnimViewDialog);
 }
 
 namespace
@@ -2194,6 +2195,8 @@ void EditorWindow::closeEvent(QCloseEvent* closeEvent)
 
     // Save the current window state
     SaveEditorWindowSettings();
+
+    m_animationWidget->EditorAboutToClose();
 
 #if defined(AZ_PLATFORM_LINUX)
     // Work-around for issue on Linux where closing (and destroying) the window an re-opening causes the Editor

@@ -44,7 +44,6 @@ namespace O3DE::ProjectManager
         void HandleBackButton();
         void HandleNextButton();
         void HandleGemsButton();
-        void HandleCreateGemButtonPressed(const GemInfo& gemInfo);
         void OnChangeScreenRequest(ProjectManagerScreen screen);
         void UpdateCurrentProject(const QString& projectPath);
 
@@ -65,7 +64,6 @@ namespace O3DE::ProjectManager
         UpdateProjectSettingsScreen* m_updateSettingsScreen = nullptr;
         ProjectGemCatalogScreen* m_projectGemCatalogScreen = nullptr;
         GemRepoScreen* m_gemRepoScreen = nullptr;
-        CreateGem* m_createGem = nullptr;
 
         QPushButton* m_backButton = nullptr;
         QPushButton* m_nextButton = nullptr;

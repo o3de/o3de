@@ -146,6 +146,51 @@ namespace UnitTest
         EXPECT_TRUE(button->m_state == AzToolsFramework::ViewportUi::Internal::Button::State::Deselected);
     }
 
+    TEST_F(ViewportUiManagerTestFixture, SetClusterDisableButtonOnActiveButton)
+    {
+        // setup
+        auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster(AzToolsFramework::ViewportUi::Alignment::TopLeft);
+        auto buttonId = m_viewportManagerWrapper.GetViewportManager()->CreateClusterButton(clusterId, "");
+
+        auto clusterEntry = m_viewportManagerWrapper.GetViewportManager()->GetClusterMap().find(clusterId);
+        auto button = clusterEntry->second->GetButton(buttonId);
+
+        // first set a button to active
+        m_viewportManagerWrapper.GetViewportManager()->SetClusterActiveButton(clusterId, buttonId);
+        EXPECT_TRUE(button->m_state == AzToolsFramework::ViewportUi::Internal::Button::State::Selected);
+
+        // Disable active button
+        m_viewportManagerWrapper.GetViewportManager()->SetClusterDisableButton(clusterId, buttonId, true);
+        // try clear active button
+        m_viewportManagerWrapper.GetViewportManager()->ClearClusterActiveButton(clusterId);
+
+        // the button should now be disabled
+        EXPECT_TRUE(button->m_state == AzToolsFramework::ViewportUi::Internal::Button::State::Disabled);
+    }
+
+    TEST_F(ViewportUiManagerTestFixture, SetClusterDisableButton)
+    {
+        // setup
+        auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster(AzToolsFramework::ViewportUi::Alignment::TopLeft);
+        auto buttonId = m_viewportManagerWrapper.GetViewportManager()->CreateClusterButton(clusterId, "");
+        auto buttonId2 = m_viewportManagerWrapper.GetViewportManager()->CreateClusterButton(clusterId, "");
+
+        auto clusterEntry = m_viewportManagerWrapper.GetViewportManager()->GetClusterMap().find(clusterId);
+        auto button = clusterEntry->second->GetButton(buttonId);
+        auto button2 = clusterEntry->second->GetButton(buttonId2);
+
+        // the button should now be disable
+        EXPECT_TRUE(button->m_state == AzToolsFramework::ViewportUi::Internal::Button::State::Deselected);
+        EXPECT_TRUE(button2->m_state == AzToolsFramework::ViewportUi::Internal::Button::State::Deselected);
+
+        m_viewportManagerWrapper.GetViewportManager()->SetClusterDisableButton(clusterId, buttonId, true);
+        m_viewportManagerWrapper.GetViewportManager()->SetClusterDisableButton(clusterId, buttonId2, true);
+
+        // the button should now be disabled
+        EXPECT_TRUE(button->m_state == AzToolsFramework::ViewportUi::Internal::Button::State::Disabled);
+        EXPECT_TRUE(button2->m_state == AzToolsFramework::ViewportUi::Internal::Button::State::Disabled);
+    }
+
     TEST_F(ViewportUiManagerTestFixture, RegisterClusterEventHandlerConnectsHandlerToClusterEvent)
     {
         auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster(AzToolsFramework::ViewportUi::Alignment::TopLeft);

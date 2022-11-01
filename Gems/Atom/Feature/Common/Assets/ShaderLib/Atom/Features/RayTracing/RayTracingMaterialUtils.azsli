@@ -12,6 +12,7 @@ struct TextureData
     float3 m_normal;
     float  m_metallic;
     float  m_roughness;
+    float3 m_emissiveColor;
 };
 
 TextureData GetHitTextureData(RayTracingMaterialSrg::MaterialInfo materialInfo, float2 uv)
@@ -68,6 +69,19 @@ TextureData GetHitTextureData(RayTracingMaterialSrg::MaterialInfo materialInfo, 
     else
     {
         textureData.m_roughness = materialInfo.m_roughnessFactor;
+    }
+
+    // emissive
+    if (materialInfo.m_textureFlags & TEXTURE_FLAG_EMISSIVE)
+    {
+        // array index of the emissive texture for this material in the m_materialTextures unbounded array
+        uint emissiveTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[materialInfo.m_textureStartIndex + MATERIAL_EMISSIVE_TEXTURE_OFFSET];
+
+        textureData.m_emissiveColor = RayTracingMaterialSrg::m_materialTextures[emissiveTextureArrayIndex].SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0);
+    }
+    else
+    {
+        textureData.m_emissiveColor = materialInfo.m_emissiveColor;
     }
 
     return textureData;

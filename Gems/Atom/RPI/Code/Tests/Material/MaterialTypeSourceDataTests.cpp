@@ -819,7 +819,7 @@ namespace UnitTest
 
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{ "c.shader" });
         // Only setting one option here, leaving the other unspecified
-        sourceData.m_shaderCollection.back().m_shaderOptionValues[Name{"o_foo"}] = Name{"Low"};
+        sourceData.m_shaderCollection.back().m_shaderOptionValues[Name{"o_foo"}] = Name{"Med"};
 
         auto materialTypeOutcome = sourceData.CreateMaterialTypeAsset(Uuid::CreateRandom());
         EXPECT_TRUE(materialTypeOutcome.IsSuccess());
@@ -843,8 +843,8 @@ namespace UnitTest
         EXPECT_EQ(shaderAOptions.GetValue(barOption).GetIndex(), 2);
         EXPECT_EQ(shaderBOptions.GetValue(fooOption).GetIndex(), 2);
         EXPECT_EQ(shaderBOptions.GetValue(barOption).GetIndex(), 0);
-        EXPECT_EQ(shaderCOptions.GetValue(fooOption).GetIndex(), 0);
-        EXPECT_EQ(shaderCOptions.GetValue(barOption).GetIndex(), -1);
+        EXPECT_EQ(shaderCOptions.GetValue(fooOption).GetIndex(), 1);
+        EXPECT_EQ(shaderCOptions.GetValue(barOption).GetIndex(), 0);
     }
 
     TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_Error_ShaderAssetNotFound)
@@ -867,9 +867,14 @@ namespace UnitTest
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{TestShaderFilename});
         sourceData.m_shaderCollection.back().m_shaderOptionValues[Name{"DoesNotExist"}] = Name{"High"};
 
-        AZ_TEST_START_TRACE_SUPPRESSION;
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("ShaderOption 'DoesNotExist' does not exist"); // This is from ShaderOptionGroup
+        errorMessageFinder.AddExpectedErrorMessage("Could not set shader option 'DoesNotExist' to 'High'."); // This is from MaterialTypeSourceData
+        errorMessageFinder.AddIgnoredErrorMessage("Failed to build MaterialTypeAsset", true);
+
         auto materialTypeOutcome = sourceData.CreateMaterialTypeAsset(Uuid::CreateRandom());
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+
+        errorMessageFinder.CheckExpectedErrorsFound();
 
         EXPECT_FALSE(materialTypeOutcome.IsSuccess());
     }
@@ -881,9 +886,14 @@ namespace UnitTest
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{TestShaderFilename});
         sourceData.m_shaderCollection.back().m_shaderOptionValues[Name{"o_quality"}] = Name{"DoesNotExist"};
 
-        AZ_TEST_START_TRACE_SUPPRESSION;
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("ShaderOption value 'DoesNotExist' does not exist"); // This is from ShaderOptionGroup
+        errorMessageFinder.AddExpectedErrorMessage("Could not set shader option 'o_quality' to 'DoesNotExist'."); // This is from MaterialTypeSourceData
+        errorMessageFinder.AddIgnoredErrorMessage("Failed to build MaterialTypeAsset", true);
+
         auto materialTypeOutcome = sourceData.CreateMaterialTypeAsset(Uuid::CreateRandom());
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+
+        errorMessageFinder.CheckExpectedErrorsFound();
 
         EXPECT_FALSE(materialTypeOutcome.IsSuccess());
     }

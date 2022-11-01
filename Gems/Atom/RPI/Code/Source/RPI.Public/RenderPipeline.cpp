@@ -84,7 +84,7 @@ namespace AZ
         }
 
         RenderPipelinePtr RenderPipeline::CreateRenderPipelineForWindow(const RenderPipelineDescriptor& desc, const WindowContext& windowContext,
-                                                                        const WindowContext::SwapChainMode swapchainMode)
+                                                                        const ViewType viewType)
         {
             RenderPipeline* pipeline = aznew RenderPipeline();
             PassSystemInterface* passSystem = PassSystemInterface::Get();
@@ -94,9 +94,9 @@ namespace AZ
             swapChainDescriptor.m_passTemplate = passSystem->GetPassTemplate(templateName);
             AZ_Assert(swapChainDescriptor.m_passTemplate, "Root-PassTemplate %s not found!", templateName.GetCStr());
 
-            pipeline->m_passTree.m_rootPass = aznew SwapChainPass(swapChainDescriptor, &windowContext, swapchainMode);
+            pipeline->m_passTree.m_rootPass = aznew SwapChainPass(swapChainDescriptor, &windowContext, viewType);
             pipeline->m_windowHandle = windowContext.GetWindowHandle();
-
+            pipeline->m_viewType = viewType;
             InitializeRenderPipeline(pipeline, desc);
 
             return RenderPipelinePtr(pipeline);
@@ -424,6 +424,8 @@ namespace AZ
                 if (m_scene)
                 {
                     SceneNotificationBus::Event(m_scene->GetId(), &SceneNotification::OnRenderPipelinePassesChanged, this);
+                    SceneNotificationBus::Event(m_scene->GetId(), &SceneNotification::OnRenderPipelineChanged, this,
+                        SceneNotification::RenderPipelineChangeType::PassChanged);
 
                     // Pipeline state lookup
                     if (PipelineStateLookupNeedsRebuild(m_pipelinePassChanges))
@@ -470,8 +472,6 @@ namespace AZ
                 }
                 else if (pipelineViews.m_type == PipelineViewType::Persistent)
                 {
-                    // Reset persistent view: clean draw list mask and draw lists
-                    pipelineViews.m_views[0]->Reset();
                     pipelineViews.m_views[0]->SetPassesByDrawList(&pipelineViews.m_passesByDrawList);
                 }
             }
@@ -488,6 +488,7 @@ namespace AZ
 
         void RenderPipeline::PassSystemFrameBegin(Pass::FramePrepareParams params)
         {
+            AZ_PROFILE_FUNCTION(RPI);
             if (GetRenderMode() != RenderPipeline::RenderMode::NoRender)
             {
                 m_passTree.m_rootPass->FrameBegin(params);
@@ -496,6 +497,7 @@ namespace AZ
 
         void RenderPipeline::PassSystemFrameEnd()
         {
+            AZ_PROFILE_FUNCTION(RPI);
             if (GetRenderMode() != RenderPipeline::RenderMode::NoRender)
             {
                 m_passTree.m_rootPass->FrameEnd();
@@ -704,6 +706,11 @@ namespace AZ
                 });
 
             return foundPass;
+        }
+
+        ViewType RenderPipeline::GetViewType() const
+        {
+            return m_viewType;
         }
     }
 }

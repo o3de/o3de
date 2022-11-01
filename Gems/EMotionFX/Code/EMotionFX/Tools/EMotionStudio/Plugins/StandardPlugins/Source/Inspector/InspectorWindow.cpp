@@ -40,6 +40,7 @@ namespace EMStudio
     {
         m_scrollArea = new QScrollArea();
         m_scrollArea->setWidgetResizable(true);
+        m_scrollArea->setFrameShape(QFrame::NoFrame);
 
         m_dock->setWidget(m_scrollArea);
 

@@ -103,7 +103,6 @@ namespace GraphCanvas
     void NumericNodePropertyDisplay::EditStart()
     {
         NodePropertiesRequestBus::Event(GetNodeId(), &NodePropertiesRequests::LockEditState, this);
-
         TryAndSelectNode();
     }
     
@@ -143,9 +142,9 @@ namespace GraphCanvas
             m_spinBox = aznew Internal::FocusableDoubleSpinBox();
             m_spinBox->setProperty("HasNoWindowDecorations", true);
 
-            QObject::connect(m_spinBox, &Internal::FocusableDoubleSpinBox::OnFocusIn, [this]() { this->EditStart(); });
-            QObject::connect(m_spinBox, &Internal::FocusableDoubleSpinBox::OnFocusOut, [this]() { this->EditFinished(); });
-            QObject::connect(m_spinBox, &QDoubleSpinBox::editingFinished, [this]() { this->SubmitValue(); });
+            QObject::connect(m_spinBox, &Internal::FocusableDoubleSpinBox::OnFocusIn, [this]() { EditStart(); });
+            QObject::connect(m_spinBox, &Internal::FocusableDoubleSpinBox::OnFocusOut, [this]() { EditFinished(); });
+            QObject::connect(m_spinBox, &QDoubleSpinBox::editingFinished, [this]() { SubmitValue(); });
 
             m_spinBox->setMinimum(m_dataInterface->GetMin());
             m_spinBox->setMaximum(m_dataInterface->GetMax());

@@ -254,10 +254,13 @@ namespace AZ
             }
 
             const char* LutAttachment = "LutOutput";
-            auto renderPipelineName = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()
-                                            ->GetDefaultViewportContext()
-                                            ->GetCurrentPipeline()
-                                            ->GetId();
+            auto currentPipeline =
+                AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->GetDefaultViewportContext()->GetCurrentPipeline();
+            if (!currentPipeline)
+            {
+                return;
+            }
+            auto renderPipelineName = currentPipeline->GetId();
             const AZStd::vector<AZStd::string> LutGenerationPassHierarchy{
                 renderPipelineName.GetCStr(),
                 "LutGenerationPass"

@@ -9,7 +9,6 @@
 
 #include <AzCore/std/containers/array.h>
 #include <AzCore/Preprocessor/Enum.h>
-#include <AzCore/std/ranges/join_with_view.h>
 #include <AzCore/std/ranges/reverse_view.h>
 #include <AzCore/std/typetraits/is_pointer.h>
 #include <AzCore/std/typetraits/is_const.h>
@@ -336,8 +335,15 @@ namespace AZ
                 {
                     constexpr AZStd::fixed_string<1024> typeNameAggregate = []()
                     {
-                        constexpr auto typeNames = AZStd::to_array({ AZStd::string_view(AzTypeInfo<Tn>::Name())... });
-                        return AZStd::fixed_string<1024>(AZStd::from_range, typeNames | AZStd::views::join_with(TypeNameSeparator));
+                        bool prependSeparator = false;
+                        AZStd::fixed_string<1024> aggregateTypeName;
+                        for (AZStd::string_view templateParamName : { AZStd::string_view(AzTypeInfo<Tn>::Name())... })
+                        {
+                            aggregateTypeName += prependSeparator ? TypeNameSeparator : "";
+                            aggregateTypeName += templateParamName;
+                            prependSeparator = true;
+                        }
+                        return aggregateTypeName;
                     }();
 
                     // resize down the aggregate type name to the exact size
@@ -516,8 +522,6 @@ namespace AZ
     {
     private:
         typedef typename AZStd::RemoveEnum<T>::type UnderlyingType;
-        // Used to provide a reference to a Uuid with a null value = {00000000-0000-0000-0000-000000000000}
-        inline static constexpr AZ::TypeId s_nullTypeId_v;
     public:
         static constexpr const char* Name()
         {
@@ -532,7 +536,7 @@ namespace AZ
         }
 
         template<typename TypeIdResolverTag = CanonicalTypeIdTag>
-        static constexpr AZ::TypeId Uuid() { return s_nullTypeId_v; }
+        static constexpr AZ::TypeId Uuid() { return AZ::TypeId{}; }
         static constexpr TypeTraits GetTypeTraits()
         {
             TypeTraits typeTraits{};
@@ -981,9 +985,14 @@ namespace AZ
                 {                                                                                                   \
                     using CombineBufferType = AZStd::fixed_string<1024>;                                            \
                     CombineBufferType typeName{ _Name "<" };                                                        \
-                    typeName.append_range(AZStd::to_array<AZStd::string_view>(                                      \
+                    bool prependSeparator = false;                                                                  \
+                    for (AZStd::string_view templateParamName :                                                     \
                         { AZ_TYPE_INFO_INTERNAL_TEMPLATE_NAME_EXPANSION(__VA_ARGS__) })                             \
-                        | AZStd::views::join_with(AZ::Internal::TypeNameSeparator));                                \
+                    {                                                                                               \
+                        typeName += prependSeparator ? AZ::Internal::TypeNameSeparator : "";                        \
+                        typeName += templateParamName;                                                              \
+                        prependSeparator = true;                                                                    \
+                    }                                                                                               \
                     typeName += '>';                                                                                \
                     return typeName;                                                                                \
                 }();                                                                                                \
@@ -1052,9 +1061,14 @@ namespace AZ
                 {                                                                                                   \
                     using CombineBufferType = AZStd::fixed_string<1024>;                                            \
                     CombineBufferType typeName{ #_Specialization "<" };                                             \
-                    typeName.append_range(AZStd::to_array<AZStd::string_view>(                                      \
+                    bool prependSeparator = false;                                                                  \
+                    for (AZStd::string_view templateParamName :                                                     \
                         { AZ_TYPE_INFO_INTERNAL_TEMPLATE_NAME_EXPANSION(__VA_ARGS__) })                             \
-                        | AZStd::views::join_with(AZ::Internal::TypeNameSeparator));                                \
+                    {                                                                                               \
+                        typeName += prependSeparator ? AZ::Internal::TypeNameSeparator : "";                        \
+                        typeName += templateParamName;                                                              \
+                        prependSeparator = true;                                                                    \
+                    }                                                                                               \
                     typeName += '>';                                                                                \
                     return typeName;                                                                                \
                 }();                                                                                                \
