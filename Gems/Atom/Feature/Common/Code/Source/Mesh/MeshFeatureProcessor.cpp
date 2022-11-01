@@ -835,6 +835,7 @@ namespace AZ
         {
             m_model = model;
             m_needsInit = true;
+            m_aabb = m_model->GetModelAsset()->GetAabb();
         }
 
         void ModelDataInstance::Init()
@@ -867,8 +868,6 @@ namespace AZ
             {
                 SetRayTracingData();
             }
-
-            m_aabb = m_model->GetModelAsset()->GetAabb();
 
             m_cullableNeedsRebuild = true;
             m_cullBoundsNeedsUpdate = true;
