@@ -76,27 +76,20 @@ namespace EMotionFX
             return;
         }
 
+        m_contentCard->hide();
+        InternalReinit();
         if (GetActor())
         {
             bool onlyRootSelected = selectedModelIndices.size() == 1 && SkeletonModel::IndicesContainRootNode(selectedModelIndices);
-            if (!selectedModelIndices.isEmpty() && !onlyRootSelected && m_collidersWidget->HasVisibleColliders())
+            if (!selectedModelIndices.isEmpty() && !onlyRootSelected)
             {
-                m_noSelectionWidget->hide();
                 InternalReinit();
-                m_contentCard->show();
+
+                if (m_collidersWidget->HasVisibleColliders())
+                {
+                    m_contentCard->show();
+                }
             }
-            else
-            {
-                m_contentCard->hide();
-                InternalReinit();
-                m_noSelectionWidget->show();
-            }
-        }
-        else
-        {
-            m_contentCard->hide();
-            InternalReinit();
-            m_noSelectionWidget->hide();
         }
     }
 
@@ -112,6 +105,7 @@ namespace EMotionFX
         {
             m_collidersWidget->SetFilterString(str);
         }
+        Reinit();
     }
 
     void SkeletonModelJointWidget::OnSelectionChanged([[maybe_unused]] const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)

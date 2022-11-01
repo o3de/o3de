@@ -486,12 +486,26 @@ namespace EMotionFX
             m_colliderWidgets[i]->hide();
             m_colliderWidgets[i]->Update(nullptr, nullptr, InvalidIndex, PhysicsSetup::ColliderConfigType::Unknown, AzPhysics::ShapeColliderPair());
         }
+
+        for (ColliderWidget* colliderWidget : m_colliderWidgets)
+        {
+            if (!colliderWidget->isHidden() && colliderWidget->HasDisplayedNodes())
+            {
+                colliderWidget->show();
+            }
+            else
+            {
+                colliderWidget->hide();
+            }
+        }
     }
 
     void ColliderContainerWidget::Update()
     {
         for (ColliderWidget* colliderWidget : m_colliderWidgets)
         {
+            colliderWidget->InvalidateEditorValues();
+            colliderWidget->Update();
             if (colliderWidget->HasDisplayedNodes())
             {
                 colliderWidget->show();
@@ -500,8 +514,6 @@ namespace EMotionFX
             {
                 colliderWidget->hide();
             }
-            colliderWidget->InvalidateEditorValues();
-            colliderWidget->Update();
         }
     }
 
@@ -520,7 +532,7 @@ namespace EMotionFX
 
     bool ColliderContainerWidget::HasVisibleColliders() const
     {
-        return m_colliderWidgets.size() > 0 ||
+        return m_colliderWidgets.size() > 0 &&
             std::any_of(
                    m_colliderWidgets.begin(),
                    m_colliderWidgets.end(),
