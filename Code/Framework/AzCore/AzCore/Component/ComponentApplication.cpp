@@ -84,6 +84,8 @@ namespace AZ::Metrics
 {
     const EventLoggerId CoreEventLoggerId{ static_cast<AZ::u32>(AZStd::hash<AZStd::string_view>{}("Core")) };
     constexpr const char* CoreMetricsFilenameStem = "Metrics/core_metrics";
+    // Settings key used which indicates the rate in microseconds seconds to record core metrics in the Tick() function
+    constexpr AZStd::string_view CoreMetricsRecordRateMicrosecondsKey = "/O3DE/Metrics/Core/RecordRateMicroseconds";
 }
 
 namespace AZ
@@ -625,21 +627,30 @@ namespace AZ
     {
         // Register Core Event logger with Component Application
 
-        // Get the name of the running build target if available
+        // Use the name of the running build target as part of the event logger name
+        // If it is not available, then an event logger will not be created
         AZ::IO::FixedMaxPath uniqueFilenameSuffix = AZ::Metrics::CoreMetricsFilenameStem;
         if (AZ::IO::FixedMaxPathString buildTargetName;
             m_settingsRegistry->Get(buildTargetName, AZ::SettingsRegistryMergeUtils::BuildTargetNameKey))
         {
             // append the build target name as injected from CMake if known
-            uniqueFilenameSuffix.Native() = AZ::IO::FixedMaxPathString::format(".%s", buildTargetName.c_str());
+            uniqueFilenameSuffix.Native() += AZ::IO::FixedMaxPathString::format(".%s", buildTargetName.c_str());
         }
-        // Retrieve a filename safe timestamp with milliseconds precision
-
-        if (AZ::Date::Iso8601TimestampString timestampMilli;
-            AZ::Date::GetFilenameCompatibleFormatNowWithMilliseconds(timestampMilli))
+        else
         {
-            uniqueFilenameSuffix.Native() = AZ::IO::FixedMaxPathString::format(".%s", timestampMilli.c_str());
+            return;
         }
+
+        // Append the build configuration(debug, release, profile) to the metrics filename
+        if (AZStd::string_view buildConfig{ AZ_BUILD_CONFIGURATION_TYPE }; !buildConfig.empty())
+        {
+            uniqueFilenameSuffix.Native() += AZ::IO::FixedMaxPathString::format(".%.*s", AZ_STRING_ARG(buildConfig));
+        }
+
+        // Use the process ID to provide uniqueness to the metrics json files
+        AZStd::fixed_string<32> processIdString;
+        AZStd::to_string(processIdString, AZ::Platform::GetCurrentProcessId());
+        uniqueFilenameSuffix.Native() += AZ::IO::FixedMaxPathString::format(".%s", processIdString.c_str());
         // Append .json extension
         uniqueFilenameSuffix.Native() += ".json";
 
@@ -649,10 +660,13 @@ namespace AZ
 
         // Open up the metrics file in write mode and truncate the contents if it exist(it shouldn't since a millisecond
         // is being used
-        constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite;
-        if (auto fileStream = AZStd::make_unique<AZ::IO::SystemFileStream>(metricsFilePath.c_str(), openMode); fileStream != nullptr)
+        constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath;
+        if (auto fileStream = AZStd::make_unique<AZ::IO::SystemFileStream>(metricsFilePath.c_str(), openMode);
+            fileStream != nullptr && fileStream->IsOpen())
         {
-            auto coreEventLogger = AZStd::make_unique<AZ::Metrics::JsonTraceEventLogger>(AZStd::move(fileStream));
+            // Configure core event logger with the name of "Core"
+            AZ::Metrics::JsonTraceLoggerEventConfig config{ "Core" };
+            auto coreEventLogger = AZStd::make_unique<AZ::Metrics::JsonTraceEventLogger>(AZStd::move(fileStream), config);
             m_eventLoggerFactory->RegisterEventLogger(AZ::Metrics::CoreEventLoggerId, AZStd::move(coreEventLogger));
         }
         else
@@ -660,6 +674,31 @@ namespace AZ
             AZ_Error("ComponentApplication", false, R"(unable to open core metrics with with path "%s")",
                 metricsFilePath.c_str());
         }
+
+        // Record metrics every X microseconds based on the /O3DE/Metrics/Core/RecordRateMicroseconds setting
+        // or every 10 secondsif not supplied
+        m_recordMetricsOnTickCallback = [&registry = *m_settingsRegistry.get(),
+            lastRecordTime = AZStd::chrono::steady_clock::now()]
+            (AZStd::chrono::steady_clock::time_point monotonicTime) mutable -> bool
+        {
+            // Retrieve the record rate setting from the Setting Registry
+            using namespace AZStd::chrono_literals;
+            AZStd::chrono::microseconds recordTickMicroseconds = 10s;
+            if (AZ::s64 recordRateMicrosecondValue;
+                registry.Get(recordRateMicrosecondValue, AZ::Metrics::CoreMetricsRecordRateMicrosecondsKey))
+            {
+                recordTickMicroseconds = AZStd::chrono::microseconds(recordRateMicrosecondValue);
+            }
+
+            if ((monotonicTime - lastRecordTime) >= recordTickMicroseconds)
+            {
+                // Reset the recordTime to the current steady clock time and return true to record the metrics
+                lastRecordTime = monotonicTime;
+                return true;
+            }
+
+            return false;
+        };
     }
 
     void ReportBadEngineRoot()
@@ -1431,30 +1470,32 @@ namespace AZ
     {
         AZ_PROFILE_SCOPE(System, "Component application simulation tick");
 
-        AZ::Metrics::EventObjectStorage argsContainer;
-
-        auto currentMonotonicTime = AZStd::chrono::steady_clock::now();
-
-        // Skip over recording the metrics for the first loop
-        if (m_lastTickTime.time_since_epoch().count() > 0)
+        // Only record when the record metrics on tick callback is set
+        if (m_recordMetricsOnTickCallback)
         {
-            argsContainer.emplace_back("m_frameTimeMicroseconds", static_cast<AZ::u64>(
-                AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(m_lastTickTime - currentMonotonicTime).count()));
-            AZ::Metrics::AsyncArgs asyncArgs;
-            asyncArgs.m_name = "FrameTime";
-            asyncArgs.m_cat = "Core";
-            asyncArgs.m_args = argsContainer;
-            asyncArgs.m_id = "Simulation";
-            asyncArgs.m_scope = "Engine";
+            auto currentMonotonicTime = AZStd::chrono::steady_clock::now();
 
-            [[maybe_unused]] auto metricsOutcome = AZ::Metrics::RecordAsyncEventInstant(AZ::Metrics::CoreEventLoggerId, asyncArgs, m_eventLoggerFactory.get());
+            if (m_recordMetricsOnTickCallback(currentMonotonicTime))
+            {
+                AZ::Metrics::EventObjectStorage argsContainer;
+                argsContainer.emplace_back("frameTimeMicroseconds", static_cast<AZ::u64>(
+                    AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(currentMonotonicTime - m_lastTickTime).count()));
+                AZ::Metrics::AsyncArgs asyncArgs;
+                asyncArgs.m_name = "FrameTime";
+                asyncArgs.m_cat = "Core";
+                asyncArgs.m_args = argsContainer;
+                asyncArgs.m_id = "Simulation";
+                asyncArgs.m_scope = "Engine";
 
-            AZ_ErrorOnce("ComponentApplication", metricsOutcome.IsSuccess(),
-                "Failed to record frame time metrics. Error %s", metricsOutcome.GetError().c_str());
+                [[maybe_unused]] auto metricsOutcome = AZ::Metrics::RecordAsyncEventInstant(AZ::Metrics::CoreEventLoggerId, asyncArgs, m_eventLoggerFactory.get());
+
+                AZ_ErrorOnce("ComponentApplication", metricsOutcome.IsSuccess(),
+                    "Failed to record frame time metrics. Error %s", metricsOutcome.GetError().c_str());
+            }
+
+            // Update the m_lastTickTime to the current monotonic time
+            m_lastTickTime = currentMonotonicTime;
         }
-
-        // Update the m_lastTickTime to the current monotonic time
-        m_lastTickTime = currentMonotonicTime;
 
         {
             AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:ExecuteQueuedEvents");

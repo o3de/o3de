@@ -17,7 +17,6 @@
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Module/ModuleManager.h>
-#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -46,7 +45,7 @@ namespace AZ::Metrics
 
     enum class EventLoggerId : AZ::u32;
 
-    extern const EventLoggerId CoreEventLoggerId;;
+    extern const EventLoggerId CoreEventLoggerId;
 }
 
 namespace AZ
@@ -418,5 +417,12 @@ namespace AZ
 
         using TickTimepoint = AZStd::chrono::steady_clock::time_point;
         TickTimepoint m_lastTickTime{};
+
+        //! Callback function for determining whether a call to record metrics in the Tick() member function
+        //! functionshould take place
+        //! @param currentMonotonicTime - The monotonic tick time of the application since launch
+        //! @return true to indicate a record event operation should occur in the current Tick() call
+        using RecordMetricsCallback = AZStd::function<bool(AZStd::chrono::steady_clock::time_point)>;
+        RecordMetricsCallback m_recordMetricsOnTickCallback;
     };
 }

@@ -15,6 +15,7 @@
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/variant.h>
+#include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/utils.h>
 
@@ -23,8 +24,47 @@ namespace AZ::IO
     class GenericStream;
 }
 
+namespace AZ::Metrics::Internal
+{
+    //! Wraps the Metrics settings prefix key of "/O3DE/Metrics"
+    //! which is used as the parent object of any "/O3DE/Metrics/<EventLoggerName>" keys
+    //! The "/O3DE/Metrics/<EventLoggerName>" is the anchor object where settings
+    //! for an Event Logger are queried.
+    //! Currently  supports the following settings
+    //!
+    //! * "/O3DE/Metrics/<EventLoggerName>/Active" - If set to false, the event logger will not record new events
+    //!   If not set or true, the event logger will record events
+    struct SettingsKey_t
+    {
+        constexpr AZStd::fixed_string<128> operator()(AZStd::string_view name) const
+        {
+            AZStd::fixed_string<128> settingsKey(MetricsSettingsPrefix);
+            settingsKey += '/';
+            settingsKey += name;
+
+            return settingsKey;
+        }
+
+        constexpr operator AZStd::string_view() const
+        {
+            return MetricsSettingsPrefix;
+        }
+
+    private:
+        AZStd::string_view MetricsSettingsPrefix = "/O3DE/Metrics";
+    };
+}
+
 namespace AZ::Metrics
 {
+    //! Settings key object which supports a call operator
+    //! which accepts the name of an event logger and returns
+    //! a fixed_string acting as an anchor object for all settings
+    //! associated with an event logger using that name
+    constexpr Internal::SettingsKey_t SettingsKey{};
+
+    //! Represents the "args" field where key, value entries
+    //! within the per event data is stored
     constexpr AZStd::string_view ArgsKey = "args";
 
     //! Event fields structure that can be used to record event argument data
@@ -299,6 +339,16 @@ namespace AZ::Metrics
     public:
         AZ_RTTI(IEventLogger, "{D39D09FA-DEA0-4874-BC45-4B310C3DD52E}");
         virtual ~IEventLogger() = default;
+
+        //! Provides a qualified name for the Event Logger
+        //! This is used to as part of the for the "/O3DE/Metrics/<Name>"
+        //! to contain settings associated with any event logger with the name
+        virtual void SetName([[maybe_unused]] AZStd::string_view name) {}
+
+        //! Returns the qualified name for the Event Logger
+        //! This can be used to query settings from event loggers with the name
+        //! through queury the "/O3DE/Metrics/<Name>" object
+        virtual AZStd::string_view GetName() const { return {}; }
 
         //! Provides a hook for implemented Event Loggers to flush recorded metrics
         //! to an associated stream(disk stream, network stream, etc...)
