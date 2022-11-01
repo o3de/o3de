@@ -156,7 +156,7 @@ namespace AZ
 
             const AZStd::string scriptPath = RPI::AssetUtils::ResolvePathReference(materialPipelineFile.c_str(), materialPipeline.m_pipelineScript);
 
-            auto reportError = [&](const AZStd::string& message)
+            auto reportError = [&]([[maybe_unused]] const AZStd::string& message)
             {
                 AZ_Error(DebugName, false, "Script '%s' failed. %s", scriptPath.c_str(), message.c_str());
             };
