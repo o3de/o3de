@@ -17,6 +17,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
+#include <LmbrCentral/Dependency/DependencyMonitor.h>
 
 namespace GradientSignal
 {
@@ -278,14 +279,6 @@ namespace GradientSignal
     ImageGradientComponent::ImageGradientComponent(const ImageGradientConfig& configuration)
         : m_configuration(configuration)
     {
-    }
-
-    void ImageGradientComponent::SetupDependencies()
-    {
-        m_dependencyMonitor.Reset();
-        m_dependencyMonitor.SetRegionChangedEntityNotificationFunction();
-        m_dependencyMonitor.ConnectOwner(GetEntityId());
-        m_dependencyMonitor.ConnectDependency(m_configuration.m_imageAsset.GetId());
     }
 
     void ImageGradientComponent::GetSubImageData()
@@ -660,8 +653,6 @@ namespace GradientSignal
         // This will immediately call OnGradientTransformChanged and initialize m_gradientTransform.
         GradientTransformNotificationBus::Handler::BusConnect(GetEntityId());
 
-        SetupDependencies();
-
         ImageGradientRequestBus::Handler::BusConnect(GetEntityId());
         ImageGradientModificationBus::Handler::BusConnect(GetEntityId());
 
@@ -685,8 +676,6 @@ namespace GradientSignal
         ImageGradientModificationBus::Handler::BusDisconnect();
         ImageGradientRequestBus::Handler::BusDisconnect();
         GradientTransformNotificationBus::Handler::BusDisconnect();
-
-        m_dependencyMonitor.Reset();
 
         // Make sure we don't keep any cached references to the image asset data or the image modification buffer.
         UpdateCachedImageBufferData({}, {});
@@ -742,6 +731,7 @@ namespace GradientSignal
         AZStd::unique_lock lock(m_queryMutex);
         m_configuration.m_imageAsset = asset;
         GetSubImageData();
+        LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
     void ImageGradientComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -825,7 +815,8 @@ namespace GradientSignal
 
     void ImageGradientComponent::ClearImageModificationBuffer()
     {
-        AZ_Assert(!ModificationBufferIsActive(), "Clearing modified image data while it's still in use!");
+        AZ_Assert(!ModificationBufferIsActive(), "Clearing modified image data while it's still in use as the active asset!");
+        AZ_Assert(!m_configuration.m_imageModificationActive, "Clearing modified image data while in modification mode!")
         m_modifiedImageData.resize(0);
     }
 
@@ -994,8 +985,6 @@ namespace GradientSignal
             m_configuration.m_imageAsset = asset;
         }
 
-        SetupDependencies();
-
         if (m_configuration.m_imageAsset.GetId().IsValid())
         {
             // If we have a valid Asset ID, check to see if it also appears in the AssetCatalog. This might be an Asset ID for an asset
@@ -1057,7 +1046,7 @@ namespace GradientSignal
         // execute an arbitrary amount of logic, including calls back to this component.
         {
             AZStd::unique_lock lock(m_queryMutex);
-        m_configuration.m_tiling.SetX(tilingX);
+            m_configuration.m_tiling.SetX(tilingX);
         }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
@@ -1073,7 +1062,7 @@ namespace GradientSignal
         // execute an arbitrary amount of logic, including calls back to this component.
         {
             AZStd::unique_lock lock(m_queryMutex);
-        m_configuration.m_tiling.SetY(tilingY);
+            m_configuration.m_tiling.SetY(tilingY);
         }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
