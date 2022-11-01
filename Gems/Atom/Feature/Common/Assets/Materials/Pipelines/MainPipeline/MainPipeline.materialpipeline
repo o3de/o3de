@@ -1,0 +1,16 @@
+{
+    "shaderTemplates": [
+        {
+            "shader": "./ForwardPass.shader.template",
+            "azsli": "./ForwardPass.azsli"
+        },
+        {
+            "shader": "../Common/DepthPass.shader.template",
+            "azsli": "../Common/DepthPass.azsli"
+        },
+        {
+            "shader": "../Common/ShadowmapPass.shader.template",
+            "azsli": "../Common/ShadowmapPass.azsli"
+        }
+    ]
+}

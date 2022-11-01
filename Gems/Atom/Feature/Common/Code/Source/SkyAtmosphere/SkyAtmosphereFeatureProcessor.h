@@ -32,6 +32,7 @@ namespace AZ::Render
         //! FeatureProcessor 
         void Activate() override;
         void Deactivate() override;
+        void AddRenderPasses(RPI::RenderPipeline* renderPipeline) override;
         void Render(const RenderPacket& packet) override;
 
         //! SkyAtmosphereFeatureProcessorInterface
@@ -46,7 +47,6 @@ namespace AZ::Render
         
         void InitializeAtmosphere(AtmosphereId id);
         void UpdateBackgroundClearColor();
-        void CachePasses();
         bool HasValidAtmosphere();
             
         struct SkyAtmosphere

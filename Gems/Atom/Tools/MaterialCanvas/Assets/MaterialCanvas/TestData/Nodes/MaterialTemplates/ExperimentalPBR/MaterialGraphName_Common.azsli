@@ -60,7 +60,7 @@ void Evaluate_CommonVSInput(in CommonVSInput IN, out CommonVSOutput OUT)
     #define O3DE_MC_WORLD_POSITION worldPosition
 
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inPositionOffset
-    float4 inPositionOffset = float4(0.0, 0.0, 0.0, 0.0);
+    float3 inPositionOffset = {0.0, 0.0, 0.0};
     // O3DE_GENERATED_INSTRUCTIONS_END
 
     #undef O3DE_MC_POSITION
@@ -70,7 +70,7 @@ void Evaluate_CommonVSInput(in CommonVSInput IN, out CommonVSOutput OUT)
     #undef O3DE_MC_BITANGENT
     #undef O3DE_MC_WORLD_POSITION
 
-    OUT.m_worldPosition = worldPosition + float4(inPositionOffset.xyz, 0.0);
+    OUT.m_worldPosition = worldPosition + float4((float3)inPositionOffset, 0.0);
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, OUT.m_worldPosition);
     OUT.m_normal = IN.m_normal;
     OUT.m_tangent = IN.m_tangent;

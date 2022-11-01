@@ -8,7 +8,7 @@
         "title": "Sample Texture 2d",
         "settings": {
             "instructions": [
-                "float4 NODEID_outColor = MaterialSrg::NODEID_inValue.Sample(MaterialSrg::NODEID_inSampler, NODEID_inUV);"
+                "float4 NODEID_outColor = MaterialSrg::NODEID_inValue.Sample(MaterialSrg::NODEID_inSampler, (float2)NODEID_inUV);"
             ]
         },
         "propertySlots": [
@@ -45,6 +45,7 @@
                 "supportedDataTypes": [
                     "image"
                 ],
+                "supportsEditingOnNode": false,
                 "settings": {
                     "materialInputs": [
                         "SLOTSTANDARDSRGMEMBER"
@@ -58,6 +59,7 @@
                 "supportedDataTypes": [
                     "sampler"
                 ],
+                "supportsEditingOnNode": false,
                 "settings": {
                     "materialInputs": [
                         "SLOTSTANDARDSRGMEMBER"
@@ -77,13 +79,6 @@
                     "float4",
                     "color"
                 ],
-                "defaultValue": {
-                    "$type": "Vector2",
-                    "Value": [
-                        0.0,
-                        0.0
-                    ]
-                },
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"

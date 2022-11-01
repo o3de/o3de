@@ -17,6 +17,14 @@
 
 #include "../BasePBR/BasePBR_LightingBrdf.azsli"
 
+#ifndef LightingData
+#error LightingData must be defined before including this file.
+#endif
+
+#ifndef Surface
+#error Surface must be defined before including this file.
+#endif
+
 // Then define the Diffuse and Specular lighting functions
 float3 GetDiffuseLighting_Skin(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight)
 {

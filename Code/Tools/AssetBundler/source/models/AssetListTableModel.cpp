@@ -84,19 +84,19 @@ namespace AssetBundler
             {
             case Column::ColumnAssetName:
             {
-                AZStd::string fileName = assetFileInfoOutcome.GetValue().m_assetRelativePath;
+                AZStd::string fileName = assetFileInfoOutcome.GetValue().get().m_assetRelativePath;
                 AzFramework::StringFunc::Path::GetFullFileName(fileName.c_str(), fileName);
 
                 return fileName.c_str();
             }
             case Column::ColumnRelativePath:
             {
-                return assetFileInfoOutcome.GetValue().m_assetRelativePath.c_str();
+                return assetFileInfoOutcome.GetValue().get().m_assetRelativePath.c_str();
             }
             case Column::ColumnAssetId:
             {
                 AZStd::string assetIdStr;
-                assetFileInfoOutcome.GetValue().m_assetId.ToString(assetIdStr);
+                assetFileInfoOutcome.GetValue().get().m_assetId.ToString(assetIdStr);
 
                 return assetIdStr.c_str();
             }
@@ -111,7 +111,7 @@ namespace AssetBundler
         return QVariant();
     }
 
-    AZ::Outcome<AzToolsFramework::AssetFileInfo&, AZStd::string> AssetListTableModel::GetAssetFileInfo(const QModelIndex& index) const
+    AZ::Outcome<AZStd::reference_wrapper<const AzToolsFramework::AssetFileInfo>, AZStd::string> AssetListTableModel::GetAssetFileInfo(const QModelIndex& index) const
     {
         int row = index.row();
         int col = index.column();
@@ -119,7 +119,7 @@ namespace AssetBundler
         {
             return AZ::Failure(AZStd::string::format("Selected index (%i, %i) is out of range", row, col));
         }
-        
-        return AZ::Success(m_assetFileInfoList.m_fileInfoList.at(row));
+
+        return m_assetFileInfoList.m_fileInfoList.at(row);
     }
 }

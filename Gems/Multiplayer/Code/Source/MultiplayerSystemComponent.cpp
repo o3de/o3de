@@ -188,7 +188,16 @@ namespace Multiplayer
                 })
                 ->Attribute(
                     AZ::Script::Attributes::AzEventDescription,
-                    AZ::BehaviorAzEventDescription{"On Client Disconnected Event"});
+                    AZ::BehaviorAzEventDescription{"On Client Disconnected Event"})
+                ->Method("GetCurrentBlendFactor", []()
+                    {
+                        if (GetMultiplayer())
+                        {
+                            return GetMultiplayer()->GetCurrentBlendFactor();
+                        }
+                        return 0.f;
+                    })
+            ;
         }
 
         MultiplayerComponent::Reflect(context);
@@ -990,6 +999,7 @@ namespace Multiplayer
             if (m_networkInterface->GetConnectionSet().GetActiveConnectionCount() == 0)
             {
                 Terminate(DisconnectReason::TerminatedByServer);
+                AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
             }
         }
     }
@@ -1001,6 +1011,8 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::InitializeMultiplayer(MultiplayerAgentType multiplayerType)
     {
+        m_lastReplicatedHostFrameId = HostFrameId{0};
+
         if (m_agentType == multiplayerType)
         {
             return;

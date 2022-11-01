@@ -25,11 +25,13 @@ class QTimer;
 namespace AzToolsFramework
 {
     class DocumentPropertyEditor;
+    class DPERowWidget;
 
     class DPELayout : public QHBoxLayout
     {
         Q_OBJECT
 
+        friend class DPERowWidget;
     signals:
         void expanderChanged(bool expanded);
 
@@ -37,16 +39,14 @@ namespace AzToolsFramework
     public:
         DPELayout(int depth, QWidget* parentWidget = nullptr);
         virtual ~DPELayout();
+
         void SetExpanderShown(bool shouldShow);
         void SetExpanded(bool expanded);
         bool IsExpanded() const;
-        void SharePriorColumn(QWidget* previousWidget);
-        void SetSharePrior(bool sharePrior);
-        bool ShouldSharePrior();
-        int SharedWidgetCount();
-        void WidgetAlignment(QWidget* alignedWidget, Qt::Alignment widgetAlignment);
-        void AddMinimumWidthWidget(QWidget* widget);
 
+        void AddSharePriorColumn(size_t previousIndex, size_t widgetIndex);
+        void RemoveSharePriorColumn(size_t widgetIndex);
+        int SharedWidgetCount();
 
         // QLayout overrides
         void invalidate() override;
@@ -60,6 +60,7 @@ namespace AzToolsFramework
 
     protected:
         DocumentPropertyEditor* GetDPE() const;
+        DPERowWidget* GetRow() const;
         void CreateExpanderWidget();
 
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
@@ -67,21 +68,9 @@ namespace AzToolsFramework
         bool m_expanded = true;
         QCheckBox* m_expanderWidget = nullptr;
 
-        //! boolean to keep track of whether we should add to an existing shared column or create a new shared column.
-        bool m_shouldSharePrior = false;
-
-        //! Vector containing pairs of widgets and integers, where each pair in the vector represents a unique shared column layout.
-        //! Each widget in a pair will be the first widget in the shared column,
-        //! while the integer in a pair represents the number of widgets in the shared column. 
-        AZStd::vector<AZStd::pair<QWidget*, int>> m_sharePriorColumn;
-
-        //! Map containing all widgets that have special alignment.
-        //! Each widget will be aligned according to its Qt::Alignment value.
-        AZStd::unordered_map<QWidget*, Qt::Alignment> m_widgetAlignment;
-
-        //! Vector containing all widgets that have the UseMinimumWidth attribute.
-        //! Dependent attribute that forces widgets to use their minimum width within a shared column.
-        AZStd::unordered_set<QWidget*> m_minimumWidthWidgets;
+        //! Vector containing vectors of widgets, where each vector represents a unique shared column group.
+        //! Each widget in a vector will be a widget that belongs to that shared column group.
+        AZStd::vector<AZStd::vector<size_t>> m_sharePriorColumn;
 
     private:
         // These cached sizes must be mutable since they are set inside of an overidden const function
@@ -96,7 +85,7 @@ namespace AzToolsFramework
         Q_PROPERTY(int getLevel READ GetLevel);
 
         friend class DocumentPropertyEditor;
-
+        friend class DPELayout;
     public:
         explicit DPERowWidget(int depth, DPERowWidget* parentRow);
         ~DPERowWidget();
@@ -107,6 +96,10 @@ namespace AzToolsFramework
         //! clears and repopulates all children from a given DOM array
         void SetValueFromDom(const AZ::Dom::Value& domArray);
         void SetAttributesFromDom(const AZ::Dom::Value& domArray);
+
+        void SetPropertyEditorAttributes(size_t domIndex, const AZ::Dom::Value& domArray, QWidget* childWidget);
+        void RemoveAttributes(size_t domIndex);
+        void ClearAttributes();
 
         //! handles a patch operation at the given path, or delegates to a child that will
         void HandleOperationAtPath(const AZ::Dom::PatchOperation& domOperation, size_t pathIndex = 0);
@@ -144,6 +137,17 @@ namespace AzToolsFramework
 
         //! widget children in DOM specified order; mix of row and column widgets
         AZStd::deque<QWidget*> m_domOrderedChildren;
+
+        struct AttributeInfo
+        {
+            AZ::Dpe::Nodes::PropertyEditor::Align m_alignment = AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment;
+            bool m_sharePriorColumn = false;
+            bool m_minimumWidth = false;
+            AZStd::string_view m_descriptionString = "";
+            bool m_shouldDisable = false;
+        };
+        AZStd::unordered_map<size_t, AttributeInfo*> m_domOrderToAttributeInfo;
+        AttributeInfo* GetAttributes(size_t domIndex);
 
         // row attributes extracted from the DOM
         AZStd::optional<bool> m_forceAutoExpand;

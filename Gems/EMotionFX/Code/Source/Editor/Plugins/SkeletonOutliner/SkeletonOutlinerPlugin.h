@@ -52,7 +52,7 @@ namespace EMotionFX
         // SkeletalOutlinerRequestBus overrides
         Node* GetSingleSelectedNode() override;
         QModelIndex GetSingleSelectedModelIndex() override;
-        AZ::Outcome<const QModelIndexList&> GetSelectedRowIndices() override;
+        AZ::Outcome<QModelIndexList> GetSelectedRowIndices() override;
         SkeletonModel* GetModel() override;
         void DataChanged(const QModelIndex& modelIndex) override;
         void DataListChanged(const QModelIndexList& modelIndexList) override;
