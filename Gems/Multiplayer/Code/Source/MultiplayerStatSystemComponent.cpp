@@ -221,9 +221,17 @@ namespace Multiplayer
                     AZStd::for_each(
                         group.m_stats.m_items.begin(),
                         group.m_stats.m_items.end(),
-                        [&argsContainer](const CumulativeAverage& stat)
+                        [&argsContainer](CumulativeAverage& stat)
                         {
-                            argsContainer.emplace_back(stat.m_name.c_str(), stat.m_average.CalculateAverage());
+                            if (stat.m_average.GetNumRecorded() > 0)
+                            {
+                                // If there are new entries, update the average.
+                                stat.m_lastAverage = stat.m_average.CalculateAverage();
+                            }
+                            argsContainer.emplace_back(stat.m_name.c_str(), stat.m_lastAverage);
+
+                            // Reset average in order to measure average over the save period.
+                            stat.m_average = CumulativeAverage::Type{};
                         });
 
                     AZ::Metrics::CounterArgs counterArgs;
