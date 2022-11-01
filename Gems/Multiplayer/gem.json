@@ -18,6 +18,9 @@
     "icon_path": "preview.png",
     "requirements": "",
     "documentation_url": "",
+    "external_subdirectories": [
+        "ScriptCanvasMultiplayer"
+    ],
     "dependencies": [
         "CertificateManager",
         "Atom_Feature_Common",
