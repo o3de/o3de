@@ -21,6 +21,9 @@ namespace AzToolsFramework
             : public UndoSystem::URSequencePoint
         {
         public:
+            AZ_RTTI(PrefabUndoBase, "{C86BFA2B-E042-40FC-B5C6-1838030B34BF}", UndoSystem::URSequencePoint);
+            AZ_CLASS_ALLOCATOR(PrefabUndoBase, AZ::SystemAllocator, 0);
+
             explicit PrefabUndoBase(const AZStd::string& undoOperationName);
 
             bool Changed() const override;

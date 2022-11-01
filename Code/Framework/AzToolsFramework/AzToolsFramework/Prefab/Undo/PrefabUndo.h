@@ -55,8 +55,6 @@ namespace AzToolsFramework
 
             void Undo() override;
             void Redo() override;
-
-            //! Overload to allow to apply the change, but prevent instanceToExclude from being refreshed.
             void Redo(InstanceOptionalConstReference instanceToExclude) override;
 
         private:
@@ -88,8 +86,6 @@ namespace AzToolsFramework
 
             void Undo() override;
             void Redo() override;
-
-            //! Overload to allow to apply the change, but prevent instanceToExclude from being refreshed.
             void Redo(InstanceOptionalConstReference instanceToExclude) override;
 
             LinkId GetLinkId();
