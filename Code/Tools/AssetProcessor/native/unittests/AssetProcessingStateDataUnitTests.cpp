@@ -14,7 +14,7 @@ using namespace AzToolsFramework::AssetDatabase;
 
 namespace AssetProcessor
 {
-    namespace
+    namespace Internal
     {
         auto ScanFoldersContainScanFolderID = [](const ScanFolderDatabaseEntryContainer& scanFolders, AZ::s64 scanFolderID) -> bool
         {
@@ -426,10 +426,10 @@ namespace AssetProcessor
         scanFolders.clear();
         EXPECT_TRUE(m_connection.GetScanFolders(scanFolders));
         EXPECT_EQ(scanFolders.size(), 1);
-        EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/O3DE/dev"));
-        EXPECT_TRUE(ScanFoldersContainScanFolderID(scanFolders, m_defaultScanFolder.m_scanFolderID));
-        EXPECT_TRUE(ScanFoldersContainPortableKey(scanFolders, m_defaultScanFolder.m_portableKey.c_str()));
-        EXPECT_TRUE(ScanFoldersContainPortableKey(scanFolders, "rootportkey"));
+        EXPECT_TRUE(Internal::ScanFoldersContainScanPath(scanFolders, "c:/O3DE/dev"));
+        EXPECT_TRUE(Internal::ScanFoldersContainScanFolderID(scanFolders, m_defaultScanFolder.m_scanFolderID));
+        EXPECT_TRUE(Internal::ScanFoldersContainPortableKey(scanFolders, m_defaultScanFolder.m_portableKey.c_str()));
+        EXPECT_TRUE(Internal::ScanFoldersContainPortableKey(scanFolders, "rootportkey"));
     }
 
     TEST_F(AssetProcessingStateDataUnitTest, TestScanFolder_AddDuplicateScanFolder_GetsSameId)
@@ -450,10 +450,10 @@ namespace AssetProcessor
         ScanFolderDatabaseEntryContainer scanFolders;
         EXPECT_TRUE(m_connection.GetScanFolders(scanFolders));
         EXPECT_EQ(scanFolders.size(), 1);
-        EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/O3DE/dev1"));
-        EXPECT_TRUE(ScanFoldersContainScanFolderID(scanFolders, m_defaultScanFolder.m_scanFolderID));
-        EXPECT_TRUE(ScanFoldersContainPortableKey(scanFolders, m_defaultScanFolder.m_portableKey.c_str()));
-        EXPECT_TRUE(ScanFoldersContainPortableKey(scanFolders, "rootportkey"));
+        EXPECT_TRUE(Internal::ScanFoldersContainScanPath(scanFolders, "c:/O3DE/dev1"));
+        EXPECT_TRUE(Internal::ScanFoldersContainScanFolderID(scanFolders, m_defaultScanFolder.m_scanFolderID));
+        EXPECT_TRUE(Internal::ScanFoldersContainPortableKey(scanFolders, m_defaultScanFolder.m_portableKey.c_str()));
+        EXPECT_TRUE(Internal::ScanFoldersContainPortableKey(scanFolders, "rootportkey"));
     }
 
     TEST_F(AssetProcessingStateDataUnitTest, TestScanFolder_RetrieveScanFolderById_Succeeds)
@@ -490,10 +490,10 @@ namespace AssetProcessor
         ScanFolderDatabaseEntryContainer scanFolders;
         EXPECT_TRUE(m_connection.GetScanFolders(scanFolders));
         EXPECT_EQ(scanFolders.size(), 2);
-        EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/O3DE/dev"));
-        EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/O3DE/game"));
-        EXPECT_TRUE(ScanFoldersContainScanFolderID(scanFolders, m_defaultScanFolder.m_scanFolderID));
-        EXPECT_TRUE(ScanFoldersContainScanFolderID(scanFolders, gameScanFolderEntry.m_scanFolderID));
+        EXPECT_TRUE(Internal::ScanFoldersContainScanPath(scanFolders, "c:/O3DE/dev"));
+        EXPECT_TRUE(Internal::ScanFoldersContainScanPath(scanFolders, "c:/O3DE/game"));
+        EXPECT_TRUE(Internal::ScanFoldersContainScanFolderID(scanFolders, m_defaultScanFolder.m_scanFolderID));
+        EXPECT_TRUE(Internal::ScanFoldersContainScanFolderID(scanFolders, gameScanFolderEntry.m_scanFolderID));
 
         // Remove the game scan folder
         EXPECT_TRUE(m_connection.RemoveScanFolder(848475));//should return true even if it doesn't exist, false only means SQL failed
@@ -503,8 +503,8 @@ namespace AssetProcessor
         scanFolders.clear();
         EXPECT_TRUE(m_connection.GetScanFolders(scanFolders));
         EXPECT_EQ(scanFolders.size(), 1);
-        EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/O3DE/dev"));
-        EXPECT_TRUE(ScanFoldersContainScanFolderID(scanFolders, m_defaultScanFolder.m_scanFolderID));
+        EXPECT_TRUE(Internal::ScanFoldersContainScanPath(scanFolders, "c:/O3DE/dev"));
+        EXPECT_TRUE(Internal::ScanFoldersContainScanFolderID(scanFolders, m_defaultScanFolder.m_scanFolderID));
     }
 
     TEST_F(AssetProcessingStateDataUnitTest, TestScanFolder_RemoveScanFolderByContainer_Succeeds)
@@ -519,10 +519,10 @@ namespace AssetProcessor
         ScanFolderDatabaseEntryContainer scanFolders;
         EXPECT_TRUE(m_connection.GetScanFolders(scanFolders));
         EXPECT_EQ(scanFolders.size(), 2);
-        EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/O3DE/dev"));
-        EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/O3DE/game"));
-        EXPECT_TRUE(ScanFoldersContainScanFolderID(scanFolders, m_defaultScanFolder.m_scanFolderID));
-        EXPECT_TRUE(ScanFoldersContainScanFolderID(scanFolders, gameScanFolderEntry.m_scanFolderID));
+        EXPECT_TRUE(Internal::ScanFoldersContainScanPath(scanFolders, "c:/O3DE/dev"));
+        EXPECT_TRUE(Internal::ScanFoldersContainScanPath(scanFolders, "c:/O3DE/game"));
+        EXPECT_TRUE(Internal::ScanFoldersContainScanFolderID(scanFolders, m_defaultScanFolder.m_scanFolderID));
+        EXPECT_TRUE(Internal::ScanFoldersContainScanFolderID(scanFolders, gameScanFolderEntry.m_scanFolderID));
 
         // Remove scan folder by using a container
         ScanFolderDatabaseEntryContainer tempScanFolderDatabaseEntryContainer; // note that on clang, its illegal to call a non-const function with a temp variable container as the param
@@ -561,9 +561,9 @@ namespace AssetProcessor
         EXPECT_TRUE(m_connection.GetSources(sources));
         EXPECT_EQ(sources.size(), 1);
         EXPECT_EQ(sources[0].m_analysisFingerprint, "12345");
-        EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource.tif"));
-        EXPECT_TRUE(SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
-        EXPECT_TRUE(SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
+        EXPECT_TRUE(Internal::SourcesContainSourceName(sources, "SomeSource.tif"));
+        EXPECT_TRUE(Internal::SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
+        EXPECT_TRUE(Internal::SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
     }
 
     TEST_F(AssetProcessingStateDataUnitTest, TestSources_AddDuplicateSource_GetsSameId)
@@ -581,9 +581,9 @@ namespace AssetProcessor
         EXPECT_TRUE(m_connection.GetSources(sources));
         EXPECT_EQ(sources.size(), 1);
         EXPECT_EQ(sources[0].m_analysisFingerprint, "12345");
-        EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource.tif"));
-        EXPECT_TRUE(SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
-        EXPECT_TRUE(SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
+        EXPECT_TRUE(Internal::SourcesContainSourceName(sources, "SomeSource.tif"));
+        EXPECT_TRUE(Internal::SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
+        EXPECT_TRUE(Internal::SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
     }
 
     TEST_F(AssetProcessingStateDataUnitTest, TestSources_ChangeSourceField_Succeeds)
@@ -600,9 +600,9 @@ namespace AssetProcessor
         EXPECT_TRUE(m_connection.GetSources(sources));
         EXPECT_EQ(sources.size(), 1);
         EXPECT_EQ(sources[0].m_analysisFingerprint, "otherFingerprint");
-        EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource.tif"));
-        EXPECT_TRUE(SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
-        EXPECT_TRUE(SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
+        EXPECT_TRUE(Internal::SourcesContainSourceName(sources, "SomeSource.tif"));
+        EXPECT_TRUE(Internal::SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
+        EXPECT_TRUE(Internal::SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
     }
 
     TEST_F(AssetProcessingStateDataUnitTest, TestSources_ChangeScanFolder_Succeeds)
@@ -625,9 +625,9 @@ namespace AssetProcessor
         EXPECT_TRUE(m_connection.GetSources(sources));
         EXPECT_EQ(sources.size(), 1);
         EXPECT_EQ(sources[0].m_analysisFingerprint, "new different fingerprint"); // verify that this column IS updated.
-        EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource.tif"));
-        EXPECT_TRUE(SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
-        EXPECT_TRUE(SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
+        EXPECT_TRUE(Internal::SourcesContainSourceName(sources, "SomeSource.tif"));
+        EXPECT_TRUE(Internal::SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
+        EXPECT_TRUE(Internal::SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
 
         // Add the same source again, but change the scan folder back. This should NOT add a new source - this time we do know what the source ID is!
         SourceDatabaseEntry dupeSource(m_defaultSource);
@@ -639,18 +639,18 @@ namespace AssetProcessor
         sources.clear();
         EXPECT_TRUE(m_connection.GetSources(sources));
         EXPECT_EQ(sources.size(), 1);
-        EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource.tif"));
-        EXPECT_TRUE(SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
-        EXPECT_TRUE(SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
+        EXPECT_TRUE(Internal::SourcesContainSourceName(sources, "SomeSource.tif"));
+        EXPECT_TRUE(Internal::SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
+        EXPECT_TRUE(Internal::SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
 
         // Remove the extra scan folder, make sure it doesn't drop the source since it should now be bound to the original scan folder agian
         EXPECT_TRUE(m_connection.RemoveScanFolder(scanfolder.m_scanFolderID));
         sources.clear();
         EXPECT_TRUE(m_connection.GetSources(sources));
         EXPECT_EQ(sources.size(), 1);
-        EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource.tif"));
-        EXPECT_TRUE(SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
-        EXPECT_TRUE(SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
+        EXPECT_TRUE(Internal::SourcesContainSourceName(sources, "SomeSource.tif"));
+        EXPECT_TRUE(Internal::SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
+        EXPECT_TRUE(Internal::SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
     }
 
     TEST_F(AssetProcessingStateDataUnitTest, TestSources_RetrieveSourceBySourceId_Succeeds)
@@ -692,39 +692,39 @@ namespace AssetProcessor
         sources.clear();
         EXPECT_TRUE(m_connection.GetSourcesLikeSourceName("SomeSource%", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::Raw, sources));
         EXPECT_EQ(sources.size(), 1);
-        EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource.tif"));
-        EXPECT_TRUE(SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
-        EXPECT_TRUE(SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
+        EXPECT_TRUE(Internal::SourcesContainSourceName(sources, "SomeSource.tif"));
+        EXPECT_TRUE(Internal::SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
+        EXPECT_TRUE(Internal::SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
         sources.clear();
         EXPECT_TRUE(m_connection.GetSourcesLikeSourceName("%SomeSource%", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::Raw, sources));
         EXPECT_EQ(sources.size(), 1);
-        EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource.tif"));
-        EXPECT_TRUE(SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
-        EXPECT_TRUE(SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
+        EXPECT_TRUE(Internal::SourcesContainSourceName(sources, "SomeSource.tif"));
+        EXPECT_TRUE(Internal::SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
+        EXPECT_TRUE(Internal::SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
         sources.clear();
         EXPECT_FALSE(m_connection.GetSourcesLikeSourceName("Source", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::StartsWith, sources));
         sources.clear();
         EXPECT_TRUE(m_connection.GetSourcesLikeSourceName("Some", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::StartsWith, sources));
         EXPECT_EQ(sources.size(), 1);
-        EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource.tif"));
-        EXPECT_TRUE(SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
-        EXPECT_TRUE(SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
+        EXPECT_TRUE(Internal::SourcesContainSourceName(sources, "SomeSource.tif"));
+        EXPECT_TRUE(Internal::SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
+        EXPECT_TRUE(Internal::SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
         sources.clear();
         EXPECT_FALSE(m_connection.GetSourcesLikeSourceName("SomeSource", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::EndsWith, sources));
         sources.clear();
         EXPECT_TRUE(m_connection.GetSourcesLikeSourceName(".tif", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::EndsWith, sources));
         EXPECT_EQ(sources.size(), 1);
-        EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource.tif"));
-        EXPECT_TRUE(SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
-        EXPECT_TRUE(SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
+        EXPECT_TRUE(Internal::SourcesContainSourceName(sources, "SomeSource.tif"));
+        EXPECT_TRUE(Internal::SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
+        EXPECT_TRUE(Internal::SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
         sources.clear();
         EXPECT_FALSE(m_connection.GetSourcesLikeSourceName("blah", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::Matches, sources));
         sources.clear();
         EXPECT_TRUE(m_connection.GetSourcesLikeSourceName("meSour", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::Matches, sources));
         EXPECT_EQ(sources.size(), 1);
-        EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource.tif"));
-        EXPECT_TRUE(SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
-        EXPECT_TRUE(SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
+        EXPECT_TRUE(Internal::SourcesContainSourceName(sources, "SomeSource.tif"));
+        EXPECT_TRUE(Internal::SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
+        EXPECT_TRUE(Internal::SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
     }
 
     TEST_F(AssetProcessingStateDataUnitTest, TestSources_RemoveSourceById_Succeeds)
@@ -736,9 +736,9 @@ namespace AssetProcessor
         EXPECT_TRUE(m_connection.GetSources(sources));
         EXPECT_EQ(sources.size(), 1);
         EXPECT_EQ(sources[0].m_analysisFingerprint, "12345");
-        EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource.tif"));
-        EXPECT_TRUE(SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
-        EXPECT_TRUE(SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
+        EXPECT_TRUE(Internal::SourcesContainSourceName(sources, "SomeSource.tif"));
+        EXPECT_TRUE(Internal::SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
+        EXPECT_TRUE(Internal::SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
 
         // Remove a source
         EXPECT_TRUE(m_connection.RemoveSource(432234));//should return true even if it doesn't exist, false only if SQL failed
@@ -761,12 +761,12 @@ namespace AssetProcessor
         SourceDatabaseEntryContainer sources;
         EXPECT_TRUE(m_connection.GetSources(sources));
         EXPECT_EQ(sources.size(), 2);
-        EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource.tif"));
-        EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource1.tif"));
-        EXPECT_TRUE(SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
-        EXPECT_TRUE(SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
-        EXPECT_TRUE(SourcesContainSourceID(sources, source.m_sourceID));
-        EXPECT_TRUE(SourcesContainSourceGuid(sources, source.m_sourceGuid));
+        EXPECT_TRUE(Internal::SourcesContainSourceName(sources, "SomeSource.tif"));
+        EXPECT_TRUE(Internal::SourcesContainSourceName(sources, "SomeSource1.tif"));
+        EXPECT_TRUE(Internal::SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
+        EXPECT_TRUE(Internal::SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
+        EXPECT_TRUE(Internal::SourcesContainSourceID(sources, source.m_sourceID));
+        EXPECT_TRUE(Internal::SourcesContainSourceGuid(sources, source.m_sourceGuid));
 
         // Remove source via container
         SourceDatabaseEntryContainer tempSourceDatabaseEntryContainer;
@@ -790,12 +790,12 @@ namespace AssetProcessor
         SourceDatabaseEntryContainer sources;
         EXPECT_TRUE(m_connection.GetSources(sources));
         EXPECT_EQ(sources.size(), 2);
-        EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource.tif"));
-        EXPECT_TRUE(SourcesContainSourceName(sources, "SomeSource1.tif"));
-        EXPECT_TRUE(SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
-        EXPECT_TRUE(SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
-        EXPECT_TRUE(SourcesContainSourceID(sources, source.m_sourceID));
-        EXPECT_TRUE(SourcesContainSourceGuid(sources, source.m_sourceGuid));
+        EXPECT_TRUE(Internal::SourcesContainSourceName(sources, "SomeSource.tif"));
+        EXPECT_TRUE(Internal::SourcesContainSourceName(sources, "SomeSource1.tif"));
+        EXPECT_TRUE(Internal::SourcesContainSourceID(sources, m_defaultSource.m_sourceID));
+        EXPECT_TRUE(Internal::SourcesContainSourceGuid(sources, m_defaultSource.m_sourceGuid));
+        EXPECT_TRUE(Internal::SourcesContainSourceID(sources, source.m_sourceID));
+        EXPECT_TRUE(Internal::SourcesContainSourceGuid(sources, source.m_sourceGuid));
 
         // Remove the scan folder for these sources, the sources should cascade delete
         EXPECT_TRUE(m_connection.RemoveScanFolder(m_defaultScanFolder.m_scanFolderID));
@@ -842,13 +842,13 @@ namespace AssetProcessor
         jobs.clear();
         EXPECT_TRUE(m_connection.GetJobs(jobs));
         EXPECT_EQ(jobs.size(), 1);
-        EXPECT_TRUE(JobsContainJobID(jobs, m_defaultJob.m_jobID));
-        EXPECT_TRUE(JobsContainJobKey(jobs, m_defaultJob.m_jobKey.c_str()));
-        EXPECT_TRUE(JobsContainFingerprint(jobs, m_defaultJob.m_fingerprint));
-        EXPECT_TRUE(JobsContainPlatform(jobs, m_defaultJob.m_platform.c_str()));
-        EXPECT_TRUE(JobsContainBuilderGuid(jobs, m_defaultJob.m_builderGuid));
-        EXPECT_TRUE(JobsContainStatus(jobs, m_defaultJob.m_status));
-        EXPECT_TRUE(JobsContainRunKey(jobs, m_defaultJob.m_jobRunKey));
+        EXPECT_TRUE(Internal::JobsContainJobID(jobs, m_defaultJob.m_jobID));
+        EXPECT_TRUE(Internal::JobsContainJobKey(jobs, m_defaultJob.m_jobKey.c_str()));
+        EXPECT_TRUE(Internal::JobsContainFingerprint(jobs, m_defaultJob.m_fingerprint));
+        EXPECT_TRUE(Internal::JobsContainPlatform(jobs, m_defaultJob.m_platform.c_str()));
+        EXPECT_TRUE(Internal::JobsContainBuilderGuid(jobs, m_defaultJob.m_builderGuid));
+        EXPECT_TRUE(Internal::JobsContainStatus(jobs, m_defaultJob.m_status));
+        EXPECT_TRUE(Internal::JobsContainRunKey(jobs, m_defaultJob.m_jobRunKey));
     }
 
     TEST_F(AssetProcessingStateDataUnitTest, TestJobs_AddDuplicateJob_GetsSameId)
@@ -865,12 +865,12 @@ namespace AssetProcessor
         JobDatabaseEntryContainer jobs;
         EXPECT_TRUE(m_connection.GetJobs(jobs));
         EXPECT_EQ(jobs.size(), 1);
-        EXPECT_TRUE(JobsContainJobID(jobs, m_defaultJob.m_jobID));
-        EXPECT_TRUE(JobsContainJobKey(jobs, m_defaultJob.m_jobKey.c_str()));
-        EXPECT_TRUE(JobsContainFingerprint(jobs, m_defaultJob.m_fingerprint));
-        EXPECT_TRUE(JobsContainPlatform(jobs, m_defaultJob.m_platform.c_str()));
-        EXPECT_TRUE(JobsContainBuilderGuid(jobs, m_defaultJob.m_builderGuid));
-        EXPECT_TRUE(JobsContainStatus(jobs, m_defaultJob.m_status));
+        EXPECT_TRUE(Internal::JobsContainJobID(jobs, m_defaultJob.m_jobID));
+        EXPECT_TRUE(Internal::JobsContainJobKey(jobs, m_defaultJob.m_jobKey.c_str()));
+        EXPECT_TRUE(Internal::JobsContainFingerprint(jobs, m_defaultJob.m_fingerprint));
+        EXPECT_TRUE(Internal::JobsContainPlatform(jobs, m_defaultJob.m_platform.c_str()));
+        EXPECT_TRUE(Internal::JobsContainBuilderGuid(jobs, m_defaultJob.m_builderGuid));
+        EXPECT_TRUE(Internal::JobsContainStatus(jobs, m_defaultJob.m_status));
     }
 
     TEST_F(AssetProcessingStateDataUnitTest, TestJobs_RetrieveJobByJobId_Succeeds)
@@ -885,12 +885,12 @@ namespace AssetProcessor
         JobDatabaseEntryContainer jobs;
         EXPECT_TRUE(m_connection.GetJobsBySourceID(m_defaultSource.m_sourceID, jobs));
         EXPECT_EQ(jobs.size(), 1);
-        EXPECT_TRUE(JobsContainJobID(jobs, m_defaultJob.m_jobID));
-        EXPECT_TRUE(JobsContainJobKey(jobs, m_defaultJob.m_jobKey.c_str()));
-        EXPECT_TRUE(JobsContainFingerprint(jobs, m_defaultJob.m_fingerprint));
-        EXPECT_TRUE(JobsContainPlatform(jobs, m_defaultJob.m_platform.c_str()));
-        EXPECT_TRUE(JobsContainBuilderGuid(jobs, m_defaultJob.m_builderGuid));
-        EXPECT_TRUE(JobsContainStatus(jobs, m_defaultJob.m_status));
+        EXPECT_TRUE(Internal::JobsContainJobID(jobs, m_defaultJob.m_jobID));
+        EXPECT_TRUE(Internal::JobsContainJobKey(jobs, m_defaultJob.m_jobKey.c_str()));
+        EXPECT_TRUE(Internal::JobsContainFingerprint(jobs, m_defaultJob.m_fingerprint));
+        EXPECT_TRUE(Internal::JobsContainPlatform(jobs, m_defaultJob.m_platform.c_str()));
+        EXPECT_TRUE(Internal::JobsContainBuilderGuid(jobs, m_defaultJob.m_builderGuid));
+        EXPECT_TRUE(Internal::JobsContainStatus(jobs, m_defaultJob.m_status));
     }
 
     TEST_F(AssetProcessingStateDataUnitTest, TestJobs_RetrieveJobBySourceName_Succeeds)
@@ -907,12 +907,12 @@ namespace AssetProcessor
         EXPECT_TRUE(m_connection.GetJobsBySourceName(AssetProcessor::SourceAssetReference(
             m_defaultSource.m_scanFolderPK, m_defaultSource.m_sourceName.c_str()), jobs));
         EXPECT_EQ(jobs.size(), 1);
-        EXPECT_TRUE(JobsContainJobID(jobs, m_defaultJob.m_jobID));
-        EXPECT_TRUE(JobsContainJobKey(jobs, m_defaultJob.m_jobKey.c_str()));
-        EXPECT_TRUE(JobsContainFingerprint(jobs, m_defaultJob.m_fingerprint));
-        EXPECT_TRUE(JobsContainPlatform(jobs, m_defaultJob.m_platform.c_str()));
-        EXPECT_TRUE(JobsContainBuilderGuid(jobs, m_defaultJob.m_builderGuid));
-        EXPECT_TRUE(JobsContainStatus(jobs, m_defaultJob.m_status));
+        EXPECT_TRUE(Internal::JobsContainJobID(jobs, m_defaultJob.m_jobID));
+        EXPECT_TRUE(Internal::JobsContainJobKey(jobs, m_defaultJob.m_jobKey.c_str()));
+        EXPECT_TRUE(Internal::JobsContainFingerprint(jobs, m_defaultJob.m_fingerprint));
+        EXPECT_TRUE(Internal::JobsContainPlatform(jobs, m_defaultJob.m_platform.c_str()));
+        EXPECT_TRUE(Internal::JobsContainBuilderGuid(jobs, m_defaultJob.m_builderGuid));
+        EXPECT_TRUE(Internal::JobsContainStatus(jobs, m_defaultJob.m_status));
     }
 
     TEST_F(AssetProcessingStateDataUnitTest, TestJobs_RemoveJobByJobId_Succeeds)
@@ -947,18 +947,18 @@ namespace AssetProcessor
         JobDatabaseEntryContainer jobs;
         EXPECT_TRUE(m_connection.GetJobs(jobs));
         EXPECT_EQ(jobs.size(), 2);
-        EXPECT_TRUE(JobsContainJobID(jobs, m_defaultJob.m_jobID));
-        EXPECT_TRUE(JobsContainJobKey(jobs, m_defaultJob.m_jobKey.c_str()));
-        EXPECT_TRUE(JobsContainFingerprint(jobs, m_defaultJob.m_fingerprint));
-        EXPECT_TRUE(JobsContainPlatform(jobs, m_defaultJob.m_platform.c_str()));
-        EXPECT_TRUE(JobsContainBuilderGuid(jobs, m_defaultJob.m_builderGuid));
-        EXPECT_TRUE(JobsContainStatus(jobs, m_defaultJob.m_status));
-        EXPECT_TRUE(JobsContainJobID(jobs, job.m_jobID));
-        EXPECT_TRUE(JobsContainJobKey(jobs, job.m_jobKey.c_str()));
-        EXPECT_TRUE(JobsContainFingerprint(jobs, job.m_fingerprint));
-        EXPECT_TRUE(JobsContainPlatform(jobs, job.m_platform.c_str()));
-        EXPECT_TRUE(JobsContainBuilderGuid(jobs, job.m_builderGuid));
-        EXPECT_TRUE(JobsContainStatus(jobs, job.m_status));
+        EXPECT_TRUE(Internal::JobsContainJobID(jobs, m_defaultJob.m_jobID));
+        EXPECT_TRUE(Internal::JobsContainJobKey(jobs, m_defaultJob.m_jobKey.c_str()));
+        EXPECT_TRUE(Internal::JobsContainFingerprint(jobs, m_defaultJob.m_fingerprint));
+        EXPECT_TRUE(Internal::JobsContainPlatform(jobs, m_defaultJob.m_platform.c_str()));
+        EXPECT_TRUE(Internal::JobsContainBuilderGuid(jobs, m_defaultJob.m_builderGuid));
+        EXPECT_TRUE(Internal::JobsContainStatus(jobs, m_defaultJob.m_status));
+        EXPECT_TRUE(Internal::JobsContainJobID(jobs, job.m_jobID));
+        EXPECT_TRUE(Internal::JobsContainJobKey(jobs, job.m_jobKey.c_str()));
+        EXPECT_TRUE(Internal::JobsContainFingerprint(jobs, job.m_fingerprint));
+        EXPECT_TRUE(Internal::JobsContainPlatform(jobs, job.m_platform.c_str()));
+        EXPECT_TRUE(Internal::JobsContainBuilderGuid(jobs, job.m_builderGuid));
+        EXPECT_TRUE(Internal::JobsContainStatus(jobs, job.m_status));
 
         //Remove job via container
         JobDatabaseEntryContainer tempJobDatabaseEntryContainer;
@@ -985,18 +985,18 @@ namespace AssetProcessor
         JobDatabaseEntryContainer jobs;
         EXPECT_TRUE(m_connection.GetJobs(jobs));
         EXPECT_EQ(jobs.size(), 2);
-        EXPECT_TRUE(JobsContainJobID(jobs, m_defaultJob.m_jobID));
-        EXPECT_TRUE(JobsContainJobKey(jobs, m_defaultJob.m_jobKey.c_str()));
-        EXPECT_TRUE(JobsContainFingerprint(jobs, m_defaultJob.m_fingerprint));
-        EXPECT_TRUE(JobsContainPlatform(jobs, m_defaultJob.m_platform.c_str()));
-        EXPECT_TRUE(JobsContainBuilderGuid(jobs, m_defaultJob.m_builderGuid));
-        EXPECT_TRUE(JobsContainStatus(jobs, m_defaultJob.m_status));
-        EXPECT_TRUE(JobsContainJobID(jobs, job.m_jobID));
-        EXPECT_TRUE(JobsContainJobKey(jobs, job.m_jobKey.c_str()));
-        EXPECT_TRUE(JobsContainFingerprint(jobs, job.m_fingerprint));
-        EXPECT_TRUE(JobsContainPlatform(jobs, job.m_platform.c_str()));
-        EXPECT_TRUE(JobsContainBuilderGuid(jobs, job.m_builderGuid));
-        EXPECT_TRUE(JobsContainStatus(jobs, job.m_status));
+        EXPECT_TRUE(Internal::JobsContainJobID(jobs, m_defaultJob.m_jobID));
+        EXPECT_TRUE(Internal::JobsContainJobKey(jobs, m_defaultJob.m_jobKey.c_str()));
+        EXPECT_TRUE(Internal::JobsContainFingerprint(jobs, m_defaultJob.m_fingerprint));
+        EXPECT_TRUE(Internal::JobsContainPlatform(jobs, m_defaultJob.m_platform.c_str()));
+        EXPECT_TRUE(Internal::JobsContainBuilderGuid(jobs, m_defaultJob.m_builderGuid));
+        EXPECT_TRUE(Internal::JobsContainStatus(jobs, m_defaultJob.m_status));
+        EXPECT_TRUE(Internal::JobsContainJobID(jobs, job.m_jobID));
+        EXPECT_TRUE(Internal::JobsContainJobKey(jobs, job.m_jobKey.c_str()));
+        EXPECT_TRUE(Internal::JobsContainFingerprint(jobs, job.m_fingerprint));
+        EXPECT_TRUE(Internal::JobsContainPlatform(jobs, job.m_platform.c_str()));
+        EXPECT_TRUE(Internal::JobsContainBuilderGuid(jobs, job.m_builderGuid));
+        EXPECT_TRUE(Internal::JobsContainStatus(jobs, job.m_status));
 
         // Remove the source for these jobs, the jobs should cascade delete
         EXPECT_TRUE(m_connection.RemoveSource(m_defaultSource.m_sourceID));
@@ -1248,11 +1248,11 @@ namespace AssetProcessor
         EXPECT_TRUE(m_connection.GetProductDependencies(productDependencies));
         EXPECT_EQ(productDependencies.size(), 1);
 
-        EXPECT_TRUE(ProductDependenciesContainProductDependencyID(productDependencies, productDependency.m_productDependencyID));
-        EXPECT_TRUE(ProductDependenciesContainProductID(productDependencies, productDependency.m_productPK));
-        EXPECT_TRUE(ProductDependenciesContainDependencySoureGuid(productDependencies, productDependency.m_dependencySourceGuid));
-        EXPECT_TRUE(ProductDependenciesContainDependencySubID(productDependencies, productDependency.m_dependencySubID));
-        EXPECT_TRUE(ProductDependenciesContainDependencyFlags(productDependencies, productDependency.m_dependencyFlags));
+        EXPECT_TRUE(Internal::ProductDependenciesContainProductDependencyID(productDependencies, productDependency.m_productDependencyID));
+        EXPECT_TRUE(Internal::ProductDependenciesContainProductID(productDependencies, productDependency.m_productPK));
+        EXPECT_TRUE(Internal::ProductDependenciesContainDependencySoureGuid(productDependencies, productDependency.m_dependencySourceGuid));
+        EXPECT_TRUE(Internal::ProductDependenciesContainDependencySubID(productDependencies, productDependency.m_dependencySubID));
+        EXPECT_TRUE(Internal::ProductDependenciesContainDependencyFlags(productDependencies, productDependency.m_dependencyFlags));
 
         // Add the same product again, should not add another because it already exists, so we should get the same id
         ProductDependencyDatabaseEntry dupeProductDependency(productDependency);
@@ -1265,11 +1265,11 @@ namespace AssetProcessor
         productDependencies.clear();
         EXPECT_TRUE(m_connection.GetProductDependencies(productDependencies));
         EXPECT_EQ(productDependencies.size(), 1);
-        EXPECT_TRUE(ProductDependenciesContainProductDependencyID(productDependencies, productDependency.m_productDependencyID));
-        EXPECT_TRUE(ProductDependenciesContainProductID(productDependencies, productDependency.m_productPK));
-        EXPECT_TRUE(ProductDependenciesContainDependencySoureGuid(productDependencies, productDependency.m_dependencySourceGuid));
-        EXPECT_TRUE(ProductDependenciesContainDependencySubID(productDependencies, productDependency.m_dependencySubID));
-        EXPECT_TRUE(ProductDependenciesContainDependencyFlags(productDependencies, productDependency.m_dependencyFlags));
+        EXPECT_TRUE(Internal::ProductDependenciesContainProductDependencyID(productDependencies, productDependency.m_productDependencyID));
+        EXPECT_TRUE(Internal::ProductDependenciesContainProductID(productDependencies, productDependency.m_productPK));
+        EXPECT_TRUE(Internal::ProductDependenciesContainDependencySoureGuid(productDependencies, productDependency.m_dependencySourceGuid));
+        EXPECT_TRUE(Internal::ProductDependenciesContainDependencySubID(productDependencies, productDependency.m_dependencySubID));
+        EXPECT_TRUE(Internal::ProductDependenciesContainDependencyFlags(productDependencies, productDependency.m_dependencyFlags));
     }
 
     TEST_F(AssetProcessingStateDataUnitTest, TestProductDependency_VerifyProductDependency_Succeeds)
@@ -1288,20 +1288,20 @@ namespace AssetProcessor
         ProductDatabaseEntryContainer dependentProducts;
         EXPECT_TRUE(m_connection.GetDirectProductDependencies(products[0].m_productID, dependentProducts));
         EXPECT_EQ(dependentProducts.size(), 1);
-        EXPECT_TRUE(ProductsContainProductID(products, products[1].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(products, products[1].m_productID));
 
         // products[1] -> products[2], products[3]
         dependentProducts.clear();
         EXPECT_TRUE(m_connection.GetDirectProductDependencies(products[1].m_productID, dependentProducts));
         EXPECT_EQ(dependentProducts.size(), 2);
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[2].m_productID));
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[3].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[2].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[3].m_productID));
 
         // products[2] -> products[4]
         dependentProducts.clear();
         EXPECT_TRUE(m_connection.GetDirectProductDependencies(products[2].m_productID, dependentProducts));
         EXPECT_EQ(dependentProducts.size(), 1);
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[4].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[4].m_productID));
 
         // products[3] ->
         dependentProducts.clear();
@@ -1312,7 +1312,7 @@ namespace AssetProcessor
         dependentProducts.clear();
         EXPECT_TRUE(m_connection.GetDirectProductDependencies(products[4].m_productID, dependentProducts));
         EXPECT_EQ(dependentProducts.size(), 1);
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[5].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[5].m_productID));
 
         // products[5] ->
         dependentProducts.clear();
@@ -1324,27 +1324,27 @@ namespace AssetProcessor
         dependentProducts.clear();
         EXPECT_TRUE(m_connection.GetAllProductDependencies(products[0].m_productID, dependentProducts));
         EXPECT_EQ(dependentProducts.size(), 5);
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[1].m_productID));
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[2].m_productID));
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[3].m_productID));
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[4].m_productID));
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[5].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[1].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[2].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[3].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[4].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[5].m_productID));
 
         // products[1] -> products[2], products[3], products[4], products[5]
         dependentProducts.clear();
         EXPECT_TRUE(m_connection.GetAllProductDependencies(products[1].m_productID, dependentProducts));
         EXPECT_EQ(dependentProducts.size(), 4);
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[2].m_productID));
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[3].m_productID));
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[4].m_productID));
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[5].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[2].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[3].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[4].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[5].m_productID));
 
         // products[2] -> products[4], products[5]
         dependentProducts.clear();
         EXPECT_TRUE(m_connection.GetAllProductDependencies(products[2].m_productID, dependentProducts));
         EXPECT_EQ(dependentProducts.size(), 2);
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[4].m_productID));
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[5].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[4].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[5].m_productID));
 
         // products[3] ->
         dependentProducts.clear();
@@ -1355,7 +1355,7 @@ namespace AssetProcessor
         dependentProducts.clear();
         EXPECT_TRUE(m_connection.GetAllProductDependencies(products[4].m_productID, dependentProducts));
         EXPECT_EQ(dependentProducts.size(), 1);
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[5].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[5].m_productID));
 
         // products[5] ->
         dependentProducts.clear();
@@ -1384,17 +1384,17 @@ namespace AssetProcessor
         ProductDatabaseEntryContainer dependentProducts;
         EXPECT_TRUE(m_connection.GetDirectProductDependencies(products[5].m_productID, dependentProducts));
         EXPECT_EQ(dependentProducts.size(), 1);
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[0].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[0].m_productID));
 
         // products[2] -> products[4], products[5], products[0], products[1], products[3]
         dependentProducts.clear();
         EXPECT_TRUE(m_connection.GetAllProductDependencies(products[2].m_productID, dependentProducts));
         EXPECT_EQ(dependentProducts.size(), 5);
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[4].m_productID));
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[5].m_productID));
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[0].m_productID));
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[1].m_productID));
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[3].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[4].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[5].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[0].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[1].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[3].m_productID));
 
         m_connection.RemoveProductDependencyByProductId(products[4].m_productID);
 
@@ -1402,9 +1402,9 @@ namespace AssetProcessor
         dependentProducts.clear();
         EXPECT_TRUE(m_connection.GetAllProductDependencies(products[1].m_productID, dependentProducts));
         EXPECT_EQ(dependentProducts.size(), 3);
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[2].m_productID));
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[3].m_productID));
-        EXPECT_TRUE(ProductsContainProductID(dependentProducts, products[4].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[2].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[3].m_productID));
+        EXPECT_TRUE(Internal::ProductsContainProductID(dependentProducts, products[4].m_productID));
     }
 
     TEST_F(AssetProcessingStateDataUnitTest, TestProductDependency_RemoveProductDependency_Succeeds)
