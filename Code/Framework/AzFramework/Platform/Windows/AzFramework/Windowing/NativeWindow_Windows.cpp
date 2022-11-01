@@ -33,7 +33,7 @@ namespace AzFramework
         NativeWindowHandle GetWindowHandle() const override;
         void SetWindowTitle(const AZStd::string& title) override;
 
-        void ResizeClientArea( WindowSize clientAreaSize ) override;
+        void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options) override;
         bool SupportsClientAreaResize() const override { return true; }
         bool GetFullScreenState() const override;
         void SetFullScreenState(bool fullScreenState) override;
@@ -335,7 +335,7 @@ namespace AzFramework
         }
     }
 
-    void NativeWindowImpl_Win32::ResizeClientArea(WindowSize clientAreaSize)
+    void NativeWindowImpl_Win32::ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options)
     {
         RECT rect = {};
         GetClientRect(m_win32Handle, &rect);
@@ -343,7 +343,8 @@ namespace AzFramework
         rect.bottom = rect.top + clientAreaSize.m_height;
         AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, false);
 
-        SetWindowPos(m_win32Handle, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE);
+        UINT flag = SWP_NOMOVE | (options.m_ignoreScreenSizeLimit ? SWP_NOSENDCHANGING : 0);
+        SetWindowPos(m_win32Handle, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, flag);
     }
 
     bool NativeWindowImpl_Win32::GetFullScreenState() const

@@ -100,10 +100,13 @@ namespace GradientSignal
         void Set3dFalloff(bool is3dFalloff) override;
 
         void CacheShapeBounds();
+
+        void NotifyRegionChanged(const AZ::Aabb& region);
+
     private:
         ShapeAreaFalloffGradientConfig m_configuration;
-        LmbrCentral::DependencyMonitor m_dependencyMonitor;
         mutable AZStd::shared_mutex m_queryMutex;
         AZ::Vector3 m_cachedShapeCenter;
+        AZ::Aabb m_cachedShapeBounds;
     };
 }

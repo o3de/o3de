@@ -8,7 +8,9 @@
 
 #pragma once
 
+#include <Atom/Feature/CoreLights/LightCommon.h>
 #include <Atom/Feature/CoreLights/PolygonLightFeatureProcessorInterface.h>
+#include <Atom/Feature/Mesh/MeshCommon.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <Atom/Feature/Utils/MultiIndexedDataVector.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
@@ -70,19 +72,20 @@ namespace AZ
                 }
             };
 
-            // Calculates cross product between vectors p1->p0 and p1->p2
-            static Vector3 CrossEdges(const LightPosition& p0, const LightPosition& p1, const LightPosition& p2);
-
             using PolygonPoints = AZStd::array<LightPosition, MaxPolygonPoints>;
-            using PolygonLightDataVector = MultiIndexedDataVector<PolygonLightData, PolygonPoints>;
+            using PolygonLightDataVector = MultiIndexedDataVector<PolygonLightData, PolygonPoints, MeshCommon::BoundsVariant>;
 
             // Recalculates the start / end indices of the points for this polygon if it recently moved in memory.
             void EvaluateStartEndIndices(PolygonLightDataVector::IndexType index);
 
-            PolygonLightDataVector m_polygonLightData;
+            void UpdateBounds(LightHandle handle);
+
+            PolygonLightDataVector m_lightData;
             
             GpuBufferHandler m_lightBufferHandler;
             GpuBufferHandler m_lightPolygonPointBufferHandler;
+
+            RHI::Handle<uint32_t> m_lightMeshFlag;
             bool m_deviceBufferNeedsUpdate = false;
         };
     } // namespace Render

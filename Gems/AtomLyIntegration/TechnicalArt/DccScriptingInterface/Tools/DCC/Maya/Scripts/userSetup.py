@@ -1,5 +1,3 @@
-# coding:utf-8
-#!/usr/bin/python
 #
 # Copyright (c) Contributors to the Open 3D Engine Project.
 # For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -8,7 +6,6 @@
 #
 #
 # -------------------------------------------------------------------------
-from __future__ import unicode_literals
 
 """
 This module fullfils the maya bootstrap pattern as described in their docs
@@ -32,12 +29,30 @@ _BOOT_INFO = True
 
 # -------------------------------------------------------------------------
 # built in's
+import sys
 import os
 import site
 import inspect
-import traceback
 from pathlib import Path
 import logging as _logging
+
+# -- maya imports
+import maya.cmds as cmds
+import maya.mel as mel
+#from pymel.all import *
+
+# Maya is frozen, entry point module path when frozen
+_MODULE_PATH = Path(os.path.abspath(inspect.getfile(inspect.currentframe())))
+print(f'o3de userSetup.py path is: {_MODULE_PATH}')
+
+PATH_O3DE_TECHART_GEMS = _MODULE_PATH.parents[5].resolve()
+print(f'o3de techart gems path is: {PATH_O3DE_TECHART_GEMS}')
+sys.path.insert(0, str(PATH_O3DE_TECHART_GEMS))
+
+from DccScriptingInterface import PATH_DCCSI_PYTHON_LIB
+# 3rdparty
+from unipath import Path
+from box import Box
 # -------------------------------------------------------------------------
 
 
@@ -53,86 +68,49 @@ __all__ = ['config',
            'scripts']
 
 _LOGGER = _logging.getLogger(_MODULENAME)
-_LOGGER.debug('Invoking:: {0}.'.format({_MODULENAME}))
-# -------------------------------------------------------------------------
 
-
-# -------------------------------------------------------------------------
-# Maya is frozen
-# module path when frozen
-_MODULE_PATH = Path(os.path.abspath(inspect.getfile(inspect.currentframe())))
-_LOGGER.debug('_MODULE_PATH: {}'.format(_MODULE_PATH))
-
-from DccScriptingInterface import PATH_DCCSIG
 from DccScriptingInterface import add_site_dir
-
-DCCSI_TOOLS_MAYA_SCRIPTS_PATH = Path(_MODULE_PATH.parent.as_posix())
-_LOGGER.debug('_DCCSI_TOOLS_MAYA_SCRIPTS_PATH: {}'.format(DCCSI_TOOLS_MAYA_SCRIPTS_PATH))
-add_site_dir(DCCSI_TOOLS_MAYA_SCRIPTS_PATH)
-
-PATH_DCCSI_TOOLS_MAYA = Path(DCCSI_TOOLS_MAYA_SCRIPTS_PATH.parent)
-PATH_DCCSI_TOOLS_MAYA = Path(os.getenv('PATH_DCCSI_TOOLS_MAYA', PATH_DCCSI_TOOLS_MAYA.as_posix()))
-add_site_dir(PATH_DCCSI_TOOLS_MAYA.as_posix())
-
-PATH_DCCSI_TOOLS_DCC = Path(PATH_DCCSI_TOOLS_MAYA.parent)
-PATH_DCCSI_TOOLS_DCC = Path(os.getenv('PATH_DCCSI_TOOLS_DCC', PATH_DCCSI_TOOLS_DCC.as_posix()))
-
-PATH_DCCSI_TOOLS = Path(PATH_DCCSI_TOOLS_DCC.parent)
-PATH_DCCSI_TOOLS = Path(os.getenv('PATH_DCCSI_TOOLS', PATH_DCCSI_TOOLS.as_posix()))
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-# now we have access to the DCCsi code and azpy
-from DccScriptingInterface.azpy.env_bool import env_bool
-from DccScriptingInterface.azpy.constants import *
-#from azpy.constants import ENVAR_DCCSI_GDEBUG
-#from azpy.constants import ENVAR_DCCSI_DEV_MODE
-#from azpy.constants import ENVAR_DCCSI_LOGLEVEL
-#from azpy.constants import ENVAR_DCCSI_GDEBUGGER
-#from azpy.constants import FRMT_LOG_LONG
+add_site_dir(PATH_O3DE_TECHART_GEMS) # cleaner add
 
 from DccScriptingInterface.globals import *
 
-if DCCSI_GDEBUG:
-    # override loglevel if runnign debug
-    DCCSI_LOGLEVEL = _logging.DEBUG
-    _logging.basicConfig(level=DCCSI_LOGLEVEL,
-                        format=FRMT_LOG_LONG,
-                        datefmt='%m-%d %H:%M')
-    _LOGGER = _logging.getLogger(_MODULENAME)
+from azpy.constants import FRMT_LOG_LONG
+_logging.basicConfig(level=_logging.DEBUG,
+                     format=FRMT_LOG_LONG,
+                    datefmt='%m-%d %H:%M')
 
-# early attach WingIDE debugger (can refactor to include other IDEs later)
+_LOGGER = _logging.getLogger(_MODULENAME)
+
+# auto-attach ide debugging at the earliest possible point in module
 if DCCSI_DEV_MODE:
-    import DccScriptingInterface.azpy.test.entry_test
-    DccScriptingInterface.azpy.test.entry_test.connect_wing()
-# -------------------------------------------------------------------------
+    if DCCSI_GDEBUGGER == 'WING':
+        import DccScriptingInterface.azpy.test.entry_test
+        DccScriptingInterface.azpy.test.entry_test.connect_wing()
+    elif DCCSI_GDEBUGGER == 'PYCHARM':
+        _LOGGER.warning(f'{DCCSI_GDEBUGGER} debugger auto-attach not yet implemented')
+    else:
+        _LOGGER.warning(f'{DCCSI_GDEBUGGER} not a supported debugger')
 
+# this should execute the core config.py first and grab settings
+from DccScriptingInterface.Tools.DCC.Maya.config import maya_config
+maya_config.settings.setenv() # init settings, ensure env is set
 
-# -------------------------------------------------------------------------
+from DccScriptingInterface import ENVAR_PATH_DCCSIG
+from DccScriptingInterface.azpy.constants import *
+from DccScriptingInterface.constants import *
+from DccScriptingInterface.Tools.DCC.Maya.constants import *
+
 # message collection
 _LOGGER.info(f'Initializing: {_MODULENAME}')
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
-_LOGGER.debug(f'PATH_DCCSIG: {PATH_DCCSIG}')
-_LOGGER.debug(f'PATH_DCCSI_TOOLS: {PATH_DCCSI_TOOLS}')
-_LOGGER.debug(f'PATH_DCCSI_TOOLS_DCC: {PATH_DCCSI_TOOLS_DCC}')
-_LOGGER.debug(f'PATH_DCCSI_TOOLS_MAYA: {PATH_DCCSI_TOOLS_MAYA}')
+_LOGGER.debug(f'{ENVAR_PATH_DCCSIG}: {maya_config.settings.PATH_DCCSIG}')
+_LOGGER.debug(f'{ENVAR_DCCSI_CONFIG_DCC_MAYA}: {maya_config.settings.DCCSI_CONFIG_DCC_MAYA}')
+_LOGGER.debug(f'{ENVAR_PATH_DCCSI_TOOLS_DCC_MAYA}: {maya_config.settings.PATH_DCCSI_TOOLS_DCC_MAYA}')
 
 # flag to turn off setting up callbacks, until they are fully implemented
 # To Do: consider making it a settings option to define and enable/disable
 _G_LOAD_CALLBACKS = True  # couple bugs, couple NOT IMPLEMENTED
-_LOGGER.info('DCCSI_MAYA_SET_CALLBACKS: {0}.'.format({_G_LOAD_CALLBACKS}))
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-# To Do: needs to be updated to use dynaconf and config.py
-from azpy.env_base import _BASE_ENVVAR_DICT
-
-# -- maya imports
-import maya.cmds as cmds
-import maya.mel as mel
-#from pymel.all import *
+_LOGGER.info(f'DCCSI_MAYA_SET_CALLBACKS: {_G_LOAD_CALLBACKS}.')
 # -------------------------------------------------------------------------
 
 
@@ -182,55 +160,6 @@ import maya.mel as mel
     #else:
         #pass
 ## -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-# validate access to the DCCsi and it's Lib site-packages
-# bootstrap site-packages by version
-from azpy.constants import PATH_DCCSI_PYTHON_LIB
-
-try:
-    os.path.exists(PATH_DCCSI_PYTHON_LIB)
-    site.addsitedir(PATH_DCCSI_PYTHON_LIB)
-    _LOGGER.info('azpy 3rdPary site-packages: is: {0}'.format(PATH_DCCSI_PYTHON_LIB))
-except Exception as e:
-    _LOGGER.error('ERROR: {0}, {1}'.format(e, PATH_DCCSI_PYTHON_LIB))
-    raise e
-
-# 3rdparty
-from unipath import Path
-from box import Box
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-# Maya is frozen
-# module path when frozen
-_MODULE_PATH = os.path.abspath(inspect.getfile(inspect.currentframe()))
-_MODULE_PATH = os.path.dirname(_MODULE_PATH)
-if _BOOT_INFO:
-    _LOGGER.debug('Boot: CWD: {}'.format(os.getcwd()))
-    _LOGGER.debug('Frozen: _MODULE_FILEPATH: {}'.format(_MODULE_PATH))
-    _LOGGER.debug('Frozen: _MODULE_PATH: {}'.format(_MODULE_PATH))
-    _LOGGER.debug('Module __name__: {}'.format(__name__))
-# root: INFO: Module __name__: __main__
-
-_LOGGER.info('_MODULENAME: {}'.format(_MODULENAME))
-
-# -------------------------------------------------------------------------
-# check some env var tags (fail if no, likely means no proper code access)
-
-_PATH_O3DE_PROJECT = None
-try:
-    _PATH_O3DE_PROJECT = _BASE_ENVVAR_DICT[ENVAR_PATH_O3DE_PROJECT]
-except Exception as e:
-    _LOGGER.critical(_STR_ERROR_ENVAR.format(_BASE_ENVVAR_DICT[ENVAR_PATH_O3DE_PROJECT]))
-
-_O3DE_DEV = _BASE_ENVVAR_DICT[ENVAR_O3DE_DEV]
-_O3DE_PATH_DCCSIG = _BASE_ENVVAR_DICT[ENVAR_PATH_DCCSIG]
-_O3DE_DCCSI_LOG_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSI_LOG_PATH]
-_O3DE_AZPY_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSI_AZPY_PATH]
-# -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
@@ -323,17 +252,17 @@ def post_startup():
     DccScriptingInterface.Tools.DCC.Maya.Scripts.set_callbacks.install_fix_paths()
 
     # set the project workspace
-    _project_workspace = os.path.join(_PATH_O3DE_PROJECT, TAG_MAYA_WORKSPACE)
+    _project_workspace = os.path.join(maya_config.settings.MAYA_PROJECT, SLUG_MAYA_WORKSPACE)
     if os.path.isfile(_project_workspace):
         try:
             # load workspace
-            maya.cmds.workspace(_PATH_O3DE_PROJECT, openWorkspace=True)
+            maya.cmds.workspace(maya_config.settings.MAYA_PROJECT, openWorkspace=True)
             _LOGGER.info('Loaded workspace file: {0}'.format(_project_workspace))
-            maya.cmds.workspace(_PATH_O3DE_PROJECT, update=True)
+            maya.cmds.workspace(maya_config.settings.MAYA_PROJECT, update=True)
         except Exception as e:
             _LOGGER.exception(f'{e} , traceback =', exc_info=True)
     else:
-        _LOGGER.warning('Workspace file not found: {1}'.format(_PATH_O3DE_PROJECT))
+        _LOGGER.warning('Workspace file not found: {1}'.format(maya_config.settings.MAYA_PROJECT))
 
     # Set up Lumberyard, maya default setting
     import DccScriptingInterface.Tools.DCC.Maya.Scripts.set_defaults
@@ -344,7 +273,7 @@ def post_startup():
         _LOGGER.info('Add UI dependent tools')
         # wrap in a try, because we haven't implmented it yet
         try:
-            mel.eval(str(r'source "{}"'.format(TAG_O3DE_DCC_MAYA_MEL)))
+            mel.eval(str(r'source "{}"'.format(SLUG_O3DE_DCC_MAYA_MEL)))
         except Exception as e:
             _LOGGER.exception(f'{e} , traceback =', exc_info=True)
             pass

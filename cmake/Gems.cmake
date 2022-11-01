@@ -14,6 +14,49 @@ define_property(TARGET PROPERTY LY_PROJECT_NAME
     only a project with that name can have it's enabled gem list added as a dependency to this target.
     If the __NOPROJECT__ placeholder is associated with a list enabled gems, then it applies to this target regardless of this property value")
 
+
+# o3de_find_ancestor_gem_root:Searches for the nearest gem root from input source_dir
+#
+# \arg:source_dir(FILEPATH) - Filepath to walk upwards from to locate a gem.json
+# \return:output_gem_module_root - The directory containing the nearest gem.json
+# \return:output_gem_name - The name of the gem read from the gem.json
+function(o3de_find_ancestor_gem_root output_gem_module_root output_gem_name source_dir)
+    unset(${output_gem_module_root} PARENT_SCOPE)
+
+    if(source_dir)
+        set(candidate_gem_path ${source_dir})
+        # Locate the root of the gem by finding the gem.json location
+        cmake_path(APPEND candidate_gem_path "gem.json" OUTPUT_VARIABLE candidate_gem_json_path)
+        while(NOT EXISTS "${candidate_gem_json_path}")
+            cmake_path(GET candidate_gem_path PARENT_PATH parent_path)
+
+            # If the parent directory is the same as the candidate path then the root path has been found
+            cmake_path(COMPARE "${candidate_gem_path}" EQUAL "${parent_path}" reached_root_dir)
+            if (reached_root_dir)
+                # The source directory is not under a gem path in this case
+                return()
+            endif()
+            set(candidate_gem_path ${parent_path})
+            cmake_path(APPEND candidate_gem_path "gem.json" OUTPUT_VARIABLE candidate_gem_json_path)
+        endwhile()
+    endif()
+
+    if (EXISTS ${candidate_gem_json_path})
+        # Update source_dir if the gem root path exists
+        set(source_dir ${candidate_gem_path})
+        o3de_read_json_key(gem_name ${candidate_gem_json_path} "gem_name")
+    endif()
+
+    # Set the gem module root output directory to the location with the gem.json file within it or
+    # the supplied gem_target SOURCE_DIR location if no gem.json file was found
+    set(${output_gem_module_root} ${source_dir} PARENT_SCOPE)
+
+    # Set the gem name output value to the name of the gem as in the gem.json file
+    if(gem_name)
+        set(${output_gem_name} ${gem_name} PARENT_SCOPE)
+    endif()
+endfunction()
+
 # ly_create_alias
 # given an alias to create, and a list of one or more targets,
 # this creates an alias that depends on all of the given targets.
@@ -64,7 +107,7 @@ function(ly_create_alias)
         endif()
         list(APPEND final_targets ${de_aliased_target_name})
     endforeach()
-    
+
     # add_dependencies must be called with at least one dependent target
     if(final_targets)
         ly_parse_third_party_dependencies("${final_targets}")
@@ -176,7 +219,7 @@ function(ly_enable_gems)
     if ((NOT ly_enable_gems_GEMS AND NOT ly_enable_gems_GEM_FILE) OR (ly_enable_gems_GEMS AND ly_enable_gems_GEM_FILE))
         message(FATAL_ERROR "Provide exactly one of either GEM_FILE (filename) or GEMS (list of gems) keywords.")
     endif()
-    
+
     if (ly_enable_gems_GEM_FILE)
         set(store_temp ${ENABLED_GEMS})
         include(${ly_enable_gems_GEM_FILE} RESULT_VARIABLE was_able_to_load_the_file)

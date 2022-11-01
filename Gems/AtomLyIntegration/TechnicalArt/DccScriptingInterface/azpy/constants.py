@@ -231,45 +231,6 @@ ENVAR_QTFORPYTHON_PATH = str('QTFORPYTHON_PATH')
 
 
 # -------------------------------------------------------------------------
-# To do: deprecate this block and redcode it, it has moved to:
-# DccScriptingInterface\Tools\DCC\Maya\constants.py
-# dcc: Maya ENVAR constants
-TAG_O3DE_DCC_MAYA_MEL = 'dccsi_setup.mel'
-TAG_MAYA_WORKSPACE = 'workspace.mel'
-
-ENVAR_DCCSI_PY_MAYA = str('DCCSI_PY_MAYA')
-
-ENVAR_MAYA_VERSION = str('MAYA_VERSION')
-ENVAR_MAYA_LOCATION = str('MAYA_LOCATION')
-
-ENVAR_PATH_DCCSI_TOOLS_MAYA = str('PATH_DCCSI_TOOLS_MAYA')
-ENVAR_MAYA_MODULE_PATH = str('MAYA_MODULE_PATH')
-ENVAR_MAYA_BIN_PATH = str('MAYA_BIN_PATH')
-
-ENVAR_DCCSI_MAYA_PLUG_IN_PATH = str('DCCSI_MAYA_PLUG_IN_PATH')
-ENVAR_MAYA_PLUG_IN_PATH = str('MAYA_PLUG_IN_PATH')
-
-ENVAR_DCCSI_MAYA_SHELF_PATH = str('DCCSI_MAYA_SHELF_PATH')
-ENVAR_MAYA_SHELF_PATH = str('MAYA_SHELF_PATH')
-
-ENVAR_DCCSI_MAYA_XBMLANGPATH = str('DCCSI_MAYA_XBMLANGPATH')
-ENVAR_XBMLANGPATH = str('XBMLANGPATH')
-
-ENVAR_DCCSI_MAYA_SCRIPT_MEL_PATH = str('DCCSI_MAYA_SCRIPT_MEL_PATH')
-ENVAR_DCCSI_MAYA_SCRIPT_PY_PATH = str('DCCSI_MAYA_SCRIPT_PY_PATH')
-ENVAR_MAYA_SCRIPT_PATH = str('MAYA_SCRIPT_PATH')
-
-ENVAR_DCCSI_MAYA_SET_CALLBACKS = str('DCCSI_MAYA_SET_CALLBACKS')
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-# dcc:Blender API constants
-
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
 # material API constants
 DCCSI_IMAGE_TYPES = ['.tif', '.tiff', '.png', '.jpg', '.jpeg', '.tga']
 

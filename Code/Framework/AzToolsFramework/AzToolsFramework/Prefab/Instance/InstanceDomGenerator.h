@@ -40,16 +40,14 @@ namespace AzToolsFramework
             //! of the focused or root instance.
             //! @param[out] instanceDom The output instance DOM that will be modified.
             //! @param instance The given instance object.
-            //! @return bool on whether the operation succeeds.
-            bool GenerateInstanceDom(PrefabDom& instanceDom, const Instance& instance) const override;
+            void GenerateInstanceDom(PrefabDom& instanceDom, const Instance& instance) const override;
 
             //! Generates an entity DOM for a given entity object based on the currently focused instance.
             //! If the owning instance of the given entity is descendant of the focused instance, entity DOM stored in focused
             //! template DOM is used; otherwise, the entity DOM stored in the root template DOM is used.
             //! @param[out] entityDom The output entity DOM that will be modified.
             //! @param entity The given entity object.
-            //! @return bool on whether the operation succeeds.
-            bool GenerateEntityDom(PrefabDom& entityDom, const AZ::Entity& entity) const override;
+            void GenerateEntityDom(PrefabDom& entityDom, const AZ::Entity& entity) const override;
 
         private:
             //! Given an instance and its DOM, updates the container entity in the DOM with the one seen

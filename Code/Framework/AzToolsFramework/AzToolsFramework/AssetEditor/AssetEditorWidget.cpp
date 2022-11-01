@@ -51,6 +51,7 @@ AZ_POP_DISABLE_WARNING
 
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
+#include <UI/DocumentPropertyEditor/FilteredDPE.h>
 
 #include <QAction>
 #include <QMenu>
@@ -210,8 +211,9 @@ namespace AzToolsFramework
             else
             {
                 m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>();
-                m_dpe = new DocumentPropertyEditor(this);
-                propertyEditor = m_dpe;
+                m_filteredWidget = new FilteredDPE(this);
+                m_dpe = m_filteredWidget->GetDPE();
+                propertyEditor = m_filteredWidget;
                 m_propertyChangeHandler = AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler(
                     [this](const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)
                     {
@@ -370,8 +372,8 @@ namespace AzToolsFramework
             if (m_useDPE)
             {
                 m_adapter->SetValue(asset.Get(), asset.GetType());
-                m_dpe->SetAdapter(m_adapter);
-                m_dpe->setEnabled(true);
+                m_filteredWidget->SetAdapter(m_adapter);
+                m_filteredWidget->setEnabled(true);
 
                 m_dpe->SetSavedStateKey(m_savedStateKey, "AssetEditor");
             }
@@ -721,7 +723,7 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    m_dpe->setEnabled(false);
+                    m_filteredWidget->setEnabled(false);
                 }
             }
         }
@@ -874,7 +876,7 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    m_dpe->setEnabled(true);
+                    m_filteredWidget->setEnabled(true);
                 }
 
                 DirtyAsset();

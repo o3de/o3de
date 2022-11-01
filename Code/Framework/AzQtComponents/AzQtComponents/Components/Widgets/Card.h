@@ -60,6 +60,7 @@ namespace AzQtComponents
         };
 
         static void applyContainerStyle(Card* card);
+        static void applySectionStyle(Card* card);
 
         Card(QWidget* parent = nullptr);
 
@@ -71,6 +72,9 @@ namespace AzQtComponents
         //! Sets the Card's Title.
         //! Equivalent to calling setTitle on the CardHeader.
         void setTitle(const QString& title);
+        //! Sets the tool tip for the card header and card header title.
+        //! Equivalent to calling setTitle on the CardHeader.
+        void setTitleToolTip(const QString& toolTip);
         //! Returns the Card's Title.
         QString title() const;
 

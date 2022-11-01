@@ -30,6 +30,12 @@ namespace AZ
 {
     namespace Vulkan
     {
+        static bool IsDefaultSwapChainNeeded()
+        {
+            auto* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
+            return !xrSystem || xrSystem->IsDefaultRenderPipelineNeeded();
+        }
+
         RHI::Ptr<SwapChain> SwapChain::Create()
         {
             return aznew SwapChain();
@@ -117,8 +123,12 @@ namespace AZ
                 auto& presentationQueue = device.GetCommandQueueContext().GetOrCreatePresentationCommandQueue(*this);
                 m_presentationQueue = &presentationQueue;
 
-                result = CreateSwapchain();
-                RETURN_RESULT_IF_UNSUCCESSFUL(result);
+                if (IsDefaultSwapChainNeeded())
+                {
+                    result = CreateSwapchain();
+                    RETURN_RESULT_IF_UNSUCCESSFUL(result);
+                }
+
                 if (nativeDimensions)
                 {
                     // Fill out the real swapchain dimensions to return
@@ -169,8 +179,11 @@ namespace AZ
             }
             else
             {
-                imageDesc.m_format = ConvertFormat(m_surfaceFormat.format);
-                result = image->Init(device, m_swapchainNativeImages[request.m_imageIndex], imageDesc);
+                if (IsDefaultSwapChainNeeded())
+                {
+                    imageDesc.m_format = ConvertFormat(m_surfaceFormat.format);
+                    result = image->Init(device, m_swapchainNativeImages[request.m_imageIndex], imageDesc);
+                }
             }
 
             if (result != RHI::ResultCode::Success)

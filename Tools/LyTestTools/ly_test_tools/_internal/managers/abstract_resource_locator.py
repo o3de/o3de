@@ -314,6 +314,13 @@ class AbstractResourceLocator(object):
         """
         return os.path.join(self.project_log(), "Editor.log")
 
+    def material_canvas_log(self):
+        """
+        Return path to the project's MaterialCanvas log dir using the builds project and platform
+        :return: path to MaterialCanvas.log
+        """
+        return os.path.join(self.project_log(), "MaterialCanvas.log")
+
     #
     #   The following are OS specific paths and must be defined by an override
     #
