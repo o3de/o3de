@@ -103,11 +103,9 @@ protected:
 
     // Speed combobox/lineEdit settings
     double m_speedScaleMin = 0.001;
-    double m_speedScaleMax = 10.0;
+    double m_speedScaleMax = 100.0;
     double m_speedScaleStep = 0.01;
     int m_speedScaleDecimalCount = 3;
-
-    double m_fieldWidthMultiplier = 1.8;
 
     void OnMenuFOVCustom();
 

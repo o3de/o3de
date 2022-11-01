@@ -190,6 +190,7 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
     m_ui->m_cameraMenu->setMenu(cameraMenu);
     m_ui->m_cameraMenu->setPopupMode(QToolButton::InstantPopup);
     QObject::connect(cameraMenu, &QMenu::aboutToShow, this, &CViewportTitleDlg::CheckForCameraSpeedUpdate);
+    QObject::connect(cameraMenu, &QMenu::aboutToHide, &QWidget::clearFocus);
 
     QAction* gotoPositionAction = new QAction("Go to position", cameraMenu);
     connect(gotoPositionAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedGotoPosition);
@@ -206,22 +207,7 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
     m_cameraSpinBox->setSingleStep(m_speedScaleStep);
     m_cameraSpinBox->setValue(SandboxEditor::CameraSpeedScale());
 
-    QObject::connect(
-        m_cameraSpinBox,
-        &AzQtComponents::DoubleSpinBox::editingFinished,
-        [this]
-        {
-            m_cameraSpinBox->clearFocus();
-        });
-
-    QObject::connect(
-        cameraMenu,
-        &QMenu::aboutToHide,
-        [this]
-        {
-            m_cameraSpinBox->clearFocus();
-        });
-
+    QObject::connect(m_cameraSpinBox, &AzQtComponents::DoubleSpinBox::editingFinished, &QWidget::clearFocus);
     QObject::connect(
         m_cameraSpinBox,
         QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged),
@@ -453,11 +439,6 @@ void CViewportTitleDlg::OnInitDialog()
     auto displayInfoHelper = new CViewportTitleDlgDisplayInfoHelper(this);
     connect(displayInfoHelper, &CViewportTitleDlgDisplayInfoHelper::ViewportInfoStatusUpdated, this, &CViewportTitleDlg::UpdateDisplayInfo);
     UpdateDisplayInfo();
-
-    QFontMetrics metrics({});
-    int width = aznumeric_cast<int>(metrics.boundingRect("-9999.99").width() * m_fieldWidthMultiplier);
-
-    m_cameraSpinBox->setFixedWidth(width);
 
     bool isPrefabSystemEnabled = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
