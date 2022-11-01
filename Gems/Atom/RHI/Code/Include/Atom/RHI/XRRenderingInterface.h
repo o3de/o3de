@@ -117,5 +117,11 @@ namespace AZ::RHI
 
         //! Rendering api to get the active swapchain image index associated with the swapchain of the provided view index.
         virtual AZ::u32 GetCurrentImageIndex(AZ::u32 viewIndex) const = 0;
+
+        //! Returns whether the default render pipeline is necessary or not.
+        virtual bool IsDefaultRenderPipelineNeeded() const = 0;
+
+        //! Returns whether to render or not on host platforms at the same time rendering on XR device.
+        virtual bool IsDefaultRenderPipelineEnabledOnHost() const = 0;
     };
 }

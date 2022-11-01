@@ -53,6 +53,7 @@ namespace GradientSignal
                         "Sampling Type", "Sampling type to use for the image data.")
                         ->EnumAttribute(SamplingType::Point, "Point")
                         ->EnumAttribute(SamplingType::Bilinear, "Bilinear")
+                        ->EnumAttribute(SamplingType::Bicubic, "Bicubic")
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::AreImageOptionsReadOnly)
 
                     ->DataElement(AZ::Edit::UIHandlers::Vector2, &ImageGradientConfig::m_tiling,

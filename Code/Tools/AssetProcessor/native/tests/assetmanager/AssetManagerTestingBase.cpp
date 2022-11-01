@@ -144,6 +144,9 @@ namespace UnitTests
         AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
         AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
+        m_stateData.reset();
+        m_assetProcessorManager.reset();
+
         ScopedAllocatorSetupFixture::TearDown();
     }
 

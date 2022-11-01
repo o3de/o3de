@@ -169,7 +169,7 @@ namespace AssetProcessor
                 return GetStatusInString(jobInfo->m_jobState, jobInfo->m_warningCount, jobInfo->m_errorCount);
             }
             case ColumnSource:
-                return getItem(index.row())->m_elementId.GetInputAssetName();
+                return getItem(index.row())->m_elementId.GetSourceAssetReference().RelativePath().c_str();
             case ColumnPlatform:
                 return getItem(index.row())->m_elementId.GetPlatform();
             case ColumnJobKey:
@@ -209,7 +209,8 @@ namespace AssetProcessor
             JobInfo jobInfo;
             AssetJobLogResponse jobLogResponse;
             auto* cachedJobInfo = getItem(index.row());
-            jobInfo.m_sourceFile = cachedJobInfo->m_elementId.GetInputAssetName().toUtf8().data();
+            jobInfo.m_sourceFile = cachedJobInfo->m_elementId.GetSourceAssetReference().RelativePath().Native();
+            jobInfo.m_watchFolder = cachedJobInfo->m_elementId.GetSourceAssetReference().ScanFolderPath().Native();
             jobInfo.m_platform = cachedJobInfo->m_elementId.GetPlatform().toUtf8().data();
             jobInfo.m_jobKey = cachedJobInfo->m_elementId.GetJobDescriptor().toUtf8().data();
             jobInfo.m_builderGuid = cachedJobInfo->m_builderGuid;
@@ -258,7 +259,8 @@ namespace AssetProcessor
         {
             AzToolsFramework::AssetSystem::JobInfo jobInfo;
             CachedJobInfo* cachedJobInfo = getItem(index.row());
-            jobInfo.m_sourceFile = cachedJobInfo->m_elementId.GetInputAssetName().toUtf8().data();
+            jobInfo.m_sourceFile = cachedJobInfo->m_elementId.GetSourceAssetReference().RelativePath().Native();
+            jobInfo.m_watchFolder = cachedJobInfo->m_elementId.GetSourceAssetReference().ScanFolderPath().Native();
             jobInfo.m_platform = cachedJobInfo->m_elementId.GetPlatform().toUtf8().data();
             jobInfo.m_jobKey = cachedJobInfo->m_elementId.GetJobDescriptor().toUtf8().data();
             jobInfo.m_builderGuid = cachedJobInfo->m_builderGuid;
@@ -354,17 +356,18 @@ namespace AssetProcessor
             AZStd::unordered_map<QueueElementID, AZ::s64> historicalStats;
             auto statsFunction = [&historicalStats](AzToolsFramework::AssetDatabase::StatDatabaseEntry entry)
             {
-                static constexpr int numTokensExpected = 5;
+                static constexpr int numTokensExpected = 6;
                 AZStd::vector<AZStd::string> tokens;
                 AZ::StringFunc::Tokenize(entry.m_statName, tokens, ',');
 
                 if (tokens.size() == numTokensExpected)
                 {
                     QueueElementID elementId;
-                    elementId.SetInputAssetName(tokens[1].c_str());
-                    elementId.SetJobDescriptor(tokens[2].c_str());
-                    elementId.SetPlatform(tokens[3].c_str());
+                    elementId.SetSourceAssetReference(SourceAssetReference(tokens[1].c_str(), tokens[2].c_str()));
+                    elementId.SetJobDescriptor(tokens[3].c_str());
+                    elementId.SetPlatform(tokens[4].c_str());
                     historicalStats[elementId] = entry.m_statValue;
+                    AZ_UNUSED(historicalStats);
                 }
                 else
                 {
@@ -388,8 +391,12 @@ namespace AssetProcessor
             {
                 AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
                 assetDatabaseConnection.GetSourceBySourceID(entry.m_sourcePK, source);
+
+                AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanFolder;
+                assetDatabaseConnection.GetScanFolderByScanFolderID(source.m_scanFolderPK, scanFolder);
+
                 CachedJobInfo* jobInfo = new CachedJobInfo();
-                jobInfo->m_elementId.SetInputAssetName(source.m_sourceName.c_str());
+                jobInfo->m_elementId.SetSourceAssetReference(SourceAssetReference(scanFolder.m_scanFolder.c_str(), source.m_sourceName.c_str()));
                 jobInfo->m_elementId.SetPlatform(entry.m_platform.c_str());
                 jobInfo->m_elementId.SetJobDescriptor(entry.m_jobKey.c_str());
                 jobInfo->m_jobState = entry.m_status;
@@ -416,15 +423,29 @@ namespace AssetProcessor
     QModelIndex JobsModel::GetJobFromProduct(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& productEntry, AzToolsFramework::AssetDatabase::AssetDatabaseConnection& assetDatabaseConnection)
     {
         AZStd::string sourceForProduct;
+        AZ::s64 scanFolderId;
         assetDatabaseConnection.QuerySourceByProductID(
             productEntry.m_productID,
             [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
         {
             sourceForProduct = sourceEntry.m_sourceName;
+                scanFolderId = sourceEntry.m_scanFolderPK;
             return false;
         });
 
         if (sourceForProduct.empty())
+        {
+            return QModelIndex();
+        }
+
+        AZStd::string scanFolderPath;
+        assetDatabaseConnection.QueryScanFolderByScanFolderID(scanFolderId, [&](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& entry)
+        {
+            scanFolderPath = entry.m_scanFolder;
+            return false;
+        });
+
+        if (scanFolderPath.empty())
         {
             return QModelIndex();
         }
@@ -442,12 +463,12 @@ namespace AssetProcessor
         {
             return QModelIndex();
         }
-        return GetJobFromSourceAndJobInfo(sourceForProduct, foundJobEntry.m_platform, foundJobEntry.m_jobKey);
+        return GetJobFromSourceAndJobInfo(SourceAssetReference(scanFolderPath.c_str(), sourceForProduct.c_str()), foundJobEntry.m_platform, foundJobEntry.m_jobKey);
     }
 
-    QModelIndex JobsModel::GetJobFromSourceAndJobInfo(const AZStd::string& source, const AZStd::string& platform, const AZStd::string& jobKey)
+    QModelIndex JobsModel::GetJobFromSourceAndJobInfo(const SourceAssetReference& sourceAsset, const AZStd::string& platform, const AZStd::string& jobKey)
     {
-        QueueElementID elementId(source.c_str(), platform.c_str(), jobKey.c_str());
+        QueueElementID elementId(sourceAsset, platform.c_str(), jobKey.c_str());
         auto iter = m_cachedJobsLookup.find(elementId);
         if (iter == m_cachedJobsLookup.end())
         {
@@ -459,7 +480,7 @@ namespace AssetProcessor
 
     void JobsModel::OnJobStatusChanged(JobEntry entry, AzToolsFramework::AssetSystem::JobStatus status)
     {
-        QueueElementID elementId(entry.m_databaseSourceName, entry.m_platformInfo.m_identifier.c_str(), entry.m_jobKey);
+        QueueElementID elementId(entry.m_sourceAssetReference, entry.m_platformInfo.m_identifier.c_str(), entry.m_jobKey);
         CachedJobInfo* jobInfo = nullptr;
         unsigned int jobIndex = 0;
 
@@ -470,7 +491,7 @@ namespace AssetProcessor
         if (iter == m_cachedJobsLookup.end())
         {
             jobInfo = new CachedJobInfo();
-            jobInfo->m_elementId.SetInputAssetName(entry.m_databaseSourceName.toUtf8().data());
+            jobInfo->m_elementId.SetSourceAssetReference(entry.m_sourceAssetReference);
             jobInfo->m_elementId.SetPlatform(entry.m_platformInfo.m_identifier.c_str());
             jobInfo->m_elementId.SetJobDescriptor(entry.m_jobKey.toUtf8().data());
             jobInfo->m_jobRunKey = aznumeric_cast<uint32_t>(entry.m_jobRunKey);
@@ -507,7 +528,7 @@ namespace AssetProcessor
 
     void JobsModel::OnJobProcessDurationChanged(JobEntry jobEntry, int durationMs)
     {
-        QueueElementID elementId(jobEntry.m_databaseSourceName, jobEntry.m_platformInfo.m_identifier.c_str(), jobEntry.m_jobKey);
+        QueueElementID elementId(jobEntry.m_sourceAssetReference, jobEntry.m_platformInfo.m_identifier.c_str(), jobEntry.m_jobKey);
 
         if (auto iter = m_cachedJobsLookup.find(elementId); iter != m_cachedJobsLookup.end())
         {
@@ -519,13 +540,13 @@ namespace AssetProcessor
         }
     }
 
-    void JobsModel::OnSourceRemoved(QString sourceDatabasePath)
+    void JobsModel::OnSourceRemoved(const SourceAssetReference& sourceAsset)
     {
         // when a source is removed, we need to eliminate all job entries for that source regardless of all other details of it.
         QList<AssetProcessor::QueueElementID> elementsToRemove;
         for (int index = 0; index < m_cachedJobs.size(); ++index)
         {
-            if (QString::compare(m_cachedJobs[index]->m_elementId.GetInputAssetName(), sourceDatabasePath, Qt::CaseSensitive) == 0)
+            if (m_cachedJobs[index]->m_elementId.GetSourceAssetReference() == sourceAsset)
             {
                 elementsToRemove.push_back(m_cachedJobs[index]->m_elementId);
             }
@@ -541,7 +562,7 @@ namespace AssetProcessor
 
     void JobsModel::OnJobRemoved(AzToolsFramework::AssetSystem::JobInfo jobInfo)
     {
-        RemoveJob(QueueElementID(jobInfo.m_sourceFile.c_str(), jobInfo.m_platform.c_str(), jobInfo.m_jobKey.c_str()));
+        RemoveJob(QueueElementID(SourceAssetReference(jobInfo.m_watchFolder.c_str(), jobInfo.m_sourceFile.c_str()), jobInfo.m_platform.c_str(), jobInfo.m_jobKey.c_str()));
     }
 
     void JobsModel::RemoveJob(const AssetProcessor::QueueElementID& elementId)
