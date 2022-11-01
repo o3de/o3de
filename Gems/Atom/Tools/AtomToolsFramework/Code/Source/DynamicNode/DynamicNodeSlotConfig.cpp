@@ -40,6 +40,7 @@ namespace AtomToolsFramework
                 editContext->Class<DynamicNodeSlotConfig>("DynamicNodeSlotConfig", "Configuration settings for individual slots on a dynamic node.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &DynamicNodeSlotConfig::GetDisplayNameForEditor)
                     ->SetDynamicEditDataProvider(&DynamicNodeSlotConfig::GetDynamicEditData)
                     ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeSlotConfig::m_name, "Name", "Unique name used to identify individual slots on a node.")
                     ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeSlotConfig::m_displayName, "Display Name", "User friendly title of the slot that will appear on the node UI.")
@@ -207,6 +208,11 @@ namespace AtomToolsFramework
             AZStd::erase_if(supportedDataTypes, [&](const auto& dataType) { return !AZStd::regex_match(dataType->GetDisplayName(), supportedDataTypeRegex); });
         }
         return supportedDataTypes;
+    }
+
+    AZStd::string DynamicNodeSlotConfig::GetDisplayNameForEditor() const
+    {
+        return AZStd::string::format("Slot (%s)", !m_name.empty() ? m_name.c_str() : "unnamed");
     }
 
     const AZ::Edit::ElementData* DynamicNodeSlotConfig::GetDynamicEditData(

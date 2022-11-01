@@ -46,6 +46,7 @@ namespace AtomToolsFramework
         GraphModel::DataTypePtr GetDefaultDataType() const;
         AZStd::vector<AZStd::string> GetSupportedDataTypeNames() const;
         GraphModel::DataTypeList GetSupportedDataTypes() const;
+        AZStd::string GetDisplayNameForEditor() const;
 
         //! Unique name or ID of a slot
         AZStd::string m_name = "untitled";
