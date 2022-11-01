@@ -212,6 +212,9 @@ namespace AZ
             AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
             RPI::MeshDrawPacketLods m_emptyDrawPacketLods;
             bool m_forceRebuildDrawPackets = false;
+
+            // list of ModelDataInstances that need an ObjectSrg update in OnBeginPrepareRender
+            AZStd::vector<ModelDataInstance*> m_objectSrgUpdateList;
         };
     } // namespace Render
 } // namespace AZ

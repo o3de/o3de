@@ -114,7 +114,10 @@ namespace AZ
 
                         if (meshDataIter->m_objectSrgNeedsUpdate)
                         {
-                            meshDataIter->UpdateObjectSrg();
+                            // add the ModelDataInstance to the ObjectSrg update list, which is processed in OnBeginPrepareRender
+                            // Note: this is necessary to avoid a race between the MeshFeatureProcessor::Simulate and ReflectionProbeFeatureProcessor::Simulate
+                            ModelDataInstance& modelDataInstance = *meshDataIter;
+                            m_objectSrgUpdateList.push_back(&modelDataInstance);
                         }
 
                         // [GFX TODO] [ATOM-1357] Currently all of the draw packets have to be checked for material ID changes because
@@ -163,6 +166,15 @@ namespace AZ
         void MeshFeatureProcessor::OnBeginPrepareRender()
         {
             m_meshDataChecker.soft_lock();
+
+            // process MeshDataInstances that require an ObjectSrg update
+            // Note: this is deferred until OnBeginPrepareRender to avoid a race between the MeshFeatureProcessor::Simulate and ReflectionProbeFeatureProcessor::Simulate
+            for (auto meshDataIter : m_objectSrgUpdateList)
+            {
+                meshDataIter->UpdateObjectSrg();
+            }
+
+            m_objectSrgUpdateList.clear();
         }
 
         void MeshFeatureProcessor::OnEndPrepareRender()

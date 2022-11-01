@@ -211,6 +211,10 @@ namespace AZ
 
             m_reflectionProbes.erase(itEntry);
             m_reflectionProbeMap.erase(handle);
+
+            // notify the MeshFeatureProcessor that the reflection probes changed
+            MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
+            meshFeatureProcessor->UpdateMeshReflectionProbes();
         }
 
         void ReflectionProbeFeatureProcessor::SetOuterExtents(const ReflectionProbeHandle& handle, const Vector3& outerExtents)
