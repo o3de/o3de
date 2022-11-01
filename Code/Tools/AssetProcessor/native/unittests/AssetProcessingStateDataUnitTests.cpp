@@ -1570,7 +1570,6 @@ namespace AssetProcessor
     TEST_F(AssetProcessingStateDataUnitTest, TestSourceFingerprint_QuerySourceAnalysisFingerprint_Succeeds)
     {
         using SourceDatabaseEntry = AzToolsFramework::AssetDatabase::SourceDatabaseEntry;
-        using ScanFolderDatabaseEntry = AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry;
 
         AddDefaultSource();
         // Add another source
