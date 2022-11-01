@@ -27,7 +27,6 @@ namespace EMotionFX
 {
     HitDetectionJointWidget::HitDetectionJointWidget(QWidget* parent)
         : SkeletonModelJointWidget(parent)
-        , m_collidersWidget(nullptr)
     {
     }
 

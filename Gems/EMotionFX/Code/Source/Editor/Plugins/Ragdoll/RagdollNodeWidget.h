@@ -85,9 +85,6 @@ namespace EMotionFX
         // Joint limit
         RagdollJointLimitWidget*      m_jointLimitWidget;
 
-        // Colliders
-        ColliderContainerWidget*      m_collidersWidget;
-
         AZStd::string                 m_copiedJointLimit;
 
         PhysicsSetupViewportUiCluster m_physicsSetupViewportUiCluster;

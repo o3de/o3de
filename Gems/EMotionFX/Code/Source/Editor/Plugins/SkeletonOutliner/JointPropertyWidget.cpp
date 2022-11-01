@@ -223,7 +223,8 @@ namespace EMotionFX
         m_filterString = m_filterEntityBox->text().toLatin1().data();
 
         m_clothJointWidget->SetFilterString(m_filterString);
-        // UpdateContents()
+        m_hitDetectionJointWidget->SetFilterString(m_filterString);
+        m_ragdollJointWidget->SetFilterString(m_filterString);
     }
 
     // AddCollidersButton

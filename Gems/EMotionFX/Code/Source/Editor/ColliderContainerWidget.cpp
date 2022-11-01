@@ -326,14 +326,28 @@ namespace EMotionFX
         {
             return;
         }
-
-        m_editor->InvalidateValues();
+        m_editor->InvalidateAll();
+        if (!m_editor->HasDisplayedNodes())
+        {
+            this->hide();
+            //m_editor->ClearInstances(true);
+        }
+        else
+        {
+            this->show();
+        }
     }
 
     void ColliderWidget::SetFilterString(AZStd::string str)
     {
         m_editor->SetFilterString(str);
-        m_editor->InvalidateAll();
+
+        Update();
+    }
+
+    bool ColliderWidget::HasDisplayedNodes()
+    {
+        return m_editor->HasDisplayedNodes();
     }
 
     void ColliderWidget::OnCardContextMenu(const QPoint& position)
@@ -589,6 +603,14 @@ namespace EMotionFX
     {
         for (ColliderWidget* colliderWidget : m_colliderWidgets)
         {
+            if (colliderWidget->HasDisplayedNodes())
+            {
+                colliderWidget->show();
+            }
+            else
+            {
+                colliderWidget->hide();
+            }
             colliderWidget->InvalidateEditorValues();
             colliderWidget->Update();
         }
@@ -605,6 +627,18 @@ namespace EMotionFX
         {
             widget->SetFilterString(str);
         }
+    }
+
+    bool ColliderContainerWidget::HasVisibleColliders() const
+    {
+        return m_colliderWidgets.size() > 0 ||
+            std::any_of(
+                   m_colliderWidgets.begin(),
+                   m_colliderWidgets.end(),
+                   [](auto w)
+                   {
+                       return !w->isHidden();
+                   });
     }
 
     void ColliderContainerWidget::contextMenuEvent(QContextMenuEvent* event)

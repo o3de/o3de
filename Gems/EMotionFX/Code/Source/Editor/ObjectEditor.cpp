@@ -45,7 +45,7 @@ namespace EMotionFX
     {
         m_object = object;
         m_propertyEditor->AddInstance(object, objectTypeId, aggregateInstance, compareInstance);
-        m_propertyEditor->InvalidateAll();
+        m_propertyEditor->InvalidateAll(m_propertyEditor->GetFilterString().c_str());
     }
 
 
@@ -62,16 +62,18 @@ namespace EMotionFX
     void ObjectEditor::SetFilterString(AZStd::string str)
     {
         m_propertyEditor->SetFilterString(str);
+        InvalidateAll();
+    }
 
-        //m_propertyEditor->InvalidateAll();
-        //TODO
-        m_propertyEditor->update();
+    bool ObjectEditor::HasDisplayedNodes() const
+    {
+        return !m_propertyEditor->HasFilteredOutNodes() || m_propertyEditor->HasVisibleNodes();
     }
 
 
     void ObjectEditor::InvalidateAll()
     {
-        m_propertyEditor->InvalidateAll();
+        m_propertyEditor->InvalidateAll(m_propertyEditor->GetFilterString().c_str());
     }
 
 

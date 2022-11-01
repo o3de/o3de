@@ -50,7 +50,6 @@ namespace EMotionFX
         , m_ragdollNodeCard(nullptr)
         , m_ragdollNodeEditor(nullptr)
         , m_jointLimitWidget(nullptr)
-        , m_collidersWidget(nullptr)
     {
     }
 

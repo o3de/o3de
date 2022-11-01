@@ -39,6 +39,7 @@ namespace EMotionFX
         void ClearInstances(bool invalidateImmediately);
 
         void SetFilterString([[maybe_unused]] AZStd::string str);
+        bool HasDisplayedNodes() const;
 
         void* GetObject() { return m_object; }
 

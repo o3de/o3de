@@ -88,7 +88,7 @@ namespace EMotionFX
         if (GetActor())
         {
             bool onlyRootSelected = selectedModelIndices.size() == 1 && SkeletonModel::IndicesContainRootNode(selectedModelIndices);
-            if (!selectedModelIndices.isEmpty() && !onlyRootSelected)
+            if (!selectedModelIndices.isEmpty() && !onlyRootSelected && m_collidersWidget->HasVisibleColliders())
             {
                 m_noSelectionWidget->hide();
                 InternalReinit();
