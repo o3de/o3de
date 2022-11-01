@@ -122,6 +122,7 @@ namespace AtomToolsFramework
     {
         // Create a dialog that will display a list of string options and prompt the user for input.
         QDialog dialog(GetToolMainWindow());
+        dialog.setModal(true);
         dialog.setWindowTitle(title.c_str());
         dialog.setLayout(new QVBoxLayout());
 
@@ -666,12 +667,12 @@ namespace AtomToolsFramework
 
                     scriptCategoryMenu->addAction(filename.c_str(), [scriptPath, arguments]() {
                         // Delay execution of the script until the next frame.
-                        QTimer::singleShot(0, [scriptPath, arguments]() {
+                        AZ::SystemTickBus::QueueFunction([scriptPath, arguments]() {
                             AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
                                 &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
                                 scriptPath,
                                 AZStd::vector<AZStd::string_view>(arguments.begin(), arguments.end()));
-                            });
+                        });
                     });
                 }
             }
@@ -684,7 +685,7 @@ namespace AtomToolsFramework
             if (!scriptPath.isEmpty())
             {
                 // Delay execution of the script until the next frame.
-                QTimer::singleShot(0, [scriptPath, arguments]() {
+                AZ::SystemTickBus::QueueFunction([scriptPath, arguments]() {
                     AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
                         &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
                         scriptPath.toUtf8().constData(),

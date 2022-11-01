@@ -11,6 +11,7 @@
 #include <native/resourcecompiler/rcjob.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <tests/assetmanager/AssetManagerTestingBase.h>
+#include <native/utilities/AssetServerHandler.h>
 
 namespace UnitTests
 {
@@ -335,6 +336,70 @@ namespace UnitTests
         EXPECT_STREQ(responseOnDisk->m_outputProducts[2].m_productFileName.c_str(), (AZ::IO::Path("%TEMP%") / "file3.txt").c_str());
 
         delete responseOnDisk;
+    }
+
+    TEST_F(RCJobTest, RCJob_DoWork_SetsProductOutputFlagsCachedAssetAsServer)
+    {
+        struct TestRCJob
+            : public RCJob
+        {
+            void DoWork(AssetBuilderSDK::ProcessJobResponse& result, BuilderParams& builderParams, AssetUtilities::QuitListener& listener) override
+            {
+                RCJob::DoWork(result, builderParams, listener);
+            }
+        };
+
+        struct ProxyAssetServerBus
+            : public AssetServerHandler
+        {
+            AssetServerMode GetRemoteCachingMode() const override
+            {
+                return AssetServerMode::Server;
+            }
+
+            bool StoreJobResult(const AssetProcessor::BuilderParams&, AZStd::vector<AZStd::string>&) override
+            {
+                return true;
+            }
+        };
+
+        auto serializeContext = AZStd::make_unique<AZ::SerializeContext>();
+        AssetBuilderSDK::ProcessJobResponse::Reflect(&*serializeContext);
+        AssetBuilderSDK::JobProduct::Reflect(&*serializeContext);
+        AzToolsFramework::AssetSystem::AssetJobLogResponse::Reflect(&*serializeContext);
+        AzFramework::AssetSystem::BaseAssetProcessorMessage::Reflect(&*serializeContext);
+
+        auto mockComponentApplication = NiceMock<::UnitTests::MockComponentApplication>();
+        ON_CALL(mockComponentApplication, GetSerializeContext()).WillByDefault(Return(serializeContext.get()));
+
+        ProxyAssetServerBus proxyAssetServerBus;
+
+        JobDetails jobDetails;
+        jobDetails.m_jobEntry.m_jobRunKey = 1;
+        jobDetails.m_checkServer = true;
+
+        AssetProcessor::RCJob rcJob;
+        rcJob.Init(jobDetails);
+
+        BuilderParams builderParams;
+        builderParams.m_rcJob = &rcJob;
+        builderParams.m_assetBuilderDesc.m_processJobFunction = [](const ProcessJobRequest&, ProcessJobResponse& response)
+        {
+            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
+            response.m_outputProducts.emplace_back(AssetBuilderSDK::JobProduct("outputfile_1.txt"));
+            response.m_outputProducts.emplace_back(AssetBuilderSDK::JobProduct("outputfile_2.txt"));
+        };
+
+        AssetBuilderSDK::ProcessJobResponse result;
+        AssetUtilities::QuitListener listener;
+
+        TestRCJob testRcJob;
+        testRcJob.Init(jobDetails);
+        testRcJob.DoWork(result, builderParams, listener);
+
+        EXPECT_EQ(result.m_outputProducts.size(), 2);
+        EXPECT_EQ(result.m_outputProducts.at(0).m_outputFlags & ProductOutputFlags::CachedAsset, ProductOutputFlags::CachedAsset);
+        EXPECT_EQ(result.m_outputProducts.at(1).m_outputFlags & ProductOutputFlags::CachedAsset, ProductOutputFlags::CachedAsset);
     }
 
 } // end namespace UnitTests

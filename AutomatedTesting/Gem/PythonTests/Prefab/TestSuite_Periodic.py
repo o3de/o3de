@@ -18,20 +18,14 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     # Enable only -BatchMode for these tests. Some tests cannot run in -autotest_mode due to UI interactions
     global_extra_cmdline_args = ["-BatchMode"]
 
-    class test_DeletePrefab_DuplicatedPrefabInstance(EditorSharedTest):
-        from .tests.delete_prefab import DeletePrefab_DuplicatedPrefabInstance as test_module
-
-    class test_ReparentEntity_UnderEntityHierarchies(EditorSharedTest):
-        from .tests.reparent_prefab import ReparentEntity_UnderEntityHierarchies as test_module
-
-    class test_CreatePrefab_ComponentConfigurationRetained(EditorSharedTest):
-        from .tests.create_prefab import CreatePrefab_ComponentConfigurationRetained as test_module
-
     class test_DeleteEntity_UnderNestedEntityHierarchy(EditorSharedTest):
         from .tests.delete_entity import DeleteEntity_UnderNestedEntityHierarchy as test_module
 
-    class test_DetachPrefab_WithSingleEntity(EditorSharedTest):
-        from .tests.detach_prefab import DetachPrefab_WithSingleEntity as test_module
+    class test_InstantiatePrefab_LevelPrefab(EditorSharedTest):
+        from .tests.instantiate_prefab import InstantiatePrefab_LevelPrefab as test_module
 
-    class test_DetachPrefab_WithNestedEntities(EditorSharedTest):
-        from .tests.detach_prefab import DetachPrefab_WithNestedEntities as test_module
+    class test_InstantiatePrefab_WithNestedEntities(EditorSharedTest):
+        from .tests.instantiate_prefab import InstantiatePrefab_WithNestedEntities as test_module
+
+    class test_InstantiatePrefab_WithNestedEntitiesAndNestedPrefabs(EditorSharedTest):
+        from .tests.instantiate_prefab import InstantiatePrefab_WithNestedEntitiesandNestedPrefabs as test_module

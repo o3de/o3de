@@ -26,6 +26,7 @@ set(FILES
     OctreePerformanceTests.cpp
     OctreeTests.cpp
     AssetCatalog.cpp
+    AssetRegistry.cpp
     AssetProcessorConnection.cpp
     NativeWindow.cpp
     ProcessLaunchParseTests.cpp

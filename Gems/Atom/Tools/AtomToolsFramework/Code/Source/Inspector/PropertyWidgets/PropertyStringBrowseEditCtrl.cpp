@@ -317,6 +317,7 @@ namespace AtomToolsFramework
     {
         QDialog dialog(GetToolMainWindow());
         dialog.setWindowTitle(tr("Edit String Value"));
+        dialog.setModal(true);
         dialog.setLayout(new QVBoxLayout());
 
         QTextEdit textEdit(&dialog);

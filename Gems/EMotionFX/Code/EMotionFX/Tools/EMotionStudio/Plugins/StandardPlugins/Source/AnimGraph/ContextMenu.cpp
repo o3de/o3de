@@ -21,6 +21,7 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodePaletteWidget.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodePaletteModelUpdater.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h>
@@ -30,38 +31,6 @@
 
 namespace EMStudio
 {
-    // Fill the node palette tree view with the anim graph objects that can be created inside the current given object and category.
-    void BlendGraphWidget::AddCategoryToNodePalette(EMotionFX::AnimGraphNode::ECategory category, GraphCanvas::NodePaletteTreeItem* rootNode,
-        EMotionFX::AnimGraphObject* focusedGraphObject)
-    {
-        const AZStd::vector<EMotionFX::AnimGraphObject*>& objectPrototypes = m_plugin->GetAnimGraphObjectFactory()->GetUiObjectPrototypes();
-        // If the category is empty, don't add a node for it
-        if (objectPrototypes.empty())
-        {
-            return;
-        }
-        const char* categoryName = EMotionFX::AnimGraphObject::GetCategoryName(category);
-
-        auto* categoryNode = rootNode->CreateChildNode<GraphCanvas::NodePaletteTreeItem>(categoryName, AnimGraphEditorId);
-        bool categoryEnabled = false;
-        for (const EMotionFX::AnimGraphObject* objectPrototype : objectPrototypes)
-        {
-            if (objectPrototype->GetPaletteCategory() != category)
-            {
-                continue;
-            }
-
-            bool active = m_plugin->CheckIfCanCreateObject(focusedGraphObject, objectPrototype, category);
-            categoryEnabled |= active;
-            const EMotionFX::AnimGraphNode* nodePrototype = static_cast<const EMotionFX::AnimGraphNode*>(objectPrototype);
-
-            const QString typeString = azrtti_typeid(nodePrototype).ToString<QString>();
-            auto* node = categoryNode->CreateChildNode<BlendGraphNodePaletteTreeItem>(nodePrototype->GetPaletteName(), typeString, AnimGraphEditorId);
-            node->SetEnabled(active);
-        }
-        categoryNode->SetEnabled(categoryEnabled);
-    }
-
     void BlendGraphWidget::AddNodeGroupSubmenu(QMenu* menu, EMotionFX::AnimGraph* animGraph, const AZStd::vector<EMotionFX::AnimGraphNode*>& selectedNodes)
     {
         // node group sub menu
@@ -175,6 +144,7 @@ namespace EMStudio
             if (graphNode == nullptr)
             {
                 QMenu* menu = new QMenu(parentWidget);
+                menu->setAttribute(Qt::WA_DeleteOnClose);
 
                 if (actionFilter.m_copyAndPaste && actionManager.GetIsReadyForPaste() && nodeGraph->GetModelIndex().isValid())
                 {
@@ -184,34 +154,21 @@ namespace EMStudio
 
                 if (actionFilter.m_createNodes)
                 {
-                    const AZStd::vector<EMotionFX::AnimGraphNode::ECategory> categories =
-                    {
-                        EMotionFX::AnimGraphNode::CATEGORY_SOURCES,
-                        EMotionFX::AnimGraphNode::CATEGORY_BLENDING,
-                        EMotionFX::AnimGraphNode::CATEGORY_CONTROLLERS,
-                        EMotionFX::AnimGraphNode::CATEGORY_PHYSICS,
-                        EMotionFX::AnimGraphNode::CATEGORY_LOGIC,
-                        EMotionFX::AnimGraphNode::CATEGORY_MATH,
-                        EMotionFX::AnimGraphNode::CATEGORY_MISC
-                    };
-
                     // Create nodes in palette view for each of the categories that are possible to be added to the currently focused graph.
                     EMotionFX::AnimGraphNode* currentNode = nodeGraph->GetModelIndex().data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
 
                     auto* action = new QWidgetAction(menu);
-                    auto* rootItem = new GraphCanvas::NodePaletteTreeItem("root", AnimGraphEditorId);
+
+                    NodePaletteModelUpdater modelUpdater{ plugin };
+                    modelUpdater.InitForNode(currentNode);
+
                     GraphCanvas::NodePaletteConfig config;
-                    config.m_rootTreeItem = rootItem;
+                    config.m_rootTreeItem = modelUpdater.GetRootItem();
                     config.m_isInContextMenu = true;
                     auto* paletteWidget = new GraphCanvas::NodePaletteWidget(nullptr);
                     paletteWidget->SetupNodePalette(config);
                     action->setDefaultWidget(paletteWidget);
                     menu->addAction(action);
-
-                    for (const EMotionFX::AnimGraphNode::ECategory category: categories)
-                    {
-                        AddCategoryToNodePalette(category, rootItem, currentNode);
-                    }
 
                     connect(menu, &QMenu::aboutToShow, paletteWidget, [=](){
                         paletteWidget->FocusOnSearchFilter();
@@ -225,8 +182,6 @@ namespace EMStudio
                             }
                     });
                 }
-
-                connect(menu, &QMenu::triggered, menu, &QMenu::deleteLater);
 
                 if (!menu->isEmpty())
                 {

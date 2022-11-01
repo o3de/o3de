@@ -66,6 +66,10 @@ QStackedWidget#createAGemRHS{
     margin-left: 0px;
 }
 
+#createAGemRHS #formTagField{
+    margin-left: 0px;
+}
+
 QTabWidget::pane {
     background-color: #333333;
     border:0 none;
@@ -161,6 +165,30 @@ QTabBar::tab:focus {
     margin-left:50px;
 }
 
+#formTagField {
+    max-width: 840px;
+    background-color: #333333;
+    padding: 0px 10px 2px 6px;
+    margin-left:50px;
+}
+
+#formTagField QCheckBox{
+    background-color: #555555;
+    padding-left:7px;
+    padding-top:2px;
+    padding-bottom:2px;
+    padding-right:5px;
+    spacing:0px;
+    color:#94D2FF;
+}
+
+#formTagField QCheckBox::indicator{
+    background-color: transparent;
+    image:url(:/X.svg);
+    width: 10%;
+    padding-left:3px;
+}
+
 #createAGem #formFrame {
     margin-left: 0px;
 }
@@ -190,6 +218,16 @@ QTabBar::tab:focus {
     background-color: transparent;
     background:transparent url(:/Select_Folder.svg) no-repeat center;
     qproperty-flat: true;
+}
+
+#formFrame QPushButton#dropDownButton{
+    background-color: transparent;
+    background: url(:/CarrotArrowDown.svg) no-repeat center;
+    qproperty-flat: true;
+    qproperty-iconSize: 40px;
+    padding-bottom:2px;
+    margin-left:-10px;
+    width: 35px;
 }
 
 #formFrame QPushButton:focus {

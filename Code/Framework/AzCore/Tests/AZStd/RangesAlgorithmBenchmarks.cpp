@@ -56,16 +56,16 @@ namespace Benchmark
 
     BENCHMARK_F(RangesAlgorithmBenchmarkFixture, BM_RangesCopy_TriviallyCopyableType_CompileTime_DirectCall)(benchmark::State& state)
     {
-        constexpr auto copyArray = []() constexpr
+        auto invokeAtCompileTime = []()
         {
-            constexpr AZStd::array test1 = AZStd::to_array<const char>("The brown quick wolf jumped over the hyperactive cat");
-            AZStd::array<char, test1.size()> resultArray{};
-            AZStd::ranges::copy(test1, resultArray.begin());
-            return resultArray;
-        };
+            constexpr auto copyArray = []() constexpr
+            {
+                constexpr AZStd::array test1 = AZStd::to_array<const char>("The brown quick wolf jumped over the hyperactive cat");
+                AZStd::array<char, test1.size()> resultArray{};
+                AZStd::ranges::copy(test1, resultArray.begin());
+                return resultArray;
+            };
 
-        auto invokeAtCompileTime = [copyArray]()
-        {
             [[maybe_unused]] constexpr auto result = copyArray();
             return true;
         };
@@ -77,15 +77,15 @@ namespace Benchmark
 
     BENCHMARK_F(RangesAlgorithmBenchmarkFixture, BM_RangesCopyN_TriviallyCopyableType_CompileTime_DirectCall)(benchmark::State& state)
     {
-        constexpr auto copyArray = []() constexpr
+        auto invokeAtCompileTime = []()
         {
-            constexpr AZStd::array test1 = AZStd::to_array<const char>("The brown quick wolf jumped over the hyperactive cat");
-            AZStd::array<char, test1.size()> resultArray{};
-            AZStd::ranges::copy_n(test1.begin(), test1.size(), resultArray.begin());
-            return resultArray;
-        };
-        auto invokeAtCompileTime = [copyArray]()
-        {
+            constexpr auto copyArray = []() constexpr
+            {
+                constexpr AZStd::array test1 = AZStd::to_array<const char>("The brown quick wolf jumped over the hyperactive cat");
+                AZStd::array<char, test1.size()> resultArray{};
+                AZStd::ranges::copy_n(test1.begin(), test1.size(), resultArray.begin());
+                return resultArray;
+            };
             [[maybe_unused]] constexpr auto result = copyArray();
             return true;
         };
@@ -98,15 +98,15 @@ namespace Benchmark
 
     BENCHMARK_F(RangesAlgorithmBenchmarkFixture, BM_RangesCopyBackward_TriviallyCopyableType_CompileTime_DirectCall)(benchmark::State& state)
     {
-        constexpr auto copyArray = []() constexpr
+        auto invokeAtCompileTime = []()
         {
-            constexpr AZStd::array test1 = AZStd::to_array<const char>("The brown quick wolf jumped over the hyperactive cat");
-            AZStd::array<char, test1.size()> resultArray{};
-            AZStd::ranges::copy_backward(test1, resultArray.end());
-            return resultArray;
-        };
-        auto invokeAtCompileTime = [copyArray]()
-        {
+            constexpr auto copyArray = []() constexpr
+            {
+                constexpr AZStd::array test1 = AZStd::to_array<const char>("The brown quick wolf jumped over the hyperactive cat");
+                AZStd::array<char, test1.size()> resultArray{};
+                AZStd::ranges::copy_backward(test1, resultArray.end());
+                return resultArray;
+            };
             [[maybe_unused]] constexpr auto result = copyArray();
             return true;
         };
