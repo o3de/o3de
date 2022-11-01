@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Object to house all the Qt Objects and behavior used in testing the script canvas variable manager
 """
+from PySide2.QtCore import Qt
 from editor_python_test_tools.utils import TestHelper as helper
 from PySide2 import QtWidgets, QtCore
 import pyside_utils
@@ -144,3 +145,29 @@ class QtPyScriptCanvasVariableManager():
 
         assert result, "Variable count did not match expected value."
 
+    def toggle_pin_variable_button(self, variable_type: str) -> None:
+        """
+        Function for clicking the pin toggle that appears for variables in the create variable list
+
+        param variable_type: The type of variable you want to pin to the top of the list
+
+        returns None
+        """
+
+        variable_table_view = self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT)
+        variable_object = pyside_utils.find_child_by_pattern(variable_table_view, variable_type)
+
+        toggle_index = 0
+        pinned_toggle = variable_object.siblingAtColumn(toggle_index)
+
+        assert pinned_toggle is not None, "Failed to find variable pinning qt widget"
+
+        pinned_toggle_state_before = pinned_toggle.data(Qt.DecorationRole)
+
+        #click the toggle then varify it's different than the before state
+        pyside_utils.item_view_index_mouse_click(variable_table_view, pinned_toggle)
+
+        pinned_toggle_state_after = helper.wait_for_condition(lambda: pinned_toggle.data(Qt.DecorationRole) is None,
+                                                              WAIT_TIME_SEC_3)
+        assert pinned_toggle_state_before != pinned_toggle_state_after, "Variable pin not successfully toggled"
+        
