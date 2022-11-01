@@ -13,7 +13,7 @@
 #include "ScriptCanvasMultiplayerSystemComponent.h"
 #include <AutoGenNodeableRegistry.generated.h>
 
-REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(ScriptCanvasMultiplayerStatic);
+REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(MultiplayerScriptCanvasStatic);
 
 namespace ScriptCanvasMultiplayer
 {
