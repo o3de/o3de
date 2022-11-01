@@ -58,10 +58,10 @@ namespace Multiplayer
 
         struct CumulativeAverage
         {
-            using Type = AZ::IO::AverageWindow<double, double, AZ::IO::s_statisticsWindowSize>;
+            using AverageWindowType = AZ::IO::AverageWindow<double, double, AZ::IO::s_statisticsWindowSize>;
 
             AZStd::string m_name;
-            Type m_average;
+            AverageWindowType m_average;
             double m_lastAverage = 0.f;
             AZ::u64 m_sampleCount = 0;
         };

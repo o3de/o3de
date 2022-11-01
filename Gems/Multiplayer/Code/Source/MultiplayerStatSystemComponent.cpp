@@ -231,7 +231,7 @@ namespace Multiplayer
                             argsContainer.emplace_back(stat.m_name.c_str(), stat.m_lastAverage);
 
                             // Reset average in order to measure average over the save period.
-                            stat.m_average = CumulativeAverage::Type{};
+                            stat.m_average = CumulativeAverage::AverageWindowType{};
                         });
 
                     AZ::Metrics::CounterArgs counterArgs;
