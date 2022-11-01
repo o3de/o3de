@@ -70,7 +70,6 @@ namespace EMotionFX
     private:
         // SkeletonModelJointWidget
         QWidget* CreateContentWidget(QWidget* parent) override;
-        QWidget* CreateNoSelectionWidget(QWidget* parent) override;
         void InternalReinit() override;
 
         Physics::RagdollConfiguration* GetRagdollConfig() const;

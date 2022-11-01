@@ -106,33 +106,6 @@ namespace EMotionFX
         QIcon* m_icon;
     };
 
-    class AddColliderButton
-        : public QPushButton
-    {
-        Q_OBJECT //AUTOMOC
-
-    public:
-        AddColliderButton(const QString& text, QWidget* parent = nullptr,
-            PhysicsSetup::ColliderConfigType copyToColliderType = PhysicsSetup::ColliderConfigType::Unknown,
-            const AZStd::vector<AZ::TypeId>& supportedColliderTypes = {azrtti_typeid<Physics::BoxShapeConfiguration>(),
-            azrtti_typeid<Physics::CapsuleShapeConfiguration>(),
-            azrtti_typeid<Physics::SphereShapeConfiguration>()});
-
-    signals:
-        void AddCollider(AZ::TypeId colliderType);
-
-    private slots:
-        void OnCreateContextMenu();
-        void OnAddColliderActionTriggered();
-        void OnCopyColliderActionTriggered();
-
-    private:
-        AZStd::string GetNameForColliderType(AZ::TypeId colliderType) const;
-
-        AZStd::vector<AZ::TypeId> m_supportedColliderTypes;
-        PhysicsSetup::ColliderConfigType m_copyToColliderType = PhysicsSetup::ColliderConfigType::Unknown;
-    };
-
     class ColliderContainerWidget
         : public QWidget
     {

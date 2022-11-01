@@ -48,11 +48,6 @@ namespace EMotionFX
         return result;
     }
 
-    QWidget* HitDetectionJointWidget::CreateNoSelectionWidget(QWidget* parent)
-    {
-        return new QWidget{parent};
-    }
-
     void HitDetectionJointWidget::InternalReinit()
     {
         if (GetSelectedModelIndices().size() == 1)

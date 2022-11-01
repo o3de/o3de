@@ -49,11 +49,6 @@ namespace EMotionFX
         return result;
     }
 
-    QWidget* ClothJointWidget::CreateNoSelectionWidget(QWidget* parent)
-    {
-        return new QWidget(parent);
-    }
-
     void ClothJointWidget::InternalReinit()
     {
         if (GetSelectedModelIndices().size() == 1)

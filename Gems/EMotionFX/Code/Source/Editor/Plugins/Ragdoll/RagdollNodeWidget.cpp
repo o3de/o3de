@@ -75,15 +75,6 @@ namespace EMotionFX
         cardHeader->setHasContextMenu(false);
         layout->addWidget(m_ragdollNodeCard);
 
-        // Buttons
-//        QVBoxLayout* buttonLayout = new QVBoxLayout();
-//        layout->addLayout(buttonLayout);
-
-//        m_addRemoveButton = new QPushButton(result);
-//        m_addRemoveButton->setObjectName("EMFX.RagdollNodeWidget.PushButton.RagdollAddRemoveButton");
-//        connect(m_addRemoveButton, &QPushButton::clicked, this, &RagdollNodeWidget::OnAddRemoveRagdollNode);
-//        buttonLayout->addWidget(m_addRemoveButton);
-
         // Joint limit
         m_jointLimitWidget = new RagdollJointLimitWidget(m_copiedJointLimit, result);
         connect(m_jointLimitWidget, &RagdollJointLimitWidget::JointLimitCopied, [this](const AZStd::string& serializedJointLimits)
@@ -106,14 +97,6 @@ namespace EMotionFX
         layout->addWidget(m_collidersWidget);
 
         return result;
-    }
-
-    QWidget* RagdollNodeWidget::CreateNoSelectionWidget(QWidget* parent)
-    {
-        QLabel* noSelectionLabel = new QLabel("Select joints from the Skeleton Outliner and add it to the ragdoll using the right-click menu", parent);
-        noSelectionLabel->setWordWrap(true);
-
-        return noSelectionLabel;
     }
 
     void RagdollNodeWidget::InternalReinit()
@@ -188,7 +171,6 @@ namespace EMotionFX
             }
             else
             {
-                //m_addRemoveButton->setText("Add to ragdoll");
                 m_collidersWidget->Reset();
                 m_ragdollNodeCard->hide();
                 m_jointLimitWidget->Update(QModelIndex());

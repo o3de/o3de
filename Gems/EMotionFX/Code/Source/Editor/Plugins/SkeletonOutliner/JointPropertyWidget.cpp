@@ -227,7 +227,10 @@ namespace EMotionFX
         m_ragdollJointWidget->SetFilterString(m_filterString);
     }
 
-    // AddCollidersButton
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //    AddCollidersButton
+    //
     AddCollidersButton::AddCollidersButton(QWidget *parent)
         :QPushButton(parent)
     {

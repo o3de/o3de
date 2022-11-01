@@ -89,15 +89,6 @@ namespace EMotionFX
         AddToSimulatedObjectButton* addObjectButtonn = new AddToSimulatedObjectButton("Add to simulated object", result);
         layout->addWidget(addObjectButtonn);
 
-        // Add collider button
-        AddColliderButton* addColliderButton = new AddColliderButton("Add simulated object collider", result,
-            PhysicsSetup::ColliderConfigType::SimulatedObjectCollider,
-            { azrtti_typeid<Physics::CapsuleShapeConfiguration>(),
-             azrtti_typeid<Physics::SphereShapeConfiguration>() });
-        addColliderButton->setObjectName("EMFX.SimulatedObjectColliderWidget.AddColliderButton");
-        connect(addColliderButton, &AddColliderButton::AddCollider, this, &SimulatedObjectColliderWidget::OnAddCollider);
-        layout->addWidget(addColliderButton);
-
         m_instruction1 = new QLabel("To simulated the selected joint, add it to a Simulated Object by clicking on the \"Add to Simulated Object\" button above", result);
         m_instruction1->setWordWrap(true);
         m_instruction2 = new QLabel("If you want the selected joint to collide against a Simulated Object, add a collider to the selected joint, and then set up the \"Collide with\" settings under the Simulated Object", result);
@@ -119,14 +110,6 @@ namespace EMotionFX
         layout->addWidget(m_collidersWidget);
 
         return result;
-    }
-
-    QWidget* SimulatedObjectColliderWidget::CreateNoSelectionWidget(QWidget* parent)
-    {
-        QLabel* noSelectionLabel = new QLabel("Select a joint from the Skeleton Outliner", parent);
-        noSelectionLabel->setWordWrap(true);
-
-        return noSelectionLabel;
     }
 
     void SimulatedObjectColliderWidget::InternalReinit()

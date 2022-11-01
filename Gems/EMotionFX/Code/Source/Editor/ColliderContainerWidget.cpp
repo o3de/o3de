@@ -256,7 +256,7 @@ namespace EMotionFX
         m_commandGroup.Clear();
     }
 
-    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ColliderWidget::ColliderWidget(QIcon* icon, QWidget* parent, AZ::SerializeContext* serializeContext)
         : AzQtComponents::Card(parent)
@@ -417,117 +417,6 @@ namespace EMotionFX
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    AddColliderButton::AddColliderButton(const QString& text, QWidget* parent, PhysicsSetup::ColliderConfigType copyToColliderType, const AZStd::vector<AZ::TypeId>& supportedColliderTypes)
-        : QPushButton(text, parent)
-        , m_supportedColliderTypes(supportedColliderTypes)
-        , m_copyToColliderType(copyToColliderType)
-    {
-        setIcon(MysticQt::GetMysticQt()->FindIcon("Images/Icons/ArrowDownGray.png"));
-        connect(this, &QPushButton::clicked, this, &AddColliderButton::OnCreateContextMenu);
-    }
-
-    void AddColliderButton::OnCreateContextMenu()
-    {
-        QMenu* contextMenu = new QMenu(this);
-        contextMenu->setObjectName("EMFX.AddColliderButton.ContextMenu");
-
-        AZStd::string actionName;
-        for (const AZ::TypeId& typeId : m_supportedColliderTypes)
-        {
-            actionName = AZStd::string::format("Add %s", GetNameForColliderType(typeId).c_str());
-            QAction* addBoxAction = contextMenu->addAction(actionName.c_str());
-            addBoxAction->setProperty("typeId", typeId.ToString<AZStd::string>().c_str());
-            connect(addBoxAction, &QAction::triggered, this, &AddColliderButton::OnAddColliderActionTriggered);
-        }
-
-        SkeletonModel* skeletonModel = nullptr;
-        SkeletonOutlinerRequestBus::BroadcastResult(skeletonModel, &SkeletonOutlinerRequests::GetModel);
-
-        // Add the copy from option
-        contextMenu->addSeparator();
-        if (m_copyToColliderType != PhysicsSetup::ColliderConfigType::Unknown)
-        {
-            for (int i = 0; i < PhysicsSetup::ColliderConfigType::Unknown; ++i)
-            {
-                const PhysicsSetup::ColliderConfigType copyFromType = static_cast<PhysicsSetup::ColliderConfigType>(i);
-                if (copyFromType == m_copyToColliderType)
-                {
-                    continue;
-                }
-                const char* visualName = PhysicsSetup::GetVisualNameForColliderConfigType(copyFromType);
-                QAction* copyColliderAction = contextMenu->addAction(QString("Copy from %1").arg(visualName));
-                copyColliderAction->setProperty("copyFromType", i);
-
-                const bool canCopyFrom = ColliderHelpers::CanCopyFrom(skeletonModel->GetSelectionModel().selectedIndexes(), copyFromType);
-                if (canCopyFrom)
-                {
-                    connect(copyColliderAction, &QAction::triggered, this, &AddColliderButton::OnCopyColliderActionTriggered);
-                }
-                else
-                {
-                    copyColliderAction->setEnabled(false);
-                }
-            }
-        }
-
-        contextMenu->setFixedWidth(width());
-        if (!contextMenu->isEmpty())
-        {
-            contextMenu->popup(mapToGlobal(QPoint(0, height())));
-        }
-        connect(contextMenu, &QMenu::triggered, contextMenu, &QMenu::deleteLater);
-    }
-
-    void AddColliderButton::OnAddColliderActionTriggered()
-    {
-        QAction* action = static_cast<QAction*>(sender());
-        const QByteArray typeString = action->property("typeId").toString().toUtf8();
-        const AZ::TypeId& typeId = AZ::TypeId::CreateString(typeString.data(), typeString.size());
-
-        emit AddCollider(typeId);
-    }
-
-    void AddColliderButton::OnCopyColliderActionTriggered()
-    {
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
-        SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
-        if (!selectedRowIndicesOutcome.IsSuccess())
-        {
-            return;
-        }
-
-        const QModelIndexList& selectedRowIndices = selectedRowIndicesOutcome.GetValue();
-        if (selectedRowIndices.empty())
-        {
-            return;
-        }
-
-        QAction* action = static_cast<QAction*>(sender());
-        const PhysicsSetup::ColliderConfigType copyFromType = static_cast<PhysicsSetup::ColliderConfigType>(action->property("copyFromType").toInt());
-
-        ColliderHelpers::CopyColliders(selectedRowIndices, copyFromType, m_copyToColliderType);
-    }
-
-    AZStd::string AddColliderButton::GetNameForColliderType(AZ::TypeId colliderType) const
-    {
-        if (colliderType == azrtti_typeid<Physics::BoxShapeConfiguration>())
-        {
-            return "box";
-        }
-        else if (colliderType == azrtti_typeid<Physics::CapsuleShapeConfiguration>())
-        {
-            return "capsule";
-        }
-        else if (colliderType == azrtti_typeid<Physics::SphereShapeConfiguration>())
-        {
-            return "sphere";
-        }
-
-        return colliderType.ToString<AZStd::string>();
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     // Align the layout spacing with the entity inspector.
     int ColliderContainerWidget::s_layoutSpacing = 13;
 
@@ -582,7 +471,7 @@ namespace EMotionFX
             }
             numAvailableColliderWidgets = m_colliderWidgets.size();
         }
-        AZ_Assert(numAvailableColliderWidgets >= numColliders, "Not enough collider widgets available. Something went one with creating new ones.");
+        AZ_Assert(numAvailableColliderWidgets >= numColliders, "Not enough collider widgets available. Something went wrong with creating new ones.");
 
         for (size_t i = 0; i < numColliders; ++i)
         {
@@ -681,7 +570,7 @@ namespace EMotionFX
         return QWidget::sizeHint() + QSize(0, s_layoutSpacing);
     }
 
-    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ColliderContainerWidget::ColliderEditedCallback::ColliderEditedCallback(ColliderContainerWidget* parent, bool executePreUndo, bool executePreCommand)
         : MCore::Command::Callback(executePreUndo, executePreCommand)
