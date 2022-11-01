@@ -5022,6 +5022,8 @@ namespace AssetProcessor
             AssetUtilities::GetFileHash(fileInfo.absoluteFilePath().toUtf8().constData()));
 
         m_remainingJobsForEachSourceFile.erase(foundTrackingInfo);
+
+        Q_EMIT FinishedAnalysis(m_remainingJobsForEachSourceFile.size());
     }
 
     void AssetProcessorManager::SetEnableModtimeSkippingFeature(bool enable)
