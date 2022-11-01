@@ -57,47 +57,31 @@ namespace AZ
                 // Extract the 2-bit index by shifting down in multiples of 2 bits and masking.
                 uint8_t colorIndex = (colorRowIndices >> (2 * (pixelIndex % 4))) & 0x03;
 
+                auto extractColor = [](uint16_t compressedColor) -> AZ::Color
+                {
+                    return AZ::Color(
+                        ((compressedColor >> 11) & 0x1F) / aznumeric_cast<float>(0x1F),
+                        ((compressedColor >> 5) & 0x3F) / aznumeric_cast<float>(0x3F),
+                        ((compressedColor >> 0) & 0x1F) / aznumeric_cast<float>(0x1F),
+                        1.0f);
+                };
+
                 // Using the pixel's color index, return the proper color value.
                 switch (colorIndex)
                 {
                 case 0:
                     // Index 0 uses color 0
-                    return AZ::Color(
-                        ((m_color0 >> 11) & 0x1F) / aznumeric_cast<float>(0x1F),
-                        ((m_color0 >> 5) & 0x3F) / aznumeric_cast<float>(0x3F),
-                        ((m_color0 >> 0) & 0x1F) / aznumeric_cast<float>(0x1F),
-                        1.0f);
-                    break;
+                    return extractColor(m_color0);
                 case 1:
                     // Index 1 uses color 1
-                    return AZ::Color(
-                        ((m_color1 >> 11) & 0x1F) / aznumeric_cast<float>(0x1F),
-                        ((m_color1 >> 5) & 0x3F) / aznumeric_cast<float>(0x3F),
-                        ((m_color1 >> 0) & 0x1F) / aznumeric_cast<float>(0x1F),
-                        1.0f);
+                    return extractColor(m_color1);
                     break;
                 case 2:
                     // Index 2 uses 2/3 of color 0 and 1/3 of color 1
-                    return AZ::Color(
-                        ((((m_color0 >> 11) & 0x1F) / aznumeric_cast<float>(0x1F)) * (2.0f / 3.0f)) +
-                            ((((m_color1 >> 11) & 0x1F) / aznumeric_cast<float>(0x1F)) * (1.0f / 3.0f)),
-                        ((((m_color0 >> 5) & 0x3F) / aznumeric_cast<float>(0x3F)) * (2.0f / 3.0f)) +
-                            ((((m_color1 >> 5) & 0x3F) / aznumeric_cast<float>(0x3F)) * (1.0f / 3.0f)),
-                        ((((m_color0 >> 0) & 0x1F) / aznumeric_cast<float>(0x1F)) * (2.0f / 3.0f)) +
-                            ((((m_color1 >> 0) & 0x1F) / aznumeric_cast<float>(0x1F)) * (1.0f / 3.0f)),
-                        1.0f);
-                    break;
+                    return extractColor(m_color0).Lerp(extractColor(m_color1), (1.0f / 3.0f));
                 case 3:
                     // Index 3 uses 1/3 of color 0 and 2/3 of color 1
-                    return AZ::Color(
-                        ((((m_color0 >> 11) & 0x1F) / aznumeric_cast<float>(0x1F)) * (1.0f / 3.0f)) +
-                            ((((m_color1 >> 11) & 0x1F) / aznumeric_cast<float>(0x1F)) * (2.0f / 3.0f)),
-                        ((((m_color0 >> 5) & 0x3F) / aznumeric_cast<float>(0x3F)) * (1.0f / 3.0f)) +
-                            ((((m_color1 >> 5) & 0x3F) / aznumeric_cast<float>(0x3F)) * (2.0f / 3.0f)),
-                        ((((m_color0 >> 0) & 0x1F) / aznumeric_cast<float>(0x1F)) * (1.0f / 3.0f)) +
-                            ((((m_color1 >> 0) & 0x1F) / aznumeric_cast<float>(0x1F)) * (2.0f / 3.0f)),
-                        1.0f);
-                    break;
+                    return extractColor(m_color0).Lerp(extractColor(m_color1), (2.0f / 3.0f));
                 }
 
                 return AZ::Color::CreateZero();
