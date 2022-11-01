@@ -42,24 +42,24 @@ class about_dccsi(QDialog):
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setSpacing(20)
 
-        dccsi_readme_url = "https://github.com/o3de/o3de/tree/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md"
+        dccsi_readme_url = 'https://github.com/o3de/o3de/tree/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md'
 
-        dccsi_maya_readme_url = "https://github.com/o3de/o3de/tree/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Tools/DCC/Maya/readme.md"
+        dccsi_maya_readme_url = 'https://github.com/o3de/o3de/tree/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Tools/DCC/Maya/readme.md'
 
-        dccsi_maya_scene_exporter_url = ""
+        dccsi_maya_scene_exporter_url = 'https://github.com/o3de/o3de/tree/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Tools/DCC/Maya/Scripts/Python/scene_exporter/readme.md'
 
-        dccsi_blender_readme_url = ""
+        dccsi_blender_readme_url = ''
 
-        dccsi_blender_scene_exporter_url = ""
+        dccsi_blender_scene_exporter_url = ''
 
-        dccsi_wing_readme_url = ""
+        dccsi_wing_readme_url = ''
 
         self.intro_label = QLabel()
         self.intro_label.setOpenExternalLinks(True)
         self.intro_label.setText(f'DccScriptingInterface Gem (DCCsi)\r'
                                  f'The DCCsi is an external tools integration framework, for popular technical artists tools such as Digital Content Creation tools (DCC) and python IDEs for tool development - stand up your studio tools to be configured for your project and o3de workflows.\r\r'
 
-                                 f'This early iteration of the DCCsi includes'
+                                 f'This early iteration of the DCCsi includes these features:'
 
                                  f'More information about the DCCsi can be found here'
                                  f'<a href=\"https://beta.dreamstudio.ai/\">beta.dreamstudio.ai</a> website<br/>\r\r'
