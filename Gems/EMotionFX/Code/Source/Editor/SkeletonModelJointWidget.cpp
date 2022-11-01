@@ -27,7 +27,6 @@ namespace EMotionFX
     SkeletonModelJointWidget::SkeletonModelJointWidget(QWidget* parent)
         : QWidget(parent)
         , m_jointNameLabel(nullptr)
-        , m_noSelectionWidget(nullptr)
     {
     }
 
@@ -45,22 +44,14 @@ namespace EMotionFX
         m_contentCard->setTitle(GetCardTitle());
         m_contentCard->header()->setHasContextMenu(false);
         m_contentCard->header()->setUnderlineColor(GetColor());
-        //m_contentCard->setVisible(false);
 
         auto* content = new QWidget{m_contentCard};
         QVBoxLayout* contentsLayout = new QVBoxLayout();
-        // contentsLayout->setSpacing(ColliderContainerWidget::s_layoutSpacing);
-        m_contentCard->setLayout(contentsLayout);
-
         content->setLayout(contentsLayout);
         contentsLayout->addWidget(CreateContentWidget(m_contentCard));
         m_contentCard->setContentWidget(content);
+
         mainLayout->addWidget(m_contentCard);
-
-        // No selection widget
-        m_noSelectionWidget = CreateNoSelectionWidget(m_contentCard);
-        mainLayout->addWidget(m_noSelectionWidget);
-
         setLayout(mainLayout);
 
         Reinit();
