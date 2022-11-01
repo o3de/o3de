@@ -47,30 +47,28 @@ namespace UnitTest
         void Render(const RenderPacket&)  override {};
 
         // Overrides for scene notification bus handler
-        void OnRenderPipelineAdded(AZ::RPI::RenderPipelinePtr pipeline) override
-        {
-            m_pipelineCount++;
-            m_lastPipeline = pipeline.get();
-        }
-
-        void OnRenderPipelineRemoved(AZ::RPI::RenderPipeline* pipeline) override
-        {
-            m_pipelineCount--;
-            m_lastPipeline = pipeline;
-        }
-
         void OnRenderPipelinePersistentViewChanged(AZ::RPI::RenderPipeline* renderPipeline, AZ::RPI::PipelineViewTag viewTag, AZ::RPI::ViewPtr newView, AZ::RPI::ViewPtr previousView) override
         {
             m_viewSetCount++;
             m_lastPipeline = renderPipeline;
         }
 
-        void OnRenderPipelinePassesChanged(AZ::RPI::RenderPipeline* renderPipeline) override
+        void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, AZ::RPI::SceneNotification::RenderPipelineChangeType changeType) override
         {
-            m_pipelineChangedCount++;
-            m_lastPipeline = renderPipeline;
+            if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::Added)
+            {            
+                m_pipelineCount++;
+            }
+            else if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::Removed)
+            {
+                m_pipelineCount--;
+            }
+            else if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
+            {
+                m_pipelineChangedCount++;
+            }
+            m_lastPipeline = pipeline;
         }
-
     }; 
     
     class TestFeatureProcessor2 final

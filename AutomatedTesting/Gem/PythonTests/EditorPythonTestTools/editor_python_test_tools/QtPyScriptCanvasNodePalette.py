@@ -9,8 +9,7 @@ Object to house all the Qt Objects and behavior used in testing the script canva
 from editor_python_test_tools.utils import TestHelper as helper
 from PySide2 import QtWidgets, QtTest, QtCore
 import pyside_utils
-import azlmbr.legacy.general as general
-from consts.scripting import (NODE_PALETTE_QT, TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT)
+from consts.scripting import (NODE_PALETTE_QT, TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT, NODE_PALETTE_CLEAR_BUTTON_QT)
 from consts.general import (WAIT_TIME_SEC_1, WAIT_TIME_SEC_3)
 
 class QtPyScriptCanvasNodePalette():
@@ -22,6 +21,8 @@ class QtPyScriptCanvasNodePalette():
         self.node_palette_tree = self.node_palette.findChild(QtWidgets.QTreeView, TREE_VIEW_QT)
         self.node_palette_search_frame = self.node_palette.findChild(QtWidgets.QFrame, SEARCH_FRAME_QT)
         self.node_palette_search_box = self.node_palette_search_frame.findChild(QtWidgets.QLineEdit, SEARCH_FILTER_QT)
+        self.node_palette_clear_search_button = self.node_palette_search_frame.findChild(QtWidgets.QToolButton,
+                                                                                         NODE_PALETTE_CLEAR_BUTTON_QT)
 
     def search_for_node(self, node_name: str):
         """
@@ -60,9 +61,21 @@ class QtPyScriptCanvasNodePalette():
 
     def clear_search_filter(self) -> None:
         """
-        Function for setting the node palette search filter to a blank string. This will wait for the node palette to
-        rebuild.
+        Function for manually setting the node palette search filter to a blank string.
 
         returns: None
         """
         self.__set_search_filter("")
+
+    def click_clear_search_button(self) -> None:
+        """
+        Function for clicking the node palette's clear search filter button. Asserts if the search field could not be
+        cleared out
+
+        returns: None
+        """
+        self.node_palette_clear_search_button.click()
+        search_field_text = self.node_palette_search_box.text()
+        search_field_cleared = search_field_text == ""
+
+        assert search_field_cleared, f"Failed to clear the node palette search field. Remaining text was {search_field_text} "

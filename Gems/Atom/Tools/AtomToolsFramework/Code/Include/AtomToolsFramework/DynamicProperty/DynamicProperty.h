@@ -124,16 +124,6 @@ namespace AtomToolsFramework
         void ApplyRangeEditDataAttributes();
         template<typename AttributeValueType>
         void ApplySliderEditDataAttributes();
-        template<typename AttributeValueType>
-        AttributeValueType GetMin() const;
-        template<typename AttributeValueType>
-        AttributeValueType GetMax() const;
-        template<typename AttributeValueType>
-        AttributeValueType GetSoftMin() const;
-        template<typename AttributeValueType>
-        AttributeValueType GetSoftMax() const;
-        template<typename AttributeValueType>
-        AttributeValueType GetStep() const;
 
         const AZ::Edit::ElementData* GetEditData() const;
 

@@ -66,6 +66,7 @@ namespace AZ
             void SetAttenuationRadius(float radius) override;
             void SetAttenuationRadiusMode(LightAttenuationRadiusMode attenuationRadiusMode) override;
             void ConvertToIntensityMode(PhotometricUnit intensityMode) override;
+            float GetSurfaceArea() const override;
 
             bool GetEnableShutters() const override;
             void SetEnableShutters(bool enabled) override;
@@ -94,6 +95,8 @@ namespace AZ
             float GetAffectsGIFactor() const override;
             void SetAffectsGIFactor(float affectsGIFactor) const override;
 
+            AZ::Aabb GetLocalVisualizationBounds() const override;
+
             void HandleDisplayEntityViewport(
                 const AzFramework::ViewportInfo& viewportInfo,
                 AzFramework::DebugDisplayRequests& debugDisplay,
@@ -110,7 +113,7 @@ namespace AZ
             
             //! Handles calculating the attenuation radius when LightAttenuationRadiusMode is auto
             void AutoCalculateAttenuationRadius();
-            //! Handles creating the light shape delegate. Separate function to allow for early returns once the correct shape inteface is found.
+            //! Handles creating the light shape delegate. Separate function to allow for early returns once the correct shape interface is found.
             void CreateLightShapeDelegate();
 
             AZStd::unique_ptr<LightDelegateInterface> m_lightShapeDelegate;

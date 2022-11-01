@@ -655,9 +655,9 @@ namespace AZStd
     {   // insert count * elem at insertPos
         const_pointer insertPosPtr = insertPos;
 
-        pointer data = m_buffer;
         size_type offset = insertPosPtr - data();
-        return insert(offset, count, ch);
+        insert(offset, count, ch);
+        return data() + offset;
     }
 
     template<class Element, size_t MaxElementCount, class Traits>

@@ -26,6 +26,7 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzToolsFramework/Asset/AssetUtils.h>
 #endif
+#include "IPathConversion.h"
 
 
 namespace AZ
@@ -65,7 +66,7 @@ namespace AssetProcessor
             int priority,
             bool critical,
             bool supportsCreateJobs,
-            AssetBuilderSDK::FilePatternMatcher patternMatcher, 
+            AssetBuilderSDK::FilePatternMatcher patternMatcher,
             const AZStd::string& version,
             const AZ::Data::AssetType& productAssetType,
             bool outputProductDependencies,
@@ -130,9 +131,12 @@ namespace AssetProcessor
     class PlatformConfiguration
         : public QObject
         , public RecognizerConfiguration
+        , public AZ::Interface<IPathConversion>::Registrar
     {
         Q_OBJECT
     public:
+        AZ_RTTI(PlatformConfiguration, "{9F0C465D-A3A6-417E-B69C-62CBD22FD950}", RecognizerConfiguration, IPathConversion);
+
         typedef QPair<QRegExp, QString> RCSpec;
         typedef QVector<RCSpec> RCSpecList;
 
@@ -192,6 +196,8 @@ namespace AssetProcessor
 
         //! Retrieve the scan folder at a given index.
         const AssetProcessor::ScanFolderInfo& GetScanFolderAt(int index) const;
+
+        const AssetProcessor::ScanFolderInfo* GetScanFolderById(AZ::s64 id) const override;
 
         //!  Manually add a scan folder.  Also used for testing.
         void AddScanFolder(const AssetProcessor::ScanFolderInfo& source, bool isUnitTesting = false);
