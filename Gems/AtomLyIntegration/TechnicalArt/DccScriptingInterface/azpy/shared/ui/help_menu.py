@@ -8,56 +8,44 @@
 #
 #
 # -------------------------------------------------------------------------
-
-"""help_menu.py: Setup a standard Help item in the menubar for PySide2 GUIs"""
+"""! @brief: help_menu.py: Setup a standard Help item in the menubar for PySide2 GUIs"""
 
 # built in's
 import os
 import logging
-
-# azpy
-from azpy import initialize_logger
-# import azpy.shared.ui.qt_settings as qt_settings
+from pathlib import Path
+import logging as _logging
 
 # 3rd Party
-from unipath import Path
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
 # -------------------------------------------------------------------------
-#  global space debug flag
-_DCCSI_GDEBUG = os.getenv('DCCSI_GDEBUG', False)
+#  global scope
+from DccScriptingInterface.azpy.shared.ui import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.help_menu'
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.info(f'Initializing: {_MODULENAME}')
 
-#  global space developer mode flag
-_DCCSI_DEV_MODE = os.getenv('DCCSI_DEV_MODE', False)
-
-_MODULE_PATH = Path(__file__)
-
-_ORG_TAG = 'Amazon_Lumberyard'
-_APP_TAG = 'DCCsi'
-_TOOL_TAG = 'azpy.shared.ui.help_menu'
-_TYPE_TAG = 'test'
-
-_MODULENAME = __name__
-if _MODULENAME is '__main__':
-    _MODULENAME = _TOOL_TAG
-
-_LOGGER = logging.getLogger(_MODULENAME)
-_LOGGER.debug('Something invoked :: {0}.'.format({_MODULENAME}))
+from DccScriptingInterface.globals import *
 
 # TODO: implement this
 # checks the run configuration to determine if we are running in maya
 _G_MAYA = False
 try:
-    from azpy.config.maya import _G_MAYA
-    if _G_MAYA:
-        import maya.cmds as mc
+    import maya.cmds as mc
+    _G_MAYA = True
 except:
     pass
+
+DCCSI_MAYA_HELP_URL = "https://github.com/o3de/o3de/tree/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Tools/DCC/Maya/readme.md"
+
+O3DE_BUG_REPORT_URL = "https://github.com/o3de/o3de/issues/new?assignees=&labels=needs-triage%2Cneeds-sig%2Ckind%2Fbug&template=bug_template.md&title=Bug+Report"
 # -------------------------------------------------------------------------
 
 
+# -------------------------------------------------------------------------
 class HelpMenu():
     """
     Setup a standard Help item in the menubar for PySide2 GUIs
@@ -73,53 +61,54 @@ class HelpMenu():
     """
 
     # ----------------------------------------------------------------------
-    def __init__(self, main_window, tool_label, tool_help_page):
+    def __init__(self, parent_widget, tool_label, tool_help_page):
         """Constructor"""
 
-        self.main_window = main_window
+        self.parent_widget = parent_widget
         # store mainwindow menubar, we can attach the Help menu to this
-        self.menubar = self.main_window.menuBar()
+        self.menubar = self.parent_widget.menuBar
         self.tool_label = tool_label
         self.tool_help_page = tool_help_page
 
         self.help_menu = QtWidgets.QMenu(self.menubar)
+        self.menubar.addMenu(self.help_menu)
         self.help_menu.setObjectName("help_menu")
         self.help_menu.setTitle("Help")
 
-        self.generic_tool_help_setup()
         self.specific_tool_help_setup()
+        self.generic_tool_help_setup()
         self.tool_bug_report_setup()
 
     # ----------------------------------------------------------------------
 
     def specific_tool_help_setup(self):
         """"""
-        self.tool_action_help = QtWidgets.QAction(self.main_window)
+        self.tool_action_help = QtWidgets.QAction(self.parent_widget)
         self.tool_action_help.setObjectName("tool_action_help")
         self.help_menu.addAction(self.tool_action_help)
         self.menubar.addAction(self.help_menu.menuAction())
         self.tool_action_help.setText(self.tool_label)
-        self.main_window.connect(self.tool_action_help, QtCore.SIGNAL("triggered()"), self.tool_help_display)
+        self.parent_widget.connect(self.tool_action_help, QtCore.SIGNAL("triggered()"), self.tool_help_display)
 
     # ----------------------------------------------------------------------
     def generic_tool_help_setup(self):
         """"""
-        self.azpy_tool_action_help = QtWidgets.QAction(self.main_window)
+        self.azpy_tool_action_help = QtWidgets.QAction(self.parent_widget)
         self.azpy_tool_action_help.setObjectName("azpy_tool_action_help")
         self.help_menu.addAction(self.azpy_tool_action_help)
         self.menubar.addAction(self.help_menu.menuAction())
         self.azpy_tool_action_help.setText("DCCsi help...")
-        self.main_window.connect(self.azpy_tool_action_help, QtCore.SIGNAL("triggered()"), self.azpy_tool_help_display)
+        self.parent_widget.connect(self.azpy_tool_action_help, QtCore.SIGNAL("triggered()"), self.azpy_tool_help_display)
 
     # ----------------------------------------------------------------------
     def tool_bug_report_setup(self):
         """"""
-        self.tool_action_bug_report = QtWidgets.QAction(self.main_window)
+        self.tool_action_bug_report = QtWidgets.QAction(self.parent_widget)
         self.tool_action_bug_report.setObjectName("tool_action_bug_report")
         self.help_menu.addAction(self.tool_action_bug_report)
         self.menubar.addAction(self.help_menu.menuAction())
         self.tool_action_bug_report.setText("Report a Tool Bug...")
-        self.main_window.connect(self.tool_action_bug_report, QtCore.SIGNAL("triggered()"), self.bug_report_display)
+        self.parent_widget.connect(self.tool_action_bug_report, QtCore.SIGNAL("triggered()"), self.bug_report_display)
 
     # ----------------------------------------------------------------------
 
@@ -135,7 +124,7 @@ class HelpMenu():
     def azpy_tool_help_display(self):
         """"""
         if _G_MAYA:
-            mc.showHelp('https://some.site.com/azpy/maya_tools/', absolute=True)
+            mc.showHelp(DCCSI_MAYA_HELP_URL, absolute=True)
         else:
             _LOGGER.debug('This command, {0}: currently only works when running in Maya.'.format('azpy_tool_help_display'))
         pass
@@ -144,7 +133,7 @@ class HelpMenu():
     def bug_report_display(self):
         """"""
         if _G_MAYA:
-            mc.showHelp('https://some.site.com/azpy/report_bug', absolute=True)
+            mc.showHelp(O3DE_BUG_REPORT_URL, absolute=True)
         else:
             _LOGGER.debug('This command, {0}: currently only works when running in Maya.'.format('bug_report_display'))
         pass
