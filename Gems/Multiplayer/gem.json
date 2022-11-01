@@ -19,7 +19,7 @@
     "requirements": "",
     "documentation_url": "",
     "external_subdirectories": [
-        "ScriptCanvasMultiplayer"
+        "Multiplayer.ScriptCanvas"
     ],
     "dependencies": [
         "CertificateManager",
