@@ -49,13 +49,13 @@ namespace AzNetworking
         };
 
         template <typename TYPE>
-        static typename AZStd::Utils::enable_if_c<HasReserveMethod<TYPE>::value>::type ReserveContainer(TYPE& value, typename TYPE::size_type size)
+        static AZStd::enable_if_t<HasReserveMethod<TYPE>::value> ReserveContainer(TYPE& value, typename TYPE::size_type size)
         {
             value.reserve(size);
         }
 
         template<typename TYPE>
-        static typename AZStd::Utils::enable_if_c<!HasReserveMethod<TYPE>::value>::type ReserveContainer(TYPE&, typename TYPE::size_type)
+        static AZStd::enable_if_t<!HasReserveMethod<TYPE>::value> ReserveContainer(TYPE&, typename TYPE::size_type)
         {
             ;
         }

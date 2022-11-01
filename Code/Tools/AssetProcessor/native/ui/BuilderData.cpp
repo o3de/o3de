@@ -163,7 +163,7 @@ namespace AssetProcessor
 
             AZStd::string entryName = AZStd::string::format(
                 "%s,%s,%s",
-                jobEntry.m_databaseSourceName.toUtf8().constData(),
+                jobEntry.m_sourceAssetReference.RelativePath().c_str(),
                 jobEntry.m_jobKey.toUtf8().constData(),
                 jobEntry.m_platformInfo.m_identifier.c_str());
 

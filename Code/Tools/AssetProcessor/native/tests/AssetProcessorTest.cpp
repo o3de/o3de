@@ -21,12 +21,17 @@
 
 namespace AssetProcessor
 {
-    class UnitTestAppManager : public BatchApplicationManager
+    class UnitTestAppManager : public BatchApplicationManager, AZ::Interface<IUnitTestAppManager>::Registrar
     {
     public:
         explicit UnitTestAppManager(int* argc, char*** argv)
             : BatchApplicationManager(argc, argv)
         {}
+
+        PlatformConfiguration& GetConfig()
+        {
+            return *m_platformConfig;
+        }
 
         bool PrepareForTests()
         {
@@ -41,7 +46,10 @@ namespace AssetProcessor
             // Disable saving global user settings to prevent failure due to detecting file updates
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
+
             m_platformConfig.reset(new AssetProcessor::PlatformConfiguration);
+
+
             m_connectionManager.reset(new ConnectionManager(m_platformConfig.get()));
             RegisterObjectForQuit(m_connectionManager.get());
 
@@ -103,7 +111,6 @@ namespace AssetProcessor
 
         AZStd::unique_ptr<UnitTestAppManager> m_application;
         AZStd::unique_ptr<MockAssetDatabaseRequestsHandler> m_assetDatabaseRequestsHandler;
-
     };
 
     // use the list of registered legacy unit tests to generate the list of test parameters:

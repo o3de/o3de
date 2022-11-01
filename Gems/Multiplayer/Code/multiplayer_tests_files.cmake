@@ -34,4 +34,9 @@ set(FILES
     Tests/ServerHierarchyTests.cpp
     Tests/TestMultiplayerComponent.h
     Tests/TestMultiplayerComponent.cpp
+
+    Tests/LocalRpcTests.cpp
+    Tests/AutoGen/RpcUnitTesterComponent.AutoComponent.xml
+    Tests/RpcUnitTesterComponent.h
+    Tests/RpcUnitTesterComponent.cpp
 )

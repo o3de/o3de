@@ -12,6 +12,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
 
+#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 
 #include <Atom/RHI/Factory.h>
@@ -61,28 +62,34 @@ namespace AZ::Render
         m_lightPolygonPointBufferHandler = GpuBufferHandler(desc);
 
         Interface<ILtcCommon>::Get()->LoadMatricesForSrg(GetParentScene()->GetShaderResourceGroup());
+
+        MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
+        if (meshFeatureProcessor)
+        {
+            m_lightMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("o_enablePolygonLights"));
+        }
     }
 
     void PolygonLightFeatureProcessor::Deactivate()
     {
-        m_polygonLightData.Clear();
+        m_lightData.Clear();
         m_lightBufferHandler.Release();
         m_lightPolygonPointBufferHandler.Release();
     }
 
     PolygonLightFeatureProcessor::LightHandle PolygonLightFeatureProcessor::AcquireLight()
     {
-        uint16_t id = m_polygonLightData.GetFreeSlotIndex();
-        if (id == m_polygonLightData.NoFreeSlot)
+        uint16_t id = m_lightData.GetFreeSlotIndex();
+        if (id == m_lightData.NoFreeSlot)
         {
             return LightHandle::Null;
         }
         else
         {
             // Set initial values for the start / end index of the light. Only the end needs to be recalculated as points are added / removed.
-            PolygonLightData& lightData = m_polygonLightData.GetData<0>(id);
-            lightData.SetStartIndex(m_polygonLightData.GetRawIndex(id) * MaxPolygonPoints);
-            lightData.SetEndIndex(m_polygonLightData.GetRawIndex(id) * MaxPolygonPoints + 1);
+            PolygonLightData& lightData = m_lightData.GetData<0>(id);
+            lightData.SetStartIndex(m_lightData.GetRawIndex(id) * MaxPolygonPoints);
+            lightData.SetEndIndex(m_lightData.GetRawIndex(id) * MaxPolygonPoints + 1);
             return LightHandle(id);
         }
         // Intentionally don't set m_deviceBufferNeedsUpdate to true since the light doesn't yet have data.
@@ -92,7 +99,7 @@ namespace AZ::Render
     {
         if (handle.IsValid())
         {
-            auto movedIndex = m_polygonLightData.RemoveIndex(handle.GetIndex());
+            auto movedIndex = m_lightData.RemoveIndex(handle.GetIndex());
 
             // fix up the start/end index for the light that moved into this deleted light's position since its
             // points were also moved.
@@ -116,11 +123,12 @@ namespace AZ::Render
         if (handle.IsValid())
         {
             // Duplicate the light data, update the start / end index fields to point to the new point buffer location.
-            PolygonLightData& lightData = m_polygonLightData.GetData<0>(handle.GetIndex());
-            lightData = m_polygonLightData.GetData<0>(sourceLightHandle.GetIndex());
+            PolygonLightData& lightData = m_lightData.GetData<0>(handle.GetIndex());
+            lightData = m_lightData.GetData<0>(sourceLightHandle.GetIndex());
             EvaluateStartEndIndices(handle.GetIndex());
 
-            m_polygonLightData.GetData<1>(handle.GetIndex()) = m_polygonLightData.GetData<1>(sourceLightHandle.GetIndex());
+            m_lightData.GetData<1>(handle.GetIndex()) = m_lightData.GetData<1>(sourceLightHandle.GetIndex());
+            m_lightData.GetData<2>(handle.GetIndex()) = m_lightData.GetData<2>(sourceLightHandle.GetIndex());
 
             m_deviceBufferNeedsUpdate = true;
         }
@@ -134,17 +142,22 @@ namespace AZ::Render
 
         if (m_deviceBufferNeedsUpdate)
         {
-            m_lightBufferHandler.UpdateBuffer(m_polygonLightData.GetDataVector<0>());
+            m_lightBufferHandler.UpdateBuffer(m_lightData.GetDataVector<0>());
 
-            if (m_polygonLightData.GetDataCount() > 0)
+            if (m_lightData.GetDataCount() > 0)
             {
                 // A single array of MaxPolygonPoints points exists for each light, but we want to treat each
                 // individual point as its own element instead of each array being its own element. Since all
                 // the arrays are stored in a contiguous vector, we can treat it as one giant array.
-                const LightPosition* firstPosition = m_polygonLightData.GetDataVector<1>().at(0).data();
-                m_lightPolygonPointBufferHandler.UpdateBuffer(firstPosition, static_cast<uint32_t>(m_polygonLightData.GetDataCount() * MaxPolygonPoints));
+                const LightPosition* firstPosition = m_lightData.GetDataVector<1>().at(0).data();
+                m_lightPolygonPointBufferHandler.UpdateBuffer(firstPosition, static_cast<uint32_t>(m_lightData.GetDataCount() * MaxPolygonPoints));
             }
             m_deviceBufferNeedsUpdate = false;
+        }
+
+        if (r_enablePerMeshShaderOptionFlags)
+        {
+            MeshCommon::MarkMeshesWithFlag(GetParentScene(), AZStd::span(m_lightData.GetDataVector<2>()), m_lightMeshFlag.GetIndex());
         }
     }
 
@@ -165,12 +178,8 @@ namespace AZ::Render
 
         auto transformedColor = AZ::RPI::TransformColor(lightRgbIntensity, AZ::RPI::ColorSpaceId::LinearSRGB, AZ::RPI::ColorSpaceId::ACEScg);
 
-        AZStd::array<float, 3>& rgbIntensity = m_polygonLightData.GetData<0>(handle.GetIndex()).m_rgbIntensityNits;
-
-        // Maintain sign bit in redsince it stores the convex / concave information of first two edges.
-        rgbIntensity[0] = copysignf(transformedColor.GetR(), rgbIntensity[0]);
-        rgbIntensity[1] = transformedColor.GetG();
-        rgbIntensity[2] = transformedColor.GetB();
+        AZStd::array<float, 3>& rgbIntensity = m_lightData.GetData<0>(handle.GetIndex()).m_rgbIntensityNits;
+        transformedColor.GetAsVector3().StoreToFloat3(rgbIntensity.data());
 
         m_deviceBufferNeedsUpdate = true;
     }
@@ -179,8 +188,10 @@ namespace AZ::Render
     {
         AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PolygonLightFeatureProcessor::SetTransform().");
 
-        PolygonLightData& data = m_polygonLightData.GetData<0>(handle.GetIndex());
+        PolygonLightData& data = m_lightData.GetData<0>(handle.GetIndex());
         position.StoreToFloat3(data.m_position.data());
+
+        UpdateBounds(handle);
 
         m_deviceBufferNeedsUpdate = true;
     }
@@ -189,10 +200,13 @@ namespace AZ::Render
     {
         AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PolygonLightFeatureProcessor::SetLightEmitsBothDirections().");
 
-        float& invAttenuationRadiusSquared = m_polygonLightData.GetData<0>(handle.GetIndex()).m_invAttenuationRadiusSquared;
+        float& invAttenuationRadiusSquared = m_lightData.GetData<0>(handle.GetIndex()).m_invAttenuationRadiusSquared;
 
         // Light emitting both directions is stored in the sign of the attenuation radius since that must always be positive.
         invAttenuationRadiusSquared = lightEmitsBothDirections ? -abs(invAttenuationRadiusSquared) : abs(invAttenuationRadiusSquared);
+
+        UpdateBounds(handle);
+
         m_deviceBufferNeedsUpdate = true;
     }
 
@@ -201,9 +215,12 @@ namespace AZ::Render
         AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PolygonLightFeatureProcessor::SetAttenuationRadius().");
 
         attenuationRadius = AZStd::max<float>(attenuationRadius, 0.001f); // prevent divide by zero.
-        float& invAttenuationRadiusSquared = m_polygonLightData.GetData<0>(handle.GetIndex()).m_invAttenuationRadiusSquared;
+        float& invAttenuationRadiusSquared = m_lightData.GetData<0>(handle.GetIndex()).m_invAttenuationRadiusSquared;
         float sign = invAttenuationRadiusSquared < 0.0f ? -1.0f : 1.0f; // preserve SetLightEmitsBothDirections data stored in the sign.
         invAttenuationRadiusSquared = 1.0f / (attenuationRadius * attenuationRadius) * sign;
+
+        UpdateBounds(handle);
+
         m_deviceBufferNeedsUpdate = true;
     }
 
@@ -217,7 +234,7 @@ namespace AZ::Render
             return; // not enough points
         }
 
-        PolygonPoints& pointArray = m_polygonLightData.GetData<1>(handle.GetIndex());
+        PolygonPoints& pointArray = m_lightData.GetData<1>(handle.GetIndex());
         uint32_t clippedCount = AZ::GetMin<uint32_t>(vertexCount, MaxPolygonPoints);
         for (uint32_t i = 0; i < clippedCount; ++i)
         {
@@ -225,13 +242,11 @@ namespace AZ::Render
             pointArray.at(i).y = vertices[i].GetY();
             pointArray.at(i).z = vertices[i].GetZ();
         }
-        PolygonLightData& data = m_polygonLightData.GetData<0>(handle.GetIndex());
+        PolygonLightData& data = m_lightData.GetData<0>(handle.GetIndex());
         data.SetEndIndex(data.GetStartIndex() + clippedCount);
+        direction.StoreToFloat3(data.m_direction.data());
 
-        Vector3 directionFromEdges = CrossEdges(vertices[0], vertices[1], vertices[2]);
-
-        float& red = data.m_rgbIntensityNits.at(0);
-        red = copysignf(red, directionFromEdges.Dot(direction));
+        UpdateBounds(handle);
 
         m_deviceBufferNeedsUpdate = true;
     }
@@ -248,17 +263,30 @@ namespace AZ::Render
 
     void PolygonLightFeatureProcessor::EvaluateStartEndIndices(PolygonLightDataVector::IndexType index)
     {
-        PolygonLightData& lightData = m_polygonLightData.GetData<0>(index);
+        PolygonLightData& lightData = m_lightData.GetData<0>(index);
         uint32_t length = lightData.GetEndIndex() - lightData.GetStartIndex();
-        lightData.SetStartIndex(m_polygonLightData.GetRawIndex(index) * MaxPolygonPoints);
+        lightData.SetStartIndex(m_lightData.GetRawIndex(index) * MaxPolygonPoints);
         lightData.SetEndIndex(lightData.GetStartIndex() + length);
     }
 
-    Vector3 PolygonLightFeatureProcessor::CrossEdges(const LightPosition& p0, const LightPosition& p1, const LightPosition& p2)
+    void PolygonLightFeatureProcessor::UpdateBounds(LightHandle handle)
     {
-        Vector3 edge1 = Vector3(p1.x, p1.y, p1.z) - Vector3(p0.x, p0.y, p0.z);
-        Vector3 edge2 = Vector3(p1.x, p1.y, p1.z) - Vector3(p2.x, p2.y, p2.z);
-        return edge2.Cross(edge1);
+        PolygonLightData data = m_lightData.GetData<0>(handle.GetIndex());
+        MeshCommon::BoundsVariant bounds = m_lightData.GetData<2>(handle.GetIndex());
+
+        AZ::Vector3 position = AZ::Vector3::CreateFromFloat3(data.m_position.data());
+        float radius = LightCommon::GetRadiusFromInvRadiusSquared(abs(data.m_invAttenuationRadiusSquared));
+
+        // Emits both directions is stored in the sign of m_invAttenuationRadiusSquared.
+        if (data.m_invAttenuationRadiusSquared < 0.0f)
+        {
+            bounds.emplace<Sphere>(AZ::Sphere(position, radius));
+        }
+        else
+        {
+            AZ::Vector3 normal = AZ::Vector3::CreateFromFloat3(data.m_direction.data());
+            bounds.emplace<Hemisphere>(AZ::Hemisphere(position, radius, normal));
+        }
     }
 
 } // namespace AZ::Render
