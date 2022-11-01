@@ -173,7 +173,7 @@ set(FILES
     Name/NameTests.cpp
     OrderedEventBenchmarks.cpp
     OrderedEventTests.cpp
-    Outcome.cpp
+    OutcomeTests.cpp
     Patching.cpp
     RemappableId.cpp
     RTTI/TypeSafeIntegralTests.cpp
