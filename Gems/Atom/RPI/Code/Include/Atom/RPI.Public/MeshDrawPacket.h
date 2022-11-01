@@ -57,6 +57,8 @@ namespace AZ
             void SetStencilRef(uint8_t stencilRef) { m_stencilRef = stencilRef; }
             void SetSortKey(RHI::DrawItemSortKey sortKey) { m_sortKey = sortKey; };
             bool SetShaderOption(const Name& shaderOptionName, RPI::ShaderOptionValue value);
+            bool UnsetShaderOption(const Name& shaderOptionName);
+            void ClearShaderOptions();
 
             Data::Instance<Material> GetMaterial() const;
             const ModelLod::Mesh& GetMesh() const;
@@ -64,6 +66,8 @@ namespace AZ
 
         private:
             bool DoUpdate(const Scene& parentScene);
+            void ForValidShaderOptionName(const Name& shaderOptionName, const AZStd::function<bool(const ShaderCollection::Item&, ShaderOptionIndex)>& callback);
+            bool MaterialOwnsShaderOption(const Name& shaderOptionName);
 
             ConstPtr<RHI::DrawPacket> m_drawPacket;
 

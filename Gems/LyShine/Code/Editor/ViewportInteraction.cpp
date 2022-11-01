@@ -985,6 +985,13 @@ void ViewportInteraction::SetCanvasZoomPercent(float percent)
 
 void ViewportInteraction::SetCanvasToViewportScale(float newScale, Vec2i* optionalPivotPoint)
 {
+    // only allow setting the viewport scale if current window is active
+    // OnTick for ViewportWidget is needed to reevaluate the layout, but does not happen when the window loses focus
+    if (!m_editorWindow->isActiveWindow())
+    {
+        return;
+    }
+
     static const float minZoom = 0.1f;
     static const float maxZoom = 10.0f;
     const float currentScale = m_canvasViewportMatrixProps.scale;

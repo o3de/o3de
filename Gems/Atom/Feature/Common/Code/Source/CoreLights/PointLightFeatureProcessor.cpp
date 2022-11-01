@@ -12,6 +12,9 @@
 #include <AzCore/Math/Color.h>
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
+#include <Atom/Feature/CoreLights/LightCommon.h>
+#include <Atom/Feature/Mesh/MeshCommon.h>
+#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
 #include <Atom/RHI/Factory.h>
 
@@ -57,19 +60,26 @@ namespace AZ
             m_shadowFeatureProcessor = GetParentScene()->GetFeatureProcessor<ProjectedShadowFeatureProcessor>();
 
             m_lightBufferHandler = GpuBufferHandler(desc);
+
+            MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
+            if (meshFeatureProcessor)
+            {
+                m_lightMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("o_enableSphereLights"));
+                m_shadowMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("o_enableSphereLightShadows"));
+            }
         }
 
         void PointLightFeatureProcessor::Deactivate()
         {
-            m_pointLightData.Clear();
+            m_lightData.Clear();
             m_lightBufferHandler.Release();
         }
 
         PointLightFeatureProcessor::LightHandle PointLightFeatureProcessor::AcquireLight()
         {
-            uint16_t id = m_pointLightData.GetFreeSlotIndex();
+            uint16_t id = m_lightData.GetFreeSlotIndex();
 
-            if (id == IndexedDataVector<PointLightData>::NoFreeSlot)
+            if (id == MultiIndexedDataVector<PointLightData>::NoFreeSlot)
             {
                 return LightHandle::Null;
             }
@@ -86,14 +96,14 @@ namespace AZ
             {
                 for (int i = 0; i < PointLightData::NumShadowFaces; ++i)
                 {
-                    ShadowId shadowId = ShadowId(m_pointLightData.GetData(handle.GetIndex()).m_shadowIndices[i]);
+                    ShadowId shadowId = ShadowId(m_lightData.GetData<0>(handle.GetIndex()).m_shadowIndices[i]);
                     if (shadowId.IsValid())
                     {
                         m_shadowFeatureProcessor->ReleaseShadow(shadowId);
                     }
                 }
 
-                m_pointLightData.RemoveIndex(handle.GetIndex());
+                m_lightData.RemoveIndex(handle.GetIndex());
                 m_deviceBufferNeedsUpdate = true;
                 handle.Reset();
                 return true;
@@ -108,7 +118,8 @@ namespace AZ
             LightHandle handle = AcquireLight();
             if (handle.IsValid())
             {
-                m_pointLightData.GetData(handle.GetIndex()) = m_pointLightData.GetData(sourceLightHandle.GetIndex());
+                m_lightData.GetData<0>(handle.GetIndex()) = m_lightData.GetData<0>(sourceLightHandle.GetIndex());
+                m_lightData.GetData<1>(handle.GetIndex()) = m_lightData.GetData<1>(sourceLightHandle.GetIndex());
                 m_deviceBufferNeedsUpdate = true;
             }
             return handle;
@@ -121,8 +132,29 @@ namespace AZ
 
             if (m_deviceBufferNeedsUpdate)
             {
-                m_lightBufferHandler.UpdateBuffer(m_pointLightData.GetDataVector());
+                m_lightBufferHandler.UpdateBuffer(m_lightData.GetDataVector<0>());
                 m_deviceBufferNeedsUpdate = false;
+            }
+
+            if (r_enablePerMeshShaderOptionFlags)
+            {
+                auto hasShadow = [&](const AZ::Sphere& sphere) -> bool
+                {
+                    LightHandle::IndexType index = m_lightData.GetIndexForData<1>(&sphere);
+                    ShadowId shadowId = ShadowId(m_lightData.GetData<0>(index).m_shadowIndices[0]);
+                    return shadowId.IsValid();
+                };
+                auto noShadow = [&](const AZ::Sphere& sphere) -> bool
+                {
+                    return !hasShadow(sphere);
+                };
+
+                // Mark meshes that have point lights without shadow using only the light flag.
+                MeshCommon::MarkMeshesWithFlag(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex(), noShadow);
+
+                // Mark meshes that have point lights with shadow using a combination of light and shadow flags.
+                uint32_t lightAndShadow = m_lightMeshFlag.GetIndex() | m_shadowMeshFlag.GetIndex();
+                MeshCommon::MarkMeshesWithFlag(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), lightAndShadow, hasShadow);
             }
         }
 
@@ -142,7 +174,7 @@ namespace AZ
 
             auto transformedColor = AZ::RPI::TransformColor(lightRgbIntensity, AZ::RPI::ColorSpaceId::LinearSRGB, AZ::RPI::ColorSpaceId::ACEScg);
 
-            AZStd::array<float, 3>& rgbIntensity = m_pointLightData.GetData(handle.GetIndex()).m_rgbIntensity;
+            AZStd::array<float, 3>& rgbIntensity = m_lightData.GetData<0>(handle.GetIndex()).m_rgbIntensity;
             rgbIntensity[0] = transformedColor.GetR();
             rgbIntensity[1] = transformedColor.GetG();
             rgbIntensity[2] = transformedColor.GetB();
@@ -154,8 +186,10 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PointLightFeatureProcessor::SetPosition().");
 
-            AZStd::array<float, 3>& position = m_pointLightData.GetData(handle.GetIndex()).m_position;
+            AZStd::array<float, 3>& position = m_lightData.GetData<0>(handle.GetIndex()).m_position;
             lightPosition.StoreToFloat3(position.data());
+
+            m_lightData.GetData<1>(handle.GetIndex()).SetCenter(lightPosition);
 
             m_deviceBufferNeedsUpdate = true;
             UpdateShadow(handle);
@@ -166,7 +200,9 @@ namespace AZ
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PointLightFeatureProcessor::SetAttenuationRadius().");
 
             attenuationRadius = AZStd::max<float>(attenuationRadius, 0.001f); // prevent divide by zero.
-            m_pointLightData.GetData(handle.GetIndex()).m_invAttenuationRadiusSquared = 1.0f / (attenuationRadius * attenuationRadius);
+            m_lightData.GetData<0>(handle.GetIndex()).m_invAttenuationRadiusSquared = 1.0f / (attenuationRadius * attenuationRadius);
+            m_lightData.GetData<1>(handle.GetIndex()).SetRadius(attenuationRadius);
+
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -174,7 +210,7 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PointLightFeatureProcessor::SetBulbRadius().");
 
-            m_pointLightData.GetData(handle.GetIndex()).m_bulbRadius = bulbRadius;
+            m_lightData.GetData<0>(handle.GetIndex()).m_bulbRadius = bulbRadius;
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -190,7 +226,7 @@ namespace AZ
 
         void PointLightFeatureProcessor::SetShadowsEnabled(LightHandle handle, bool enabled)
         {
-            auto& light = m_pointLightData.GetData(handle.GetIndex());
+            auto& light = m_lightData.GetData<0>(handle.GetIndex());
             for (int i = 0; i < PointLightData::NumShadowFaces; ++i)
             {
                 ShadowId shadowId = ShadowId(light.m_shadowIndices[i]);
@@ -217,7 +253,11 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PointLightFeatureProcessor::SetPointData().");
 
-            m_pointLightData.GetData(handle.GetIndex()) = data;
+            m_lightData.GetData<0>(handle.GetIndex()) = data;
+
+            AZ::Vector3 position = AZ::Vector3::CreateFromFloat3(data.m_position.data());
+            float radius = LightCommon::GetRadiusFromInvRadiusSquared(data.m_invAttenuationRadiusSquared);
+            m_lightData.GetData<1>(handle.GetIndex()).Set(AZ::Sphere(position, radius));
             m_deviceBufferNeedsUpdate = true;
             UpdateShadow(handle);
         }
@@ -226,7 +266,7 @@ namespace AZ
         {
             constexpr float SqrtHalf = 0.707106781187f; // sqrt(0.5);
 
-            const auto& pointLight = m_pointLightData.GetData(handle.GetIndex());
+            const auto& pointLight = m_lightData.GetData<0>(handle.GetIndex());
             for (int i = 0; i < PointLightData::NumShadowFaces; ++i)
             {
                 ShadowId shadowId = ShadowId(pointLight.m_shadowIndices[i]);
@@ -262,7 +302,7 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PointLightFeatureProcessor::SetShadowSetting().");
 
-            auto& light = m_pointLightData.GetData(handle.GetIndex());
+            auto& light = m_lightData.GetData<0>(handle.GetIndex());
             for (int lightIndex = 0; lightIndex < PointLightData::NumShadowFaces; ++lightIndex)
             {
                 ShadowId shadowId = ShadowId(light.m_shadowIndices[lightIndex]);
@@ -284,7 +324,7 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PointLightFeatureProcessor::SetAffectsGI().");
 
-            m_pointLightData.GetData(handle.GetIndex()).m_affectsGI = affectsGI;
+            m_lightData.GetData<0>(handle.GetIndex()).m_affectsGI = affectsGI;
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -292,7 +332,7 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PointLightFeatureProcessor::SetAffectsGIFactor().");
 
-            m_pointLightData.GetData(handle.GetIndex()).m_affectsGIFactor = affectsGIFactor;
+            m_lightData.GetData<0>(handle.GetIndex()).m_affectsGIFactor = affectsGIFactor;
             m_deviceBufferNeedsUpdate = true;
         }
 

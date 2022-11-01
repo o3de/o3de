@@ -517,7 +517,11 @@ namespace AssetProcessor
                         AssetServerBus::BroadcastResult(assetServerMode, &AssetServerBus::Events::GetRemoteCachingMode);
 
                         QFileInfo fileInfo(builderParams.m_processJobRequest.m_sourceFile.c_str());
-                        builderParams.m_serverKey = QString("%1_%2_%3_%4").arg(fileInfo.completeBaseName(), builderParams.m_processJobRequest.m_jobDescription.m_jobKey.c_str(), builderParams.m_processJobRequest.m_platformInfo.m_identifier.c_str()).arg(builderParams.m_rcJob->GetOriginalFingerprint());
+                        builderParams.m_serverKey = QString("%1_%2_%3_%4")
+                            .arg(fileInfo.completeBaseName(),
+                                 builderParams.m_processJobRequest.m_jobDescription.m_jobKey.c_str(),
+                                 builderParams.m_processJobRequest.m_platformInfo.m_identifier.c_str())
+                            .arg(builderParams.m_rcJob->GetOriginalFingerprint());
                         bool operationResult = false;
                         if (assetServerMode == AssetServerMode::Server)
                         {
@@ -542,6 +546,13 @@ namespace AssetProcessor
                                         builderParams.m_rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str(), builderParams.m_rcJob->GetJobKey().toUtf8().data(),
                                         builderParams.m_rcJob->GetPlatformInfo().m_identifier.c_str(), builderParams.m_rcJob->GetOriginalFingerprint());
                                 }
+                                else
+                                {
+                                    for (auto& product : result.m_outputProducts)
+                                    {
+                                        product.m_outputFlags |= AssetBuilderSDK::ProductOutputFlags::CachedAsset;
+                                    }
+                                }
                             }
                         }
                         else if (assetServerMode == AssetServerMode::Client)
@@ -559,6 +570,14 @@ namespace AssetProcessor
                                 AZ_TracePrintf(AssetProcessor::DebugChannel, "Unable to get job (%s, %s, %s) with fingerprint (%u) from the server. Processing locally.\n",
                                     builderParams.m_rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str(), builderParams.m_rcJob->GetJobKey().toUtf8().data(),
                                     builderParams.m_rcJob->GetPlatformInfo().m_identifier.c_str(), builderParams.m_rcJob->GetOriginalFingerprint());
+                            }
+
+                            if (operationResult)
+                            {
+                                for (auto& product : result.m_outputProducts)
+                                {
+                                    product.m_outputFlags |= AssetBuilderSDK::ProductOutputFlags::CachedAsset;
+                                }
                             }
 
                             runProcessJob = !operationResult;

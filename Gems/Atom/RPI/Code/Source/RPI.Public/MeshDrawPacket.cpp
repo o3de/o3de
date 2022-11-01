@@ -59,47 +59,86 @@ namespace AZ
             return m_modelLod->GetMeshes()[m_modelLodMeshIndex];
         }
 
-        bool MeshDrawPacket::SetShaderOption(const Name& shaderOptionName, RPI::ShaderOptionValue value)
+        void MeshDrawPacket::ForValidShaderOptionName(const Name& shaderOptionName, const AZStd::function<bool(const ShaderCollection::Item&, ShaderOptionIndex)>& callback)
+        {
+            for (auto& shaderItem : m_material->GetShaderCollection())
+            {
+                const ShaderOptionGroupLayout* layout = shaderItem.GetShaderOptions()->GetShaderOptionLayout();
+                ShaderOptionIndex index = layout->FindShaderOptionIndex(shaderOptionName);
+                if (index.IsValid())
+                {
+                    bool shouldContinue = callback(shaderItem, index);
+                    if (!shouldContinue)
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+
+        bool MeshDrawPacket::MaterialOwnsShaderOption(const Name& shaderOptionName)
         {
             // check if the material owns this option in any of its shaders, if so it can't be set externally
-            for (auto& shaderItem : m_material->GetShaderCollection())
-            {
-                const ShaderOptionGroupLayout* layout = shaderItem.GetShaderOptions()->GetShaderOptionLayout();
-                ShaderOptionIndex index = layout->FindShaderOptionIndex(shaderOptionName);
-                if (index.IsValid())
+            bool materialOwnsShaderOption = false;
+            ForValidShaderOptionName(shaderOptionName,
+                [&](const ShaderCollection::Item& shaderItem, ShaderOptionIndex index)
                 {
-                    if (shaderItem.MaterialOwnsShaderOption(index))
-                    {
-                        return false;
-                    }
+                    materialOwnsShaderOption = shaderItem.MaterialOwnsShaderOption(index);
+                    return !materialOwnsShaderOption; // will stop execution if set to true.
+                }
+            );
+            return materialOwnsShaderOption;
+        }
+
+        bool MeshDrawPacket::SetShaderOption(const Name& shaderOptionName, ShaderOptionValue value)
+        {
+            // check if the material owns this option in any of its shaders, if so it can't be set externally
+            if (MaterialOwnsShaderOption(shaderOptionName))
+            {
+                return false;
+            }
+
+            // Try to find an existing option entry in the list
+            for (ShaderOptionPair& shaderOptionPair : m_shaderOptions)
+            {
+                if (shaderOptionPair.first == shaderOptionName)
+                {
+                    shaderOptionPair.second = value;
+                    return true;
                 }
             }
 
-            for (auto& shaderItem : m_material->GetShaderCollection())
-            {
-                const ShaderOptionGroupLayout* layout = shaderItem.GetShaderOptions()->GetShaderOptionLayout();
-                ShaderOptionIndex index = layout->FindShaderOptionIndex(shaderOptionName);
-                if (index.IsValid())
+            // Shader option isn't on the list, look to see if it's even valid for at least one shader item, and if so, add it.
+            ForValidShaderOptionName(shaderOptionName,
+                [&]([[maybe_unused]] const ShaderCollection::Item& shaderItem, [[maybe_unused]] ShaderOptionIndex index)
                 {
-                    // try to find an existing option entry in the list
-                    auto itEntry = AZStd::find_if(m_shaderOptions.begin(), m_shaderOptions.end(), [&shaderOptionName](const ShaderOptionPair& entry)
-                    {
-                        return entry.first == shaderOptionName;
-                    });
-
-                    // store the option name and value, they will be used in DoUpdate() to select the appropriate shader variant
-                    if (itEntry == m_shaderOptions.end())
-                    {
-                        m_shaderOptions.push_back({ shaderOptionName, value });
-                    }
-                    else
-                    {
-                        itEntry->second = value;
-                    }
+                    // Store the option name and value, they will be used in DoUpdate() to select the appropriate shader variant
+                    m_shaderOptions.push_back({ shaderOptionName, value });
+                    return false; // stop checking other shader items.
                 }
-            }
+            );
 
             return true;
+        }
+
+        bool MeshDrawPacket::UnsetShaderOption(const Name& shaderOptionName)
+        {
+            // try to find an existing option entry in the list, then remove it by swapping it with the back.
+            for (ShaderOptionPair& shaderOptionPair : m_shaderOptions)
+            {
+                if (shaderOptionPair.first == shaderOptionName)
+                {
+                    shaderOptionPair = m_shaderOptions.back();
+                    m_shaderOptions.pop_back();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        void MeshDrawPacket::ClearShaderOptions()
+        {
+            m_shaderOptions.clear();
         }
 
         bool MeshDrawPacket::Update(const Scene& parentScene, bool forceUpdate /*= false*/)

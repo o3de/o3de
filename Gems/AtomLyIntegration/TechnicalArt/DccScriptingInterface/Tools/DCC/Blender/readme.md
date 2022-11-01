@@ -1,4 +1,4 @@
-# O3DE Blender DCCsi Integration
+# O3DE DCCsi,DCC Blender
 
 This sets up Blender to be integrated with O3DE in a managed way, via the DccScriptingInterface Gem (aka DCCsi). For more information about the DCCis please see the readme.md at the root of the Gem.
 
@@ -72,11 +72,9 @@ https://www.o3de.org/docs/user-guide/< DCC Tools, not stubbed >
 
 ---
 
-LICENSE INFO
+###### LICENSE INFO
 
 Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
-
----
