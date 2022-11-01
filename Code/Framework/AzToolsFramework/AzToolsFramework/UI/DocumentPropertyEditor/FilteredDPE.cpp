@@ -25,7 +25,7 @@ namespace AzToolsFramework
             &QLineEdit::textChanged,
             [=](const QString& filterText)
             {
-                m_filterAdapter->SetFilterString(filterText);
+                m_filterAdapter->SetFilterString(filterText.toUtf8().data());
             });
     }
 
@@ -38,6 +38,11 @@ namespace AzToolsFramework
     {
         m_sourceAdapter = sourceAdapter;
         m_filterAdapter->SetSourceAdapter(m_sourceAdapter);
+    }
+
+    DocumentPropertyEditor* FilteredDPE::GetDPE()
+    {
+        return m_ui->m_dpe;
     }
 
 } // namespace AzToolsFramework

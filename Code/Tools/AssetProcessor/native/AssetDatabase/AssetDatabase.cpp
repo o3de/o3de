@@ -486,7 +486,7 @@ namespace AssetProcessor
         static const auto s_InsertSourceDependencyQuery = MakeSqlQuery(INSERT_SOURCE_DEPENDENCY, INSERT_SOURCE_DEPENDENCY_STATEMENT, LOG_NAME,
             SqlParam<AZ::Uuid>(":builderGuid"),
             SqlParam<AZ::Uuid>(":source"),
-            SqlParam<const char*>(":dependsOnSource"),
+            SqlParam<PathOrUuid>(":dependsOnSource"),
             SqlParam<AZ::s32>(":typeofdependency"),
             SqlParam<AZ::s32>(":fromAssetId"),
             SqlParam<const char*>(":subIds"));
@@ -859,7 +859,7 @@ namespace AssetProcessor
     }
 
 
-    bool AssetDatabaseConnection::PostOpenDatabase()
+    bool AssetDatabaseConnection::PostOpenDatabase(bool ignoreFutureAssetDBVersionError)
     {
         DatabaseVersion foundVersion = DatabaseVersion::DatabaseDoesNotExist;
 
@@ -872,10 +872,31 @@ namespace AssetProcessor
         // if its a future version, we don't want to drop tables and blow up, we'd rather just inform the user, and move on:
         if (foundVersion > CurrentDatabaseVersion())
         {
-            AZ_Error(AssetProcessor::ConsoleChannel, false,
-                "The database in the Cache folder appears to be from a NEWER version of Asset Processor than this one.\n"
-                "To prevent loss of data in the cache for the newer version, this Asset Processor will close.\n");
-            return false;
+            if (!ignoreFutureAssetDBVersionError)
+            {
+                AZ_Error(
+                    AssetProcessor::ConsoleChannel,
+                    false,
+                    "The database in the Cache folder appears to be from a NEWER version of Asset Processor than this one.\n"
+                    "To prevent loss of data in the cache for the newer version, this Asset Processor will close.\n");
+                return false;
+            }
+            else
+            {
+                // This will erase the Asset Database. A future version can't be fully resolved,
+                // so if the flag is set to ignore the error, this will erase the Asset Database and create a new one at the current version.
+                // This flag should only be used with automated builds that use the same asset cache across builds of different branches.
+                // This should not be used for individual builds. If an individual finds themselves running into this issue often, the team should
+                // examine their workflows to determine why that individual frequently encounters future Asset Database versions.
+                AZ_TracePrintf(
+                    AssetProcessor::ConsoleChannel,
+                    "The Asset Database in the Cache folder is from a newer version of the Asset Processor (%i) than this one (expected: %i).\n"
+                    "The existing Asset Database will be deleted and a new Asset Database will be constructed.\n",
+                    foundVersion,
+                    CurrentDatabaseVersion()
+                    );
+                dropAllTables = true;
+            }
         }
 
         if (foundVersion == DatabaseVersion::AddedOutputPrefixToScanFolders)
@@ -1182,7 +1203,7 @@ namespace AssetProcessor
         // now that the database matches the schema, update it:
         SetDatabaseVersion(CurrentDatabaseVersion());
 
-        return AzToolsFramework::AssetDatabase::AssetDatabaseConnection::PostOpenDatabase();
+        return AzToolsFramework::AssetDatabase::AssetDatabaseConnection::PostOpenDatabase(ignoreFutureAssetDBVersionError);
     }
 
 
@@ -1956,10 +1977,10 @@ namespace AssetProcessor
         return found && succeeded;
     }
 
-    bool AssetDatabaseConnection::GetJobsBySourceName(QString exactSourceName, JobDatabaseEntryContainer& container, AZ::Uuid builderGuid, QString jobKey, QString platform, JobStatus status)
+    bool AssetDatabaseConnection::GetJobsBySourceName(const SourceAssetReference& sourceAsset, JobDatabaseEntryContainer& container, AZ::Uuid builderGuid, QString jobKey, QString platform, JobStatus status)
     {
         bool found = false;
-        bool succeeded = QuerySourceBySourceName(exactSourceName.toUtf8().constData(),
+        bool succeeded = QuerySourceBySourceNameScanFolderID(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(),
             [&](SourceDatabaseEntry& source)
         {
             succeeded = QueryJobBySourceID(source.m_sourceID,
@@ -2578,10 +2599,10 @@ namespace AssetProcessor
         return found && succeeded;
     }
 
-    bool AssetDatabaseConnection::GetJobInfoBySourceName(QString exactSourceName, JobInfoContainer& container, AZ::Uuid builderGuid, QString jobKey, QString platform, JobStatus status)
+    bool AssetDatabaseConnection::GetJobInfoBySourceNameScanFolderId(QString exactSourceName, AZ::s64 scanfolderId, JobInfoContainer& container, AZ::Uuid builderGuid, QString jobKey, QString platform, JobStatus status)
     {
         bool found = false;
-        bool succeeded = QueryJobInfoBySourceName(exactSourceName.toUtf8().constData(),
+        bool succeeded = QueryJobInfoBySourceNameScanFolderId(exactSourceName.toUtf8().constData(), scanfolderId,
             [&](JobInfo& jobInfo)
         {
             found = true;
@@ -2607,7 +2628,7 @@ namespace AssetProcessor
     bool AssetDatabaseConnection::SetSourceFileDependency(SourceFileDependencyEntry& entry)
     {
         //first make sure its not already in the database
-        if (!s_InsertSourceDependencyQuery.BindAndStep(*m_databaseConnection, entry.m_builderGuid, entry.m_sourceGuid, entry.m_dependsOnSource.c_str(), entry.m_typeOfDependency, entry.m_fromAssetId, entry.m_subIds.c_str()))
+        if (!s_InsertSourceDependencyQuery.BindAndStep(*m_databaseConnection, entry.m_builderGuid, entry.m_sourceGuid, entry.m_dependsOnSource, entry.m_typeOfDependency, entry.m_fromAssetId, entry.m_subIds.c_str()))
         {
             return false;
         }
@@ -2651,7 +2672,7 @@ namespace AssetProcessor
     bool AssetDatabaseConnection::GetSourceFileDependenciesByBuilderGUIDAndSource(const AZ::Uuid& builderGuid, AZ::Uuid sourceGuid, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, SourceFileDependencyEntryContainer& container)
     {
         bool found = false;
-        bool succeeded = QueryDependsOnSourceBySourceDependency(sourceGuid, nullptr, typeOfDependency,
+        bool succeeded = QueryDependsOnSourceBySourceDependency(sourceGuid, typeOfDependency,
             [&](SourceFileDependencyEntry& entry)
         {
             if (builderGuid == entry.m_builderGuid)
@@ -2664,10 +2685,10 @@ namespace AssetProcessor
         return found && succeeded;
     }
 
-    bool AssetDatabaseConnection::GetSourceFileDependenciesByDependsOnSource(const QString& dependsOnSource, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, SourceFileDependencyEntryContainer& container)
+    bool AssetDatabaseConnection::GetSourceFileDependenciesByDependsOnSource(AZ::Uuid sourceGuid, const char* sourceName, const char* absolutePath, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, SourceFileDependencyEntryContainer& container)
     {
         bool found = false;
-        bool succeeded = QuerySourceDependencyByDependsOnSource(dependsOnSource.toUtf8().constData(), typeOfDependency,
+        bool succeeded = QuerySourceDependencyByDependsOnSource(sourceGuid, sourceName, absolutePath,typeOfDependency,
             [&](SourceFileDependencyEntry& entry)
         {
             found = true;
@@ -2683,7 +2704,7 @@ namespace AssetProcessor
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer& container)
     {
         bool found = false;
-        bool succeeded = QueryDependsOnSourceBySourceDependency(sourceUuid, nullptr, typeOfDependency,
+        bool succeeded = QueryDependsOnSourceBySourceDependency(sourceUuid, typeOfDependency,
             [&](SourceFileDependencyEntry& entry)
         {
             found = true;

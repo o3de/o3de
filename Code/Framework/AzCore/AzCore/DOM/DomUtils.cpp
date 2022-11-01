@@ -243,6 +243,11 @@ namespace AZ::Dom::Utils
                     const Array::ContainerType& ourChildren = ourNode.GetChildren();
                     const Array::ContainerType& theirChildren = theirNode.GetChildren();
 
+                    if (ourChildren.size() != theirChildren.size())
+                    {
+                        return false;
+                    }
+
                     for (size_t i = 0; i < ourChildren.size(); ++i)
                     {
                         const Value& lhsChild = ourChildren[i];

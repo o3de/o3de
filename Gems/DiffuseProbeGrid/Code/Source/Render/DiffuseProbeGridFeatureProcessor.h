@@ -133,10 +133,11 @@ namespace AZ
             // RPI::SceneNotificationBus::Handler overrides
             void OnBeginPrepareRender() override;
             void OnEndPrepareRender() override;
-            void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
-            void OnRenderPipelineAdded(RPI::RenderPipelinePtr renderPipeline) override;
-            void OnRenderPipelineRemoved(RPI::RenderPipeline* renderPipeline) override;
-
+            void OnRenderPipelineChanged(RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
+            
+            // FeatureProcessor overrides
+            void AddRenderPasses(RPI::RenderPipeline* renderPipeline) override;
+            
             void AddPassRequest(RPI::RenderPipeline* renderPipeline, const char* passRequestAssetFilePath, const char* insertionPointPassName);
             void UpdatePipelineStates();
             void UpdatePasses();

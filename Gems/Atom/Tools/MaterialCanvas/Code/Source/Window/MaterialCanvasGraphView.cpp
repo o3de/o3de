@@ -25,7 +25,6 @@ namespace MaterialCanvas
 
     MaterialCanvasGraphView::~MaterialCanvasGraphView()
     {
-        OnDocumentOpened(AZ::Uuid::CreateNull());
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
     }
 
@@ -42,12 +41,18 @@ namespace MaterialCanvas
 
     void MaterialCanvasGraphView::OnDocumentClosed([[maybe_unused]] const AZ::Uuid& documentId)
     {
-        SetActiveGraphId(GraphCanvas::GraphId(), m_documentId == documentId);
+        if (m_documentId == documentId)
+        {
+            SetActiveGraphId(GraphCanvas::GraphId(), true);
+        }
     }
 
     void MaterialCanvasGraphView::OnDocumentDestroyed([[maybe_unused]] const AZ::Uuid& documentId)
     {
-        SetActiveGraphId(GraphCanvas::GraphId(), m_documentId == documentId);
+        if (m_documentId == documentId)
+        {
+            SetActiveGraphId(GraphCanvas::GraphId(), true);
+        }
     }
 } // namespace MaterialCanvas
 

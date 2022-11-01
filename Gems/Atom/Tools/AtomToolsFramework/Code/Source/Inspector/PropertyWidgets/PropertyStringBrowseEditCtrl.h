@@ -32,15 +32,14 @@ namespace AtomToolsFramework
 
         PropertyStringBrowseEditCtrl(QWidget* parent = nullptr);
         virtual void ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue);
-        virtual void Edit();
-        virtual void Clear();
+        virtual void EditValue();
+        virtual void ClearValue();
         virtual void SetValue(const AZStd::string& value);
         virtual AZStd::string GetValue() const;
 
-    Q_SIGNALS:
-        void ValueChanged();
-
     protected:
+        virtual void OnValueChanged();
+        virtual void OnTextEditingFinished();
         void SetEditButtonEnabled(bool value);
         void SetEditButtonVisible(bool value);
         AzQtComponents::BrowseEdit* m_browseEdit = nullptr;
@@ -89,7 +88,7 @@ namespace AtomToolsFramework
 
         PropertyFilePathStringCtrl(QWidget* parent = nullptr);
         void ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue) override;
-        void Edit() override;
+        void EditValue() override;
 
     private:
         AZStd::string m_title = "File";
@@ -139,7 +138,7 @@ namespace AtomToolsFramework
 
         PropertyMultiLineStringCtrl(QWidget* parent = nullptr);
         void ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue) override;
-        void Edit() override;
+        void EditValue() override;
     };
 
     // Property handler for PropertyMultiLineStringCtrl
@@ -185,7 +184,7 @@ namespace AtomToolsFramework
 
         PropertyMultiSelectSplitStringCtrl(QWidget* parent = nullptr);
         void ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue) override;
-        void Edit() override;
+        void EditValue() override;
 
         void SetValues(const AZStd::string& values);
         AZStd::string GetValues() const;

@@ -34,50 +34,41 @@ namespace UnitTest
             "foo #   include \"a/directory/valid-file5.azsli\"\n"
             "# include <a\\dire-ctory\\valid-file6.azsli>\n"
             "#includ \"a\\dire-ctory\\invalid-file7.azsli\"\n"
+            " #include <..\\Relative\\Path\\To\\File.azsi>\n"
+            " #include <C:\\Absolute\\Path\\To\\File.azsi>\n"
         );
 
         AZ::ShaderBuilder::ShaderBuilderUtility::IncludedFilesParser includedFilesParser;
         auto fileList = includedFilesParser.ParseStringAndGetIncludedFiles(haystack);
-        EXPECT_EQ(fileList.size(), 5);
+        EXPECT_EQ(fileList.size(), 7);
 
-        auto it = AZStd::find(fileList.begin(), fileList.end(), "valid_file1.azsli");
-        EXPECT_TRUE(it != fileList.end());
 
-        it = AZStd::find(fileList.begin(), fileList.end(), "valid_file2.azsli");
-        EXPECT_TRUE(it != fileList.end());
-
-        it = AZStd::find(fileList.begin(), fileList.end(), "valid_file3.azsli");
-        EXPECT_TRUE(it != fileList.end());
-
-        // Remark: From now on We must normalize because internally AZ::ShaderBuilder::ShaderBuilderUtility::IncludedFilesParser
-        // always returns normalized paths.
+        auto expectHasIncludeFile = [fileList](bool shouldExist, const char* filePath)
         {
-            AZStd::string fileName("a\\dire-ctory\\invalid-file4.azsli");
-            AzFramework::StringFunc::Path::Normalize(fileName);
-            it = AZStd::find(fileList.begin(), fileList.end(), fileName);
-            EXPECT_TRUE(it == fileList.end());
-        }
+            //We must normalize because internally AZ::ShaderBuilder::ShaderBuilderUtility::IncludedFilesParser
+            // always returns normalized paths.
+            AZStd::string filePathNormalized(filePath);
+            AzFramework::StringFunc::Path::Normalize(filePathNormalized);
+            auto it = AZStd::find(fileList.begin(), fileList.end(), filePathNormalized);
+            if (shouldExist)
+            {
+                EXPECT_TRUE(it != fileList.end()) << "Could not find path '" << filePath << "' in the include list.";
+            }
+            else
+            {
+                EXPECT_TRUE(it == fileList.end()) << "Path '" << filePath << "' should not be in the include list.";
+            }
+        };
 
-        {
-            AZStd::string fileName("a\\directory\\valid-file5.azsli");
-            AzFramework::StringFunc::Path::Normalize(fileName);
-            it = AZStd::find(fileList.begin(), fileList.end(), fileName);
-            EXPECT_TRUE(it != fileList.end());
-        }
-
-        {
-            AZStd::string fileName("a\\dire-ctory\\valid-file6.azsli");
-            AzFramework::StringFunc::Path::Normalize(fileName);
-            it = AZStd::find(fileList.begin(), fileList.end(), fileName);
-            EXPECT_TRUE(it != fileList.end());
-        }
-
-        {
-            AZStd::string fileName("a\\dire-ctory\\invalid-file7.azsli");
-            AzFramework::StringFunc::Path::Normalize(fileName);
-            it = AZStd::find(fileList.begin(), fileList.end(), fileName);
-            EXPECT_TRUE(it == fileList.end());
-        }
+        expectHasIncludeFile(true, "valid_file1.azsli");
+        expectHasIncludeFile(true, "valid_file2.azsli");
+        expectHasIncludeFile(true, "valid_file3.azsli");
+        expectHasIncludeFile(false, "a\\dire-ctory\\invalid-file4.azsli");
+        expectHasIncludeFile(true, "a\\directory\\valid-file5.azsli");
+        expectHasIncludeFile(true, "a\\dire-ctory\\valid-file6.azsli");
+        expectHasIncludeFile(false, "a\\dire-ctory\\invalid-file7.azsli");
+        expectHasIncludeFile(true, "C:\\Absolute\\Path\\To\\File.azsi");
+        expectHasIncludeFile(true, "..\\Relative\\Path\\To\\File.azsi");
     }
 
 } //namespace UnitTest

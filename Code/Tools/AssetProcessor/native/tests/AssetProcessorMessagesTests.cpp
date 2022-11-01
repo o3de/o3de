@@ -15,13 +15,12 @@
 #include <AzCore/Utils/Utils.h>
 #include <connection/connectionManager.h>
 #include <QCoreApplication>
-#include <QTemporaryDir>
 #include <AzFramework/Network/AssetProcessorConnection.h>
+#include <native/tests/MockAssetDatabaseRequestsHandler.h>
 
 namespace AssetProcessorMessagesTests
 {
     using namespace testing;
-    using ::testing::NiceMock;
 
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;
@@ -40,12 +39,6 @@ namespace AssetProcessorMessagesTests
         }
 
         friend class AssetProcessorMessages;
-    };
-
-    class AssetProcessorMessagesTestsMockDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
-    {
-    public:
-        MOCK_METHOD1(GetAssetDatabaseLocation, bool(AZStd::string&));
     };
 
     struct MockAssetCatalog : AssetProcessor::AssetCatalog
@@ -85,17 +78,6 @@ namespace AssetProcessorMessagesTests
         {
             AssetUtilities::ResetGameName();
 
-            m_temporarySourceDir = QDir(m_temporaryDir.path());
-            m_databaseLocation = m_temporarySourceDir.absoluteFilePath("test_database.sqlite").toUtf8().constData();
-
-            ON_CALL(m_databaseLocationListener, GetAssetDatabaseLocation(_))
-                .WillByDefault(
-                    DoAll( // set the 0th argument ref (string) to the database location and return true.
-                        SetArgReferee<0>(m_databaseLocation.c_str()),
-                        Return(true)));
-
-            m_databaseLocationListener.BusConnect();
-
             m_dbConn.OpenDatabase();
 
             int argC = 0;
@@ -123,7 +105,9 @@ namespace AssetProcessorMessagesTests
             ASSERT_EQ(status, ApplicationManager::BeforeRunStatus::Status_Success);
 
             m_batchApplicationManager->m_platformConfiguration = new PlatformConfiguration();
-            m_batchApplicationManager->InitAssetProcessorManager();
+            
+            AZStd::vector<ApplicationManagerBase::APCommandLineSwitch> commandLineInfo;
+            m_batchApplicationManager->InitAssetProcessorManager(commandLineInfo);
 
             m_assetCatalog = AZStd::make_unique<MockAssetCatalog>(nullptr, m_batchApplicationManager->m_platformConfiguration);
 
@@ -198,6 +182,10 @@ namespace AssetProcessorMessagesTests
                 m_assetSystemComponent->Deactivate();
             }
             m_batchApplicationManager->Destroy();
+
+            m_assetCatalog.reset();
+            m_assetSystemComponent.reset();
+            m_batchApplicationManager.reset();
         }
 
         void RunNetworkRequest(AZStd::function<void()> func) const
@@ -226,12 +214,10 @@ namespace AssetProcessorMessagesTests
     protected:
 
         MockAssetRequestHandler* m_assetRequestHandler{}; // Not owned, AP will delete this pointer
-        QTemporaryDir m_temporaryDir;
         AZStd::unique_ptr<UnitTestBatchApplicationManager> m_batchApplicationManager;
         AZStd::unique_ptr<AzFramework::AssetSystem::AssetSystemComponent> m_assetSystemComponent;
-        NiceMock<AssetProcessorMessagesTestsMockDatabaseLocationListener> m_databaseLocationListener;
+        AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
         AZStd::unique_ptr<MockAssetCatalog> m_assetCatalog = nullptr;
-        QDir m_temporarySourceDir;
         AZStd::string m_databaseLocation;
         AssetDatabaseConnection m_dbConn;
     };

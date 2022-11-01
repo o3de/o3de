@@ -20,6 +20,7 @@
 #include <QModelIndex>
 #include <QPointer>
 #include <QDialog>
+#include <QMessageBox>
 #endif
 
 class QTimer;
@@ -37,6 +38,8 @@ namespace AzToolsFramework
             : public QTreeViewWithStateSaving
             , public AssetBrowserViewRequestBus::Handler
             , public AssetBrowserComponentNotificationBus::Handler
+            , public AssetBrowserInteractionNotificationBus::Handler
+
         {
             Q_OBJECT
 
@@ -68,6 +71,7 @@ namespace AzToolsFramework
             void RenameEntry();
             void DuplicateEntries();
             void MoveEntries();
+            void AfterRename(QString newVal);
 
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserViewRequestBus
@@ -124,6 +128,9 @@ namespace AzToolsFramework
 
             //! Grab one entry from the source thumbnail list and update it
             void UpdateSCThumbnails();
+
+            //! AssetBrowserInteractionNotificationBus::Handler overrides...
+            void AddSourceFileCreators(const char* fullSourceFolderName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators) override;
 
         private Q_SLOTS:
             void OnContextMenu(const QPoint& point);
