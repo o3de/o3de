@@ -10,7 +10,6 @@
 
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
-#include <QString>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -104,7 +103,7 @@ namespace AZ::DocumentPropertyEditor
             and updates the m_matchingDescendants state for all its ancestors
             \param rowState the row to operate on */
         void UpdateMatchState(MatchInfoNode* rowState);
-        void UpdateMatchDescendants(MatchInfoNode* startNode); //!< callls UpdateMatchState on the subtree starting at startNode
+        void UpdateMatchDescendants(MatchInfoNode* startNode); //!< calls UpdateMatchState on the subtree starting at startNode
 
         //! returns the first path in the ancestry of sourcePath that is of type Row, including self
         Dom::Path GetRowPath(const Dom::Path& sourcePath) const;
@@ -126,13 +125,13 @@ namespace AZ::DocumentPropertyEditor
     {
     public:
         ValueStringFilter();
-        void SetFilterString(QString filterString);
+        void SetFilterString(AZStd::string filterString);
 
         struct StringMatchNode : public RowFilterAdapter::MatchInfoNode
         {
             void AddStringifyValue(const Dom::Value& domValue);
 
-            QString m_matchableDomTerms;
+            AZStd::string m_matchableDomTerms;
         };
 
     protected:
@@ -142,6 +141,6 @@ namespace AZ::DocumentPropertyEditor
         virtual bool MatchesFilter(MatchInfoNode* matchNode) const override;
 
         bool m_includeDescriptions = true;
-        QString m_filterString;
+        AZStd::string m_filterString;
     };
 } // namespace AZ::DocumentPropertyEditor

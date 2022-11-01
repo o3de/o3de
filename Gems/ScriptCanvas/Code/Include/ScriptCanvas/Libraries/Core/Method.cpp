@@ -13,7 +13,6 @@
 #include <Core/SlotConfigurationDefaults.h> 
 #include <Core/SlotExecutionMap.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
-#include <ScriptCanvas/Utils/ReplacementUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 namespace MethodCPP
@@ -230,15 +229,6 @@ namespace ScriptCanvas
                 default:
                     return PropertyStatus::None;
                 }
-            }
-
-            NodeReplacementConfiguration Method::GetReplacementNodeConfiguration() const
-            {
-                if (m_method)
-                {
-                    return ReplacementUtils::GetReplacementMethodNode(m_className.c_str(), m_lookupName.c_str());
-                }
-                return NodeReplacementConfiguration{};
             }
 
             void Method::InitializeMethod(const MethodConfiguration& config)

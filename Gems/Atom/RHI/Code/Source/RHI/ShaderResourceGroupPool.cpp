@@ -116,7 +116,8 @@ namespace AZ
             bool isQueuedForCompile = shaderResourceGroup.IsQueuedForCompile();
             AZ_Warning(
                 "ShaderResourceGroupPool", !isQueuedForCompile,
-                "Attempting to compile an SRG that's already been queued for compile. Only compile an SRG once per frame.");
+                "Attempting to compile SRG '%s' that's already been queued for compile. Only compile an SRG once per frame.",
+                shaderResourceGroup.GetName().GetCStr());
 
             if (!isQueuedForCompile)
             {

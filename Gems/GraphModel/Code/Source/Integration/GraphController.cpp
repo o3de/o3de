@@ -406,6 +406,11 @@ namespace GraphModelIntegration
         //    That's why we loop through SlotDefinitions instead of the actual Slots, which are stored in a map.
         for (SlotDefinitionPtr slotDefinition : node->GetSlotDefinitions())
         {
+            if (!slotDefinition->SupportsEditingOnNode())
+            {
+                continue;
+            }
+
             const AZStd::string& slotName = slotDefinition->GetName();
             GraphCanvas::ExtenderId extenderId;
 

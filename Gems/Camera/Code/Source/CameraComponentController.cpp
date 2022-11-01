@@ -133,7 +133,7 @@ namespace Camera
 
             // Push the Atom camera after we make sure we're up-to-date with our component's transform to ensure the viewport reads the correct state
             UpdateCamera();
-            atomViewportRequests->PushView(contextName, m_atomCameraViewGroup);
+            atomViewportRequests->PushViewGroup(contextName, m_atomCameraViewGroup);
         }
     }
 
@@ -148,7 +148,7 @@ namespace Camera
         if (atomViewportRequests)
         {
             const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-            atomViewportRequests->PopView(contextName, m_atomCameraViewGroup);
+            atomViewportRequests->PopViewGroup(contextName, m_atomCameraViewGroup);
         }
     }
 

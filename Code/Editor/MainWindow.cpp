@@ -418,7 +418,7 @@ MainWindow::~MainWindow()
         GetEntityContextId(), &ActionOverrideRequests::TeardownActionOverrideHandler);
 
     m_instance = nullptr;
-    
+
     if (!IsNewActionManagerEnabled())
     {
         delete m_levelEditorMenuHandler;
@@ -763,7 +763,7 @@ void MainWindow::InitActions()
                 EditorTransformComponentSelectionRequestBus::Event(
                     GetEntityContextId(), &EditorTransformComponentSelectionRequests::SetTransformMode,
                     EditorTransformComponentSelectionRequests::Mode::Translation);
-            });                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+            });
     am->AddAction(AzToolsFramework::EditModeRotate, tr("Rotate"))
         .SetIcon(Style::icon("Translate"))
         .SetShortcut(tr("2"))
@@ -1434,7 +1434,7 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
         auto cryEdit = CCryEditApp::instance();
         if (cryEdit)
         {
-            cryEdit->SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectName().c_str(), GetIEditor()->GetGameEngine()->GetLevelName());
+            cryEdit->SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectDisplayName().c_str(), GetIEditor()->GetGameEngine()->GetLevelName());
         }
     }
     break;
@@ -1443,7 +1443,7 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
         auto cryEdit = CCryEditApp::instance();
         if (cryEdit)
         {
-            cryEdit->SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectName().c_str(), nullptr);
+            cryEdit->SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectDisplayName().c_str(), nullptr);
         }
     }
     break;
@@ -2021,9 +2021,14 @@ void MainWindow::ShowCustomizeToolbarDialog()
 QMenu* MainWindow::createPopupMenu()
 {
     QMenu* menu = QMainWindow::createPopupMenu();
-    menu->addSeparator();
-    QAction* action = menu->addAction(QStringLiteral("Customize..."));
-    connect(action, &QAction::triggered, this, &MainWindow::ShowCustomizeToolbarDialog);
+
+    if (!IsNewActionManagerEnabled())
+    {
+        menu->addSeparator();
+        QAction* action = menu->addAction(QStringLiteral("Customize..."));
+        connect(action, &QAction::triggered, this, &MainWindow::ShowCustomizeToolbarDialog);
+    }
+
     return menu;
 }
 
