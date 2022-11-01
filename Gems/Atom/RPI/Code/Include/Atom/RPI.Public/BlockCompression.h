@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RPI.Public/Base.h>
+#include <AzCore/Math/Color.h>
 
 namespace AZ
 {
