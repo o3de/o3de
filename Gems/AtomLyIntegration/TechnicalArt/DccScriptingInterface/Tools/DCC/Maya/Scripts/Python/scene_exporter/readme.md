@@ -1,4 +1,4 @@
-# DCCsi: Maya Scene Exporter
+# O3DE DCCsi, Maya Scene Exporter
 
 The "DccScriptingInterface" (aka DCCsi) is a Gem for O3DE to extend and interface with dcc tools in the python ecosystem. This document contains the details of using the 'Scene Exporter' for Maya that is provided as a utility with the DCCsi.
 
@@ -43,6 +43,8 @@ Do this ...
 And this ...
 
 ----
+
+###### LICENSE INFO
 
 Copyright (c) Contributors to the Open 3D Engine Project.  For complete copyright and license terms please see the LICENSE at the root of this distribution.
 

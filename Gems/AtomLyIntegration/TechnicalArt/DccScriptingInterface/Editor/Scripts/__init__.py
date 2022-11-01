@@ -19,7 +19,7 @@ import logging as _logging
 # -------------------------------------------------------------------------
 # global scope
 _DCCSI_SLUG = 'DccScriptingInterface'
-_PACKAGENAME = 'DCCsi.editor.scripts'
+_PACKAGENAME = 'DCCsi.Editor.Scripts'
 _LOGGER = _logging.getLogger(_PACKAGENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 _MODULE_PATH = Path(__file__) # thos module should not be used as an entry

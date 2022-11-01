@@ -246,9 +246,26 @@ def click_action_wing_docs():
 # -------------------------------------------------------------------------
 
 
+# - slot ------------------------------------------------------------------
+from DccScriptingInterface.Editor.Scripts.about import DccsiAbout
+
+@Slot()
+def click_action_about():
+    """Open DCCsi About Dialog"""
+    _LOGGER.debug(f'Clicked: click_action_about')
+
+    EDITOR_MAIN_WINDOW = az_qt_helpers.get_editor_main_window()
+
+    about_dialog = DccsiAbout(EDITOR_MAIN_WINDOW)
+    return about_dialog.exec_()
+# -------------------------------------------------------------------------
+
 # -------------------------------------------------------------------------
 def bootstrap_Editor():
     """! Put bootstrapping code here to execute in O3DE Editor.exe"""
+
+    START_SLUG = 'Start'
+    HELP_SLUG = 'Help ...'
 
     # Editor main window (should work with any standalone o3de editor exe)
     EDITOR_MAIN_WINDOW = az_qt_helpers.get_editor_main_window()
@@ -268,22 +285,22 @@ def bootstrap_Editor():
     # inject themselves, instead of this module manually
     # bootstrapping each. Suggestion for a follow up PR.
     action_start_blender = add_action(parent=dccsi_dcc_menu_blender,
-                                      title="Start",
+                                      title=START_SLUG,
                                       action_slot = click_action_blender_start)
 
     action_docs_blender = add_action(parent=dccsi_dcc_menu_blender,
-                                      title="Docs",
+                                      title=HELP_SLUG,
                                       action_slot = click_action_blender_docs)
 
     # Editor MenuBar, Studio Tools > DCC > Maya
     dccsi_dcc_menu_maya = create_menu(parent=dccsi_dcc_menu, title="Maya")
 
     action_start_maya = add_action(parent=dccsi_dcc_menu_maya,
-                                   title="Start",
+                                   title=START_SLUG,
                                    action_slot = click_action_maya_start)
 
     action_docs_maya = add_action(parent=dccsi_dcc_menu_maya,
-                                  title="Docs",
+                                  title=HELP_SLUG,
                                   action_slot = click_action_maya_docs)
 
     # Editor MenuBar, Studio Tools > IDE
@@ -294,11 +311,11 @@ def bootstrap_Editor():
     dccsi_ide_menu_wing = create_menu(parent=dccsi_ide_menu, title="Wing")
 
     action_start_wingide = add_action(parent=dccsi_ide_menu_wing,
-                                       title="Start",
+                                       title=START_SLUG,
                                        action_slot = click_action_wing_start)
 
     action_start_blender = add_action(parent=dccsi_ide_menu_wing,
-                                      title="Docs",
+                                      title=HELP_SLUG,
                                       action_slot = click_action_wing_docs)
 
     # Editor MenuBar, Studio Tools > Examples
@@ -310,6 +327,11 @@ def bootstrap_Editor():
     action_start_sampleui = add_action(parent=dccsi_examples_menu,
                                        title="SampleUI",
                                        action_slot = click_action_sampleui)
+
+    # MEditor MenuBar, Studio Tools > About
+    action_start_sampleui = add_action(parent=dccsi_menu,
+                                       title="About",
+                                       action_slot = click_action_about)
 
     return dccsi_menu
 # -------------------------------------------------------------------------

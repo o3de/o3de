@@ -28,8 +28,8 @@ from shiboken2 import wrapInstance, getCppPointer
 
 # -------------------------------------------------------------------------
 # global scope
-_DCCSI_SLUG = 'DccScriptingInterface'
-_MODULENAME = 'DCCsi.editor.scripts.ui'
+from DccScriptingInterface.Editor.Scripts import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.ui'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
