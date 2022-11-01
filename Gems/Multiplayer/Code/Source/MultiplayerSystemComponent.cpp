@@ -188,7 +188,16 @@ namespace Multiplayer
                 })
                 ->Attribute(
                     AZ::Script::Attributes::AzEventDescription,
-                    AZ::BehaviorAzEventDescription{"On Client Disconnected Event"});
+                    AZ::BehaviorAzEventDescription{"On Client Disconnected Event"})
+                ->Method("GetCurrentBlendFactor", []()
+                    {
+                        if (GetMultiplayer())
+                        {
+                            return GetMultiplayer()->GetCurrentBlendFactor();
+                        }
+                        return 0.f;
+                    })
+            ;
         }
 
         MultiplayerComponent::Reflect(context);
