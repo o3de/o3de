@@ -58,6 +58,7 @@ namespace AzToolsFramework::ViewportUi::Internal
             {
                 return;
             }
+
             ClearHighlightedButton();
             buttonEntry->second->m_state = Button::State::Selected;
             m_highlightedButtonId = buttonId;
