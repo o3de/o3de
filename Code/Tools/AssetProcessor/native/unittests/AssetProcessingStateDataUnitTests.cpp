@@ -266,9 +266,10 @@ namespace AssetProcessor
 
         void AddDefaultScanFolder()
         {
+            // this isn't a real directory. It just creates an entry in the database, so any string would work.
             m_defaultScanFolder = ScanFolderDatabaseEntry("c:/O3DE/dev", "dev", "rootportkey");
             EXPECT_TRUE(m_connection.SetScanFolder(m_defaultScanFolder));
-            EXPECT_NE(m_defaultScanFolder.m_scanFolderID, AzToolsFramework::AssetDatabase::InvalidEntryId) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
+            EXPECT_NE(m_defaultScanFolder.m_scanFolderID, AzToolsFramework::AssetDatabase::InvalidEntryId);
         }
 
         void AddDefaultSource()
@@ -281,7 +282,7 @@ namespace AssetProcessor
             AZ::Uuid validSourceGuid = AZ::Uuid::CreateRandom();
             m_defaultSource = SourceDatabaseEntry(m_defaultScanFolder.m_scanFolderID, "SomeSource.tif", validSourceGuid, "12345");
             EXPECT_TRUE(m_connection.SetSource(m_defaultSource));
-            EXPECT_NE(m_defaultSource.m_sourceID, AzToolsFramework::AssetDatabase::InvalidEntryId) << "AssetProcessingStateDataTest Failed - source failed to add";
+            EXPECT_NE(m_defaultSource.m_sourceID, AzToolsFramework::AssetDatabase::InvalidEntryId);
         }
 
         void AddDefaultJob()
@@ -440,7 +441,7 @@ namespace AssetProcessor
         ScanFolderDatabaseEntry dupeScanFolder("c:/O3DE/dev1", "dev", "rootportkey");
         dupeScanFolder.m_scanFolderID = AzToolsFramework::AssetDatabase::InvalidEntryId;
         EXPECT_TRUE(m_connection.SetScanFolder(dupeScanFolder));
-        EXPECT_EQ(dupeScanFolder, m_defaultScanFolder) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
+        EXPECT_EQ(dupeScanFolder, m_defaultScanFolder);
 
         EXPECT_EQ(dupeScanFolder.m_portableKey, m_defaultScanFolder.m_portableKey);
         EXPECT_EQ(dupeScanFolder.m_scanFolderID, m_defaultScanFolder.m_scanFolderID);
@@ -462,8 +463,8 @@ namespace AssetProcessor
         // Retrieve the one we just made by id
         ScanFolderDatabaseEntry retrieveScanfolderById;
         EXPECT_TRUE(m_connection.GetScanFolderByScanFolderID(m_defaultScanFolder.m_scanFolderID, retrieveScanfolderById));
-        EXPECT_NE(retrieveScanfolderById.m_scanFolderID, AzToolsFramework::AssetDatabase::InvalidEntryId) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
-        EXPECT_EQ(retrieveScanfolderById.m_scanFolderID, m_defaultScanFolder.m_scanFolderID) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
+        EXPECT_NE(retrieveScanfolderById.m_scanFolderID, AzToolsFramework::AssetDatabase::InvalidEntryId);
+        EXPECT_EQ(retrieveScanfolderById.m_scanFolderID, m_defaultScanFolder.m_scanFolderID);
     }
 
     TEST_F(AssetProcessingStateDataUnitTest, TestScanFolder_RetrieveScanFolderByPortableKey_Succeeds)
@@ -473,8 +474,8 @@ namespace AssetProcessor
         // Retrieve the one we just made by portable key
         ScanFolderDatabaseEntry retrieveScanfolderByScanPath;
         EXPECT_TRUE(m_connection.GetScanFolderByPortableKey("rootportkey", retrieveScanfolderByScanPath));
-        EXPECT_NE(retrieveScanfolderByScanPath.m_scanFolderID, AzToolsFramework::AssetDatabase::InvalidEntryId) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
-        EXPECT_EQ(retrieveScanfolderByScanPath.m_scanFolderID, m_defaultScanFolder.m_scanFolderID) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
+        EXPECT_NE(retrieveScanfolderByScanPath.m_scanFolderID, AzToolsFramework::AssetDatabase::InvalidEntryId);
+        EXPECT_EQ(retrieveScanfolderByScanPath.m_scanFolderID, m_defaultScanFolder.m_scanFolderID);
     }
 
     TEST_F(AssetProcessingStateDataUnitTest, TestScanFolder_RemoveScanFolderById_Succeeds)
@@ -483,7 +484,7 @@ namespace AssetProcessor
         // Add another scan folder
         ScanFolderDatabaseEntry gameScanFolderEntry("c:/O3DE/game", "game", "gameportkey");
         EXPECT_TRUE(m_connection.SetScanFolder(gameScanFolderEntry));
-        EXPECT_NE(gameScanFolderEntry.m_scanFolderID, AzToolsFramework::AssetDatabase::InvalidEntryId) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
+        EXPECT_NE(gameScanFolderEntry.m_scanFolderID, AzToolsFramework::AssetDatabase::InvalidEntryId);
 
         // Get all scan folders, there should be two scan folders we just added
         ScanFolderDatabaseEntryContainer scanFolders;
@@ -512,7 +513,7 @@ namespace AssetProcessor
         // Add another scan folder
         ScanFolderDatabaseEntry gameScanFolderEntry("c:/O3DE/game", "game", "gameportkey");
         EXPECT_TRUE(m_connection.SetScanFolder(gameScanFolderEntry));
-        EXPECT_NE(gameScanFolderEntry.m_scanFolderID, AzToolsFramework::AssetDatabase::InvalidEntryId) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
+        EXPECT_NE(gameScanFolderEntry.m_scanFolderID, AzToolsFramework::AssetDatabase::InvalidEntryId);
 
         // Get all scan folders, there should only the two we added
         ScanFolderDatabaseEntryContainer scanFolders;
@@ -573,7 +574,7 @@ namespace AssetProcessor
         SourceDatabaseEntry dupeSource(m_defaultSource);
         dupeSource.m_sourceID = AzToolsFramework::AssetDatabase::InvalidEntryId;
         EXPECT_TRUE(m_connection.SetSource(dupeSource));
-        EXPECT_EQ(dupeSource.m_sourceID, m_defaultSource.m_sourceID) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
+        EXPECT_EQ(dupeSource.m_sourceID, m_defaultSource.m_sourceID);
 
         // Get all sources, there should still only the one we added
         SourceDatabaseEntryContainer sources;
@@ -617,7 +618,7 @@ namespace AssetProcessor
         source.m_analysisFingerprint = "new different fingerprint";
         source.m_sourceID = AzToolsFramework::AssetDatabase::InvalidEntryId;
         EXPECT_TRUE(m_connection.SetSource(source));
-        EXPECT_EQ(source.m_sourceID, m_defaultSource.m_sourceID) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
+        EXPECT_EQ(source.m_sourceID, m_defaultSource.m_sourceID);
 
         // Get all sources, there should still only the one we added
         SourceDatabaseEntryContainer sources;
@@ -632,7 +633,7 @@ namespace AssetProcessor
         SourceDatabaseEntry dupeSource(m_defaultSource);
         dupeSource.m_scanFolderPK = m_defaultScanFolder.m_scanFolderID; // changing it back here.
         EXPECT_TRUE(m_connection.SetSource(dupeSource));
-        EXPECT_EQ(dupeSource.m_sourceID, m_defaultSource.m_sourceID) << "AssetProcessingStateDataTest Failed - scan folder failed to add";
+        EXPECT_EQ(dupeSource.m_sourceID, m_defaultSource.m_sourceID);
 
         // Get all sources, there should still only the one we added
         sources.clear();
@@ -658,11 +659,11 @@ namespace AssetProcessor
 
         SourceDatabaseEntry retrieveSourceBySourceID;
         EXPECT_TRUE(m_connection.GetSourceBySourceID(m_defaultSource.m_sourceID, retrieveSourceBySourceID));
-        EXPECT_NE(retrieveSourceBySourceID.m_sourceID, AzToolsFramework::AssetDatabase::InvalidEntryId) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
-        EXPECT_EQ(retrieveSourceBySourceID.m_sourceID, m_defaultSource.m_sourceID) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
-        EXPECT_EQ(retrieveSourceBySourceID.m_scanFolderPK, m_defaultSource.m_scanFolderPK) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
-        EXPECT_EQ(retrieveSourceBySourceID.m_sourceGuid, m_defaultSource.m_sourceGuid) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
-        EXPECT_EQ(retrieveSourceBySourceID.m_sourceName, m_defaultSource.m_sourceName) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
+        EXPECT_NE(retrieveSourceBySourceID.m_sourceID, AzToolsFramework::AssetDatabase::InvalidEntryId);
+        EXPECT_EQ(retrieveSourceBySourceID.m_sourceID, m_defaultSource.m_sourceID);
+        EXPECT_EQ(retrieveSourceBySourceID.m_scanFolderPK, m_defaultSource.m_scanFolderPK);
+        EXPECT_EQ(retrieveSourceBySourceID.m_sourceGuid, m_defaultSource.m_sourceGuid);
+        EXPECT_EQ(retrieveSourceBySourceID.m_sourceName, m_defaultSource.m_sourceName);
     }
 
     TEST_F(AssetProcessingStateDataUnitTest, TestSources_RetrieveSourceBySourceGuid_Succeeds)
@@ -672,11 +673,11 @@ namespace AssetProcessor
         // Try retrieving this source by guid
         SourceDatabaseEntry retrieveSourceBySourceGuid;
         EXPECT_TRUE(m_connection.GetSourceBySourceGuid(m_defaultSource.m_sourceGuid, retrieveSourceBySourceGuid));
-        EXPECT_NE(retrieveSourceBySourceGuid.m_sourceID, AzToolsFramework::AssetDatabase::InvalidEntryId) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
-        EXPECT_EQ(retrieveSourceBySourceGuid.m_sourceID, m_defaultSource.m_sourceID) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
-        EXPECT_EQ(retrieveSourceBySourceGuid.m_scanFolderPK, m_defaultSource.m_scanFolderPK) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
-        EXPECT_EQ(retrieveSourceBySourceGuid.m_sourceGuid, m_defaultSource.m_sourceGuid) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
-        EXPECT_EQ(retrieveSourceBySourceGuid.m_sourceName, m_defaultSource.m_sourceName) << "AssetProcessingStateDataTest Failed - GetSourceBySourceID failed";
+        EXPECT_NE(retrieveSourceBySourceGuid.m_sourceID, AzToolsFramework::AssetDatabase::InvalidEntryId);
+        EXPECT_EQ(retrieveSourceBySourceGuid.m_sourceID, m_defaultSource.m_sourceID);
+        EXPECT_EQ(retrieveSourceBySourceGuid.m_scanFolderPK, m_defaultSource.m_scanFolderPK);
+        EXPECT_EQ(retrieveSourceBySourceGuid.m_sourceGuid, m_defaultSource.m_sourceGuid);
+        EXPECT_EQ(retrieveSourceBySourceGuid.m_sourceName, m_defaultSource.m_sourceName);
     }
 
     TEST_F(AssetProcessingStateDataUnitTest, TestSources_RetrieveSourceBySourceName_Succeeds)
@@ -858,7 +859,7 @@ namespace AssetProcessor
         JobDatabaseEntry dupeJob(m_defaultJob);
         dupeJob.m_jobID = AzToolsFramework::AssetDatabase::InvalidEntryId;
         EXPECT_TRUE(m_connection.SetJob(dupeJob));
-        EXPECT_EQ(dupeJob, m_defaultJob) << "AssetProcessingStateDataTest Failed - SetJob failed to add";
+        EXPECT_EQ(dupeJob, m_defaultJob);
 
         // Get all jobs, there should still only the one we added
         JobDatabaseEntryContainer jobs;
@@ -878,7 +879,7 @@ namespace AssetProcessor
 
         // Try retrieving this source by id
         EXPECT_TRUE(m_connection.GetJobByJobID(m_defaultJob.m_jobID, m_defaultJob));
-        EXPECT_NE(m_defaultJob.m_jobID, AzToolsFramework::AssetDatabase::InvalidEntryId) << "AssetProcessingStateDataTest Failed - GetJobByJobID failed";
+        EXPECT_NE(m_defaultJob.m_jobID, AzToolsFramework::AssetDatabase::InvalidEntryId);
 
         // Try retrieving jobs by source id
         JobDatabaseEntryContainer jobs;
@@ -1240,7 +1241,7 @@ namespace AssetProcessor
         // Product -> Product2
         productDependency = ProductDependencyDatabaseEntry(m_defaultProduct.m_productID, validSourceGuid, 2, 0, platform, true);
         EXPECT_TRUE(m_connection.SetProductDependency(productDependency));
-        EXPECT_NE(productDependency.m_productDependencyID, AzToolsFramework::AssetDatabase::InvalidEntryId) << "AssetProcessingStateDataTest Failed - SetProductDependency failed to add";
+        EXPECT_NE(productDependency.m_productDependencyID, AzToolsFramework::AssetDatabase::InvalidEntryId);
 
         // Get all product dependencies, there should only the one we added
         productDependencies.clear();
@@ -1257,7 +1258,8 @@ namespace AssetProcessor
         ProductDependencyDatabaseEntry dupeProductDependency(productDependency);
         dupeProductDependency.m_productDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
         EXPECT_TRUE(m_connection.SetProductDependency(dupeProductDependency));
-        EXPECT_EQ(dupeProductDependency, dupeProductDependency) << "AssetProcessingStateDataTest Failed - SetProductDependency failed to add";
+        EXPECT_EQ(dupeProductDependency, dupeProductDependency);
+        EXPECT_EQ(dupeProductDependency, dupeProductDependency);
 
         // Get all product dependencies, there should still only the one we added
         productDependencies.clear();
