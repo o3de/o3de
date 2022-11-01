@@ -643,7 +643,8 @@ namespace AssetBuilderSDK
         // Indicates this JobProduct is a product asset which should be output to the cache.  This is the default.
         // Currently it is not supported to use this with IntermediateAsset since the Common platform is required for IntermediateAsset and not yet supported for ProductAsset.
         ProductAsset = 1,
-        IntermediateAsset = 2 // Indicates this JobProduct is an intermediate asset which should be output to the intermediate asset folder.  Must be used with the "common" platform (see CommonPlatformName).
+        IntermediateAsset = 2, // Indicates this JobProduct is an intermediate asset which should be output to the intermediate asset folder.  Must be used with the "common" platform (see CommonPlatformName).
+        CachedAsset = 4 // This product asset has been archived using the Asset Cache Server feature (aka Shared Cache)
     };
 
     bool IsProductOutputFlagSet(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& product, ProductOutputFlags flag);

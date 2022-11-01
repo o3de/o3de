@@ -13,4 +13,4 @@ from DccScriptingInterface.Tools.DCC.Maya.Scripts.Python import _PACKAGENAME
 _PACKAGENAME = f'{_PACKAGENAME}.export'
 _LOGGER = _logging.getLogger(_PACKAGENAME)
 
-__all__ = ['materials']
+__all__ = ['export_tool']
