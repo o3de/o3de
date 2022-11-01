@@ -51,7 +51,7 @@ class HelpMenu():
 
     INPUTS:
     @param parent_widget: the class instance of the QMainWindow, or QWidget object
-        note: parent_widget must have it;s own menuBar
+        note: parent_widget must have it's own menuBar
 
     @param dcc_app_label: Label for the tools parent dcc app help
     @param dcc_app_url: URL for the tools parent dcc app help link
