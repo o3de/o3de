@@ -78,7 +78,7 @@ class DccsiAbout(QDialog):
 
                                  f'or come ask a question in the <a href=\"https://discord.com/channels/805939474655346758/842110573625081876\">O3DE #TechnicalArtists Channel</a> on Discord.</a><br/><br/>'
 
-                                 f'The DccScriptingInterface Gem was creaded by <a href=\"https://github.com/HogJonny-AMZN/\">HogJonny-AMZN</a> Along with other AWS Design Technologists. Please let me know if you have ideas, enahncement requests, find any bugs, or would like to contribute.<br/><br/>'
+                                 f'The DccScriptingInterface Gem was created by <a href=\"https://github.com/HogJonny-AMZN/\">HogJonny-AMZN</a> Along with other AWS Design Technologists. Please let me know if you have ideas, enhancement requests, find any bugs, or would like to contribute.<br/><br/>'
 
                                  f'Enjoy building your studio toolchain!</a><br/><br/>')
 
