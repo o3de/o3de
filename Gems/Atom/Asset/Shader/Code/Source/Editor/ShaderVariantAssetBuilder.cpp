@@ -1177,16 +1177,18 @@ namespace AZ
                     AZStd::vector<AZStd::string> fullCommand;
                     fullCommand.push_back(command);
                     AZStd::string failMessage;
-                    if (!LaunchRadeonGPUAnalyzer(fullCommand, creationContext.m_tempDirPath, failMessage))
+                    if (LaunchRadeonGPUAnalyzer(fullCommand, creationContext.m_tempDirPath, failMessage))
                     {
-                        return AZ::Failure(failMessage);
+                        // add rga output to the by product list
+                        outputByproducts->m_intermediatePaths.insert(AZStd::string::format(
+                            "./%s_disassem_%u_frag.txt", shaderVariantInfo.m_asic.c_str(), shaderVariantInfo.m_stableId));
+                        outputByproducts->m_intermediatePaths.insert(AZStd::string::format(
+                            "./%s_livereg_%u_frag.txt", shaderVariantInfo.m_asic.c_str(), shaderVariantInfo.m_stableId));
                     }
-
-                    // add rga output to the by product list
-                    outputByproducts->m_intermediatePaths.insert(
-                        AZStd::string::format("./%s_disassem_%u_frag.txt", shaderVariantInfo.m_asic.c_str(), shaderVariantInfo.m_stableId));
-                    outputByproducts->m_intermediatePaths.insert(
-                        AZStd::string::format("./%s_livereg_%u_frag.txt", shaderVariantInfo.m_asic.c_str(), shaderVariantInfo.m_stableId));
+                    else
+                    {
+                        AZ_Warning(ShaderVariantAssetBuilderName, false, failMessage.c_str());
+                    }
                 }
                 else
                 {
@@ -1196,7 +1198,6 @@ namespace AZ
                         "Current platform is %s, register analysis is only available on Vulkan for now.",
                         creationContext.m_shaderPlatformInterface.GetAPIName().GetCStr());
                 }
-                
             }
 
             Data::Asset<RPI::ShaderVariantAsset> shaderVariantAsset;

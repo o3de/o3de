@@ -21,7 +21,7 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<VariantInfo>()
-                    ->Version(2)
+                    ->Version(2) // Added Radeon GPU Analyzer
                     ->Field("StableId", &VariantInfo::m_stableId)
                     ->Field("Options", &VariantInfo::m_options)
                     ->Field("EnableAnalysis", &VariantInfo::m_enableRegisterAnalysis)
