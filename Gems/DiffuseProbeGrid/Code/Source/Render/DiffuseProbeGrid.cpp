@@ -48,7 +48,6 @@ namespace AZ
             m_visualizationTlasInstancesAttachmentId = AZStd::string::format("ProbeVisualizationTlasInstancesAttachmentId_%s", uuidString.c_str());
 
             // setup culling
-            m_cullable.m_cullData.m_scene = m_scene;
             m_cullable.SetDebugName(AZ::Name("DiffuseProbeGrid Volume"));
 
             // create the visualization TLAS
@@ -518,14 +517,19 @@ namespace AZ
             constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeMaxRayDistance"));
             m_prepareSrg->SetConstant(constantIndex, m_probeMaxRayDistance);
 
+            // scale the normal bias based on the grid density to reduce artifacts on thin geometry, less density results in more bias
+            float scaledNormalBias = m_normalBias + 0.15f * (m_probeSpacing.GetMaxElement() / 2.0f);
             constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeNormalBias"));
-            m_prepareSrg->SetConstant(constantIndex, m_normalBias);
+            m_prepareSrg->SetConstant(constantIndex, scaledNormalBias);
 
             constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeViewBias"));
             m_prepareSrg->SetConstant(constantIndex, m_viewBias);
 
+            // scale the probe distance exponent based on the grid density to reduce artifacts on thin geometry
+            static const float MinProbeDistanceExponent = 50.0f;
+            float scaledProbeDistanceExponent = AZStd::max(m_probeDistanceExponent * (m_probeSpacing.GetMaxElement() / 1.5f), MinProbeDistanceExponent);
             constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeDistanceExponent"));
-            m_prepareSrg->SetConstant(constantIndex, m_probeDistanceExponent);
+            m_prepareSrg->SetConstant(constantIndex, scaledProbeDistanceExponent);
 
             constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeIrradianceThreshold"));
             m_prepareSrg->SetConstant(constantIndex, m_probeIrradianceThreshold);

@@ -68,10 +68,12 @@ set(FILES
     Source/AnimGraph/NodeGraphWidget.h
     Source/AnimGraph/NodeGroupWindow.cpp
     Source/AnimGraph/NodeGroupWindow.h
+    Source/AnimGraph/NodePaletteModelUpdater.h
+    Source/AnimGraph/NodePaletteModelUpdater.cpp
     Source/AnimGraph/NodePaletteWidget.cpp
     Source/AnimGraph/NodePaletteWidget.h
-    Source/AnimGraph/ParameterCreateEditDialog.cpp
-    Source/AnimGraph/ParameterCreateEditDialog.h
+    Source/AnimGraph/ParameterCreateEditWidget.cpp
+    Source/AnimGraph/ParameterCreateEditWidget.h
     Source/AnimGraph/ParameterSelectionWindow.cpp
     Source/AnimGraph/ParameterSelectionWindow.h
     Source/AnimGraph/ParameterWidget.cpp
@@ -148,8 +150,6 @@ set(FILES
     Source/MotionEvents/MotionEventPresetsWidget.h
     Source/MotionEvents/MotionEventWidget.cpp
     Source/MotionEvents/MotionEventWidget.h
-    Source/MotionEvents/MotionEventsPlugin.cpp
-    Source/MotionEvents/MotionEventsPlugin.h
     Source/MotionSetsWindow/MotionSetManagementWindow.cpp
     Source/MotionSetsWindow/MotionSetManagementWindow.h
     Source/MotionSetsWindow/MotionSetsWindowPlugin.cpp
@@ -176,8 +176,6 @@ set(FILES
     Source/NodeWindow/NodeInfo.h
     Source/NodeWindow/NodeGroupInfo.cpp
     Source/NodeWindow/NodeGroupInfo.h
-    Source/NodeWindow/NodeWindowPlugin.cpp
-    Source/NodeWindow/NodeWindowPlugin.h
     Source/NodeWindow/SubMeshInfo.cpp
     Source/NodeWindow/SubMeshInfo.h
     Source/SceneManager/ActorPropertiesWindow.cpp

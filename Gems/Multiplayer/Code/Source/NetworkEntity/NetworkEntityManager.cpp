@@ -231,7 +231,6 @@ namespace Multiplayer
 
     void NetworkEntityManager::HandleLocalRpcMessage(NetworkEntityRpcMessage& message)
     {
-        AZ_Assert(message.GetRpcDeliveryType() == RpcDeliveryType::ServerToAuthority, "Only ServerToAuthority rpc messages can be locally deferred");
         m_localDeferredRpcMessages.emplace_back(AZStd::move(message));
     }
 
@@ -276,6 +275,7 @@ namespace Multiplayer
     {
         if (alwaysRelevant)
         {
+            AZ_Assert(entityHandle.GetNetBindComponent()->IsNetEntityRoleAuthority(), "Marking an entity always relevant can only be done on an authoritative entity");
             m_alwaysRelevantToClients.emplace(entityHandle);
         }
         else
@@ -288,6 +288,7 @@ namespace Multiplayer
     {
         if (alwaysRelevant)
         {
+            AZ_Assert(entityHandle.GetNetBindComponent()->IsNetEntityRoleAuthority(), "Marking an entity always relevant can only be done on an authoritative entity");
             m_alwaysRelevantToServers.emplace(entityHandle);
         }
         else
@@ -350,17 +351,36 @@ namespace Multiplayer
 
     void NetworkEntityManager::DispatchLocalDeferredRpcMessages()
     {
-        for (NetworkEntityRpcMessage& rpcMessage : m_localDeferredRpcMessages)
+        // Local messages may get queued up while we process other local messages,
+        // so let @m_localDeferredRpcMessages accumulate,
+        // while we work on the current messages.
+        AZStd::deque<NetworkEntityRpcMessage> copy;
+        copy.swap(m_localDeferredRpcMessages);
+
+        for (NetworkEntityRpcMessage& rpcMessage : copy)
         {
             AZ::Entity* entity = m_networkEntityTracker.GetRaw(rpcMessage.GetEntityId());
             if (entity != nullptr)
             {
                 NetBindComponent* netBindComponent = m_networkEntityTracker.GetNetBindComponent(entity);
                 AZ_Assert(netBindComponent != nullptr, "Attempting to send an RPC to an entity with no NetBindComponent");
-                netBindComponent->HandleRpcMessage(nullptr, NetEntityRole::Server, rpcMessage);
+                switch(rpcMessage.GetRpcDeliveryType())
+                {
+                case RpcDeliveryType::AuthorityToClient:
+                case RpcDeliveryType::AuthorityToAutonomous:
+                    netBindComponent->HandleRpcMessage(nullptr, NetEntityRole::Authority, rpcMessage);
+                    break;
+                case RpcDeliveryType::AutonomousToAuthority:
+                    netBindComponent->HandleRpcMessage(nullptr, NetEntityRole::Autonomous, rpcMessage);
+                    break;
+                case RpcDeliveryType::ServerToAuthority:
+                    netBindComponent->HandleRpcMessage(nullptr, NetEntityRole::Server, rpcMessage);
+                    break;
+                case RpcDeliveryType::None:
+                    break;
+                }
             }
         }
-        m_localDeferredRpcMessages.clear();
     }
 
     void NetworkEntityManager::Reset()

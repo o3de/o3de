@@ -186,9 +186,9 @@ namespace GraphCanvas
             m_propertyEntityIdCtrl->setContextMenuPolicy(Qt::CustomContextMenu);
             QObject::connect(m_propertyEntityIdCtrl, &AzToolsFramework::PropertyEntityIdCtrl::customContextMenuRequested, [this](const QPoint& pos) { this->ShowContextMenu(pos); });
 
-            QObject::connect(m_propertyEntityIdCtrl, &AzToolsFramework::PropertyEntityIdCtrl::OnPickStart, [this]() { this->EditStart(); });
-            QObject::connect(m_propertyEntityIdCtrl, &AzToolsFramework::PropertyEntityIdCtrl::OnPickComplete, [this]() { this->EditFinished(); });
-            QObject::connect(m_propertyEntityIdCtrl, &AzToolsFramework::PropertyEntityIdCtrl::OnEntityIdChanged, [this]() { this->SubmitValue(); });
+            QObject::connect(m_propertyEntityIdCtrl, &AzToolsFramework::PropertyEntityIdCtrl::OnPickStart, [this]() { EditStart(); });
+            QObject::connect(m_propertyEntityIdCtrl, &AzToolsFramework::PropertyEntityIdCtrl::OnPickComplete, [this]() { EditFinished(); });
+            QObject::connect(m_propertyEntityIdCtrl, &AzToolsFramework::PropertyEntityIdCtrl::OnEntityIdChanged, [this]() { SubmitValue(); });
 
             m_proxyWidget->setWidget(m_propertyEntityIdCtrl);
 

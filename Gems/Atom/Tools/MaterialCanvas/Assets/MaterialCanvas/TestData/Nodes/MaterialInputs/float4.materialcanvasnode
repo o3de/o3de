@@ -42,7 +42,7 @@
                 ],
                 "settings": {
                     "materialInputs": [
-                        "SLOTTYPE NODEINPUTID;"
+                        "SLOTSTANDARDSRGMEMBER"
                     ]
                 }
             }
@@ -57,7 +57,59 @@
                 ],
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEINPUTID;"
+                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue;"
+                    ]
+                }
+            },
+            {
+                "name": "outX",
+                "displayName": "X",
+                "description": "X",
+                "supportedDataTypes": [
+                    "float"
+                ],
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.x;"
+                    ]
+                }
+            },
+            {
+                "name": "outY",
+                "displayName": "Y",
+                "description": "Y",
+                "supportedDataTypes": [
+                    "float"
+                ],
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.y;"
+                    ]
+                }
+            },
+            {
+                "name": "outZ",
+                "displayName": "Z",
+                "description": "Z",
+                "supportedDataTypes": [
+                    "float"
+                ],
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.z;"
+                    ]
+                }
+            },
+            {
+                "name": "outW",
+                "displayName": "W",
+                "description": "W",
+                "supportedDataTypes": [
+                    "float"
+                ],
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.w;"
                     ]
                 }
             }

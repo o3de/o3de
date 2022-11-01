@@ -55,6 +55,9 @@ namespace AZ
         //! @return the scheduled event instance bound to this event handle
         ScheduledEvent* GetScheduledEvent() const;
 
+        //! Used internally to clear the event associated with this handle.
+        void Clear();
+
     private:
 
         TimeMs m_executeTimeMs = TimeMs{ 0 }; //< execution time of the scheduled event

@@ -11,7 +11,8 @@
 #include <AzTest/AzTest.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <qcoreapplication.h>
-#include "native/tests/AssetProcessorTest.h"
+#include <native/tests/AssetProcessorTest.h>
+#include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include "native/assetprocessor.h"
 #include "native/unittests/UnitTestRunner.h"
@@ -21,7 +22,6 @@
 #include <AssetManager/FileStateCache.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
-#include <QTemporaryDir>
 #include <QMetaObject>
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Jobs/JobManager.h>
@@ -32,12 +32,6 @@
 #include "resourcecompiler/rccontroller.h"
 
 class AssetProcessorManager_Test;
-
-class MockDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
-{
-public:
-    MOCK_METHOD1(GetAssetDatabaseLocation, bool(AZStd::string&));
-};
 
 class AssetProcessorManager_Test : public AssetProcessor::AssetProcessorManager
 {
@@ -172,10 +166,11 @@ protected:
     virtual void CreateSourceAndFile(const char* tempFolderRelativePath);
     virtual void PopulateDatabase();
 
-    QTemporaryDir m_tempDir;
+    QDir m_assetRootDir;
 
     AZStd::unique_ptr<AssetProcessorManager_Test> m_assetProcessorManager;
     AZStd::unique_ptr<AssetProcessor::MockApplicationManager> m_mockApplicationManager;
+    AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
     AZStd::unique_ptr<AssetProcessor::PlatformConfiguration> m_config;
     QString m_gameName;
     QDir m_normalizedCacheRootDir;
@@ -190,7 +185,6 @@ protected:
     struct StaticData
     {
         AZStd::string m_databaseLocation;
-        ::testing::NiceMock<MockDatabaseLocationListener> m_databaseLocationListener;
         AZ::Entity* m_jobManagerEntity{};
         AZ::ComponentDescriptor* m_descriptor{};
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;

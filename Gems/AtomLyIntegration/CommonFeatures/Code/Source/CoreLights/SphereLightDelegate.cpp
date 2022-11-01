@@ -132,4 +132,8 @@ namespace AZ::Render
         }
     }
 
+    Aabb SphereLightDelegate::GetLocalVisualizationBounds() const
+    {
+        return Aabb::CreateCenterRadius(Vector3::CreateZero(), GetConfig()->m_attenuationRadius);
+    }
 } // namespace AZ::Render

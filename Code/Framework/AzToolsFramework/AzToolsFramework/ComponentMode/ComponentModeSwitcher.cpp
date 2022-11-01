@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Component/TickBus.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeSwitcher.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
@@ -77,10 +78,7 @@ namespace AzToolsFramework::ComponentModeFramework
         auto handlerFunc = [this](ViewportUi::ButtonId buttonId)
         {
             ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId,
-                &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
-                m_switcherId,
-                buttonId);
+                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton, m_switcherId, buttonId);
 
             ActivateComponentMode(buttonId);
         };
@@ -287,28 +285,20 @@ namespace AzToolsFramework::ComponentModeFramework
         if (mode == ViewportEditorMode::Component)
         {
             // when component mode ends, change the active button to transform
-            // this waits one frame in case component mode is switching to another component
-            // instead of ending
             m_activeSwitcherComponent = nullptr;
 
-            QTimer::singleShot(
-                1,
-                nullptr,
-                [this]()
-                {
-                    bool inComponentMode = false;
-                    AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
-                        inComponentMode, &ComponentModeSystemRequests::InComponentMode);
+            bool inComponentMode = false;
+            AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
+                inComponentMode, &ComponentModeSystemRequests::InComponentMode);
 
-                    if (!inComponentMode)
-                    {
-                        ViewportUi::ViewportUiRequestBus::Event(
-                            ViewportUi::DefaultViewportId,
-                            &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
-                            m_switcherId,
-                            m_transformButtonId);
-                    }
-                });
+            if (!inComponentMode)
+            {
+                ViewportUi::ViewportUiRequestBus::Event(
+                    ViewportUi::DefaultViewportId,
+                    &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
+                    m_switcherId,
+                    m_transformButtonId);
+            }
         }
     }
 
@@ -419,18 +409,15 @@ namespace AzToolsFramework::ComponentModeFramework
     void ComponentModeSwitcher::AfterUndoRedo()
     {
         // wait one frame for the undo stack to actually be updated
-        QTimer::singleShot(
-            0,
-            nullptr,
+        AZ::TickBus::QueueFunction(
             [this]()
             {
-                auto* toolsApplicationRequests = AzToolsFramework::ToolsApplicationRequestBus::FindFirstHandler();
-                if (toolsApplicationRequests != nullptr)
+                if (auto* toolsApplicationRequests = AzToolsFramework::ToolsApplicationRequestBus::FindFirstHandler())
                 {
                     const auto& selectedEntityIds = toolsApplicationRequests->GetSelectedEntities();
                     if (selectedEntityIds.size() == 1)
                     {
-                        bool inComponentMode;
+                        bool inComponentMode = false;
                         AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
                             inComponentMode, &ComponentModeSystemRequests::InComponentMode);
 
