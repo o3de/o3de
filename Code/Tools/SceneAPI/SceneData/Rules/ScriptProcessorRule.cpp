@@ -26,9 +26,8 @@ namespace AZ
                 AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<ScriptProcessorRule, DataTypes::IScriptProcessorRule>()->Version(3)
+                    serializeContext->Class<ScriptProcessorRule, DataTypes::IScriptProcessorRule>()->Version(2)
                         ->Field("scriptFilename", &ScriptProcessorRule::m_scriptFilename)
-//                        ->Field("defaultScriptFilename", &ScriptProcessorRule::m_defaultScriptFilename) // TODO add test for this new field
                         ->Field("fallbackLogic", &ScriptProcessorRule::m_fallbackLogic);
 
                     serializeContext->Enum<DataTypes::ScriptProcessorFallbackLogic>()
