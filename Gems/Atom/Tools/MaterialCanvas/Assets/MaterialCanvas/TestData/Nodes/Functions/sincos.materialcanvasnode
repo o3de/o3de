@@ -18,13 +18,8 @@
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float4",
                 "defaultValue": {
                     "$type": "Vector4",
                     "Value": [
@@ -46,35 +41,15 @@
                 "name": "outSin",
                 "displayName": "Sin",
                 "description": "Sin",
-                "supportedDataTypes": [
-                    "float4"
-                ],
-                "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                }
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4"
             },
             {
                 "name": "outCos",
                 "displayName": "Cos",
                 "description": "Cos",
-                "supportedDataTypes": [
-                    "float4"
-                ],
-                "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                }
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4"
             }
         ]
     }
