@@ -129,7 +129,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
     from Atom.atom_utils.atom_component_helper import (
         enter_exit_game_mode_take_screenshot, compare_screenshot_to_golden_image)
 
-    from Atom.atom_utils.screenshot_utils import FOLDER_PATH
+    from Atom.atom_utils.screenshot_utils import (FOLDER_PATH, screenshot_compare_result_code_to_string)
 
     DEGREE_RADIAN_FACTOR = 0.0174533
 
@@ -144,15 +144,10 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
         all_entities = azlmbr.entity.SearchBus(azlmbr.bus.Broadcast, "SearchEntities", search_filter)
         azlmbr.editor.ToolsApplicationRequestBus(azlmbr.bus.Broadcast, "DeleteEntities", all_entities)
 
-        # Setup: Define the screenshot names
-        screenshot_names = [
-            "AtomBasicLevelSetup.png"
-        ]
-
-        # Setup: Set the threshold of how different screenshots are from golden images.
-        screenshot_thresholds = [
-            0.01
-        ]
+        # Setup: Define the screenshot names and threshold pairs
+        screenshot_thresholds = {
+            "AtomBasicLevelSetup.png" : 0.02
+        }
 
         # Test steps begin.
         # 1. Close error windows and display helpers then update the viewport size.
@@ -312,14 +307,34 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
             AtomComponentProperties.camera('Field of view')) == camera_fov_value)
 
         # 21. Enter/Exit game mode taking screenshot.
-        enter_exit_game_mode_take_screenshot(screenshot_names[0], Tests.enter_game_mode, Tests.exit_game_mode)
+        enter_exit_game_mode_take_screenshot("AtomBasicLevelSetup.png", Tests.enter_game_mode, Tests.exit_game_mode)
 
         # 22. Compare the screenshots to golden images.
-        for screenshot_name, screenshot_threshold in zip(screenshot_names, screenshot_thresholds):
-            compResult = compare_screenshot_to_golden_image(FOLDER_PATH, screenshot_name, screenshot_name)
-            Report.result(("Screenshot comparison succeeded.", "Screenshot comparison failed."), compResult.result_code == azlmbr.utils.ImageDiffResultCode_Success)
-            if compResult.result_code == azlmbr.utils.ImageDiffResultCode_Success:
-                Report.result((f"{screenshot_name} diff score {compResult.diff_score} under threshold {screenshot_threshold}.", f"{screenshot_name} diff score {compResult.diff_score} over threshold {screenshot_threshold}."), compResult.diff_score < screenshot_threshold)
+        for screenshot_name, screenshot_threshold in screenshot_thresholds.items():
+            image_diff_result = compare_screenshot_to_golden_image(FOLDER_PATH, screenshot_name, screenshot_name)
+            screenshot_compare_execution = (
+                    f"Screenshot {screenshot_name} comparison succeeded.",
+                    f"Screenshot {screenshot_name} comparison failed due to "
+                    + f"{screenshot_compare_result_code_to_string(image_diff_result.result_code)}.");
+            Report.result(
+                screenshot_compare_execution,
+                image_diff_result.result_code == azlmbr.utils.ImageDiffResultCode_Success
+            )
+
+            if image_diff_result.result_code == azlmbr.utils.ImageDiffResultCode_Success:
+                screenshot_compare_result = (
+                        "{0} diff score {1} under threshold {2}.".format(
+                            screenshot_name,
+                            image_diff_result.diff_score,
+                            screenshot_threshold),
+                        "{0} diff score {1} over threshold {2}.".format(
+                            screenshot_name,
+                            image_diff_result.diff_score,
+                            screenshot_threshold)
+                        )
+                Report.result(
+                    screenshot_compare_result,
+                    image_diff_result.diff_score < screenshot_threshold)
 
         # 23. Look for errors.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)

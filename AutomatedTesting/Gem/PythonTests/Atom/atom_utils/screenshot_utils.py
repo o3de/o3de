@@ -108,7 +108,33 @@ def take_screenshot_game_mode(screenshot_name, entity_name=None):
     helper.wait_for_condition(lambda: not general.is_in_game_mode(), 2.0)
     general.log(f"{entity_name}_test: Exit game mode: {not general.is_in_game_mode()}")
 
-def compare_screenshots(imageA, imageB):
-    result = azlmbr.atom.FrameCaptureTestRequestBus(
-        azlmbr.bus.Broadcast, "CompareScreenshots", imageA, imageB, 0.01)
-    return result
+def compare_screenshots(imageA, imageB, min_diff_filter=0.01):
+    """
+    Compare 2 images through an Ebus call. Image order doesn't matter.
+    RMS (root mean square) is used for the difference indicator.
+    2 final scores are provided: diff_score, filtered_diff_score (after applying min_diff_filter).
+    The higher value the more different.
+    :param imageA: one of the image.
+    :param imageB: the other image.
+    :param min_diff_filter: diff values less than this will be filtered out when calculating filtered_diff_score.
+    :return: a class ImageDiffResult, containing result_code (Success, FormatMismatch, SizeMismatch, UnsupportedFormat),
+        diff_score, filtered_diff_score.
+    """
+    imageDiffResult = azlmbr.atom.FrameCaptureTestRequestBus(
+        azlmbr.bus.Broadcast, "CompareScreenshots", imageA, imageB, min_diff_filter)
+
+    return imageDiffResult
+
+def screenshot_compare_result_code_to_string(result_code):
+    """
+    Convert the ImageDiffResult.result_code from value to string for debugging purpose.
+    :param result_code: the value form of the result code.
+    :return: the string form of the result code.
+    """
+    value_to_string = {
+        azlmbr.utils.ImageDiffResultCode_FormatMismatch : "FormatMismatch",
+        azlmbr.utils.ImageDiffResultCode_UnsupportedFormat : "UnsupportedFormat",
+        azlmbr.utils.ImageDiffResultCode_Success : "Success",
+        azlmbr.utils.ImageDiffResultCode_SizeMismatch : "SizeMismatch"}
+
+    return value_to_string[result_code];
