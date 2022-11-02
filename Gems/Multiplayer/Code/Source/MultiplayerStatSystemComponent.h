@@ -62,7 +62,7 @@ namespace Multiplayer
 
             AZStd::string m_name;
             AverageWindowType m_average;
-            double m_lastAverage = 0.f;
+            double m_lastValue = 0.f;
             AZ::u64 m_sampleCount = 0;
         };
 

@@ -196,8 +196,9 @@ namespace Multiplayer
         {
             if (const auto group = m_statGroups.Find(statIterator->second))
             {
-                if (auto stat = group->m_stats.Find(uniqueStatId))
+                if (CumulativeAverage* stat = group->m_stats.Find(uniqueStatId))
                 {
+                    stat->m_lastValue = value;
                     stat->m_average.PushEntry(value);
                     return;
                 }
@@ -226,9 +227,13 @@ namespace Multiplayer
                             if (stat.m_average.GetNumRecorded() > 0)
                             {
                                 // If there are new entries, update the average.
-                                stat.m_lastAverage = stat.m_average.CalculateAverage();
+                                argsContainer.emplace_back(stat.m_name.c_str(), stat.m_average.CalculateAverage());
                             }
-                            argsContainer.emplace_back(stat.m_name.c_str(), stat.m_lastAverage);
+                            else
+                            {
+                                // If there were no entries within the last collection period, report the last value received.
+                                argsContainer.emplace_back(stat.m_name.c_str(), stat.m_lastValue);
+                            }
 
                             // Reset average in order to measure average over the save period.
                             stat.m_average = CumulativeAverage::AverageWindowType{};
