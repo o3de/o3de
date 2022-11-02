@@ -104,8 +104,8 @@ namespace AzToolsFramework
             // EntityCompositionNotificationBus overrides ...
             void OnEntityComponentAdded(const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
             void OnEntityComponentRemoved(const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
-            void OnEntityComponentEnabled(const AZ::EntityId& entityId, [[maybe_unused]] const AZ::ComponentId& componentId) override;
-            void OnEntityComponentDisabled(const AZ::EntityId& entityId, [[maybe_unused]] const AZ::ComponentId& componentId) override;
+            void OnEntityComponentEnabled(const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
+            void OnEntityComponentDisabled(const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
             void OnEntityCompositionChanged(const AzToolsFramework::EntityIdList& entityIdList) override;
 
             // ToolsApplicationBus overrides ...
@@ -130,9 +130,6 @@ namespace AzToolsFramework
             AddOrRemoveComponent m_addOrRemove = AddOrRemoveComponent::Add; //!< Setting to either add or remove component.
             //! Protects the switcher from being opened by OnImGuiDropDownShown if it has been hidden elsewhere.
             bool m_hiddenByImGui = false;
-            //! The notification OnEntityCompositionChanged is called twice when an Entities composition changes, this is used to
-            //! stop subsequent functions being called twice.
-            int m_callCount = 0;
         };
 
     } // namespace ComponentModeFramework

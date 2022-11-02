@@ -393,14 +393,8 @@ namespace AzToolsFramework::ComponentModeFramework
             {
                 ClearSwitcher();
             }
-            else if (m_addOrRemove == AddOrRemoveComponent::Add && m_callCount < 1)
-            {
-                m_callCount += 1;
-                return;
-            }
 
             UpdateSwitcher(entityIdList, {});
-            m_callCount = 0;
         }
     }
 
