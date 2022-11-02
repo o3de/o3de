@@ -107,6 +107,16 @@ namespace AZ
             return m_separateDepthStencilFeatures;
         }
 
+        const VkPhysicalDeviceShaderAtomicInt64Features& PhysicalDevice::GetShaderAtomicInt64Features() const
+        {
+            return m_shaderAtomicInt64Features;
+        }
+
+        const VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT& PhysicalDevice::GetShaderImageAtomicInt64Features() const
+        {
+            return m_shaderImageAtomicInt64Features;
+        }
+
         const VkPhysicalDeviceAccelerationStructurePropertiesKHR& PhysicalDevice::GetPhysicalDeviceAccelerationStructureProperties() const
         {
             return m_accelerationStructureProperties;
@@ -125,6 +135,11 @@ namespace AZ
         const VkPhysicalDeviceRayTracingPipelineFeaturesKHR& PhysicalDevice::GetPhysicalDeviceRayTracingPipelineFeatures() const
         {
             return m_rayTracingPipelineFeatures;
+        }
+
+        const VkPhysicalDeviceRayQueryFeaturesKHR& PhysicalDevice::GetRayQueryFeatures() const
+        {
+            return m_rayQueryFeatures;
         }
 
         const VkPhysicalDeviceShaderFloat16Int8FeaturesKHR& PhysicalDevice::GetPhysicalDeviceFloat16Int8Features() const
@@ -264,10 +279,13 @@ namespace AZ
                 VK_KHR_RELAXED_BLOCK_LAYOUT_EXTENSION_NAME,
                 VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
                 VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME,
+                VK_KHR_SHADER_ATOMIC_INT64_EXTENSION_NAME,
+                VK_EXT_SHADER_IMAGE_ATOMIC_INT64_EXTENSION_NAME,
 
                 // ray tracing extensions
                 VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
                 VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+                VK_KHR_RAY_QUERY_EXTENSION_NAME,
                 VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
                 VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
                 VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
@@ -346,10 +364,25 @@ namespace AZ
                 dephClipEnableFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT;
                 bufferDeviceAddressFeatures.pNext = &dephClipEnableFeatures;
 
+                VkPhysicalDeviceShaderAtomicInt64Features& shaderAtomicInt64Features = m_shaderAtomicInt64Features;
+                shaderAtomicInt64Features = {};
+                shaderAtomicInt64Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES;
+                dephClipEnableFeatures.pNext = &shaderAtomicInt64Features;
+
+                VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT& shaderImageAtomicInt64Features = m_shaderImageAtomicInt64Features;
+                shaderImageAtomicInt64Features = {};
+                shaderImageAtomicInt64Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT;
+                shaderAtomicInt64Features.pNext = &shaderImageAtomicInt64Features;
+
+                VkPhysicalDeviceRayQueryFeaturesKHR& rayQueryFeatures = m_rayQueryFeatures;
+                rayQueryFeatures = {};
+                rayQueryFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR;
+                shaderImageAtomicInt64Features.pNext = &rayQueryFeatures;
+
                 VkPhysicalDeviceRobustness2FeaturesEXT& robustness2Feature = m_robutness2Features;
                 robustness2Feature = {};
                 robustness2Feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
-                dephClipEnableFeatures.pNext = &robustness2Feature;
+                rayQueryFeatures.pNext = &robustness2Feature;
 
                 VkPhysicalDeviceShaderFloat16Int8FeaturesKHR& float16Int8Features = m_float16Int8Features;
                 float16Int8Features = {};
