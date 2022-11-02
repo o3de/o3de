@@ -63,7 +63,6 @@ namespace Multiplayer
             AZStd::string m_name;
             AverageWindowType m_average;
             double m_lastValue = 0.f;
-            AZ::u64 m_sampleCount = 0;
         };
 
         //! A custom combined data structure for fast iteration and fast insertion.
