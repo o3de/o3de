@@ -215,7 +215,7 @@ namespace LmbrCentral
         return intersection;
     }
 
-    AZ::Vector3 CapsuleShape::GetTranslationOffset()
+    AZ::Vector3 CapsuleShape::GetTranslationOffset() const
     {
         return m_capsuleShapeConfig.m_translationOffset;
     }

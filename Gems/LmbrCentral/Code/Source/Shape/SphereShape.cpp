@@ -140,7 +140,7 @@ namespace LmbrCentral
             src, dir, m_intersectionDataCache.m_position, m_intersectionDataCache.m_radius, distance) > 0;
     }
 
-    AZ::Vector3 SphereShape::GetTranslationOffset()
+    AZ::Vector3 SphereShape::GetTranslationOffset() const
     {
         return m_sphereShapeConfig.m_translationOffset;
     }

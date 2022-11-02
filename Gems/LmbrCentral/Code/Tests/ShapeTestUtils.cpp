@@ -12,7 +12,7 @@
 
 namespace UnitTest
 {
-    void ShapeOffsetFixture::SetUp()
+    void ShapeOffsetTestsBase::SetUp()
     {
         m_oldSettingsRegistry = AZ::SettingsRegistry::Get();
         if (m_oldSettingsRegistry)
@@ -25,7 +25,7 @@ namespace UnitTest
         AZ::SettingsRegistry::Register(m_settingsRegistry.get());
     }
 
-    void ShapeOffsetFixture::TearDown()
+    void ShapeOffsetTestsBase::TearDown()
     {
         AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
         if (m_oldSettingsRegistry)

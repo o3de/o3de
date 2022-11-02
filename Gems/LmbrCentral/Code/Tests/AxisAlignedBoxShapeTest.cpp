@@ -22,7 +22,7 @@ namespace UnitTest
 {
     class AxisAlignedBoxShapeTest
         : public AllocatorsFixture
-        , public ShapeOffsetFixture
+        , public ShapeOffsetTestsBase
     {
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformComponentDescriptor;
@@ -33,7 +33,7 @@ namespace UnitTest
         void SetUp() override
         {
             AllocatorsFixture::SetUp();
-            ShapeOffsetFixture::SetUp();
+            ShapeOffsetTestsBase::SetUp();
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
 
             m_transformComponentDescriptor =
@@ -53,7 +53,7 @@ namespace UnitTest
             m_axisAlignedBoxShapeComponentDescriptor.reset();
             m_axisAlignedBoxShapeDebugDisplayComponentDescriptor.reset();
             m_serializeContext.reset();
-            ShapeOffsetFixture::TearDown();
+            ShapeOffsetTestsBase::TearDown();
             AllocatorsFixture::TearDown();
         }
     };

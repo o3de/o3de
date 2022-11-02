@@ -24,7 +24,7 @@ namespace UnitTest
 {
     class SphereShapeTest
         : public AllocatorsFixture
-        , public ShapeOffsetFixture
+        , public ShapeOffsetTestsBase
     {
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformShapeComponentDescriptor;
@@ -34,7 +34,7 @@ namespace UnitTest
         void SetUp() override
         {
             AllocatorsFixture::SetUp();
-            ShapeOffsetFixture::SetUp();
+            ShapeOffsetTestsBase::SetUp();
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
             m_transformShapeComponentDescriptor.reset(AzFramework::TransformComponent::CreateDescriptor());
             m_transformShapeComponentDescriptor->Reflect(&(*m_serializeContext));
@@ -50,7 +50,7 @@ namespace UnitTest
             m_sphereShapeComponentDescriptor.reset();
             m_sphereShapeDebugDisplayComponentDescriptor.reset();
             m_serializeContext.reset();
-            ShapeOffsetFixture::TearDown();
+            ShapeOffsetTestsBase::TearDown();
             AllocatorsFixture::TearDown();
         }
     };

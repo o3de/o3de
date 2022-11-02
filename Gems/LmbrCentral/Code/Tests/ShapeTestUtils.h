@@ -19,7 +19,7 @@ namespace AZ
 
 namespace UnitTest
 {
-    class ShapeOffsetFixture
+    class ShapeOffsetTestsBase
     {
     public:
         void SetUp();

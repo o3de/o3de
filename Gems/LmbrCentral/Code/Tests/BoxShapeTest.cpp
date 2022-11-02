@@ -23,7 +23,7 @@ namespace UnitTest
 {
     class BoxShapeTest
         : public AllocatorsFixture
-        , public ShapeOffsetFixture
+        , public ShapeOffsetTestsBase
     {
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformComponentDescriptor;
@@ -35,7 +35,7 @@ namespace UnitTest
         void SetUp() override
         {
             AllocatorsFixture::SetUp();
-            ShapeOffsetFixture::SetUp();
+            ShapeOffsetTestsBase::SetUp();
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
 
             m_transformComponentDescriptor = AZStd::unique_ptr<AZ::ComponentDescriptor>(AzFramework::TransformComponent::CreateDescriptor());
@@ -57,7 +57,7 @@ namespace UnitTest
             m_boxShapeDebugDisplayComponentDescriptor.reset();
             m_nonUniformScaleComponentDescriptor.reset();
             m_serializeContext.reset();
-            ShapeOffsetFixture::TearDown();
+            ShapeOffsetTestsBase::TearDown();
             AllocatorsFixture::TearDown();
         }
     };
@@ -877,7 +877,7 @@ namespace UnitTest
         EXPECT_FALSE(IsPointInside(entity, AZ::Vector3(-6.36f, 5.58f, 5.47f)));
     }
 
-    TEST_F(BoxShapeTest, IsPointInsideUnrotatedWithTranslationOFfset)
+    TEST_F(BoxShapeTest, IsPointInsideUnrotatedWithTranslationOffset)
     {
         AZ::Entity entity;
         AZ::Transform transform =

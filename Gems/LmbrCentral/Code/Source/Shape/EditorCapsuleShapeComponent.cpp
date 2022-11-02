@@ -93,7 +93,7 @@ namespace LmbrCentral
             {
                 DrawShape(
                     debugDisplay,
-                    { m_shapeColor, m_shapeWireColor, m_displayFilled },
+                    ShapeDrawParams{ m_shapeColor, m_shapeWireColor, m_displayFilled },
                     m_capsuleShapeMesh,
                     m_capsuleShape.GetTranslationOffset());
             },

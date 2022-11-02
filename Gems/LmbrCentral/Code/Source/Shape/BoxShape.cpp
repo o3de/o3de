@@ -274,7 +274,7 @@ namespace LmbrCentral
         return worldTransformWithoutScale.TransformPoint(AZ::Vector3(x, y, z) + scaledTranslationOffset);
     }
 
-    AZ::Vector3 BoxShape::GetTranslationOffset()
+    AZ::Vector3 BoxShape::GetTranslationOffset() const
     {
         return m_boxShapeConfig.m_translationOffset;
     }
