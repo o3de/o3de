@@ -75,7 +75,10 @@ namespace Multiplayer
         //! @return a map of all the multiplayer components by name and hash version value
         const AZStd::unordered_map<AZ::Name, AZ::HashValue64>& GetMultiplayerComponentVersionHashes() const;
 
-        bool FindMultiplayerComponentVersionHash(const AZ::Name& multiplayerComponentName, AZ::HashValue64& hash) const;
+        //! Finds the multiplayer component version hash by name.
+        //! @param hash value that will be set if the component is found.
+        //! @return True if we found the multiplayer component and filled out the hash value; otherwise false.
+        bool FindComponentVersionHashByName(const AZ::Name& multiplayerComponentName, AZ::HashValue64& hash) const;
 
         //! This releases all owned memory, should only be called during multiplayer shutdown.
         void Reset();

@@ -904,7 +904,7 @@ namespace Multiplayer
         {
             // Check for modified components
             AZ::HashValue64 localComponentHash;
-            if (GetMultiplayerComponentRegistry()->FindMultiplayerComponentVersionHash(
+            if (GetMultiplayerComponentRegistry()->FindComponentVersionHashByName(
                     theirComponent.m_componentName, localComponentHash))
             {
                 
@@ -920,9 +920,10 @@ namespace Multiplayer
             {
                 // Connected machine is using a multiplayer component we don't have
                 AZLOG_ERROR(
-                    "Multiplayer component mismatch! We're missing a component with version hash %x. "
+                    "Multiplayer component mismatch! We're missing a component with version hash 0x%" PRIx64 ". "
                     "Because we are missing this component, we don't know its name, only its hash. "
-                    "To find the missing component go to the other machine and search for 's_versionHash = AZ::HashValue64{ %x }' inside the generated multiplayer auto-component build folder.",
+                    "To find the missing component go to the other machine and search for 's_versionHash = AZ::HashValue64{ 0x%" PRIx64" }' "
+                    "inside the generated multiplayer auto-component build folder.",
                     theirComponent.m_componentVersionHash,
                     theirComponent.m_componentVersionHash);
             }

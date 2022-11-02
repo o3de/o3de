@@ -80,7 +80,7 @@ namespace Multiplayer
         return m_componentVersionHash;
     }
 
-    bool MultiplayerComponentRegistry::FindMultiplayerComponentVersionHash(const AZ::Name& multiplayerComponentName, AZ::HashValue64& hash) const
+    bool MultiplayerComponentRegistry::FindComponentVersionHashByName(const AZ::Name& multiplayerComponentName, AZ::HashValue64& hash) const
     {
         const auto it = m_componentVersionHashes.find(multiplayerComponentName);
         if ( it != m_componentVersionHashes.end())
