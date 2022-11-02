@@ -1,6 +1,19 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+
+if (APPLE)
+    return()  # RGA is not applicable to APPLE host platforms.
+endif()
+
 # This script encapsulates fetching RGA as a dependency and providing the
 # requested targets. To use it, simply include this script from the CMakeLists.txt
 # file of the target platform.
+
 include(FetchContent)
 
 # note that this won't stop it from trying each time, but will stop it from doing anything multiple times in the same
