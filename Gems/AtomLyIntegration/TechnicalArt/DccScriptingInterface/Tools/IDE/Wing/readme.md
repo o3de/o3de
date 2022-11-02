@@ -1,11 +1,4 @@
-----
-
-Copyright (c) Contributors to the Open 3D Engine Project.  For complete copyright and license terms please see the LICENSE at the root of this distribution.
-SPDX-License-Identifier: Apache-2.0 OR MIT
-
-----
-
-# O3DE DCCsi and Wing Pro IDE
+# O3DE DCCsi, Wing Pro IDE
 
 ###### Status: Prototype
 
@@ -250,3 +243,13 @@ Trouble attaching debugger?  Open your firewall and add an exception for wing.
 - Wing 7.x was previously supported, but it was python2.7 based and we are deprecating support for py2.7, and this includes deprecation of support for apps that are pre-py3 bound.
 
 - Previous versions of Wing may still work, however you will need to configure and/or modify the env yourself. This would also include version such as Wing Community Edition.
+
+- Updated this readme
+
+---
+
+###### LICENSE INFO
+
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+
+SPDX-License-Identifier: Apache-2.0 OR MIT

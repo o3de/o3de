@@ -58,6 +58,7 @@ namespace AZ
             MaterialSourceData::Reflect(context);
             MaterialPipelineSourceData::Reflect(context);
             MaterialPropertyValueSourceData::Reflect(context);
+            MaterialFunctorSourceData::Reflect(context);
             MaterialFunctorSourceDataHolder::Reflect(context);
             LuaMaterialFunctorSourceData::Reflect(context);
             ResourcePoolSourceData::Reflect(context);

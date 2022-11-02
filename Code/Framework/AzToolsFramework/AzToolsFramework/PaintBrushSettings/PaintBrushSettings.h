@@ -9,8 +9,10 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Math/Color.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/PaintBrushSettings/PaintBrushSettings.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyColorCtrl.hxx>
 
 namespace AzToolsFramework
 {
@@ -27,11 +29,13 @@ namespace AzToolsFramework
        With that description in mind, here's how the settings play together:
 
        Stroke settings:
-       - Intensity: The color of the paint on the paintbrush. We only support monochromatic painting, so this is just a greyscale
-         intensity from black to white. This color is fully applied to each brush stroke.
+       - Color: The color of the paint on the paintbrush. This color is fully applied to each brush stroke.
+       - Intensity: When using greyscale painting, this replaces color with an intensity from black to white. This color is fully applied to
+       each brush stroke.
        - Opacity: The opacity of an entire brush stroke. Because it's per-stroke, a stroke that crosses itself won't blend with
          itself when this opacity setting is lowered. The blending only occurs after the stroke is complete. (A stroke can still
          blend with itself from flow and hardness settings below, just not from the stroke opacity setting)
+
        - Blend Mode: The blend mode for blending the brush stroke down to the base layer.
 
        Stamp settings:
@@ -49,6 +53,14 @@ namespace AzToolsFramework
        paints per-pixel opacity data into the stroke layer based on the combination of Flow and Hardness. The stroke layer itself is
        then blended down using the Intensity, Opacity, and Blend Mode.
     */
+
+    //! The different types of blend modes supported by the paint brush tool.
+    enum class PaintBrushColorMode : uint8_t
+    {
+        Greyscale,
+        SRGB,
+        LinearColor
+    };
 
     //! The different types of blend modes supported by the paint brush tool.
     enum class PaintBrushBlendMode : uint8_t
@@ -76,15 +88,20 @@ namespace AzToolsFramework
         PaintBrushSettings() = default;
         ~PaintBrushSettings() = default;
 
+        // Overall paintbrush settings
+
+        PaintBrushColorMode GetColorMode() const
+        {
+            return m_colorMode;
+        }
+
+        void SetColorMode(PaintBrushColorMode colorMode);
+
         // Stroke settings
 
-        float GetIntensityPercent() const
+        AZ::Color GetColor() const
         {
-            return m_intensityPercent;
-        }
-        float GetOpacityPercent() const
-        {
-            return m_opacityPercent;
+            return m_brushColor;
         }
 
         PaintBrushBlendMode GetBlendMode() const
@@ -92,8 +109,7 @@ namespace AzToolsFramework
             return m_blendMode;
         }
 
-        void SetIntensityPercent(float intensityPercent);
-        void SetOpacityPercent(float opacityPercent);
+        void SetColor(const AZ::Color& color);
         void SetBlendMode(PaintBrushBlendMode blendMode);
 
         // Stamp settings
@@ -122,10 +138,20 @@ namespace AzToolsFramework
         void SetDistancePercent(float distancePercent);
 
     protected:
-        //! Brush stroke intensity percent (0=black, 100=white)
-        float m_intensityPercent = 100.0f;
-        //! Brush stroke opacity percent (0=transparent brush stroke, 100=opaque brush stroke)
-        float m_opacityPercent = 100.0f;
+        AzToolsFramework::ColorEditorConfiguration GetColorEditorConfig();
+
+        AZ::u32 OnColorChanged();
+        AZ::u32 OnIntensityChanged();
+        AZ::u32 OnOpacityChanged();
+
+        bool GetColorVisibility() const;
+        bool GetIntensityVisibility() const;
+
+        //! Brush settings color mode
+        PaintBrushColorMode m_colorMode = PaintBrushColorMode::Greyscale;
+
+        //! Brush stroke color
+        AZ::Color m_brushColor = AZ::Color::CreateOne();
         //! Brush stroke blend mode
         PaintBrushBlendMode m_blendMode = PaintBrushBlendMode::Normal;
 
@@ -137,6 +163,14 @@ namespace AzToolsFramework
         float m_flowPercent = 100.0f;
         //! Brush distance to move between stamps in % of paintbrush size. (25% is the default in Photoshop.)
         float m_distancePercent = 25.0f;
+
+        //! These only exist for alternate editing controls. They get stored back into m_brushColor.
+
+        //! Brush stroke intensity percent (0=black, 100=white)
+        //! This is displayed instead of color when in monochrome mode.
+        float m_intensityPercent = 100.0f;
+        //! Brush stroke opacity percent (0=transparent brush stroke, 100=opaque brush stroke)
+        float m_opacityPercent = 100.0f;
 
         AZ::u32 OnSettingsChanged();
     };
