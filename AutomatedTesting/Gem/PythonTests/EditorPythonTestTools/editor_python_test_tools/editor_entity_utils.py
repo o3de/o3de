@@ -320,10 +320,9 @@ class EditorComponent:
         :param expected: The expected visibility (default True)
         :return: None
         """
-        visible_key = 1
 
         get_component_property_outcome = self.get_property_type_visibility()
-        result = get_component_property_outcome[component_property_path][visible_key]
+        type, result = get_component_property_outcome[component_property_path]
 
         assert (result == "Visible") == expected, \
             f"Failure: Property visibility was not {expected} for" \
