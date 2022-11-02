@@ -88,6 +88,12 @@ def CreateAZHashValue64(btyes):
 def EtreeToString(xmlNode):
     return etree.tostring(xmlNode)
 
+def EtreeToStringStripped(xmlNode):
+    for elem in xmlNode.iter():
+        if elem.text: elem.text = elem.text.strip()
+        if elem.tail: elem.tail = elem.tail.strip()
+    return etree.tostring(xmlNode)
+    
 def SanitizePath(path):
     return (path or '').replace('\\', '/').replace('//', '/')
 
@@ -184,6 +190,7 @@ def ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templ
         templateEnv.filters['createHashGuid'] = CreateHashGuid
         templateEnv.filters['createAZHashValue64'] = CreateAZHashValue64
         templateEnv.filters['etreeToString' ] = EtreeToString
+        templateEnv.filters['etreeToStringStripped' ] = EtreeToStringStripped
         templateJinja  = templateEnv.get_template(os.path.basename(templateFile))
         templateVars   = \
             { \
