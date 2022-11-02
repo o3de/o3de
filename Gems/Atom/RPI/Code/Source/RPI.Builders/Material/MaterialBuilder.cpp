@@ -132,7 +132,7 @@ namespace AZ
             // to easily read the property values. Note that with the latest .material file format, it actually wouldn't be too hard to
             // just read the raw json, it's just a map of property name to property value. But we also are maintaining backward compatible
             // support for an older file format that nests property values rather than using a flat list. By deserializing we leave it up
-            // to the MaterialSourceData class to provide that backward compatibility (see MaterialSourceData::ConvertToNewDataFormat()).
+            // to the MaterialSourceData class to provide that backward compatibility (see MaterialSourceData::UpgradeLegacyFormat()).
                     
             auto materialSourceData = MaterialUtils::LoadMaterialSourceData(fullSourcePath, &materialJson);
             if (materialSourceData.IsSuccess())
