@@ -1,4 +1,4 @@
-# DCCsi.Tools.DCC.Maya
+# O3DE DCCsi, DCC Maya
 
 The "DccScriptingInterface" (aka DCCsi) is a Gem for O3DE to extend and interface with dcc tools in the python ecosystem.  This document contains the details of configuration of Maya as a DCC tool to be used with O3DE.
 
@@ -243,10 +243,10 @@ The following will install those requirements into a sandbox area that we can bo
 
     mayapy -m pip install -r C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\requirements.txt -t C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\3.x\3.10.x\site-packages
 
-![image](https://user-images.githubusercontent.com/23222931/155037723-8f514a85-194f-46e8-b726-55a04f0860bb.png)
+---
 
-```yaml
-Copyright (c) Contributors to the Open 3D Engine Project.For complete copyright and license terms please see the LICENSE at the root of this distribution.
+###### LICENSE INFO
+
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
-```

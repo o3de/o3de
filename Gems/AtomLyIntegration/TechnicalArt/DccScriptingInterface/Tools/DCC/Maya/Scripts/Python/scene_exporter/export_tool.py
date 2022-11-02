@@ -23,9 +23,12 @@ import maya.cmds as mc
 from maya import OpenMayaUI as omui
 from shiboken2 import wrapInstance
 from PySide2 import QtWidgets, QtCore, QtGui
+# -------------------------------------------------------------------------
 
+
+# -------------------------------------------------------------------------
 #  global scope
-from DccScriptingInterface.Tools.DCC.Maya.Scripts.Python.export import _PACKAGENAME
+from DccScriptingInterface.Tools.DCC.Maya.Scripts.Python.scene_exporter import _PACKAGENAME
 _MODULENAME = f'{_PACKAGENAME}.materials'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.info(f'Initializing: {_MODULENAME}')
@@ -37,21 +40,25 @@ if DCCSI_DEV_MODE:
     import DccScriptingInterface.azpy.test.entry_test
     DccScriptingInterface.azpy.test.entry_test.connect_wing()
 
-mayaMainWindowPtr = omui.MQtUtil.mainWindow()
-mayaMainWindow = wrapInstance(int(mayaMainWindowPtr), QtWidgets.QWidget)
+from DccScriptingInterface.azpy.shared.ui.help_menu import HelpMenu
+
+HELP_URL = 'https://github.com/o3de/o3de/tree/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Tools/DCC/Maya/Scripts/Python/scene_exporter/readme.md'
+
+maya_mainwindow_ptr = omui.MQtUtil.mainWindow()
+maya_mainwindow = wrapInstance(int(maya_mainwindow_ptr), QtWidgets.QWidget)
 # -------------------------------------------------------------------------
 
 
 # ---- First Class --------------------------------------------------------
-class MaterialsHelper(QtWidgets.QWidget):
+class SceneExporter(QtWidgets.QWidget):
     def __init__(self, operation, parent=None):
         super().__init__(parent)
 
-        self.setParent(mayaMainWindow)
+        self.setParent(maya_mainwindow)
         self.setWindowFlags(QtCore.Qt.Window)
         self.setGeometry(200, 200, 450, 600)
-        self.setObjectName('MaterialsHelper')
-        self.setWindowTitle('Materials Helper')
+        self.setObjectName('MayaSceneExporter')
+        self.setWindowTitle('O3DE Scene Exporter')
         self.isTopLevel()
         self.operation = operation
         self.scope = 0
@@ -62,14 +69,24 @@ class MaterialsHelper(QtWidgets.QWidget):
         self.bold_font = QtGui.QFont("Plastique", 8, QtGui.QFont.Bold)
 
         self.main_container = QtWidgets.QVBoxLayout()
+        self.main_container.setSpacing(20)
+
         self.setLayout(self.main_container)
         self.main_container.setAlignment(QtCore.Qt.AlignTop)
+
+        # THack spacing (because I added menu, it's crunched)
+        self.spacing_label = QtWidgets.QLabel('    ')
+        self.main_container.addWidget(self.spacing_label)
 
         # Task Section
         self.test_label = QtWidgets.QLabel('Task')
         self.test_label.setFont(self.bold_font)
         self.main_container.addWidget(self.test_label)
-        self.main_container.addSpacing(5)
+        self.main_container.addSpacing(10)
+
+        # Setup Help Menu
+        self.menuBar = QtWidgets.QMenuBar(self) # HelpMenu wants menuBar
+        self.help_menu = HelpMenu(self, 'Tool Help...', HELP_URL)
 
         self.task_button_container = QtWidgets.QHBoxLayout()
         self.task_button_container.setAlignment(QtCore.Qt.AlignLeft)
@@ -403,7 +420,7 @@ def delete_instances():
     """to do: docstring"""
     from DccScriptingInterface.Tools.DCC.Maya.Scripts.Python.export import _PACKAGENAME
 
-    for obj in mayaMainWindow.children():
+    for obj in maya_mainwindow.children():
         if str(type(obj)) == f"<class '{_PACKAGENAME}.MaterialsHelper'>":
             if obj.__class__.__name__ == "MaterialsHelper":
                 obj.setParent(None)
@@ -413,6 +430,6 @@ def delete_instances():
 def show_ui(operation):
     """to do: docstring"""
     delete_instances()
-    ui = MaterialsHelper(operation, mayaMainWindow)
+    ui = SceneExporter(operation, maya_mainwindow)
     ui.show()
 # -------------------------------------------------------------------------
