@@ -3,14 +3,14 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "id": "{E32BFDA0-21C9-4C9B-8522-3C4C674095C2}",
+        "id": "{AA2C065F-D537-404F-88D3-945AB61C0EBE}",
         "category": "Math Functions",
-        "title": "cross",
+        "title": "transform3",
         "inputSlots": [
             {
-                "name": "inValue1",
-                "displayName": "Value1",
-                "description": "Value1",
+                "name": "inVector",
+                "displayName": "Vector",
+                "description": "Vector",
                 "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
                 "defaultDataType": "float3",
                 "defaultValue": {
@@ -28,17 +28,29 @@
                 }
             },
             {
-                "name": "inValue2",
-                "displayName": "Value2",
-                "description": "Value2",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
-                "defaultDataType": "float3",
+                "name": "inMatrix",
+                "displayName": "Matrix",
+                "description": "Matrix",
+                "supportedDataTypeRegex": "(bool|int|uint|float)[3]x[1-4]",
+                "defaultDataType": "float3x3",
                 "defaultValue": {
-                    "$type": "Vector3",
+                    "$type": "AZStd::array<Vector3, 3>",
                     "Value": [
-                        0.0,
-                        0.0,
-                        0.0
+                        [
+                            1.0,
+                            0.0,
+                            0.0
+                        ],
+                        [
+                            0.0,
+                            1.0,
+                            0.0
+                        ],
+                        [
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
                     ]
                 },
                 "settings": {
@@ -50,14 +62,14 @@
         ],
         "outputSlots": [
             {
-                "name": "outValue",
-                "displayName": "Value",
-                "description": "Value",
+                "name": "outVector",
+                "displayName": "Vector",
+                "description": "Vector",
                 "supportedDataTypeRegex": "float3",
                 "defaultDataType": "float3",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = cross((float3)NODEID_inValue1, (float3)NODEID_inValue2);"
+                        "SLOTTYPE NODEID_SLOTNAME = mul((float3)NODEID_inVector, NODEID_inMatrix);"
                     ]
                 }
             }

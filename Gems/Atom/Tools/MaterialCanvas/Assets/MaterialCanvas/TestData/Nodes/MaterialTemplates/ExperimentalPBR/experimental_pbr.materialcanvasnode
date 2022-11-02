@@ -24,9 +24,12 @@
                 "name": "inDescription",
                 "displayName": "Description",
                 "description": "Description",
-                "supportedDataTypes": [
-                    "string"
-                ],
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                },
                 "supportsEditingOnNode": false
             }
         ],
@@ -35,12 +38,8 @@
                 "name": "inPositionOffset",
                 "displayName": "Position Offset",
                 "description": "Position Offset",
-                "supportedDataTypes": [
-                    "float",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
+                "defaultDataType": "float3",
                 "defaultValue": {
                     "$type": "Vector3",
                     "Value": [
@@ -59,12 +58,8 @@
                 "name": "inBaseColor",
                 "displayName": "Base Color",
                 "description": "Base Color",
-                "supportedDataTypes": [
-                    "float",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
+                "defaultDataType": "float3",
                 "defaultValue": {
                     "$type": "Vector3",
                     "Value": [
@@ -83,13 +78,8 @@
                 "name": "inMetallic",
                 "displayName": "Metallic",
                 "description": "Metallic",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float",
                 "defaultValue": {
                     "$type": "float",
                     "Value": 0.0
@@ -104,13 +94,8 @@
                 "name": "inSpecularF0Factor",
                 "displayName": "Specular F0 Factor",
                 "description": "Specular F0 Factor",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float",
                 "defaultValue": {
                     "$type": "float",
                     "Value": 0.0
@@ -125,13 +110,8 @@
                 "name": "inRoughness",
                 "displayName": "Roughness",
                 "description": "Roughness",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float",
                 "defaultValue": {
                     "$type": "float",
                     "Value": 0.0
@@ -146,12 +126,8 @@
                 "name": "inEmissive",
                 "displayName": "Emissive",
                 "description": "Emissive",
-                "supportedDataTypes": [
-                    "float",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
+                "defaultDataType": "float3",
                 "defaultValue": {
                     "$type": "Vector3",
                     "Value": [
@@ -170,13 +146,8 @@
                 "name": "inAlpha",
                 "displayName": "Alpha",
                 "description": "Alpha",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float",
                 "defaultValue": {
                     "$type": "float",
                     "Value": 1.0
