@@ -590,7 +590,7 @@ namespace EMStudio
             // Handle transitions in case the node graph is representing a state machine.
             if (CheckIfIsStateMachine())
             {
-                removeConnectionActionName = QString("Remove transition%1").arg(pluralPostfix);
+                removeConnectionActionName = tr("Remove transition%1").arg(pluralPostfix);
 
                 bool hasDisabledConnection = false;
                 bool hasEnabledConnection = false;
@@ -609,13 +609,13 @@ namespace EMStudio
                 // Show enable transitions menu entry in case there is at least one disabled transition in the selected ones.
                 if (actionFilter.m_editNodes && hasDisabledConnection)
                 {
-                    QAction* enableConnectionAction = menu.addAction(QString("Enable transition%1").arg(pluralPostfix));
+                    QAction* enableConnectionAction = menu.addAction(tr("Enable transition%1").arg(pluralPostfix));
                     connect(enableConnectionAction, &QAction::triggered, this, &BlendGraphWidget::EnableSelectedTransitions);
                 }
 
                 if (actionFilter.m_editNodes && hasEnabledConnection)
                 {
-                    QAction* disableConnectionAction = menu.addAction(QString("Disable transition%1").arg(pluralPostfix));
+                    QAction* disableConnectionAction = menu.addAction(tr("Disable transition%1").arg(pluralPostfix));
                     connect(disableConnectionAction, &QAction::triggered, this, &BlendGraphWidget::DisableSelectedTransitions);
                 }
 
@@ -632,7 +632,7 @@ namespace EMStudio
             // Handle blend tree connections in case the node graph is representing a blend tree.
             else
             {
-                removeConnectionActionName = QString("Remove connection%1").arg(pluralPostfix);
+                removeConnectionActionName = tr("Remove connection%1").arg(pluralPostfix);
             }
 
             if (actionFilter.m_delete &&
@@ -1372,7 +1372,7 @@ namespace EMStudio
         AZ::Color newGroupColor = AzQtComponents::ColorPicker::getColor(
             AzQtComponents::ColorPicker::Configuration::RGB,
             nodeGroupColor,
-            QStringLiteral("Color Picker RGB"),
+            tr("Color Picker RGB"),
             QString(),
             QStringList(),
             this);

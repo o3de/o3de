@@ -41,7 +41,7 @@ namespace EMStudio
             return;
         }
 
-        QMenu* nodeGroupMenu = new QMenu("Assign To Node Group", menu);
+        QMenu* nodeGroupMenu = new QMenu(tr("Assign To Node Group"), menu);
 
         for (size_t i = 0; i < numNodeGroups; ++i)
         {
@@ -77,7 +77,7 @@ namespace EMStudio
                     return;
                 }
 
-                QAction* previewMotionAction = menu->addAction(AZStd::string::format("Preview %s", motionId).c_str());
+                QAction* previewMotionAction = menu->addAction(tr("Preview %1").arg(motionId));
                 previewMotionAction->setWhatsThis(QString("PreviewMotion"));
                 previewMotionAction->setData(QVariant(motionId));
                 connect(previewMotionAction, &QAction::triggered, [actionManager, motionId]() { actionManager->PreviewMotionSelected(motionId); });
@@ -193,7 +193,7 @@ namespace EMStudio
                             ChangeNodeGroupColor(nodeGroup);
                         });
 
-                    QAction* removeNodeGroupAction = menu->addAction("Delete Group");
+                    QAction* removeNodeGroupAction = menu->addAction(tr("Delete Group"));
                     connect(
                         removeNodeGroupAction,
                         &QAction::triggered,
@@ -203,7 +203,7 @@ namespace EMStudio
                             DeleteNodeGroup(nodeGroup);
                         });
 
-                    QAction* deleteSelectedNodesAction = menu->addAction("Delete Group and Nodes");
+                    QAction* deleteSelectedNodesAction = menu->addAction(tr("Delete Group and Nodes"));
                     connect(
                         deleteSelectedNodesAction,
                         &QAction::triggered,
@@ -243,7 +243,7 @@ namespace EMStudio
                 {
                     if (actionFilter.m_activateState)
                     {
-                        QAction* activateNodeAction = menu->addAction("Activate State");
+                        QAction* activateNodeAction = menu->addAction(tr("Activate State"));
                         connect(activateNodeAction, &QAction::triggered, viewWidget, &BlendGraphViewWidget::OnActivateState);
                     }
 
@@ -254,14 +254,14 @@ namespace EMStudio
                             stateMachine->GetEntryState() != animGraphNode &&
                             animGraphNode->GetCanBeEntryNode())
                         {
-                            QAction* setAsEntryStateAction = menu->addAction("Set As Entry State");
+                            QAction* setAsEntryStateAction = menu->addAction(tr("Set As Entry State"));
                             connect(setAsEntryStateAction, &QAction::triggered, &actionManager, &AnimGraphActionManager::SetEntryState);
                         }
 
                         // action for adding a wildcard transition
                         if (actionFilter.m_createConnections)
                         {
-                            QAction* addWildcardAction = menu->addAction("Add Wildcard Transition");
+                            QAction* addWildcardAction = menu->addAction(tr("Add Wildcard Transition"));
                             connect(addWildcardAction, &QAction::triggered, &actionManager, &AnimGraphActionManager::AddWildCardTransition);
                         }
                     }
@@ -276,12 +276,12 @@ namespace EMStudio
                         // enable or disable the node
                         if (animGraphNode->GetIsEnabled() == false)
                         {
-                            QAction* enableAction = menu->addAction("Enable Node");
+                            QAction* enableAction = menu->addAction(tr("Enable Node"));
                             connect(enableAction, &QAction::triggered, &actionManager, &AnimGraphActionManager::EnableSelected);
                         }
                         else
                         {
-                            QAction* disableAction = menu->addAction("Disable Node");
+                            QAction* disableAction = menu->addAction(tr("Disable Node"));
                             connect(disableAction, &QAction::triggered, &actionManager, &AnimGraphActionManager::DisableSelected);
                         }
                     }
@@ -289,7 +289,7 @@ namespace EMStudio
                     if (animGraphNode->GetSupportsVisualization())
                     {
                         menu->addSeparator();
-                        QAction* action = menu->addAction("Adjust Visualization Color");
+                        QAction* action = menu->addAction(tr("Adjust Visualization Color"));
                         connect(action, &QAction::triggered, [this, animGraphNode](bool) { m_plugin->GetActionManager().ShowNodeColorPicker(animGraphNode); });
                     }
                 }
@@ -308,7 +308,7 @@ namespace EMStudio
                 {
                     AZStd::string filename;
                     AzFramework::StringFunc::Path::GetFullFileName(referencedGraph->GetFileName(), filename);
-                    QAction* openAnimGraphAction = menu->addAction(QString("Open '%1' file").arg(filename.c_str()));
+                    QAction* openAnimGraphAction = menu->addAction(QString(tr("Open '%1' file")).arg(filename.c_str()));
                     connect(openAnimGraphAction, &QAction::triggered, [&actionManager, referenceNode]() { actionManager.OpenReferencedAnimGraph(referenceNode); });
                     menu->addSeparator();
                 }
@@ -329,7 +329,7 @@ namespace EMStudio
                     EMotionFX::BlendTree* blendTree = static_cast<EMotionFX::BlendTree*>(animGraphNode->GetParentNode());
                     if (blendTree->GetVirtualFinalNode() != animGraphNode)
                     {
-                        QAction* virtualAction = menu->addAction("Make Final Output");
+                        QAction* virtualAction = menu->addAction(tr("Make Final Output"));
                         connect(virtualAction, &QAction::triggered, &actionManager, &AnimGraphActionManager::MakeVirtualFinalNode);
                         menu->addSeparator();
                     }
@@ -337,7 +337,7 @@ namespace EMStudio
                     {
                         if (blendTree->GetFinalNode() != animGraphNode)
                         {
-                            QAction* virtualAction = menu->addAction("Restore Final Output");
+                            QAction* virtualAction = menu->addAction(tr("Restore Final Output"));
                             connect(virtualAction, &QAction::triggered, &actionManager, &AnimGraphActionManager::RestoreVirtualFinalNode);
                             menu->addSeparator();
                         }
@@ -369,7 +369,7 @@ namespace EMStudio
 
             if (!nodeGroup)
             {
-                QAction* createNodeGroupAction = menu->addAction("Create Node Group");
+                QAction* createNodeGroupAction = menu->addAction(tr("Create Node Group"));
                 connect(createNodeGroupAction, &QAction::triggered, this, &BlendGraphWidget::CreateNodeGroup);
                 if (actionFilter.m_editNodeGroups && !inReferenceGraph && animGraphNode->GetParentNode())
                 {
@@ -378,7 +378,7 @@ namespace EMStudio
             }
             else
             {
-                QAction* removeFromGroupAction = menu->addAction("Remove From Node Group");
+                QAction* removeFromGroupAction = menu->addAction(tr("Remove From Node Group"));
                 connect(
                     removeFromGroupAction,
                     &QAction::triggered,
@@ -462,7 +462,7 @@ namespace EMStudio
                 if (actionFilter.m_editNodes &&
                     oneDisabled && oneSupportsDelete)
                 {
-                    QAction* enableAction = menu.addAction("Enable Nodes");
+                    QAction* enableAction = menu.addAction(tr("Enable Nodes"));
                     connect(enableAction, &QAction::triggered, &actionManager, &AnimGraphActionManager::EnableSelected);
                 }
 
@@ -470,7 +470,7 @@ namespace EMStudio
                 if (actionFilter.m_editNodes &&
                     oneEnabled && oneSupportsDelete)
                 {
-                    QAction* disableAction = menu.addAction("Disable Nodes");
+                    QAction* disableAction = menu.addAction(tr("Disable Nodes"));
                     connect(disableAction, &QAction::triggered, &actionManager, &AnimGraphActionManager::DisableSelected);
                 }
 
@@ -520,7 +520,7 @@ namespace EMStudio
                 });
             if (allNodesAreUngrouped)
             {
-                QAction* createNodeGroupAction = menu.addAction("Create Node Group");
+                QAction* createNodeGroupAction = menu.addAction(tr("Create Node Group"));
                 connect(createNodeGroupAction, &QAction::triggered, this, &BlendGraphWidget::CreateNodeGroup);
                 if (actionFilter.m_editNodeGroups && !inReferenceGraph)
                 {
@@ -529,7 +529,7 @@ namespace EMStudio
             }
             else
             {
-                QAction* removeFromGroupAction = menu.addAction("Remove From Node Group");
+                QAction* removeFromGroupAction = menu.addAction(tr("Remove From Node Group"));
                 connect(
                     removeFromGroupAction,
                     &QAction::triggered,
