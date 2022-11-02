@@ -430,6 +430,17 @@ namespace GradientSignal
         m_paintStrokeData = {};
     }
 
+    AZ::Color EditorImageGradientComponentMode::OnGetColor(const AZ::Vector3& brushCenter)
+    {
+        // Get the gradient value at the given point.
+
+        float gradientValue = 0.0f;
+        GradientSampleParams sampleParams = {brushCenter};
+        GradientRequestBus::EventResult(gradientValue, GetEntityId(), &GradientRequestBus::Events::GetValue, sampleParams);
+        return AZ::Color(gradientValue, gradientValue, gradientValue, 1.0f);
+    }
+
+
     void EditorImageGradientComponentMode::OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn)
     {
         // The OnPaint notification means that we should paint new values into our image gradient.
@@ -512,6 +523,128 @@ namespace GradientSignal
             GetEntityId(), &ImageGradientModificationBus::Events::SetPixelValuesByPixelIndex,
             pixelIndices,
             paintedValues);
+
+        // Because Image Gradients support bilinear filtering, we need to expand our dirty area by an extra pixel in each direction
+        // so that the effects of the painted values on adjacent pixels are taken into account when refreshing.
+        AZ::Aabb expandedDirtyArea(dirtyArea);
+        expandedDirtyArea.Expand(AZ::Vector3(m_paintStrokeData.m_metersPerPixelX, m_paintStrokeData.m_metersPerPixelY, 0.0f));
+
+        // Expand the dirty region to encompass the full Z range since image gradients are 2D.
+        auto dirtyRegionMin = expandedDirtyArea.GetMin();
+        auto dirtyRegionMax = expandedDirtyArea.GetMax();
+        expandedDirtyArea.Set(
+            AZ::Vector3(dirtyRegionMin.GetX(), dirtyRegionMin.GetY(), AZStd::numeric_limits<float>::lowest()),
+            AZ::Vector3(dirtyRegionMax.GetX(), dirtyRegionMax.GetY(), AZStd::numeric_limits<float>::max()));
+
+        // Notify anything listening to the image gradient that the modified region has changed.
+        LmbrCentral::DependencyNotificationBus::Event(
+            GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, expandedDirtyArea);
+    }
+
+    void EditorImageGradientComponentMode::OnSmooth(
+        const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, [[maybe_unused]] size_t kernelSize, SmoothFn& smoothFn)
+    {
+        // The OnPaint notification means that we should paint new values into our image gradient.
+        // To do this, we need to calculate the set of world space positions that map to individual pixels in the image,
+        // then ask the paint brush for each position what value we should set that pixel to. Finally, we use those modified
+        // values to change the image gradient.
+
+        const AZ::Vector3 minDistances = dirtyArea.GetMin();
+        const AZ::Vector3 maxDistances = dirtyArea.GetMax();
+        const float zMinDistance = minDistances.GetZ();
+
+        const int32_t xPoints = aznumeric_cast<int32_t>((maxDistances.GetX() - minDistances.GetX()) / m_paintStrokeData.m_metersPerPixelX);
+        const int32_t yPoints = aznumeric_cast<int32_t>((maxDistances.GetY() - minDistances.GetY()) / m_paintStrokeData.m_metersPerPixelY);
+
+        // Calculate the minimum set of world space points that map to those pixels.
+        AZStd::vector<AZ::Vector3> points;
+        points.reserve(xPoints * yPoints);
+        for (float y = minDistances.GetY(); y <= maxDistances.GetY(); y += m_paintStrokeData.m_metersPerPixelY)
+        {
+            for (float x = minDistances.GetX(); x <= maxDistances.GetX(); x += m_paintStrokeData.m_metersPerPixelX)
+            {
+                points.emplace_back(x, y, zMinDistance);
+            }
+        }
+
+        // Query the paintbrush with those points to get back the subset of points and brush opacities for each point that's
+        // affected by the brush.
+        AZStd::vector<AZ::Vector3> validPoints;
+        AZStd::vector<float> perPixelOpacities;
+        valueLookupFn(points, validPoints, perPixelOpacities);
+
+        // Early out if none of the points were actually affected by the brush.
+        if (validPoints.empty())
+        {
+            return;
+        }
+
+        AZ::EntityId entityId = GetEntityId();
+
+        // Get the pixel indices for each position.
+        AZStd::vector<PixelIndex> pixelIndices(validPoints.size());
+        ImageGradientModificationBus::Event(
+            entityId, &ImageGradientModificationBus::Events::GetPixelIndicesForPositions, validPoints, pixelIndices);
+
+        // Create a buffer for all of the modified, blended gradient values.
+        AZStd::vector<float> paintedValues;
+        paintedValues.reserve(pixelIndices.size());
+
+        // For each pixel, accumulate the per-pixel opacity in the stroke layer, then (re)blend the stroke layer with
+        // the original data by using the stroke intensity, stroke opacity, per-pixel opacity, and original pre-stroke gradient value.
+        // The (re)blended value gets sent immediately to the image gradient, as well as getting cached off into the stroke buffer
+        // for easier and faster undo/redo operations.
+        for (size_t index = 0; index < pixelIndices.size(); index++)
+        {
+            // If we have an invalid pixel index, fill in a placeholder value into paintedValues and move on to the next pixel.
+            if ((pixelIndices[index].first < 0) || (pixelIndices[index].second < 0))
+            {
+                paintedValues.emplace_back(0.0f);
+                continue;
+            }
+
+            auto [gradientValue, opacityValue] = m_paintStrokeData.m_strokeBuffer->GetOriginalPixelValueAndOpacity(pixelIndices[index]);
+
+            // Add the new per-pixel opacity to the existing opacity in our stroke layer.
+            opacityValue = AZStd::clamp(opacityValue + (1.0f - opacityValue) * perPixelOpacities[index], 0.0f, 1.0f);
+
+            AZStd::array<AZ::Vector3, 9> kernelPoints = {
+                validPoints[index] + AZ::Vector3(-1.0f * m_paintStrokeData.m_metersPerPixelX, -1.0f * m_paintStrokeData.m_metersPerPixelY, 0.0f),
+                validPoints[index] + AZ::Vector3( 0.0f * m_paintStrokeData.m_metersPerPixelX, -1.0f * m_paintStrokeData.m_metersPerPixelY, 0.0f),
+                validPoints[index] + AZ::Vector3( 1.0f * m_paintStrokeData.m_metersPerPixelX, -1.0f * m_paintStrokeData.m_metersPerPixelY, 0.0f),
+                validPoints[index] + AZ::Vector3(-1.0f * m_paintStrokeData.m_metersPerPixelX,  0.0f * m_paintStrokeData.m_metersPerPixelY, 0.0f),
+                validPoints[index] + AZ::Vector3( 0.0f * m_paintStrokeData.m_metersPerPixelX,  0.0f * m_paintStrokeData.m_metersPerPixelY, 0.0f),
+                validPoints[index] + AZ::Vector3( 1.0f * m_paintStrokeData.m_metersPerPixelX,  0.0f * m_paintStrokeData.m_metersPerPixelY, 0.0f),
+                validPoints[index] + AZ::Vector3(-1.0f * m_paintStrokeData.m_metersPerPixelX,  1.0f * m_paintStrokeData.m_metersPerPixelY, 0.0f),
+                validPoints[index] + AZ::Vector3( 0.0f * m_paintStrokeData.m_metersPerPixelX,  1.0f * m_paintStrokeData.m_metersPerPixelY, 0.0f),
+                validPoints[index] + AZ::Vector3( 1.0f * m_paintStrokeData.m_metersPerPixelX,  1.0f * m_paintStrokeData.m_metersPerPixelY, 0.0f),
+            };
+            AZStd::array<PixelIndex, 9> kernelPixelIndices;
+            AZStd::array<float, 9> kernelValues = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+            ImageGradientModificationBus::Event(
+                entityId, &ImageGradientModificationBus::Events::GetPixelIndicesForPositions, kernelPoints, kernelPixelIndices);
+
+            // Read all of the original gradient values into the image tile buffer.
+            ImageGradientModificationBus::Event(
+                entityId,
+                &ImageGradientModificationBus::Events::GetPixelValuesByPixelIndex,
+                kernelPixelIndices, kernelValues);
+
+            // Blend the pixel and store the blended pixel and new opacity back into our paint stroke buffer.
+            float blendedValue = smoothFn(
+                gradientValue, kernelValues, opacityValue * m_paintStrokeData.m_opacity);
+            m_paintStrokeData.m_strokeBuffer->SetModifiedPixelValue(pixelIndices[index], blendedValue, opacityValue);
+
+            // Also store the blended value into a second buffer that we'll use to immediately modify the image gradient.
+            paintedValues.emplace_back(blendedValue);
+
+            // Track the overall dirty region for everything we modify so that we don't have to recalculate it for undos/redos.
+            m_paintStrokeData.m_dirtyRegion.AddPoint(validPoints[index]);
+        }
+
+        // Modify the image gradient with all of the changed values
+        ImageGradientModificationBus::Event(
+            GetEntityId(), &ImageGradientModificationBus::Events::SetPixelValuesByPixelIndex, pixelIndices, paintedValues);
 
         // Because Image Gradients support bilinear filtering, we need to expand our dirty area by an extra pixel in each direction
         // so that the effects of the painted values on adjacent pixels are taken into account when refreshing.

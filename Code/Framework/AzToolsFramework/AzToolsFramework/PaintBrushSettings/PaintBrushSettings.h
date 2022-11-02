@@ -54,6 +54,14 @@ namespace AzToolsFramework
        then blended down using the Intensity, Opacity, and Blend Mode.
     */
 
+    //! The different types of functionality offered by the paint brush tool
+    enum class PaintBrushMode : uint8_t
+    {
+        Paintbrush,     //!< Uses color, opacity, and other brush settings to 'paint' values for an abstract data source
+        Eyedropper,     //!< Gets the current value underneath the brush from an abstract data source
+        Smooth          //!< Smooths/blurs the existing values in an abstract data source
+    };
+
     //! The different types of blend modes supported by the paint brush tool.
     enum class PaintBrushColorMode : uint8_t
     {
@@ -89,6 +97,13 @@ namespace AzToolsFramework
         ~PaintBrushSettings() = default;
 
         // Overall paintbrush settings
+
+        PaintBrushMode GetBrushMode() const
+        {
+            return m_brushMode;
+        }
+
+        void SetBrushMode(PaintBrushMode brushMode);
 
         PaintBrushColorMode GetColorMode() const
         {
@@ -146,6 +161,9 @@ namespace AzToolsFramework
 
         bool GetColorVisibility() const;
         bool GetIntensityVisibility() const;
+
+        //! Brush settings brush mode
+        PaintBrushMode m_brushMode = PaintBrushMode::Paintbrush;
 
         //! Brush settings color mode
         PaintBrushColorMode m_colorMode = PaintBrushColorMode::Greyscale;

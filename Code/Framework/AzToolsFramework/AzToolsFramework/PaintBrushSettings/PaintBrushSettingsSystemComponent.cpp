@@ -46,6 +46,16 @@ namespace AzToolsFramework
         return m_settings;
     }
 
+    PaintBrushMode PaintBrushSettingsSystemComponent::GetBrushMode() const
+    {
+        return m_settings.GetBrushMode();
+    }
+
+    void PaintBrushSettingsSystemComponent::SetBrushMode(PaintBrushMode brushMode)
+    {
+        m_settings.SetBrushMode(brushMode);
+    }
+
     PaintBrushColorMode PaintBrushSettingsSystemComponent::GetBrushColorMode() const
     {
         return m_settings.GetColorMode();

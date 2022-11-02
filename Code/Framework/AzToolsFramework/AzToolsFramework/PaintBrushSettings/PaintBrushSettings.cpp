@@ -61,7 +61,8 @@ namespace AzToolsFramework
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<PaintBrushSettings>()
-                ->Version(4)
+                ->Version(5)
+                ->Field("BrushMode", &PaintBrushSettings::m_brushMode)
                 ->Field("Size", &PaintBrushSettings::m_size)
                 ->Field("Color", &PaintBrushSettings::m_brushColor)
                 ->Field("Intensity", &PaintBrushSettings::m_intensityPercent)
@@ -79,6 +80,12 @@ namespace AzToolsFramework
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox, &PaintBrushSettings::m_brushMode, "Brush Mode", "Brush functionality.")
+                    ->EnumAttribute(PaintBrushMode::Paintbrush, "Paintbrush")
+                    ->EnumAttribute(PaintBrushMode::Eyedropper, "Eyedropper")
+                    ->EnumAttribute(PaintBrushMode::Smooth, "Smooth")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_size, "Size",
                         "Size/diameter of the brush stamp in meters.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
@@ -146,7 +153,7 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Edit::Attributes::Suffix, " %")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::ComboBox, &PaintBrushSettings::m_blendMode, "Mode", "Blend mode of the brush stroke.")
+                        AZ::Edit::UIHandlers::ComboBox, &PaintBrushSettings::m_blendMode, "Blend Mode", "Blend mode of the brush stroke.")
                     ->EnumAttribute(PaintBrushBlendMode::Normal, "Normal")
                     ->EnumAttribute(PaintBrushBlendMode::Multiply, "Multiply")
                     ->EnumAttribute(PaintBrushBlendMode::Screen, "Screen")
@@ -170,6 +177,12 @@ namespace AzToolsFramework
     bool PaintBrushSettings::GetIntensityVisibility() const
     {
         return (m_colorMode == PaintBrushColorMode::Greyscale);
+    }
+
+    void PaintBrushSettings::SetBrushMode(PaintBrushMode brushMode)
+    {
+        m_brushMode = brushMode;
+        OnSettingsChanged();
     }
 
     void PaintBrushSettings::SetColorMode(PaintBrushColorMode colorMode)

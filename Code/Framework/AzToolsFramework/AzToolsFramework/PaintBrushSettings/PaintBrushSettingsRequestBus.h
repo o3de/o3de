@@ -31,6 +31,12 @@ namespace AzToolsFramework
         //! Returns a copy of the current paintbrush settings
         virtual PaintBrushSettings GetSettings() const = 0;
 
+        //! Returns the current brush mode for the paint brush settings
+        virtual PaintBrushMode GetBrushMode() const = 0;
+
+        //! Sets the brush mode for the paint brush settings.
+        virtual void SetBrushMode(PaintBrushMode brushMode) = 0;
+
         //! Returns the current color mode for the paint brush settings
         virtual PaintBrushColorMode GetBrushColorMode() const = 0;
 

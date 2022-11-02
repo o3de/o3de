@@ -38,6 +38,8 @@ namespace GradientSignal
         void OnPaintStrokeBegin(const AZ::Color& color) override;
         void OnPaintStrokeEnd() override;
         void OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn) override;
+        void OnSmooth(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, size_t kernelSize, SmoothFn& smoothFn) override;
+        AZ::Color OnGetColor(const AZ::Vector3& brushCenter) override;
 
         void BeginUndoBatch();
         void EndUndoBatch();

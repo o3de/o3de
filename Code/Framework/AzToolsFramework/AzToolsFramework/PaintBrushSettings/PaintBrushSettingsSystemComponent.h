@@ -35,6 +35,8 @@ namespace AzToolsFramework
         // PaintBrushSettingsRequestBus overrides...
         PaintBrushSettings* GetSettingsPointerForPropertyEditor() override;
         PaintBrushSettings GetSettings() const override;
+        PaintBrushMode GetBrushMode() const override;
+        void SetBrushMode(PaintBrushMode brushMode) override;
         PaintBrushColorMode GetBrushColorMode() const override;
         void SetBrushColorMode(PaintBrushColorMode colorMode) override;
         float GetSize() const override;
