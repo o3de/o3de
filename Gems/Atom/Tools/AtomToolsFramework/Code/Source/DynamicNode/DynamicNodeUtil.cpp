@@ -11,7 +11,27 @@
 
 namespace AtomToolsFramework
 {
-    void VisitDynamicNodeSlotConfigs(const DynamicNodeConfig& nodeConfig, const SlotConfigVisitorFn& visitorFn)
+    void VisitDynamicNodeSlotConfigs(
+        DynamicNodeConfig& nodeConfig, const AZStd::function<void(DynamicNodeSlotConfig&)>& visitorFn)
+    {
+        for (auto& slotConfig : nodeConfig.m_propertySlots)
+        {
+            visitorFn(slotConfig);
+        }
+
+        for (auto& slotConfig : nodeConfig.m_inputSlots)
+        {
+            visitorFn(slotConfig);
+        }
+
+        for (auto& slotConfig : nodeConfig.m_outputSlots)
+        {
+            visitorFn(slotConfig);
+        }
+    }
+
+    void VisitDynamicNodeSlotConfigs(
+        const DynamicNodeConfig& nodeConfig, const AZStd::function<void(const DynamicNodeSlotConfig&)>& visitorFn)
     {
         for (const auto& slotConfig : nodeConfig.m_propertySlots)
         {
@@ -29,7 +49,21 @@ namespace AtomToolsFramework
         }
     }
 
-    void VisitDynamicNodeSettings(const DynamicNodeConfig& nodeConfig, const SettingsVisitorFn& visitorFn)
+    void VisitDynamicNodeSettings(
+        DynamicNodeConfig& nodeConfig, const AZStd::function<void(DynamicNodeSettingsMap&)>& visitorFn)
+    {
+        visitorFn(nodeConfig.m_settings);
+
+        VisitDynamicNodeSlotConfigs(
+            nodeConfig,
+            [visitorFn](DynamicNodeSlotConfig& slotConfig)
+            {
+                visitorFn(slotConfig.m_settings);
+            });
+    }
+
+    void VisitDynamicNodeSettings(
+        const DynamicNodeConfig& nodeConfig, const AZStd::function<void(const DynamicNodeSettingsMap&)>& visitorFn)
     {
         visitorFn(nodeConfig.m_settings);
 

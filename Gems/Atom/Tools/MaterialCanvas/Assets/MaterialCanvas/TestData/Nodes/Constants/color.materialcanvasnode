@@ -11,15 +11,14 @@
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[14]?",
+                "defaultDataType": "color",
                 "defaultValue": {
                     "$type": "Color",
                     "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
+                        1.0,
+                        1.0,
+                        1.0,
                         1.0
                     ]
                 },
@@ -35,9 +34,8 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue;"
@@ -48,9 +46,8 @@
                 "name": "outR",
                 "displayName": "R",
                 "description": "R",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.r;"
@@ -61,9 +58,8 @@
                 "name": "outG",
                 "displayName": "G",
                 "description": "G",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.g;"
@@ -74,9 +70,8 @@
                 "name": "outB",
                 "displayName": "B",
                 "description": "B",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.b;"
@@ -87,9 +82,8 @@
                 "name": "outA",
                 "displayName": "A",
                 "description": "A",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.a;"

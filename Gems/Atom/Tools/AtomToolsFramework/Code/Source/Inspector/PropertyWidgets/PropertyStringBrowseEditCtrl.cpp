@@ -64,7 +64,7 @@ namespace AtomToolsFramework
     {
         if (attrib == AZ_CRC_CE("LineEditReadOnly"))
         {
-            if (bool value = true; attrValue->Read<bool>(value))
+            if (bool value = true; attrValue->Read<decltype(value)>(value))
             {
                 m_browseEdit->setLineEditReadOnly(value);
             }
@@ -73,7 +73,7 @@ namespace AtomToolsFramework
 
         if (attrib == AZ_CRC_CE("ClearButtonEnabled"))
         {
-            if (bool value = true; attrValue->Read<bool>(value))
+            if (bool value = true; attrValue->Read<decltype(value)>(value))
             {
                 m_browseEdit->setClearButtonEnabled(value);
             }
@@ -82,7 +82,7 @@ namespace AtomToolsFramework
 
         if (attrib == AZ_CRC_CE("EditButtonIcon"))
         {
-            if (AZStd::string value; attrValue->Read<AZStd::string>(value))
+            if (AZStd::string value; attrValue->Read<decltype(value)>(value))
             {
                 m_browseEdit->setAttachedButtonIcon(QIcon(value.c_str()));
             }
@@ -91,7 +91,7 @@ namespace AtomToolsFramework
 
         if (attrib == AZ_CRC_CE("EditButtonVisible"))
         {
-            if (bool value = true; attrValue->Read<bool>(value))
+            if (bool value = true; attrValue->Read<decltype(value)>(value))
             {
                 SetEditButtonVisible(value);
             }
@@ -100,7 +100,7 @@ namespace AtomToolsFramework
 
         if (attrib == AZ_CRC_CE("EditButtonEnabled"))
         {
-            if (bool value = true; attrValue->Read<bool>(value))
+            if (bool value = true; attrValue->Read<decltype(value)>(value))
             {
                 SetEditButtonEnabled(value);
             }
@@ -200,7 +200,7 @@ namespace AtomToolsFramework
         return false;
     }
 
-    PropertyFilePathStringCtrl::PropertyFilePathStringCtrl(QWidget* parent)
+    PropertyStringFilePathCtrl::PropertyStringFilePathCtrl(QWidget* parent)
         : PropertyStringBrowseEditCtrl(parent)
     {
         m_browseEdit->setLineEditReadOnly(true);
@@ -209,7 +209,7 @@ namespace AtomToolsFramework
         SetEditButtonEnabled(true);
     }
 
-    void PropertyFilePathStringCtrl::ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue)
+    void PropertyStringFilePathCtrl::ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue)
     {
         PropertyStringBrowseEditCtrl::ConsumeAttribute(attrib, attrValue);
 
@@ -256,7 +256,7 @@ namespace AtomToolsFramework
         }
     }
 
-    void PropertyFilePathStringCtrl::EditValue()
+    void PropertyStringFilePathCtrl::EditValue()
     {
         if (const auto& paths = GetOpenFilePathsFromDialog({ GetValue() }, m_extensions, m_title, false); !paths.empty())
         {
@@ -265,13 +265,13 @@ namespace AtomToolsFramework
         }
     }
 
-    QWidget* PropertyFilePathStringHandler::CreateGUI(QWidget* parent)
+    QWidget* PropertyStringFilePathHandler::CreateGUI(QWidget* parent)
     {
-        return aznew PropertyFilePathStringCtrl(parent);
+        return aznew PropertyStringFilePathCtrl(parent);
     }
 
-    void PropertyFilePathStringHandler::ConsumeAttribute(
-        [[maybe_unused]] PropertyFilePathStringCtrl* GUI,
+    void PropertyStringFilePathHandler::ConsumeAttribute(
+        [[maybe_unused]] PropertyStringFilePathCtrl* GUI,
         [[maybe_unused]] AZ::u32 attrib,
         [[maybe_unused]] AzToolsFramework::PropertyAttributeReader* attrValue,
         [[maybe_unused]] const char* debugName)
@@ -279,18 +279,18 @@ namespace AtomToolsFramework
         GUI->ConsumeAttribute(attrib, attrValue);
     }
 
-    void PropertyFilePathStringHandler::WriteGUIValuesIntoProperty(
+    void PropertyStringFilePathHandler::WriteGUIValuesIntoProperty(
         [[maybe_unused]] size_t index,
-        [[maybe_unused]] PropertyFilePathStringCtrl* GUI,
+        [[maybe_unused]] PropertyStringFilePathCtrl* GUI,
         [[maybe_unused]] property_t& instance,
         [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
     {
         instance = GUI->GetValue();
     }
 
-    bool PropertyFilePathStringHandler::ReadValuesIntoGUI(
+    bool PropertyStringFilePathHandler::ReadValuesIntoGUI(
         [[maybe_unused]] size_t index,
-        [[maybe_unused]] PropertyFilePathStringCtrl* GUI,
+        [[maybe_unused]] PropertyStringFilePathCtrl* GUI,
         [[maybe_unused]] const property_t& instance,
         [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
     {
@@ -299,7 +299,7 @@ namespace AtomToolsFramework
         return false;
     }
 
-    PropertyMultiLineStringCtrl::PropertyMultiLineStringCtrl(QWidget* parent)
+    PropertyMultilineStringDialogCtrl::PropertyMultilineStringDialogCtrl(QWidget* parent)
         : PropertyStringBrowseEditCtrl(parent)
     {
         m_browseEdit->setLineEditReadOnly(false);
@@ -308,12 +308,12 @@ namespace AtomToolsFramework
         SetEditButtonEnabled(true);
     }
 
-    void PropertyMultiLineStringCtrl::ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue)
+    void PropertyMultilineStringDialogCtrl::ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue)
     {
         PropertyStringBrowseEditCtrl::ConsumeAttribute(attrib, attrValue);
     }
 
-    void PropertyMultiLineStringCtrl::EditValue()
+    void PropertyMultilineStringDialogCtrl::EditValue()
     {
         QDialog dialog(GetToolMainWindow());
         dialog.setWindowTitle(tr("Edit String Value"));
@@ -351,13 +351,13 @@ namespace AtomToolsFramework
         }
     }
 
-    QWidget* PropertyMultiLineStringHandler::CreateGUI(QWidget* parent)
+    QWidget* PropertyMultilineStringDialogHandler::CreateGUI(QWidget* parent)
     {
-        return aznew PropertyMultiLineStringCtrl(parent);
+        return aznew PropertyMultilineStringDialogCtrl(parent);
     }
 
-    void PropertyMultiLineStringHandler::ConsumeAttribute(
-        [[maybe_unused]] PropertyMultiLineStringCtrl* GUI,
+    void PropertyMultilineStringDialogHandler::ConsumeAttribute(
+        [[maybe_unused]] PropertyMultilineStringDialogCtrl* GUI,
         [[maybe_unused]] AZ::u32 attrib,
         [[maybe_unused]] AzToolsFramework::PropertyAttributeReader* attrValue,
         [[maybe_unused]] const char* debugName)
@@ -365,18 +365,18 @@ namespace AtomToolsFramework
         GUI->ConsumeAttribute(attrib, attrValue);
     }
 
-    void PropertyMultiLineStringHandler::WriteGUIValuesIntoProperty(
+    void PropertyMultilineStringDialogHandler::WriteGUIValuesIntoProperty(
       [[maybe_unused]] size_t index,
-        [[maybe_unused]] PropertyMultiLineStringCtrl* GUI,
+        [[maybe_unused]] PropertyMultilineStringDialogCtrl* GUI,
         [[maybe_unused]] property_t& instance,
         [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
     {
         instance = GUI->GetValue();
     }
 
-    bool PropertyMultiLineStringHandler::ReadValuesIntoGUI(
+    bool PropertyMultilineStringDialogHandler::ReadValuesIntoGUI(
         [[maybe_unused]] size_t index,
-        [[maybe_unused]] PropertyMultiLineStringCtrl* GUI,
+        [[maybe_unused]] PropertyMultilineStringDialogCtrl* GUI,
         [[maybe_unused]] const property_t& instance,
         [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
     {
@@ -385,7 +385,7 @@ namespace AtomToolsFramework
         return false;
     }
 
-    PropertyMultiSelectSplitStringCtrl::PropertyMultiSelectSplitStringCtrl(QWidget* parent)
+    PropertyMultiStringSelectCtrl::PropertyMultiStringSelectCtrl(QWidget* parent)
         : PropertyStringBrowseEditCtrl(parent)
     {
         m_browseEdit->setLineEditReadOnly(true);
@@ -394,91 +394,127 @@ namespace AtomToolsFramework
         SetEditButtonEnabled(true);
     }
 
-    void PropertyMultiSelectSplitStringCtrl::ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue)
+    void PropertyMultiStringSelectCtrl::ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue)
     {
         PropertyStringBrowseEditCtrl::ConsumeAttribute(attrib, attrValue);
 
-        if (attrib == AZ_CRC_CE("MultiSelectOptions"))
+        if (attrib == AZ_CRC_CE("Options"))
         {
-            if (AZStd::string value; attrValue->Read<AZStd::string>(value))
+            if (AZStd::string value; attrValue->Read<decltype(value)>(value))
             {
                 SetOptions(value);
                 return;
             }
 
-            if (AZStd::vector<AZStd::string> value; attrValue->Read<AZStd::vector<AZStd::string>>(value))
+            if (AZStd::vector<AZStd::string> value; attrValue->Read<decltype(value)>(value))
             {
                 SetOptionsVec(value);
                 return;
             }
         }
+
+        if (attrib == AZ_CRC_CE("MultiSelect"))
+        {
+            if (bool value = true; attrValue->Read<decltype(value)>(value))
+            {
+                m_multiSelect = value;
+                return;
+            }
+        }
+
+        if (attrib == AZ_CRC_CE("SingleSelect"))
+        {
+            if (bool value = false; attrValue->Read<decltype(value)>(value))
+            {
+                m_multiSelect = !value;
+                return;
+            }
+        }
+
+        if (attrib == AZ_CRC_CE("DelimitersForSplit"))
+        {
+            if (AZStd::string value; attrValue->Read<decltype(value)>(value))
+            {
+                m_delimitersForSplit = value;
+                return;
+            }
+        }
+
+        if (attrib == AZ_CRC_CE("DelimitersForJoin"))
+        {
+            if (AZStd::string value; attrValue->Read<decltype(value)>(value))
+            {
+                m_delimitersForJoin = value;
+                return;
+            }
+        }
     }
 
-    void PropertyMultiSelectSplitStringCtrl::EditValue()
+    void PropertyMultiStringSelectCtrl::EditValue()
     {
         AZStd::vector<AZStd::string> selections = GetValuesVec();
-        if (GetStringListFromDialog(selections, GetOptionsVec(), "Select Options", true))
+        if (GetStringListFromDialog(selections, GetOptionsVec(), "Select Options", m_multiSelect))
         {
             SetValuesVec(selections);
             OnValueChanged();
         }
     }
 
-    void PropertyMultiSelectSplitStringCtrl::SetValues(const AZStd::string& values)
+    void PropertyMultiStringSelectCtrl::SetValues(const AZStd::string& values)
     {
         SetValue(values);
     }
 
-    AZStd::string PropertyMultiSelectSplitStringCtrl::GetValues() const
+    AZStd::string PropertyMultiStringSelectCtrl::GetValues() const
     {
         return GetValue();
     }
 
-    void PropertyMultiSelectSplitStringCtrl::SetValuesVec(const AZStd::vector<AZStd::string>& values)
+    void PropertyMultiStringSelectCtrl::SetValuesVec(const AZStd::vector<AZStd::string>& values)
     {
         AZStd::string value;
-        AZ::StringFunc::Join(value, values, ", ");
+        AZ::StringFunc::Join(value, values, m_delimitersForJoin);
         SetValues(value);
     }
 
-    AZStd::vector<AZStd::string> PropertyMultiSelectSplitStringCtrl::GetValuesVec() const
+    AZStd::vector<AZStd::string> PropertyMultiStringSelectCtrl::GetValuesVec() const
     {
         AZStd::vector<AZStd::string> values;
-        AZ::StringFunc::Tokenize(GetValues(), values, ";:, \t\r\n\\/|");
+        AZ::StringFunc::Tokenize(GetValues(), values, m_delimitersForSplit);
         return values;
     }
 
-    void PropertyMultiSelectSplitStringCtrl::SetOptions(const AZStd::string& options)
+    void PropertyMultiStringSelectCtrl::SetOptions(const AZStd::string& options)
     {
         m_options = options;
     }
 
-    AZStd::string PropertyMultiSelectSplitStringCtrl::GetOptions() const
+    AZStd::string PropertyMultiStringSelectCtrl::GetOptions() const
     {
         return m_options;
     }
 
-    void PropertyMultiSelectSplitStringCtrl::SetOptionsVec(const AZStd::vector<AZStd::string>& options)
+    void PropertyMultiStringSelectCtrl::SetOptionsVec(const AZStd::vector<AZStd::string>& options)
     {
         AZStd::string option;
-        AZ::StringFunc::Join(option, options, ", ");
+        AZ::StringFunc::Join(option, options, m_delimitersForJoin);
         SetOptions(option);
     }
 
-    AZStd::vector<AZStd::string> PropertyMultiSelectSplitStringCtrl::GetOptionsVec() const
+    AZStd::vector<AZStd::string> PropertyMultiStringSelectCtrl::GetOptionsVec() const
     {
         AZStd::vector<AZStd::string> options;
-        AZ::StringFunc::Tokenize(GetOptions(), options, ";:, \t\r\n\\/|");
+        AZ::StringFunc::Tokenize(GetOptions(), options, m_delimitersForSplit);
         return options;
     }
 
-    QWidget* PropertyMultiSelectSplitStringHandler::CreateGUI(QWidget* parent)
+    QWidget* PropertyMultiStringSelectDelimitedHandler::CreateGUI(QWidget* parent)
     {
-        return aznew PropertyMultiSelectSplitStringCtrl(parent);
+        return aznew PropertyMultiStringSelectCtrl(parent);
     }
 
-    void PropertyMultiSelectSplitStringHandler::ConsumeAttribute(
-        [[maybe_unused]] PropertyMultiSelectSplitStringCtrl* GUI,
+    void PropertyMultiStringSelectDelimitedHandler::ConsumeAttribute(
+        [[maybe_unused]] PropertyMultiStringSelectCtrl* GUI,
         [[maybe_unused]] AZ::u32 attrib,
         [[maybe_unused]] AzToolsFramework::PropertyAttributeReader* attrValue,
         [[maybe_unused]] const char* debugName)
@@ -486,18 +522,18 @@ namespace AtomToolsFramework
         GUI->ConsumeAttribute(attrib, attrValue);
     }
 
-    void PropertyMultiSelectSplitStringHandler::WriteGUIValuesIntoProperty(
+    void PropertyMultiStringSelectDelimitedHandler::WriteGUIValuesIntoProperty(
         [[maybe_unused]] size_t index,
-        [[maybe_unused]] PropertyMultiSelectSplitStringCtrl* GUI,
+        [[maybe_unused]] PropertyMultiStringSelectCtrl* GUI,
         [[maybe_unused]] property_t& instance,
         [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
     {
         instance = GUI->GetValue();
     }
 
-    bool PropertyMultiSelectSplitStringHandler::ReadValuesIntoGUI(
+    bool PropertyMultiStringSelectDelimitedHandler::ReadValuesIntoGUI(
         [[maybe_unused]] size_t index,
-        [[maybe_unused]] PropertyMultiSelectSplitStringCtrl* GUI,
+        [[maybe_unused]] PropertyMultiStringSelectCtrl* GUI,
         [[maybe_unused]] const property_t& instance,
         [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
     {
@@ -506,13 +542,13 @@ namespace AtomToolsFramework
         return false;
     }
 
-    QWidget* PropertyMultiSelectStringVectorHandler::CreateGUI(QWidget* parent)
+    QWidget* PropertyMultiStringSelectVectorHandler::CreateGUI(QWidget* parent)
     {
-        return aznew PropertyMultiSelectSplitStringCtrl(parent);
+        return aznew PropertyMultiStringSelectCtrl(parent);
     }
 
-    void PropertyMultiSelectStringVectorHandler::ConsumeAttribute(
-        [[maybe_unused]] PropertyMultiSelectSplitStringCtrl* GUI,
+    void PropertyMultiStringSelectVectorHandler::ConsumeAttribute(
+        [[maybe_unused]] PropertyMultiStringSelectCtrl* GUI,
         [[maybe_unused]] AZ::u32 attrib,
         [[maybe_unused]] AzToolsFramework::PropertyAttributeReader* attrValue,
         [[maybe_unused]] const char* debugName)
@@ -520,23 +556,59 @@ namespace AtomToolsFramework
         GUI->ConsumeAttribute(attrib, attrValue);
     }
 
-    void PropertyMultiSelectStringVectorHandler::WriteGUIValuesIntoProperty(
+    void PropertyMultiStringSelectVectorHandler::WriteGUIValuesIntoProperty(
         [[maybe_unused]] size_t index,
-        [[maybe_unused]] PropertyMultiSelectSplitStringCtrl* GUI,
+        [[maybe_unused]] PropertyMultiStringSelectCtrl* GUI,
         [[maybe_unused]] property_t& instance,
         [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
     {
         instance = GUI->GetValuesVec();
     }
 
-    bool PropertyMultiSelectStringVectorHandler::ReadValuesIntoGUI(
+    bool PropertyMultiStringSelectVectorHandler::ReadValuesIntoGUI(
         [[maybe_unused]] size_t index,
-        [[maybe_unused]] PropertyMultiSelectSplitStringCtrl* GUI,
+        [[maybe_unused]] PropertyMultiStringSelectCtrl* GUI,
         [[maybe_unused]] const property_t& instance,
         [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
     {
         QSignalBlocker blocker(GUI);
         GUI->SetValuesVec(instance);
+        return false;
+    }
+
+    QWidget* PropertyMultiStringSelectSetHandler::CreateGUI(QWidget* parent)
+    {
+        return aznew PropertyMultiStringSelectCtrl(parent);
+    }
+
+    void PropertyMultiStringSelectSetHandler::ConsumeAttribute(
+        [[maybe_unused]] PropertyMultiStringSelectCtrl* GUI,
+        [[maybe_unused]] AZ::u32 attrib,
+        [[maybe_unused]] AzToolsFramework::PropertyAttributeReader* attrValue,
+        [[maybe_unused]] const char* debugName)
+    {
+        GUI->ConsumeAttribute(attrib, attrValue);
+    }
+
+    void PropertyMultiStringSelectSetHandler::WriteGUIValuesIntoProperty(
+        [[maybe_unused]] size_t index,
+        [[maybe_unused]] PropertyMultiStringSelectCtrl* GUI,
+        [[maybe_unused]] property_t& instance,
+        [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
+    {
+        const auto& values = GUI->GetValuesVec();
+        instance.clear();
+        instance.insert(values.begin(), values.end());
+    }
+
+    bool PropertyMultiStringSelectSetHandler::ReadValuesIntoGUI(
+        [[maybe_unused]] size_t index,
+        [[maybe_unused]] PropertyMultiStringSelectCtrl* GUI,
+        [[maybe_unused]] const property_t& instance,
+        [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
+    {
+        QSignalBlocker blocker(GUI);
+        GUI->SetValuesVec(AZStd::vector(instance.begin(), instance.end()));
         return false;
     }
 
@@ -547,16 +619,19 @@ namespace AtomToolsFramework
             aznew PropertyStringBrowseEditHandler());
         AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
             &AzToolsFramework::PropertyTypeRegistrationMessages::RegisterPropertyType,
-            aznew PropertyFilePathStringHandler());
+            aznew PropertyStringFilePathHandler());
         AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
             &AzToolsFramework::PropertyTypeRegistrationMessages::RegisterPropertyType,
-            aznew PropertyMultiLineStringHandler());
+            aznew PropertyMultilineStringDialogHandler());
         AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
             &AzToolsFramework::PropertyTypeRegistrationMessages::RegisterPropertyType,
-            aznew PropertyMultiSelectSplitStringHandler());
+            aznew PropertyMultiStringSelectDelimitedHandler());
         AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
             &AzToolsFramework::PropertyTypeRegistrationMessages::RegisterPropertyType,
-            aznew PropertyMultiSelectStringVectorHandler());
+            aznew PropertyMultiStringSelectVectorHandler());
+        AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &AzToolsFramework::PropertyTypeRegistrationMessages::RegisterPropertyType,
+            aznew PropertyMultiStringSelectSetHandler());
     }
 } // namespace AtomToolsFramework
 

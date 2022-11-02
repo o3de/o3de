@@ -148,7 +148,7 @@ namespace GraphModel
 
         //! Returns the number of extendable slots for a given SlotName.
         //! Will return -1 if the specified slot is not extendable.
-        int GetExtendableSlotCount(const SlotName& name);
+        int GetExtendableSlotCount(const SlotName& name) const;
 
         //! Delete the specified slot, which is only allowed on extendable slots.
         //! This method does nothing if the slot is not extendable.
