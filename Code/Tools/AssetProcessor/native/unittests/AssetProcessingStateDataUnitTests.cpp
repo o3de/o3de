@@ -5,6 +5,7 @@
 * SPDX-License-Identifier: Apache-2.0 OR MIT
 *
 */
+#include <native/tests/AssetProcessorTest.h>
 
 #include <native/unittests/AssetProcessorUnitTests.h>
 #include <native/unittests/UnitTestRunner.h> // for the assert absorber.
@@ -495,6 +496,9 @@ namespace AssetProcessor
         scanFolder = ScanFolderDatabaseEntry("c:/O3DE/dev", "dev", "devkey3");
         EXPECT_TRUE(m_connection.SetScanFolder(scanFolder));
 
+        auto& config = m_appManager->m_platformConfig;
+        config->AddScanFolder(AssetProcessor::ScanFolderInfo{scanFolder.m_scanFolder.c_str(), scanFolder.m_displayName.c_str(), scanFolder.m_portableKey.c_str(), false, true, {} , 0, scanFolder.m_scanFolderID});
+
         //Add some sources
         source = SourceDatabaseEntry(scanFolder.m_scanFolderID, "SomeSource1.tif", validSourceGuid1, "");
         EXPECT_TRUE(m_connection.SetSource(source));
@@ -597,7 +601,7 @@ namespace AssetProcessor
         EXPECT_FALSE(m_connection.GetJobs(jobs));
         EXPECT_FALSE(m_connection.GetJobByJobID(3443, job));
         EXPECT_FALSE(m_connection.GetJobsBySourceID(3234, jobs));
-        EXPECT_FALSE(m_connection.GetJobsBySourceName("none", jobs));
+        EXPECT_FALSE(m_connection.GetJobsBySourceName(AssetProcessor::SourceAssetReference("c:/O3DE/dev/none"), jobs));
 
         //trying to add a job without a valid source pk should fail:
         {
@@ -668,7 +672,7 @@ namespace AssetProcessor
 
         //try retrieving jobs by source name
         jobs.clear();
-        EXPECT_TRUE(m_connection.GetJobsBySourceName(source.m_sourceName.c_str(), jobs));
+        EXPECT_TRUE(m_connection.GetJobsBySourceName(AssetProcessor::SourceAssetReference(source.m_scanFolderPK, source.m_sourceName.c_str()), jobs));
         EXPECT_EQ(jobs.size(), 1);
         EXPECT_TRUE(JobsContainJobID(jobs, job.m_jobID));
         EXPECT_TRUE(JobsContainJobKey(jobs, job.m_jobKey.c_str()));

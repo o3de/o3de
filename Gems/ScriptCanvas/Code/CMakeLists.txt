@@ -260,10 +260,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 scriptcanvasgem_editor_tests_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
-                    .
-                    Include
-                    Include/ScriptCanvas
-                    Source
+                    Builder
+                    Editor
             BUILD_DEPENDENCIES
                 PRIVATE
                     AZ::AzTest
