@@ -8,16 +8,11 @@
         "title": "clamp",
         "inputSlots": [
             {
-                "name": "inValue1",
-                "displayName": "Value1",
-                "description": "Value1",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "name": "inValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float4",
                 "defaultValue": {
                     "$type": "Vector4",
                     "Value": [
@@ -34,16 +29,11 @@
                 }
             },
             {
-                "name": "inValue2",
-                "displayName": "Value2",
-                "description": "Value2",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "name": "inMin",
+                "displayName": "Min",
+                "description": "Min",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float4",
                 "defaultValue": {
                     "$type": "Vector4",
                     "Value": [
@@ -60,16 +50,11 @@
                 }
             },
             {
-                "name": "inValue3",
-                "displayName": "Value3",
-                "description": "Value3",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "name": "inMax",
+                "displayName": "Max",
+                "description": "Max",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float4",
                 "defaultValue": {
                     "$type": "Vector4",
                     "Value": [
@@ -91,21 +76,11 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "float4"
-                ],
-                "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = clamp(NODEID_inValue1, NODEID_inValue2, NODEID_inValue3);"
+                        "SLOTTYPE NODEID_SLOTNAME = clamp(NODEID_inValue, NODEID_inMin, NODEID_inMax);"
                     ]
                 }
             }

@@ -851,12 +851,6 @@ namespace UnitTest
         EXPECT_THAT(resultValues, ::testing::ElementsAreArray(expectedValues));
     }
 
-    TEST_F(RangesViewTestFixture, IotaView_WithReverseView_CanGenerateDecrementingValues)
-    {
-        constexpr AZStd::array expectedValues{ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
-        EXPECT_THAT(AZStd::vector(AZStd::from_range, AZStd::views::iota(0, 10) | AZStd::views::reverse), ::testing::ElementsAreArray(expectedValues));
-    }
-
     TEST_F(RangesViewTestFixture, IotaView_WithZipView_CanGenerateIndexForEveryElementOfOtherView)
     {
         const AZStd::map expectedValues{ AZStd::pair{0, 'H'}, {1, 'e'}, { 2, 'l'}, { 3, 'l'}, {4, 'o'} };

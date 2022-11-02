@@ -152,10 +152,7 @@ namespace AZ
 
                 AZStd::sort(m_reflectionProbes.begin(), m_reflectionProbes.end(), sortFn);
                 m_probeSortRequired = false;
-
-                // notify the MeshFeatureProcessor that the reflection probes changed
-                MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
-                meshFeatureProcessor->UpdateMeshReflectionProbes();
+                m_meshFeatureProcessorUpdateRequired = true;
             }
 
             // call Simulate on all reflection probes
@@ -176,6 +173,17 @@ namespace AZ
                 AZ_Assert(reflectionProbe.use_count() > 1, "ReflectionProbe found with no corresponding owner, ensure that RemoveProbe() is called before releasing probe handles");
 
                 reflectionProbe->OnRenderEnd();
+            }
+
+            // notify the MeshFeatureProcessor if there were changes to the ReflectionProbes
+            // Note: This is done in OnRenderEnd to avoid a race between the two feature processors in Simulate, and any changes
+            // will be applied on the next frame by the MeshFeatureProcessor.
+            if (m_meshFeatureProcessorUpdateRequired)
+            {
+                MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
+                meshFeatureProcessor->UpdateMeshReflectionProbes();
+
+                m_meshFeatureProcessorUpdateRequired = false;
             }
         }
 
@@ -211,6 +219,8 @@ namespace AZ
 
             m_reflectionProbes.erase(itEntry);
             m_reflectionProbeMap.erase(handle);
+
+            m_meshFeatureProcessorUpdateRequired = true;
         }
 
         void ReflectionProbeFeatureProcessor::SetOuterExtents(const ReflectionProbeHandle& handle, const Vector3& outerExtents)
@@ -310,9 +320,7 @@ namespace AZ
 
             m_reflectionProbeMap[handle]->SetCubeMapImage(cubeMapImage, relativePath);
 
-            // notify the MeshFeatureProcessor that the reflection probe changed
-            MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
-            meshFeatureProcessor->UpdateMeshReflectionProbes();
+            m_meshFeatureProcessorUpdateRequired = true;
         }
 
         Data::Instance<RPI::Image> ReflectionProbeFeatureProcessor::GetCubeMap(const ReflectionProbeHandle& handle) const

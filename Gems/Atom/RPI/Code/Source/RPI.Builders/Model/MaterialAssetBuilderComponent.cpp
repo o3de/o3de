@@ -87,7 +87,7 @@ namespace AZ
                 materialTypeSource.m_sourceFileDependencyPath = materialTypePath;
 
                 AssetBuilderSDK::JobDependency jobDependency;
-                jobDependency.m_jobKey = "Material Type Builder";
+                jobDependency.m_jobKey = "Material Type Builder (Final Stage)";
                 jobDependency.m_sourceFile = materialTypeSource;
                 jobDependency.m_platformIdentifier = platformIdentifier;
                 jobDependency.m_productSubIds.push_back(0);

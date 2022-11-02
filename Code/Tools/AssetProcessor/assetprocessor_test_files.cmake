@@ -69,6 +69,7 @@ set(FILES
     native/tests/BuilderManagerTests.cpp
     native/tests/BuilderManagerTests.h
     native/tests/MockAssetDatabaseRequestsHandler.h
+    native/tests/SourceAssetReferenceTests.cpp
     native/unittests/AssetCacheServerUnitTests.cpp
     native/unittests/AssetProcessingStateDataUnitTests.cpp
     native/unittests/AssetProcessorUnitTests.h
