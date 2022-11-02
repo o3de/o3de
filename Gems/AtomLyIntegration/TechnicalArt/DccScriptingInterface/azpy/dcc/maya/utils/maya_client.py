@@ -11,12 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-# -- Standard Python modules --
-import config
-import socket
-import time
 import logging
-
 from azpy.shared.client_base import ClientBase
 
 
@@ -25,8 +20,6 @@ _LOGGER = logging.getLogger(_MODULENAME)
 
 
 class MayaClient(ClientBase):
-    PORT = 17337
-    BUFFER_SIZE = 4096
 
     def echo(self, text):
         cmd = {
@@ -52,9 +45,11 @@ class MayaClient(ClientBase):
         else:
             return None
 
-    def sleep(self):
+    def run_script(self, target_path, script_arguments=None):
         cmd = {
-            'cmd': 'sleep'
+            'cmd':   'run_script',
+            'path': target_path,
+            'arguments': script_arguments
         }
 
         reply = self.send(cmd)
@@ -65,13 +60,18 @@ class MayaClient(ClientBase):
 
 
 if __name__ == '__main__':
-    client = MayaClient(timeout=10)
+    client = MayaClient(17344, timeout=10)
     if client.connect():
         _LOGGER.info('Connected successfully')
-        _LOGGER.info(client.ping())
-        _LOGGER.info(client.echo('Hello World!'))
-        _LOGGER.info(client.set_title('Maya Server New'))
-        _LOGGER.info(client.sleep())
+        script_path = 'E:/Depot/o3de-engine/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/azpy/dcc/maya/' \
+                      'utils/maya_scene_audit.py'
+        arguments = {
+            'class': 'MayaSceneAuditor',
+            'target_application': 'maya',
+            'target_files': 'current',
+            'operation': 'audit'
+        }
+        client.run_script(script_path, arguments)
 
         if client.disconnect():
             _LOGGER.info('Disconnected successfully')

@@ -33,14 +33,15 @@ class Worker(QRunnable):
 
     @Slot()
     def run(self):
-        timer = QtCore.QDeadlineTimer.ForeverConstant
-        if self.dcc_app == 'Maya':
-            from azpy.dcc.maya.utils import maya_server
-            from azpy.dcc.maya.utils import maya_client
-            maya_server.launch()
-
-        while not self.stopped and not timer.hasExpired():
-            self.msleep(1000)
+        pass
+        # timer = QtCore.QDeadlineTimer.ForeverConstant
+        # if self.dcc_app == 'Maya':
+        #     from azpy.dcc.maya.utils import maya_server
+        #     from azpy.dcc.maya.utils import maya_client
+        #     maya_server.launch()
+        #
+        # while not self.stopped and not timer.hasExpired():
+        #     self.msleep(1000)
 
     def stop(self):
         self.stopped = True
@@ -111,10 +112,10 @@ class QtProcess(QtCore.QObject):
         return env
 
     def handle_stderr(self):
-        # pass
+        pass
         # Keep this disabled unless you need to register all events while debugging
-        data = str(self.p.readAllStandardError(), 'utf-8')
-        _LOGGER.info(f'STD_ERROR_FIRED: {data}')
+        # data = str(self.p.readAllStandardError(), 'utf-8')
+        # _LOGGER.info(f'STD_ERROR_FIRED: {data}')
 
     def handle_stdout(self):
         """
@@ -180,8 +181,7 @@ class QtProcess(QtCore.QObject):
 
         try:
             if detached:
-                self.p.start()
-                self.p.waitForFinished(-1)
+                self.p.startDetached()
             else:
                 self.p.start()
                 self.p.waitForFinished(-1)
@@ -193,7 +193,6 @@ class QtProcess(QtCore.QObject):
         _LOGGER.info(f'Starting DCC Server [{dcc_app}]...')
         worker = Worker(dcc_app)
         self.threadpool.start(worker)
-
 
     @Slot(dict)
     def get_process_output(self):

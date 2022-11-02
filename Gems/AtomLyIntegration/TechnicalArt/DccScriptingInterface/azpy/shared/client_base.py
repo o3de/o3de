@@ -24,17 +24,22 @@ _LOGGER = logging.getLogger(_MODULENAME)
 
 
 class ClientBase(object):
-    PORT = 17344
-    HEADER_SIZE = 10
-
-    def __init__(self, timeout=2):
+    def __init__(self, port=17344, timeout=2):
         self.timeout = timeout
+        self.header_size = 10
+        self.buffer_size = 4096
         self.client_socket = None
-        self.port = self.__class__.PORT
+        self.port = port
+        self.client = None
+        self.addr = None
+        self.discard_count = 0
 
     def connect(self, port=-1):
+        _LOGGER.info(f'Client connecting to port [{self.port}]')
+
         if port >= 0:
             self.port = port
+
         try:
             self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.client_socket.connect(('localhost', self.port))
@@ -54,12 +59,10 @@ class ClientBase(object):
 
     def send(self, cmd):
         json_cmd = json.dumps(cmd)
-        message = json_cmd
-        message = f'{len(message):<{self.HEADER_SIZE}}' + message
-        _LOGGER.info(f'Message: {message}')
         try:
-            _LOGGER.info(f'Encode: {message.encode()}')
-            self.client_socket.sendall(message.encode())
+            msg_str = f'{len(json_cmd):<{self.header_size}}{json_cmd}'
+            _LOGGER.info(f"Message: {msg_str.encode('ascii')}")
+            self.client_socket.sendall(msg_str.encode('ascii'))
         except Exception as e:
             _LOGGER.info(f'Send Exception [{type(e)}] ::: {e}')
             traceback.print_exc()
@@ -68,27 +71,25 @@ class ClientBase(object):
 
     def recv(self):
         total_data = []
-        data = ''
         reply_length = 0
-        bytes_remaining = ClientBase.HEADER_SIZE
+        bytes_remaining = self.header_size
 
         start_time = time.time()
         while time.time() - start_time < self.timeout:
             try:
                 data = self.client_socket.recv(bytes_remaining)
-                _LOGGER.info(f'RECV DATA: {data.decode()}')
             except Exception:
                 time.sleep(0.01)
                 continue
 
             if data:
                 total_data.append(data)
+                _LOGGER.info(f'Data: {data}')
 
                 bytes_remaining -= len(data)
                 if bytes_remaining <= 0:
                     for i in range(len(total_data)):
                         total_data[i] = total_data[i].decode()
-                        _LOGGER.info(f'---> {total_data[i]}')
 
                     if reply_length == 0:
                         header = ''.join(total_data)
@@ -96,8 +97,13 @@ class ClientBase(object):
                         bytes_remaining = reply_length
                         total_data = []
                     else:
+                        if self.discard_count > 0:
+                            self.discard_count -= 1
+                            return self.recv()
                         reply_json = ''.join(total_data)
                         return json.loads(reply_json)
+        self.discard_count += 1
+
         raise RuntimeError('Timeout waiting for response.')
 
     def ping(self):
@@ -110,6 +116,7 @@ class ClientBase(object):
 
     @staticmethod
     def is_valid_reply(reply):
+        _LOGGER.info(f'Is Valid Reply: {reply}')
         if not reply:
             _LOGGER.info('[ERROR] Invalid Reply')
             return False
@@ -122,16 +129,13 @@ class ClientBase(object):
 
 if __name__ == '__main__':
     _LOGGER.info('Socket Communication- ClientBase started...')
-    client = ClientBase(timeout=10)
-    if client.connect():
-        _LOGGER.info('Connected successfully')
-        _LOGGER.info(client.ping())
-        _LOGGER.info(client.echo('Hello World!'))
-        _LOGGER.info(client.set_title('New Window Title'))
-        _LOGGER.info(client.sleep())
-
-        if client.disconnect():
-            _LOGGER.info('Disconnected successfully')
-    else:
-        _LOGGER.info('Failed to connect')
+    # client = ClientBase(timeout=10)
+    # if client.connect():
+    #     _LOGGER.info('Connected successfully')
+    #     _LOGGER.info(client.ping())
+    #
+    #     if client.disconnect():
+    #         _LOGGER.info('Disconnected successfully')
+    # else:
+    #     _LOGGER.info('Failed to connect')
 

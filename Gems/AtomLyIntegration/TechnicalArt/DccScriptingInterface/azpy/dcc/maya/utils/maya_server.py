@@ -28,7 +28,7 @@
 #
 # @section Maya Server Description
 # The Maya Server can be launched alongside launching a bootstrapped Maya UI session (as opposed to a Maya Standalone
-# session to allow commands to be sent directly into Maya. The most likely use would be to launch a scene file and
+# session to allow commands to be sent directly into Maya). The most likely use would be to launch a scene file and
 # then run one or more utility scripts on these files.
 #
 # In order for Maya communication to be possible, you must add
@@ -52,40 +52,55 @@
 # @section Launcher Notes
 # - Comments are Doxygen compatible
 
-# import config
-import sys
-import time
-import logging as _logging
 
-from PySide2 import QtWidgets
+import sys
+import logging as _logging
+import importlib.util
+from pathlib import Path
+from importlib import import_module
+from PySide2 import QtWidgets, QtCore
+from PySide2.QtCore import Signal, Slot
 from azpy.shared.server_base import ServerBase
+from shiboken2 import wrapInstance
+from maya import OpenMayaUI as omui
+import os
 
 
 _MODULENAME = 'azpy.dcc.maya.utils.maya_server'
 _LOGGER = _logging.getLogger(_MODULENAME)
 
 
+mayaMainWindowPtr = omui.MQtUtil.mainWindow()
+mayaMainWindow = wrapInstance(int(mayaMainWindowPtr), QtWidgets.QWidget)
+
+
 class MayaServer(ServerBase):
-    PORT = 17337
+    def __init__(self):
+        super(MayaServer, self).__init__()
 
-    def __init__(self, parent_window):
-        super(MayaServer, self).__init__(parent_window)
-
-        self.window = parent_window
+        self.setParent(mayaMainWindow)
+        self.setWindowFlags(QtCore.Qt.Window)
+        self.setObjectName('MayaServer')
+        self.setWindowTitle('Maya Server')
+        self.setGeometry(50, 50, 240, 150)
+        self.container = QtWidgets.QVBoxLayout(self)
+        self.window = QtWidgets.QPlainTextEdit()
+        self.container.addWidget(self.window)
+        self.cls = None
+        self.show()
 
     def process_cmd(self, cmd, data, reply):
         """! Extends command capabilities for DCC applications. The run script command is likely the most useful
         of these commands beyond testing and verifying connections. Any commands that are unrecognized return errors
         in the reply
         """
+        _LOGGER.info(f'Process command FIRED: cmd:: {cmd}   data:: {data}   reply:: {reply}')
         if cmd == 'echo':
             self.echo(data, reply)
         elif cmd == 'run_script':
             self.run_script(data, reply)
         elif cmd == 'set_title':
             self.set_title(data, reply)
-        elif cmd == 'sleep':
-            self.sleep(data, reply)
         else:
             super(MayaServer, self).process_cmd(cmd, data, reply)
 
@@ -95,39 +110,54 @@ class MayaServer(ServerBase):
         reply['success'] = True
 
     def run_script(self, data, reply):
-        """! Fires commands and/or python scripts to open scenes """
-        reply['result'] = data['text']
+        """! Fire commands and/or python scripts to open scenes """
+        _LOGGER.info(f'Run Script DATA: {data}')
+        target_module = self.get_module_path(Path(data['path']))
+        module_name = f"{Path(data['path']).parts[-2]}.{Path(data['path']).stem}"
+        processing_data = None
+
+        # Import module if it hasn't been done already
+        if target_module not in sys.modules:
+            self.handle_script_configuration(module_name, data)
+
+        if 'class' in data['arguments']:
+            target_class = getattr(import_module(module_name), data['arguments']['class'])
+            cls = target_class(**data['arguments'])
+            processing_data = cls.get_script_data()
+        else:
+            target_module.run(data['arguments'])
+            processing_data = data['path']
+
+        reply['result'] = processing_data
         reply['success'] = True
+
+    def handle_script_configuration(self, module_name, data):
+        spec = importlib.util.spec_from_file_location(module_name, Path(data['path']).as_posix())
+        script = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = script
+        spec.loader.exec_module(script)
 
     def set_title(self, data, reply):
         """! Tests QT window modifications """
-        self.window.setWindowTitle(data['title'])
+        self.setWindowTitle(data['title'])
         reply['result'] = True
         reply['success'] = True
 
-    def sleep(self, data, reply):
-        """! Tests communication channel """
-        for i in range(6):
-            _LOGGER.info(f'Sleeping: {i}')
-            time.sleep(1)
+    def get_module_path(self, script_path):
+        path_list = list(script_path.parts)
+        start_index = path_list.index('DccScriptingInterface')
+        if start_index != -1:
+            _LOGGER.info(type(path_list))
+            path_list[-1] = script_path.stem
+            return '.'.join(path_list[start_index+1:])
+        return None
 
-        reply['result'] = True
-        reply['success'] = True
+    @Slot(object)
+    def return_scene_data(self, data):
+        _LOGGER.info(f'%%%%%% Return Scene Data Slot Fired %%%%%%\n{data}')
 
 
 def launch():
-    _LOGGER.info('MayaServer firing')
-    if not QtWidgets.QApplication.instance():
-        app = QtWidgets.QApplication(sys.argv)
-    else:
-        app = QtWidgets.QApplication.instance()
-
-    window = QtWidgets.QDialog()
-    window.setWindowTitle('Maya Server')
-    window.setFixedSize(240, 150)
-
-    QtWidgets.QPlainTextEdit(window)
-    MayaServer(window)
-    window.show()
-    app.exec_()
+    _LOGGER.info('Starting Maya Communication Server...')
+    MayaServer()
 

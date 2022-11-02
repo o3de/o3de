@@ -32,12 +32,16 @@ class Launcher(QtWidgets.QMainWindow):
         self.content = ContentContainer(self.model)
         self.setCentralWidget(self.content)
         self.status_bar = QtWidgets.QStatusBar()
-        self.status_bar.setVisible(False)
-        self.status_bar.setStyleSheet('background-color: rgb(35, 35, 35)')
+        self.status_bar.setVisible(True)
+        self.status_bar.setStyleSheet('QStatusBar::QSizeGrip {color:white;}')
         self.setStatusBar(self.status_bar)
         self.load_bar = QtWidgets.QProgressBar()
         self.load_bar.setFixedSize(200, 20)
+        self.load_bar.setVisible(False)
         self.status_bar.addPermanentWidget(self.load_bar)
+        self.status_label = QtWidgets.QLabel()
+        self.status_bar.setStyleSheet('color:rgb(0, 255, 0);')
+        self.status_bar.addPermanentWidget(self.status_label)
         self.status_bar.showMessage('Ready.')
 
 

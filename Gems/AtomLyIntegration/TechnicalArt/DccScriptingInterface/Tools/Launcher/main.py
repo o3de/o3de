@@ -65,6 +65,8 @@ class ContentContainer(QtWidgets.QWidget):
         self.main_layout.addWidget(self.navigation)
         self.sections_layout = QtWidgets.QStackedLayout()
         self.main_layout.addLayout(self.sections_layout)
+        self.main_layout.addSpacing(-10)
+        self.main_layout.addLayout(self.get_separator_bar())
         self.build()
 
     def build(self):
@@ -84,6 +86,16 @@ class ContentContainer(QtWidgets.QWidget):
 
         # Change this back to splash once you are done testing
         # self.change_section('tools')
+
+    def get_separator_bar(self):
+        self.separator_layout = QtWidgets.QHBoxLayout()
+        self.separator_layout.setContentsMargins(0, 2, 0, 2)
+        self.line = QtWidgets.QFrame()
+        self.line.setStyleSheet('color: rgb(50, 50, 50);')
+        self.line.setFrameShape(QtWidgets.QFrame.HLine)
+        self.line.setLineWidth(1)
+        self.separator_layout.addWidget(self.line)
+        return self.separator_layout
 
     @Slot(str)
     def change_section(self, target_section: str):

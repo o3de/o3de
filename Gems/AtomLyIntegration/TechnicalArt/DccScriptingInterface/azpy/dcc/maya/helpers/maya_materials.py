@@ -27,9 +27,14 @@ import os
 import logging as _logging
 from pathlib import Path
 import maya.cmds as mc
-from azpy.dcc.maya.utils import pycharm_debugger
+# from azpy.dcc.maya.utils import pycharm_debugger
 from azpy.dcc.maya.helpers import convert_arnold_material as arnold
 from azpy.dcc.maya.helpers import convert_stingray_material as stingray
+from azpy.dcc.maya.helpers import convert_lambert_material as lambert
+from azpy.dcc.maya.helpers import convert_blinn_material as blinn
+from azpy.dcc.maya.helpers import convert_phong_material as phong
+from azpy.dcc.maya.helpers import convert_standardSurface_material as standardSurface
+from azpy.dcc.maya.helpers import maya_meshes
 
 
 _LOGGER = _logging.getLogger('azpy.dcc.maya.utils.maya_materials')
@@ -137,6 +142,26 @@ def get_materials_in_scene():
     return material_list
 
 
+def get_file_texture_information(material_list):
+    material_info = {}
+    for material in material_list:
+        material_info[material] = {}
+        connections = mc.listConnections(material, c=1, d=0)
+
+        for index, connection in enumerate(connections):
+            if index % 2 == 0:
+                temp_array = {connection: {}}
+                file_connection = mc.listConnections(connection, type='file')
+                connection = connection if file_connection else connections[index + 1]
+                file_connection = mc.listConnections(connection, type='file')
+                temp_array[list(temp_array.keys())[0]].update({'file_node': file_connection[0]})
+                material_info[material].update(temp_array)
+            else:
+                if not connection.startswith('file'):
+                    material_info[material][connections[index - 1]]['embedded_node'] = connection
+    return material_info
+
+
 def get_material_assignments():
     """! Gathers all materials in a scene and which mesh they are assigned to.
 
@@ -167,6 +192,18 @@ def get_material_type(target_material):
 def get_current_scene():
     current_scene = mc.file(q=True, sceneName=True)
     return Path(current_scene)
+
+
+def get_material_info(target_meshes):
+    supported_materials = ['lambert', 'blinn', 'phong', 'standardSurface', 'StingrayPBS', 'aiStandardSurface']
+    material_info = {}
+    for mesh in target_meshes:
+        file_texture_info = get_file_texture_information(get_materials(mesh))
+        for material_name, attr_values in file_texture_info.items():
+            material_type = mc.nodeType(material_name)
+            if material_type in supported_materials:
+                material_info[mesh] = {'material_type': material_type, 'file_texture_info': attr_values}
+    return material_info
 
 
 def get_scene_material_information():
@@ -268,23 +305,26 @@ def get_material(material_name: str) -> list:
         _LOGGER.info('Shader creation failed: {}'.format(e))
     return [sha, sg]
 
-
-def get_material_info(target_material: str):
-    mc.select(target_material, r=True)
-    material_type = get_material_type(mc.ls(sl=True, long=True) or [])
-    if material_type == 'aiStandardSurface':
-        return arnold.get_material_info(target_material)
-    elif material_type == 'StingrayPBS':
-        return stingray.get_material_info(target_material)
+#
+# def get_material_type(target_material, material_type=None):
+#     mc.select(target_material, r=True)
+#     material_type = get_material_type(mc.ls(sl=True, long=True) or []) if not material_type else material_type
+#     if material_type == 'aiStandardSurface':
+#         return arnold.get_material_info(target_material)
+#     elif material_type == 'StingrayPBS':
+#         return stingray.get_material_info(target_material)
+#     elif material_type == 'lambert':
+#         return lambert.get_material_info(target_material)
+#     elif material_type == 'blinn':
+#         return blinn.get_material_info(target_material)
+#     elif material_type == 'phong':
+#         return phong.get_material_info(target_material)
+#     elif material_type == 'standardSurface':
+#         return standardSurface.get_material_info(target_material)
 
 
 def get_arnold_material_info(material_name: str):
     _LOGGER.info(f'Getting arnold material information')
-
-
-def get_scene_objects():
-    mesh_objects = mc.ls(type='mesh')
-    return mesh_objects
 
 
 def get_selected_objects():

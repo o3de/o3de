@@ -31,7 +31,6 @@
 # Houdini, 3dsMax)
 
 
-import config
 from PySide2 import QtCore, QtNetwork, QtWidgets
 import logging
 import json
@@ -42,21 +41,19 @@ _MODULENAME = 'azpy.shared.server_base'
 _LOGGER = logging.getLogger(_MODULENAME)
 
 
-class ServerBase(QtCore.QObject):
-    PORT = 17344
+class ServerBase(QtWidgets.QWidget):
     HEADER_SIZE = 10
 
-    def __init__(self, parent):
-        super(ServerBase, self).__init__(parent)
+    def __init__(self):
+        super(ServerBase, self).__init__()
         self.server = None
         self.socket = None
-        self.port = self.__class__.PORT
+        self.port = 17344
         self.initialize()
 
     def initialize(self):
         self.server = QtNetwork.QTcpServer(self)
         self.server.newConnection.connect(self.establish_connection)
-        _LOGGER.info(f'Port: {self.port}')
 
         if self.listen():
             _LOGGER.info(f'Server listening on port: {self.port}')
@@ -71,7 +68,6 @@ class ServerBase(QtCore.QObject):
 
     def establish_connection(self):
         self.socket = self.server.nextPendingConnection()
-        _LOGGER.info(f'SocketState: {self.socket}')
         if self.socket.state() == QtNetwork.QTcpSocket.ConnectedState:
             self.socket.disconnected.connect(self.on_disconnected)
             self.socket.readyRead.connect(self.read)
@@ -114,7 +110,6 @@ class ServerBase(QtCore.QObject):
 
     def write(self, reply):
         json_reply = json.dumps(reply)
-        _LOGGER.info(f'JSON_REPLY:::::::::: {json_reply}')
         if self.socket.state() == QtNetwork.QTcpSocket.ConnectedState:
             header = '{}'.format(len(json_reply.encode())).zfill(ServerBase.HEADER_SIZE)
             data = QtCore.QByteArray(f'{header}{json_reply}'.encode())
@@ -132,6 +127,7 @@ class ServerBase(QtCore.QObject):
         self.write(reply)
 
     def process_data(self, data):
+        _LOGGER.info(f'++++++ PROCESS DATA: {data}')
         reply = {
             'success': False
         }

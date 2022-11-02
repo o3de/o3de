@@ -1,7 +1,6 @@
-import config
-from dynaconf import settings
 from PySide2 import QtWidgets, QtCore, QtGui
 from PySide2.QtCore import QObject
+from PySide2.QtCore import Signal, Slot
 import logging
 
 
@@ -13,18 +12,15 @@ class SceneAuditor(QObject):
 
     Defines the tool's main window, messaging and loading systems and adds content widget
     """
-    def __init__(self, target_application, target_files, operation='audit'):
+
+    def __init__(self, **kwargs):
         super(SceneAuditor, self).__init__()
 
-        self.target_application = target_application
-        self.target_files = target_files
-        self.operation = operation
         self.audit_data = {}
         self.animation_data = {}
         self.lighting_data = {}
         self.mesh_data = {}
         self.material_data = {}
-        self.animation_data = {}
         self.camera_data = {}
         self.audit_started = False
 
