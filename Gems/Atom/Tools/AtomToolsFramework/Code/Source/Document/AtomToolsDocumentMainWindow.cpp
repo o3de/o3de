@@ -260,7 +260,7 @@ namespace AtomToolsFramework
                     const QString text = QObject::tr("Close document failed because document was not saved: \n%1").arg(documentPath.c_str());
                     AZ_Error("AtomToolsDocumentMainWindow", false, "%s: %s", title.toUtf8().constData(), text.toUtf8().constData());
                     QMessageBox::critical(
-                        GetToolMainWindow(), title, QObject::tr("%1\nThese messages can be disabled from settings.").arg(text));
+                        GetToolMainWindow(), title, QObject::tr("%1").arg(text));
                     return false;
                 }
             }
