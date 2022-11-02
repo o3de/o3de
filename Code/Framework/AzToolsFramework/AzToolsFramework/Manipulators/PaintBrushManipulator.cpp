@@ -537,16 +537,16 @@ namespace AzToolsFramework
         const size_t kernelSize = 3;
 
         PaintBrushNotifications::SmoothFn smoothFn =
-            [kernelSize](float baseValue, AZStd::span<float> adjacentValues, float opacity) -> float
+            [kernelSize](float baseValue, AZStd::span<float> kernelValues, float opacity) -> float
         {
             const float gaussianMultipliers[] = { 1.0f, 2.0f, 1.0f, 2.0f, 4.0f, 2.0f, 1.0f, 2.0f, 1.0f };
 
-            AZ_Assert(adjacentValues.size() == (kernelSize * kernelSize), "Invalid number of points to smooth.");
+            AZ_Assert(kernelValues.size() == (kernelSize * kernelSize), "Invalid number of points to smooth.");
 
             float smoothedValue = 0.0f;
-            for (size_t index = 0; index < adjacentValues.size(); index++)
+            for (size_t index = 0; index < kernelValues.size(); index++)
             {
-                smoothedValue += (adjacentValues[index] * gaussianMultipliers[index]);
+                smoothedValue += (kernelValues[index] * gaussianMultipliers[index]);
             }
 
             return AZStd::clamp(AZStd::lerp(baseValue, smoothedValue / 16.0f, opacity), 0.0f, 1.0f);

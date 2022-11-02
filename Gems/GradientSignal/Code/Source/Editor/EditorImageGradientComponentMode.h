@@ -41,6 +41,10 @@ namespace GradientSignal
         void OnSmooth(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, size_t kernelSize, SmoothFn& smoothFn) override;
         AZ::Color OnGetColor(const AZ::Vector3& brushCenter) override;
 
+        void OnPaintSmoothInternal(
+            const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn,
+            AZStd::function<float(const AZ::Vector3& worldPosition, float gradientValue, float opacity)> combineFn);
+
         void BeginUndoBatch();
         void EndUndoBatch();
 
