@@ -33,7 +33,7 @@ cd C:\path\to\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
     3. Run the DCCsi `foundation.py` script with a target to the `mayapy.exe` of the vision you want to configure:
 
 ```batch
-.\python foundation.py -py=C:\Program Files\Autodesk\Maya2023\bin\mayapy.exe
+.\python foundation.py -py="C:\Program Files\Autodesk\Maya2023\bin\mayapy.exe""
 ```
 
 This will install a version of all of the package dependencies into a folder such as the following, where the DCCsi will add them as a site-package based on the DCC tools version of python.
