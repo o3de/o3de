@@ -109,6 +109,8 @@ set(FILES
     Source/MultiplayerStats.cpp
     Source/MultiplayerSystemComponent.cpp
     Source/MultiplayerSystemComponent.h
+    Source/MultiplayerStatSystemComponent.cpp
+    Source/MultiplayerStatSystemComponent.h
     Source/NetworkEntity/EntityReplication/EntityReplicationManager.cpp
     Source/NetworkEntity/EntityReplication/EntityReplicator.cpp
     Source/NetworkEntity/EntityReplication/PropertyPublisher.cpp

@@ -89,7 +89,7 @@ namespace AZ
             // Add the current view which can potentially be the editor view
             auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
             const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-            auto currentView = atomViewportRequests->GetCurrentView(contextName);
+            auto currentView = atomViewportRequests->GetCurrentViewGroup(contextName)->GetView();
             if (IsEditorView(currentView))
             {
                 allSceneViews.insert(currentView.get());

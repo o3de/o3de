@@ -71,7 +71,7 @@ namespace AssetBundler
         };
 
     private:
-        AZ::Outcome<AzFramework::SeedInfo&, void> GetSeedInfo(const QModelIndex& index) const;
+        AZ::Outcome<AZStd::reference_wrapper<const AzFramework::SeedInfo>, void> GetSeedInfo(const QModelIndex& index) const;
 
         AZ::Outcome<AdditionalSeedInfoPtr, void> GetAdditionalSeedInfo(const QModelIndex& index) const;
 

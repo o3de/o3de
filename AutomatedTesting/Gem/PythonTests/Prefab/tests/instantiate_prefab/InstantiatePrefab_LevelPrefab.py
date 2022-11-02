@@ -26,7 +26,7 @@ def InstantiatePrefab_LevelPrefab():
     prefab_test_utils.open_base_tests_level()
 
     # Find and instantiate an existing level.prefab
-    test_level_prefab_path = os.path.join("levels", "prefab", "QuitOnSuccessfulSpawn", "QuitOnSuccessfulSpawn.prefab")
+    test_level_prefab_path = os.path.join("Levels", "Prefab", "QuitOnSuccessfulSpawn", "QuitOnSuccessfulSpawn.prefab")
     test_level_prefab = Prefab.get_prefab(test_level_prefab_path)
     test_level_prefab_instance = test_level_prefab.instantiate()
     parent_entity = EditorEntity(test_level_prefab_instance.container_entity.get_parent_id())

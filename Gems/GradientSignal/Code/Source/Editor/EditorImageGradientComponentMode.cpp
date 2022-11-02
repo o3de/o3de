@@ -483,6 +483,13 @@ namespace GradientSignal
         // for easier and faster undo/redo operations.
         for (size_t index = 0; index < pixelIndices.size(); index++)
         {
+            // If we have an invalid pixel index, fill in a placeholder value into paintedValues and move on to the next pixel.
+            if ((pixelIndices[index].first < 0) || (pixelIndices[index].second < 0))
+            {
+                paintedValues.emplace_back(0.0f);
+                continue;
+            }
+
             auto [gradientValue, opacityValue] = m_paintStrokeData.m_strokeBuffer->GetOriginalPixelValueAndOpacity(pixelIndices[index]);
 
             // Add the new per-pixel opacity to the existing opacity in our stroke layer.
