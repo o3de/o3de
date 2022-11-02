@@ -11,35 +11,52 @@
                 "name": "inGroup",
                 "displayName": "Group",
                 "description": "Group",
-                "supportedDataTypes": [
-                    "string"
-                ],
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                },
                 "supportsEditingOnNode": false
             },
             {
                 "name": "inName",
                 "displayName": "Name",
                 "description": "Name",
-                "supportedDataTypes": [
-                    "string"
-                ]
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                }
             },
             {
                 "name": "inDescription",
                 "displayName": "Description",
                 "description": "Description",
-                "supportedDataTypes": [
-                    "string"
-                ],
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                },
                 "supportsEditingOnNode": false
             },
             {
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "defaultValue": {
+                    "$type": "Color",
+                    "Value": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                },
                 "settings": {
                     "materialInputs": [
                         "SLOTSTANDARDSRGMEMBER"
@@ -52,9 +69,8 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue;"
@@ -65,9 +81,8 @@
                 "name": "outR",
                 "displayName": "R",
                 "description": "R",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.r;"
@@ -78,9 +93,8 @@
                 "name": "outG",
                 "displayName": "G",
                 "description": "G",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.g;"
@@ -91,9 +105,8 @@
                 "name": "outB",
                 "displayName": "B",
                 "description": "B",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.b;"
@@ -104,9 +117,8 @@
                 "name": "outA",
                 "displayName": "A",
                 "description": "A",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.a;"

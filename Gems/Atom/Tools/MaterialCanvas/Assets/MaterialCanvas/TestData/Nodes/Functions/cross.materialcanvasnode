@@ -11,17 +11,11 @@
                 "name": "inValue1",
                 "displayName": "Value1",
                 "description": "Value1",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
+                "defaultDataType": "float3",
                 "defaultValue": {
-                    "$type": "Vector4",
+                    "$type": "Vector3",
                     "Value": [
-                        0.0,
                         0.0,
                         0.0,
                         0.0
@@ -37,17 +31,11 @@
                 "name": "inValue2",
                 "displayName": "Value2",
                 "description": "Value2",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
+                "defaultDataType": "float3",
                 "defaultValue": {
-                    "$type": "Vector4",
+                    "$type": "Vector3",
                     "Value": [
-                        0.0,
                         0.0,
                         0.0,
                         0.0
@@ -65,21 +53,11 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "float4"
-                ],
-                "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
+                "supportedDataTypeRegex": "float3",
+                "defaultDataType": "float3",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = cross(NODEID_inValue1, NODEID_inValue2);"
+                        "SLOTTYPE NODEID_SLOTNAME = cross((float3)NODEID_inValue1, (float3)NODEID_inValue2);"
                     ]
                 }
             }
