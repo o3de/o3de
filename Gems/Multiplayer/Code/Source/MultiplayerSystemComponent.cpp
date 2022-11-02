@@ -874,17 +874,10 @@ namespace Multiplayer
     }
 
     bool MultiplayerSystemComponent::HandleRequest(
-        [[maybe_unused]] IConnection* connection,
+        IConnection* connection,
         [[maybe_unused]] const IPacketHeader& packetHeader,
         MultiplayerPackets::SyncComponentMismatch& packet)
     {
-        const auto nameDictionary = AZ::Interface<AZ::NameDictionary>::Get();
-        if (nameDictionary == nullptr)
-        {
-            AZLOG_ERROR("MultiplayerSystemComponent::SyncComponentMismatch failed. Cannot access the NameDictionary so we won't be able to look up the multiplayer component names from their AZ::Name value.");
-            return true;
-        }
-
         // If this is the first packet containing component version data from this connection id, start a new vector for tracking the data
         if (!m_connectedAppsComponentVersions.contains(connection->GetConnectionId()))
         {
@@ -920,7 +913,7 @@ namespace Multiplayer
                     AZLOG_ERROR(
                         "Multiplayer component mismatch! %s has a different version hash. Please make sure both client and server have "
                         "matching multiplayer components.",
-                        nameDictionary->FindName(theirComponent.m_componentName.GetHash()).GetCStr());
+                        theirComponent.m_componentName.GetCStr());
                 }
             }
             else
@@ -952,8 +945,9 @@ namespace Multiplayer
 
             if (!theyHaveComponent)
             {
-                const char* componentName = nameDictionary->FindName(ourComponentName.GetHash()).GetCStr();
-                AZLOG_ERROR("Multiplayer component mismatch! We have a component named %s which the connected application is missing!", componentName);
+                AZLOG_ERROR(
+                    "Multiplayer component mismatch! We have a component named %s which the connected application is missing!",
+                    ourComponentName.GetCStr());
             }
         }
 

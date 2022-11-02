@@ -72,7 +72,6 @@ namespace Multiplayer
         AZ::HashValue64 GetMultiplayerComponentVersionHolisticHash() const;
 
         //! Gets the mapping of all the multiplayer components by AZ::Name and hash version value.
-        //! Note: AZ::Name is also just a hash, but the string values are stored and accessible via AZ::Interface<AZ::NameDictionary>
         //! @return a map of all the multiplayer components by name and hash version value
         const AZStd::unordered_map<AZ::Name, AZ::HashValue64>& GetMultiplayerComponentVersionHashes() const;
 
