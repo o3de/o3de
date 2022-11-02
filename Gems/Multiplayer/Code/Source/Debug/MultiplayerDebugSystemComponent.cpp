@@ -11,7 +11,6 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/StringFunc/StringFunc.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzNetworking/Framework/INetworkInterface.h>
@@ -134,13 +133,8 @@ namespace Multiplayer
                 if (auto console = AZ::Interface<AZ::IConsole>::Get())
                 {
                     const MultiplayerAgentType multiplayerAgentType = multiplayerInterface->GetAgentType();
-
-                    // Enable the host level selection menu if we're neither a host nor client, or if we are hosting, but haven't loaded a level yet.
-                    const bool isLevelLoaded = AzFramework::LevelSystemLifecycleInterface::Get()->IsLevelLoaded();
-                    const bool isHosting = multiplayerAgentType == MultiplayerAgentType::ClientServer || multiplayerAgentType == MultiplayerAgentType::DedicatedServer;
-                    const bool enableHostLevelSelection = multiplayerAgentType == MultiplayerAgentType::Uninitialized || (isHosting && !isLevelLoaded);
-
-                    if (ImGui::BeginMenu(HostLevelMenuTitle, enableHostLevelSelection))
+                    const bool enableHosting = multiplayerAgentType == MultiplayerAgentType::Uninitialized;                    
+                    if (ImGui::BeginMenu(HostLevelMenuTitle, enableHosting))
                     {
                         // Run through all the assets in the asset catalog and gather up the list of level assets
                         AZ::Data::AssetType levelAssetType = azrtti_typeid<AzFramework::Spawnable>();
@@ -195,15 +189,10 @@ namespace Multiplayer
                                 if (ImGui::MenuItem(levelMenuItem.c_str()))
                                 {
                                     AZ::TickBus::QueueFunction(
-                                        [console, multiplayerLevelFilePath, isHosting]()
+                                        [console, multiplayerLevelFilePath]()
                                         {
                                             auto loadLevelString = AZStd::string::format("LoadLevel %s", multiplayerLevelFilePath.c_str());
-
-                                            if (!isHosting)
-                                            {
-                                                console->PerformCommand("host");
-                                            }
-
+                                            console->PerformCommand("host");
                                             console->PerformCommand(loadLevelString.c_str());
                                         });
                                 }
@@ -218,8 +207,9 @@ namespace Multiplayer
                         ImGui::EndMenu();
                     }
                     
-                    // Disable the launch local client button if we're not hosting, or if even if we are hosting, but haven't loaded a level yet.
-                    if (!isHosting || !isLevelLoaded)
+                    // Disable the launch local client button if we're not hosting
+                    const bool isHost = multiplayerAgentType == MultiplayerAgentType::DedicatedServer || multiplayerAgentType == MultiplayerAgentType::ClientServer;
+                    if (!isHost)
                     {
                         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.6f);
                         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
@@ -230,7 +220,7 @@ namespace Multiplayer
                         console->PerformCommand("sv_launch_local_client");
                     }
 
-                    if (!isHosting || !isLevelLoaded)
+                    if (!isHost)
                     {
                         ImGui::PopItemFlag();
                         ImGui::PopStyleVar();
