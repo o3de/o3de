@@ -952,6 +952,8 @@ namespace Multiplayer
             }
         }
 
+        // Disconnect and clear out the list of components in case the user fixes up their end and tries to reconnect
+        theirMultiplayerComponents.clear();
         connection->Disconnect(DisconnectReason::VersionMismatch, TerminationEndpoint::Local);
         return true;
     }
