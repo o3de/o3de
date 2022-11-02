@@ -951,6 +951,7 @@ namespace Multiplayer
             }
         }
 
+        connection->Disconnect(DisconnectReason::VersionMismatch, TerminationEndpoint::Local);
         return true;
     }
 
