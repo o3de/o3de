@@ -22,9 +22,8 @@ namespace AzToolsFramework
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
-        //! Notifies listeners that the paintbrush color mode has changed.
-        //! @param newSettings The settings after the change
-        virtual void OnColorModeChanged([[maybe_unused]] const PaintBrushSettings& newSettings)
+        //! Notifies listeners that the set of visible paintbrush settings has changed.
+        virtual void OnVisiblePropertiesChanged()
         {
         }
 

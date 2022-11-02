@@ -67,7 +67,7 @@ namespace PaintBrush
             AzToolsFramework::PaintBrushSettingsNotificationBus::Handler::BusDisconnect();
         }
 
-        void PaintBrushSettingsWindow::OnColorModeChanged([[maybe_unused]] const AzToolsFramework::PaintBrushSettings& newSettings)
+        void PaintBrushSettingsWindow::OnVisiblePropertiesChanged()
         {
             m_propertyEditor->InvalidateAll();
         }

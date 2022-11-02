@@ -78,96 +78,153 @@ namespace AzToolsFramework
             {
                 editContext->Class<PaintBrushSettings>("Paint Brush", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &PaintBrushSettings::m_brushMode, "Brush Mode", "Brush functionality.")
+                        ->EnumAttribute(PaintBrushMode::Paintbrush, "Paintbrush")
+                        ->EnumAttribute(PaintBrushMode::Eyedropper, "Eyedropper")
+                        ->EnumAttribute(PaintBrushMode::Smooth, "Smooth")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::ComboBox, &PaintBrushSettings::m_brushMode, "Brush Mode", "Brush functionality.")
-                    ->EnumAttribute(PaintBrushMode::Paintbrush, "Paintbrush")
-                    ->EnumAttribute(PaintBrushMode::Eyedropper, "Eyedropper")
-                    ->EnumAttribute(PaintBrushMode::Smooth, "Smooth")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_size, "Size",
+                        AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_size, "Size",
                         "Size/diameter of the brush stamp in meters.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 1024.0f)
-                    ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.25f)
-                    ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 2)
-                    ->Attribute(AZ::Edit::Attributes::Suffix, " m")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 1024.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 0.25f)
+                        ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 2)
+                        ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetSizeVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &PaintBrushSettings::m_brushColor, "Color", "Color of the paint brush.")
-                    ->Attribute("ColorEditorConfiguration", &PaintBrushSettings::GetColorEditorConfig)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetColorVisibility)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnColorChanged)
+                        ->Attribute("ColorEditorConfiguration", &PaintBrushSettings::GetColorEditorConfig)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &PaintBrushSettings::GetColorReadOnly)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetColorVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnColorChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider,
                         &PaintBrushSettings::m_intensityPercent,
                         "Intensity",
                         "Intensity/color percent of the paint brush. 0% = black, 100% = white.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
-                    ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 1)
-                    ->Attribute(AZ::Edit::Attributes::Suffix, " %")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetIntensityVisibility)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnIntensityChanged)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
+                        ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 1)
+                        ->Attribute(AZ::Edit::Attributes::Suffix, " %")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &PaintBrushSettings::GetIntensityReadOnly)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetIntensityVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnIntensityChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider,
                         &PaintBrushSettings::m_opacityPercent,
                         "Opacity",
                         "Opacity percent of each paint brush stroke. 0% = transparent, 100% = opaque.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
-                    ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 1)
-                    ->Attribute(AZ::Edit::Attributes::Suffix, " %")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnOpacityChanged)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
+                        ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 1)
+                        ->Attribute(AZ::Edit::Attributes::Suffix, " %")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &PaintBrushSettings::GetOpacityReadOnly)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetOpacityVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnOpacityChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider,
                         &PaintBrushSettings::m_hardnessPercent,
                         "Hardness",
                         "Falloff percent around the edges of each paint brush stamp. 0% = soft falloff, 100% = hard edges.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
-                    ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 1)
-                    ->Attribute(AZ::Edit::Attributes::Suffix, " %")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
+                        ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 1)
+                        ->Attribute(AZ::Edit::Attributes::Suffix, " %")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetHardnessVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_flowPercent, "Flow",
                         "The opacity percent of each paint brush stamp. 0% = transparent, 100% = opaque.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
-                    ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 1)
-                    ->Attribute(AZ::Edit::Attributes::Suffix, " %")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
+                        ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 1)
+                        ->Attribute(AZ::Edit::Attributes::Suffix, " %")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetFlowVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_distancePercent, "Distance",
                         "Brush distance to move between stamps in % of brush size. 1% = high overlap, 100% = non-overlapping stamps.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
-                    ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 300.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
-                    ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 1)
-                    ->Attribute(AZ::Edit::Attributes::Suffix, " %")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 300.0f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
+                        ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 1)
+                        ->Attribute(AZ::Edit::Attributes::Suffix, " %")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetDistanceVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox, &PaintBrushSettings::m_blendMode, "Blend Mode", "Blend mode of the brush stroke.")
-                    ->EnumAttribute(PaintBrushBlendMode::Normal, "Normal")
-                    ->EnumAttribute(PaintBrushBlendMode::Multiply, "Multiply")
-                    ->EnumAttribute(PaintBrushBlendMode::Screen, "Screen")
-                    ->EnumAttribute(PaintBrushBlendMode::Add, "Linear Dodge (Add)")
-                    ->EnumAttribute(PaintBrushBlendMode::Subtract, "Subtract")
-                    ->EnumAttribute(PaintBrushBlendMode::Darken, "Darken (Min)")
-                    ->EnumAttribute(PaintBrushBlendMode::Lighten, "Lighten (Max)")
-                    ->EnumAttribute(PaintBrushBlendMode::Average, "Average")
-                    ->EnumAttribute(PaintBrushBlendMode::Overlay, "Overlay")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
+                        ->EnumAttribute(PaintBrushBlendMode::Normal, "Normal")
+                        ->EnumAttribute(PaintBrushBlendMode::Multiply, "Multiply")
+                        ->EnumAttribute(PaintBrushBlendMode::Screen, "Screen")
+                        ->EnumAttribute(PaintBrushBlendMode::Add, "Linear Dodge (Add)")
+                        ->EnumAttribute(PaintBrushBlendMode::Subtract, "Subtract")
+                        ->EnumAttribute(PaintBrushBlendMode::Darken, "Darken (Min)")
+                        ->EnumAttribute(PaintBrushBlendMode::Lighten, "Lighten (Max)")
+                        ->EnumAttribute(PaintBrushBlendMode::Average, "Average")
+                        ->EnumAttribute(PaintBrushBlendMode::Overlay, "Overlay")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetBlendModeVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
                     ;
             }
         }
     }
+
+    // The following settings are visible but read-only when in the Eyedropper mode
+
+    bool PaintBrushSettings::GetColorReadOnly() const
+    {
+        return (m_brushMode == PaintBrushMode::Eyedropper);
+    }
+
+    bool PaintBrushSettings::GetIntensityReadOnly() const
+    {
+        return (m_brushMode == PaintBrushMode::Eyedropper);
+    }
+
+    bool PaintBrushSettings::GetOpacityReadOnly() const
+    {
+        return (m_brushMode == PaintBrushMode::Eyedropper);
+    }
+
+    // The following settings aren't visible in Eyedropper mode, but are available in Paint / Smooth modes
+
+    bool PaintBrushSettings::GetSizeVisibility() const
+    {
+        return (m_brushMode != PaintBrushMode::Eyedropper);
+    }
+
+    bool PaintBrushSettings::GetHardnessVisibility() const
+    {
+        return (m_brushMode != PaintBrushMode::Eyedropper);
+    }
+
+    bool PaintBrushSettings::GetFlowVisibility() const
+    {
+        return (m_brushMode != PaintBrushMode::Eyedropper);
+    }
+
+    bool PaintBrushSettings::GetDistanceVisibility() const
+    {
+        return (m_brushMode != PaintBrushMode::Eyedropper);
+    }
+
+    // The following settings are only visible in Paint mode
+
+    bool PaintBrushSettings::GetBlendModeVisibility() const
+    {
+        return (m_brushMode == PaintBrushMode::Paintbrush);
+    }
+
+    // The color / intensity / opacity settings have their visibility controlled by the color mode, not the brush mode.
 
     bool PaintBrushSettings::GetColorVisibility() const
     {
@@ -179,16 +236,25 @@ namespace AzToolsFramework
         return (m_colorMode == PaintBrushColorMode::Greyscale);
     }
 
+    bool PaintBrushSettings::GetOpacityVisibility() const
+    {
+        // Opacity is always visible, regardless of brush mode or color mode.
+        return true;
+    }
+
+
     void PaintBrushSettings::SetBrushMode(PaintBrushMode brushMode)
     {
         m_brushMode = brushMode;
+        PaintBrushSettingsNotificationBus::Broadcast(&PaintBrushSettingsNotificationBus::Events::OnVisiblePropertiesChanged);
         OnSettingsChanged();
     }
 
     void PaintBrushSettings::SetColorMode(PaintBrushColorMode colorMode)
     {
         m_colorMode = colorMode;
-        PaintBrushSettingsNotificationBus::Broadcast(&PaintBrushSettingsNotificationBus::Events::OnColorModeChanged, *this);
+        PaintBrushSettingsNotificationBus::Broadcast(&PaintBrushSettingsNotificationBus::Events::OnVisiblePropertiesChanged);
+        OnSettingsChanged();
     }
 
     void PaintBrushSettings::SetBlendMode(PaintBrushBlendMode blendMode)
