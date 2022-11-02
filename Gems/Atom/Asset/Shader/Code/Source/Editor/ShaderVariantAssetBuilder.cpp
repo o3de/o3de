@@ -1187,7 +1187,7 @@ namespace AZ
                     }
                     else
                     {
-                        AZ_Warning(ShaderVariantAssetBuilderName, false, failMessage.c_str());
+                        AZ_Warning(ShaderVariantAssetBuilderName, false, "%s", failMessage.c_str());
                     }
                 }
                 else
