@@ -41,13 +41,13 @@ namespace AzToolsFramework
     } // namespace
 
     AZStd::shared_ptr<PaintBrushManipulator> PaintBrushManipulator::MakeShared(
-        const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair)
+        const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair, PaintBrushColorMode colorMode)
     {
-        return AZStd::shared_ptr<PaintBrushManipulator>(aznew PaintBrushManipulator(worldFromLocal, entityComponentIdPair));
+        return AZStd::shared_ptr<PaintBrushManipulator>(aznew PaintBrushManipulator(worldFromLocal, entityComponentIdPair, colorMode));
     }
 
     PaintBrushManipulator::PaintBrushManipulator(
-        const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair)
+        const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair, PaintBrushColorMode colorMode)
     {
         m_ownerEntityComponentId = entityComponentIdPair;
 
@@ -55,6 +55,9 @@ namespace AzToolsFramework
 
         // Make sure the Paint Brush Settings window is open
         AzToolsFramework::OpenViewPane(PaintBrush::s_paintBrushSettingsName);
+
+        // Set the paint brush settings to use the requested color mode.
+        PaintBrushSettingsRequestBus::Broadcast(&PaintBrushSettingsRequestBus::Events::SetBrushColorMode, colorMode);
 
         // Get the diameter from the global Paint Brush Settings.
         float diameter = 0.0f;
@@ -124,21 +127,14 @@ namespace AzToolsFramework
         {
             if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
             {
-                // Get the intensity and opacity to use for this brush stroke.
-                float intensityPercent = 0.0f;
-                float opacityPercent = 0.0f;
+                // Get the color, intensity and opacity to use for this brush stroke.
+                AZ::Color color = AZ::Color::CreateZero();
 
-                PaintBrushSettingsRequestBus::BroadcastResult(intensityPercent, &PaintBrushSettingsRequestBus::Events::GetIntensityPercent);
-                PaintBrushSettingsRequestBus::BroadcastResult(opacityPercent, &PaintBrushSettingsRequestBus::Events::GetOpacityPercent);
+                PaintBrushSettingsRequestBus::BroadcastResult(color, &PaintBrushSettingsRequestBus::Events::GetColor);
 
-                // Convert intensity and opacity to the 0-1 range.
-                const float intensity = AZStd::clamp(intensityPercent / 100.0f, 0.0f, 1.0f);
-                const float opacity = AZStd::clamp(opacityPercent / 100.0f, 0.0f, 1.0f);
-
-                // Notify that a paint stroke has begun, and provide the stroke intensity and opacity in the 0-1 range.
+                // Notify that a paint stroke has begun, and provide the paint color including opacity.
                 m_isPainting = true;
-                PaintBrushNotificationBus::Event(
-                    m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaintStrokeBegin, intensity, opacity);
+                PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaintStrokeBegin, color);
 
                 const bool isFirstPaintedPoint = true;
                 MovePaintBrush(
@@ -196,10 +192,8 @@ namespace AzToolsFramework
             PaintBrushSettingsRequestBus::BroadcastResult(currentSettings, &PaintBrushSettingsRequestBus::Events::GetSettings);
 
             // Early out if we're completely transparent, there's no distance between brush stamps, or the brush stamp size is 0.
-            if ((currentSettings.GetOpacityPercent() == 0.0f) ||
-                (currentSettings.GetFlowPercent() == 0.0f) ||
-                (currentSettings.GetDistancePercent() == 0.0f) ||
-                (currentSettings.GetSize() == 0.0f))
+            if ((currentSettings.GetColor().GetA() == 0.0f) || (currentSettings.GetFlowPercent() == 0.0f) ||
+                (currentSettings.GetDistancePercent() == 0.0f) || (currentSettings.GetSize() == 0.0f))
             {
                 return;
             }
@@ -449,22 +443,6 @@ namespace AzToolsFramework
         PaintBrushSettingsRequestBus::BroadcastResult(diameter, &PaintBrushSettingsRequestBus::Events::GetSize);
         diameter = AZStd::clamp(diameter + sizeDelta, 0.0f, 1024.0f);
         PaintBrushSettingsRequestBus::Broadcast(&PaintBrushSettingsRequestBus::Events::SetSize, diameter);
-    }
-
-    void PaintBrushManipulator::AdjustIntensityPercent(float intensityPercentDelta)
-    {
-        float intensity = 0.0f;
-        PaintBrushSettingsRequestBus::BroadcastResult(intensity, &PaintBrushSettingsRequestBus::Events::GetIntensityPercent);
-        intensity = AZStd::clamp(intensity + intensityPercentDelta, 0.0f, 100.0f);
-        PaintBrushSettingsRequestBus::Broadcast(&PaintBrushSettingsRequestBus::Events::SetIntensityPercent, intensity);
-    }
-
-    void PaintBrushManipulator::AdjustOpacityPercent(float opacityPercentDelta)
-    {
-        float opacity = 0.0f;
-        PaintBrushSettingsRequestBus::BroadcastResult(opacity, &PaintBrushSettingsRequestBus::Events::GetOpacityPercent);
-        opacity = AZStd::clamp(opacity + opacityPercentDelta, 0.0f, 100.0f);
-        PaintBrushSettingsRequestBus::Broadcast(&PaintBrushSettingsRequestBus::Events::SetOpacityPercent, opacity);
     }
 
 } // namespace AzToolsFramework
