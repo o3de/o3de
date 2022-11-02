@@ -18,7 +18,7 @@
         <Member Type="Multiplayer::LongNetworkString" Name="map" />
     </Packet>
 
-    <Packet Name="SyncComponentMismatch" Desc="Sends a vector of multiplayer components with their name and version hashes in order to compare which components exactly are mismatched.">
+    <Packet Name="SyncComponentMismatch" HandshakePacket="true" Desc="Sends a vector of multiplayer components with their name and version hashes in order to compare which particular components are mismatched. Note: Marked as a handshake packet so it can be sent back to the client without having received the server acceptance packet. ">
         <Member Type="Multiplayer::ComponentVersionMessageData" Name="componentVersions" Container="Vector" Count="Multiplayer::MaxComponentVersionDataPerPacket"/>
         <Member Type="uint32_t" Name="totalComponentCount"/>
     </Packet>

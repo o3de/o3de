@@ -634,7 +634,6 @@ namespace Multiplayer
         reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
 
         // Hosts will handle spawning for a player on connect
-        // @todo: why is this required? aren't servers the only one's receiving Connect packet?
         if (GetAgentType() == MultiplayerAgentType::ClientServer
          || GetAgentType() == MultiplayerAgentType::DedicatedServer)
         {
@@ -882,7 +881,7 @@ namespace Multiplayer
         const auto nameDictionary = AZ::Interface<AZ::NameDictionary>::Get();
         if (nameDictionary == nullptr)
         {
-            AZLOG_ERROR("MultiplayerSystemComponent::SyncComponentMismatch failed. Cannot access the NameDictionary so we can't find multiplayer component names.");
+            AZLOG_ERROR("MultiplayerSystemComponent::SyncComponentMismatch failed. Cannot access the NameDictionary so we won't be able to look up the multiplayer component names from their AZ::Name value.");
             return true;
         }
 
@@ -892,12 +891,15 @@ namespace Multiplayer
             m_connectedAppsComponentVersions[connection->GetConnectionId()] = AZStd::vector<ComponentVersionMessageData>();
         }
 
-        for (const auto& packetComponentData : m_connectedAppsComponentVersions[connection->GetConnectionId()])
+        // Populate a list of the other app's multiplayer components.
+        // Once we have received all their components, we can begin comparing.
+        auto& theirMultiplayerComponents = m_connectedAppsComponentVersions[connection->GetConnectionId()];
+        for (const auto& theirComponentVersion : packet.GetComponentVersions())
         {
-            m_connectedAppsComponentVersions[connection->GetConnectionId()].push_back(packetComponentData);
+            theirMultiplayerComponents.push_back(theirComponentVersion);
         }
 
-        if (m_connectedAppsComponentVersions[connection->GetConnectionId()].size() != packet.GetTotalComponentCount())
+        if (theirMultiplayerComponents.size() != packet.GetTotalComponentCount())
         {
             // There's more component version data to receive from this connection
             return true;
@@ -905,7 +907,7 @@ namespace Multiplayer
 
         // We've received all the component data from this connection
         // Iterate over each component and see what's been added, missing, or modified
-        for (const auto& theirComponent : m_connectedAppsComponentVersions[connection->GetConnectionId()])
+        for (const auto& theirComponent : theirMultiplayerComponents)
         {
             // Check for modified components
             AZ::HashValue64 localComponentHash;
@@ -923,36 +925,35 @@ namespace Multiplayer
             }
             else
             {
-                // Connection has an added component
+                // Connected machine is using a multiplayer component we don't have
                 AZLOG_ERROR(
-                    "Multiplayer component mismatch! We're missing a component with version hash %x. To find the missing component, go to "
-                    "the other machine and look for an auto-component with s_versionHash %x",
+                    "Multiplayer component mismatch! We're missing a component with version hash %x. "
+                    "Because we are missing this component, we don't know its name, only its hash. "
+                    "To find the missing component go to the other machine and search for 's_versionHash = AZ::HashValue64{ %x }' inside the generated multiplayer auto-component build folder.",
                     theirComponent.m_componentVersionHash,
                     theirComponent.m_componentVersionHash);
             }
-
-            theirComponent.m_componentName;
         }
 
-        // Iterate over our components and see if we the connection is missing a component we have
-        const AZStd::vector<ComponentVersionMessageData>& connectedAppComponents =
-            m_connectedAppsComponentVersions[connection->GetConnectionId()];
+        // One last iteration over our components this time to check if we have a component the connected app is missing.
         for (const auto& ourComponent : GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes())
         {
             AZ::Name ourComponentName = ourComponent.first;
 
-            bool theyHaveComponent = AZStd::find_if(
-                connectedAppComponents.begin(),
-                connectedAppComponents.end(),
-                [&ourComponentName](const ComponentVersionMessageData& theirComponent)
+            bool theyHaveComponent = false;
+            for (const auto& theirComponent : theirMultiplayerComponents)
+            {
+                if (ourComponentName == theirComponent.m_componentName)
                 {
-                    return ourComponentName == theirComponent.m_componentName;
-                });
+                    theyHaveComponent = true;
+                    break;
+                }
+            }
 
             if (!theyHaveComponent)
             {
                 const char* componentName = nameDictionary->FindName(ourComponentName.GetHash()).GetCStr();
-                AZLOG_ERROR("Multiplayer component mismatch! Connected application is missing %s!", componentName);
+                AZLOG_ERROR("Multiplayer component mismatch! We have a component named %s which the connected application is missing!", componentName);
             }
         }
 

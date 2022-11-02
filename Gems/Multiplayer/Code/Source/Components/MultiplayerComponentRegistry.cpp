@@ -92,6 +92,11 @@ namespace Multiplayer
         return false;
     }
 
+    const AZStd::unordered_map<AZ::Name, AZ::HashValue64>& MultiplayerComponentRegistry::GetMultiplayerComponentVersionHashes() const
+    {
+        return m_componentVersionHashes;
+    }
+
     void MultiplayerComponentRegistry::Reset()
     {
         m_componentData.clear();
