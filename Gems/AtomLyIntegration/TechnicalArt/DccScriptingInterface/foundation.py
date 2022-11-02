@@ -445,6 +445,8 @@ if __name__ == '__main__':
                 _LOGGER.info(f'.touch(): {_PATH_DCCSI_PYTHON_LIB}')
         else:
             _LOGGER.error(f'This py exe does not exist:{_PYTHON_EXE}')
+            _LOGGER.info(f'Make sure to wrap your path to the exe in quotes, like:')
+            _LOGGER.info(f'.\python foundation.py -py="C:\Program Files\Autodesk\Maya2023\bin\mayapy.exe"')
             sys.exit()
 
     # this will verify pip is installed for the target python interpreter/env
