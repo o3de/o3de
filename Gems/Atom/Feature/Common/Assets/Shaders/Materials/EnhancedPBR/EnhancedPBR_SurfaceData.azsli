@@ -75,9 +75,6 @@
 
         //! Sets albedo and specularF0 using metallic workflow
         void SetAlbedoAndSpecularF0(float3 baseColor, float specularF0Factor, float metallic);
-
-        //! Get the packed subsurface scattering factor and quality
-        float GetSubsurfaceScatteringFactorAndQuality();
     };
 
     void SurfaceData_EnhancedPBR::CalculateRoughnessA()
@@ -92,13 +89,6 @@
 
         albedo = GetAlbedo(baseColor, metallic);
         specularF0 = GetSpecularF0(baseColor, metallic, specularF0Factor);
-    }
-
-    float SurfaceData_EnhancedPBR::GetSubsurfaceScatteringFactorAndQuality()
-    {
-        // Pack factor and quality, drawback: because of precision limit of float16 cannot represent exact 1, maximum representable value is 0.9961
-        uint factorAndQuality = dot(round(float2(saturate(subsurfaceScatteringFactor), subsurfaceScatteringQuality) * 255), float2(256, 1));
-        return factorAndQuality * (o_enableSubsurfaceScattering ? 1.0 : -1.0);
     }
 
 #endif

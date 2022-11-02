@@ -20,6 +20,7 @@
 #endif
 
 #include <Atom/Features/PBR/Microfacet/Brdf.azsli>
+#include <Atom/Features/PBR/LightingOptions.azsli>
 
 #ifndef LightingData
 #error LightingData must be defined before including this file.

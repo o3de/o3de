@@ -1,11 +1,11 @@
 {
-    "description": "This material type demonstrates how to use the material pipeline system to customize the vertex shader stage. This is temporary and can be removed after the core material types are ported to the new system.",
+    "description": "This material type demonstrates how to use the material pipeline system. This is temporary and can be removed after the core material types are ported to the new system.",
     "version": 3,
     "propertyLayout": {
         "propertyGroups": [
             {
-                "name": "settings",
-                "displayName": "Settings",
+                "name": "base",
+                "displayName": "Base Layer",
                 "properties": [
                     {
                         "name": "color",
@@ -40,49 +40,62 @@
                             "type": "ShaderInput",
                             "name": "m_roughness"
                         }
+                    }
+                ]
+            },
+            {
+                "name": "clearCoat",
+                "displayName": "Clear Coat",
+                "properties": [
+                    {
+                        "name": "enable",
+                        "displayName": "Enable",
+                        "description": "Enable clear coat",
+                        "type": "Bool",
+                        "defaultValue": false,
+                        "connection": [
+                            {
+                                "type": "ShaderOption",
+                                "name": "o_clearCoat_feature_enabled"
+                            },
+                            {
+                                "type": "ShaderOption",
+                                "name": "o_materialUseForwardPassIBLSpecular"
+                            }
+                        ]
                     },
                     {
-                        "name": "animationSpeed",
-                        "displayName": "Animation Speed",
+                        "name": "factor",
+                        "displayName": "Factor",
+                        "description": "Strength factor for scaling the percentage of effect applied",
                         "type": "Float",
                         "defaultValue": 1.0,
                         "min": 0.0,
-                        "softMax": 10.0,
+                        "max": 1.0,
                         "connection": {
                             "type": "ShaderInput",
-                            "name": "m_animationSpeed"
+                            "name": "m_clearCoatFactor"
                         }
                     },
                     {
-                        "name": "amplitude",
-                        "displayName": "Amplitude",
+                        "name": "roughness",
+                        "displayName": "Roughness",
+                        "description": "Clear coat layer roughness",
                         "type": "Float",
-                        "defaultValue": 0.1,
+                        "defaultValue": 0.0,
                         "min": 0.0,
-                        "softMax": 1.0,
+                        "max": 1.0,
                         "connection": {
                             "type": "ShaderInput",
-                            "name": "m_amplitude"
-                        }
-                    },
-                    {
-                        "name": "frequency",
-                        "displayName": "Frequency",
-                        "type": "Float",
-                        "defaultValue": 10.0,
-                        "min": 0.0,
-                        "softMax": 100.0,
-                        "connection": {
-                            "type": "ShaderInput",
-                            "name": "m_frequency"
+                            "name": "m_clearCoatRoughness"
                         }
                     }
                 ]
             }
         ]
     },
-    "lightingModel": "Base",
-    "materialShaderCode": "./MaterialPipelineTest_Animated.azsli",
+    "lightingModel": "Standard",
+    "materialShaderCode": "./MaterialPipelineTest_Standard.azsli",
     "functors": [
     ]
 }
