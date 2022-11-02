@@ -51,6 +51,17 @@ from PySide2 import QtWidgets, QtCore, QtGui
 from SDK.Python import general_utilities as utils
 from azpy.shared import qt_process
 
+# O3DE Imports
+import azlmbr.bus as bus
+import azlmbr.components as components
+import azlmbr.editor as editor
+import azlmbr.entity as entity
+import azlmbr.math as math
+
+from PySide2.QtCore import Qt
+from PySide2.QtGui import QDoubleValidator
+
+
 # Logging Formatting
 _MODULENAME = 'Tools.Python.MockTool.main'
 _LOGGER = logging.getLogger(_MODULENAME)
