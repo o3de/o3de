@@ -598,15 +598,16 @@ namespace AZ::DocumentPropertyEditor
     {
     }
 
-    void ValueStringFilter::SetFilterString(QString filterString)
+    void ValueStringFilter::SetFilterString(AZStd::string filterString)
     {
+        AZStd::to_lower(filterString.begin(), filterString.end());
         if (m_filterString != filterString)
         {
             m_filterString = AZStd::move(filterString);
 
             if (m_filterActive)
             {
-                if (m_filterString.isEmpty())
+                if (m_filterString.empty())
                 {
                     SetFilterActive(false);
                 }
@@ -615,7 +616,7 @@ namespace AZ::DocumentPropertyEditor
                     InvalidateFilter();
                 }
             }
-            else if (!m_filterString.isEmpty())
+            else if (!m_filterString.empty())
             {
                 SetFilterActive(true);
             }
@@ -669,44 +670,45 @@ namespace AZ::DocumentPropertyEditor
     bool ValueStringFilter::MatchesFilter(MatchInfoNode* matchNode) const
     {
         auto actualNode = static_cast<StringMatchNode*>(matchNode);
-        return (m_filterString.isEmpty() || actualNode->m_matchableDomTerms.contains(m_filterString, Qt::CaseInsensitive));
+        return (m_filterString.empty() || actualNode->m_matchableDomTerms.contains(m_filterString));
     }
 
     void ValueStringFilter::StringMatchNode::AddStringifyValue(const Dom::Value& domValue)
     {
-        QString stringifiedValue;
+        AZStd::string stringifiedValue;
 
         if (domValue.IsNull())
         {
-            stringifiedValue = QStringLiteral("null");
+            stringifiedValue = "null";
         }
         else if (domValue.IsBool())
         {
-            stringifiedValue = (domValue.GetBool() ? QStringLiteral("true") : QStringLiteral("false"));
+            stringifiedValue = (domValue.GetBool() ? "true" : "false");
         }
         else if (domValue.IsInt())
         {
-            stringifiedValue = QString::number(domValue.GetInt64());
+            stringifiedValue = AZStd::to_string(domValue.GetInt64());
         }
         else if (domValue.IsUint())
         {
-            stringifiedValue = QString::number(domValue.GetUint64());
+            stringifiedValue = AZStd::to_string(domValue.GetUint64());
         }
         else if (domValue.IsDouble())
         {
-            stringifiedValue = QString::number(domValue.GetDouble());
+            stringifiedValue = AZStd::to_string(domValue.GetDouble());
         }
         else if (domValue.IsString())
         {
             AZStd::string_view stringView = domValue.GetString();
-            stringifiedValue = QString::fromUtf8(stringView.data(), aznumeric_cast<int>(stringView.size()));
+            stringifiedValue = stringView;
+            AZStd::to_lower(stringifiedValue.begin(), stringifiedValue.end());
         }
 
-        if (!stringifiedValue.isEmpty())
+        if (!stringifiedValue.empty())
         {
-            if (!m_matchableDomTerms.isEmpty())
+            if (!m_matchableDomTerms.empty())
             {
-                m_matchableDomTerms.append(QChar::Space);
+                m_matchableDomTerms.append(" ");
             }
             m_matchableDomTerms.append(stringifiedValue);
         }

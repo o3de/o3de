@@ -1745,7 +1745,7 @@ namespace AzToolsFramework
                 componentEditor->mockDisabledState(true);
             }
 
-            if (!componentEditor->GetPropertyEditor()->HasFilteredOutNodes() || componentEditor->GetPropertyEditor()->HasVisibleNodes())
+            if (componentEditor->HasContents())
             {
                 for (AZ::Component* componentInstance : componentInstances)
                 {
@@ -5677,8 +5677,7 @@ namespace AzToolsFramework
 
         for (auto componentEditor : m_componentEditors)
         {
-            componentEditor->GetPropertyEditor()->SetFilterString(m_filterString);
-            componentEditor->GetHeader()->SetFilterString(m_filterString);
+            componentEditor->SetFilterString(m_filterString);
         }
 
         UpdateContents();

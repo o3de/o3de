@@ -621,7 +621,7 @@ namespace AssetProcessor
 
         return AZ::SettingsRegistryInterface::VisitResponse::Skip;
     }
- 
+
     const char AssetConfigPlatformDir[] = "AssetProcessorConfig/";
     const char AssetProcessorPlatformConfigFileName[] = "AssetProcessorPlatformConfig.ini";
 
@@ -1031,7 +1031,7 @@ namespace AssetProcessor
     bool PlatformConfiguration::ConvertToJson(const RecognizerContainer& recognizerContainer, AZStd::string& jsonText)
     {
         AZStd::unordered_map<AZStd::string, AssetCacheServerMatcher> assetCacheServerMatcherMap;
-        
+
         for (const auto& recognizer : recognizerContainer)
         {
             AssetCacheServerMatcher matcher;
@@ -1441,6 +1441,19 @@ namespace AssetProcessor
         Q_ASSERT(index >= 0);
         Q_ASSERT(index < m_scanFolders.size());
         return m_scanFolders[index];
+    }
+
+    const AssetProcessor::ScanFolderInfo* PlatformConfiguration::GetScanFolderById(AZ::s64 id) const
+    {
+        auto* result = AZStd::find_if(
+            m_scanFolders.begin(),
+            m_scanFolders.end(),
+            [id](const ScanFolderInfo& scanFolder)
+            {
+                return scanFolder.ScanFolderID() == id;
+            });
+
+        return result != m_scanFolders.end() ? result : nullptr;
     }
 
     void PlatformConfiguration::AddScanFolder(const AssetProcessor::ScanFolderInfo& source, bool isUnitTesting)

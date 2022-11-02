@@ -143,6 +143,8 @@ namespace ScriptCanvasEditor
                 m_upgradeDisabled = true;
             }
         }
+
+        m_nodeReplacementSystem.LoadReplacementMetadata();
     }
 
     void SystemComponent::NotifyRegisterViews()
@@ -159,6 +161,7 @@ namespace ScriptCanvasEditor
 
     void SystemComponent::Deactivate()
     {
+        m_nodeReplacementSystem.UnloadReplacementMetadata();
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         ScriptCanvasExecutionBus::Handler::BusDisconnect();

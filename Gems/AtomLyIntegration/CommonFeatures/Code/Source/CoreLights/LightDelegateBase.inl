@@ -63,7 +63,7 @@ namespace AZ
         }
 
         template <typename FeatureProcessorType>
-        void LightDelegateBase<FeatureProcessorType>::SetChroma(const AZ::Color& color)
+        void LightDelegateBase<FeatureProcessorType>::SetChroma(const Color& color)
         {
             m_photometricValue.SetChroma(color);
             if (m_lightHandle.IsValid())
@@ -100,7 +100,7 @@ namespace AZ
             AZ_Assert(m_shapeBus, "OnShapeChanged called without a shape bus present.");
             if (changeReason == ShapeChangeReasons::TransformChanged)
             {
-                AZ::Aabb aabb; // unused, but required for GetTransformAndLocalBounds()
+                Aabb aabb; // unused, but required for GetTransformAndLocalBounds()
                 m_shapeBus->GetTransformAndLocalBounds(m_transform, aabb);
             }
             m_photometricValue.SetArea(GetSurfaceArea());
@@ -112,7 +112,7 @@ namespace AZ
         }
         
         template <typename FeatureProcessorType>
-        void LightDelegateBase<FeatureProcessorType>::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
+        void LightDelegateBase<FeatureProcessorType>::OnTransformChanged(const Transform& /*local*/, const Transform& world)
         {
             m_transform = world;
             HandleShapeChanged();

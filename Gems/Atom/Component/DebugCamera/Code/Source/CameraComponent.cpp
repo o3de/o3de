@@ -81,13 +81,12 @@ namespace AZ
                 AZ::Name("Camera view (unknown entity)");
 
             m_cameraView->CreateMainView(viewName);
+            m_cameraView->CreateStereoscopicViews(viewName);
 
-            //Create stereoscopic view if XR system is active
             m_xrSystem = RPI::RPISystemInterface::Get()->GetXRSystem();
             if (m_xrSystem)
             {
                 m_numXrViews = m_xrSystem->GetNumViews();
-                m_cameraView->CreateStereoscopicViews(viewName);
             }
 
             for (uint16_t i = 0; i < AZ::RPI::XRMaxNumViews; i++)

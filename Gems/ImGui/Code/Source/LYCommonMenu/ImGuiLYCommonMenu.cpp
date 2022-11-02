@@ -303,7 +303,7 @@ namespace ImGui
 
                 // View Maps ( pending valid ILevelSystem )
                 auto lvlSystem = (gEnv && gEnv->pSystem) ? gEnv->pSystem->GetILevelSystem() : nullptr;
-                if (lvlSystem && ImGui::BeginMenu("Levels"))
+                if (lvlSystem && AzFramework::LevelSystemLifecycleInterface::Get() && ImGui::BeginMenu("Levels"))
                 {
                     if (AzFramework::LevelSystemLifecycleInterface::Get()->IsLevelLoaded())
                     {
