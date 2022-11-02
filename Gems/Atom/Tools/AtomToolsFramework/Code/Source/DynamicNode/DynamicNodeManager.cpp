@@ -175,7 +175,7 @@ namespace AtomToolsFramework
             AZ_Error(
                 "DynamicNodeManager",
                 false,
-                "DynamicNodeConfig \"%s\" could not be validated because DynamicNodeSlotConfig \"%s\" does not match any rich to data "
+                "DynamicNodeConfig \"%s\" could not be validated because DynamicNodeSlotConfig \"%s\" does not match any registered data type."
                 "types.",
                 configId.ToFixedString().c_str(),
                 slotConfig.m_displayName.c_str());

@@ -111,9 +111,10 @@ namespace AtomToolsFramework
         const auto& supportedDataTypes = GetSupportedDataTypes();
         if (supportedDataTypes.empty())
         {
+            const bool hadDefaultValue = !m_defaultValue.empty();
             m_defaultDataType.clear();
             m_defaultValue.clear();
-            return AZ::Edit::PropertyRefreshLevels::EntireTree;
+            return hadDefaultValue ? AZ::Edit::PropertyRefreshLevels::EntireTree : AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
         }
 
         // Find the registered data types corresponding to the selected default value and default data type.
@@ -144,9 +145,10 @@ namespace AtomToolsFramework
         if (defaultTypeItr != defaultValueItr)
         {
             m_defaultValue = (*defaultTypeItr)->GetDefaultValue();
+            return AZ::Edit::PropertyRefreshLevels::EntireTree;
         }
 
-        return AZ::Edit::PropertyRefreshLevels::EntireTree;
+        return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
     }
 
     AZStd::any DynamicNodeSlotConfig::GetDefaultValue() const
@@ -164,15 +166,8 @@ namespace AtomToolsFramework
 
     AZStd::string DynamicNodeSlotConfig::GetDefaultDataTypeName() const
     {
-        const auto& supportedDataTypes = GetSupportedDataTypes();
-        for (const auto& dataType : supportedDataTypes)
-        {
-            if (dataType->GetDisplayName() == m_defaultDataType)
-            {
-                return m_defaultDataType;
-            }
-        }
-        return !supportedDataTypes.empty() ? supportedDataTypes.front()->GetDisplayName() : AZStd::string();
+        const auto& dataType = GetDefaultDataType();
+        return dataType ? dataType->GetDisplayName() : AZStd::string();
     }
 
     GraphModel::DataTypePtr DynamicNodeSlotConfig::GetDefaultDataType() const
