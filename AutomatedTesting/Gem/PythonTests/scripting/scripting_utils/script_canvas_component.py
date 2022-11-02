@@ -51,7 +51,7 @@ class ScriptCanvasComponent:
         Function for constructing the SCComponent object. This will make a new entity, add a script canvas component and
         then open a script canvas file from disk onto the component's source handle value.
 
-        param hydra_entity_name: The name you want the entity to have
+        param entity_name: The name you want the entity to have
         param sc_file_path: The path on disk to the script canvas file
         param position: optional parameter for the position of the entity
 
@@ -71,7 +71,7 @@ class ScriptCanvasComponent:
         Function for constructing the SCComponent object. This uses an existing entity and loads a new script canvas
         file into the source handle value
 
-        param hydra_entity_name: The name of the entity we want to configure
+        param editor_entity: The entity we want to configure
         param sc_file_path: location on disk to the script canvas file
 
         returns None

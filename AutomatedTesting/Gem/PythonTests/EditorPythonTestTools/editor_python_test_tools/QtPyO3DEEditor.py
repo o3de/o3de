@@ -15,8 +15,7 @@ from editor_python_test_tools.utils import TestHelper
 from consts.asset_editor import (ASSET_EDITOR_UI)
 from consts.scripting import (SCRIPT_CANVAS_UI)
 from consts.general import (WAIT_TIME_SEC_3)
-import azlmbr.math as math
-from editor_python_test_tools.editor_entity_utils import EditorEntity
+
 
 class Tests():
     script_canvas_editor_opened = ("Script Canvas Editor opened successfully", "Failed to open Script Canvas Editor")
@@ -92,12 +91,3 @@ class QtPyO3DEEditor(QtPyCommon):
                                                WAIT_TIME_SEC_3)
 
         assert result, "Failed to close Asset Editor"
-
-    def make_new_editor_entity(self, entity_name: str, component_list: list, position=math.Vector3(512.0, 512.0, 32.0)) \
-            -> EditorEntity:
-
-        editor_entity = EditorEntity.create_editor_entity_at(position, entity_name)
-        editor_entity.add_components(component_list)
-
-        return editor_entity
-

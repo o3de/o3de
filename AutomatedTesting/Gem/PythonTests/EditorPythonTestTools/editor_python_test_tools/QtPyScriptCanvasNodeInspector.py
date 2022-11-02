@@ -12,8 +12,8 @@ Object to house all the Qt Objects and behavior used in testing the script canva
 from editor_python_test_tools.utils import TestHelper as helper
 from PySide2 import QtWidgets, QtTest, QtCore
 import pyside_utils
-from consts.scripting import (PROPERTY_EDITOR_QT, INITIAL_VALUE_SOURCE_QT)
-from consts.general import (WAIT_TIME_SEC_1)
+from consts.scripting import (PROPERTY_EDITOR_QT, INITIAL_VALUE_SOURCE_QT, NODE_INSPECTOR_QT)
+from consts.general import (WAIT_TIME_SEC_1, )
 from enum import IntEnum
 
 class BooleanCheckBoxValues(IntEnum): # get a better name for this
@@ -23,8 +23,7 @@ class BooleanCheckBoxValues(IntEnum): # get a better name for this
 class QtPyScriptCanvasNodeInspector:
 
     def __init__(self, sc_editor):
-        self.node_inspector = sc_editor.sc_editor.findChild(QtWidgets.QDockWidget, "NodeInspector")
-
+        self.node_inspector = sc_editor.sc_editor.findChild(QtWidgets.QDockWidget, NODE_INSPECTOR_QT)
 
     def change_variable_initial_value(self, variable_name: str, variable_type: str,  new_value) -> None:
         """
@@ -49,11 +48,10 @@ class QtPyScriptCanvasNodeInspector:
 
         returns None
         """
-        #todo
-        #flesh out the rest of the switch
-        #add better verification that the client is trying to modify the correct type of variable
 
         variable_qobject = self.node_inspector.findChild(QtWidgets.QFrame, f"{variable_name}")
+
+        assert variable_qobject is not None, f"Variable by name {variable_name} was not found."
 
         match variable_type:
             case "Boolean":
@@ -62,6 +60,8 @@ class QtPyScriptCanvasNodeInspector:
             case "Color", "String":
                 assert type(new_value) == str, f"New value: {new_value} is invalid for this variable type:{variable_type}"
                 self.__change_variable_value_string(variable_qobject, new_value)
+            case default:
+                assert False, "An invalid variable type was provided"
 
     def __change_variable_value_Boolean(self, variable_qobject: QtWidgets.QFrame, new_value: BooleanCheckBoxValues) -> None:
         """

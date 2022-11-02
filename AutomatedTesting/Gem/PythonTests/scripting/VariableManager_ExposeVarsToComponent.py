@@ -40,13 +40,15 @@ def VariableManager_ExposeVarsToComponent():
     from editor_python_test_tools.QtPyScriptCanvasNodeInspector import BooleanCheckBoxValues
     import azlmbr.legacy.general as general
     from consts.scripting import (SCRIPT_CANVAS_TEST_FILE_PATH)
-    import editor_python_test_tools.hydra_editor_utils as hydra
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
+    from editor_python_test_tools.utils import TestHelper
+    import azlmbr.math as math
 
     general.idle_enable(True)
 
     # 1) Open Script Canvas window
     qtpy_o3de_editor = QtPyO3DEEditor()
-    hydra.open_base_level()
+    TestHelper.open_level("", "Base")
     sc_editor = qtpy_o3de_editor.open_script_canvas()
 
     # 2) Get the SC window, variable manager and node inspector objects
@@ -72,8 +74,9 @@ def VariableManager_ExposeVarsToComponent():
     #imagine a save file function call here
 
     # 8) Create an entity w/ component in the O3DE editor and attach the file
-    editor_entity = qtpy_o3de_editor.make_new_editor_entity(ENTITY_NAME, COMPONENT_LIST)
-    #do we want an entity class that can contain component types?
+    position = math.Vector3(512.0, 512.0, 32.0)
+    editor_entity = EditorEntity.create_editor_entity_at(position, ENTITY_NAME)
+    editor_entity.add_components(COMPONENT_LIST)
     script_canvas_component = ScriptCanvasComponent(editor_entity, SCRIPT_CANVAS_TEST_FILE_PATH)
 
     # 9) Verify the new variables are exposed properly by modifying one of them

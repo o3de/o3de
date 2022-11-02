@@ -88,30 +88,36 @@ class QtPyScriptCanvasVariableManager():
 
         params: The type of variable to create as a string. ie "Boolean"
 
-        returns none
+        returns Qwidget with the graph variables that have been created. Used for further helper methods
         """
+        #extract the graph variables table so we can verify a variable has been added to the list
+        graph_vars_table = self.variable_manager.findChild(QtWidgets.QTableView, GRAPH_VARIABLES_QT)
+        expected_number_of_variables = graph_vars_table.model().rowCount(QtCore.QModelIndex()) + 1
 
         # Select variable type
         table_view = self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT)
         variable_entry = pyside_utils.find_child_by_pattern(table_view, new_variable_type)
 
-        # Click on it to create variable and wait 1 second for the UI to respond
+        # Click on it to create variable and wait for the UI to respond
         pyside_utils.item_view_index_mouse_click(table_view, variable_entry)
-        helper.wait_for_condition(lambda: True is False, WAIT_TIME_SEC_1)
+        actual_number_of_variables = graph_vars_table.model().rowCount(QtCore.QModelIndex())
+        helper.wait_for_condition(lambda: (actual_number_of_variables == expected_number_of_variables),
+                                  WAIT_TIME_SEC_3)
 
-    def __set_new_variable_name(self, new_variable_name: str):
+
+    def __set_new_variable_name(self, new_variable_name: str) -> QtWidgets:
 
         """
         helper function for adding a new variable. sets the new variable's name. waits for the UI to respond afterwards
 
-        returns Qwidget with the graph variables that have been created
+        returns graph vars page object for future usage
         """
-
-        # Set the new variable's name. Wait 1 second for the UI to respond
+        #get the widget with the newly added graph variable (currently selected)
         graph_vars_page = self.variable_manager.findChild(QtWidgets.QWidget, GRAPH_VARIABLES_PAGE_QT)
+        # Set the new variable's name. Wait 3 seconds for the UI to respond
         line_edit = graph_vars_page.findChild(QtWidgets.QLineEdit, "")
         line_edit.insert(new_variable_name)
-        helper.wait_for_condition(lambda: True is False, WAIT_TIME_SEC_1)
+        helper.wait_for_condition(lambda: line_edit.text() == new_variable_name, WAIT_TIME_SEC_3)
 
         return graph_vars_page
 
@@ -126,7 +132,7 @@ class QtPyScriptCanvasVariableManager():
         selection_model = graph_vars_page.findChild(QtCore.QItemSelectionModel)
         selection = selection_model.selection()
         selection_model.clear()
-        helper.wait_for_condition(lambda: True is False, WAIT_TIME_SEC_1)
+        helper.wait_for_condition(lambda: selection_model.hasSelection() is False, WAIT_TIME_SEC_3)
 
         return selection
 
@@ -142,7 +148,7 @@ class QtPyScriptCanvasVariableManager():
         graph_vars_page = self.variable_manager.findChild(QtWidgets.QWidget, GRAPH_VARIABLES_PAGE_QT)
         selection_model = graph_vars_page.findChild(QtCore.QItemSelectionModel)
         selection_model.select(item_selection, QtCore.QItemSelectionModel.Select)
-        helper.wait_for_condition(lambda: True is False, WAIT_TIME_SEC_1)
+        helper.wait_for_condition(lambda: selection_model.hasSelection(), WAIT_TIME_SEC_3)
 
         assert selection_model.selection() == item_selection, "Unable to select variable from variable manager table"
 
@@ -188,19 +194,44 @@ class QtPyScriptCanvasVariableManager():
         returns None
         """
 
+        pinned_toggle_data = self.__find_pinned_toggle_control(variable_type)
+
+        assert pinned_toggle_data[1] is not None, "Failed to find variable pinning qt widget"
+
+        toggle_state_is_different = self.__toggle_the_pinned_control(pinned_toggle_data)
+
+        assert toggle_state_is_different, "Variable pin not successfully toggled"
+
+    def __find_pinned_toggle_control(self, variable_type: str):
+        """
+        helper function for toggling the pinned variable type in the create variable menu.
+
+        returns tuple with the variable view and toggle control in it
+        """
         variable_table_view = self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT)
         variable_object = pyside_utils.find_child_by_pattern(variable_table_view, variable_type)
 
         toggle_index = 0
         pinned_toggle = variable_object.siblingAtColumn(toggle_index)
+        pinned_toggle_data = {variable_table_view, pinned_toggle}
+        return pinned_toggle_data
 
-        assert pinned_toggle is not None, "Failed to find variable pinning qt widget"
+    def __toggle_the_pinned_control(self, pinned_toggle_data):
 
-        pinned_toggle_state_before = pinned_toggle.data(Qt.DecorationRole)
+        """
+        helper function for toggling the pinned variable type. performs a mouse click on the toggle control and waits
+        for the UI to respond
 
-        #click the toggle then varify it's different than the before state
-        pyside_utils.item_view_index_mouse_click(variable_table_view, pinned_toggle)
+        returns the boolean comparison of the state of the toggle control after it's been toggled.
+        """
 
-        pinned_toggle_state_after = helper.wait_for_condition(lambda: pinned_toggle.data(Qt.DecorationRole) is None,
+        pinned_toggle_state_before = pinned_toggle_data[1].data(Qt.DecorationRole)
+
+        # click the toggle then varify it's different than the before state
+        pyside_utils.item_view_index_mouse_click(pinned_toggle_data[0], pinned_toggle_data[1])
+
+        pinned_toggle_state_after = helper.wait_for_condition(lambda: pinned_toggle_data[1].data(Qt.DecorationRole) is None,
                                                               WAIT_TIME_SEC_3)
-        assert pinned_toggle_state_before != pinned_toggle_state_after, "Variable pin not successfully toggled"
+
+        return pinned_toggle_state_before != pinned_toggle_state_after
+
