@@ -707,19 +707,19 @@ namespace UnitTest
 
         ErrorMessageFinder errorMessageFinder;
 
-        errorMessageFinder.AddExpectedErrorMessage("Could not find asset [DoesNotExist.materialtype]");
+        errorMessageFinder.AddExpectedErrorMessage("Could not find asset for source file [DoesNotExist.materialtype]");
         auto result = material.CreateMaterialAsset(AZ::Uuid::CreateRandom(), "test.material", AZ::RPI::MaterialAssetProcessingMode::DeferredBake, elevateWarnings);
         EXPECT_FALSE(result.IsSuccess());
         errorMessageFinder.CheckExpectedErrorsFound();
 
         errorMessageFinder.Reset();
-        errorMessageFinder.AddExpectedErrorMessage("Could not find asset [DoesNotExist.materialtype]");
+        errorMessageFinder.AddExpectedErrorMessage("Could not find asset for source file [DoesNotExist.materialtype]");
         result = material.CreateMaterialAsset(AZ::Uuid::CreateRandom(), "test.material", AZ::RPI::MaterialAssetProcessingMode::PreBake, elevateWarnings);
         EXPECT_FALSE(result.IsSuccess());
         errorMessageFinder.CheckExpectedErrorsFound();
         
         errorMessageFinder.Reset();
-        errorMessageFinder.AddExpectedErrorMessage("Could not find asset [DoesNotExist.materialtype]");
+        errorMessageFinder.AddExpectedErrorMessage("Could not find asset for source file [DoesNotExist.materialtype]");
         errorMessageFinder.AddIgnoredErrorMessage("Failed to create material type asset ID", true);
         result = material.CreateMaterialAssetFromSourceData(AZ::Uuid::CreateRandom(), "test.material", elevateWarnings);
         EXPECT_FALSE(result.IsSuccess());
@@ -1122,7 +1122,12 @@ namespace UnitTest
                             ]
                         }
                     ]
-                }
+                },
+                "shaders": [
+                    {
+                        "file": "test.shader"
+                    }
+                ]
             }
         )";
 
@@ -1237,7 +1242,12 @@ namespace UnitTest
                             ]
                         }
                     ]
-                }
+                },
+                "shaders": [
+                    {
+                        "file": "test.shader"
+                    }
+                ]
             }
         )";
 
@@ -1353,7 +1363,12 @@ namespace UnitTest
                                 ]
                             }
                         ]
-                    }
+                    },
+                    "shaders": [
+                        {
+                            "file": "@exefolder@/Temp/test.shader"
+                        }
+                    ]
                 }
             )";
 

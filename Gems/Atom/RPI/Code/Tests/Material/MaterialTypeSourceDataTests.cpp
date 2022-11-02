@@ -1035,7 +1035,12 @@ namespace UnitTest
                             ]
                         }
                     ]
-                }
+                },
+                "shaders": [
+                    {
+                        "file": "test.shader"
+                    }
+                ]
             }
         )";
 
@@ -1065,7 +1070,12 @@ namespace UnitTest
                             ]
                         }
                     ]
-                }
+                },
+                "shaders": [
+                    {
+                        "file": "test.shader"
+                    }
+                ]
             }
         )";
 
@@ -1099,7 +1109,12 @@ namespace UnitTest
                             ]
                         }
                     ]
-                }
+                },
+                "shaders": [
+                    {
+                        "file": "test.shader"
+                    }
+                ]
             }
         )";
 
@@ -1141,7 +1156,12 @@ namespace UnitTest
                             ]
                         }
                     ]
-                }
+                },
+                "shaders": [
+                    {
+                        "file": "test.shader"
+                    }
+                ]
             }
         )";
 
@@ -2014,7 +2034,12 @@ namespace UnitTest
                                 ]
                             }
                         ]
-                    }
+                    },
+                    "shaders": [
+                        {
+                            "file": "test.shader"
+                        }
+                    ]
                 }
             )",
             MaterialTypeSourceDataTests::TestImageFilepathAbsolute,
@@ -2070,7 +2095,12 @@ namespace UnitTest
                             ]
                         }
                     ]
-                }
+                },
+                "shaders": [
+                    {
+                        "file": "test.shader"
+                    }
+                ]
             }
             )",
             MaterialTypeSourceDataTests::TestImageFilepathAbsolute);
@@ -2110,7 +2140,12 @@ namespace UnitTest
             {
                 "propertyLayout": {
                     "version": 4
-                }
+                },
+                "shaders": [
+                    {
+                        "file": "test.shader"
+                    }
+                ]
             }
         )";
 
