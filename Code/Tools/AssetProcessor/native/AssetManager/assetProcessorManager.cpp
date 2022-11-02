@@ -4952,6 +4952,9 @@ namespace AssetProcessor
             // if the job failed, we need to wipe the tracking column so that the next time we start the app we will try it again.
             // it may not be necessary to actually alter the database here.
             m_remainingJobsForEachSourceFile.erase(foundTrackingInfo);
+
+            Q_EMIT FinishedAnalysis(m_remainingJobsForEachSourceFile.size());
+
             return;
         }
 
