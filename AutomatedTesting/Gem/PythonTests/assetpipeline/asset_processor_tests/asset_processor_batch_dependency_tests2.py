@@ -50,7 +50,7 @@ class TestsAssetProcessorBatch_DependencyTests(object):
     @pytest.mark.test_case_id("C18108049")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    def test_WindowsMacPlatforms_SchemaGem_BatchLoadsSchema(
+    def test_SchemaGem_BatchLoadsSchema(
             self, asset_processor, workspace, ap_setup_fixture):
         """
 
