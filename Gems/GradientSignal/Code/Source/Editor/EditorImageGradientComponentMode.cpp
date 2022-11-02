@@ -13,6 +13,7 @@
 #include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsRequestBus.h>
 #include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsWindow.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
@@ -697,15 +698,28 @@ namespace GradientSignal
         // create and register the "Show Paint Brush Settings" button.
         // This button is needed because the window is only shown while in component mode, and the window can be closed by the user,
         // so we need to provide an alternate way for the user to re-open the window. 
-        m_paintBrushSettingsButtonId = RegisterClusterButton(m_paintBrushControlClusterId, "Paint", "Show Paint Brush Settings");
+        m_paintModeButtonId = RegisterClusterButton(m_paintBrushControlClusterId, "Paint", "Switch to Paint Mode");
+        m_eyedropperModeButtonId = RegisterClusterButton(m_paintBrushControlClusterId, "Eyedropper", "Switch to Eyedropper Mode");
+        m_smoothModeButtonId = RegisterClusterButton(m_paintBrushControlClusterId, "Smooth", "Switch to Smooth Mode");
 
         m_buttonSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(
             [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
             {
-                if (buttonId == m_paintBrushSettingsButtonId)
+                AzToolsFramework::PaintBrushMode brushMode = AzToolsFramework::PaintBrushMode::Paintbrush;
+
+                if (buttonId == m_eyedropperModeButtonId)
                 {
-                    AzToolsFramework::OpenViewPane(PaintBrush::s_paintBrushSettingsName);
+                    brushMode = AzToolsFramework::PaintBrushMode::Eyedropper;
                 }
+                else if (buttonId == m_smoothModeButtonId)
+                {
+                    brushMode = AzToolsFramework::PaintBrushMode::Smooth;
+                }
+
+                AzToolsFramework::OpenViewPane(PaintBrush::s_paintBrushSettingsName);
+
+                AzToolsFramework::PaintBrushSettingsRequestBus::Broadcast(
+                    &AzToolsFramework::PaintBrushSettingsRequestBus::Events::SetBrushMode, brushMode);
             });
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,

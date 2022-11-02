@@ -83,7 +83,9 @@ namespace GradientSignal
         PaintBrushUndoBuffer* m_paintBrushUndoBuffer = nullptr;
 
         AzToolsFramework::ViewportUi::ClusterId m_paintBrushControlClusterId;
-        AzToolsFramework::ViewportUi::ButtonId m_paintBrushSettingsButtonId;
+        AzToolsFramework::ViewportUi::ButtonId m_paintModeButtonId;
+        AzToolsFramework::ViewportUi::ButtonId m_eyedropperModeButtonId;
+        AzToolsFramework::ViewportUi::ButtonId m_smoothModeButtonId;
 
         AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler m_buttonSelectionHandler;
     };
