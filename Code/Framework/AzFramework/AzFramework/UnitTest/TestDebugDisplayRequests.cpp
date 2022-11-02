@@ -7,6 +7,7 @@
  */
 
 #include "TestDebugDisplayRequests.h"
+#include <AzCore/Math/Geometry3DUtils.h>
 
 namespace UnitTest
 {
@@ -100,23 +101,20 @@ namespace UnitTest
 
     void TestDebugDisplayRequests::DrawWireSphere(const AZ::Vector3& pos, float radius)
     {
-        AZStd::vector<AZ::Vector3> points;
-        const int numSlices = 16;
-        const int numAngularDivisions = 16;
-        points.reserve(numSlices * numAngularDivisions);
-        for (int sliceIndex = 0; sliceIndex < numSlices; sliceIndex++)
-        {
-            const float theta = (static_cast<float>(sliceIndex) + 0.5f) / static_cast<float>(numSlices) * AZ::Constants::Pi;
-            float sinTheta;
-            float cosTheta;
-            AZ::SinCos(theta, sinTheta, cosTheta);
-            for (int angularIndex = 0; angularIndex < numAngularDivisions; angularIndex++)
+        const int subdivisionDepth = 3;
+        AZStd::vector<AZ::Vector3> icoSphereVertices = AZ::Geometry3dUtils::GenerateIcoSphere(subdivisionDepth);
+
+        // scale the icosphere vertices to the correct radius and move to the required position
+        AZStd::transform(
+            icoSphereVertices.begin(),
+            icoSphereVertices.end(),
+            icoSphereVertices.begin(),
+            [&radius, &pos](AZ::Vector3& vertex)
             {
-                const float phi = static_cast<float>(angularIndex) / static_cast<float>(numAngularDivisions) * AZ::Constants::TwoPi;
-                points.push_back(pos + radius * AZ::Vector3(sinTheta * AZ::Sin(phi), sinTheta * AZ::Cos(phi), cosTheta));
-            }
-        }
-        DrawPoints(points);
+                return pos + radius * vertex;
+            });
+
+        DrawPoints(icoSphereVertices);
     }
 
     void TestDebugDisplayRequests::PushMatrix(const AZ::Transform& tm)
