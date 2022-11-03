@@ -38,17 +38,17 @@ class ScriptCanvasComponent:
 
     def __init__(self):
         self.editor_entity = None
-        self.sc_component = None
+        self.script_canvas_component = None
 
     def __init__(self, editor_entity: EditorEntity, sc_file_path: str):
         self.editor_entity = None
-        self.sc_component = None
-        self.setup_SC_component_existing_entity(editor_entity, sc_file_path)
+        self.script_canvas_component = None
+        self.add_component_to_entity(editor_entity, sc_file_path)
 
-    def setup_SC_component_new_entity(self, entity_name: str, sc_file_path: str,
-                                      position=math.Vector3(512.0, 512.0, 32.0)) -> None:
+    def create_new_entity_with_component(self, entity_name: str, sc_file_path: str,
+                                         position=math.Vector3(512.0, 512.0, 32.0)) -> None:
         """
-        Function for constructing the SCComponent object. This will make a new entity, add a script canvas component and
+        Function for constructing the SC Component object. This will make a new entity, add a script canvas component and
         then open a script canvas file from disk onto the component's source handle value.
 
         param entity_name: The name you want the entity to have
@@ -62,11 +62,11 @@ class ScriptCanvasComponent:
         self.editor_entity = EditorEntity.create_editor_entity_at(position, entity_name)
         self.editor_entity.add_components([SCRIPT_CANVAS_UI])
 
-        self.sc_component = self.editor_entity.get_components_of_type([SCRIPT_CANVAS_UI])[0]
-        self.sc_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
+        self.script_canvas_component = self.editor_entity.get_components_of_type([SCRIPT_CANVAS_UI])[0]
+        self.script_canvas_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
 
-    def setup_SC_component_existing_entity(self, editor_entity: EditorEntity, sc_file_path: str,
-                                           sc_component_index=0) -> None:
+    def add_component_to_entity(self, editor_entity: EditorEntity, sc_file_path: str,
+                                sc_component_index=0) -> None:
         """
         Function for constructing the SCComponent object. This uses an existing entity and loads a new script canvas
         file into the source handle value
@@ -79,9 +79,9 @@ class ScriptCanvasComponent:
         sourcehandle = scriptcanvas.SourceHandleFromPath(sc_file_path)
 
         self.editor_entity = editor_entity
-        self.sc_component = self.editor_entity.get_components_of_type([SCRIPT_CANVAS_UI])[sc_component_index]
+        self.script_canvas_component = self.editor_entity.get_components_of_type([SCRIPT_CANVAS_UI])[sc_component_index]
 
-        self.sc_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
+        self.script_canvas_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
 
     def set_variable_value(self, variable_name: str, variable_state: VariableState, variable_value) -> None:
         """
@@ -96,15 +96,15 @@ class ScriptCanvasComponent:
 
         returns None
         """
-        component_property_path = self.__make_variable_component_property_path(variable_name, variable_state)
+        component_property_path = self.__construct_variable_component_property_path(variable_name, variable_state)
         print(variable_value)
-        self.sc_component.set_component_property_value(component_property_path, variable_value)
+        self.script_canvas_component.set_component_property_value(component_property_path, variable_value)
 
         #validate the change
-        set_value = self.sc_component.get_component_property_value(component_property_path)
+        set_value = self.script_canvas_component.get_component_property_value(component_property_path)
         assert set_value == variable_value, f"Component variable {variable_name} was not set properly"
 
-    def __make_variable_component_property_path(self, variable_name: str, variable_state: VariableState) -> str:
+    def __construct_variable_component_property_path(self, variable_name: str, variable_state: VariableState) -> str:
         """
         helper function for constructing a component property path for the value setting function
 
@@ -127,7 +127,7 @@ class ScriptCanvasComponent:
         component_property_path += variable_name
 
         # test to see if this is a valid path
-        valid_path = self.sc_component.get_component_property_value(component_property_path) is not None
+        valid_path = self.script_canvas_component.get_component_property_value(component_property_path) is not None
         assert valid_path, "Path to variable was invalid! Check use/unused state or variable name"
 
         return component_property_path

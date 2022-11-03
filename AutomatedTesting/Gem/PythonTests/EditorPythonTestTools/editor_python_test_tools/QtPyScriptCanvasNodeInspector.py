@@ -13,10 +13,10 @@ from editor_python_test_tools.utils import TestHelper as helper
 from PySide2 import QtWidgets, QtTest, QtCore
 import pyside_utils
 from consts.scripting import (PROPERTY_EDITOR_QT, INITIAL_VALUE_SOURCE_QT, NODE_INSPECTOR_QT)
-from consts.general import (WAIT_TIME_SEC_1, )
+from consts.general import (WAIT_TIME_SEC_3)
 from enum import IntEnum
 
-class BooleanCheckBoxValues(IntEnum): # get a better name for this
+class CheckBoxStates(IntEnum):
     Off = 0
     On = 1
 
@@ -55,7 +55,7 @@ class QtPyScriptCanvasNodeInspector:
 
         match variable_type:
             case "Boolean":
-                assert type(new_value) == BooleanCheckBoxValues, f"New value: {new_value} is invalid for this variable type:{variable_type}"
+                assert type(new_value) == CheckBoxStates, f"New value: {new_value} is invalid for this variable type:{variable_type}"
                 self.__change_variable_value_Boolean(variable_qobject, new_value)
             case "Color", "String":
                 assert type(new_value) == str, f"New value: {new_value} is invalid for this variable type:{variable_type}"
@@ -63,7 +63,7 @@ class QtPyScriptCanvasNodeInspector:
             case default:
                 assert False, "An invalid variable type was provided"
 
-    def __change_variable_value_Boolean(self, variable_qobject: QtWidgets.QFrame, new_value: BooleanCheckBoxValues) -> None:
+    def __change_variable_value_Boolean(self, variable_qobject: QtWidgets.QFrame, new_value: CheckBoxStates) -> None:
         """
         helper function for the change_variable initial_value branch (boolean variable type)
         """
@@ -76,7 +76,9 @@ class QtPyScriptCanvasNodeInspector:
 
     def __change_variable_value_string(self, variable_qobject: QtWidgets.QFrame, new_value: str) -> None:
         """
-        helper function for the change_variable_initial_value branch(color, string variable type)
+        helper function for the change_variable_initial_value branch(color, string variable type). This changes the
+        variable's initial value to whatever is in the new_value argument. Color's RGBA value is a string and *NOT*
+        a vector
 
         params variable_qobject: the qframe we need to drill into
         params new_value: the value we are replacing the old value with
@@ -85,12 +87,12 @@ class QtPyScriptCanvasNodeInspector:
         """
 
         qline_edit = variable_qobject.findChild(QtWidgets.QLineEdit, "")
-        helper.wait_for_condition(lambda: True is False, WAIT_TIME_SEC_1)
+        helper.wait_for_condition(lambda: qline_edit is not None, WAIT_TIME_SEC_3)
 
         qline_edit.setText(f"{new_value}")
 
 
-    def change_variable_initial_value_source(self, value_source: BooleanCheckBoxValues):
+    def change_variable_initial_value_source(self, value_source: CheckBoxStates):
         """
         Function for changing the scope of a variable. if you change the value source to 'from component' the variable
         will be exposed the script canvas component.

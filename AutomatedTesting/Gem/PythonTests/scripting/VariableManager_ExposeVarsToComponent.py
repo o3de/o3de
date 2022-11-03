@@ -37,7 +37,7 @@ def VariableManager_ExposeVarsToComponent():
     # Preconditions
     from editor_python_test_tools.QtPyO3DEEditor import QtPyO3DEEditor
     from scripting_utils.script_canvas_component import ScriptCanvasComponent, VariableState
-    from editor_python_test_tools.QtPyScriptCanvasNodeInspector import BooleanCheckBoxValues
+    from editor_python_test_tools.QtPyScriptCanvasNodeInspector import CheckBoxStates
     import azlmbr.legacy.general as general
     from consts.scripting import (SCRIPT_CANVAS_TEST_FILE_PATH)
     from editor_python_test_tools.editor_entity_utils import EditorEntity
@@ -46,9 +46,10 @@ def VariableManager_ExposeVarsToComponent():
 
     general.idle_enable(True)
 
-    # 1) Open Script Canvas window
-    qtpy_o3de_editor = QtPyO3DEEditor()
+    # 1) Create a new level file and then open Script Canvas editor
     TestHelper.open_level("", "Base")
+
+    qtpy_o3de_editor = QtPyO3DEEditor()
     sc_editor = qtpy_o3de_editor.open_script_canvas()
 
     # 2) Get the SC window, variable manager and node inspector objects
@@ -68,7 +69,7 @@ def VariableManager_ExposeVarsToComponent():
     variable_manager.select_variable_from_table(selection_index)
 
     # 7) change the selected variable's intial value source to from Component (on)
-    node_inspector.change_variable_initial_value_source(BooleanCheckBoxValues.On)
+    node_inspector.change_variable_initial_value_source(CheckBoxStates.On)
 
     # 8) Save the file to disk
     #imagine a save file function call here
