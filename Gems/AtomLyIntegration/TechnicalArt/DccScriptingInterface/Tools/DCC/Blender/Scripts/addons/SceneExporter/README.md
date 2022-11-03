@@ -133,7 +133,7 @@ This option will export your FBX in Quads or Triangles. This is non-destrutive t
 
 # E: EXPORT FILE
 
-When all the requirements are met for an export, the export button will be unlocked, click this will send your assets to the selected o3de project path. A custom export filename for the asset. If you wish to export multi-able files at once, they will use the assets object name when exported.
+When all the requirements are met for an export, the export button will be unlocked. Clicking the export button will send your assets to the selected o3de project path with a custom export filename for the asset. If you wish to export multi-able files at once, they will use the assets object name when exported.
 
 ![image](https://user-images.githubusercontent.com/87207603/191545003-1296a19b-e66d-4d02-a88f-396ec16478d3.png)
 
