@@ -904,6 +904,7 @@ namespace AzToolsFramework
                 {
                     dpe->ReleaseHandler(AZStd::move(foundEntry->second.hanlderInterface));
                     m_widgetToPropertyHandlerInfo.erase(foundEntry);
+                    RemoveAttributes(childIndex);
                     DetachAndHide(childWidget);
                 }
                 else // not a row, not a PropertyHandler, must be a label
@@ -1574,71 +1575,4 @@ namespace AzToolsFramework
         // Release unused handlers from the pool, thereby destroying them and their associated widgets
         m_unusedHandlers.clear();
     }
-
-    /*
-    DocumentPropertyEditor::RecycledWidgets::~RecycledWidgets()
-    {
-        for (auto* rowWidget : m_recycledRows)
-        {
-            delete rowWidget;
-        }
-        for (auto* labelWidget : m_recycledLabels)
-        {
-            delete labelWidget;
-        }
-    }
-
-    DPERowWidget* DocumentPropertyEditor::RecycledWidgets::GetRow(int depth, DPERowWidget* parentRow)
-    {
-        if (!m_recycledRows.empty())
-        {
-            auto mostRecentlyUsed = m_recycledRows.back();
-            m_recycledRows.pop_back();
-            mostRecentlyUsed->Init(depth, parentRow);
-            return mostRecentlyUsed;
-        }
-        else
-        {
-            return new DPERowWidget(depth, parentRow);
-        }
-    }
-
-    void DocumentPropertyEditor::RecycledWidgets::RecycleRow(DPERowWidget* recycledRow)
-    {
-        if (recycledRow)
-        {
-            recycledRow->Clear();
-            DetachAndHide(recycledRow);
-            m_recycledRows.push_back(recycledRow);
-        }
-    }
-
-    AzQtComponents::ElidingLabel* DocumentPropertyEditor::RecycledWidgets::GetLabel(const QString& text, QWidget* parent)
-    {
-        if (!m_recycledLabels.empty())
-        {
-            auto mostRecentlyUsed = m_recycledLabels.back();
-            m_recycledLabels.pop_back();
-            mostRecentlyUsed->SetText(text);
-            mostRecentlyUsed->setParent(parent);
-            return mostRecentlyUsed;
-        }
-        else
-        {
-            return new AzQtComponents::ElidingLabel(text, parent);
-        }
-    }
-
-    void DocumentPropertyEditor::RecycledWidgets::RecycleLabel(AzQtComponents::ElidingLabel* recycledLabel)
-    {
-        if (recycledLabel)
-        {
-            DetachAndHide(recycledLabel);
-            m_recycledLabels.push_back(recycledLabel);
-        }
-    }
-
-    AZStd::weak_ptr<DocumentPropertyEditor::RecycledWidgets> DocumentPropertyEditor::s_recycledList;
-    */
-
 } // namespace AzToolsFramework

@@ -218,7 +218,7 @@ namespace AzToolsFramework
         bool IsRecursiveExpansionOngoing() const;
         void SetRecursiveExpansionOngoing(bool isExpanding);
 
-        // shared pool of recycled widgets
+        // shared pools of recycled widgets
         auto GetRowPool()
         {
             return m_rowPool;
@@ -228,26 +228,6 @@ namespace AzToolsFramework
         {
             return m_labelPool;
         }
-
-        /*struct RecycledWidgets
-        {
-            ~RecycledWidgets();
-
-            DPERowWidget* GetRow(int depth, DPERowWidget* parentRow);
-            void RecycleRow(DPERowWidget* recycledRow);
-            AzQtComponents::ElidingLabel* GetLabel(const QString& text, QWidget* parent);
-            void RecycleLabel(AzQtComponents::ElidingLabel* recycledLabel);
-
-            static void DetachAndHide(QWidget* widget);
-
-            AZStd::vector<DPERowWidget*> m_recycledRows;
-            AZStd::vector<AzQtComponents::ElidingLabel*> m_recycledLabels;
-        };
-
-        static AZStd::shared_ptr<RecycledWidgets> GetWidgetPool()
-        {
-            return s_recycledList.lock();
-        }*/
 
     public slots:
         //! set the DOM adapter for this DPE to inspect
@@ -279,12 +259,8 @@ namespace AzToolsFramework
         AZStd::vector<AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_unusedHandlers;
         DPERowWidget* m_rootNode = nullptr;
 
-        // keep a list of frequently used widgets that can be recycled for efficiency without
-        // incurring the cost of creating and destroying them, and share this list (and its ownership) between
-        // all instances of DocumentPropertyWidgets. Keep a weak_pointer for each new DPE to initialize their shared reference
-        //AZStd::shared_ptr<RecycledWidgets> m_recycledList;
-        //static AZStd::weak_ptr<RecycledWidgets> s_recycledList;
-
+        // keep pools of frequently used widgets that can be recycled for efficiency without
+        // incurring the cost of creating and destroying them
         AZStd::shared_ptr<AZ::InstancePool<DPERowWidget>> m_rowPool;
         AZStd::shared_ptr<AZ::InstancePool<AzQtComponents::ElidingLabel>> m_labelPool;
     };

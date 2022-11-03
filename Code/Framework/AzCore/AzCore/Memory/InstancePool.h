@@ -38,13 +38,13 @@ namespace AZ
 
         T* GetInstance()
         {
-            /*if (!m_instances.empty())
+            if (!m_instances.empty())
             {
                 T* fromList = m_instances.back().release();
                 m_instances.pop_back();
                 return fromList;
             }
-            else*/
+            else
             {
                 return new T;
             }
