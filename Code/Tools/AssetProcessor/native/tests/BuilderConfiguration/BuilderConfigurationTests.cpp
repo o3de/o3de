@@ -10,6 +10,8 @@
 #include <native/unittests/UnitTestUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
+#include <QTemporaryDir>
+
 
 class BuilderConfigurationTests
     : public ::UnitTest::ScopedAllocatorSetupFixture
