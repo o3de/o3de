@@ -107,9 +107,9 @@ namespace UnitTest
         m_prefabSystemComponent->OnSystemTick();
     }
 
-    AZ::Entity* PrefabTestFixture::CreateEntity(AZStd::string entityName, const bool shouldActivate)
+    AZ::Entity* PrefabTestFixture::CreateEntity(const AZStd::string& entityName, bool shouldActivate)
     {
-        // Circumvent the EntityContext system and generate a new entity with a transformcomponent
+        // Circumvent the EntityContext system and generate a new entity with a transform component
         AZ::Entity* newEntity = aznew AZ::Entity(entityName);
         
         if(shouldActivate)

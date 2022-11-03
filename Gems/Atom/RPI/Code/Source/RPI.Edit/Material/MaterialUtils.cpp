@@ -151,7 +151,7 @@ namespace AZ
                 AZ::Outcome<MaterialTypeSourceData> outcome = LoadJsonSourceDataWithImports<MaterialTypeSourceData>(filePath, document, importedFiles);
                 if (outcome.IsSuccess())
                 {
-                    outcome.GetValue().ConvertToNewDataFormat();
+                    outcome.GetValue().UpgradeLegacyFormat();
                     outcome.GetValue().ResolveUvEnums();
                 }
                 return outcome;
@@ -180,7 +180,7 @@ namespace AZ
                 reportingHelper.Attach(settings);
 
                 JsonSerialization::Load(material, *document, settings);
-                material.ConvertToNewDataFormat();
+                material.UpgradeLegacyFormat();
 
                 if (reportingHelper.ErrorsReported())
                 {

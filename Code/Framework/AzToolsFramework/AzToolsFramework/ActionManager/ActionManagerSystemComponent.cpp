@@ -77,7 +77,7 @@ namespace AzToolsFramework
     {
     }
 
-    void ActionManagerSystemComponent::NotifyEditorInitialized()
+    void ActionManagerSystemComponent::NotifyMainWindowInitialized(QMainWindow* /* mainWindow */)
     {
         // Broadcast synchronization hooks.
         // Order is important since latter elements may have depencencies on earlier ones.

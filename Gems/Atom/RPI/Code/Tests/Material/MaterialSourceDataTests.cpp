@@ -549,7 +549,7 @@ namespace UnitTest
 
         MaterialSourceData material;
         LoadTestDataFromJson(material, inputJson);
-        material.ConvertToNewDataFormat();
+        material.UpgradeLegacyFormat();
 
         MaterialSourceData expectedMaterial;
         expectedMaterial.m_materialType = "test.materialtype";
@@ -707,19 +707,19 @@ namespace UnitTest
 
         ErrorMessageFinder errorMessageFinder;
 
-        errorMessageFinder.AddExpectedErrorMessage("Could not find asset [DoesNotExist.materialtype]");
+        errorMessageFinder.AddExpectedErrorMessage("Could not find asset for source file [DoesNotExist.materialtype]");
         auto result = material.CreateMaterialAsset(AZ::Uuid::CreateRandom(), "test.material", AZ::RPI::MaterialAssetProcessingMode::DeferredBake, elevateWarnings);
         EXPECT_FALSE(result.IsSuccess());
         errorMessageFinder.CheckExpectedErrorsFound();
 
         errorMessageFinder.Reset();
-        errorMessageFinder.AddExpectedErrorMessage("Could not find asset [DoesNotExist.materialtype]");
+        errorMessageFinder.AddExpectedErrorMessage("Could not find asset for source file [DoesNotExist.materialtype]");
         result = material.CreateMaterialAsset(AZ::Uuid::CreateRandom(), "test.material", AZ::RPI::MaterialAssetProcessingMode::PreBake, elevateWarnings);
         EXPECT_FALSE(result.IsSuccess());
         errorMessageFinder.CheckExpectedErrorsFound();
         
         errorMessageFinder.Reset();
-        errorMessageFinder.AddExpectedErrorMessage("Could not find asset [DoesNotExist.materialtype]");
+        errorMessageFinder.AddExpectedErrorMessage("Could not find asset for source file [DoesNotExist.materialtype]");
         errorMessageFinder.AddIgnoredErrorMessage("Failed to create material type asset ID", true);
         result = material.CreateMaterialAssetFromSourceData(AZ::Uuid::CreateRandom(), "test.material", elevateWarnings);
         EXPECT_FALSE(result.IsSuccess());
@@ -1122,7 +1122,12 @@ namespace UnitTest
                             ]
                         }
                     ]
-                }
+                },
+                "shaders": [
+                    {
+                        "file": "test.shader"
+                    }
+                ]
             }
         )";
 
@@ -1212,7 +1217,7 @@ namespace UnitTest
         // This test is the same as CreateMaterialAssetFromSourceData_MultiLevelDataInheritance except it uses the old format
         // where material property values in the .material file were nested, with properties listed under a group object,
         // rather than using a flat list of property values.
-        // Basically, we are making sure that MaterialSourceData::ConvertToNewDataFormat() is getting called.
+        // Basically, we are making sure that MaterialSourceData::UpgradeLegacyFormat() is getting called.
 
         const AZStd::string simpleMaterialTypeJson = R"(
             {
@@ -1237,7 +1242,12 @@ namespace UnitTest
                             ]
                         }
                     ]
-                }
+                },
+                "shaders": [
+                    {
+                        "file": "test.shader"
+                    }
+                ]
             }
         )";
 
@@ -1353,7 +1363,12 @@ namespace UnitTest
                                 ]
                             }
                         ]
-                    }
+                    },
+                    "shaders": [
+                        {
+                            "file": "@exefolder@/Temp/test.shader"
+                        }
+                    ]
                 }
             )";
 

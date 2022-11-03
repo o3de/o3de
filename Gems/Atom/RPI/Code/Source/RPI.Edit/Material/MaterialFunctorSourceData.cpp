@@ -18,6 +18,14 @@ namespace AZ
 {
     namespace RPI
     {
+        void MaterialFunctorSourceData::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+            {
+                serializeContext->Class<MaterialFunctorSourceData>();
+            }
+        }
+
         void MaterialFunctorSourceData::AddMaterialPropertyDependency(Ptr<MaterialFunctor> functor, MaterialPropertyIndex index) const
         {
             functor->m_materialPropertyDependencies.set(index.GetIndex());
