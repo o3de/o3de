@@ -113,7 +113,7 @@ namespace Multiplayer
         Enabled
     };
 
-        //! The maximum number of component version hashes we want to stuff into a single packet
+    //! The maximum number of component version hashes we want to stuff into a single packet
     static constexpr uint32_t MaxComponentVersionDataPerPacket = 64;
 
     struct ComponentVersionMessageData
