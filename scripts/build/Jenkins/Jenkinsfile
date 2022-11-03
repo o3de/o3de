@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 import groovy.json.JsonOutput
 import java.util.regex.Pattern
 
