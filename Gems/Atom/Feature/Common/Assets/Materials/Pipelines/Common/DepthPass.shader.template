@@ -1,5 +1,5 @@
 {
-    "Source" : "INSERT_AZSL_HERE",
+    "Source" : "INSERT_AZSL_PATH_HERE",
 
     "DepthStencilState" : { 
         "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }

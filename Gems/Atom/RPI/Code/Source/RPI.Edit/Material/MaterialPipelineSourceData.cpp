@@ -28,6 +28,7 @@ namespace AZ
                 serializeContext->Class<MaterialPipelineSourceData>()
                     ->Version(1)
                     ->Field("shaderTemplates", &MaterialPipelineSourceData::m_shaderTemplates)
+                    ->Field("pipelineScript", &MaterialPipelineSourceData::m_pipelineScript)
                     ;
 
                 if (auto editContext = serializeContext->GetEditContext())
@@ -43,6 +44,7 @@ namespace AZ
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialPipelineSourceData::m_shaderTemplates, "Shader Templates", "List of templates used to generate material-specific shaders.")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialPipelineSourceData::m_pipelineScript, "Pipeline Script Path", "The pipeline can use a lua script to configure shader compilation.")
                         ;
                 }
             }
@@ -66,6 +68,7 @@ namespace AZ
                     ->Constructor()
                     ->Constructor<const MaterialPipelineSourceData&>()
                     ->Property("shaderTemplates", BehaviorValueProperty(&MaterialPipelineSourceData::m_shaderTemplates))
+                    ->Property("pipelineScript", BehaviorValueProperty(&MaterialPipelineSourceData::m_pipelineScript))
                     ;
             }
         }

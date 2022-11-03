@@ -11,12 +11,8 @@
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float2",
                 "defaultValue": {
                     "$type": "Vector2",
                     "Value": [
@@ -26,7 +22,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "float2 NODEID_SLOTNAME = SLOTVALUE.xy;"
+                        "float2 NODEID_SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -36,9 +32,8 @@
                 "name": "outX",
                 "displayName": "X",
                 "description": "X",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.x;"
@@ -49,9 +44,8 @@
                 "name": "outY",
                 "displayName": "Y",
                 "description": "Y",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.y;"

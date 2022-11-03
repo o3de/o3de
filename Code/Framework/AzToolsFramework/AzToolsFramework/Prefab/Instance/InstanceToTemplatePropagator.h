@@ -37,7 +37,8 @@ namespace AzToolsFramework
 
             AZStd::string GenerateEntityAliasPath(AZ::EntityId entityId) override;
 
-            void AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, AZStd::string prefix = "") override;
+            void AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, const AZStd::string& prefix = "") override;
+            void AppendEntityAliasPathToPatchPaths(PrefabDom& providedPatch, const AZStd::string& entityAliasPath) override;
 
             InstanceOptionalReference GetTopMostInstanceInHierarchy(AZ::EntityId entityId) override;
 
