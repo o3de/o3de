@@ -43,7 +43,7 @@ namespace AzToolsFramework
 
         // todo: look into caching and QLayoutItem::invalidate()
     public:
-        DPELayout(int depth, QWidget* parentWidget = nullptr);
+        DPELayout();
         void Init(int depth, QWidget* parentWidget = nullptr);
         void Clear();
         virtual ~DPELayout();
@@ -95,7 +95,7 @@ namespace AzToolsFramework
         friend class DocumentPropertyEditor;
         friend class DPELayout;
     public:
-        explicit DPERowWidget(int depth, DPERowWidget* parentRow);
+        explicit DPERowWidget();
         void Init(int depth, DPERowWidget* parentRow);
         void Clear(); //!< destroy all layout contents and clear DOM children
         ~DPERowWidget();
@@ -219,7 +219,17 @@ namespace AzToolsFramework
         void SetRecursiveExpansionOngoing(bool isExpanding);
 
         // shared pool of recycled widgets
-        struct RecycledWidgets
+        auto GetRowPool()
+        {
+            return m_rowPool;
+        }
+
+        auto GetLabelPool()
+        {
+            return m_labelPool;
+        }
+
+        /*struct RecycledWidgets
         {
             ~RecycledWidgets();
 
@@ -237,7 +247,7 @@ namespace AzToolsFramework
         static AZStd::shared_ptr<RecycledWidgets> GetWidgetPool()
         {
             return s_recycledList.lock();
-        }
+        }*/
 
     public slots:
         //! set the DOM adapter for this DPE to inspect
@@ -272,14 +282,16 @@ namespace AzToolsFramework
         // keep a list of frequently used widgets that can be recycled for efficiency without
         // incurring the cost of creating and destroying them, and share this list (and its ownership) between
         // all instances of DocumentPropertyWidgets. Keep a weak_pointer for each new DPE to initialize their shared reference
-        AZStd::shared_ptr<RecycledWidgets> m_recycledList;
-        static AZStd::weak_ptr<RecycledWidgets> s_recycledList;
+        //AZStd::shared_ptr<RecycledWidgets> m_recycledList;
+        //static AZStd::weak_ptr<RecycledWidgets> s_recycledList;
 
         AZStd::shared_ptr<AZ::InstancePool<DPERowWidget>> m_rowPool;
+        AZStd::shared_ptr<AZ::InstancePool<AzQtComponents::ElidingLabel>> m_labelPool;
     };
 } // namespace AzToolsFramework
 
 namespace AZ
 {
     AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::DPERowWidget, "{C457A594-6E19-4674-A617-3CC09CF7E532}");
+    AZ_TYPE_INFO_SPECIALIZE(AzQtComponents::ElidingLabel, "{02674C46-1401-4237-97F1-2774A067BF80}");
 }

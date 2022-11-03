@@ -7,7 +7,17 @@
  */
 #pragma once
 
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/smart_ptr/weak_ptr.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/std/string/string.h>
+#include <AzCore/Name/Name.h>
+#include <AzCore/std/utils.h>
 
 namespace AZ
 {
@@ -18,27 +28,29 @@ namespace AZ
     template<typename T>
     class InstancePool : public InstancePoolBase
     {
+    public:
         using ResetInstance = AZStd::function<void(T&)>;
-        InstancePool(ResetInstance resetFunctor)
+
+        InstancePool(ResetInstance resetFunctor = [](T&){})
             : m_resetFunction(resetFunctor)
         {
         }
 
         T* GetInstance()
         {
-            if (m_instances.empty())
+            /*if (!m_instances.empty())
             {
-                auto fromList = m_instances.back();
+                T* fromList = m_instances.back().release();
                 m_instances.pop_back();
-                return fromList.release();
+                return fromList;
             }
-            else
+            else*/
             {
                 return new T;
             }
         }
 
-        void RecycleInstance(AZStd::unique_ptr<T> instanceToRecycle)
+        void RecycleInstance(T* instanceToRecycle)
         {
             if (instanceToRecycle == nullptr)
             {
@@ -49,7 +61,7 @@ namespace AZ
                 m_resetFunction(*instanceToRecycle);
             }
 
-            m_instances.emplace_back(AZStd::move(instanceToRecycle));
+            m_instances.emplace_back(AZStd::unique_ptr<T>(instanceToRecycle));
         }
 
     private:
@@ -76,17 +88,37 @@ namespace AZ
             AZ::Interface<PoolManagerInterface>::Unregister(this);
         }
 
-        template<class T, class... Args>
-        AZ::Outcome<void, AZStd::string> EmplacePool(AZ::Name name, Args&&... args)
+        template<class T>
+        AZ::Outcome<AZStd::shared_ptr<InstancePool<T>>, AZStd::string> CreatePool(AZ::Name name, typename InstancePool<T>::ResetInstance resetFunc)
         {
-            if (auto foundIt = m_nameToInstancePool.find(name); foundIt != m_nameToInstancePool.end())
+            AZStd::shared_ptr<InstancePool<T>> instancePool = AZStd::make_shared<InstancePool<T>>(resetFunc);
+            auto insertResult = m_nameToInstancePool.insert({ name, instancePool });
+            if (!insertResult.second)
             {
-                return AZ::Failure(AZStd::string::format("Instance already exist with name %.s", name.GetCStr()));
+                // Insert failed because an entry already exists. See if the weak pointer at that location is 
+                // lockable. If not, remove the weak_ptr and insert a new one
+                if (insertResult.first->second.lock())
+                {
+                    return AZ::Failure(AZStd::string::format("Instance already exist with name %.s", name.GetCStr()));
+                }
+                else
+                {
+                    m_nameToInstancePool.erase(insertResult.first);
+                    m_nameToInstancePool.insert({ name, instancePool });
+                    return AZ::Success(instancePool);
+                }
             }
+            else
+            {
+                return AZ::Success(instancePool);
+            }
+        }
 
-            AZStd::shared_ptr<InstancePool<T>> instancePool = AZStd::make_shared<InstancePool<T>>(AZStd::forward<Args>(args)...);
-            m_nameToInstancePool.emplace(name, instancePool);
-            return AZ::Success();
+        template<class T>
+        AZ::Outcome<AZStd::shared_ptr<InstancePool<T>>, AZStd::string> CreatePool(typename InstancePool<T>::ResetInstance resetFunc)
+        {
+            const char* name = AZ::AzTypeInfo<T>::Name();
+            return CreatePool<T>(AZ::Name(name), resetFunc);
         }
 
         template<class T>
@@ -105,14 +137,7 @@ namespace AZ
         AZStd::shared_ptr<InstancePool<T>> GetPool()
         {
             const char* name = AZ::AzTypeInfo<T>::Name();
-            auto foundIt = m_nameToInstancePool.find(AZ::Name(name));
-            if (foundIt != m_nameToInstancePool.end())
-            {
-                AZStd::shared_ptr<InstancePoolBase> instancePoolBase = foundIt->second.lock();
-                return AZStd::rtti_pointer_cast<InstancePool<T>>(instancePoolBase);
-            }
-
-            return nullptr;
+            return GetPool<T>(AZ::Name(name));
         }
 
     private:
