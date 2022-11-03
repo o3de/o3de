@@ -17,11 +17,13 @@
 
 #include <GradientSignal/Editor/EditorGradientBakerComponent.h>
 
+// this needs to be included before OpenImageIO because of WIN32 GetObject macro conflicting with RegistrySettings::GetObject
+#include <Tests/GradientSignalTestFixtures.h>
+
 AZ_PUSH_DISABLE_WARNING(4777, "-Wunknown-warning-option")
 #include <OpenImageIO/imageio.h>
 AZ_POP_DISABLE_WARNING
 
-#include <Tests/GradientSignalTestFixtures.h>
 
 namespace UnitTest
 {
