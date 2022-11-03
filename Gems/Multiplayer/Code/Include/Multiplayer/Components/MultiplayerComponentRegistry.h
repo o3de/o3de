@@ -86,7 +86,7 @@ namespace Multiplayer
     private:
         NetComponentId m_nextNetComponentId = NetComponentId{ 0 };
         AZStd::unordered_map<NetComponentId, ComponentData> m_componentData;
-        AZ::HashValue64 m_componentVersionHash = AZ::HashValue64{ 0 };
+        AZ::HashValue64 m_componentVersionHolisticHash = AZ::HashValue64{ 0 };
         AZStd::unordered_map<AZ::Name, AZ::HashValue64> m_componentVersionHashes;
     };
 }

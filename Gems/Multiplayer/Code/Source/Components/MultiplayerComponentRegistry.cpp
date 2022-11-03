@@ -17,7 +17,7 @@ namespace Multiplayer
 
         // add all the component hashes together to create an app-wide holistic hash
         m_componentVersionHashes[componentData.m_componentName] = componentData.m_versionHash;
-        m_componentVersionHash += componentData.m_versionHash;
+        m_componentVersionHolisticHash += componentData.m_versionHash;
 
         return netComponentId;
     }
@@ -77,7 +77,7 @@ namespace Multiplayer
 
     AZ::HashValue64 MultiplayerComponentRegistry::GetMultiplayerComponentVersionHolisticHash() const
     {
-        return m_componentVersionHash;
+        return m_componentVersionHolisticHash;
     }
 
     bool MultiplayerComponentRegistry::FindComponentVersionHashByName(const AZ::Name& multiplayerComponentName, AZ::HashValue64& hash) const
@@ -101,5 +101,6 @@ namespace Multiplayer
     {
         m_componentData.clear();
         m_componentVersionHashes.clear();
+        m_componentVersionHolisticHash = AZ::HashValue64{ 0 };
     }
 }
