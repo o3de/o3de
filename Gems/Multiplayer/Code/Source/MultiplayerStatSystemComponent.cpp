@@ -219,25 +219,22 @@ namespace Multiplayer
                 {
                     AZStd::vector<AZ::Metrics::EventField> argsContainer;
 
-                    AZStd::for_each(
-                        group.m_stats.m_items.begin(),
-                        group.m_stats.m_items.end(),
-                        [&argsContainer](CumulativeAverage& stat)
+                    for (auto& stat : group.m_stats.m_items)
+                    {
+                        if (stat.m_average.GetNumRecorded() > 0)
                         {
-                            if (stat.m_average.GetNumRecorded() > 0)
-                            {
-                                // If there are new entries, update the average.
-                                argsContainer.emplace_back(stat.m_name.c_str(), stat.m_average.CalculateAverage());
-                            }
-                            else
-                            {
-                                // If there were no entries within the last collection period, report the last value received.
-                                argsContainer.emplace_back(stat.m_name.c_str(), stat.m_lastValue);
-                            }
+                            // If there are new entries, update the average.
+                            argsContainer.emplace_back(stat.m_name.c_str(), stat.m_average.CalculateAverage());
+                        }
+                        else
+                        {
+                            // If there were no entries within the last collection period, report the last value received.
+                            argsContainer.emplace_back(stat.m_name.c_str(), stat.m_lastValue);
+                        }
 
-                            // Reset average in order to measure average over the save period.
-                            stat.m_average = CumulativeAverage::AverageWindowType{};
-                        });
+                        // Reset average in order to measure average over the save period.
+                        stat.m_average = CumulativeAverage::AverageWindowType{};
+                    }
 
                     AZ::Metrics::CounterArgs counterArgs;
                     counterArgs.m_name = "Stats";
