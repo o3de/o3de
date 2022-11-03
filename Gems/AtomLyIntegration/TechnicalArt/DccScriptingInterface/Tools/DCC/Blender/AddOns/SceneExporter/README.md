@@ -1,14 +1,6 @@
-"""
-Copyright (c) Contributors to the Open 3D Engine Project.
-For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-SPDX-License-Identifier: Apache-2.0 OR MIT
-"""
-
-# -------------------------------------------------------------------------
-
-This folder contains the Blender O3DE Scene Exporter Plugin (DCCsi) for O3DE
 # The O3DE Scene Exporter DCC Tool for Blender
+This folder contains the Blender O3DE Scene Exporter Plugin (DCCsi) for O3DE
 
 ![SciFiDockSmall](https://user-images.githubusercontent.com/87207603/175056100-d8dc00fa-5795-4a46-b1ab-724c25fb1604.gif)
 
@@ -161,23 +153,10 @@ To install, simply zip the SceneExporter folder and import as a Blender Plugin. 
 
 ![InstallPlugin](https://user-images.githubusercontent.com/87207603/191545430-1033c1e5-b195-4cd0-8c1a-864d91ebe487.gif)
 
+----
+"""
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+SPDX-License-Identifier: Apache-2.0 OR MIT
+"""
