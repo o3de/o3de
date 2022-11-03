@@ -18,7 +18,7 @@ namespace UnitTest
 {
     class ComponentModeTestFixture
         : public ToolsApplicationFixture
-        , public AzToolsFramework::EditorDisabledCompositionRequestBus::Handler
+        , private AzToolsFramework::EditorDisabledCompositionRequestBus::Handler
     {
     public:
         // EditorDisabledCompositionRequestBus overrides ...
@@ -28,7 +28,6 @@ namespace UnitTest
 
         void Connect(AZ::EntityId entityId);
         void Disconnect();
-        // Adds disabled component to 
         void AddDisabledComponentToBus(AZ::Component*);
 
     protected:
