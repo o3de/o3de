@@ -11,7 +11,7 @@
 #include <native/resourcecompiler/rccontroller.h>
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <native/unittests/RCcontrollerUnitTests.h>
-#include <native/unittests/UnitTestRunner.h>
+#include <native/unittests/UnitTestUtils.h>
 
 #include <QCoreApplication>
 

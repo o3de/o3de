@@ -53,6 +53,7 @@ namespace LmbrCentral
 
         float m_height = 1.0f; ///< The end to end height of capsule, this includes the cylinder and both caps.
         float m_radius = 0.25f; ///< The radius of this capsule.
+        AZ::Vector3 m_translationOffset = AZ::Vector3::CreateZero(); ///< Translation offset from the entity position.
     };
 
     struct CapsuleInternalEndPoints

@@ -72,7 +72,7 @@ namespace AZ
             
             //! If the data was loaded from an old format file (i.e. where "properties" was a tree with property values nested under groups),
             //! this converts to the new format where properties are stored in a flat list.
-            void ConvertToNewDataFormat();
+            void UpgradeLegacyFormat();
 
             // Note that even though we use an unordered map, the JSON serialization system is nice enough to sort the data when saving to JSON.
             using PropertyValueMap = AZStd::unordered_map<Name, MaterialPropertyValue>;

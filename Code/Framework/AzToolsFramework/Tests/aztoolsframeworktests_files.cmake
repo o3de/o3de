@@ -32,6 +32,7 @@ set(FILES
     EditorTransformComponentSelectionTests.cpp
     EditorVertexSelectionTests.cpp
     EditorViewportIconTests.cpp
+    EditorViewportHelperTests.cpp
     Entity/EditorEntityContextComponentTests.cpp
     Entity/EditorEntityHelpersTests.cpp
     Entity/EditorEntitySearchComponentTests.cpp
@@ -110,6 +111,9 @@ set(FILES
     Prefab/PrefabTestUndoFixture.cpp
     Prefab/PrefabTestUndoFixture.h
     Prefab/PrefabTestUtils.h
+    Prefab/PrefabUndoAddEntityTestFixture.cpp
+    Prefab/PrefabUndoAddEntityTestFixture.h
+    Prefab/PrefabUndoAddEntityTests.cpp
     Prefab/PrefabUndoLinkTests.cpp
     Prefab/PrefabUndoTests.cpp
     Prefab/PrefabUpdateInstancesTests.cpp

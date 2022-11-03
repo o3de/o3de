@@ -51,6 +51,17 @@ namespace WhiteBox
             buttonId);
     }
 
+    static void SetViewportUiClusterDisableButton(
+        AzToolsFramework::ViewportUi::ClusterId clusterId, AzToolsFramework::ViewportUi::ButtonId buttonId, bool isDisabled)
+    {
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterDisableButton,
+            clusterId,
+            buttonId,
+            isDisabled);
+    }
+
     TransformMode::TransformMode(const AZ::EntityComponentIdPair& entityComponentIdPair)
         : m_entityComponentIdPair(entityComponentIdPair)
     {
@@ -352,8 +363,21 @@ namespace WhiteBox
 
     void TransformMode::RefreshManipulator()
     {
+        TransformType activeTransformType = m_transformType;
+        if (m_whiteBoxSelection && AZStd::get_if<VertexIntersection>(&m_whiteBoxSelection->m_selection))
+        {
+            SetViewportUiClusterDisableButton(m_transformClusterId, m_transformRotateButtonId, true);
+            SetViewportUiClusterDisableButton(m_transformClusterId, m_transformScaleButtonId, true);
+            activeTransformType = TransformType::Translation;
+        }
+        else
+        {
+            SetViewportUiClusterDisableButton(m_transformClusterId, m_transformRotateButtonId, false);
+            SetViewportUiClusterDisableButton(m_transformClusterId, m_transformScaleButtonId, false);
+        }
+
         DestroyManipulators();
-        switch (m_transformType)
+        switch (activeTransformType)
         {
         case TransformType::Translation:
             CreateTranslationManipulators();
@@ -403,11 +427,11 @@ namespace WhiteBox
             return;
         }
 
-        AZ::Transform worldTranform = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(worldTranform, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+        AZ::Transform worldTransform = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::EventResult(worldTransform, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
         AZStd::shared_ptr<AzToolsFramework::TranslationManipulators> translationManipulators =
             AZStd::make_shared<AzToolsFramework::TranslationManipulators>(
-                AzToolsFramework::TranslationManipulators::Dimensions::Three, worldTranform, AZ::Vector3::CreateOne());
+                AzToolsFramework::TranslationManipulators::Dimensions::Three, worldTransform, AZ::Vector3::CreateOne());
 
         translationManipulators->SetLineBoundWidth(AzToolsFramework::ManipulatorLineBoundWidth());
         translationManipulators->AddEntityComponentIdPair(m_entityComponentIdPair);
