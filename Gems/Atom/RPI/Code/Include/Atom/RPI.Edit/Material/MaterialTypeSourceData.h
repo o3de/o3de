@@ -29,13 +29,7 @@ namespace AZ
         class JsonMaterialPropertySerializer;
 
         //! This is a simple data structure for serializing in/out .materialtype source files.
-        //! The .materialtype file has two slightly different formats.
-        //! A) It can use an "abstract" format (see IsAbstractFormat) that provides only material-specific shader code.
-        //!    The MaterialTypeBuilder will automatically adapt the material type to work in any render pipeline (Forward+, Deferred, VR, etc.),
-        //!    by pairing it with the available material pipelines (see MaterialPipelineSourceData).
-        //! B) It can use a "direct" format that provides a complete list of the specific shaders that will be used for rendering.
-        //!    This circumvents the material pipeline system, and the author is responsible for adapting the material type to any desired render pipelines.
-        //! Note that there may be a mixture of public and private members, as we are gradually introducing a proper API.
+        //! The .materialtype file has two slightly different formats: "abstract" and "direct". See enum Format below.
         class MaterialTypeSourceData final
         {
         public:
@@ -45,6 +39,23 @@ namespace AZ
             static constexpr const char Extension[] = "materialtype";
 
             static void Reflect(ReflectContext* context);
+
+            //! The .materialtype file has two slightly different formats, in most cases users will want to author content in the abstract format, which is 
+            //! more convenient to work with, as it hides of lot of technical details and automatically works with mulitple render pipelines.
+            enum class Format
+            {
+                Invalid,
+
+                //! In the abstract format, the material type provides only material-specific shader code and a lighting model reference.
+                //! The MaterialTypeBuilder will automatically adapt the material type to work in any render pipeline (Forward+, Deferred, VR, etc.),
+                //! by stitching it together with the available material pipelines (see MaterialPipelineSourceData). This will produce a
+                //! new intermediate material type that is not abstract, for further processing. 
+                Abstract,
+
+                //! In the direct format, the material type provides a complete list of the specific shaders that will be used for rendering.
+                //! This circumvents the material pipeline system, and the author is responsible for adapting the material type to any desired render pipelines.
+                Direct
+            };
 
             struct PropertyConnection
             {
@@ -237,9 +248,16 @@ namespace AZ
             //! A list of specific shaders that will be used to render the material.
             AZStd::vector<ShaderVariantReferenceData> m_shaderCollection;
 
+            //! This indicates the name of the lighting model that this material type uses.
+            //! For example, "Standard", "Enhanced", "Skin". The actual set of available lighting models
+            //! is determined by the .materialpipeline.
+            //! This is relevant for "abstract" material type files (see IsAbstractFormat()).
+            AZStd::string m_lightingModel;
+
             //! This indicates a .azsli file that contains only material-specific shader code.
-            //! The build system will automatically combine this code with material pipeline shader code
+            //! The build system will automatically combine this code with .materialpipeline shader code
             //! for use in each available render pipeline.
+            //! This is relevant for "abstract" material type files (see IsAbstractFormat()).
             AZStd::string m_materialShaderCode;
 
             //! Material functors provide custom logic and calculations to configure shaders, render states, and more. See MaterialFunctor.h for details.
@@ -310,16 +328,15 @@ namespace AZ
             //! Returns a MaterialNameContext for a specific path through the property group hierarchy.
             static MaterialNameContext MakeMaterialNameContext(const MaterialTypeSourceData::PropertyGroupStack& propertyGroupStack);
 
+            //! Create a MaterialTypeAsset for use at runtime. This is only valid for material types with the "direct" format (see GetFormat()).
             Outcome<Data::Asset<MaterialTypeAsset>> CreateMaterialTypeAsset(Data::AssetId assetId, AZStd::string_view materialTypeSourceFilePath = "", bool elevateWarnings = true) const;
 
-            //! If the data was loaded from an old format file (i.e. where "groups" and "properties" were separate sections),
+            //! If the data was loaded from the legacy format file (i.e. where "groups" and "properties" were separate sections),
             //! this converts to the new format where properties are listed inside property groups.
-            bool ConvertToNewDataFormat();
+            bool UpgradeLegacyFormat();
 
-            //! The material type can be formatted in an abstract way. Instead of listing all the specific shaders to be used, it only provides a few snippets of material-specific shader code.
-            //! In this case, the MaterialTypeBuilder will automatically stitch the material shader code together with code for each of the available render pipelines, and produce a
-            //! new intermediate material type that is not abstract, for further processing. CreateMaterialTypeAsset() can only be used on a non-abstract MaterialTypeSourceData.
-            bool IsAbstractFormat() const;
+            //! See enum Format
+            Format GetFormat() const;
 
         private:
                 
