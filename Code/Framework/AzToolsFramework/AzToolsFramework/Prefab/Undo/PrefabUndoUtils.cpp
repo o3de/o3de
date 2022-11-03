@@ -34,32 +34,59 @@ namespace AzToolsFramework
                 patch.PushBack(addNewEntityPatch.Move(), patch.GetAllocator());
             }
 
-            void AppendRemoveEntityPatch(
+            void AppendRemovePatch(
                 PrefabDom& patch,
-                const AZStd::string& targetEntityAliasPath)
+                const AZStd::string& targetAliasPath)
             {
                 AZ_Assert(patch.IsArray(), "Provided patch should be an array object DOM value.");
 
                 PrefabDomValue removeTargetEntityPatch(rapidjson::kObjectType);
-                rapidjson::Value path = rapidjson::Value(targetEntityAliasPath.data(),
-                    aznumeric_caster(targetEntityAliasPath.length()), patch.GetAllocator());
+                rapidjson::Value path = rapidjson::Value(targetAliasPath.data(),
+                    aznumeric_caster(targetAliasPath.length()), patch.GetAllocator());
                 removeTargetEntityPatch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("remove"), patch.GetAllocator())
                     .AddMember(rapidjson::StringRef("path"), AZStd::move(path), patch.GetAllocator());
                 patch.PushBack(removeTargetEntityPatch.Move(), patch.GetAllocator());
             }
 
-            void UpdateCachedOwningInstanceDom(
-                PrefabDomReference cachedOwningInstanceDom,
-                const PrefabDomValue& entityDom,
+            void AppendUpdateEntityPatch(
+                PrefabDom& patch,
+                const PrefabDomValue& entityDomBeforeUpdate,
+                const PrefabDomValue& entityDomAfterUpdate,
                 const AZStd::string& entityAliasPath)
             {
+                AZ_Assert(patch.IsArray(), "Provided patch should be an array object DOM value.");
+
+                auto instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
+                AZ_Assert(instanceToTemplateInterface, "Could not get InstanceToTemplateInterface.");
+
+                PrefabDom newPatches(&(patch.GetAllocator()));
+                instanceToTemplateInterface->GeneratePatch(newPatches, entityDomBeforeUpdate, entityDomAfterUpdate);
+                instanceToTemplateInterface->AppendEntityAliasPathToPatchPaths(newPatches, entityAliasPath);
+
+                for (auto& newPatch : newPatches.GetArray())
+                {
+                    patch.PushBack(newPatch.Move(), patch.GetAllocator());
+                }
+            }
+
+            void UpdateCachedOwningInstanceDom(
+                PrefabDomReference cachedOwningInstanceDom, const PrefabDomValue& entityDom, const AZStd::string& entityAliasPath)
+            {
                 // Create a copy of the DOM of the end state so that it shares the lifecycle of the cached DOM.
-                PrefabDom endStateCopy;
-                endStateCopy.CopyFrom(entityDom, cachedOwningInstanceDom->get().GetAllocator());
-                PrefabDomPath entityPathInDom(entityAliasPath.c_str());
+                PrefabDomValue endStateCopy(entityDom, cachedOwningInstanceDom->get().GetAllocator());
 
                 // Update the cached instance DOM corresponding to the entity so that the same modified entity isn't reloaded again.
-                entityPathInDom.Set(cachedOwningInstanceDom->get(), AZStd::move(endStateCopy));
+                PrefabDomPath entityPathInDom(entityAliasPath.c_str());
+                entityPathInDom.Set(cachedOwningInstanceDom->get(), endStateCopy.Move());
+            }
+
+            void UpdateCachedOwningInstanceDomWithRemoval(PrefabDomReference cachedOwningInstanceDom, const AZStd::string& aliasPath)
+            {
+                if (!aliasPath.empty())
+                {
+                    PrefabDomPath aliasDomPath(aliasPath.c_str());
+                    aliasDomPath.Erase(cachedOwningInstanceDom->get());
+                }
             }
 
             void GenerateUpdateEntityPatch(

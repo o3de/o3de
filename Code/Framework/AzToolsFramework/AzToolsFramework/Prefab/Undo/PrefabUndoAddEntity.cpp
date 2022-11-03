@@ -8,6 +8,7 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoAddEntity.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoUtils.h>
@@ -65,7 +66,7 @@ namespace AzToolsFramework
             PrefabDom newEntityDom;
             m_instanceToTemplateInterface->GenerateDomForEntity(newEntityDom, newEntity);
             PrefabUndoUtils::AppendAddEntityPatch(m_redoPatch, newEntityDom, newEntityAliasPath);
-            PrefabUndoUtils::AppendRemoveEntityPatch(m_undoPatch, newEntityAliasPath);
+            PrefabUndoUtils::AppendRemovePatch(m_undoPatch, newEntityAliasPath);
 
             // Preemptively updates the cached DOM to prevent reloading instance DOM.
             PrefabDomReference cachedOwningInstanceDom = focusedInstance.GetCachedInstanceDom();

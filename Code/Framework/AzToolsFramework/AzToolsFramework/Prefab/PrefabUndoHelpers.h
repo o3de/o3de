@@ -48,6 +48,21 @@ namespace AzToolsFramework
                 TemplateId templateId,
                 UndoSystem::URSequencePoint* undoBatch);
 
+            //! Helper function for removing entities and instances to a prefab template with undo-redo support.
+            //! @param entityAliasPathList The alias path list for entities that will be removed.
+            //! @param nestedInstanceList The pointer list for instances that will be removed.
+            //! @param parentEntityList The parent entity list that will be updated.
+            //! @param owningInstance The common owning prefab instance of all inputs.
+            //! @param focusedInstance The current focused prefab instance.
+            //! @param undoBatch The undo batch node to register the removal undo nodes to.
+            void DeleteEntitiesAndNestedInstances(
+                const AZStd::vector<AZStd::string>& entityAliasPathList,
+                const AZStd::vector<const Instance*>& nestedInstanceList,
+                const AZStd::vector<const AZ::Entity*> parentEntityList,
+                Instance& owningInstance,
+                Instance& focusedInstance,
+                UndoSystem::URSequencePoint* undoBatch);
+
             //! Helper function for updating an entity to a prefab template with undo-redo support.
             //! @param entityDomBeforeUpdatingEntity The DOM of the entity before updating.
             //! @param entityDomAfterUpdatingEntity The DOM of the entity after updating.

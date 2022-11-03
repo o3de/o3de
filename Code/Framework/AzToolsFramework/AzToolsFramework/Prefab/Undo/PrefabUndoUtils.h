@@ -17,8 +17,7 @@ namespace AzToolsFramework
     {
         namespace PrefabUndoUtils
         {
-            //! Create add-entity patch from entity's DOM and alias path, and append it to a given instance 
-            //! patch which is an array of entity patches.
+            //! Create add-entity patch from entity's DOM and alias path, and append it to a given instance patch. 
             //! @param patch An array object of DOM values which stores entity patches.
             //! @param newEntityDom The entity DOM generated from the new entity.
             //! @param newEntityAliasPath The path of the new entity for given instance patch.
@@ -27,18 +26,26 @@ namespace AzToolsFramework
                 const PrefabDomValue& newEntityDom,
                 const AZStd::string& newEntityAliasPath);
 
-            //! Create remove-entity patch from entity's alias path, and append it to a given instance 
-            //! patch which is an array of entity patches.
+            //! Create remove patch from an alias path, and append it to a given instance patch.
             //! @param patch An array object of DOM values which stores entity patches.
-            //! @param newEntityAliasPath The alias path of the entity to remove for given instance patch.
-            void AppendRemoveEntityPatch(
-                PrefabDom& patch,
-                const AZStd::string& targetEntityAliasPath);
+            //! @param targetAliasPath The alias path to DOM value that will be removed.
+            void AppendRemovePatch(
+                PrefabDom& patches,
+                const AZStd::string& targetAliasPath);
 
-            //! Take an entity's before and after update state DOM, create an array of entity patches as
-            //! an instance patch.
-            //! @param patch A patch where an array object of DOM values which stores entity patches will
-            //!     be generated.
+            //! Create edit-entity patch, and append it to a given instance patch array.
+            //! @param patch An array object of DOM values which stores entity patches will be generated.
+            //! @param entityDomBeforeUpdate The DOM presenting state of an entity before update.
+            //! @param entityDomAfterUpdate The DOM presenting state of an entity after update.
+            //! @param entityAliasPath The alias path of the entity to update for given instance patch.
+            void AppendUpdateEntityPatch(
+                PrefabDom& patch,
+                const PrefabDomValue& entityDomBeforeUpdate,
+                const PrefabDomValue& entityDomAfterUpdate,
+                const AZStd::string& entityAliasPath);
+
+            //! Take an entity's before and after update state DOM, create an instance patch of entity patches.
+            //! @param patch An array object of DOM values which stores entity patches will be generated.
             //! @param entityDomBeforeUpdate The DOM presenting state of an entity before update.
             //! @param entityDomAfterUpdate The DOM presenting state of an entity after update.
             //! @param entityAliasPathForPatches The alias path of the entity to update for given instance patch.
@@ -56,7 +63,13 @@ namespace AzToolsFramework
                 PrefabDomReference cachedOwningInstanceDom,
                 const PrefabDomValue& entityDom,
                 const AZStd::string& entityAliasPath);
+
+            //! Remove the DOM (entity or instance) pointed by the provided alias path in the cached instance DOM.
+            //! @param cachedOwningInstanceDom Cached instance DOM that is provided.
+            //! @param aliasPath The alias path as position where the DOM will be removed.
+            void UpdateCachedOwningInstanceDomWithRemoval(
+                PrefabDomReference cachedOwningInstanceDom,
+                const AZStd::string& aliasPath);
         } // namespace PrefabUndoUtils
     } // namespace Prefab
 } // namespace AzToolsFramework
-
