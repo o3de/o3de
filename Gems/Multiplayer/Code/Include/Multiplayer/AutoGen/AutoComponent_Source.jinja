@@ -231,7 +231,7 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Prop
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
 {% if Property.attrib['IsPublic'] | booleanTrue != IsProtected %}
 {%     if (ReplicateFrom == 'Authority') and (ReplicateTo == 'Server') %}
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
 {{ DefineNetworkPropertyGet(ClassName, Property, Prefix) }}
 #endif
 {%     else %}
@@ -247,14 +247,14 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Prop
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
 {% if Property.attrib['IsPublic'] | booleanTrue != IsProtected %}
 {%     if ReplicateFrom == 'Authority' and ReplicateTo == 'Server' %}
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
 {{ DefineNetworkPropertyGet(ClassName, Property, "GetParent().") }}
 #endif
 {%     else %}
 {{ DefineNetworkPropertyGet(ClassName, Property, "GetParent().") }}
 {%     endif %}
 {%     if (ReplicateFrom == 'Authority' and ReplicateTo == 'Server') or (ReplicateTo == 'Client' and Property.attrib['IsPredictable'] | booleanTrue == false) %}
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
 {{ DefineNetworkPropertySet(Component, ReplicateFrom, ReplicateTo, ClassName, Property) }}
 #endif
 {%     else %}
@@ -280,9 +280,9 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Prop
 {%     set paramDefines = [] %}
 {{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
 {% if (InvokeFrom == 'Client') or (InvokeFrom == 'Autonomous') %}
-#if AZ_TRAIT_CLIENT_ENABLED
+#if AZ_TRAIT_CLIENT
 {% elif (InvokeFrom == 'Authority') or (InvokeFrom == 'Server') %}
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
 {% endif %}
 void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ PrintRpcParameters('', paramDefines) }})
 {
@@ -480,7 +480,7 @@ case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ Upp
         if (paramsSerialized && {{ ValidationFunction }})
         {
 {% if HandleOn == 'Authority' %}
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
             if (m_controller)
             {
                 AZ_Assert(GetNetBindComponent()->GetNetEntityRole() == Multiplayer::NetEntityRole::Authority, "Entity proxy does not have authority");
@@ -498,7 +498,7 @@ case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ Upp
             }
 #endif
 {% elif HandleOn == 'Autonomous' %}
-#if AZ_TRAIT_CLIENT_ENABLED
+#if AZ_TRAIT_CLIENT
             if (m_controller)
             {
                 AZ_Assert(GetNetBindComponent()->IsNetEntityRoleAutonomous(), "Entity proxy does not have autonomy");
@@ -509,7 +509,7 @@ case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ Upp
             }
 #endif
 {% elif HandleOn == 'Client' %}
-#if AZ_TRAIT_CLIENT_ENABLED
+#if AZ_TRAIT_CLIENT
             Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection{{ PrintRpcParameters(', ', rpcParamList) }});
 {%        if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
             m_{{ UpperFirst(Property.attrib['Name']) }}Event.Signal({{ PrintRpcParameters('', rpcParamList) }});
@@ -641,7 +641,7 @@ bool {{ ClassName }}::Serialize{{ AutoComponentMacros.GetNetPropertiesSetName(Re
     // We modify the record if we are writing an update so that we don't notify for a change that really didn't change the value (just a duplicated send from the server)
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
 {%     if ReplicateFrom == 'Authority' and ReplicateTo == 'Server' %}
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
 {%     endif %}
 {%     if Property.attrib['Container'] != 'None' and Property.attrib['Container'] != 'Object' %}
     { // Serialization for Vector and Array Network Properties
@@ -1376,7 +1376,7 @@ namespace {{ Component.attrib['Namespace'] }}
         output.m_name = "{{ ComponentName }}NetworkInput";
 {% call(Input) AutoComponentMacros.ParseNetworkInputs(Component) %}
 {% if Input.attrib['ReplicateFrom'] == 'Authority' and Input.attrib['ReplicateTo'] == 'Server' %}
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
 {% endif %}
         if (m_{{ LowerFirst(Input.attrib['Name']) }} != {{ Input.attrib['Type'] }}({{ Input.attrib['Init'] }}))
         {
@@ -1398,7 +1398,7 @@ namespace {{ Component.attrib['Namespace'] }}
     {
 {% call(Input) AutoComponentMacros.ParseNetworkInputs(Component) %}
 {% if Input.attrib['ReplicateFrom'] == 'Authority' and Input.attrib['ReplicateTo'] == 'Server' %}
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
         serializer.Serialize(m_{{ LowerFirst(Input.attrib['Name']) }}, "{{ UpperFirst(Input.attrib['Name']) }}");
 #endif
 {% else %}

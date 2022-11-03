@@ -37,7 +37,7 @@ namespace Multiplayer
         void OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating) override;
         void OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating) override;
 
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
         void HandleSendClientInput
         (
             AzNetworking::IConnection* invokingConnection,
@@ -52,7 +52,7 @@ namespace Multiplayer
         ) override;
 #endif
 
-#if AZ_TRAIT_CLIENT_ENABLED
+#if AZ_TRAIT_CLIENT
         void HandleSendClientInputCorrection
         (
             AzNetworking::IConnection* invokingConnection,
@@ -78,13 +78,13 @@ namespace Multiplayer
 
     private:
 
-#if AZ_TRAIT_CLIENT_ENABLED
+#if AZ_TRAIT_CLIENT
         void OnMigrateStart(ClientInputId migratedInputId);
         void OnMigrateEnd();
         void UpdateAutonomous(AZ::TimeMs deltaTimeMs);
 #endif
 
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
         void UpdateBankedTime(AZ::TimeMs deltaTimeMs);
 #endif
 
@@ -99,11 +99,11 @@ namespace Multiplayer
         // Anti-cheat accumulator for clients who purposely mess with their clock rate
         NetworkInputArray m_lastInputReceived;
 
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
         AZ::ScheduledEvent m_updateBankedTimeEvent; // Drives authority bank time updates
 #endif
 
-#if AZ_TRAIT_CLIENT_ENABLED
+#if AZ_TRAIT_CLIENT
         AZ::ScheduledEvent m_autonomousUpdateEvent; // Drives autonomous input collection
         ClientMigrationStartEvent::Handler m_migrateStartHandler;
         ClientMigrationEndEvent::Handler m_migrateEndHandler;

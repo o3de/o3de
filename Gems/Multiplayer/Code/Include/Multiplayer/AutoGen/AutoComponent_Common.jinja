@@ -170,9 +170,9 @@ AZ::Event<{{ Property.attrib['Type'] }}>
 {%     set PropertyName = UpperFirst(Property.attrib['Name']) %}
 {{     ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
 {% if HandleOn == "Server" or HandleOn == "Authority" %}
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
 {% else %}
-#if AZ_TRAIT_CLIENT_ENABLED
+#if AZ_TRAIT_CLIENT
 {% endif %}
 {% if IsOverride %}
 {%     if paramDefines|count > 0 %}

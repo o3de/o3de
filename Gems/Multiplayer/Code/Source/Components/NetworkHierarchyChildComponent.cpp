@@ -160,7 +160,7 @@ namespace Multiplayer
 
     void NetworkHierarchyChildComponent::TrySetControllerRoot([[maybe_unused]] const NetEntityId rootNetId)
     {
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
         if (HasController() && GetNetBindComponent()->GetNetEntityRole() == NetEntityRole::Authority)
         {
             NetworkHierarchyChildComponentController* controller = static_cast<NetworkHierarchyChildComponentController*>(GetController());

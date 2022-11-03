@@ -37,8 +37,8 @@ ly_add_target(
             Include
     COMPILE_DEFINITIONS
         PUBLIC
-            AZ_TRAIT_CLIENT_ENABLED=1
-            AZ_TRAIT_SERVER_ENABLED=0
+            AZ_TRAIT_CLIENT=1
+            AZ_TRAIT_SERVER=0
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore
@@ -74,8 +74,8 @@ ly_add_target(
             Include
     COMPILE_DEFINITIONS
         PUBLIC
-            AZ_TRAIT_CLIENT_ENABLED=0
-            AZ_TRAIT_SERVER_ENABLED=1
+            AZ_TRAIT_CLIENT=0
+            AZ_TRAIT_SERVER=1
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore
@@ -111,8 +111,8 @@ ly_add_target(
             Include
     COMPILE_DEFINITIONS
         PUBLIC
-            AZ_TRAIT_CLIENT_ENABLED=1
-            AZ_TRAIT_SERVER_ENABLED=1
+            AZ_TRAIT_CLIENT=1
+            AZ_TRAIT_SERVER=1
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore

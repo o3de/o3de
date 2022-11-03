@@ -68,7 +68,7 @@ void Set{{ PropertyName }}(const {{ Property.attrib['Type'] }}& value);
 {% set PropertyName = UpperFirst(Property.attrib['Name']) %}
 {% if Property.attrib['IsPublic']|booleanTrue != IsProtected %}
 {%     if ReplicateFrom == 'Authority' and ReplicateTo == 'Server' %}
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
 //! {{ PropertyName }} Accessors
 //! {{ Property.attrib['Description'] }}.
 {{ DeclareNetworkPropertyGetter(Property) }}
@@ -118,7 +118,7 @@ const {{ Property.attrib['Type'] }}& Get{{ PropertyName }}() const;
 {% set PropertyName = UpperFirst(Property.attrib['Name']) %}
 {% if Property.attrib['IsPublic']|booleanTrue != IsProtected %}
 {% if ReplicateFrom == 'Authority' and ReplicateTo == 'Server' %}
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
 //! {{ PropertyName }} Accessors
 //! {{ Property.attrib['Description'] }}.
 {{ DeclareNetworkPropertyGetter(Property) -}}
@@ -129,7 +129,7 @@ const {{ Property.attrib['Type'] }}& Get{{ PropertyName }}() const;
 {{ DeclareNetworkPropertyGetter(Property) -}}
 {% endif %}
 {%     if (ReplicateFrom == 'Authority' and ReplicateTo == 'Server') or (ReplicateTo == 'Client' and Property.attrib['IsPredictable'] | booleanTrue == false) %}
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
 {{ DeclareNetworkPropertySetter(Property) }}
 #endif
 {%     else %}
@@ -151,11 +151,15 @@ const {{ Property.attrib['Type'] }}& Get{{ PropertyName }}() const;
 //! {{ Property.attrib['Description'] }}
 //! HandleOn {{ HandleOn }}
 {% if (InvokeFrom == 'Client') or (InvokeFrom == 'Autonomous') %}
-#if AZ_TRAIT_CLIENT_ENABLED
+#if AZ_TRAIT_CLIENT
 {% elif (InvokeFrom == 'Authority') or (InvokeFrom == 'Server') %}
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
 {% endif %}
+{% if paramDefines|count > 0 %}
 void {{ PropertyName }}([[maybe_unused]] {{ ', [[maybe_unused]] '.join(paramDefines) }});
+{% else %}
+void {{ PropertyName }}();
+{% endif %}
 #endif
 {% endmacro %}
 {#
@@ -195,7 +199,7 @@ AZ::Event<{{ Property.attrib['Type'] }}> m_{{ LowerFirst(Property.attrib['Name']
 {% macro DeclareNetworkPropertyVars(Component, ReplicateFrom, ReplicateTo) %}
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
 {% if ReplicateFrom == 'Authority' and ReplicateTo == 'Server' %}
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
 {% endif %}
 {%     if Property.attrib['Container'] == 'Array' %}
 {% if Property.attrib['IsRewindable']|booleanTrue %}
@@ -226,7 +230,7 @@ Multiplayer::RewindableObject<{{ Property.attrib['Type'] }}, Multiplayer::Rewind
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
 {% if Property.attrib['IsRewindable']|booleanTrue %}
 {% if ReplicateFrom == 'Authority' and ReplicateTo == 'Server' %}
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
 {% endif %}
 {%     if Property.attrib['Container'] == 'Array' %}
 AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}> m_{{ LowerFirst(Property.attrib['Name']) }}Reflect;
@@ -404,7 +408,7 @@ namespace {{ Component.attrib['Namespace'] }}
 
 {% call(Input) AutoComponentMacros.ParseNetworkInputs(Component) %}
 {% if Input.attrib['ReplicateFrom'] == 'Authority' and Input.attrib['ReplicateTo'] == 'Server' %}
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
         {{ Input.attrib['Type'] }} m_{{ LowerFirst(Input.attrib['Name']) }} = {{ Input.attrib['Type'] }}({{ Input.attrib['Init'] }});
 #endif
 {% else %}

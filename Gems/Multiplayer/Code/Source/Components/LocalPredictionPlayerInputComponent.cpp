@@ -26,7 +26,7 @@ namespace Multiplayer
     AZ_CVAR(uint32_t, cl_PredictiveStateHistorySize, 120, nullptr, AZ::ConsoleFunctorFlags::Null, "Controls how many inputs of predictive state should be retained for debugging desyncs");
 #endif
 
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
     AZ_CVAR(bool, sv_ForceCorrections, false, nullptr, AZ::ConsoleFunctorFlags::Null, "If enabled, the server will force a correction for every input received for debugging");
     AZ_CVAR(bool, sv_EnableCorrections, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables server corrections on autonomous proxy desyncs");
     AZ_CVAR(double, sv_MaxBankTimeWindowSec, 0.2, nullptr, AZ::ConsoleFunctorFlags::Null, "Maximum bank time we allow before we start rejecting autonomous proxy move inputs due to anticheat kicking in");
@@ -130,11 +130,11 @@ namespace Multiplayer
 
     LocalPredictionPlayerInputComponentController::LocalPredictionPlayerInputComponentController(LocalPredictionPlayerInputComponent& parent)
         : LocalPredictionPlayerInputComponentControllerBase(parent)
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
         , m_updateBankedTimeEvent([this]() { UpdateBankedTime(m_updateBankedTimeEvent.TimeInQueueMs()); }, AZ::Name("BankTimeUpdate Event"))
 #endif
 
-#if AZ_TRAIT_CLIENT_ENABLED
+#if AZ_TRAIT_CLIENT
         , m_autonomousUpdateEvent([this]() { UpdateAutonomous(m_autonomousUpdateEvent.TimeInQueueMs()); }, AZ::Name("AutonomousUpdate Event"))
         , m_migrateStartHandler([this](ClientInputId migratedInputId) { OnMigrateStart(migratedInputId); })
         , m_migrateEndHandler([this]() { OnMigrateEnd(); })
@@ -151,7 +151,7 @@ namespace Multiplayer
             m_serverMigrateFrameId = GetNetworkTime()->GetHostFrameId();
         }
 
-#if AZ_TRAIT_CLIENT_ENABLED
+#if AZ_TRAIT_CLIENT
         if (IsNetEntityRoleAutonomous())
         {
             m_autonomousUpdateEvent.Enqueue(AZ::TimeMs{ 1 }, true);
@@ -163,7 +163,7 @@ namespace Multiplayer
 
     void LocalPredictionPlayerInputComponentController::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
-#if AZ_TRAIT_CLIENT_ENABLED
+#if AZ_TRAIT_CLIENT
         if (IsNetEntityRoleAutonomous())
         {
             m_autonomousUpdateEvent.RemoveFromQueue();
@@ -173,7 +173,7 @@ namespace Multiplayer
 #endif
     }
 
-#if AZ_TRAIT_SERVER_ENABLED
+#if AZ_TRAIT_SERVER
     void LocalPredictionPlayerInputComponentController::HandleSendClientInput
     (
         AzNetworking::IConnection* invokingConnection, 
@@ -406,7 +406,7 @@ namespace Multiplayer
     }
 #endif
 
-#if AZ_TRAIT_CLIENT_ENABLED
+#if AZ_TRAIT_CLIENT
     void LocalPredictionPlayerInputComponentController::HandleSendClientInputCorrection
     (
         AzNetworking::IConnection* invokingConnection,
