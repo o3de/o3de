@@ -252,15 +252,15 @@ namespace AzToolsFramework
                 m_prefabOverridePublicInterface->AreOverridesPresent(descendantEntityId))
             {
                 // Build the rect that will be used to paint the icon
-                QRect overrideRectangle =
+                QRect overrideIconBounds =
                     QRect(option.rect.topLeft() + s_overrideIconOffset, QSize(s_overrideIconSize * 2, s_overrideIconSize * 2));
 
                 painter->save();
                 painter->setRenderHint(QPainter::Antialiasing, true);
                 painter->setPen(Qt::NoPen);
                 painter->setBrush(s_overrideIconBackgroundColor);
-                painter->drawEllipse(overrideRectangle.center(), s_overrideIconSize, s_overrideIconSize);
-                s_overrideIcon.paint(painter, overrideRectangle);
+                painter->drawEllipse(overrideIconBounds.center(), s_overrideIconSize, s_overrideIconSize);
+                s_overrideIcon.paint(painter, overrideIconBounds);
                 painter->restore();
             }
         }
