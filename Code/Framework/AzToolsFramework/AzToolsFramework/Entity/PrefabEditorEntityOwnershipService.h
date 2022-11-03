@@ -160,6 +160,8 @@ namespace AzToolsFramework
         void SetEntitiesRemovedCallback(OnEntitiesRemovedCallback onEntitiesRemovedCallback) override;
         void SetValidateEntitiesCallback(ValidateEntitiesCallback validateEntitiesCallback) override;
 
+        void HandleEntityBeingDestroyed(const AZ::EntityId& entityId) override;
+
         bool LoadFromStream(AZ::IO::GenericStream& stream, AZStd::string_view filename) override;
         bool SaveToStream(AZ::IO::GenericStream& stream, AZStd::string_view filename) override;
         

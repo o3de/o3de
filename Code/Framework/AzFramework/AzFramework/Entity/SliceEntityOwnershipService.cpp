@@ -134,10 +134,7 @@ namespace AzFramework
     {
         if (entity)
         {
-            AZ_Assert(m_rootAsset && m_rootAsset->GetComponent(), "Root slice has not been created.");
-            SliceEntityRequestBus::MultiHandler::BusDisconnect(entity->GetId());
-            m_entitiesRemovedCallback({ entity->GetId() });
-            return m_rootAsset->GetComponent()->RemoveEntity(entity);
+            return DestroyEntityById(entity->GetId());
         }
         return false;
     }
@@ -146,11 +143,9 @@ namespace AzFramework
     {
         AZ_Assert(m_rootAsset && m_rootAsset->GetComponent(), "Root slice has not been created.");
         AZ_Assert(m_entitiesRemovedCallback, "Callback function for DestroyEntityById has not been set.");
+        SliceEntityRequestBus::MultiHandler::BusDisconnect(entityId);
         m_entitiesRemovedCallback({ entityId });
-
-        // Entities removed through the application (as in via manual 'delete'),
-        // should be removed from the root slice, but not again deleted.
-        return m_rootAsset->GetComponent()->RemoveEntity(entityId, false);
+        return m_rootAsset->GetComponent()->RemoveEntity(entityId);
     }
 
     void SliceEntityOwnershipService::CreateRootSlice()
@@ -659,6 +654,17 @@ namespace AzFramework
     void SliceEntityOwnershipService::SetValidateEntitiesCallback(ValidateEntitiesCallback validateEntitiesCallback)
     {
         m_validateEntitiesCallback = AZStd::move(validateEntitiesCallback);
+    }
+
+    void SliceEntityOwnershipService::HandleEntityBeingDestroyed(const AZ::EntityId& entityId)
+    {
+        AZ_Assert(m_rootAsset && m_rootAsset->GetComponent(), "Root slice has not been created.");
+        AZ_Assert(m_entitiesRemovedCallback, "Callback function for entity removal has not been set.");
+        m_entitiesRemovedCallback({ entityId });
+
+        // Entities removed through the application (as in via manual 'delete'),
+        // should be removed from the root slice, but not again deleted.
+        m_rootAsset->GetComponent()->RemoveEntity(entityId, false);
     }
 
     AZ::Data::AssetId SliceEntityOwnershipService::CurrentlyInstantiatingSlice()

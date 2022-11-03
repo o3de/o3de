@@ -100,6 +100,7 @@ namespace AzToolsFramework
             bool AddEntity(AZStd::unique_ptr<AZ::Entity>&& entity, EntityAlias entityAlias);
             AZStd::unique_ptr<AZ::Entity> DetachEntity(const AZ::EntityId& entityId);
             void DetachEntities(const AZStd::function<void(AZStd::unique_ptr<AZ::Entity>)>& callback);
+            bool DestroyEntity(const AZ::EntityId& entityId);
             /**
              * Replaces the entity stored under the provided alias with a new one.
              *
@@ -226,6 +227,7 @@ namespace AzToolsFramework
             void SetContainerEntity(AZ::Entity& entity);
 
             AZStd::unique_ptr<AZ::Entity> DetachContainerEntity();
+            bool DestroyContainerEntity();
 
             static EntityAlias GenerateEntityAlias();
             AliasPath GetAbsoluteInstanceAliasPath() const;
