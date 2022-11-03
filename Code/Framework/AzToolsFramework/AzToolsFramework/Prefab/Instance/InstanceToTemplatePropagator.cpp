@@ -123,9 +123,7 @@ namespace AzToolsFramework
 
             // create the prefix for the update - choosing between container and regular entities
             AZStd::string entityAliasPath = "/";
-
-            bool isContainerEntity = entityId == owningInstance->get().GetContainerEntityId();
-
+            const bool isContainerEntity = entityId == owningInstance->get().GetContainerEntityId();
             if (isContainerEntity)
             {
                 entityAliasPath += PrefabDomUtils::ContainerEntityName;
@@ -140,7 +138,12 @@ namespace AzToolsFramework
             return AZStd::move(entityAliasPath);
         }
 
-        void InstanceToTemplatePropagator::AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, AZStd::string prefix)
+        void InstanceToTemplatePropagator::AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, const AZStd::string& prefix)
+        {
+            AppendEntityAliasPathToPatchPaths(providedPatch, prefix + GenerateEntityAliasPath(entityId));
+        }
+
+        void InstanceToTemplatePropagator::AppendEntityAliasPathToPatchPaths(PrefabDom& providedPatch, const AZStd::string& entityAliasPath)
         {
             if (!providedPatch.IsArray())
             {
@@ -148,9 +151,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            prefix += GenerateEntityAliasPath(entityId);
-
-            if (prefix.empty())
+            if (entityAliasPath.empty())
             {
                 return;
             }
@@ -167,7 +168,7 @@ namespace AzToolsFramework
                     continue;
                 }
 
-                AZStd::string path = prefix + pathIter->value.GetString();
+                AZStd::string path = entityAliasPath + pathIter->value.GetString();
 
                 pathIter->value.SetString(path.c_str(), static_cast<rapidjson::SizeType>(path.length()), providedPatch.GetAllocator());
             }

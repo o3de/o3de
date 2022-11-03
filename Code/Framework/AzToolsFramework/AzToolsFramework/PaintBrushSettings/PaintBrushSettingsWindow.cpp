@@ -67,6 +67,11 @@ namespace PaintBrush
             AzToolsFramework::PaintBrushSettingsNotificationBus::Handler::BusDisconnect();
         }
 
+        void PaintBrushSettingsWindow::OnColorModeChanged([[maybe_unused]] const AzToolsFramework::PaintBrushSettings& newSettings)
+        {
+            m_propertyEditor->InvalidateAll();
+        }
+
         void PaintBrushSettingsWindow::OnSettingsChanged([[maybe_unused]] const AzToolsFramework::PaintBrushSettings& newSettings)
         {
             m_propertyEditor->InvalidateValues();
@@ -97,4 +102,4 @@ namespace PaintBrush
             viewOptions,
             &Internal::CreateNewPaintBrushSettingsWindow);
     }
-} // namespace Camera
+} // namespace PaintBrush

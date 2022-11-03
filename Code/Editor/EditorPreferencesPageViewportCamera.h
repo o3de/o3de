@@ -47,8 +47,11 @@ private:
     {
         AZ_TYPE_INFO(CameraMovementSettings, "{60B8C07E-5F48-4171-A50B-F45558B5CCA1}")
 
+        static void Reflect(AZ::SerializeContext& serialize);
+
         AZ::Vector3 m_defaultPosition;
         AZ::Vector2 m_defaultPitchYaw;
+        float m_speedScale;
         float m_translateSpeed;
         float m_rotateSpeed;
         float m_scrollSpeed;
@@ -74,11 +77,19 @@ private:
         {
             return EditorPropertyVisibility(m_translateSmoothing);
         }
+
+        void Reset();
+        void Initialize();
+
+    private:
+        bool m_resetButton = false; // required for positioning in edit context, otherwise unused
     };
 
     struct CameraInputSettings
     {
         AZ_TYPE_INFO(struct CameraInputSettings, "{A250FAD4-662E-4896-B030-D4ED03679377}")
+
+        static void Reflect(AZ::SerializeContext& serialize);
 
         AZStd::string m_translateForwardChannelId;
         AZStd::string m_translateBackwardChannelId;
@@ -94,6 +105,12 @@ private:
         AZStd::string m_orbitDollyChannelId;
         AZStd::string m_orbitPanChannelId;
         AZStd::string m_focusChannelId;
+
+        void Reset();
+        void Initialize();
+
+    private:
+        bool m_resetButton = false; // required for positioning in edit context, otherwise unused
     };
 
     CameraMovementSettings m_cameraMovementSettings;

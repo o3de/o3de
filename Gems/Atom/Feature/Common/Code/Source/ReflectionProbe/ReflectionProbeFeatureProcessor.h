@@ -142,9 +142,9 @@ namespace AZ
             // it is loaded by the feature processor and passed to the probes to avoid loading it in each probe
             ReflectionRenderData m_reflectionRenderData;
 
-            // indicates that the probe list needs to be re-sorted, necessary when a probe is resized
+            // flags
             bool m_probeSortRequired = false;
-
+            bool m_meshFeatureProcessorUpdateRequired = false;
             bool m_needUpdatePipelineStates = false;
         };
     } // namespace Render

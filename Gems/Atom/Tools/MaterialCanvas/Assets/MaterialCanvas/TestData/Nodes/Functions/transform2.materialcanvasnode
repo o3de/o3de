@@ -1,0 +1,70 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{4614DBDC-25EB-4C71-B5FB-26C072962DD1}",
+        "category": "Math Functions",
+        "title": "transform2",
+        "inputSlots": [
+            {
+                "name": "inVector",
+                "displayName": "Vector",
+                "description": "Vector",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float2",
+                "defaultValue": {
+                    "$type": "Vector2",
+                    "Value": [
+                        0.0,
+                        0.0
+                    ]
+                },
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inMatrix",
+                "displayName": "Matrix",
+                "description": "Matrix",
+                "supportedDataTypeRegex": "(bool|int|uint|float)[2]x[1-4]",
+                "defaultDataType": "float2x2",
+                "defaultValue": {
+                    "$type": "AZStd::array<Vector2, 2>",
+                    "Value": [
+                        [
+                            1.0,
+                            0.0
+                        ],
+                        [
+                            0.0,
+                            1.0
+                        ]
+                    ]
+                },
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outVector",
+                "displayName": "Vector",
+                "description": "Vector",
+                "supportedDataTypeRegex": "float2",
+                "defaultDataType": "float2",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = mul((float2)NODEID_inVector, NODEID_inMatrix);"
+                    ]
+                }
+            }
+        ]
+    }
+}

@@ -9,7 +9,7 @@
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <native/unittests/AssetProcessorUnitTests.h>
-#include <native/unittests/UnitTestRunner.h> // for the assert absorber.
+#include <native/unittests/UnitTestUtils.h> // for the assert absorber.
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
 
 namespace UnitTest
