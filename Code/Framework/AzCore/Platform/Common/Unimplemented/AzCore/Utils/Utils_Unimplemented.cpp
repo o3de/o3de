@@ -10,7 +10,7 @@
 
 namespace AZ::Utils
 {
-    AZ::IO::FixedMaxPathString GetHomeDirectory()
+    AZ::IO::FixedMaxPathString GetHomeDirectory(AZ::SettingsRegistryInterface*)
     {
         return {};
     }

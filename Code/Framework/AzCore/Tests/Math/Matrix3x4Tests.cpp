@@ -10,7 +10,6 @@
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Quaternion.h>
-#include <AzCore/Math/VectorConversions.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AzCore/Math/Vector4.h>
 #include "MathTestData.h"

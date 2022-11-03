@@ -28,7 +28,7 @@ namespace AZ
         }
 
         AZ_CLASS_ALLOCATOR_IMPL(JsonMaterialFunctorSourceDataSerializer, SystemAllocator, 0);
-        
+
         JsonSerializationResult::Result JsonMaterialFunctorSourceDataSerializer::Load(void* outputValue, const Uuid& outputValueTypeId,
             const rapidjson::Value& inputValue, JsonDeserializerContext& context)
         {
@@ -49,7 +49,7 @@ namespace AZ
                 return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported, "Material functor data must be a JSON object.");
             }
 
-            Uuid functorTypeId = 0;
+            Uuid functorTypeId;
             if (!inputValue.HasMember(TypeField))
             {
                 return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported, "Functor type name is not specified.");
@@ -59,7 +59,7 @@ namespace AZ
             AZStd::string functorName;
             result.Combine(ContinueLoadingFromJsonObjectField(&functorName, azrtti_typeid<AZStd::string>(), inputValue, TypeField, context));
             functorTypeId = MaterialFunctorSourceDataRegistration::Get()->FindMaterialFunctorTypeIdByName(functorName);
-            if (functorTypeId == 0)
+            if (functorTypeId.IsNull())
             {
                 return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported, "Functor type name is not registered.");
             }

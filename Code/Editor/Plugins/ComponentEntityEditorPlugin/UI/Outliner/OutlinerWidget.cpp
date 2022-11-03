@@ -542,10 +542,11 @@ void OutlinerWidget::contextMenuEvent(QContextMenuEvent* event)
 
     // Populate global context menu.
 
-    AzToolsFramework::EditorContextMenuBus::Broadcast(&AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu,
+    AzToolsFramework::EditorContextMenuBus::Broadcast(
+        &AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu,
         contextMenu,
-        AZ::Vector2::CreateZero(),
-        AzToolsFramework::EditorEvents::eECMF_HIDE_ENTITY_CREATION | AzToolsFramework::EditorEvents::eECMF_USE_VIEWPORT_CENTER);
+        AZStd::nullopt,
+        AzToolsFramework::EditorEvents::eECMF_HIDE_ENTITY_CREATION);
 
     PrepareSelection();
 

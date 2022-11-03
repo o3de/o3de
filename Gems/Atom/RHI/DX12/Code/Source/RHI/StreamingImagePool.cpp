@@ -12,13 +12,27 @@
 #include <RHI/Image.h>
 #include <RHI/ResourcePoolResolver.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
-// NOTE: Tiled resources are currently disabled, because RenderDoc does not support them.
-// #define AZ_RHI_USE_TILED_RESOURCES
+
+// enable debug output for DX12::StreamingImagePool
+#define AZ_RHI_DX12_DEBUG_STREAMINGIMAGEPOOL 0
+
+// enable tiled resource implementation
+#define AZ_RHI_USE_TILED_RESOURCES
 
 namespace AZ
 {
     namespace DX12
     {
+
+        // constants for heap page allocation 
+        namespace
+        {
+            const static uint32_t TileSizeInBytes = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+            const static uint32_t TileCountPerPage = 256;
+        }
+
+        // The StreamingImagePoolResolver adds streaming image transition barriers when scope starts
+        // The streaming image transition barriers are added when image was initialized and image mip got expanded or trimmed.
         class StreamingImagePoolResolver
             : public ResourcePoolResolver
         {
@@ -26,8 +40,9 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(StreamingImagePoolResolver, AZ::SystemAllocator, 0);
             AZ_RTTI(StreamingImagePoolResolver, "{C69BD5E1-15CD-4F60-A899-29E9DEDFA056}", ResourcePoolResolver);
 
-            void QueuePrologueTransitionBarriers(CommandList& commandList) const override
+            void QueuePrologueTransitionBarriers(CommandList& commandList) override
             {
+                AZStd::shared_lock<AZStd::shared_mutex> lock(m_mutex);
                 for (const auto& barrier : m_prologueBarriers)
                 {
                     commandList.QueueTransitionBarrier(barrier.second);
@@ -36,6 +51,7 @@ namespace AZ
 
             void Deactivate() override
             {
+                AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
                 AZStd::for_each(m_prologueBarriers.begin(), m_prologueBarriers.end(), [](auto& barrier)
                 {
                     Image* image = barrier.first;
@@ -47,6 +63,7 @@ namespace AZ
 
             void AddImageTransitionBarrier(Image& image, uint32_t beforeMip, uint32_t afterMip)
             {
+                AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
                 // Expand or Trim
                 bool isExpand = beforeMip > afterMip;
 
@@ -77,6 +94,10 @@ namespace AZ
                         }
                         m_prologueBarriers.push_back(ImageBarrier{ &image, transition });
                         image.m_pendingResolves++;
+
+#if AZ_RHI_DX12_DEBUG_STREAMINGIMAGEPOOL
+                        AZ_TracePrintf("DX12 StreamingImagePool", "Add resource barrier for image [%s] [%d] expand: %d]\n", image.GetName().GetCStr(), subresourceId, isExpand);
+#endif
                     }
                 }
             }
@@ -94,12 +115,14 @@ namespace AZ
                     return barrier.first == &image;
                 };
 
+                AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
                 m_prologueBarriers.erase(AZStd::remove_if(m_prologueBarriers.begin(), m_prologueBarriers.end(), predicateBarriers), m_prologueBarriers.end());
             }
 
         private:
             using ImageBarrier = AZStd::pair<Image*, D3D12_RESOURCE_TRANSITION_BARRIER>;
             AZStd::vector<ImageBarrier> m_prologueBarriers;
+            AZStd::shared_mutex m_mutex;
         };
 
         RHI::Ptr<StreamingImagePool> StreamingImagePool::Create()
@@ -117,48 +140,50 @@ namespace AZ
             return static_cast<StreamingImagePoolResolver*>(Base::GetResolver());
         }
 
-        D3D12_RESOURCE_ALLOCATION_INFO StreamingImagePool::GetAllocationInfo(const RHI::ImageDescriptor& imageDescriptor, uint32_t residentMipLevel)
+        RHI::HeapMemoryUsage& StreamingImagePool::GetDeviceHeapMemoryUsage()
         {
-            AZ_PROFILE_FUNCTION(RHI);
-
-            uint32_t alignment = GetFormatDimensionAlignment(imageDescriptor.m_format);
-
-            RHI::ImageDescriptor residentImageDescriptor = imageDescriptor;
-            residentImageDescriptor.m_size = imageDescriptor.m_size.GetReducedMip(residentMipLevel);
-            residentImageDescriptor.m_size.m_width = RHI::AlignUp(residentImageDescriptor.m_size.m_width, alignment);
-            residentImageDescriptor.m_size.m_height = RHI::AlignUp(residentImageDescriptor.m_size.m_height, alignment);
-            residentImageDescriptor.m_mipLevels = static_cast<uint16_t>(imageDescriptor.m_mipLevels - residentMipLevel);
-
-            D3D12_RESOURCE_ALLOCATION_INFO allocationInfo;
-            GetDevice().GetImageAllocationInfo(residentImageDescriptor, allocationInfo);
-            return allocationInfo;
+            return m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
         }
 
         RHI::ResultCode StreamingImagePool::InitInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::StreamingImagePoolDescriptor& descriptor)
         {
             AZ_PROFILE_FUNCTION(RHI);
 
-#ifdef AZ_RHI_USE_TILED_RESOURCES
-            {
-                AZ_PROFILE_SCOPE(RHI, "StreamImagePool::CreateHeap");
+            Device& device = static_cast<Device&>(deviceBase);
 
-                CD3DX12_HEAP_DESC heapDesc(descriptor.m_budgetInBytes, D3D12_HEAP_TYPE_DEFAULT, 0, D3D12_HEAP_FLAG_DENY_BUFFERS | D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES);
+            m_enableTileResource = device.GetFeatures().m_tiledResource;
 
-                Microsoft::WRL::ComPtr<ID3D12Heap> heap;
-                device.AssertSuccess(device.GetDevice()->CreateHeap(&heapDesc, IID_GRAPHICS_PPV_ARGS(heap.GetAddressOf())));
-                m_heap = heap.Get();
-            }
-
-            {
-                const size_t tileCountTotal = descriptor.m_budgetInBytes / D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-
-                RHI::PoolAllocator::Descriptor allocatorDesc;
-                allocatorDesc.m_elementSize = 1;
-                allocatorDesc.m_alignmentInBytes = 1;
-                allocatorDesc.m_capacityInBytes = tileCountTotal;
-                m_tileAllocator.Init(allocatorDesc);
-            }
+#ifndef AZ_RHI_USE_TILED_RESOURCES
+            // Disable tile resource for all 
+            m_enableTileResource = false;
 #endif
+
+            if (m_enableTileResource)
+            {
+                HeapAllocator::Descriptor heapPageAllocatorDesc;
+                heapPageAllocatorDesc.m_device = &device;
+                // Heap allocator updates total resident memory
+                heapPageAllocatorDesc.m_getHeapMemoryUsageFunction = [this]() { return &GetDeviceHeapMemoryUsage();};
+                heapPageAllocatorDesc.m_pageSizeInBytes = TileSizeInBytes * TileCountPerPage; // 16M per page, 256 tiles
+                heapPageAllocatorDesc.m_resourceTypeFlags = ResourceTypeFlags::Image; 
+                heapPageAllocatorDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
+                heapPageAllocatorDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
+                heapPageAllocatorDesc.m_collectLatency = 0;
+                heapPageAllocatorDesc.m_recycleOnCollect = false;    // Release the heap page when the TileAllocator deallocate it
+
+                m_heapPageAllocator.Init(heapPageAllocatorDesc);
+
+                TileAllocator::Descriptor tileAllocatorDesc;
+                tileAllocatorDesc.m_tileSizeInBytes = TileSizeInBytes;
+                // Tile allocator updates used resident memory
+                tileAllocatorDesc.m_getHeapMemoryUsageFunction = heapPageAllocatorDesc.m_getHeapMemoryUsageFunction;
+                m_tileAllocator.Init(tileAllocatorDesc, m_heapPageAllocator);
+
+                // Allocate one tile for default tile
+                auto heapTiles = m_tileAllocator.Allocate(1);
+                AZ_Assert(heapTiles.size() == 1, "Failed to allocate a default heap");
+                m_defaultTile = heapTiles[0];
+            }
 
             SetResolver(AZStd::make_unique<StreamingImagePoolResolver>());
             return RHI::ResultCode::Success;
@@ -166,61 +191,171 @@ namespace AZ
 
         void StreamingImagePool::ShutdownInternal()
         {
-#ifdef AZ_RHI_USE_TILED_RESOURCES
-            GetDevice().QueueForRelease(AZStd::move(m_heap));
-            m_tileAllocator.Shutdown();
-#endif
+            if (m_enableTileResource)
+            {
+                m_tileAllocator.DeAllocate(AZStd::vector<HeapTiles>{m_defaultTile});
+                m_defaultTile = HeapTiles{ };
+                m_tileAllocator.Shutdown();
+            }
         }
 
-        void StreamingImagePool::AllocateImageTilesInternal(Image& image, CommandList::TileMapRequest& request, uint32_t subresourceIndex)
+        void StreamingImagePool::AllocateImageTilesInternal(Image& image, uint32_t subresourceIndex)
         {
-            AZ_Assert(request.m_destinationHeap, "Destination heap must be valid.");
-
             uint32_t imageTileOffset = 0;
+            CommandList::TileMapRequest request;
+            request.m_sourceMemory = image.GetMemoryView().GetMemory();
             image.m_tileLayout.GetSubresourceTileInfo(subresourceIndex, imageTileOffset, request.m_sourceCoordinate, request.m_sourceRegionSize);
 
-            request.m_destinationTileMap.resize(request.m_sourceRegionSize.NumTiles);
+            AZ_Assert(image.m_heapTiles[subresourceIndex].size() == 0, "Stopping on an existing tile allocation. This will leak.");
 
-            // Allocate tiles from the tile pool.
-            for (uint32_t subresourceTileIndex = 0; subresourceTileIndex < request.m_sourceRegionSize.NumTiles; ++subresourceTileIndex)
+            uint32_t totalTiles = request.m_sourceRegionSize.NumTiles;
+
+            // Check if heap memory is enough for the tiles. 
+            RHI::HeapMemoryUsage& memoryAllocatorUsage = GetDeviceHeapMemoryUsage();
+            size_t pageAllocationInBytes = m_tileAllocator.EvaluateMemoryAllocation(totalTiles);
+
+            // Try to release some memory if there isn't enough memory available in the pool
+            bool canAllocate = memoryAllocatorUsage.CanAllocate(pageAllocationInBytes);
+            if (!canAllocate && m_memoryReleaseCallback)
             {
-                const uint32_t imageTileIndex = imageTileOffset + subresourceTileIndex;
+                bool releaseSuccess = false;
+                while (!canAllocate)
+                {
+                    // Request to release some memory
+                    releaseSuccess = m_memoryReleaseCallback();
 
-                // Make sure the tile is actually null so we don't leak.
-                AZ_Assert(image.m_tiles[imageTileIndex].IsNull(), "Stomping on an existing tile allocation. This will leak.");
+                    // break out of the loop if memory release did not happen
+                    if (!releaseSuccess)
+                    {
+                        break;
+                    }
 
-                RHI::VirtualAddress address = m_tileAllocator.Allocate();
-                AZ_Assert(address.IsValid(), "Exceeded size of tile heap. The budget checks should have caught this.");
+                    // re-evaluation page memory allocation since there are tiles were released.
+                    pageAllocationInBytes = m_tileAllocator.EvaluateMemoryAllocation(totalTiles);
+                    canAllocate = memoryAllocatorUsage.CanAllocate(pageAllocationInBytes);
+                }
 
-                // Store the allocation in the image (using image-relative index).
-                image.m_tiles[imageTileIndex] = address;
-
-                // Store the allocation into the map request (using subresource-relative index).
-                request.m_destinationTileMap[subresourceTileIndex] = static_cast<uint32_t>(address.m_ptr);
+                if (!releaseSuccess)
+                {
+                    AZ_Warning("DX12::StreamingImagePool", false, "There isn't enough memory to allocate the image subresource. "
+                        "Using the default tile for the subresource. Try increase the StreamingImagePool memory budget");
+                }
             }
 
-            GetDevice().GetAsyncUploadQueue().QueueTileMapping(request);
+            image.m_heapTiles[subresourceIndex] = m_tileAllocator.Allocate(totalTiles);
 
-            // Garbage collect the allocator immediately.
-            m_tileAllocator.GarbageCollect();
+            // If it failed to allocate tiles, use default tile for the sub-resource
+            if (image.m_heapTiles[subresourceIndex].size() == 0)
+            {
+                request.m_rangeFlags.resize(1);
+                request.m_rangeStartOffsets.resize(1);
+                request.m_rangeTileCounts.resize(1);
+                request.m_destinationHeap = m_defaultTile.m_heap.get();
+                
+                request.m_rangeFlags[0] = D3D12_TILE_RANGE_FLAG_REUSE_SINGLE_TILE;
+                request.m_rangeStartOffsets[0] = 0;
+                request.m_rangeTileCounts[0] = totalTiles;
+
+                GetDevice().GetAsyncUploadQueue().QueueTileMapping(request);
+
+                return;
+            }
+
+            // If the allocated tiles are spread across multiple heaps, we need one TileMapRequest for each heap.
+            // In the TileMapRequest for the heap, it maps the tiles from the heap to a subset tiles of the subresource
+            // and set the unmapped subresource tiles as skip.
+            // Note: the mapped subset of tiles of the subresource will always be continues. So the skip range could only happen
+            // in the front part of subresource tiles or the back part of them. 
+            bool needSkipRange = image.m_heapTiles[subresourceIndex].size() > 1;
+
+            uint32_t tileOffsetStart = 0;
+            // send a tile map request for each heap
+            for (const HeapTiles& heapTiles : image.m_heapTiles[subresourceIndex])
+            {
+                size_t rangeCount = heapTiles.m_tileSpanList.size();
+                uint32_t startRangeIndex = 0;
+
+                if (needSkipRange)
+                {
+                    if (tileOffsetStart == 0 || tileOffsetStart + heapTiles.m_totalTileCount == totalTiles)
+                    {
+                        // For the first heap, one extra range will indicate the subsequent subresource tiles that are not mapped in that heap.
+                        // For the last heap, one extra range will indicate the preceding subresource tiles that are not mapped in that heap.
+                        rangeCount += 1;
+                    }
+                    else
+                    {
+                        // For all other heaps, two extra ranges will indicate both the preceding and subsequent subresource tiles that are not mapped in that heap.
+                        rangeCount += 2;
+                    }
+
+                    if (tileOffsetStart != 0)
+                    {
+                        startRangeIndex = 1;
+                    }
+                }
+
+                request.m_rangeFlags.resize(rangeCount);
+                request.m_rangeStartOffsets.resize(rangeCount);
+                request.m_rangeTileCounts.resize(rangeCount);
+                request.m_destinationHeap = heapTiles.m_heap.get();
+
+                // skip tiles which are not mapped by current heap
+                // [tileOffsetStart, tileOffsetStart + heapTiles.m_totalTileCount) 
+                if (needSkipRange)
+                {
+                    // from 0 to current start tile
+                    if (tileOffsetStart != 0)
+                    {
+                        request.m_rangeFlags[0] = D3D12_TILE_RANGE_FLAG_SKIP;
+                        request.m_rangeStartOffsets[0] = 0;
+                        request.m_rangeTileCounts[0] = tileOffsetStart;
+                    }
+
+                    if (tileOffsetStart + heapTiles.m_totalTileCount != totalTiles)
+                    {
+                        // from the last tile the current heap tiles mapped to the end
+                        size_t lastIndex = rangeCount-1;
+                        request.m_rangeFlags[lastIndex] = D3D12_TILE_RANGE_FLAG_SKIP;
+                        request.m_rangeStartOffsets[lastIndex] = tileOffsetStart + heapTiles.m_totalTileCount;
+                        request.m_rangeTileCounts[lastIndex] = totalTiles - request.m_rangeStartOffsets[lastIndex];
+                    }
+                }
+
+                uint32_t rangeIdx = startRangeIndex;
+                for (const auto& tiles : heapTiles.m_tileSpanList)
+                {
+                    request.m_rangeFlags[rangeIdx] = D3D12_TILE_RANGE_FLAG_NONE;
+                    request.m_rangeStartOffsets[rangeIdx] = tiles.m_offset;
+                    request.m_rangeTileCounts[rangeIdx] = tiles.m_tileCount;
+                    rangeIdx++;
+                }
+
+                tileOffsetStart += heapTiles.m_totalTileCount;
+                GetDevice().GetAsyncUploadQueue().QueueTileMapping(request);
+            }
         }
 
         void StreamingImagePool::DeAllocateImageTilesInternal(Image& image, uint32_t subresourceIndex)
         {
-            D3D12_TILED_RESOURCE_COORDINATE sourceCoordinate;
-            D3D12_TILE_REGION_SIZE sourceRegionSize;
-            uint32_t imageTileOffset = 0;
-            image.m_tileLayout.GetSubresourceTileInfo(subresourceIndex, imageTileOffset, sourceCoordinate, sourceRegionSize);
+            const AZStd::vector<HeapTiles>& heapTilesList = image.m_heapTiles[subresourceIndex];
 
-            for (uint32_t subresourceTileIndex = 0; subresourceTileIndex < sourceRegionSize.NumTiles; ++subresourceTileIndex)
+            // The tile list can be empty if the subresource was using the default tile
+            if (heapTilesList.size() == 0)
             {
-                const uint32_t imageTileIndex = imageTileOffset + subresourceTileIndex;
-
-                // De-allocate the tile and reset it null.
-                AZ_Assert(image.m_tiles[imageTileIndex].IsValid(), "Attempting to map a tile to null when it's already null.");
-                m_tileAllocator.DeAllocate(image.m_tiles[imageTileIndex]);
-                image.m_tiles[imageTileIndex] = {};
+                return;
             }
+
+            // map all the tiles to NULL
+            CommandList::TileMapRequest request;
+            uint32_t imageTileOffset = 0;
+            request.m_sourceMemory = image.GetMemoryView().GetMemory();
+            image.m_tileLayout.GetSubresourceTileInfo(subresourceIndex, imageTileOffset, request.m_sourceCoordinate, request.m_sourceRegionSize);
+            GetDevice().GetAsyncUploadQueue().QueueTileMapping(request);
+
+            // deallocate tiles and update image's sub-resource info
+            m_tileAllocator.DeAllocate(heapTilesList);
+            image.m_heapTiles[subresourceIndex] = {};
 
             // Garbage collect the allocator immediately.
             m_tileAllocator.GarbageCollect();
@@ -231,15 +366,13 @@ namespace AZ
             AZ_PROFILE_FUNCTION(RHI);
 
             AZ_Assert(image.IsTiled(), "This method is only valid for tiled resources.");
-            AZ_Assert(image.GetDescriptor().m_arraySize == 1, "Not implemented for image arrays.");
 
             const ImageTileLayout& tileLayout = image.m_tileLayout;
             if (tileLayout.m_mipCountPacked)
             {
-                CommandList::TileMapRequest request;
-                request.m_sourceMemory = image.GetMemoryView().GetMemory();
-                request.m_destinationHeap = m_heap.get();
-                AllocateImageTilesInternal(image, request, tileLayout.GetPackedSubresourceIndex());
+                AZStd::lock_guard<AZStd::mutex> lock(m_tileMutex);
+                AllocateImageTilesInternal(image, tileLayout.GetPackedSubresourceIndex());
+                image.UpdateResidentTilesSizeInBytes(TileSizeInBytes);
             }
         }
 
@@ -257,19 +390,16 @@ namespace AZ
             // Only proceed if the interval is still valid.
             if (mipInterval.m_min < mipInterval.m_max)
             {
-                // Reuse the same request structure (avoids additional heap allocations).
-                CommandList::TileMapRequest request;
-                request.m_sourceMemory = image.GetMemoryView().GetMemory();
-                request.m_destinationHeap = m_heap.get();
-
                 AZStd::lock_guard<AZStd::mutex> lock(m_tileMutex);
                 for (uint32_t arrayIndex = 0; arrayIndex < descriptor.m_arraySize; ++arrayIndex)
                 {
                     for (uint32_t mipIndex = mipInterval.m_min; mipIndex < mipInterval.m_max; ++mipIndex)
                     {
-                        AllocateImageTilesInternal(image, request, RHI::GetImageSubresourceIndex(mipIndex, arrayIndex, descriptor.m_mipLevels));
+                        AllocateImageTilesInternal(image, RHI::GetImageSubresourceIndex(mipIndex, arrayIndex, descriptor.m_mipLevels));
                     }
                 }
+                
+                image.UpdateResidentTilesSizeInBytes(TileSizeInBytes);
             }
         }
 
@@ -287,6 +417,13 @@ namespace AZ
             // Only proceed if the interval is still valid.
             if (mipInterval.m_min < mipInterval.m_max)
             {
+                // add wait frame fence to async upload queue before queue tile mapping
+                auto& device = static_cast<Device&>(GetDevice());
+                CommandQueueContext& context = device.GetCommandQueueContext();
+                const FenceSet &compiledFences = context.GetFrameFences(context.GetLastFrameIndex());
+                const Fence& fence = compiledFences.GetFence(RHI::HardwareQueueClass::Graphics);
+                GetDevice().GetAsyncUploadQueue().QueueWaitFence(fence, fence.GetPendingValue());
+
                 AZStd::lock_guard<AZStd::mutex> lock(m_tileMutex);
                 for (uint32_t arrayIndex = 0; arrayIndex < descriptor.m_arraySize; ++arrayIndex)
                 {
@@ -295,9 +432,41 @@ namespace AZ
                         DeAllocateImageTilesInternal(image, RHI::GetImageSubresourceIndex(mipIndex, arrayIndex, descriptor.m_mipLevels));
                     }
                 }
+                image.UpdateResidentTilesSizeInBytes(TileSizeInBytes);
             }
         }
-        
+
+        bool StreamingImagePool::ShouldUseTileHeap(const RHI::ImageDescriptor& imageDescriptor) const
+        {
+            if (m_enableTileResource)
+            {
+                // D3D12_RESOURCE_DIMENSION_TEXTURE1D is not supported for tier 1 tile image resource
+                if (imageDescriptor.m_dimension == RHI::ImageDimension::Image1D)
+                {
+                    return false;
+                }
+
+                // ID3D12Device::CreateReservedResource limitation
+                // D3D12 ERROR: ID3D12Device::CreateReservedResource: On a device with Tier 2 & 3 Tiled Resources support, Tiled Resources cannot be created
+                // with both more than one array slice and any mipmap that has a dimension less than a tile in extent.
+                if (imageDescriptor.m_arraySize > 1)
+                {
+                    // get smallest mip size
+                    uint32_t formatDiemensionAlignment = RHI::GetFormatDimensionAlignment(imageDescriptor.m_format);
+                    uint32_t minMipWidth = AZStd::max(imageDescriptor.m_size.m_width >> (imageDescriptor.m_mipLevels-1), 1u);
+                    uint32_t minMipHeight = AZStd::max(imageDescriptor.m_size.m_height >> (imageDescriptor.m_mipLevels-1), 1u);
+                    uint32_t minMipSize = AZ::DivideAndRoundUp(minMipWidth, formatDiemensionAlignment) * AZ::DivideAndRoundUp(minMipHeight, formatDiemensionAlignment)
+                        * RHI::GetFormatSize(imageDescriptor.m_format);
+                    if (minMipSize < TileSizeInBytes)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            return false;
+        }
 
         RHI::ResultCode StreamingImagePool::InitImageInternal(const RHI::StreamingImageInitRequest& request)
         {
@@ -305,63 +474,83 @@ namespace AZ
 
             Image& image = static_cast<Image&>(*request.m_image);
 
-            uint32_t expectedResidentMipLevel = request.m_descriptor.m_mipLevels - static_cast<uint32_t>(request.m_tailMipSlices.size());
-            D3D12_RESOURCE_ALLOCATION_INFO allocationInfo = GetAllocationInfo(request.m_descriptor, expectedResidentMipLevel);
-
-            RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            if (!memoryUsage.TryReserveMemory(allocationInfo.SizeInBytes))
-            {
-                return RHI::ResultCode::OutOfMemory;
-            }
-
-            #if defined (AZ_RHI_USE_TILED_RESOURCES)
-                /**
-                 * DirectX has weird limitation in the implementation where texture arrays are not currently supported
-                 * (despite the spec saying they are):
-                 *
-                 * 'On a device with Tier 2 Tiled Resources support, Tiled Resources cannot be created with both more
-                 *  than one array slice and any mipmap that has a dimension less than a tile in extent. 
-                 *  Hardware support in this area was not able to be standardized in time to be included in D3D'
-                 *
-                 * Need to follow up to figure out if this is a permanent limitation or whether it will be lifted in an
-                 * upcoming version of windows. For now, a committed resource is created when texture arrays are in use.
-                 */
-                const bool useTileHeap = request.m_descriptor.m_arraySize == 1;
-            #else
-                const bool useTileHeap = false;
-            #endif
+            // Decide if we use tile heap for the image. It may effect allocation and memory usage.
+            bool useTileHeap = ShouldUseTileHeap(image.GetDescriptor());
 
             MemoryView memoryView;
+
             if (useTileHeap)
             {
-                memoryView = GetDevice().CreateImageReserved(
-                    request.m_descriptor, D3D12_RESOURCE_STATE_COMMON, image.m_tileLayout);
-            }
-            else
-            {
-                memoryView = GetDevice().CreateImageCommitted(
-                    request.m_descriptor, nullptr, D3D12_RESOURCE_STATE_COMMON, D3D12_HEAP_TYPE_DEFAULT);
+                // Note, the heap memory usage for reserved image are updated by the HeapAllocator and TileAllocator
+                memoryView = GetDevice().CreateImageReserved(request.m_descriptor, D3D12_RESOURCE_STATE_COMMON, image.m_tileLayout);
+                if (!memoryView.IsValid())
+                {
+                    // fall back to use non-tiled resource
+                    useTileHeap = false;
+                }
             }
 
-            // Ensure the driver was able to make the allocation.
-            if (!memoryView.IsValid())
+            if (!useTileHeap)
             {
-                memoryUsage.m_reservedInBytes -= allocationInfo.SizeInBytes;
-                return RHI::ResultCode::OutOfMemory;
+                // The committed image would allocate heap from the entire image
+                // We would only need to update memory usage once at creating time and when resource is shutdown
+                D3D12_RESOURCE_ALLOCATION_INFO allocationInfo;
+                GetDevice().GetImageAllocationInfo(request.m_descriptor, allocationInfo);
+
+                auto& memoryAllocatorUsage = GetDeviceHeapMemoryUsage();
+                
+                bool canAllocate = memoryAllocatorUsage.CanAllocate(allocationInfo.SizeInBytes);
+                if (!canAllocate && m_memoryReleaseCallback)
+                {
+                    bool releaseSuccess = false;
+                    while (!canAllocate)
+                    {
+                        releaseSuccess = m_memoryReleaseCallback();
+                        if (!releaseSuccess)
+                        {
+                            AZ_Warning("DX12::StreamingImagePool", false, "Failed to release any memory from the StreamngImagePool");
+                            break;
+                        }
+                        // Re-evaluation the allocation after some memory got release
+                        canAllocate = memoryAllocatorUsage.CanAllocate(allocationInfo.SizeInBytes);
+                    }
+                }
+
+                if (!canAllocate)
+                {
+                    // Can't resolve the memory issue.
+                    AZ_Error("DX12::StreamingImagePool", false, "StreamingImagePool doesn't have enough memory to allocate image. Try increase the StreamingImagePool's memory budget");
+                    return RHI::ResultCode::OutOfMemory;
+                }
+
+                memoryView = GetDevice().CreateImageCommitted(request.m_descriptor, nullptr, D3D12_RESOURCE_STATE_COMMON, D3D12_HEAP_TYPE_DEFAULT);
+                
+                // Ensure the driver was able to make the allocation.
+                if (!memoryView.IsValid())
+                {
+                    return RHI::ResultCode::Fail;
+                }
+                else
+                {
+                    // Update memory usage for committed resource
+                    memoryAllocatorUsage.m_totalResidentInBytes += allocationInfo.SizeInBytes;
+                    memoryAllocatorUsage.m_usedResidentInBytes += allocationInfo.SizeInBytes;
+                    image.m_residentSizeInBytes = allocationInfo.SizeInBytes;
+                }
             }
 
             memoryView.SetName(image.GetName().GetStringView());
-
-            image.m_tiles.resize(image.m_tileLayout.m_tileCount);
-            image.m_residentSizeInBytes = allocationInfo.SizeInBytes;
             image.m_memoryView = AZStd::move(memoryView);
             image.GenerateSubresourceLayouts();
             image.m_streamedMipLevel = request.m_descriptor.m_mipLevels - static_cast<uint32_t>(request.m_tailMipSlices.size());
 
+            // allocate tiles from heaps for reserved images
             if (useTileHeap)
             {
+                // Allocate packed tiles for tail mips which are packed
                 AllocatePackedImageTiles(image);
-                // Allocate standard tile for mips from tail mipchain which are not included in packed tile
+
+                // Allocate standard tile for mips from tail mip chain which are not included in packed tile
                 const ImageTileLayout& tileLayout = image.m_tileLayout;
                 if (tileLayout.m_mipCountPacked < static_cast<uint32_t>(request.m_tailMipSlices.size()))
                 {
@@ -369,15 +558,15 @@ namespace AZ
                 }
             }
 
+            // update image's minimum resident size
+            image.m_minimumResidentSizeInBytes = image.m_residentSizeInBytes;
+
             // Queue upload tail mip slices
             RHI::StreamingImageExpandRequest uploadMipRequest;
             uploadMipRequest.m_image = &image;
             uploadMipRequest.m_mipSlices = request.m_tailMipSlices;
             uploadMipRequest.m_waitForUpload = true;
             GetDevice().GetAsyncUploadQueue().QueueUpload(uploadMipRequest, request.m_descriptor.m_mipLevels);
-
-            memoryUsage.m_residentInBytes += allocationInfo.SizeInBytes;
-            memoryUsage.Validate();
 
             GetResolver()->AddImageTransitionBarrier(image, request.m_descriptor.m_mipLevels, image.m_streamedMipLevel);
 
@@ -396,24 +585,25 @@ namespace AZ
                 resolver->OnResourceShutdown(resourceBase);
             }
 
-
-            RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            memoryUsage.m_residentInBytes -= image.m_residentSizeInBytes;
-            memoryUsage.m_reservedInBytes -= image.m_residentSizeInBytes;
-            memoryUsage.Validate();
-
             if (image.IsTiled())
             {
-                m_tileMutex.lock();
-                for (RHI::VirtualAddress address : image.m_tiles)
+                m_tileMutex.lock();                
+
+                for (const auto& heapTiles : image.m_heapTiles)
                 {
-                    m_tileAllocator.DeAllocate(address);
+                    m_tileAllocator.DeAllocate(heapTiles.second);
                 }
                 m_tileAllocator.GarbageCollect();
                 m_tileMutex.unlock();
-                image.m_tiles.clear();
-                image.m_tiles.shrink_to_fit();
+                image.m_heapTiles.clear();
                 image.m_tileLayout = ImageTileLayout();
+            }
+            else
+            {
+                auto& memoryAllocatorUsage = GetDeviceHeapMemoryUsage();
+                memoryAllocatorUsage.m_totalResidentInBytes -= image.m_residentSizeInBytes;
+                memoryAllocatorUsage.m_usedResidentInBytes -= image.m_residentSizeInBytes;
+                memoryAllocatorUsage.Validate();
             }
 
             GetDevice().QueueForRelease(image.m_memoryView);
@@ -427,27 +617,11 @@ namespace AZ
 
             const uint32_t residentMipLevelBefore = image.GetResidentMipLevel();
             const uint32_t residentMipLevelAfter = residentMipLevelBefore - static_cast<uint32_t>(request.m_mipSlices.size());
-            D3D12_RESOURCE_ALLOCATION_INFO allocationInfoAfter = GetAllocationInfo(image.GetDescriptor(), residentMipLevelAfter);
-
-            RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            const size_t imageSizeBefore = image.m_residentSizeInBytes;
-            const size_t imageSizeAfter = allocationInfoAfter.SizeInBytes;
-            
-            // Try reserve memory for the increased size.
-            if (!memoryUsage.TryReserveMemory(imageSizeAfter - imageSizeBefore))
-            {
-                return RHI::ResultCode::OutOfMemory;
-            }
 
             if (image.IsTiled())
             {
                 AllocateStandardImageTiles(image, RHI::Interval{ residentMipLevelAfter, residentMipLevelBefore });
             }
-
-            // Update resident memory size
-            memoryUsage.m_residentInBytes += imageSizeAfter - imageSizeBefore;
-            memoryUsage.Validate();
-            image.m_residentSizeInBytes = imageSizeAfter;
 
             // Create new expend request and append callback from the StreamingImagePool
             RHI::StreamingImageExpandRequest newRequest = request;
@@ -455,9 +629,12 @@ namespace AZ
             {
                 Image& dxImage = static_cast<Image&>(*request.m_image);
                 dxImage.FinalizeAsyncUpload(residentMipLevelAfter);
-                GetResolver()->AddImageTransitionBarrier(dxImage, residentMipLevelBefore, residentMipLevelAfter);
-
                 request.m_completeCallback();
+                GetResolver()->AddImageTransitionBarrier(dxImage, residentMipLevelBefore, residentMipLevelAfter);
+                
+#if AZ_RHI_DX12_DEBUG_STREAMINGIMAGEPOOL
+                AZ_TracePrintf("DX12 StreamingImagePool", "Image upload complete [%s]\n", request.m_image->GetName().GetCStr());
+#endif
             };
 
             GetDevice().GetAsyncUploadQueue().QueueUpload(newRequest, residentMipLevelBefore);
@@ -478,28 +655,58 @@ namespace AZ
                 imageImpl.SetStreamedMipLevel(targetMipLevel);
             }
 
-            D3D12_RESOURCE_ALLOCATION_INFO allocationInfoAfter = GetAllocationInfo(image.GetDescriptor(), targetMipLevel);
-
             const uint32_t residentMipLevelBefore = image.GetResidentMipLevel();
-
-            RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            const size_t imageSizeBefore = imageImpl.m_residentSizeInBytes;
-            const size_t imageSizeAfter = allocationInfoAfter.SizeInBytes;
 
             if (imageImpl.IsTiled())
             {
                 DeAllocateStandardImageTiles(imageImpl, RHI::Interval{ residentMipLevelBefore, targetMipLevel});
             }
 
-            const size_t sizeDiffInBytes = imageSizeBefore - imageSizeAfter;
-            memoryUsage.m_residentInBytes -= sizeDiffInBytes;
-            memoryUsage.m_reservedInBytes -= sizeDiffInBytes;
-            imageImpl.m_residentSizeInBytes = imageSizeAfter;
-            memoryUsage.Validate();
+#if AZ_RHI_DX12_DEBUG_STREAMINGIMAGEPOOL
+            AZ_TracePrintf("DX12 StreamingImagePool", "Image mips were trimmer from %d to %d\n", residentMipLevelBefore, targetMipLevel);
+#endif
 
             GetResolver()->AddImageTransitionBarrier(imageImpl, residentMipLevelBefore, targetMipLevel);
 
             return RHI::ResultCode::Success;
         }
+
+        RHI::ResultCode StreamingImagePool::SetMemoryBudgetInternal(size_t newBudget)
+        {
+            RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
+
+            if (newBudget == 0)
+            {
+                heapMemoryUsage.m_budgetInBytes = newBudget;
+                return RHI::ResultCode::Success;
+            }
+
+            // Can't set to new budget if the new budget is smaller than allocated and there is no memory release handling
+            if (newBudget < heapMemoryUsage.m_totalResidentInBytes && !m_memoryReleaseCallback)
+            {
+                AZ_Warning("StreamingImagePool", false, "Can't set pool memory budget to %u because the memory release callback wasn't set", newBudget);
+                return RHI::ResultCode::InvalidArgument;
+            }
+
+            bool releaseSuccess = true;
+            while (newBudget < heapMemoryUsage.m_totalResidentInBytes && releaseSuccess)
+            {
+                // Request to release some memory
+                releaseSuccess = m_memoryReleaseCallback();
+            }
+
+            // Failed to release memory to desired budget. Set current budget to current total resident.
+            if (!releaseSuccess)
+            {
+                heapMemoryUsage.m_budgetInBytes = heapMemoryUsage.m_totalResidentInBytes;
+                AZ_Warning("StreamingImagePool", false, "Failed to set pool memory budget to %u, set to %u instead", newBudget, heapMemoryUsage.m_budgetInBytes);
+            }
+            else
+            {
+                heapMemoryUsage.m_budgetInBytes = newBudget;
+            }
+            return RHI::ResultCode::Success;
+        }
     }
 }
+

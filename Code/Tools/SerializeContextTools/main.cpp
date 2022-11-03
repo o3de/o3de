@@ -102,6 +102,7 @@ int main(int argc, char** argv)
 {
     using namespace AZ::SerializeContextTools;
 
+    const AZ::Debug::Trace tracer;
     constexpr int StdoutDescriptor = 1;
     AZ::IO::FileDescriptorCapturer stdoutCapturer(StdoutDescriptor);
 

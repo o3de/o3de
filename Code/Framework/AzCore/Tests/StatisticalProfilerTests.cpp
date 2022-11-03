@@ -19,11 +19,9 @@ namespace UnitTest
 
         TimedScopeType rootScope(profiler, rootId);
 
-        int counter = 0;
         for (int i = 0; i < loopCount; ++i)
         {
             TimedScopeType loopScope(profiler, loopId);
-            ++counter;
         }
     }
 
@@ -33,11 +31,9 @@ namespace UnitTest
     {
         AZ::Statistics::StatisticalProfilerProxy::TimedScope rootScope(ProfilerProxyGroup, rootId);
 
-        int counter = 0;
         for (int i = 0; i < loopCount; ++i)
         {
             AZ::Statistics::StatisticalProfilerProxy::TimedScope loopScope(ProfilerProxyGroup, loopId);
-            ++counter;
         }
     }
 

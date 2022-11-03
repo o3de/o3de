@@ -98,6 +98,11 @@ namespace GradientSignal
         return m_wrappingType;
     }
 
+    AZ::Aabb GradientTransform::GetBounds() const
+    {
+        return m_shapeBounds;
+    }
+
     AZ::Vector3 GradientTransform::NoTransform(const AZ::Vector3& point, const AZ::Aabb& /*bounds*/)
     {
         return point;

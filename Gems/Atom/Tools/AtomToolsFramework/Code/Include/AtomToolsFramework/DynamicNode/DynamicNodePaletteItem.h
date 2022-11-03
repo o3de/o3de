@@ -25,12 +25,12 @@ namespace AtomToolsFramework
         static void Reflect(AZ::ReflectContext* context);
 
         CreateDynamicNodeMimeEvent() = default;
-        CreateDynamicNodeMimeEvent(const AZ::Crc32& toolId, const AZStd::string& configId);
+        CreateDynamicNodeMimeEvent(const AZ::Crc32& toolId, const AZ::Uuid& configId);
         bool ExecuteEvent(const AZ::Vector2& mouseDropPosition, AZ::Vector2& dropPosition, const AZ::EntityId& graphCanvasSceneId) override;
 
     protected:
         AZ::Crc32 m_toolId = {};
-        AZStd::string m_configId;
+        AZ::Uuid m_configId;
     };
 
     //! Item displayed in the node palette for creating a DynamicNode using the configuration settings passed into the constructor
@@ -41,15 +41,14 @@ namespace AtomToolsFramework
 
         //! Constructor
         //! @param toolId Unique ID of the client system editor (ex: AZ_CRC_CE("MaterialCanvas"))
-        //! @param configId Unique ID of the DynamicNodeConfig registered with the manager
         //! @param config The DynamicNodeConfig used to populate the DynamicNode.
-        DynamicNodePaletteItem(const AZ::Crc32& toolId, const AZStd::string& configId, const DynamicNodeConfig& config);
+        DynamicNodePaletteItem(const AZ::Crc32& toolId, const DynamicNodeConfig& config);
         ~DynamicNodePaletteItem() = default;
 
         GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const override;
 
     protected:
         AZ::Crc32 m_toolId = {};
-        AZStd::string m_configId;
+        AZ::Uuid m_configId;
     };
 } // namespace AtomToolsFramework

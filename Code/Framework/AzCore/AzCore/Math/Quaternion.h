@@ -61,6 +61,14 @@ namespace AZ
         static Quaternion CreateRotationZ(float angleInRadians);
         //! @}
 
+        static Quaternion CreateFromEulerRadiansXYZ(const Vector3& eulerRadians);
+        static Quaternion CreateFromEulerRadiansYXZ(const Vector3& eulerRadians);
+        static Quaternion CreateFromEulerRadiansZYX(const Vector3& eulerRadians);
+
+        static Quaternion CreateFromEulerDegreesXYZ(const Vector3& eulerDegrees);
+        static Quaternion CreateFromEulerDegreesYXZ(const Vector3& eulerDegrees);
+        static Quaternion CreateFromEulerDegreesZYX(const Vector3& eulerDegrees);
+
         //! Creates a quaternion from a Matrix3x3
         static Quaternion CreateFromMatrix3x3(const class Matrix3x3& m);
 
@@ -232,9 +240,13 @@ namespace AZ
         Vector3 GetEulerRadians() const;
 
         //! @param eulerRadians A vector containing component-wise rotation angles in radians.
+        //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+        //! @deprecated use CreateFromEulerRadiansXYZ
         void SetFromEulerRadians(const Vector3& eulerRadians);
 
         //! @param eulerDegrees A vector containing component-wise rotation angles in degrees.
+        //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+        //! @deprecated use CreateFromEulerDegreesXYZ
         void SetFromEulerDegrees(const Vector3& eulerDegrees);
 
         //! Populate axis and angle of rotation from Quaternion
@@ -287,10 +299,14 @@ namespace AZ
     //! @return A vector containing component-wise rotation angles in radians.
     Vector3 ConvertQuaternionToEulerRadians(const Quaternion& q);
 
+    //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+    //! @deprecated use Quaternion::CreateFromEulerRadiansXYZ
     //! @param eulerRadians A vector containing component-wise rotation angles in radians.
     //! @return a quaternion made from composition of rotations around principle axes.
     Quaternion ConvertEulerRadiansToQuaternion(const Vector3& eulerRadians);
 
+    //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+    //! @deprecated use Quaternion::CreateFromEulerDegreesXYZ
     //! @param eulerDegrees A vector containing component-wise rotation angles in degrees.
     //! @return a quaternion made from composition of rotations around principle axes.
     Quaternion ConvertEulerDegreesToQuaternion(const Vector3& eulerDegrees);

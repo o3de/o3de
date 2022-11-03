@@ -8,8 +8,7 @@
 
 #pragma once
 
-#include <Atom_RHI_Vulkan_Platform.h>
-#include <Atom/RHI/Object.h>
+#include <vulkan/vulkan.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 

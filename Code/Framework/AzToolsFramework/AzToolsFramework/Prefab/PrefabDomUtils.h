@@ -19,6 +19,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class Instance;
+
         namespace PrefabDomUtils
         {
             inline static constexpr const char* InstancesName = "Instances";
@@ -31,11 +32,13 @@ namespace AzToolsFramework
             inline static constexpr const char* ComponentsName = "Components";
             inline static constexpr const char* EntityOrderName = "Child Entity Order";
             inline static constexpr const char* TypeName = "$type";
-            inline static constexpr const char* PathMatchingEntities = "/Entities";
-            inline static constexpr const char* PathMatchingInstances = "/Instances";
+
             inline static constexpr const char* PathStartingWithEntities = "/Entities/";
             inline static constexpr const char* PathStartingWithInstances = "/Instances/";
+            inline static constexpr const char* PathMatchingEntities = "/Entities";
+            inline static constexpr const char* PathMatchingInstances = "/Instances";
             inline static constexpr const char* PathMatchingContainerEntity = "/ContainerEntity";
+            inline static constexpr const char* PathMatchingLinkId = "/LinkId";
 
             /**
             * Find Prefab value from given parent value and target value's name.
@@ -113,12 +116,16 @@ namespace AzToolsFramework
             {
                 //! No flags used.
                 None = 0,
+
                 //! By default entities will get a stable id when they're deserialized. In cases where the new entities need to be kept
                 //! unique, e.g. when they are duplicates of live entities, this flag will assign them a random new id.
                 AssignRandomEntityId = 1 << 0,
 
                 //! Identifies the entities modified since the last deserialization and only loads them.
-                UseSelectiveDeserialization = 1 << 1
+                UseSelectiveDeserialization = 1 << 1,
+
+                //! Adds metadata to track and report deprecated components during deserialization
+                ReportDeprecatedComponents = 1 << 2
             };
             AZ_DEFINE_ENUM_BITWISE_OPERATORS(LoadFlags);
 
@@ -182,6 +189,13 @@ namespace AzToolsFramework
                 PrefabDomValue& prefabDomToApplyPatchesOn,
                 PrefabDom::AllocatorType& allocator,
                 const PrefabDomValue& patches);
+
+             /**
+             * Gets the instances DOM value from the given prefab DOM.
+             *
+             * @return the instances DOM value or AZStd::nullopt if its instances can't be found.
+             */
+            PrefabDomValueReference GetInstancesValue(PrefabDomValue& prefabDom);
 
             //! Identifies instance members modified by inspecting the patches provided.
             //! @param patches The patches to inspect.

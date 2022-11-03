@@ -14,11 +14,11 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Debug/Profiler.h>
 
-#include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzToolsFramework/AzToolsFrameworkModule.h>
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsSystemComponent.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
@@ -298,6 +298,7 @@ namespace AzToolsFramework
                 azrtti_typeid<AzToolsFramework::EntityUtilityComponent>(),
                 azrtti_typeid<AzToolsFramework::Script::LuaSymbolsReporterSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::Script::LuaEditorSystemComponent>(),
+                azrtti_typeid<AzToolsFramework::PaintBrushSettingsSystemComponent>(),
             });
 
         return components;
@@ -378,12 +379,6 @@ namespace AzToolsFramework
         EditorAssetMimeDataContainer::Reflect(context);
         ComponentAssetMimeDataContainer::Reflect(context);
 
-        AssetBrowser::AssetBrowserEntry::Reflect(context);
-        AssetBrowser::RootAssetBrowserEntry::Reflect(context);
-        AssetBrowser::FolderAssetBrowserEntry::Reflect(context);
-        AssetBrowser::SourceAssetBrowserEntry::Reflect(context);
-        AssetBrowser::ProductAssetBrowserEntry::Reflect(context);
-
         AssetEditor::AssetEditorWindowSettings::Reflect(context);
         AssetEditor::AssetEditorWidgetUserSettings::Reflect(context);
 
@@ -455,6 +450,8 @@ namespace AzToolsFramework
                 ->Event("RegisterCustomViewPane", &EditorRequests::RegisterCustomViewPane)
                 ->Event("UnregisterViewPane", &EditorRequests::UnregisterViewPane)
                 ->Event("GetComponentTypeEditorIcon", &EditorRequests::GetComponentTypeEditorIcon)
+                ->Event("IsLevelDocumentOpen", &EditorRequests::IsLevelDocumentOpen)
+                ->Event("GetLevelName", &EditorRequests::GetLevelName)
                 ;
 
             behaviorContext->EBus<EditorEventsBus>("EditorEventBus")

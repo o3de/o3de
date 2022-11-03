@@ -23,7 +23,6 @@
 
 #include <Atom/RPI.Reflect/ResourcePoolAssetCreator.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAssetCreator.h>
-#include <Atom/RPI.Public/Image/DefaultStreamingImageController.h>
 
 namespace AZ
 {
@@ -218,9 +217,6 @@ namespace AZ
             AZStd::unique_ptr<RHI::StreamingImagePoolDescriptor> poolDescriptor = AZStd::make_unique<RHI::StreamingImagePoolDescriptor>();
             poolDescriptor->m_budgetInBytes = sourceData.m_budgetInBytes;
             assetCreator.SetPoolDescriptor(AZStd::move(poolDescriptor));
-            assetCreator.SetControllerAsset(Data::Asset<StreamingImageControllerAsset>(
-                DefaultStreamingImageControllerAsset::BuiltInAssetId, 
-                azrtti_typeid<DefaultStreamingImageControllerAsset>()));
             assetCreator.SetPoolName(sourceData.m_poolName);
 
             Data::Asset<StreamingImagePoolAsset> poolAsset;

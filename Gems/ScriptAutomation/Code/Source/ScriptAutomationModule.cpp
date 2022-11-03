@@ -43,4 +43,4 @@ namespace ScriptAutomation
     };
 }// namespace ScriptAutomation
 
-AZ_DECLARE_MODULE_CLASS(ScriptAutomationModule, ScriptAutomation::ScriptAutomationModule)
+AZ_DECLARE_MODULE_CLASS(Gem_ScriptAutomation, ScriptAutomation::ScriptAutomationModule)

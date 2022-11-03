@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Framebuffer.h>
 #include <RHI/RenderPass.h>
@@ -75,6 +75,74 @@ namespace AZ
         uint32_t RenderPass::GetAttachmentCount() const
         {
             return m_descriptor.m_attachmentCount;
+        }
+
+        RenderPass::Descriptor RenderPass::ConvertRenderAttachmentLayout(const RHI::RenderAttachmentLayout& layout, const RHI::MultisampleState& multisampleState)
+        {
+            Descriptor renderPassDesc;
+            renderPassDesc.m_attachmentCount = layout.m_attachmentCount;
+
+            for (uint32_t index = 0; index < renderPassDesc.m_attachmentCount; ++index)
+            {
+                // Only fill up the necessary information to get a compatible render pass
+                renderPassDesc.m_attachments[index].m_format = layout.m_attachmentFormats[index];
+                renderPassDesc.m_attachments[index].m_initialLayout = VK_IMAGE_LAYOUT_GENERAL;
+                renderPassDesc.m_attachments[index].m_finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+                renderPassDesc.m_attachments[index].m_multisampleState = multisampleState;
+            }
+
+            renderPassDesc.m_subpassCount = layout.m_subpassCount;
+            for (uint32_t subpassIndex = 0; subpassIndex < layout.m_subpassCount; ++subpassIndex)
+            {
+                AZStd::bitset<RHI::Limits::Pipeline::RenderAttachmentCountMax> usedAttachments;
+                const auto& subpassLayout = layout.m_subpassLayouts[subpassIndex];
+                auto& subpassDescriptor = renderPassDesc.m_subpassDescriptors[subpassIndex];
+                subpassDescriptor.m_rendertargetCount = subpassLayout.m_rendertargetCount;
+                subpassDescriptor.m_subpassInputCount = subpassLayout.m_subpassInputCount;
+                if (subpassLayout.m_depthStencilDescriptor.IsValid())
+                {
+                    subpassDescriptor.m_depthStencilAttachment = RenderPass::SubpassAttachment{
+                        subpassLayout.m_depthStencilDescriptor.m_attachmentIndex,
+                        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
+                    usedAttachments.set(subpassLayout.m_depthStencilDescriptor.m_attachmentIndex, true);
+                }
+
+                for (uint32_t colorAttachmentIndex = 0; colorAttachmentIndex < subpassLayout.m_rendertargetCount; ++colorAttachmentIndex)
+                {
+                    RenderPass::SubpassAttachment& subpassAttachment = subpassDescriptor.m_rendertargetAttachments[colorAttachmentIndex];
+                    subpassAttachment.m_attachmentIndex = subpassLayout.m_rendertargetDescriptors[colorAttachmentIndex].m_attachmentIndex;
+                    subpassAttachment.m_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    usedAttachments.set(subpassAttachment.m_attachmentIndex);
+                    RenderPass::SubpassAttachment& resolveSubpassAttachment = subpassDescriptor.m_resolveAttachments[colorAttachmentIndex];
+                    resolveSubpassAttachment.m_attachmentIndex = subpassLayout.m_rendertargetDescriptors[colorAttachmentIndex].m_resolveAttachmentIndex;
+                    resolveSubpassAttachment.m_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+                    if (resolveSubpassAttachment.IsValid())
+                    {
+                        // Set the number of samples for resolve attachments to 1.
+                        renderPassDesc.m_attachments[resolveSubpassAttachment.m_attachmentIndex].m_multisampleState.m_samples = 1;
+                        usedAttachments.set(resolveSubpassAttachment.m_attachmentIndex);
+                    }
+                }
+
+                for (uint32_t inputAttachmentIndex = 0; inputAttachmentIndex < subpassLayout.m_subpassInputCount; ++inputAttachmentIndex)
+                {
+                    RenderPass::SubpassAttachment& subpassAttachment = subpassDescriptor.m_subpassInputAttachments[inputAttachmentIndex];
+                    subpassAttachment.m_attachmentIndex = subpassLayout.m_subpassInputIndices[inputAttachmentIndex];
+                    subpassAttachment.m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    usedAttachments.set(subpassAttachment.m_attachmentIndex);
+                }
+
+                // [GFX_TODO][ATOM-3948] Implement preserve attachments. For now preserve all attachments.
+                for (uint32_t attachmentIndex = 0; attachmentIndex < renderPassDesc.m_attachmentCount; ++attachmentIndex)
+                {
+                    if (!usedAttachments[attachmentIndex])
+                    {
+                        subpassDescriptor.m_preserveAttachments[subpassDescriptor.m_preserveAttachmentCount++] = attachmentIndex;
+                    }
+                }
+            }
+
+            return renderPassDesc;
         }
 
         AZStd::span<const RenderPass::SubpassAttachment> RenderPass::GetSubpassAttachments(const uint32_t subpassIndex, const AttachmentType type) const

@@ -39,6 +39,7 @@ AZ_POP_DISABLE_WARNING
 #include <ScriptCanvas/GraphCanvas/MappingBus.h>
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
 #include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
+#include <Editor/Include/ScriptCanvas/Components/NodeReplacementSystem.h>
 #include <Editor/Include/ScriptCanvas/GraphCanvas/MappingBus.h>
 #include <Editor/Include/ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
 #include <Editor/Nodes/NodeCreateUtils.h>
@@ -84,7 +85,7 @@ AZ_POP_DISABLE_WARNING
 #include <ScriptCanvas/Utils/NodeUtils.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
 
-    AZ_CVAR(bool, g_disableDeprecatedNodeUpdates, false, {}, AZ::ConsoleFunctorFlags::Null,
+AZ_CVAR(bool, g_disableDeprecatedNodeUpdates, false, {}, AZ::ConsoleFunctorFlags::Null,
         "Disables automatic update attempts of deprecated nodes, so that graphs that require and update can be viewed in their original form");
 
 namespace EditorGraphCpp
@@ -488,7 +489,7 @@ namespace ScriptCanvasEditor
         const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(config.m_type);
         if (!classData)
         {
-            AZ_Warning("ScriptCanvas", false, "Failed to find replacement class with UUID %s from serialize context.", config.m_type.data);
+            AZ_Warning("ScriptCanvas", false, "Failed to find replacement class with UUID %s from serialize context.", config.m_type.ToFixedString().c_str());
             return nullptr;
         }
 
@@ -3945,9 +3946,17 @@ namespace ScriptCanvasEditor
 
                 if (scriptCanvasNode)
                 {
-                     if (scriptCanvasNode->IsDeprecated() && !g_disableDeprecatedNodeUpdates)
+                    if (scriptCanvasNode->IsDeprecated() && !g_disableDeprecatedNodeUpdates)
                     {
                         ScriptCanvas::NodeReplacementConfiguration nodeConfig = scriptCanvasNode->GetReplacementNodeConfiguration();
+                        // fallback to node replacement system, once fully migrated, all replacement config should come from replacement system
+                        if (!nodeConfig.IsValid())
+                        {
+                            auto replacementId = ScriptCanvasEditor::NodeReplacementSystem::GenerateReplacementId(scriptCanvasNode);
+                            ScriptCanvasEditor::NodeReplacementRequestBus::BroadcastResult(
+                                nodeConfig, &ScriptCanvasEditor::NodeReplacementRequests::GetNodeReplacementConfiguration, replacementId);
+                        }
+
                         if (nodeConfig.IsValid())
                         {
                             ScriptCanvas::NodeUpdateSlotReport nodeUpdateSlotReport;

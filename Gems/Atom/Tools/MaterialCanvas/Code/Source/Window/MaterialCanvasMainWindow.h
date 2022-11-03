@@ -37,7 +37,7 @@ namespace MaterialCanvas
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
         MaterialCanvasMainWindow(const AZ::Crc32& toolId, const AtomToolsFramework::GraphViewConfig& graphViewConfig, QWidget* parent = 0);
-        ~MaterialCanvasMainWindow();
+        ~MaterialCanvasMainWindow() = default;
 
     protected:
         // AtomToolsFramework::AtomToolsMainWindowRequestBus::Handler overrides...
@@ -47,10 +47,9 @@ namespace MaterialCanvas
 
         // AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
-        void OnDocumentCleared(const AZ::Uuid& documentId) override;
-        void OnDocumentError(const AZ::Uuid& documentId) override;
 
         // AtomToolsFramework::AtomToolsDocumentMainWindow overrides...
+        AZStd::vector<AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup>> GetSettingsDialogGroups() const override;
         AZStd::string GetHelpDialogText() const override;
 
     private:

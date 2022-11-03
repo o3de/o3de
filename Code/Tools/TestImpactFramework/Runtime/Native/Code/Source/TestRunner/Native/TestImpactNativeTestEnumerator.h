@@ -29,18 +29,18 @@ namespace TestImpact
     {
     public:
         using TestEnumerator<NativeTestEnumerationJobData>::TestEnumerator;
-    };
 
-    template<>
-    inline PayloadOutcome<TestEnumeration> PayloadFactory(const JobInfo<NativeTestEnumerationJobData>& jobData, [[maybe_unused]]const JobMeta& jobMeta)
-    {
-        try
+    protected:
+        JobPayloadOutcome PayloadExtractor(const JobInfo& jobData, [[maybe_unused]] const JobMeta& jobMeta) override
         {
-            return AZ::Success(TestEnumeration(
-                GTest::TestEnumerationSuitesFactory(ReadFileContents<TestRunnerException>(jobData.GetEnumerationArtifactPath()))));
-        } catch (const Exception& e)
-        {
-            return AZ::Failure(AZStd::string::format("%s\n", e.what()));
-        }
+            try
+            {
+                return AZ::Success(TestEnumeration(
+                    GTest::TestEnumerationSuitesFactory(ReadFileContents<TestRunnerException>(jobData.GetEnumerationArtifactPath()))));
+            } catch (const Exception& e)
+            {
+                return AZ::Failure(AZStd::string::format("%s\n", e.what()));
+            }
+        };
     };
 } // namespace TestImpact

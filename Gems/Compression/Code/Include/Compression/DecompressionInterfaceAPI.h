@@ -63,9 +63,12 @@ namespace Compression
         AZ_RTTI(DecompressionFactoryInterface, "{DB1ACA55-B36F-469B-9704-EC486D9FC810}");
         virtual ~DecompressionFactoryInterface() = default;
 
-        //! Returns a span containing all registered Decompression Interfaces
-        //! @return view of registered Decompression Interfaces.
-        virtual AZStd::span<IDecompressionInterface* const> GetDecompressionInterfaces() const= 0;
+        //! Callback function that is invoked for every registered decompression interface
+        //! return true to indicate that visitation of decompression interfaces should continue
+        //! returning false halts iteration
+        using VisitDecompressionInterfaceCallback = AZStd::function<bool(IDecompressionInterface&)>;
+        //! Invokes the supplied visitor for each register decompression interface that is non-nullptr
+        virtual void VisitDecompressionInterfaces(const VisitDecompressionInterfaceCallback&) const = 0;
 
         //! Registers a decompression interface with the decompression factory.
         //! If a decompression interface with a CompressionAlgorithmId is registered that
@@ -80,7 +83,7 @@ namespace Compression
         //!
         //! @param compressionAlgorithmId unique Id that identifies the Decompression Interface
         //! @return true if the IDecompressionInterface was unregistered, otherwise false
-        virtual bool UnregisterCompressionInterface(CompressionAlgorithmId) = 0;
+        virtual bool UnregisterDecompressionInterface(CompressionAlgorithmId) = 0;
 
         //! Queries the Decompression Interface with the compression algorithmd Id
         //! @param compressionAlgorithmId unique Id of Decompression Interface to query

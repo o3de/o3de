@@ -12,9 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/function/function_base.h>
 
-#include <QWidget>
-
-class QAction;
+class QWidget;
 
 namespace AzToolsFramework
 {
@@ -47,6 +45,9 @@ namespace AzToolsFramework
         AZStd::string m_description; //!< The description for the Action.
         AZStd::string m_category; //!< The category for the Action to be used in UI.
         AZStd::string m_iconPath; //!< The qrc path to the icon to be used in UI.
+        //! Determines in which mode this action should be accessible.
+        //! Empty means action will always appear regardless of the mode.
+        AZStd::vector<AZStd::string> m_modes = {}; 
         bool m_hideFromMenusWhenDisabled = true; //!< Determines whether this actions should be hidden in menus when disabled.
         bool m_hideFromToolBarsWhenDisabled = false; //!< Determines whether this actions should be hidden in toolbars when disabled.
     };
@@ -88,6 +89,13 @@ namespace AzToolsFramework
         //! @param contextIdentifier The identifier for the action context to query.
         //! @return True if an Action Context with the identifier provided was found, false otherwise.
         virtual bool IsActionContextRegistered(const AZStd::string& contextIdentifier) const = 0;
+
+        //! Register a new Mode for an Action Context to the Action Manager.
+        //! @param actionContextIdentifier The identifier for the action context the newly registered mode should be added to.
+        //! @param modeIdentifier The new value for the category property of the widget action.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ActionManagerOperationResult RegisterActionContextMode(
+            const AZStd::string& actionContextIdentifier, const AZStd::string& modeIdentifier) = 0;
 
         //! Register a new Action to the Action Manager.
         //! @param contextIdentifier The identifier for the action context the newly registered action should be added to.
@@ -247,41 +255,25 @@ namespace AzToolsFramework
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ActionManagerOperationResult SetWidgetActionCategory(
             const AZStd::string& widgetActionIdentifier, const AZStd::string& category) = 0;
-    };
 
-    //! ActionManagerInternalInterface
-    //! Internal Interface to query implementation details for actions.
-    class ActionManagerInternalInterface
-    {
-    public:
-        AZ_RTTI(ActionManagerInternalInterface, "{2DCEB7AB-B07A-4085-B5AF-6EEB37439ED6}");
+        //! Sets an additional mode for an action via its identifier.
+        //! @param modeIdentifier The action context mode identifier to add to the action.
+        //! @param actionIdentifier The action to set the mode to.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ActionManagerOperationResult AssignModeToAction(
+            const AZStd::string& modeIdentifier, const AZStd::string& actionIdentifier) = 0;
 
-        //! Retrieve a QAction via its identifier.
-        //! @param actionIdentifier The identifier for the action to retrieve.
-        //! @return A raw pointer to the QAction, or nullptr if the action could not be found.
-        virtual QAction* GetAction(const AZStd::string& actionIdentifier) = 0;
+        //! Sets the active mode for an action context via its identifier.
+        //! @param actionContextIdentifier The action context to set the active mode to.
+        //! @param modeIdentifier The action context mode identifier to set as active.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ActionManagerOperationResult SetActiveActionContextMode(
+            const AZStd::string& actionContextIdentifier, const AZStd::string& modeIdentifier) = 0;
 
-        //! Retrieve a QAction via its identifier (const version).
-        //! @param actionIdentifier The identifier for the action to retrieve.
-        //! @return A raw const pointer to the QAction, or nullptr if the action could not be found.
-        virtual const QAction* GetActionConst(const AZStd::string& actionIdentifier) const = 0;
-
-        //! Retrieve whether an Action should be hidden from Menus when disabled.
-        //! @param actionIdentifier The identifier for the action to query.
-        //! @return True if the actions should be hidden, false otherwise.
-        virtual bool GetHideFromMenusWhenDisabled(const AZStd::string& actionIdentifier) const = 0;
-
-        //! Retrieve whether an Action should be hidden from ToolBars when disabled.
-        //! @param actionIdentifier The identifier for the action to query.
-        //! @return True if the actions should be hidden, false otherwise.
-        virtual bool GetHideFromToolBarsWhenDisabled(const AZStd::string& actionIdentifier) const = 0;
-
-        //! Generate a QWidget from a Widget Action identifier.
-        //! The WidgetAction will generate a new instance of the Widget and parent it to the widget provided.
-        //! Is is on the caller to handle its lifetime correctly.
-        //! @param widgetActionIdentifier The identifier for the widget action to retrieve.
-        //! @return A raw pointer to the QWidget, or nullptr if the action could not be found.
-        virtual QWidget* GenerateWidgetFromWidgetAction(const AZStd::string& widgetActionIdentifier) = 0;
+        //! Gets the active mode for an action context via its identifier.
+        //! @param actionContextIdentifier The action context to get the active mode of.
+        //! @return A successful outcome object containing the value, or a string with a message detailing the error in case of failure.
+        virtual ActionManagerGetterResult GetActiveActionContextMode(const AZStd::string& actionContextIdentifier) const = 0;
     };
 
 } // namespace AzToolsFramework

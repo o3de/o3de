@@ -158,6 +158,7 @@ namespace AZ
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute("AutoExpand", true)
                             ->Attribute(Edit::Attributes::NameLabelOverride, "")
+                            ->Attribute(AZ::Edit::Attributes::CategoryStyle, "display divider")
                         ->DataElement(AZ_CRC("ManifestName", 0x5215b349), &AnimationGroup::m_name, "Group name",
                             "Name for the group. This name will also be used as the name for the generated file.")
                             ->Attribute("FilterType", DataTypes::IAnimationGroup::TYPEINFO_Uuid())

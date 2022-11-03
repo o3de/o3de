@@ -1,22 +1,23 @@
 {
     "gem_name": "${Name}",
-    "display_name": "${Name}",
-    "license": "What license ${Name} uses goes here: i.e. Apache-2.0 Or MIT",
-    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
-    "origin": "The name of the originator goes here. i.e. XYZ Inc.",
-    "origin_url": "The primary repo for ${Name} goes here: i.e. http://www.mydomain.com",
+    "display_name": "${DisplayName}",
+    "license": "${License}",
+    "license_url": "${LicenseURL}",
+    "origin": "${Origin}",
+    "origin_url": "${OriginURL}",
     "type": "Code",
-    "summary": "A short description of ${Name}.",
+    "summary": "${Summary}",
     "canonical_tags": [
         "Gem"
     ],
     "user_tags": [
-        "${Name}"
+        "${UserTags}"
     ],
-    "icon_path": "preview.png",
-    "requirements": "",
-    "documentation_url": "",
+    "icon_path": "${IconPath}",
+    "requirements": "${Requirements}",
+    "documentation_url": "${DocumentationURL}",
     "dependencies": [
         "QtForPython"
-    ]
+    ],
+    "repo_uri": "${RepoURI}"
 }

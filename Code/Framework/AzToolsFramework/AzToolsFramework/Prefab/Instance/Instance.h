@@ -210,6 +210,8 @@ namespace AzToolsFramework
 
             InstanceOptionalConstReference GetParentInstance() const;
 
+            bool HasParentInstance() const;
+
             const InstanceAlias& GetInstanceAlias() const;
 
             bool IsParentInstance(const Instance& instance) const;

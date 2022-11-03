@@ -1,5 +1,5 @@
 {
-    "materialType": "Materials\\Types\\StandardPBR.materialtype",
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
     "propertyValues": {
         "baseColor.color": [
@@ -9,7 +9,7 @@
             1.0
         ],
         "metallic.factor": 1.0,
-        "metallic.textureMap": "TestData/Textures/checker8x8_gray_512.png",
+        "metallic.textureMap": "../../Textures/checker8x8_gray_512.png",
         "roughness.factor": 0.5
     }
 }

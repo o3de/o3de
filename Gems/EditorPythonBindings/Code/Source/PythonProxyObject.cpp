@@ -527,6 +527,12 @@ namespace EditorPythonBindings
         return GetWrappedObjectRepr();
     }
 
+    pybind11::ssize_t PythonProxyObject::GetWrappedObjectHash()
+    {
+        pybind11::object result = GetWrappedObjectRepr(); 
+        return pybind11::hash(result.release());
+    }
+
     void PythonProxyObject::ReleaseWrappedObject()
     {
         if (m_wrappedObject.IsValid() && m_ownership == Ownership::Owned)
@@ -976,6 +982,7 @@ namespace EditorPythonBindings
                 })
                 .def("__setattr__", &PythonProxyObject::SetPropertyValue)
                 .def("__getattr__", &PythonProxyObject::GetPropertyValue)
+                .def("__hash__", &PythonProxyObject::GetWrappedObjectHash)
                 .def(Builtins::s_repr, [](PythonProxyObject& self)
                 {
                     return self.GetWrappedObjectRepr();

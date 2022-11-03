@@ -9,6 +9,7 @@
 #include <Shadows/ProjectedShadowFeatureProcessor.h>
 
 #include <AzCore/Math/MatrixUtils.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <Math/GaussianMathFilter.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
@@ -299,18 +300,9 @@ namespace AZ::Render
 
         UpdateShadowView(shadowProperty);
     }
-
-    void ProjectedShadowFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* /*renderPipeline*/)
-    {
-        CachePasses();
-    }
-
-    void ProjectedShadowFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr /*renderPipeline*/)
-    {
-        CachePasses();
-    }
-
-    void ProjectedShadowFeatureProcessor::OnRenderPipelineRemoved( RPI::RenderPipeline* /*renderPipeline*/)
+        
+    void ProjectedShadowFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline,
+            [[maybe_unused]] RPI::SceneNotification::RenderPipelineChangeType changeType)
     {
         CachePasses();
     }

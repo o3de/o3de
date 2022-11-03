@@ -40,6 +40,9 @@ namespace AZ
             //! Creates a FullscreenTrianglePass
             static Ptr<FullscreenTrianglePass> Create(const PassDescriptor& descriptor);
 
+            //! Return the shader
+            Data::Instance<Shader> GetShader() const;
+
         protected:
             FullscreenTrianglePass(const PassDescriptor& descriptor);
 
@@ -58,8 +61,6 @@ namespace AZ
 
             // The stencil reference value for the draw item
             uint32_t m_stencilRef;
-
-            RPI::ShaderVariantStableId m_shaderVariantStableId = RPI::ShaderAsset::RootShaderVariantStableId;
 
             Data::Instance<ShaderResourceGroup> m_drawShaderResourceGroup;
 

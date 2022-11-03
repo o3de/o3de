@@ -15,6 +15,7 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <SceneAPI/SceneCore/SceneCoreConfiguration.h>
 #include <SceneAPI/SceneCore/Events/ProcessingResult.h>
+#include <AzCore/Interface/Interface.h>
 
 namespace AZ
 {
@@ -33,6 +34,53 @@ namespace AZ
                 ManifestLoaded,
                 AssetFailure,
                 ManifestFailure
+            };
+
+            class AssetImportRequest;
+
+            struct AssetImportRequestReporter
+            {
+                AZ_RTTI(AssetImportRequestReporter, "{3BCEDF5C-9FE6-4A16-A521-D2362E51522F}");
+
+                virtual void ReportStart(const AssetImportRequest* instance) = 0;
+                virtual void ReportFinish(const AssetImportRequest* instance) = 0;
+            };
+
+            struct AssetImportRequestEventProcessingPolicy
+            {
+                template<class Interface>
+                static void ReportStart(Interface&& iface)
+                {
+                    if (auto* reporter = AZ::Interface<AssetImportRequestReporter>::Get(); reporter)
+                    {
+                        reporter->ReportStart(static_cast<const AssetImportRequest*>(iface));
+                    }
+                }
+
+                template<class Interface>
+                static void ReportFinish(Interface&& iface)
+                {
+                    if (auto* reporter = AZ::Interface<AssetImportRequestReporter>::Get(); reporter)
+                    {
+                        reporter->ReportFinish(static_cast<const AssetImportRequest*>(iface));
+                    }
+                }
+
+                template<class Results, class Function, class Interface, class... InputArgs>
+                static void CallResult(Results& results, Function&& func, Interface&& iface, InputArgs&&... args)
+                {
+                    ReportStart(iface);
+                    results = AZStd::invoke(AZStd::forward<Function>(func), AZStd::forward<Interface>(iface), AZStd::forward<InputArgs>(args)...);
+                    ReportFinish(iface);
+                }
+
+                template<class Function, class Interface, class... InputArgs>
+                static void Call(Function&& func, Interface&& iface, InputArgs&&... args)
+                {
+                    ReportStart(iface);
+                    AZStd::invoke(AZStd::forward<Function>(func), AZStd::forward<Interface>(iface), AZStd::forward<InputArgs>(args)...);
+                    ReportFinish(iface);
+                }
             };
 
             class SCENE_CORE_API LoadingResultCombiner
@@ -66,6 +114,7 @@ namespace AZ
 
                 static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
                 using MutexType = AZStd::recursive_mutex;
+                using EventProcessingPolicy = AssetImportRequestEventProcessingPolicy;
 
                 static AZ::Crc32 GetAssetImportRequestComponentTag()
                 {
@@ -80,6 +129,8 @@ namespace AZ
                 virtual void GetManifestExtension(AZStd::string& result);
                 //! Gets the file extension for the generated manifest.
                 virtual void GetGeneratedManifestExtension(AZStd::string& result);
+                //! Gets the label for a scene builder using this HandlerPolicy
+                virtual void GetPolicyName(AZStd::string& result) const;
 
                 //! Before asset loading starts this is called to allow for any required initialization.
                 virtual ProcessingResult PrepareForAssetLoading(Containers::Scene& scene, RequestingApplication requester);
@@ -87,14 +138,13 @@ namespace AZ
                 //! the calling application.
                 virtual LoadingResult LoadAsset(Containers::Scene& scene, const AZStd::string& path, const Uuid& guid, RequestingApplication requester);
                 //! FinalizeAssetLoading can be used to do any work to complete loading, such as complete asynchronous loading
-                //! or adjust the loaded content in the the SceneGraph. While manifest changes can be done here as well, it's
+                //! or adjust the loaded content in the SceneGraph. While manifest changes can be done here as well, it's
                 //! recommended to wait for the UpdateManifest call.
                 virtual void FinalizeAssetLoading(Containers::Scene& scene, RequestingApplication requester);
                 //! After all loading has completed, this call can be used to make adjustments to the manifest. Based on the given
                 //! action this can mean constructing a new manifest or updating an existing manifest. This call is intended
                 //! to deal with any default behavior of the manifest.
-                virtual ProcessingResult UpdateManifest(Containers::Scene& scene, ManifestAction action,
-                    RequestingApplication requester);
+                virtual ProcessingResult UpdateManifest(Containers::Scene& scene, ManifestAction action, RequestingApplication requester);
 
                 // Get scene processing project setting: UseCustomNormal 
                 virtual void AreCustomNormalsUsed(bool & value);
@@ -136,6 +186,20 @@ namespace AZ
             using AssetImportRequestBus = AZ::EBus<AssetImportRequest>;
 
             inline AssetImportRequest::~AssetImportRequest() = default;
+
+            //! Queue EBus to resolve events during the scene import phases
+            class SCENE_CORE_API AssetPostImportRequest
+                : public AZ::EBusTraits
+            {
+            public:
+                using MutexType = AZStd::recursive_mutex;
+                using EventQueueMutexType = AZStd::recursive_mutex;
+                static constexpr bool EnableEventQueue = true;
+
+                virtual void CallAfterSceneExport(AZStd::function<void()> callback) = 0;
+            };
+            using AssetPostImportRequestBus = AZ::EBus<AssetPostImportRequest>;
+
         } // namespace Events
     } // namespace SceneAPI
 } // namespace AZ

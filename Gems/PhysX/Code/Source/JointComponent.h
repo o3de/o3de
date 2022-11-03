@@ -94,6 +94,8 @@ namespace PhysX
         /// Issues warnings for invalid scenarios when initializing a joint from entity IDs.
         void WarnInvalidJointSetup(AZ::EntityId entityId, const AZStd::string& message);
 
+        /// Issues info messages for potentially invalid scenarios when initializing a joint from entity IDs.
+        void PrintJointSetupMessage(AZ::EntityId entityId, const AZStd::string& message);
 
         JointComponentConfiguration m_configuration;
         JointGenericProperties m_genericProperties;

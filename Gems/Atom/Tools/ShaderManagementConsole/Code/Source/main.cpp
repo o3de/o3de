@@ -10,6 +10,7 @@
 
 int main(int argc, char** argv)
 {
+    const AZ::Debug::Trace tracer;
     AzQtComponents::AzQtApplication::InitializeDpiScaling();
 
     ShaderManagementConsole::ShaderManagementConsoleApplication app(&argc, &argv);

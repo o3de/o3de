@@ -25,26 +25,26 @@ namespace AtomToolsFramework
         static void Reflect(AZ::ReflectContext* context);
 
         DynamicNode() = default;
-        DynamicNode(GraphModel::GraphPtr ownerGraph, const AZ::Crc32& toolId, const AZStd::string& configId);
+        DynamicNode(GraphModel::GraphPtr ownerGraph, const AZ::Crc32& toolId, const AZ::Uuid& configId);
 
         const char* GetTitle() const override;
         const char* GetSubTitle() const override;
 
-        using Node::PostLoadSetup;
-        void PostLoadSetup(GraphModel::GraphPtr ownerGraph, GraphModel::NodeId id) override;
-
         // Get the ID of the dynamic node config used to create this node
-        const AZStd::string& GetConfigId() const;
+        const AZ::Uuid& GetConfigId() const;
 
         // Get the dynamic node config used to create this node. This will be necessary to look up any application or context specific data
         // contained in the config.
         const DynamicNodeConfig& GetConfig() const;
 
+        // Get the name of the title palette for node UI
+        AZStd::string GetTitlePaletteName() const;
+
     protected:
         void RegisterSlots() override;
 
         AZ::Crc32 m_toolId = {};
-        AZStd::string m_configId;
+        AZ::Uuid m_configId = AZ::Uuid::CreateNull();
         DynamicNodeConfig m_config;
     };
 } // namespace AtomToolsFramework

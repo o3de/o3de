@@ -16,9 +16,12 @@
 #include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/Viewport/ClickDetector.h>
 #include <AzFramework/Viewport/CursorState.h>
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
+#include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeCollection.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
@@ -35,8 +38,15 @@
 
 namespace AzToolsFramework
 {
+    namespace ComponentModeFramework
+    {
+        class ComponentModeSwitcher;
+    }
+
     class ActionManagerInterface;
+    class HotKeyManagerInterface;
     class MenuManagerInterface;
+
     class EditorVisibleEntityDataCacheInterface;
 
     //! Entity related data required by manipulators during action.
@@ -133,6 +143,7 @@ namespace AzToolsFramework
     //! Provide a suite of functionality for manipulating entities, primarily through their TransformComponent.
     class EditorTransformComponentSelection
         : public ViewportInteraction::ViewportSelectionRequests
+        , public ActionManagerRegistrationNotificationBus::Handler
         , public EditorContextMenuBus::Handler
         , private EditorEventsBus::Handler
         , private EditorTransformComponentSelectionRequestBus::Handler
@@ -185,6 +196,7 @@ namespace AzToolsFramework
 
         void CreateTransformModeSelectionCluster();
         void CreateSpaceSelectionCluster();
+        void CreateComponentModeSwitcher();
         void CreateSnappingCluster();
 
         void ClearManipulatorTranslationOverride();
@@ -210,6 +222,11 @@ namespace AzToolsFramework
         // Legacy ActionManager
         void RegisterActions();
         void UnregisterActions();
+
+        // ActionManagerRegistrationNotificationBus overrides ...
+        void OnActionUpdaterRegistrationHook() override;
+        void OnActionRegistrationHook() override;
+        void OnMenuBindingHook() override;
 
         void BeginRecordManipulatorCommand();
         void EndRecordManipulatorCommand();
@@ -245,18 +262,18 @@ namespace AzToolsFramework
         void CopyScaleToSelectedEntitiesIndividualLocal(float scale) override;
         void CopyScaleToSelectedEntitiesIndividualWorld(float scale) override;
         void SnapSelectedEntitiesToWorldGrid(float gridSize) override;
+        void OverrideComponentModeSwitcher(AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher>) override;
 
         // EditorManipulatorCommandUndoRedoRequestBus overrides ...
         void UndoRedoEntityManipulatorCommand(AZ::u8 pivotOverride, const AZ::Transform& transform) override;
 
         // EditorContextMenuBus overrides ...
-        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
+        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, int flags) override;
         int GetMenuPosition() const override;
         AZStd::string GetMenuIdentifier() const override;
 
         // EditorEventsBus overrides ...
         void OnEscape() override;
-        void NotifyMainWindowInitialized(QMainWindow* mainWindow) override;
 
         // ToolsApplicationNotificationBus overrides ...
         void BeforeEntitySelectionChanged() override;
@@ -350,9 +367,12 @@ namespace AzToolsFramework
         AzFramework::CursorState m_cursorState; //!< Track the mouse position and delta movement each frame.
         SpaceCluster m_spaceCluster; //!< Related viewport ui state for controlling the current reference space.
         SnappingCluster m_snappingCluster; //!< Related viewport ui state for aligning positions to a grid or reference frame.
+        //! Viewport UI Switcher for showing component mode components.
+        AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> m_componentModeSwitcher; 
         bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
 
         ActionManagerInterface* m_actionManagerInterface = nullptr;
+        HotKeyManagerInterface* m_hotKeyManagerInterface = nullptr;
         MenuManagerInterface* m_menuManagerInterface = nullptr;
     };
 

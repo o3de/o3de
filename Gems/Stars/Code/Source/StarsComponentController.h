@@ -56,8 +56,8 @@ namespace AZ::Render
         void OnConfigChanged();
         void OnStarsAssetChanged();
         void UpdateStarsFromAsset(Data::Asset<Data::AssetData> asset);
-        void RegisterFeatureProcessor(EntityId entityId);
-        void UnregisterFeatureProcessor();
+        void EnableFeatureProcessor(EntityId entityId);
+        void DisableFeatureProcessor();
 
         StarsComponentConfig m_configuration;
 

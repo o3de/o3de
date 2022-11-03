@@ -103,7 +103,6 @@ namespace UnitTest
                 test.m_imageSize, test.m_imageSize,
                 static_cast<AZ::u32>(test.m_pixel.GetX()), static_cast<AZ::u32>(test.m_pixel.GetY()), test.m_setPixelValues);
             config.m_tiling = AZ::Vector2(test.m_tiling);
-            config.m_advancedMode = test.m_advancedMode;
             config.m_channelToUse = test.m_channelToUse;
             config.m_customScaleType = test.m_customScaleType;
             config.m_scaleRangeMin = test.m_scaleRangeMin;

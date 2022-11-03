@@ -9,7 +9,7 @@
 #include <RHI/Buffer.h>
 #include <RHI/Image.h>
 #include <RHI/Scope.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 
 namespace AZ

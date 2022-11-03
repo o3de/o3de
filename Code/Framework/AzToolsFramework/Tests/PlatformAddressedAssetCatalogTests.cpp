@@ -14,13 +14,12 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzFramework/IO/LocalFileIO.h>
-#include <Tests/AZTestShared/Utils/Utils.h>
+#include <AZTestShared/Utils/Utils.h>
 #include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzTest/AzTest.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
-#include <Utils/Utils.h>
 
 namespace
 {
@@ -117,7 +116,7 @@ namespace UnitTest
 
         AzToolsFramework::PlatformAddressedAssetCatalogManager* m_PlatformAddressedAssetCatalogManager = nullptr;
         ToolsTestApplication* m_application = nullptr;
-        UnitTest::ScopedTemporaryDirectory m_tempDir;
+        AZ::Test::ScopedAutoTempDirectory m_tempDir;
         AZ::IO::FileIOStream m_fileStreams[AzFramework::PlatformId::NumPlatformIds][s_totalAssets];
 
         AZ::Data::AssetId m_assets[AzFramework::PlatformId::NumPlatformIds][s_totalAssets];
@@ -166,8 +165,8 @@ namespace UnitTest
         {
 
         }
-        MOCK_METHOD1(AssetChanged, void(AzFramework::AssetSystem::AssetNotificationMessage message));
-        MOCK_METHOD1(AssetRemoved, void(AzFramework::AssetSystem::AssetNotificationMessage message));
+        MOCK_METHOD2(AssetChanged, void(const AZStd::vector<AzFramework::AssetSystem::AssetNotificationMessage>& message, bool isCatalogInitialize));
+        MOCK_METHOD1(AssetRemoved, void(const AZStd::vector<AzFramework::AssetSystem::AssetNotificationMessage>& message));
     };
 
     class PlatformAddressedAssetCatalogManagerMessageTest : public AzToolsFramework::PlatformAddressedAssetCatalogManager
@@ -206,7 +205,7 @@ namespace UnitTest
         }
         ToolsTestApplication* m_application = nullptr;
         AZStd::unique_ptr<AzToolsFramework::PlatformAddressedAssetCatalogManager> m_platformAddressedAssetCatalogManager;
-        UnitTest::ScopedTemporaryDirectory m_tempDir;
+        AZ::Test::ScopedAutoTempDirectory m_tempDir;
     };
 
     TEST_F(MessageTest, PlatformAddressedAssetCatalogManagerMessageTest_MessagesForwarded_CountsMatch)
@@ -222,23 +221,23 @@ namespace UnitTest
         catalogHolder.reset(mockCatalog);
 
         m_platformAddressedAssetCatalogManager->TakeSingleCatalog(AZStd::move(catalogHolder));
-        EXPECT_CALL(*mockCatalog, AssetChanged(testing::_)).Times(0);
-        notificationInterface->AssetChanged(testMessage);
+        EXPECT_CALL(*mockCatalog, AssetChanged(testing::_, false)).Times(0);
+        notificationInterface->AssetChanged({ testMessage });
 
         testMessage.m_platform = "android";
-        EXPECT_CALL(*mockCatalog, AssetChanged(testing::_)).Times(1);
-        notificationInterface->AssetChanged(testMessage);
+        EXPECT_CALL(*mockCatalog, AssetChanged(testing::_, false)).Times(1);
+        notificationInterface->AssetChanged({ testMessage });
 
         testMessage.m_platform = "pc";
-        EXPECT_CALL(*mockCatalog, AssetChanged(testing::_)).Times(0);
-        notificationInterface->AssetChanged(testMessage);
+        EXPECT_CALL(*mockCatalog, AssetChanged(testing::_, false)).Times(0);
+        notificationInterface->AssetChanged({ testMessage });
 
         EXPECT_CALL(*mockCatalog, AssetRemoved(testing::_)).Times(0);
-        notificationInterface->AssetRemoved(testMessage);
+        notificationInterface->AssetRemoved({ testMessage });
 
         testMessage.m_platform = "android";
         EXPECT_CALL(*mockCatalog, AssetRemoved(testing::_)).Times(1);
-        notificationInterface->AssetRemoved(testMessage);
+        notificationInterface->AssetRemoved({ testMessage });
     }
 
 }

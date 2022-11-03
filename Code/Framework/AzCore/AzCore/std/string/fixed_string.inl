@@ -12,7 +12,8 @@
 #include <cstring>
 
 #include <AzCore/std/algorithm.h>
-
+#include <AzCore/std/ranges/common_view.h>
+#include <AzCore/std/ranges/as_rvalue_view.h>
 #include <AzCore/std/string/fixed_string_Platform.inl>
 
 namespace AZStd
@@ -70,6 +71,14 @@ namespace AZStd
     inline constexpr basic_fixed_string<Element, MaxElementCount, Traits>::basic_fixed_string(InputIt first, InputIt last)
     {   // construct from [first, last)
         assign(first, last);
+    }
+
+    // https://eel.is/c++draft/strings#string.cons-18
+    template<class Element, size_t MaxElementCount, class Traits>
+    template<class R, typename>
+    inline constexpr basic_fixed_string<Element, MaxElementCount, Traits>::basic_fixed_string(from_range_t, R&& rg)
+    {
+        assign_range(AZStd::forward<R>(rg));
     }
 
     // #7
@@ -257,7 +266,7 @@ namespace AZStd
         {
             count = num;    // trim count to size
         }
-        AZSTD_CONTAINER_ASSERT(Capacity - m_size > count && m_size + count >= m_size,
+        AZSTD_CONTAINER_ASSERT(capacity() - size() >= count,
             "New size of fixed_string would be larger than can be represented in internal size_type with size %d",
             std::numeric_limits<internal_size_type>::digits);
         num = m_size + count;
@@ -278,7 +287,7 @@ namespace AZStd
     {
         // append [ptr, ptr + count)
         pointer data = m_buffer;
-        AZSTD_CONTAINER_ASSERT(Capacity - m_size > count && m_size + count >= m_size,
+        AZSTD_CONTAINER_ASSERT(capacity() - size() >= count,
             "New size of fixed_string would be larger than can be represented in internal size_type with size %d",
             std::numeric_limits<internal_size_type>::digits);
         size_type num = m_size + count;
@@ -328,15 +337,15 @@ namespace AZStd
         -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>
     {
         if constexpr (contiguous_iterator<InputIt>
-            && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+            && is_same_v<iter_value_t<InputIt>, value_type>)
         {
-            return append(AZStd::to_address(first), AZStd::distance(first, last));
+            return append(AZStd::to_address(first), ranges::distance(first, last));
         }
         else if constexpr (forward_iterator<InputIt>)
         {
             // Input Iterator pointer type doesn't match the const_pointer type
             // So the elements need to be appended one by one into the buffer
-            size_type newSize = m_size + AZStd::distance(first, last);
+            size_type newSize = m_size + ranges::distance(first, last);
             if (fits_in_capacity(newSize))
             {
                 for (size_t updateIndex = m_size; first != last; ++first, ++updateIndex)
@@ -351,7 +360,7 @@ namespace AZStd
         else
         {
             // input iterator that aren't forward iterators can only be used in a single pass
-            // algorithm. Therefore AZStd::distance can't be used
+            // algorithm. Therefore ranges::distance can't be used
             // So the input is copied into a local string and then delegated
             // to use the (const_pointer, size_type) overload
             basic_fixed_string inputCopy;
@@ -363,6 +372,15 @@ namespace AZStd
             return append(inputCopy.c_str(), inputCopy.size());
         }
     }
+
+    template<class Element, size_t MaxElementCount, class Traits>
+    template<class R>
+    inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::append_range(R&& rg)
+        -> enable_if_t<Internal::container_compatible_range<R, value_type>, basic_fixed_string&>
+    {
+        return append(basic_fixed_string(from_range, AZStd::forward<R>(rg)));
+    }
+
     template<class Element, size_t MaxElementCount, class Traits>
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::append(AZStd::initializer_list<Element> ilist) -> basic_fixed_string&
     {
@@ -464,15 +482,15 @@ namespace AZStd
         -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>
     {
         if constexpr (contiguous_iterator<InputIt>
-            && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+            && is_same_v<iter_value_t<InputIt>, value_type>)
         {
-            return assign(AZStd::to_address(first), AZStd::distance(first, last));
+            return assign(AZStd::to_address(first), ranges::distance(first, last));
         }
         else if constexpr (forward_iterator<InputIt>)
         {
             // Input Iterator pointer type doesn't match the const_pointer type
             // So the elements need to be assigned one by one into the buffer
-            size_type newSize = AZStd::distance(first, last);
+            size_type newSize = ranges::distance(first, last);
             if (fits_in_capacity(newSize))
             {
                 for (size_t updateIndex = 0; first != last; ++first, ++updateIndex)
@@ -487,7 +505,7 @@ namespace AZStd
         else
         {
             // input iterator that aren't forward iterators can only be used in a single pass
-            // algorithm. Therefore AZStd::distance can't be used
+            // algorithm. Therefore ranges::distance can't be used
             // So the input is copied into a local string and then delegated
             // to use the (const_pointer, size_type) overload
             basic_fixed_string inputCopy;
@@ -499,6 +517,24 @@ namespace AZStd
             return assign(inputCopy.c_str(), inputCopy.size());
         }
     }
+
+    template<class Element, size_t MaxElementCount, class Traits>
+    template<class R>
+    inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::assign_range(R&& rg)
+        -> enable_if_t<Internal::container_compatible_range<R, value_type>, basic_fixed_string&>
+    {
+        if constexpr (is_lvalue_reference_v<R>)
+        {
+            auto rangeView = AZStd::forward<R>(rg) | views::common;
+            return assign(ranges::begin(rangeView), ranges::end(rangeView));
+        }
+        else
+        {
+            auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
+            return assign(ranges::begin(rangeView), ranges::end(rangeView));
+        }
+    }
+
     template<class Element, size_t MaxElementCount, class Traits>
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::assign(AZStd::initializer_list<Element> ilist) -> basic_fixed_string&
     {
@@ -619,9 +655,9 @@ namespace AZStd
     {   // insert count * elem at insertPos
         const_pointer insertPosPtr = insertPos;
 
-        pointer data = m_buffer;
         size_type offset = insertPosPtr - data();
-        return insert(offset, count, ch);
+        insert(offset, count, ch);
+        return data() + offset;
     }
 
     template<class Element, size_t MaxElementCount, class Traits>
@@ -629,17 +665,17 @@ namespace AZStd
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::insert(const_iterator insertPos,
         InputIt first, InputIt last)-> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, iterator>
     {   // insert [_First, _Last) at _Where
-        size_type insertOffset = AZStd::distance(cbegin(), insertPos);
+        size_type insertOffset = ranges::distance(cbegin(), insertPos);
         if constexpr (contiguous_iterator<InputIt>
-            && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+            && is_same_v<iter_value_t<InputIt>, value_type>)
         {
-            insert(insertOffset, AZStd::to_address(first), AZStd::distance(first, last));
+            insert(insertOffset, AZStd::to_address(first), ranges::distance(first, last));
         }
         else if constexpr (forward_iterator<InputIt>)
         {
             // Input Iterator pointer type doesn't match the const_pointer type
             // So the elements need to be inserted one by one into the buffer
-            size_type count = AZStd::distance(first, last);
+            size_type count = ranges::distance(first, last);
             size_type newSize = m_size + count;
             if (fits_in_capacity(newSize))
             {
@@ -655,7 +691,7 @@ namespace AZStd
         else
         {
             // input iterator that aren't forward iterators can only be used in a single pass
-            // algorithm. Therefore AZStd::distance can't be used
+            // algorithm. Therefore ranges::distance can't be used
             // So the input is copied into a local string and then delegated
             // to use the (const_pointer, size_type) overload
             basic_fixed_string inputCopy;
@@ -667,6 +703,16 @@ namespace AZStd
             insert(insertOffset, inputCopy.c_str(), inputCopy.size());
         }
         return begin() + insertOffset;
+    }
+
+    template<class Element, size_t MaxElementCount, class Traits>
+    template<class R>
+    inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::insert_range(const_iterator insertPos, R&& rg)
+        -> enable_if_t<Internal::container_compatible_range<R, value_type>, iterator>
+    {
+        size_t offset = insertPos - begin();
+        insert(insertPos - begin(), basic_fixed_string(from_range, AZStd::forward<R>(rg)));
+        return begin() + offset;
     }
 
     template<class Element, size_t MaxElementCount, class Traits>
@@ -887,21 +933,21 @@ namespace AZStd
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::replace(const_iterator first, const_iterator last,
         const basic_fixed_string& rhs) -> basic_fixed_string&
     {
-        return replace(AZStd::distance(cbegin(), first), AZStd::distance(first, last), rhs);
+        return replace(ranges::distance(cbegin(), first), ranges::distance(first, last), rhs);
     }
 
     template<class Element, size_t MaxElementCount, class Traits>
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::replace(const_iterator first, const_iterator last,
         const_pointer ptr, size_type count) -> basic_fixed_string&
     {   // replace [first, last) with [ptr, ptr + count)
-        return replace(AZStd::distance(cbegin(), first), AZStd::distance(first, last), ptr, count);
+        return replace(ranges::distance(cbegin(), first), ranges::distance(first, last), ptr, count);
     }
 
     template<class Element, size_t MaxElementCount, class Traits>
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::replace(const_iterator first, const_iterator last,
         const_pointer ptr) -> basic_fixed_string&
     {   // replace [first, last) with [ptr, <null>)
-        return replace(AZStd::distance(cbegin(), first), AZStd::distance(first, last), ptr);
+        return replace(ranges::distance(cbegin(), first), ranges::distance(first, last), ptr);
     }
     template<class Element, size_t MaxElementCount, class Traits>
     template<typename T>
@@ -930,19 +976,19 @@ namespace AZStd
         InputIt replaceFirst, InputIt replaceLast) -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>
     {   // replace [first, last) with [replaceFirst,replaceLast)
         if constexpr (contiguous_iterator<InputIt>
-            && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+            && is_same_v<iter_value_t<InputIt>, value_type>)
         {
-            return replace(first, last, AZStd::to_address(replaceFirst), AZStd::distance(replaceFirst, replaceLast));
+            return replace(first, last, AZStd::to_address(replaceFirst), ranges::distance(replaceFirst, replaceLast));
         }
         else if constexpr (forward_iterator<InputIt>)
         {
             // Input Iterator pointer type doesn't match the const_pointer type
             // So the elements need to be appended one by one into the buffer
 
-            size_type insertOffset = AZStd::distance(cbegin(), first);
-            size_type postInsertOffset = AZStd::distance(cbegin(), last);
-            size_type count = AZStd::distance(replaceFirst, replaceLast);
-            size_type newSize = m_size + count - AZStd::distance(first, last);
+            size_type insertOffset = ranges::distance(cbegin(), first);
+            size_type postInsertOffset = ranges::distance(cbegin(), last);
+            size_type count = ranges::distance(replaceFirst, replaceLast);
+            size_type newSize = m_size + count - ranges::distance(first, last);
             if (fits_in_capacity(newSize))
             {
                 Traits::move(first + count, last, m_size - postInsertOffset); // empty out hole
@@ -958,7 +1004,7 @@ namespace AZStd
         else
         {
             // input iterator that aren't forward iterators can only be used in a single pass
-            // algorithm. Therefore AZStd::distance can't be used
+            // algorithm. Therefore ranges::distance can't be used
             // So the input is copied into a local string and then delegated
             // to use the (const_pointer, size_type) overload
             basic_fixed_string inputCopy;
@@ -970,6 +1016,16 @@ namespace AZStd
             return replace(first, last, inputCopy.c_str(), inputCopy.size());
         }
     }
+
+    template<class Element, size_t MaxElementCount, class Traits>
+    template<class R>
+    inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::replace_with_range(
+        const_iterator first, const_iterator last, R&& rg)
+        -> enable_if_t<Internal::container_compatible_range<R, value_type>, basic_fixed_string&>
+    {
+        return replace(first, last, basic_fixed_string(from_range, AZStd::forward<R>(rg)));
+    }
+
     template<class Element, size_t MaxElementCount, class Traits>
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::replace(const_iterator first, const_iterator last,
         AZStd::initializer_list<Element> ilist) -> basic_fixed_string&
@@ -1118,6 +1174,17 @@ namespace AZStd
             m_size = static_cast<internal_size_type>(newSize);
             Traits::assign(data[m_size], Element());  // terminate
         }
+    }
+
+    template<class Element, size_t MaxElementCount, class Traits>
+    template<class Operation>
+    inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::resize_and_overwrite(size_type n, Operation op) -> void
+    {
+        resize_no_construct(n);
+        const auto newSize = AZStd::move(op)(data(), n);
+        AZSTD_CONTAINER_ASSERT(newSize >= 0 && newSize <= n,
+            "resize_and_operation operation returned a new size that is outside the bounds of [0, %zu]", n);
+        resize_no_construct(newSize);
     }
 
     template<class Element, size_t MaxElementCount, class Traits>
@@ -1752,7 +1819,7 @@ namespace AZStd
         -> typename basic_fixed_string<Element, MaxElementCount, Traits>::size_type
     {
         auto iter = AZStd::remove(container.begin(), container.end(), element);
-        auto removedCount = AZStd::distance(iter, container.end());
+        auto removedCount = ranges::distance(iter, container.end());
         container.erase(iter, container.end());
         return removedCount;
     }
@@ -1762,7 +1829,7 @@ namespace AZStd
         -> typename basic_fixed_string<Element, MaxElementCount, Traits>::size_type
     {
         auto iter = AZStd::remove_if(container.begin(), container.end(), predicate);
-        auto removedCount = AZStd::distance(iter, container.end());
+        auto removedCount = ranges::distance(iter, container.end());
         container.erase(iter, container.end());
         return removedCount;
     }

@@ -78,22 +78,9 @@ namespace SandboxEditor
                 AzFramework::WindowRequestBus::EventResult(
                     windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
 
-                if (SandboxEditor::ManipulatorMouseWrap() && event.m_priority == ManipulatorPriority)
-                {
-                    if (m_virtualNormalizedPosition)
-                    {
-                        (*m_virtualNormalizedPosition) += position->m_normalizedPositionDelta;
-                    }
-                    else
-                    {
-                        m_virtualNormalizedPosition = { position->m_normalizedPosition };
-                    }
-                }
-
-                const auto normalizedPosition = m_virtualNormalizedPosition.value_or(position->m_normalizedPosition);
-                const auto screenPoint = AzFramework::ScreenPointFromVector2(AZ::Vector2(
-                    normalizedPosition.GetX() * aznumeric_cast<float>(windowSize.m_width),
-                    normalizedPosition.GetY() * aznumeric_cast<float>(windowSize.m_height)));
+                const auto screenPoint = AzFramework::ScreenPoint(
+                    aznumeric_cast<int>(position->m_normalizedPosition.GetX() * windowSize.m_width),
+                    aznumeric_cast<int>(position->m_normalizedPosition.GetY() * windowSize.m_height));
 
                 ProjectedViewportRay ray{};
                 ViewportInteractionRequestBus::EventResult(
@@ -131,12 +118,6 @@ namespace SandboxEditor
                     }
                     eventType = MouseEvent::Down;
                 }
-                if (SandboxEditor::ManipulatorMouseWrap() && event.m_priority == ManipulatorPriority)
-                {
-                    AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
-                        GetViewportId(), &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::SetCursorMode,
-                        AzToolsFramework::CursorInputMode::CursorModeWrapped);
-                }
             }
             else if (state == InputChannel::State::Ended)
             {
@@ -151,13 +132,6 @@ namespace SandboxEditor
                         m_mouseInteraction.m_mouseButtons.m_mouseButtons &= ~mouseButtonValue;
                     }
                     eventType = MouseEvent::Up;
-                }
-                if (SandboxEditor::ManipulatorMouseWrap() && event.m_priority == ManipulatorPriority)
-                {
-                    AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
-                        GetViewportId(), &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::SetCursorMode,
-                        AzToolsFramework::CursorInputMode::CursorModeNone);
-                    m_virtualNormalizedPosition = AZStd::nullopt;
                 }
             }
         }

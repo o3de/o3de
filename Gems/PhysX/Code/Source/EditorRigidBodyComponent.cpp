@@ -326,7 +326,6 @@ namespace PhysX
     void EditorRigidBodyComponent::Reflect(AZ::ReflectContext* context)
     {
         EditorRigidBodyConfiguration::Reflect(context);
-        RigidBodyConfiguration::Reflect(context);
 
         auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
@@ -372,6 +371,14 @@ namespace PhysX
 
     EditorRigidBodyComponent::EditorRigidBodyComponent(const EditorRigidBodyConfiguration& config)
         : m_config(config)
+    {
+        InitPhysicsTickHandler();
+    }
+
+    EditorRigidBodyComponent::EditorRigidBodyComponent(
+        const EditorRigidBodyConfiguration& configuration, const RigidBodyConfiguration& physxSpecificConfiguration)
+        : m_config(configuration)
+        , m_physxSpecificConfig(physxSpecificConfiguration)
     {
         InitPhysicsTickHandler();
     }

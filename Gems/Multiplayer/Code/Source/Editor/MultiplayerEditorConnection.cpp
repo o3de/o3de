@@ -55,7 +55,7 @@ namespace Multiplayer
             {
                 AZ::ComponentApplicationLifecycle::RegisterHandler(
                     *settingsRegistry, m_componentApplicationLifecycleHandler,
-                    [this](AZStd::string_view /*path*/, AZ::SettingsRegistryInterface::Type /*type*/)
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs&)
                     {
                         ActivateDedicatedEditorServer();
                     },

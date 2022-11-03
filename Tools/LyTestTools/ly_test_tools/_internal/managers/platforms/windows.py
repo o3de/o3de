@@ -61,19 +61,13 @@ class _WindowsResourceLocator(AbstractResourceLocator):
         """
         return os.path.join(self.project(), 'user', 'ScreenShots')
 
-    def editor_log(self):
-        """
-        Return path to the project's editor log dir using the builds project and platform
-        :return: path to Editor.log
-        """
-        return os.path.join(self.project_log(), "Editor.log")
-
     def crash_log(self):
         """
         Return path to the project's crash log dir using the builds project and platform
         :return: path to Error.log
         """
         return os.path.join(self.project_log(), "error.log")
+
 
 class WindowsWorkspaceManager(AbstractWorkspaceManager):
     """

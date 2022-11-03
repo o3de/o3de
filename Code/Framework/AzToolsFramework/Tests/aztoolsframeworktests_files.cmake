@@ -11,6 +11,7 @@ set(FILES
     ActionManager/ActionManagerFixture.cpp
     ActionManager/ActionManagerFixture.h
     ActionManager/ActionManagerTests.cpp
+    ActionManager/HotKeyManagerTests.cpp
     ActionManager/MenuManagerTests.cpp
     ActionManager/ToolBarManagerTests.cpp
     ArchiveTests.cpp
@@ -27,9 +28,11 @@ set(FILES
     ComponentModeTestFixture.cpp
     ComponentModeTestFixture.h
     ComponentModeTests.cpp
+    ComponentModeSwitcherTests.cpp
     EditorTransformComponentSelectionTests.cpp
     EditorVertexSelectionTests.cpp
     EditorViewportIconTests.cpp
+    EditorViewportHelperTests.cpp
     Entity/EditorEntityContextComponentTests.cpp
     Entity/EditorEntityHelpersTests.cpp
     Entity/EditorEntitySearchComponentTests.cpp
@@ -64,6 +67,8 @@ set(FILES
     ManipulatorViewTests.cpp
     PerforceComponentTests.cpp
     PlatformAddressedAssetCatalogTests.cpp
+    Prefab/Benchmark/Link/SingleInstanceMultiplePatchesBenchmarks.cpp
+    Prefab/Benchmark/Link/SingleInstanceMultiplePatchesBenchmarks.h
     Prefab/Benchmark/PrefabBenchmarkFixture.cpp
     Prefab/Benchmark/PrefabBenchmarkFixture.h
     Prefab/Benchmark/PrefabCreateBenchmarks.cpp
@@ -106,6 +111,9 @@ set(FILES
     Prefab/PrefabTestUndoFixture.cpp
     Prefab/PrefabTestUndoFixture.h
     Prefab/PrefabTestUtils.h
+    Prefab/PrefabUndoAddEntityTestFixture.cpp
+    Prefab/PrefabUndoAddEntityTestFixture.h
+    Prefab/PrefabUndoAddEntityTests.cpp
     Prefab/PrefabUndoLinkTests.cpp
     Prefab/PrefabUndoTests.cpp
     Prefab/PrefabUpdateInstancesTests.cpp

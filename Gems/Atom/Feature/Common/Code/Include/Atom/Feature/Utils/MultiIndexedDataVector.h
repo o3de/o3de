@@ -27,6 +27,8 @@ namespace AZ
 
             MultiIndexedDataVector()
             {
+                static_assert((AZStd::is_default_constructible_v<Ts> && ...), "MultiIndexDataVector can only be used with types that are default constructible");
+
                 m_dataToIndices.reserve(InitialReservedCount);
                 m_indices.reserve(InitialReservedCount);
 

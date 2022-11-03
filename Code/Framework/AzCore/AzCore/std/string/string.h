@@ -13,8 +13,11 @@
 #include <cstring>
 
 #include <AzCore/std/containers/compressed_pair.h>
+#include <AzCore/std/containers/containers_concepts.h>
 #include <AzCore/std/base.h>
 #include <AzCore/std/iterator.h>
+#include <AzCore/std/ranges/common_view.h>
+#include <AzCore/std/ranges/as_rvalue_view.h>
 #include <AzCore/std/allocator.h>
 #include <AzCore/std/allocator_traits.h>
 #include <AzCore/std/algorithm.h>
@@ -64,8 +67,6 @@ namespace AZStd
 
         using reference = Element&;
         using const_reference = const Element&;
-        using difference_type = typename Allocator::difference_type;
-        using size_type = typename Allocator::size_type;
 
         using iterator_impl = pointer;
         using const_iterator_impl = const_pointer;
@@ -76,6 +77,8 @@ namespace AZStd
         using iterator = iterator_impl;
         using const_iterator = const_iterator_impl;
 #endif
+        using difference_type = iter_difference_t<iterator>;
+        using size_type = make_unsigned_t<difference_type>;
         using reverse_iterator = AZStd::reverse_iterator<iterator>;
         using const_reverse_iterator = AZStd::reverse_iterator<const_iterator>;
         using value_type = Element;
@@ -122,6 +125,16 @@ namespace AZStd
             : m_storage{ skip_element_tag{}, alloc }
         {   // construct from [first, last)
             assign(first, last);
+        }
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        basic_string(from_range_t, R&& rg, const Allocator& alloc = Allocator())
+            : m_storage{ skip_element_tag{}, alloc }
+        {
+            assign_range(AZStd::forward<R>(rg));
+        }
+        basic_string(initializer_list<Element> ilist, const Allocator& alloc = Allocator())
+            : basic_string(ilist.begin(), ilist.end(), alloc)
+        {
         }
 
         inline basic_string(const this_type& rhs)
@@ -221,7 +234,7 @@ namespace AZStd
             {
                 return append(*this, ptr - data, count);    // substring
             }
-            AZSTD_CONTAINER_ASSERT(npos - size() > count && size() + count >= size(), "result is too long!");
+            AZSTD_CONTAINER_ASSERT(max_size() - size() >= count, "result is too long!");
             size_type oldSize = size();
             size_type newSize = oldSize + count;
             if (count > 0 && grow(newSize))
@@ -239,7 +252,7 @@ namespace AZStd
         this_type& append(size_type count, Element ch)
         {
             // append count * ch
-            AZSTD_CONTAINER_ASSERT(npos - size() > count, "result is too long");
+            AZSTD_CONTAINER_ASSERT(max_size() - size() >= count, "result is too long");
             size_type num  = size() + count;
             if (count > 0 && grow(num))
             {
@@ -257,16 +270,16 @@ namespace AZStd
             -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, this_type&>
         {   // append [first, last)
             if constexpr (contiguous_iterator<InputIt>
-                && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+                && is_same_v<iter_value_t<InputIt>, value_type>)
             {
-                return append(AZStd::to_address(first), AZStd::distance(first, last));
+                return append(AZStd::to_address(first), ranges::distance(first, last));
             }
             else if constexpr (forward_iterator<InputIt>)
             {
                 // Input Iterator pointer type doesn't match the const_pointer type
                 // So the elements need to be appended one by one into the buffer
                 size_type oldSize = size();
-                size_type newSize = oldSize + AZStd::distance(first, last);
+                size_type newSize = oldSize + ranges::distance(first, last);
                 if (grow(newSize))
                 {
                     pointer buffer = data();
@@ -282,7 +295,7 @@ namespace AZStd
             else
             {
                 // input iterator that aren't forward iterators can only be used in a single pass
-                // algorithm. Therefore AZStd::distance can't be used
+                // algorithm. Therefore ranges::distance can't be used
                 // So the input is copied into a local string and then delegated
                 // to use the (const_pointer, size_type) overload
                 basic_string inputCopy;
@@ -298,6 +311,16 @@ namespace AZStd
         inline this_type& append(const_pointer first, const_pointer last)
         {   // append [first, last), const pointers
             return replace(end(), end(), first, last);
+        }
+        template<class R>
+        auto append_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>, basic_string&>
+        {
+            return append(basic_string(from_range, AZStd::forward<R>(rg), get_allocator()));
+        }
+
+        basic_string& append(initializer_list<Element> iList)
+        {
+            return append(iList.begin(), iList.end());
         }
 
         inline this_type& assign(const this_type& rhs)
@@ -402,15 +425,15 @@ namespace AZStd
             -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, this_type&>
         {
             if constexpr (contiguous_iterator<InputIt>
-                && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+                && is_same_v<iter_value_t<InputIt>, value_type>)
             {
-                return assign(AZStd::to_address(first), AZStd::distance(first, last));
+                return assign(AZStd::to_address(first), ranges::distance(first, last));
             }
             else if constexpr (forward_iterator<InputIt>)
             {
                 // forward iterator pointer type doesn't match the const_pointer type
                 // So the elements need to be assigned one by one into the buffer
-                size_type newSize = AZStd::distance(first, last);
+                size_type newSize = ranges::distance(first, last);
                 if (grow(newSize))
                 {
                     pointer buffer = data();
@@ -426,7 +449,7 @@ namespace AZStd
             else
             {
                 // input iterator that aren't forward iterators can only be used in a single pass
-                // algorithm. Therefore AZStd::distance can't be used
+                // algorithm. Therefore ranges::distance can't be used
                 // So the input is copied into a local string and then delegated
                 // to use the (const_pointer, size_type) overload
                 basic_string inputCopy;
@@ -438,6 +461,26 @@ namespace AZStd
                 return assign(AZStd::move(inputCopy));
             }
         }
+        template<class R>
+        auto assign_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>, basic_string&>
+        {
+            if constexpr (is_lvalue_reference_v<R>)
+            {
+                auto rangeView = AZStd::forward<R>(rg) | views::common;
+                return assign(ranges::begin(rangeView), ranges::end(rangeView));
+            }
+            else
+            {
+                auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
+                return assign(ranges::begin(rangeView), ranges::end(rangeView));
+            }
+        }
+
+        basic_string& assign(initializer_list<Element> iList)
+        {
+            return assign(iList.begin(), iList.end());
+        }
+
         inline this_type& insert(size_type offset, const this_type& rhs) { return insert(offset, rhs, 0, npos); }
         this_type& insert(size_type offset, const this_type& rhs, size_type rhsOffset, size_type count)
         {
@@ -545,17 +588,17 @@ namespace AZStd
         auto insert(const_iterator insertPos, InputIt first, InputIt last)
             -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, iterator>
         {   // insert [_First, _Last) at _Where
-            size_type insertOffset = AZStd::distance(cbegin(), insertPos);
+            size_type insertOffset = ranges::distance(cbegin(), insertPos);
             if constexpr (contiguous_iterator<InputIt>
-                && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+                && is_same_v<iter_value_t<InputIt>, value_type>)
             {
-                insert(insertOffset, AZStd::to_address(first), AZStd::distance(first, last));
+                insert(insertOffset, AZStd::to_address(first), ranges::distance(first, last));
             }
             else if constexpr (forward_iterator<InputIt>)
             {
                 // Input Iterator pointer type doesn't match the const_pointer type
                 // So the elements need to be inserted one by one into the buffer
-                size_type count = AZStd::distance(first, last);
+                size_type count = ranges::distance(first, last);
                 size_type oldSize = size();
                 size_type newSize = oldSize + count;
                 if (grow(newSize))
@@ -573,7 +616,7 @@ namespace AZStd
             else
             {
                 // input iterator that aren't forward iterators can only be used in a single pass
-                // algorithm. Therefore AZStd::distance can't be used
+                // algorithm. Therefore ranges::distance can't be used
                 // So the input is copied into a local string and then delegated
                 // to use the (const_pointer, size_type) overload
                 basic_string inputCopy;
@@ -585,6 +628,19 @@ namespace AZStd
                 insert(insertOffset, inputCopy.c_str(), inputCopy.size());
             }
             return begin() + insertOffset;
+        }
+
+        template<class R>
+        auto insert_range(const_iterator insertPos, R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>, iterator>
+        {
+            size_t offset = insertPos - begin();
+            insert(offset, basic_string(from_range, AZStd::forward<R>(rg), get_allocator()));
+            return begin() + offset;
+        }
+
+        iterator insert(const_iterator insertPos, initializer_list<Element> iList)
+        {
+            return insert(insertPos, iList.begin(), iList.end());
         }
 
         this_type& erase(size_type offset = 0, size_type count = npos)
@@ -604,7 +660,7 @@ namespace AZStd
                 Traits::move(data + offset, data + offset + count, size() - offset - count);
                 m_storage.first().SetSize(size() - count);
                 Traits::assign(data[size()], Element());  // terminate
-        }
+            }
             return *this;
         }
 
@@ -841,20 +897,20 @@ namespace AZStd
             -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, this_type&>
         {
             if constexpr (contiguous_iterator<InputIt>
-                && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+                && is_same_v<iter_value_t<InputIt>, value_type>)
             {
-                return replace(first, last, AZStd::to_address(replaceFirst), AZStd::distance(replaceFirst, replaceLast));
+                return replace(first, last, AZStd::to_address(replaceFirst), ranges::distance(replaceFirst, replaceLast));
             }
             else if constexpr (forward_iterator<InputIt>)
             {
                 // Input Iterator pointer type doesn't match the const_pointer type
                 // So the elements need to be appended one by one into the buffer
 
-                size_type insertOffset = AZStd::distance(cbegin(), first);
-                size_type postInsertOffset = AZStd::distance(cbegin(), last);
-                size_type count = AZStd::distance(replaceFirst, replaceLast);
+                size_type insertOffset = ranges::distance(cbegin(), first);
+                size_type postInsertOffset = ranges::distance(cbegin(), last);
+                size_type count = ranges::distance(replaceFirst, replaceLast);
                 size_type oldSize = size();
-                size_type newSize = oldSize + count - AZStd::distance(first, last);
+                size_type newSize = oldSize + count - ranges::distance(first, last);
                 if (grow(newSize))
                 {
                     pointer buffer = data();
@@ -871,7 +927,7 @@ namespace AZStd
             else
             {
                 // input iterator that aren't forward iterators can only be used in a single pass
-                // algorithm. Therefore AZStd::distance can't be used
+                // algorithm. Therefore ranges::distance can't be used
                 // So the input is copied into a local string and then delegated
                 // to use the (const_pointer, size_type) overload
                 basic_string inputCopy;
@@ -882,6 +938,18 @@ namespace AZStd
 
                 return replace(first, last, inputCopy.c_str(), inputCopy.size());
             }
+        }
+
+        template<class R>
+        auto replace_with_range(const_iterator first, const_iterator last, R&& rg)
+            -> enable_if_t<Internal::container_compatible_range<R, value_type>, basic_string&>
+        {
+            return replace(first, last, basic_string(from_range, AZStd::forward<R>(rg), get_allocator()));
+        }
+
+        basic_string& replace(const_iterator first, const_iterator last, initializer_list<Element> iList)
+        {
+            return replace(first, last, iList.begin(), iList.end());
         }
 
         inline reference at(size_type offset)
@@ -979,6 +1047,16 @@ namespace AZStd
                 m_storage.first().SetSize(newSize);
                 Traits::assign(data[newSize], Element());  // terminate
             }
+        }
+
+        template<class Operation>
+        void resize_and_overwrite(size_type n, Operation op)
+        {
+            resize_no_construct(n);
+            const auto newSize = AZStd::move(op)(data(), n);
+            AZSTD_CONTAINER_ASSERT(newSize >= 0 && newSize <= n,
+                "resize_and_operation operation returned a new size that is outside the bounds of [0, %zu]", n);
+            resize_no_construct(newSize);
         }
 
         inline void resize(size_type newSize, Element ch)
@@ -1887,9 +1965,13 @@ namespace AZStd
 
     // AZStd::basic_string deduction guides
     template<class InputIt, class Alloc = allocator>
-    basic_string(InputIt, InputIt, Alloc = Alloc())-> basic_string<typename iterator_traits<InputIt>::value_type,
-        AZStd::char_traits<typename iterator_traits<InputIt>::value_type>,
+    basic_string(InputIt, InputIt, Alloc = Alloc()) -> basic_string<iter_value_t<InputIt>,
+        AZStd::char_traits<iter_value_t<InputIt>>,
         Alloc>;
+
+    template<class R, class Alloc = allocator, class = enable_if_t<ranges::input_range<R>>>
+    basic_string(from_range_t, R&&, Alloc = Alloc())
+        -> basic_string<ranges::range_value_t<R>, char_traits<ranges::range_value_t<R>>, Alloc>;
 
     template<class CharT, class Traits, class Alloc = allocator>
     explicit basic_string(AZStd::basic_string_view<CharT, Traits>, const Alloc& = Alloc()) ->
@@ -2041,7 +2123,7 @@ namespace AZStd
     decltype(auto) erase(basic_string<Element, Traits, Allocator>& container, const U& element)
     {
         auto iter = AZStd::remove(container.begin(), container.end(), element);
-        auto removedCount = AZStd::distance(iter, container.end());
+        auto removedCount = ranges::distance(iter, container.end());
         container.erase(iter, container.end());
         return removedCount;
     }
@@ -2050,7 +2132,7 @@ namespace AZStd
     decltype(auto) erase_if(basic_string<Element, Traits, Allocator>& container, Predicate predicate)
     {
         auto iter = AZStd::remove_if(container.begin(), container.end(), predicate);
-        auto removedCount = AZStd::distance(iter, container.end());
+        auto removedCount = ranges::distance(iter, container.end());
         container.erase(iter, container.end());
         return removedCount;
     }

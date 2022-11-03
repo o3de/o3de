@@ -28,7 +28,6 @@ class TestAutomation(EditorTestSuite):
     class test_LandscapeCanvas_ComponentUpdates_UpdateGraph(EditorSharedTest):
         from .EditorScripts import ComponentUpdates_UpdateGraph as test_module
 
-    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/10126")
     class test_LandscapeCanvas_Edit_DisabledNodeDuplication(EditorSharedTest):
         from .EditorScripts import Edit_DisabledNodeDuplication as test_module
 
@@ -83,3 +82,21 @@ class TestAutomation(EditorTestSuite):
 
     class test_LandscapeCanvas_SlotConnections_UpdateComponentReferences(EditorSharedTest):
         from .EditorScripts import SlotConnections_UpdateComponentReferences as test_module
+
+    class test_LandscapeCanvas_ExistingTerrainSetups_GraphSuccessfully(EditorSharedTest):
+        from .EditorScripts import Terrain_ExistingSetups_GraphSuccessfully as test_module
+
+    class test_LandscapeCanvas_Terrain_NodeConstruction(EditorSharedTest):
+        from .EditorScripts import Terrain_NodeConstruction as test_module
+
+    class test_LandscapeCanvas_TerrainExtenderNodes_ComponentEntitySync(EditorSharedTest):
+        from .EditorScripts import TerrainExtenderNodes_ComponentEntitySync as test_module
+
+    class test_LandscapeCanvas_TerrainNodes_DependentComponentsAdded(EditorSharedTest):
+        from .EditorScripts import TerrainNodes_DependentComponentsAdded as test_module
+
+    class test_LandscapeCanvas_TerrainNodes_EntityCreatedOnNodeAdd(EditorSharedTest):
+        from .EditorScripts import TerrainNodes_EntityCreatedOnNodeAdd as test_module
+
+    class test_LandscapeCanvas_TerrainNodes_EntityRemovedOnNodeDelete(EditorSharedTest):
+        from .EditorScripts import TerrainNodes_EntityRemovedOnNodeDelete as test_module

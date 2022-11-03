@@ -9,7 +9,7 @@
 #include <Atom/RHI.Reflect/Bits.h>
 #include <Atom/RHI.Reflect/BufferDescriptor.h>
 #include <RHI/Memory.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 
 namespace AZ

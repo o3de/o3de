@@ -44,7 +44,7 @@ namespace AZ
                     editContext->Class<EditorAreaLightComponent>(
                         "Light", "A light which emits from a point or goemetric shape.")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                            ->Attribute(Edit::Attributes::Category, "Atom")
+                            ->Attribute(Edit::Attributes::Category, "Graphics/Lighting")
                             ->Attribute(Edit::Attributes::Icon, "Icons/Components/AreaLight.svg")
                             ->Attribute(Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/AreaLight.svg")
                             ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
@@ -75,7 +75,7 @@ namespace AZ
                         ->DataElement(Edit::UIHandlers::Color, &AreaLightComponentConfig::m_color, "Color", "Color of the light")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
-                            ->Attribute("ColorEditorConfiguration", RPI::ColorUtils::GetRgbEditorConfig())
+                            ->Attribute("ColorEditorConfiguration", RPI::ColorUtils::GetLinearRgbEditorConfig())
                         ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_intensityMode, "Intensity mode", "Allows specifying which photometric unit to work in.")
                             ->Attribute(AZ::Edit::Attributes::EnumValues, &AreaLightComponentConfig::GetValidPhotometricUnits)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
@@ -93,7 +93,7 @@ namespace AZ
                         ->ClassElement(Edit::ClassElements::Group, "Attenuation radius")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
-                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_attenuationRadiusMode, "Mode", "Controls whether the attenation radius is calculated automatically or set explicitly.")
+                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_attenuationRadiusMode, "Mode", "Controls whether the attenuation radius is calculated automatically or set explicitly.")
                             ->EnumAttribute(LightAttenuationRadiusMode::Automatic, "Automatic")
                             ->EnumAttribute(LightAttenuationRadiusMode::Explicit, "Explicit")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::AttributesAndValues)
@@ -214,10 +214,14 @@ namespace AZ
             // Override the shape component so that this component controls the color.
             LmbrCentral::EditorShapeComponentRequestsBus::Event(GetEntityId(), &LmbrCentral::EditorShapeComponentRequests::SetShapeColorIsEditable, false);
             LmbrCentral::EditorShapeComponentRequestsBus::Event(GetEntityId(), &LmbrCentral::EditorShapeComponentRequests::SetShapeColor, m_controller.m_configuration.m_color);
+
+            AzFramework::BoundsRequestBus::Handler::BusConnect(GetEntityId());
         }
 
         void EditorAreaLightComponent::Deactivate()
         {
+            AzFramework::BoundsRequestBus::Handler::BusDisconnect();
+
             LmbrCentral::EditorShapeComponentRequestsBus::Event(GetEntityId(), &LmbrCentral::EditorShapeComponentRequests::SetShapeColorIsEditable, true);
             AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
             BaseClass::Deactivate();
@@ -284,7 +288,7 @@ namespace AZ
                 m_controller.ConvertToIntensityMode(PhotometricUnit::Lumen);
             }
             
-            // componets may be removed or added here, so deactivate now and reactivate the entity when everything is done shifting around.
+            // components may be removed or added here, so deactivate now and reactivate the entity when everything is done shifting around.
             GetEntity()->Deactivate();
 
             // Check if there is already a shape components and remove it.
@@ -397,5 +401,16 @@ namespace AZ
             return true;
         }
 
+        AZ::Aabb EditorAreaLightComponent::GetWorldBounds()
+        {
+            Transform transform = Transform::CreateIdentity();
+            TransformBus::EventResult(transform, GetEntityId(), &TransformBus::Events::GetWorldTM);
+            return GetLocalBounds().GetTransformedAabb(transform);
+        }
+
+        AZ::Aabb EditorAreaLightComponent::GetLocalBounds()
+        {
+            return m_controller.GetLocalVisualizationBounds();
+        }
     } // namespace Render
 } // namespace AZ

@@ -105,7 +105,7 @@ namespace AZ::Dom::Benchmark
     {
         SetupTree(state);
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             m_tree.VisitPath(
                 Path(),

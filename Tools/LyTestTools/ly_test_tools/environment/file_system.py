@@ -73,7 +73,7 @@ def remove_path_and_extension(src):
     Given a src, will strip off the path and the extension. Used in unzip and untgz
 
     Example:
-        C:\\packages\\lumberyard-XXXX.zip would become lumberyard-XXX
+        C:\\packages\\lumberyard-XXXX.zip would become lumberyard-XXXX
     """
     src_name = os.path.basename(src)
     src_no_extension, _ = os.path.splitext(src_name)

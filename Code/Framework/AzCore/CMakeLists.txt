@@ -80,7 +80,7 @@ endif()
 # Tests
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-    
+
     ly_add_target(
         NAME AzCoreTestCommon STATIC
         NAMESPACE AZ
@@ -151,6 +151,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME AZ::AzCore.Tests
+    )
+    ly_add_googletest(
+        NAME AZ::AzCore.Tests
+        TEST_SUITE sandbox
     )
     ly_add_googlebenchmark(
         NAME AZ::AzCore.Benchmarks

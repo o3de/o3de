@@ -88,14 +88,14 @@ namespace AzToolsFramework
         //! Writable stream interface
         //! Accepts a filename and contents buffer, it will pass the buffer to the third parameter and output to the stream provided.
         using StreamWriteFn = AZStd::function<bool(
-            const AZStd::string& localBookmarksFileName,
-            const AZStd::string& stringBuffer,
+            const AZ::IO::PathView& localBookmarksFileName,
+            AZStd::string_view stringBuffer,
             AZStd::function<bool(AZ::IO::GenericStream& genericStream, const AZStd::string& stringBuffer)>)>;
         //! Readable interface
         //! Will load the file name provided (using project for full path) and return the contents of the file.
-        using StreamReadFn = AZStd::function<AZStd::vector<char>(const AZStd::string& localBookmarksFileName)>;
+        using StreamReadFn = AZStd::function<AZStd::vector<char>(const AZ::IO::PathView& localBookmarksFileName)>;
         // Interface to determine if a file (using project for full path) with the name provided exists already.
-        using FileExistsFn = AZStd::function<bool(const AZStd::string& localBookmarksFileName)>;
+        using FileExistsFn = AZStd::function<bool(const AZ::IO::PathView& localBookmarksFileName)>;
 
         //! Overrides the behavior of writing to a stream.
         //! @note By default this will write to a file on disk.

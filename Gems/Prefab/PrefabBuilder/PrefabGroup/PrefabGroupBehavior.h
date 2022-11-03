@@ -61,3 +61,4 @@ namespace AZ::SceneAPI::Behaviors
         AZStd::shared_ptr<ExportEventHandler> m_exportEventHandler;
     };
 }
+

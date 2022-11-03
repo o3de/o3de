@@ -241,6 +241,8 @@ protected:
     // -------------------------------------------
 
 private:
+    friend class EditorActionsHandler;
+
     void InitLevel(const CEditCommandLineInfo& cmdInfo);
 
     bool ConnectToAssetProcessor() const;

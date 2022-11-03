@@ -105,6 +105,7 @@ namespace Physics
         virtual void SetContactOffset(float contactOffset) = 0;
 
         virtual void* GetNativePointer() = 0;
+        virtual const void* GetNativePointer() const = 0;
 
         virtual AZ::Crc32 GetTag() const = 0;
 

@@ -56,29 +56,17 @@ namespace AzToolsFramework
             }
         }
 
-        void SourceAssetBrowserEntry::Reflect(AZ::ReflectContext* context)
-        {
-            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-            if (serializeContext)
-            {
-                serializeContext->Class<SourceAssetBrowserEntry, AssetBrowserEntry>()
-                    ->Version(2)
-                    ->Field("m_sourceId", &SourceAssetBrowserEntry::m_sourceId)
-                    ->Field("m_scanFolderId", &SourceAssetBrowserEntry::m_scanFolderId)
-                    ->Field("m_sourceUuid", &SourceAssetBrowserEntry::m_sourceUuid)
-                    ->Field("m_extension", &SourceAssetBrowserEntry::m_extension);
-            }
-        }
-
         AssetBrowserEntry::AssetEntryType SourceAssetBrowserEntry::GetEntryType() const
         {
             return AssetEntryType::Source;
         }
 
-        const AZStd::string& SourceAssetBrowserEntry::GetExtension() const
+        const AZStd::string SourceAssetBrowserEntry::GetExtension() const
         {
-            return m_extension;
-        }
+            AZStd::string extension;
+            AZ::StringFunc::Path::GetExtension(GetFullPath().c_str(), extension);
+            return extension;
+        };
 
         AZ::s64 SourceAssetBrowserEntry::GetFileID() const
         {
@@ -138,12 +126,6 @@ namespace AzToolsFramework
                 return cache->m_sourceUuidMap[sourceUuid];
             }
             return nullptr;
-        }
-
-        void SourceAssetBrowserEntry::UpdateChildPaths(AssetBrowserEntry* child) const
-        {
-            child->m_fullPath = m_fullPath;
-            AssetBrowserEntry::UpdateChildPaths(child);
         }
 
         void SourceAssetBrowserEntry::PathsUpdated()

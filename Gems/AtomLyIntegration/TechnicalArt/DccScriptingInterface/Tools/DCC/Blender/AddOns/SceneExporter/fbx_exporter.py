@@ -119,9 +119,12 @@ def fbx_file_exporter(fbx_file_path, file_name):
             file_menu_export = True
             if not bpy.types.Scene.export_textures_folder is None:
                 utils.clone_repath_images(file_menu_export, source_file_path, o3de_utils.build_projects_list())
-
+                # Currently the Blender FBX Export API is not support use_triangles, we will need to use a modifier at export then remove when done.
+        if bpy.types.Scene.convert_mesh_to_triangles:
+            utils.add_remove_modifier("TRIANGULATE", True)
+        # Lets get the Animation Options
         bake_anim_option, bake_anim_use_all_bones, bake_anim_use_nla_strips_option, bake_anim_use_all_actions_option, bake_anim_force_startend_keying_option = amimation_export_options()
-
+        # Main Blender FBX API exporter
         bpy.ops.export_scene.fbx(
             filepath=str(export_file_path),
             check_existing=False,
@@ -161,9 +164,11 @@ def fbx_file_exporter(fbx_file_path, file_name):
             axis_forward='-Z',
             axis_up='Y')
         
-        transforms_status = utils.check_selected_transforms()
+        # If we added a Triangulate modifier, lets remove it now.
+        if bpy.types.Scene.convert_mesh_to_triangles:
+            utils.add_remove_modifier("Triangulate", False)
         # Show export status
-        bpy.types.Scene.pop_up_notes = f'{file_name} Exported! Freeze Transforms: {transforms_status}'
+        bpy.types.Scene.pop_up_notes = f'{file_name} Exported!'
         bpy.ops.message.popup('INVOKE_DEFAULT')
         if not bpy.types.Scene.export_textures_folder is None:
             utils.replace_stored_paths()

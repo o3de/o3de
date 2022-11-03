@@ -10,7 +10,7 @@
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
 #include <RHI/BufferView.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/RenderPassBuilder.h>
 #include <RHI/Device.h>
 #include <RHI/Framebuffer.h>

@@ -85,7 +85,7 @@ namespace Terrain
                 }
             }
         );
-        OnTerrainDataChanged(AZ::Aabb::CreateNull(), TerrainDataChangedMask::HeightData);
+        OnTerrainDataChanged(AZ::Aabb::CreateNull(), TerrainDataChangedMask(TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings));
         m_meshManager.Initialize(*GetParentScene());
     }
 
@@ -130,14 +130,14 @@ namespace Terrain
         }
     }
 
-    void TerrainFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]] AZ::RPI::RenderPipelinePtr pipeline)
+    void TerrainFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] AZ::RPI::RenderPipeline* renderPipeline,
+        AZ::RPI::SceneNotification::RenderPipelineChangeType changeType)
     {
-        CachePasses();
-    }
-
-    void TerrainFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] AZ::RPI::RenderPipeline* renderPipeline)
-    {
-        CachePasses();
+        if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::Added
+            || changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
+        {
+            CachePasses();
+        }
     }
 
     void AddPassRequestToRenderPipeline(
@@ -192,7 +192,7 @@ namespace Terrain
         }
     }
 
-    void TerrainFeatureProcessor::ApplyRenderPipelineChange(AZ::RPI::RenderPipeline* renderPipeline)
+    void TerrainFeatureProcessor::AddRenderPasses(AZ::RPI::RenderPipeline* renderPipeline)
     {
         // Get the pass requests to create passes from the asset
         AddPassRequestToRenderPipeline(renderPipeline, "Passes/TerrainPassRequest.azasset", "DepthPrePass", true);

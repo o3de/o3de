@@ -303,11 +303,13 @@ namespace Multiplayer
         bool StartHosting([[maybe_unused]] uint16_t port, [[maybe_unused]] bool isDedicated) override { return {}; }
         bool Connect([[maybe_unused]] const AZStd::string& remoteAddress, [[maybe_unused]] uint16_t port) override { return {}; }
         void Terminate([[maybe_unused]] AzNetworking::DisconnectReason reason) override {}
-        void AddEndpointDisonnectedHandler([[maybe_unused]] EndpointDisonnectedEvent::Handler& handler) override {}
+        void AddEndpointDisconnectedHandler([[maybe_unused]] EndpointDisconnectedEvent::Handler& handler) override {}
         void AddConnectionAcquiredHandler([[maybe_unused]] ConnectionAcquiredEvent::Handler& handler) override {}
         void AddServerAcceptanceReceivedHandler([[maybe_unused]] ServerAcceptanceReceivedEvent::Handler& handler) override {}
         void AddSessionInitHandler([[maybe_unused]] SessionInitEvent::Handler& handler) override {}
         void AddSessionShutdownHandler([[maybe_unused]] SessionShutdownEvent::Handler& handler) override {}
+        void AddLevelLoadBlockedHandler([[maybe_unused]] LevelLoadBlockedEvent::Handler& handler) override {}
+        void AddNoServerLevelLoadedHandler([[maybe_unused]] NoServerLevelLoadedEvent::Handler& handler) override {}
         void SendReadyForEntityUpdates([[maybe_unused]] bool readyForEntityUpdates) override {}
         AZ::TimeMs GetCurrentHostTimeMs() const override { return {}; }
         float GetCurrentBlendFactor() const override { return {}; }

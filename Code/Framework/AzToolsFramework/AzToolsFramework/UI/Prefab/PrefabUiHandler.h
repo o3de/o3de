@@ -14,15 +14,15 @@
 
 namespace AzToolsFramework
 {
+    class ContainerEntityInterface;
 
     namespace Prefab
     {
         class PrefabFocusPublicInterface;
         class PrefabPublicInterface;
-    };
+    }; // namespace Prefab
 
-    class PrefabUiHandler
-        : public EditorEntityUiHandlerBase
+    class PrefabUiHandler : public EditorEntityUiHandlerBase
     {
     public:
         AZ_CLASS_ALLOCATOR(PrefabUiHandler, AZ::SystemAllocator, 0);
@@ -35,6 +35,7 @@ namespace AzToolsFramework
         QString GenerateItemInfoString(AZ::EntityId entityId) const override;
         QString GenerateItemTooltip(AZ::EntityId entityId) const override;
         QIcon GenerateItemIcon(AZ::EntityId entityId) const override;
+        bool CanToggleLockVisibility(AZ::EntityId entityId) const override;
         void PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
         void PaintDescendantBackground(
             QPainter* painter,
@@ -52,6 +53,7 @@ namespace AzToolsFramework
         void OnOutlinerItemCollapse(const QModelIndex& index) const override;
 
     protected:
+        ContainerEntityInterface* m_containerEntityInterface = nullptr;
         Prefab::PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
 
@@ -70,6 +72,9 @@ namespace AzToolsFramework
 
         int m_prefabCapsuleRadius = 6;
         int m_prefabBorderThickness = 2;
+        int m_prefabFileNameFontSize = 10;
+        int m_prefabEditIconSize = 16;
+
         QColor m_backgroundColor = QColor("#444444");
         QColor m_backgroundHoverColor = QColor("#5A5A5A");
         QColor m_backgroundSelectedColor = QColor("#656565");

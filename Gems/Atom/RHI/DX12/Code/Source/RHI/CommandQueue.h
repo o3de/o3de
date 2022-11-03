@@ -98,11 +98,12 @@ namespace AZ
             HardwareQueueSubclass   m_hardwareQueueSubclass{ HardwareQueueSubclass::Primary };
 
             uint64_t m_calibratedGpuTimestampFrequency = 0;
-            AZStd::vector<D3D12_TILE_RANGE_FLAGS> m_rangeFlags;
-            AZStd::vector<uint32_t> m_rangeCounts;
 
             AZStd::sys_time_t m_lastExecuteDuration{};
             AZStd::sys_time_t m_lastPresentDuration{};
         };
+
+        // helper function
+        void UpdateTileMap(RHI::Ptr<ID3D12CommandQueue> queue, const CommandList::TileMapRequest& request);
     }
 }

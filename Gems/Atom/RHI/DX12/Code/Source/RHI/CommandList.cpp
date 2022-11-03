@@ -149,9 +149,9 @@ namespace AZ
             SetShaderResourceGroup<RHI::PipelineStateType::Dispatch>(static_cast<const ShaderResourceGroup*>(&shaderResourceGroup));
         }
 
-        void CommandList::Submit(const RHI::CopyItem& copyItem)
+        void CommandList::Submit(const RHI::CopyItem& copyItem, uint32_t submitIndex)
         {
-            ValidateSubmitItem(copyItem);
+            ValidateSubmitIndex(submitIndex);
 
             switch (copyItem.m_type)
             {
@@ -296,9 +296,9 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit(const RHI::DispatchItem& dispatchItem)
+        void CommandList::Submit(const RHI::DispatchItem& dispatchItem, uint32_t submitIndex)
         {
-            ValidateSubmitItem(dispatchItem);
+            ValidateSubmitIndex(submitIndex);
 
             if (!CommitShaderResources<RHI::PipelineStateType::Dispatch>(dispatchItem))
             {
@@ -324,10 +324,10 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem)
+        void CommandList::Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem, [[maybe_unused]] uint32_t submitIndex)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
-            ValidateSubmitItem(dispatchRaysItem);
+            ValidateSubmitIndex(submitIndex);
 
             ID3D12GraphicsCommandList4* commandList = static_cast<ID3D12GraphicsCommandList4*>(GetCommandList());
 
@@ -367,7 +367,8 @@ namespace AZ
 
                 for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays; ++unboundedArrayIndex)
                 {
-                    if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid())
+                    if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid()
+                        && compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex].ptr != 0)
                     {
                         GetCommandList()->SetComputeRootDescriptorTable(
                             binding.m_unboundedArrayResourceTables[unboundedArrayIndex].GetIndex(),
@@ -408,9 +409,9 @@ namespace AZ
 #endif
         }
 
-        void CommandList::Submit(const RHI::DrawItem& drawItem)
+        void CommandList::Submit(const RHI::DrawItem& drawItem, uint32_t submitIndex)
         {
-            ValidateSubmitItem(drawItem);
+            ValidateSubmitIndex(submitIndex);
 
             if (!CommitShaderResources<RHI::PipelineStateType::Draw>(drawItem))
             {

@@ -12,6 +12,7 @@
 #include <AzCore/std/parallel/semaphore.h>
 
 #include <AzTest/AzTest.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
 
 #include <TerrainSystem/TerrainSystem.h>
 #include <Components/TerrainLayerSpawnerComponent.h>
@@ -183,6 +184,27 @@ namespace UnitTest
                     }
                 }
             );
+        }
+
+        void TestNormals(const AZStd::span<const NormalTestPoint>& testPoints,
+            AzFramework::Terrain::TerrainDataRequests::Sampler sampler, 
+            AZStd::function<void(AZ::Vector3&position, bool&terrainExists)> heightMockFunction)
+        {
+            // Create and activate the terrain system with the same testing defaults for world bounds and query resolutions for
+            // all of our normals tests.
+            constexpr float queryResolution = 1.0f;
+            const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(-10.0f, -10.0f, -20.0f, 10.0f, 10.0f, 20.0f);
+            auto entity = CreateAndActivateMockTerrainLayerSpawner(spawnerBox, heightMockFunction);
+            auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+
+            for (auto& testPoint : testPoints)
+            {
+                bool terrainExists = false;
+                AZ::Vector3 normal = terrainSystem->GetNormal(AZ::Vector3(testPoint.m_testLocation), sampler, &terrainExists);
+
+                EXPECT_TRUE(terrainExists);
+                EXPECT_THAT(normal, UnitTest::IsClose(testPoint.m_expectedNormal));
+            }
         }
     };
 
@@ -535,6 +557,281 @@ namespace UnitTest
         }
     }
 
+    TEST_F(TerrainSystemTest, TerrainNormalQueriesWithExactSamplersUseExactHeights)
+    {
+        // Verify that when using the "EXACT" normal sampler, the normals are calculated from heights immediately around the query
+        // point, instead of relying on heights that fall on the query grid.
+
+        // Our height mock function will return 0 on exact grid points, and X everywhere else. If the grid points are used,
+        // normals will get all 0 heights which will produce a Z-up normal. If the exact heights are used, the heights will
+        // slope up and to the right at a 45 degree angle, so all the normals should point 45 degrees to the left.
+        auto heightMockFunction = [](AZ::Vector3& position, bool& terrainExists)
+        {
+            terrainExists = true;
+
+            if ((AZStd::fmod(position.GetX(), 1.0f) == 0.0f) && (AZStd::fmod(position.GetY(), 1.0f) == 0.0f))
+            {
+                // Points that fall exactly on grid squares should return 0 for height.
+                position.SetZ(0.0f);
+            }
+            else
+            {
+                // All other points should return the X value as height.
+                position.SetZ(position.GetX());
+            }
+        };
+
+        // We expect the queries to never use the grid points, so all the normals should point 45 degrees to the left.
+        const AZ::Vector3 normalLeft45Degrees =
+            AZ::Transform::CreateRotationY(AZ::DegToRad(-45.0f)).TransformVector(AZ::Vector3::CreateAxisZ());
+
+        // Get the normals for an arbitrary set of points that can either fall on or off grid points.
+        // These should all produce normals that point 45 degrees to the left, because even for the points that fall on grid points,
+        // the height values used for calculating the normals will fall off of the grid points.
+        const NormalTestPoint testPoints[] = {
+            { AZ::Vector2(0.3f), normalLeft45Degrees }, { AZ::Vector2(1.0f), normalLeft45Degrees },
+            { AZ::Vector2(2.8f), normalLeft45Degrees }, { AZ::Vector2(3.0f), normalLeft45Degrees },
+            { AZ::Vector2(5.9f), normalLeft45Degrees }, { AZ::Vector2(7.7f), normalLeft45Degrees },
+        };
+
+        // Test our normals 
+        TestNormals(testPoints, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, heightMockFunction);
+    }
+
+    TEST_F(TerrainSystemTest, TerrainNormalQueriesWithClampAndBilinearSamplersUseQueryGrid)
+    {
+        // Verify that when using the "CLAMP" or "BILINEAR" normal samplers, the normals are
+        // calculated only from heights that fall on the query grid.
+
+        // Our height mock function will return 0 on exact grid points, and X everywhere else. If the grid points are used,
+        // normals will get all 0 heights which will produce a Z-up normal. If the exact heights are used, the heights will
+        // slope up and to the right at a 45 degree angle, so all the normals should point 45 degrees to the left.
+        auto heightMockFunction = [](AZ::Vector3& position, bool& terrainExists)
+        {
+            terrainExists = true;
+
+            if ((AZStd::fmod(position.GetX(), 1.0f) == 0.0f) && (AZStd::fmod(position.GetY(), 1.0f) == 0.0f))
+            {
+                // Points that fall exactly on grid squares should return 0 for height.
+                position.SetZ(0.0f);
+            }
+            else
+            {
+                // All other points should return the X value as height.
+                position.SetZ(position.GetX());
+            }
+        };
+
+        // We expect the queries to never use the grid points, so all the normals should point directly up.
+        const AZ::Vector3 normalUp = AZ::Vector3::CreateAxisZ();
+
+        // Get the normals for an arbitrary set of points that can either fall on or off grid points.
+        // These should all produce normals that point directly up, because the height values used for
+        // calculating the normals should always come from the grid points.
+        const NormalTestPoint testPoints[] = {
+            { AZ::Vector2(0.3f), normalUp }, { AZ::Vector2(1.0f), normalUp }, { AZ::Vector2(2.8f), normalUp },
+            { AZ::Vector2(3.0f), normalUp }, { AZ::Vector2(5.9f), normalUp }, { AZ::Vector2(7.7f), normalUp },
+        };
+
+        // Test our normals with the CLAMP sampler, and make sure they only use the query grid
+        TestNormals(testPoints, AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP, heightMockFunction);
+
+        // Test our normals with the BILINEAR sampler, and make sure they only use the query grid
+        TestNormals(testPoints, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, heightMockFunction);
+    }
+
+    TEST_F(TerrainSystemTest, TerrainNormalQueriesWithClampSamplersReturnTriangleNormal)
+    {
+        // Verify that when using the "CLAMP" normal sampler, the returned normals are the normal of the triangle for whichever
+        // half of the terrain grid square the query point falls in.
+
+        // Our height mock function will return 1 on every other X and Y grid value so that every other bottom left triangle
+        // will return Z-up and every other top right triangle will return a sloped normal.
+        // We'll only pick query points from grid squares where the 1 is the upper right vertex.
+        //  0  1  0  1  0
+        //  *--*--*--*--*
+        //  |\ |\ |\ |\ |
+        //  | \| \| \| \|
+        //  *--*--*--*--*
+        //  0  0  0  0  0
+        auto heightMockFunction = [](AZ::Vector3& position, bool& terrainExists)
+        {
+            terrainExists = true;
+
+            if ((AZStd::fmod(position.GetX(), 2.0f) == 1.0f) && (AZStd::fmod(position.GetY(), 2.0f) == 1.0f))
+            {
+                // Grid points where X and Y are odd will get a value of 1.0
+                // (i.e. (1,1) (3,1) (5,1) (1,3) (3,3) (5,3) etc.
+                position.SetZ(1.0f);
+            }
+            else
+            {
+                // All other points will return 0.
+                position.SetZ(0.0f);
+            }
+        };
+
+        // The normals in the lower left triangle should point straight up.
+        const AZ::Vector3 normalUp = AZ::Vector3::CreateAxisZ();
+        // Calculate the rotated normal for the upper right triangle.
+        const AZ::Vector3 normalRotated = (AZ::Vector3(1.0f, 1.0f, 1.0f) - AZ::Vector3(0.0f, 1.0f, 0.0f))
+                                        .Cross(AZ::Vector3(1.0f, 1.0f, 1.0f) - AZ::Vector3(1.0f, 0.0f, 0.0f)).GetNormalized();
+
+        const NormalTestPoint testPoints[] = {
+            // Test points that fall in the upper right triangles.
+            { AZ::Vector2(0.6f), normalRotated },
+            { AZ::Vector2(2.6f, 0.8f), normalRotated },
+            { AZ::Vector2(4.4f, 0.9f), normalRotated },
+
+            // Test points that fall in the lower left triangles.
+            { AZ::Vector2(0.3f), normalUp },
+            { AZ::Vector2(0.5f, 0.2f), normalUp },
+            { AZ::Vector2(2.2f, 0.7f), normalUp },
+            { AZ::Vector2(4.4f, 0.1f), normalUp },
+        };
+
+        // Test our normals
+        TestNormals(testPoints, AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP, heightMockFunction);
+    }
+
+    TEST_F(TerrainSystemTest, TerrainNormalQueriesWithBilinearSamplersReturnPredictableNormalsAtGridPoints)
+    {
+        // Verify that when using the "BILINEAR" normal sampler, if we query directly on a grid point,
+        // we get back a predictable normal for that grid point without needing to consider interpolation.
+
+        // Our height mock will return +X for every even X query point, and -X for every odd X query point.
+        // When calculating a normal from heights gathered from a + shape, the normals will always point
+        // 45 degrees left when the center is at an odd X value (because the two heights will come from even X values),
+        // and they will always point 45 degrees right when the center is at an even X value.
+        auto heightMockFunction = [](AZ::Vector3& position, bool& terrainExists)
+        {
+            terrainExists = true;
+
+            if (AZStd::fmod(position.GetX(), 2.0f) == 0.0f)
+            {
+                // Return +X for even X points:  (0,0), (0,1), (0,2), (2,0), (2,1), (2,2), etc.
+                position.SetZ(position.GetX());
+            }
+            else
+            {
+                // Return -X for odd X points:  (1,0), (1,1), (1,2), (3,0), (3,1), (3,2), etc.
+                position.SetZ(-position.GetX());
+            }
+        };
+
+        // The normals should either point left or right 45 degrees.
+        const AZ::Vector3 normalLeft45Degrees =
+            AZ::Transform::CreateRotationY(AZ::DegToRad(-45.0f)).TransformVector(AZ::Vector3::CreateAxisZ());
+        const AZ::Vector3 normalRight45Degrees =
+            AZ::Transform::CreateRotationY(AZ::DegToRad(45.0f)).TransformVector(AZ::Vector3::CreateAxisZ());
+
+        const NormalTestPoint testPoints[] = {
+            // Test points centered on odd X grid points should point left
+            { AZ::Vector2(1.0f, 2.0f), normalLeft45Degrees },
+            { AZ::Vector2(3.0f, 0.0f), normalLeft45Degrees },
+            { AZ::Vector2(7.0f, 5.0f), normalLeft45Degrees },
+
+            // Test points centered on even X grid points should point right
+            { AZ::Vector2(2.0f, 2.0f), normalRight45Degrees },
+            { AZ::Vector2(4.0f, 0.0f), normalRight45Degrees },
+            { AZ::Vector2(8.0f, 5.0f), normalRight45Degrees },
+        };
+
+        // Test our normals
+        TestNormals(testPoints, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, heightMockFunction);
+    }
+
+    TEST_F(TerrainSystemTest, TerrainNormalQueriesWithBilinearSamplersReturnInterpolatedNormalsBetweenGridPoints)
+    {
+        // Verify that when using the "BILINEAR" normal sampler, if we query in-between grid points,
+        // we get back a normal that is interpolated between the 4 normals on the corners of that grid square.
+
+        // To test this, we'll set up a 3 x 3 grid of specific heights, and perform all our queries in the center square.
+        //          * --- 0 --- 4 --- *  (3,3)
+        //
+        //          2 --- 2 --- 2 --- 2
+        //                   x
+        //          0 --- 2 --- 2 --- 0
+        //
+        //   (0,0)  * --- 2 --- 2 --- *
+
+        // This pattern of heights should give us the following normals at each corner
+        //         X -45 deg    X +45 deg    Y -45 deg    Y +45 deg
+        //          normal0      normal1      normal2      normal3
+        //            2            2            0            4
+        //            |            |            |            |
+        //        0---*---2    2---*---0    2---*---2    2---*---2
+        //            |            |            |            |
+        //            2            2            2            2
+
+        auto heightMockFunction = [](AZ::Vector3& position, bool& terrainExists)
+        {
+            const float heights[4][4] = {
+                { 1.0f, 0.0f, 4.0f, 1.0f },
+                { 2.0f, 2.0f, 2.0f, 2.0f },
+                { 0.0f, 2.0f, 2.0f, 0.0f },
+                { 1.0f, 2.0f, 2.0f, 1.0f }
+            };
+
+            terrainExists = true;
+
+            uint32_t xIndex = static_cast<uint32_t>(AZStd::fmod(position.GetX(), 4.0f));
+            uint32_t yIndex = static_cast<uint32_t>(AZStd::fmod(position.GetY(), 4.0f));
+
+            // We use "3 - y" here so that we can list the heights above in the same order as the picture.
+            position.SetZ(heights[3 - yIndex][xIndex]);
+        };
+
+        // Create and activate the terrain system with some reasonable defaults for world bounds and query resolutions.
+        constexpr float queryResolution = 1.0f;
+        const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(-10.0f, -10.0f, -20.0f, 10.0f, 10.0f, 20.0f);
+        auto entity = CreateAndActivateMockTerrainLayerSpawner(spawnerBox, heightMockFunction);
+        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+
+        // Expected corner normals
+        const AZStd::array<AZ::Vector3, 4> expectedCornerNormals =
+        {
+            AZ::Transform::CreateRotationY(AZ::DegToRad(-45.0f)).TransformVector(AZ::Vector3::CreateAxisZ()),
+            AZ::Transform::CreateRotationY(AZ::DegToRad(+45.0f)).TransformVector(AZ::Vector3::CreateAxisZ()),
+            AZ::Transform::CreateRotationX(AZ::DegToRad(-45.0f)).TransformVector(AZ::Vector3::CreateAxisZ()),
+            AZ::Transform::CreateRotationX(AZ::DegToRad(+45.0f)).TransformVector(AZ::Vector3::CreateAxisZ())
+        };
+
+        // Get the normals at the four corners and verify that they match expectations.
+        const AZStd::array<AZ::Vector3, 4> cornerPositions = {
+            AZ::Vector3(1.0f, 1.0f, 0.0f), AZ::Vector3(2.0f, 1.0f, 0.0f), AZ::Vector3(1.0f, 2.0f, 0.0f), AZ::Vector3(2.0f, 2.0f, 0.0f)
+        };
+        AZStd::array<AZ::Vector3, 4> cornerNormals;
+        AZStd::array<bool, 4> cornerExists;
+        for (size_t corner = 0; corner < 4; corner++)
+        {
+            cornerNormals[corner] = terrainSystem->GetNormal(
+                cornerPositions[corner], AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, &(cornerExists[corner]));
+
+            EXPECT_TRUE(cornerExists[corner]);
+            EXPECT_THAT(cornerNormals[corner], UnitTest::IsClose(expectedCornerNormals[corner]));
+        }
+
+        // Now query a set of points across the terrain grid box and verify that they interpolate correctly.
+        for (float y = 0.0f; y <= 1.0f; y += 0.125f)
+        {
+            for (float x = 0.0f; x <= 1.0f; x += 0.125f)
+            {
+                AZ::Vector3 queryPoint = cornerPositions[0] + AZ::Vector3(x, y, 0.0f);
+                bool terrainExists = false;
+                AZ::Vector3 normal = terrainSystem->GetNormal(
+                    queryPoint, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, &terrainExists);
+
+                const AZ::Vector3 normalLerpX0 = cornerNormals[0].Lerp(cornerNormals[1], x);
+                const AZ::Vector3 normalLerpX1 = cornerNormals[2].Lerp(cornerNormals[3], x);
+                const AZ::Vector3 expectedNormal = normalLerpX0.Lerp(normalLerpX1, y).GetNormalized();
+
+                EXPECT_TRUE(terrainExists);
+                EXPECT_THAT(normal, UnitTest::IsClose(expectedNormal));
+            }
+        }
+    }
+
     TEST_F(TerrainSystemTest, GetSurfaceWeightsReturnsAllValidSurfaceWeightsInOrder)
     {
         // When there is more than one surface/weight defined, they should all be returned in descending weight order.
@@ -631,6 +928,74 @@ namespace UnitTest
 
         EXPECT_EQ(tagWeight.m_surfaceType, tagWeight1.m_surfaceType);
         EXPECT_NEAR(tagWeight.m_weight, tagWeight1.m_weight, 0.01f);
+    }
+
+    TEST_F(TerrainSystemTest, GetSurfacePointAndIndividualQueriesProduceSameResults)
+    {
+        // Verify that the height / normal / surface weights returned from GetSurfacePoint matches the results
+        // that we get from individually querying GetHeight, GetNormal, and GetSurfaceWeights.
+        // We don't need to validate all combinations because we have separate unit tests that validate equivalent results between
+        // the different variations of each individual API. The transitive property means that if those are equal and the results here
+        // are equal, then all the combinations will be equal as well.
+
+        // Set up the arbitrary terrain world parameters that we'll use for verifying our queries match.
+        const float terrainSize = 32.0f;
+        const float terrainQueryResolution = 1.0f;
+        const uint32_t terrainNumSurfaces = 3;
+        const AZ::Aabb terrainWorldBounds =
+            AZ::Aabb::CreateFromMinMax(AZ::Vector3(-terrainSize / 2.0f), AZ::Vector3(terrainSize / 2.0f));
+
+        // Set up the query bounds and step size to use for selecting the points to query and compare.
+        const AZ::Aabb queryBounds = terrainWorldBounds;
+        const AZ::Vector2 queryStepSize = AZ::Vector2(terrainQueryResolution / 2.0f);
+
+        CreateTestTerrainSystem(terrainWorldBounds, terrainQueryResolution, terrainNumSurfaces);
+
+        for (auto sampler : { AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR,
+                              AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP,
+                              AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT })
+        {
+            for (float y = queryBounds.GetMin().GetY(); y < queryBounds.GetMax().GetY(); y += queryStepSize.GetY())
+            {
+                for (float x = queryBounds.GetMin().GetX(); y < queryBounds.GetMax().GetX(); y += queryStepSize.GetX())
+                {
+                    AZ::Vector3 queryPosition(x, y, 0.0f);
+
+                    // GetHeight
+                    float expectedHeight = terrainWorldBounds.GetMin().GetZ();
+                    bool heightExists = false;
+                    AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+                        expectedHeight, &AzFramework::Terrain::TerrainDataRequests::GetHeight, queryPosition, sampler, &heightExists);
+
+                    // GetNormal
+                    AZ::Vector3 expectedNormal = AZ::Vector3::CreateAxisZ();
+                    bool normalExists = false;
+                    AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+                        expectedNormal, &AzFramework::Terrain::TerrainDataRequests::GetNormal, queryPosition, sampler, &normalExists);
+
+                    // GetSurfaceWeights
+                    AzFramework::SurfaceData::SurfaceTagWeightList expectedWeights;
+                    bool weightsExist = false;
+                    AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                        &AzFramework::Terrain::TerrainDataRequests::GetSurfaceWeights,
+                        queryPosition, expectedWeights, sampler, &weightsExist);
+
+                    // GetSurfacePoint
+                    AzFramework::SurfaceData::SurfacePoint surfacePoint;
+                    bool pointExists = false;
+                    AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                        &AzFramework::Terrain::TerrainDataRequests::GetSurfacePoint, queryPosition, surfacePoint, sampler, &pointExists);
+
+                    // Verify that all the results match.
+                    EXPECT_EQ(heightExists, pointExists);
+                    EXPECT_EQ(expectedHeight, surfacePoint.m_position.GetZ());
+                    EXPECT_THAT(expectedNormal, UnitTest::IsClose(surfacePoint.m_normal));
+                    EXPECT_EQ(expectedWeights, surfacePoint.m_surfaceTags);
+                }
+            }
+        }
+
+        DestroyTestTerrainSystem();
     }
 
     TEST_F(TerrainSystemTest, TerrainProcessHeightsFromListWithBilinearSamplers)

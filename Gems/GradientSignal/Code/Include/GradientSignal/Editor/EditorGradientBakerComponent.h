@@ -15,15 +15,13 @@
 #include <AzCore/std/parallel/condition_variable.h>
 #include <AzCore/std/parallel/mutex.h>
 
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
-#include <GradientSignal/Ebuses/GradientPreviewContextRequestBus.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
-#include <GradientSignal/Ebuses/SectorDataRequestBus.h>
 #include <GradientSignal/Editor/EditorGradientBakerRequestBus.h>
+#include <GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h>
 #include <GradientSignal/Editor/EditorGradientTypeIds.h>
+#include <GradientSignal/Editor/GradientPreviewer.h>
 #include <GradientSignal/GradientSampler.h>
 
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
@@ -78,12 +76,10 @@ namespace GradientSignal
 
     class EditorGradientBakerComponent
         : public AzToolsFramework::Components::EditorComponentBase
-        , private AzToolsFramework::EntitySelectionEvents::Bus::Handler
         , private GradientRequestBus::Handler
         , private GradientBakerRequestBus::Handler
-        , private GradientPreviewContextRequestBus::Handler
+        , private GradientImageCreatorRequestBus::Handler
         , private LmbrCentral::DependencyNotificationBus::Handler
-        , private SectorDataNotificationBus::Handler
         , private AZ::TickBus::Handler
     {
     public:
@@ -104,16 +100,18 @@ namespace GradientSignal
         void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
         bool IsEntityInHierarchy(const AZ::EntityId& entityId) const override;
 
-        //! GradientBakerRequestBus overrides ...
-        AZ::EntityId GetInputBounds() const override;
-        void SetInputBounds(const AZ::EntityId& inputBounds) override;
+        //! GradientImageCreatorRequestBus overrides ...
         AZ::Vector2 GetOutputResolution() const override;
         void SetOutputResolution(const AZ::Vector2& resolution) override;
         OutputFormat GetOutputFormat() const override;
         void SetOutputFormat(OutputFormat outputFormat) override;
         AZ::IO::Path GetOutputImagePath() const override;
         void SetOutputImagePath(const AZ::IO::Path& outputImagePath) override;
+
+        //! GradientBakerRequestBus overrides ...
         void BakeImage() override;
+        AZ::EntityId GetInputBounds() const override;
+        void SetInputBounds(const AZ::EntityId& inputBounds) override;
 
         //! LmbrCentral::DependencyNotificationBus overrides ...
         void OnCompositionChanged() override;
@@ -126,27 +124,10 @@ namespace GradientSignal
         static constexpr const char* const s_helpUrl = "";
 
     protected:
-        //! SectorDataNotificationBus overrides ...
-        void OnSectorDataConfigurationUpdated() const override;
-
-        //! AzToolsFramework::EntitySelectionEvents overrides ...
-        void OnSelected() override;
-        void OnDeselected() override;
-
-        //! GradientPreviewContextRequestBus overrides ...
-        AZ::EntityId GetPreviewEntity() const override;
-        AZ::Aabb GetPreviewBounds() const override;
-
         //! AZ::TickBus overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         void OnConfigurationChanged();
-
-        // This is used by the preview so we can pass an invalid entity Id if our component is disabled
-        AZ::EntityId GetGradientEntityId() const;
-
-        void UpdatePreviewSettings() const;
-        AzToolsFramework::EntityIdList CancelPreviewRendering() const;
 
         void SetupDependencyMonitor();
 
@@ -154,8 +135,8 @@ namespace GradientSignal
         bool IsBakeDisabled() const;
 
     private:
+        GradientPreviewer m_previewer;
         GradientBakerConfig m_configuration;
-        AZ::EntityId m_gradientEntityId;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
         BakeImageJob* m_bakeImageJob = nullptr;
     };

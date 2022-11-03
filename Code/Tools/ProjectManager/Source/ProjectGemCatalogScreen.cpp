@@ -20,8 +20,8 @@
 
 namespace O3DE::ProjectManager
 {
-    ProjectGemCatalogScreen::ProjectGemCatalogScreen(QWidget* parent)
-        : GemCatalogScreen(/*readOnly = */ false, parent)
+    ProjectGemCatalogScreen::ProjectGemCatalogScreen(DownloadController* downloadController, QWidget* parent)
+        : GemCatalogScreen(downloadController , /*readOnly = */ false, parent)
     {
 
     }

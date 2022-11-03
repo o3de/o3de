@@ -11,6 +11,7 @@
 
 int main(int argc, char* argv[])
 {
+    const AZ::Debug::Trace tracer;
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     UIApplicationMain(argc,
                       argv,

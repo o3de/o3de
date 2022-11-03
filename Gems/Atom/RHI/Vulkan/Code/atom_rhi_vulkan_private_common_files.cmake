@@ -27,9 +27,6 @@ set(FILES
     Source/RHI/CommandQueue.h
     Source/RHI/CommandQueueContext.cpp
     Source/RHI/CommandQueueContext.h
-    Source/RHI/Conversion.h
-    Source/RHI/Conversion.cpp
-    Source/RHI/Formats.inl
     Source/RHI/DescriptorPool.cpp
     Source/RHI/DescriptorPool.h
     Source/RHI/DescriptorSet.cpp

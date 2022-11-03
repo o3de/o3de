@@ -29,12 +29,27 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString ImageGradientNode::TITLE = QObject::tr("Image");
+    const char* ImageGradientNode::TITLE = "Image";
 
     ImageGradientNode::ImageGradientNode(GraphModel::GraphPtr graph)
         : BaseGradientNode(graph)
     {
         RegisterSlots();
         CreateSlotData();
+    }
+
+    void ImageGradientNode::RegisterSlots()
+    {
+        BaseGradientNode::RegisterSlots();
+
+        // Image Gradient has an additional input slot for the image asset
+        GraphModel::DataTypePtr pathDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Path);
+
+        RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
+            IMAGE_ASSET_SLOT_ID,
+            IMAGE_ASSET_SLOT_LABEL.toUtf8().constData(),
+            { pathDataType },
+            pathDataType->GetDefaultValue(),
+            IMAGE_ASSET_SLOT_DESCRIPTION.toUtf8().constData()));
     }
 } // namespace LandscapeCanvas

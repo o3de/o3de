@@ -18,6 +18,10 @@
 
 namespace ScriptCanvas
 {
+    constexpr const char* InternalValidationErrorId = "DV-0000";
+    static const AZ::Crc32 InternalValidationErrorCrc = AZ_CRC(InternalValidationErrorId);
+
+
     //! Base class for all parser validation events, they will all share the same
     //! behavior
     class ParserValidation
@@ -30,11 +34,28 @@ namespace ScriptCanvas
         AZ_RTTI(ParserValidation, "{1B91C6DC-B258-463C-B7EE-05338F6635E2}", ValidationEvent, HighlightEntityEffect, FocusOnEntityEffect);
         AZ_CLASS_ALLOCATOR(ParserValidation, AZ::SystemAllocator, 0);
 
-        ParserValidation(AZ::EntityId nodeId, ValidationSeverity severity, const AZStd::string_view& description)
+        ParserValidation
+            ( AZ::EntityId nodeId
+            , ValidationSeverity severity
+            , const AZStd::string_view& description
+            , AZ::Crc32 idCRC = {}
+            , const AZStd::string& id = {})
             : ValidationEvent(severity)
             , m_nodeId(nodeId)
+            , m_idCrc(idCRC)
+            , m_identifier(id)
         {
             SetDescription(description);
+        }
+
+        AZStd::string GetIdentifier() const override
+        {
+            return m_identifier;
+        }
+
+        AZ::Crc32 GetIdCrc() const override
+        {
+            return m_idCrc;
         }
 
         AZStd::string_view GetTooltip() const override
@@ -57,10 +78,10 @@ namespace ScriptCanvas
         ////
 
     private:
-
         AZ::EntityId m_nodeId;
+        AZStd::string m_identifier;
+        AZ::Crc32 m_idCrc;
     };
-
 
     // \todo this must be removed before it goes even into preview
     class NotYetImplemented

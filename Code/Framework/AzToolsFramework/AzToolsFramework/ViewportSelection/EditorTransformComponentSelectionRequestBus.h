@@ -34,7 +34,13 @@ namespace AzToolsFramework
     constexpr inline AZ::Crc32 ViewportUiVisible = AZ_CRC_CE("org.o3de.action.editortransform.viewportuivisible");
     constexpr inline AZ::Crc32 Helpers = AZ_CRC_CE("org.o3de.action.editor.helpers");
     constexpr inline AZ::Crc32 Icons = AZ_CRC_CE("org.o3de.action.editor.icons");
+    constexpr inline AZ::Crc32 OnlyShowHelpersForSelectedEntitiesAction = AZ_CRC_CE("org.o3de.action.editor.onlyshowselectedentitieshelpers");
     //@}
+
+    namespace ComponentModeFramework
+    {
+        class ComponentModeSwitcher;
+    }
 
     //! Provide interface for EditorTransformComponentSelection requests.
     class EditorTransformComponentSelectionRequests : public AZ::EBusTraits
@@ -124,6 +130,9 @@ namespace AzToolsFramework
 
         //! Snap selected entities to be aligned with the world space grid.
         virtual void SnapSelectedEntitiesToWorldGrid(float gridSize) = 0;
+
+        //! Replace ComponentModeSwitcher with overridden ComponentModeSwitcher
+        virtual void OverrideComponentModeSwitcher(AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher>) = 0;
 
     protected:
         ~EditorTransformComponentSelectionRequests() = default;

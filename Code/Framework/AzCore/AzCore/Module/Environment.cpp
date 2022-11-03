@@ -124,7 +124,7 @@ namespace AZ
             static EnvironmentInterface* Get();
 
             EnvironmentImpl(Environment::AllocatorInterface* allocator)
-                : m_variableMap(MapType::hasher(), MapType::key_eq(), OSStdAllocator(allocator))
+                : m_variableMap(MapType::hasher(), MapType::key_equal(), OSStdAllocator(allocator))
                 , m_numAttached(0)
                 , m_fallback(nullptr)
                 , m_allocator(allocator)

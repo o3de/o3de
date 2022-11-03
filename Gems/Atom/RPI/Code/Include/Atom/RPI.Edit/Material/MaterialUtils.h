@@ -26,6 +26,7 @@ namespace AZ
     {
         class MaterialSourceData;
         class MaterialTypeSourceData;
+        struct MaterialPipelineSourceData;
 
         namespace MaterialUtils
         {
@@ -51,8 +52,15 @@ namespace AZ
             //! @return if resolving is successful. An error will be reported if it fails.
             bool ResolveMaterialPropertyEnumValue(const MaterialPropertyDescriptor* propertyDescriptor, const AZ::Name& enumName, MaterialPropertyValue& outResolvedValue);
 
+            //! Load a material pipeline file from a json file or document.
+            //! It will use the passed in document if not null, or otherwise load the json document from the path.
+            //! @param filePath path to the JSON file to load, unless the @document is already provided. In either case, this path will be used to resolve any relative file references.
+            //! @param document an optional already loaded json document.
+            //! @param importedFiles receives the list of files that were imported by the JSON serializer
+            AZ::Outcome<MaterialPipelineSourceData> LoadMaterialPipelineSourceData(const AZStd::string& filePath, rapidjson::Document* document = nullptr, ImportedJsonFiles* importedFiles = nullptr);
+
             //! Load a material type from a json file or document.
-            //! Otherwise, it will use the passed in document first if not null, or load the json document from the path.
+            //! It will use the passed in document if not null, or otherwise load the json document from the path.
             //! @param filePath path to the JSON file to load, unless the @document is already provided. In either case, this path will be used to resolve any relative file references.
             //! @param document an optional already loaded json document.
             //! @param importedFiles receives the list of files that were imported by the JSON serializer
@@ -72,10 +80,8 @@ namespace AZ
                 const AZStd::string_view* acceptedFieldNames, uint32_t acceptedFieldNameCount,
                 const rapidjson::Value& object, JsonDeserializerContext& context, JsonSerializationResult::ResultCode& result);
 
-            //! Materials assets can either be finalized during asset-processing time or when materials are loaded at runtime.
-            //! Finalizing during asset processing reduces load times and obfuscates the material data.
-            //! Waiting to finalize at load time reduces dependencies on the material type data, resulting in fewer asset rebuilds and less time spent processing assets.
-            bool BuildersShouldFinalizeMaterialAssets();
+            //! Inspects the content of the MaterialPropertyValue to see if it is a string that appears to be an image file path.
+            bool LooksLikeImageFileReference(const MaterialPropertyValue& value);
         }
     }
 }

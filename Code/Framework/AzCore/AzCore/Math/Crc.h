@@ -10,6 +10,7 @@
 #include <AzCore/base.h>
 #include <AzCore/std/hash.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Macros for pre-processor Crc32 conversion
@@ -57,6 +58,8 @@ namespace AZ
     class Crc32
     {
     public:
+        AZ_TYPE_INFO(Crc32, "{88345436-06F2-4DA9-B687-9F821A4FA115}")
+
         /**
          * Initializes to 0.
          */

@@ -19,7 +19,7 @@
 #include <Atom/Utils/DdsFile.h>
 #include <Atom/Utils/PpmFile.h>
 #include <Atom/Utils/PngFile.h>
-
+#include <Atom/Utils/ImageComparison.h>
 #include <AzCore/std/parallel/lock.h>
 
 #include <AzCore/Serialization/Json/JsonUtils.h>
@@ -241,15 +241,15 @@ namespace AZ
         }
 
         class FrameCaptureNotificationBusHandler final
-            : public FrameCaptureNotificationBus::Handler
+            : public FrameCaptureNotificationBus::MultiHandler // Use multi handler as it has to handle all use cases
             , public AZ::BehaviorEBusHandler
         {
         public:
-            AZ_EBUS_BEHAVIOR_BINDER(FrameCaptureNotificationBusHandler, "{68D1D94C-7055-4D32-8E22-BEEEBA0940C4}", AZ::SystemAllocator, OnCaptureFinished);
+            AZ_EBUS_BEHAVIOR_BINDER(FrameCaptureNotificationBusHandler, "{68D1D94C-7055-4D32-8E22-BEEEBA0940C4}", AZ::SystemAllocator, OnFrameCaptureFinished);
 
-            void OnCaptureFinished(uint32_t captureId, FrameCaptureResult result, const AZStd::string& info) override
+            void OnFrameCaptureFinished(FrameCaptureResult result, const AZStd::string& info) override
             {
-                Call(FN_OnCaptureFinished, captureId, result, info);
+                Call(FN_OnFrameCaptureFinished, result, info);
             }
 
             static void Reflect(AZ::ReflectContext* context)
@@ -292,6 +292,9 @@ namespace AZ
 
         void FrameCaptureSystemComponent::Reflect(AZ::ReflectContext* context)
         {
+            Utils::ImageDiffResult::Reflect(context);
+            FrameCaptureNotificationBusHandler::Reflect(context);
+
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<FrameCaptureSystemComponent, AZ::Component>()
@@ -309,13 +312,25 @@ namespace AZ
                     ->Event("CapturePassAttachment", &FrameCaptureRequestBus::Events::CapturePassAttachment)
                     ;
 
-                FrameCaptureNotificationBusHandler::Reflect(context);
+                behaviorContext->EBus<FrameCaptureTestRequestBus>("FrameCaptureTestRequestBus")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Module, "atom")
+                    ->Event("SetScreenshotFolder", &FrameCaptureTestRequestBus::Events::SetScreenshotFolder)
+                    ->Event("SetTestEnvPath", &FrameCaptureTestRequestBus::Events::SetTestEnvPath)
+                    ->Event("SetOfficialBaselineImageFolder", &FrameCaptureTestRequestBus::Events::SetOfficialBaselineImageFolder)
+                    ->Event("SetLocalBaselineImageFolder", &FrameCaptureTestRequestBus::Events::SetLocalBaselineImageFolder)
+                    ->Event("BuildScreenshotFilePath", &FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath)
+                    ->Event("BuildOfficialBaselineFilePath", &FrameCaptureTestRequestBus::Events::BuildOfficialBaselineFilePath)
+                    ->Event("BuildLocalBaselineFilePath", &FrameCaptureTestRequestBus::Events::BuildLocalBaselineFilePath)
+                    ->Event("CompareScreenshots", &FrameCaptureTestRequestBus::Events::CompareScreenshots)
+                    ;
             }
         }
 
         void FrameCaptureSystemComponent::Activate()
         {
             FrameCaptureRequestBus::Handler::BusConnect();
+            FrameCaptureTestRequestBus::Handler::BusConnect();
             SystemTickBus::Handler::BusConnect();
         }
 
@@ -353,6 +368,7 @@ namespace AZ
         void FrameCaptureSystemComponent::Deactivate()
         {
             FrameCaptureRequestBus::Handler::BusDisconnect();
+            FrameCaptureTestRequestBus::Handler::BusDisconnect();
             SystemTickBus::Handler::BusDisconnect();
             m_idleCaptures.clear();
             m_inProgressCaptures.clear();
@@ -373,25 +389,25 @@ namespace AZ
             return !AZ::RHI::IsNullRHI();
         }
 
-        uint32_t FrameCaptureSystemComponent::CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle)
+        FrameCaptureId FrameCaptureSystemComponent::CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle)
         {
             if (!CanCapture())
             {
-                return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                return InvalidFrameCaptureId;
             }
 
             CaptureHandle captureHandle = InitCapture();
             if (captureHandle.IsNull())
             {
                 AZ_Assert(false, "Failed to allocate a capture");
-                return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                return InvalidFrameCaptureId;
             }
             AZStd::scoped_lock<CaptureHandle> scope_lock(captureHandle);
             CaptureState* capture = captureHandle.GetCaptureState();
             if (!capture) // failed to get the capture state ptr, abort
             {
                 m_idleCaptures.push_back(captureHandle);
-                return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                return InvalidFrameCaptureId;
             }
 
             // Find SwapChainPass for the window handle
@@ -400,14 +416,14 @@ namespace AZ
             {
                 AZ_Warning("FrameCaptureSystemComponent", false, "Failed to find SwapChainPass for the window");
                 m_idleCaptures.push_back(captureHandle);
-                return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                return InvalidFrameCaptureId;
             }
 
             if (!capture->m_readback->IsReady())
             {
                 AZ_Assert(false, "Failed to capture attachment since the readback is not ready");
                 m_idleCaptures.push_back(captureHandle);
-                return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                return InvalidFrameCaptureId;
             }
             capture->m_readback->SetUserIdentifier(captureHandle.GetCaptureStateIndex());
             capture->m_readback->SetCallback(AZStd::bind(&FrameCaptureSystemComponent::CaptureAttachmentCallback, this, AZStd::placeholders::_1));
@@ -419,7 +435,7 @@ namespace AZ
             return captureHandle.GetCaptureStateIndex();
         }
 
-        uint32_t FrameCaptureSystemComponent::CaptureScreenshot(const AZStd::string& filePath)
+        FrameCaptureId FrameCaptureSystemComponent::CaptureScreenshot(const AZStd::string& filePath)
         {
             AzFramework::NativeWindowHandle windowHandle = AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContext()->GetWindowHandle();
             if (windowHandle)
@@ -427,35 +443,35 @@ namespace AZ
                 return CaptureScreenshotForWindow(filePath, windowHandle);
             }
 
-            return FrameCaptureRequests::s_InvalidFrameCaptureId;
+            return InvalidFrameCaptureId;
         }
 
-        uint32_t FrameCaptureSystemComponent::CaptureScreenshotWithPreview(const AZStd::string& outputFilePath)
+        FrameCaptureId FrameCaptureSystemComponent::CaptureScreenshotWithPreview(const AZStd::string& outputFilePath)
         {
             if (!CanCapture())
             {
-                return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                return InvalidFrameCaptureId;
             }
 
             CaptureHandle captureHandle = InitCapture();
             if (captureHandle.IsNull())
             {
                 AZ_Assert(false, "Failed to allocate a capture");
-                return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                return InvalidFrameCaptureId;
             }
             AZStd::scoped_lock<CaptureHandle> scope_lock(captureHandle);
             CaptureState* capture = captureHandle.GetCaptureState();
             if (!capture) // failed to get the capture state ptr, abort
             {
                 m_idleCaptures.push_back(captureHandle);
-                return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                return InvalidFrameCaptureId;
             }
 
             if (!capture->m_readback->IsReady())
             {
                 AZ_Assert(false, "Failed to capture attachment since the readback is not ready");
                 m_idleCaptures.push_back(captureHandle);
-                return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                return InvalidFrameCaptureId;
             }
             capture->m_readback->SetUserIdentifier(captureHandle.GetCaptureStateIndex());
             capture->m_readback->SetCallback(AZStd::bind(&FrameCaptureSystemComponent::CaptureAttachmentCallback, this, AZStd::placeholders::_1));
@@ -478,7 +494,7 @@ namespace AZ
             {
                 m_idleCaptures.push_back(captureHandle);
                 AZ_Warning("FrameCaptureSystemComponent", false, "Failed to find an ImageAttachmentPreviewPass");
-                return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                return InvalidFrameCaptureId;
             }
 
             bool result = previewPass->ReadbackOutput(capture->m_readback);
@@ -490,7 +506,7 @@ namespace AZ
 
             AZ_Warning("FrameCaptureSystemComponent", false, "CaptureScreenshotWithPreview. Failed to readback output from the ImageAttachmentPreviewPass");
             m_idleCaptures.push_back(captureHandle);
-            return FrameCaptureRequests::s_InvalidFrameCaptureId;
+            return InvalidFrameCaptureId;
         }
 
         FrameCaptureSystemComponent::CaptureHandle FrameCaptureSystemComponent::InternalCapturePassAttachment(
@@ -558,10 +574,11 @@ namespace AZ
             return CaptureHandle::Null();
         }
 
-        uint32_t FrameCaptureSystemComponent::CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy,
-                                                                    const AZStd::string& slot,
-                                                                    const AZStd::string& outputFilePath, 
-                                                                    RPI::PassAttachmentReadbackOption option)
+        FrameCaptureId FrameCaptureSystemComponent::CapturePassAttachment(
+            const AZStd::vector<AZStd::string>& passHierarchy,
+            const AZStd::string& slot,
+            const AZStd::string& outputFilePath,
+            RPI::PassAttachmentReadbackOption option)
         {
             CaptureHandle captureHandle = InternalCapturePassAttachment(passHierarchy, slot, outputFilePath, option, AZStd::bind(&FrameCaptureSystemComponent::CaptureAttachmentCallback, this, AZStd::placeholders::_1));
             if (captureHandle.IsValid())
@@ -570,18 +587,19 @@ namespace AZ
                 CaptureState* capture = captureHandle.GetCaptureState();
                 if (!capture)
                 {
-                    return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                    return InvalidFrameCaptureId;
                 }
                 m_inProgressCaptures.push_back(captureHandle);
                 return captureHandle.GetCaptureStateIndex();
             }
-            return FrameCaptureRequests::s_InvalidFrameCaptureId;
+            return InvalidFrameCaptureId;
         }
 
-        uint32_t FrameCaptureSystemComponent::CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, 
-                                                                            const AZStd::string& slotName, 
-                                                                            RPI::AttachmentReadback::CallbackFunction callback, 
-                                                                            RPI::PassAttachmentReadbackOption option)
+        FrameCaptureId FrameCaptureSystemComponent::CapturePassAttachmentWithCallback(
+            const AZStd::vector<AZStd::string>& passHierarchy,
+            const AZStd::string& slotName,
+            RPI::AttachmentReadback::CallbackFunction callback,
+            RPI::PassAttachmentReadbackOption option)
         {
 
             CaptureHandle captureHandle = InternalCapturePassAttachment(passHierarchy, slotName, "", option, [this, callback](const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
@@ -601,12 +619,12 @@ namespace AZ
                 CaptureState* capture = captureHandle.GetCaptureState();
                 if (!capture)
                 {
-                    return FrameCaptureRequests::s_InvalidFrameCaptureId;
+                    return InvalidFrameCaptureId;
                 }
                 m_inProgressCaptures.push_back(captureHandle);
                 return captureHandle.GetCaptureStateIndex();
             }
-            return FrameCaptureRequests::s_InvalidFrameCaptureId;
+            return InvalidFrameCaptureId;
         }
 
         void FrameCaptureSystemComponent::OnSystemTick()
@@ -628,7 +646,7 @@ namespace AZ
                 {
                     break;
                 }
-                FrameCaptureNotificationBus::Broadcast(&FrameCaptureNotificationBus::Events::OnCaptureFinished, captureHandle.GetCaptureStateIndex(), capture->m_result, capture->m_latestCaptureInfo.c_str());
+                FrameCaptureNotificationBus::Event(captureHandle.GetCaptureStateIndex(), &FrameCaptureNotificationBus::Events::OnFrameCaptureFinished, capture->m_result, capture->m_latestCaptureInfo.c_str());
                 m_inProgressCaptures.pop_front();
                 m_idleCaptures.push_back(captureHandle);
             }
@@ -816,14 +834,139 @@ namespace AZ
             m_result = result; 
         }
 
-
-
         void FrameCaptureSystemComponent::CaptureState::Reset()
         {
             //m_readback->Reset();
             m_outputFilePath.clear();
             m_latestCaptureInfo.clear();
             m_result = FrameCaptureResult::None;
+        }
+
+        void FrameCaptureSystemComponent::SetScreenshotFolder(const AZStd::string& screenshotFolder)
+        {
+            m_screenshotFolder = ResolvePath(screenshotFolder);
+        }
+
+        void FrameCaptureSystemComponent::SetTestEnvPath(const AZStd::string& envPath)
+        {
+            m_testEnvPath = envPath;
+        }
+
+        void FrameCaptureSystemComponent::SetOfficialBaselineImageFolder(const AZStd::string& baselineFolder)
+        {
+            m_officialBaselineImageFolder = ResolvePath(baselineFolder);
+        }
+
+        void FrameCaptureSystemComponent::SetLocalBaselineImageFolder(const AZStd::string& baselineFolder)
+        {
+            m_localBaselineImageFolder = ResolvePath(baselineFolder);
+        }
+
+        AZStd::string FrameCaptureSystemComponent::BuildScreenshotFilePath(const AZStd::string& imageName, bool useEnvPath)
+        {
+            if (useEnvPath)
+            {
+                return ResolvePath(AZStd::string::format("%s/%s/%s", m_screenshotFolder.c_str(), m_testEnvPath.c_str(), imageName.c_str()));
+            }
+            else
+            {
+                return ResolvePath(AZStd::string::format("%s/%s", m_screenshotFolder.c_str(), imageName.c_str()));
+            }
+        }
+
+        AZStd::string FrameCaptureSystemComponent::BuildOfficialBaselineFilePath(const AZStd::string& imageName, bool useEnvPath)
+        {
+            if (useEnvPath)
+            {
+                return ResolvePath(AZStd::string::format("%s/%s/%s", m_officialBaselineImageFolder.c_str(), m_testEnvPath.c_str(), imageName.c_str()));
+            }
+            else
+            {
+                return ResolvePath(AZStd::string::format("%s/%s", m_officialBaselineImageFolder.c_str(), imageName.c_str()));
+            }
+        }
+
+        AZStd::string FrameCaptureSystemComponent::BuildLocalBaselineFilePath(const AZStd::string& imageName, bool useEnvPath)
+        {
+            if (useEnvPath)
+            {
+                return ResolvePath(AZStd::string::format("%s/%s/%s", m_localBaselineImageFolder.c_str(), m_testEnvPath.c_str(), imageName.c_str()));
+            }
+            else
+            {
+                return ResolvePath(AZStd::string::format("%s/%s", m_localBaselineImageFolder.c_str(), imageName.c_str()));
+            }
+        }
+
+        Utils::ImageDiffResult FrameCaptureSystemComponent::CompareScreenshots(const AZStd::string& filePathA, const AZStd::string& filePathB, float minDiffFilter)
+        {
+            Utils::ImageDiffResult result;
+
+            char resolvedFilePathA[AZ_MAX_PATH_LEN] = { 0 };
+            char resolvedFilePathB[AZ_MAX_PATH_LEN] = { 0 };
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath(filePathA.c_str(), resolvedFilePathA, AZ_MAX_PATH_LEN);
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath(filePathB.c_str(), resolvedFilePathB, AZ_MAX_PATH_LEN);
+
+            if (!filePathA.ends_with(".png") || !filePathB.ends_with(".png"))
+            {
+                AZ_Error("FrameCaptureSystemComponent", false, "Image comparison only supports png and ppm files for now.");
+                result.m_resultCode = Utils::ImageDiffResultCode::UnsupportedFormat;
+                return result;
+            }
+
+            // Load image A
+            Utils::PngFile imageA = Utils::PngFile::Load(resolvedFilePathA);
+
+            if (!imageA.IsValid())
+            {
+                AZ_Error("FrameCaptureSystemComponent", false, "Failed to load image file: %s.", resolvedFilePathA);
+                result.m_resultCode = Utils::ImageDiffResultCode::UnsupportedFormat;
+                return result;
+            }
+            else if (imageA.GetBufferFormat() != Utils::PngFile::Format::RGBA)
+            {
+                AZ_Error("FrameCaptureSystemComponent", false, "Image comparison only supports 8-bit RGBA png.", resolvedFilePathA);
+                result.m_resultCode = Utils::ImageDiffResultCode::UnsupportedFormat;
+                return result;
+            }
+
+            // Load image B
+            Utils::PngFile imageB = Utils::PngFile::Load(resolvedFilePathB);
+
+            if (!imageB.IsValid())
+            {
+                AZ_Error("FrameCaptureSystemComponent", false, "Failed to load image file: %s.", resolvedFilePathB);
+                result.m_resultCode = Utils::ImageDiffResultCode::UnsupportedFormat;
+                return result;
+            }
+            else if (imageA.GetBufferFormat() != Utils::PngFile::Format::RGBA)
+            {
+                AZ_Error("FrameCaptureSystemComponent", false, "Image comparison only supports 8-bit RGBA png.", resolvedFilePathB);
+                result.m_resultCode = Utils::ImageDiffResultCode::UnsupportedFormat;
+                return result;
+            }
+
+            // Compare
+            result = Utils::CalcImageDiffRms(
+                imageA.GetBuffer(), RHI::Size(imageA.GetWidth(), imageA.GetHeight(), 1), AZ::RHI::Format::R8G8B8A8_UNORM,
+                imageB.GetBuffer(), RHI::Size(imageB.GetWidth(), imageB.GetHeight(), 1), AZ::RHI::Format::R8G8B8A8_UNORM,
+                minDiffFilter
+            );
+
+            if (result.m_resultCode == Utils::ImageDiffResultCode::SizeMismatch)
+            {
+                AZ_Error("FrameCaptureSystemComponent", false, "Size mismatch at: %s and %s.", resolvedFilePathA, resolvedFilePathB);
+                return result;
+            }
+
+            if (result.m_resultCode == Utils::ImageDiffResultCode::UnsupportedFormat ||
+                result.m_resultCode == Utils::ImageDiffResultCode::FormatMismatch)
+            {
+                AZ_Error("FrameCaptureSystemComponent", false, "Format unsupported or format mistmatch: %s and %s.", resolvedFilePathA, resolvedFilePathB);
+                return result;
+            }
+
+            return result;
         }
     }
 }

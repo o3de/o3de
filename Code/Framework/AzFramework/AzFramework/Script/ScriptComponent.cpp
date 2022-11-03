@@ -837,7 +837,7 @@ namespace AzFramework
         if (serializeContext)
         {
             // we may have been reflected by ScriptEditorComponent already, so check first
-            if (serializeContext->FindClassData("{8D1BC97E-C55D-4D34-A460-E63C57CD0D4B}") == nullptr)
+            if (serializeContext->FindClassData(AZ::Uuid("{8D1BC97E-C55D-4D34-A460-E63C57CD0D4B}")) == nullptr)
             {
                 auto converter = [](AZ::SerializeContext&, AZ::SerializeContext::DataElementNode& node)
                 {

@@ -12,6 +12,9 @@
 #include <AzCore/std/allocator_traits.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/createdestroy.h>
+#include <AzCore/std/iterator/const_iterator.h>
+#include <AzCore/std/ranges/common_view.h>
+#include <AzCore/std/ranges/as_rvalue_view.h>
 #include <AzCore/std/typetraits/alignment_of.h>
 #include <AzCore/std/typetraits/is_constructible.h>
 #include <AzCore/std/typetraits/is_integral.h>
@@ -38,7 +41,7 @@ namespace AZStd
      * List constant iterator implementation. SCARY iterator implementation.
      */
     template< class T >
-    class list_const_iterator
+    class list_iterator
     {
         enum
         {
@@ -47,12 +50,12 @@ namespace AZStd
 
         template<class E, class A>
         friend class list;
-        typedef list_const_iterator                 this_type;
+        typedef list_iterator                       this_type;
     public:
         typedef T                                   value_type;
         typedef AZStd::ptrdiff_t                    difference_type;
-        typedef const T*                            pointer;
-        typedef const T&                            reference;
+        typedef T*                                  pointer;
+        typedef T&                                  reference;
         typedef AZStd::bidirectional_iterator_tag   iterator_category;
 
         typedef Internal::list_node<T>              node_type;
@@ -60,9 +63,9 @@ namespace AZStd
         typedef Internal::list_node_base            base_node_type;
         typedef base_node_type*                     base_node_ptr_type;
 
-        AZ_FORCE_INLINE list_const_iterator()
-            : m_node(0) {}
-        AZ_FORCE_INLINE list_const_iterator(base_node_ptr_type node)
+        AZ_FORCE_INLINE list_iterator() = default;
+
+        AZ_FORCE_INLINE explicit list_iterator(base_node_ptr_type node)
             : m_node(node) {}
         AZ_FORCE_INLINE reference operator*() const { return static_cast<node_ptr_type>(m_node)->m_value; }
         AZ_FORCE_INLINE pointer operator->() const { return &static_cast<node_ptr_type>(m_node)->m_value; }
@@ -105,63 +108,15 @@ namespace AZStd
             return (m_node != rhs.m_node);
         }
     protected:
-        base_node_ptr_type  m_node;
+        base_node_ptr_type m_node{};
     };
 
-    /**
-     * List iterator implementation. SCARY iterator implementation.
-     */
+
+    // To allow incomplete types to be used with the const_iterator
+    // the list_iterator has specializations added for the basic_const_iterator
+    // constraints
     template<class T>
-    class list_iterator
-        : public list_const_iterator<T>
-    {
-        typedef list_iterator                   this_type;
-        typedef list_const_iterator<T>          base_type;
-    public:
-        typedef T*                              pointer;
-        typedef T&                              reference;
-
-        typedef typename base_type::node_type           node_type;
-        typedef typename base_type::node_ptr_type       node_ptr_type;
-        typedef typename base_type::base_node_type      base_node_type;
-        typedef typename base_type::base_node_ptr_type  base_node_ptr_type;
-
-        AZ_FORCE_INLINE list_iterator() {}
-        AZ_FORCE_INLINE list_iterator(base_node_ptr_type node)
-            : list_const_iterator<T>(node)   {}
-        AZ_FORCE_INLINE this_type& operator++()
-        {
-            AZSTD_CONTAINER_ASSERT(base_type::m_node != 0, "AZSTD::list::iterator_impl invalid node!");
-            base_type::m_node = base_type::m_node->m_next;
-            return *this;
-        }
-
-        AZ_FORCE_INLINE reference operator*() const { return static_cast<node_ptr_type>(base_type::m_node)->m_value; }
-        AZ_FORCE_INLINE pointer operator->() const { return &(static_cast<node_ptr_type>(base_type::m_node)->m_value); }
-        AZ_FORCE_INLINE this_type operator++(int)
-        {
-            AZSTD_CONTAINER_ASSERT(base_type::m_node != 0, "AZSTD::list::iterator_impl invalid node!");
-            this_type temp = *this;
-            base_type::m_node = base_type::m_node->m_next;
-            return temp;
-        }
-
-        AZ_FORCE_INLINE this_type& operator--()
-        {
-            AZSTD_CONTAINER_ASSERT(base_type::m_node != 0, "AZSTD::list::const_iterator invalid node!");
-            base_type::m_node = base_type::m_node->m_prev;
-            return *this;
-        }
-
-        AZ_FORCE_INLINE this_type operator--(int)
-        {
-            AZSTD_CONTAINER_ASSERT(base_type::m_node != 0, "AZSTD::list::const_iterator invalid node!");
-            this_type temp = *this;
-            base_type::m_node = base_type::m_node->m_prev;
-            return temp;
-        }
-    };
-
+    inline constexpr bool input_or_output_iterator<list_iterator<T>> = true;
 
     /**
     * The list container (double linked list) is complaint with \ref CStd (23.2.2). In addition we introduce the following \ref ListExtensions "extensions".
@@ -194,8 +149,6 @@ namespace AZStd
 
         typedef T&                                      reference;
         typedef const T&                                const_reference;
-        typedef typename Allocator::difference_type     difference_type;
-        typedef typename Allocator::size_type           size_type;
         typedef Allocator                               allocator_type;
 
         // AZSTD extension.
@@ -205,15 +158,17 @@ namespace AZStd
         typedef Internal::list_node_base                base_node_type;
         typedef base_node_type*                         base_node_ptr_type;
 
-        typedef list_const_iterator<T>                  const_iterator_impl;
-        typedef list_iterator<T>                        iterator_impl;
+        using iterator_impl = list_iterator<T>;
+        using const_iterator_impl = basic_const_iterator<iterator_impl>;
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
-        typedef Debug::checked_bidirectional_iterator<iterator_impl, this_type>          iterator;
-        typedef Debug::checked_bidirectional_iterator<const_iterator_impl, this_type>    const_iterator;
+        using iterator = Debug::checked_bidirectional_iterator<iterator_impl, this_type>;
+        using const_iterator = Debug::checked_bidirectional_iterator<const_iterator_impl, this_type>;
 #else
-        typedef iterator_impl                           iterator;
-        typedef const_iterator_impl                     const_iterator;
+        using iterator = iterator_impl;
+        using const_iterator = const_iterator_impl;
 #endif
+        using difference_type = typename iterator::difference_type;
+        using size_type = make_unsigned_t<difference_type>;
 
         typedef AZStd::reverse_iterator<iterator>       reverse_iterator;
         typedef AZStd::reverse_iterator<const_iterator> const_reverse_iterator;
@@ -262,6 +217,13 @@ namespace AZStd
             insert_iter(begin(), first, last, is_integral<InputIterator>());
         }
 
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        list(from_range_t, R&& rg, const allocator_type& alloc = Allocator())
+            : m_allocator(alloc)
+        {
+            m_head.m_next = m_head.m_prev = &m_head;
+            assign_range(AZStd::forward<R>(rg));
+        }
 
         AZ_FORCE_INLINE list(initializer_list<T> ilist, const allocator_type& alloc = allocator_type())
             : list(ilist.begin(), ilist.end(), alloc)
@@ -302,9 +264,25 @@ namespace AZStd
             }
         }
         template <class InputIterator>
-        AZ_FORCE_INLINE void assign(const InputIterator& first, const InputIterator& last)
+        void assign(InputIterator first, InputIterator last)
         {
             assign_iter(first, last, is_integral<InputIterator>());
+        }
+
+
+        template<class R>
+        auto assign_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>>
+        {
+            if constexpr (is_lvalue_reference_v<R>)
+            {
+                auto rangeView = AZStd::forward<R>(rg) | views::common;
+                assign_iter(ranges::begin(rangeView), ranges::end(rangeView), false_type{});
+            }
+            else
+            {
+                auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
+                assign_iter(ranges::begin(rangeView), ranges::end(rangeView), false_type{});
+            }
         }
 
         void assign(initializer_list<T> iList)
@@ -312,19 +290,19 @@ namespace AZStd
             assign(iList.begin(), iList.end());
         }
 
-        AZ_FORCE_INLINE size_type   size() const            { return m_numElements; }
-        AZ_FORCE_INLINE size_type   max_size() const        { return AZStd::allocator_traits<allocator_type>::max_size(m_allocator) / sizeof(node_type); }
-        AZ_FORCE_INLINE bool    empty() const               { return (m_numElements == 0); }
+        AZ_FORCE_INLINE size_type   size() const { return m_numElements; }
+        AZ_FORCE_INLINE size_type   max_size() const { return AZStd::allocator_traits<allocator_type>::max_size(m_allocator) / sizeof(node_type); }
+        AZ_FORCE_INLINE bool    empty() const { return (m_numElements == 0); }
 
-        AZ_FORCE_INLINE iterator begin()                    { return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, m_head.m_next)); }
-        AZ_FORCE_INLINE const_iterator begin() const        { return const_iterator(AZSTD_CHECKED_ITERATOR(const_iterator_impl, m_head.m_next)); }
-        AZ_FORCE_INLINE iterator end()                      { return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, &m_head)); }
-        AZ_FORCE_INLINE const_iterator end() const          { return const_iterator(AZSTD_CHECKED_ITERATOR(const_iterator_impl, const_cast<base_node_ptr_type>(&m_head))); }
+        AZ_FORCE_INLINE iterator begin() { return iterator(m_head.m_next); }
+        AZ_FORCE_INLINE const_iterator begin() const { return const_iterator(iterator(m_head.m_next)); }
+        AZ_FORCE_INLINE iterator end() { return iterator(&m_head); }
+        AZ_FORCE_INLINE const_iterator end() const { return const_iterator(iterator(const_cast<base_node_ptr_type>(&m_head))); }
 
-        AZ_FORCE_INLINE reverse_iterator rbegin()           { return reverse_iterator(end()); }
-        AZ_FORCE_INLINE const_reverse_iterator rbegin() const{ return const_reverse_iterator(end()); }
-        AZ_FORCE_INLINE reverse_iterator rend()             { return reverse_iterator(begin()); }
-        AZ_FORCE_INLINE const_reverse_iterator rend() const { return const_reverse_iterator(begin());   }
+        AZ_FORCE_INLINE reverse_iterator rbegin() { return reverse_iterator(end()); }
+        AZ_FORCE_INLINE const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
+        AZ_FORCE_INLINE reverse_iterator rend() { return reverse_iterator(begin()); }
+        AZ_FORCE_INLINE const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
 
         AZ_FORCE_INLINE void resize(size_type newNumElements, const_reference value = value_type())
         {   // determine new length, padding with value elements as needed
@@ -341,18 +319,28 @@ namespace AZStd
             }
         }
 
-        AZ_FORCE_INLINE reference front()               { return (*begin()); }
-        AZ_FORCE_INLINE const_reference front() const   { return (*begin()); }
-        AZ_FORCE_INLINE reference back()                { return (*(--end())); }
-        AZ_FORCE_INLINE const_reference back() const    { return (*(--end())); }
+        AZ_FORCE_INLINE reference front() { return (*begin()); }
+        AZ_FORCE_INLINE const_reference front() const { return (*begin()); }
+        AZ_FORCE_INLINE reference back() { return (*(--end())); }
+        AZ_FORCE_INLINE const_reference back() const { return (*(--end())); }
 
         // 23.2.2.3 modifiers
-        AZ_FORCE_INLINE void push_front(const_reference value)  { insert(begin(), value); }
-        AZ_FORCE_INLINE void pop_front()                        { erase(begin()); }
-        AZ_FORCE_INLINE void push_back(const_reference value)   { insert(end(), value); }
-        AZ_FORCE_INLINE void pop_back()                         { erase(--end()); }
+        AZ_FORCE_INLINE void push_front(const_reference value) { insert(begin(), value); }
+        template<class R>
+        auto prepend_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, T>>
+        {
+            insert_range(begin(), AZStd::forward<R>(rg));
+        }
+        AZ_FORCE_INLINE void pop_front() { erase(begin()); }
+        AZ_FORCE_INLINE void push_back(const_reference value) { insert(end(), value); }
+        template<class R>
+        auto append_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, T>>
+        {
+            insert_range(end(), AZStd::forward<R>(rg));
+        }
+        AZ_FORCE_INLINE void pop_back() { erase(--end()); }
 
-        template <typename MyAllocator=allocator_type>
+        template <typename MyAllocator = allocator_type>
         list(this_type&& rhs, typename AZStd::enable_if_t<AZStd::is_default_constructible<MyAllocator>::value>* = nullptr)
             : m_numElements(0)
         {
@@ -409,7 +397,7 @@ namespace AZStd
         iterator emplace(const_iterator insertPos, ArgumentsInputs&& ... arguments)
         {
             insert_element(insertPos, AZStd::forward<ArgumentsInputs>(arguments) ...);
-            return iterator((--insertPos).m_node);
+            return iterator((--insertPos).base().m_node);
         }
 
         iterator insert(const_iterator insertPos, initializer_list<T> ilist)
@@ -426,9 +414,9 @@ namespace AZStd
             Internal::construct<pointer>::single(ptr, value);
 
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
-            base_node_ptr_type insNode = insertPos.get_iterator().m_node;
+            base_node_ptr_type insNode = insertPos.base().get_iterator().m_node;
 #else
-            base_node_ptr_type insNode = insertPos.m_node;
+            base_node_ptr_type insNode = insertPos.base().m_node;
 #endif
 
             ++m_numElements;
@@ -445,12 +433,12 @@ namespace AZStd
             m_numElements += numElements;
 
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
-            base_node_ptr_type insNode = insertPos.get_iterator().m_node;
+            base_node_ptr_type insNode = insertPos.base().get_iterator().m_node;
 #else
-            base_node_ptr_type insNode = insertPos.m_node;
+            base_node_ptr_type insNode = insertPos.base().m_node;
 #endif
 
-            for (; 0  < numElements; --numElements)
+            for (; 0 < numElements; --numElements)
             {
                 node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignment_of<node_type>::value));
                 // copy construct
@@ -476,13 +464,28 @@ namespace AZStd
             return insert_iter(insertPos, first, last, is_integral<InputIterator>());
         }
 
+        template<class R>
+        auto insert_range(const_iterator insertPos, R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>, iterator>
+        {
+            if constexpr (is_lvalue_reference_v<R>)
+            {
+                auto rangeView = AZStd::forward<R>(rg) | views::common;
+                return insert_iter(insertPos, ranges::begin(rangeView), ranges::end(rangeView), false_type{});
+            }
+            else
+            {
+                auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
+                return insert_iter(insertPos, ranges::begin(rangeView), ranges::end(rangeView), false_type{});
+            }
+        }
+
         inline iterator erase(const_iterator toErase)
         {
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
-            node_ptr_type node = static_cast<node_ptr_type>(toErase.get_iterator().m_node);
+            node_ptr_type node = static_cast<node_ptr_type>(toErase.base().get_iterator().m_node);
             orphan_node(node);
 #else
-            node_ptr_type node = static_cast<node_ptr_type>(toErase.m_node);
+            node_ptr_type node = static_cast<node_ptr_type>(toErase.base().m_node);
 #endif
             base_node_ptr_type prevNode = node->m_prev;
             base_node_ptr_type nextNode = node->m_next;
@@ -503,7 +506,7 @@ namespace AZStd
                 erase(first++);
             }
 
-            return AZStd::Internal::ConstIteratorCast<iterator>(last);
+            return last.base();
         }
 
         AZ_FORCE_INLINE void clear()
@@ -1010,9 +1013,9 @@ namespace AZStd
         {
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
             AZ_Assert(iter.m_container == this, "This iterator doesn't belong to this container");
-            base_node_ptr_type iterNode = iter.m_iter.m_node;
+            base_node_ptr_type iterNode = iter.base().m_iter.m_node;
 #else
-            base_node_ptr_type iterNode = iter.m_node;
+            base_node_ptr_type iterNode = iter.base().m_node;
 #endif
 
             if (iterNode == &m_head)
@@ -1026,9 +1029,9 @@ namespace AZStd
         {
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
             AZ_Assert(iter.m_container == this, "This iterator doesn't belong to this container");
-            base_node_ptr_type iterNode = iter.m_iter.m_node;
+            base_node_ptr_type iterNode = iter.base().m_iter.m_node;
 #else
-            base_node_ptr_type iterNode = iter.m_node;
+            base_node_ptr_type iterNode = iter.base().m_node;
 #endif
             if (iterNode == &m_head)
             {
@@ -1138,7 +1141,7 @@ namespace AZStd
         //! This is used to implement a node handle construct in the unordered_map
         node_ptr_type unlink(const_iterator unlinkPos)
         {
-            node_ptr_type unlinkNode = static_cast<node_ptr_type>(unlinkPos.m_node);
+            node_ptr_type unlinkNode = static_cast<node_ptr_type>(unlinkPos.base().m_node);
 
             unlinkNode->m_prev->m_next = unlinkNode->m_next;
             unlinkNode->m_next->m_prev = unlinkNode->m_prev;
@@ -1153,7 +1156,7 @@ namespace AZStd
         //! Requirements: The list node must use the same allocator as the list being linked to
         iterator relink(const_iterator insertPos, const base_node_ptr_type nodeToLink)
         {
-            base_node_ptr_type insNode = insertPos.m_node;
+            base_node_ptr_type insNode = insertPos.base().m_node;
 
             ++m_numElements;
             nodeToLink->m_next = insNode;
@@ -1186,7 +1189,7 @@ namespace AZStd
             if (first == last)
             {
                 // If the list is empty, return a non-const iterator version of insertPos.
-                return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, insertPos.m_node));
+                return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, insertPos.base().m_node));
             }
 
             InputIterator iter(first);
@@ -1235,9 +1238,9 @@ namespace AZStd
             Internal::construct<pointer>::single(ptr, AZStd::forward<ArgumentsInputs>(arguments) ...);
 
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
-            base_node_ptr_type insNode = insertPos.get_iterator().m_node;
+            base_node_ptr_type insNode = insertPos.base().get_iterator().m_node;
 #else
-            base_node_ptr_type insNode = insertPos.m_node;
+            base_node_ptr_type insNode = insertPos.base().m_node;
 #endif
 
             ++m_numElements;
@@ -1294,7 +1297,10 @@ namespace AZStd
 
     // AZStd::list deduction guides
     template <class InputIt, class Alloc = allocator>
-    list(InputIt, InputIt, Alloc = Alloc()) -> list<typename iterator_traits<InputIt>::value_type, Alloc>;
+    list(InputIt, InputIt, Alloc = Alloc()) -> list<iter_value_t<InputIt>, Alloc>;
+
+    template<class R, class Alloc = allocator, class = enable_if_t<ranges::input_range<R>>>
+    list(from_range_t, R&&, Alloc = Alloc()) -> list<ranges::range_value_t<R>, Alloc>;
 
     template< class T, class Allocator >
     AZ_FORCE_INLINE bool operator==(const list<T, Allocator>& left, const list<T, Allocator>& right)

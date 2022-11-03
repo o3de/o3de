@@ -74,11 +74,15 @@ namespace PythonCoverage
         void WriteCoverageFile();
 
         CoverageState m_coverageState = CoverageState::Disabled; //!< Current coverage state.
-        AZStd::unordered_map<AZStd::string, AZStd::unordered_map<AZ::Uuid, AZ::ComponentDescriptor*>> m_entityComponentMap; //!< Map of
-        //!< component IDs to component descriptors for all activated entities, organized by test cases.
+        AZStd::unordered_map<AZ::Uuid, AZ::ComponentDescriptor*> m_entityComponents; //!< Set of
+        //!< component IDs to component descriptors for all activated entities.
         AZStd::unordered_map<AZ::Uuid, AZStd::string> m_moduleComponents; //!< Map of component IDs to module names for all modules.
         AZ::IO::Path m_coverageDir; //!< Directory to write coverage data to.
         AZ::IO::Path m_coverageFile; //!< Full file path to write coverage data to.
+        AZStd::string m_scriptPath; //!< Path to the Python test script being executed.
+        //! Path to the parent Python script all test case siblings belong to (used to ID the python test target).
+        AZStd::string m_parentScriptPath; 
+        AZStd::string m_testFixture; //!< Name of the test fixture this test case belongs to.
         AZStd::string m_testCase; //!< Name of current test case that coverage data is being gathered for.
     };
 } // namespace PythonCoverage

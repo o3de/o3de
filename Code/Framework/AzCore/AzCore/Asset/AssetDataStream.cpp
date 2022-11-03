@@ -272,7 +272,6 @@ namespace AZ::Data
 
     void AssetDataStream::Seek(AZ::IO::OffsetType bytes, AZ::IO::GenericStream::SeekMode mode)
     {
-        AZ_PROFILE_FUNCTION(AzCore);
         AZ::IO::OffsetType requestedOffset = 0;
 
         switch (mode)
@@ -302,7 +301,6 @@ namespace AZ::Data
 
     AZ::IO::SizeType AssetDataStream::Read(AZ::IO::SizeType bytes, void* oBuffer)
     {
-        AZ_PROFILE_FUNCTION(AzCore);
         if (m_curOffset >= m_loadedSize)
         {
             return 0;

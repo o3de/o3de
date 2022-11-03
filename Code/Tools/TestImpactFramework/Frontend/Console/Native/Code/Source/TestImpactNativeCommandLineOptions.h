@@ -30,16 +30,8 @@ namespace TestImpact
         //! Returns the maximum number of test targets to be in flight at any given time.
         const AZStd::optional<size_t>& GetMaxConcurrency() const;
 
-        //! Returns the individual test target timeout to use (if any).
-        const AZStd::optional<AZStd::chrono::milliseconds>& GetTestTargetTimeout() const;
-
-        //! Returns true if the safe mode option has been enabled, otherwise false.
-        bool HasSafeMode() const;
-
     private:
         Policy::TestSharding m_testShardingPolicy = Policy::TestSharding::Never;
         AZStd::optional<size_t> m_maxConcurrency;
-        AZStd::optional<AZStd::chrono::milliseconds> m_testTargetTimeout;
-        bool m_safeMode = false;
     };
 } // namespace TestImpact

@@ -61,14 +61,13 @@ namespace AZ::Render
 
     void StarsComponentController::Activate(EntityId entityId)
     {
-        RegisterFeatureProcessor(entityId);
+        EnableFeatureProcessor(entityId);
 
         TransformNotificationBus::Handler::BusConnect(entityId);
     }
 
-    void StarsComponentController::RegisterFeatureProcessor(EntityId entityId)
+    void StarsComponentController::EnableFeatureProcessor(EntityId entityId)
     {
-        RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<StarsFeatureProcessor, StarsFeatureProcessorInterface>();
         m_scene = RPI::Scene::GetSceneForEntityId(entityId);
         if (m_scene)
         {
@@ -95,15 +94,13 @@ namespace AZ::Render
         OnConfigChanged();
     }
 
-    void StarsComponentController::UnregisterFeatureProcessor()
+    void StarsComponentController::DisableFeatureProcessor()
     {
         if (m_scene && m_starsFeatureProcessor)
         {
             m_scene->DisableFeatureProcessor<StarsFeatureProcessor>();
 
             m_starsFeatureProcessor = nullptr;
-
-            RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<StarsFeatureProcessor>();
         }
     }
 
@@ -178,7 +175,7 @@ namespace AZ::Render
         TransformNotificationBus::Handler::BusDisconnect();
         Data::AssetBus::MultiHandler::BusDisconnect();
 
-        UnregisterFeatureProcessor();
+        DisableFeatureProcessor();
     }
 
     void StarsComponentController::SetConfiguration(const StarsComponentConfig& config)

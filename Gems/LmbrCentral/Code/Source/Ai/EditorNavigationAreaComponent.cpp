@@ -10,7 +10,6 @@
 
 #include "EditorNavigationUtil.h"
 #include <AzCore/Component/TransformBus.h>
-#include <AzCore/Math/VectorConversions.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <LmbrCentral/Shape/PolygonPrismShapeComponentBus.h>
@@ -197,7 +196,7 @@ namespace LmbrCentral
 
                 for (size_t i = 0; i < vertexCount; ++i)
                 {
-                    verticesWorld.push_back(transform.TransformPoint(AZ::Vector2ToVector3(verticesLocal[i])));
+                    verticesWorld.push_back(transform.TransformPoint(AZ::Vector3(verticesLocal[i])));
                 }
 
                 // The volume could be set but if the binary data didn't exist the volume was not correctly recreated

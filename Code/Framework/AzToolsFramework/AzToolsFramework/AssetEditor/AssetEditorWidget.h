@@ -39,6 +39,7 @@ namespace AzToolsFramework
 {
     class ReflectedPropertyEditor;
     class DocumentPropertyEditor;
+    class FilteredDPE;
 
     namespace AssetEditor
     {
@@ -103,6 +104,9 @@ namespace AzToolsFramework
 
             void OnNewAsset();
 
+            // For subscribing to document property editor adapter property specific changes
+            void OnDocumentPropertyChanged(const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo);
+
         Q_SIGNALS:
             void OnAssetSavedSignal();
             void OnAssetSaveFailedSignal(const AZStd::string& error);
@@ -148,6 +152,7 @@ namespace AzToolsFramework
             Ui::AssetEditorHeader* m_header = nullptr;
             ReflectedPropertyEditor* m_propertyEditor = nullptr;
             AZStd::shared_ptr<AZ::DocumentPropertyEditor::ReflectionAdapter> m_adapter;
+            FilteredDPE* m_filteredWidget = nullptr;
             DocumentPropertyEditor* m_dpe = nullptr;
             AZ::SerializeContext* m_serializeContext = nullptr;
 
@@ -174,6 +179,9 @@ namespace AzToolsFramework
 
             AZStd::intrusive_ptr<AssetEditorWidgetUserSettings> m_userSettings;
             AZStd::unique_ptr< Ui::AssetEditorStatusBar > m_statusBar;
+
+            AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler m_propertyChangeHandler;
+            AZ::Crc32 m_savedStateKey;
 
             void PopulateGenericAssetTypes();
             void CreateAssetImpl(AZ::Data::AssetType assetType);

@@ -32,7 +32,7 @@ namespace AZStd
 
                 int result = pthread_attr_setaffinity_np(&attr, sizeof(cpuset), &cpuset);
                 (void)result;
-                AZ_Warning("System", result == 0, "pthread_setaffinity_np failed %s\n", strerror(errno));
+                AZ_Warning("System", result == 0, "pthread_setaffinity_np failed with code %d: %s\n", result, strerror(result));
             }
         }
 

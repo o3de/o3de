@@ -114,6 +114,15 @@ namespace EMStudio
             return nullptr;
         }
 
+        size_t FindHoveredJointIndex(EMotionFX::ActorInstance* instance) const override
+        {
+            if (instance == m_commandManager->GetCurrentSelection().GetSingleActorInstance())
+            {
+                return m_hoveredJointIndex;
+            }
+            return InvalidIndex;
+        }
+
         Workspace* GetWorkspace()                                                               { return &m_workspace; }
 
         void ClearScene();  // remove animgraphs, animgraph instances and actors
@@ -132,8 +141,9 @@ namespace EMStudio
         NotificationWindowManager*          m_notificationWindowManager;
         CommandSystem::CommandManager*      m_commandManager;
         AZStd::string                       m_compileDate;
-        AZStd::unordered_set<size_t>       m_visibleJointIndices;
-        AZStd::unordered_set<size_t>       m_selectedJointIndices;
+        AZStd::unordered_set<size_t>        m_visibleJointIndices;
+        AZStd::unordered_set<size_t>        m_selectedJointIndices;
+        size_t                              m_hoveredJointIndex = InvalidIndex;
         Workspace                           m_workspace;
         bool                                m_autoLoadLastWorkspace;
         AZStd::string                       m_htmlLinkString;
@@ -144,6 +154,7 @@ namespace EMStudio
 
         // SkeletonOutlinerNotificationBus
         void JointSelectionChanged();
+        void JointHoveredChanged(size_t hoveredJointIndex);
 
         class EMSTUDIO_API EventProcessingCallback
             : public MCore::CommandManagerCallback

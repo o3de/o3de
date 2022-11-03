@@ -63,6 +63,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::LmbrCentral.Editor
+                Gem::GradientSignal.Editor.Static
             PUBLIC
                 Gem::FastNoise.Static
                 AZ::AzToolsFramework

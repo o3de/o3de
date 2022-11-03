@@ -107,6 +107,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 3rdParty::OpenGLInterface
                 Gem::AtomToolsFramework.Static
                 Gem::AtomToolsFramework.Editor
+                Gem::GraphCanvasWidgets
         COMPILE_DEFINITIONS
             PUBLIC
                 EMFX_EMSTUDIOLYEMBEDDED
@@ -169,6 +170,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Legacy::CryCommon
                 AZ::AzTest
                 AZ::AzFramework
+                AZ::AzTestShared
                 Gem::EMotionFX.Static
                 Gem::EMotionFX.Tests.Static
     )

@@ -60,6 +60,11 @@ class TestCheckFreeSpace(unittest.TestCase):
 class TestSafeMakedirs(unittest.TestCase):
 
     @mock.patch('os.makedirs')
+    def test_SafeMakedirs_ValidCreation_Success(self, mock_makedirs):
+        file_system.safe_makedirs('dummy')
+        mock_makedirs.assert_called_once()
+
+    @mock.patch('os.makedirs')
     def test_SafeMakedirs_RaisedOSErrorErrnoEEXIST_DoesNotPropagate(self, mock_makedirs):
         error = OSError()
         error.errno = errno.EEXIST
@@ -93,21 +98,19 @@ class TestGetNewestFileInDir(unittest.TestCase):
 
     @mock.patch('os.path.getctime')
     @mock.patch('glob.iglob')
-    def test_GetNewestFileInDir_TwoResultsFound_ReturnsNewer(self, mock_glob, mock_ctime):
-        mock_glob.return_value = ['fileA.zip', 'fileB.zip']
-        mock_ctime.side_effect = [1, 2]
-        result = file_system.get_newest_file_in_dir('', [''])
-
-        self.assertEqual(result, 'fileB.zip')
-
-    @mock.patch('os.path.getctime')
-    @mock.patch('glob.iglob')
     def test_GetNewestFileInDir_ThreeResultsTwoExts_CtimeCalledSixTimes(self, mock_glob, mock_ctime):
         mock_glob.return_value = ['fileA.zip', 'fileB.zip', 'fileC.zip']
         mock_ctime.side_effect = range(6)
         file_system.get_newest_file_in_dir('', ['.zip', '.tgz'])
 
         self.assertEqual(len(mock_ctime.mock_calls), 6)
+
+
+class TestRemovePathAndExtension(unittest.TestCase):
+
+    def test_GetNewestFileInDir_ValidPath_ReturnsStripped(self):
+        result = file_system.remove_path_and_extension(os.path.join("C", "packages", "lumberyard-XXXX.zip"))
+        self.assertEqual(result, "lumberyard-XXXX")
 
 
 class TestUnZip(unittest.TestCase):
@@ -139,23 +142,11 @@ class TestUnZip(unittest.TestCase):
     def call_decomp(self, dest, src, force=True, allow_exists=False):
         return file_system.unzip(dest, src, force, allow_exists)
 
-    @mock.patch('os.path.exists')
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
-    @mock.patch(decomp_obj_name)
-    def test_Unzip_DefaultArgs_CallsDecompressorWithSrc(self, mock_decomp, mock_join, mock_check_free, mock_exists):
-
-        mock_exists.return_value = self.exists
-
-        self.call_decomp(self.dest_path, self.src_path)
-
-        mock_decomp.assert_called_once_with(self.src_path, 'r')
 
     @mock.patch('os.path.exists')
     @mock.patch('ly_test_tools.environment.file_system.check_free_space')
     @mock.patch('os.path.join')
-    def test_Unzip_DefaultArgs_CheckFreeSpaceCalledOnceWithOneGiBAdded(self, mock_join,
-                                                                       mock_check_free, mock_exists):
+    def test_Unzip_NotEnoughSpaceInDestination_FailsWithErrorMessage(self, mock_join, mock_check_free, mock_exists):
 
         mock_exists.return_value = self.exists
         total_size = sum(info.file_size for info in self.file_list)
@@ -166,33 +157,6 @@ class TestUnZip(unittest.TestCase):
         mock_check_free.assert_called_once_with(self.dest_path,
                                                 total_size + file_system.ONE_GIB,
                                                 'Not enough space to safely extract: ')
-
-    @mock.patch('os.path.exists')
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
-    def test_Unzip_DefaultArgs_JoinCalledWithNoPathNoExtension(self, mock_join, mock_check_free, mock_exists):
-        expected_name, _ = os.path.splitext(self.src_path)
-
-        mock_exists.return_value = self.exists
-
-        with mock.patch(self.decomp_obj_name, self.mock_decomp):
-            self.call_decomp(self.dest_path, self.src_path)
-
-        mock_join.assert_called_once_with(self.dest_path, expected_name)
-
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
-    def test_Unzip_DefaultArgs_ReturnsCorrectPath(self, mock_join, mock_check_free):
-
-        build_name = 'build_name'
-        expected_path = self.dest_path+'\\'+build_name
-        mock_join.return_value = expected_path
-
-        path = ''
-        with mock.patch(self.decomp_obj_name, self.mock_decomp):
-            path = self.call_decomp(self.dest_path, self.src_path)
-
-        self.assertEqual(path, expected_path)
 
     @mock.patch('ly_test_tools.environment.file_system.check_free_space')
     @mock.patch('os.path.join')
@@ -290,60 +254,6 @@ class TestUnTgz(unittest.TestCase):
 
     def call_decomp(self, dest, src, exact=False, force=True, allow_exists=False):
         return file_system.untgz(dest, src, exact, force, allow_exists)
-
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
-    @mock.patch(decomp_obj_name)
-    @mock.patch('os.stat')
-    def test_UnTgz_DefaultArgs_CallsDecompressorWithSrc(self, mock_stat, mock_decomp, mock_join, mock_check_free):
-
-        mock_stat.return_value = self.src_stat
-        self.call_decomp(self.dest_path, self.src_path)
-
-        mock_decomp.assert_called_once_with(self.src_path)
-
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
-    @mock.patch('os.stat')
-    def test_UnTgz_DefaultArgs_CheckFreeSpaceCalledOnceWithOneGiBAdded(self, mock_stat, mock_join, mock_check_free):
-
-        mock_stat.return_value = self.src_stat
-        total_size = sum(info.size for info in self.file_list)
-
-        with mock.patch(self.decomp_obj_name, self.mock_decomp):
-            self.call_decomp(self.dest_path, self.src_path, True)
-
-        mock_check_free.assert_called_once_with(self.dest_path,
-                                                total_size + file_system.ONE_GIB,
-                                                'Not enough space to safely extract: ')
-
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
-    @mock.patch('os.stat')
-    def test_UnTgz_DefaultArgs_JoinCalledWithNoPathNoExtension(self, mock_stat, mock_join, mock_check_free):
-        expected_path, _ = os.path.splitext(os.path.basename(self.src_path))
-
-        mock_stat.return_value = self.src_stat
-        with mock.patch(self.decomp_obj_name, self.mock_decomp):
-            self.call_decomp(self.dest_path, self.src_path)
-
-        mock_join.assert_called_once_with(self.dest_path, expected_path)
-
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
-    @mock.patch('os.stat')
-    def test_Untgz_DefaultArgs_ReturnsCorrectPath(self, mock_stat, mock_join, mock_check_free):
-
-        build_name = 'build_name'
-        expected_path = self.dest_path+'\\'+build_name
-        mock_join.return_value = expected_path
-        mock_stat.return_value = self.src_stat
-
-        path = ''
-        with mock.patch(self.decomp_obj_name, self.mock_decomp):
-            path = self.call_decomp(self.dest_path, self.src_path)
-
-        self.assertEqual(path, expected_path)
 
     @mock.patch('ly_test_tools.environment.file_system.check_free_space')
     @mock.patch('os.path.join')
@@ -457,6 +367,7 @@ class TestChangePermissions(unittest.TestCase):
 class MockStatResult():
     def __init__(self, st_mode):
         self.st_mode = st_mode
+
 
 class TestUnlockFile(unittest.TestCase):
 

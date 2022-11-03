@@ -22,7 +22,8 @@ import sys
 import subprocess
 import pathlib
 
-from distutils.version import LooseVersion
+from packaging.version import Version
+
 
 # Resolve the common python module
 ROOT_DEV_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
@@ -100,13 +101,14 @@ class AndroidProjectManifestEnvironment(object):
     that were passed in or calculated from the command line arguments.
     """
 
-    def __init__(self, engine_root, project_path, android_sdk_version_number, is_test:bool):
+    def __init__(self, engine_root, project_path, android_sdk_version_number, oculus_project:bool, is_test:bool):
         """
         Initialize the object with the project specific parameters and values for the game project
 
         :param engine_root:                 The path where the engine is located
         :param project_path:                The path were the project is located
         :param android_sdk_version_number:  The android SDK platform version
+        :param oculus_project:              Indicates if it's an oculus project
         :param is_test:                     Indicates if theAzTestRunner application should be run
         """
 
@@ -150,6 +152,8 @@ class AndroidProjectManifestEnvironment(object):
             # Multiview options require special processing
             multi_window_options = AndroidProjectManifestEnvironment.process_android_multi_window_options(android_settings)
 
+            oculus_intent_filter_category = '<category android:name="com.oculus.intent.category.VR" />' if oculus_project else ''
+
             self.internal_dict = {
                 'ANDROID_PACKAGE':                  package_name,
                 'ANDROID_PACKAGE_PATH':             package_path,
@@ -176,7 +180,9 @@ class AndroidProjectManifestEnvironment(object):
 
                 'SAMSUNG_DEX_KEEP_ALIVE':           multi_window_options['SAMSUNG_DEX_KEEP_ALIVE'],
                 'SAMSUNG_DEX_LAUNCH_WIDTH':         multi_window_options['SAMSUNG_DEX_LAUNCH_WIDTH'],
-                'SAMSUNG_DEX_LAUNCH_HEIGHT':        multi_window_options['SAMSUNG_DEX_LAUNCH_HEIGHT']
+                'SAMSUNG_DEX_LAUNCH_HEIGHT':        multi_window_options['SAMSUNG_DEX_LAUNCH_HEIGHT'],
+
+                'OCULUS_INTENT_FILTER_CATEGORY':    oculus_intent_filter_category
             }
         except KeyError as e:
             raise common.LmbrCmdError(f"Missing key from android project settings for project at {project_path}:'{e}' ")
@@ -478,7 +484,8 @@ class AndroidProjectGenerator(object):
                  project_path, third_party_path, cmake_version, override_cmake_path, override_gradle_path, gradle_version, gradle_plugin_version,
                  override_ninja_path, include_assets_in_apk, asset_mode, asset_type, signing_config, native_build_path, vulkan_validation_path,
                  extra_cmake_configure_args, is_test_project=False,
-                 overwrite_existing=True, unity_build_enabled=False):
+                 overwrite_existing=True, unity_build_enabled=False,
+                 oculus_project=False):
         """
         Initialize the object with all the required parameters needed to create an Android Project. The parameters should be verified before initializing this object
 
@@ -507,6 +514,7 @@ class AndroidProjectGenerator(object):
         :param is_test_project:         Flag to indicate if this is a unit test runner project. (If true, project_path, asset_mode, asset_type, and include_assets_in_apk are ignored)
         :param overwrite_existing:      Flag to overwrite existing project files when being generated, or skip if they already exist.
         :param unity_build_enabled:     Flag to enable unity build.
+        :param oculus_project:          Flag to indicate if this is an oculus project
         """
         self.env = {}
 
@@ -560,6 +568,8 @@ class AndroidProjectGenerator(object):
         self.overwrite_existing = overwrite_existing
 
         self.unity_build_enabled = unity_build_enabled
+
+        self.oculus_project = oculus_project
 
     def execute(self):
         """
@@ -830,7 +840,7 @@ class AndroidProjectGenerator(object):
                 '"-GNinja"',
                 f'"-S{template_engine_root}"',
                 f'"-DCMAKE_BUILD_TYPE={native_config_lower}"',
-                f'"-DCMAKE_TOOLCHAIN_FILE={template_engine_root}/cmake/Platform/Android/Toolchain_Android.cmake"',
+                f'"-DCMAKE_TOOLCHAIN_FILE={template_engine_root}/cmake/Platform/Android/Toolchain_android.cmake"',
                 f'"-DLY_3RDPARTY_PATH={template_third_party_path}"',
                 f'"-DLY_UNITY_BUILD={template_unity_build}"']
 
@@ -853,6 +863,9 @@ class AndroidProjectGenerator(object):
 
             if self.override_ninja_path:
                 cmake_argument_list.append(f'"-DCMAKE_MAKE_PROGRAM={common.normalize_path_for_settings(self.override_ninja_path)}"')
+
+            if self.oculus_project:
+                cmake_argument_list.append('"-DANDROID_USE_OCULUS_OPENXR=ON"')
 
             if self.extra_cmake_configure_args:
                 cmake_argument_list.extend(map(json.dumps, self.extra_cmake_configure_args))
@@ -936,6 +949,7 @@ class AndroidProjectGenerator(object):
         az_android_package_env = AndroidProjectManifestEnvironment(engine_root=self.engine_root,
                                                                    project_path=self.project_path,
                                                                    android_sdk_version_number=self.android_sdk_platform,
+                                                                   oculus_project=self.oculus_project,
                                                                    is_test=self.is_test_project)
         self.create_file_from_project_template(src_template_file=ANDROID_MANIFEST_FILE,
                                                template_env=az_android_package_env,
@@ -1539,16 +1553,16 @@ class AndroidGradlePluginInfo(object):
                                       f"Only the following version(s) are supported: {','.join(ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP.keys())}")
 
         details = ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP[android_gradle_plugin_version]
-        self.default_sdk_build_tools_version = LooseVersion(details.get('sdk_build'))
+        self.default_sdk_build_tools_version = Version(details.get('sdk_build'))
 
-        self.default_ndk_version = LooseVersion(details.get('default_ndk'))
+        self.default_ndk_version = Version(details.get('default_ndk'))
 
-        self.min_gradle_version = LooseVersion(details.get('min_gradle_version'))
+        self.min_gradle_version = Version(details.get('min_gradle_version'))
 
-        self.min_cmake_version = LooseVersion(details.get('min_cmake_version'))
+        self.min_cmake_version = Version(details.get('min_cmake_version'))
 
         max_cmake_version_number = details.get('max_cmake_version')
-        self.max_cmake_version = None if max_cmake_version_number is None else LooseVersion(max_cmake_version_number)
+        self.max_cmake_version = None if max_cmake_version_number is None else Version(max_cmake_version_number)
 
 
 class AndroidSDKResolver(object):
@@ -1556,27 +1570,27 @@ class AndroidSDKResolver(object):
     Class that manages the Android SDK tool to validate, install packages (e.g. built tools, sdk platforms, ndk, etc)
     """
 
-    class InstalledPackage(object):
+    class BasePackage(object):
+        def __init__(self, components):
+            self.path = components[0]
+            self.version = Version(components[1].strip().replace(' ', '.'))  # Fix for versions that have spaces between the version number and potential non-numeric versioning (PEP-0440)
+            self.description = components[2]
+
+    class InstalledPackage(BasePackage):
         def __init__(self, installed_package_components):
+            super().__init__(installed_package_components)
             assert len(installed_package_components) == 4, '4 sections expected for installed package components (path, version, description, location)'
-            self.path = installed_package_components[0]
-            self.version = LooseVersion(installed_package_components[1])
-            self.description = installed_package_components[2]
             self.location = installed_package_components[3]
 
-    class AvailablePackage(object):
+    class AvailablePackage(BasePackage):
         def __init__(self, available_package_components):
+            super().__init__(available_package_components)
             assert len(available_package_components) == 3, '3 sections expected for installed package components (path, version, description)'
-            self.path = available_package_components[0]
-            self.version = LooseVersion(available_package_components[1])
-            self.description = available_package_components[2]
 
-    class AvailableUpdate(object):
+    class AvailableUpdate(BasePackage):
         def __init__(self, available_update_components):
+            super().__init__(available_update_components)
             assert len(available_update_components) == 3, '3 sections expected for installed package components (path, version, available)'
-            self.path = available_update_components[0]
-            self.version = LooseVersion(available_update_components[1])
-            self.available = available_update_components[2]
 
     def __init__(self, android_sdk_path, command_line_tools_version):
 

@@ -33,7 +33,7 @@ namespace Vegetation
         AZ::EntityId m_shapeEntityId;
     };
 
-    static const AZ::Uuid ShapeIntersectionFilterComponentTypeId = "{BA6C09DC-16B2-4550-8115-4882A40A622C}";
+    inline constexpr AZ::TypeId ShapeIntersectionFilterComponentTypeId{ "{BA6C09DC-16B2-4550-8115-4882A40A622C}" };
 
     /**
     * Component implementing VegetationFilterRequestBus that accepts/rejects vegetation based on shape intersection

@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/std/string/string_view.h>
 
 #include <assert.h>
 #include <sys/sysctl.h>
@@ -76,7 +77,7 @@ namespace AZ
                 _exit(exitCode);
             }
 
-            void OutputToDebugger(const char*, const char*)
+            void OutputToDebugger(AZStd::string_view, AZStd::string_view)
             {
                 // std::cout << title << ": " << message;
             }

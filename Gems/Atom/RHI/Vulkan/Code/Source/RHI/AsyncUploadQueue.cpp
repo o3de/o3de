@@ -18,7 +18,7 @@
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/CommandQueueContext.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Fence.h>
 #include <RHI/Image.h>

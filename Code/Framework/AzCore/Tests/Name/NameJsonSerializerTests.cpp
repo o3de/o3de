@@ -75,7 +75,7 @@ namespace JsonSerializationTests
     };
 
     using NameJsonSerializerTestTypes = ::testing::Types<NameJsonSerializerTestDescription>;
-    INSTANTIATE_TYPED_TEST_CASE_P(NameJsonSerializer, JsonSerializerConformityTests, NameJsonSerializerTestTypes);
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(NameJsonSerializer, JsonSerializerConformityTests, NameJsonSerializerTestTypes));
 
     class NameJsonSerializerTests
         : public BaseJsonSerializerFixture

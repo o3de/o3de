@@ -39,7 +39,7 @@ namespace AZ
                     editContext->Class<EditorDirectionalLightComponent>(
                         "Directional Light", "A directional light to cast a shadow of meshes onto meshes.")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                        ->Attribute(Edit::Attributes::Category, "Atom")
+                        ->Attribute(Edit::Attributes::Category, "Graphics/Lighting")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // [GFX TODO][ATOM-1998] create icons.
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg") // [GFX TODO][ATOM-1998] create icons.
                         ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
@@ -59,7 +59,7 @@ namespace AZ
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->DataElement(Edit::UIHandlers::Color, &DirectionalLightComponentConfig::m_color, "Color", "Color of the light")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                            ->Attribute("ColorEditorConfiguration", AZ::RPI::ColorUtils::GetRgbEditorConfig())
+                            ->Attribute("ColorEditorConfiguration", AZ::RPI::ColorUtils::GetLinearRgbEditorConfig())
                         ->DataElement(Edit::UIHandlers::ComboBox, &DirectionalLightComponentConfig::m_intensityMode, "Intensity mode", "Allows specifying light values in lux or Ev100")
                             ->EnumAttribute(PhotometricUnit::Lux, "Lux")
                             ->EnumAttribute(PhotometricUnit::Ev100Illuminance, "Ev100")

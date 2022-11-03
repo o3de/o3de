@@ -42,6 +42,7 @@
 #include "MainWindow.h"
 #include "QtViewPaneManager.h"
 #include "EditorViewportWidget.h"
+#include <Editor/EditorViewportSettings.h>
 
 //////////////////////////////////////////////////////////////////////////
 // ViewportTitleExpanderWatcher
@@ -342,7 +343,7 @@ void CLayoutViewPane::AttachViewport(QWidget* pViewport)
         }
         else
         {
-            OnFOVChanged(gSettings.viewports.fDefaultFov);
+            OnFOVChanged(SandboxEditor::CameraDefaultFovRadians());
         }
 
         if (!AzToolsFramework::IsNewActionManagerEnabled())
@@ -357,7 +358,7 @@ void CLayoutViewPane::AttachViewport(QWidget* pViewport)
 void CLayoutViewPane::DetachViewport()
 {
     DisconnectRenderViewportInteractionRequestBus();
-    OnFOVChanged(gSettings.viewports.fDefaultFov);
+    OnFOVChanged(SandboxEditor::CameraDefaultFovRadians());
     m_viewport = nullptr;
 }
 
@@ -493,7 +494,7 @@ void CLayoutViewPane::SetViewportFOV(const float fovDegrees)
         // if viewport camera is active, make selected fov new default
         if (pRenderViewport->GetViewManager()->GetCameraObjectId() == GUID_NULL)
         {
-            gSettings.viewports.fDefaultFov = fovRadians;
+            SandboxEditor::SetCameraDefaultFovRadians(fovRadians);
         }
 
         OnFOVChanged(fovRadians);

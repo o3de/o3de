@@ -11,15 +11,11 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
 
-namespace AzFramework
-{
-    struct PlayerConnectionConfig;
-}
-
 namespace Multiplayer
 {
     struct EntityReplicationData;
     struct MultiplayerAgentDatum;
+    struct PlayerConnectionConfig;
 
     // It's important that this be an ordered associative container
     // as we'll walk corresponding replication sets to compute differences

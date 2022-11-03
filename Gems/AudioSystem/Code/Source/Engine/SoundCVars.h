@@ -14,6 +14,8 @@
 
 namespace Audio::CVars
 {
+    AZ_CVAR_EXTERNED(AZ::u32, sys_audio_disable);
+
     AZ_CVAR_EXTERNED(AZ::u64, s_ATLMemorySize);
     AZ_CVAR_EXTERNED(AZ::u64, s_FileCacheManagerMemorySize);
     AZ_CVAR_EXTERNED(AZ::u64, s_AudioObjectPoolSize);

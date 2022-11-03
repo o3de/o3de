@@ -21,51 +21,16 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodePaletteWidget.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodePaletteModelUpdater.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
+#include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
+#include <GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h>
 #include <QMenu>
+#include <QWidgetAction>
 
 
 namespace EMStudio
 {
-    // Fill the given menu with anim graph objects that can be created inside the current given object and category.
-    void BlendGraphWidget::AddAnimGraphObjectCategoryMenu(AnimGraphPlugin* plugin, QMenu* parentMenu,
-        EMotionFX::AnimGraphObject::ECategory category, EMotionFX::AnimGraphObject* focusedGraphObject)
-    {
-        // Check if any object of the given category can be created in the currently focused and shown graph.
-        bool isEmpty = true;
-        const AZStd::vector<EMotionFX::AnimGraphObject*>& objectPrototypes = plugin->GetAnimGraphObjectFactory()->GetUiObjectPrototypes();
-        for (EMotionFX::AnimGraphObject* objectPrototype : objectPrototypes)
-        {
-            if (m_plugin->CheckIfCanCreateObject(focusedGraphObject, objectPrototype, category))
-            {
-                isEmpty = false;
-                break;
-            }
-        }
-
-        // If the category will be empty, return directly and skip adding a category sub-menu.
-        if (isEmpty)
-        {
-            return;
-        }
-
-        const char* categoryName = EMotionFX::AnimGraphObject::GetCategoryName(category);
-        QMenu* menu = parentMenu->addMenu(categoryName);
-
-        for (const EMotionFX::AnimGraphObject* objectPrototype : objectPrototypes)
-        {
-            if (m_plugin->CheckIfCanCreateObject(focusedGraphObject, objectPrototype, category))
-            {
-                const EMotionFX::AnimGraphNode* nodePrototype = static_cast<const EMotionFX::AnimGraphNode*>(objectPrototype);
-                QAction* action = menu->addAction(nodePrototype->GetPaletteName());
-                action->setWhatsThis(azrtti_typeid(nodePrototype).ToString<QString>());
-                action->setData(QVariant(nodePrototype->GetPaletteName()));
-                connect(action, &QAction::triggered, plugin->GetGraphWidget(), &BlendGraphWidget::OnContextMenuCreateNode);
-            }
-        }
-    }
-
-
     void BlendGraphWidget::AddNodeGroupSubmenu(QMenu* menu, EMotionFX::AnimGraph* animGraph, const AZStd::vector<EMotionFX::AnimGraphNode*>& selectedNodes)
     {
         // node group sub menu
@@ -179,6 +144,7 @@ namespace EMStudio
             if (graphNode == nullptr)
             {
                 QMenu* menu = new QMenu(parentWidget);
+                menu->setAttribute(Qt::WA_DeleteOnClose);
 
                 if (actionFilter.m_copyAndPaste && actionManager.GetIsReadyForPaste() && nodeGraph->GetModelIndex().isValid())
                 {
@@ -188,28 +154,34 @@ namespace EMStudio
 
                 if (actionFilter.m_createNodes)
                 {
-                    QMenu* createNodeMenu = menu->addMenu("Create Node");
-
-                    const AZStd::vector<EMotionFX::AnimGraphNode::ECategory> categories =
-                    {
-                        EMotionFX::AnimGraphNode::CATEGORY_SOURCES,
-                        EMotionFX::AnimGraphNode::CATEGORY_BLENDING,
-                        EMotionFX::AnimGraphNode::CATEGORY_CONTROLLERS,
-                        EMotionFX::AnimGraphNode::CATEGORY_PHYSICS,
-                        EMotionFX::AnimGraphNode::CATEGORY_LOGIC,
-                        EMotionFX::AnimGraphNode::CATEGORY_MATH,
-                        EMotionFX::AnimGraphNode::CATEGORY_MISC
-                    };
-
-                    // Create sub-menus for each of the categories that are possible to be added to the currently focused graph.
+                    // Create nodes in palette view for each of the categories that are possible to be added to the currently focused graph.
                     EMotionFX::AnimGraphNode* currentNode = nodeGraph->GetModelIndex().data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
-                    for (const EMotionFX::AnimGraphNode::ECategory category: categories)
-                    {
-                        AddAnimGraphObjectCategoryMenu(plugin, createNodeMenu, category, currentNode);
-                    }
-                }
 
-                connect(menu, &QMenu::triggered, menu, &QMenu::deleteLater);
+                    auto* action = new QWidgetAction(menu);
+
+                    NodePaletteModelUpdater modelUpdater{ plugin };
+                    modelUpdater.InitForNode(currentNode);
+
+                    GraphCanvas::NodePaletteConfig config;
+                    config.m_rootTreeItem = modelUpdater.GetRootItem();
+                    config.m_isInContextMenu = true;
+                    auto* paletteWidget = new GraphCanvas::NodePaletteWidget(nullptr);
+                    paletteWidget->SetupNodePalette(config);
+                    action->setDefaultWidget(paletteWidget);
+                    menu->addAction(action);
+
+                    connect(menu, &QMenu::aboutToShow, paletteWidget, [=](){
+                        paletteWidget->FocusOnSearchFilter();
+                    });
+                    connect(paletteWidget, &GraphCanvas::NodePaletteWidget::OnCreateSelection, paletteWidget, [=]() {
+                            auto* event = static_cast<BlendGraphMimeEvent*>(paletteWidget->GetContextMenuEvent());
+                            if (event)
+                            {
+                                m_plugin->GetGraphWidget()->OnContextMenuCreateNode(event);
+                                menu->close();
+                            }
+                    });
+                }
 
                 if (!menu->isEmpty())
                 {

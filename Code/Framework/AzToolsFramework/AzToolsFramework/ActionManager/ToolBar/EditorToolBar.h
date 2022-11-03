@@ -101,13 +101,13 @@ namespace AzToolsFramework
         AZStd::unordered_map<AZStd::string, int> m_actionToSortKeyMap;
         AZStd::unordered_map<AZStd::string, int> m_widgetToSortKeyMap;
 
-        inline static QWidget* m_defaultParentWidget;
+        inline static QWidget* s_defaultParentWidget = nullptr;
 
-        inline static ActionManagerInterface* m_actionManagerInterface = nullptr;
-        inline static ActionManagerInternalInterface* m_actionManagerInternalInterface = nullptr;
-        inline static MenuManagerInterface* m_menuManagerInterface = nullptr;
-        inline static MenuManagerInternalInterface* m_menuManagerInternalInterface = nullptr;
-        inline static ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
+        inline static ActionManagerInterface* s_actionManagerInterface = nullptr;
+        inline static ActionManagerInternalInterface* s_actionManagerInternalInterface = nullptr;
+        inline static MenuManagerInterface* s_menuManagerInterface = nullptr;
+        inline static MenuManagerInternalInterface* s_menuManagerInternalInterface = nullptr;
+        inline static ToolBarManagerInterface* s_toolBarManagerInterface = nullptr;
     };
 
 } // namespace AzToolsFramework

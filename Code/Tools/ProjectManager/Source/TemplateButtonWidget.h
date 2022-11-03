@@ -12,6 +12,9 @@
 #include <QPushButton>
 #endif
 
+QT_FORWARD_DECLARE_CLASS(QLabel)
+QT_FORWARD_DECLARE_CLASS(QProgressBar)
+
 namespace O3DE::ProjectManager
 {
     class TemplateButton
@@ -23,7 +26,17 @@ namespace O3DE::ProjectManager
         explicit TemplateButton(const QString& imagePath, const QString& labelText, QWidget* parent = nullptr);
         ~TemplateButton() = default;
 
+        void SetIsRemote(bool isRemote);
+        void ShowDownloadProgress(bool showProgress);
+        void SetProgressPercentage(float percent);
+
     protected slots:
         void onToggled();
+
+    private:
+        QLabel* m_cloudIcon = nullptr;
+        QLabel* m_darkenOverlay = nullptr;
+        QLabel* m_progressMessageLabel = nullptr;
+        QProgressBar* m_progessBar = nullptr;
     };
 } // namespace O3DE::ProjectManager

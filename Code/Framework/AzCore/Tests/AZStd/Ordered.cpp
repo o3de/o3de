@@ -14,6 +14,8 @@
 
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/fixed_vector.h>
+#include <AzCore/std/containers/span.h>
+#include <AzCore/std/ranges/transform_view.h>
 
 #define AZ_TEST_VALIDATE_EMPTY_TREE(_Tree_) \
     EXPECT_EQ(0, _Tree_.size());     \
@@ -39,7 +41,7 @@ namespace UnitTest
     struct RedBlackTree_SetTestTraits
     {
         typedef T                   key_type;
-        typedef KeyEq               key_eq;
+        typedef KeyEq               key_equal;
         typedef T                   value_type;
         typedef Allocator           allocator_type;
         static AZ_FORCE_INLINE const key_type& key_from_value(const value_type& value)  { return value; }
@@ -1071,6 +1073,66 @@ namespace UnitTest
         EXPECT_EQ(1, uniqueSet.count(4));
     }
 
+    template<template<class...> class SetTemplate>
+    static void TreeSetRangeConstructorSucceeds()
+    {
+        constexpr AZStd::string_view testView = "abc";
+
+        SetTemplate testSet(AZStd::from_range, testView);
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+
+        testSet = SetTemplate(AZStd::from_range, AZStd::vector<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::list<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::deque<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::set<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::unordered_set<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::fixed_vector<char, 8>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::array{ 'a', 'b', 'c' });
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::span(testView));
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::span(testView));
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+
+        AZStd::fixed_string<8> testValue(testView);
+        testSet = SetTemplate(AZStd::from_range, testValue);
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::string(testView));
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+
+        // Test Range views
+        testSet = SetTemplate(AZStd::from_range, testValue | AZStd::views::transform([](const char elem) -> char { return elem + 1; }));
+        EXPECT_THAT(testSet, ::testing::ElementsAre('b', 'c', 'd'));
+    }
+
+    TEST_F(Tree_Set, RangeConstructor_Succeeds)
+    {
+        TreeSetRangeConstructorSucceeds<AZStd::set>();
+        TreeSetRangeConstructorSucceeds<AZStd::multiset>();
+    }
+
+    template<template<class...> class SetTemplate>
+    static void TreeSetInsertRangeSucceeds()
+    {
+        constexpr AZStd::string_view testView = "abc";
+        SetTemplate testSet{ 'd', 'e', 'f' };
+        testSet.insert_range(AZStd::vector<char>{testView.begin(), testView.end()});
+        testSet.insert_range(testView | AZStd::views::transform([](const char elem) -> char { return elem + 6; }));
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'));
+    }
+
+    TEST_F(Tree_Set, InsertRange_Succeeds)
+    {
+        TreeSetInsertRangeSucceeds<AZStd::set>();
+        TreeSetInsertRangeSucceeds<AZStd::multiset>();
+    }
+
     template <typename ContainerType>
     class TreeSetDifferentAllocatorFixture
         : public AllocatorsFixture
@@ -1490,6 +1552,56 @@ namespace UnitTest
         EXPECT_EQ(1, s_tryInsertOrAssignAssignmentCalls);
         EXPECT_FALSE(insertOrAssignPairIter.second);
         EXPECT_EQ(-6354, insertOrAssignPairIter.first->second.m_value);
+    }
+
+    template<template<class...> class MapTemplate>
+    static void TreeMapRangeConstructorSucceeds()
+    {
+        using ValueType = AZStd::pair<char, int>;
+        constexpr AZStd::array testArray{ ValueType{'a', 1}, ValueType{'b', 2}, ValueType{'c', 3} };
+
+        MapTemplate testMap(AZStd::from_range, testArray);
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+
+        testMap = MapTemplate(AZStd::from_range, AZStd::vector<ValueType>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::list<ValueType>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::deque<ValueType>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::set<ValueType>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::unordered_set<ValueType>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::fixed_vector<ValueType, 8>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::span(testArray));
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+    }
+
+    TEST_F(Tree_Map, RangeConstructor_Succeeds)
+    {
+        TreeMapRangeConstructorSucceeds<AZStd::map>();
+        TreeMapRangeConstructorSucceeds<AZStd::multimap>();
+    }
+
+    template<template<class...> class MapTemplate>
+    static void TreeMapInsertRangeSucceeds()
+    {
+        using ValueType = AZStd::pair<char, int>;
+        constexpr AZStd::array testArray{ ValueType{'a', 1}, ValueType{'b', 2}, ValueType{'c', 3} };
+
+        MapTemplate testMap(AZStd::from_range, testArray);
+
+        testMap.insert_range(AZStd::vector<ValueType>{ValueType{ 'd', 4 }, ValueType{ 'e', 5 }, ValueType{ 'f', 6 }});
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 },
+            ValueType{ 'd', 4 }, ValueType{ 'e', 5 }, ValueType{ 'f', 6 }));
+    }
+
+    TEST_F(Tree_Map, InsertRange_Succeeds)
+    {
+        TreeMapInsertRangeSucceeds<AZStd::map>();
+        TreeMapInsertRangeSucceeds<AZStd::multimap>();
     }
 
     template <typename ContainerType>

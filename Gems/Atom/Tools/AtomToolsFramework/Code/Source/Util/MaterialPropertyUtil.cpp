@@ -32,39 +32,8 @@ namespace AtomToolsFramework
         return AZ::RPI::MaterialPropertyValue::ToAny(value);
     }
 
-    AtomToolsFramework::DynamicPropertyType ConvertToEditableType(const AZ::RPI::MaterialPropertyDataType dataType)
-    {
-        switch (dataType)
-        {
-        case AZ::RPI::MaterialPropertyDataType::Bool:
-            return AtomToolsFramework::DynamicPropertyType::Bool;
-        case AZ::RPI::MaterialPropertyDataType::Int:
-            return AtomToolsFramework::DynamicPropertyType::Int;
-        case AZ::RPI::MaterialPropertyDataType::UInt:
-            return AtomToolsFramework::DynamicPropertyType::UInt;
-        case AZ::RPI::MaterialPropertyDataType::Float:
-            return AtomToolsFramework::DynamicPropertyType::Float;
-        case AZ::RPI::MaterialPropertyDataType::Vector2:
-            return AtomToolsFramework::DynamicPropertyType::Vector2;
-        case AZ::RPI::MaterialPropertyDataType::Vector3:
-            return AtomToolsFramework::DynamicPropertyType::Vector3;
-        case AZ::RPI::MaterialPropertyDataType::Vector4:
-            return AtomToolsFramework::DynamicPropertyType::Vector4;
-        case AZ::RPI::MaterialPropertyDataType::Color:
-            return AtomToolsFramework::DynamicPropertyType::Color;
-        case AZ::RPI::MaterialPropertyDataType::Image:
-            return AtomToolsFramework::DynamicPropertyType::Asset;
-        case AZ::RPI::MaterialPropertyDataType::Enum:
-            return AtomToolsFramework::DynamicPropertyType::Enum;
-        }
-
-        AZ_Assert(false, "Attempting to convert an unsupported property type.");
-        return AtomToolsFramework::DynamicPropertyType::Invalid;
-    }
-
     void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition)
     {
-        propertyConfig.m_dataType = ConvertToEditableType(propertyDefinition.m_dataType);
         propertyConfig.m_name = propertyDefinition.GetName();
         propertyConfig.m_displayName = propertyDefinition.m_displayName;
         propertyConfig.m_description = propertyDefinition.m_description;
@@ -213,5 +182,56 @@ namespace AtomToolsFramework
         }
 
         return true;
+    }
+
+    AZ::RPI::MaterialPropertyDataType GetMaterialPropertyDataTypeFromValue(
+        AZ::RPI::MaterialPropertyValue& propertyValue, bool hasEnumValues)
+    {
+        if (propertyValue.Is<bool>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Bool;
+        }
+        if (propertyValue.Is<AZ::s32>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Int;
+        }
+        if (propertyValue.Is<AZ::u32>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::UInt;
+        }
+        if (propertyValue.Is<float>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Float;
+        }
+        if (propertyValue.Is<AZ::Vector2>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Vector2;
+        }
+        if (propertyValue.Is<AZ::Vector3>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Vector3;
+        }
+        if (propertyValue.Is<AZ::Vector4>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Vector4;
+        }
+        if (propertyValue.Is<AZ::Color>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Color;
+        }
+        if (propertyValue.Is<AZ::Data::Asset<AZ::RPI::ImageAsset>>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Image;
+        }
+        if (propertyValue.Is<AZ::Data::Instance<AZ::RPI::Image>>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Image;
+        }
+        if (propertyValue.Is<AZStd::string>())
+        {
+            return hasEnumValues ? AZ::RPI::MaterialPropertyDataType::Enum : AZ::RPI::MaterialPropertyDataType::Image;
+        }
+
+        return AZ::RPI::MaterialPropertyDataType::Invalid;
     }
 } // namespace AtomToolsFramework

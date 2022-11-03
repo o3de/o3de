@@ -7,10 +7,14 @@
  */
 #pragma once
 
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/containers/containers_concepts.h>
 #include <AzCore/std/containers/node_handle.h>
 #include <AzCore/std/containers/rbtree.h>
 #include <AzCore/std/functional_basic.h>
-#include <AzCore/std/algorithm.h>
+#include <AzCore/std/ranges/common_view.h>
+#include <AzCore/std/ranges/as_rvalue_view.h>
+#include <AzCore/std/typetraits/type_identity.h>
 
 namespace AZStd
 {
@@ -19,10 +23,10 @@ namespace AZStd
         template<class T, class KeyEq, class Allocator >
         struct OrderedSetRbTreeTraits
         {
-            typedef T                   key_type;
-            typedef KeyEq               key_eq;
-            typedef T                   value_type;
-            typedef Allocator           allocator_type;
+            using key_type = T;
+            using key_equal = KeyEq;
+            using value_type = T;
+            using allocator_type = Allocator;
             static AZ_FORCE_INLINE const key_type& key_from_value(const value_type& value)  { return value; }
         };
     }
@@ -42,78 +46,127 @@ namespace AZStd
             CONTAINER_VERSION = 1
         };
 
-        typedef set<Key, Compare, Allocator> this_type;
-        typedef rbtree< Internal::OrderedSetRbTreeTraits<Key, Compare, Allocator> > tree_type;
+        using this_type = set<Key, Compare, Allocator>;
+        using tree_type = rbtree<Internal::OrderedSetRbTreeTraits<Key, Compare, Allocator>>;
     public:
-        typedef typename tree_type::traits_type traits_type;
+        using traits_type = typename tree_type::traits_type;
 
-        typedef typename tree_type::key_type    key_type;
-        typedef typename tree_type::value_type  value_type;
-        typedef typename tree_type::key_eq      key_compare;
-        typedef typename tree_type::key_eq      value_compare;
+        using key_type = typename tree_type::key_type;
+        using value_type = typename tree_type::value_type;
+        using key_compare = typename tree_type::key_equal;
+        using value_compare = typename tree_type::key_equal;
 
-        typedef typename tree_type::allocator_type              allocator_type;
-        typedef typename tree_type::size_type                   size_type;
-        typedef typename tree_type::difference_type             difference_type;
-        typedef typename tree_type::pointer                     pointer;
-        typedef typename tree_type::const_pointer               const_pointer;
-        typedef typename tree_type::reference                   reference;
-        typedef typename tree_type::const_reference             const_reference;
+        using allocator_type = typename tree_type::allocator_type;
+        using size_type = typename tree_type::size_type;
+        using difference_type = typename tree_type::difference_type;
+        using pointer = typename tree_type::pointer;
+        using const_pointer = typename tree_type::const_pointer;
+        using reference = typename tree_type::reference;
+        using const_reference = typename tree_type::const_reference;
 
-        typedef typename tree_type::iterator                    iterator;
-        typedef typename tree_type::const_iterator              const_iterator;
+        using iterator = typename tree_type::iterator;
+        using const_iterator = typename tree_type::const_iterator;
 
-        typedef typename tree_type::reverse_iterator            reverse_iterator;
-        typedef typename tree_type::const_reverse_iterator      const_reverse_iterator;
+        using reverse_iterator = typename tree_type::reverse_iterator;
+        using const_reverse_iterator = typename tree_type::const_reverse_iterator;
 
         using node_type = set_node_handle<set_node_traits<value_type, allocator_type, typename tree_type::node_type, typename tree_type::node_deleter>>;
-        using insert_return_type = AZStd::AssociativeInternal::insert_return_type<iterator, node_type>;
+        using insert_return_type = AssociativeInternal::insert_return_type<iterator, node_type>;
 
-        AZ_FORCE_INLINE explicit set(const Compare& comp = Compare(), const Allocator& alloc = Allocator())
+        set() = default;
+        explicit set(const Compare& comp, const Allocator& alloc = Allocator())
             : m_tree(comp, alloc) {}
-        explicit set(const Allocator& alloc)
-            : m_tree(alloc) {}
+
         template <class InputIterator>
-        AZ_FORCE_INLINE set(InputIterator first, InputIterator last, const Compare& comp = Compare(), const Allocator& alloc = Allocator())
+        set(InputIterator first, InputIterator last, const Compare& comp = Compare(), const Allocator& alloc = Allocator())
             : m_tree(comp, alloc)
         {
             m_tree.insert_unique(first, last);
         }
-        set(std::initializer_list<value_type> list, const Compare& comp = Compare(), const Allocator& alloc = Allocator())
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        set(from_range_t, R&& rg, const Compare& comp = Compare(), const Allocator& alloc = Allocator())
+            : m_tree(comp, alloc)
+        {
+            if constexpr (is_lvalue_reference_v<R>)
+            {
+                auto rangeView = AZStd::forward<R>(rg) | views::common;
+                m_tree.insert_unique(ranges::begin(rangeView), ranges::end(rangeView));
+            }
+            else
+            {
+                auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
+                m_tree.insert_unique(ranges::begin(rangeView), ranges::end(rangeView));
+            }
+        }
+        set(const set& rhs)
+            : m_tree(rhs.m_tree) {}
+        set(set&& rhs)
+            : m_tree(AZStd::move(rhs.m_tree)) {}
+
+        explicit set(const Allocator& alloc)
+            : m_tree(alloc) {}
+        set(const set& rhs, const type_identity_t<Allocator>& alloc)
+            : m_tree(rhs.m_tree, alloc) {}
+        set(set&& rhs, const type_identity_t<Allocator>& alloc)
+            : m_tree(AZStd::move(rhs.m_tree), alloc) {}
+
+        set(initializer_list<value_type> list, const Compare& comp = Compare(), const Allocator& alloc = Allocator())
             : set(list.begin(), list.end(), comp, alloc) {}
-        set(std::initializer_list<value_type> list, const Allocator& alloc)
+
+        template <class InputIterator>
+        set(InputIterator first, InputIterator last, const Allocator& alloc)
+            : set(first, last, Compare(), alloc)
+        {
+        }
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        set(from_range_t, R&& rg, const Allocator& a)
+            : set(from_range, AZStd::forward<R>(rg), Compare(), a)
+        {
+        }
+        set(initializer_list<value_type> list, const Allocator& alloc)
             : set(list, Compare(), alloc) {}
-        AZ_FORCE_INLINE set(const this_type& rhs)
-            : m_tree(rhs.m_tree)  {}
-        AZ_FORCE_INLINE set(const this_type& rhs, const Allocator& alloc)
-            : m_tree(rhs.m_tree, alloc)   {}
+
         // Add move semantics...
         AZ_FORCE_INLINE this_type& operator=(const this_type& rhs) { m_tree = rhs.m_tree; return *this; }
-        AZ_FORCE_INLINE key_compare key_comp() const        { return m_tree.key_comp(); }
-        AZ_FORCE_INLINE value_compare value_comp() const    { return m_tree.key_comp(); }
+        AZ_FORCE_INLINE key_compare key_comp() const { return m_tree.key_comp(); }
+        AZ_FORCE_INLINE value_compare value_comp() const { return m_tree.key_comp(); }
 
-        AZ_FORCE_INLINE iterator begin()                    { return m_tree.begin(); }
-        AZ_FORCE_INLINE iterator end()                      { return m_tree.end(); }
-        AZ_FORCE_INLINE const_iterator begin() const        { return m_tree.begin(); }
-        AZ_FORCE_INLINE const_iterator end() const          { return m_tree.end(); }
-        AZ_FORCE_INLINE reverse_iterator rbegin()           { return m_tree.rbegin(); }
-        AZ_FORCE_INLINE reverse_iterator rend()             { return m_tree.rend(); }
+        AZ_FORCE_INLINE iterator begin() { return m_tree.begin(); }
+        AZ_FORCE_INLINE iterator end() { return m_tree.end(); }
+        AZ_FORCE_INLINE const_iterator begin() const { return m_tree.begin(); }
+        AZ_FORCE_INLINE const_iterator end() const { return m_tree.end(); }
+        AZ_FORCE_INLINE reverse_iterator rbegin() { return m_tree.rbegin(); }
+        AZ_FORCE_INLINE reverse_iterator rend() { return m_tree.rend(); }
         AZ_FORCE_INLINE const_reverse_iterator rbegin() const { return m_tree.rbegin(); }
         AZ_FORCE_INLINE const_reverse_iterator rend() const { return m_tree.rend(); }
-        AZ_FORCE_INLINE bool empty() const                  { return m_tree.empty(); }
-        AZ_FORCE_INLINE size_type size() const              { return m_tree.size(); }
-        AZ_FORCE_INLINE size_type max_size() const          { return m_tree.max_size(); }
-        AZ_FORCE_INLINE void swap(this_type& rhs)           { m_tree.swap(rhs.m_tree); }
+        AZ_FORCE_INLINE bool empty() const { return m_tree.empty(); }
+        AZ_FORCE_INLINE size_type size() const { return m_tree.size(); }
+        AZ_FORCE_INLINE size_type max_size() const { return m_tree.max_size(); }
+        AZ_FORCE_INLINE void swap(this_type& rhs) { m_tree.swap(rhs.m_tree); }
 
         // insert/erase
-        AZ_FORCE_INLINE pair<iterator, bool> insert(const value_type& value)             { return m_tree.insert_unique(value); }
-        AZ_FORCE_INLINE iterator insert(iterator insertPos, const value_type& value)    { return m_tree.insert_unique(insertPos, value); }
+        AZ_FORCE_INLINE pair<iterator, bool> insert(const value_type& value) { return m_tree.insert_unique(value); }
+        AZ_FORCE_INLINE iterator insert(iterator insertPos, const value_type& value) { return m_tree.insert_unique(insertPos, value); }
         template <class InputIterator>
-        AZ_FORCE_INLINE void insert(InputIterator first, InputIterator last)            { m_tree.insert_unique(first, last); }
-        set(this_type&& rhs)
-            : m_tree(AZStd::move(rhs.m_tree)) {}
-        set(this_type&& rhs, const Allocator& alloc)
-            : m_tree(AZStd::move(rhs.m_tree), alloc){}
+        void insert(InputIterator first, InputIterator last)
+        {
+            m_tree.insert_unique(first, last);
+        }
+        template<class R>
+        auto insert_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>>
+        {
+            if constexpr (is_lvalue_reference_v<R>)
+            {
+                auto rangeView = AZStd::forward<R>(rg) | views::common;
+                m_tree.insert_unique(ranges::begin(rangeView), ranges::end(rangeView));
+            }
+            else
+            {
+                auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
+                m_tree.insert_unique(ranges::begin(rangeView), ranges::end(rangeView));
+            }
+        }
+
         this_type& operator=(this_type&& rhs)
         {
             if (this != &rhs)
@@ -163,21 +216,21 @@ namespace AZStd
             return m_tree.template node_handle_extract<node_type>(it);
         }
 
-        AZ_FORCE_INLINE iterator erase(const_iterator erasePos)                         { return m_tree.erase(erasePos); }
-        AZ_FORCE_INLINE size_type erase(const key_type& key)                            { return m_tree.erase_unique(key); }
-        AZ_FORCE_INLINE iterator erase(const_iterator first, const_iterator last)       { return m_tree.erase(first, last); }
+        AZ_FORCE_INLINE iterator erase(const_iterator erasePos) { return m_tree.erase(erasePos); }
+        AZ_FORCE_INLINE size_type erase(const key_type& key) { return m_tree.erase_unique(key); }
+        AZ_FORCE_INLINE iterator erase(const_iterator first, const_iterator last) { return m_tree.erase(first, last); }
         AZ_FORCE_INLINE void clear() { m_tree.clear(); }
 
         // set operations:
-        const_iterator find(const key_type& key) const          { return m_tree.find(key); }
-        iterator find(const key_type& key)                      { return m_tree.find(key); }
-        bool contains(const key_type& key) const                { return m_tree.contains(key); }
-        size_type count(const key_type& key) const              { return m_tree.find(key) == m_tree.end() ? 0 : 1; }
-        iterator lower_bound(const key_type& key)               { return m_tree.lower_bound(key); }
-        const_iterator lower_bound(const key_type& key) const   { return m_tree.lower_bound(key); }
-        iterator upper_bound(const key_type& key)               { return m_tree.upper_bound(key); }
-        const_iterator upper_bound(const key_type& key) const   { return m_tree.upper_bound(key); }
-        pair<iterator, iterator> equal_range(const key_type& key)                   { return m_tree.equal_range_unique(key); }
+        const_iterator find(const key_type& key) const { return m_tree.find(key); }
+        iterator find(const key_type& key) { return m_tree.find(key); }
+        bool contains(const key_type& key) const { return m_tree.contains(key); }
+        size_type count(const key_type& key) const { return m_tree.find(key) == m_tree.end() ? 0 : 1; }
+        iterator lower_bound(const key_type& key) { return m_tree.lower_bound(key); }
+        const_iterator lower_bound(const key_type& key) const { return m_tree.lower_bound(key); }
+        iterator upper_bound(const key_type& key) { return m_tree.upper_bound(key); }
+        const_iterator upper_bound(const key_type& key) const { return m_tree.upper_bound(key); }
+        pair<iterator, iterator> equal_range(const key_type& key) { return m_tree.equal_range_unique(key); }
         pair<const_iterator, const_iterator> equal_range(const key_type& key) const { return m_tree.equal_range_unique(key); }
 
         template<typename ComparableToKey>
@@ -212,15 +265,15 @@ namespace AZStd
         * @{
         */
         // The only difference from the standard is that we return the allocator instance, not a copy.
-        AZ_FORCE_INLINE allocator_type&         get_allocator()         { return m_tree.get_allocator(); }
-        AZ_FORCE_INLINE const allocator_type&   get_allocator() const   { return m_tree.get_allocator(); }
+        AZ_FORCE_INLINE allocator_type& get_allocator() { return m_tree.get_allocator(); }
+        AZ_FORCE_INLINE const allocator_type& get_allocator() const { return m_tree.get_allocator(); }
         /// Set the vector allocator. If different than then current all elements will be reallocated.
         AZ_FORCE_INLINE void                    set_allocator(const allocator_type& allocator) { m_tree.set_allocator(allocator); }
         // Validate container status.
-        AZ_INLINE bool      validate() const    { return m_tree.validate(); }
+        AZ_INLINE bool      validate() const { return m_tree.validate(); }
         /// Validates an iter iterator. Returns a combination of \ref iterator_status_flag.
         AZ_INLINE int       validate_iterator(const const_iterator& iter) const { return m_tree.validate_iterator(iter); }
-        AZ_INLINE int       validate_iterator(const iterator& iter) const       { return m_tree.validate_iterator(iter); }
+        AZ_INLINE int       validate_iterator(const iterator& iter) const { return m_tree.validate_iterator(iter); }
 
         /**
         * Resets the container without deallocating any memory or calling any destructor.
@@ -230,7 +283,7 @@ namespace AZStd
         * \note This function is added to the vector for consistency. In the vector case we have only one allocation, and if the allocator allows memory leaks
         * it can just leave deallocate function empty, which performance wise will be the same. For more complex containers this will make big difference.
         */
-        AZ_FORCE_INLINE void                        leak_and_reset()    { m_tree.leak_and_reset(); }
+        AZ_FORCE_INLINE void                        leak_and_reset() { m_tree.leak_and_reset(); }
         /// @}
     private:
         tree_type   m_tree;
@@ -246,7 +299,7 @@ namespace AZStd
     inline bool operator==(const set<Key, Compare, Allocator>& left, const set<Key, Compare, Allocator>& right)
     {
         return (left.size() == right.size()
-                && equal(left.begin(), left.end(), right.begin()));
+            && equal(left.begin(), left.end(), right.begin()));
     }
 
     template<class Key, class Compare, class Allocator>
@@ -303,9 +356,15 @@ namespace AZStd
     template<class InputIterator,
         class Compare = less<iter_value_type<InputIterator>>,
         class Allocator = allocator>
-        set(InputIterator, InputIterator,
-            Compare = Compare(), Allocator = Allocator())
+    set(InputIterator, InputIterator,
+        Compare = Compare(), Allocator = Allocator())
         ->set<iter_value_type<InputIterator>, Compare, Allocator>;
+
+    template<class R, class Compare = less<ranges::range_value_t<R>>,
+        class Allocator = allocator,
+        class = enable_if_t<ranges::input_range<R>>>
+    set(from_range_t, R&&, Compare = Compare(), Allocator = Allocator())
+        ->set<ranges::range_value_t<R>, Compare, Allocator>;
 
     template<class Key, class Compare = less<Key>, class Allocator = allocator>
     set(initializer_list<Key>, Compare = Compare(), Allocator = Allocator())
@@ -315,6 +374,10 @@ namespace AZStd
     set(InputIterator, InputIterator, Allocator)
         ->set<iter_value_type<InputIterator>,
         less<iter_value_type<InputIterator>>, Allocator>;
+
+    template<class R, class Allocator, class = enable_if_t<ranges::input_range<R>>>
+    set(from_range_t, R&&, Allocator)
+        ->set<ranges::range_value_t<R>, less<ranges::range_value_t<R>>, Allocator>;
 
     template<class Key, class Allocator>
     set(initializer_list<Key>, Allocator)->set<Key, less<Key>, Allocator>;
@@ -334,51 +397,85 @@ namespace AZStd
             CONTAINER_VERSION = 1
         };
 
-        typedef multiset<Key, Compare, Allocator> this_type;
-        //typedef hash_table< Internal::UnorderedSetTableTraits<Key,Hasher,EqualKey,Allocator,false> > base_type;
-        typedef rbtree< Internal::OrderedSetRbTreeTraits<Key, Compare, Allocator> > tree_type;
+        using this_type = multiset<Key, Compare, Allocator>;
+        using tree_type = rbtree<Internal::OrderedSetRbTreeTraits<Key, Compare, Allocator>>;
     public:
-        typedef typename tree_type::traits_type traits_type;
+        using traits_type = typename tree_type::traits_type;
 
-        typedef typename tree_type::key_type    key_type;
-        typedef typename tree_type::value_type  value_type;
-        typedef typename tree_type::key_eq      key_compare;
-        typedef typename tree_type::key_eq      value_compare;
+        using key_type = typename tree_type::key_type;
+        using value_type = typename tree_type::value_type;
+        using key_compare = typename tree_type::key_equal;
+        using value_compare = typename tree_type::key_equal;
 
-        typedef typename tree_type::allocator_type              allocator_type;
-        typedef typename tree_type::size_type                   size_type;
-        typedef typename tree_type::difference_type             difference_type;
-        typedef typename tree_type::pointer                     pointer;
-        typedef typename tree_type::const_pointer               const_pointer;
-        typedef typename tree_type::reference                   reference;
-        typedef typename tree_type::const_reference             const_reference;
+        using allocator_type = typename tree_type::allocator_type;
+        using size_type = typename tree_type::size_type;
+        using difference_type = typename tree_type::difference_type;
+        using pointer = typename tree_type::pointer;
+        using const_pointer = typename tree_type::const_pointer;
+        using reference = typename tree_type::reference;
+        using const_reference = typename tree_type::const_reference;
 
-        typedef typename tree_type::iterator                    iterator;
-        typedef typename tree_type::const_iterator              const_iterator;
+        using iterator = typename tree_type::iterator;
+        using const_iterator = typename tree_type::const_iterator;
 
-        typedef typename tree_type::reverse_iterator            reverse_iterator;
-        typedef typename tree_type::const_reverse_iterator      const_reverse_iterator;
-        
+        using reverse_iterator = typename tree_type::reverse_iterator;
+        using const_reverse_iterator = typename tree_type::const_reverse_iterator;
+
         using node_type = set_node_handle<set_node_traits<value_type, allocator_type, typename tree_type::node_type, typename tree_type::node_deleter>>;
 
-        AZ_FORCE_INLINE explicit multiset(const Compare& comp = Compare(), const Allocator& alloc = Allocator())
+        multiset() = default;
+        explicit multiset(const Compare& comp, const Allocator& alloc = Allocator())
             : m_tree(comp, alloc) {}
-        explicit multiset(const Allocator& alloc)
-            : m_tree(alloc) {}
+
         template <class InputIterator>
-        AZ_FORCE_INLINE multiset(InputIterator first, InputIterator last, const Compare& comp = Compare(), const Allocator& alloc = Allocator())
+        multiset(InputIterator first, InputIterator last, const Compare& comp = Compare(), const Allocator& alloc = Allocator())
             : m_tree(comp, alloc)
         {
             m_tree.insert_equal(first, last);
         }
-        multiset(std::initializer_list<value_type> list, const Compare& comp = Compare(), const Allocator& alloc = Allocator())
-            : multiset(list.begin(), list.end(), comp, alloc) {}
-        multiset(std::initializer_list<value_type> list, const Allocator& alloc)
-            : multiset(list, Compare(), alloc) {}
-        AZ_FORCE_INLINE multiset(const this_type& rhs)
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        multiset(from_range_t, R&& rg, const Compare& comp = Compare(), const Allocator& alloc = Allocator())
+            : m_tree(comp, alloc)
+        {
+            if constexpr (is_lvalue_reference_v<R>)
+            {
+                auto rangeView = AZStd::forward<R>(rg) | views::common;
+                m_tree.insert_equal(ranges::begin(rangeView), ranges::end(rangeView));
+            }
+            else
+            {
+                auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
+                m_tree.insert_equal(ranges::begin(rangeView), ranges::end(rangeView));
+            }
+        }
+        multiset(const multiset& rhs)
             : m_tree(rhs.m_tree) {}
-        AZ_FORCE_INLINE multiset(const this_type& rhs, const Allocator& alloc)
-            : m_tree(rhs.m_tree, alloc)   {}
+        multiset(multiset&& rhs)
+            : m_tree(AZStd::move(rhs.m_tree)) {}
+
+        explicit multiset(const Allocator& alloc)
+            : m_tree(alloc) {}
+        multiset(const multiset& rhs, const type_identity_t<Allocator>& alloc)
+            : m_tree(rhs.m_tree, alloc) {}
+        multiset(multiset&& rhs, const type_identity_t<Allocator>& alloc)
+            : m_tree(AZStd::move(rhs.m_tree), alloc) {}
+
+        multiset(initializer_list<value_type> list, const Compare& comp = Compare(), const Allocator& alloc = Allocator())
+            : multiset(list.begin(), list.end(), comp, alloc) {}
+
+        template <class InputIterator>
+        multiset(InputIterator first, InputIterator last, const Allocator& alloc)
+            : multiset(first, last, Compare(), alloc)
+        {
+        }
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        multiset(from_range_t, R&& rg, const Allocator& a)
+            : multiset(from_range, AZStd::forward<R>(rg), Compare(), a)
+        {
+        }
+        multiset(initializer_list<value_type> list, const Allocator& alloc)
+            : multiset(list, Compare(), alloc) {}
+
         // Add move semantics...
         AZ_FORCE_INLINE this_type& operator=(const this_type& rhs) { m_tree = rhs.m_tree; return *this; }
         AZ_FORCE_INLINE key_compare key_comp() const        { return m_tree.key_comp(); }
@@ -400,17 +497,30 @@ namespace AZStd
         // insert/erase
         AZ_FORCE_INLINE pair<iterator, bool> insert(const value_type& value)             { return m_tree.insert_equal(value); }
         AZ_FORCE_INLINE iterator insert(iterator insertPos, const value_type& value)    { return m_tree.insert_equal(insertPos, value); }
-        template <class InputIterator>
-        AZ_FORCE_INLINE void insert(InputIterator first, InputIterator last)            { m_tree.insert_equal(first, last); }
+        template<class InputIterator>
+        void insert(InputIterator first, InputIterator last)
+        {
+            m_tree.insert_equal(first, last);
+        }
+        template<class R>
+        auto insert_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>>
+        {
+            if constexpr (is_lvalue_reference_v<R>)
+            {
+                auto rangeView = AZStd::forward<R>(rg) | views::common;
+                m_tree.insert_equal(ranges::begin(rangeView), ranges::end(rangeView));
+            }
+            else
+            {
+                auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
+                m_tree.insert_equal(ranges::begin(rangeView), ranges::end(rangeView));
+            }
+        }
         AZ_FORCE_INLINE iterator erase(const_iterator erasePos)                         { return m_tree.erase(erasePos); }
         AZ_FORCE_INLINE size_type erase(const key_type& key)                            { return m_tree.erase(key); }
         AZ_FORCE_INLINE iterator erase(const_iterator first, const_iterator last)       { return m_tree.erase(first, last); }
         AZ_FORCE_INLINE void clear() { m_tree.clear(); }
 
-        multiset(this_type&& rhs)
-            : m_tree(AZStd::move(rhs.m_tree)) {}
-        multiset(this_type&& rhs, const Allocator& alloc)
-            : m_tree(AZStd::move(rhs.m_tree), alloc){}
         this_type& operator=(this_type&& rhs)
         {
             if (this != &rhs)
@@ -597,9 +707,15 @@ namespace AZStd
     template<class InputIterator,
         class Compare = less<iter_value_type<InputIterator>>,
         class Allocator = allocator>
-        multiset(InputIterator, InputIterator,
+    multiset(InputIterator, InputIterator,
             Compare = Compare(), Allocator = Allocator())
         ->multiset<iter_value_type<InputIterator>, Compare, Allocator>;
+
+    template<class R, class Compare = less<ranges::range_value_t<R>>,
+        class Allocator = allocator,
+        class = enable_if_t<ranges::input_range<R>>>
+    multiset(from_range_t, R&&, Compare = Compare(), Allocator = Allocator())
+        ->multiset<ranges::range_value_t<R>, Compare, Allocator>;
 
     template<class Key, class Compare = less<Key>, class Allocator = allocator>
     multiset(initializer_list<Key>, Compare = Compare(), Allocator = Allocator())
@@ -609,6 +725,10 @@ namespace AZStd
     multiset(InputIterator, InputIterator, Allocator)
         ->multiset<iter_value_type<InputIterator>,
         less<iter_value_type<InputIterator>>, Allocator>;
+
+    template<class R, class Allocator, class = enable_if_t<ranges::input_range<R>>>
+    multiset(from_range_t, R&&, Allocator)
+        ->multiset<ranges::range_value_t<R>, less<ranges::range_value_t<R>>, Allocator>;
 
     template<class Key, class Allocator>
     multiset(initializer_list<Key>, Allocator)->multiset<Key, less<Key>, Allocator>;

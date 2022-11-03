@@ -24,7 +24,7 @@
 #include <AzCore/std/containers/intrusive_slist.h>
 #include <AzCore/std/containers/intrusive_list.h>
 
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 
 #include <AzCore/std/functional.h>
 
@@ -272,7 +272,7 @@ namespace UnitTest
             // run some thread allocations.
             //////////////////////////////////////////////////////////////////////////
             // Create some threads and simulate concurrent allocation and deallocation
-            //AZStd::chrono::system_clock::time_point startTime = AZStd::chrono::system_clock::now();
+            //AZStd::chrono::steady_clock::time_point startTime = AZStd::chrono::steady_clock::now();
             {
                 AZStd::thread m_threads[m_maxNumThreads];
                 for (unsigned int i = 0; i < m_maxNumThreads; ++i)
@@ -287,7 +287,7 @@ namespace UnitTest
                     m_threads[i].join();
                 }
             }
-            //AZStd::chrono::microseconds exTime = AZStd::chrono::system_clock::now() - startTime;
+            //AZStd::chrono::microseconds exTime = AZStd::chrono::steady_clock::now() - startTime;
             //AZ_Printf("UnitTest::SystemAllocatorTest::mspaces","Time: %d Ms\n",exTime.count());
             //////////////////////////////////////////////////////////////////////////
 
@@ -708,7 +708,7 @@ namespace UnitTest
 
             //////////////////////////////////////////////////////////////////////////
             // Create some threads and simulate concurrent allocation and deallocation
-            //AZStd::chrono::system_clock::time_point startTime = AZStd::chrono::system_clock::now();
+            //AZStd::chrono::steady_clock::time_point startTime = AZStd::chrono::steady_clock::now();
             {
                 AZStd::thread m_threads[m_maxNumThreads];
                 for (unsigned int i = 0; i < m_maxNumThreads; ++i)
@@ -722,7 +722,7 @@ namespace UnitTest
                 }
             }
             //////////////////////////////////////////////////////////////////////////
-            //AZStd::chrono::microseconds exTime = AZStd::chrono::system_clock::now() - startTime;
+            //AZStd::chrono::microseconds exTime = AZStd::chrono::steady_clock::now() - startTime;
             //AZ_Printf("UnitTest","Time: %d Ms\n",exTime.count());
 
             //////////////////////////////////////////////////////////////////////////
@@ -1598,7 +1598,7 @@ namespace UnitTest
 
         void allocdealloc(HphaSchema& hpha, HeapSchema& dl, PoolSchema& pool, bool isHpha, bool isDL, bool isDefault, bool isPool)
         {
-            AZStd::chrono::system_clock::time_point start;
+            AZStd::chrono::steady_clock::time_point start;
             AZStd::chrono::duration<float> elapsed;
             printf("MinSize %u MaxSize %u MaxAlignment %u\n", static_cast<unsigned int>(MIN_SIZE), static_cast<unsigned int>(MAX_SIZE), static_cast<unsigned int>(MAX_ALIGNMENT));
             printf("\t\t\t\tHPHA\t\tDL\t\tDEFAULT\t\tPOOL\n");
@@ -1607,13 +1607,13 @@ namespace UnitTest
             if (isHpha)
             {
                 srand(1234);
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 hphaAllocate(hpha, 0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("\t\t\t(%.3f/", elapsed.count());
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 hphaFree(hpha, 0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("%.3f)", elapsed.count());
             }
             else
@@ -1624,13 +1624,13 @@ namespace UnitTest
             if (isDL)
             {
                 srand(1234);
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 dlAllocate(dl, 0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("\t(%.3f/", elapsed.count());
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 dlFree(dl, 0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("%.3f)", elapsed.count());
             }
             else
@@ -1642,13 +1642,13 @@ namespace UnitTest
             if (isDefault)
             {
                 srand(1234);
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 defAllocate(0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("\t(%.3f/", elapsed.count());
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 defFree(0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("%.3f)", elapsed.count());
             }
             else
@@ -1661,13 +1661,13 @@ namespace UnitTest
                 if (isPool)
                 {
                     srand(1234);
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     poolAllocate(pool, 0, N);
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("\t(%.3f/", elapsed.count());
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     poolFree(pool, 0, N);
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("%.3f)\n", elapsed.count());
                 }
                 else
@@ -1684,13 +1684,13 @@ namespace UnitTest
             if (isHpha)
             {
                 srand(1234);
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 hphaAllocateSize(hpha, 0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("\t\t(%.3f/", elapsed.count());
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 hphaFreeSize(hpha, 0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("%.3f)", elapsed.count());
             }
             else
@@ -1701,13 +1701,13 @@ namespace UnitTest
             if (isDL)
             {
                 srand(1234);
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 dlAllocateSize(dl, 0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("\t(%.3f/", elapsed.count());
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 dlFreeSize(dl, 0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("%.3f)", elapsed.count());
             }
             else
@@ -1718,13 +1718,13 @@ namespace UnitTest
             if (isDefault)
             {
                 srand(1234);
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 defAllocateSize(0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("\t(%.3f/", elapsed.count());
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 defFreeSize(0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("%.3f)", elapsed.count());
             }
             else
@@ -1737,13 +1737,13 @@ namespace UnitTest
                 if (isPool)
                 {
                     srand(1234);
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     poolAllocateSize(pool, 0, N);
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("\t(%.3f/", elapsed.count());
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     poolFreeSize(pool, 0, N);
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("%.3f)\n", elapsed.count());
                 }
                 else
@@ -1760,13 +1760,13 @@ namespace UnitTest
             if (isHpha)
             {
                 srand(1234);
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 hphaAllocateAlignment(hpha, 0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("\t\t(%.3f/", elapsed.count());
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 hphaFreeAlignment(hpha, 0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("%.3f)", elapsed.count());
             }
             else
@@ -1777,13 +1777,13 @@ namespace UnitTest
             if (isDL)
             {
                 srand(1234);
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 dlAllocateAlignment(dl, 0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("\t(%.3f/", elapsed.count());
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 dlFreeAlignment(dl, 0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("%.3f)", elapsed.count());
             }
             else
@@ -1794,13 +1794,13 @@ namespace UnitTest
             if (isDefault)
             {
                 srand(1234);
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 defAllocateAlignment(0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("\t(%.3f/", elapsed.count());
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 defFreeAlignment(0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("%.3f)", elapsed.count());
             }
             else
@@ -1813,13 +1813,13 @@ namespace UnitTest
                 if (isPool)
                 {
                     srand(1234);
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     poolAllocateAlignment(pool, 0, N);
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("\t(%.3f/", elapsed.count());
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     poolFreeAlignment(pool, 0, N);
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("%.3f)\n", elapsed.count());
                 }
                 else
@@ -1836,13 +1836,13 @@ namespace UnitTest
             if (isHpha)
             {
                 srand(1234);
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 hphaAllocateAlignmentSize(hpha, 0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("\t(%.3f/", elapsed.count());
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 hphaFreeAlignmentSize(hpha, 0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("%.3f)", elapsed.count());
             }
             else
@@ -1853,13 +1853,13 @@ namespace UnitTest
             if (isDL)
             {
                 srand(1234);
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 dlAllocateAlignmentSize(dl, 0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("\t(%.3f/", elapsed.count());
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 dlFreeAlignmentSize(dl, 0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("%.3f)", elapsed.count());
             }
             else
@@ -1870,13 +1870,13 @@ namespace UnitTest
             if (isDefault)
             {
                 srand(1234);
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 defAllocateAlignmentSize(0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("\t(%.3f/", elapsed.count());
-                start = AZStd::chrono::system_clock::now();
+                start = AZStd::chrono::steady_clock::now();
                 defFreeAlignmentSize(0, N);
-                elapsed = AZStd::chrono::system_clock::now() - start;
+                elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("%.3f)", elapsed.count());
             }
             else
@@ -1889,13 +1889,13 @@ namespace UnitTest
                 if (isPool)
                 {
                     srand(1234);
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     poolAllocateAlignmentSize(pool, 0, N);
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("\t(%.3f/", elapsed.count());
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     poolFreeAlignmentSize(pool, 0, N);
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("%.3f)\n", elapsed.count());
                 }
                 else
@@ -1910,7 +1910,7 @@ namespace UnitTest
 
             printf("TEST REALLOC:");
             srand(1234);
-            start = AZStd::chrono::system_clock::now();
+            start = AZStd::chrono::steady_clock::now();
             for (unsigned i = 0; i < N; i++) {
             size_t size = rand_size();
             tr[i].ptr = hpha.ReAllocate(nullptr, size, 1);
@@ -1924,11 +1924,11 @@ namespace UnitTest
             hpha.ReAllocate(tr[j].ptr, 0, 0);
             tr[j].ptr = tr[i].ptr;
             }
-            elapsed = AZStd::chrono::system_clock::now() - start;
+            elapsed = AZStd::chrono::steady_clock::now() - start;
             printf("\t\t\t\t\t(%.3f)", elapsed.count());
 
             srand(1234);
-            start = AZStd::chrono::system_clock::now();
+            start = AZStd::chrono::steady_clock::now();
             for (unsigned i = 0; i < N; i++) {
             size_t size = rand_size();
             tr[i].ptr = realloc(NULL, size);
@@ -1942,12 +1942,12 @@ namespace UnitTest
             realloc(tr[j].ptr, 0);
             tr[j].ptr = tr[i].ptr;
             }
-            elapsed = AZStd::chrono::system_clock::now() - start;
+            elapsed = AZStd::chrono::steady_clock::now() - start;
             printf("\t(%.3f)\n", elapsed.count());
 
             printf("TEST REALLOC with ALIGNMENT:");
             srand(1234);
-            start = AZStd::chrono::system_clock::now();
+            start = AZStd::chrono::steady_clock::now();
             for (unsigned i = 0; i < N; i++) {
             size_t size = rand_size();
             size_t alignment = rand_alignment();
@@ -1963,11 +1963,11 @@ namespace UnitTest
             hpha.ReAllocate(tr[j].ptr, 0, 0);
             tr[j].ptr = tr[i].ptr;
             }
-            elapsed = AZStd::chrono::system_clock::now() - start;
+            elapsed = AZStd::chrono::steady_clock::now() - start;
             printf("\t\t\t(%.3f)", elapsed.count());
 
             srand(1234);
-            start = AZStd::chrono::system_clock::now();
+            start = AZStd::chrono::steady_clock::now();
 #ifdef AZ_PLATFORM_WINDOWS // Windows test only
             for (unsigned i = 0; i < N; i++) {
             size_t size = rand_size();
@@ -1985,13 +1985,13 @@ namespace UnitTest
             tr[j].ptr = tr[i].ptr;
             }
 #endif // AZ_PLATFORM_WINDOWS
-            elapsed = AZStd::chrono::system_clock::now() - start;
+            elapsed = AZStd::chrono::steady_clock::now() - start;
             printf("\t(%.3f)\n", elapsed.count());
         }
 
         void allocdeallocThread(HphaSchema& hpha, HeapSchema& dl, ThreadPoolSchema& thPool, bool isHpha, bool isDL, bool isDefault, bool isPool)
         {
-            AZStd::chrono::system_clock::time_point start;
+            AZStd::chrono::steady_clock::time_point start;
             AZStd::chrono::duration<float> elapsed;
             printf("MinSize %u MaxSize %u MaxAlignment %u\n", static_cast<unsigned int>(MIN_SIZE), static_cast<unsigned int>(MAX_SIZE), static_cast<unsigned int>(MAX_ALIGNMENT));
             printf("\t\t\t\tHPHA\t\tDL\t\tDEFAULT\t\tPOOL\n");
@@ -2007,23 +2007,23 @@ namespace UnitTest
                     AZStd::thread tr2(AZStd::bind(&PERF_MemoryBenchmark::hphaAllocate, this, AZStd::ref(hpha), 1 * TN, 2 * TN));
                     AZStd::thread tr3(AZStd::bind(&PERF_MemoryBenchmark::hphaAllocate, this, AZStd::ref(hpha), 2 * TN, 3 * TN));
                     AZStd::thread tr4(AZStd::bind(&PERF_MemoryBenchmark::hphaAllocate, this, AZStd::ref(hpha), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr1.join();
                     tr2.join();
                     tr3.join();
                     tr4.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("\t\t\t(%.3f/", elapsed.count());
                     AZStd::thread tr5(AZStd::bind(&PERF_MemoryBenchmark::hphaFree, this, AZStd::ref(hpha), 0 * TN, 1 * TN));
                     AZStd::thread tr6(AZStd::bind(&PERF_MemoryBenchmark::hphaFree, this, AZStd::ref(hpha), 1 * TN, 2 * TN));
                     AZStd::thread tr7(AZStd::bind(&PERF_MemoryBenchmark::hphaFree, this, AZStd::ref(hpha), 2 * TN, 3 * TN));
                     AZStd::thread tr8(AZStd::bind(&PERF_MemoryBenchmark::hphaFree, this, AZStd::ref(hpha), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr5.join();
                     tr6.join();
                     tr7.join();
                     tr8.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("%.3f)", elapsed.count());
                 }
                 else
@@ -2040,23 +2040,23 @@ namespace UnitTest
                     AZStd::thread tr2(AZStd::bind(&PERF_MemoryBenchmark::dlAllocate, this, AZStd::ref(dl), 1 * TN, 2 * TN));
                     AZStd::thread tr3(AZStd::bind(&PERF_MemoryBenchmark::dlAllocate, this, AZStd::ref(dl), 2 * TN, 3 * TN));
                     AZStd::thread tr4(AZStd::bind(&PERF_MemoryBenchmark::dlAllocate, this, AZStd::ref(dl), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr1.join();
                     tr2.join();
                     tr3.join();
                     tr4.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("\t(%.3f/", elapsed.count());
                     AZStd::thread tr5(AZStd::bind(&PERF_MemoryBenchmark::dlFree, this, AZStd::ref(dl), 0 * TN, 1 * TN));
                     AZStd::thread tr6(AZStd::bind(&PERF_MemoryBenchmark::dlFree, this, AZStd::ref(dl), 1 * TN, 2 * TN));
                     AZStd::thread tr7(AZStd::bind(&PERF_MemoryBenchmark::dlFree, this, AZStd::ref(dl), 2 * TN, 3 * TN));
                     AZStd::thread tr8(AZStd::bind(&PERF_MemoryBenchmark::dlFree, this, AZStd::ref(dl), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr5.join();
                     tr6.join();
                     tr7.join();
                     tr8.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("%.3f)", elapsed.count());
                 }
                 else
@@ -2073,23 +2073,23 @@ namespace UnitTest
                     AZStd::thread tr2(AZStd::bind(&PERF_MemoryBenchmark::defAllocate, this, 1 * TN, 2 * TN));
                     AZStd::thread tr3(AZStd::bind(&PERF_MemoryBenchmark::defAllocate, this, 2 * TN, 3 * TN));
                     AZStd::thread tr4(AZStd::bind(&PERF_MemoryBenchmark::defAllocate, this, 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr1.join();
                     tr2.join();
                     tr3.join();
                     tr4.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("\t(%.3f/", elapsed.count());
                     AZStd::thread tr5(AZStd::bind(&PERF_MemoryBenchmark::defFree, this, 0 * TN, 1 * TN));
                     AZStd::thread tr6(AZStd::bind(&PERF_MemoryBenchmark::defFree, this, 1 * TN, 2 * TN));
                     AZStd::thread tr7(AZStd::bind(&PERF_MemoryBenchmark::defFree, this, 2 * TN, 3 * TN));
                     AZStd::thread tr8(AZStd::bind(&PERF_MemoryBenchmark::defFree, this, 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr5.join();
                     tr6.join();
                     tr7.join();
                     tr8.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("\t(%.3f)", elapsed.count());
                 }
                 else
@@ -2107,23 +2107,23 @@ namespace UnitTest
                     AZStd::thread tr2(AZStd::bind(&PERF_MemoryBenchmark::thPoolAllocate, this, AZStd::ref(thPool), 1 * TN, 2 * TN));
                     AZStd::thread tr3(AZStd::bind(&PERF_MemoryBenchmark::thPoolAllocate, this, AZStd::ref(thPool), 2 * TN, 3 * TN));
                     AZStd::thread tr4(AZStd::bind(&PERF_MemoryBenchmark::thPoolAllocate, this, AZStd::ref(thPool), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr1.join();
                     tr2.join();
                     tr3.join();
                     tr4.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("\t(%.3f/", elapsed.count());
                     AZStd::thread tr5(AZStd::bind(&PERF_MemoryBenchmark::thPoolFree, this, AZStd::ref(thPool), 0 * TN, 1 * TN));
                     AZStd::thread tr6(AZStd::bind(&PERF_MemoryBenchmark::thPoolFree, this, AZStd::ref(thPool), 1 * TN, 2 * TN));
                     AZStd::thread tr7(AZStd::bind(&PERF_MemoryBenchmark::thPoolFree, this, AZStd::ref(thPool), 2 * TN, 3 * TN));
                     AZStd::thread tr8(AZStd::bind(&PERF_MemoryBenchmark::thPoolFree, this, AZStd::ref(thPool), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr5.join();
                     tr6.join();
                     tr7.join();
                     tr8.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("%.3f)\n", elapsed.count());
                 }
                 else
@@ -2145,23 +2145,23 @@ namespace UnitTest
                     AZStd::thread tr2(AZStd::bind(&PERF_MemoryBenchmark::hphaAllocateSize, this, AZStd::ref(hpha), 1 * TN, 2 * TN));
                     AZStd::thread tr3(AZStd::bind(&PERF_MemoryBenchmark::hphaAllocateSize, this, AZStd::ref(hpha), 2 * TN, 3 * TN));
                     AZStd::thread tr4(AZStd::bind(&PERF_MemoryBenchmark::hphaAllocateSize, this, AZStd::ref(hpha), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr1.join();
                     tr2.join();
                     tr3.join();
                     tr4.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("\t\t(%.3f/", elapsed.count());
                     AZStd::thread tr5(AZStd::bind(&PERF_MemoryBenchmark::hphaFreeSize, this, AZStd::ref(hpha), 0 * TN, 1 * TN));
                     AZStd::thread tr6(AZStd::bind(&PERF_MemoryBenchmark::hphaFreeSize, this, AZStd::ref(hpha), 1 * TN, 2 * TN));
                     AZStd::thread tr7(AZStd::bind(&PERF_MemoryBenchmark::hphaFreeSize, this, AZStd::ref(hpha), 2 * TN, 3 * TN));
                     AZStd::thread tr8(AZStd::bind(&PERF_MemoryBenchmark::hphaFreeSize, this, AZStd::ref(hpha), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr5.join();
                     tr6.join();
                     tr7.join();
                     tr8.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("/%.3f)", elapsed.count());
                 }
                 else
@@ -2178,23 +2178,23 @@ namespace UnitTest
                     AZStd::thread tr2(AZStd::bind(&PERF_MemoryBenchmark::dlAllocateSize, this, AZStd::ref(dl), 1 * TN, 2 * TN));
                     AZStd::thread tr3(AZStd::bind(&PERF_MemoryBenchmark::dlAllocateSize, this, AZStd::ref(dl), 2 * TN, 3 * TN));
                     AZStd::thread tr4(AZStd::bind(&PERF_MemoryBenchmark::dlAllocateSize, this, AZStd::ref(dl), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr1.join();
                     tr2.join();
                     tr3.join();
                     tr4.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("\t(%.3f/", elapsed.count());
                     AZStd::thread tr5(AZStd::bind(&PERF_MemoryBenchmark::dlFreeSize, this, AZStd::ref(dl), 0 * TN, 1 * TN));
                     AZStd::thread tr6(AZStd::bind(&PERF_MemoryBenchmark::dlFreeSize, this, AZStd::ref(dl), 1 * TN, 2 * TN));
                     AZStd::thread tr7(AZStd::bind(&PERF_MemoryBenchmark::dlFreeSize, this, AZStd::ref(dl), 2 * TN, 3 * TN));
                     AZStd::thread tr8(AZStd::bind(&PERF_MemoryBenchmark::dlFreeSize, this, AZStd::ref(dl), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr5.join();
                     tr6.join();
                     tr7.join();
                     tr8.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("%.3f)", elapsed.count());
                 }
                 else
@@ -2212,23 +2212,23 @@ namespace UnitTest
                     AZStd::thread tr2(AZStd::bind(&PERF_MemoryBenchmark::defAllocateSize, this, 1 * TN, 2 * TN));
                     AZStd::thread tr3(AZStd::bind(&PERF_MemoryBenchmark::defAllocateSize, this, 2 * TN, 3 * TN));
                     AZStd::thread tr4(AZStd::bind(&PERF_MemoryBenchmark::defAllocateSize, this, 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr1.join();
                     tr2.join();
                     tr3.join();
                     tr4.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("\t(%.3f/", elapsed.count());
                     AZStd::thread tr5(AZStd::bind(&PERF_MemoryBenchmark::defFreeSize, this, 0 * TN, 1 * TN));
                     AZStd::thread tr6(AZStd::bind(&PERF_MemoryBenchmark::defFreeSize, this, 1 * TN, 2 * TN));
                     AZStd::thread tr7(AZStd::bind(&PERF_MemoryBenchmark::defFreeSize, this, 2 * TN, 3 * TN));
                     AZStd::thread tr8(AZStd::bind(&PERF_MemoryBenchmark::defFreeSize, this, 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr5.join();
                     tr6.join();
                     tr7.join();
                     tr8.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("%.3f)", elapsed.count());
                 }
                 else
@@ -2246,23 +2246,23 @@ namespace UnitTest
                     AZStd::thread tr2(AZStd::bind(&PERF_MemoryBenchmark::thPoolAllocateSize, this, AZStd::ref(thPool), 1 * TN, 2 * TN));
                     AZStd::thread tr3(AZStd::bind(&PERF_MemoryBenchmark::thPoolAllocateSize, this, AZStd::ref(thPool), 2 * TN, 3 * TN));
                     AZStd::thread tr4(AZStd::bind(&PERF_MemoryBenchmark::thPoolAllocateSize, this, AZStd::ref(thPool), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr1.join();
                     tr2.join();
                     tr3.join();
                     tr4.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("\t(%.3f/", elapsed.count());
                     AZStd::thread tr5(AZStd::bind(&PERF_MemoryBenchmark::thPoolFreeSize, this, AZStd::ref(thPool), 0 * TN, 1 * TN));
                     AZStd::thread tr6(AZStd::bind(&PERF_MemoryBenchmark::thPoolFreeSize, this, AZStd::ref(thPool), 1 * TN, 2 * TN));
                     AZStd::thread tr7(AZStd::bind(&PERF_MemoryBenchmark::thPoolFreeSize, this, AZStd::ref(thPool), 2 * TN, 3 * TN));
                     AZStd::thread tr8(AZStd::bind(&PERF_MemoryBenchmark::thPoolFreeSize, this, AZStd::ref(thPool), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr5.join();
                     tr6.join();
                     tr7.join();
                     tr8.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("%.3f)\n", elapsed.count());
                 }
                 else
@@ -2284,23 +2284,23 @@ namespace UnitTest
                     AZStd::thread tr2(AZStd::bind(&PERF_MemoryBenchmark::hphaAllocateAlignment, this, AZStd::ref(hpha), 1 * TN, 2 * TN));
                     AZStd::thread tr3(AZStd::bind(&PERF_MemoryBenchmark::hphaAllocateAlignment, this, AZStd::ref(hpha), 2 * TN, 3 * TN));
                     AZStd::thread tr4(AZStd::bind(&PERF_MemoryBenchmark::hphaAllocateAlignment, this, AZStd::ref(hpha), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr1.join();
                     tr2.join();
                     tr3.join();
                     tr4.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("\t\t(%.3f/", elapsed.count());
                     AZStd::thread tr5(AZStd::bind(&PERF_MemoryBenchmark::hphaFreeAlignment, this, AZStd::ref(hpha), 0 * TN, 1 * TN));
                     AZStd::thread tr6(AZStd::bind(&PERF_MemoryBenchmark::hphaFreeAlignment, this, AZStd::ref(hpha), 1 * TN, 2 * TN));
                     AZStd::thread tr7(AZStd::bind(&PERF_MemoryBenchmark::hphaFreeAlignment, this, AZStd::ref(hpha), 2 * TN, 3 * TN));
                     AZStd::thread tr8(AZStd::bind(&PERF_MemoryBenchmark::hphaFreeAlignment, this, AZStd::ref(hpha), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr5.join();
                     tr6.join();
                     tr7.join();
                     tr8.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("%.3f)", elapsed.count());
                 }
                 else
@@ -2317,23 +2317,23 @@ namespace UnitTest
                     AZStd::thread tr2(AZStd::bind(&PERF_MemoryBenchmark::dlAllocateAlignment, this, AZStd::ref(dl), 1 * TN, 2 * TN));
                     AZStd::thread tr3(AZStd::bind(&PERF_MemoryBenchmark::dlAllocateAlignment, this, AZStd::ref(dl), 2 * TN, 3 * TN));
                     AZStd::thread tr4(AZStd::bind(&PERF_MemoryBenchmark::dlAllocateAlignment, this, AZStd::ref(dl), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr1.join();
                     tr2.join();
                     tr3.join();
                     tr4.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("\t(%.3f/", elapsed.count());
                     AZStd::thread tr5(AZStd::bind(&PERF_MemoryBenchmark::dlFreeAlignment, this, AZStd::ref(dl), 0 * TN, 1 * TN));
                     AZStd::thread tr6(AZStd::bind(&PERF_MemoryBenchmark::dlFreeAlignment, this, AZStd::ref(dl), 1 * TN, 2 * TN));
                     AZStd::thread tr7(AZStd::bind(&PERF_MemoryBenchmark::dlFreeAlignment, this, AZStd::ref(dl), 2 * TN, 3 * TN));
                     AZStd::thread tr8(AZStd::bind(&PERF_MemoryBenchmark::dlFreeAlignment, this, AZStd::ref(dl), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr5.join();
                     tr6.join();
                     tr7.join();
                     tr8.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("%.3f)", elapsed.count());
                 }
                 else
@@ -2350,23 +2350,23 @@ namespace UnitTest
                     AZStd::thread tr2(AZStd::bind(&PERF_MemoryBenchmark::defAllocateAlignment, this, 1 * TN, 2 * TN));
                     AZStd::thread tr3(AZStd::bind(&PERF_MemoryBenchmark::defAllocateAlignment, this, 2 * TN, 3 * TN));
                     AZStd::thread tr4(AZStd::bind(&PERF_MemoryBenchmark::defAllocateAlignment, this, 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr1.join();
                     tr2.join();
                     tr3.join();
                     tr4.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("\t(%.3f/", elapsed.count());
                     AZStd::thread tr5(AZStd::bind(&PERF_MemoryBenchmark::defFreeAlignment, this, 0 * TN, 1 * TN));
                     AZStd::thread tr6(AZStd::bind(&PERF_MemoryBenchmark::defFreeAlignment, this, 1 * TN, 2 * TN));
                     AZStd::thread tr7(AZStd::bind(&PERF_MemoryBenchmark::defFreeAlignment, this, 2 * TN, 3 * TN));
                     AZStd::thread tr8(AZStd::bind(&PERF_MemoryBenchmark::defFreeAlignment, this, 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr5.join();
                     tr6.join();
                     tr7.join();
                     tr8.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("%.3f)", elapsed.count());
                 }
                 else
@@ -2384,23 +2384,23 @@ namespace UnitTest
                     AZStd::thread tr2(AZStd::bind(&PERF_MemoryBenchmark::thPoolAllocateAlignment, this, AZStd::ref(thPool), 1 * TN, 2 * TN));
                     AZStd::thread tr3(AZStd::bind(&PERF_MemoryBenchmark::thPoolAllocateAlignment, this, AZStd::ref(thPool), 2 * TN, 3 * TN));
                     AZStd::thread tr4(AZStd::bind(&PERF_MemoryBenchmark::thPoolAllocateAlignment, this, AZStd::ref(thPool), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr1.join();
                     tr2.join();
                     tr3.join();
                     tr4.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("\t(%.3f/", elapsed.count());
                     AZStd::thread tr5(AZStd::bind(&PERF_MemoryBenchmark::thPoolFreeAlignment, this, AZStd::ref(thPool), 0 * TN, 1 * TN));
                     AZStd::thread tr6(AZStd::bind(&PERF_MemoryBenchmark::thPoolFreeAlignment, this, AZStd::ref(thPool), 1 * TN, 2 * TN));
                     AZStd::thread tr7(AZStd::bind(&PERF_MemoryBenchmark::thPoolFreeAlignment, this, AZStd::ref(thPool), 2 * TN, 3 * TN));
                     AZStd::thread tr8(AZStd::bind(&PERF_MemoryBenchmark::thPoolFreeAlignment, this, AZStd::ref(thPool), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr5.join();
                     tr6.join();
                     tr7.join();
                     tr8.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("%.3f)\n", elapsed.count());
                 }
                 else
@@ -2422,23 +2422,23 @@ namespace UnitTest
                     AZStd::thread tr2(AZStd::bind(&PERF_MemoryBenchmark::hphaAllocateAlignmentSize, this, AZStd::ref(hpha), 1 * TN, 2 * TN));
                     AZStd::thread tr3(AZStd::bind(&PERF_MemoryBenchmark::hphaAllocateAlignmentSize, this, AZStd::ref(hpha), 2 * TN, 3 * TN));
                     AZStd::thread tr4(AZStd::bind(&PERF_MemoryBenchmark::hphaAllocateAlignmentSize, this, AZStd::ref(hpha), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr1.join();
                     tr2.join();
                     tr3.join();
                     tr4.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("\t(%.3f/", elapsed.count());
                     AZStd::thread tr5(AZStd::bind(&PERF_MemoryBenchmark::hphaFreeAlignmentSize, this, AZStd::ref(hpha), 0 * TN, 1 * TN));
                     AZStd::thread tr6(AZStd::bind(&PERF_MemoryBenchmark::hphaFreeAlignmentSize, this, AZStd::ref(hpha), 1 * TN, 2 * TN));
                     AZStd::thread tr7(AZStd::bind(&PERF_MemoryBenchmark::hphaFreeAlignmentSize, this, AZStd::ref(hpha), 2 * TN, 3 * TN));
                     AZStd::thread tr8(AZStd::bind(&PERF_MemoryBenchmark::hphaFreeAlignmentSize, this, AZStd::ref(hpha), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr5.join();
                     tr6.join();
                     tr7.join();
                     tr8.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("%.3f)", elapsed.count());
                 }
                 else
@@ -2455,23 +2455,23 @@ namespace UnitTest
                     AZStd::thread tr2(AZStd::bind(&PERF_MemoryBenchmark::dlAllocateAlignmentSize, this, AZStd::ref(dl), 1 * TN, 2 * TN));
                     AZStd::thread tr3(AZStd::bind(&PERF_MemoryBenchmark::dlAllocateAlignmentSize, this, AZStd::ref(dl), 2 * TN, 3 * TN));
                     AZStd::thread tr4(AZStd::bind(&PERF_MemoryBenchmark::dlAllocateAlignmentSize, this, AZStd::ref(dl), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr1.join();
                     tr2.join();
                     tr3.join();
                     tr4.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("\t(%.3f/", elapsed.count());
                     AZStd::thread tr5(AZStd::bind(&PERF_MemoryBenchmark::dlFreeAlignmentSize, this, AZStd::ref(dl), 0 * TN, 1 * TN));
                     AZStd::thread tr6(AZStd::bind(&PERF_MemoryBenchmark::dlFreeAlignmentSize, this, AZStd::ref(dl), 1 * TN, 2 * TN));
                     AZStd::thread tr7(AZStd::bind(&PERF_MemoryBenchmark::dlFreeAlignmentSize, this, AZStd::ref(dl), 2 * TN, 3 * TN));
                     AZStd::thread tr8(AZStd::bind(&PERF_MemoryBenchmark::dlFreeAlignmentSize, this, AZStd::ref(dl), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr5.join();
                     tr6.join();
                     tr7.join();
                     tr8.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("%.3f)", elapsed.count());
                 }
                 else
@@ -2488,23 +2488,23 @@ namespace UnitTest
                     AZStd::thread tr2(AZStd::bind(&PERF_MemoryBenchmark::defAllocateAlignmentSize, this, 1 * TN, 2 * TN));
                     AZStd::thread tr3(AZStd::bind(&PERF_MemoryBenchmark::defAllocateAlignmentSize, this, 2 * TN, 3 * TN));
                     AZStd::thread tr4(AZStd::bind(&PERF_MemoryBenchmark::defAllocateAlignmentSize, this, 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr1.join();
                     tr2.join();
                     tr3.join();
                     tr4.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("\t(%.3f/", elapsed.count());
                     AZStd::thread tr5(AZStd::bind(&PERF_MemoryBenchmark::defFreeAlignmentSize, this, 0 * TN, 1 * TN));
                     AZStd::thread tr6(AZStd::bind(&PERF_MemoryBenchmark::defFreeAlignmentSize, this, 1 * TN, 2 * TN));
                     AZStd::thread tr7(AZStd::bind(&PERF_MemoryBenchmark::defFreeAlignmentSize, this, 2 * TN, 3 * TN));
                     AZStd::thread tr8(AZStd::bind(&PERF_MemoryBenchmark::defFreeAlignmentSize, this, 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr5.join();
                     tr6.join();
                     tr7.join();
                     tr8.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("%.3f)", elapsed.count());
                 }
                 else
@@ -2522,23 +2522,23 @@ namespace UnitTest
                     AZStd::thread tr2(AZStd::bind(&PERF_MemoryBenchmark::thPoolAllocateAlignmentSize, this, AZStd::ref(thPool), 1 * TN, 2 * TN));
                     AZStd::thread tr3(AZStd::bind(&PERF_MemoryBenchmark::thPoolAllocateAlignmentSize, this, AZStd::ref(thPool), 2 * TN, 3 * TN));
                     AZStd::thread tr4(AZStd::bind(&PERF_MemoryBenchmark::thPoolAllocateAlignmentSize, this, AZStd::ref(thPool), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr1.join();
                     tr2.join();
                     tr3.join();
                     tr4.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("\t(%.3f/", elapsed.count());
                     AZStd::thread tr5(AZStd::bind(&PERF_MemoryBenchmark::thPoolFreeAlignmentSize, this, AZStd::ref(thPool), 0 * TN, 1 * TN));
                     AZStd::thread tr6(AZStd::bind(&PERF_MemoryBenchmark::thPoolFreeAlignmentSize, this, AZStd::ref(thPool), 1 * TN, 2 * TN));
                     AZStd::thread tr7(AZStd::bind(&PERF_MemoryBenchmark::thPoolFreeAlignmentSize, this, AZStd::ref(thPool), 2 * TN, 3 * TN));
                     AZStd::thread tr8(AZStd::bind(&PERF_MemoryBenchmark::thPoolFreeAlignmentSize, this, AZStd::ref(thPool), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::system_clock::now();
+                    start = AZStd::chrono::steady_clock::now();
                     tr5.join();
                     tr6.join();
                     tr7.join();
                     tr8.join();
-                    elapsed = AZStd::chrono::system_clock::now() - start;
+                    elapsed = AZStd::chrono::steady_clock::now() - start;
                     printf("%.3f)\n", elapsed.count());
                 }
                 else

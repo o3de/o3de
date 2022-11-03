@@ -13,7 +13,7 @@
 #include <Atom/RHI.Reflect/BufferDescriptor.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/MemoryView.h>
 #include <RHI/MemoryAllocator.h>
 #include <RHI/Device.h>

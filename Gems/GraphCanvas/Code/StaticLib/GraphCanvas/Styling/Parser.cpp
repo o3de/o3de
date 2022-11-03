@@ -18,6 +18,7 @@
 
 AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
 #include <QFile>
+#include <QFontDatabase>
 #include <QByteArray>
 #include <QColor>
 #include <QFont>
@@ -859,9 +860,9 @@ namespace GraphCanvas
                     }
                     else
                     {
-                        QFont font(valueStr);
-                        QFontInfo info(font);
-                        if (!info.exactMatch())
+                        // Check all available font families (from both the system and explicitly registered with the application)
+                        QFontDatabase fontDatabase;
+                        if (!fontDatabase.families().contains(valueStr))
                         {
                             qWarning() << "Invalid font-family:" << valueStr;
                         }

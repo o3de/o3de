@@ -11,7 +11,7 @@
 #include <AzCore/Component/EntityId.h>
 #include <ScriptCanvas/Core/Core.h>
 #include <AzCore/EBus/EBus.h>
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
+#include <AzFramework/Network/IRemoteTools.h>
 #include <AzCore/Outcome/Outcome.h>
 
 /**
@@ -40,10 +40,10 @@ namespace ScriptCanvas
 {
     namespace Debugger
     {
-        extern const AzFramework::MsgSlotId k_serviceNotificationsMsgSlotId;
-        extern const AzFramework::MsgSlotId k_clientRequestsMsgSlotId;
+        extern const AZ::u64 k_serviceNotificationsMsgSlotId;
+        extern const AZ::u64 k_clientRequestsMsgSlotId;
 
-        AZ::Outcome<void, AZStd::string> IsTargetConnectable(const AzFramework::TargetInfo& target);
+        AZ::Outcome<void, AZStd::string> IsTargetConnectable(const AzFramework::RemoteToolsEndpointInfo& target);
         void ReflectArguments(AZ::ReflectContext* context);
         void ReflectNotifications(AZ::ReflectContext* context);
         void ReflectRequests(AZ::ReflectContext* context);

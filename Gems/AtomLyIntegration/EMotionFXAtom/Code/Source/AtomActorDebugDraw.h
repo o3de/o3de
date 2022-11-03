@@ -118,9 +118,17 @@ namespace AZ::Render
         AZStd::vector<AZ::Vector3> m_worldSpacePositions; //!< The buffer used to store world space positions for rendering normals
                                                           //!< tangents and the wireframe.
 
+        //! Checks if a joint is selected or hovered and updates the color appropriately.
+        AZ::Color GetModifiedColor(
+            const AZ::Color& color,
+            size_t jointIndex,
+            const AZStd::unordered_set<size_t>* cachedSelectedJointIndices,
+            size_t cachedHoveredJointIndex) const;
+
         static constexpr float BaseFontSize = 0.7f;
         const Vector3 TopRightBorderPadding = AZ::Vector3(-40.0f, 22.0f, 0.0f);
         const AZ::Color SelectedColor = AZ::Color{ 1.0f, 0.67f, 0.0f, 1.0f };
+        const AZ::Color HoveredColor = AZ::Color{ 0.78f, 1.0f, 0.67f, 1.0f };
 
         RPI::AuxGeomFeatureProcessorInterface* m_auxGeomFeatureProcessor = nullptr;
         AZStd::vector<AZ::Vector3> m_auxVertices;

@@ -13,8 +13,6 @@ set(FILES
     Include/Atom/Feature/Utils/ModelPreset.h
     Source/Material/MaterialAssignment.cpp
     Source/Material/MaterialAssignmentId.cpp
-    Source/Material/MaterialAssignmentSerializer.cpp
-    Source/Material/MaterialAssignmentSerializer.h
     Source/Utils/LightingPreset.cpp
     Source/Utils/ModelPreset.cpp
 )

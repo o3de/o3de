@@ -143,7 +143,6 @@ def BasicEditorWorkflows_LevelEntityComponentCRUD():
                                                                   "Box Shape|Box Configuration|Dimensions")
         Report.result(Tests.component_updated, box_shape_dimensions == dimensions_to_set)
 
-
         # Remove the component
         child_entity.remove_component("Box Shape")
         component_rem_success = await pyside_utils.wait_for_condition(lambda: not hydra.has_components(child_entity.id,
@@ -156,7 +155,7 @@ def BasicEditorWorkflows_LevelEntityComponentCRUD():
 
         # 5) Verify the save/export of the level
         level_prefab_path = os.path.join(paths.products, "levels", lvl_name, f"{lvl_name}.spawnable")
-        success = await pyside_utils.wait_for_condition(lambda: os.path.exists(level_prefab_path), 5.0)
+        success = await pyside_utils.wait_for_condition(lambda: os.path.exists(level_prefab_path), 10.0)
         Report.result(Tests.saved_and_exported, success)
 
     run_test()

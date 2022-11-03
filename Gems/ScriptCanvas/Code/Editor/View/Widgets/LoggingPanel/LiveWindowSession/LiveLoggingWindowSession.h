@@ -12,7 +12,7 @@
 
 #include <AzCore/UserSettings/UserSettings.h>
 
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
+#include <AzFramework/Network/IRemoteTools.h>
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
@@ -36,18 +36,17 @@ namespace ScriptCanvasEditor
         QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
         ////
 
-        void TargetJoinedNetwork(AzFramework::TargetInfo info);
-        void TargetLeftNetwork(AzFramework::TargetInfo info);
+        void TargetJoinedNetwork(AzFramework::RemoteToolsEndpointInfo info);
+        void TargetLeftNetwork(AzFramework::RemoteToolsEndpointInfo info);
 
-        AzFramework::TargetInfo FindTargetInfoForRow(int row);
+        AzFramework::RemoteToolsEndpointInfo FindTargetInfoForRow(int row);
         int GetRowForTarget(AZ::u32 targetId);
 
     private:
 
         void ScrapeTargetInfo();
 
-        AzFramework::TargetInfo                  m_selfInfo;
-        AZStd::vector< AzFramework::TargetInfo > m_targetInfo;
+        AZStd::vector<AzFramework::RemoteToolsEndpointInfo> m_targetInfo;
     };
 
     class LiveLoggingUserSettings
@@ -77,7 +76,6 @@ namespace ScriptCanvasEditor
     
     class LiveLoggingWindowSession
         : public LoggingWindowSession
-        , public AzFramework::TargetManagerClient::Bus::Handler
         , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
         , public ScriptCanvas::Debugger::ServiceNotificationsBus::Handler
     {
@@ -89,11 +87,11 @@ namespace ScriptCanvasEditor
         ~LiveLoggingWindowSession() override;
         
         // AzFramework::TargetManagerClient
-        void DesiredTargetChanged(AZ::u32 newId, AZ::u32 oldId) override;
-        void DesiredTargetConnected(bool connected) override;
+        void DesiredTargetChanged(AZ::u32 newId, AZ::u32 oldId);
+        void DesiredTargetConnected(bool connected);
 
-        void TargetJoinedNetwork(AzFramework::TargetInfo info) override;
-        void TargetLeftNetwork(AzFramework::TargetInfo info) override;
+        void TargetJoinedNetwork(AzFramework::RemoteToolsEndpointInfo info);
+        void TargetLeftNetwork(AzFramework::RemoteToolsEndpointInfo info);
         ////
 
         // AzToolsFramework::EditorEntityContextNotificationBus::Handler

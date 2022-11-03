@@ -7,7 +7,7 @@
  */
 #include <RHI/BufferMemory.h>
 #include <RHI/Device.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 
 namespace AZ
 {

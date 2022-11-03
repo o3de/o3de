@@ -62,9 +62,13 @@ namespace Compression
         AZ_RTTI(CompressionFactoryInterface, "{92251FE8-9D19-4A23-9A2B-F91D99D9491B}");
         virtual ~CompressionFactoryInterface() = default;
 
-        //! Returns a span containing all registered Compression Interfaces
-        //! @return view of registered Compression Interfaces.
-        virtual AZStd::span<ICompressionInterface* const> GetCompressionInterfaces() const = 0;
+
+        //! Callback function that is invoked for every registered compression interface
+        //! return true to indicate that visitation of compression interfaces should continue
+        //! returning false halts iteration
+        using VisitCompressionInterfaceCallback = AZStd::function<bool(ICompressionInterface&)>;
+        //! Invokes the supplied visitor for each register compression interface that is non-nullptr
+        virtual void VisitCompressionInterfaces(const VisitCompressionInterfaceCallback&) const = 0;
 
         //! Registers a compression interface with the compression factory.
         //! If a compression interface with a CompressionAlgorithmId is registered that

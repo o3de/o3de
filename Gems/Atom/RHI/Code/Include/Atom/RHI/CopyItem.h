@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <Atom/RHI/SubmitItem.h>
 #include <Atom/RHI/Image.h>
 #include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/QueryPool.h>
@@ -94,7 +93,6 @@ namespace AZ
         };
 
         struct CopyItem
-            : public SubmitItem
         {
             CopyItem()
                 : m_type{CopyItemType::Buffer}

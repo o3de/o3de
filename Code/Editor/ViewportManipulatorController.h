@@ -49,6 +49,5 @@ namespace SandboxEditor
 
         AZ::ScriptTimePoint m_currentTime;
         
-        AZStd::optional<AZ::Vector2> m_virtualNormalizedPosition = AZStd::nullopt;
     };
 } // namespace SandboxEditor

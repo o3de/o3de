@@ -35,6 +35,7 @@
         <file alias="emfx_editor.svg">Menu/emfx_editor.svg</file>
         <file alias="landscape_canvas_editor.svg">Menu/landscape_canvas_editor.svg</file>
         <file alias="lua_editor.svg">Menu/lua_editor.svg</file>
+        <file alias="material_canvas.svg">Menu/material_canvas.svg</file>
         <file alias="material_editor.svg">Menu/material_editor.svg</file>
         <file alias="script_canvas_editor.svg">Menu/script_canvas_editor.svg</file>
         <file alias="trackview_editor.svg">Menu/trackview_editor.svg</file>

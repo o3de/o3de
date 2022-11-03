@@ -123,6 +123,9 @@ namespace ScriptCanvasTests
 
         static void TearDownTestCase()
         {
+            ScriptCanvas::AutoGenRegistryManager::GetInstance()->UnregisterRegistry("ScriptCanvasTestingEditorStaticFunctionRegistry");
+            ScriptCanvas::AutoGenRegistryManager::GetInstance()->UnregisterRegistry("ScriptCanvasTestingEditorStaticNodeableRegistry");
+
             // don't hang on to dangling assets
             AZ::Data::AssetManager::Instance().DispatchEvents();
 
@@ -177,7 +180,7 @@ namespace ScriptCanvasTests
                 GetApplication()->UnregisterComponentDescriptor(componentDescriptor);
             }
 
-            m_descriptors.clear();            
+            m_descriptors.clear();
         }
 
         ScriptCanvas::Graph* CreateGraph()
@@ -193,7 +196,7 @@ namespace ScriptCanvasTests
 
         TestNodes::ConfigurableUnitTestNode* CreateConfigurableNode(AZStd::string entityName = "ConfigurableNodeEntity")
         {
-            AZ::Entity* configurableNodeEntity = new AZ::Entity(entityName.c_str());         
+            AZ::Entity* configurableNodeEntity = new AZ::Entity(entityName.c_str());
             auto configurableNode = configurableNodeEntity->CreateComponent<TestNodes::ConfigurableUnitTestNode>();
 
             if (m_graph == nullptr)

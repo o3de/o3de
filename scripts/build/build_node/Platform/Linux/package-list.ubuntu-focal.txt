@@ -1,7 +1,7 @@
 # Package list for Ubuntu 20.04
 
 # Build Tools Packages
-cmake/3.21.1-0kitware1ubuntu20.04.1     # For cmake
+cmake/3.24.0-0kitware1ubuntu20.04.1     # For cmake
 clang-12                                # For the compiler and its dependencies
 ninja-build                             # For Ninja Build System
 java-11-amazon-corretto-jdk             # For Jenkins and Android

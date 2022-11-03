@@ -64,7 +64,7 @@ namespace AZ
             : public RPI::FeatureProcessor
         {
         public:
-            AZ_RTTI(AZ::Render::QuadLightFeatureProcessorInterface, "{D86216E4-92A8-43BE-A5E4-883489C6AF06}");
+            AZ_RTTI(AZ::Render::QuadLightFeatureProcessorInterface, "{D86216E4-92A8-43BE-A5E4-883489C6AF06}", AZ::RPI::FeatureProcessor);
 
             using LightHandle = RHI::Handle<uint16_t, class QuadLight>;
             static constexpr PhotometricUnit PhotometricUnitType = PhotometricUnit::Nit;

@@ -24,7 +24,7 @@ class RuntimeArgs(Enum):
     COMMON_FPOLICY = ("test_failure_policy", "--fpolicy=",
                "Test failure policy is set to: ")
     COMMON_SUITE = ("suite", "--suite=", "Test suite is set to: ")
-    COMMON_EXCLUDE = ("exclude_file", "--exclude=",
+    COMMON_EXCLUDE = ("exclude_file", "--excluded=",
                "Exclude file found, excluding tests stored at: ")
     COMMON_TEST_TIMEOUT = ("test_timeout", "--ttimeout=",
                     "Test target timeout in seconds is set to: ")
@@ -39,6 +39,7 @@ class RuntimeArgs(Enum):
     NATIVE_SAFEMODE = ("safe_mode", "--safemode=", "Safe mode set to: ")
 
     # Python arguments
+    PYTHON_TEST_RUNNER = ("testrunner_policy", "--testrunner=", "Test runner policy is set to: ")
 
     def __init__(self, driver_argument, runtime_arg, message):
         self.driver_argument = driver_argument

@@ -8,40 +8,13 @@
 
 #pragma once
 
-#include <AzCore/IO/SystemFile.h>
-#include <AzCore/Math/Uuid.h>
-#include <AzCore/IO/Path/Path.h>
-#include <AzFramework/IO/LocalFileIO.h>
-#if !AZ_TRAIT_USE_POSIX_TEMP_FOLDER
-#include <filesystem>
-#endif
+#include <AZTestShared/Utils/Utils.h>
 
 namespace UnitTest
 {
-    //! Deletes a folder hierarchy from the supplied path
-    void DeleteFolderRecursive(const AZ::IO::PathView& path);
-
-    // Creates a randomly named folder inside the user's temporary directory.
-    // The folder and all contents will be destroyed when the object goes out of scope
-    struct ScopedTemporaryDirectory
-    {
-        ScopedTemporaryDirectory();
-        ~ScopedTemporaryDirectory();
-
-        bool IsValid() const;
-        const char* GetDirectory() const;
-
-#if !AZ_TRAIT_USE_POSIX_TEMP_FOLDER      
-        const std::filesystem::path& GetPath() const;
-        std::filesystem::path operator/(const std::filesystem::path& rhs) const;
-#endif
-        AZ_DISABLE_COPY_MOVE(ScopedTemporaryDirectory);
-
-    private:
-        bool m_directoryExists{ false };
-        AZ::IO::FixedMaxPath m_tempDirectory;
-#if !AZ_TRAIT_USE_POSIX_TEMP_FOLDER     
-        std::filesystem::path m_path;
-#endif
-    };
+    // O3DE_DEPRECATED - Use AZ::Test::ScopedAutoTempDirectory
+    // The UnitTest::ScopedTemporaryDirectory was another implementation
+    // of a temporary directory workflow, but in AzFrameworkTestShared instead of
+    // AzTestShared
+    using ScopedTemporaryDirectory = AZ::Test::ScopedAutoTempDirectory;
 }

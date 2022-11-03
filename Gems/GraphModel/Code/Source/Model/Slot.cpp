@@ -7,21 +7,23 @@
  */
 
 // AZ
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
-#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 // Graph Model
-#include <GraphModel/Model/Slot.h>
-#include <GraphModel/Model/Node.h>
+#include <GraphModel/Model/Connection.h>
 #include <GraphModel/Model/Graph.h>
 #include <GraphModel/Model/GraphContext.h>
+#include <GraphModel/Model/Node.h>
+#include <GraphModel/Model/Slot.h>
 
 namespace GraphModel
 {
@@ -104,12 +106,27 @@ namespace GraphModel
     /////////////////////////////////////////////////////////
     // SlotDefinition
 
-    SlotDefinitionPtr SlotDefinition::CreateInputData(AZStd::string_view name, AZStd::string_view displayName, DataTypePtr dataType, AZStd::any defaultValue, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration)
+    SlotDefinitionPtr SlotDefinition::CreateInputData(
+        AZStd::string_view name,
+        AZStd::string_view displayName,
+        DataTypePtr dataType,
+        AZStd::any defaultValue,
+        AZStd::string_view description,
+        ExtendableSlotConfiguration* extendableSlotConfiguration,
+        bool supportsEditingOnNode)
     {
-        return CreateInputData(name, displayName, DataTypeList{ dataType }, defaultValue, description, extendableSlotConfiguration);
+        return CreateInputData(
+            name, displayName, DataTypeList{ dataType }, defaultValue, description, extendableSlotConfiguration, supportsEditingOnNode);
     }
 
-    SlotDefinitionPtr SlotDefinition::CreateInputData(AZStd::string_view name, AZStd::string_view displayName, DataTypeList supportedDataTypes, AZStd::any defaultValue, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration)
+    SlotDefinitionPtr SlotDefinition::CreateInputData(
+        AZStd::string_view name,
+        AZStd::string_view displayName,
+        DataTypeList supportedDataTypes,
+        AZStd::any defaultValue,
+        AZStd::string_view description,
+        ExtendableSlotConfiguration* extendableSlotConfiguration,
+        bool supportsEditingOnNode)
     {
         AZStd::shared_ptr<SlotDefinition> slotDefinition = AZStd::make_shared<SlotDefinition>();
         slotDefinition->m_slotDirection = SlotDirection::Input;
@@ -119,13 +136,20 @@ namespace GraphModel
         slotDefinition->m_supportedDataTypes = supportedDataTypes;
         slotDefinition->m_defaultValue = defaultValue;
         slotDefinition->m_description = description;
+        slotDefinition->m_supportsEditingOnNode = supportsEditingOnNode;
 
         HandleExtendableSlotRegistration(slotDefinition, extendableSlotConfiguration);
 
         return slotDefinition;
     }
 
-    SlotDefinitionPtr SlotDefinition::CreateOutputData(AZStd::string_view name, AZStd::string_view displayName, DataTypePtr dataType, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration)
+    SlotDefinitionPtr SlotDefinition::CreateOutputData(
+        AZStd::string_view name,
+        AZStd::string_view displayName,
+        DataTypePtr dataType,
+        AZStd::string_view description,
+        ExtendableSlotConfiguration* extendableSlotConfiguration,
+        bool supportsEditingOnNode)
     {
         AZStd::shared_ptr<SlotDefinition> slotDefinition = AZStd::make_shared<SlotDefinition>();
         slotDefinition->m_slotDirection = SlotDirection::Output;
@@ -134,13 +158,19 @@ namespace GraphModel
         slotDefinition->m_displayName = displayName;
         slotDefinition->m_supportedDataTypes = { dataType };
         slotDefinition->m_description = description;
+        slotDefinition->m_supportsEditingOnNode = supportsEditingOnNode;
 
         HandleExtendableSlotRegistration(slotDefinition, extendableSlotConfiguration);
 
         return slotDefinition;
     }
 
-    SlotDefinitionPtr SlotDefinition::CreateInputEvent(AZStd::string_view name, AZStd::string_view displayName, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration)
+    SlotDefinitionPtr SlotDefinition::CreateInputEvent(
+        AZStd::string_view name,
+        AZStd::string_view displayName,
+        AZStd::string_view description,
+        ExtendableSlotConfiguration* extendableSlotConfiguration,
+        bool supportsEditingOnNode)
     {
         AZStd::shared_ptr<SlotDefinition> slotDefinition = AZStd::make_shared<SlotDefinition>();
         slotDefinition->m_slotDirection = SlotDirection::Input;
@@ -148,13 +178,19 @@ namespace GraphModel
         slotDefinition->m_name = name;
         slotDefinition->m_displayName = displayName;
         slotDefinition->m_description = description;
+        slotDefinition->m_supportsEditingOnNode = supportsEditingOnNode;
 
         HandleExtendableSlotRegistration(slotDefinition, extendableSlotConfiguration);
 
         return slotDefinition;
     }
 
-    SlotDefinitionPtr SlotDefinition::CreateOutputEvent(AZStd::string_view name, AZStd::string_view displayName, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration)
+    SlotDefinitionPtr SlotDefinition::CreateOutputEvent(
+        AZStd::string_view name,
+        AZStd::string_view displayName,
+        AZStd::string_view description,
+        ExtendableSlotConfiguration* extendableSlotConfiguration,
+        bool supportsEditingOnNode)
     {
         AZStd::shared_ptr<SlotDefinition> slotDefinition = AZStd::make_shared<SlotDefinition>();
         slotDefinition->m_slotDirection = SlotDirection::Output;
@@ -162,13 +198,21 @@ namespace GraphModel
         slotDefinition->m_name = name;
         slotDefinition->m_displayName = displayName;
         slotDefinition->m_description = description;
+        slotDefinition->m_supportsEditingOnNode = supportsEditingOnNode;
 
         HandleExtendableSlotRegistration(slotDefinition, extendableSlotConfiguration);
 
         return slotDefinition;
     }
 
-    SlotDefinitionPtr SlotDefinition::CreateProperty(AZStd::string_view name, AZStd::string_view displayName, DataTypePtr dataType, AZStd::any defaultValue, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration)
+    SlotDefinitionPtr SlotDefinition::CreateProperty(
+        AZStd::string_view name,
+        AZStd::string_view displayName,
+        DataTypePtr dataType,
+        AZStd::any defaultValue,
+        AZStd::string_view description,
+        ExtendableSlotConfiguration* extendableSlotConfiguration,
+        bool supportsEditingOnNode)
     {
         AZStd::shared_ptr<SlotDefinition> slotDefinition = AZStd::make_shared<SlotDefinition>();
         slotDefinition->m_slotDirection = SlotDirection::Input;
@@ -178,13 +222,15 @@ namespace GraphModel
         slotDefinition->m_supportedDataTypes = { dataType };
         slotDefinition->m_defaultValue = defaultValue;
         slotDefinition->m_description = description;
+        slotDefinition->m_supportsEditingOnNode = supportsEditingOnNode;
 
         HandleExtendableSlotRegistration(slotDefinition, extendableSlotConfiguration);
 
         return slotDefinition;
     }
 
-    void SlotDefinition::HandleExtendableSlotRegistration(AZStd::shared_ptr<SlotDefinition> slotDefinition, ExtendableSlotConfiguration* extendableSlotConfiguration)
+    void SlotDefinition::HandleExtendableSlotRegistration(
+        AZStd::shared_ptr<SlotDefinition> slotDefinition, ExtendableSlotConfiguration* extendableSlotConfiguration)
     {
         if (extendableSlotConfiguration)
         {
@@ -226,14 +272,19 @@ namespace GraphModel
         return GetSlotType() == SlotType::Data || GetSlotType() == SlotType::Event;
     }
 
-    bool SlotDefinition::Is(SlotDirection slotDirection, SlotType slotType) const
+    bool SlotDefinition::SupportsEditingOnNode() const
     {
-        return GetSlotDirection() == slotDirection && GetSlotType() == slotType;
+        return m_supportsEditingOnNode;
     }
 
     bool SlotDefinition::SupportsExtendability() const
     {
         return m_extendableSlotConfiguration.m_isValid;
+    }
+
+    bool SlotDefinition::Is(SlotDirection slotDirection, SlotType slotType) const
+    {
+        return GetSlotDirection() == slotDirection && GetSlotType() == slotType;
     }
 
     const DataTypeList& SlotDefinition::GetSupportedDataTypes() const
@@ -284,174 +335,8 @@ namespace GraphModel
     /////////////////////////////////////////////////////////
     // Slot
 
-    AZ::JsonSerializationResult::Result JsonSlotSerializer::Load(
-        void* outputValue, [[maybe_unused]] const AZ::Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
-        AZ::JsonDeserializerContext& context)
-    {
-        namespace JSR = AZ::JsonSerializationResult;
-
-        AZ_Assert(
-            azrtti_typeid<Slot>() == outputValueTypeId,
-            "Unable to deserialize Slot from json because the provided type is %s.",
-            outputValueTypeId.ToString<AZStd::string>().c_str());
-
-        Slot* slot = reinterpret_cast<Slot*>(outputValue);
-        AZ_Assert(slot, "Output value for JsonSlotSerializer can't be null.");
-
-        JSR::ResultCode result(JSR::Tasks::ReadField);
-
-        auto serializedSlotValue = inputValue.FindMember("m_value");
-        if (serializedSlotValue != inputValue.MemberEnd())
-        {
-            AZStd::any slotValue;
-            if (LoadAny<bool>(slotValue, serializedSlotValue->value, context, result) ||
-                LoadAny<int16_t>(slotValue, serializedSlotValue->value, context, result) ||
-                LoadAny<uint16_t>(slotValue, serializedSlotValue->value, context, result) ||
-                LoadAny<int32_t>(slotValue, serializedSlotValue->value, context, result) ||
-                LoadAny<uint32_t>(slotValue, serializedSlotValue->value, context, result) ||
-                LoadAny<int64_t>(slotValue, serializedSlotValue->value, context, result) ||
-                LoadAny<uint64_t>(slotValue, serializedSlotValue->value, context, result) ||
-                LoadAny<float>(slotValue, serializedSlotValue->value, context, result) ||
-                LoadAny<double>(slotValue, serializedSlotValue->value, context, result) ||
-                LoadAny<AZStd::string>(slotValue, serializedSlotValue->value, context, result) ||
-                LoadAny<AZ::Vector2>(slotValue, serializedSlotValue->value, context, result) ||
-                LoadAny<AZ::Vector3>(slotValue, serializedSlotValue->value, context, result) ||
-                LoadAny<AZ::Vector4>(slotValue, serializedSlotValue->value, context, result) ||
-                LoadAny<AZ::Color>(slotValue, serializedSlotValue->value, context, result) ||
-                LoadAny<AZ::EntityId>(slotValue, serializedSlotValue->value, context, result))
-            {
-                slot->m_value = slotValue;
-            }
-        }
-
-        // Load m_subId normally because it's just an int
-        {
-            SlotSubId slotSubId = 0;
-            result.Combine(ContinueLoadingFromJsonObjectField(
-                &slotSubId, azrtti_typeid<SlotSubId>(), inputValue,
-                "m_subId", context));
-            slot->m_subId = slotSubId;
-        }
-
-        return context.Report(
-            result,
-            result.GetProcessing() != JSR::Processing::Halted ? "Successfully loaded Slot information."
-            : "Failed to load Slot information.");
-    }
-
-    AZ::JsonSerializationResult::Result JsonSlotSerializer::Store(
-        rapidjson::Value& outputValue, const void* inputValue, [[maybe_unused]] const void* defaultValue, [[maybe_unused]] const AZ::Uuid& valueTypeId,
-        AZ::JsonSerializerContext& context)
-    {
-        namespace JSR = AZ::JsonSerializationResult;
-
-        AZ_Assert(
-            azrtti_typeid<Slot>() == valueTypeId,
-            "Unable to Serialize Slot because the provided type is %s.", valueTypeId.ToString<AZStd::string>().c_str());
-
-        const Slot* slot = reinterpret_cast<const Slot*>(inputValue);
-        AZ_Assert(slot, "Input value for JsonSlotSerializer can't be null.");
-
-        outputValue.SetObject();
-
-        JSR::ResultCode result(JSR::Tasks::WriteValue);
-
-        {
-            AZ::ScopedContextPath subPathPropertyOverrides(context, "m_value");
-
-            if (!slot->m_value.empty())
-            {
-                rapidjson::Value outputPropertyValue;
-                if (StoreAny<bool>(slot->m_value, outputPropertyValue, context, result) ||
-                    StoreAny<int16_t>(slot->m_value, outputPropertyValue, context, result) ||
-                    StoreAny<uint16_t>(slot->m_value, outputPropertyValue, context, result) ||
-                    StoreAny<int32_t>(slot->m_value, outputPropertyValue, context, result) ||
-                    StoreAny<uint32_t>(slot->m_value, outputPropertyValue, context, result) ||
-                    StoreAny<int64_t>(slot->m_value, outputPropertyValue, context, result) ||
-                    StoreAny<uint64_t>(slot->m_value, outputPropertyValue, context, result) ||
-                    StoreAny<float>(slot->m_value, outputPropertyValue, context, result) ||
-                    StoreAny<double>(slot->m_value, outputPropertyValue, context, result) ||
-                    StoreAny<AZStd::string>(slot->m_value, outputPropertyValue, context, result) ||
-                    StoreAny<AZ::Vector2>(slot->m_value, outputPropertyValue, context, result) ||
-                    StoreAny<AZ::Vector3>(slot->m_value, outputPropertyValue, context, result) ||
-                    StoreAny<AZ::Vector4>(slot->m_value, outputPropertyValue, context, result) ||
-                    StoreAny<AZ::Color>(slot->m_value, outputPropertyValue, context, result) ||
-                    StoreAny<AZ::EntityId>(slot->m_value, outputPropertyValue, context, result))
-                {
-                    outputValue.AddMember("m_value", outputPropertyValue, context.GetJsonAllocator());
-                }
-            }
-        }
-
-        {
-            AZ::ScopedContextPath subSlotId(context, "m_subId");
-            SlotSubId defaultSubId = 0;
-
-            result.Combine(ContinueStoringToJsonObjectField(
-                outputValue, "m_subId", &slot->m_subId, &defaultSubId,
-                azrtti_typeid<SlotSubId>(), context));
-        }
-
-        return context.Report(
-            result,
-            result.GetProcessing() != JSR::Processing::Halted ? "Successfully stored MaterialAssignment information."
-            : "Failed to store MaterialAssignment information.");
-    }
-
-    template<typename T>
-    bool JsonSlotSerializer::LoadAny(
-        AZStd::any& propertyValue, const rapidjson::Value& inputPropertyValue, AZ::JsonDeserializerContext& context,
-        AZ::JsonSerializationResult::ResultCode& result)
-    {
-        auto valueItr = inputPropertyValue.FindMember("Value");
-        auto typeItr = inputPropertyValue.FindMember("$type");
-        if ((valueItr != inputPropertyValue.MemberEnd()) && (typeItr != inputPropertyValue.MemberEnd()))
-        {
-            // Requiring explicit type info to differentiate between colors versus vectors and numeric types
-            const AZ::Uuid baseTypeId = azrtti_typeid<T>();
-            AZ::Uuid typeId = AZ::Uuid::CreateNull();
-            result.Combine(LoadTypeId(typeId, inputPropertyValue, context, &baseTypeId));
-
-            if (typeId == azrtti_typeid<T>())
-            {
-                T value;
-                result.Combine(ContinueLoadingFromJsonObjectField(&value, azrtti_typeid<T>(), inputPropertyValue, "Value", context));
-                propertyValue = value;
-                return true;
-            }
-        }
-        return false;
-    }
-
-    template<typename T>
-    bool JsonSlotSerializer::StoreAny(
-        const AZStd::any& propertyValue, rapidjson::Value& outputPropertyValue, AZ::JsonSerializerContext& context,
-        AZ::JsonSerializationResult::ResultCode& result)
-    {
-        if (propertyValue.is<T>())
-        {
-            outputPropertyValue.SetObject();
-
-            // Storing explicit type info to differentiate between colors versus vectors and numeric types
-            rapidjson::Value typeValue;
-            result.Combine(StoreTypeId(typeValue, azrtti_typeid<T>(), context));
-            outputPropertyValue.AddMember("$type", typeValue, context.GetJsonAllocator());
-
-            T value = AZStd::any_cast<T>(propertyValue);
-            result.Combine(
-                ContinueStoringToJsonObjectField(outputPropertyValue, "Value", &value, nullptr, azrtti_typeid<T>(), context));
-            return true;
-        }
-        return false;
-    }
-
     void Slot::Reflect(AZ::ReflectContext* context)
     {
-        if (auto jsonContext = azrtti_cast<AZ::JsonRegistrationContext*>(context))
-        {
-            jsonContext->Serializer<JsonSlotSerializer>()->HandlesType<Slot>();
-        }
-
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<Slot>()
@@ -476,20 +361,12 @@ namespace GraphModel
     void Slot::PostLoadSetup(GraphPtr graph, SlotDefinitionPtr slotDefinition)
     {
         AZ_Assert(nullptr == GetGraph(), "This slot is not freshly loaded");
-        AZ_Assert(m_parentNode._empty(), "This slot is not freshly loaded");
 
         m_graph = graph;
         m_slotDefinition = slotDefinition;
 
         if (SupportsValues())
         {
-            // CJS TODO: Consider using AZ::Outcome for better error reporting
-
-            // Check the serialized value type against the supported types for this slot
-            // instead of just using Slot::GetDataType(), because for slots with
-            // multiple supported types, Slot::GetDataType() will call GetParentNode()
-            // to try and resolve its type, which will be a nullptr at this point
-            // because the parent won't be valid yet
             AZ_Error(
                 GetGraph()->GetSystemName(),
                 GetDataTypeForValue(m_value),
@@ -500,24 +377,14 @@ namespace GraphModel
 
     NodePtr Slot::GetParentNode() const
     {
-        // Originally the parent node was passed to the Slot constructor, but this was before
-        // using shared_ptr for Nodes. Because the Node constructor is what creates the Slots,
-        // and shared_from_this() doesn't work in constructors, we can't initialize m_parentNode
-        // until after the Node is created. So we search for and cache the pointer here the first
-        // time it is requested.
-        if (m_parentNode._empty())
+        for (auto nodePair : GetGraph()->GetNodes())
         {
-            for (auto nodeIter : GetGraph()->GetNodes())
+            if (nodePair.second->Contains(shared_from_this()))
             {
-                if (nodeIter.second->Contains(shared_from_this()))
-                {
-                    m_parentNode = nodeIter.second;
-                    break;
-                }
+                return nodePair.second;
             }
         }
-
-        return m_parentNode.lock();
+        return {};
     }
 
     AZStd::any Slot::GetValue() const
@@ -528,19 +395,16 @@ namespace GraphModel
     Slot::ConnectionList Slot::GetConnections() const
     {
         ConnectionList connections;
-
-        for (auto iter : m_connections)
+        for (auto connection : GetGraph()->GetConnections())
         {
-            if (ConnectionPtr connection = iter.lock())
+            if (connection &&
+                connection->GetSourceSlot() &&
+                connection->GetTargetSlot() &&
+                (connection->GetSourceSlot().get() == this || connection->GetTargetSlot().get() == this))
             {
                 connections.insert(connection);
             }
-            else
-            {
-                AZ_Assert(false , "Slot's connection cache is out of date");
-            }
         }
-
         return connections;
     }
 
@@ -560,6 +424,7 @@ namespace GraphModel
     bool                 Slot::SupportsDataTypes()      const { return m_slotDefinition->SupportsDataTypes(); }
     bool                 Slot::SupportsConnections()   const { return m_slotDefinition->SupportsConnections(); }
     bool                 Slot::SupportsExtendability() const { return m_slotDefinition->SupportsExtendability(); }
+    bool                 Slot::SupportsEditingOnNode()      const { return m_slotDefinition->SupportsEditingOnNode(); }
     const SlotName&      Slot::GetName()               const { return m_slotDefinition->GetName(); }
     const AZStd::string& Slot::GetDisplayName()        const { return m_slotDefinition->GetDisplayName(); }
     const AZStd::string& Slot::GetDescription()        const { return m_slotDefinition->GetDescription(); }

@@ -16,6 +16,7 @@ namespace AzToolsFramework
     DPEDebugWindow::DPEDebugWindow(QWidget* parentWidget)
         : QMainWindow(parentWidget)
     {
+        setAttribute(Qt::WA_DeleteOnClose);
         m_ui = new Ui::DPEDebugWindow;
         m_ui->setupUi(this);
 
@@ -28,6 +29,8 @@ namespace AzToolsFramework
                 SetAdapter(m_adapters[m_ui->adapterSelector->currentIndex()]);
             });
     }
+
+    DPEDebugWindow::~DPEDebugWindow() = default;
 
     void DPEDebugWindow::SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapterPtr adapter)
     {

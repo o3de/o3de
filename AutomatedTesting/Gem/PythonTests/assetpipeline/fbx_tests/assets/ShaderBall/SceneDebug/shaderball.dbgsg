@@ -30,40 +30,46 @@ Node Type: CustomPropertyData
 
 Node Name: InnerPortion
 Node Path: RootNode.ShaderBall_1m.InnerPortion
-Node Type: CustomPropertyData
-	IsNull: true
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	UserProperties: 
-	InheritType: 1
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: MaterialBase
 Node Path: RootNode.ShaderBall_1m.MaterialBase
-Node Type: CustomPropertyData
-	IsNull: true
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	currentUVSet: UVW
-	UserProperties: 
-	InheritType: 1
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: InlayRings
 Node Path: RootNode.ShaderBall_1m.InlayRings
-Node Type: CustomPropertyData
-	IsNull: true
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	currentUVSet: UVW
-	UserProperties: 
-	InheritType: 1
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: MainSphere
 Node Path: RootNode.ShaderBall_1m.MainSphere
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.ShaderBall_1m.InnerPortion.custom_properties
 Node Type: CustomPropertyData
 	IsNull: true
 	RotationActive: true
 	DefaultAttributeIndex: 0
-	currentUVSet: UVW
 	UserProperties: 
 	InheritType: 1
 
@@ -114,6 +120,16 @@ Node Type: MeshData
 	Normals: Count 5846. Hash: 12980164457801827192
 	FaceList: Count 9800. Hash: 2914108932212582430
 	FaceMaterialIds: Count 9800. Hash: 2219364576630417284
+
+Node Name: custom_properties
+Node Path: RootNode.ShaderBall_1m.MaterialBase.custom_properties
+Node Type: CustomPropertyData
+	IsNull: true
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	currentUVSet: UVW
+	UserProperties: 
+	InheritType: 1
 
 Node Name: InnerCone
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone
@@ -283,6 +299,16 @@ Node Type: MeshData
 	FaceList: Count 10024. Hash: 10907381836011223214
 	FaceMaterialIds: Count 10024. Hash: 9849297365743356453
 
+Node Name: custom_properties
+Node Path: RootNode.ShaderBall_1m.InlayRings.custom_properties
+Node Type: CustomPropertyData
+	IsNull: true
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	currentUVSet: UVW
+	UserProperties: 
+	InheritType: 1
+
 Node Name: RingLeft
 Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft
 Node Type: MeshData
@@ -330,6 +356,16 @@ Node Type: MeshData
 	Normals: Count 720. Hash: 14263134585377771060
 	FaceList: Count 1280. Hash: 13824345071081010014
 	FaceMaterialIds: Count 1280. Hash: 6371267399123018661
+
+Node Name: custom_properties
+Node Path: RootNode.ShaderBall_1m.MainSphere.custom_properties
+Node Type: CustomPropertyData
+	IsNull: true
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	currentUVSet: UVW
+	UserProperties: 
+	InheritType: 1
 
 Node Name: RightHub
 Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub
@@ -427,6 +463,15 @@ Node Type: MeshData
 	FaceList: Count 9456. Hash: 13541126452398082145
 	FaceMaterialIds: Count 9456. Hash: 13982281543095132650
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap.custom_properties
 Node Type: CustomPropertyData
@@ -504,6 +549,15 @@ Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap.BitangentSet_1
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 20476. Hash: 309820643999247955
 	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.InnerPortion.InnerSphere.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.InnerPortion.InnerSphere.custom_properties
@@ -621,6 +675,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 4724. Hash: 1080930468361041453
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap_shaderball_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
@@ -698,6 +761,15 @@ Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap_default_shaderball_E95B8EA
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 4724. Hash: 1080930468361041453
 	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap_default_shaderball_E95B8EA6_DCA7_501D_AE59_1088AB70DF38__optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap_default_shaderball_E95B8EA6_DCA7_501D_AE59_1088AB70DF38__optimized.custom_properties
@@ -777,6 +849,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 5846. Hash: 6861847030641362531
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.InnerPortion.InnerSphere_shaderball_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.InnerPortion.InnerSphere_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
@@ -855,6 +936,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 5846. Hash: 6861847030641362531
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.InnerPortion.InnerSphere_default_shaderball_473A4A86_CC7E_55D2_91F6_7EF87FBD5C01__optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.InnerPortion.InnerSphere_default_shaderball_473A4A86_CC7E_55D2_91F6_7EF87FBD5C01__optimized.custom_properties
 Node Type: CustomPropertyData
@@ -894,6 +984,15 @@ Node Type: MaterialData
 	AmbientOcclusionTexture: 
 	EmissiveTexture: 
 	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
+
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone.custom_properties
@@ -973,6 +1072,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 192. Hash: 14378088137727336097
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost.custom_properties
 Node Type: CustomPropertyData
@@ -1050,6 +1158,15 @@ Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost.BitangentSet_1
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 4864. Hash: 12470368568863176335
 	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff.custom_properties
@@ -1129,6 +1246,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 4096. Hash: 16465645522600859391
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset.custom_properties
 Node Type: CustomPropertyData
@@ -1206,6 +1332,15 @@ Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset.BitangentSet_1
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 1536. Hash: 17779645716491562667
 	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MaterialBase.BottomCap.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MaterialBase.BottomCap.custom_properties
@@ -1285,6 +1420,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 960. Hash: 15826838159231044203
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion.custom_properties
 Node Type: CustomPropertyData
@@ -1362,6 +1506,15 @@ Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion.BitangentSet_1
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 54208. Hash: 2074363216216487237
 	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff.custom_properties
@@ -1479,6 +1632,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 65. Hash: 15200278891890596008
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone_shaderball_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
@@ -1556,6 +1718,15 @@ Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone_default_shaderball_F50B
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 65. Hash: 15200278891890596008
 	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone_default_shaderball_F50B5AC3_CCD7_5683_9F22_9A229001ABFF__optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone_default_shaderball_F50B5AC3_CCD7_5683_9F22_9A229001ABFF__optimized.custom_properties
@@ -1635,6 +1806,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 1300. Hash: 14920629477034919393
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost_shaderball_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
@@ -1712,6 +1892,15 @@ Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost_default_shaderball_FEA7
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 1300. Hash: 14920629477034919393
 	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost_default_shaderball_FEA7D61B_0535_550B_86E8_B48BD812D84A__optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost_default_shaderball_FEA7D61B_0535_550B_86E8_B48BD812D84A__optimized.custom_properties
@@ -1791,6 +1980,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 1122. Hash: 100095329364523248
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_shaderball_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
@@ -1868,6 +2066,15 @@ Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_default_shaderball_
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 1122. Hash: 100095329364523248
 	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_default_shaderball_9714DB61_2272_55A8_80FD_0386DF43C72C__optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_default_shaderball_9714DB61_2272_55A8_80FD_0386DF43C72C__optimized.custom_properties
@@ -1947,6 +2154,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 448. Hash: 8818080862566813062
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset_shaderball_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
@@ -2024,6 +2240,15 @@ Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset_default_shaderball_6D25426B
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 448. Hash: 8818080862566813062
 	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset_default_shaderball_6D25426B_F22E_54CA_B38A_1F8D65A05243__optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset_default_shaderball_6D25426B_F22E_54CA_B38A_1F8D65A05243__optimized.custom_properties
@@ -2103,6 +2328,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 257. Hash: 9909736394462106525
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MaterialBase.BottomCap_shaderball_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MaterialBase.BottomCap_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
@@ -2180,6 +2414,15 @@ Node Path: RootNode.ShaderBall_1m.MaterialBase.BottomCap_default_shaderball_1C4F
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 257. Hash: 9909736394462106525
 	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MaterialBase.BottomCap_default_shaderball_1C4F5C76_38DF_5289_AF68_EB96F7658B86__optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MaterialBase.BottomCap_default_shaderball_1C4F5C76_38DF_5289_AF68_EB96F7658B86__optimized.custom_properties
@@ -2259,6 +2502,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 13860. Hash: 7251784463761381809
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion_shaderball_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
@@ -2336,6 +2588,15 @@ Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion_default_shaderball_4
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 13860. Hash: 7251784463761381809
 	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion_default_shaderball_491DD9C0_9F62_538A_8637_2F85BDEE4675__optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion_default_shaderball_491DD9C0_9F62_538A_8637_2F85BDEE4675__optimized.custom_properties
@@ -2415,6 +2676,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 5206. Hash: 8652443944286435468
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_shaderball_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
@@ -2493,6 +2763,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 5206. Hash: 8652443944286435468
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_default_shaderball_61FA311B_958E_5E8A_A4C1_96AA01552B5D__optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_default_shaderball_61FA311B_958E_5E8A_A4C1_96AA01552B5D__optimized.custom_properties
 Node Type: CustomPropertyData
@@ -2532,6 +2811,15 @@ Node Type: MaterialData
 	AmbientOcclusionTexture: 
 	EmissiveTexture: 
 	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
+
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft.custom_properties
@@ -2610,6 +2898,15 @@ Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft.BitangentSet_1
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 2560. Hash: 3318206549561696188
 	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.InlayRings.RingRight.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.InlayRings.RingRight.custom_properties
@@ -2727,6 +3024,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 720. Hash: 16922723248982534245
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft_shaderball_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
@@ -2804,6 +3110,15 @@ Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft_default_shaderball_92798A1
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 720. Hash: 16922723248982534245
 	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft_default_shaderball_92798A1A_DA92_5BCB_8E70_6433043ABDB6__optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft_default_shaderball_92798A1A_DA92_5BCB_8E70_6433043ABDB6__optimized.custom_properties
@@ -2883,6 +3198,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 720. Hash: 12477592739739533067
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.InlayRings.RingRight_shaderball_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.InlayRings.RingRight_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
@@ -2961,6 +3285,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 720. Hash: 12477592739739533067
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.InlayRings.RingRight_default_shaderball_60E3FD38_62BE_5AF8_8DF9_085F00380C7C__optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.InlayRings.RingRight_default_shaderball_60E3FD38_62BE_5AF8_8DF9_085F00380C7C__optimized.custom_properties
 Node Type: CustomPropertyData
@@ -3000,6 +3333,15 @@ Node Type: MaterialData
 	AmbientOcclusionTexture: 
 	EmissiveTexture: 
 	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
+
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub.custom_properties
@@ -3079,6 +3421,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 6304. Hash: 3046294637431015510
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub.custom_properties
 Node Type: CustomPropertyData
@@ -3157,6 +3508,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 6304. Hash: 4969210758291089995
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MainSphere.Inside.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MainSphere.Inside.custom_properties
 Node Type: CustomPropertyData
@@ -3234,6 +3594,15 @@ Node Path: RootNode.ShaderBall_1m.MainSphere.Inside.BitangentSet_1
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 3520. Hash: 8463107387658894201
 	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere.custom_properties
@@ -3351,6 +3720,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 1617. Hash: 6416015160247779547
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub_shaderball_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
@@ -3428,6 +3806,15 @@ Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub_default_shaderball_51CC241
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 1617. Hash: 6416015160247779547
 	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub_default_shaderball_51CC241B_C54B_50F2_AED7_113C1327FAD0__optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub_default_shaderball_51CC241B_C54B_50F2_AED7_113C1327FAD0__optimized.custom_properties
@@ -3507,6 +3894,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 1617. Hash: 14516337485055158228
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub_shaderball_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
@@ -3584,6 +3980,15 @@ Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub_default_shaderball_2386C2AB
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 1617. Hash: 14516337485055158228
 	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub_default_shaderball_2386C2AB_0C4B_554F_B3BC_43754B12017E__optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub_default_shaderball_2386C2AB_0C4B_554F_B3BC_43754B12017E__optimized.custom_properties
@@ -3663,6 +4068,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 960. Hash: 6108415656799664788
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MainSphere.Inside_shaderball_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MainSphere.Inside_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
@@ -3740,6 +4154,15 @@ Node Path: RootNode.ShaderBall_1m.MainSphere.Inside_default_shaderball_0E8A4436_
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 960. Hash: 6108415656799664788
 	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MainSphere.Inside_default_shaderball_0E8A4436_3658_5EF3_8EA9_0503A42060D6__optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MainSphere.Inside_default_shaderball_0E8A4436_3658_5EF3_8EA9_0503A42060D6__optimized.custom_properties
@@ -3819,6 +4242,15 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 4891. Hash: 7889928104085840247
 	GenerationMethod: 1
 
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_shaderball_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
@@ -3896,6 +4328,15 @@ Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_default_shaderball_
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 4891. Hash: 7889928104085840247
 	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_default_shaderball_1616D68E_F072_5643_BD07_565772CD0E30__optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
 Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_default_shaderball_1616D68E_F072_5643_BD07_565772CD0E30__optimized.custom_properties

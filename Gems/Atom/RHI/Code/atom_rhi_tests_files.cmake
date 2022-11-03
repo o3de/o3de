@@ -18,6 +18,7 @@ set(FILES
     Tests/IndirectBufferTests.cpp
     Tests/InputStreamLayoutBuilderTests.cpp
     Tests/NameIdReflectionMapTests.cpp
+    Tests/PageTileAllocatorTests.cpp
     Tests/PipelineStateTests.cpp
     Tests/QueryTests.cpp
     Tests/RenderAttachmentLayoutBuilderTests.cpp
@@ -43,6 +44,7 @@ set(FILES
     Tests/Scope.cpp
     Tests/ShaderResourceGroup.h
     Tests/ShaderResourceGroup.cpp
+    Tests/TagRegistryTests.cpp
     Tests/TransientAttachmentPool.h
     Tests/TransientAttachmentPool.cpp
     Tests/ThreadTester.h

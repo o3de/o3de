@@ -370,7 +370,7 @@ namespace Audio
         EATLDataScope m_dataScope;
 
 #if !defined(AUDIO_RELEASE)
-        AZStd::chrono::system_clock::time_point m_timeCached;
+        AZStd::chrono::steady_clock::time_point m_timeCached;
 #endif // !AUDIO_RELEASE
     };
 

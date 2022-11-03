@@ -72,6 +72,8 @@
 #include <PostProcessing/ChromaticAberrationPass.h>
 #include <ScreenSpace/DeferredFogPass.h>
 #include <Shadows/ProjectedShadowFeatureProcessor.h>
+#include <SkyAtmosphere/SkyAtmosphereFeatureProcessor.h>
+#include <SkyAtmosphere/SkyAtmosphereParentPass.h>
 #include <SkyBox/SkyBoxFogSettings.h>
 #include <SkyBox/SkyBoxFeatureProcessor.h>
 
@@ -90,22 +92,6 @@
 #include <RayTracing/RayTracingAccelerationStructurePass.h>
 #include <RayTracing/RayTracingPass.h>
 #include <RayTracing/RayTracingPassData.h>
-#include <DiffuseGlobalIllumination/DiffuseProbeGridPreparePass.h>
-#include <DiffuseGlobalIllumination/DiffuseProbeGridRayTracingPass.h>
-#include <DiffuseGlobalIllumination/DiffuseProbeGridBlendIrradiancePass.h>
-#include <DiffuseGlobalIllumination/DiffuseProbeGridBlendDistancePass.h>
-#include <DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdatePass.h>
-#include <DiffuseGlobalIllumination/DiffuseProbeGridRelocationPass.h>
-#include <DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.h>
-#include <DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.h>
-#include <DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.h>
-#include <DiffuseGlobalIllumination/DiffuseProbeGridVisualizationPreparePass.h>
-#include <DiffuseGlobalIllumination/DiffuseProbeGridVisualizationAccelerationStructurePass.h>
-#include <DiffuseGlobalIllumination/DiffuseProbeGridVisualizationRayTracingPass.h>
-#include <DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.h>
-#include <DiffuseGlobalIllumination/DiffuseProbeGridQueryPass.h>
-#include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
-#include <DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.h>
@@ -126,6 +112,7 @@ namespace AZ
             AuxGeomFeatureProcessor::Reflect(context);
             TransformServiceFeatureProcessor::Reflect(context);
             ProjectedShadowFeatureProcessor::Reflect(context);
+            SkyAtmosphereFeatureProcessor::Reflect(context);
             SkyBoxFeatureProcessor::Reflect(context);
             SkyBoxFogSettings::Reflect(context);
             UseTextureFunctor::Reflect(context);
@@ -152,8 +139,6 @@ namespace AZ
 
             LightingPreset::Reflect(context);
             ModelPreset::Reflect(context);
-            DiffuseProbeGridFeatureProcessor::Reflect(context);
-            DiffuseGlobalIlluminationFeatureProcessor::Reflect(context);
             RayTracingFeatureProcessor::Reflect(context);
             OcclusionCullingPlaneFeatureProcessor::Reflect(context);
 
@@ -201,6 +186,7 @@ namespace AZ
         {
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<AuxGeomFeatureProcessor, RPI::AuxGeomFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<TransformServiceFeatureProcessor, TransformServiceFeatureProcessorInterface>();
+            AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<SkyAtmosphereFeatureProcessor, SkyAtmosphereFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<SkyBoxFeatureProcessor, SkyBoxFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<MeshFeatureProcessor, MeshFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<ImageBasedLightFeatureProcessor, ImageBasedLightFeatureProcessorInterface>();
@@ -212,14 +198,14 @@ namespace AZ
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<ReflectionProbeFeatureProcessor, ReflectionProbeFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<CubeMapCaptureFeatureProcessor, CubeMapCaptureFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<SMAAFeatureProcessor>();
-            AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<DiffuseProbeGridFeatureProcessor, DiffuseProbeGridFeatureProcessorInterface>();
-            AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<DiffuseGlobalIlluminationFeatureProcessor, DiffuseGlobalIlluminationFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<RayTracingFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<OcclusionCullingPlaneFeatureProcessor, OcclusionCullingPlaneFeatureProcessorInterface>();
 
-            // Add SkyBox pass
             auto* passSystem = RPI::PassSystemInterface::Get();
             AZ_Assert(passSystem, "Cannot get the pass system.");
+
+            // Add Sky Atmosphere Parent pass
+            passSystem->AddPassCreator(Name("SkyAtmosphereParentPass"), &SkyAtmosphereParentPass::Create);
 
             // Add DisplayMapper pass
             passSystem->AddPassCreator(Name("AcesOutputTransformLutPass"), &AcesOutputTransformLutPass::Create);
@@ -286,23 +272,7 @@ namespace AZ
             // Add Chromatic Aberration
             passSystem->AddPassCreator(Name("ChromaticAberrationPass"), &ChromaticAberrationPass::Create);
 
-            // Add Diffuse Global Illumination passes
-            passSystem->AddPassCreator(Name("RayTracingAccelerationStructurePass"), &Render::RayTracingAccelerationStructurePass::Create);
-            passSystem->AddPassCreator(Name("DiffuseProbeGridPreparePass"), &Render::DiffuseProbeGridPreparePass::Create);
-            passSystem->AddPassCreator(Name("DiffuseProbeGridRayTracingPass"), &Render::DiffuseProbeGridRayTracingPass::Create);
-            passSystem->AddPassCreator(Name("DiffuseProbeGridBlendIrradiancePass"), &Render::DiffuseProbeGridBlendIrradiancePass::Create);
-            passSystem->AddPassCreator(Name("DiffuseProbeGridBlendDistancePass"), &Render::DiffuseProbeGridBlendDistancePass::Create);
-            passSystem->AddPassCreator(Name("DiffuseProbeGridBorderUpdatePass"), &Render::DiffuseProbeGridBorderUpdatePass::Create);
-            passSystem->AddPassCreator(Name("DiffuseProbeGridRelocationPass"), &Render::DiffuseProbeGridRelocationPass::Create);
-            passSystem->AddPassCreator(Name("DiffuseProbeGridClassificationPass"), &Render::DiffuseProbeGridClassificationPass::Create);
-            passSystem->AddPassCreator(Name("DiffuseProbeGridDownsamplePass"), &Render::DiffuseProbeGridDownsamplePass::Create);
-            passSystem->AddPassCreator(Name("DiffuseProbeGridRenderPass"), &Render::DiffuseProbeGridRenderPass::Create);
-            passSystem->AddPassCreator(Name("DiffuseProbeGridVisualizationPreparePass"), &Render::DiffuseProbeGridVisualizationPreparePass::Create);
-            passSystem->AddPassCreator(Name("DiffuseProbeGridVisualizationAccelerationStructurePass"), &Render::DiffuseProbeGridVisualizationAccelerationStructurePass::Create);
-            passSystem->AddPassCreator(Name("DiffuseProbeGridVisualizationRayTracingPass"), &Render::DiffuseProbeGridVisualizationRayTracingPass::Create);
-            passSystem->AddPassCreator(Name("DiffuseProbeGridVisualizationCompositePass"), &Render::DiffuseProbeGridVisualizationCompositePass::Create);
-            passSystem->AddPassCreator(Name("DiffuseProbeGridQueryPass"), &Render::DiffuseProbeGridQueryPass::Create);
-
+            // Add Luminance Histogram pass
             passSystem->AddPassCreator(Name("LuminanceHistogramGeneratorPass"), &LuminanceHistogramGeneratorPass::Create);
 
             // Deferred Fog
@@ -315,7 +285,8 @@ namespace AZ
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceCompositePass"), &Render::ReflectionScreenSpaceCompositePass::Create);
             passSystem->AddPassCreator(Name("ReflectionCopyFrameBufferPass"), &Render::ReflectionCopyFrameBufferPass::Create);
 
-            // Add RayTracing pass
+            // Add RayTracing passes
+            passSystem->AddPassCreator(Name("RayTracingAccelerationStructurePass"), &Render::RayTracingAccelerationStructurePass::Create);
             passSystem->AddPassCreator(Name("RayTracingPass"), &Render::RayTracingPass::Create);
 
             // setup handler for load pass template mappings
@@ -330,8 +301,6 @@ namespace AZ
             m_modelReloaderSystem.reset();
             m_loadTemplatesHandler.Disconnect();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<RayTracingFeatureProcessor>();
-            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<DiffuseGlobalIlluminationFeatureProcessor>();
-            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SMAAFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<ReflectionProbeFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<CubeMapCaptureFeatureProcessor>();
@@ -342,6 +311,7 @@ namespace AZ
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<ImageBasedLightFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<MeshFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SkyBoxFeatureProcessor>();
+            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SkyAtmosphereFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<TransformServiceFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<AuxGeomFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<OcclusionCullingPlaneFeatureProcessor>();

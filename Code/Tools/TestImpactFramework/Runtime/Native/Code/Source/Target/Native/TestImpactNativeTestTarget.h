@@ -8,35 +8,27 @@
 
 #pragma once
 
-#include <Artifact/Static/TestImpactNativeTestTargetDescriptor.h>
-#include <Target/Native/TestImpactNativeTarget.h>
+#include <Artifact/Static/TestImpactNativeTestTargetMeta.h>
+#include <Target/Common/TestImpactTestTarget.h>
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace TestImpact
 {
     //! Build target specialization for native test targets (build targets containing test code and no production code).
-    class NativeTestTarget
-        : public NativeTarget
+    class NativeTestTarget 
+    : public TestTarget
     {
     public:
-        using Descriptor = NativeTestTargetDescriptor;
-
-        NativeTestTarget(AZStd::unique_ptr<Descriptor> descriptor);
-
-        //! Returns the test target suite.
-        const AZStd::string& GetSuite() const;
+        NativeTestTarget(TargetDescriptor&& descriptor, NativeTestTargetMeta&& testMetaData);
 
         //! Returns the launcher custom arguments.
         const AZStd::string& GetCustomArgs() const;
-
-        //! Returns the test run timeout.
-        AZStd::chrono::milliseconds GetTimeout() const;
-
+        
         //! Returns the test target launch method.
         LaunchMethod GetLaunchMethod() const;
 
     private:
-        AZStd::unique_ptr<Descriptor> m_descriptor;
+        NativeTargetLaunchMeta m_launchMeta;
     };
 } // namespace TestImpact

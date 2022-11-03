@@ -11,6 +11,7 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/IO/LocalFileIO.h>
+#include <AzTest/Utils.h>
 #include <Multiplayer/Session/SessionConfig.h>
 #include <Multiplayer/Session/SessionNotifications.h>
 
@@ -193,7 +194,7 @@ R"({
 
             AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_localFileIO);
-            m_localFileIO->SetAlias("@log@", AZ_TRAIT_TEST_ROOT_FOLDER);
+            m_localFileIO->SetAlias("@log@", m_tempDirectory.GetDirectory());
         }
 
         void TearDown() override
@@ -210,6 +211,9 @@ R"({
         AZStd::unique_ptr<NiceMock<AWSGameLiftServerManagerMock>> m_serverManager;
         AZ::IO::FileIOBase* m_priorFileIO;
         AZ::IO::FileIOBase* m_localFileIO;
+
+    private:
+        AZ::Test::ScopedAutoTempDirectory m_tempDirectory;
     };
 
     TEST_F(GameLiftServerManagerTest, InitializeGameLiftServerSDK_InitializeTwice_InitSDKCalledOnce)

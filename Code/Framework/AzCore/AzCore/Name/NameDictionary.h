@@ -19,6 +19,11 @@
 namespace UnitTest
 {
     class NameDictionaryTester;
+
+    // forward declare RunConcurrencyTest function in UnitTest namespace
+    // so it can be friended
+    template<class ConcurrencyTestThreadT>
+    void RunConcurrencyTest(uint32_t nameCount, uint32_t threadsPerName);
 }
 
 namespace AZ
@@ -48,16 +53,19 @@ namespace AZ
         friend Name;
         friend Internal::NameData;
         friend UnitTest::NameDictionaryTester;
+        template<class ConcurrentcyTestThreadT>
+        friend void UnitTest::RunConcurrencyTest(uint32_t nameCount, uint32_t threadsPerName);
+
         template<typename T, typename... Args> friend constexpr auto AZStd::construct_at(T*, Args&&... args)
             -> AZStd::enable_if_t<AZStd::is_void_v<AZStd::void_t<decltype(new (AZStd::declval<void*>()) T(AZStd::forward<Args>(args)...))>>, T*>;
         template<typename T> constexpr friend void AZStd::destroy_at(T*);
 
     public:
-
+        AZ_TYPE_INFO(NameDictionary, "{6DBF9DEA-1F65-44DB-977C-65BA9047E869}");
         static void Create();
 
         static void Destroy();
-        static bool IsReady(bool tryCreate = true);
+        static bool IsReady();
         static NameDictionary& Instance();
 
         //! Makes a Name from the provided raw string. If an entry already exists in the dictionary, it is shared.
@@ -73,13 +81,17 @@ namespace AZ
         Name FindName(Name::Hash hash) const;
 
         NameDictionary();
+        //! Constructs a NameDictionary with a fixed amount of hash slots
+        //! @param maxHashSlots exclusive max for the hashValue that be calculated. Can be used to generate more hash collisoins
+        //! @precondition maxHashSlots value are [1, 2^64-1)
+        explicit NameDictionary(AZ::u64 maxHashSlots);
+        ~NameDictionary();
 
         //! Loads a list of names, starting at a given list head, and ensures they're all created and linked
         //! into our list of deferred load names.
         void LoadDeferredNames(Name* deferredHead);
 
     private:
-        ~NameDictionary();
 
         void ReportStats() const;
 
@@ -104,7 +116,22 @@ namespace AZ
         //! Unloads the data with all deferred names registered using LoadDeferredName.
         void UnloadDeferredNames();
 
-        AZStd::unordered_map<Name::Hash, Internal::NameData*> m_dictionary;
+        //! Wrapper structure around a NameData pointer
+        //! Which sets the Internal::NameData::m_nameDictionary pointer to this name dictionary
+        //! instance on construction and to nullptr on destruction
+        struct ScopedNameDataWrapper
+        {
+            ScopedNameDataWrapper(NameDictionary& nameDictionary, Internal::NameData* nameData);
+            // Move constructor to prevent m_nameData from being propagated to copies
+            ScopedNameDataWrapper(ScopedNameDataWrapper&&);
+            ~ScopedNameDataWrapper();
+
+            Internal::NameData* m_nameData{};
+        private:
+            NameDictionary& m_nameDictionary;
+        };
+
+        AZStd::unordered_map<Name::Hash, ScopedNameDataWrapper> m_dictionary;
         mutable AZStd::shared_mutex m_sharedMutex;
 
         //! A fixed Name used as the head of a linked list of Name literals.
@@ -112,5 +139,11 @@ namespace AZ
         //! so we keep track of them here to ensure their name data gets correctly cleaned up
         //! when this dictionary is shut down.
         Name m_deferredHead;
+
+        //! Set the maximum number of hash slots to 2^32
+        //! hash values will be mapped between [0, m_maxHashSlots)
+        //! Can only be configured at construction time and cannot change
+        //! value cannot be 0
+        const AZ::u64 m_maxHashSlots{ static_cast<AZ::u64>(AZStd::numeric_limits<Name::Hash>::max()) + 1 };
     };
 }

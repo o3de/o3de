@@ -62,4 +62,6 @@ namespace ScriptCanvas
     struct ExecutionStateConfig;
 
     using ExecutionUserData = AZStd::any;
+
+    constexpr const char* k_ExecutionStateAzTypeIdString = "{85C66E59-F012-460E-9756-B36819753F4D}";
 } 

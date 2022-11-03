@@ -231,6 +231,8 @@ private Q_SLOTS:
     void OnOpenAssetImporterManager(const QStringList& list);
 
 private:
+    friend class EditorActionsHandler;
+
     bool IsGemEnabled(const QString& uuid, const QString& version) const;
 
     // Broadcast the SystemTick event
@@ -260,7 +262,6 @@ private:
 
     QPointer<ToolbarCustomizationDialog> m_toolbarCustomizationDialog;
     QScopedPointer<AzToolsFramework::QtSourceControlNotificationHandler> m_sourceControlNotifHandler;
-    AZ::Event<bool>::Handler m_handleImGuiStateChangeHandler;
 
     EditorActionsHandler m_editorActionsHandler;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING

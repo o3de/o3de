@@ -17,7 +17,6 @@ AzToolsFramework--EntityOutlinerWidget QTreeView
     selection-background-color: transparent;
 }
 
-
 /* 	
  *  Entity Outliner handles hover and selected state of items via code,
  *  so we need to override the AzQtComponents::Treeview style.

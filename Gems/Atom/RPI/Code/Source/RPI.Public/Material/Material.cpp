@@ -33,15 +33,12 @@ namespace AZ
         Data::Instance<Material> Material::FindOrCreate(const Data::Asset<MaterialAsset>& materialAsset)
         {
             return Data::InstanceDatabase<Material>::Instance().FindOrCreate(
-                Data::InstanceId::CreateFromAssetId(materialAsset.GetId()),
-                materialAsset);
+                Data::InstanceId::CreateFromAsset(materialAsset), materialAsset);
         }
 
         Data::Instance<Material> Material::Create(const Data::Asset<MaterialAsset>& materialAsset)
         {
-            return Data::InstanceDatabase<Material>::Instance().FindOrCreate(
-                Data::InstanceId::CreateRandom(),
-                materialAsset);
+            return Data::InstanceDatabase<Material>::Instance().FindOrCreate(Data::InstanceId::CreateRandom(), materialAsset);
         }
 
         AZ::Data::Instance<Material> Material::CreateInternal(MaterialAsset& materialAsset)
@@ -252,9 +249,7 @@ namespace AZ
         {
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnAssetReloaded %s", this, asset.GetHint().c_str());
 
-            Data::Asset<MaterialAsset> newMaterialAsset = Data::static_pointer_cast<MaterialAsset>(asset);
-
-            if (newMaterialAsset)
+            if (Data::Asset<MaterialAsset> newMaterialAsset = asset)
             {
                 Init(*newMaterialAsset);
                 MaterialReloadNotificationBus::Event(newMaterialAsset.GetId(), &MaterialReloadNotifications::OnMaterialReinitialized, this);
@@ -629,6 +624,17 @@ namespace AZ
                     AZ::Data::AssetCatalogRequestBus::BroadcastResult(
                         assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, imageAsset.GetId());
                     assetType = assetInfo.m_assetType;
+                }
+
+                // There is an issue in the Asset<T>(Asset<U>) copy constructor which is used with the FindOrCreate() calls below.
+                // If the AssetData is valid, then it will get the actual asset type ID from the AssetData. However, if it is null
+                // then it will continue using the original type ID. The InstanceDatabase will end up asking the AssetManager for
+                // the asset using the wrong type (ImageAsset) and will lead to various error messages and in the end the asset
+                // will never be loaded. So we work around this issue by forcing the asset type ID to the correct value first.
+                // See https://github.com/o3de/o3de/issues/12224
+                if (!imageAsset.Get())
+                {
+                    imageAsset = Data::Asset<ImageAsset>{imageAsset.GetId(), assetType, imageAsset.GetHint()};
                 }
 
                 Data::Instance<Image> image = nullptr;

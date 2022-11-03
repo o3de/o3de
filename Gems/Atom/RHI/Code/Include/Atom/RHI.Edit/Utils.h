@@ -64,7 +64,7 @@ namespace AZ
         template< size_t N >
         AZStd::string ByteToHexString(const unsigned char (&array)[N])
         {
-            AZStd::string result{ N * 2, '\0' };
+            AZStd::string result(N * 2, '\0');
             for (int i = 0; i < N; ++i)
             {
                 char msb = (array[i] >> 4) & 0x0F;

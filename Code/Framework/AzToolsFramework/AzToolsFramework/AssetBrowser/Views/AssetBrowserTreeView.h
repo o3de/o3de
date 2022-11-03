@@ -19,6 +19,8 @@
 
 #include <QModelIndex>
 #include <QPointer>
+#include <QDialog>
+#include <QMessageBox>
 #endif
 
 class QTimer;
@@ -36,6 +38,8 @@ namespace AzToolsFramework
             : public QTreeViewWithStateSaving
             , public AssetBrowserViewRequestBus::Handler
             , public AssetBrowserComponentNotificationBus::Handler
+            , public AssetBrowserInteractionNotificationBus::Handler
+
         {
             Q_OBJECT
 
@@ -56,13 +60,18 @@ namespace AzToolsFramework
             void LoadState(const QString& name);
             void SaveState() const;
 
-            AZStd::vector<AssetBrowserEntry*> GetSelectedAssets() const;
+            //! Gets the selected entries.  if includeProducts is false, it will only
+            //! count sources and folders - many common operations such as deleting, renaming, etc,
+            //! can only work on sources and folders.
+            AZStd::vector<AssetBrowserEntry*> GetSelectedAssets(bool includeProducts = true) const;
 
             void SelectFolder(AZStd::string_view folderPath);
 
             void DeleteEntries();
             void RenameEntry();
             void DuplicateEntries();
+            void MoveEntries();
+            void AfterRename(QString newVal);
 
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserViewRequestBus
@@ -119,6 +128,9 @@ namespace AzToolsFramework
 
             //! Grab one entry from the source thumbnail list and update it
             void UpdateSCThumbnails();
+
+            //! AssetBrowserInteractionNotificationBus::Handler overrides...
+            void AddSourceFileCreators(const char* fullSourceFolderName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators) override;
 
         private Q_SLOTS:
             void OnContextMenu(const QPoint& point);

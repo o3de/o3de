@@ -12,6 +12,7 @@
 
 int main(int argc, char* argv[])
 {
+    const AZ::Debug::Trace tracer;
     qputenv("QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM", "1");
 
     AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::PerScreenDpiAware);

@@ -29,7 +29,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString GradientBakerNode::TITLE = QObject::tr("Gradient Baker");
+    const char* GradientBakerNode::TITLE = "Gradient Baker";
 
     GradientBakerNode::GradientBakerNode(GraphModel::GraphPtr graph)
         : BaseGradientNode(graph)
@@ -40,12 +40,12 @@ namespace LandscapeCanvas
 
     const char* GradientBakerNode::GetTitle() const
     {
-        return TITLE.toUtf8().constData();
+        return TITLE;
     }
 
     const char* GradientBakerNode::GetSubTitle() const
     {
-        return GRADIENT_GENERATOR_TITLE.toUtf8().constData();
+        return GRADIENT_GENERATOR_TITLE;
     }
 
     const BaseNode::BaseNodeType GradientBakerNode::GetBaseNodeType() const
@@ -59,6 +59,7 @@ namespace LandscapeCanvas
 
         GraphModel::DataTypePtr boundsDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Bounds);
         GraphModel::DataTypePtr gradientDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
+        GraphModel::DataTypePtr pathDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Path);
 
         RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
             INPUT_BOUNDS_SLOT_ID,
@@ -73,5 +74,11 @@ namespace LandscapeCanvas
             { gradientDataType },
             AZStd::any(AZ::EntityId()),
             INBOUND_GRADIENT_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
+
+        RegisterSlot(GraphModel::SlotDefinition::CreateOutputData(
+            OUTPUT_IMAGE_SLOT_ID,
+            OUTPUT_IMAGE_SLOT_LABEL.toUtf8().constData(),
+            pathDataType,
+            OUTPUT_IMAGE_SLOT_DESCRIPTION.toUtf8().constData()));
     }
 } // namespace LandscapeCanvas

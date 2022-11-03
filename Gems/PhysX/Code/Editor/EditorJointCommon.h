@@ -14,4 +14,7 @@ namespace PhysX
 {
     //! Pair of floating point values for angular limits.
     using AngleLimitsFloatPair = AZStd::pair<float, float>;
+
+    //! Pair of floating point values for linear limits.
+    using LinearLimitsFloatPair = AZStd::pair<float, float>;
 } // namespace PhysX

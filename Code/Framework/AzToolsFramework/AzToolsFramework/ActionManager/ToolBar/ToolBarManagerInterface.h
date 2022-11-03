@@ -11,8 +11,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-class QToolBar;
-class QWidget;
+#include <QToolBar>
 
 namespace AzToolsFramework
 {
@@ -43,6 +42,14 @@ namespace AzToolsFramework
         //! @param properties The properties object for the newly registered ToolBar.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ToolBarManagerOperationResult RegisterToolBar(const AZStd::string& toolBarIdentifier, const ToolBarProperties& properties) = 0;
+
+        //! Register a new ToolBar Area to the ToolBar Manager.
+        //! @param toolBarAreaIdentifier The identifier for the toolbar area that is being registered.
+        //! @param mainWindow Pointer to the QMainWindow to associate the toolbar area with.
+        //! @param toolBarArea Enum of which part of the QMainWindow the toolbar area will cover.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ToolBarManagerOperationResult RegisterToolBarArea(
+            const AZStd::string& toolBarAreaIdentifier, QMainWindow* mainWindow, Qt::ToolBarArea toolBarArea) = 0;
 
         //! Add an Action to a ToolBar.
         //! @param toolBarIdentifier The identifier for the ToolBar the action is being added to.
@@ -97,6 +104,14 @@ namespace AzToolsFramework
         virtual ToolBarManagerOperationResult AddWidgetToToolBar(
             const AZStd::string& toolBarIdentifier, const AZStd::string& widgetActionIdentifier, int sortIndex) = 0;
 
+        //! Add a ToolBar to a ToolBar Area.
+        //! @param toolBarAreaIdentifier The identifier for the toolbar area the toolbar is being added to.
+        //! @param toolBarIdentifier The identifier for the toolbar to add to the toolbar area.
+        //! @param sortIndex An integer defining the position the toolbar should appear in the toolbar area.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ToolBarManagerOperationResult AddToolBarToToolBarArea(
+            const AZStd::string& toolBarAreaIdentifier, const AZStd::string& toolBarIdentifier, int sortIndex) = 0;
+
         //! Retrieve a QToolBar from its identifier.
         //! @param toolBarIdentifier The identifier for the ToolBar to retrieve.
         //! @return A raw pointer to the QToolBar object.
@@ -114,30 +129,6 @@ namespace AzToolsFramework
         //! @return A successful outcome object containing the sort key, or a string with a message detailing the error in case of failure.
         virtual ToolBarManagerIntegerResult GetSortKeyOfWidgetInToolBar(
             const AZStd::string& toolBarIdentifier, const AZStd::string& widgetActionIdentifier) const = 0;
-    };
-
-    //! ToolBarManagerInternalInterface
-    //! Internal Interface to query implementation details for toolBars.
-    class ToolBarManagerInternalInterface
-    {
-    public:
-        AZ_RTTI(ToolBarManagerInternalInterface, "{55B9CA70-5277-4B8A-8F76-8C1F2A75D558}");
-
-        //! Queues up a toolBar for a refresh at the end of this tick.
-        //! @param toolBarIdentifier The identifier for the toolbar to refresh.
-        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
-        virtual ToolBarManagerOperationResult QueueToolBarRefresh(const AZStd::string& toolBarIdentifier) = 0;
-
-        //! Queues up all toolbars containing the action provided for a refresh at the end of this tick.
-        //! @param actionIdentifier The identifier for the action triggering the refresh for toolbars containing it.
-        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
-        virtual ToolBarManagerOperationResult QueueRefreshForToolBarsContainingAction(const AZStd::string& actionIdentifier) = 0;
-
-        //! Refreshes all toolbars that were queued up for refresh.
-        virtual void RefreshToolBars() = 0;
-
-        //! Serialize a toolbar by its identifier.
-        virtual ToolBarManagerStringResult SerializeToolBar(const AZStd::string& toolBarIdentifier) = 0;
     };
 
 } // namespace AzToolsFramework

@@ -69,6 +69,7 @@ namespace ScriptCanvasBuilder
         UpdateDependencyHandling,
         AddExplicitDestructCallForMemberVariables,
         DoNotLoadScriptEventsDuringCreateJobs,
+        FixEntityIdReturnValuesInEvents,
         // add new entries above
         Current,
     };
@@ -173,6 +174,7 @@ namespace ScriptCanvasBuilder
     private:
         AZ::Data::AssetHandler* m_runtimeAssetHandler = nullptr;
         AZ::Data::AssetHandler* m_subgraphInterfaceHandler = nullptr;
+        AZ::Uuid m_sourceUuid;
 
         mutable AZStd::vector<AZ::Data::AssetFilterInfo> m_processEditorAssetDependencies;
         // cached on first time query

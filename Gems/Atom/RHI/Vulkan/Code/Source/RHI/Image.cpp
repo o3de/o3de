@@ -8,7 +8,7 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/sort.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Image.h>
 #include <RHI/ImagePool.h>
 #include <RHI/SwapChain.h>
@@ -340,6 +340,7 @@ namespace AZ
             imageStats->m_name = GetName();
             imageStats->m_bindFlags = descriptor.m_bindFlags;
             imageStats->m_sizeInBytes = m_residentSizeInBytes;
+            imageStats->m_minimumSizeInBytes = m_residentSizeInBytes;
         }
         
         // We don't use vkGetImageSubresourceLayout to calculate the subresource layout because we don't use linear images.

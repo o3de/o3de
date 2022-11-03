@@ -12,6 +12,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/EBus/EventSchedulerSystemComponent.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/Mocks/MockITime.h>
@@ -54,6 +55,7 @@ namespace RecastNavigationTests
         unique_ptr<UnitTest::MockPhysicsShape> m_mockPhysicsShape;
         unique_ptr<UnitTest::MockSimulatedBody> m_mockSimulatedBody;
         unique_ptr<AZ::Console> m_console;
+        unique_ptr<AZ::NameDictionary> m_nameDictionary;
 
         void SetUp() override
         {
@@ -61,6 +63,9 @@ namespace RecastNavigationTests
 
             m_console.reset(aznew AZ::Console());
             AZ::Interface<AZ::IConsole>::Register(m_console.get());
+
+            m_nameDictionary = AZStd::make_unique<AZ::NameDictionary>();
+            AZ::Interface<AZ::NameDictionary>::Register(m_nameDictionary.get());
 
             // register components involved in testing
             m_descriptors = AZStd::make_unique<AZStd::vector<AZ::ComponentDescriptor*>>();
@@ -97,6 +102,9 @@ namespace RecastNavigationTests
 
             m_sc = {};
             m_bc = {};
+
+            AZ::Interface<AZ::NameDictionary>::Unregister(m_nameDictionary.get());
+            m_nameDictionary.reset();
 
             AZ::Interface<AZ::IConsole>::Unregister(m_console.get());
             m_console = {};

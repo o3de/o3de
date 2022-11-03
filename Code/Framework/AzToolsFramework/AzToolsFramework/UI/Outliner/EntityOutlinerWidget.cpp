@@ -306,7 +306,7 @@ namespace AzToolsFramework
         EditorEntityContextNotificationBus::Handler::BusConnect();
         ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
         EditorEntityInfoNotificationBus::Handler::BusConnect();
-        Prefab::PrefabFocusNotificationBus::Handler::BusDisconnect();
+        Prefab::PrefabFocusNotificationBus::Handler::BusConnect(GetEntityContextId());
         Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
         EditorWindowUIRequestBus::Handler::BusConnect();
     }
@@ -342,6 +342,13 @@ namespace AzToolsFramework
     //  Currently, the first behavior is implemented.
     void EntityOutlinerWidget::OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
     {
+        // If we have an open context menu when the selection changes, it is no longer relevant and needs closing.
+        QMenu* menu = qobject_cast<QMenu*>(QApplication::activePopupWidget());
+        if (menu && menu->parentWidget() == this)
+        {
+            menu->close();
+        }
+
         if (m_selectionChangeInProgress || !m_enableSelectionUpdates
             || (selected.empty() && deselected.empty()))
         {
@@ -581,10 +588,11 @@ namespace AzToolsFramework
         QMenu* contextMenu = new QMenu(this);
 
         // Populate global context menu.
-        AzToolsFramework::EditorContextMenuBus::Broadcast(&AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu,
+        AzToolsFramework::EditorContextMenuBus::Broadcast(
+            &AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu,
             contextMenu,
-            AZ::Vector2::CreateZero(),
-            EditorEvents::eECMF_HIDE_ENTITY_CREATION | EditorEvents::eECMF_USE_VIEWPORT_CENTER);
+            AZStd::nullopt,
+            EditorEvents::eECMF_HIDE_ENTITY_CREATION);
 
         PrepareSelection();
 

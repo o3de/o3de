@@ -20,6 +20,8 @@
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 
+#include <AzCore/Name/NameDictionary.h>
+
 namespace AZ::Render
 {
     void StarsFeatureProcessor::Reflect(ReflectContext* context)
@@ -193,39 +195,42 @@ namespace AZ::Render
         m_updateShaderConstants = true;
     }
 
-    void StarsFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]] RPI::RenderPipelinePtr renderPipeline)
+    void StarsFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] AZ::RPI::RenderPipeline* renderPipeline,
+        AZ::RPI::SceneNotification::RenderPipelineChangeType changeType)
     {
-        if(!m_meshPipelineState)
+        if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::Added)
         {
-            m_meshPipelineState = aznew RPI::PipelineStateForDraw;
-            m_meshPipelineState->Init(m_shader);
+            if(!m_meshPipelineState)
+            {
+                m_meshPipelineState = aznew RPI::PipelineStateForDraw;
+                m_meshPipelineState->Init(m_shader);
 
 
-            RHI::InputStreamLayoutBuilder layoutBuilder;
-            layoutBuilder.AddBuffer()
-                ->Channel("POSITION", RHI::Format::R32G32B32_FLOAT)
-                ->Channel("COLOR", RHI::Format::R8G8B8A8_UNORM);
-            layoutBuilder.SetTopology(RHI::PrimitiveTopology::TriangleList);
-            auto inputStreamLayout = layoutBuilder.End();
+                RHI::InputStreamLayoutBuilder layoutBuilder;
+                layoutBuilder.AddBuffer()
+                    ->Channel("POSITION", RHI::Format::R32G32B32_FLOAT)
+                    ->Channel("COLOR", RHI::Format::R8G8B8A8_UNORM);
+                layoutBuilder.SetTopology(RHI::PrimitiveTopology::TriangleList);
+                auto inputStreamLayout = layoutBuilder.End();
 
-            m_meshPipelineState->SetInputStreamLayout(inputStreamLayout);
-            m_meshPipelineState->SetOutputFromScene(GetParentScene());
-            m_meshPipelineState->Finalize();
+                m_meshPipelineState->SetInputStreamLayout(inputStreamLayout);
+                m_meshPipelineState->SetOutputFromScene(GetParentScene());
+                m_meshPipelineState->Finalize();
 
-            UpdateDrawPacket();
-            UpdateBackgroundClearColor();
+                UpdateDrawPacket();
+                UpdateBackgroundClearColor();
+            }
         }
-    }
-
-    void StarsFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
-    {
-        if(m_meshPipelineState)
+        else if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
         {
-            m_meshPipelineState->SetOutputFromScene(GetParentScene());
-            m_meshPipelineState->Finalize();
+            if(m_meshPipelineState)
+            {
+                m_meshPipelineState->SetOutputFromScene(GetParentScene());
+                m_meshPipelineState->Finalize();
 
-            UpdateDrawPacket();
-            UpdateBackgroundClearColor();
+                UpdateDrawPacket();
+                UpdateBackgroundClearColor();
+            }
         }
     }
 
@@ -252,7 +257,7 @@ namespace AZ::Render
 
         auto setClearValue = [&](RPI::Pass* pass)-> RPI::PassFilterExecutionFlow
         {
-            Name slotName = Name::FromStringLiteral(slot);
+            Name slotName = Name::FromStringLiteral(slot, AZ::Interface<AZ::NameDictionary>::Get());
             if (auto binding = pass->FindAttachmentBinding(slotName))
             {
                 binding->m_unifiedScopeDesc.m_loadStoreAction.m_clearValue = blackClearValue;

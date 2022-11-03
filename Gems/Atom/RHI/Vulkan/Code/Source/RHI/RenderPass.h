@@ -119,6 +119,8 @@ namespace AZ
             const Descriptor& GetDescriptor() const;
             uint32_t GetAttachmentCount() const;
 
+            static Descriptor ConvertRenderAttachmentLayout(const RHI::RenderAttachmentLayout& layout, const RHI::MultisampleState& multisampleState);
+
         private:
             RenderPass() = default;
 

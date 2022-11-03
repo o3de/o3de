@@ -289,6 +289,7 @@ namespace GradientSignal
         GradientTransformModifierRequestBus::Handler::BusConnect(GetEntityId());
 
         m_dependencyMonitor.Reset();
+        m_dependencyMonitor.SetRegionChangedEntityNotificationFunction();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         m_dependencyMonitor.ConnectDependency(GetEntityId());
         m_dependencyMonitor.ConnectDependency(GetShapeEntityId());

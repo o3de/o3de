@@ -1,10 +1,5 @@
 {
     "Source": "LightCullingRemap.azsl",
-
-    "Compiler":
-    {
-        "DisableOptimizations":false
-    },
     
     "ProgramSettings" : 
     {

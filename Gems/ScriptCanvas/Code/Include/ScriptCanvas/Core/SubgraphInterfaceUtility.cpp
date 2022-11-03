@@ -23,14 +23,14 @@ namespace SubgraphInterfaceUtilityCpp
 
     bool IsSignatureId(size_t index, AZ::u64 signature, const FunctionSourceId& id)
     {
-        const AZ::u64* idData = reinterpret_cast<const AZ::u64*>(id.data);
+        const AZ::u64* idData = reinterpret_cast<const AZ::u64*>(AZStd::ranges::data(id));
         return idData[index] == signature;
     }
 
     FunctionSourceId MakeSignatureId(size_t index, AZ::u64 signature, const FunctionSourceId& id)
     {
         FunctionSourceId signatureId = id;
-        AZ::u64* idData = reinterpret_cast<AZ::u64*>(signatureId.data);
+        AZ::u64* idData = reinterpret_cast<AZ::u64*>(AZStd::ranges::data(signatureId));
         idData[index] = signature;
         return signatureId;
     }
@@ -87,7 +87,7 @@ namespace ScriptCanvas
             Ins ins;
             return ins;
         }
-               
+
         Outs CreateOutsFromBehaviorContextMethod(const AZ::BehaviorMethod& /*method*/)
         {
             Outs outs;
@@ -113,6 +113,6 @@ namespace ScriptCanvas
             return iter != ins.end() ? iter : nullptr;
         }
 
-    } 
+    }
 
-} 
+}

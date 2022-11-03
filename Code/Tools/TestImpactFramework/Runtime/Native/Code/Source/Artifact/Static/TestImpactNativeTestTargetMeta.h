@@ -8,7 +8,9 @@
 
 #pragma once
 
-#include <Artifact/Static/TestImpactTestSuiteMeta.h>
+#include <TestImpactFramework/TestImpactRepoPath.h>
+
+#include <Artifact/Static/TestImpactTestTargetMeta.h>
 
 #include <AzCore/std/containers/unordered_map.h>
 
@@ -21,12 +23,17 @@ namespace TestImpact
         StandAlone //!< Target is launched directly by itself.
     };
 
+    struct NativeTargetLaunchMeta
+    {
+        AZStd::string m_customArgs;
+        LaunchMethod m_launchMethod = LaunchMethod::TestRunner;
+    };
+
     //! Artifact produced by the build system for each test target containing the additional meta-data about the test.
     struct NativeTestTargetMeta
     {
-        TestSuiteMeta m_suiteMeta;
-        AZStd::string m_customArgs;
-        LaunchMethod m_launchMethod = LaunchMethod::TestRunner;
+        TestTargetMeta m_testTargetMeta;
+        NativeTargetLaunchMeta m_launchMeta;
     };
 
     //! Map between test target name and test target meta-data.

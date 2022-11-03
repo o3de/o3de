@@ -144,13 +144,18 @@ namespace AZ
             if (options3.CopyQueueTimestampQueriesSupported)
             {
                 m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Copy)] = RHI::QueryTypeFlags::Timestamp;
-            }            
+            }
             m_features.m_predication = true;
             m_features.m_occlusionQueryPrecise = true;
             m_features.m_indirectCommandTier = RHI::IndirectCommandTiers::Tier2;
             m_features.m_indirectDrawCountBufferSupported = true;
             m_features.m_indirectDispatchCountBufferSupported = true;
             m_features.m_indirectDrawStartInstanceLocationSupported = true;
+                        
+            D3D12_FEATURE_DATA_D3D12_OPTIONS options;
+            GetDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &options, sizeof(options));
+            // DX12's tile resource implementation uses undefined swizzle tile layout which only requires tier 1
+            m_features.m_tiledResource = options.TiledResourcesTier >= D3D12_TILED_RESOURCES_TIER_1;
 
 #ifdef AZ_DX12_DXR_SUPPORT
             D3D12_FEATURE_DATA_D3D12_OPTIONS5 options5;
@@ -170,6 +175,8 @@ namespace AZ
             m_limits.m_minConstantBufferViewOffset = D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
             m_limits.m_maxIndirectDrawCount = static_cast<uint32_t>(-1);
             m_limits.m_maxIndirectDispatchCount = static_cast<uint32_t>(-1);
+            m_limits.m_maxConstantBufferSize = D3D12_REQ_CONSTANT_BUFFER_ELEMENT_COUNT * 4u * 4u; // 4096 vectors * 4 values per vector * 4 bytes per value
+            m_limits.m_maxBufferSize = D3D12_REQ_RESOURCE_SIZE_IN_MEGABYTES_EXPRESSION_C_TERM * (1024u * 1024u); // 2048 MB
         }
 
         void Device::CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder)
@@ -207,7 +214,7 @@ namespace AZ
         AZStd::chrono::microseconds Device::GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const
         {
             auto durationInSeconds = AZStd::chrono::duration<double>(double(gpuTimestamp) / m_commandQueueContext.GetCommandQueue(queueClass).GetGpuTimestampFrequency());
-            return AZStd::chrono::microseconds(durationInSeconds);
+            return AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(durationInSeconds);
         }
 
         void Device::FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities)
