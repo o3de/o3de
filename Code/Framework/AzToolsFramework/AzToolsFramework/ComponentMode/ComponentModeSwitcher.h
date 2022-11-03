@@ -53,6 +53,7 @@ namespace AzToolsFramework
             , private EntityCompositionNotificationBus::Handler
             , private ToolsApplicationNotificationBus::Handler
             , private AzFramework::ViewportImGuiNotificationBus::Handler
+            , private AzFramework::ComponentModeDelegateNotificationBus::Handler
         {
         public:
             ComponentModeSwitcher();
@@ -118,6 +119,9 @@ namespace AzToolsFramework
             void OnImGuiDropDownHidden() override;
             void OnImGuiActivated() override;
             void OnImGuiDeactivated() override;
+
+            // ComponentModeDelegateNotificationBus overrides ...
+            void OnComponentModeEnabledStatusChanged() override;
 
             // Member variables
             AZ::Component* m_activeSwitcherComponent = nullptr; //!< The component that is currently in component mode

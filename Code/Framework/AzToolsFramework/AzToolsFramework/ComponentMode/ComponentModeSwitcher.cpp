@@ -43,6 +43,7 @@ namespace AzToolsFramework::ComponentModeFramework
         EntityCompositionNotificationBus::Handler::BusConnect();
         ToolsApplicationNotificationBus::Handler::BusConnect();
         AzFramework::ViewportImGuiNotificationBus::Handler::BusConnect();
+        AzFramework::ComponentModeDelegateNotificationBus::Handler::BusConnect();
 
         // create the switcher
         ViewportUi::ViewportUiRequestBus::EventResult(
@@ -94,6 +95,7 @@ namespace AzToolsFramework::ComponentModeFramework
 
     ComponentModeSwitcher::~ComponentModeSwitcher()
     {
+        AzFramework::ComponentModeDelegateNotificationBus::Handler::BusDisconnect();
         AzFramework::ViewportImGuiNotificationBus::Handler::BusDisconnect();
         ToolsApplicationNotificationBus::Handler::BusDisconnect();
         EntityCompositionNotificationBus::Handler::BusDisconnect();
@@ -468,5 +470,10 @@ namespace AzToolsFramework::ComponentModeFramework
             ViewportUi::ViewportUiRequestBus::Event(
                 ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, m_switcherId, false);
         }
+    }
+
+    void ComponentModeSwitcher::OnComponentModeEnabledStatusChanged()
+    {
+        AZ_Printf("debugging", "notification");
     }
 } // namespace AzToolsFramework::ComponentModeFramework

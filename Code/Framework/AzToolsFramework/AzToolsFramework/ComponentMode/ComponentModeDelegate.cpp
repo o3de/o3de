@@ -226,6 +226,9 @@ namespace AzToolsFramework
             m_entityComponentIdPair = entityComponentIdPair;
             m_componentType = componentType;
 
+            AzFramework::ComponentModeDelegateNotificationBus::Broadcast(
+                &AzFramework::ComponentModeDelegateNotificationBus::Events::OnComponentModeEnabledStatusChanged);
+
             EntitySelectionEvents::Bus::Handler::BusConnect(entityComponentIdPair.GetEntityId());
             EditorEntityVisibilityNotificationBus::Handler::BusConnect(entityComponentIdPair.GetEntityId());
             EditorEntityLockComponentNotificationBus::Handler::BusConnect(entityComponentIdPair.GetEntityId());
@@ -233,6 +236,10 @@ namespace AzToolsFramework
 
         void ComponentModeDelegate::Disconnect()
         {
+            //m_entityComponentIdPair;
+            AzFramework::ComponentModeDelegateNotificationBus::Broadcast(
+                &AzFramework::ComponentModeDelegateNotificationBus::Events::OnComponentModeEnabledStatusChanged);
+
             EditorEntityLockComponentNotificationBus::Handler::BusDisconnect();
             EditorEntityVisibilityNotificationBus::Handler::BusDisconnect();
             EntitySelectionEvents::Bus::Handler::BusDisconnect();
