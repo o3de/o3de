@@ -23,6 +23,7 @@
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConverterStackProfileNames.h>
@@ -49,6 +50,10 @@ namespace AzToolsFramework
         m_prefabFocusInterface = AZ::Interface<Prefab::PrefabFocusInterface>::Get();
         AZ_Assert(m_prefabFocusInterface != nullptr,
             "Couldn't get prefab focus interface, it's a requirement for PrefabEntityOwnership system to work");
+
+        m_instanceEntityMapperInterface = AZ::Interface<Prefab::InstanceEntityMapperInterface>::Get();
+        AZ_Assert(m_instanceEntityMapperInterface,
+            "Couldn't get instance entity mapper interface. It's a requirement for PrefabEntityOwnership to work");
 
         m_prefabSystemComponent = AZ::Interface<Prefab::PrefabSystemComponentInterface>::Get();
         AZ_Assert(m_prefabSystemComponent != nullptr,
@@ -175,6 +180,11 @@ namespace AzToolsFramework
         AZ_Assert(IsInitialized(), "Tried to destroy an entity without initializing the Entity Ownership Service");
         AZ_Assert(m_entitiesRemovedCallback, "Callback function for DestroyEntityById has not been set.");
         OnEntityRemoved(entityId);
+        auto owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+        if (owningInstance.has_value())
+        {
+            owningInstance->get().DetachEntity(entityId).release();
+        }
         return true;
     }
 

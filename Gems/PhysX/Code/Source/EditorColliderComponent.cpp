@@ -483,6 +483,9 @@ namespace PhysX
 
         m_componentModeDelegate.Disconnect();
 
+        // When Deactivate is triggered from an application shutdown, it's possible that the
+        // scene interface has already been deleted, so check for its existence here again
+        m_sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         if (m_sceneInterface)
         {
             m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);

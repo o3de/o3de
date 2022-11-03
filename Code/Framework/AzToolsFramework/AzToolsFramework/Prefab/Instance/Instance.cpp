@@ -198,32 +198,44 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<AZ::Entity> Instance::DetachEntity(const AZ::EntityId& entityId)
         {
-            EntityAlias entityAliasToRemove;
-            auto instanceToTemplateEntityIdIterator = m_instanceToTemplateEntityIdMap.find(entityId);
-
-            if (instanceToTemplateEntityIdIterator != m_instanceToTemplateEntityIdMap.end())
+            if (m_containerEntity && m_containerEntity->GetId() == entityId)
             {
-                entityAliasToRemove = instanceToTemplateEntityIdIterator->second;
-                if (m_entityIdInstanceRelationship == EntityIdInstanceRelationship::OneToOne)
+                return DetachContainerEntity();
+            }
+            else
+            {
+                EntityAlias entityAliasToRemove;
+                auto instanceToTemplateEntityIdIterator = m_instanceToTemplateEntityIdMap.find(entityId);
+
+                if (instanceToTemplateEntityIdIterator != m_instanceToTemplateEntityIdMap.end())
                 {
-                    if (!UnregisterEntity(entityId))
+                    entityAliasToRemove = instanceToTemplateEntityIdIterator->second;
+                    if (m_entityIdInstanceRelationship == EntityIdInstanceRelationship::OneToOne)
                     {
-                        AZ_Error("Prefab", false, "An owning instance couldn't be found corresponding to the entity requested to be detached");
-                        return nullptr;
+                        if (!UnregisterEntity(entityId))
+                        {
+                            AZ_Error(
+                                "Prefab",
+                                false,
+                                "An owning instance couldn't be found corresponding to the entity requested to be detached");
+                            return nullptr;
+                        }
+                    }
+                    else
+                    {
+                        [[maybe_unused]] bool isEntityRemoved =
+                            m_templateToInstanceEntityIdMap.erase(entityAliasToRemove) && m_instanceToTemplateEntityIdMap.erase(entityId);
+                        AZ_Assert(
+                            isEntityRemoved,
+                            "Prefab - Failed to remove entity with id %s with a Prefab Instance derived from source asset %s "
+                            "This happens when the entity is not correctly removed from all the prefab system entity maps.",
+                            entityId.ToString().c_str(),
+                            m_templateSourcePath.c_str());
                     }
                 }
-                else
-                {
-                    [[maybe_unused]] bool isEntityRemoved =
-                        m_templateToInstanceEntityIdMap.erase(entityAliasToRemove) && m_instanceToTemplateEntityIdMap.erase(entityId);
-                    AZ_Assert(isEntityRemoved,
-                        "Prefab - Failed to remove entity with id %s with a Prefab Instance derived from source asset %s "
-                        "This happens when the entity is not correctly removed from all the prefab system entity maps.",
-                        entityId.ToString().c_str(), m_templateSourcePath.c_str());
-                }
-            }
 
-            return DetachEntity(entityAliasToRemove);
+                return DetachEntity(entityAliasToRemove);
+            }
         }
 
         AZStd::unique_ptr<AZ::Entity> Instance::DetachEntity(const EntityAlias& entityAlias)

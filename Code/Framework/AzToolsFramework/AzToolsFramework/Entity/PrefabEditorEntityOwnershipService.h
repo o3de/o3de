@@ -22,6 +22,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class Instance;
+        class InstanceEntityMapperInterface;
         class PrefabFocusInterface;
         class PrefabLoaderInterface;
         class PrefabSystemComponentInterface;
@@ -221,6 +222,7 @@ namespace AzToolsFramework
         AZStd::unique_ptr<Prefab::Instance> m_rootInstance;
 
         Prefab::PrefabFocusInterface* m_prefabFocusInterface = nullptr;
+        Prefab::InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
         Prefab::PrefabSystemComponentInterface* m_prefabSystemComponent = nullptr;
         Prefab::PrefabLoaderInterface* m_loaderInterface = nullptr;
         AzFramework::EntityContextId m_entityContextId;
