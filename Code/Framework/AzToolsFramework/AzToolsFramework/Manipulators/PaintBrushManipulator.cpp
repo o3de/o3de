@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Math/Geometry2DUtils.h>
+#include <AzCore/std/sort.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 #include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
@@ -534,23 +535,64 @@ namespace AzToolsFramework
 
 
         // Set the smoothing function to use a Gaussian blur.
-        const size_t kernelSize = 3;
 
-        PaintBrushNotifications::SmoothFn smoothFn =
-            [kernelSize](float baseValue, AZStd::span<float> kernelValues, float opacity) -> float
+        PaintBrushNotifications::SmoothFn smoothFn;
+        size_t kernelSize = 1;
+
+        switch (brushSettings.GetSmoothMode())
         {
-            const float gaussianMultipliers[] = { 1.0f, 2.0f, 1.0f, 2.0f, 4.0f, 2.0f, 1.0f, 2.0f, 1.0f };
-
-            AZ_Assert(kernelValues.size() == (kernelSize * kernelSize), "Invalid number of points to smooth.");
-
-            float smoothedValue = 0.0f;
-            for (size_t index = 0; index < kernelValues.size(); index++)
+        case AzToolsFramework::PaintBrushSmoothMode::Gaussian:
+            // We'll use a 3x3 kernel for Gaussian smoothing
+            kernelSize = 3;
+            smoothFn = [](float baseValue, AZStd::span<float> kernelValues, float opacity) -> float
             {
-                smoothedValue += (kernelValues[index] * gaussianMultipliers[index]);
-            }
+                AZ_Assert(kernelValues.size() == 9, "Invalid number of points to smooth.");
 
-            return AZStd::clamp(AZStd::lerp(baseValue, smoothedValue / 16.0f, opacity), 0.0f, 1.0f);
-        };
+                // Calculate a weighted Gaussian average value from the neighborhood of values surrounding (and including) the baseValue.
+                constexpr float gaussianMultipliers[] = { 1.0f, 2.0f, 1.0f, 2.0f, 4.0f, 2.0f, 1.0f, 2.0f, 1.0f };
+                constexpr float gaussianDivisor = 16.0f;
+
+                float smoothedValue = 0.0f;
+                for (size_t index = 0; index < kernelValues.size(); index++)
+                {
+                    smoothedValue += (kernelValues[index] * gaussianMultipliers[index]);
+                }
+
+                return AZStd::clamp(AZStd::lerp(baseValue, smoothedValue / gaussianDivisor, opacity), 0.0f, 1.0f);
+            };
+            break;
+        case AzToolsFramework::PaintBrushSmoothMode::Mean:
+            // We'll use a 3x3 kernel, but any kernel size here would work.
+            kernelSize = 3;
+            smoothFn = [](float baseValue, AZStd::span<float> kernelValues, float opacity) -> float
+            {
+                // Calculate the average value from the neighborhood of values surrounding (and including) the baseValue.
+                float smoothedValue = 0.0f;
+                for (size_t index = 0; index < kernelValues.size(); index++)
+                {
+                    smoothedValue += kernelValues[index];
+                }
+
+                return AZStd::clamp(AZStd::lerp(baseValue, smoothedValue / kernelValues.size(), opacity), 0.0f, 1.0f);
+            };
+            break;
+        case AzToolsFramework::PaintBrushSmoothMode::Median:
+            kernelSize = 3;
+            smoothFn = [](float baseValue, AZStd::span<float> kernelValues, float opacity) -> float
+            {
+                AZ_Assert(kernelValues.size() == 9, "Invalid number of points to smooth.");
+
+                // Find the middle value from the neighborhood of values surrounding (and including) the baseValue.
+                AZStd::vector<float> sortedValues(kernelValues.begin(), kernelValues.end());
+                AZStd::sort(sortedValues.begin(), sortedValues.end());
+
+                float medianValue = sortedValues[4];
+
+                return AZStd::clamp(AZStd::lerp(baseValue, medianValue, opacity), 0.0f, 1.0f);
+            };
+            break;
+        }
+
 
         // Trigger the OnSmooth notification. Provide the listener with the strokeRegion to describe the general area of the paint stroke,
         // the valueLookupFn to find out the paint brush values at specific world positions, the kernelSize to describe how many values

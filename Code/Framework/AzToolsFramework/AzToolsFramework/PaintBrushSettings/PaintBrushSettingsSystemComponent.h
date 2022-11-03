@@ -45,12 +45,14 @@ namespace AzToolsFramework
         float GetFlowPercent() const override;
         float GetDistancePercent() const override;
         PaintBrushBlendMode GetBlendMode() const override;
+        PaintBrushSmoothMode GetSmoothMode() const override;
         void SetSize(float size) override;
         void SetColor(const AZ::Color& color) override;
         void SetHardnessPercent(float hardnessPercent) override;
         void SetFlowPercent(float flowPercent) override;
         void SetDistancePercent(float distancePercent) override;
         void SetBlendMode(PaintBrushBlendMode blendMode) override;
+        void SetSmoothMode(PaintBrushSmoothMode smoothMode) override;
 
         PaintBrushSettings m_settings;
     };

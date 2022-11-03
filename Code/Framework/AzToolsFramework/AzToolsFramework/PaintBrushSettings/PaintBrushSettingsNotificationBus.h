@@ -13,7 +13,7 @@
 
 namespace AzToolsFramework
 {
-    enum class PaintBrushBlendMode : uint8_t;
+    enum class PaintBrushBlendModeNamespace::PaintBrushBlendMode : uint8_t;
     class PaintBrushSettings;
 
     //! PaintBrushSettingsNotificationBus is used to send out notifications whenever the global paintbrush settings have changed.

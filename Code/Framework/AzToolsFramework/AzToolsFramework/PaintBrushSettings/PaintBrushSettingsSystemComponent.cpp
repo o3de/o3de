@@ -96,6 +96,11 @@ namespace AzToolsFramework
         return m_settings.GetBlendMode();
     }
 
+    PaintBrushSmoothMode PaintBrushSettingsSystemComponent::GetSmoothMode() const
+    {
+        return m_settings.GetSmoothMode();
+    }
+
     void PaintBrushSettingsSystemComponent::SetSize(float size)
     {
         m_settings.SetSize(size);
@@ -124,5 +129,10 @@ namespace AzToolsFramework
     void PaintBrushSettingsSystemComponent::SetBlendMode(PaintBrushBlendMode blendMode)
     {
         m_settings.SetBlendMode(blendMode);
+    }
+
+    void PaintBrushSettingsSystemComponent::SetSmoothMode(PaintBrushSmoothMode smoothMode)
+    {
+        m_settings.SetSmoothMode(smoothMode);
     }
 } // namespace AzToolsFramework

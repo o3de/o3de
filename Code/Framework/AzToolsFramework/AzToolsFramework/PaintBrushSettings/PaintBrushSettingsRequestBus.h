@@ -52,9 +52,16 @@ namespace AzToolsFramework
         //! Returns the current brush stroke blend mode.
         virtual PaintBrushBlendMode GetBlendMode() const = 0;
 
+        //! Returns the current brush stroke smooth mode.
+        virtual PaintBrushSmoothMode GetSmoothMode() const = 0;
+
         //! Sets the brush stroke blend mode.
         //! @param blendMode The new blend mode.
         virtual void SetBlendMode(PaintBrushBlendMode blendMode) = 0;
+
+        //! Sets the brush stroke smooth mode.
+        //! @param smoothMode The new smooth mode.
+        virtual void SetSmoothMode(PaintBrushSmoothMode smoothMode) = 0;
 
         //! Set the brush stroke color, including opacity.
         //! @param color The new brush color. In monochrome painting, only the Red value will be used.

@@ -50,6 +50,7 @@ namespace AzToolsFramework
         //! PaintBrushNotificationBus::OnSmooth(dirtyRegion, valueLookupFn, smoothFn) event to smooth the base values together.
         //! @baseValue The input base value from whatever data is being painted (0-1).
         //! @kernelValues The NxN kernel input base values (with baseValue at the center) from whatever data is being painted (0-1).
+        //! These values may get sorted and/or modified.
         //! @opacity The paint brush opacity at this position (0-1).
         //! @return The smoothed value from 0-1.
         using SmoothFn = AZStd::function<float(float baseValue, AZStd::span<float> kernelValues, float opacity)>;

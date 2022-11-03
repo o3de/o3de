@@ -71,6 +71,7 @@ namespace AzToolsFramework
                 ->Field("Flow", &PaintBrushSettings::m_flowPercent)
                 ->Field("DistancePercent", &PaintBrushSettings::m_distancePercent)
                 ->Field("BlendMode", &PaintBrushSettings::m_blendMode)
+                ->Field("SmoothMode", &PaintBrushSettings::m_smoothMode)
                 ;
 
 
@@ -81,9 +82,8 @@ namespace AzToolsFramework
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &PaintBrushSettings::m_brushMode, "Brush Mode", "Brush functionality.")
-                        ->EnumAttribute(PaintBrushMode::Paintbrush, "Paintbrush")
-                        ->EnumAttribute(PaintBrushMode::Eyedropper, "Eyedropper")
-                        ->EnumAttribute(PaintBrushMode::Smooth, "Smooth")
+                        ->Attribute(
+                            AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<PaintBrushMode>())
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_size, "Size",
@@ -173,6 +173,14 @@ namespace AzToolsFramework
                         ->EnumAttribute(PaintBrushBlendMode::Overlay, "Overlay")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetBlendModeVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox, &PaintBrushSettings::m_smoothMode,
+                        "Smooth Mode", "Smooth mode of the brush stroke.")
+                        ->EnumAttribute(PaintBrushSmoothMode::Gaussian, "Weighted Average (Gaussian)")
+                        ->EnumAttribute(PaintBrushSmoothMode::Mean, "Average (Mean)")
+                        ->EnumAttribute(PaintBrushSmoothMode::Median, "Middle Value (Median)")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetSmoothModeVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
                     ;
             }
         }
@@ -224,21 +232,29 @@ namespace AzToolsFramework
         return (m_brushMode == PaintBrushMode::Paintbrush);
     }
 
-    // The color / intensity / opacity settings have their visibility controlled by the color mode, not the brush mode.
+    // The following settings are only visible in Smooth mode
+
+    bool PaintBrushSettings::GetSmoothModeVisibility() const
+    {
+        return (m_brushMode == PaintBrushMode::Smooth);
+    }
+
+    // The color / intensity settings have their visibility controlled by both the color mode and the brush mode.
 
     bool PaintBrushSettings::GetColorVisibility() const
     {
-        return (m_colorMode != PaintBrushColorMode::Greyscale);
+        return (m_colorMode != PaintBrushColorMode::Greyscale) && (m_brushMode != PaintBrushMode::Smooth);
     }
 
     bool PaintBrushSettings::GetIntensityVisibility() const
     {
-        return (m_colorMode == PaintBrushColorMode::Greyscale);
+        return (m_colorMode == PaintBrushColorMode::Greyscale) && (m_brushMode != PaintBrushMode::Smooth);
     }
+
+    // Opacity is always visible, regardless of brush mode or color mode.
 
     bool PaintBrushSettings::GetOpacityVisibility() const
     {
-        // Opacity is always visible, regardless of brush mode or color mode.
         return true;
     }
 
@@ -260,6 +276,12 @@ namespace AzToolsFramework
     void PaintBrushSettings::SetBlendMode(PaintBrushBlendMode blendMode)
     {
         m_blendMode = blendMode;
+        OnSettingsChanged();
+    }
+
+    void PaintBrushSettings::SetSmoothMode(PaintBrushSmoothMode smoothMode)
+    {
+        m_smoothMode = smoothMode;
         OnSettingsChanged();
     }
 
