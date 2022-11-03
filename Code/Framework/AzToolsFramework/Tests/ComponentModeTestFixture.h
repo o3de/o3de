@@ -18,7 +18,7 @@ namespace UnitTest
 {
     class ComponentModeTestFixture
         : public ToolsApplicationFixture
-        , private AzToolsFramework::EditorDisabledCompositionRequestBus::Handler
+        , public AzToolsFramework::EditorDisabledCompositionRequestBus::Handler
     {
     public:
         // EditorDisabledCompositionRequestBus overrides ...
