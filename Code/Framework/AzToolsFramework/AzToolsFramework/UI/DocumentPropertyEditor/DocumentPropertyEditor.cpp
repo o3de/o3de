@@ -522,6 +522,7 @@ namespace AzToolsFramework
         }
 
         m_widgetToPropertyHandlerInfo.clear();
+        ClearAttributes();
         m_domOrderedChildren.clear();
         m_columnLayout->Clear();
     }
