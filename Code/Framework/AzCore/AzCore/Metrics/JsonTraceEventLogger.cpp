@@ -339,7 +339,7 @@ namespace AZ::Metrics
         constexpr size_t MaxExtraFieldCount = 8;
         AZStd::fixed_vector<EventField, MaxExtraFieldCount> extraParams;
         char scopeChar = static_cast<char>(instantArgs.m_scope);
-        extraParams.emplace_back(ScopeKey, EventValue{ AZStd::in_place_type<AZStd::string_view>, &scopeChar });
+        extraParams.emplace_back(ScopeKey, EventValue{ AZStd::in_place_type<AZStd::string_view>, &scopeChar, 1 });
 
         eventDesc.SetExtraParams(extraParams);
 
