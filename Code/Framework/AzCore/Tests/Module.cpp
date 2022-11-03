@@ -24,7 +24,6 @@ using namespace AZ;
 using ::testing::Return;
 using ::testing::StrEq;
 using ::testing::Matcher;
-using ::testing::_;
 
 namespace UnitTest
 {
