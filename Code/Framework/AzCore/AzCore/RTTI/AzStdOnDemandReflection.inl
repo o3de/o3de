@@ -658,6 +658,22 @@ namespace AZ
         }
     };
 
+    template<>
+    struct OnDemandReflection<AZStd::unexpect_t>
+    {
+        static void Reflect(ReflectContext* context)
+        {
+            if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context))
+            {
+                behaviorContext->Class<AZStd::unexpect_t>()
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Module, "std")
+                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                    ;
+            }
+        }
+    };
+
     template<typename T1, typename T2>
     struct OnDemandReflection<AZStd::pair<T1, T2>>
     {

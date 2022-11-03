@@ -41,10 +41,10 @@ namespace AtomToolsFramework
                     ->SetDynamicEditDataProvider(&DynamicNodeConfig::GetDynamicEditData)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeConfig::m_id, "Id", "UUID for identifying this node configuration regardless of file location.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
-                    ->DataElement(AZ_CRC_CE("MultiLineString"), &DynamicNodeConfig::m_category, "Category", "Name of the category where this node will appear in the node palette.")
-                    ->DataElement(AZ_CRC_CE("MultiLineString"), &DynamicNodeConfig::m_title, "Title", "Title that will appear at the top of the node UI in a graph.")
-                    ->DataElement(AZ_CRC_CE("MultiLineString"), &DynamicNodeConfig::m_subTitle, "Sub Title", "Secondary title that will appear below the main title on the node UI in a graph.")
-                    ->DataElement(AZ_CRC_CE("MultiLineString"), &DynamicNodeConfig::m_titlePaletteName, "Title Palette Name", "Name of the node title bar UI palette style sheet entry.")
+                    ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeConfig::m_category, "Category", "Name of the category where this node will appear in the node palette.")
+                    ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeConfig::m_title, "Title", "Title that will appear at the top of the node UI in a graph.")
+                    ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeConfig::m_subTitle, "Sub Title", "Secondary title that will appear below the main title on the node UI in a graph.")
+                    ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeConfig::m_titlePaletteName, "Title Palette Name", "Name of the node title bar UI palette style sheet entry.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeConfig::m_settings, "Settings", "Table of strings that can be used for any context specific or user defined data for each node.")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                         ->Attribute(AZ::Edit::Attributes::ClearNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
@@ -120,7 +120,6 @@ namespace AtomToolsFramework
             AZ_Error("DynamicNodeConfig", false, "Failed to save (%s). %s", path.c_str(), saveResult.GetError().c_str());
             return false;
         }
-
         return true;
     }
 
@@ -140,7 +139,25 @@ namespace AtomToolsFramework
         }
 
         *this = AZStd::any_cast<DynamicNodeConfig>(loadResult.GetValue());
+
+        ValidateSlots();
         return true;
+    }
+
+    void DynamicNodeConfig::ValidateSlots()
+    {
+        for (auto& slotConfig : m_propertySlots)
+        {
+            slotConfig.ValidateDataTypes();
+        }
+        for (auto& slotConfig : m_inputSlots)
+        {
+            slotConfig.ValidateDataTypes();
+        }
+        for (auto& slotConfig : m_outputSlots)
+        {
+            slotConfig.ValidateDataTypes();
+        }
     }
 
 
