@@ -16,7 +16,7 @@ The O3DE Scene Exporter is a Blender plugin for Customers using Blender as a 3D 
 
 # Create Export, Iterate Export, and Repeat.
 
-We often don’t hit our targets on the first time. The creative process is very iterative and has lots of repetition of the same steps over and over again until our vision is completed. With Digital Content Creation tools, we can help make this process much smother, speeding steps up or completely removing them, giving time back to be creative.
+We often don’t hit our targets on the first time. The creative process is very iterative and has lots of repetition of the same steps over and over again until our vision is completed. With Digital Content Creation tools, we can help make this process much smoother, speeding steps up or completely removing them, giving time back to be creative.
 
 # Project Asset Organization with O3DE Projects and Custom Project Paths.
 
