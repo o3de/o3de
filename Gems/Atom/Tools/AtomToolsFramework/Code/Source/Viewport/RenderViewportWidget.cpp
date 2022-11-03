@@ -74,10 +74,13 @@ namespace AtomToolsFramework
         SetControllerList(AZStd::make_shared<AzFramework::ViewportControllerList>());
 
         AZ::Name cameraName = AZ::Name(AZStd::string::format("Viewport %i Default Camera", m_viewportContext->GetId()));
-        m_defaultCamera = AZ::RPI::View::CreateView(cameraName, AZ::RPI::View::UsageFlags::UsageCamera);
-        AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->PushView(m_viewportContext->GetName(), m_defaultCamera);
+        m_defaultCameraGroup = AZStd::make_shared<AZ::RPI::ViewGroup>();
+        m_defaultCameraGroup->Init(AZ::RPI::ViewGroup::Descriptor{ nullptr, nullptr });
+        m_defaultCameraGroup->CreateMainView(cameraName);
+        m_defaultCameraGroup->CreateStereoscopicViews(cameraName);
+        AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->PushViewGroup(m_viewportContext->GetName(), m_defaultCameraGroup);
 
-        m_viewportInteractionImpl = AZStd::make_unique<ViewportInteractionImpl>(m_defaultCamera);
+        m_viewportInteractionImpl = AZStd::make_unique<ViewportInteractionImpl>(GetDefaultCamera());
         m_viewportInteractionImpl->m_deviceScalingFactorFn = [this] { return aznumeric_cast<float>(devicePixelRatioF()); };
         m_viewportInteractionImpl->m_screenSizeFn = [this] { return AzFramework::ScreenSize(width(), height()); };
         m_viewportInteractionImpl->Connect(newId);
@@ -155,7 +158,7 @@ namespace AtomToolsFramework
             {
                 if (auto auxGeomFP = existingScene->get()->GetFeatureProcessor<AZ::RPI::AuxGeomFeatureProcessorInterface>())
                 {
-                    m_auxGeom = auxGeomFP->GetOrCreateDrawQueueForView(m_defaultCamera.get());
+                    m_auxGeom = auxGeomFP->GetOrCreateDrawQueueForView(GetDefaultCamera().get());
                 }
                 return;
             }
@@ -176,18 +179,18 @@ namespace AtomToolsFramework
         m_viewportContext->SetRenderScene(atomScene);
         if (auto auxGeomFP = atomScene->GetFeatureProcessor<AZ::RPI::AuxGeomFeatureProcessorInterface>())
         {
-            m_auxGeom = auxGeomFP->GetOrCreateDrawQueueForView(m_defaultCamera.get());
+            m_auxGeom = auxGeomFP->GetOrCreateDrawQueueForView(GetDefaultCamera().get());
         }
     }
 
     AZ::RPI::ViewPtr RenderViewportWidget::GetDefaultCamera()
     {
-        return m_defaultCamera;
+        return m_defaultCameraGroup->GetView();
     }
 
     AZ::RPI::ConstViewPtr RenderViewportWidget::GetDefaultCamera() const
     {
-        return m_defaultCamera;
+        return m_defaultCameraGroup->GetView();
     }
 
     bool RenderViewportWidget::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)

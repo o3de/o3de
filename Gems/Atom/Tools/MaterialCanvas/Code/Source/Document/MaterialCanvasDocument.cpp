@@ -409,7 +409,8 @@ namespace MaterialCanvas
         GraphModel::GraphPtr graph = AZStd::make_shared<GraphModel::Graph>(m_graphContext);
         AZ::Utils::LoadObjectFromStreamInPlace(undoGraphStateStream, *graph.get());
 
-        m_modified = true;        CreateGraph(graph);
+        m_modified = true;
+        CreateGraph(graph);
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
         QueueCompileGraph();
@@ -562,25 +563,33 @@ namespace MaterialCanvas
     {
         if (auto v = AZStd::any_cast<const AZ::Color>(&slotValue))
         {
-            return AZStd::string::format("float4(%g, %g, %g, %g)", v->GetR(), v->GetG(), v->GetB(), v->GetA());
+            return AZStd::string::format("{%g, %g, %g, %g}", v->GetR(), v->GetG(), v->GetB(), v->GetA());
         }
         if (auto v = AZStd::any_cast<const AZ::Vector4>(&slotValue))
         {
-            return AZStd::string::format("float4(%g, %g, %g, %g)", v->GetX(), v->GetY(), v->GetZ(), v->GetW());
+            return AZStd::string::format("{%g, %g, %g, %g}", v->GetX(), v->GetY(), v->GetZ(), v->GetW());
         }
         if (auto v = AZStd::any_cast<const AZ::Vector3>(&slotValue))
         {
-            return AZStd::string::format("float3(%g, %g, %g)", v->GetX(), v->GetY(), v->GetZ());
+            return AZStd::string::format("{%g, %g, %g}", v->GetX(), v->GetY(), v->GetZ());
         }
         if (auto v = AZStd::any_cast<const AZ::Vector2>(&slotValue))
         {
-            return AZStd::string::format("float2(%g, %g)", v->GetX(), v->GetY());
+            return AZStd::string::format("{%g, %g}", v->GetX(), v->GetY());
+        }
+        if (auto v = AZStd::any_cast<const AZStd::array<AZ::Vector2, 2>>(&slotValue))
+        {
+            const auto& value = *v;
+            return AZStd::string::format(
+                "{%g, %g, %g, %g}",
+                value[0].GetX(), value[0].GetY(),
+                value[1].GetX(), value[1].GetY());
         }
         if (auto v = AZStd::any_cast<const AZStd::array<AZ::Vector3, 3>>(&slotValue))
         {
             const auto& value = *v;
             return AZStd::string::format(
-                "float3x3(%g, %g, %g, %g, %g, %g, %g, %g, %g)",
+                "{%g, %g, %g, %g, %g, %g, %g, %g, %g}",
                 value[0].GetX(), value[0].GetY(), value[0].GetZ(),
                 value[1].GetX(), value[1].GetY(), value[1].GetZ(),
                 value[2].GetX(), value[2].GetY(), value[2].GetZ());
@@ -589,7 +598,7 @@ namespace MaterialCanvas
         {
             const auto& value = *v;
             return AZStd::string::format(
-                "float4x3(%g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g)",
+                "{%g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g}",
                 value[0].GetX(), value[0].GetY(), value[0].GetZ(), value[0].GetW(),
                 value[1].GetX(), value[1].GetY(), value[1].GetZ(), value[1].GetW(),
                 value[2].GetX(), value[2].GetY(), value[2].GetZ(), value[2].GetW());
@@ -598,7 +607,7 @@ namespace MaterialCanvas
         {
             const auto& value = *v;
             return AZStd::string::format(
-                "float4x4(%g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g)",
+                "{%g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g}",
                 value[0].GetX(), value[0].GetY(), value[0].GetZ(), value[0].GetW(),
                 value[1].GetX(), value[1].GetY(), value[1].GetZ(), value[1].GetW(),
                 value[2].GetX(), value[2].GetY(), value[2].GetZ(), value[2].GetW(),
@@ -615,6 +624,10 @@ namespace MaterialCanvas
         if (auto v = AZStd::any_cast<const unsigned int>(&slotValue))
         {
             return AZStd::string::format("%u", *v);
+        }
+        if (auto v = AZStd::any_cast<const bool>(&slotValue))
+        {
+            return AZStd::string::format("%u", *v ? 1 : 0);
         }
         return AZStd::string();
     }

@@ -53,7 +53,7 @@ namespace AtomToolsFramework
 
     private:
         //! AZ::Render::PreviewerFeatureProcessorProviderBus::Handler interface overrides...
-        void GetRequiredFeatureProcessors(AZStd::unordered_set<AZStd::string>& featureProcessors) const override;
+        void GetRequiredFeatureProcessors(AZStd::vector<AZStd::string>& featureProcessors) const override;
 
         static constexpr float AspectRatio = 1.0f;
         static constexpr float NearDist = 0.001f;

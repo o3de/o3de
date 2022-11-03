@@ -35,6 +35,8 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
+#include <AzFramework/Process/ProcessCommunicator.h>
+#include <AzFramework/Process/ProcessWatcher.h>
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/JSON/document.h>
@@ -1140,10 +1142,163 @@ namespace AZ
                 }
             }
 
+            if (shaderVariantInfo.m_enableRegisterAnalysis)
+            {
+                if (creationContext.m_shaderPlatformInterface.GetAPIName().GetStringView() == "vulkan")
+                {
+                    AZ::IO::FixedMaxPath projectBuildPath = AZ::Utils::GetExecutableDirectory();
+                    projectBuildPath = projectBuildPath.RemoveFilename(); // profile
+                    projectBuildPath = projectBuildPath.RemoveFilename(); // bin
+
+                    AZ::IO::FixedMaxPath spirvPath(AZStd::string_view(creationContext.m_tempDirPath));
+                    spirvPath /= AZ::IO::FixedMaxPathString::format(
+                        "%s_vulkan_%u.spirv.bin", creationContext.m_shaderStemNamePrefix.c_str(), shaderVariantInfo.m_stableId);
+
+                    AZStd::string rgaCommand = AZStd::string::format(
+                        "-s vk-spv-offline --isa ./disassem_%u.txt --livereg ./livereg_%u.txt --asic %s",
+                        shaderVariantInfo.m_stableId,
+                        shaderVariantInfo.m_stableId,
+                        shaderVariantInfo.m_asic.c_str());
+
+                    AZStd::string RgaPath;
+                    if (creationContext.m_platformInfo.m_identifier == "pc")
+                    {
+                        RgaPath = "\\_deps\\rga-src\\rga.exe";
+                    }
+                    else
+                    {
+                        RgaPath = "/_deps/rga-src/rga";
+                    }
+
+                    AZStd::string command = AZStd::string::format(
+                        "%s%s %s %s", projectBuildPath.c_str(), RgaPath.c_str(), rgaCommand.c_str(), spirvPath.c_str());
+                    AZ_TracePrintf(ShaderVariantAssetBuilderName, "Rga command %s\n", command.c_str());
+
+                    AZStd::vector<AZStd::string> fullCommand;
+                    fullCommand.push_back(command);
+                    AZStd::string failMessage;
+                    if (LaunchRadeonGPUAnalyzer(fullCommand, creationContext.m_tempDirPath, failMessage))
+                    {
+                        // add rga output to the by product list
+                        outputByproducts->m_intermediatePaths.insert(AZStd::string::format(
+                            "./%s_disassem_%u_frag.txt", shaderVariantInfo.m_asic.c_str(), shaderVariantInfo.m_stableId));
+                        outputByproducts->m_intermediatePaths.insert(AZStd::string::format(
+                            "./%s_livereg_%u_frag.txt", shaderVariantInfo.m_asic.c_str(), shaderVariantInfo.m_stableId));
+                    }
+                    else
+                    {
+                        AZ_Warning(ShaderVariantAssetBuilderName, false, "%s", failMessage.c_str());
+                    }
+                }
+                else
+                {
+                    AZ_Warning(
+                        ShaderVariantAssetBuilderName,
+                        false,
+                        "Current platform is %s, register analysis is only available on Vulkan for now.",
+                        creationContext.m_shaderPlatformInterface.GetAPIName().GetCStr());
+                }
+            }
+
             Data::Asset<RPI::ShaderVariantAsset> shaderVariantAsset;
             variantCreator.End(shaderVariantAsset);
             return AZ::Success(AZStd::move(shaderVariantAsset));
         }
 
+        bool ShaderVariantAssetBuilder::LaunchRadeonGPUAnalyzer(AZStd::vector<AZStd::string> command, const AZStd::string& workingDirectory, AZStd::string& failMessage)
+        {
+            AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+            processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(AZStd::move(command));
+            processLaunchInfo.m_workingDirectory = workingDirectory;
+            processLaunchInfo.m_showWindow = false;
+            AzFramework::ProcessWatcher* watcher =
+                AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::COMMUNICATOR_TYPE_STDINOUT);
+            if (!watcher)
+            {
+                failMessage = AZStd::string("Rga executable can not be launched");
+                return false;
+            }
+
+            AZStd::unique_ptr<AzFramework::ProcessWatcher> watcherPtr = AZStd::unique_ptr<AzFramework::ProcessWatcher>(watcher);
+
+            AZStd::string errorMessages;
+            AZStd::string outputMessages;
+            auto pumpOuputStreams = [&watcherPtr, &errorMessages, &outputMessages]()
+            {
+                auto communicator = watcherPtr->GetCommunicator();
+
+                // Instead of collecting all the output in a giant string, it would be better to report
+                // the chunks of messages as they arrive, but this should be good enough for now.
+                if (auto byteCount = communicator->PeekError())
+                {
+                    AZStd::string chunk;
+                    chunk.resize(byteCount);
+                    communicator->ReadError(chunk.data(), byteCount);
+                    errorMessages += chunk;
+                }
+
+                if (auto byteCount = communicator->PeekOutput())
+                {
+                    AZStd::string chunk;
+                    chunk.resize(byteCount);
+                    communicator->ReadOutput(chunk.data(), byteCount);
+                    outputMessages += chunk;
+                }
+            };
+
+            uint32_t exitCode = 0;
+            bool timedOut = false;
+
+            const AZStd::sys_time_t maxWaitTimeSeconds = 5;
+            const AZStd::sys_time_t startTimeSeconds = AZStd::GetTimeNowSecond();
+
+            while (watcherPtr->IsProcessRunning(&exitCode))
+            {
+                const AZStd::sys_time_t currentTimeSeconds = AZStd::GetTimeNowSecond();
+                if (currentTimeSeconds - startTimeSeconds > maxWaitTimeSeconds)
+                {
+                    timedOut = true;
+                    static const uint32_t TimeOutExitCode = 121;
+                    exitCode = TimeOutExitCode;
+                    watcherPtr->TerminateProcess(TimeOutExitCode);
+                    break;
+                }
+                else
+                {
+                    pumpOuputStreams();
+                }
+            }
+
+            AZ_Assert(!watcherPtr->IsProcessRunning(), "Rga execution failed to terminate");
+
+            // Pump one last time to make sure the streams have been flushed
+            pumpOuputStreams();
+
+            if (timedOut)
+            {
+                failMessage = AZStd::string("Rga execution timed out");
+                return false;
+            }
+
+            if (exitCode != 0)
+            {
+                failMessage = AZStd::string::format("Rga process failed, exit code %u", exitCode);
+                return false;
+            }
+
+            if (!errorMessages.empty())
+            {
+                failMessage = AZStd::string::format("Rga report error message %s", errorMessages.c_str());
+                return false;
+            }
+
+            if (!outputMessages.empty() && outputMessages.contains("Error"))
+            {
+                failMessage = AZStd::string::format("Rga report error message %s", outputMessages.c_str());
+                return false;
+            }
+
+            return true;
+        }
     } // ShaderBuilder
 } // AZ
