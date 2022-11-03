@@ -87,7 +87,7 @@ namespace LmbrCentral
             debugDisplay, [this]() { return CanDraw(); },
             [this](AzFramework::DebugDisplayRequests& debugDisplay)
             {
-                DrawShape(debugDisplay, { m_shapeColor, m_shapeWireColor, m_displayFilled }, m_capsuleShapeMesh);
+                DrawShape(debugDisplay, { m_capsuleShape.GetCapsuleConfiguration().GetDrawColor(), m_shapeWireColor, m_displayFilled }, m_capsuleShapeMesh);
             },
             m_capsuleShape.GetCurrentTransform());
     }

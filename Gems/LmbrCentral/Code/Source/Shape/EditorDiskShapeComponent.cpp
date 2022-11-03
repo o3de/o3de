@@ -86,7 +86,7 @@ namespace LmbrCentral
             [this](AzFramework::DebugDisplayRequests& debugDisplay)
             {
                 DrawDiskShape(
-                    { m_shapeColor, m_shapeWireColor, m_displayFilled },
+                    { m_diskShape.GetDiskConfiguration().GetDrawColor(), m_shapeWireColor, m_displayFilled },
                     m_diskShape.GetDiskConfiguration(), debugDisplay);
             },
             m_diskShape.GetCurrentTransform());
