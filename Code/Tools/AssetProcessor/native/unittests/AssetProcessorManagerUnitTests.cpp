@@ -203,7 +203,7 @@ namespace AssetProcessor
                 QFile file(expect);
                 ASSERT_TRUE(file.open(QIODevice::Append | QIODevice::Text))
                     << AZStd::string::format("Failed to open %s", expect.toUtf8().data()).c_str();
-                EXPECT_TRUE(file.setFileTime(fileTime, QFileDevice::FileBirthTime))
+                EXPECT_TRUE(file.setFileTime(fileTime, QFileDevice::FileModificationTime))
                     << AZStd::string::format("Failed to modify the creation time of %s", expect.toUtf8().data()).c_str();
                 file.close();
 
