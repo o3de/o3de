@@ -38,7 +38,7 @@ namespace UnitTest
 
     bool IsPointInside(const AZ::Entity& entity, const AZ::Vector3& point)
     {
-        bool inside;
+        bool inside = false;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
             inside, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IsPointInside, point);
         return inside;
