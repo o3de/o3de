@@ -43,7 +43,7 @@ namespace AzToolsFramework
 
         // todo: look into caching and QLayoutItem::invalidate()
     public:
-        DPELayout();
+        DPELayout(QWidget* parent);
         void Init(int depth, QWidget* parentWidget = nullptr);
         void Clear();
         virtual ~DPELayout();

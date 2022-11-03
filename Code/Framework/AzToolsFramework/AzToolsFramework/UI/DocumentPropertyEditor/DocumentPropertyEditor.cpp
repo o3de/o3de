@@ -45,8 +45,8 @@ void DetachAndHide(T* widget)
 
 namespace AzToolsFramework
 {
-    DPELayout::DPELayout()
-        : QHBoxLayout(nullptr)
+    DPELayout::DPELayout(QWidget* parent)
+        : QHBoxLayout(parent)
         , m_depth(-1)
     {
     }
@@ -476,7 +476,7 @@ namespace AzToolsFramework
         : QFrame(nullptr) // parent will be set when the row is added to its layout
         , m_parentRow(nullptr)
         , m_depth(-1)
-        , m_columnLayout(new DPELayout)
+        , m_columnLayout(new DPELayout(this))
     {
         m_columnLayout->Init(-1, this);
         // allow horizontal stretching, but use the vertical size hint exactly
