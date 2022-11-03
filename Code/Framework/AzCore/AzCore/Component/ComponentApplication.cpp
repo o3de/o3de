@@ -17,8 +17,6 @@
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Component/TickBus.h>
 
-#include <AzCore/Date/DateFormat.h>
-
 #include <AzCore/Memory/AllocationRecords.h>
 
 #include <AzCore/Memory/OverrunDetectionAllocator.h>

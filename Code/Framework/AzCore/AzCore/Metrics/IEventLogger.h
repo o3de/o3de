@@ -36,9 +36,18 @@ namespace AZ::Metrics::Internal
     //!   If not set or true, the event logger will record events
     struct SettingsKey_t
     {
-        constexpr AZStd::fixed_string<128> operator()(AZStd::string_view name) const
+        using StringType = AZStd::fixed_string<128>;
+
+        constexpr StringType operator()(AZStd::string_view name) const
         {
-            AZStd::fixed_string<128> settingsKey(MetricsSettingsPrefix);
+            constexpr size_t MaxTotalKeySize = StringType{}.max_size();
+            // The +1 is for the '/' separator
+            [[maybe_unused]] const size_t maxNameSize = MaxTotalKeySize - (MetricsSettingsPrefix.size() + 1);
+
+            AZ_Assert(name.size() <= maxNameSize,
+                R"(The size of the event logger name "%.*s" is too long. It must be <= %zu characters)",
+                AZ_STRING_ARG(name), maxNameSize);
+            StringType settingsKey(MetricsSettingsPrefix);
             settingsKey += '/';
             settingsKey += name;
 
