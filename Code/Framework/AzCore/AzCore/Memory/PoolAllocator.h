@@ -178,7 +178,7 @@ namespace AZ
             {
                 return AllocatorDebugConfig()
                     .ExcludeFromDebugging(false)
-                    .StackRecordLevels(5)
+                    .StackRecordLevels(O3DE_STACK_CAPTURE_DEPTH)
                     .MarksUnallocatedMemory(false)
                     .UsesMemoryGuards(false);
             }

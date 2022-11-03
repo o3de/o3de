@@ -76,7 +76,7 @@ namespace AZ
     AllocatorDebugConfig SystemAllocator::GetDebugConfig()
     {
         return AllocatorDebugConfig()
-            .StackRecordLevels(20)
+            .StackRecordLevels(O3DE_STACK_CAPTURE_DEPTH)
             .UsesMemoryGuards()
             .MarksUnallocatedMemory()
             .ExcludeFromDebugging(false);
