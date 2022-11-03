@@ -409,7 +409,8 @@ namespace MaterialCanvas
         GraphModel::GraphPtr graph = AZStd::make_shared<GraphModel::Graph>(m_graphContext);
         AZ::Utils::LoadObjectFromStreamInPlace(undoGraphStateStream, *graph.get());
 
-        m_modified = true;        CreateGraph(graph);
+        m_modified = true;
+        CreateGraph(graph);
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
         QueueCompileGraph();
@@ -576,6 +577,14 @@ namespace MaterialCanvas
         {
             return AZStd::string::format("{%g, %g}", v->GetX(), v->GetY());
         }
+        if (auto v = AZStd::any_cast<const AZStd::array<AZ::Vector2, 2>>(&slotValue))
+        {
+            const auto& value = *v;
+            return AZStd::string::format(
+                "{%g, %g, %g, %g}",
+                value[0].GetX(), value[0].GetY(),
+                value[1].GetX(), value[1].GetY());
+        }
         if (auto v = AZStd::any_cast<const AZStd::array<AZ::Vector3, 3>>(&slotValue))
         {
             const auto& value = *v;
@@ -615,6 +624,10 @@ namespace MaterialCanvas
         if (auto v = AZStd::any_cast<const unsigned int>(&slotValue))
         {
             return AZStd::string::format("%u", *v);
+        }
+        if (auto v = AZStd::any_cast<const bool>(&slotValue))
+        {
+            return AZStd::string::format("%u", *v ? 1 : 0);
         }
         return AZStd::string();
     }

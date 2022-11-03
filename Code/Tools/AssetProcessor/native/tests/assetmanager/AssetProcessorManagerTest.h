@@ -14,11 +14,11 @@
 #include <native/tests/AssetProcessorTest.h>
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
-#include "native/assetprocessor.h"
-#include "native/unittests/UnitTestRunner.h"
-#include "native/AssetManager/assetProcessorManager.h"
-#include "native/utilities/PlatformConfiguration.h"
-#include "native/unittests/MockApplicationManager.h"
+#include <native/assetprocessor.h>
+#include <native/unittests/UnitTestUtils.h>
+#include <native/AssetManager/assetProcessorManager.h>
+#include <native/utilities/PlatformConfiguration.h>
+#include <native/unittests/MockApplicationManager.h>
 #include <AssetManager/FileStateCache.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 

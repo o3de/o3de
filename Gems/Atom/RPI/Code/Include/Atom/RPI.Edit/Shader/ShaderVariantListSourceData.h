@@ -40,6 +40,19 @@ namespace AZ
                 AZ::u32 m_stableId = 0;
 
                 ShaderOptionValuesSourceData m_options;
+
+                
+                // Output register analysis data
+                // RGA did support DX12, but some how it couldn't build our hlsl
+                // So for now we only use vulkan offline mode
+                // To activate it, set EnableAnalysis to true in your shader variant in .shadervariantlist
+                bool m_enableRegisterAnalysis = false;
+
+                // The GPU target to use on register analysis
+                // The value depends on the version of RGA we use
+                // Current RGA is 2.6.2
+                // Supported values: gfx900 gfx902 gfx906 gfx90c gfx1010 gfx1011 gfx1012 gfx1030 gfx1031 gfx1032 gfx1034 gfx1035 
+                AZStd::string m_asic = AZStd::string("gfx1035");
             };
 
             AZStd::string m_shaderFilePath; // .shader file.

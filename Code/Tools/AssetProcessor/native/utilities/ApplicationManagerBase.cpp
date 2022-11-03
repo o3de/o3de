@@ -875,6 +875,7 @@ ApplicationManager::BeforeRunStatus ApplicationManagerBase::BeforeRun()
 
     qRegisterMetaType<QSet<QString> >("QSet<QString>");
     qRegisterMetaType<QSet<AssetProcessor::AssetFileInfo>>("QSet<AssetFileInfo>");
+    qRegisterMetaType<AssetProcessor::SourceAssetReference>("SourceAssetReference");
 
     AssetBuilderSDK::AssetBuilderBus::Handler::BusConnect();
     AssetProcessor::AssetBuilderRegistrationBus::Handler::BusConnect();
@@ -1596,7 +1597,7 @@ static void HandleConditionalRetry(const AssetProcessor::BuilderRunJobOutcome& r
             builderRef.release();
 
             AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, purpose);
-            
+
             if (builderRef)
             {
                 AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new builder %s (Attempt %d with %d second delay)",
@@ -1724,7 +1725,7 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                     {
                         return; // exit early if you're shutting down!
                     }
-                    
+
                     retryCount++;
                     result = builderRef->RunJob<AssetBuilder::ProcessJobNetRequest, AssetBuilder::ProcessJobNetResponse>(
                         request, response, s_MaximumProcessJobsTimeSeconds, "process", "", &jobCancelListener, request.m_tempDirPath);

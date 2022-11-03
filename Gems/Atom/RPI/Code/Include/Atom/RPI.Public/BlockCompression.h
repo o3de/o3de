@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RPI.Public/Base.h>
+#include <AzCore/Math/Color.h>
 
 namespace AZ
 {
@@ -48,8 +49,8 @@ namespace AZ
                 return AZStd::pair<size_t, size_t>(blockIndex, pixelIndex);
             }
 
-            // Given a pixel index into the 4x4 block and a component index (R, G, B, or A), return the color value in the 0-1 range.
-            float GetBlockColor(size_t pixelIndex, uint32_t componentIndex) const
+            // Given an index into the 4x4 block, return the color value in the 0-1 range.
+            AZ::Color GetBlockColor(size_t pixelIndex) const
             {
                 AZ_Assert(pixelIndex < 16, "Unsupported pixel index for BC1: %zu", pixelIndex);
                 // The pixels are in a 4x4 block, so first we get the row of 4 2-bit indices that have the pixel we want.
@@ -57,47 +58,34 @@ namespace AZ
                 // Extract the 2-bit index by shifting down in multiples of 2 bits and masking.
                 uint8_t colorIndex = (colorRowIndices >> (2 * (pixelIndex % 4))) & 0x03;
 
-                // Extract just the R, G, B, or A component of the two colors.
-                float color0;
-                float color1;
-                switch (componentIndex)
+                auto extractColor = [](uint16_t compressedColor) -> AZ::Color
                 {
-                case 0:
-                    // red
-                    color0 = ((m_color0 >> 11) & 0x1F) / aznumeric_cast<float>(0x1F);
-                    color1 = ((m_color1 >> 11) & 0x1F) / aznumeric_cast<float>(0x1F);
-                    break;
-                case 1:
-                    // green
-                    color0 = ((m_color0 >> 5) & 0x3F) / aznumeric_cast<float>(0x3F);
-                    color1 = ((m_color1 >> 5) & 0x3F) / aznumeric_cast<float>(0x3F);
-                    break;
-                case 2:
-                    // blue
-                    color0 = ((m_color0 >> 0) & 0x1F) / aznumeric_cast<float>(0x1F);
-                    color1 = ((m_color1 >> 0) & 0x1F) / aznumeric_cast<float>(0x1F);
-                    break;
-                case 3:
-                    // alpha
-                    return 1.0f;
-                default:
-                    AZ_Assert(false, "Unsupported component offset for BC1: %u", componentIndex);
-                    return 0.0f;
-                }
+                    return AZ::Color(
+                        ((compressedColor >> 11) & 0x1F) / aznumeric_cast<float>(0x1F),
+                        ((compressedColor >> 5) & 0x3F) / aznumeric_cast<float>(0x3F),
+                        ((compressedColor >> 0) & 0x1F) / aznumeric_cast<float>(0x1F),
+                        1.0f);
+                };
 
                 // Using the pixel's color index, return the proper color value.
                 switch (colorIndex)
                 {
                 case 0:
-                    return color0;
+                    // Index 0 uses color 0
+                    return extractColor(m_color0);
                 case 1:
-                    return color1;
+                    // Index 1 uses color 1
+                    return extractColor(m_color1);
+                    break;
                 case 2:
-                    return (color0 * (2.0f / 3.0f)) + (color1 * (1.0f / 3.0f));
+                    // Index 2 uses 2/3 of color 0 and 1/3 of color 1
+                    return extractColor(m_color0).Lerp(extractColor(m_color1), (1.0f / 3.0f));
                 case 3:
-                    return (color0 * (1.0f / 3.0f)) + (color1 * (2.0f / 3.0f));
+                    // Index 3 uses 1/3 of color 0 and 2/3 of color 1
+                    return extractColor(m_color0).Lerp(extractColor(m_color1), (2.0f / 3.0f));
                 }
-                return 0.0f;
+
+                return AZ::Color::CreateZero();
             }
         };
 

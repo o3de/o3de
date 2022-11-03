@@ -11,6 +11,8 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/set.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <QWidget>
 #endif
@@ -80,13 +82,13 @@ namespace AtomToolsFramework
     };
 
     // Property widget that interprets string data as file paths and opens a custom source file browser.
-    class PropertyFilePathStringCtrl : public PropertyStringBrowseEditCtrl
+    class PropertyStringFilePathCtrl : public PropertyStringBrowseEditCtrl
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyFilePathStringCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyStringFilePathCtrl, AZ::SystemAllocator, 0);
 
-        PropertyFilePathStringCtrl(QWidget* parent = nullptr);
+        PropertyStringFilePathCtrl(QWidget* parent = nullptr);
         void ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue) override;
         void EditValue() override;
 
@@ -95,94 +97,94 @@ namespace AtomToolsFramework
         AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>> m_extensions;
     };
 
-    // Property handler for PropertyFilePathStringCtrl
-    class PropertyFilePathStringHandler
+    // Property handler for PropertyStringFilePathCtrl
+    class PropertyStringFilePathHandler
         : public QObject
-        , public AzToolsFramework::PropertyHandler<AZStd::string, PropertyFilePathStringCtrl>
+        , public AzToolsFramework::PropertyHandler<AZStd::string, PropertyStringFilePathCtrl>
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyFilePathStringHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyStringFilePathHandler, AZ::SystemAllocator, 0);
 
-        AZ::u32 GetHandlerName() const override { return AZ_CRC_CE("FilePathString"); }
+        AZ::u32 GetHandlerName() const override { return AZ_CRC_CE("StringFilePath"); }
 
         bool IsDefaultHandler() const override { return false; }
 
         QWidget* CreateGUI(QWidget* parent) override;
 
         void ConsumeAttribute(
-            PropertyFilePathStringCtrl* GUI,
+            PropertyStringFilePathCtrl* GUI,
             AZ::u32 attrib,
             AzToolsFramework::PropertyAttributeReader* attrValue,
             const char* debugName) override;
 
         void WriteGUIValuesIntoProperty(
             size_t index,
-            PropertyFilePathStringCtrl* GUI,
+            PropertyStringFilePathCtrl* GUI,
             property_t& instance,
             AzToolsFramework::InstanceDataNode* node) override;
 
         bool ReadValuesIntoGUI(
             size_t index,
-            PropertyFilePathStringCtrl* GUI,
+            PropertyStringFilePathCtrl* GUI,
             const property_t& instance,
             AzToolsFramework::InstanceDataNode* node) override;
     };
 
     // Property widget that opens a separate dialog for extended editing of large strings.
-    class PropertyMultiLineStringCtrl : public PropertyStringBrowseEditCtrl
+    class PropertyMultilineStringDialogCtrl : public PropertyStringBrowseEditCtrl
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyMultiLineStringCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyMultilineStringDialogCtrl, AZ::SystemAllocator, 0);
 
-        PropertyMultiLineStringCtrl(QWidget* parent = nullptr);
+        PropertyMultilineStringDialogCtrl(QWidget* parent = nullptr);
         void ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue) override;
         void EditValue() override;
     };
 
-    // Property handler for PropertyMultiLineStringCtrl
-    class PropertyMultiLineStringHandler
+    // Property handler for PropertyMultilineStringDialogCtrl
+    class PropertyMultilineStringDialogHandler
         : public QObject
-        , public AzToolsFramework::PropertyHandler<AZStd::string, PropertyMultiLineStringCtrl>
+        , public AzToolsFramework::PropertyHandler<AZStd::string, PropertyMultilineStringDialogCtrl>
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyMultiLineStringHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyMultilineStringDialogHandler, AZ::SystemAllocator, 0);
 
-        AZ::u32 GetHandlerName() const override { return AZ_CRC_CE("MultiLineString"); }
+        AZ::u32 GetHandlerName() const override { return AZ_CRC_CE("MultilineStringDialog"); }
 
         bool IsDefaultHandler() const override { return false; }
 
         QWidget* CreateGUI(QWidget* parent) override;
 
         void ConsumeAttribute(
-            PropertyMultiLineStringCtrl* GUI,
+            PropertyMultilineStringDialogCtrl* GUI,
             AZ::u32 attrib,
             AzToolsFramework::PropertyAttributeReader* attrValue,
             const char* debugName) override;
 
         void WriteGUIValuesIntoProperty(
-            size_t index, PropertyMultiLineStringCtrl* GUI,
+            size_t index, PropertyMultilineStringDialogCtrl* GUI,
             property_t& instance,
             AzToolsFramework::InstanceDataNode* node) override;
 
         bool ReadValuesIntoGUI(
             size_t index,
-            PropertyMultiLineStringCtrl* GUI,
+            PropertyMultilineStringDialogCtrl* GUI,
             const property_t& instance,
             AzToolsFramework::InstanceDataNode* node) override;
     };
 
     // Property widget that splits an incoming stream into multiple values and allows selecting those values from another list of
     // available strings.
-    class PropertyMultiSelectSplitStringCtrl : public PropertyStringBrowseEditCtrl
+    class PropertyMultiStringSelectCtrl : public PropertyStringBrowseEditCtrl
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyMultiSelectSplitStringCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyMultiStringSelectCtrl, AZ::SystemAllocator, 0);
 
-        PropertyMultiSelectSplitStringCtrl(QWidget* parent = nullptr);
+        PropertyMultiStringSelectCtrl(QWidget* parent = nullptr);
         void ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue) override;
         void EditValue() override;
 
@@ -200,72 +202,109 @@ namespace AtomToolsFramework
 
     private:
         AZStd::string m_options;
+        bool m_multiSelect = true;
+        AZStd::string m_delimitersForSplit = ";:, \t\r\n\\/|";
+        AZStd::string m_delimitersForJoin = ", ";
     };
 
-    // PropertyMultiSelectSplitStringCtrl handler that tokenizes strings into a list of selected and available options
-    class PropertyMultiSelectSplitStringHandler
+    // PropertyMultiStringSelectCtrl handler that tokenizes strings into a list of selected and available options
+    class PropertyMultiStringSelectDelimitedHandler
         : public QObject
-        , public AzToolsFramework::PropertyHandler<AZStd::string, PropertyMultiSelectSplitStringCtrl>
+        , public AzToolsFramework::PropertyHandler<AZStd::string, PropertyMultiStringSelectCtrl>
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyMultiSelectSplitStringHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyMultiStringSelectDelimitedHandler, AZ::SystemAllocator, 0);
 
-        AZ::u32 GetHandlerName() const override { return AZ_CRC_CE("MultiSelectSplitString"); }
+        AZ::u32 GetHandlerName() const override { return AZ_CRC_CE("MultiStringSelectDelimited"); }
 
         bool IsDefaultHandler() const override { return false; }
 
         QWidget* CreateGUI(QWidget* parent) override;
 
         void ConsumeAttribute(
-            PropertyMultiSelectSplitStringCtrl* GUI,
+            PropertyMultiStringSelectCtrl* GUI,
             AZ::u32 attrib,
             AzToolsFramework::PropertyAttributeReader* attrValue,
             const char* debugName) override;
 
         void WriteGUIValuesIntoProperty(
             size_t index,
-            PropertyMultiSelectSplitStringCtrl* GUI,
+            PropertyMultiStringSelectCtrl* GUI,
             property_t& instance,
             AzToolsFramework::InstanceDataNode* node) override;
 
         bool ReadValuesIntoGUI(
             size_t index,
-            PropertyMultiSelectSplitStringCtrl* GUI,
+            PropertyMultiStringSelectCtrl* GUI,
             const property_t& instance,
             AzToolsFramework::InstanceDataNode* node) override;
     };
 
-    // PropertyMultiSelectSplitStringCtrl handler that works directly with vectors to get the list of selected and available strains
-    class PropertyMultiSelectStringVectorHandler
+    // PropertyMultiStringSelectCtrl handler that works directly with vectors to get the list of selected and available strains
+    class PropertyMultiStringSelectVectorHandler
         : public QObject
-        , public AzToolsFramework::PropertyHandler<AZStd::vector<AZStd::string>, PropertyMultiSelectSplitStringCtrl>
+        , public AzToolsFramework::PropertyHandler<AZStd::vector<AZStd::string>, PropertyMultiStringSelectCtrl>
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyMultiSelectStringVectorHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyMultiStringSelectVectorHandler, AZ::SystemAllocator, 0);
 
-        AZ::u32 GetHandlerName() const override { return AZ_CRC_CE("MultiSelectStringVector"); }
+        AZ::u32 GetHandlerName() const override { return AZ_CRC_CE("MultiStringSelectVector"); }
 
         bool IsDefaultHandler() const override { return false; }
 
         QWidget* CreateGUI(QWidget* parent) override;
 
         void ConsumeAttribute(
-            PropertyMultiSelectSplitStringCtrl* GUI,
+            PropertyMultiStringSelectCtrl* GUI,
             AZ::u32 attrib,
             AzToolsFramework::PropertyAttributeReader* attrValue,
             const char* debugName) override;
 
         void WriteGUIValuesIntoProperty(
             size_t index,
-            PropertyMultiSelectSplitStringCtrl* GUI,
+            PropertyMultiStringSelectCtrl* GUI,
             property_t& instance,
             AzToolsFramework::InstanceDataNode* node) override;
 
         bool ReadValuesIntoGUI(
             size_t index,
-            PropertyMultiSelectSplitStringCtrl* GUI,
+            PropertyMultiStringSelectCtrl* GUI,
+            const property_t& instance,
+            AzToolsFramework::InstanceDataNode* node) override;
+    };
+
+    // PropertyMultiStringSelectCtrl handler that works directly with sets to get the list of selected and available strains
+    class PropertyMultiStringSelectSetHandler
+        : public QObject
+        , public AzToolsFramework::PropertyHandler<AZStd::set<AZStd::string>, PropertyMultiStringSelectCtrl>
+    {
+        Q_OBJECT
+    public:
+        AZ_CLASS_ALLOCATOR(PropertyMultiStringSelectSetHandler, AZ::SystemAllocator, 0);
+
+        AZ::u32 GetHandlerName() const override { return AZ_CRC_CE("MultiStringSelectSet"); }
+
+        bool IsDefaultHandler() const override { return false; }
+
+        QWidget* CreateGUI(QWidget* parent) override;
+
+        void ConsumeAttribute(
+            PropertyMultiStringSelectCtrl* GUI,
+            AZ::u32 attrib,
+            AzToolsFramework::PropertyAttributeReader* attrValue,
+            const char* debugName) override;
+
+        void WriteGUIValuesIntoProperty(
+            size_t index,
+            PropertyMultiStringSelectCtrl* GUI,
+            property_t& instance,
+            AzToolsFramework::InstanceDataNode* node) override;
+
+        bool ReadValuesIntoGUI(
+            size_t index,
+            PropertyMultiStringSelectCtrl* GUI,
             const property_t& instance,
             AzToolsFramework::InstanceDataNode* node) override;
     };

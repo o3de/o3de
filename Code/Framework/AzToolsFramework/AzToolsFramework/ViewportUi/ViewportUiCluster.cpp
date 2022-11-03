@@ -38,6 +38,7 @@ namespace AzToolsFramework::ViewportUi::Internal
             },
             [button](QAction* action)
             {
+                action->setDisabled(button->m_state == Button::State::Disabled);
                 action->setChecked(button->m_state == Button::State::Selected);
             });
 

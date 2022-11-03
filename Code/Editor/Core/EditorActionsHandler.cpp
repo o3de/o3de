@@ -33,8 +33,10 @@
 #include <QtViewPaneManager.h>
 #include <ToolBox.h>
 #include <ToolsConfigPage.h>
+#include <Util/PathUtil.h>
 
 #include <QDesktopServices>
+#include <QDir>
 #include <QLabel>
 #include <QMainWindow>
 #include <QMenu>
@@ -111,6 +113,8 @@ void EditorActionsHandler::Initialize(MainWindow* mainWindow)
     m_mainWindow = mainWindow;
     m_cryEditApp = CCryEditApp::instance();
     m_qtViewPaneManager = QtViewPaneManager::instance();
+
+    m_levelExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
 
     m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
     AZ_Assert(m_actionManagerInterface, "EditorActionsHandler - could not get ActionManagerInterface on EditorActionsHandler construction.");
@@ -251,15 +255,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
                 EditorMainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [cryEdit = m_cryEditApp, index]
+                [&, index]
                 {
-                    RecentFileList* recentFiles = cryEdit->GetRecentFileList();
-                    const int recentFilesSize = recentFiles->GetSize();
-
-                    if (index < recentFilesSize)
-                    {
-                        cryEdit->OpenDocumentFile((*recentFiles)[index].toUtf8().data(), true, COpenSameLevelOptions::ReopenLevelIfSame);
-                    }
+                    OpenLevelByRecentFileEntryIndex(index);
                 }
             );
 
@@ -1782,8 +1780,77 @@ void EditorActionsHandler::OnOnlyShowHelpersForSelectedEntitiesChanged([[maybe_u
 
 bool EditorActionsHandler::IsRecentFileActionActive(int index)
 {
+    return (index < m_recentFileActionsCount);
+}
+
+bool EditorActionsHandler::IsRecentFileEntryValid(const QString& entry, const QString& gameFolderPath)
+{
+    if (entry.isEmpty())
+    {
+        return false;
+    }
+
+    QFileInfo info(entry);
+    if (!info.exists())
+    {
+        return false;
+    }
+
+    if (!entry.endsWith(m_levelExtension))
+    {
+        return false;
+    }
+
+    const QDir gameDir(gameFolderPath);
+    QDir dir(entry); // actually pointing at file, first cdUp() gets us the parent dir
+    while (dir.cdUp())
+    {
+        if (dir == gameDir)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void EditorActionsHandler::OpenLevelByRecentFileEntryIndex(int index)
+{
+    // Out of bounds, do nothing
+    if (index >= m_recentFileActionsCount)
+    {
+        return;
+    }
+
     RecentFileList* recentFiles = m_cryEditApp->GetRecentFileList();
-    return (index < recentFiles->GetSize());
+    const int recentFilesSize = recentFiles->GetSize();
+
+    QString sCurDir = QString(Path::GetEditingGameDataFolder().c_str()) + QDir::separator();
+    QFileInfo gameDir(sCurDir); // Pass it through QFileInfo so it comes out normalized
+    const QString gameDirPath = gameDir.absolutePath();
+
+    // Index is the index of the action in the menu, but in generating that list we skipped invalid files from other projects.
+    // As such, we need to actually go through the list again to find the correct index for the recentFiles array.
+
+    int counter = 0;
+    int fileIndex = 0;
+    for (; fileIndex < recentFilesSize; ++fileIndex)
+    {
+        if (!IsRecentFileEntryValid((*recentFiles)[fileIndex], gameDirPath))
+        {
+            continue;
+        }
+
+        if (counter == index)
+        {
+            break;
+        }
+
+        ++counter;
+    }
+
+    m_cryEditApp->OpenDocumentFile((*recentFiles)[fileIndex].toUtf8().data(), true, COpenSameLevelOptions::ReopenLevelIfSame);
+    
 }
 
 void EditorActionsHandler::UpdateRecentFileActions()
@@ -1791,19 +1858,39 @@ void EditorActionsHandler::UpdateRecentFileActions()
     RecentFileList* recentFiles = m_cryEditApp->GetRecentFileList();
     const int recentFilesSize = recentFiles->GetSize();
 
+    QString sCurDir = QString(Path::GetEditingGameDataFolder().c_str()) + QDir::separator();
+    QFileInfo gameDir(sCurDir); // Pass it through QFileInfo so it comes out normalized
+    const QString gameDirPath = gameDir.absolutePath();
+
+    m_recentFileActionsCount = 0;
+    int counter = 0;
+
     // Update all names
-    for (int index = 0; index < maxRecentFiles; ++index)
+    for (int index = 0; (index < maxRecentFiles) || (index < recentFilesSize); ++index)
     {
-        AZStd::string actionIdentifier = AZStd::string::format("o3de.action.file.recent.file%i", index + 1);
+        if (!IsRecentFileEntryValid((*recentFiles)[index], gameDirPath))
+        {
+            continue;
+        }
+
+        AZStd::string actionIdentifier = AZStd::string::format("o3de.action.file.recent.file%i", counter + 1);
+
         if (index < recentFilesSize)
         {
+            QString displayName;
+            recentFiles->GetDisplayName(displayName, index, sCurDir);
+
             m_actionManagerInterface->SetActionName(
-                actionIdentifier, AZStd::string::format("%i | %s", index + 1, (*recentFiles)[index].toUtf8().data()));
+                actionIdentifier, AZStd::string::format("%i | %s", counter + 1, displayName.toUtf8().data()));
+
+            ++m_recentFileActionsCount;
         }
         else
         {
-            m_actionManagerInterface->SetActionName(actionIdentifier, AZStd::string::format("Recent File #%i", index + 1));
+            m_actionManagerInterface->SetActionName(actionIdentifier, AZStd::string::format("Recent File #%i", counter + 1));
         }
+
+        ++counter;
     }
 
     // Trigger the updater
