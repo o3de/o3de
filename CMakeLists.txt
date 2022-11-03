@@ -9,6 +9,13 @@
 # Cmake version 3.20 is the minimum version needed for all of Open 3D Engine's supported platforms
 cmake_minimum_required(VERSION 3.20)
 
+if(NOT ${CMAKE_VERSION} VERSION_LESS "3.24") 
+    # CMP0135 - controls whether, when unpacking an archive file, it should:
+    # (OLD) set the file timestamps to what they are in the archive (not recommended)
+    # (NEW) set the file timestamps to the time of extraction (recommended)
+    cmake_policy(SET CMP0135 NEW) 
+endif()
+
 include(cmake/LySet.cmake)
 include(cmake/Version.cmake)
 include(cmake/OutputDirectory.cmake)

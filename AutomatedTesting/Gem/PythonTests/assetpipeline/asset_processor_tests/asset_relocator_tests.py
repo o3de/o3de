@@ -557,7 +557,7 @@ class TestsAssetRelocator_WindowsAndMac(object):
     @pytest.mark.test_case_id("C21968373")
     @pytest.mark.assetpipeline
     @pytest.mark.parametrize("test_file_name", ["ReadOnly.txt", "Writable.txt"])
-    @pytest.mark.skipif(not utils.check_for_perforce(), reason="Perforce not enabled")
+    @pytest.mark.skipif(not utils.check_for_perforce(error_on_no_perforce=False), reason="Perforce not enabled")
     def test_WindowsMacPlatforms_EnableSCM_RelocatorFails(self, workspace, ap_setup_fixture, test_file_name,
                                                           asset_processor):
         """

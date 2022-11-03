@@ -105,7 +105,7 @@ namespace AZ
             return m_propertyValues.find(propertyId) != m_propertyValues.end();
         }
         
-        void MaterialSourceData::ConvertToNewDataFormat()
+        void MaterialSourceData::UpgradeLegacyFormat()
         {
             for (const auto& [groupName, propertyList] : m_propertiesOld)
             {

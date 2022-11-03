@@ -12,9 +12,10 @@
 
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettings.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsNotificationBus.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsNotificationBus.h>
 
 namespace AzToolsFramework
 {
@@ -44,7 +45,7 @@ namespace AzToolsFramework
     {
         //! Private constructor.
         PaintBrushManipulator(
-            const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair);
+            const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair, PaintBrushColorMode colorMode);
 
     public:
         AZ_RTTI(PaintBrushManipulator, "{0621CB58-21FD-474A-A296-5B1192E714E7}", BaseManipulator);
@@ -58,7 +59,7 @@ namespace AzToolsFramework
 
         //! A Manipulator must only be created and managed through a shared_ptr.
         static AZStd::shared_ptr<PaintBrushManipulator> MakeShared(
-            const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair);
+            const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair, PaintBrushColorMode colorMode);
 
         //! Draw the current manipulator state.
         void Draw(
@@ -74,8 +75,6 @@ namespace AzToolsFramework
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl();
  
         void AdjustSize(float sizeDelta);
-        void AdjustIntensityPercent(float intensityPercentDelta);
-        void AdjustOpacityPercent(float opacityPercentDelta);
 
     private:
         void OnSettingsChanged(const PaintBrushSettings& newSettings) override;

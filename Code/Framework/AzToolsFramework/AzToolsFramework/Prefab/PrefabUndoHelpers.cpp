@@ -6,9 +6,11 @@
  *
  */
 
-#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
-#include <AzToolsFramework/Prefab/PrefabUndo.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoAddEntity.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoAddEntityAsOverride.h>
 
 namespace AzToolsFramework
 {
@@ -52,15 +54,29 @@ namespace AzToolsFramework
             }
 
             void AddEntity(
-                const PrefabDomValue& newEntityDom,
-                AZ::EntityId entityId,
-                TemplateId templateId,
+                const AZ::Entity& parentEntity,
+                const AZ::Entity& newEntity,
+                Instance& owningInstance,
+                Instance& focusedInstance,
                 UndoSystem::URSequencePoint* undoBatch)
             {
-                PrefabUndoAddEntity* addEntityUndoState = aznew PrefabUndoAddEntity("Undo Adding Entity");
-                addEntityUndoState->SetParent(undoBatch);
-                addEntityUndoState->Capture(newEntityDom, entityId, templateId);
-                addEntityUndoState->Redo();
+                if (&owningInstance == &focusedInstance)
+                {
+                    PrefabUndoAddEntity* addEntityUndoState =
+                        aznew PrefabUndoAddEntity("Undo Adding Entity");
+                    addEntityUndoState->SetParent(undoBatch);
+                    addEntityUndoState->Capture(parentEntity, newEntity, focusedInstance);
+                    addEntityUndoState->Redo();
+                }
+                else
+                {
+                    PrefabUndoAddEntityAsOverride* addEntityUndoState =
+                        aznew PrefabUndoAddEntityAsOverride("Undo Adding Entity");
+                    addEntityUndoState->SetParent(undoBatch);
+                    addEntityUndoState->Capture(parentEntity, newEntity, owningInstance, focusedInstance);
+                    addEntityUndoState->Redo();
+                }
+                
             }
 
             void RemoveEntities(

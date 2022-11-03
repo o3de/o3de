@@ -36,6 +36,10 @@ def on_change_default_shape_type(whiteBoxMeshComponent, defaultShapeType):
 
     # get the white box mesh handle
     whiteBoxMesh = azlmbr.whitebox.request.bus.EditorWhiteBoxComponentRequestBus(bus.Event, 'GetWhiteBoxMeshHandle', whiteBoxMeshComponent)
+    
+    if not whiteBoxMesh.IsValid():
+        print('Could not resolve White Box Mesh')
+        return
 
     # clear whiteBoxMesh
     whiteBoxMesh.Clear()
