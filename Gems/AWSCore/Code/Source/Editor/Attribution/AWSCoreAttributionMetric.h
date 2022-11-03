@@ -28,7 +28,10 @@ namespace AWSCore
         ~AttributionMetric() = default;
 
         void SetO3DEVersion(const AZStd::string& version);
+
+        AZStd::string Platform() const { return m_platform;}
         void SetPlatform(const AZStd::string& platform, const AZStd::string& platformVersion);
+
         void AddActiveGem(const AZStd::string& gemName);
 
         //! Serialize the metrics object queue to a string.
