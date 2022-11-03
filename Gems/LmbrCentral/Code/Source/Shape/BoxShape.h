@@ -50,6 +50,8 @@ namespace LmbrCentral
         float DistanceSquaredFromPoint(const AZ::Vector3& point) override;
         AZ::Vector3 GenerateRandomPointInside(AZ::RandomDistributionType randomDistribution) override;
         bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        AZ::Vector3 GetTranslationOffset() const override;
+        void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
 
         // BoxShapeComponentRequestBus::Handler
         BoxShapeConfig GetBoxConfiguration() override { return m_boxShapeConfig; }
