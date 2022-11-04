@@ -17,6 +17,18 @@
    <property name="spacing">
     <number>0</number>
    </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <item>
     <widget class="QScrollArea" name="scrollArea">
      <property name="minimumSize">
@@ -24,6 +36,9 @@
        <width>1</width>
        <height>1</height>
       </size>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
      </property>
      <property name="widgetResizable">
       <bool>true</bool>
@@ -55,6 +70,18 @@
        </property>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout">
+         <property name="leftMargin">
+          <number>5</number>
+         </property>
+         <property name="topMargin">
+          <number>5</number>
+         </property>
+         <property name="rightMargin">
+          <number>5</number>
+         </property>
+         <property name="bottomMargin">
+          <number>5</number>
+         </property>
          <item>
           <widget class="AzToolsFramework::AssetBrowser::SearchWidget" name="m_searchWidget" native="true">
            <property name="sizePolicy">
@@ -88,7 +115,57 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QToolButton" name="m_thumbnailViewButton">
+           <property name="icon">
+            <iconset resource="../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+             <normaloff>:/Gallery/Grid-small.svg</normaloff>:/Gallery/Grid-small.svg</iconset>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">m_viewSelectButtonGroup</string>
+           </attribute>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="m_listViewButton">
+           <property name="text">
+            <string>...</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+             <normaloff>:/Breadcrumb/img/UI20/Breadcrumb/List_View.svg</normaloff>:/Breadcrumb/img/UI20/Breadcrumb/List_View.svg</iconset>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">m_viewSelectButtonGroup</string>
+           </attribute>
+          </widget>
+         </item>
         </layout>
+       </item>
+       <item>
+        <widget class="QWidget" name="m_separator" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>1</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QSplitter" name="m_splitter">
@@ -182,6 +259,54 @@
            </item>
           </layout>
          </widget>
+         <widget class="QStackedWidget" name="m_middleStackWidget">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>50</width>
+            <height>0</height>
+           </size>
+          </property>
+          <widget class="QWidget" name="m_iconView">
+           <layout class="QVBoxLayout" name="m_iconViewLayout">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="m_iconViewPlaceholder">
+              <property name="text">
+               <string>Icon view placeholder</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="m_tableView">
+           <layout class="QVBoxLayout" name="m_tableViewLayout">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="m_tableViewPlaceholder">
+              <property name="text">
+               <string>List view placeholder</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
          <widget class="QWidget" name="previewWidgetWrapper">
           <layout class="QVBoxLayout" name="m_rightLayout">
            <item>
@@ -237,4 +362,7 @@
   <include location="../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc"/>
  </resources>
  <connections/>
+ <buttongroups>
+  <buttongroup name="m_viewSelectButtonGroup"/>
+ </buttongroups>
 </ui>

@@ -11,9 +11,8 @@
                 "name": "outPosition",
                 "displayName": "Position",
                 "description": "Position",
-                "supportedDataTypes": [
-                    "float3"
-                ],
+                "supportedDataTypeRegex": "float3",
+                "defaultDataType": "float3",
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = O3DE_MC_WORLD_POSITION;"
@@ -24,9 +23,8 @@
                 "name": "outX",
                 "displayName": "X",
                 "description": "X",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = O3DE_MC_WORLD_POSITION.x;"
@@ -37,9 +35,8 @@
                 "name": "outY",
                 "displayName": "Y",
                 "description": "Y",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = O3DE_MC_WORLD_POSITION.y;"
@@ -50,9 +47,8 @@
                 "name": "outZ",
                 "displayName": "Z",
                 "description": "Z",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = O3DE_MC_WORLD_POSITION.z;"

@@ -12,17 +12,18 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
-#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 // Graph Model
-#include <GraphModel/Model/Slot.h>
-#include <GraphModel/Model/Node.h>
+#include <GraphModel/Model/Connection.h>
 #include <GraphModel/Model/Graph.h>
 #include <GraphModel/Model/GraphContext.h>
+#include <GraphModel/Model/Node.h>
+#include <GraphModel/Model/Slot.h>
 
 namespace GraphModel
 {
@@ -360,20 +361,12 @@ namespace GraphModel
     void Slot::PostLoadSetup(GraphPtr graph, SlotDefinitionPtr slotDefinition)
     {
         AZ_Assert(nullptr == GetGraph(), "This slot is not freshly loaded");
-        AZ_Assert(m_parentNode._empty(), "This slot is not freshly loaded");
 
         m_graph = graph;
         m_slotDefinition = slotDefinition;
 
         if (SupportsValues())
         {
-            // CJS TODO: Consider using AZ::Outcome for better error reporting
-
-            // Check the serialized value type against the supported types for this slot
-            // instead of just using Slot::GetDataType(), because for slots with
-            // multiple supported types, Slot::GetDataType() will call GetParentNode()
-            // to try and resolve its type, which will be a nullptr at this point
-            // because the parent won't be valid yet
             AZ_Error(
                 GetGraph()->GetSystemName(),
                 GetDataTypeForValue(m_value),
@@ -384,24 +377,14 @@ namespace GraphModel
 
     NodePtr Slot::GetParentNode() const
     {
-        // Originally the parent node was passed to the Slot constructor, but this was before
-        // using shared_ptr for Nodes. Because the Node constructor is what creates the Slots,
-        // and shared_from_this() doesn't work in constructors, we can't initialize m_parentNode
-        // until after the Node is created. So we search for and cache the pointer here the first
-        // time it is requested.
-        if (m_parentNode._empty())
+        for (auto nodePair : GetGraph()->GetNodes())
         {
-            for (auto nodeIter : GetGraph()->GetNodes())
+            if (nodePair.second->Contains(shared_from_this()))
             {
-                if (nodeIter.second->Contains(shared_from_this()))
-                {
-                    m_parentNode = nodeIter.second;
-                    break;
-                }
+                return nodePair.second;
             }
         }
-
-        return m_parentNode.lock();
+        return {};
     }
 
     AZStd::any Slot::GetValue() const
@@ -412,19 +395,16 @@ namespace GraphModel
     Slot::ConnectionList Slot::GetConnections() const
     {
         ConnectionList connections;
-
-        for (auto iter : m_connections)
+        for (auto connection : GetGraph()->GetConnections())
         {
-            if (ConnectionPtr connection = iter.lock())
+            if (connection &&
+                connection->GetSourceSlot() &&
+                connection->GetTargetSlot() &&
+                (connection->GetSourceSlot().get() == this || connection->GetTargetSlot().get() == this))
             {
                 connections.insert(connection);
             }
-            else
-            {
-                AZ_Assert(false , "Slot's connection cache is out of date");
-            }
         }
-
         return connections;
     }
 
