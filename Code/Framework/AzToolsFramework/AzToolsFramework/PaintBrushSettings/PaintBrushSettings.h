@@ -11,7 +11,6 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettings.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyColorCtrl.hxx>
 
 namespace AzToolsFramework
