@@ -50,6 +50,7 @@ namespace PhysX::Benchmarks
     {
         m_defaultScene->StartSimulation(timeStep);
         m_defaultScene->FinishSimulation();
+        static_cast<PhysX::PhysXScene*>(m_defaultScene)->FlushTransformSync();
     }
 
     void PhysXBaseBenchmarkFixture::SetUpInternal()
