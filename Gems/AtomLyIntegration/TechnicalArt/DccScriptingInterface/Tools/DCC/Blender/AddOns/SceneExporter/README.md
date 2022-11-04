@@ -14,6 +14,10 @@ We often don’t hit our targets on the first time. The creative process is very
 
 Although it is not a hard requirement, you can enable the DccScriptingInterface Gem (DCCsi) with your O3DE Project (using the o3de.exe project manager).  This includes a tool integration with Blender, this provides and out-of-box developer experience for creating python scripts, tools and other addons.  With the DCCsi enabled, you can launch Blender from the main O3DE Editor, and Blender will start in a managed way (configuration and settings) and this addon can be enabled in the preferences (without requiring a manual install, although you can still do that also)
 
+More information about DCC tool integrations and setup can be found here in the[DccScriptingInterface Readme](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md)
+
+More information about the DCCsi Blender tool integration, configuration and setup, can be found here in the: [Blender Readme](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Tools/DCC/Blender/readme.md)
+
 ## Installing the DccScriptingInterface Gem
 
 < project manager dccsi gem image >
