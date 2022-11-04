@@ -27,8 +27,7 @@ More information about the DCCsi Blender tool integration, configuration and set
 ![Editor_fYF0aCP2k5](https://user-images.githubusercontent.com/23222931/200064272-81b7921a-1909-4836-ac4e-62b6ac919245.gif)
 
 ## Enable the AddOn via Blender Prefs
-
-< blender prefs gif >
+![blender_T6xHTOTS7k](https://user-images.githubusercontent.com/23222931/200065171-a9e1d802-7a94-4273-bd00-03421fcbfd17.gif)
 
 ## Accessing the O3DE Scene Exporter Tool
 
