@@ -59,3 +59,12 @@ The destination path for converted assets are sent to this location. The proper 
 #### Output Window
 
 Once a scene has been processed, this window can be used to see all assets that have been exported, along with their set attributes/texture assignments. The combobox can be used to access each of the various exported elements.
+
+---
+
+"""
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
+
+SPDX-License-Identifier: Apache-2.0 OR MIT
+"""
