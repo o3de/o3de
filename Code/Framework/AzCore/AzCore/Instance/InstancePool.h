@@ -19,6 +19,9 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/std/utils.h>
 
+// InstancePools hold and recycle arbitrary C++ objects and are useful for objects that are expensive to create and destroy.
+// They are created by the InstancePoolManager whose lifetime is managed by AzFramework::Application
+
 namespace AZ
 {
     class InstancePoolBase
@@ -36,6 +39,7 @@ namespace AZ
         {
         }
 
+        // returns a recycled instance if present, but creates a new instance if necessary
         T* GetInstance()
         {
             if (!m_instances.empty())
@@ -50,6 +54,7 @@ namespace AZ
             }
         }
 
+        // calls the pool's reset function on the passed instance, then adds it to the pool
         void RecycleInstance(T* instanceToRecycle)
         {
             if (instanceToRecycle == nullptr)
@@ -69,25 +74,26 @@ namespace AZ
         ResetInstance m_resetFunction;
     };
 
-    class PoolManagerInterface
+    class InstancePoolManagerInterface
     {
     public:
-        AZ_RTTI(PoolManagerInterface, "{58980615-BC01-470F-8056-D2E2EFDFF27E}");
+        AZ_RTTI(InstancePoolManagerInterface, "{58980615-BC01-470F-8056-D2E2EFDFF27E}");
     };
 
-    class PoolManager : public PoolManagerInterface
+    class InstancePoolManager : public InstancePoolManagerInterface
     {
     public:
-        PoolManager()
+        InstancePoolManager()
         {
-            AZ::Interface<PoolManagerInterface>::Register(this);
+            AZ::Interface<InstancePoolManagerInterface>::Register(this);
         }
 
-        virtual ~PoolManager()
+        virtual ~InstancePoolManager()
         {
-            AZ::Interface<PoolManagerInterface>::Unregister(this);
+            AZ::Interface<InstancePoolManagerInterface>::Unregister(this);
         }
 
+        // creates a pool with the explicit name given, and the reset function specified
         template<class T>
         AZ::Outcome<AZStd::shared_ptr<InstancePool<T>>, AZStd::string> CreatePool(AZ::Name name, typename InstancePool<T>::ResetInstance resetFunc)
         {
@@ -114,6 +120,9 @@ namespace AZ
             }
         }
 
+        // same as above, but uses the class's AzTypeInfo name as the pool name. Useful when sharing pools across different editors
+        // without having to manually coordinate the pool name. 
+        // important note: to use this, the T type must either include the AZ_RTTI macro, or be externally exposed via AZ_TYPE_INFO_SPECIALIZE
         template<class T>
         AZ::Outcome<AZStd::shared_ptr<InstancePool<T>>, AZStd::string> CreatePool(typename InstancePool<T>::ResetInstance resetFunc)
         {
@@ -121,6 +130,7 @@ namespace AZ
             return CreatePool<T>(AZ::Name(name), resetFunc);
         }
 
+        // returns the pool with the specified name
         template<class T>
         AZStd::shared_ptr<InstancePool<T>> GetPool(AZ::Name name)
         {
@@ -133,6 +143,7 @@ namespace AZ
             return nullptr;
         }
 
+        // same as above, but uses the AzTypeInfo name for the given T type
         template<class T>
         AZStd::shared_ptr<InstancePool<T>> GetPool()
         {

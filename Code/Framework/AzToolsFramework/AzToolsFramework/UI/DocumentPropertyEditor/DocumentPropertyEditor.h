@@ -9,7 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/Memory/InstancePool.h>
+#include <AzCore/Instance/InstancePool.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/IPropertyEditor.h>
@@ -266,6 +266,7 @@ namespace AzToolsFramework
     };
 } // namespace AzToolsFramework
 
+// expose type info for external classes so that they can be used with the InstancePool system
 namespace AZ
 {
     AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::DPERowWidget, "{C457A594-6E19-4674-A617-3CC09CF7E532}");

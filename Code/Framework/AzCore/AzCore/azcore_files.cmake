@@ -142,6 +142,7 @@ set(FILES
     EBus/Internal/Debug.h
     EBus/Internal/Handlers.h
     EBus/Internal/StoragePolicies.h
+    Instance/InstancePool.h
     Interface/Interface.h
     IO/ByteContainerStream.h
     IO/CompressionBus.h
@@ -409,7 +410,6 @@ set(FILES
     Memory/HeapSchema.h
     Memory/HphaSchema.cpp
     Memory/HphaSchema.h
-    Memory/InstancePool.h
     Memory/IAllocator.cpp
     Memory/IAllocator.h
     Memory/MallocSchema.cpp

@@ -1272,7 +1272,7 @@ namespace AzToolsFramework
         setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
         // register as a co-owner of the recycled widgets list if it exists, create it if it doesn't
-        auto poolManager = static_cast<AZ::PoolManager*>(AZ::Interface<AZ::PoolManagerInterface>::Get());
+        auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
         if (m_rowPool = poolManager->GetPool<DPERowWidget>(); !m_rowPool)
         {
             AZStd::function<void(DPERowWidget&)> resetRow = [](DPERowWidget& row)
