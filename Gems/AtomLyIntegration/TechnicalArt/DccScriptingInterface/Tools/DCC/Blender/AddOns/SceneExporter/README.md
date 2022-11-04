@@ -21,8 +21,7 @@ More information about DCC tool integrations and setup can be found here in the[
 More information about the DCCsi Blender tool integration, configuration and setup, can be found here in the: [Blender Readme](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Tools/DCC/Blender/readme.md)
 
 ## Installing the DccScriptingInterface Gem
-
-![o3de_gerUiVeyOR](https://user-images.githubusercontent.com/23222931/200063063-094a3639-1834-47d8-b527-9fd998fc2dfa.gif)
+![image](https://user-images.githubusercontent.com/23222931/200064189-c2d32414-fa62-4281-ae38-b084ee041b45.png)
 
 ## Launch Blender from the Main Editor
 
