@@ -1377,6 +1377,7 @@ namespace AssetProcessor
                 AssessFileInternal(affectedSourceFile.c_str(), false);
             }
 
+            // If there are any new or updated products, trigger any source dependencies which depend on a specific product
             if(!updatedProducts.empty())
             {
                 QStringList dependencies = GetSourceFilesWhichDependOnSourceFile(processedAsset.m_entry.GetAbsoluteSourcePath(), updatedProducts);
