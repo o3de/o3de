@@ -246,22 +246,27 @@ namespace AzToolsFramework
         {
             AZ::EntityId descendantEntityId = GetEntityIdFromIndex(descendantIndex);
 
-            // Container entities will always have overrides because they need to maintain unique positions in the scene.
-            // We are skipping checking for overrides on container entities for this reason.
-            if (!m_prefabPublicInterface->IsInstanceContainerEntity(descendantEntityId) &&
-                m_prefabOverridePublicInterface->AreOverridesPresent(descendantEntityId))
+            // If the entity is not in the focus hierarchy, we needn't add override visualization
+            // as overrides are only shown from the current focused prefab.
+            if (m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(descendantEntityId))
             {
-                // Build the rect that will be used to paint the icon
-                QRect overrideIconBounds =
-                    QRect(option.rect.topLeft() + s_overrideIconOffset, QSize(s_overrideIconSize * 2, s_overrideIconSize * 2));
+                // Container entities will always have overrides because they need to maintain unique positions in the scene.
+                // We are skipping checking for overrides on container entities for this reason.
+                if (!m_prefabPublicInterface->IsInstanceContainerEntity(descendantEntityId) &&
+                    m_prefabOverridePublicInterface->AreOverridesPresent(descendantEntityId))
+                {
+                    // Build the rect that will be used to paint the icon
+                    QRect overrideIconBounds =
+                        QRect(option.rect.topLeft() + s_overrideIconOffset, QSize(s_overrideIconSize * 2, s_overrideIconSize * 2));
 
-                painter->save();
-                painter->setRenderHint(QPainter::Antialiasing, true);
-                painter->setPen(Qt::NoPen);
-                painter->setBrush(s_overrideIconBackgroundColor);
-                painter->drawEllipse(overrideIconBounds.center(), s_overrideIconSize, s_overrideIconSize);
-                s_overrideIcon.paint(painter, overrideIconBounds);
-                painter->restore();
+                    painter->save();
+                    painter->setRenderHint(QPainter::Antialiasing, true);
+                    painter->setPen(Qt::NoPen);
+                    painter->setBrush(s_overrideIconBackgroundColor);
+                    painter->drawEllipse(overrideIconBounds.center(), s_overrideIconSize, s_overrideIconSize);
+                    s_overrideIcon.paint(painter, overrideIconBounds);
+                    painter->restore();
+                }
             }
         }
 

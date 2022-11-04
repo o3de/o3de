@@ -90,7 +90,7 @@ namespace AzToolsFramework
 
         inline static const QColor s_overrideIconBackgroundColor = QColor("#444444");
         inline static const QPoint s_overrideIconOffset = QPoint(10, 10);
-        inline static const int s_overrideIconSize = 6;
+        inline static const int s_overrideIconSize = 5;
         QIcon s_overrideIcon = QIcon(QString(":/Entity/entity_overridden.svg"));
     };
 } // namespace AzToolsFramework
