@@ -55,7 +55,7 @@ class MaterialGenerator:
 
     def parse_material_attributes(self):
         """! This organizes material attributes into a number of separate class attributes to make accessing the
-        respective information a little more easily.
+        respective information a little easier.
         """
         for material_key, material_values in self.material_attributes.items():
             self.dcc_material_name = material_key
@@ -104,7 +104,6 @@ class MaterialGenerator:
         properties_dictionary = {}
         _LOGGER.info(f'\n\n>>>>> PROPERTY VALUES: {property_values}')
         for material_property, property_value in property_values.items():
-            _LOGGER.info(f'MaterialProperty: {material_property}   PropertyValue: {property_value}')
             for key, value in self.transferable_properties.items():
                 if value == material_property:
                     property_components = material_property.split('.')
