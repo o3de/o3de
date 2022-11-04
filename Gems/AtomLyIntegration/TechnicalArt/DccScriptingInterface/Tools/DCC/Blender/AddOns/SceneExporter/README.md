@@ -30,8 +30,7 @@ More information about the DCCsi Blender tool integration, configuration and set
 ![blender_T6xHTOTS7k](https://user-images.githubusercontent.com/23222931/200065171-a9e1d802-7a94-4273-bd00-03421fcbfd17.gif)
 
 ## Accessing the O3DE Scene Exporter Tool
-
-< Blender shelf gif >
+![blender_uZhsuDbmuU](https://user-images.githubusercontent.com/23222931/200066094-63be4232-d92c-41e5-a9ef-a226c74d2b77.gif)
 
 # Project Asset Organization with O3DE Projects and Custom Project Paths.
 
