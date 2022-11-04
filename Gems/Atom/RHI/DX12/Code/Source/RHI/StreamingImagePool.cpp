@@ -17,7 +17,7 @@
 #define AZ_RHI_DX12_DEBUG_STREAMINGIMAGEPOOL 0
 
 // enable tiled resource implementation
-#define AZ_RHI_USE_TILED_RESOURCES
+#define AZ_RHI_DX12_USE_TILED_RESOURCES
 
 namespace AZ
 {
@@ -153,7 +153,7 @@ namespace AZ
 
             m_enableTileResource = device.GetFeatures().m_tiledResource;
 
-#ifndef AZ_RHI_USE_TILED_RESOURCES
+#ifndef AZ_RHI_DX12_USE_TILED_RESOURCES
             // Disable tile resource for all 
             m_enableTileResource = false;
 #endif

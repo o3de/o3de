@@ -40,6 +40,7 @@ namespace AZ
             RHI::ResultCode InitImageInternal(const RHI::StreamingImageInitRequest& request) override;
             RHI::ResultCode ExpandImageInternal(const RHI::StreamingImageExpandRequest& request) override;
             RHI::ResultCode TrimImageInternal(RHI::Image& image, uint32_t targetMipLevel) override;
+            RHI::ResultCode SetMemoryBudgetInternal(size_t newBudget) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
@@ -66,6 +67,8 @@ namespace AZ
 
             MemoryAllocator m_memoryAllocator;
             RHI::HeapMemoryUsage m_memoryAllocatorUsage;
+
+            bool m_enableTileResource = false;
         };
     }
 }

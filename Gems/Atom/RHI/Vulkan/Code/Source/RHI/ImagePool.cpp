@@ -84,7 +84,7 @@ namespace AZ
             // Add copy write flag since images can be copy into or clear using a command list.
             imageDescriptor.m_bindFlags |= RHI::ImageBindFlags::CopyWrite;
 
-            RHI::ResultCode result = image->Init(device, imageDescriptor);
+            RHI::ResultCode result = image->Init(device, imageDescriptor, false);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
             MemoryView memoryView = m_memoryAllocator.Allocate(image->m_memoryRequirements.size, image->m_memoryRequirements.alignment);

@@ -68,6 +68,9 @@ namespace AZ
 
             void WaitForUpload(const RHI::AsyncWorkHandle& workHandle);
 
+            // queue sparse bindings
+            void QueueBindSparse(const VkBindSparseInfo& bindSparseInfo);
+
         private:
             RHI::Ptr<CommandQueue> m_queue;
             RHI::Ptr<CommandList> m_commandList;
@@ -84,6 +87,7 @@ namespace AZ
 
             FramePacket* BeginFramePacket(Queue* queue);
             void EndFramePacket(Queue* queue, Semaphore* semaphoreToSignal = nullptr);
+
 
             void EmmitPrologueMemoryBarrier(const Buffer& buffer, size_t offset, size_t size);
             void EmmitPrologueMemoryBarrier(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip);

@@ -96,7 +96,7 @@ namespace AZ
 
             // For heaps that suballocate in a manner that results in fragmentation, this quantity is computed as
             // 1 - (largest free block byte size) / (total free memory). When the free memory equals the largest block size, this
-            // measure is 0. As the largest free block size descreases relative to the amount of free memory, this approaches 1.
+            // measure is 0. As the largest free block size decreases relative to the amount of free memory, this approaches 1.
             // Fragmentation may be expensive to compute on demand, so it is currently computed as a side-effect of the ReportMemoryUsage
             // routines. As this is the only quantity that changes during the memory statistics gathering process, we opt to mark it mutable
             // here instead of marking the entire routine mutable.
@@ -105,7 +105,7 @@ namespace AZ
             // Total number of bytes allocated on the physical memory. This may not exceed the budget if it's non zero.
             AZStd::atomic_size_t m_totalResidentInBytes{ 0 };
 
-            // Number of bytes are used for resources or objects. This ususally tracks the sub-allocations out of the total resident.
+            // Number of bytes are used for resources or objects. This usually tracks the sub-allocations out of the total resident.
             // It may not exceed the total resident.
             AZStd::atomic_size_t m_usedResidentInBytes{ 0 };
 

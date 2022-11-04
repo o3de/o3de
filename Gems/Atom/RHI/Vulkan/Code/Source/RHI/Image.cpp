@@ -9,6 +9,7 @@
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/sort.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <RHI/AsyncUploadQueue.h>
 #include <RHI/Image.h>
 #include <RHI/ImagePool.h>
 #include <RHI/SwapChain.h>
@@ -24,6 +25,237 @@ namespace AZ
 {
     namespace Vulkan
     {
+        // SparseImageInfo functions
+        void SparseImageInfo::Init(const Device& device, VkImage vkImage, const RHI::ImageDescriptor& imageDescriptor)
+        {
+            // Get image memory requirements 
+            VkMemoryRequirements memoryRequirements;
+            device.GetContext().GetImageMemoryRequirements(device.GetNativeDevice(), vkImage, &memoryRequirements);
+            
+            // get sparse memory requirement count;
+            uint32_t sparseMemoryReqsCount = 0;
+            device.GetContext().GetImageSparseMemoryRequirements(device.GetNativeDevice(), vkImage, &sparseMemoryReqsCount, nullptr);
+            AZ_Assert(sparseMemoryReqsCount, "Sparse memory requirements count shouldn't be 0");
+
+            // Get actual requirements
+            AZStd::vector<VkSparseImageMemoryRequirements> sparseImageMemoryRequirements;
+            sparseImageMemoryRequirements.resize(sparseMemoryReqsCount);
+            device.GetContext().GetImageSparseMemoryRequirements(device.GetNativeDevice(), vkImage, &sparseMemoryReqsCount, sparseImageMemoryRequirements.data());
+
+            bool validSparseImage = false;
+            for (const VkSparseImageMemoryRequirements& requirements : sparseImageMemoryRequirements)
+            {
+                if (requirements.formatProperties.aspectMask == VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT)
+                {
+                    m_sparseImageMemoryRequirements = requirements;
+                    validSparseImage = true;
+                    break;
+                }
+            }
+
+            if (!validSparseImage)
+            {
+                AZ_Assert(false, "Non-color sparse image is not supported");
+                return;
+            }
+
+            m_image = vkImage;
+
+            VkExtent3D imageGranularity = m_sparseImageMemoryRequirements.formatProperties.imageGranularity;
+
+            // calculate block size in bytes
+            uint32_t blockAreaSize = imageGranularity.width * imageGranularity.height * imageGranularity.depth;
+            m_blockSizeInBytes = blockAreaSize * RHI::GetFormatSize(imageDescriptor.m_format);
+            AZ_Assert(m_blockSizeInBytes == memoryRequirements.alignment, "unexpected block size");
+
+            // calculate block count for mip tail
+            m_mipTailBlockCount = aznumeric_cast<uint32_t>(m_sparseImageMemoryRequirements.imageMipTailSize/m_blockSizeInBytes);
+            
+            // calculate block count for each non-tail mip levels
+            uint32_t nonTailMipLevels = m_sparseImageMemoryRequirements.imageMipTailFirstLod;
+            if (nonTailMipLevels)
+            {
+                m_mipSizes.resize(nonTailMipLevels);
+                m_mipBlockCount.resize(nonTailMipLevels);
+                m_mipMemoryViews.resize(nonTailMipLevels);
+                m_mipMemoryBinds.resize(nonTailMipLevels);
+                m_mipMemoryBindInfos.resize(nonTailMipLevels);
+
+                for (uint32_t mip = 0; mip < nonTailMipLevels; mip++)
+                {
+                    m_mipSizes[mip] = RHI::Size(
+                        AZStd::max(imageDescriptor.m_size.m_width >> mip, 1u),
+                        AZStd::max(imageDescriptor.m_size.m_height >> mip, 1u),
+                        AZStd::max(imageDescriptor.m_size.m_depth >> mip, 1u));
+
+                    m_mipBlockCount[mip] = AZ::DivideAndRoundUp(m_mipSizes[mip].m_width, imageGranularity.width)
+                        * AZ::DivideAndRoundUp(m_mipSizes[mip].m_height, imageGranularity.height)
+                        * AZ::DivideAndRoundUp(m_mipSizes[mip].m_depth, imageGranularity.depth);
+                }
+            }
+        }
+
+        uint64_t SparseImageInfo::GetRequiredMemorySize(uint16_t residentMipLevel) const
+        {
+            // minimum memory size should be mip tail size
+            uint64_t memorySize = m_sparseImageMemoryRequirements.imageMipTailSize;
+
+            // for any resident mips which are not part of tail
+            for (uint32_t mip = residentMipLevel; mip < m_tailStartMip; mip++ )
+            {
+                memorySize += m_mipBlockCount[mip] * m_blockSizeInBytes;
+            }
+
+            return memorySize; 
+        }
+
+        void SparseImageInfo::SetMipTailMemoryBind(const MemoryView& memoryView)
+        {
+            m_mipTailMemoryView = memoryView;
+        }
+
+        void SparseImageInfo::AddMipMemoryView(uint16_t mipLevel, const MemoryView& memoryView)
+        {
+            m_mipMemoryViews[mipLevel].push_back(memoryView);
+        }
+
+        void SparseImageInfo::ResetMipMemoryView(uint16_t mipLevel)
+        {
+            m_mipMemoryViews[mipLevel].clear();
+            m_mipMemoryBinds[mipLevel].clear();
+        }
+
+        void SparseImageInfo::UpdateMipMemoryBindInfo(uint16_t mipLevel)
+        {
+            AZ_Assert(mipLevel < m_tailStartMip, "Invalid mip level. Mip level should be smaller than m_tailStartMip");
+
+            MipMemoryViews& memoryViews = m_mipMemoryViews[mipLevel];
+            size_t memoryViewCount = memoryViews.size();
+            AZ_Assert(memoryViewCount > 0, "There wasn't memory allocated for mip level %u", mipLevel);
+            MipMemoryBinds& memoryBinds = m_mipMemoryBinds[mipLevel];
+            auto imageGranularity = m_sparseImageMemoryRequirements.formatProperties.imageGranularity;
+
+            // subresource for this mip level
+            VkImageSubresource subResource;
+            subResource.mipLevel = mipLevel;
+            subResource.aspectMask = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
+            subResource.arrayLayer = 0;
+
+            RHI::Size mipSize = m_mipSizes[mipLevel];
+            const uint32_t mipBlockCount = m_mipBlockCount[mipLevel];
+            const uint32_t blockCountPerRow = AZ::DivideAndRoundUp(mipSize.m_width, imageGranularity.width);
+            const uint32_t blockCountPerColumn = AZ::DivideAndRoundUp(mipSize.m_height, imageGranularity.height);
+
+            // convert memory views to memory binds
+            memoryBinds.clear();
+            uint32_t boundBlockCount = 0;
+            for (size_t index = 0; index < memoryViewCount; memoryViews)
+            {
+                const MemoryView& memoryView = memoryViews[index];
+                VkSparseImageMemoryBind memoryBind;
+                
+                uint32_t memoryBlockCount = aznumeric_cast<uint32_t>(memoryView.GetSize() / m_blockSizeInBytes);
+
+                // No more than one row of blocks per bind for simpler implementation
+                while (memoryBlockCount > 0)
+                {
+                    // find the offset base on bound blocks
+                    VkOffset3D offset;
+                    offset.x = (boundBlockCount % blockCountPerRow) * imageGranularity.width;
+                    offset.y = (boundBlockCount / blockCountPerRow) * imageGranularity.height;
+                    offset.z = (boundBlockCount / (blockCountPerRow * blockCountPerColumn)) * imageGranularity.depth;
+
+                    // only update the width of the extent 
+                    uint32_t bindCount = AZStd::min(blockCountPerRow - boundBlockCount%blockCountPerRow, memoryBlockCount);
+                    VkExtent3D extent {bindCount * imageGranularity.width, imageGranularity.height, imageGranularity.depth};
+                    // handle the edges
+                    if (offset.x + extent.width > mipSize.m_width)
+                    {
+                        extent.width = mipSize.m_width - offset.x;
+                    }
+                    if (offset.y + extent.height > mipSize.m_height)
+                    {
+                        extent.height = mipSize.m_height - offset.y;
+                    }
+                    if (offset.z + extent.depth > mipSize.m_depth)
+                    {
+                        extent.depth = mipSize.m_depth - offset.z;
+                    }
+               
+                    memoryBind.subresource = subResource;
+                    memoryBind.memory = memoryView.GetMemory()->GetNativeDeviceMemory();
+                    memoryBind.memoryOffset = memoryView.GetOffset() + memoryView.GetSize() - memoryBlockCount * m_blockSizeInBytes;
+                    memoryBind.offset = offset;
+                    memoryBind.extent = extent;
+                    memoryBind.flags = 0;
+                    memoryBinds.emplace_back(memoryBind);
+
+                    memoryBlockCount -= bindCount;
+                    boundBlockCount += bindCount;
+                }
+
+                // move to next array layer
+                if (boundBlockCount == mipBlockCount)
+                {
+                    subResource.arrayLayer++;
+                    boundBlockCount = 0;
+                }
+
+                if (boundBlockCount > mipBlockCount)
+                {
+                    AZ_Assert(false, "Allocation issue: memory should be allocated separately for each image layer");
+                }
+            }
+
+            // generate bind info
+            VkSparseImageMemoryBindInfo& info = m_mipMemoryBindInfos[mipLevel];
+            info.image = m_image;
+            info.bindCount = aznumeric_cast<uint32_t>(memoryBinds.size());
+            info.pBinds = memoryBinds.data();
+        }
+
+        void SparseImageInfo::UpdateMipTailMemoryBindInfo()
+        {
+            AZ_Assert(m_mipTailMemoryView.IsValid(), "Memory view for mip tail is invalid");
+            m_mipTailMemoryBind.memory = m_mipTailMemoryView.GetMemory()->GetNativeDeviceMemory();
+            m_mipTailMemoryBind.memoryOffset = m_mipTailMemoryView.GetOffset();
+            m_mipTailMemoryBind.size = m_mipTailMemoryView.GetSize();
+            m_mipTailMemoryBind.resourceOffset = m_sparseImageMemoryRequirements.imageMipTailOffset;
+            m_mipTailMemoryBind.flags = 0;
+
+            m_mipTailMemoryBindInfo.bindCount = 1;
+            m_mipTailMemoryBindInfo.image = m_image;
+            m_mipTailMemoryBindInfo.pBinds = &m_mipTailMemoryBind;
+        }
+
+        VkBindSparseInfo SparseImageInfo::GetBindSparseInfo(uint16_t startMipLevel, uint16_t endMipLevel)
+        {
+            AZ_Assert(startMipLevel >= endMipLevel, "Invalid mip level range; start mip level shouldn't be smaller than endMipLevel");
+
+            VkBindSparseInfo bindSparseInfo;
+            bindSparseInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_BIND_SPARSE_INFO;
+            bindSparseInfo.pNext = nullptr;
+            bindSparseInfo.waitSemaphoreCount = 0;
+            bindSparseInfo.signalSemaphoreCount = 0;
+            bindSparseInfo.bufferBindCount = 0;
+
+            // add mip tail binds if start mip level is part of mip tail
+            if (startMipLevel >= m_tailStartMip)
+            {
+                bindSparseInfo.imageOpaqueBindCount = 1;
+                bindSparseInfo.pImageOpaqueBinds = &m_mipTailMemoryBindInfo;
+            }
+
+            uint16_t startMip = AZStd::min(startMipLevel, m_tailStartMip);
+            bindSparseInfo.imageBindCount = startMip - endMipLevel + 1;
+            if (bindSparseInfo.imageBindCount > 0)
+            {
+                bindSparseInfo.pImageBinds = m_mipMemoryBindInfos.data() + endMipLevel;
+            }
+
+            return bindSparseInfo;
+        }
+
         Image::~Image()
         {
             Invalidate();
@@ -59,16 +291,6 @@ namespace AZ
             m_ownerQueue.Reset();
         }
 
-        const MemoryView* Image::GetMemoryView() const
-        {
-            return &m_memoryView;
-        }
-
-        MemoryView* Image::GetMemoryView()
-        {
-            return &m_memoryView;
-        }
-
         VkImage Image::GetNativeImage() const
         {
             return m_vkImage;
@@ -77,6 +299,25 @@ namespace AZ
         bool Image::IsOwnerOfNativeImage() const
         {
             return m_isOwnerOfNativeImage;
+        }
+
+        bool Image::IsSparse() const
+        {
+            return m_isSparse;
+        }
+
+        VkMemoryRequirements Image::GetMemoryRequirements(uint16_t residentMipLevel) const
+        {
+            if (m_isSparse)
+            {
+                VkMemoryRequirements requirements = m_memoryRequirements;
+                requirements.size = m_sparseImageInfo->GetRequiredMemorySize(residentMipLevel);
+                return requirements;
+            }
+            else
+            {
+                return m_memoryRequirements;
+            }
         }
 
         VkImageAspectFlags Image::GetImageAspectFlags() const
@@ -161,16 +402,40 @@ namespace AZ
             m_layout.Set(range ? *range : RHI::ImageSubresourceRange(GetDescriptor()), layout);
         }
 
-        RHI::ResultCode Image::Init(Device& device, const RHI::ImageDescriptor& descriptor)
+        RHI::ResultCode Image::Init(Device& device, const RHI::ImageDescriptor& descriptor, bool tryUseSparse)
         {
             RHI::DeviceObject::Init(device);
             SetDescriptor(descriptor);
-            RHI::ResultCode result = BuildNativeImage();
-            RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
+            m_isSparse = false;
+
+            // try create sparse image first
+            if (tryUseSparse)
+            {
+                m_isSparse = BuildSparseImage() == RHI::ResultCode::Success;
+            }
+
+            if (!m_isSparse)
+            {
+                // create non-sparse if failed to create sparse image
+                RHI::ResultCode result = BuildNativeImage();
+                RETURN_RESULT_IF_UNSUCCESSFUL(result);
+            }
+
+            m_isOwnerOfNativeImage = true;
+
+            // Get image memory requirements 
             device.GetContext().GetImageMemoryRequirements(device.GetNativeDevice(), m_vkImage, &m_memoryRequirements);
+            
+            // Get sparse image memory requirements and initialize sparse image info
+            if (m_isSparse)
+            {
+                m_sparseImageInfo = AZStd::make_unique<SparseImageInfo>();
+                m_sparseImageInfo->Init(device, m_vkImage, descriptor);
+            }
+
             SetName(GetName());
-            return result;
+            return RHI::ResultCode::Success;
         }
 
         RHI::ResultCode Image::BindMemoryView(const MemoryView& memoryView, [[maybe_unused]] const RHI::HeapMemoryLevel heapMemoryLevel)
@@ -186,6 +451,145 @@ namespace AZ
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
             m_memoryView = memoryView;
             return result;
+        }
+
+        RHI::ResultCode Image::AllocateAndBindMemory(MemoryAllocator& memoryAllocator, uint16_t residentMipLevel)
+        {
+            if (m_isSparse)
+            {
+                const size_t pageSize = memoryAllocator.GetDescriptor().m_pageSizeInBytes;
+
+                AZ_Assert(m_sparseImageInfo->m_sparseImageMemoryRequirements.imageMipTailSize <= pageSize, "Memory allocator page size is too small");
+                // Allocate memory for mip tail
+                auto tailMipMemoryView = memoryAllocator.Allocate(m_sparseImageInfo->m_sparseImageMemoryRequirements.imageMipTailSize,
+                    m_sparseImageInfo->m_blockSizeInBytes);
+                if (!tailMipMemoryView.IsValid())
+                {
+                    return RHI::ResultCode::OutOfMemory;
+                }
+                m_sparseImageInfo->SetMipTailMemoryBind(tailMipMemoryView);
+                m_sparseImageInfo->UpdateMipTailMemoryBindInfo();
+                
+                // For any resident mips which are not part of tail
+                const uint32_t blockCountPerPage = aznumeric_cast<uint32_t>(pageSize / m_sparseImageInfo->m_blockSizeInBytes);
+                for (uint16_t mip = residentMipLevel; mip < m_sparseImageInfo->m_tailStartMip; mip++ )
+                {
+                    for (uint16_t arrayIndex = 0; arrayIndex < GetDescriptor().m_arraySize; arrayIndex++ )
+                    {
+                        uint32_t blockCount = m_sparseImageInfo->m_mipBlockCount[mip];
+                        while (blockCount > 0)
+                        {
+                            uint32_t allocateBlockCount = AZStd::min(blockCount, blockCountPerPage);
+                            auto memoryView = memoryAllocator.Allocate(allocateBlockCount * m_sparseImageInfo->m_blockSizeInBytes,
+                                m_sparseImageInfo->m_blockSizeInBytes);
+                            if (!memoryView.IsValid())
+                            {
+                                m_sparseImageInfo->ResetMipMemoryView(mip);
+                                return RHI::ResultCode::OutOfMemory;
+                            }
+                            blockCount -= allocateBlockCount;
+                            m_sparseImageInfo->AddMipMemoryView(mip, memoryView);
+                        }
+                    }
+                    m_sparseImageInfo->UpdateMipMemoryBindInfo(mip);
+                }
+
+                // Queue the image's sparse bindings
+                auto& device = static_cast<Device&>(GetDevice());
+                VkBindSparseInfo bindSparseInfo = m_sparseImageInfo->GetBindSparseInfo(GetDescriptor().m_mipLevels, residentMipLevel);
+                device.GetAsyncUploadQueue().QueueBindSparse(bindSparseInfo);
+
+                return RHI::ResultCode::Success;
+            }
+            else 
+            {
+                auto memoryView = memoryAllocator.Allocate(m_memoryRequirements.size, m_memoryRequirements.alignment);
+                if (!memoryView.IsValid())
+                {
+                    return RHI::ResultCode::OutOfMemory;
+                }
+            
+                // Update memory usage for committed resource
+                m_residentSizeInBytes = m_memoryRequirements.size;
+                return BindMemoryView(memoryView, memoryAllocator.GetDescriptor().m_heapMemoryLevel);
+            }
+        }
+
+        RHI::ResultCode Image::BuildSparseImage()
+        {
+            AZ_Assert(m_vkImage == VK_NULL_HANDLE, "Vulkan's native image has already been initialized.");
+
+            // Only support color sparse image for now. Support for other aspects need to added
+            if (GetAspectFlags() != RHI::ImageAspectFlags::Color)
+            {
+                return RHI::ResultCode::Fail;
+            }
+
+            auto& device = static_cast<Device&>(GetDevice());
+            const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
+            const VkPhysicalDeviceFeatures& deviceFeatures = physicalDevice.GetPhysicalDeviceFeatures();
+            const RHI::ImageDescriptor& descriptor = GetDescriptor();
+
+            if (descriptor.m_dimension == RHI::ImageDimension::Image1D)
+            {
+                return RHI::ResultCode::Fail;
+            }
+
+            if (!(descriptor.m_multisampleState.m_samples == 1
+                || (descriptor.m_multisampleState.m_samples == 2 && deviceFeatures.sparseResidency2Samples)
+                || (descriptor.m_multisampleState.m_samples == 4 && deviceFeatures.sparseResidency4Samples)
+                || (descriptor.m_multisampleState.m_samples == 8 && deviceFeatures.sparseResidency8Samples)
+                || (descriptor.m_multisampleState.m_samples == 16 && deviceFeatures.sparseResidency16Samples))
+                )
+            {
+                return RHI::ResultCode::Fail;
+            }
+
+            VkImageCreateInfo createInfo{};
+            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            createInfo.pNext = nullptr;
+            createInfo.format = ConvertFormat(descriptor.m_format);
+            createInfo.flags = GetImageCreateFlags();
+            // Add flags for sparse binding and sparse memory residency
+            createInfo.flags |= VK_IMAGE_CREATE_SPARSE_BINDING_BIT | VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT; 
+            createInfo.imageType = ConvertToImageType(descriptor.m_dimension);
+            createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+            createInfo.usage = GetImageUsageFlags();
+
+            // Get general image properties
+            VkImageFormatProperties formatProps{};
+            AssertSuccess(device.GetContext().GetPhysicalDeviceImageFormatProperties(
+                physicalDevice.GetNativePhysicalDevice(), createInfo.format, createInfo.imageType, createInfo.tiling, createInfo.usage,
+                createInfo.flags, &formatProps));
+
+            VkSampleCountFlagBits sampleCountFlagBits = static_cast<VkSampleCountFlagBits>(RHI::FilterBits(static_cast<VkSampleCountFlags>(ConvertSampleCount(descriptor.m_multisampleState.m_samples)), formatProps.sampleCounts));
+            createInfo.samples = (static_cast<uint32_t>(sampleCountFlagBits) > 0) ? sampleCountFlagBits : VK_SAMPLE_COUNT_1_BIT;
+            
+            VkExtent3D extent = ConvertToExtent3D(descriptor.m_size);
+            extent.width = AZStd::min<uint32_t>(extent.width, formatProps.maxExtent.width);
+            extent.height = AZStd::min<uint32_t>(extent.height, formatProps.maxExtent.height);
+            extent.depth = AZStd::min<uint32_t>(extent.depth, formatProps.maxExtent.depth);
+            createInfo.extent = extent;
+            createInfo.mipLevels = AZStd::min<uint32_t>(descriptor.m_mipLevels, formatProps.maxMipLevels);
+            createInfo.arrayLayers = AZStd::min<uint32_t>(descriptor.m_arraySize, formatProps.maxArrayLayers);
+
+            // We will always handles image's ownership
+            createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            createInfo.queueFamilyIndexCount = 1;
+            createInfo.pQueueFamilyIndices = nullptr;
+
+            createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+            const VkResult result = device.GetContext().CreateImage(device.GetNativeDevice(), &createInfo, nullptr, &m_vkImage);
+            AssertSuccess(result);
+
+            if (result == VkResult::VK_SUCCESS)
+            {
+                m_sparseImageInfo = AZStd::make_unique<SparseImageInfo>();
+                m_sparseImageInfo->Init(device, m_vkImage, descriptor);
+            }
+
+            return ConvertResult(result);
         }
 
         RHI::ResultCode Image::BuildNativeImage()
@@ -239,7 +643,6 @@ namespace AZ
             const VkResult result = device.GetContext().CreateImage(device.GetNativeDevice(), &createInfo, nullptr, &m_vkImage);
             AssertSuccess(result);
 
-            m_isOwnerOfNativeImage = true;
             return ConvertResult(result);
         }
 
@@ -409,5 +812,6 @@ namespace AZ
                 }
             }
         }
-     }
+
+    }
 }

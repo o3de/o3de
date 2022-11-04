@@ -430,6 +430,24 @@ namespace AZ
             ProcessCallback(workHandle);
         }
 
+        void AsyncUploadQueue::QueueBindSparse(const VkBindSparseInfo& bindInfo)
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+
+            RHI::Ptr<Fence> uploadFence = Fence::Create();
+            uploadFence->Init(device, RHI::FenceState::Reset);
+
+            VkBindSparseInfo bindInfoCache = bindInfo;
+
+            CommandQueue::Command command = [=, &device](void* queue)
+            {            
+                Queue* vulkanQueue = static_cast<Queue*>(queue);
+                device.GetContext().QueueBindSparse(vulkanQueue->GetNativeQueue(), 1, &bindInfoCache, uploadFence->GetNativeFence());
+            };
+            
+            m_queue->QueueCommand(AZStd::move(command));
+        }
+
         RHI::ResultCode AsyncUploadQueue::BuilidFramePackets()
         {
             auto& device = static_cast<Device&>(GetDevice());
