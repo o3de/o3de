@@ -1210,6 +1210,7 @@ namespace AzToolsFramework
                 if (rowChild)
                 {
                     dpe->GetRowPool()->RecycleInstance(rowChild);
+                    currentChild = nullptr;
                 }
             }
         }
@@ -1276,6 +1277,7 @@ namespace AzToolsFramework
         {
             AZStd::function<void(DPERowWidget&)> resetRow = [](DPERowWidget& row)
             {
+                row.Clear();
                 DetachAndHide(&row);
             };
             m_rowPool = poolManager->CreatePool<DPERowWidget>(resetRow).GetValue();
