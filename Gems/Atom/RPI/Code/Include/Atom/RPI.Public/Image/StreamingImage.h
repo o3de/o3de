@@ -212,6 +212,9 @@ namespace AZ
 
             // The image's streaming priority
             Priority m_streamingPriority = 0; // value 0 means lowest priority
+
+            // The first active mip chain (that will exist on GPU-side)
+            size_t m_firstActiveMipChainIndex = 0;
         };
     }
 }

@@ -13,6 +13,7 @@
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
 #include <Atom/RPI.Reflect/Image/ImageMipChainAsset.h>
+#include <AzCore/std/containers/unordered_set.h>
 
 namespace AZ
 {
@@ -104,6 +105,9 @@ namespace AZ
             //! Whether the image has all referenced ImageMipChainAssets loaded
             bool HasFullMipChainAssets() const;
 
+            //! Returns the image tags
+            const AZStd::unordered_set<AZ::Name>& GetTags() const;
+
         private:
             struct MipChain
             {
@@ -143,6 +147,8 @@ namespace AZ
             //! mip chain index, not the level. And will fail for any level
             //! that resides in the tail mip chain.
             const ImageMipChainAsset* GetImageMipChainAsset(AZ::u32 mipLevel) const;
+
+            AZStd::unordered_set<AZ::Name> m_tags;
         };
     }
 }

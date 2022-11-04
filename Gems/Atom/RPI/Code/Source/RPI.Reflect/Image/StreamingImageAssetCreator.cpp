@@ -112,6 +112,14 @@ namespace AZ
             }
         }
 
+        void StreamingImageAssetCreator::AddTag(AZ::Name tag)
+        {
+            if (ValidateIsReady())
+            {
+                m_asset->m_tags.emplace(AZStd::move(tag));
+            }
+        }
+
         bool StreamingImageAssetCreator::End(Data::Asset<StreamingImageAsset>& result)
         {
             if (!ValidateIsReady())

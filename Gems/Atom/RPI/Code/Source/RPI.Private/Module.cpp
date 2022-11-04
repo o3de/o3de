@@ -10,11 +10,13 @@
 #include <AzCore/Module/Module.h>
 #include <RPI.Private/Module.h>
 
+#include <Atom/RPI.Public/Image/ImageTagSystemComponent.h>
 #include <RPI.Private/RPISystemComponent.h>
 
 AZ::RPI::Module::Module()
 {
     m_descriptors.push_back(AZ::RPI::RPISystemComponent::CreateDescriptor());
+    m_descriptors.push_back(AZ::RPI::ImageTagSystemComponent::CreateDescriptor());
 }
 
 AZ::ComponentTypeList AZ::RPI::Module::GetRequiredSystemComponents() const
@@ -22,6 +24,7 @@ AZ::ComponentTypeList AZ::RPI::Module::GetRequiredSystemComponents() const
     return
     {
         azrtti_typeid<AZ::RPI::RPISystemComponent>(),
+        azrtti_typeid<AZ::RPI::ImageTagSystemComponent>(),
     };
 }
 

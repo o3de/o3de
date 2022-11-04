@@ -40,13 +40,15 @@ namespace ImageProcessingAtom
         const Data::AssetId& sourceAssetId,
         AZStd::string_view fileName,
         uint8_t numResidentMips,
-        uint32_t subId)
+        uint32_t subId,
+        AZStd::set<AZStd::string> tags)
         : m_imageObject(imageObject)
         , m_productFolder(saveFolder)
         , m_sourceAssetId(sourceAssetId)
         , m_fileName(fileName)
         , m_numResidentMips(numResidentMips)
         , m_subId(subId)
+        , m_tags(AZStd::move(tags))
     {
         AZ_Assert(imageObject, "Input imageObject can't be empty");
         AZ_Assert(sourceAssetId.IsValid(), "The source asset Id is not valid");
@@ -191,6 +193,11 @@ namespace ImageProcessingAtom
         }
 
         builder.SetAverageColor(m_imageObject->GetAverageColor());
+
+        for (const AZStd::string& tag : m_tags)
+        {
+            builder.AddTag(AZ::Name{ tag });
+        }
 
         product.m_dependenciesHandled = true; // We've output the dependencies immediately above so it's OK to tell the AP we've handled dependencies
 
