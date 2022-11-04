@@ -344,6 +344,10 @@ class TestsAssetRelocator_WindowsAndMac(object):
         4. Assert file existence or nonexistence based on the test case
         5. Validate the relocation report based on expected and unexpected messages
         """
+        if str(type(workspace)) == "<class 'ly_test_tools._internal.managers.platforms.linux.LinuxWorkspaceManager'>":
+            logger.info("Skipping test on Linux, Python based file locking does not function on Linux.")
+            return
+
         env = ap_setup_fixture
         test_file = "testFile.txt"
 

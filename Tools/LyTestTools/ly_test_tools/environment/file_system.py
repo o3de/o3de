@@ -221,7 +221,7 @@ def unlock_file(file_name):
     if not os.access(file_name, os.W_OK):
         file_stat = os.stat(file_name)
         os.chmod(file_name, file_stat.st_mode | stat.S_IWRITE)
-        logger.warning(f'Clearing write lock for file {file_name}.')
+        logger.info(f'Clearing write lock for file {file_name}.')
         return True
     else:
         logger.info(f'File {file_name} not write locked. Unlocking file not necessary.')
@@ -238,7 +238,7 @@ def lock_file(file_name):
     if os.access(file_name, os.W_OK):
         file_stat = os.stat(file_name)
         os.chmod(file_name, file_stat.st_mode & (~stat.S_IWRITE))
-        logger.warning(f'Write locking file {file_name}')
+        logger.info(f'Write locking file {file_name}')
         return True
     else:
         logger.info(f'File {file_name} already locked. Locking file not necessary.')
