@@ -1,13 +1,15 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project.
- * For complete copyright and license terms please see the LICENSE at the root of this distribution.
- *
- * SPDX-License-Identifier: Apache-2.0 OR MIT
- *
- */
-#include "UnitTestRunner.h"
+* Copyright (c) Contributors to the Open 3D Engine Project.
+* For complete copyright and license terms please see the LICENSE at the root of this distribution.
+*
+* SPDX-License-Identifier: Apache-2.0 OR MIT
+*
+*/
+
+#include <native/unittests/UnitTestUtils.h>
 
 #include <QElapsedTimer>
+#include <QTextStream>
 #include <QCoreApplication>
 
 
@@ -21,29 +23,6 @@ namespace AssetProcessorBuildTarget
 #endif
         return AZStd::string_view{ LY_CMAKE_TARGET };
     }
-}
-
-UnitTestRegistry* UnitTestRegistry::s_first = nullptr;
-
-UnitTestRegistry::UnitTestRegistry(const char* name)
-    : m_name(name)
-{
-    m_next = s_first;
-    s_first = this;
-}
-
-int UnitTestRun::UnitTestPriority() const
-{
-    return 0;
-}
-
-const char* UnitTestRun::GetName() const
-{
-    return m_name;
-}
-void UnitTestRun::SetName(const char* name)
-{
-    m_name = name;
 }
 
 namespace UnitTestUtils

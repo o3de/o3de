@@ -108,7 +108,8 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
     19. Create a Camera Entity as a child entity of the Default Level Entity then add a Camera component.
     20. Set the Camera Entity rotation value and set the Camera component Field of View value.
     21. Enter/Exit game mode taking screenshot.
-    22. Look for errors.
+    22. Compare the screenshots to golden images.
+    23. Look for errors.
 
     :return: None
     """
@@ -125,10 +126,12 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
 
     from Atom.atom_utils.atom_constants import AtomComponentProperties
     from Atom.atom_utils.atom_component_helper import initial_viewport_setup
-    from Atom.atom_utils.atom_component_helper import enter_exit_game_mode_take_screenshot
+    from Atom.atom_utils.atom_component_helper import (
+        enter_exit_game_mode_take_screenshot, compare_screenshot_to_golden_image)
+
+    from Atom.atom_utils.screenshot_utils import (FOLDER_PATH, screenshot_compare_result_code_to_string)
 
     DEGREE_RADIAN_FACTOR = 0.0174533
-    SCREENSHOT_NAME = "AtomBasicLevelSetup"
 
     with Tracer() as error_tracer:
         # Test setup begins.
@@ -140,6 +143,11 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
         search_filter = azlmbr.entity.SearchFilter()
         all_entities = azlmbr.entity.SearchBus(azlmbr.bus.Broadcast, "SearchEntities", search_filter)
         azlmbr.editor.ToolsApplicationRequestBus(azlmbr.bus.Broadcast, "DeleteEntities", all_entities)
+
+        # Setup: Define the screenshot names and threshold pairs
+        screenshot_thresholds = {
+            "AtomBasicLevelSetup.png" : 0.02
+        }
 
         # Test steps begin.
         # 1. Close error windows and display helpers then update the viewport size.
@@ -299,9 +307,36 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
             AtomComponentProperties.camera('Field of view')) == camera_fov_value)
 
         # 21. Enter/Exit game mode taking screenshot.
-        enter_exit_game_mode_take_screenshot(f"{SCREENSHOT_NAME}.ppm", Tests.enter_game_mode, Tests.exit_game_mode)
+        enter_exit_game_mode_take_screenshot("AtomBasicLevelSetup.png", Tests.enter_game_mode, Tests.exit_game_mode)
 
-        # 22. Look for errors.
+        # 22. Compare the screenshots to golden images.
+        for screenshot_name, screenshot_threshold in screenshot_thresholds.items():
+            image_diff_result = compare_screenshot_to_golden_image(FOLDER_PATH, screenshot_name, screenshot_name)
+            screenshot_compare_execution = (
+                    f"Screenshot {screenshot_name} comparison succeeded.",
+                    f"Screenshot {screenshot_name} comparison failed due to "
+                    + f"{screenshot_compare_result_code_to_string(image_diff_result.result_code)}.");
+            Report.result(
+                screenshot_compare_execution,
+                image_diff_result.result_code == azlmbr.utils.ImageDiffResultCode_Success
+            )
+
+            if image_diff_result.result_code == azlmbr.utils.ImageDiffResultCode_Success:
+                screenshot_compare_result = (
+                        "{0} diff score {1} under threshold {2}.".format(
+                            screenshot_name,
+                            image_diff_result.diff_score,
+                            screenshot_threshold),
+                        "{0} diff score {1} over threshold {2}.".format(
+                            screenshot_name,
+                            image_diff_result.diff_score,
+                            screenshot_threshold)
+                        )
+                Report.result(
+                    screenshot_compare_result,
+                    image_diff_result.diff_score < screenshot_threshold)
+
+        # 23. Look for errors.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

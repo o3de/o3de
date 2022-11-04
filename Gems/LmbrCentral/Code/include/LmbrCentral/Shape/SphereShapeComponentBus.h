@@ -45,6 +45,7 @@ namespace LmbrCentral
         }
 
         float m_radius = 0.5f;
+        AZ::Vector3 m_translationOffset = AZ::Vector3::CreateZero(); ///< Translation offset from the entity position.
     };
 
     using SphereShapeConfiguration = SphereShapeConfig; ///< @deprecated Use SphereShapeConfig.

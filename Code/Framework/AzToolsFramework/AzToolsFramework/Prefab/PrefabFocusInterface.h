@@ -14,6 +14,7 @@
 #include <AzFramework/Entity/EntityContext.h>
 
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
 
 namespace AzToolsFramework::Prefab
