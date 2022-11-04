@@ -22,7 +22,7 @@ More information about the DCCsi Blender tool integration, configuration and set
 
 ## Installing the DccScriptingInterface Gem
 
-< project manager dccsi gem image >
+![o3de_gerUiVeyOR](https://user-images.githubusercontent.com/23222931/200063063-094a3639-1834-47d8-b527-9fd998fc2dfa.gif)
 
 ## Launch Blender from the Main Editor
 
