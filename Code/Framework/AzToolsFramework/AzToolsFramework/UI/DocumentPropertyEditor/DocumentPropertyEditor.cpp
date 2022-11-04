@@ -664,165 +664,76 @@ namespace AzToolsFramework
 
     void DPERowWidget::SetPropertyEditorAttributes(size_t domIndex, const AZ::Dom::Value& domArray, QWidget* childWidget)
     {
-        // Extract all attributes from dom value
-        auto alignment = AZ::Dpe::Nodes::PropertyEditor::Alignment.ExtractFromDomNode(domArray).value_or(
-            AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment);
-        auto sharePrior = AZ::Dpe::Nodes::PropertyEditor::SharePriorColumn.ExtractFromDomNode(domArray).value_or(false);
-        auto minimumWidth = AZ::Dpe::Nodes::PropertyEditor::UseMinimumWidth.ExtractFromDomNode(domArray).value_or(false);
-        auto descriptionString = AZ::Dpe::Nodes::PropertyEditor::Description.ExtractFromDomNode(domArray).value_or("");
-        auto shouldDisable = AZ::Dpe::Nodes::PropertyEditor::Disabled.ExtractFromDomNode(domArray).value_or(false);
+        AttributeInfo updatedInfo;
 
-        // Check for a widget in the previous column
-        int priorColumnIndex = -1;
-        for (int searchIndex = static_cast<int>(domIndex) - 1; (priorColumnIndex == -1 && searchIndex >= 0); --searchIndex)
+        // Extract all attributes from dom value
+        updatedInfo.m_alignment = AZ::Dpe::Nodes::PropertyEditor::Alignment.ExtractFromDomNode(domArray).value_or(
+            AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment);
+        updatedInfo.m_sharePriorColumn = AZ::Dpe::Nodes::PropertyEditor::SharePriorColumn.ExtractFromDomNode(domArray).value_or(false);
+        updatedInfo.m_minimumWidth = AZ::Dpe::Nodes::PropertyEditor::UseMinimumWidth.ExtractFromDomNode(domArray).value_or(false);
+        updatedInfo.m_descriptionString = AZ::Dpe::Nodes::PropertyEditor::Description.ExtractFromDomNode(domArray).value_or("");
+        updatedInfo.m_isDisabled = AZ::Dpe::Nodes::PropertyEditor::Disabled.ExtractFromDomNode(domArray).value_or(false) ||
+            AZ::Dpe::Nodes::PropertyEditor::AncestorDisabled.ExtractFromDomNode(domArray).value_or(false);
+
+        AttributeInfo currentInfo;
+        auto attributeIter = m_domOrderToAttributeInfo.find(domIndex);
+        if (attributeIter != m_domOrderToAttributeInfo.end())
         {
-            priorColumnIndex = m_columnLayout->indexOf(m_domOrderedChildren[searchIndex]);
+            currentInfo = m_domOrderToAttributeInfo[domIndex];
         }
 
-        auto foundEntry = m_domOrderToAttributeInfo.find(domIndex);
-
-        // If there is no existing attribute entry in the map, try to create a new one
-        if (foundEntry == m_domOrderToAttributeInfo.end())
+        if (updatedInfo.m_sharePriorColumn != currentInfo.m_sharePriorColumn)
         {
-            bool validAttribute = false;
-            AttributeInfo* newAttribute = new AttributeInfo;
-
-            // Check Alignment
-            if (alignment != AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment)
+            if (updatedInfo.m_sharePriorColumn)
             {
-                newAttribute->m_alignment = alignment;
-                validAttribute = true;
-            }
+                // Check for a widget in the previous column
+                int priorColumnIndex = -1;
+                for (int searchIndex = static_cast<int>(domIndex) - 1; (priorColumnIndex == -1 && searchIndex >= 0); --searchIndex)
+                {
+                    priorColumnIndex = m_columnLayout->indexOf(m_domOrderedChildren[searchIndex]);
+                }
 
-            // Check SharePrior
-            if (sharePrior)
-            {
                 AZ_Assert(priorColumnIndex != -1, "Tried to share column with an out of bounds index!");
                 if (priorColumnIndex != -1)
                 {
                     m_columnLayout->AddSharePriorColumn(priorColumnIndex, domIndex);
-                    newAttribute->m_sharePriorColumn = true;
-                    validAttribute = true;
                 }
             }
-            // Check MinimumWidth
-            if (minimumWidth)
+            else
             {
-                newAttribute->m_minimumWidth = true;
-                validAttribute = true;
-            }
-
-            // Check DescriptionString
-            if (!descriptionString.empty())
-            {
-                if (toolTip().isEmpty())
-                {
-                    setToolTip(QString::fromUtf8(descriptionString.data(), aznumeric_cast<int>(descriptionString.size())));
-                }
-                if (childWidget->toolTip().isEmpty())
-                {
-                    setToolTip(QString::fromUtf8(descriptionString.data(), aznumeric_cast<int>(descriptionString.size())));
-                }
-                newAttribute->m_descriptionString = descriptionString;
-                validAttribute = true;
-            }
-
-            // Check Disabled
-            if (shouldDisable)
-            {
-                childWidget->setEnabled(false);
-                validAttribute = true;
-            }
-
-            // If there are any valid attributes, add the new entry to the map
-            if (validAttribute)
-            {
-                m_domOrderToAttributeInfo[domIndex] = newAttribute;
+                m_columnLayout->RemoveSharePriorColumn(domIndex);
             }
         }
 
-        // If an attribute entry already exists at this index, either update it or remove it
-        else if (foundEntry != m_domOrderToAttributeInfo.end())
+        if (updatedInfo.m_descriptionString != currentInfo.m_descriptionString)
         {
-            // If none of the extracted attributes are valid, delete the attribute entry at this index
-            if (alignment == AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment && !sharePrior && !minimumWidth &&
-                descriptionString.empty() && !shouldDisable)
-            {
-                m_columnLayout->RemoveSharePriorColumn(domIndex);
-                m_domOrderToAttributeInfo.erase(foundEntry);
-            }
-            // At least one attribute is valid, check if we need to update the existing attribute entry
-            else
-            {
-                // Check Alignment
-                if (alignment != foundEntry->second->m_alignment)
-                {
-                    foundEntry->second->m_alignment = alignment;
-                }
+            setToolTip(QString::fromUtf8(updatedInfo.m_descriptionString.data(),
+                aznumeric_cast<int>(updatedInfo.m_descriptionString.size())));
+            childWidget->setToolTip(QString::fromUtf8(updatedInfo.m_descriptionString.data(),
+                aznumeric_cast<int>(updatedInfo.m_descriptionString.size())));
+        }
 
-                // Check SharePrior
-                if (sharePrior && !foundEntry->second->m_sharePriorColumn)
-                {
-                    AZ_Assert(priorColumnIndex != -1, "Tried to share column with an out of bounds index!");
-                    if (priorColumnIndex != -1)
-                    {
-                        m_columnLayout->AddSharePriorColumn(priorColumnIndex, domIndex);
-                        foundEntry->second->m_sharePriorColumn = true;
-                    }
-                }
-                else if (!sharePrior && foundEntry->second->m_sharePriorColumn)
-                {
-                    m_columnLayout->RemoveSharePriorColumn(domIndex);
-                    foundEntry->second->m_sharePriorColumn = false;
-                }
+        if (updatedInfo.m_isDisabled != currentInfo.m_isDisabled)
+        {
+            childWidget->setEnabled(!updatedInfo.m_isDisabled);
+        }
 
-                // Check MinimumWidth
-                if (minimumWidth != foundEntry->second->m_minimumWidth)
-                {
-                    foundEntry->second->m_minimumWidth = minimumWidth;
-                }
-
-                // Check DescriptionString
-                if (descriptionString.empty() && !foundEntry->second->m_descriptionString.empty())
-                {
-                    if (!toolTip().isEmpty())
-                    {
-                        setToolTip(QString());
-                    }
-                    if (!childWidget->toolTip().isEmpty())
-                    {
-                        childWidget->setToolTip(QString());
-                    }
-                    foundEntry->second->m_descriptionString = "";
-                }
-                else if (!descriptionString.empty() && foundEntry->second->m_descriptionString.empty())
-                {
-                    if (toolTip().isEmpty())
-                    {
-                        setToolTip(QString::fromUtf8(descriptionString.data(), aznumeric_cast<int>(descriptionString.size())));
-                    }
-                    if (childWidget->toolTip().isEmpty())
-                    {
-                        childWidget->setToolTip(QString::fromUtf8(descriptionString.data(), aznumeric_cast<int>(descriptionString.size())));
-                    }
-                    foundEntry->second->m_descriptionString = descriptionString;
-                }
-
-                // Check Disabled
-                if (shouldDisable != foundEntry->second->m_shouldDisable)
-                {
-                    foundEntry->second->m_shouldDisable = shouldDisable;
-                }
-            }
+        if (attributeIter != m_domOrderToAttributeInfo.end() && updatedInfo.IsDefault())
+        {
+            m_domOrderToAttributeInfo.erase(attributeIter);
+        }
+        else
+        {
+            m_domOrderToAttributeInfo[domIndex] = updatedInfo;
         }
     }
 
-    AzToolsFramework::DPERowWidget::AttributeInfo* DPERowWidget::GetAttributes(size_t domIndex)
+    DPERowWidget::AttributeInfo* DPERowWidget::GetAttributes(size_t domIndex)
     {
         auto foundEntry = m_domOrderToAttributeInfo.find(domIndex);
         if (foundEntry != m_domOrderToAttributeInfo.end())
         {
-            return foundEntry->second;
+            return &foundEntry->second;
         }
         else
         {

@@ -264,15 +264,13 @@ namespace AZ::Reflection
                 StackEntry* nodeData = &m_stack.back();
                 nodeData->m_path = AZStd::move(path);
 
-                // If our parent node is disabled then we should inherit its Disabled attribute and make note of the inheritance
-                if (parentData.m_disableEditor)
+                // If our parent node is disabled then we should inherit its disabled state
+                if (parentData.m_disableEditor || parentData.m_isAncestorDisabled)
                 {
-                    nodeData->m_disableEditor = true;
                     nodeData->m_isAncestorDisabled = true;
                 }
                 else if (classElement && classElement->m_editData)
                 {
-                    // If this node is ReadOnly then we want to add a Disabled attribute
                     if (auto readOnlyAttribute = classElement->m_editData->FindAttribute(AZ::Crc32("ReadOnly")); readOnlyAttribute)
                     {
                         Dom::Value readOnlyValue = readOnlyAttribute->GetAsDomValue(instance);
