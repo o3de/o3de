@@ -11,7 +11,6 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettings.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyColorCtrl.hxx>
 
 namespace AzToolsFramework
@@ -54,27 +53,39 @@ namespace AzToolsFramework
        then blended down using the Intensity, Opacity, and Blend Mode.
     */
 
-    //! The different types of blend modes supported by the paint brush tool.
-    enum class PaintBrushColorMode : uint8_t
-    {
-        Greyscale,
-        SRGB,
-        LinearColor
-    };
+    //! The different types of functionality offered by the paint brush tool
+    AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(PaintBrushMode, uint8_t,
+        (Paintbrush, 0),    //!< Uses color, opacity, and other brush settings to 'paint' values for an abstract data source
+        (Eyedropper, 1),    //!< Gets the current value underneath the brush from an abstract data source
+        (Smooth, 2)         //!< Smooths/blurs the existing values in an abstract data source
+    );
 
     //! The different types of blend modes supported by the paint brush tool.
-    enum class PaintBrushBlendMode : uint8_t
-    {
-        Normal,  //!< Alpha blends between the paint brush value and the existing value 
-        Add,        //!< Adds the paint brush value to the existing value
-        Subtract,   //!< Subtracts the paint brush value from the existing value
-        Multiply,   //!< Multiplies the paint brush value with the existing value. (Darkens)
-        Screen,     //!< Inverts the two values, multiplies, then inverts again. (Lightens)
-        Darken,     //!< Keeps the minimum of the paint brush value and the existing value
-        Lighten,    //!< Keeps the maximum of the paint brush value and the existing value
-        Average,    //!< Takes the average of the paint brush value and the existing value
-        Overlay     //!< Combines Multiply and Screen - darkens when brush < 0.5, lightens when brush > 0.5
-    };
+    AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(PaintBrushColorMode, uint8_t,
+        (Greyscale, 0), 
+        (SRGB, 1), 
+        (LinearColor, 2) 
+    );
+
+    //! The different types of blend modes supported by the paint brush tool.
+    AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(PaintBrushBlendMode, uint8_t,
+        (Normal, 0),    //!< Alpha blends between the paint brush value and the existing value 
+        (Add, 1),       //!< Adds the paint brush value to the existing value
+        (Subtract, 2),  //!< Subtracts the paint brush value from the existing value
+        (Multiply, 3),  //!< Multiplies the paint brush value with the existing value. (Darkens)
+        (Screen, 4),    //!< Inverts the two values, multiplies, then inverts again. (Lightens)
+        (Darken, 5),    //!< Keeps the minimum of the paint brush value and the existing value
+        (Lighten, 6),   //!< Keeps the maximum of the paint brush value and the existing value
+        (Average, 7),   //!< Takes the average of the paint brush value and the existing value
+        (Overlay, 8)    //!< Combines Multiply and Screen - darkens when brush < 0.5, lightens when brush > 0.5
+    );
+
+    //! The different types of smoothing modes supported by the paint brush tool.
+    AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(PaintBrushSmoothMode, uint8_t,
+        (Gaussian, 0), 
+        (Mean, 1), 
+        (Median, 2)
+    );
 
     //! Defines the specific global paintbrush settings.
     //! They can be modified directly through the Property Editor or indirectly via the PaintBrushSettingsRequestBus.
@@ -89,6 +100,13 @@ namespace AzToolsFramework
         ~PaintBrushSettings() = default;
 
         // Overall paintbrush settings
+
+        PaintBrushMode GetBrushMode() const
+        {
+            return m_brushMode;
+        }
+
+        void SetBrushMode(PaintBrushMode brushMode);
 
         PaintBrushColorMode GetColorMode() const
         {
@@ -109,8 +127,14 @@ namespace AzToolsFramework
             return m_blendMode;
         }
 
+        PaintBrushSmoothMode GetSmoothMode() const
+        {
+            return m_smoothMode;
+        }
+
         void SetColor(const AZ::Color& color);
         void SetBlendMode(PaintBrushBlendMode blendMode);
+        void SetSmoothMode(PaintBrushSmoothMode smoothMode);
 
         // Stamp settings
 
@@ -144,8 +168,22 @@ namespace AzToolsFramework
         AZ::u32 OnIntensityChanged();
         AZ::u32 OnOpacityChanged();
 
+        bool GetColorReadOnly() const;
+        bool GetIntensityReadOnly() const;
+        bool GetOpacityReadOnly() const;
+
+        bool GetSizeVisibility() const;
         bool GetColorVisibility() const;
         bool GetIntensityVisibility() const;
+        bool GetOpacityVisibility() const;
+        bool GetHardnessVisibility() const;
+        bool GetFlowVisibility() const;
+        bool GetDistanceVisibility() const;
+        bool GetBlendModeVisibility() const;
+        bool GetSmoothModeVisibility() const;
+
+        //! Brush settings brush mode
+        PaintBrushMode m_brushMode = PaintBrushMode::Paintbrush;
 
         //! Brush settings color mode
         PaintBrushColorMode m_colorMode = PaintBrushColorMode::Greyscale;
@@ -154,6 +192,8 @@ namespace AzToolsFramework
         AZ::Color m_brushColor = AZ::Color::CreateOne();
         //! Brush stroke blend mode
         PaintBrushBlendMode m_blendMode = PaintBrushBlendMode::Normal;
+        //! Brush stroke smooth mode
+        PaintBrushSmoothMode m_smoothMode = PaintBrushSmoothMode::Gaussian;
 
         //! Brush stamp diameter in meters
         float m_size = 10.0f;
@@ -175,4 +215,12 @@ namespace AzToolsFramework
         AZ::u32 OnSettingsChanged();
     };
 
-}; // namespace AzToolsFramework
+} // namespace AzToolsFramework
+
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::PaintBrushMode, "{88C6AEA1-5424-4F3A-9E22-6D55C050F06C}");
+    AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::PaintBrushColorMode, "{0D3B0981-BFB3-47E0-9E28-99CFB540D5AC}");
+    AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::PaintBrushBlendMode, "{8C52DEAF-C45B-4C3B-8300-5DBC44CE30AF}");
+    AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::PaintBrushSmoothMode, "{7FEF32F1-54B8-419C-A11E-1CE821BEDF1D}");
+} // namespace AZ
