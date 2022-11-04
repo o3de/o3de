@@ -11,6 +11,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/optional.h>
 #include <AzFramework/Viewport/ViewportId.h>
+#include <AzCore/Component/ComponentBus.h>
 
 namespace AZ
 {
@@ -109,7 +110,11 @@ namespace AzFramework
     {
     public:
         //! Notification that the ImGui menu bar has been activated.
-        virtual void OnComponentModeEnabledStatusChanged()
+        virtual void OnComponentModeDelegateConnect([[maybe_unused]] const AZ::EntityComponentIdPair& pairId)
+        {
+        }
+
+        virtual void OnComponentModeDelegateDisconnect([[maybe_unused]] const AZ::EntityComponentIdPair& pairId)
         {
         }
     };

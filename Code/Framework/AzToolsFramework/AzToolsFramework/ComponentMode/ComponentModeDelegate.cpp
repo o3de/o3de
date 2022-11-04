@@ -226,8 +226,9 @@ namespace AzToolsFramework
             m_entityComponentIdPair = entityComponentIdPair;
             m_componentType = componentType;
 
+            AZ_Printf("debugging", "connect");
             AzFramework::ComponentModeDelegateNotificationBus::Broadcast(
-                &AzFramework::ComponentModeDelegateNotificationBus::Events::OnComponentModeEnabledStatusChanged);
+                &AzFramework::ComponentModeDelegateNotificationBus::Events::OnComponentModeDelegateConnect, m_entityComponentIdPair);
 
             EntitySelectionEvents::Bus::Handler::BusConnect(entityComponentIdPair.GetEntityId());
             EditorEntityVisibilityNotificationBus::Handler::BusConnect(entityComponentIdPair.GetEntityId());
@@ -237,8 +238,13 @@ namespace AzToolsFramework
         void ComponentModeDelegate::Disconnect()
         {
             //m_entityComponentIdPair;
+            AZ_Printf("debugging", "disconncet");
             AzFramework::ComponentModeDelegateNotificationBus::Broadcast(
-                &AzFramework::ComponentModeDelegateNotificationBus::Events::OnComponentModeEnabledStatusChanged);
+                &AzFramework::ComponentModeDelegateNotificationBus::Events::OnComponentModeDelegateDisconnect, m_entityComponentIdPair);
+
+            m_componentType = AZ::Uuid::CreateNull();
+            m_entityComponentIdPair = AZ::EntityComponentIdPair(AZ::EntityId(), AZ::InvalidComponentId);
+            m_handler = nullptr;
 
             EditorEntityLockComponentNotificationBus::Handler::BusDisconnect();
             EditorEntityVisibilityNotificationBus::Handler::BusDisconnect();
