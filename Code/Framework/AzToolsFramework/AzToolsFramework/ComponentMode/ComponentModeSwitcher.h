@@ -87,7 +87,7 @@ namespace AzToolsFramework
             //! Removes component button from switcher.
             void RemoveComponentButton(const AZ::EntityComponentIdPair pairId);
             //! Add or remove component buttons to/from the switcher based on entities selected.
-            void UpdateSwitcherOnEntitySelectionChange(
+            void UpdateSwitcher(
                 const EntityIdList& newlyselectedEntityIds, const EntityIdList& newlydeselectedEntityIds);
             //! Clears all buttons from switcher.
             void ClearSwitcher();
@@ -105,7 +105,7 @@ namespace AzToolsFramework
             void OnEntityComponentAdded(const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
             void OnEntityComponentRemoved(const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
             void OnEntityComponentEnabled(const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
-            void OnEntityComponentDisabled(const AZ::EntityId& entityId, [[maybe_unused]] const AZ::ComponentId& componentId) override;
+            void OnEntityComponentDisabled(const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
             void OnEntityCompositionChanged(const AzToolsFramework::EntityIdList& entityIdList) override;
 
             // ToolsApplicationBus overrides ...
