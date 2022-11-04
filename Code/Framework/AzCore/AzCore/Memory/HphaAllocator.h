@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZ_HPHA_ALLOCATION_SCHEME_ALLOCATOR_H
-#define AZ_HPHA_ALLOCATION_SCHEME_ALLOCATOR_H
+
+#pragma once
 
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/typetraits/aligned_storage.h>
@@ -79,6 +79,3 @@ namespace AZ
         using HphaSchemaBase<Internal::HphaDebugAllocator>::HphaSchemaBase;
     };
 } // namespace AZ
-
-#endif // AZ_HPHA_ALLOCATION_SCHEME_ALLOCATOR_H
-#pragma once
