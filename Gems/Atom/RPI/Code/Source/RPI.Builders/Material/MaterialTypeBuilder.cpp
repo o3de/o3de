@@ -559,6 +559,10 @@ namespace AZ
                 materialType.m_shaderCollection.push_back({});
                 materialType.m_shaderCollection.back().m_shaderFilePath = AZ::IO::Path{outputShaderFilePath.Filename()}.c_str();
 
+                // Files in the cache, including intermediate files, end up using lower case for all files and folders. We have to match this
+                // in the output .materialtype file, because the asset system's source dependencies are case-sensitive on some platforms.
+                AZStd::to_lower(materialType.m_shaderCollection.back().m_shaderFilePath.begin(), materialType.m_shaderCollection.back().m_shaderFilePath.end());
+
                 // TODO(MaterialPipeline): We should warn the user if the shader collection has multiple shaders that use the same draw list.
             }
 
