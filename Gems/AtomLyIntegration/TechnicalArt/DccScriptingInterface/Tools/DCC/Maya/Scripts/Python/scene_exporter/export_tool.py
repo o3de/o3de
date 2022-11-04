@@ -441,8 +441,8 @@ def delete_instances():
     from DccScriptingInterface.Tools.DCC.Maya.Scripts.Python.export import _PACKAGENAME
 
     for obj in maya_mainwindow.children():
-        if str(type(obj)) == f"<class '{_PACKAGENAME}.MaterialsHelper'>":
-            if obj.__class__.__name__ == "MaterialsHelper":
+        if str(type(obj)) == f"<class '{_PACKAGENAME}.SceneExporter'>":
+            if obj.__class__.__name__ == "SceneExporter":
                 obj.setParent(None)
                 obj.deleteLater()
 

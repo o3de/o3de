@@ -92,7 +92,6 @@ def process_object_materials(controller, operation, output_path, source):
 
     _LOGGER.info(f'\n\n\n************************\nProcessDictionary: {process_dictionary}')
     _LOGGER.info('\n************************\n')
-    # controller.run_operation(process_dictionary, operation, output)
     controller.cleanup(target_objects)
 
     return process_dictionary if process_dictionary else []
