@@ -6,25 +6,7 @@
  *
  */
 
-#include <GemCatalog/GemCatalogHeaderWidget.h>
-#include <ProjectUtils.h>
-#include <PythonBindingsInterface.h>
-#include <ScreenHeaderWidget.h>
 #include <EditAGemScreen.h>
-
-#include <QApplication>
-#include <QButtonGroup>
-#include <QComboBox>
-#include <QDialogButtonBox>
-#include <QDir>
-#include <QLabel>
-#include <QMessageBox>
-#include <QPushButton>
-#include <QRadioButton>
-#include <QScrollArea>
-#include <QStackedWidget>
-#include <QVBoxLayout>
-
 
 namespace O3DE::ProjectManager
 {

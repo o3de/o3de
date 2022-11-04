@@ -9,26 +9,8 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <ScreenWidget.h>
-#include <FormFolderBrowseEditWidget.h>
-#include <FormLineEditWidget.h>
-#include <FormLineEditTagsWidget.h>
-#include <FormComboBoxWidget.h>
-#include <GemCatalog/GemInfo.h>
 #include <CreateAGemScreen.h>
-#include <PythonBindings.h>
-#include <ScreenHeaderWidget.h>
-#include <ScreenDefs.h>
-
 #endif
-
-QT_FORWARD_DECLARE_CLASS(QButtonGroup)
-QT_FORWARD_DECLARE_CLASS(QDialogButtonBox)
-QT_FORWARD_DECLARE_CLASS(QRadioButton)
-QT_FORWARD_DECLARE_CLASS(QScrollArea)
-QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
-QT_FORWARD_DECLARE_CLASS(QStackedWidget)
-QT_FORWARD_DECLARE_CLASS(QDir)
 
 namespace O3DE::ProjectManager
 {
