@@ -17,7 +17,8 @@
 #include <GemCatalog/GemInfo.h>
 #include <PythonBindings.h>
 #include <ScreenHeaderWidget.h>
-
+#include <ScreenDefs.h>
+#include <QDir>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QButtonGroup)
@@ -26,6 +27,7 @@ QT_FORWARD_DECLARE_CLASS(QRadioButton)
 QT_FORWARD_DECLARE_CLASS(QScrollArea)
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QStackedWidget)
+QT_FORWARD_DECLARE_CLASS(QDir)
 
 namespace O3DE::ProjectManager
 {
@@ -36,41 +38,45 @@ namespace O3DE::ProjectManager
         explicit CreateGem(QWidget* parent = nullptr);
         ~CreateGem() = default;
 
-        void ClearWorkflow();
-        void ResetWorkflow(const GemInfo& oldGemInfo, bool isEditWorkflow);
+        void ClearFields();
+
+        ProjectManagerScreen GetScreenEnum() override
+        {
+            return ProjectManagerScreen::CreateGem;
+        }
 
     signals:
         void GemCreated(const GemInfo& gemInfo);
-        void GemEdited(const GemInfo& newGemInfo);
 
-    private slots:
+    protected slots:
         void HandleBackButton();
         void HandleNextButton();
+        
+
+    private slots:
         void HandleGemTemplateSelectionTab();
         void HandleGemDetailsTab();
         void HandleGemCreatorDetailsTab();
 
-    private:
-        void LoadButtonsFromGemTemplatePaths(QVBoxLayout* gemSetupLayout);
-        QScrollArea* CreateGemSetupScrollArea();
-        QScrollArea* CreateGemDetailsScrollArea();
-        QScrollArea* CreateGemCreatorScrollArea();
-        QFrame* CreateTabButtonsFrame();
-        QFrame* CreateTabPaneFrame();
+    protected:
         bool ValidateGemTemplateLocation();
         bool ValidateGemDisplayName();
         bool ValidateGemName();
         bool ValidateGemPath();
         bool ValidateFormNotEmpty(FormLineEditWidget* form);
         bool ValidateRepositoryURL();
+        
+        void ProceedToGemDetailsPage();
+        void ProceedToGemCreatorDetailsPage();
+        void ProceedToGemAction();
 
-        //workflow management
-        void ChangeToEditWorkflow();
-        void ChangeToCreateWorkflow();
+        virtual void GemAction();
 
-        //Edit Gem workflow
-        bool m_isEditGem = false;
-        GemInfo m_oldGemInfo;
+        virtual bool ValidateGemLocation(QDir chosenGemLocation)
+        {
+            return !chosenGemLocation.exists() || chosenGemLocation.isEmpty();
+        }
+
 
         //Gem Setup
         QVector<TemplateInfo> m_gemTemplates;
@@ -108,12 +114,24 @@ namespace O3DE::ProjectManager
         QRadioButton* m_gemDetailsTab = nullptr;
         QRadioButton* m_gemCreatorDetailsTab = nullptr;
 
-        GemInfo m_createGemInfo;
+        GemInfo m_focalGemInfo;
 
         static constexpr int GemTemplateSelectionScreen = 0;
         static constexpr int GemDetailsScreen = 1;
         static constexpr int GemCreatorDetailsScreen = 2;
+
+        int m_indexBackLimit = 0;
+
+        QString m_gemActionString;
+
+    private:
+        void LoadButtonsFromGemTemplatePaths(QVBoxLayout* gemSetupLayout);
+        QScrollArea* CreateGemSetupScrollArea();
+        QScrollArea* CreateGemDetailsScrollArea();
+        QScrollArea* CreateGemCreatorScrollArea();
+        QFrame* CreateTabButtonsFrame();
+        QFrame* CreateTabPaneFrame();
+        void SetupCreateWorkflow();
+        
     };
-
-
 } // namespace O3DE::ProjectManager

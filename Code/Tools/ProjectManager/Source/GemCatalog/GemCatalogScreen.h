@@ -76,7 +76,7 @@ namespace O3DE::ProjectManager
     private slots:
         void HandleOpenGemRepo();
         void HandleCreateGem();
-        void HandleEditGem();
+        void HandleEditGem(const QModelIndex& currentModelIndex);
         void UpdateAndShowGemCart(QWidget* cartWidget);
         void ShowInspector();
 
@@ -102,5 +102,8 @@ namespace O3DE::ProjectManager
         bool m_notificationsEnabled = true;
         QString m_projectPath;
         bool m_readOnly;
+
+        QModelIndex m_curEditedIndex;
+
     };
 } // namespace O3DE::ProjectManager

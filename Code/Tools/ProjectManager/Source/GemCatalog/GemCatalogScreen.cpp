@@ -23,6 +23,7 @@
 #include <AdjustableHeaderWidget.h>
 #include <ScreensCtrl.h>
 #include <CreateAGemScreen.h>
+#include <EditAGemScreen.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -82,7 +83,13 @@ namespace O3DE::ProjectManager
             {
                 CreateGem* createGem = static_cast<CreateGem*>(createGemScreen);
                 connect(createGem, &CreateGem::GemCreated, this, &GemCatalogScreen::HandleGemCreated);
-                connect(createGem, &CreateGem::GemEdited, this, &GemCatalogScreen::HandleGemEdited);
+            }
+
+            ScreenWidget* editGemScreen = m_screensControl->FindScreen(ProjectManagerScreen::EditGem);
+            if (editGemScreen)
+            {
+                EditGem* editGem = static_cast<EditGem*>(editGemScreen);
+                connect(editGem, &EditGem::GemEdited, this, &GemCatalogScreen::HandleGemEdited);
             }
         }
 
@@ -643,17 +650,17 @@ namespace O3DE::ProjectManager
         emit ChangeScreenRequest(ProjectManagerScreen::CreateGem);
     }
 
-    void GemCatalogScreen::HandleEditGem()
+    void GemCatalogScreen::HandleEditGem(const QModelIndex& currentModelIndex)
     {
         if (m_screensControl)
         {
-            ScreenWidget* createGemScreen = m_screensControl->FindScreen(ProjectManagerScreen::CreateGem);
-            if (createGemScreen)
+            ScreenWidget* editGemScreen = m_screensControl->FindScreen(ProjectManagerScreen::EditGem);
+            if (editGemScreen)
             {
-                auto createGem = qobject_cast<CreateGem*>(createGemScreen);
-                createGem->ResetWorkflow(m_gemModel->GetGemInfo(m_gemInspector->GetCurrentModelIndex()),
-                                        /*isEditWorkflow = */true);
-                emit ChangeScreenRequest(ProjectManagerScreen::CreateGem);
+                auto editGem = qobject_cast<EditGem*>(editGemScreen);
+                m_curEditedIndex = currentModelIndex;
+                editGem->ResetWorkflow(m_gemModel->GetGemInfo(currentModelIndex));
+                emit ChangeScreenRequest(ProjectManagerScreen::EditGem);
             }
         }
         
@@ -744,8 +751,10 @@ namespace O3DE::ProjectManager
     {
         // This signal only occurs upon successful completion of editing a gem. As such, the gemInfo is assumed to be valid
 
-        // make sure to update the current model index in the gem catalog model
-        m_gemModel->RemoveGem(m_gemInspector->GetCurrentModelIndex());
+        // Make sure to update the current model index in the gem catalog model.
+        // The current edited index is only set by HandleEdit before editing a gem, and nowhere else.
+        // As such, the index should be valid.
+        m_gemModel->RemoveGem(m_curEditedIndex);
         m_gemModel->AddGem(newGemInfo);
 
         //gem inspector needs to have its selection updated to the newly added gem

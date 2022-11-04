@@ -110,11 +110,11 @@ namespace O3DE::ProjectManager
 
         /**
          * Edit a Gem from the Edit Gem Wizard
-         * @param oldGemInfo the gem info that existed prior to the update request
+         * @param oldGemName the gem name that existed prior to the update request
          * @param newGemInfo the gem updates that the user is requesting
          * @return an outcome with GemInfo on success
          */
-         virtual AZ::Outcome<GemInfo> EditGem(const GemInfo& oldGemInfo, const GemInfo& newGemInfo) = 0;
+         virtual AZ::Outcome<GemInfo> EditGem(const QString& oldGemName, const GemInfo& newGemInfo) = 0;
 
         /**
          * Get info about a Gem.

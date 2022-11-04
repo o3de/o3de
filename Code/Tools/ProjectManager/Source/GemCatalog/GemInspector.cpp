@@ -278,7 +278,7 @@ namespace O3DE::ProjectManager
         m_editGemButton = new QPushButton(tr("Edit Gem"));
         m_editGemButton->setObjectName("gemCatalogUpdateGemButton");
         m_mainLayout->addWidget(m_editGemButton);
-        connect(m_editGemButton, &QPushButton::clicked, this , [this]{ emit EditGem(); });
+        connect(m_editGemButton, &QPushButton::clicked, this , [this]{ emit EditGem(m_curModelIndex); });
 
         m_mainLayout->addSpacing(10);
 

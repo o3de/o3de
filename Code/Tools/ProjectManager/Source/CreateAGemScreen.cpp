@@ -45,12 +45,6 @@ namespace O3DE::ProjectManager
             this,
             [&]()
             {
-                //if previously editing a gem, cancel the operation and revert to old creation workflow
-                //this way we prevent accidental stale data for an already existing gem.
-                if(m_isEditGem)
-                {
-                    ClearWorkflow();
-                }
                 emit GoToPreviousScreenRequest();
             });
         screenLayout->addWidget(m_header);
@@ -88,6 +82,9 @@ namespace O3DE::ProjectManager
 
         setObjectName("createAGemBody");
         setLayout(screenLayout);
+
+        m_gemActionString = tr("Create");
+        m_indexBackLimit = GemTemplateSelectionScreen;
     }
 
     QFrame* CreateGem::CreateTabButtonsFrame()
@@ -135,21 +132,13 @@ namespace O3DE::ProjectManager
     {
         m_stackWidget->setCurrentIndex(GemDetailsScreen);
         m_nextButton->setText(tr("Next"));
-        m_backButton->setVisible(!m_isEditGem);
+        m_backButton->setVisible(m_stackWidget->currentIndex() != m_indexBackLimit);
     }
 
     void CreateGem::HandleGemCreatorDetailsTab()
     {
         m_stackWidget->setCurrentIndex(GemCreatorDetailsScreen);
-        if(m_isEditGem)
-        {
-            m_nextButton->setText(tr("Edit"));
-        }
-        else
-        {
-            m_nextButton->setText(tr("Create"));
-        }
-        
+        m_nextButton->setText(m_gemActionString);
         m_backButton->setVisible(true);
     }
 
@@ -377,17 +366,7 @@ namespace O3DE::ProjectManager
 
         QDir chosenGemLocation = QDir(m_gemLocation->lineEdit()->text());
         
-        bool locationValid = false;
-        
-        if(m_isEditGem)
-        {
-            //If in edit gem workflow, users cannot change this value, so this check should suffice
-            locationValid = chosenGemLocation.exists();
-        }
-        else
-        {
-            locationValid = !chosenGemLocation.exists() || chosenGemLocation.isEmpty();
-        }
+        bool locationValid = ValidateGemLocation(chosenGemLocation);
 
         m_gemLocation->setErrorLabelVisible(!locationValid);
         return locationValid;
@@ -415,15 +394,7 @@ namespace O3DE::ProjectManager
 
     void CreateGem::HandleBackButton()
     {
-        int indexBackLimit = 0;
-
-        if(m_isEditGem)
-        {
-            //this will prevent us from reaching the templates page in the edit gem workflow
-            indexBackLimit = 1;
-        }
-
-        if (m_stackWidget->currentIndex() > indexBackLimit)
+        if (m_stackWidget->currentIndex() > m_indexBackLimit)
         {
             const int newIndex = m_stackWidget->currentIndex() - 1;
             m_stackWidget->setCurrentIndex(newIndex);
@@ -438,7 +409,7 @@ namespace O3DE::ProjectManager
             }
         }
 
-        if (m_stackWidget->currentIndex() == indexBackLimit)
+        if (m_stackWidget->currentIndex() == m_indexBackLimit)
         {
             m_backButton->setVisible(false);
         }
@@ -446,115 +417,109 @@ namespace O3DE::ProjectManager
         m_nextButton->setText(tr("Next"));
     }
 
+    void CreateGem::ProceedToGemDetailsPage()
+    {
+        m_backButton->setVisible(true);
+        m_stackWidget->setCurrentIndex(GemDetailsScreen);
+        m_gemDetailsTab->setEnabled(true);
+        m_gemDetailsTab->setChecked(true);
+    }
+
+    void CreateGem::ProceedToGemCreatorDetailsPage()
+    {
+        bool gemNameValid = ValidateGemName();
+        bool gemDisplayNameValid = ValidateGemDisplayName();
+        bool licenseValid = ValidateFormNotEmpty(m_license);
+        bool gemPathValid = ValidateGemPath();
+        bool canProceedToDetailsPage = gemNameValid && gemDisplayNameValid && licenseValid && gemPathValid; 
+        
+        if (canProceedToDetailsPage)
+        {
+            m_focalGemInfo.m_displayName = m_gemDisplayName->lineEdit()->text();
+            m_focalGemInfo.m_name = m_gemName->lineEdit()->text();
+            m_focalGemInfo.m_summary = m_gemSummary->lineEdit()->text();
+            m_focalGemInfo.m_requirement = m_requirements->lineEdit()->text();
+            m_focalGemInfo.m_licenseText = m_license->lineEdit()->text();
+            m_focalGemInfo.m_licenseLink = m_licenseURL->lineEdit()->text();
+            m_focalGemInfo.m_documentationLink = m_documentationURL->lineEdit()->text();
+            m_focalGemInfo.m_path = m_gemLocation->lineEdit()->text();
+            m_focalGemInfo.m_features = m_userDefinedGemTags->getTags();
+
+            m_stackWidget->setCurrentIndex(GemCreatorDetailsScreen);
+            
+            m_gemCreatorDetailsTab->setEnabled(true);
+            m_gemCreatorDetailsTab->setChecked(true);
+
+            m_nextButton->setText(m_gemActionString);
+            
+            m_backButton->setVisible(true);
+        }
+    }
+
+    //here we handle the actual gem creation logic
+    void CreateGem::GemAction()
+    {
+        QString templateLocation;
+        if (m_formFolderRadioButton->isChecked())
+        {
+            templateLocation = m_gemTemplateLocation->lineEdit()->text();
+        }
+        else
+        {
+            int templateID = m_radioButtonGroup->checkedId();
+            templateLocation = m_gemTemplates[templateID].m_path;
+        }
+
+        auto result = PythonBindingsInterface::Get()->CreateGem(templateLocation, m_focalGemInfo);
+        if (result.IsSuccess())
+        {
+            ClearFields();
+            SetupCreateWorkflow();
+            emit GemCreated(result.GetValue<GemInfo>());
+            emit GoToPreviousScreenRequest();
+        }
+        else
+        {
+            QMessageBox::critical(
+                this,
+                tr("Failed to create gem"),
+                tr("The gem failed to be created"));
+        }
+    }
+
+    void CreateGem::ProceedToGemAction()
+    {
+        bool originIsValid = ValidateFormNotEmpty(m_origin);
+        bool repoURLIsValid = ValidateRepositoryURL();
+        if (originIsValid && repoURLIsValid)
+        {
+            m_focalGemInfo.m_origin = m_origin->lineEdit()->text();
+            m_focalGemInfo.m_originURL = m_originURL->lineEdit()->text();
+            m_focalGemInfo.m_repoUri = m_repositoryURL->lineEdit()->text();
+            
+
+            GemAction();
+        }
+    }
+
     void CreateGem::HandleNextButton()
     {
         if (m_stackWidget->currentIndex() == GemTemplateSelectionScreen && ValidateGemTemplateLocation())
         {
-            m_backButton->setVisible(true);
-            m_stackWidget->setCurrentIndex(GemDetailsScreen);
-            m_gemDetailsTab->setEnabled(true);
-            m_gemDetailsTab->setChecked(true);
+            ProceedToGemDetailsPage();
         }
         else if (m_stackWidget->currentIndex() == GemDetailsScreen)
         {
-            bool gemNameValid = ValidateGemName();
-            bool gemDisplayNameValid = ValidateGemDisplayName();
-            bool licenseValid = ValidateFormNotEmpty(m_license);
-            bool gemPathValid = ValidateGemPath();
-            if (gemNameValid && gemDisplayNameValid && licenseValid && gemPathValid)
-            {
-                m_createGemInfo.m_displayName = m_gemDisplayName->lineEdit()->text();
-                m_createGemInfo.m_name = m_gemName->lineEdit()->text();
-                m_createGemInfo.m_summary = m_gemSummary->lineEdit()->text();
-                m_createGemInfo.m_requirement = m_requirements->lineEdit()->text();
-                m_createGemInfo.m_licenseText = m_license->lineEdit()->text();
-                m_createGemInfo.m_licenseLink = m_licenseURL->lineEdit()->text();
-                m_createGemInfo.m_documentationLink = m_documentationURL->lineEdit()->text();
-                m_createGemInfo.m_path = m_gemLocation->lineEdit()->text();
-                m_createGemInfo.m_features = m_userDefinedGemTags->getTags();
-
-                m_stackWidget->setCurrentIndex(GemCreatorDetailsScreen);
-                if(m_isEditGem)
-                {
-                    m_nextButton->setText(tr("Edit"));
-                    m_backButton->setVisible(true);
-                }
-                else
-                {
-                    m_nextButton->setText(tr("Create"));
-                }
-                
-                m_gemCreatorDetailsTab->setEnabled(true);
-                m_gemCreatorDetailsTab->setChecked(true);
-            }
+            ProceedToGemCreatorDetailsPage();
         }
         else if (m_stackWidget->currentIndex() == GemCreatorDetailsScreen)
         {
-            bool originIsValid = ValidateFormNotEmpty(m_origin);
-            bool repoURLIsValid = ValidateRepositoryURL();
-            if (originIsValid && repoURLIsValid)
-            {
-                m_createGemInfo.m_origin = m_origin->lineEdit()->text();
-                m_createGemInfo.m_originURL = m_originURL->lineEdit()->text();
-                m_createGemInfo.m_repoUri = m_repositoryURL->lineEdit()->text();
-                QString templateLocation;
-                if (m_formFolderRadioButton->isChecked())
-                {
-                    templateLocation = m_gemTemplateLocation->lineEdit()->text();
-                }
-                else
-                {
-                    int templateID = m_radioButtonGroup->checkedId();
-                    templateLocation = m_gemTemplates[templateID].m_path;
-                }
-
-                if (m_isEditGem)
-                {
-                    //during editing, we remove the gem name tag to prevent the user accidentally altering it
-                    //so add it back here before submission
-                    if(!m_createGemInfo.m_features.contains(m_createGemInfo.m_name))
-                    {
-                        m_createGemInfo.m_features << m_createGemInfo.m_name;
-                    }
-
-                    auto result = PythonBindingsInterface::Get()->EditGem(m_oldGemInfo, m_createGemInfo);
-                    if(result.IsSuccess())
-                    {
-                        ClearWorkflow();
-                        emit GemEdited(result.GetValue<GemInfo>());
-                        emit GoToPreviousScreenRequest();
-                    }
-                    else
-                    {
-                        QMessageBox::critical(
-                            this,
-                            tr("Failed to edit gem"),
-                            tr("The gem failed to be edited"));
-                    }
-                }
-                else
-                {
-                    auto result = PythonBindingsInterface::Get()->CreateGem(templateLocation, m_createGemInfo);
-                    if (result.IsSuccess())
-                    {
-                        ClearWorkflow();
-                        emit GemCreated(result.GetValue<GemInfo>());
-                        emit GoToPreviousScreenRequest();
-                    }
-                    else
-                    {
-                        QMessageBox::critical(
-                            this,
-                            tr("Failed to create gem"),
-                            tr("The gem failed to be created"));
-                    }
-                }
-            }
+            ProceedToGemAction();
         }
     }
 
     //this ignores the templates page
-    void CreateGem::ClearWorkflow()
+    void CreateGem::ClearFields()
     {
         //details page
         m_gemDisplayName->lineEdit()->clear();
@@ -584,108 +549,16 @@ namespace O3DE::ProjectManager
         
         m_originURL->lineEdit()->clear();
         m_repositoryURL->lineEdit()->clear();
-
-        //we remove any assumptions about editing a gem, if it was an edit workflow, set it back
-        if(m_isEditGem)
-        {
-            m_isEditGem = false;
-            ChangeToCreateWorkflow();
-        }
-        
     }
 
-    void CreateGem::ChangeToCreateWorkflow()
+    void CreateGem::SetupCreateWorkflow()
     {
-        m_header->setSubTitle(tr("Create a new gem"));
-
-        //we ensure that we are using all pages
-        m_gemTemplateSelectionTab->setVisible(true);
         m_gemTemplateSelectionTab->setChecked(true);
-
         m_gemDetailsTab->setEnabled(false);
-        m_gemDetailsTab->setChecked(false);
-
         m_gemCreatorDetailsTab->setEnabled(false);
-        m_gemCreatorDetailsTab->setChecked(false);
-
-        m_gemDetailsTab->setText(tr("2.  Gem Details"));
-        m_gemCreatorDetailsTab->setText(tr("3.  Creator Details"));
-
         m_stackWidget->setCurrentIndex(GemTemplateSelectionScreen);
-
-        m_gemLocation->setEnabled(true);
-
-        //there exists an edge case where backing out from an old edit gem workflow fails to update next button title
         m_nextButton->setText(tr("Next"));
-    }
-
-    void CreateGem::ResetWorkflow(const GemInfo& oldGemInfo, bool isEditWorkflow)
-    {
-        //details page
-        m_gemDisplayName->lineEdit()->setText(oldGemInfo.m_displayName);
-        m_gemDisplayName->setErrorLabelVisible(false);
-
-        m_gemName->lineEdit()->setText(oldGemInfo.m_name);
-        m_gemName->setErrorLabelVisible(false);
-
-        m_gemSummary->lineEdit()->setText(oldGemInfo.m_summary);
-        m_requirements->lineEdit()->setText(oldGemInfo.m_requirement);
-        
-        m_license->lineEdit()->setText(oldGemInfo.m_licenseText);
-        m_license->setErrorLabelVisible(false);
-
-        m_licenseURL->lineEdit()->setText(oldGemInfo.m_licenseLink);
-        m_documentationURL->lineEdit()->setText(oldGemInfo.m_documentationLink);
-        
-        m_gemLocation->lineEdit()->setText(oldGemInfo.m_path);
-        m_gemLocation->setErrorLabelVisible(false);
-
-        m_gemIconPath->lineEdit()->setText(oldGemInfo.m_iconPath);
-
-        //Gem name is included in tags. Since the user can override this by setting the name field
-        //we should remove it from the tag list to prevent unintended consequences
-        QStringList tagsToEdit = oldGemInfo.m_features;
-        tagsToEdit.removeAll(oldGemInfo.m_name);
-        m_userDefinedGemTags->setTags(tagsToEdit);
-
-        //creator details page
-        m_origin->lineEdit()->setText(oldGemInfo.m_origin);
-        m_origin->setErrorLabelVisible(false);
-
-        m_originURL->lineEdit()->setText(oldGemInfo.m_originURL);
-        m_repositoryURL->lineEdit()->setText(oldGemInfo.m_repoUri);
-
-        //mark if we are editing a gem, and if so, change the UI accordingly
-        m_isEditGem = isEditWorkflow;
-        if(isEditWorkflow)
-        {
-            ChangeToEditWorkflow();
-            m_oldGemInfo = oldGemInfo;
-        }
-    }
-
-    void CreateGem::ChangeToEditWorkflow()
-    {
-        m_header->setSubTitle(tr("Edit gem"));
-
-        //we will only have two pages: details page and creator details page
-        m_gemTemplateSelectionTab->setChecked(false);
-        m_gemTemplateSelectionTab->setVisible(false);
-
-        m_gemDetailsTab->setEnabled(true);
-        m_gemDetailsTab->setChecked(true);
-
-        m_gemCreatorDetailsTab->setEnabled(true);
-
-        m_gemDetailsTab->setText(tr("1.  Gem Details"));
-        m_gemCreatorDetailsTab->setText(tr("2.  Creator Details"));
-
-        m_stackWidget->setCurrentIndex(GemDetailsScreen);
-
-        m_gemLocation->setEnabled(false);
-
-        //there exists an edge case where backing out from an old create gem workflow fails to update next button title
-        m_nextButton->setText(tr("Next"));
+        m_backButton->setVisible(false);
     }
 
 } // namespace O3DE::ProjectManager

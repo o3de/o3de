@@ -60,6 +60,16 @@ namespace Platform
 #define QString_To_Py_String(value) pybind11::str(value.toStdString())
 #define QString_To_Py_Path(value) m_pathlib.attr("Path")(value.toStdString())
 
+pybind11::list QStringList_To_Py_List(const QStringList& values)
+{
+    std::list<std::string> newValues;
+    for (const auto& i : values)
+    {
+        newValues.push_back(i.toStdString());
+    }
+    return pybind11::list(pybind11::cast(newValues));
+};
+
 namespace RedirectOutput
 {
     using RedirectOutputFunc = AZStd::function<void(const char*)>;
@@ -885,54 +895,29 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<GemInfo> PythonBindings::EditGem(const GemInfo& oldGemInfo, const GemInfo& newGemInfo)
+    AZ::Outcome<GemInfo> PythonBindings::EditGem(const QString& oldGemName, const GemInfo& newGemInfo)
     {
         using namespace pybind11::literals;
-
-        QStringList newList;
-
-        for(auto feature : newGemInfo.m_features)
-        {
-            if(!oldGemInfo.m_features.contains(feature))
-            {
-                //this must have been added by the user
-                newList << feature;
-            }
-        }
-
-        QStringList removeList;
-
-        for (auto feature : oldGemInfo.m_features)
-        {
-            if(!newGemInfo.m_features.contains(feature))
-            {
-                //this must have been removed by the user
-                removeList << feature;
-            }
-        }
 
         GemInfo gemInfoResult;
         bool result = ExecuteWithLock(
             [&]
             {
-                auto gemPath = QString_To_Py_Path(oldGemInfo.m_path);
+                auto gemPath = QString_To_Py_Path(newGemInfo.m_path);
 
                 auto editGemResult = m_gemProperties.attr("edit_gem_props")(
                     "gem_path"_a = gemPath,
-                    "gem_name"_a = QString_To_Py_String(oldGemInfo.m_name),
+                    "gem_name"_a = QString_To_Py_String(oldGemName),
                     "new_name"_a = QString_To_Py_String(newGemInfo.m_name),
                     "new_display"_a = QString_To_Py_String(newGemInfo.m_displayName),
                     "new_origin"_a = QString_To_Py_String(newGemInfo.m_origin),
-                    "new_type"_a = pybind11::none(), //For the Project manager, it does not make sense to change the type of a gem once it's created
                     "new_summary"_a = QString_To_Py_String(newGemInfo.m_summary),
                     "new_icon"_a = QString_To_Py_String(newGemInfo.m_iconPath),
                     "new_requirements"_a = QString_To_Py_String(newGemInfo.m_requirement),
                     "new_documentation_url"_a = QString_To_Py_String(newGemInfo.m_documentationLink),
                     "new_license"_a = QString_To_Py_String(newGemInfo.m_licenseText),
-                    "new_license_url"_a = QString_To_Py_String(newGemInfo.m_licenseLink),
-                    "new_tags"_a = QString_To_Py_String(newList.join(" ")),  //the python code seems to interpret these lists as space separated
-                    "remove_tags"_a = QString_To_Py_String(removeList.join(" ")),
-                    "replace_tags"_a = pybind11::none())
+                    "new_license_url"_a = QString_To_Py_String(newGemInfo.m_licenseLink),   
+                    "replace_tags"_a = QStringList_To_Py_List(newGemInfo.m_features)) //the python code seems to interpret these lists as space separated
                     ;
                 
                 if (editGemResult.cast<int>() == 0)
