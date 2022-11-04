@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Reflect/Material/LuaMaterialFunctor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
+#include <Atom/RPI.Reflect/Material/LuaScriptUtilities.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Script/ScriptContext.h>
@@ -18,6 +19,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/Color.h>
+
 namespace AZ
 {
     namespace RPI
@@ -60,7 +62,7 @@ namespace AZ
 
             LuaMaterialFunctorRenderStates::Reflect(behaviorContext);
             LuaMaterialFunctorShaderItem::Reflect(behaviorContext);
-            LuaMaterialFunctorUtilities::Reflect(behaviorContext);
+            LuaScriptUtilities::Reflect(behaviorContext);
             LuaMaterialFunctorRuntimeContext::Reflect(behaviorContext);
             LuaMaterialFunctorEditorContext::Reflect(behaviorContext);
         }
@@ -107,7 +109,7 @@ namespace AZ
 
                 if (!m_scriptContext->Execute(scriptBuffer.data(), GetScriptDescription(), scriptBuffer.size()))
                 {
-                    AZ_Error(LuaMaterialFunctorUtilities::DebugName, false, "Error initializing script '%s'.", m_scriptAsset.ToString<AZStd::string>().c_str());
+                    AZ_Error(LuaScriptUtilities::DebugName, false, "Error initializing script '%s'.", m_scriptAsset.ToString<AZStd::string>().c_str());
                     m_scriptStatus = ScriptStatus::Error;
                 }
                 else
@@ -218,7 +220,7 @@ namespace AZ
             {
                 if (!m_psoChangesReported)
                 {
-                    LuaMaterialFunctorUtilities::Script_Error(
+                    LuaScriptUtilities::Error(
                         AZStd::string::format(
                             "The following material properties must not be changed at runtime because they impact Pipeline State Objects: %s", GetMaterialPropertyDependenciesString().c_str()));
                     
@@ -231,7 +233,7 @@ namespace AZ
             {
                 if (!m_psoChangesReported)
                 {
-                    LuaMaterialFunctorUtilities::Script_Warning(
+                    LuaScriptUtilities::Warning(
                         AZStd::string::format(
                             "The following material properties should not be changed at runtime because they impact Pipeline State Objects: %s", GetMaterialPropertyDependenciesString().c_str()));
                     
@@ -253,7 +255,7 @@ namespace AZ
 
             if (!propertyIndex.IsValid())
             {
-                LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format("%s() could not find property '%s'", functionName, propertyFullName.GetCStr()));
+                LuaScriptUtilities::Error(AZStd::string::format("%s() could not find property '%s'", functionName, propertyFullName.GetCStr()));
             }
 
             return propertyIndex;
@@ -291,13 +293,13 @@ namespace AZ
 
             if (!value.IsValid())
             {
-                LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format("GetMaterialPropertyValue() got invalid value for property '%s'", name));
+                LuaScriptUtilities::Error(AZStd::string::format("GetMaterialPropertyValue() got invalid value for property '%s'", name));
                 return {};
             }
 
             if (!value.Is<Type>())
             {
-                LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format("GetMaterialPropertyValue() accessed property '%s' using the wrong data type.", name));
+                LuaScriptUtilities::Error(AZStd::string::format("GetMaterialPropertyValue() accessed property '%s' using the wrong data type.", name));
                 return {};
             }
 
@@ -395,7 +397,7 @@ namespace AZ
 
                 if (!shaderItem.MaterialOwnsShaderOption(optionIndex))
                 {
-                    LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format("Shader option '%s' is not owned by this material.", fullOptionName.GetCStr()));
+                    LuaScriptUtilities::Error(AZStd::string::format("Shader option '%s' is not owned by this material.", fullOptionName.GetCStr()));
                     break;
                 }
 
@@ -436,7 +438,7 @@ namespace AZ
 
             if (!index.IsValid())
             {
-                LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format("%s() could not find shader input '%s'", functionName, fullInputName.GetCStr()));
+                LuaScriptUtilities::Error(AZStd::string::format("%s() could not find shader input '%s'", functionName, fullInputName.GetCStr()));
             }
 
             return index;
@@ -467,7 +469,7 @@ namespace AZ
             }
             else
             {
-                LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format("GetShader(%zu) is invalid.", index));
+                LuaScriptUtilities::Error(AZStd::string::format("GetShader(%zu) is invalid.", index));
                 return {};
             }
         }
@@ -481,7 +483,7 @@ namespace AZ
             }
             else
             {
-                LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format(
+                LuaScriptUtilities::Error(AZStd::string::format(
                     "GetShaderByTag('%s') is invalid: Could not find a shader with the tag '%s'.", tag.GetCStr(), tag.GetCStr()));
                 return {};
             }
@@ -626,28 +628,6 @@ namespace AZ
             return false;
         }
 
-        void LuaMaterialFunctorUtilities::Reflect(AZ::BehaviorContext* behaviorContext)
-        {
-            behaviorContext->Method("Error", &Script_Error);
-            behaviorContext->Method("Warning", &Script_Warning);
-            behaviorContext->Method("Print", &Script_Print);
-        }
-
-        void LuaMaterialFunctorUtilities::Script_Error([[maybe_unused]] const AZStd::string& message)
-        {
-            AZ_Error(DebugName, false, "LuaMaterialFunctor: %s", message.c_str());
-        }
-
-        void LuaMaterialFunctorUtilities::Script_Warning([[maybe_unused]] const AZStd::string& message)
-        {
-            AZ_Warning(DebugName, false, "LuaMaterialFunctor: %s", message.c_str());
-        }
-
-        void LuaMaterialFunctorUtilities::Script_Print([[maybe_unused]] const AZStd::string& message)
-        {
-            AZ_TracePrintf(DebugName, "LuaMaterialFunctor: %s\n", message.c_str());
-        }
-
         template<>
         void LuaMaterialFunctorShaderItem::SetShaderOptionValue(const char* name, const char* value);
 
@@ -706,7 +686,7 @@ namespace AZ
 
             if (!m_shaderItem->MaterialOwnsShaderOption(optionIndex))
             {
-                LuaMaterialFunctorUtilities::Script_Error(
+                LuaScriptUtilities::Error(
                     AZStd::string::format(
                         "Shader option '%s' is not owned by the shader '%s'.", name.GetCStr(), m_shaderItem->GetShaderTag().GetCStr()));
                 return;
@@ -807,7 +787,7 @@ namespace AZ
                 }                                                                                                       \
                 else                                                                                                    \
                 {                                                                                                       \
-                    LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format(                                    \
+                    LuaScriptUtilities::Error(AZStd::string::format(                                    \
                         "Set" AZ_STRINGIZE(PropertyName) "(%zu,...) index is out of range. Must be less than %u.",      \
                         targetIndex, RHI::Limits::Pipeline::AttachmentColorCountMax));                                  \
                 }                                                                                                       \
@@ -820,7 +800,7 @@ namespace AZ
                 }                                                                                                       \
                 else                                                                                                    \
                 {                                                                                                       \
-                    LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format(                                    \
+                    LuaScriptUtilities::Error(AZStd::string::format(                                    \
                         "Clear" AZ_STRINGIZE(PropertyName) "(%zu,...) index is out of range. Must be less than %u.",    \
                         targetIndex, RHI::Limits::Pipeline::AttachmentColorCountMax));                                  \
                 }                                                                                                       \
@@ -835,7 +815,7 @@ namespace AZ
             }
             else
             {
-                LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format("SetMultisampleCustomPosition(%zu,...) index is out of range. Must be less than %u.",
+                LuaScriptUtilities::Error(AZStd::string::format("SetMultisampleCustomPosition(%zu,...) index is out of range. Must be less than %u.",
                     multisampleCustomLocationIndex, RHI::Limits::Pipeline::MultiSampleCustomLocationsCountMax));
             }
         }
@@ -849,7 +829,7 @@ namespace AZ
             }
             else
             {
-                LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format("ClearMultisampleCustomPosition(%zu,...) index is out of range. Must be less than %u.",
+                LuaScriptUtilities::Error(AZStd::string::format("ClearMultisampleCustomPosition(%zu,...) index is out of range. Must be less than %u.",
                     multisampleCustomLocationIndex, RHI::Limits::Pipeline::MultiSampleCustomLocationsCountMax));
             }
         }
@@ -862,7 +842,7 @@ namespace AZ
             }
             else
             {
-                LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format("SetMultisampleCustomPositionCount(%u) value is out of range. Must be less than %u.",
+                LuaScriptUtilities::Error(AZStd::string::format("SetMultisampleCustomPositionCount(%u) value is out of range. Must be less than %u.",
                     value, RHI::Limits::Pipeline::MultiSampleCustomLocationsCountMax));
             }
         }
@@ -911,5 +891,5 @@ namespace AZ
         #undef TEMP_DEFINE_RENDERSTATE_METHODS_COMMON
         #undef TEMP_DEFINE_RENDERSTATE_METHODS_BLENDSTATETARGET
 
-    } // namespace Render
+    } // namespace RPI
 } // namespace AZ

@@ -44,6 +44,9 @@ namespace AZ
             };
 
             AZStd::vector<ShaderTemplate> m_shaderTemplates;
+
+            //! Relative path to a lua script to configure shader compilation
+            AZStd::string m_pipelineScript;
         };
         
     } // namespace RPI
