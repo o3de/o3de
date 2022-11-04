@@ -52,7 +52,6 @@ namespace AZ::DocumentPropertyEditor::Nodes
 
         system->RegisterNode<PropertyEditor, NodeWithVisiblityControl>();
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::OnChanged);
-        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::SetDisabled);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::Type);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::Value);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ValueType);

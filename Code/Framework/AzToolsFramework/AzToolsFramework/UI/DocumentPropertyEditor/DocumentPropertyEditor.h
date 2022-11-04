@@ -164,7 +164,7 @@ namespace AzToolsFramework
                     !m_isDisabled;
             }
         };
-        AZStd::unordered_map<size_t, AttributeInfo> m_domOrderToAttributeInfo;
+        AZStd::unordered_map<size_t, AttributeInfo> m_childIndexToAttributeInfo;
         AttributeInfo* GetAttributes(size_t domIndex);
 
         // row attributes extracted from the DOM

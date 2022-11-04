@@ -228,7 +228,6 @@ namespace AZ::DocumentPropertyEditor
             m_onChangedCallbacks.SetValue(m_builder.GetCurrentPath(), AZStd::move(onChanged));
             m_builder.AddMessageHandler(m_adapter, Nodes::PropertyEditor::OnChanged);
             m_builder.AddMessageHandler(m_adapter, Nodes::PropertyEditor::RequestTreeUpdate);
-            m_builder.AddMessageHandler(m_adapter, Nodes::PropertyEditor::SetDisabled);
 
             if (hashValue)
             {
@@ -349,9 +348,9 @@ namespace AZ::DocumentPropertyEditor
                     m_builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
                     m_builder.Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignRight);
                     m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::RemoveElement);
-                    auto disabledValue = attributes.Find(DocumentPropertyEditor::Nodes::PropertyEditor::AncestorDisabled.GetName());
-                    bool isDisabled = disabledValue.IsBool() && disabledValue.GetBool();
-                    if (isDisabled)
+                    auto ancestorDisabledValue = attributes.Find(Nodes::NodeWithVisiblityControl::AncestorDisabled.GetName());
+                    bool isAncestorDisabledValue = ancestorDisabledValue.IsBool() && ancestorDisabledValue.GetBool();
+                    if (isAncestorDisabledValue)
                     {
                         m_builder.Attribute(Nodes::PropertyEditor::AncestorDisabled, true);
                     }
@@ -431,7 +430,7 @@ namespace AZ::DocumentPropertyEditor
 
                     if (!container->IsFixedSize())
                     {
-                        auto disabledValue = attributes.Find(DocumentPropertyEditor::Nodes::PropertyEditor::Disabled.GetName());
+                        auto disabledValue = attributes.Find(Nodes::NodeWithVisiblityControl::Disabled.GetName());
                         bool isDisabled = disabledValue.IsBool() && disabledValue.GetBool();
 
                         m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
@@ -620,6 +619,7 @@ namespace AZ::DocumentPropertyEditor
         m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::QueryKey);
         m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::AddContainerKey);
         m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::RejectContainerKey);
+        m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::SetNodeDisabled);
         m_impl->m_onChangedCallbacks.Clear();
         m_impl->m_containers.Clear();
         if (m_instance != nullptr)
@@ -643,140 +643,88 @@ namespace AZ::DocumentPropertyEditor
             }
         };
 
-        auto handlePropertyEditorDisabledChanged = [&](bool shouldDisable)
+        auto handleSetNodeDisabled = [&](bool shouldDisable, Dom::Path targetNodePath)
         {
-            auto originNode = GetContents()[message.m_messageOrigin];
-            if (originNode.IsNull() || message.m_messageOrigin.Size() == 0)
+            Dom::Value targetNode = GetContents()[targetNodePath];
+
+            if (!targetNode.IsNode() || targetNode.IsNull())
             {
+                AZ_Warning("ReflectionAdapter",
+                    false,
+                    "Failed to update disabled state for Value at path `%s`; this is not a valid node",
+                    targetNodePath.ToString().c_str());
                 return;
             }
 
-            const Name& disabledAttributeName = Nodes::PropertyEditor::Disabled.GetName();
-            const Name& ancestorDisabledAttrName = Nodes::PropertyEditor::AncestorDisabled.GetName();
-
-            Dom::Path originPath = message.m_messageOrigin;
+            const Name& disabledAttributeName = Nodes::NodeWithVisiblityControl::Disabled.GetName();
+            const Name& ancestorDisabledAttrName = Nodes::NodeWithVisiblityControl::AncestorDisabled.GetName();
 
             Dom::Patch patch;
-            AZStd::stack<AZStd::pair<Dom::Path, const Dom::Value*>> unvisitedChildren;
+            AZStd::stack<AZStd::pair<Dom::Path, const Dom::Value*>> unvisitedDescendants;
 
-            const auto queueDescendantsForSearch = [&unvisitedChildren](const Dom::Value& parentNode, const Dom::Path& parentPath)
+            const auto queueDescendantsForSearch = [&unvisitedDescendants](const Dom::Value& parentNode, const Dom::Path& parentPath)
             {
-                int index = 0;
-                for (auto child = parentNode.ArrayBegin(); child != parentNode.ArrayEnd(); ++child)
-                {
-                    if (child->IsNode() && (child->GetNodeName() == GetNodeName<Nodes::PropertyEditor>() ||
-                        child->GetNodeName() == GetNodeName<Nodes::Row>()))
-                    {
-                        unvisitedChildren.push({ parentPath / index, child });
-                    }
-                    ++index;
-                }
-            };
-
-            // Call this for cases where the attribute change should only propagate through the origin node, excluding its siblings
-            const auto applyAttributeChangeExcludingSiblings =
-                [&](Dom::Value& parentNode, Dom::Path& parentPath, AZStd::function<void(const Dom::Value&, Dom::Path&)> procedure)
-            {
-                procedure(parentNode, parentPath);
-                if (auto disabledAttributeIter = parentNode.FindMember(disabledAttributeName);
-                    disabledAttributeIter != parentNode.MemberEnd() && !disabledAttributeIter->second.GetBool())
-                {
-                    queueDescendantsForSearch(parentNode, parentPath);
-                }
-            };
-
-            // Call this for cases where the attribute change should propagate from the origin node's parent, including all sibling trees
-            const auto propagateAttributeChangeToSiblings =
-                [&](Dom::Value& parentNode, Dom::Path& parentPath, AZStd::function<void(const Dom::Value&, Dom::Path&)> procedure)
-            {
-                // Remove the disabled attribute from the origin node and its property editor siblings
                 int index = 0;
                 for (auto child = parentNode.ArrayBegin(); child != parentNode.ArrayEnd(); ++child)
                 {
                     if (child->IsNode())
                     {
-                        Dom::Path childPath = parentPath / index;
-
-                        if (child->GetNodeName() == GetNodeName<Nodes::PropertyEditor>())
-                        {
-                            procedure(*child, childPath);
-
-                            if (auto disabledAttributeIter = child->FindMember(disabledAttributeName);
-                                disabledAttributeIter != child->MemberEnd() && !disabledAttributeIter->second.GetBool())
-                            {
-                                queueDescendantsForSearch(*child, childPath);
-                            }
-                        }
-                        else if (child->GetNodeName() == GetNodeName<Nodes::Row>())
-                        {
-                            queueDescendantsForSearch(*child, childPath);
-                        }
+                        unvisitedDescendants.push({ parentPath / index, child });
                     }
                     ++index;
                 }
             };
 
-            // Applies the attribute change to any descendants in unvisitedChildren until its done
-            const auto propagateAttributeChangeToDescendants = [&](AZStd::function<void(Dom::Path&)> procedure)
+            const auto propagateAttributeChangeToRow = [&](
+                const Dom::Value& parentNode,
+                const Dom::Path& parentPath,
+                AZStd::function<void(const Dom::Value&, const Dom::Path&)> procedure)
             {
-                while (!unvisitedChildren.empty())
+                int index = 0;
+                for (auto child = parentNode.ArrayBegin(); child != parentNode.ArrayEnd(); ++child)
                 {
-                    Dom::Path childPath = unvisitedChildren.top().first;
-                    auto childNode = unvisitedChildren.top().second;
-                    unvisitedChildren.pop();
-
-                    if (childNode->GetNodeName() != GetNodeName<Nodes::Row>())
+                    if (child->IsNode())
                     {
-                        procedure(childPath);
+                        auto childPath = parentPath / index;
+                        if (child->GetNodeName() != GetNodeName<Nodes::Row>())
+                        {
+                            procedure(*child, childPath);
+                        }
+                        queueDescendantsForSearch(*child, childPath);
+                    }
+                    ++index;
+                }
+            };
+
+            // This lambda applies the attribute change to any descendants in unvisitedChildren until its done
+            const auto propagateAttributeChangeToDescendants = [&](AZStd::function<void(const Dom::Value&, Dom::Path&)> procedure)
+            {
+                while (!unvisitedDescendants.empty())
+                {
+                    Dom::Path nodePath = unvisitedDescendants.top().first;
+                    auto node = unvisitedDescendants.top().second;
+                    unvisitedDescendants.pop();
+
+                    if (node->GetNodeName() != GetNodeName<Nodes::Row>())
+                    {
+                        procedure(*node, nodePath);
                     }
 
                     // We can stop traversing this path if the node has a truthy disabled attribute since its descendants
                     // should retain their inherited disabled state
-                    if (auto iter = childNode->FindMember(disabledAttributeName); iter != childNode->MemberEnd() && iter->second.GetBool())
+                    if (auto iter = node->FindMember(disabledAttributeName); iter == node->MemberEnd() || !iter->second.GetBool())
                     {
-                        continue;
+                        queueDescendantsForSearch(*node, nodePath);
                     }
-
-                    queueDescendantsForSearch(*childNode, childPath);
                 }
             };
 
-            if (!shouldDisable)
+            if (shouldDisable)
             {
-                // Attribute changes should be applied from the origin node's parent row
-                originPath.Pop();
-                originNode = GetContents()[originPath];
-
-                // Remove the disabled attribute from the origin node and its property editor siblings
-                propagateAttributeChangeToSiblings(
-                    originNode,
-                    originPath,
-                    [&patch, &disabledAttributeName](const Dom::Value& node, const Dom::Path& nodePath)
-                    {
-                        if (auto iter = node.FindMember(disabledAttributeName); iter != node.MemberEnd() && iter->second.GetBool())
-                        {
-                            patch.PushBack({ Dom::PatchOperation::RemoveOperation(nodePath / disabledAttributeName) });
-                        }
-                    });
-
-                // Remove the ancestor disabled attribute from the origin node's descendants if any
-                propagateAttributeChangeToDescendants([&patch, &ancestorDisabledAttrName](const Dom::Path& nodePath)
+                if (targetNode.GetNodeName() == GetNodeName<Nodes::Row>())
                 {
-                    patch.PushBack({ Dom::PatchOperation::RemoveOperation(nodePath / ancestorDisabledAttrName) });
-                });
-            }
-            else
-            {
-                if (!originNode.HasMember(AZ::Reflection::DescriptorAttributes::ParentContainer))
-                {
-                    // This is not a container element, so get the origin node's parent row
-                    originPath.Pop();
-                    originNode = GetContents()[originPath];
-
-                    // Add the disabled attribute to the origin node and its property editor siblings
-                    propagateAttributeChangeToSiblings(
-                        originNode,
-                        originPath,
+                    propagateAttributeChangeToRow(targetNode,
+                        targetNodePath,
                         [&patch, &disabledAttributeName](const Dom::Value& node, const Dom::Path& nodePath)
                         {
                             if (auto iter = node.FindMember(disabledAttributeName); iter == node.MemberEnd() || !iter->second.GetBool())
@@ -787,25 +735,47 @@ namespace AZ::DocumentPropertyEditor
                 }
                 else
                 {
-                    // If we don't exclude the origin node's siblings in this case then we could end up with a disabled element
-                    // that cannot be removed from its enabled parent container
-                    applyAttributeChangeExcludingSiblings(
-                        originNode,
-                        originPath,
+                    patch.PushBack({ Dom::PatchOperation::AddOperation(targetNodePath / disabledAttributeName, Dom::Value(true)) });
+                    queueDescendantsForSearch(targetNode, targetNodePath);
+                }
+
+                propagateAttributeChangeToDescendants(
+                    [&patch, &ancestorDisabledAttrName](const Dom::Value& node, const Dom::Path& nodePath)
+                    {
+                        if (auto iter = node.FindMember(ancestorDisabledAttrName); iter == node.MemberEnd() || !iter->second.GetBool())
+                        {
+                            patch.PushBack({ Dom::PatchOperation::AddOperation(nodePath / ancestorDisabledAttrName, Dom::Value(true)) });
+                        }
+                    });
+            }
+            else
+            {
+                if (targetNode.GetNodeName() == GetNodeName<Nodes::Row>())
+                {
+                    propagateAttributeChangeToRow(targetNode,
+                        targetNodePath,
                         [&patch, &disabledAttributeName](const Dom::Value& node, const Dom::Path& nodePath)
                         {
-                            if (auto iter = node.FindMember(disabledAttributeName); iter == node.MemberEnd() || !iter->second.GetBool())
+                            if (auto iter = node.FindMember(disabledAttributeName); iter != node.MemberEnd() && iter->second.GetBool())
                             {
-                                patch.PushBack({ Dom::PatchOperation::AddOperation(nodePath / disabledAttributeName, Dom::Value(true)) });
+                                patch.PushBack({ Dom::PatchOperation::RemoveOperation(nodePath / disabledAttributeName) });
                             }
                         });
                 }
-
-                // Propagate the ancestor disabled attribute to the origin node's descendants if any
-                propagateAttributeChangeToDescendants([&patch, &ancestorDisabledAttrName](const Dom::Path& nodePath)
+                else
                 {
-                    patch.PushBack({ Dom::PatchOperation::AddOperation(nodePath / ancestorDisabledAttrName, Dom::Value(true)) });
-                });
+                    patch.PushBack({ Dom::PatchOperation::RemoveOperation(targetNodePath / disabledAttributeName) });
+                    queueDescendantsForSearch(targetNode, targetNodePath);
+                }
+
+                propagateAttributeChangeToDescendants(
+                    [&patch, &ancestorDisabledAttrName](const Dom::Value& node, const Dom::Path& nodePath)
+                    {
+                        if (auto iter = node.FindMember(ancestorDisabledAttrName); iter != node.MemberEnd() && iter->second.GetBool())
+                        {
+                            patch.PushBack({ Dom::PatchOperation::RemoveOperation(nodePath / ancestorDisabledAttrName) });
+                        }
+                    });
             }
 
             if (patch.Size() > 0)
@@ -874,10 +844,11 @@ namespace AZ::DocumentPropertyEditor
 
         return message.Match(
             Nodes::PropertyEditor::OnChanged, handlePropertyEditorChanged,
-            Nodes::PropertyEditor::SetDisabled, handlePropertyEditorDisabledChanged,
             Nodes::ContainerActionButton::OnActivate, handleContainerOperation,
             Nodes::PropertyEditor::RequestTreeUpdate, handleTreeUpdate,
+            Nodes::Adapter::SetNodeDisabled, handleSetNodeDisabled,
             Nodes::Adapter::AddContainerKey, addKeyToContainer,
-            Nodes::Adapter::RejectContainerKey, rejectKeyToContainer);
+            Nodes::Adapter::RejectContainerKey, rejectKeyToContainer
+            );
     }
 } // namespace AZ::DocumentPropertyEditor

@@ -676,10 +676,10 @@ namespace AzToolsFramework
             AZ::Dpe::Nodes::PropertyEditor::AncestorDisabled.ExtractFromDomNode(domArray).value_or(false);
 
         AttributeInfo currentInfo;
-        auto attributeIter = m_domOrderToAttributeInfo.find(domIndex);
-        if (attributeIter != m_domOrderToAttributeInfo.end())
+        auto attributeIter = m_childIndexToAttributeInfo.find(domIndex);
+        if (attributeIter != m_childIndexToAttributeInfo.end())
         {
-            currentInfo = m_domOrderToAttributeInfo[domIndex];
+            currentInfo = m_childIndexToAttributeInfo[domIndex];
         }
 
         if (updatedInfo.m_sharePriorColumn != currentInfo.m_sharePriorColumn)
@@ -718,20 +718,20 @@ namespace AzToolsFramework
             childWidget->setEnabled(!updatedInfo.m_isDisabled);
         }
 
-        if (attributeIter != m_domOrderToAttributeInfo.end() && updatedInfo.IsDefault())
+        if (attributeIter != m_childIndexToAttributeInfo.end() && updatedInfo.IsDefault())
         {
-            m_domOrderToAttributeInfo.erase(attributeIter);
+            m_childIndexToAttributeInfo.erase(attributeIter);
         }
         else
         {
-            m_domOrderToAttributeInfo[domIndex] = updatedInfo;
+            m_childIndexToAttributeInfo[domIndex] = updatedInfo;
         }
     }
 
     DPERowWidget::AttributeInfo* DPERowWidget::GetAttributes(size_t domIndex)
     {
-        auto foundEntry = m_domOrderToAttributeInfo.find(domIndex);
-        if (foundEntry != m_domOrderToAttributeInfo.end())
+        auto foundEntry = m_childIndexToAttributeInfo.find(domIndex);
+        if (foundEntry != m_childIndexToAttributeInfo.end())
         {
             return &foundEntry->second;
         }
@@ -743,17 +743,17 @@ namespace AzToolsFramework
 
     void DPERowWidget::RemoveAttributes(size_t domIndex)
     {
-        auto foundEntry = m_domOrderToAttributeInfo.find(domIndex);
-        if (foundEntry != m_domOrderToAttributeInfo.end())
+        auto foundEntry = m_childIndexToAttributeInfo.find(domIndex);
+        if (foundEntry != m_childIndexToAttributeInfo.end())
         {
-            m_domOrderToAttributeInfo.erase(foundEntry);
+            m_childIndexToAttributeInfo.erase(foundEntry);
             m_columnLayout->RemoveSharePriorColumn(domIndex);
         }
     }
 
     void DPERowWidget::ClearAttributes()
     {
-        m_domOrderToAttributeInfo.clear();
+        m_childIndexToAttributeInfo.clear();
         for (AZStd::vector<size_t> sharedGroup : m_columnLayout->m_sharePriorColumn)
         {
             sharedGroup.clear();
