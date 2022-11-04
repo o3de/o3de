@@ -12,7 +12,7 @@ We often don’t hit our targets on the first time. The creative process is very
 
 # Getting Started
 
-Although it is not a hard requirement, you can enable the DccScriptingInterface Gem (DCCsi) with your O3DE Project (using the o3de.exe project manager).  This includes a tool integration with Blender, this provides and out-of-box developer experience for creating python scripts, tools and other addons. Once the DccScriptingInterface Gem is enabled in your project via the Project Manager, then build your project (DCCsi python boostrapping will require the project to be built.) [Adding and Removing Gems in a Project - Open 3D Engine](https://www.o3de.org/docs/user-guide/project-config/add-remove-gems/)
+Although it is not a hard requirement, you can enable the DccScriptingInterface Gem (DCCsi) with your O3DE Project (using the o3de.exe project manager).  This includes a tool integration with Blender, this provides and out-of-box developer experience for creating python scripts, tools and other addons. Once the DccScriptingInterface Gem is enabled in your project via the Project Manager, then build your project (DCCsi python bootstrapping will require the project to be built.) [Adding and Removing Gems in a Project - Open 3D Engine](https://www.o3de.org/docs/user-guide/project-config/add-remove-gems/)
 
 With the DCCsi enabled, you can launch Blender from the main O3DE Editor, and Blender will start in a managed way (configuration and settings) and this addon can be enabled in the preferences (without requiring a manual install, although you can still do that also)
 
@@ -34,7 +34,7 @@ More information about the DCCsi Blender tool integration, configuration and set
 
 ## Accessing the O3DE Scene Exporter Tool
 
-< Blender shefl gif >
+< Blender shelf gif >
 
 # Project Asset Organization with O3DE Projects and Custom Project Paths.
 
@@ -148,7 +148,7 @@ This option will show up when selecting more than one mesh. You can export a sin
 
 **Export as Quads or Triangles:**
 
-This option will export your FBX in Quads or Triangles. This is non-destrutive to your Blender Model. This is good when **NGONs** might be an issue.
+This option will export your FBX in Quads or Triangles. This is non-destructive to your Blender Model. This is good when **NGONs** might be an issue.
 
 # E: EXPORT FILE
 
