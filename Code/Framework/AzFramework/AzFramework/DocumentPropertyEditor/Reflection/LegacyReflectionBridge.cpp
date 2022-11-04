@@ -209,7 +209,7 @@ namespace AZ::Reflection
                 {
                     return;
                 }
-                EditContext::EnumerateInstanceCallContext context(
+            SerializeContext::EnumerateInstanceCallContext context(
                     [this](
                         void* instance,
                         const AZ::SerializeContext::ClassData* classData,
@@ -221,12 +221,12 @@ namespace AZ::Reflection
                     {
                         return EndNode();
                     },
-                    m_serializeContext->GetEditContext(),
+                    m_serializeContext,
                     SerializeContext::EnumerationAccessFlags::ENUM_ACCESS_FOR_WRITE,
                     nullptr);
 
                 const StackEntry& nodeData = m_stack.back();
-                m_serializeContext->GetEditContext()->EnumerateInstance(&context, nodeData.m_instance, nodeData.m_typeId, nullptr, nullptr);
+                m_serializeContext->EnumerateInstance(&context, nodeData.m_instance, nodeData.m_typeId, nullptr, nullptr);
             }
 
             bool BeginNode(
@@ -355,7 +355,7 @@ namespace AZ::Reflection
                         }
                     }
                 }
-                CacheAttributes();
+                CacheAttributes(parentData);
 
                 // Inherit the change notify attribute from our parent
                 const Name changeNotify = Name("ChangeNotify");
@@ -443,7 +443,7 @@ namespace AZ::Reflection
                 return m_stack.back().m_instance;
             }
 
-            void CacheAttributes()
+            void CacheAttributes([[maybe_unused]] StackEntry& parentData)
             {
                 StackEntry& nodeData = m_stack.back();
                 AZStd::vector<AttributeData>& cachedAttributes = nodeData.m_cachedAttributes;
@@ -690,6 +690,40 @@ namespace AZ::Reflection
                         { group, DescriptorAttributes::Container, Dom::Utils::ValueFromType<void*>(nodeData.m_classData->m_container) });
                 }
 
+                // If parent is a dynamic serializable field with edit reflection, default to visible.
+                
+                //if (nodeData.m_classElement &&
+                //    0 != (nodeData.m_classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_DYNAMIC_FIELD))
+                //{
+                //    if (parentData.m_classElement && parentData.m_classElement->m_editData)
+                //    {
+                //        visibility = PropertyVisibility::Show;
+                //    }
+                //}
+
+                //// Show UI Elements by default
+                //if (nodeData.m_classElement &&
+                //    0 != (nodeData.m_classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_UI_ELEMENT))
+                //{
+                //    visibility = PropertyVisibility::Show;
+                //}
+
+                //// Use class meta data as opposed to parent's reflection data if this is a root node or a container element.
+                //if (visibility == PropertyVisibility::ShowChildrenOnly &&
+                //    (parentData.m_classData->m_container))
+                //{
+                //    if (nodeData.m_classData && nodeData.m_classData->m_editData)
+                //    {
+                //        visibility = PropertyVisibility::Show;
+                //    }
+                //}
+
+                //// Child nodes must have edit data in their parent's reflection.
+                //if (visibility == PropertyVisibility::ShowChildrenOnly && nodeData.m_classElement && nodeData.m_classElement->m_editData)
+                //{
+                //    visibility = PropertyVisibility::Show;
+                //}
+
                 // Calculate our visibility, going through parent nodes in reverse order to see if we should be hidden
                 for (size_t i = 1; i < m_stack.size(); ++i)
                 {
@@ -700,6 +734,10 @@ namespace AZ::Reflection
                         visibility = PropertyVisibility::Hide;
                         break;
                     }
+                }
+                if (nodeData.m_classElement && !nodeData.m_classElement->m_editData)
+                {
+                    visibility = PropertyVisibility::ShowChildrenOnly;
                 }
                 nodeData.m_computedVisibility = visibility;
                 nodeData.m_cachedAttributes.push_back(
