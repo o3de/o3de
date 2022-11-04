@@ -6,7 +6,7 @@
 #
 #
 
-set(LY_RADEON_GPU_ANALYZER_ENABLED FALSE CACHE BOOL "Whether to download Radeon(™) GPU Analyzer from Github.")
+set(LY_RADEON_GPU_ANALYZER_ENABLED FALSE CACHE BOOL "Whether to download Radeon GPU Analyzer from Github.")
 
 define_property(TARGET PROPERTY LY_SYSTEM_LIBRARY
     BRIEF_DOCS "Defines a 3rdParty library as a system library"
