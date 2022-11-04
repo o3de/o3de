@@ -99,9 +99,10 @@ namespace AtomToolsFramework
 
         // Return true when save success or no save
         // Return false when save failed or save cancel or close cancel
-        bool CloseDocumentCheck(const AZ::Uuid& documentId); 
-        bool CloseAllDocumentCheck();
-        bool CloseAllDocumentExceptCheck(const AZ::Uuid& documentId);
+        bool CloseDocumentCheck(const AZ::Uuid& documentId);
+        // Return false when CloseDocumentCheck failed or close failed
+        bool CloseDocuments(const AZStd::vector<AZ::Uuid>& documentIds);
+        const AZStd::vector<AZ::Uuid> GetOpenDocumentIds() const;
 
         // AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;

@@ -126,9 +126,9 @@ namespace AtomToolsFramework
 
         m_actionSaveAll = CreateActionAtPosition(m_menuFile, insertPostion, "Save A&ll", [this]() {
 
-            for (int index = 0; index < m_tabWidget->count(); index++)
+            for (const auto& documentId : GetOpenDocumentIds())
             {
-                if (!SaveDocument(GetDocumentTabId(index)))
+                if (!SaveDocument(documentId))
                 {
                     // Stop if there is any save failed or cancel
                     break;
@@ -138,26 +138,17 @@ namespace AtomToolsFramework
         m_menuFile->insertSeparator(insertPostion);
 
         m_actionClose = CreateActionAtPosition(m_menuFile, insertPostion, "&Close", [this]() {
-            const AZ::Uuid documentId = GetCurrentDocumentId();
-            if (CloseDocumentCheck(documentId))
-            {
-                AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseDocument, documentId);
-            }
+            CloseDocuments({GetCurrentDocumentId()});
         }, QKeySequence::Close);
 
         m_actionCloseAll = CreateActionAtPosition(m_menuFile, insertPostion, "Close All", [this]() {
-            if (CloseAllDocumentCheck())
-            {
-                AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseAllDocuments);
-            }
+            CloseDocuments(GetOpenDocumentIds());
         });
 
         m_actionCloseOthers = CreateActionAtPosition(m_menuFile, insertPostion, "Close Others", [this]() {
-            const AZ::Uuid documentId = GetCurrentDocumentId();
-            if (CloseAllDocumentExceptCheck(documentId))
-            {
-                AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseAllDocumentsExcept, documentId);
-            }
+            auto documentIds = GetOpenDocumentIds();
+            AZStd::erase(documentIds, GetCurrentDocumentId());
+            CloseDocuments(documentIds);
         });
         m_menuFile->insertSeparator(insertPostion);
 
@@ -269,40 +260,35 @@ namespace AtomToolsFramework
         return true;
     }
 
-    bool AtomToolsDocumentMainWindow::CloseAllDocumentCheck()
+    bool AtomToolsDocumentMainWindow::CloseDocuments(const AZStd::vector<AZ::Uuid>& documentIds)
     {
-        bool canClose = true;
-        for (int index = 0; index < m_tabWidget->count(); index++)
+        for (const auto& documentId : documentIds)
         {
-            const AZ::Uuid documentId = GetDocumentTabId(index);
             if (!CloseDocumentCheck(documentId))
             {
-                // Stop if there is any save failed or cancel
-                canClose = false;
-                break;
+                return false;
+            }
+
+            bool result = false;
+            AtomToolsDocumentSystemRequestBus::EventResult(result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseDocument, documentId);
+
+            if (!result)
+            {
+                return false;
             }
         }
-        return canClose;
+        return true;
     }
 
-    bool AtomToolsDocumentMainWindow::CloseAllDocumentExceptCheck(const AZ::Uuid& documentId)
+    const AZStd::vector<AZ::Uuid> AtomToolsDocumentMainWindow::GetOpenDocumentIds() const
     {
-        bool canClose = true;
+        AZStd::vector<AZ::Uuid> documentIds;
+        documentIds.reserve(m_tabWidget->count());
         for (int index = 0; index < m_tabWidget->count(); index++)
         {
-            const AZ::Uuid documentTabId = GetDocumentTabId(index);
-            if (documentId != documentTabId)
-            {
-                if (!CloseDocumentCheck(documentTabId))
-                {
-                    // Stop if there is any save failed or cancel
-                    canClose = false;
-                    break;
-                }
-            }
+            documentIds.push_back(GetDocumentTabId(index));
         }
-
-        return canClose;
+        return documentIds;
     }
 
     void AtomToolsDocumentMainWindow::UpdateMenus(QMenuBar* menuBar)
@@ -481,12 +467,8 @@ namespace AtomToolsFramework
             }
         });
 
-        connect(m_tabWidget, &QTabWidget::tabCloseRequested, this, [this]() {
-            const AZ::Uuid documentId = GetCurrentDocumentId();
-            if (CloseDocumentCheck(documentId))
-            {
-                AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseDocument, documentId);
-            }
+        connect(m_tabWidget, &QTabWidget::tabCloseRequested, this, [this](int index) {
+            CloseDocuments({ GetDocumentTabId(index) });
         });
 
         // Add context menu for right-clicking on tabs
@@ -678,16 +660,12 @@ namespace AtomToolsFramework
             AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentId);
         });
         menu.addAction("Close", [this, documentId]() {
-            if (CloseDocumentCheck(documentId))
-            {
-                AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseDocument, documentId);
-            }
+            CloseDocuments({documentId});
         });
         menu.addAction("Close Others", [this, documentId]() {
-            if (CloseAllDocumentExceptCheck(documentId))
-            {
-                AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseAllDocumentsExcept, documentId);
-            }
+            auto documentIds = GetOpenDocumentIds();
+            AZStd::erase(documentIds, documentId);
+            CloseDocuments(documentIds);
         })->setEnabled(m_tabWidget->tabBar()->count() > 1);
     }
 
@@ -765,18 +743,8 @@ namespace AtomToolsFramework
     }
 
     void AtomToolsDocumentMainWindow::closeEvent(QCloseEvent* closeEvent)
-    {
-        bool canClose = true;
-        if (CloseAllDocumentCheck())
-        {
-            AtomToolsDocumentSystemRequestBus::EventResult(canClose, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseAllDocuments);
-        }
-        else
-        {
-            canClose = false;
-        }
-        
-        if(!canClose)
+    {   
+        if (!CloseDocuments(GetOpenDocumentIds()))
         {
             closeEvent->ignore();
             return;
