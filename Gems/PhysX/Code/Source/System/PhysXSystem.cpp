@@ -16,9 +16,12 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Debug/PerformanceCollector.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/PlatformId/PlatformId.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 // only enable physx timestep warning when not running debug or in Release
 #if !defined(DEBUG) && !defined(RELEASE)
@@ -51,6 +54,25 @@ namespace PhysX
         AZ::AllocatorInstance<PhysXAllocator>::Create(allocatorDescriptor);
 
         InitializePhysXSdk(cookingParams);
+
+        InitializePerformanceCollector();
+    }
+
+    void PhysXSystem::InitializePerformanceCollector()
+    {
+        auto performanceMetrics = AZStd::to_array<AZStd::string_view>({
+            PerformanceSpecPhysXSimulationTime,
+        });
+
+        AZStd::string platformName = AZ::GetPlatformName(AZ::g_currentPlatform);
+        auto logCategory =
+            AZStd::string::format("%.*s-%s", AZ_STRING_ARG(PerformanceLogCategory), platformName.c_str());
+        m_performanceCollector = AZStd::make_unique<AZ::Debug::PerformanceCollector>(
+            logCategory,
+            performanceMetrics,
+            [](AZ::u32)
+            {
+            });
     }
 
     PhysXSystem::~PhysXSystem()
@@ -112,6 +134,7 @@ namespace PhysX
             {
                 if (scenePtr != nullptr && scenePtr->IsEnabled())
                 {
+                    AZ::Debug::ScopeDuration performanceScopeDuration(m_performanceCollector.get(), PerformanceSpecPhysXSimulationTime);
                     scenePtr->StartSimulation(timeStep);
                     scenePtr->FinishSimulation();
                 }
@@ -161,6 +184,10 @@ namespace PhysX
 
             simulateScenes(tickTime);
         }
+
+        // Flush performance data for this tick
+        m_performanceCollector->FrameTick();
+
         m_postSimulateEvent.Signal(tickTime);
     }
 
