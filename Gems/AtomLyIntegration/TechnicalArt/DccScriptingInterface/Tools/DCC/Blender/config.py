@@ -44,7 +44,7 @@ _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
 # be rewritten from ConfigClass, then BlenderConfig inherits core
 import DccScriptingInterface.config as dccsi_core_config
 
-_settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=True,
+_settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=False,
                                                        enable_o3de_pyside2=False,
                                                        set_env=True)
 
