@@ -55,7 +55,8 @@ namespace LmbrCentral
             return m_dimensions;
         }
 
-        AZ::Vector3 m_dimensions = AZ::Vector3::CreateOne(); ///< Stores the dimensions of the box along each axis.        
+        AZ::Vector3 m_dimensions = AZ::Vector3::CreateOne(); ///< Stores the dimensions of the box along each axis.
+        AZ::Vector3 m_translationOffset = AZ::Vector3::CreateZero(); ///< Translation offset from the entity position.
     };
 
     /// Services provided by the Box Shape Component

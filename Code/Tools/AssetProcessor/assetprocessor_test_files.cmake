@@ -17,7 +17,6 @@ set(FILES
     testdata/EmptyDummyProject/AssetProcessorGamePlatformConfig.setreg
     testdata/DummyProject/AssetProcessorGamePlatformConfig.setreg
     native/tests/AssetProcessorTest.h
-    native/tests/AssetProcessorTest.cpp
     native/tests/BaseAssetProcessorTest.h
     native/tests/assetdatabase/AssetDatabaseTest.cpp
     native/tests/resourcecompiler/RCControllerTest.cpp
@@ -87,8 +86,8 @@ set(FILES
     native/unittests/PlatformConfigurationUnitTests.cpp
     native/unittests/RCcontrollerUnitTests.cpp
     native/unittests/RCcontrollerUnitTests.h
-    native/unittests/UnitTestRunner.cpp
-    native/unittests/UnitTestRunner.h
+    native/unittests/UnitTestUtils.cpp
+    native/unittests/UnitTestUtils.h
     native/unittests/UtilitiesUnitTests.cpp
     native/unittests/AssetRequestHandlerUnitTests.cpp
     native/unittests/AssetRequestHandlerUnitTests.h
