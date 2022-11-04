@@ -29,16 +29,30 @@ namespace AzToolsFramework
         AZ::ConsoleFunctorFlags::Null,
         "The amount to increase / decrease the paintbrush size in meters.");
 
+    AZ_CVAR(
+        float,
+        ed_paintBrushHardnessPercentAdjustAmount,
+        5.0f,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "The amount to increase / decrease the paintbrush hardness in percent (0 - 100).");
+
     namespace
     {
         static constexpr AZ::Crc32 PaintbrushIncreaseSize = AZ_CRC_CE("org.o3de.action.paintbrush.increase_size");
         static constexpr AZ::Crc32 PaintbrushDecreaseSize = AZ_CRC_CE("org.o3de.action.paintbrush.decrease_size");
+        static constexpr AZ::Crc32 PaintbrushIncreaseHardness = AZ_CRC_CE("org.o3de.action.paintbrush.increase_hardness_percent");
+        static constexpr AZ::Crc32 PaintbrushDecreaseHardness = AZ_CRC_CE("org.o3de.action.paintbrush.decrease_hardness_percent");
 
         static constexpr const char* PaintbrushIncreaseSizeTitle = "Increase Size";
         static constexpr const char* PaintbrushDecreaseSizeTitle = "Decrease Size";
+        static constexpr const char* PaintbrushIncreaseHardnessTitle = "Increase Hardness Percent";
+        static constexpr const char* PaintbrushDecreaseHardnessTitle = "Decrease Hardness Percent";
 
         static constexpr const char* PaintbrushIncreaseSizeDesc = "Increases size of paintbrush";
         static constexpr const char* PaintbrushDecreaseSizeDesc = "Decreases size of paintbrush";
+        static constexpr const char* PaintbrushIncreaseHardnessDesc = "Increases paintbrush hardness";
+        static constexpr const char* PaintbrushDecreaseHardnessDesc = "Decreases paintbrush hardness";
     } // namespace
 
     AZStd::shared_ptr<PaintBrushManipulator> PaintBrushManipulator::MakeShared(
@@ -509,6 +523,58 @@ namespace AzToolsFramework
         PaintBrushSettingsRequestBus::Broadcast(&PaintBrushSettingsRequestBus::Events::SetColor, brushColor);
     }
 
+    AZStd::vector<float> PaintBrushManipulator::CalculateGaussianWeights(size_t smoothingRadius)
+    {
+        // The Gaussian function is G(x, y) = (1 / 2*pi*sigma^2) * e^(-(x^2 + y^2) / (2*sigma^2)).
+        // This function produces a bell curve symmetric around the origin, where (1 / 2*pi*sigma^2) is the height of the peak,
+        // and sigma (the standard deviation) controls the width of the peak.
+        // x and y are the relative distances from the center.
+
+        // This will contain all of the Gaussian weights that we compute and return.
+        AZStd::vector<float> gaussianWeights;
+
+        // We track the sum of all the weights so that we can normalize them at the end.
+        float sum = 0.0f;
+
+        // Keep a floating-point version of this so that we don't have to do int/float conversions in our loops below.
+        const float radius = aznumeric_cast<float>(smoothingRadius);
+
+        // In practice, only pixels within a distance of 3 * sigma affect the result, so we'll pick a sigma that's 1/3 of the distance
+        // in each direction.
+        const float sigma = AZStd::max(smoothingRadius / 3.0f, 1.0f);
+
+        // We can precompute the peakHeight and expConstant terms outside of the loop.
+        const float peakHeight = (1.0f / (AZ::Constants::TwoPi * sigma * sigma));
+        const float expConstant = -1.0f / (2.0f * sigma * sigma);
+
+        // Preallocate space for all our weights.
+        size_t kernelSize = (smoothingRadius * 2) + 1;
+        gaussianWeights.reserve(kernelSize * kernelSize);
+
+        // Compute the Gaussian weights for each point spreading outward from the origin.
+        // The order in which we compute this is important, because we'll expect the pixel values that we're smoothing to have been
+        // gathered in the same order.
+        for (float y = -radius; y <= radius; y++)
+        {
+            for (float x = -radius; x <= radius; x++)
+            {
+                float kernelValue = peakHeight * AZStd::exp(expConstant * ((x * x) + (y * y)));
+                sum += kernelValue;
+
+                gaussianWeights.emplace_back(kernelValue);
+            }
+        }
+
+        // Normalize all the values.
+        AZStd::transform(gaussianWeights.begin(), gaussianWeights.end(), gaussianWeights.begin(),
+            [sum](float value)
+            {
+                return value / sum;
+            });
+
+        return gaussianWeights;
+    }
+
     void PaintBrushManipulator::PerformSmoothAction(
         const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings, bool isFirstBrushStrokePoint)
     {
@@ -534,36 +600,63 @@ namespace AzToolsFramework
             });
 
 
-        // Set the smoothing function to use a Gaussian blur.
+        // The smoothing radius tells us the number of pixels in each direction to use,
+        // so the kernelSize (the N x N size for the box of pixels) is (radius + center pixel + radius) in size.
+        size_t smoothingRadius = brushSettings.GetSmoothingRadius();
+        size_t kernelSize = (smoothingRadius * 2) + 1;
+
+        // Even though this is only used by the Gaussian smoothing mode, it's declared outside the switch statement
+        // so that it will have a lifetime that lasts throughout the OnSmooth call.
+        AZStd::vector<float> gaussianWeights;
+
+        // Using our brush settings, compute the relative world-space offsets for each value that we'll want to fetch.
+        AZStd::vector<AZ::Vector3> valuePointOffsets;
+        valuePointOffsets.reserve(kernelSize * kernelSize);
+
+        // Our smoothing spacing setting describes how many values to skip. The "+ 1" is so that we're instead describing
+        // how much to increment our location for each value.
+        const float spacing = aznumeric_cast<float>(brushSettings.GetSmoothingSpacing()) + 1.0f;
+
+        // This describes our spaced-out range of relative positions from the center value.
+        const float range = aznumeric_cast<float>(smoothingRadius) * spacing;
+
+        // Calculate our list of relative position offsets that the component mode will use to look up all the adjacent values that
+        // the smoothFn is expecting. 
+        for (float_t y = -range; y <= range; y += spacing)
+        {
+            for (float_t x = -range; x <= range; x += spacing)
+            {
+                valuePointOffsets.emplace_back(x, y, 0.0f);
+            }
+        }
+
+        // Select the appropriate smoothing function.
 
         PaintBrushNotifications::SmoothFn smoothFn;
-        size_t kernelSize = 1;
 
         switch (brushSettings.GetSmoothMode())
         {
         case AzToolsFramework::PaintBrushSmoothMode::Gaussian:
-            // We'll use a 3x3 kernel for Gaussian smoothing
-            kernelSize = 3;
-            smoothFn = [](float baseValue, AZStd::span<float> kernelValues, float opacity) -> float
+            gaussianWeights = CalculateGaussianWeights(brushSettings.GetSmoothingRadius());
+
+            smoothFn = [&gaussianWeights](float baseValue, AZStd::span<float> kernelValues, float opacity) -> float
             {
-                AZ_Assert(kernelValues.size() == 9, "Invalid number of points to smooth.");
+                AZ_Assert(kernelValues.size() == gaussianWeights.size(), "Invalid number of points to smooth.");
 
-                // Calculate a weighted Gaussian average value from the neighborhood of values surrounding (and including) the baseValue.
-                constexpr float gaussianMultipliers[] = { 1.0f, 2.0f, 1.0f, 2.0f, 4.0f, 2.0f, 1.0f, 2.0f, 1.0f };
-                constexpr float gaussianDivisor = 16.0f;
-
+                // Calculate a weighted Gaussian average value from the neighborhood of values surrounding (and including) the
+                // baseValue.
+                // Note that this makes the assumption that the kernelValues are stored sequentially in row order.
                 float smoothedValue = 0.0f;
                 for (size_t index = 0; index < kernelValues.size(); index++)
                 {
-                    smoothedValue += (kernelValues[index] * gaussianMultipliers[index]);
+                    smoothedValue += (kernelValues[index] * gaussianWeights[index]);
                 }
 
-                return AZStd::clamp(AZStd::lerp(baseValue, smoothedValue / gaussianDivisor, opacity), 0.0f, 1.0f);
+                return AZStd::clamp(AZStd::lerp(baseValue, smoothedValue, opacity), 0.0f, 1.0f);
             };
             break;
         case AzToolsFramework::PaintBrushSmoothMode::Mean:
             // We'll use a 3x3 kernel, but any kernel size here would work.
-            kernelSize = 3;
             smoothFn = [](float baseValue, AZStd::span<float> kernelValues, float opacity) -> float
             {
                 // Calculate the average value from the neighborhood of values surrounding (and including) the baseValue.
@@ -577,32 +670,30 @@ namespace AzToolsFramework
             };
             break;
         case AzToolsFramework::PaintBrushSmoothMode::Median:
-            kernelSize = 3;
             smoothFn = [](float baseValue, AZStd::span<float> kernelValues, float opacity) -> float
             {
-                AZ_Assert(kernelValues.size() == 9, "Invalid number of points to smooth.");
-
                 // Find the middle value from the neighborhood of values surrounding (and including) the baseValue.
-                AZStd::vector<float> sortedValues(kernelValues.begin(), kernelValues.end());
-                AZStd::sort(sortedValues.begin(), sortedValues.end());
-
-                float medianValue = sortedValues[4];
+                // This will change the order of the values in kernelValues!
+                AZStd::nth_element(kernelValues.begin(), kernelValues.begin() + (kernelValues.size() / 2), kernelValues.end());
+                float medianValue = kernelValues[kernelValues.size() / 2];
 
                 return AZStd::clamp(AZStd::lerp(baseValue, medianValue, opacity), 0.0f, 1.0f);
             };
             break;
         }
 
-
         // Trigger the OnSmooth notification. Provide the listener with the strokeRegion to describe the general area of the paint stroke,
-        // the valueLookupFn to find out the paint brush values at specific world positions, the kernelSize to describe how many values
-        // to smooth, and the smoothFn to perform smoothing operations based on the provided base and paint brush values.
+        // the valueLookupFn to find out the paint brush values at specific world positions, the valuePointOffsets to describe
+        // which relative values to gather for smoothing, and the smoothFn to perform smoothing operations based on the provided
+        // base value, adjacent values, and paint brush settings.
         PaintBrushNotificationBus::Event(
-            m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnSmooth, strokeRegion, valueLookupFn, kernelSize, smoothFn);
+            m_ownerEntityComponentId,
+            &PaintBrushNotificationBus::Events::OnSmooth,
+            strokeRegion,
+            valueLookupFn,
+            valuePointOffsets,
+            smoothFn);
     }
-
-
-
 
     AZStd::vector<AzToolsFramework::ActionOverride> PaintBrushManipulator::PopulateActionsImpl()
     {
@@ -630,6 +721,28 @@ namespace AzToolsFramework
                     {
                         AdjustSize(-ed_paintBrushSizeAdjustAmount);
                     }),
+            AzToolsFramework::ActionOverride()
+                .SetUri(PaintbrushIncreaseHardness)
+                .SetKeySequence(QKeySequence{ Qt::Key_BraceRight })
+                .SetTitle(PaintbrushIncreaseHardnessTitle)
+                .SetTip(PaintbrushIncreaseHardnessDesc)
+                .SetEntityComponentIdPair(m_ownerEntityComponentId)
+                .SetCallback(
+                    [this]()
+                    {
+                        AdjustHardnessPercent(ed_paintBrushHardnessPercentAdjustAmount);
+                    }),
+            AzToolsFramework::ActionOverride()
+                .SetUri(PaintbrushDecreaseHardness)
+                .SetKeySequence(QKeySequence{ Qt::Key_BraceLeft })
+                .SetTitle(PaintbrushDecreaseHardnessTitle)
+                .SetTip(PaintbrushDecreaseHardnessDesc)
+                .SetEntityComponentIdPair(m_ownerEntityComponentId)
+                .SetCallback(
+                    [this]()
+                    {
+                        AdjustHardnessPercent(-ed_paintBrushHardnessPercentAdjustAmount);
+                    }),
         };
     }
 
@@ -639,6 +752,14 @@ namespace AzToolsFramework
         PaintBrushSettingsRequestBus::BroadcastResult(diameter, &PaintBrushSettingsRequestBus::Events::GetSize);
         diameter = AZStd::clamp(diameter + sizeDelta, 0.0f, 1024.0f);
         PaintBrushSettingsRequestBus::Broadcast(&PaintBrushSettingsRequestBus::Events::SetSize, diameter);
+    }
+
+    void PaintBrushManipulator::AdjustHardnessPercent(float hardnessPercentDelta)
+    {
+        float hardnessPercent = 0.0f;
+        PaintBrushSettingsRequestBus::BroadcastResult(hardnessPercent, &PaintBrushSettingsRequestBus::Events::GetHardnessPercent);
+        hardnessPercent = AZStd::clamp(hardnessPercent + hardnessPercentDelta, 0.0f, 100.0f);
+        PaintBrushSettingsRequestBus::Broadcast(&PaintBrushSettingsRequestBus::Events::SetHardnessPercent, hardnessPercent);
     }
 
 } // namespace AzToolsFramework

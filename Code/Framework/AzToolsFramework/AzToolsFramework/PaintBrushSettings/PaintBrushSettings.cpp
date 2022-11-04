@@ -61,7 +61,7 @@ namespace AzToolsFramework
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<PaintBrushSettings>()
-                ->Version(5)
+                ->Version(6)
                 ->Field("BrushMode", &PaintBrushSettings::m_brushMode)
                 ->Field("Size", &PaintBrushSettings::m_size)
                 ->Field("Color", &PaintBrushSettings::m_brushColor)
@@ -71,6 +71,8 @@ namespace AzToolsFramework
                 ->Field("Flow", &PaintBrushSettings::m_flowPercent)
                 ->Field("DistancePercent", &PaintBrushSettings::m_distancePercent)
                 ->Field("BlendMode", &PaintBrushSettings::m_blendMode)
+                ->Field("SmoothingRadius", &PaintBrushSettings::m_smoothingRadius)
+                ->Field("SmoothingSpacing", &PaintBrushSettings::m_smoothingSpacing)
                 ->Field("SmoothMode", &PaintBrushSettings::m_smoothMode)
                 ;
 
@@ -160,6 +162,18 @@ namespace AzToolsFramework
                         ->Attribute(AZ::Edit::Attributes::Suffix, " %")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetDistanceVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_smoothingRadius, "Smoothing Radius",
+                        "The number of pixels in each direction to use for smoothing calculations")
+                        ->Attribute(AZ::Edit::Attributes::Min, MinSmoothingRadius)
+                        ->Attribute(AZ::Edit::Attributes::Max, MaxSmoothingRadius)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetSmoothingRadiusVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_smoothingSpacing, "Smoothing Spacing",
+                        "The number of pixels to skip between each pixel used for smoothing calculations")
+                        ->Attribute(AZ::Edit::Attributes::Min, MinSmoothingSpacing)
+                        ->Attribute(AZ::Edit::Attributes::Max, MaxSmoothingSpacing)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetSmoothingSpacingVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox, &PaintBrushSettings::m_blendMode, "Blend Mode", "Blend mode of the brush stroke.")
                         ->EnumAttribute(PaintBrushBlendMode::Normal, "Normal")
@@ -233,6 +247,16 @@ namespace AzToolsFramework
     }
 
     // The following settings are only visible in Smooth mode
+
+    bool PaintBrushSettings::GetSmoothingRadiusVisibility() const
+    {
+        return (m_brushMode == PaintBrushMode::Smooth);
+    }
+
+    bool PaintBrushSettings::GetSmoothingSpacingVisibility() const
+    {
+        return (m_brushMode == PaintBrushMode::Smooth);
+    }
 
     bool PaintBrushSettings::GetSmoothModeVisibility() const
     {
@@ -318,6 +342,18 @@ namespace AzToolsFramework
     {
         // Distance percent is *normally* 0-100%, but values above 100% are reasonable as well, so we don't clamp the upper limit.
         m_distancePercent = AZStd::max(distancePercent, 0.0f);
+        OnSettingsChanged();
+    }
+
+    void PaintBrushSettings::SetSmoothingRadius(size_t smoothingRadius)
+    {
+        m_smoothingRadius = AZStd::clamp(smoothingRadius, MinSmoothingRadius, MaxSmoothingRadius);
+        OnSettingsChanged();
+    }
+
+    void PaintBrushSettings::SetSmoothingSpacing(size_t smoothingSpacing)
+    {
+        m_smoothingSpacing = AZStd::clamp(smoothingSpacing, MinSmoothingSpacing, MaxSmoothingSpacing);
         OnSettingsChanged();
     }
 

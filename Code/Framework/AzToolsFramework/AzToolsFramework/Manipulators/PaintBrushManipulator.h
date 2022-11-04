@@ -75,6 +75,9 @@ namespace AzToolsFramework
         //! Adjusts the size of the paintbrush
         void AdjustSize(float sizeDelta);
 
+        //! Adjusts the paintbrush hardness percent
+        void AdjustHardnessPercent(float hardnessPercentDelta);
+
     private:
         //! Create the manipulator view(s) for the paintbrush.
         void SetView(
@@ -136,6 +139,9 @@ namespace AzToolsFramework
             AZStd::span<const AZ::Vector3> points,
             AZStd::vector<AZ::Vector3>& validPoints,
             AZStd::vector<float>& opacities);
+
+        //! Calculate the Gaussian weights to use for combining all the sampled pixels for the smoothing function.
+        static AZStd::vector<float> CalculateGaussianWeights(size_t smoothingRadius);
 
         AZStd::shared_ptr<ManipulatorViewProjectedCircle> m_innerCircle;
         AZStd::shared_ptr<ManipulatorViewProjectedCircle> m_outerCircle;
