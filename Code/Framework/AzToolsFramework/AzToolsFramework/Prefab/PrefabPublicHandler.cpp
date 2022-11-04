@@ -1320,9 +1320,6 @@ namespace AzToolsFramework
             // - Detach instance objects and entity objects.
             // - Update focused template DOM accordingly with undo/redo support.
 
-            const TemplateId focusedTemplateId = focusedInstance->get().GetTemplateId();
-            const TemplateId commonOwningTemplateId = commonOwningInstance->get().GetTemplateId();
-
             // Set for entity ids that will be removed. It is used for filtering out parents that won't need to be updated.
             // If we know in advance that a parent entity will be removed, we can skip updating this parent entity.
             AZStd::unordered_set<AZ::EntityId> entitiesThatWillBeRemoved;
