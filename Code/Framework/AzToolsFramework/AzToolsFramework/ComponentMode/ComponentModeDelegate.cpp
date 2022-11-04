@@ -13,6 +13,8 @@
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeDelegateNotificationBus.h>
+
 
 namespace AzToolsFramework
 {
@@ -226,7 +228,6 @@ namespace AzToolsFramework
             m_entityComponentIdPair = entityComponentIdPair;
             m_componentType = componentType;
 
-            AZ_Printf("debugging", "connect");
             AzFramework::ComponentModeDelegateNotificationBus::Broadcast(
                 &AzFramework::ComponentModeDelegateNotificationBus::Events::OnComponentModeDelegateConnect, m_entityComponentIdPair);
 
@@ -237,8 +238,6 @@ namespace AzToolsFramework
 
         void ComponentModeDelegate::Disconnect()
         {
-            //m_entityComponentIdPair;
-            AZ_Printf("debugging", "disconncet");
             AzFramework::ComponentModeDelegateNotificationBus::Broadcast(
                 &AzFramework::ComponentModeDelegateNotificationBus::Events::OnComponentModeDelegateDisconnect, m_entityComponentIdPair);
 

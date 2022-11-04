@@ -14,7 +14,7 @@
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/ViewportUi/Button.h>
-#include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeDelegateNotificationBus.h>
 
 namespace AZ
 {
@@ -102,13 +102,6 @@ namespace AzToolsFramework
             void OnEditorModeDeactivated(
                 [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
 
-            // EntityCompositionNotificationBus overrides ...
-            void OnEntityComponentAdded(const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
-            void OnEntityComponentRemoved(const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
-            //void OnEntityComponentEnabled(const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
-            //void OnEntityComponentDisabled(const AZ::EntityId& entityId, [[maybe_unused]] const AZ::ComponentId& componentId) override;
-            void OnEntityCompositionChanged(const AzToolsFramework::EntityIdList& entityIdList) override;
-
             // ToolsApplicationBus overrides ...
             void AfterEntitySelectionChanged(
                 const EntityIdList& newlySelectedEntities, const EntityIdList& newlyDeselectedEntities) override;
@@ -121,8 +114,8 @@ namespace AzToolsFramework
             void OnImGuiDeactivated() override;
 
             // ComponentModeDelegateNotificationBus overrides ...
-            void OnComponentModeDelegateConnect([[maybe_unused]] const AZ::EntityComponentIdPair& pairId) override;
-            void OnComponentModeDelegateDisconnect([[maybe_unused]] const AZ::EntityComponentIdPair& pairId) override;
+            void OnComponentModeDelegateConnect(const AZ::EntityComponentIdPair& pairId) override;
+            void OnComponentModeDelegateDisconnect(const AZ::EntityComponentIdPair& pairId) override;
 
             // Member variables
             AZ::Component* m_activeSwitcherComponent = nullptr; //!< The component that is currently in component mode

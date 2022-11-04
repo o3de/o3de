@@ -105,19 +105,4 @@ namespace AzFramework
     };
 
     using ViewportImGuiNotificationBus = AZ::EBus<ViewportImGuiNotifications>;
-
-    class ComponentModeDelegateNotifications : public AZ::EBusTraits
-    {
-    public:
-        //! Notification that the ImGui menu bar has been activated.
-        virtual void OnComponentModeDelegateConnect([[maybe_unused]] const AZ::EntityComponentIdPair& pairId)
-        {
-        }
-
-        virtual void OnComponentModeDelegateDisconnect([[maybe_unused]] const AZ::EntityComponentIdPair& pairId)
-        {
-        }
-    };
-
-    using ComponentModeDelegateNotificationBus = AZ::EBus<ComponentModeDelegateNotifications>;
 } // namespace AzFramework

@@ -14,8 +14,6 @@
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 
-#include <AzFramework/Viewport/ViewportBus.h>
-
 namespace AzToolsFramework
 {
     namespace ComponentModeFramework
