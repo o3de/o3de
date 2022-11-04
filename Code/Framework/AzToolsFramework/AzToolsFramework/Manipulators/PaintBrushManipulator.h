@@ -83,7 +83,7 @@ namespace AzToolsFramework
         //! Calculate the radius for the inner and out circles for the paintbrush manipulator views based on the given brush settings.
         //! @param settings The paint brush settings to use for calculating the two radii
         //! @return The inner radius and the outer radius for the brush manipulator views
-        AZStd::pair<float, float> GetBrushRadii(const PaintBrushSettings& settings);
+        AZStd::pair<float, float> GetBrushRadii(const PaintBrushSettings& settings) const;
 
         //! PaintBrushSettingsNotificationBus overrides...
         void OnSettingsChanged(const PaintBrushSettings& newSettings) override;

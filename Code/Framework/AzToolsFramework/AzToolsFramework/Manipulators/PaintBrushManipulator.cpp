@@ -93,7 +93,7 @@ namespace AzToolsFramework
         AzToolsFramework::CloseViewPane(PaintBrush::s_paintBrushSettingsName);
     }
 
-    AZStd::pair<float, float> PaintBrushManipulator::GetBrushRadii(const PaintBrushSettings& settings)
+    AZStd::pair<float, float> PaintBrushManipulator::GetBrushRadii(const PaintBrushSettings& settings) const
     {
         const float outerRadius = settings.GetSize() / 2.0f;
 
