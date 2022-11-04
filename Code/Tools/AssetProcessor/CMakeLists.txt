@@ -254,10 +254,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     # Have the AssetProcessorTest use the LY_CMAKE_TARGET define of AssetProcessorBatch for the purpose
     # of looking up the generated cmake build dependencies settings registry .setreg file
-    # It is tied to the UnitTestRunner.cpp file
+    # It is tied to the UnitTestUtils.cpp file
     if(TARGET AssetProcessorBatch)
         set_source_files_properties(
-            native/unittests/UnitTestRunner.cpp
+            native/unittests/UnitTestUtils.cpp
             PROPERTIES
                 COMPILE_DEFINITIONS
                     LY_CMAKE_TARGET="AssetProcessorBatch"

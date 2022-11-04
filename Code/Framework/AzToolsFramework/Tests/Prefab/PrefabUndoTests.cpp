@@ -6,15 +6,13 @@
  *
  */
 
-#include <Prefab/PrefabTestDomUtils.h>
-#include <Prefab/PrefabTestFixture.h>
-
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndo.h>
 
-#include <Prefab/PrefabUndo.h>
+#include <Prefab/PrefabTestDomUtils.h>
+#include <Prefab/PrefabTestFixture.h>
 
 namespace UnitTest
 {
@@ -78,7 +76,7 @@ namespace UnitTest
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
         // verify template updated correctly
-        //instantiate second instance for checking if propogation works
+        //instantiate second instance for checking if propagation works
         AZStd::unique_ptr<Instance> secondInstance = m_prefabSystemComponent->InstantiatePrefab(
             templateId, AZStd::nullopt,
             [](const AzToolsFramework::EntityList& entities)
