@@ -24,8 +24,7 @@ More information about the DCCsi Blender tool integration, configuration and set
 ![image](https://user-images.githubusercontent.com/23222931/200064189-c2d32414-fa62-4281-ae38-b084ee041b45.png)
 
 ## Launch Blender from the Main Editor
-
-< studio tool menu gif >
+![Editor_fYF0aCP2k5](https://user-images.githubusercontent.com/23222931/200064272-81b7921a-1909-4836-ac4e-62b6ac919245.gif)
 
 ## Enable the AddOn via Blender Prefs
 
