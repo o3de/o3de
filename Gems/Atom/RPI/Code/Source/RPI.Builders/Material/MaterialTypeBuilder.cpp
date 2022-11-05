@@ -43,7 +43,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = "Material Type Builder";
-            materialBuilderDescriptor.m_version = 5; // Material pipelines support multiple lighting models
+            materialBuilderDescriptor.m_version = 6; // Fixed shader path casing
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialTypeBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialTypeBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -558,6 +558,10 @@ namespace AZ
 
                 materialType.m_shaderCollection.push_back({});
                 materialType.m_shaderCollection.back().m_shaderFilePath = AZ::IO::Path{outputShaderFilePath.Filename()}.c_str();
+
+                // Files in the cache, including intermediate files, end up using lower case for all files and folders. We have to match this
+                // in the output .materialtype file, because the asset system's source dependencies are case-sensitive on some platforms.
+                AZStd::to_lower(materialType.m_shaderCollection.back().m_shaderFilePath.begin(), materialType.m_shaderCollection.back().m_shaderFilePath.end());
 
                 // TODO(MaterialPipeline): We should warn the user if the shader collection has multiple shaders that use the same draw list.
             }

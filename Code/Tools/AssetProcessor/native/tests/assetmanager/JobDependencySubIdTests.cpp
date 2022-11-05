@@ -7,7 +7,7 @@
  */
 
 #include <native/tests/assetmanager/JobDependencySubIdTests.h>
-#include <unittests/UnitTestRunner.h>
+#include <native/unittests/UnitTestUtils.h>
 #include <QApplication>
 
 namespace UnitTests

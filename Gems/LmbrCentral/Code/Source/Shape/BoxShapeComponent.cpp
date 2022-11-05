@@ -113,17 +113,23 @@ namespace LmbrCentral
             serializeContext->Class<BoxShapeConfig, ShapeComponentConfig>()
                 ->Version(2)
                 ->Field("Dimensions", &BoxShapeConfig::m_dimensions)
+                ->Field("TranslationOffset", &BoxShapeConfig::m_translationOffset)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<BoxShapeConfig>("Configuration", "Box shape configuration parameters")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "Shape Configuration")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &BoxShapeConfig::m_dimensions, "Dimensions", "Dimensions of the box along its axes")
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " m")
-                        ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
-                        ;
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &BoxShapeConfig::m_dimensions, "Dimensions", "Dimensions of the box along its axes")
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &BoxShapeConfig::m_translationOffset, "Translation Offset", "Translation offset of shape relative to its entity")
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &IsShapeComponentTranslationEnabled);
             }
         }
 

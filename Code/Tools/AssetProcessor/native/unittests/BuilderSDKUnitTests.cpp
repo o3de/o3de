@@ -8,7 +8,7 @@
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include <native/unittests/UnitTestRunner.h>
+#include <native/unittests/UnitTestUtils.h>
 #include <QDir>
 #include <QTemporaryDir>
 

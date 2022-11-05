@@ -8,7 +8,7 @@
 
 #include <native/tests/assetmanager/IntermediateAssetTests.h>
 #include <QCoreApplication>
-#include <native/unittests/UnitTestRunner.h>
+#include <native/unittests/UnitTestUtils.h>
 
 #include <AzFramework/IO/LocalFileIO.h>
 

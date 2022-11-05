@@ -16,7 +16,6 @@
 #include <QCoreApplication>
 #include <native/tests/assetmanager/AssetManagerTestingBase.h>
 #include <native/utilities/AssetUtilEBusHelper.h>
-#include <unittests/UnitTestRunner.h>
 
 namespace UnitTests
 {

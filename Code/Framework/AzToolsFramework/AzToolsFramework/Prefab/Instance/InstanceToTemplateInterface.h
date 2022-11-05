@@ -46,6 +46,11 @@ namespace AzToolsFramework
             //! @return The string matching the path to the entity alias
             virtual AZStd::string GenerateEntityAliasPath(AZ::EntityId entityId) = 0;
 
+            //! Generates a path to the entity matching the id from the focused prefab.
+            //! @param entityId The entity id to fetch the path for.
+            //! @return The path to the entity with the given id.
+            virtual AZ::Dom::Path GenerateEntityPathFromFocusedPrefab(AZ::EntityId entityId) = 0;
+
             //! Generates an entity alias from given entity id and prefix and then add it as path into the provided patch.
             //! @param providedPatch The patch to add entity alias path to.
             //! @param entityId The entity id to use for generating alias path.

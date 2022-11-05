@@ -110,6 +110,7 @@ namespace LmbrCentral
             serializeContext->Class<SphereShapeConfig, ShapeComponentConfig>()
                 ->Version(2)
                 ->Field("Radius", &SphereShapeConfig::m_radius)
+                ->Field("TranslationOffset", &SphereShapeConfig::m_translationOffset)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -117,10 +118,17 @@ namespace LmbrCentral
                 editContext->Class<SphereShapeConfig>("Configuration", "Sphere shape configuration parameters")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SphereShapeConfig::m_radius, "Radius", "Radius of sphere")
-                        ->Attribute(AZ::Edit::Attributes::Min, 0.f)
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " m")
-                        ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
-                        ;
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.f)
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &SphereShapeConfig::m_translationOffset,
+                        "Translation Offset",
+                        "Translation offset of shape relative to its entity")
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &IsShapeComponentTranslationEnabled);
             }
         }
 
