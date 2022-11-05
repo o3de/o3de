@@ -7,7 +7,13 @@
  */
 
 #include <EditAGemScreen.h>
+
 #include <QDir>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QStackedWidget>
+
 
 namespace O3DE::ProjectManager
 {
