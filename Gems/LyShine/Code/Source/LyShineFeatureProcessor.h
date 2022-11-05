@@ -29,5 +29,7 @@ namespace LyShine
     private:        
         // AZ::RPI::FeatureProcessor overrides...
         void AddRenderPasses(AZ::RPI::RenderPipeline* renderPipeline) override;
+
+        AZStd::unique_ptr<AZ::RPI::PassRequest> m_passRequest;
     };
 }
