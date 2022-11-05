@@ -45,8 +45,9 @@ namespace O3DE::ProjectManager
         m_indexBackLimit = GemDetailsScreen;
     }
 
-    void EditGem::HookConnections()
+    void EditGem::Init()
     {
+        //hookup connections
         connect(
             m_header->backButton(),
             &QPushButton::clicked,

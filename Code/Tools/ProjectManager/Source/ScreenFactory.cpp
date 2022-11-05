@@ -75,7 +75,7 @@ namespace O3DE::ProjectManager
         }
 
         //handle any code that needs to run after construction but before startup 
-        newScreen->HookConnections();
+        newScreen->Init();
 
         return newScreen;
     }

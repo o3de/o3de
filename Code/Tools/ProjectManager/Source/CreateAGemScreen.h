@@ -41,7 +41,7 @@ namespace O3DE::ProjectManager
             return ProjectManagerScreen::CreateGem;
         }
 
-        void HookConnections() override;
+        void Init() override;
 
     signals:
         void GemCreated(const GemInfo& gemInfo);

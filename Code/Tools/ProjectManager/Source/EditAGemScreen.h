@@ -30,7 +30,7 @@ namespace O3DE::ProjectManager
             return ProjectManagerScreen::EditGem;
         }
 
-        void HookConnections() override;
+        void Init() override;
 
     signals:
         void GemEdited(const GemInfo& newGemInfo);
