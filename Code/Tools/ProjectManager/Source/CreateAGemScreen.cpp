@@ -39,14 +39,6 @@ namespace O3DE::ProjectManager
 
         m_header = new ScreenHeader();
         m_header->setSubTitle(tr("Create a new gem"));
-        connect(
-            m_header->backButton(),
-            &QPushButton::clicked,
-            this,
-            [&]()
-            {
-                emit GoToPreviousScreenRequest();
-            });
         screenLayout->addWidget(m_header);
         
         QHBoxLayout* hLayout = new QHBoxLayout();
@@ -77,14 +69,26 @@ namespace O3DE::ProjectManager
         m_backButton->setProperty("secondary", true);
         m_nextButton = m_backNextButtons->addButton(tr("Next"), QDialogButtonBox::ApplyRole);
 
-        connect(m_backButton, &QPushButton::clicked, this, &CreateGem::HandleBackButton);
-        connect(m_nextButton, &QPushButton::clicked, this, &CreateGem::HandleNextButton);
-
         setObjectName("createAGemBody");
         setLayout(screenLayout);
 
         m_gemActionString = tr("Create");
         m_indexBackLimit = GemTemplateSelectionScreen;
+    }
+
+    void CreateGem::HookConnections()
+    {
+        connect(
+            m_header->backButton(),
+            &QPushButton::clicked,
+            this,
+            [&]()
+            {
+                emit GoToPreviousScreenRequest();
+            });
+        
+        connect(m_backButton, &QPushButton::clicked, this, &CreateGem::HandleBackButton);
+        connect(m_nextButton, &QPushButton::clicked, this, &CreateGem::HandleNextButton);
     }
 
     QFrame* CreateGem::CreateTabButtonsFrame()
@@ -354,6 +358,11 @@ namespace O3DE::ProjectManager
         return gemSystemNameIsValid;
     }
 
+    bool CreateGem::ValidateGemLocation(const QDir& chosenGemLocation) const
+    {
+        return !chosenGemLocation.exists() || chosenGemLocation.isEmpty();
+    }
+
     bool CreateGem::ValidateGemPath()
     {
         // This first isEmpty check is to check that the input field is not empty. If it is QDir will use the current
@@ -435,15 +444,15 @@ namespace O3DE::ProjectManager
         
         if (canProceedToDetailsPage)
         {
-            m_focalGemInfo.m_displayName = m_gemDisplayName->lineEdit()->text();
-            m_focalGemInfo.m_name = m_gemName->lineEdit()->text();
-            m_focalGemInfo.m_summary = m_gemSummary->lineEdit()->text();
-            m_focalGemInfo.m_requirement = m_requirements->lineEdit()->text();
-            m_focalGemInfo.m_licenseText = m_license->lineEdit()->text();
-            m_focalGemInfo.m_licenseLink = m_licenseURL->lineEdit()->text();
-            m_focalGemInfo.m_documentationLink = m_documentationURL->lineEdit()->text();
-            m_focalGemInfo.m_path = m_gemLocation->lineEdit()->text();
-            m_focalGemInfo.m_features = m_userDefinedGemTags->getTags();
+            m_gemInfo.m_displayName = m_gemDisplayName->lineEdit()->text();
+            m_gemInfo.m_name = m_gemName->lineEdit()->text();
+            m_gemInfo.m_summary = m_gemSummary->lineEdit()->text();
+            m_gemInfo.m_requirement = m_requirements->lineEdit()->text();
+            m_gemInfo.m_licenseText = m_license->lineEdit()->text();
+            m_gemInfo.m_licenseLink = m_licenseURL->lineEdit()->text();
+            m_gemInfo.m_documentationLink = m_documentationURL->lineEdit()->text();
+            m_gemInfo.m_path = m_gemLocation->lineEdit()->text();
+            m_gemInfo.m_features = m_userDefinedGemTags->getTags();
 
             m_stackWidget->setCurrentIndex(GemCreatorDetailsScreen);
             
@@ -466,11 +475,11 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            int templateID = m_radioButtonGroup->checkedId();
+            const int templateID = m_radioButtonGroup->checkedId();
             templateLocation = m_gemTemplates[templateID].m_path;
         }
 
-        auto result = PythonBindingsInterface::Get()->CreateGem(templateLocation, m_focalGemInfo);
+        auto result = PythonBindingsInterface::Get()->CreateGem(templateLocation, m_gemInfo);
         if (result.IsSuccess())
         {
             ClearFields();
@@ -493,9 +502,9 @@ namespace O3DE::ProjectManager
         bool repoURLIsValid = ValidateRepositoryURL();
         if (originIsValid && repoURLIsValid)
         {
-            m_focalGemInfo.m_origin = m_origin->lineEdit()->text();
-            m_focalGemInfo.m_originURL = m_originURL->lineEdit()->text();
-            m_focalGemInfo.m_repoUri = m_repositoryURL->lineEdit()->text();
+            m_gemInfo.m_origin = m_origin->lineEdit()->text();
+            m_gemInfo.m_originURL = m_originURL->lineEdit()->text();
+            m_gemInfo.m_repoUri = m_repositoryURL->lineEdit()->text();
             
 
             GemAction();

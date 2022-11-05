@@ -17,8 +17,6 @@
 #include <GemCatalog/GemInfo.h>
 #include <PythonBindings.h>
 #include <ScreenHeaderWidget.h>
-#include <ScreenDefs.h>
-#include <QDir>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QButtonGroup)
@@ -38,12 +36,12 @@ namespace O3DE::ProjectManager
         explicit CreateGem(QWidget* parent = nullptr);
         ~CreateGem() = default;
 
-        void ClearFields();
-
         ProjectManagerScreen GetScreenEnum() override
         {
             return ProjectManagerScreen::CreateGem;
         }
+
+        void HookConnections() override;
 
     signals:
         void GemCreated(const GemInfo& gemInfo);
@@ -59,24 +57,11 @@ namespace O3DE::ProjectManager
         void HandleGemCreatorDetailsTab();
 
     protected:
-        bool ValidateGemTemplateLocation();
-        bool ValidateGemDisplayName();
-        bool ValidateGemName();
-        bool ValidateGemPath();
-        bool ValidateFormNotEmpty(FormLineEditWidget* form);
-        bool ValidateRepositoryURL();
-        
-        void ProceedToGemDetailsPage();
-        void ProceedToGemCreatorDetailsPage();
-        void ProceedToGemAction();
+        void ClearFields();
 
         virtual void GemAction();
 
-        virtual bool ValidateGemLocation(QDir chosenGemLocation)
-        {
-            return !chosenGemLocation.exists() || chosenGemLocation.isEmpty();
-        }
-
+        virtual bool ValidateGemLocation(const QDir& chosenGemLocation) const;
 
         //Gem Setup
         QVector<TemplateInfo> m_gemTemplates;
@@ -114,7 +99,7 @@ namespace O3DE::ProjectManager
         QRadioButton* m_gemDetailsTab = nullptr;
         QRadioButton* m_gemCreatorDetailsTab = nullptr;
 
-        GemInfo m_focalGemInfo;
+        GemInfo m_gemInfo;
 
         static constexpr int GemTemplateSelectionScreen = 0;
         static constexpr int GemDetailsScreen = 1;
@@ -132,6 +117,16 @@ namespace O3DE::ProjectManager
         QFrame* CreateTabButtonsFrame();
         QFrame* CreateTabPaneFrame();
         void SetupCreateWorkflow();
-        
+
+        void ProceedToGemDetailsPage();
+        void ProceedToGemCreatorDetailsPage();
+        void ProceedToGemAction();
+
+        bool ValidateGemTemplateLocation();
+        bool ValidateGemDisplayName();
+        bool ValidateGemName();
+        bool ValidateGemPath();
+        bool ValidateFormNotEmpty(FormLineEditWidget* form);
+        bool ValidateRepositoryURL();
     };
 } // namespace O3DE::ProjectManager

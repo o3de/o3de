@@ -10,6 +10,8 @@
 
 #if !defined(Q_MOC_RUN)
 #include <CreateAGemScreen.h>
+
+QT_FORWARD_DECLARE_CLASS(QDir)
 #endif
 
 namespace O3DE::ProjectManager
@@ -28,20 +30,17 @@ namespace O3DE::ProjectManager
             return ProjectManagerScreen::EditGem;
         }
 
+        void HookConnections() override;
+
     signals:
         void GemEdited(const GemInfo& newGemInfo);
         
     private: 
         void GemAction() override;
 
-        bool ValidateGemLocation(QDir chosenGemLocation) override
-        {
-            return chosenGemLocation.exists();
-        }
+        bool ValidateGemLocation(const QDir& chosenGemLocation) const override;
 
-        //Edit Gem workflow
-        bool m_isEditGem = false;
-        GemInfo m_oldGemInfo;
+        QString m_oldGemName;
 
     };
 

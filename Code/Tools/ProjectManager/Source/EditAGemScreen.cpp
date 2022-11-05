@@ -7,6 +7,7 @@
  */
 
 #include <EditAGemScreen.h>
+#include <QDir>
 
 namespace O3DE::ProjectManager
 {
@@ -14,29 +15,8 @@ namespace O3DE::ProjectManager
     EditGem::EditGem(QWidget* parent)
         : CreateGem(parent)
     {
-        //undo the connections of the parent class
-        m_header->backButton()->disconnect();
-        m_backButton->disconnect();
-        m_nextButton->disconnect();
-
         m_header->setSubTitle(tr("Edit gem"));
-        
-        connect(
-            m_header->backButton(),
-            &QPushButton::clicked,
-            this,
-            [&]()
-            {
-                //if previously editing a gem, cancel the operation and revert to old creation workflow
-                //this way we prevent accidental stale data for an already existing gem.
-                ClearFields();
-                emit GoToPreviousScreenRequest();
-            });
-        
-        connect(m_backButton, &QPushButton::clicked, this, &EditGem::HandleBackButton);
-        connect(m_nextButton, &QPushButton::clicked, this, &EditGem::HandleNextButton);
-
-        
+           
         //we will only have two pages: details page and creator details page
         m_gemTemplateSelectionTab->setChecked(false);
         m_gemTemplateSelectionTab->setVisible(false);
@@ -57,6 +37,31 @@ namespace O3DE::ProjectManager
 
         m_gemActionString = tr("Edit");
         m_indexBackLimit = GemDetailsScreen;
+    }
+
+    void EditGem::HookConnections()
+    {
+        connect(
+            m_header->backButton(),
+            &QPushButton::clicked,
+            this,
+            [&]()
+            {
+                // if previously editing a gem, cancel the operation and revert to old creation workflow
+                // this way we prevent accidental stale data for an already existing gem.
+                ClearFields();
+                emit GoToPreviousScreenRequest();
+            });
+
+        connect(m_backButton, &QPushButton::clicked, this, &EditGem::HandleBackButton);
+        connect(m_nextButton, &QPushButton::clicked, this, &EditGem::HandleNextButton);
+
+     
+    }
+
+    bool EditGem::ValidateGemLocation(const QDir& chosenGemLocation) const
+    {
+        return chosenGemLocation.exists();
     }
 
     void EditGem::ResetWorkflow(const GemInfo& oldGemInfo)
@@ -95,7 +100,7 @@ namespace O3DE::ProjectManager
         m_originURL->lineEdit()->setText(oldGemInfo.m_originURL);
         m_repositoryURL->lineEdit()->setText(oldGemInfo.m_repoUri);
 
-        m_oldGemInfo = oldGemInfo;
+        m_oldGemName = oldGemInfo.m_name;
     }
 
 
@@ -104,12 +109,12 @@ namespace O3DE::ProjectManager
     {
         //during editing, we remove the gem name tag to prevent the user accidentally altering it
         //so add it back here before submission
-        if(!m_focalGemInfo.m_features.contains(m_focalGemInfo.m_name))
+        if(!m_gemInfo.m_features.contains(m_gemInfo.m_name))
         {
-            m_focalGemInfo.m_features << m_focalGemInfo.m_name;
+            m_gemInfo.m_features << m_gemInfo.m_name;
         }
 
-        auto result = PythonBindingsInterface::Get()->EditGem(m_oldGemInfo.m_name, m_focalGemInfo);
+        auto result = PythonBindingsInterface::Get()->EditGem(m_oldGemName, m_gemInfo);
         if(result.IsSuccess())
         {
             ClearFields();

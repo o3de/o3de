@@ -74,6 +74,9 @@ namespace O3DE::ProjectManager
             newScreen = new ScreenWidget(parent);
         }
 
+        //handle any code that needs to run after construction but before startup 
+        newScreen->HookConnections();
+
         return newScreen;
     }
 } // namespace O3DE::ProjectManager

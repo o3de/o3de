@@ -654,16 +654,14 @@ namespace O3DE::ProjectManager
     {
         if (m_screensControl)
         {
-            ScreenWidget* editGemScreen = m_screensControl->FindScreen(ProjectManagerScreen::EditGem);
+            auto editGemScreen = qobject_cast<EditGem*>(m_screensControl->FindScreen(ProjectManagerScreen::EditGem));
             if (editGemScreen)
             {
-                auto editGem = qobject_cast<EditGem*>(editGemScreen);
                 m_curEditedIndex = currentModelIndex;
-                editGem->ResetWorkflow(m_gemModel->GetGemInfo(currentModelIndex));
+                editGemScreen->ResetWorkflow(m_gemModel->GetGemInfo(currentModelIndex));
                 emit ChangeScreenRequest(ProjectManagerScreen::EditGem);
             }
         }
-        
     }
 
     void GemCatalogScreen::UpdateAndShowGemCart(QWidget* cartWidget)
