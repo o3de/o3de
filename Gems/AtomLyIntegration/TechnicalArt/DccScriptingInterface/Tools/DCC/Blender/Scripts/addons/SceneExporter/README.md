@@ -1,14 +1,6 @@
-"""
-Copyright (c) Contributors to the Open 3D Engine Project.
-For complete copyright and license terms please see the LICENSE at the root of this distribution.
-
-SPDX-License-Identifier: Apache-2.0 OR MIT
-"""
-
-# -------------------------------------------------------------------------
+# O3DE Blender, Scene Exporter AddOn
 
 This folder contains the Blender O3DE Scene Exporter Plugin (DCCsi) for O3DE
-# The O3DE Scene Exporter DCC Tool for Blender
 
 ![SciFiDockSmall](https://user-images.githubusercontent.com/87207603/175056100-d8dc00fa-5795-4a46-b1ab-724c25fb1604.gif)
 
@@ -16,7 +8,33 @@ The O3DE Scene Exporter is a Blender plugin for Customers using Blender as a 3D 
 
 # Create Export, Iterate Export, and Repeat.
 
-We often don’t hit our targets on the first time. The creative process is very iterative and has lots of repetition of the same steps over and over again until our vision is completed. With Digital Content Creation tools, we can help make this process much smoother, speeding steps up or completely removing them, giving time back to be creative.
+We often don’t hit our targets on the first time. The creative process is very iterative and has lots of repetition of the same steps over and over again until our vision is completed. With Digital Content Creation tools, we can help make this process much smother, speeding steps up or completely removing them, giving time back to be creative.
+
+# Getting Started
+
+Although it is not a hard requirement, you can enable the DccScriptingInterface Gem (DCCsi) with your O3DE Project (using the o3de.exe project manager).  This includes a tool integration with Blender, this provides and out-of-box developer experience for creating python scripts, tools and other addons. Once the DccScriptingInterface Gem is enabled in your project via the Project Manager, then build your project (DCCsi python bootstrapping will require the project to be built.) [Adding and Removing Gems in a Project - Open 3D Engine](https://www.o3de.org/docs/user-guide/project-config/add-remove-gems/)
+
+With the DCCsi enabled, you can launch Blender from the main O3DE Editor, and Blender will start in a managed way (configuration and settings) and this addon can be enabled in the preferences (without requiring a manual install, although you can still do that also)
+
+More information about DCC tool integrations and setup can be found here in the[DccScriptingInterface Readme](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md)
+
+More information about the DCCsi Blender tool integration, configuration and setup, can be found here in the: [Blender Readme](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Tools/DCC/Blender/readme.md)
+
+## Installing the DccScriptingInterface Gem
+
+![image](https://user-images.githubusercontent.com/23222931/200064189-c2d32414-fa62-4281-ae38-b084ee041b45.png)
+
+## Launch Blender from the Main Editor
+
+![Editor_fYF0aCP2k5](https://user-images.githubusercontent.com/23222931/200064272-81b7921a-1909-4836-ac4e-62b6ac919245.gif)
+
+## Enable the AddOn via Blender Prefs
+
+![blender_T6xHTOTS7k](https://user-images.githubusercontent.com/23222931/200065171-a9e1d802-7a94-4273-bd00-03421fcbfd17.gif)
+
+## Accessing the O3DE Scene Exporter Tool
+
+![blender_uZhsuDbmuU](https://user-images.githubusercontent.com/23222931/200066094-63be4232-d92c-41e5-a9ef-a226c74d2b77.gif)
 
 # Project Asset Organization with O3DE Projects and Custom Project Paths.
 
@@ -42,10 +60,11 @@ O3DE User Defined Properties meta data in our DCCs tools helps speeds up the ite
 ![image](https://user-images.githubusercontent.com/87207603/191542498-1272b606-944d-4d5d-821e-29e5d73d7d48.png)
 
 Above, An Example of a Tree exported with Multiple Levels of UDP LODs o3de_atom_lod
-  
+
 More on O3DE User Defined Properties https://docs.o3de.org/blog/posts/blog-udp/
 
 # O3DE Actor, Skin Attachments, and Animation Exports
+
 Selected your mesh, Animation Options, and EXPORT TO O3DE! The plugin will look at the whole connected tree and export your Rig with Animation to o3de. This speeds up the iterative tweaks that are needed to have Skin Weights and Animation Motions look their best.
 
 ![image](https://user-images.githubusercontent.com/87207603/191542958-53242cc0-8da7-443d-b75a-9ea0bf80b7e1.png)
@@ -58,8 +77,8 @@ Bring it all together, an Actor that is Animating in O3DE with Skin Attachments 
 
 ![Base_Planet_3](https://user-images.githubusercontent.com/87207603/191543321-92168c58-bc68-40b4-b7a0-bdfbe42ea129.gif)
 
-
 # Deep Dive into the feature details.
+
 The O3DE Tools Panel will have an easy ABC order of workflow. 
 
 ![image](https://user-images.githubusercontent.com/87207603/191543676-05688ac1-d689-40cb-b02f-22cf6f8901d8.png)
@@ -129,15 +148,15 @@ This option will show up when selecting more than one mesh. You can export a sin
 
 **Export as Quads or Triangles:**
 
-This option will export your FBX in Quads or Triangles. This is non-destrutive to your Blender Model. This is good when **NGONs** might be an issue.
+This option will export your FBX in Quads or Triangles. This is non-destructive to your Blender Model. This is good when **NGONs** might be an issue.
 
 # E: EXPORT FILE
 
-When all the requirements are met for an export, the export button will be unlocked. Clicking the export button will send your assets to the selected o3de project path with a custom export filename for the asset. If you wish to export multi-able files at once, they will use the assets object name when exported.
+When all the requirements are met for an export, the export button will be unlocked, click this will send your assets to the selected o3de project path. A custom export filename for the asset. If you wish to export multi-able files at once, they will use the assets object name when exported.
 
 ![image](https://user-images.githubusercontent.com/87207603/191545003-1296a19b-e66d-4d02-a88f-396ec16478d3.png)
 
-# THE PREFLIGHT REPORT CARD  
+# THE PREFLIGHT REPORT CARD
 
 When exporting your selected model, the In the scene export Preflight tool will give you a quick diagnostic of your file and common issues it may have when importing into O3DE.
 
@@ -156,28 +175,15 @@ When exporting your selected model, the In the scene export Preflight tool will 
 **Warning, Your Scene is set to Feet. However O3DE units are in Meters.**
 
 # INSTALL PLUGIN MANUALLY:
+
 To install, simply zip the SceneExporter folder and import as a Blender Plugin. This is the same process of any Blender Plugin.
 ![image](https://user-images.githubusercontent.com/87207603/191545265-91b1cbff-fd23-4bfc-be3b-5357f4c77449.png)
 
 ![InstallPlugin](https://user-images.githubusercontent.com/87207603/191545430-1033c1e5-b195-4cd0-8c1a-864d91ebe487.gif)
 
+----
 
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+SPDX-License-Identifier: Apache-2.0 OR MIT
