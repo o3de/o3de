@@ -406,7 +406,7 @@ namespace GraphModelIntegration
         //    That's why we loop through SlotDefinitions instead of the actual Slots, which are stored in a map.
         for (SlotDefinitionPtr slotDefinition : node->GetSlotDefinitions())
         {
-            if (!slotDefinition->SupportsEditingOnNode())
+            if (!slotDefinition->IsVisibleOnNode())
             {
                 continue;
             }
@@ -1278,7 +1278,7 @@ namespace GraphModelIntegration
 
     GraphCanvas::NodePropertyDisplay* GraphController::CreateSlotPropertyDisplay(GraphModel::SlotPtr inputSlot) const
     {
-        if (!inputSlot || !inputSlot->SupportsEditingOnNode())
+        if (!inputSlot || !inputSlot->IsVisibleOnNode() || !inputSlot->IsEditableOnNode())
         {
             return nullptr;
         }

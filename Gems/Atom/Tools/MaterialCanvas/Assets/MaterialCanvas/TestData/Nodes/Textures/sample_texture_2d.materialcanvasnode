@@ -22,7 +22,8 @@
                     "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
                     "Value": ""
                 },
-                "supportsEditingOnNode": false
+                "visibleOnNode": false,
+                "editableOnNode": false
             },
             {
                 "name": "inName",
@@ -45,7 +46,8 @@
                     "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
                     "Value": ""
                 },
-                "supportsEditingOnNode": false
+                "visibleOnNode": false,
+                "editableOnNode": false
             },
             {
                 "name": "inValue",
@@ -56,7 +58,8 @@
                 "defaultValue": {
                     "$type": "{403A7CFE-B218-5D57-8540-BD58E734BCFE} Asset<StreamingImageAsset>"
                 },
-                "supportsEditingOnNode": false,
+                "visibleOnNode": false,
+                "editableOnNode": false,
                 "settings": {
                     "materialInputs": [
                         "SLOTSTANDARDSRGMEMBER"
@@ -72,7 +75,8 @@
                 "defaultValue": {
                     "$type": "SamplerState"
                 },
-                "supportsEditingOnNode": false,
+                "visibleOnNode": false,
+                "editableOnNode": false,
                 "settings": {
                     "materialInputs": [
                         "SLOTSTANDARDSRGMEMBER"

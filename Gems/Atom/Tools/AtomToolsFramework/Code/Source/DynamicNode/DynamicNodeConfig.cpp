@@ -160,7 +160,6 @@ namespace AtomToolsFramework
         }
     }
 
-
     const AZ::Edit::ElementData* DynamicNodeConfig::GetDynamicEditData(
         const void* handlerPtr, const void* elementPtr, const AZ::Uuid& elementType)
     {
