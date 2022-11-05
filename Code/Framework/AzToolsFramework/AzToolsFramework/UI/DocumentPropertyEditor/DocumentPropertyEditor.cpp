@@ -65,9 +65,9 @@ namespace AzToolsFramework
         m_sharePriorColumn.clear();
         m_cachedLayoutSize = QSize();
         m_cachedMinLayoutSize = QSize();
-        for (auto index = count() - 1; index >= 0; --index)
+        for (int index = count(); index > 0; --index)
         {
-            auto theItem = takeAt(index);
+            auto theItem = takeAt(index - 1);
             auto theWidget = theItem->widget();
             if (theWidget)
             {
