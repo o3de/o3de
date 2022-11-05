@@ -12,10 +12,8 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/smart_ptr/weak_ptr.h>
-#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Outcome/Outcome.h>
-#include <AzCore/std/string/string.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/std/utils.h>
 
