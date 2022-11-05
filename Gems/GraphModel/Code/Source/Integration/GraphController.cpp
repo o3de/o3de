@@ -66,7 +66,7 @@ namespace GraphModelIntegration
 
     void GraphController::GraphElementMap::Remove(AZ::EntityId graphCanvasId)
     {
-        auto iter = m_uiToGraphElement.find(graphCanvasId);
+        const auto iter = m_uiToGraphElement.find(graphCanvasId);
         if (iter != m_uiToGraphElement.end())
         {
             m_graphElementToUi.erase(iter->second.get());
@@ -76,7 +76,7 @@ namespace GraphModelIntegration
 
     void GraphController::GraphElementMap::Remove(GraphModel::ConstGraphElementPtr graphElement)
     {
-        auto iter = m_graphElementToUi.find(graphElement.get());
+        const auto iter = m_graphElementToUi.find(graphElement.get());
         if (iter != m_graphElementToUi.end())
         {
             m_uiToGraphElement.erase(iter->second);
@@ -86,19 +86,19 @@ namespace GraphModelIntegration
 
     GraphModel::GraphElementPtr GraphController::GraphElementMap::Find(AZ::EntityId graphCanvasId)
     {
-        auto iter = m_uiToGraphElement.find(graphCanvasId);
+        const auto iter = m_uiToGraphElement.find(graphCanvasId);
         return iter != m_uiToGraphElement.end() ? iter->second : nullptr;
     }
 
     GraphModel::ConstGraphElementPtr GraphController::GraphElementMap::Find(AZ::EntityId graphCanvasId) const
     {
-        auto iter = m_uiToGraphElement.find(graphCanvasId);
+        const auto iter = m_uiToGraphElement.find(graphCanvasId);
         return iter != m_uiToGraphElement.end() ? iter->second : nullptr;
     }
 
     AZ::EntityId GraphController::GraphElementMap::Find(GraphModel::ConstGraphElementPtr graphElement) const
     {
-        auto iter = m_graphElementToUi.find(graphElement.get());
+        const auto iter = m_graphElementToUi.find(graphElement.get());
         return iter != m_graphElementToUi.end() ? iter->second : AZ::EntityId();
     }
 
@@ -114,19 +114,19 @@ namespace GraphModelIntegration
         {
             return &m_nodeMap;
         }
-        else if (azrtti_istypeof<Slot>(graphElement.get()))
+
+        if (azrtti_istypeof<Slot>(graphElement.get()))
         {
             return &m_slotMap;
         }
-        else if (azrtti_istypeof<Connection>(graphElement.get()))
+
+        if (azrtti_istypeof<Connection>(graphElement.get()))
         {
             return &m_connectionMap;
         }
-        else
-        {
-            AZ_Assert(false, "Could not determine correct GraphElementMap");
-            return nullptr;
-        }
+
+        AZ_Assert(false, "Could not determine correct GraphElementMap");
+        return nullptr;
     }
 
     GraphController::GraphElementMap* GraphController::GraphElementMapCollection::GetMapFor(GraphModel::ConstGraphElementPtr graphElement)
@@ -169,43 +169,36 @@ namespace GraphModelIntegration
 
     GraphCanvas::ConnectionType ToGraphCanvasConnectionType(const GraphModel::SlotDirection& direction)
     {
-        GraphCanvas::ConnectionType connectionType = GraphCanvas::ConnectionType::CT_Invalid;
-
         switch (direction)
         {
         case GraphModel::SlotDirection::Input:
-            connectionType = GraphCanvas::ConnectionType::CT_Input;
-            break;
+            return GraphCanvas::ConnectionType::CT_Input;
         case GraphModel::SlotDirection::Output:
-            connectionType = GraphCanvas::ConnectionType::CT_Output;
-            break;
+            return GraphCanvas::ConnectionType::CT_Output;
         default:
-            AZ_Assert(false, "Invalid SlotDirection");
+            break;
         }
 
-        return connectionType;
+        AZ_Assert(false, "Invalid SlotDirection");
+        return GraphCanvas::ConnectionType::CT_Invalid;
     }
 
     GraphCanvas::SlotGroup ToGraphCanvasSlotGroup(const GraphModel::SlotType& slotType)
     {
-        GraphCanvas::SlotGroup group;
-
         switch (slotType)
         {
         case GraphModel::SlotType::Data:
-            group = GraphCanvas::SlotGroups::DataGroup;
-            break;
+            return GraphCanvas::SlotGroups::DataGroup;
         case GraphModel::SlotType::Event:
-            group = GraphCanvas::SlotGroups::ExecutionGroup;
-            break;
+            return GraphCanvas::SlotGroups::ExecutionGroup;
         case GraphModel::SlotType::Property:
-            group = GraphCanvas::SlotGroups::PropertyGroup;
-            break;
+            return GraphCanvas::SlotGroups::PropertyGroup;
         default:
-            AZ_Assert(false, "Invalid SlotType");
+            break;
         }
 
-        return group;
+        AZ_Assert(false, "Invalid SlotType");
+        return GraphCanvas::SlotGroups::Invalid;
     }
 
     GraphController::GraphController(GraphModel::GraphPtr graph, AZ::EntityId graphCanvasSceneId)
@@ -243,14 +236,14 @@ namespace GraphModelIntegration
         }
 
         // Load graph canvas metadata for non data model elements like comment nodes
-        for (auto& pair : graphCanvasMetadata->m_otherMetadata)
+        for (const auto& pair : graphCanvasMetadata->m_otherMetadata)
         {
             GraphCanvas::EntitySaveDataRequestBus::Event(
                 AZ::Entity::MakeId(), &GraphCanvas::EntitySaveDataRequests::ReadSaveData, *pair.second);
         }
 
         // Create UI for all the Nodes
-        for (auto& pair : m_graph->GetNodes())
+        for (const auto& pair : m_graph->GetNodes())
         {
             const NodeId nodeId = pair.first;
             NodePtr node = pair.second;
@@ -261,7 +254,6 @@ namespace GraphModelIntegration
                 AZ::Vector2 position(0, 0);
 
                 auto metadataIter = graphCanvasMetadata->m_nodeMetadata.find(nodeId);
-
                 if (metadataIter != graphCanvasMetadata->m_nodeMetadata.end())
                 {
                     AZStd::shared_ptr<GraphCanvas::EntitySaveDataContainer> saveDataContainer = metadataIter->second;
@@ -523,7 +515,7 @@ namespace GraphModelIntegration
 
     bool GraphController::RemoveNode(GraphModel::NodePtr node)
     {
-        AZ::EntityId nodeUiId = m_elementMap.Find(node);
+       const AZ::EntityId nodeUiId = m_elementMap.Find(node);
         if (nodeUiId.IsValid())
         {
             AzToolsFramework::EntityIdSet entityIds = { nodeUiId };
@@ -538,7 +530,7 @@ namespace GraphModelIntegration
     AZ::Vector2 GraphController::GetPosition(GraphModel::NodePtr node) const
     {
         AZ::Vector2 position = AZ::Vector2::CreateZero();
-        AZ::EntityId nodeUiId = m_elementMap.Find(node);
+        const AZ::EntityId nodeUiId = m_elementMap.Find(node);
         if (nodeUiId.IsValid())
         {
             GraphCanvas::GeometryRequestBus::EventResult(position, nodeUiId, &GraphCanvas::GeometryRequests::GetPosition);
@@ -664,8 +656,9 @@ namespace GraphModelIntegration
             return false;
         }
 
-        GraphModel::SlotPtr sourceSlot = sourceNode->GetSlot(sourceSlotId);
-        if (!sourceSlot)
+        const GraphModel::SlotPtr sourceSlot = sourceNode->GetSlot(sourceSlotId);
+        const GraphModel::SlotPtr targetSlot = targetNode->GetSlot(targetSlotId);
+        if (!sourceSlot || !targetSlot)
         {
             return false;
         }
@@ -673,7 +666,7 @@ namespace GraphModelIntegration
         // Check all connections on the source slot to see if they match the target node and slot
         for (const auto& connection : sourceSlot->GetConnections())
         {
-            if (connection->GetTargetNode() == targetNode && connection->GetTargetSlot()->GetSlotId() == targetSlotId)
+            if (connection->GetTargetNode() == targetNode && connection->GetTargetSlot() == targetSlot)
             {
                 return true;
             }
@@ -684,7 +677,7 @@ namespace GraphModelIntegration
 
     bool GraphController::RemoveConnection(GraphModel::ConnectionPtr connection)
     {
-        AZ::EntityId connectionUiId = m_elementMap.Find(connection);
+        const AZ::EntityId connectionUiId = m_elementMap.Find(connection);
         if (connectionUiId.IsValid())
         {
             AZStd::unordered_set<AZ::EntityId> deleteIds = { connectionUiId };
@@ -723,7 +716,7 @@ namespace GraphModelIntegration
         GraphModel::NodePtrList nodeList;
         nodeList.reserve(nodeIds.size());
 
-        for (auto nodeId : nodeIds)
+        for (const auto& nodeId : nodeIds)
         {
             if (GraphModel::NodePtr nodePtr = m_elementMap.Find<GraphModel::Node>(nodeId))
             {
@@ -736,29 +729,19 @@ namespace GraphModelIntegration
 
     GraphCanvas::NodeId GraphController::GetNodeIdByNode(GraphModel::NodePtr node) const
     {
-        GraphCanvas::NodeId nodeId = m_elementMap.Find(node);
-        if (nodeId.IsValid())
-        {
-            return nodeId;
-        }
-
-        return GraphCanvas::NodeId();
+        const GraphCanvas::NodeId nodeId = m_elementMap.Find(node);
+        return nodeId.IsValid() ? nodeId : GraphCanvas::NodeId();
     }
 
     GraphCanvas::SlotId GraphController::GetSlotIdBySlot(GraphModel::SlotPtr slot) const
     {
-        GraphCanvas::SlotId slotId = m_elementMap.Find(slot);
-        if (slotId.IsValid())
-        {
-            return slotId;
-        }
-
-        return GraphCanvas::SlotId();
+        const GraphCanvas::SlotId slotId = m_elementMap.Find(slot);
+        return slotId.IsValid() ? slotId : GraphCanvas::SlotId();
     }
 
     GraphModel::NodePtrList GraphController::GetNodes()
     {
-        auto& nodeMap = m_graph->GetNodes();
+        const auto& nodeMap = m_graph->GetNodes();
         GraphModel::NodePtrList nodes;
         nodes.reserve(nodeMap.size());
 
@@ -780,9 +763,9 @@ namespace GraphModelIntegration
 
     void GraphController::SetSelected(GraphModel::NodePtrList nodes, bool selected)
     {
-        for (auto node : nodes)
+        for (const auto& node : nodes)
         {
-            AZ::EntityId nodeId = m_elementMap.Find(node);
+            const AZ::EntityId nodeId = m_elementMap.Find(node);
             if (nodeId.IsValid())
             {
                 GraphCanvas::SceneMemberUIRequestBus::Event(nodeId, &GraphCanvas::SceneMemberUIRequests::SetSelected, selected);
@@ -797,7 +780,7 @@ namespace GraphModelIntegration
 
     void GraphController::EnableNode(GraphModel::NodePtr node)
     {
-        AZ::EntityId nodeId = m_elementMap.Find(node);
+        const AZ::EntityId nodeId = m_elementMap.Find(node);
         if (nodeId.IsValid())
         {
             GraphCanvas::SceneRequestBus::Event(m_graphCanvasSceneId, &GraphCanvas::SceneRequests::Enable, nodeId);
@@ -806,7 +789,7 @@ namespace GraphModelIntegration
 
     void GraphController::DisableNode(GraphModel::NodePtr node)
     {
-        AZ::EntityId nodeId = m_elementMap.Find(node);
+        const AZ::EntityId nodeId = m_elementMap.Find(node);
         if (nodeId.IsValid())
         {
             GraphCanvas::SceneRequestBus::Event(m_graphCanvasSceneId, &GraphCanvas::SceneRequests::Disable, nodeId);
@@ -821,17 +804,14 @@ namespace GraphModelIntegration
         // Find all the position points for our nodes are are selecting
         // The Aabb class has functionality for creating a box from a series of points
         // so we are using that/Vector3 and just ignoring the Z value
-        for (auto node : nodes)
+        for (const auto& node : nodes)
         {
-            AZ::EntityId nodeId = m_elementMap.Find(node);
-            float x, y;
-            AZ::Vector2 position;
+            const AZ::EntityId nodeId = m_elementMap.Find(node);
+            AZ::Vector2 position = AZ::Vector2::CreateZero();
             GraphCanvas::GeometryRequestBus::EventResult(position, nodeId, &GraphCanvas::GeometryRequests::GetPosition);
-            x = position.GetX();
-            y = position.GetY();
 
             // Add the top-left corner position of the node
-            points.push_back(AZ::Vector3(x, y, 0));
+            points.emplace_back(position);
 
             // Add the bottom-right corner position of the node as well, so that
             // when we center the view, it will contain the entire node
@@ -839,15 +819,15 @@ namespace GraphModelIntegration
             GraphCanvas::SceneMemberUIRequestBus::EventResult(nodeItem, nodeId, &GraphCanvas::SceneMemberUIRequests::GetRootGraphicsItem);
             if (nodeItem)
             {
-                QRectF nodeRect = nodeItem->boundingRect();
-                points.push_back(AZ::Vector3(x + aznumeric_cast<float>(nodeRect.width()), y + aznumeric_cast<float>(nodeRect.height()), 0));
+                const QRectF nodeRect = nodeItem->boundingRect();
+                points.emplace_back(position + AZ::Vector2(aznumeric_cast<float>(nodeRect.width()), aznumeric_cast<float>(nodeRect.height())));
             }
         }
 
         // Create a bounding box using all of our points so that we can center around
         // all of the nodes
-        AZ::Aabb boundingBox = AZ::Aabb::CreatePoints(points.begin(), (int)points.size());
-        AZ::Vector3 topLeft = boundingBox.GetMin();
+        const AZ::Aabb boundingBox = AZ::Aabb::CreatePoints(points.data(), (int)points.size());
+        const AZ::Vector3 topLeft = boundingBox.GetMin();
         QRectF boundingRect(topLeft.GetX(), topLeft.GetY(), boundingBox.GetXExtent(), boundingBox.GetYExtent());
 
         // Center the view on our desired area
@@ -917,10 +897,10 @@ namespace GraphModelIntegration
         // Create mappings of the serialized nodes/slots so that we can properly associate
         // the GraphCanvas nodes/slots that get deserialized later with the GraphModel counterparts
         const auto& nodeWrappings = m_graph->GetNodeWrappings();
-        for (auto nodeEntity : serializationTarget.GetGraphData().m_nodes)
+        for (const auto& nodeEntity : serializationTarget.GetGraphData().m_nodes)
         {
-            GraphCanvas::NodeId nodeUiId = nodeEntity->GetId();
-            GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeUiId);
+            const GraphCanvas::NodeId nodeUiId = nodeEntity->GetId();
+            const GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeUiId);
 
             if (!node)
             {
@@ -932,10 +912,10 @@ namespace GraphModelIntegration
 
             // Keep a mapping of the serialized GraphCanvas slotIds with their serialized GraphModel slots
             serialization.m_serializedSlotMappings[nodeUiId] = GraphModelSerialization::SerializedSlotMapping();
-            for (auto it : node->GetSlots())
+            for (const auto& slotPair : node->GetSlots())
             {
-                GraphModel::SlotId slotId = it.first;
-                GraphModel::SlotPtr slot = it.second;
+                const GraphModel::SlotId slotId = slotPair.first;
+                const GraphModel::SlotPtr slot = slotPair.second;
                 AZ::EntityId slotUiId = m_elementMap.Find(slot);
                 if (slotUiId.IsValid())
                 {
@@ -945,8 +925,7 @@ namespace GraphModelIntegration
 
             // Keep track of any serialized wrapped nodes, since these will need to be
             // handled separately after the deserialization is complete
-            auto it = nodeWrappings.find(node->GetId());
-            if (it != nodeWrappings.end())
+            if (const auto it = nodeWrappings.find(node->GetId()); it != nodeWrappings.end())
             {
                 GraphModel::NodePtr wrapperNode = m_graph->GetNode(it->second.first);
                 AZ::u32 layoutOrder = it->second.second;
