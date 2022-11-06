@@ -1280,7 +1280,22 @@ namespace GraphModelIntegration
         }
         if (dataTypeUuid == azrtti_typeid<int>())
         {
-            return CreatePropertyDisplay<IntegerDataInterface>(
+            return CreatePropertyDisplay<IntegerDataInterface<int>>(
+                inputSlot, &GraphCanvas::GraphCanvasRequests::CreateNumericNodePropertyDisplay);
+        }
+        if (dataTypeUuid == azrtti_typeid<unsigned int>())
+        {
+            return CreatePropertyDisplay<IntegerDataInterface<unsigned int>>(
+                inputSlot, &GraphCanvas::GraphCanvasRequests::CreateNumericNodePropertyDisplay);
+        }
+        if (dataTypeUuid == azrtti_typeid<long>())
+        {
+            return CreatePropertyDisplay<IntegerDataInterface<long>>(
+                inputSlot, &GraphCanvas::GraphCanvasRequests::CreateNumericNodePropertyDisplay);
+        }
+        if (dataTypeUuid == azrtti_typeid<unsigned long>())
+        {
+            return CreatePropertyDisplay<IntegerDataInterface<unsigned long>>(
                 inputSlot, &GraphCanvas::GraphCanvasRequests::CreateNumericNodePropertyDisplay);
         }
         if (dataTypeUuid == azrtti_typeid<float>())
