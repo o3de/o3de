@@ -554,26 +554,27 @@ namespace GraphModel
         if (SupportsValues())
         {
 #if defined(AZ_ENABLE_TRACING)
-            DataTypePtr dataTypeUsed = GetDataTypeForValue(value);
-            AssertWithTypeInfo(IsSupportedDataType(dataTypeUsed), dataTypeUsed, "Slot::SetValue used with the wrong type");
+            DataTypePtr dataTypeRequested = GetDataTypeForValue(value);
+            AssertWithTypeInfo(IsSupportedDataType(dataTypeRequested), dataTypeRequested, "Slot::SetValue Requested with the wrong type");
 #endif
             m_value = value;
         }
     }
 
 #if defined(AZ_ENABLE_TRACING)
-    void Slot::AssertWithTypeInfo(bool expression, DataTypePtr dataTypeUsed, const char* message) const
+    void Slot::AssertWithTypeInfo(bool expression, DataTypePtr dataTypeRequested, const char* message) const
     {
         DataTypePtr dataType = GetDataType();
-        AZ_Assert(expression, "%s (Slot DataType=['%s', '%s', %s]. Used DataType=['%s', '%s', %s]). m_value TypeId=%s.",
+        AZ_Assert(expression, "%s Slot %s (Current DataType=['%s', '%s', %s]. Requested DataType=['%s', '%s', %s]). Current Value TypeId=%s.",
             message,
+            GetDisplayName().c_str(),
             !dataType ? "nullptr" : dataType->GetDisplayName().c_str(),
             !dataType ? "nullptr" : dataType->GetCppName().c_str(),
             !dataType ? "nullptr" : dataType->GetTypeUuidString().c_str(),
-            !dataTypeUsed ? "nullptr" : dataTypeUsed->GetDisplayName().c_str(),
-            !dataTypeUsed ? "nullptr" : dataTypeUsed->GetCppName().c_str(),
-            !dataTypeUsed ? "nullptr" : dataTypeUsed->GetTypeUuidString().c_str(),
-            m_value.type().ToString<AZStd::string>().c_str()
+            !dataTypeRequested ? "nullptr" : dataTypeRequested->GetDisplayName().c_str(),
+            !dataTypeRequested ? "nullptr" : dataTypeRequested->GetCppName().c_str(),
+            !dataTypeRequested ? "nullptr" : dataTypeRequested->GetTypeUuidString().c_str(),
+            GetValue().type().ToString<AZStd::string>().c_str()
         );
     }
 #endif // AZ_ENABLE_TRACING

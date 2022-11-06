@@ -321,7 +321,7 @@ namespace GraphModel
     private:
 
 #if defined(AZ_ENABLE_TRACING)
-        void AssertWithTypeInfo(bool expression, DataTypePtr dataTypeUsed, const char* message) const;
+        void AssertWithTypeInfo(bool expression, DataTypePtr dataTypeRequested, const char* message) const;
 #endif
         DataTypePtr GetDataTypeForTypeId(const AZ::Uuid& typeId) const;
         DataTypePtr GetDataTypeForValue(const AZStd::any& value) const;
@@ -334,13 +334,14 @@ namespace GraphModel
     template<typename T>
     T Slot::GetValue() const
     {
+        const AZStd::any& value = GetValue();
 #if defined(AZ_ENABLE_TRACING)
-        DataTypePtr dataTypeUsed = GetDataTypeForTypeId(azrtti_typeid<T>());
-        AssertWithTypeInfo(SupportsValues(), dataTypeUsed, "This slot type does not support values");
-        AssertWithTypeInfo(IsSupportedDataType(dataTypeUsed), dataTypeUsed, "Slot::GetValue used with the wrong type");
-        AssertWithTypeInfo(m_value.is<T>(), dataTypeUsed, "m_value does not hold data of the appropriate type");
+        DataTypePtr dataTypeRequested = GetDataTypeForTypeId(azrtti_typeid<T>());
+        AssertWithTypeInfo(SupportsValues(), dataTypeRequested, "This slot type does not support values");
+        AssertWithTypeInfo(IsSupportedDataType(dataTypeRequested), dataTypeRequested, "Slot::GetValue used with the wrong type");
+        AssertWithTypeInfo(value.is<T>(), dataTypeRequested, "value does not hold data of the appropriate type");
 #endif
-        return m_value.is<T>() ? AZStd::any_cast<T>(m_value) : T{};
+        return value.is<T>() ? AZStd::any_cast<T>(value) : T{};
     }
 
     template<typename T>
