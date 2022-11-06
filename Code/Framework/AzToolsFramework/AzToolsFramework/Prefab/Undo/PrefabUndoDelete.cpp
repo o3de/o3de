@@ -70,15 +70,13 @@ namespace AzToolsFramework
                 }
 
                 PrefabDom patchesCopyForUndoSupport;
-                PrefabDomReference nestedInstanceLinkDom = nestedInstanceLink->get().GetLinkDom();
-                if (nestedInstanceLinkDom.has_value())
+                PrefabDom nestedInstanceLinkDom;
+                nestedInstanceLink->get().GetLinkDom(nestedInstanceLinkDom, nestedInstanceLinkDom.GetAllocator());
+                PrefabDomValueReference nestedInstanceLinkPatches =
+                    PrefabDomUtils::FindPrefabDomValue(nestedInstanceLinkDom, PrefabDomUtils::PatchesName);
+                if (nestedInstanceLinkPatches.has_value())
                 {
-                    PrefabDomValueReference nestedInstanceLinkPatches =
-                        PrefabDomUtils::FindPrefabDomValue(nestedInstanceLinkDom->get(), PrefabDomUtils::PatchesName);
-                    if (nestedInstanceLinkPatches.has_value())
-                    {
-                        patchesCopyForUndoSupport.CopyFrom(nestedInstanceLinkPatches->get(), patchesCopyForUndoSupport.GetAllocator());
-                    }
+                    patchesCopyForUndoSupport.CopyFrom(nestedInstanceLinkPatches->get(), patchesCopyForUndoSupport.GetAllocator());
                 }
 
                 PrefabUndoInstanceLink* removeLinkUndo = aznew PrefabUndoInstanceLink("Remove Link");
