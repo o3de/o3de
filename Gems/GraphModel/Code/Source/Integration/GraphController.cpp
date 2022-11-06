@@ -12,6 +12,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
@@ -908,7 +909,12 @@ namespace GraphModelIntegration
             }
 
             // Keep a mapping of the serialized GraphCanvas nodeId with the serialized GraphModel node
-            serialization.m_serializedNodes[nodeUiId] = node;
+            // The node is being serialized to an object stream and deserialized as needed. This prevents any objects or smart pointers from
+            // lingering after related systems have been destroyed.
+            GraphModelSerialization::SerializedNodeBuffer serializedNodeBuffer;
+            AZ::IO::ByteContainerStream<decltype(serializedNodeBuffer)> serializedNodeStream(&serializedNodeBuffer);
+            AZ::Utils::SaveObjectToStream(serializedNodeStream, AZ::ObjectStream::ST_BINARY, &node);
+            serialization.m_serializedNodes[nodeUiId] = serializedNodeBuffer;
 
             // Keep a mapping of the serialized GraphCanvas slotIds with their serialized GraphModel slots
             serialization.m_serializedSlotMappings[nodeUiId] = GraphModelSerialization::SerializedSlotMapping();
@@ -916,7 +922,7 @@ namespace GraphModelIntegration
             {
                 const GraphModel::SlotId slotId = slotPair.first;
                 const GraphModel::SlotPtr slot = slotPair.second;
-                AZ::EntityId slotUiId = m_elementMap.Find(slot);
+                const AZ::EntityId slotUiId = m_elementMap.Find(slot);
                 if (slotUiId.IsValid())
                 {
                     serialization.m_serializedSlotMappings[nodeUiId][slotId] = slotUiId;
@@ -945,15 +951,15 @@ namespace GraphModelIntegration
         GraphModelSerialization serialization;
         GraphManagerRequestBus::BroadcastResult(serialization, &GraphManagerRequests::GetSerializedMappings);
 
-        for (auto it : serialization.m_serializedNodes)
+        for (const auto& it : serialization.m_serializedNodes)
         {
-            GraphCanvas::NodeId serializedNodeId = it.first;
-            GraphModel::NodePtr serializedNode = it.second;
+            const auto& serializedNodeId = it.first;
+            const auto serializedNodeBuffer = it.second;
 
-            // Clone the serialized node
-            auto newNodeObject = m_serializeContext->CloneObject(serializedNode.get());
+            // Recreate the notes previously serialized to the stream.
             GraphModel::NodePtr newNode;
-            newNode.reset(newNodeObject);
+            AZ::IO::ByteContainerStream<decltype(serializedNodeBuffer)> serializedNodeStream(&serializedNodeBuffer);
+            AZ::Utils::LoadObjectFromStreamInPlace(serializedNodeStream, newNode);
 
             // Load the new node into our graph
             m_graph->PostLoadSetup(newNode);
