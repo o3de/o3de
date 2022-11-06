@@ -507,7 +507,7 @@ namespace MaterialCanvas
 
                             // Set up the change call back to apply the value of the property from the inspector to the slot. This could
                             // also send a document modified notifications and queue regeneration of shader and material assets but the
-                            // compilation process and going through the AP is not responsive enough what is the matter.
+                            // compilation process and going through the ap is not responsive enough for this to matter.
                             propertyConfig.m_dataChangeCallback = [currentSlot](const AZStd::any& value)
                             {
                                 currentSlot->SetValue(value);
@@ -686,7 +686,7 @@ namespace MaterialCanvas
             {
                 auto sourceSlot = connection->GetSourceSlot();
                 auto targetSlot = connection->GetTargetSlot();
-                if (sourceSlot && targetSlot && sourceSlot != targetSlot && sourceSlot != slot)
+                if (targetSlot && sourceSlot && targetSlot != sourceSlot && targetSlot == slot)
                 {
                     ReplaceStringsInContainer(
                         "SLOTVALUE",
@@ -737,19 +737,18 @@ namespace MaterialCanvas
     template<typename NodeContainer>
     void MaterialCanvasDocument::SortNodesInExecutionOrder(NodeContainer& nodes) const
     {
-        using NodeTypeRef = typename NodeContainer::const_reference;
-        AZStd::stable_sort(nodes.begin(), nodes.end(), [](NodeTypeRef nodeA, NodeTypeRef nodeB) {
-            const auto dynamicNodeA = azrtti_cast<const AtomToolsFramework::DynamicNode*>(nodeA.get());
-            const auto dynamicNodeB = azrtti_cast<const AtomToolsFramework::DynamicNode*>(nodeB.get());
-            const auto scoreA = AZStd::make_tuple(
-                !dynamicNodeA->GetConfig().m_inputSlots.empty(),
-                dynamicNodeA->GetConfig().m_outputSlots.empty(),
-                nodeA->GetMaxInputDepth());
-            const auto scoreB = AZStd::make_tuple(
-                !dynamicNodeB->GetConfig().m_inputSlots.empty(),
-                dynamicNodeB->GetConfig().m_outputSlots.empty(),
-                nodeB->GetMaxInputDepth());
-            return scoreA < scoreB;
+        using NodeValueType = typename NodeContainer::value_type;
+        using NodeValueTypeRef = typename NodeContainer::const_reference;
+
+        // Pre-calculate and cache sorting scores for all nodes to avoid reprocessing during the sort
+        AZStd::map<NodeValueType, AZStd::tuple<bool, bool, uint32_t>> nodeScoreTable;
+        for (NodeValueTypeRef node : nodes)
+        {
+            nodeScoreTable[node] = AZStd::make_tuple(node->HasInputSlots(), !node->HasOutputSlots(), node->GetMaxInputDepth());
+        }
+
+        AZStd::stable_sort(nodes.begin(), nodes.end(), [&](NodeValueTypeRef nodeA, NodeValueTypeRef nodeB) {
+            return nodeScoreTable[nodeA] < nodeScoreTable[nodeB];
         });
     }
 
@@ -1042,7 +1041,8 @@ namespace MaterialCanvas
         m_compileGraphQueued = false;
         m_generatedFiles.clear();
 
-        if (!m_graph)
+        // Skip compilation if there is no graph or this is a template.
+        if (!m_graph || AZ::StringFunc::EndsWith(m_absolutePath, "materialcanvastemplate.azasset"))
         {
             return false;
         }
@@ -1056,23 +1056,27 @@ namespace MaterialCanvas
         // This could really be any globally defined function, class, struct, define.
         AZStd::vector<AZStd::string> classDefinitions;
         AZStd::vector<AZStd::string> functionDefinitions;
-        AZStd::vector<AZStd::string> inputDefinitions;
 
-        // Traverse all graph nodes and slots to collect global settings like include files and class definitions
+        // Visit all unique node configurations in the graph to collect their include paths, class definitions, and function definitions.
+        AZStd::unordered_set<AZ::Uuid> configIdsVisited;
         for (const auto& nodePair : m_graph->GetNodes())
         {
             const auto& currentNode = nodePair.second;
 
             if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(currentNode.get()))
             {
-                AtomToolsFramework::VisitDynamicNodeSettings(
-                    dynamicNode->GetConfig(),
-                    [&](const AtomToolsFramework::DynamicNodeSettingsMap& settings)
-                    {
-                        AtomToolsFramework::CollectDynamicNodeSettings(settings, "includePaths", includePaths);
-                        AtomToolsFramework::CollectDynamicNodeSettings(settings, "classDefinitions", classDefinitions);
-                        AtomToolsFramework::CollectDynamicNodeSettings(settings, "functionDefinitions", functionDefinitions);
-                    });
+                if (!configIdsVisited.contains(dynamicNode->GetConfig().m_id))
+                {
+                    configIdsVisited.insert(dynamicNode->GetConfig().m_id);
+                    AtomToolsFramework::VisitDynamicNodeSettings(
+                        dynamicNode->GetConfig(),
+                        [&](const AtomToolsFramework::DynamicNodeSettingsMap& settings)
+                        {
+                            AtomToolsFramework::CollectDynamicNodeSettings(settings, "includePaths", includePaths);
+                            AtomToolsFramework::CollectDynamicNodeSettings(settings, "classDefinitions", classDefinitions);
+                            AtomToolsFramework::CollectDynamicNodeSettings(settings, "functionDefinitions", functionDefinitions);
+                        });
+                }
             }
         }
 
