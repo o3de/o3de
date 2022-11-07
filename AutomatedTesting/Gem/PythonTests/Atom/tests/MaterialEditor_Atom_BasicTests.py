@@ -78,8 +78,6 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
             "StandardPBR.materialtype")
         test_data_path = os.path.join(
             azlmbr.paths.engroot, "Gems", "Atom", "TestData", "TestData", "Materials", "StandardPbrTestCases")
-        lighting_background_path = os.path.join(
-            azlmbr.paths.engroot, "Gems", "Atom", "TestData", "TestData", "LightingPresets")
         test_material_1 = "001_DefaultWhite.material"
         test_material_2 = "002_BaseColorLerp.material"
         test_material_3 = "003_MetalMatte.material"
@@ -164,7 +162,7 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
             material_editor_utils.get_property(document_id, base_color_property_name) == expected_color)
 
         # 10. Change the lighting background displayed behind the material model in the viewport.
-        lighting_background_asset_path = os.path.join(lighting_background_path, "greenwich_park.lightingpreset")
+        lighting_background_asset_path = os.path.join("lightingpresets", "greenwich_park.lightingpreset")
         lighting_background_asset_id = atom_tools_utils.select_lighting_config(lighting_background_asset_path)
         Report.result(
             Tests.lighting_background_changed,
