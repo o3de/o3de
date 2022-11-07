@@ -102,11 +102,10 @@ class QtPyScriptCanvasVariableManager():
         # Click on it to create variable and wait for the UI to respond
         pyside_utils.item_view_index_mouse_click(table_view, variable_entry)
         actual_number_of_variables = graph_vars_table.model().rowCount(QtCore.QModelIndex())
-        helper.wait_for_condition(lambda: (actual_number_of_variables == expected_number_of_variables),
+        variable_added = helper.wait_for_condition(lambda: (actual_number_of_variables == expected_number_of_variables),
                                   WAIT_TIME_SEC_3)
 
-        assert actual_number_of_variables == expected_number_of_variables, \
-            "New variable not added to graph variables list."
+        assert variable_added, "New variable not added to graph variables list."
 
     def __set_new_variable_name(self, new_variable_name: str) -> QtWidgets:
         """
@@ -196,11 +195,11 @@ class QtPyScriptCanvasVariableManager():
 
         returns None
         """
-        pinned_toggle_data = self.__find_pinned_toggle_control(variable_type)
+        variable_table_view, pinned_toggle = self.__find_pinned_toggle_control(variable_type)
 
-        assert pinned_toggle_data[1] is not None, "Failed to find variable pinning qt widget"
+        assert pinned_toggle is not None, "Failed to find variable pinning qt widget"
 
-        toggle_state_is_different = self.__toggle_the_pinned_control(pinned_toggle_data)
+        toggle_state_is_different = self.__toggle_the_pinned_control(variable_table_view, pinned_toggle)
 
         assert toggle_state_is_different, "Variable pin not successfully toggled"
 
@@ -215,22 +214,22 @@ class QtPyScriptCanvasVariableManager():
 
         toggle_index = 0
         pinned_toggle = variable_object.siblingAtColumn(toggle_index)
-        pinned_toggle_data = {variable_table_view, pinned_toggle}
-        return pinned_toggle_data
 
-    def __toggle_the_pinned_control(self, pinned_toggle_data):
+        return variable_table_view, pinned_toggle
+
+    def __toggle_the_pinned_control(self, variable_table_view, pinned_toggle):
         """
         helper function for toggling the pinned variable type. performs a mouse click on the toggle control and waits
         for the UI to respond
 
         returns the boolean comparison of the state of the toggle control after it's been toggled.
         """
-        pinned_toggle_state_before = pinned_toggle_data[1].data(Qt.DecorationRole)
+        pinned_toggle_state_before = pinned_toggle.data(Qt.DecorationRole)
 
-        # click the toggle then varify it's different than the before state
-        pyside_utils.item_view_index_mouse_click(pinned_toggle_data[0], pinned_toggle_data[1])
+        # click the toggle then varify it's different from before state
+        pyside_utils.item_view_index_mouse_click(variable_table_view, pinned_toggle)
 
-        pinned_toggle_state_after = helper.wait_for_condition(lambda: pinned_toggle_data[1].data(Qt.DecorationRole) is None,
+        pinned_toggle_state_after = helper.wait_for_condition(lambda: pinned_toggle.data(Qt.DecorationRole) is None,
                                                               WAIT_TIME_SEC_3)
 
         return pinned_toggle_state_before != pinned_toggle_state_after

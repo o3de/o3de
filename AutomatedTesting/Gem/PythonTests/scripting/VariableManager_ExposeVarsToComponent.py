@@ -46,7 +46,7 @@ def VariableManager_ExposeVarsToComponent():
 
     general.idle_enable(True)
 
-    # 1) Create a new level file and then open Script Canvas editor
+    # 1) Open the base level and then open Script Canvas editor
     TestHelper.open_level("", "Base")
 
     qtpy_o3de_editor = QtPyO3DEEditor()
@@ -72,7 +72,7 @@ def VariableManager_ExposeVarsToComponent():
     node_inspector.change_variable_initial_value_source(CheckBoxStates.On)
 
     # 8) Save the file to disk
-    #imagine a save file function call here
+    # This step requires engineering support. See github FR: 12668
 
     # 8) Create an entity w/ component in the O3DE editor and attach the file
     position = math.Vector3(512.0, 512.0, 32.0)
