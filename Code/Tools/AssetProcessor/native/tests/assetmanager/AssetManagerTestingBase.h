@@ -43,9 +43,9 @@ namespace UnitTests
         }
 
         void WaitForFinish()
-        {
-            m_signal.acquire();
-        }
+            {
+                m_signal.acquire();
+            }
 
     protected:
         AZStd::binary_semaphore m_signal;
@@ -78,6 +78,28 @@ namespace UnitTests
         void RunFile(int expectedJobCount, int expectedFileCount = 1, int dependencyFileCount = 0);
         void ProcessJob(AssetProcessor::RCController& rcController, const AssetProcessor::JobDetails& jobDetails);
 
+        AZStd::string MakePath(const char* filename, bool intermediate);
+
+        void CheckProduct(const char* relativePath, bool exists = true);
+        void CheckIntermediate(const char* relativePath, bool exists = true);
+        void ProcessSingleStep(int expectedJobCount = 1, int expectedFileCount = 1, int jobToRun = 0, bool expectSuccess = true);
+
+        void ProcessFileMultiStage(
+            int endStage,
+            bool doProductOutputCheck,
+            const char* file = nullptr,
+            int startStage = 1,
+            bool expectAutofail = false,
+            bool hasExtraFile = false);
+
+        void CreateBuilder(
+            const char* name,
+            const char* inputFilter,
+            const char* outputExtension,
+            bool createJobCommonPlatform,
+            AssetBuilderSDK::ProductOutputFlags outputFlags,
+            bool outputExtraFile = false);
+
         int m_argc = 0;
         char** m_argv{};
 
@@ -98,6 +120,15 @@ namespace UnitTests
         AZ::Entity* m_jobManagerEntity{};
         AZ::ComponentDescriptor* m_descriptor{};
 
+        AZStd::unique_ptr<AssetProcessor::RCController> m_rc;
+
         AZStd::vector<AssetProcessor::JobDetails> m_jobDetailsList;
+
+        bool m_fileCompiled = false;
+        bool m_fileFailed = false;
+        AZStd::string m_testFilePath;
+
+        AssetProcessor::JobEntry m_processedJobEntry;
+        AssetBuilderSDK::ProcessJobResponse m_processJobResponse;
     };
 } // namespace UnitTests
