@@ -54,6 +54,7 @@ fi
 #
 
 KITWARE_REPO_COUNT=$(cat /etc/apt/sources.list | grep ^deb | grep https://apt.kitware.com/ubuntu/ | wc -l)
+CMAKE_VERSION=3.22.0
 
 if [ $KITWARE_REPO_COUNT -eq 0 ]
 then
@@ -65,11 +66,11 @@ then
     # Add the appropriate kitware repository to apt
     if [ "$UBUNTU_DISTRO" == "bionic" ]
     then
-        CMAKE_DISTRO_VERSION=3.20.1-0kitware1ubuntu18.04.1
+        CMAKE_DISTRO_VERSION=$CMAKE_VERSION-0kitware1ubuntu18.04.1
         apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
     elif [ "$UBUNTU_DISTRO" == "focal" ]
     then
-        CMAKE_DISTRO_VERSION=3.20.1-0kitware1ubuntu20.04.1
+        CMAKE_DISTRO_VERSION=$CMAKE_VERSION-0kitware1ubuntu20.04.1
         apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main'
     elif [ "$UBUNTU_DISTRO" == "jammy" ]
     then
