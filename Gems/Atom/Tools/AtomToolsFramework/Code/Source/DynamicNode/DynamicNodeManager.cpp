@@ -19,6 +19,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/std/string/regex.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/IconDecoratedNodePaletteTreeItem.h>
@@ -150,7 +151,7 @@ namespace AtomToolsFramework
     bool DynamicNodeManager::ValidateSlotConfig(
         [[maybe_unused]] const AZ::Uuid& configId, const DynamicNodeSlotConfig& slotConfig) const
     {
-        if (slotConfig.m_supportedDataTypes.empty())
+        if (slotConfig.m_supportedDataTypeRegex.empty())
         {
             AZ_Error(
                 "DynamicNodeManager",
@@ -161,25 +162,24 @@ namespace AtomToolsFramework
             return false;
         }
 
-        for (const AZStd::string& dataTypeName : slotConfig.m_supportedDataTypes)
+        AZStd::regex supportedDataTypeRegex(slotConfig.m_supportedDataTypeRegex, AZStd::regex::flag_type::icase);
+        if (!AZStd::any_of(
+                m_registeredDataTypes.begin(),
+                m_registeredDataTypes.end(),
+                [&](const auto& dataType)
+                {
+                    return AZStd::regex_match(dataType->GetCppName(), supportedDataTypeRegex) ||
+                        AZStd::regex_match(dataType->GetDisplayName(), supportedDataTypeRegex);
+                }))
         {
-            if (!AZStd::any_of(
-                    m_registeredDataTypes.begin(),
-                    m_registeredDataTypes.end(),
-                    [&dataTypeName](const auto& dataType)
-                    {
-                        return dataTypeName == dataType->GetCppName() || dataTypeName == dataType->GetDisplayName();
-                    }))
-            {
-                AZ_Error(
-                    "DynamicNodeManager",
-                    false,
-                    "DynamicNodeConfig \"%s\" could not be validated because DynamicNodeSlotConfig \"%s\" references unregistered data type \"%s\".",
-                    configId.ToFixedString().c_str(),
-                    slotConfig.m_displayName.c_str(),
-                    dataTypeName.c_str());
-                return false;
-            }
+            AZ_Error(
+                "DynamicNodeManager",
+                false,
+                "DynamicNodeConfig \"%s\" could not be validated because DynamicNodeSlotConfig \"%s\" does not match any registered data type."
+                "types.",
+                configId.ToFixedString().c_str(),
+                slotConfig.m_displayName.c_str());
+            return false;
         }
 
         return true;

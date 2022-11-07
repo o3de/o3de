@@ -31,29 +31,41 @@ namespace AzToolsFramework
         //! Returns a copy of the current paintbrush settings
         virtual PaintBrushSettings GetSettings() const = 0;
 
+        //! Returns the current brush mode for the paint brush settings
+        virtual PaintBrushMode GetBrushMode() const = 0;
+
+        //! Sets the brush mode for the paint brush settings.
+        virtual void SetBrushMode(PaintBrushMode brushMode) = 0;
+
+        //! Returns the current color mode for the paint brush settings
+        virtual PaintBrushColorMode GetBrushColorMode() const = 0;
+
+        //! Sets the color mode for the paint brush settings.
+        virtual void SetBrushColorMode(PaintBrushColorMode colorMode) = 0;
+
         // Paint Brush Stroke settings
 
-        //! Returns the brush stroke intensity (0=black, 100=white).
-        //! @return The intensity of the brush stroke
-        virtual float GetIntensityPercent() const = 0;
-
-        //! Returns the brush stroke opacity (0=transparent, 100=opaque).
-        virtual float GetOpacityPercent() const = 0;
+        //! Returns the current brush stroke color, including opacity.
+        //! In monochrome painting, the RGB values will all be identical.
+        virtual AZ::Color GetColor() const = 0;
 
         //! Returns the current brush stroke blend mode.
         virtual PaintBrushBlendMode GetBlendMode() const = 0;
 
-        //! Sets the brush stroke intensity.
-        //! @param intensity The new intensity, in 0-100 range (0=black, 100=white).
-        virtual void SetIntensityPercent(float intensityPercent) = 0;
-
-        //! Sets the brush stroke opacity.
-        //! @param opacity The new opacity, in 0-100 range (0=transparent, 100=opaque).
-        virtual void SetOpacityPercent(float opacityPercent) = 0;
+        //! Returns the current brush stroke smooth mode.
+        virtual PaintBrushSmoothMode GetSmoothMode() const = 0;
 
         //! Sets the brush stroke blend mode.
         //! @param blendMode The new blend mode.
         virtual void SetBlendMode(PaintBrushBlendMode blendMode) = 0;
+
+        //! Sets the brush stroke smooth mode.
+        //! @param smoothMode The new smooth mode.
+        virtual void SetSmoothMode(PaintBrushSmoothMode smoothMode) = 0;
+
+        //! Set the brush stroke color, including opacity.
+        //! @param color The new brush color. In monochrome painting, only the Red value will be used.
+        virtual void SetColor(const AZ::Color& color) = 0;
 
         // Paint Brush Stamp settings
 

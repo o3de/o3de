@@ -91,9 +91,14 @@ namespace AzToolsFramework
             // Set the entity* for each disabled component
             for (auto disabledComponent : m_disabledComponents)
             {
-                auto editorComponentBaseComponent = azrtti_cast<Components::EditorComponentBase*>(disabledComponent);
-                AZ_Assert(editorComponentBaseComponent, "Editor component does not derive from EditorComponentBase");
-                editorComponentBaseComponent->SetEntity(GetEntity());
+                // It's possible to get null components in the list if errors occur during serialization.
+                // Guard against that case so that the code won't crash.
+                if (disabledComponent)
+                {
+                    auto editorComponentBaseComponent = azrtti_cast<Components::EditorComponentBase*>(disabledComponent);
+                    AZ_Assert(editorComponentBaseComponent, "Editor component does not derive from EditorComponentBase");
+                    editorComponentBaseComponent->SetEntity(GetEntity());
+                }
             }
         }
 

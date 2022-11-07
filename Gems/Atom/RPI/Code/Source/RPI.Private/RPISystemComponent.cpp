@@ -20,9 +20,11 @@
 #include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/PlatformId/PlatformId.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/CommandLine/CommandLine.h>
+#include <AzFramework/Components/ConsoleBus.h>
 
 #ifdef RPI_EDITOR
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h>
@@ -185,12 +187,26 @@ namespace AZ
         AZ_CVAR_EXTERNED(AZ::CVarFixedString, r_metricsDataLogType);
         AZ_CVAR_EXTERNED(AZ::u32, r_metricsWaitTimePerCaptureBatch);
         AZ_CVAR_EXTERNED(AZ::u32, r_metricsFrameCountPerCaptureBatch);
+        AZ_CVAR_EXTERNED(bool, r_metricsQuitUponCompletion);
+
+        AZStd::string RPISystemComponent::GetLogCategory()
+        {
+            AZStd::string platformName = AZ::GetPlatformName(AZ::g_currentPlatform);
+            AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
+            auto logCategory = AZStd::string::format("%.*s-%s-%s", AZ_STRING_ARG(PerformanceLogCategory), platformName.c_str(), apiName.GetCStr());
+            return logCategory;
+        }
 
         void RPISystemComponent::InitializePerformanceCollector()
         {
             auto onBatchCompleteCallback = [](AZ::u32 pendingBatches) {
                 AZ_TracePrintf("RPISystem", "Completed a performance batch, still %u batches are pending.\n", pendingBatches);
                 r_metricsNumberOfCaptureBatches = pendingBatches;
+                if (r_metricsQuitUponCompletion && (pendingBatches == 0))
+                {
+                    AzFramework::ConsoleRequestBus::Broadcast(
+                        &AzFramework::ConsoleRequests::ExecuteConsoleCommand, "quit");
+                }
             };
 
             auto performanceMetrics = AZStd::to_array<AZStd::string_view>({
@@ -198,8 +214,9 @@ namespace AZ
                 PerformanceSpecGraphicsRenderTime,
                 PerformanceSpecEngineCpuTime,
                 });
+            AZStd::string logCategory = GetLogCategory();
             m_performanceCollector = AZStd::make_unique<AZ::Debug::PerformanceCollector>(
-                PerformanceLogCategory, performanceMetrics, onBatchCompleteCallback);
+                logCategory, performanceMetrics, onBatchCompleteCallback);
             //Feed the CVAR values.
             m_performanceCollector->UpdateDataLogType(GetDataLogTypeFromCVar(r_metricsDataLogType));
             m_performanceCollector->UpdateFrameCountPerCaptureBatch(r_metricsFrameCountPerCaptureBatch);

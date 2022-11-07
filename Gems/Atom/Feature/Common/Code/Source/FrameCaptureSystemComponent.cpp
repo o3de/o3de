@@ -19,7 +19,7 @@
 #include <Atom/Utils/DdsFile.h>
 #include <Atom/Utils/PpmFile.h>
 #include <Atom/Utils/PngFile.h>
-
+#include <Atom/Utils/ImageComparison.h>
 #include <AzCore/std/parallel/lock.h>
 
 #include <AzCore/Serialization/Json/JsonUtils.h>
@@ -292,6 +292,9 @@ namespace AZ
 
         void FrameCaptureSystemComponent::Reflect(AZ::ReflectContext* context)
         {
+            Utils::ImageDiffResult::Reflect(context);
+            FrameCaptureNotificationBusHandler::Reflect(context);
+
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<FrameCaptureSystemComponent, AZ::Component>()
@@ -308,8 +311,6 @@ namespace AZ
                     ->Event("CaptureScreenshotWithPreview", &FrameCaptureRequestBus::Events::CaptureScreenshotWithPreview)
                     ->Event("CapturePassAttachment", &FrameCaptureRequestBus::Events::CapturePassAttachment)
                     ;
-
-                FrameCaptureNotificationBusHandler::Reflect(context);
 
                 behaviorContext->EBus<FrameCaptureTestRequestBus>("FrameCaptureTestRequestBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
@@ -897,64 +898,75 @@ namespace AZ
             }
         }
 
-        bool FrameCaptureSystemComponent::CompareScreenshots(
-            const AZStd::string& filePathA, const AZStd::string& filePathB, float* diffScore, float* filteredDiffScore, float minDiffFilter)
+        Utils::ImageDiffResult FrameCaptureSystemComponent::CompareScreenshots(const AZStd::string& filePathA, const AZStd::string& filePathB, float minDiffFilter)
         {
+            Utils::ImageDiffResult result;
+
+            char resolvedFilePathA[AZ_MAX_PATH_LEN] = { 0 };
+            char resolvedFilePathB[AZ_MAX_PATH_LEN] = { 0 };
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath(filePathA.c_str(), resolvedFilePathA, AZ_MAX_PATH_LEN);
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath(filePathB.c_str(), resolvedFilePathB, AZ_MAX_PATH_LEN);
+
             if (!filePathA.ends_with(".png") || !filePathB.ends_with(".png"))
             {
-                AZ_Error("FrameCaptureSystemComponent", false, "Image comparison only supports png files for now.");
-                return false;
+                AZ_Error("FrameCaptureSystemComponent", false, "Image comparison only supports png and ppm files for now.");
+                result.m_resultCode = Utils::ImageDiffResultCode::UnsupportedFormat;
+                return result;
             }
 
             // Load image A
-            Utils::PngFile imageA = Utils::PngFile::Load(filePathA.c_str());
+            Utils::PngFile imageA = Utils::PngFile::Load(resolvedFilePathA);
 
             if (!imageA.IsValid())
             {
-                AZ_Error("FrameCaptureSystemComponent", false, "Failed to load image file: %s.", filePathA.c_str());
-                return false;
+                AZ_Error("FrameCaptureSystemComponent", false, "Failed to load image file: %s.", resolvedFilePathA);
+                result.m_resultCode = Utils::ImageDiffResultCode::UnsupportedFormat;
+                return result;
             }
             else if (imageA.GetBufferFormat() != Utils::PngFile::Format::RGBA)
             {
-                AZ_Error("FrameCaptureSystemComponent", false, "Image comparison only supports 8-bit RGBA png.", filePathA.c_str());
-                return false;
+                AZ_Error("FrameCaptureSystemComponent", false, "Image comparison only supports 8-bit RGBA png.", resolvedFilePathA);
+                result.m_resultCode = Utils::ImageDiffResultCode::UnsupportedFormat;
+                return result;
             }
 
             // Load image B
-            Utils::PngFile imageB = Utils::PngFile::Load(filePathB.c_str());
+            Utils::PngFile imageB = Utils::PngFile::Load(resolvedFilePathB);
 
             if (!imageB.IsValid())
             {
-                AZ_Error("FrameCaptureSystemComponent", false, "Failed to load image file: %s.", filePathB.c_str());
-                return false;
+                AZ_Error("FrameCaptureSystemComponent", false, "Failed to load image file: %s.", resolvedFilePathB);
+                result.m_resultCode = Utils::ImageDiffResultCode::UnsupportedFormat;
+                return result;
             }
             else if (imageA.GetBufferFormat() != Utils::PngFile::Format::RGBA)
             {
-                AZ_Error("FrameCaptureSystemComponent", false, "Image comparison only supports 8-bit RGBA png.", filePathB.c_str());
-                return false;
+                AZ_Error("FrameCaptureSystemComponent", false, "Image comparison only supports 8-bit RGBA png.", resolvedFilePathB);
+                result.m_resultCode = Utils::ImageDiffResultCode::UnsupportedFormat;
+                return result;
             }
 
             // Compare
-            Utils::ImageDiffResultCode rmsResult = Utils::CalcImageDiffRms(
+            result = Utils::CalcImageDiffRms(
                 imageA.GetBuffer(), RHI::Size(imageA.GetWidth(), imageA.GetHeight(), 1), AZ::RHI::Format::R8G8B8A8_UNORM,
                 imageB.GetBuffer(), RHI::Size(imageB.GetWidth(), imageB.GetHeight(), 1), AZ::RHI::Format::R8G8B8A8_UNORM,
-                diffScore, filteredDiffScore,
                 minDiffFilter
             );
 
-            if (rmsResult == Utils::ImageDiffResultCode::SizeMismatch)
+            if (result.m_resultCode == Utils::ImageDiffResultCode::SizeMismatch)
             {
-                AZ_Error("FrameCaptureSystemComponent", false, "Size mismatch at: %s and %s.", filePathA.c_str(), filePathB.c_str());
-                return false;
+                AZ_Error("FrameCaptureSystemComponent", false, "Size mismatch at: %s and %s.", resolvedFilePathA, resolvedFilePathB);
+                return result;
             }
 
-            if (rmsResult == Utils::ImageDiffResultCode::UnsupportedFormat || rmsResult == Utils::ImageDiffResultCode::FormatMismatch)
+            if (result.m_resultCode == Utils::ImageDiffResultCode::UnsupportedFormat ||
+                result.m_resultCode == Utils::ImageDiffResultCode::FormatMismatch)
             {
-                AZ_Error("FrameCaptureSystemComponent", false, "Format unsupported or format mistmatch: %s and %s.", filePathA.c_str(), filePathB.c_str());
-                return false;
+                AZ_Error("FrameCaptureSystemComponent", false, "Format unsupported or format mistmatch: %s and %s.", resolvedFilePathA, resolvedFilePathB);
+                return result;
             }
 
-            return rmsResult == Utils::ImageDiffResultCode::Success;
+            return result;
         }
     }
 }

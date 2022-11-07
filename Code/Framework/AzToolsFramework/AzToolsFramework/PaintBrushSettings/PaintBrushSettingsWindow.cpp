@@ -67,6 +67,11 @@ namespace PaintBrush
             AzToolsFramework::PaintBrushSettingsNotificationBus::Handler::BusDisconnect();
         }
 
+        void PaintBrushSettingsWindow::OnVisiblePropertiesChanged()
+        {
+            m_propertyEditor->InvalidateAll();
+        }
+
         void PaintBrushSettingsWindow::OnSettingsChanged([[maybe_unused]] const AzToolsFramework::PaintBrushSettings& newSettings)
         {
             m_propertyEditor->InvalidateValues();
@@ -88,7 +93,7 @@ namespace PaintBrush
         // and this is only visible while in a painting component mode, so we don't ever need to disable the controls.
         viewOptions.isDisabledInComponentMode = false;
         // Default size of the window
-        viewOptions.paneRect = QRect(50, 50, 350, 210);
+        viewOptions.paneRect = QRect(50, 50, 350, 230);
 
         AzToolsFramework::EditorRequestBus::Broadcast(
             &AzToolsFramework::EditorRequestBus::Events::RegisterViewPane,
@@ -97,4 +102,4 @@ namespace PaintBrush
             viewOptions,
             &Internal::CreateNewPaintBrushSettingsWindow);
     }
-} // namespace Camera
+} // namespace PaintBrush

@@ -242,8 +242,6 @@ namespace AZ
         //! Returns the homogenized vector, i.e. divides all components by w, return value is a Vector3.
         Vector3 GetHomogenized() const;
 
-        Vector4& operator=(const Vector4& rhs);
-
         Vector4 operator-() const;
         Vector4 operator+(const Vector4& rhs) const;
         Vector4 operator-(const Vector4& rhs) const;
