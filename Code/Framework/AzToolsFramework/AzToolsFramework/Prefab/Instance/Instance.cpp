@@ -223,10 +223,10 @@ namespace AzToolsFramework
                 }
             }
 
-            return EraseEntityFromMap(entityAliasToRemove);
+            return DetachEntityHelper(entityAliasToRemove);
         }
 
-        AZStd::unique_ptr<AZ::Entity> Instance::EraseEntityFromMap(const EntityAlias& entityAlias)
+        AZStd::unique_ptr<AZ::Entity> Instance::DetachEntityHelper(const EntityAlias& entityAlias)
         {
             AZStd::unique_ptr<AZ::Entity> removedEntity;
             auto&& entityIterator = m_entities.find(entityAlias);

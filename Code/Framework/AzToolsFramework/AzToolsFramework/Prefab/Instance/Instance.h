@@ -110,7 +110,7 @@ namespace AzToolsFramework
             //! @return Template source path of the instance.
             const AZ::IO::Path& GetTemplateSourcePath() const;
 
-            //! Sets template id.
+            //! Sets template source path.
             //! @param sourcePath Template source path to be set.
             void SetTemplateSourcePath(AZ::IO::Path sourcePath);
 
@@ -348,10 +348,11 @@ namespace AzToolsFramework
             //! @return Returns true if the unregistration succeeds.
             bool UnregisterEntity(AZ::EntityId entityId);
 
-            //! Erases an entity from entity map.
+            //! Helper function for detaching entity.
+            //! It removes an entity from map and returns entity pointer.
             //! @param entityAlias The entity alias to be erased.
             //! @return Unique pointer to the entity.
-            AZStd::unique_ptr<AZ::Entity> EraseEntityFromMap(const EntityAlias& entityAlias);
+            AZStd::unique_ptr<AZ::Entity> DetachEntityHelper(const EntityAlias& entityAlias);
 
             // Provide access to private data members in the serializer
             friend class JsonInstanceSerializer;
