@@ -159,7 +159,7 @@ namespace AssetProcessor
         for (const QMetaObject::Connection& connection : m_assetProcessorConnections)
         {
             QObject::disconnect(connection);
-        }        
+        }
 
         QCoreApplication::processEvents(QEventLoop::AllEvents);
 
@@ -286,7 +286,7 @@ namespace AssetProcessor
         ignore_rec.m_platformSpecs.insert({"android", AssetInternalSpec::Skip});
         m_config.AddRecognizer(ignore_rec);
         mockAppManager.RegisterAssetRecognizerAsBuilder(ignore_rec);
-     
+
         QSet<QString> expectedFiles;
         // subfolder3 is not recursive so none of these should show up in any scan or override check
         expectedFiles << m_sourceRoot.absoluteFilePath("subfolder3/aaa/basefile.txt");
@@ -412,7 +412,7 @@ namespace AssetProcessor
             EXPECT_EQ(m_processResults[checkIdx].m_intermediatePath, intermediateAssetsFolder);
             EXPECT_NE(m_processResults[checkIdx].m_jobEntry.m_computedFingerprint, 0);
 
-            QMetaObject::invokeMethod(m_assetProcessorManager.get(), "OnJobStatusChanged", Qt::QueuedConnection, Q_ARG(JobEntry, m_processResults[checkIdx].m_jobEntry), Q_ARG(JobStatus, JobStatus::Queued));
+            QMetaObject::invokeMethod(m_assetProcessorManager.get(), "OnJobStatusChanged", Qt::QueuedConnection, Q_ARG(JobEntry, m_processResults[checkIdx].m_jobEntry), Q_ARG(JobStatus, JobStatus::Queued), Q_ARG(int, 0), Q_ARG(bool, false));
 
             QCoreApplication::processEvents(QEventLoop::AllEvents);
 
@@ -1421,7 +1421,7 @@ namespace AssetProcessor
         rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
         m_config.AddRecognizer(rec);
         EXPECT_TRUE(mockAppManager.RegisterAssetRecognizerAsBuilder(rec));
-        
+
         QString absolutePath = AssetUtilities::NormalizeFilePath(m_sourceRoot.absoluteFilePath("subfolder3/somerandomfile.random"));
         CreateExpectedFiles({absolutePath});
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
