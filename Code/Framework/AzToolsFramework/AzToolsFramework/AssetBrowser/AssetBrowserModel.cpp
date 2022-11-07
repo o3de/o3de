@@ -14,6 +14,7 @@
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
@@ -225,10 +226,14 @@ namespace AzToolsFramework
                 AssetBrowserEntry* item = static_cast<AssetBrowserEntry*>(index.internalPointer());
                 if (item && (item->RTTI_IsTypeOf(ProductAssetBrowserEntry::RTTI_Type()) || item->RTTI_IsTypeOf(SourceAssetBrowserEntry::RTTI_Type())))
                 {
+                    return Qt::ItemIsDragEnabled | defaultFlags;
+                }
+                if (item && (item->RTTI_IsTypeOf(FolderAssetBrowserEntry::RTTI_Type())))
+                {
                     return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
                 }
             }
-            return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
+            return defaultFlags;
         }
 
         QStringList AssetBrowserModel::mimeTypes() const
