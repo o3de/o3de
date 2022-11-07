@@ -9,6 +9,8 @@
 #pragma once
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
+#include <Atom/RPI.Reflect/System/AnyAsset.h>
+#include <AzCore/Asset/AssetCommon.h>
 
 
 namespace LyShine
@@ -30,6 +32,6 @@ namespace LyShine
         // AZ::RPI::FeatureProcessor overrides...
         void AddRenderPasses(AZ::RPI::RenderPipeline* renderPipeline) override;
 
-        AZStd::unique_ptr<AZ::RPI::PassRequest> m_passRequest;
+        AZ::Data::Asset<AZ::RPI::AnyAsset> m_passRequestAsset;
     };
 }

@@ -35,27 +35,29 @@ namespace LyShine
             return;
         }
 
-        // // Get the pass request if it's not loaded
-        if (!m_passRequest)
+        // Get the pass request if it's not loaded
+        if (!m_passRequestAsset)
         {
             const char* passRequestAssetFilePath = "Passes/LyShinePassRequest.azasset";
-            auto passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
+            m_passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
                 passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
-            if (passRequestAsset->IsReady())
-            {
-                m_passRequest = AZStd::make_unique<AZ::RPI::PassRequest>();
-                auto passRequest = passRequestAsset->GetDataAs<AZ::RPI::PassRequest>();
-                if (!passRequest)
-                {
-                    AZ_Error("LyShine", false, "Failed to add LyShine parent pass. Can't load PassRequest from %s", passRequestAssetFilePath);
-                    return;
-                }
-                *m_passRequest = *passRequest;
-            }
+            
+        }
+
+        const AZ::RPI::PassRequest *passRequest = nullptr;
+        if (m_passRequestAsset->IsReady())
+        {
+            passRequest = m_passRequestAsset->GetDataAs<AZ::RPI::PassRequest>();
+        }
+
+        if (!passRequest)
+        {
+            AZ_Error("LyShine", false, "Failed to add LyShine parent pass. Can't load PassRequest from %s", m_passRequestAsset.GetHint().c_str());
+            return;
         }
 
         // Return if the pass to be created already exists
-        AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithPassName(m_passRequest->m_passName, renderPipeline);
+        AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithPassName(passRequest->m_passName, renderPipeline);
         AZ::RPI::Pass* pass = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
         if (pass)
         {
@@ -63,7 +65,7 @@ namespace LyShine
         }
 
         // Create the pass
-        AZ::RPI::Ptr<AZ::RPI::Pass> lyShineParentPass  = AZ::RPI::PassSystemInterface::Get()->CreatePassFromRequest(m_passRequest.get());
+        AZ::RPI::Ptr<AZ::RPI::Pass> lyShineParentPass  = AZ::RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest);
         if (!lyShineParentPass)
         {
             AZ_Error("LyShine", false, "Create LyShine parent pass from pass request failed");
