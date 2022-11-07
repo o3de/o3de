@@ -430,16 +430,20 @@ namespace GradientSignal
     {
         AZ_Assert(m_paintBrushUndoBuffer != nullptr, "Undo batch is expected to exist while painting");
 
-        // Expand the dirty region for this brush stroke by one pixel in each direction
-        // to account for any data affected by bilinear filtering as well.
-        m_paintStrokeData.m_dirtyRegion.Expand(AZ::Vector3(m_paintStrokeData.m_metersPerPixelX, m_paintStrokeData.m_metersPerPixelY, 0.0f));
+        if (m_paintStrokeData.m_dirtyRegion.IsValid())
+        {
+            // Expand the dirty region for this brush stroke by one pixel in each direction
+            // to account for any data affected by bilinear filtering as well.
+            m_paintStrokeData.m_dirtyRegion.Expand(
+                AZ::Vector3(m_paintStrokeData.m_metersPerPixelX, m_paintStrokeData.m_metersPerPixelY, 0.0f));
 
-        // Expand the dirty region to encompass the full Z range since image gradients are 2D.
-        auto dirtyRegionMin = m_paintStrokeData.m_dirtyRegion.GetMin();
-        auto dirtyRegionMax = m_paintStrokeData.m_dirtyRegion.GetMax();
-        m_paintStrokeData.m_dirtyRegion.Set(
-            AZ::Vector3(dirtyRegionMin.GetX(), dirtyRegionMin.GetY(), AZStd::numeric_limits<float>::lowest()),
-            AZ::Vector3(dirtyRegionMax.GetX(), dirtyRegionMax.GetY(), AZStd::numeric_limits<float>::max()));
+            // Expand the dirty region to encompass the full Z range since image gradients are 2D.
+            auto dirtyRegionMin = m_paintStrokeData.m_dirtyRegion.GetMin();
+            auto dirtyRegionMax = m_paintStrokeData.m_dirtyRegion.GetMax();
+            m_paintStrokeData.m_dirtyRegion.Set(
+                AZ::Vector3(dirtyRegionMin.GetX(), dirtyRegionMin.GetY(), AZStd::numeric_limits<float>::lowest()),
+                AZ::Vector3(dirtyRegionMax.GetX(), dirtyRegionMax.GetY(), AZStd::numeric_limits<float>::max()));
+        }
 
         // Hand over ownership of the paint stroke buffer to the undo/redo buffer.
         m_paintBrushUndoBuffer->SetUndoBufferAndDirtyArea(
