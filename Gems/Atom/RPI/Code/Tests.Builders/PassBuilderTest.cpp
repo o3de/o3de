@@ -70,6 +70,19 @@ namespace UnitTest
             stream->Open(assetFile, 0, fileLength);
             stream->BlockUntilLoadComplete();
             m_assetHandler->LoadAssetData(outAsset, stream, {});
+            stream->Close();
+
+            // Force a file streamer flush to ensure that file handles don't remain used
+            auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
+            AZStd::binary_semaphore wait;
+            AZ::IO::FileRequestPtr flushRequest = streamer->FlushCaches();
+            streamer->SetRequestCompleteCallback(flushRequest, [&wait]([[maybe_unused]] AZ::IO::FileRequestHandle request)
+                {
+                    wait.release();
+                });
+            streamer->QueueRequest(flushRequest);
+            wait.acquire();
+
             return outAsset;
         }
 
@@ -81,13 +94,18 @@ namespace UnitTest
     
     TEST_F(PassBuilderTests, ProcessJob)
     {
+        const char* testAssetName = "PassTestAsset.pass";
+        AZ::Test::ScopedAutoTempDirectory productDir;
+        AZ::Test::ScopedAutoTempDirectory sourceDir;
+        AZStd::string testAssetPath;
+        AzFramework::StringFunc::Path::Join(sourceDir.GetDirectory(), testAssetName, testAssetPath, true, true);
+
         // Basic test: test data before and after are same. Test data class doesn't have converter or asset reference.
         AssetBuilderSDK::ProcessJobRequest request;
 
         // Initial job request
-        const char* testAssetPath = "PassTestAsset.pass";
         request.m_fullPath = testAssetPath;
-        request.m_tempDirPath = m_currentDir;
+        request.m_tempDirPath = productDir.GetDirectory();
 
         // Dummy pass template
         RPI::PassTemplate passTemplate;
