@@ -43,9 +43,9 @@ namespace UnitTests
         }
 
         void WaitForFinish()
-            {
-                m_signal.acquire();
-            }
+        {
+            m_signal.acquire();
+        }
 
     protected:
         AZStd::binary_semaphore m_signal;
