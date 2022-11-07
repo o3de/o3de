@@ -7,14 +7,14 @@
  */
 #pragma once
 
-#include <AzCore/Math/Aabb.h>
-#include <AzCore/Math/Vector3.h>
-#include <AzCore/Math/Color.h>
-#include <AzCore/Math/Transform.h>
-#include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/EBusSharedDispatchTraits.h>
-
+#include <AzCore/Math/Aabb.h>
+#include <AzCore/Math/Color.h>
+#include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 
 namespace AZ
@@ -30,6 +30,23 @@ namespace LmbrCentral
         TransformChange, ///< The cache is invalid because the transform of the entity changed.
         ShapeChange ///< The cache is invalid because the shape configuration/properties changed.
     };
+
+    /// Feature flag for work in progress on shape component translation offsets (see https://github.com/o3de/sig-simulation/issues/26).
+    constexpr AZStd::string_view ShapeComponentTranslationOffsetEnabled = "/Amazon/Preferences/EnableShapeComponentTranslationOffset";
+
+    /// Helper function for checking whether feature flag for in progress shape component translation offsets is enabled.
+    /// See https://github.com/o3de/sig-simulation/issues/26 for more details.
+    inline bool IsShapeComponentTranslationEnabled()
+    {
+        bool isShapeComponentTranslationEnabled = false;
+
+        if (auto* registry = AZ::SettingsRegistry::Get())
+        {
+            registry->Get(isShapeComponentTranslationEnabled, ShapeComponentTranslationOffsetEnabled);
+        }
+
+        return isShapeComponentTranslationEnabled;
+    }
 
     /// Wrapper for cache of data used for intersection tests
     template <typename ShapeConfiguration>
@@ -172,6 +189,19 @@ namespace LmbrCentral
         {
             AZ_Warning("ShapeComponentRequests", false, "IntersectRay not implemented");
             return false;
+        }
+
+        /// Get the translation offset for the shape relative to its entity.
+        virtual AZ::Vector3 GetTranslationOffset() const
+        {
+            AZ_Warning("ShapeComponentRequests", !IsShapeComponentTranslationEnabled(), "GetTranslationOffset not implemented");
+            return AZ::Vector3::CreateZero();
+        }
+
+        /// Set the translation offset for the shape relative to its entity.
+        virtual void SetTranslationOffset([[maybe_unused]] const AZ::Vector3& translationOffset)
+        {
+            AZ_Warning("ShapeComponentRequests", !IsShapeComponentTranslationEnabled(), "SetTranslationOffset not implemented");
         }
 
         virtual ~ShapeComponentRequests() = default;

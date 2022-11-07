@@ -9,27 +9,33 @@
 #include <Editor/EditorImageGradientComponent.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Preprocessor/EnumReflectUtils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyFilePathCtrl.h>
 #include <Editor/EditorImageGradientComponentMode.h>
 #include <Editor/EditorGradientImageCreatorUtils.h>
 
 namespace GradientSignal
 {
+    AZ_ENUM_DEFINE_REFLECT_UTILITIES(ImageGradientAutoSaveMode);
+
     void EditorImageGradientComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            ImageGradientAutoSaveModeReflect(*serializeContext);
+
             serializeContext->Class<EditorImageGradientComponent, AzToolsFramework::Components::EditorComponentBase>()
-                ->Version(2)
+                ->Version(3)
                 ->Field("Previewer", &EditorImageGradientComponent::m_previewer)
                 ->Field("CreationSelectionChoice", &EditorImageGradientComponent::m_creationSelectionChoice)
                 ->Field("OutputResolution", &EditorImageGradientComponent::m_outputResolution)
                 ->Field("OutputFormat", &EditorImageGradientComponent::m_outputFormat)
-                ->Field("OutputImagePath", &EditorImageGradientComponent::m_outputImagePath)
                 ->Field("Configuration", &EditorImageGradientComponent::m_configuration)
+                ->Field("AutoSaveMode", &EditorImageGradientComponent::m_autoSaveMode)
                 ->Field("ComponentMode", &EditorImageGradientComponent::m_componentModeDelegate)
                 ;
 
@@ -53,6 +59,7 @@ namespace GradientSignal
                         "Sampling Type", "Sampling type to use for the image data.")
                         ->EnumAttribute(SamplingType::Point, "Point")
                         ->EnumAttribute(SamplingType::Bilinear, "Bilinear")
+                        ->EnumAttribute(SamplingType::Bicubic, "Bicubic")
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::AreImageOptionsReadOnly)
 
                     ->DataElement(AZ::Edit::UIHandlers::Vector2, &ImageGradientConfig::m_tiling,
@@ -66,7 +73,7 @@ namespace GradientSignal
 
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ImageGradientConfig::m_channelToUse,
                         "Channel To Use", "The channel to use from the image.")
-                        ->EnumAttribute(ChannelToUse::Red, "Red (default)")
+                        ->EnumAttribute(ChannelToUse::Red, "Red")
                         ->EnumAttribute(ChannelToUse::Green, "Green")
                         ->EnumAttribute(ChannelToUse::Blue, "Blue")
                         ->EnumAttribute(ChannelToUse::Alpha, "Alpha")
@@ -81,7 +88,7 @@ namespace GradientSignal
 
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ImageGradientConfig::m_customScaleType,
                         "Custom Scale", "Choose a type of scaling to be applied to the image data.")
-                        ->EnumAttribute(CustomScaleType::None, "None (default)")
+                        ->EnumAttribute(CustomScaleType::None, "None")
                         ->EnumAttribute(CustomScaleType::Auto, "Auto")
                         ->EnumAttribute(CustomScaleType::Manual, "Manual")
                         // Refresh the entire tree on scaling changes, because it will show/hide the scale ranges for Manual scaling.
@@ -121,6 +128,17 @@ namespace GradientSignal
                         ->EnumAttribute(ImageCreationOrSelection::CreateNewImage, "Create New Image")
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorImageGradientComponent::InComponentMode)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageGradientComponent::RefreshCreationSelectionChoice)
+
+                    // Auto-save option when editing an image.
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageGradientComponent::m_autoSaveMode, "Save Mode",
+                        "When editing an image, this selects whether to manually prompt for the save location, auto-save on every edit, "
+                        "or auto-save with incrementing file names on every edit.")
+                        ->EnumAttribute(ImageGradientAutoSaveMode::SaveAs, "Save As...")
+                        ->EnumAttribute(ImageGradientAutoSaveMode::AutoSave, "Auto Save")
+                        ->EnumAttribute(ImageGradientAutoSaveMode::AutoSaveWithIncrementalNames, "Auto Save With Incrementing Names")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorImageGradientComponent::GetAutoSaveVisibility)
+                        // There's no need to ChangeNotify when this property changes, it doesn't affect the behavior of the comopnent,
+                        // it's only queried at the point that an edit is completed.
 
                     // Controls for creating a new image
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageGradientComponent::m_outputResolution,
@@ -222,18 +240,15 @@ namespace GradientSignal
         m_previewer.Activate(GetEntityId());
         GradientImageCreatorRequestBus::Handler::BusConnect(GetEntityId());
 
-        // Make sure our image asset and creation/selection visibility settings are synced in the runtime component's configuration.
+        // Make sure our image asset settings are synced in the runtime component's configuration.
         RefreshImageAssetStatus();
-        RefreshCreationSelectionChoice();
 
-        auto entityComponentIdPair = AZ::EntityComponentIdPair(GetEntityId(), GetId());
-        m_componentModeDelegate.ConnectWithSingleComponentMode<EditorImageGradientComponent, EditorImageGradientComponentMode>(
-            entityComponentIdPair, nullptr);
+        EnableComponentMode();
     }
 
     void EditorImageGradientComponent::Deactivate()
     {
-        m_componentModeDelegate.Disconnect();
+        DisableComponentMode();
 
         m_currentImageAssetStatus = AZ::Data::AssetData::AssetStatus::NotLoaded;
         m_currentImageJobsPending = false;
@@ -341,14 +356,48 @@ namespace GradientSignal
         return statusChanged;
     }
 
+    void EditorImageGradientComponent::RefreshComponentModeStatus()
+    {
+        const bool paintModeVisible = (GetPaintModeVisibility() != AZ::Edit::PropertyVisibility::Hide);
+
+        if (paintModeVisible)
+        {
+            EnableComponentMode();
+        }
+        else
+        {
+            DisableComponentMode();
+        }
+    }
+
+    void EditorImageGradientComponent::EnableComponentMode()
+    {
+        if (m_componentModeDelegate.AddedToComponentMode())
+        {
+            return;
+        }
+
+        auto entityComponentIdPair = AZ::EntityComponentIdPair(GetEntityId(), GetId());
+        m_componentModeDelegate.ConnectWithSingleComponentMode<EditorImageGradientComponent, EditorImageGradientComponentMode>(
+            entityComponentIdPair, nullptr);
+    }
+
+    void EditorImageGradientComponent::DisableComponentMode()
+    {
+        if (!m_componentModeDelegate.AddedToComponentMode())
+        {
+            return;
+        }
+
+        m_componentModeDelegate.Disconnect();
+    }
+
+
     void EditorImageGradientComponent::OnCompositionChanged()
     {
         m_previewer.RefreshPreview();
         m_component.WriteOutConfig(&m_configuration);
         SetDirty();
-
-        // Make sure the creation/selection visibility flags have been refreshed correctly.
-        RefreshCreationSelectionChoice();
 
         if (RefreshImageAssetStatus() && GetImageOptionsVisibility())
         {
@@ -401,6 +450,12 @@ namespace GradientSignal
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
+    AZ::Crc32 EditorImageGradientComponent::GetAutoSaveVisibility() const
+    {
+        return (m_creationSelectionChoice == ImageCreationOrSelection::UseExistingImage) ? AZ::Edit::PropertyVisibility::Show
+                                                                                         : AZ::Edit::PropertyVisibility::Hide;
+    }
+
     AZ::Crc32 EditorImageGradientComponent::GetImageOptionsVisibility() const
     {
         return (m_creationSelectionChoice == ImageCreationOrSelection::UseExistingImage)
@@ -418,8 +473,7 @@ namespace GradientSignal
     {
         // Only show the image painting button while we're using an image, not while we're creating one.
         return ((GetImageOptionsVisibility() != AZ::Edit::PropertyVisibility::Hide)
-                && m_configuration.m_imageAsset.IsReady()
-                && !ImageHasPendingJobs(m_configuration.m_imageAsset.GetId()))
+                && (m_currentImageAssetStatus == AZ::Data::AssetData::AssetStatus::Ready) && !m_currentImageJobsPending)
             ? AZ::Edit::PropertyVisibility::ShowChildrenOnly
             : AZ::Edit::PropertyVisibility::Hide;
 
@@ -452,12 +506,12 @@ namespace GradientSignal
 
     AZ::IO::Path EditorImageGradientComponent::GetOutputImagePath() const
     {
-        return m_outputImagePath;
+        return AZ::IO::Path(GetImageSourcePath(m_configuration.m_imageAsset.GetId()));
     }
 
     void EditorImageGradientComponent::SetOutputImagePath(const AZ::IO::Path& outputImagePath)
     {
-        m_outputImagePath = outputImagePath;
+        m_component.SetImageAssetSourcePath(outputImagePath.String());
     }
 
     bool EditorImageGradientComponent::InComponentMode() const
@@ -465,27 +519,111 @@ namespace GradientSignal
         return m_componentModeDelegate.AddedToComponentMode();
     }
 
-    bool EditorImageGradientComponent::GetSaveLocation(AZ::IO::Path& fullPath, AZStd::string& relativePath)
+    AZ::IO::Path EditorImageGradientComponent::GetIncrementingAutoSavePath(const AZ::IO::Path& currentPath) const
     {
-        // Create a default path to save our image to if we haven't previously set the image path to anything yet.
-        if (m_outputImagePath.empty())
+        // Given a path for a source texture, this will return a new path with an incremented version number on the end.
+        // If the input path doesn't have a version number yet, it will get one added.
+        // Ex:
+        // 'Assets/Gradients/MyGradient_gsi.tif' -> 'Assets/Gradients/MyGradient_gsi.0000.tif'
+        // 'Assets/Gradients/MyGradient_gsi.0005.tif' -> 'Assets/Gradients/MyGradient_gsi.0006.tif'
+
+        // We'll use 4 digits as our minimum version number size. We use this to add leading 0s so that alpha-sorting of the
+        // numbers still puts them in the right order. For example, we'll get 08, 09, 10 instead of 0, 1, 10, 2. This does
+        // mean that the alpha-sorting will look wrong if we hit 5 digits, but it's a readability tradeoff.
+        constexpr int NumVersionDigits = 4;
+
+        // Store a copy of the filename in a string so that we can modify it below.
+        AZStd::string baseFileName = currentPath.Stem().Native();
+
+        size_t foundDotChar = baseFileName.find_last_of(AZ_FILESYSTEM_EXTENSION_SEPARATOR);
+        uint32_t versionNumber = 0;
+
+        // If the base name ends with '.####' (4 or more digits), then we'll treat that as our auto version number.
+        // We'll read in the existing number, strip it, and increment it.
+        if (foundDotChar <= (baseFileName.length() - NumVersionDigits - 1))
         {
-            m_outputImagePath = AZStd::string::format("%.*s_gsi.tif", AZ_STRING_ARG(GetEntity()->GetName()));
+            bool foundVersionNumber = true;
+            uint32_t tempVersionNumber = 0;
+
+            for (size_t digitChar = foundDotChar + 1; digitChar < baseFileName.length(); digitChar++)
+            {
+                // If any character after the . isn't a digit, then this isn't a valid version number, so leave it alone.
+                // (Ex: "image_gsi.o3de")
+                if (!isdigit(baseFileName.at(digitChar)))
+                {
+                    foundVersionNumber = false;
+                    break;
+                }
+
+                // Convert the version number that we've found one character at a time.
+                tempVersionNumber = (tempVersionNumber * 10) + (baseFileName.at(digitChar) - '0');
+            }
+
+            // If we found a valid version number, auto-increment it by one and strip off the previous one.
+            // We'll re-add the new incremented version number back on at the end.
+            if (foundVersionNumber)
+            {
+                versionNumber = tempVersionNumber + 1;
+                baseFileName = baseFileName.substr(0, foundDotChar);
+            }
         }
 
-        // Turn it into an absolute path to give to the "Save file" dialog.
-        fullPath = AzToolsFramework::GetAbsolutePathFromRelativePath(m_outputImagePath);
+        // Create a new string of the form <filename>.####
+        // For example, "entity1_gsi.tif" should become "entity1_gsi.0000.tif"
+        AZStd::string newFilename = AZStd::string::format(
+            AZ_STRING_FORMAT "%c%0*d" AZ_STRING_FORMAT,
+            AZ_STRING_ARG(baseFileName),
+            AZ_FILESYSTEM_EXTENSION_SEPARATOR,
+            NumVersionDigits, versionNumber,
+            AZ_STRING_ARG(currentPath.Extension().Native()));
 
-        // Prompt the user for the file name and path.
-        const QString fileFilter = ImageCreatorUtils::GetSupportedImagesFilter().c_str();
-        const QString absoluteSaveFilePath =
-            AzQtComponents::FileDialog::GetSaveFileName(nullptr, "Save As...", QString(fullPath.Native().c_str()), fileFilter);
+        AZ::IO::Path newPath = currentPath;
+        newPath.ReplaceFilename(AZ::IO::Path(newFilename));
+        return newPath;
+    }
+
+
+    bool EditorImageGradientComponent::GetSaveLocation(
+        AZ::IO::Path& fullPath, AZStd::string& relativePath, ImageGradientAutoSaveMode autoSaveMode)
+    {
+        QString absoluteSaveFilePath = QString(fullPath.Native().c_str());
+        bool promptForSaveName = false;
+
+        switch (autoSaveMode)
+        {
+        case ImageGradientAutoSaveMode::SaveAs:
+            promptForSaveName = true;
+            break;
+        case ImageGradientAutoSaveMode::AutoSave:
+            // If the user has never been prompted for a save location during this Editor run, make sure they're prompted at least once.
+            // If they have been prompted, then skip the prompt and just overwrite the existing location.
+            promptForSaveName = !m_promptedForSaveLocation;
+            break;
+        case ImageGradientAutoSaveMode::AutoSaveWithIncrementalNames:
+            fullPath = GetIncrementingAutoSavePath(fullPath);
+            absoluteSaveFilePath = QString(fullPath.Native().c_str());
+
+            // Only prompt if our auto-generated name matches an existing file.
+            promptForSaveName = AZ::IO::SystemFile::Exists(fullPath.Native().c_str());
+            break;
+        }
+
+        if (promptForSaveName)
+        {
+            // Prompt the user for the file name and path.
+            const QString fileFilter = ImageCreatorUtils::GetSupportedImagesFilter().c_str();
+            absoluteSaveFilePath = AzQtComponents::FileDialog::GetSaveFileName(nullptr, "Save As...", absoluteSaveFilePath, fileFilter);
+        }
 
         // User canceled the save dialog, so exit out.
         if (absoluteSaveFilePath.isEmpty())
         {
             return false;
         }
+
+        // If we prompted for a save name and didn't cancel out with an empty path, track that we've prompted the user so that we don't
+        // do it again for autosave.
+        m_promptedForSaveLocation = m_promptedForSaveLocation || promptForSaveName;
 
         const auto absoluteSaveFilePathUtf8 = absoluteSaveFilePath.toUtf8();
         const auto absoluteSaveFilePathCStr = absoluteSaveFilePathUtf8.constData();
@@ -538,7 +676,13 @@ namespace GradientSignal
     {
         AZ::IO::Path fullPathIO;
         AZStd::string relativePath;
-        if (!GetSaveLocation(fullPathIO, relativePath))
+
+        fullPathIO = AZ::IO::Path(GetImageSourcePath({}));
+
+        // Creating an image should always prompt the user for the save location.
+        const auto saveMode = ImageGradientAutoSaveMode::SaveAs;
+
+        if (!GetSaveLocation(fullPathIO, relativePath, saveMode))
         {
             return;
         }
@@ -562,11 +706,47 @@ namespace GradientSignal
             imageResolutionX, imageResolutionY, channels, m_outputFormat, pixelBuffer);
     }
 
+    AZStd::string EditorImageGradientComponent::GetImageSourcePath(const AZ::Data::AssetId& imageAssetId) const
+    {
+        if (imageAssetId.IsValid())
+        {
+            AZStd::string sourcePath;
+            bool sourceFileFound = false;
+            AZ::Data::AssetInfo assetInfo;
+            AZStd::string watchFolder;
+
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                sourceFileFound,
+                &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourceUUID,
+                imageAssetId.m_guid,
+                assetInfo,
+                watchFolder);
+
+            if (sourceFileFound)
+            {
+                bool success = AzFramework::StringFunc::Path::ConstructFull(
+                    watchFolder.c_str(), assetInfo.m_relativePath.c_str(), sourcePath, true);
+
+                if (success)
+                {
+                    return sourcePath;
+                }
+            }
+        }
+
+        // Invalid image asset or failed path creation, try creating a new name.
+        return AZStd::string::format(AZ_STRING_FORMAT "_gsi.tif", AZ_STRING_ARG(GetEntity()->GetName()));
+    }
+
     bool EditorImageGradientComponent::SaveImage()
     {
         AZ::IO::Path fullPathIO;
         AZStd::string relativePath;
-        if (!GetSaveLocation(fullPathIO, relativePath))
+
+        // Turn it into an absolute path to give to the "Save file" dialog.
+        fullPathIO = AZ::IO::Path(GetImageSourcePath(m_configuration.m_imageAsset.GetId()));
+
+        if (!GetSaveLocation(fullPathIO, relativePath, m_autoSaveMode))
         {
             return false;
         }
@@ -634,9 +814,6 @@ namespace GradientSignal
         // Set the asset hint to the source path so that we can display something reasonably correct in the component while waiting
         // for the product asset to get created.
         createdAsset.SetHint(relativePath);
-
-        // Set our output image path to whatever was selected so that we default to the same file name and path next time.
-        m_outputImagePath = fullPath.c_str();
 
         // Set the active image to the created one.
         m_component.SetImageAsset(createdAsset);

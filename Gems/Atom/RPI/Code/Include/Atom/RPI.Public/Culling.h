@@ -58,10 +58,10 @@ namespace AZ
 
                 //! World-space bounding sphere
                 AZ::Sphere m_boundingSphere;
-                //! World-space bouding oriented-bounding-box
+                //! World-space bounding oriented-bounding-box
                 AZ::Obb m_boundingObb;
 
-                //! Will only pass visibity if at least one of the drawListMask bits matches the view's drawListMask.
+                //! Will only pass visibility if at least one of the drawListMask bits matches the view's drawListMask.
                 //! Set to all 1's if the object type doesn't have a drawListMask
                 RHI::DrawListMask m_drawListMask;
                 //! Will hide this object if any of the hideFlags match the View's usage flags. Useful to hide objects from certain Views.
@@ -71,8 +71,6 @@ namespace AZ
                 //! UUID and type of the component that owns this cullable (optional)
                 AZ::Uuid m_componentUuid = AZ::Uuid::CreateNull();
                 uint32_t m_componentType = 0;
-
-                class RPI::Scene* m_scene = nullptr;  //[GFX_TODO][ATOM-13796] once the IVisibilitySystem supports multiple octree scenes, remove this
             };
             CullData m_cullData;
 
@@ -88,7 +86,7 @@ namespace AZ
             {
                 LodType m_lodType = LodType::Default;
                 LodOverride m_lodOverride = 0;
-                // the minimum possibe area a sphere enclosing a mesh projected onto the screen should have before it is culled.
+                // the minimum possible area a sphere enclosing a mesh projected onto the screen should have before it is culled.
                 float m_minimumScreenCoverage = 1.0f / 1080.0f; // For default, mesh should cover at least a screen pixel at 1080p to be drawn;
                 // The screen area decay between 0 and 1, i.e. closer to 1 -> lose quality immediately, closer to 0 -> never lose quality 
                 float m_qualityDecayRate = 0.5f;
@@ -112,6 +110,10 @@ namespace AZ
                 LodConfiguration m_lodConfiguration;
             };
             LodData m_lodData;
+
+            using FlagType = uint32_t;
+            FlagType m_prevFlags = 0;
+            AZStd::atomic<FlagType> m_flags = 0;
 
             //! Flag indicating if the object is visible in any view, meaning it passed the culling tests in the previous frame.
             //! This flag must be manually cleared by the Cullable object every frame.
@@ -196,7 +198,7 @@ namespace AZ
 
             //! Finds or creates a new CullStats struct for a given view.
             //! Once accessed, use the CullStats to accumulate metrics for a frame.
-            //! Is designed to be threadsafe
+            //! Is designed to be thread-safe
             CullStats& GetCullStatsForView(View* view);
 
             void ResetCullStats();
@@ -218,7 +220,7 @@ namespace AZ
             AZStd::mutex m_perViewCullStatsMutex;
         };
 
-        //! Selects an lod (based on size-in-screnspace) and adds the appropriate DrawPackets to the view.
+        //! Selects an lod (based on size-in-screen-space) and adds the appropriate DrawPackets to the view.
         uint32_t AddLodDataToView(const Vector3& pos, const Cullable::LodData& lodData, RPI::View& view);
 
         //! Centralized manager for culling-related processing for a given scene.
@@ -239,7 +241,7 @@ namespace AZ
 
             struct OcclusionPlane
             {
-                // World space corners of the occluson plane
+                // World space corners of the occlusion plane
                 Vector3 m_cornerBL;
                 Vector3 m_cornerTL;
                 Vector3 m_cornerTR;
@@ -275,12 +277,12 @@ namespace AZ
 
             //! Adds a Cullable to the underlying visibility system(s).
             //! Must be called at least once on initialization and whenever a Cullable's position or bounds is changed.
-            //! Is not threadsafe, so call this from the main thread outside of Begin/EndCulling()
+            //! Is not thread-safe, so call this from the main thread outside of Begin/EndCulling()
             void RegisterOrUpdateCullable(Cullable& cullable);
 
             //! Removes a Cullable from the underlying visibility system(s).
             //! Must be called once for each cullable object on de-initialization.
-            //! Is not threadsafe, so call this from the main thread outside of Begin/EndCulling()
+            //! Is not thread-safe, so call this from the main thread outside of Begin/EndCulling()
             void UnregisterCullable(Cullable& cullable);
 
             //! Returns the number of cullables that have been added to the CullingScene

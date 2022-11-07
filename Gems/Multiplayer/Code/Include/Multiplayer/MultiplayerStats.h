@@ -28,7 +28,8 @@ namespace Multiplayer
     enum MultiplayerStatIds
     {
         MultiplayerStat_EntityCount = 1001,
-        MultiplayerStat_FrameTime
+        MultiplayerStat_FrameTime,
+        MultiplayerStat_ClientConnectionCount
     };
 
     struct MultiplayerStats

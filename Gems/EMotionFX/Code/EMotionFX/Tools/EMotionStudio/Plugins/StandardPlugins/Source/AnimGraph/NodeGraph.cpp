@@ -21,10 +21,14 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodeConnection.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodeGraph.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodeGraphWidget.h>
-
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ZoomableLineEdit.h>
 
 namespace EMStudio
 {
+    static const int sGroupRectContentPadding = 10;
+    static const int sGroupRectTextHPadding = 8;
+    static const int sGroupRectTextVPadding = 8;
+    static const int sGroupRectTextFontSize = 14;
     float NodeGraph::sLowestScale = 0.15f;
 
     NodeGraph::NodeGraph(const QModelIndex& modelIndex, NodeGraphWidget* graphWidget)
@@ -89,10 +93,12 @@ namespace EMStudio
         m_fontMetrics = new QFontMetrics(m_font);
 
         // Group nodes
-        m_groupFont.setPixelSize(18);
+        m_groupFont.setPixelSize(sGroupRectTextFontSize);
         m_groupFontMetrics.reset(new QFontMetrics(m_font));
-    }
+        m_nodeGroupNameLineEdit.reset(new ZoomableLineEdit(m_graphWidget));
 
+        connect(m_nodeGroupNameLineEdit.get(), &QLineEdit::editingFinished, this, &NodeGraph::DisableNameEditForNodeGroup);
+    }
 
     // destructor
     NodeGraph::~NodeGraph()
@@ -811,7 +817,7 @@ namespace EMStudio
             EMotionFX::AnimGraphNode* node = m_parentReferenceNode.data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
             EMotionFX::AnimGraphReferenceNode* referenceNode = static_cast<EMotionFX::AnimGraphReferenceNode*>(node);
             EMotionFX::AnimGraph* referencedAnimGraph = referenceNode->GetReferencedAnimGraph();
-            
+
             QString titleLabel;
             if (!referencedAnimGraph)
             {
@@ -2105,6 +2111,11 @@ namespace EMStudio
 
     GraphNode* NodeGraph::FindGraphNode(const EMotionFX::AnimGraphNode* node)
     {
+        return const_cast<GraphNode*>(std::as_const(*this).FindGraphNode(node));
+    }
+
+    const GraphNode* NodeGraph::FindGraphNode(const EMotionFX::AnimGraphNode* node) const
+    {
         for (const AZStd::pair<QPersistentModelIndex, AZStd::unique_ptr<GraphNode> >& modelIndexAndGraphNode : m_graphNodeByModelIndex)
         {
             // Since the OS wont allocate different objects on the same address, we can use the pointer to
@@ -2397,14 +2408,76 @@ namespace EMStudio
         FitGraphOnScreen(graphWidgetRect.width(), graphWidgetRect.height(), QPoint(0, 0), false);
     }
 
-    void NodeGraph::RenderNodeGroups(QPainter& painter)
+    QRect NodeGraph::ComputeNodeGroupRect(const EMotionFX::AnimGraphNodeGroup* nodeGroup) const
+    {
+        EMotionFX::AnimGraphNode* currentNode =
+            m_currentModelIndex.data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
+
+        QRect groupRect;
+        QRect nodeRect;
+
+        int32_t top = std::numeric_limits<int32_t>::max();
+        int32_t bottom = std::numeric_limits<int32_t>::lowest();
+        int32_t left = std::numeric_limits<int32_t>::max();
+        int32_t right = std::numeric_limits<int32_t>::lowest();
+
+        // get the number of nodes inside the node group and skip the group in case there are no nodes in
+        const size_t numNodes = nodeGroup->GetNumNodes();
+        if (numNodes == 0)
+        {
+            return groupRect;
+        }
+
+        bool nodesInGroupDisplayed = false;
+        for (size_t j = 0; j < numNodes; ++j)
+        {
+            // get the graph node by the id and skip it if the node is not inside the currently visible node graph
+            const EMotionFX::AnimGraphNodeId nodeId = nodeGroup->GetNode(j);
+            EMotionFX::AnimGraphNode* node = currentNode->RecursiveFindNodeById(nodeId);
+            const GraphNode* graphNode = FindGraphNode(node);
+            if (graphNode)
+            {
+                nodesInGroupDisplayed = true;
+                nodeRect = graphNode->GetRect();
+                top = MCore::Min3<int32_t>(top, nodeRect.top(), nodeRect.bottom());
+                bottom = MCore::Max3<int32_t>(bottom, nodeRect.top(), nodeRect.bottom());
+                left = MCore::Min3<int32_t>(left, nodeRect.left(), nodeRect.right());
+                right = MCore::Max3<int32_t>(right, nodeRect.left(), nodeRect.right());
+            }
+
+            if (nodesInGroupDisplayed)
+            {
+                groupRect.setTop(top - (sGroupRectContentPadding + m_groupFont.pixelSize() + 2 * sGroupRectTextVPadding));
+                groupRect.setBottom(bottom + sGroupRectContentPadding);
+                groupRect.setLeft(left - sGroupRectContentPadding);
+                groupRect.setRight(right + sGroupRectContentPadding);
+            }
+        }
+
+        return groupRect;
+    }
+
+    bool NodeGraph::CheckInsideNodeGroupTitleRect(const EMotionFX::AnimGraphNodeGroup* nodeGroup, const QPoint& globalPoint) const
+    {
+        QRect groupRect = ComputeNodeGroupRect(nodeGroup);
+
+        if (groupRect.isEmpty())
+        {
+            return false;
+        }
+
+        groupRect.setHeight(m_groupFontMetrics->height());
+        groupRect.setLeft(groupRect.left() + sGroupRectContentPadding);
+
+        return GetTransform().mapRect(groupRect).contains(globalPoint);
+    }
+
+    EMotionFX::AnimGraphNodeGroup* NodeGraph::FindNodeGroup(const QPoint& globalPoint) const
     {
         EMotionFX::AnimGraphNode* currentNode = m_currentModelIndex.data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
         EMotionFX::AnimGraph* animGraph = currentNode->GetAnimGraph();
 
         // get the number of node groups and iterate through them
-        QRect nodeRect;
-        QRect groupRect;
         const size_t numNodeGroups = animGraph->GetNumNodeGroups();
         for (size_t i = 0; i < numNodeGroups; ++i)
         {
@@ -2417,64 +2490,130 @@ namespace EMStudio
                 continue;
             }
 
-            // get the number of nodes inside the node group and skip the group in case there are no nodes in
-            const size_t numNodes = nodeGroup->GetNumNodes();
-            if (numNodes == 0)
+            QRect groupRect = GetTransform().mapRect(ComputeNodeGroupRect(nodeGroup));
+            if (groupRect.contains(globalPoint))
+            {
+                return nodeGroup;
+            }
+        }
+
+        return nullptr;
+    }
+
+    void NodeGraph::RenderNodeGroups(QPainter& painter)
+    {
+        EMotionFX::AnimGraphNode* currentNode =
+            m_currentModelIndex.data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
+        EMotionFX::AnimGraph* animGraph = currentNode->GetAnimGraph();
+
+        // get the number of node groups and iterate through them
+        const size_t numNodeGroups = animGraph->GetNumNodeGroups();
+        for (size_t i = 0; i < numNodeGroups; ++i)
+        {
+            // get the current node group
+            EMotionFX::AnimGraphNodeGroup* nodeGroup = animGraph->GetNodeGroup(i);
+
+            // skip the node group if it isn't visible
+            if (nodeGroup->GetIsVisible() == false)
             {
                 continue;
             }
 
-            int32 top = std::numeric_limits<int32>::max();
-            int32 bottom = std::numeric_limits<int32>::lowest();
-            int32 left = std::numeric_limits<int32>::max();
-            int32 right = std::numeric_limits<int32>::lowest();
+            QRect groupRect = ComputeNodeGroupRect(nodeGroup);
 
-            bool nodesInGroupDisplayed = false;
-            for (size_t j = 0; j < numNodes; ++j)
-            {
-                // get the graph node by the id and skip it if the node is not inside the currently visible node graph
-                const EMotionFX::AnimGraphNodeId nodeId = nodeGroup->GetNode(j);
-                EMotionFX::AnimGraphNode* node = currentNode->RecursiveFindNodeById(nodeId);
-                GraphNode* graphNode = FindGraphNode(node);
-                if (graphNode)
-                {
-                    nodesInGroupDisplayed = true;
-                    nodeRect = graphNode->GetRect();
-                    top = MCore::Min3<int32>(top, nodeRect.top(), nodeRect.bottom());
-                    bottom = MCore::Max3<int32>(bottom, nodeRect.top(), nodeRect.bottom());
-                    left = MCore::Min3<int32>(left, nodeRect.left(), nodeRect.right());
-                    right = MCore::Max3<int32>(right, nodeRect.left(), nodeRect.right());
-                }
-            }
-
-            if (nodesInGroupDisplayed)
+            if (!groupRect.isNull())
             {
                 // get the color from the node group and set it to the painter
                 AZ::Color azColor;
                 azColor.FromU32(nodeGroup->GetColor());
+
+                // Draw outer rect
                 QColor color = AzQtComponents::ToQColor(azColor);
-                color.setAlpha(150);
+                color.setAlpha(255);
                 painter.setPen(color);
                 color.setAlpha(40);
                 painter.setBrush(color);
+                painter.drawRect(groupRect);
 
-                const int32 border = 10;
-                groupRect.setTop(top - (border + 15));
-                groupRect.setBottom(bottom + border);
-                groupRect.setLeft(left - border);
-                groupRect.setRight(right + border);
-                painter.drawRoundedRect(groupRect, 7, 7);
-
-                QRect textRect = groupRect;
-                textRect.setHeight(m_groupFontMetrics->height());
-                textRect.setLeft(textRect.left() + border);
-
-                // draw the name on top
+                // Draw label rect
+                groupRect.setHeight(sGroupRectTextFontSize + 2 * sGroupRectTextHPadding);
                 color.setAlpha(255);
-                GraphNode::RenderText(painter, nodeGroup->GetName(), color, m_groupFont, *m_groupFontMetrics, Qt::AlignLeft, textRect);
+                painter.setBrush(color);
+                painter.drawRect(groupRect);
+
+                if (nodeGroup->IsNameEditOngoing())
+                {
+                    const int x_delta = (groupRect.left() + sGroupRectTextHPadding) * GetScale();
+                    const int y_delta = (groupRect.top() +
+                                         (m_groupFont.pixelSize() + 2 * sGroupRectTextVPadding - m_nodeGroupNameLineEdit->height()) / 2.0) *
+                        GetScale();
+                    m_nodeGroupNameLineEdit->move(m_transform.dx() + x_delta, m_transform.dy() + y_delta);
+                    m_nodeGroupNameLineEdit->setBaseSize(
+                        QSize(groupRect.width() - 2 * sGroupRectTextHPadding, m_groupFontMetrics->height()));
+                    m_nodeGroupNameLineEdit->setBaseFontPointSizeF(m_groupFont.pointSizeF());
+                    m_nodeGroupNameLineEdit->setScale(GetScale());
+                    m_nodeGroupNameLineEdit->show();
+                }
+                else
+                {
+                    // Draw group name label
+                    m_nodeGroupNameLineEdit->hide();
+                    QRect textRect = groupRect;
+                    textRect.setHeight(m_groupFontMetrics->height());
+                    textRect.setLeft(textRect.left() + sGroupRectTextHPadding);
+                    textRect.setTop(textRect.top() + sGroupRectTextVPadding);
+
+                    // draw the name on top
+                    GraphNode::RenderText(
+                        painter,
+                        nodeGroup->GetName(),
+                        AzQtComponents::ToQColor(AZ::Colors::Black),
+                        m_groupFont,
+                        *m_groupFontMetrics,
+                        Qt::AlignLeft,
+                        textRect);
+                }
             }
-        }   // for all node groups
+        } // for all node groups
     }
+
+    void NodeGraph::EnableNameEditForNodeGroup(EMotionFX::AnimGraphNodeGroup* nodeGroup)
+    {
+        if (!nodeGroup)
+        {
+            return;
+        }
+
+        nodeGroup->SetNameEditOngoing(true);
+        m_currentNameEditNodeGroup = nodeGroup;
+        m_nodeGroupNameLineEdit->setText(nodeGroup->GetName());
+        m_nodeGroupNameLineEdit->setFocus();
+    }
+
+    void NodeGraph::DisableNameEditForNodeGroup()
+    {
+        if (m_currentNameEditNodeGroup)
+        {
+            m_currentNameEditNodeGroup->SetName(m_nodeGroupNameLineEdit->text().toStdString().c_str());
+            m_nodeGroupNameLineEdit->setText({});
+            m_currentNameEditNodeGroup->SetNameEditOngoing(false);
+            m_currentNameEditNodeGroup = nullptr;
+        }
+    }
+
+    void NodeGraph::RemoveNodeGroup(EMotionFX::AnimGraphNodeGroup* nodeGroup)
+    {
+        EMotionFX::AnimGraphNode* currentNode =
+            m_currentModelIndex.data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
+        EMotionFX::AnimGraph* animGraph = currentNode->GetAnimGraph();
+
+        size_t idx = animGraph->FindNodeGroupIndexByName(nodeGroup->GetName());
+        if (idx != InvalidIndex)
+        {
+            animGraph->RemoveNodeGroup(idx);
+        }
+    }
+
 }   // namespace EMotionStudio
 
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/moc_NodeGraph.cpp>

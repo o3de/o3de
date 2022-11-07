@@ -58,6 +58,8 @@ namespace AzToolsFramework
         {
             setSortingEnabled(true);
             setItemDelegate(m_delegate);
+            connect(m_delegate, &EntryDelegate::RenameEntry, this, &AssetBrowserTreeView::AfterRename);
+
             header()->hide();
 
             setContextMenuPolicy(Qt::CustomContextMenu);
