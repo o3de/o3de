@@ -423,6 +423,8 @@ set(FILES
     Memory/SystemAllocator.h
     Metrics/EventLoggerFactoryImpl.h
     Metrics/EventLoggerFactoryImpl.cpp
+    Metrics/EventLoggerReflectUtils.cpp
+    Metrics/EventLoggerReflectUtils.h
     Metrics/EventLoggerUtils.cpp
     Metrics/EventLoggerUtils.h
     Metrics/JsonTraceEventLogger.h
