@@ -168,10 +168,10 @@ POSTFX_LAYER_CATEGORY = {
 # Directional Light Intensity Mode
 DIRECTIONAL_LIGHT_INTENSITY_MODE = {
     'Ev100': 5,
-    'Nit': 3,
+    'Lux': 2,
 }
 
-# Directional Light Intensity Mode
+# Directional Light Shadow Filter Method
 DIRECTIONAL_LIGHT_SHADOW_FILTER_METHOD = {
     'None': 0,
     'PCF': 1,
@@ -499,9 +499,10 @@ class AtomComponentProperties:
         """
         Directional Light component properties.
           - 'Camera' an EditorEntity.id reference to the Camera component that controls cascaded shadow view frustum.
-            Must be a different entity than the one which hosts Directional Light component.
-          - 'Color' Color of the Light. (
-          - 'Intensity mode' Allows specifying light values in Lux or Ev100.
+               Must be a different entity than the one which hosts Directional Light component.
+          - 'Color' Color of the Light.
+          - 'Intensity mode' Allows specifying light values in Lux or Ev100. (Lux, Ev100)
+               (Uses above dictionary DIRECTIONAL_LIGHT_INTENSITY_MODE)
           - 'Intensity' Intensity of the light in the set photometric unit.
           - 'Angular diameter' Angular diameter of the directional light in degrees. The sun is about 0.5.
           - 'Camera' Entity of the camera for cascaded shadowmap view frustum.
@@ -510,34 +511,35 @@ class AtomComponentProperties:
           - 'Cascade count' Number of cascades.
           - 'Automatic splitting' Switch splitting of shadowmap frustum to cascades automatically or not.
           - 'Split ratio' Ratio to lerp between the two types of frustrum splitting scheme.
-          0 = Uniform scheme which will split the frustum evenly across all cascades.
-          1 = Logarithmic scheme which is designed to split the frustrum in a logarithmic fashion in order to enable us
-          to produce a more optimal perspective aliasing across the frustrum. [0,1]
+               0 = Uniform scheme which will split the frustum evenly across all cascades.
+               1 = Logarithmic scheme which is designed to split the frustrum in a logarithmic fashion in order to enable us
+              to produce a more optimal perspective aliasing across the frustrum. [0,1]
           - 'Far depth cascade' Far depth of each cascade. The value of the index greater than or equal to cascade
-            count is ignored.
+               count is ignored.
           - 'Ground height' Height of the ground.  Used to correct position of cascades.
           - 'Cascade correction' Enable position correction of cascades to optimize the appearance for certain
-            camera positions.
+               camera positions.
           - 'Debug coloring' Enable coloring to see how cascades places 0:red, 1:green, 2:blue, 3:yellow.
           - 'Shadow filter method' Filtering method of edge-softening of shadows.
-            None: no Filtering
-            PCF: Percentage-closer filtering
-            ESM: Exponential shadow maps
-            ESM+PCF: ESM with a PCF fallback
-            For BehaviorContext (or TrackView), None=0, PCF=1, ESM=2, ESM=PCF=3
+               (Uses above dictionary DIRECTIONAL_LIGHT_SHADOW_FILTER_METHOD)
+               None: no Filtering
+               PCF: Percentage-closer filtering
+               ESM: Exponential shadow maps
+               ESM+PCF: ESM with a PCF fallback
+               For BehaviorContext (or TrackView), None=0, PCF=1, ESM=2, ESM=PCF=3
           - 'Filtering sample count' This is used only when the pixel is predicted to be on the boundary.
           - 'Shadow Receiver Plan Bias Enable' This reduces shadow acne when using large pcf kernels.
           - 'Shadow Bias' Reduces acne by applying a fixed bias along z in shadow-space.
-            If this is 0, no biasing is applied. [0,0.2]
+               If this is 0, no biasing is applied. [0.0,0.2]
           - 'Normal Shadow Bias' Reducing acne by biasing the shadowmap lookup along the geometric normal.
-            If this is 0, no biasing is applied. [0,10]
+               If this is 0, no biasing is applied. [min 0, max 10]
           - 'Blend between cascades' Enable smooth blending between shadowmap cascades.
           - 'Fullscreen Blur' Enables fullscreen blur on fullscreen sunlight shadows.
           - 'Fullscreen Blur Strength' Affects how strong the fullscreen is. Reccomended value is 0.67 [0.0, 0.95]
           - 'Fullscreen Blur Sharpness' Affect how sharp the fullscreen shadow blur appears around edges.
-            Recommended value is 50 [0.0, 400.00]
+               Recommended value is 50 [0.0, 400.00]
           - 'Affects GI' Controls whether this light affects diffuse global illumination.
-          - 'Factor' Multiplier on the amount of contribution to diffuse global illumination. [0, 2]
+          - 'Factor' Multiplier on the amount of contribution to diffuse global illumination. [0.0, 2.0]
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -687,9 +689,9 @@ class AtomComponentProperties:
         """
         properties = {
             'name': 'Global Skylight (IBL)',
-            'Diffuse Image': 'Controller|Configuration|Diffuse Image',
-            'Specular Image': 'Controller|Configuration|Specular Image',
-            'Exposure': 'Controller|Configuration|Exposure',
+            'Diffuse Image': 'Diffuse Image',
+            'Specular Image': 'Specular Image',
+            'Exposure': 'Exposure',
         }
         return properties[property]
 
@@ -1058,6 +1060,7 @@ class AtomComponentProperties:
           - 'Minimum Screen Coverage' portion of the screen at which the mesh is culled; 0 (never culled) to 1
           - 'Quality Decay Rate' rate at which the mesh degrades; 0 (never) to 1 (lowest quality imediately)
           - 'Lod Override' which specific LOD to always use; default or other named LOD
+          - 'Vertex Count LOD0' the vertices in LOD 0 of the model
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         :rtype: str
@@ -1074,6 +1077,7 @@ class AtomComponentProperties:
             'Minimum Screen Coverage': 'Controller|Configuration|Lod Configuration|Minimum Screen Coverage',
             'Quality Decay Rate': 'Controller|Configuration|Lod Configuration|Quality Decay Rate',
             'Lod Override': 'Controller|Configuration|Lod Configuration|Lod Override',
+            'Vertex Count LOD0': 'Model Stats|Mesh Stats|LOD 0|Vert Count'
         }
         return properties[property]
 
