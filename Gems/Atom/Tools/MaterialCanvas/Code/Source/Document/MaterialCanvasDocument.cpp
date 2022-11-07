@@ -1361,10 +1361,20 @@ namespace MaterialCanvas
                 templateFileData.ReplaceLinesInBlock(
                     "O3DE_GENERATED_INCLUDES_BEGIN",
                     "O3DE_GENERATED_INCLUDES_END",
-                    [&includePaths]([[maybe_unused]] const AZStd::string& blockHeader)
+                    [&includePaths, &templateFileData]([[maybe_unused]] const AZStd::string& blockHeader)
                     {
-                        // Include file paths will need to be specified as or converted to include statements.
-                        return AZStd::vector<AZStd::string>(includePaths.begin(), includePaths.end());
+                        // Include file paths will need to be converted to include statements.
+                        AZStd::vector<AZStd::string> includeStatements;
+                        includeStatements.reserve(includePaths.size());
+                        for (const auto& path : includePaths)
+                        {
+                            // TODO Replace relative path reference function
+                            // The relative path reference function will only work for include files in the same gem.
+                            includeStatements.push_back(AZStd::string::format(
+                                "#include <%s>;",
+                                AtomToolsFramework::GetPathToExteralReference(templateFileData.m_outputPath, path).c_str()));
+                        }
+                        return includeStatements;
                     });
 
                 // Inject class definitions found while traversing the graph.
