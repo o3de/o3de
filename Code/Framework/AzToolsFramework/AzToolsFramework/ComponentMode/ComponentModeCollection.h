@@ -56,7 +56,7 @@ namespace AzToolsFramework
             /// ComponentMode, add them too (duplicates will not be added - handled by AddComponentMode)
             void AddOtherSelectedEntityModes();
 
-            /// Return is the Editor-wide ComponentMode state active.
+            /// Return if the Editor-wide ComponentMode state active.
             bool InComponentMode() const { return m_componentModeState == ComponentModeState::Active; }
             /// Are ComponentModes in the process of being added.
             /// Used to determine if other selected entities with the same Component type should also be added.
@@ -65,6 +65,9 @@ namespace AzToolsFramework
             /// Return if this Entity and its Component are currently in ComponentMode.
             bool AddedToComponentMode(
                 const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid& componentType);
+
+            /// Return if the Component pair is connected to Component mode delegate.
+            bool IsConnectedToDelegate(const AZ::EntityComponentIdPair& entityComponentIdPair);
 
             /// Move to the next active ComponentMode so the Actions for that mode become available (it is now 'selected').
             bool SelectNextActiveComponentMode();
