@@ -87,9 +87,9 @@ namespace AZ::Settings
             return AZStd::unexpected(ParseErrorString::format("The Parse Config Entry function is not valid for parsing a Windows Style INI line"));
         }
 
-        // The ConfigFile is parsed using into a fixed_vector of ConfigBufferMaxSize below
+        // The ConfigFile is parsed into a fixed_vector of ConfigBufferMaxSize below
         // which avoids performing any dynamic memory allocations during parsing
-        // Only the user supplied callback functions as part of the ConfigParserSettings can potentailly allocate memory
+        // Only the user supplied callback functions as part of the ConfigParserSettings can potentially allocate memory
         size_t remainingFileLength = configStream.GetLength();
         if (remainingFileLength == 0)
         {
