@@ -59,6 +59,9 @@ def edit_gem_props(gem_path: pathlib.Path = None,
                    new_tags: list or str = None,
                    remove_tags: list or str = None,
                    replace_tags: list or str = None,
+                   new_platforms: list or str = None,
+                   remove_platforms: list or str = None,
+                   replace_platforms: list or str = None
                    ) -> int:
 
     if not gem_path and not gem_name:
@@ -103,6 +106,9 @@ def edit_gem_props(gem_path: pathlib.Path = None,
 
     update_key_dict['user_tags'] = update_values_in_key_list(gem_json_data.get('user_tags', []), new_tags,
                                                      remove_tags, replace_tags)
+    
+    update_key_dict['platforms'] = update_values_in_key_list(gem_json_data.get('platforms', []), new_platforms,
+                                                     remove_platforms, replace_platforms)
 
     gem_json_data.update(update_key_dict)
 
@@ -161,6 +167,12 @@ def add_parser_args(parser):
                        help='Removes tag(s) from the user_tags property. Can be specified multiple times.')
     group.add_argument('-rt', '--replace-tags', type=str, nargs='*', required=False,
                        help='Replace tag(s) in user_tags property. Can be specified multiple times.')
+    group.add_argument('-apl', '--add-platforms', type=str, nargs='*', required=False,
+                       help='Adds platform(s) to platforms property. Can be specified multiple times.')
+    group.add_argument('-dpl', '--remove-platforms', type=str, nargs='*', required=False,
+                       help='Removes platform(s) from the platforms property. Can be specified multiple times.')
+    group.add_argument('-rpl', '--replace-platforms', type=str, nargs='*', required=False,
+                       help='Replace platform(s) in platforms property. Can be specified multiple times.')
     parser.set_defaults(func=_edit_gem_props)
 
 
