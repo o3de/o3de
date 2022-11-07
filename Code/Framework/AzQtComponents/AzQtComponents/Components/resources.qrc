@@ -350,6 +350,7 @@
     <file>img/UI20/toolbar/Debugging.svg</file>
     <file>img/UI20/toolbar/Deploy.svg</file>
     <file>img/UI20/toolbar/Environment.svg</file>
+    <file>img/UI20/toolbar/Eyedropper.svg</file>
     <file>img/UI20/toolbar/Flowgraph.svg</file>
     <file>img/UI20/toolbar/Follow_terrain.svg</file>
     <file>img/UI20/toolbar/Get_physics_state.svg</file>
@@ -383,6 +384,7 @@
     <file>img/UI20/toolbar/Simulate_Physics.svg</file>
     <file>img/UI20/toolbar/Simulate_Physics_on_selected_objects.svg</file>
     <file>img/UI20/toolbar/SketchMode.svg</file>
+    <file>img/UI20/toolbar/Smooth.svg</file>
     <file>img/UI20/toolbar/Terrain.svg</file>
     <file>img/UI20/toolbar/Terrain_Texture.svg</file>
     <file>img/UI20/toolbar/Rotate.svg</file>

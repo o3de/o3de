@@ -32,12 +32,48 @@ AZ_CVAR(
     AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
     "If set, enables experimental Document Property Editor support, replacing the Reflected Property Editor where possible");
 
+
+template <class T>
+void DetachAndHide(T* widget)
+{
+    if (widget)
+    {
+        widget->hide();
+        widget->setParent(nullptr);
+    }
+}
+
 namespace AzToolsFramework
 {
-    DPELayout::DPELayout(int depth, QWidget* parentWidget)
-        : QHBoxLayout(parentWidget)
-        , m_depth(depth)
+    DPELayout::DPELayout(QWidget* parent)
+        : QHBoxLayout(parent)
+        , m_depth(-1)
     {
+    }
+
+    void DPELayout::Init(int depth, [[maybe_unused]] QWidget* parentWidget)
+    {
+        m_depth = depth;
+    }
+
+    void DPELayout::Clear()
+    {
+        m_showExpander = false;
+        m_expanded = true;
+        delete m_expanderWidget;
+        m_expanderWidget = nullptr;
+        m_sharePriorColumn.clear();
+        m_cachedLayoutSize = QSize();
+        m_cachedMinLayoutSize = QSize();
+        for (int index = count(); index > 0; --index)
+        {
+            auto theItem = takeAt(index - 1);
+            auto theWidget = theItem->widget();
+            if (theWidget)
+            {
+                theWidget->deleteLater();
+            }
+        }
     }
 
     DPELayout::~DPELayout()
@@ -189,13 +225,14 @@ namespace AzToolsFramework
             // iterate over each item, laying them left to right
             int layoutIndex = 0;
             const int itemCountActual = count();
-            while (layoutIndex  < itemCountActual)
+            while (layoutIndex < itemCountActual)
             {
                 size_t currentWidget = static_cast<size_t>(layoutIndex);
                 AzToolsFramework::DPERowWidget::AttributeInfo* attributes = GetRow()->GetAttributes(currentWidget);
 
                 //! If the current widget is the first widget of a shared column, create the shared column layout and add widgets to it
-                if (sharedVectorIndex < m_sharePriorColumn.size() && layoutIndex == static_cast<int>(m_sharePriorColumn[sharedVectorIndex][0]))
+                if (sharedVectorIndex < m_sharePriorColumn.size() &&
+                    layoutIndex == static_cast<int>(m_sharePriorColumn[sharedVectorIndex][0]))
                 {
                     QHBoxLayout* sharedColumnLayout = new QHBoxLayout;
                     const int numItems = static_cast<int>(m_sharePriorColumn[sharedVectorIndex].size());
@@ -435,53 +472,64 @@ namespace AzToolsFramework
         return numWidgets;
     }
 
-    DPERowWidget::DPERowWidget(int depth, DPERowWidget* parentRow)
+    DPERowWidget::DPERowWidget()
         : QFrame(nullptr) // parent will be set when the row is added to its layout
-        , m_parentRow(parentRow)
-        , m_depth(depth)
-        , m_columnLayout(new DPELayout(depth, this))
+        , m_parentRow(nullptr)
+        , m_depth(-1)
+        , m_columnLayout(new DPELayout(this))
     {
+        m_columnLayout->Init(-1, this);
         // allow horizontal stretching, but use the vertical size hint exactly
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         QObject::connect(m_columnLayout, &DPELayout::expanderChanged, this, &DPERowWidget::onExpanderChanged);
     }
 
-    DPERowWidget::~DPERowWidget()
+    void DPERowWidget::Init(int depth, DPERowWidget* parentRow)
     {
-        Clear();
+        m_parentRow = parentRow;
+        m_depth = depth;
+        m_columnLayout->Init(depth, parentRow);
     }
 
     void DPERowWidget::Clear()
     {
-        if (!m_widgetToPropertyHandlerInfo.empty())
+        auto dpe = GetDPE();
+        for (auto childWidget : m_domOrderedChildren)
         {
-            DocumentPropertyEditor* dpe = GetDPE();
-            // propertyHandlers own their widgets, so don't destroy them here. Set them free!
-            for (auto propertyWidgetIter = m_widgetToPropertyHandlerInfo.begin(), endIter = m_widgetToPropertyHandlerInfo.end();
-                 propertyWidgetIter != endIter;
-                 ++propertyWidgetIter)
+            if (childWidget)
             {
-                QWidget* propertyWidget = propertyWidgetIter->first;
-                auto toRemove = AZStd::remove(m_domOrderedChildren.begin(), m_domOrderedChildren.end(), propertyWidget);
-                m_domOrderedChildren.erase(toRemove, m_domOrderedChildren.end());
-                propertyWidget->hide();
-                m_columnLayout->removeWidget(propertyWidget);
-                propertyWidget->setParent(nullptr);
-                dpe->ReleaseHandler(AZStd::move(propertyWidgetIter->second.hanlderInterface));
+                if (auto foundPropertIter = m_widgetToPropertyHandlerInfo.find(childWidget);
+                    foundPropertIter != m_widgetToPropertyHandlerInfo.end())
+                {
+                    // propertyHandlers own their widgets, so don't destroy them here. Set them free!
+                    DetachAndHide(childWidget);
+                    dpe->ReleaseHandler(AZStd::move(foundPropertIter->second.hanlderInterface));
+                }
+                else if (auto rowWidget = qobject_cast<DPERowWidget*>(childWidget))
+                {
+                    dpe->GetRowPool()->RecycleInstance(rowWidget);
+                }
+                else // if it's not a row or a PropertyHandler, it must be a label
+                {
+                    auto* label = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget);
+                    AZ_Assert(label, "unknown widget in DPERowWidget!");
+                    if (label)
+                    {
+                        dpe->GetLabelPool()->RecycleInstance(label);
+                    }
+                }
             }
-            m_widgetToPropertyHandlerInfo.clear();
-            ClearAttributes();
         }
 
-        // delete all remaining child widgets, this will also remove them from their layout
-        for (auto entry : m_domOrderedChildren)
-        {
-            if (entry)
-            {
-                delete entry;
-            }
-        }
+        m_widgetToPropertyHandlerInfo.clear();
+        ClearAttributes();
         m_domOrderedChildren.clear();
+        m_columnLayout->Clear();
+    }
+
+    DPERowWidget::~DPERowWidget()
+    {
+        Clear();
     }
 
     void DPERowWidget::AddChildFromDomValue(const AZ::Dom::Value& childValue, size_t domIndex)
@@ -495,12 +543,16 @@ namespace AzToolsFramework
 
             if (IsExpanded())
             {
+                auto dpe = GetDPE();
                 // determine where to put this new row in the main DPE layout
-                auto newRow = new DPERowWidget(m_depth + 1, this);
+                auto newRow = dpe->GetRowPool()->GetInstance();
+                newRow->Init(m_depth + 1, this);
+                newRow->setParent(dpe);
                 DPERowWidget* priorWidgetInLayout = nullptr;
 
                 // search for an existing row sibling with a lower dom index
-                for (int priorWidgetIndex = static_cast<int>(domIndex) - 1; priorWidgetInLayout == nullptr && priorWidgetIndex >= 0; --priorWidgetIndex)
+                for (int priorWidgetIndex = static_cast<int>(domIndex) - 1; priorWidgetInLayout == nullptr && priorWidgetIndex >= 0;
+                     --priorWidgetIndex)
                 {
                     priorWidgetInLayout = qobject_cast<DPERowWidget*>(m_domOrderedChildren[priorWidgetIndex]);
                 }
@@ -516,7 +568,7 @@ namespace AzToolsFramework
                     priorWidgetInLayout = this;
                 }
                 AddDomChildWidget(domIndex, newRow);
-                GetDPE()->AddAfterWidget(priorWidgetInLayout, newRow);
+                dpe->AddAfterWidget(priorWidgetInLayout, newRow);
 
                 // if it's a row, recursively populate the children from the DOM array in the passed value
                 newRow->SetValueFromDom(childValue);
@@ -534,8 +586,10 @@ namespace AzToolsFramework
             if (childType == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Label>())
             {
                 auto labelString = AZ::Dpe::Nodes::Label::Value.ExtractFromDomNode(childValue).value_or("");
-                addedWidget =
-                    new AzQtComponents::ElidingLabel(QString::fromUtf8(labelString.data(), aznumeric_cast<int>(labelString.size())), this);
+                auto label = GetDPE()->GetLabelPool()->GetInstance();
+                label->SetText(QString::fromUtf8(labelString.data(), aznumeric_cast<int>(labelString.size())));
+                label->setParent(this);
+                addedWidget = label;
             }
             else if (childType == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::PropertyEditor>())
             {
@@ -611,7 +665,8 @@ namespace AzToolsFramework
     void DPERowWidget::SetPropertyEditorAttributes(size_t domIndex, const AZ::Dom::Value& domArray, QWidget* childWidget)
     {
         // Extract all attributes from dom value
-        auto alignment = AZ::Dpe::Nodes::PropertyEditor::Alignment.ExtractFromDomNode(domArray).value_or(AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment);
+        auto alignment = AZ::Dpe::Nodes::PropertyEditor::Alignment.ExtractFromDomNode(domArray).value_or(
+            AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment);
         auto sharePrior = AZ::Dpe::Nodes::PropertyEditor::SharePriorColumn.ExtractFromDomNode(domArray).value_or(false);
         auto minimumWidth = AZ::Dpe::Nodes::PropertyEditor::UseMinimumWidth.ExtractFromDomNode(domArray).value_or(false);
         auto descriptionString = AZ::Dpe::Nodes::PropertyEditor::Description.ExtractFromDomNode(domArray).value_or("");
@@ -657,7 +712,7 @@ namespace AzToolsFramework
                 validAttribute = true;
             }
 
-            //Check DescriptionString
+            // Check DescriptionString
             if (!descriptionString.empty())
             {
                 if (toolTip().isEmpty())
@@ -684,14 +739,14 @@ namespace AzToolsFramework
             {
                 m_domOrderToAttributeInfo[domIndex] = newAttribute;
             }
-
         }
 
         // If an attribute entry already exists at this index, either update it or remove it
         else if (foundEntry != m_domOrderToAttributeInfo.end())
         {
             // If none of the extracted attributes are valid, delete the attribute entry at this index
-            if (alignment == AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment && !sharePrior && !minimumWidth && descriptionString.empty() && !shouldDisable)
+            if (alignment == AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment && !sharePrior && !minimumWidth &&
+                descriptionString.empty() && !shouldDisable)
             {
                 m_columnLayout->RemoveSharePriorColumn(domIndex);
                 m_domOrderToAttributeInfo.erase(foundEntry);
@@ -708,7 +763,7 @@ namespace AzToolsFramework
                 // Check SharePrior
                 if (sharePrior && !foundEntry->second->m_sharePriorColumn)
                 {
-                    AZ_Assert(priorColumnIndex != -1, "Tried to share column with an out of bounds index!")
+                    AZ_Assert(priorColumnIndex != -1, "Tried to share column with an out of bounds index!");
                     if (priorColumnIndex != -1)
                     {
                         m_columnLayout->AddSharePriorColumn(priorColumnIndex, domIndex);
@@ -721,7 +776,7 @@ namespace AzToolsFramework
                     foundEntry->second->m_sharePriorColumn = false;
                 }
 
-                //Check MinimumWidth
+                // Check MinimumWidth
                 if (minimumWidth != foundEntry->second->m_minimumWidth)
                 {
                     foundEntry->second->m_minimumWidth = minimumWidth;
@@ -835,26 +890,32 @@ namespace AzToolsFramework
             if (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Remove ||
                 domOperation.GetType() == AZ::Dom::PatchOperation::Type::Replace)
             {
+                auto dpe = GetDPE();
                 const auto childIterator = m_domOrderedChildren.begin() + childIndex;
                 auto childWidget = *childIterator;
                 DPERowWidget* rowToRemove = qobject_cast<DPERowWidget*>(childWidget);
                 if (rowToRemove)
                 {
                     // we're removing a row, remove any associated saved expander state
-                    GetDPE()->RemoveExpanderStateForRow(rowToRemove->GetPath());
+                    dpe->RemoveExpanderStateForRow(rowToRemove->GetPath());
+                    dpe->GetRowPool()->RecycleInstance(rowToRemove);
                 }
-                if (auto foundEntry = m_widgetToPropertyHandlerInfo.find(childWidget); foundEntry != m_widgetToPropertyHandlerInfo.end())
+                else if (auto foundEntry = m_widgetToPropertyHandlerInfo.find(childWidget);
+                         foundEntry != m_widgetToPropertyHandlerInfo.end())
                 {
-                    GetDPE()->ReleaseHandler(AZStd::move(foundEntry->second.hanlderInterface));
+                    dpe->ReleaseHandler(AZStd::move(foundEntry->second.hanlderInterface));
                     m_widgetToPropertyHandlerInfo.erase(foundEntry);
                     RemoveAttributes(childIndex);
-                    childWidget->hide();
-                    m_columnLayout->removeWidget(childWidget);
-                    childWidget->setParent(nullptr);
+                    DetachAndHide(childWidget);
                 }
-                else
+                else // not a row, not a PropertyHandler, must be a label
                 {
-                    delete childWidget;
+                    auto label = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget);
+                    AZ_Assert(label, "not a label, unknown widget discovered!");
+                    if (label)
+                    {
+                        dpe->GetLabelPool()->RecycleInstance(label);
+                    }
                 }
                 m_domOrderedChildren.erase(childIterator);
 
@@ -976,7 +1037,7 @@ namespace AzToolsFramework
             }
         }
     }
-    
+
     DocumentPropertyEditor* DPERowWidget::GetDPE() const
     {
         DocumentPropertyEditor* theDPE = nullptr;
@@ -989,7 +1050,7 @@ namespace AzToolsFramework
         AZ_Assert(theDPE, "the top level widget in any DPE hierarchy must be the DocumentPropertyEditor itself!");
         return theDPE;
     }
-    
+
     void DPERowWidget::AddDomChildWidget(size_t domIndex, QWidget* childWidget)
     {
         const bool validIndex = (domIndex <= m_domOrderedChildren.size());
@@ -1020,6 +1081,7 @@ namespace AzToolsFramework
         // insert after the found index; even if nothing were found and priorIndex is -1,
         // insert one after it, at position 0
         m_columnLayout->insertWidget(priorColumnIndex + 1, columnWidget);
+        columnWidget->show();
     }
 
     QWidget* DPERowWidget::CreateWidgetForHandler(
@@ -1147,7 +1209,7 @@ namespace AzToolsFramework
                 DPERowWidget* rowChild = qobject_cast<DPERowWidget*>(currentChild);
                 if (rowChild)
                 {
-                    delete rowChild;
+                    dpe->GetRowPool()->RecycleInstance(rowChild);
                     currentChild = nullptr;
                 }
             }
@@ -1208,6 +1270,26 @@ namespace AzToolsFramework
         m_spawnDebugView = AZ::DocumentPropertyEditor::PropertyEditorSystem::DPEDebugEnabled();
 
         setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+        // register as a co-owner of the recycled widgets list if it exists, create it if it doesn't
+        auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
+        if (m_rowPool = poolManager->GetPool<DPERowWidget>(); !m_rowPool)
+        {
+            AZStd::function<void(DPERowWidget&)> resetRow = [](DPERowWidget& row)
+            {
+                row.Clear();
+                DetachAndHide(&row);
+            };
+            m_rowPool = poolManager->CreatePool<DPERowWidget>(resetRow).GetValue();
+        }
+        if (m_labelPool = poolManager->GetPool<AzQtComponents::ElidingLabel>(); !m_labelPool)
+        {
+            AZStd::function<void(AzQtComponents::ElidingLabel&)> resetLabel = [](AzQtComponents::ElidingLabel& label)
+            {
+                DetachAndHide(&label);
+            };
+            m_labelPool = poolManager->CreatePool<AzQtComponents::ElidingLabel>(resetLabel).GetValue();
+        }
     }
 
     DocumentPropertyEditor::~DocumentPropertyEditor()
@@ -1255,7 +1337,7 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::Clear()
     {
-        delete m_rootNode;
+        m_rowPool->RecycleInstance(m_rootNode);
     }
 
     void DocumentPropertyEditor::AddAfterWidget(QWidget* precursor, QWidget* widgetToAdd)
@@ -1275,6 +1357,7 @@ namespace AzToolsFramework
                 m_layout->insertWidget(foundIndex + 1, widgetToAdd);
             }
         }
+        widgetToAdd->show();
     }
 
     void DocumentPropertyEditor::SetSavedStateKey(AZ::u32 key, AZStd::string propertyEditorName)
@@ -1289,7 +1372,8 @@ namespace AzToolsFramework
                 [this](DocumentPropertyEditorSettings::ExpanderStateMap& storedStates)
                 {
                     const auto& rootValue = m_adapter->GetContents();
-                    auto numErased = AZStd::erase_if(storedStates,
+                    auto numErased = AZStd::erase_if(
+                        storedStates,
                         [&rootValue](const AZStd::pair<AZStd::string, bool>& statePair)
                         {
                             return !rootValue.FindChild(AZ::Dom::Path(statePair.first)) ? true : false;
@@ -1437,7 +1521,8 @@ namespace AzToolsFramework
         Clear();
 
         // invisible root node has a "depth" of -1; its children are all at indent 0
-        m_rootNode = new DPERowWidget(-1, nullptr);
+        m_rootNode = m_rowPool->GetInstance();
+        m_rootNode->Init(-1, nullptr);
         m_rootNode->setParent(this);
         m_rootNode->hide();
 

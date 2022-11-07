@@ -40,7 +40,7 @@ import logging as _logging
 
 
 # -------------------------------------------------------------------------
-# this is an entry point, we must self bootstrap
+# global scope
 _MODULE_PATH = Path(__file__)
 PATH_O3DE_TECHART_GEMS = _MODULE_PATH.parents[4].resolve()
 os.chdir(PATH_O3DE_TECHART_GEMS.as_posix())
@@ -48,17 +48,13 @@ sys.path.insert(0, PATH_O3DE_TECHART_GEMS.as_posix())
 
 from DccScriptingInterface import add_site_dir
 add_site_dir(PATH_O3DE_TECHART_GEMS) # cleaner add
-# -------------------------------------------------------------------------
 
-
-# -------------------------------------------------------------------------
-#os.environ['PYTHONINSPECT'] = 'True'
-# global scope
 from DccScriptingInterface.Tools.DCC.Blender import _PACKAGENAME
 _MODULENAME = f'{_PACKAGENAME}.start'
 
 # get the global dccsi state
 from DccScriptingInterface.globals import *
+from DccScriptingInterface import add_site_dir
 
 from azpy.constants import FRMT_LOG_LONG
 _logging.basicConfig(level=_logging.DEBUG,
@@ -81,12 +77,18 @@ _LOGGER.debug(f'Initializing: {_MODULENAME}')
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
 
 # this should execute the core config.py first and grab settings
-from dynaconf import settings
+from DccScriptingInterface.Tools.DCC.Blender.config import blender_config
+_settings = blender_config.get_config_settings()
+_settings.setenv() # ensure env is set
 
-# may re-enable later
-# # retreive the blender_config class object and it's settings
-# from DccScriptingInterface.Tools.DCC.Blender.config import blender_config
-# blender_config.settings.setenv() # ensure env is set
+_BLENDER_EXE = Path(_settings.PATH_DCCSI_BLENDER_EXE).resolve(strict=True)
+
+_BLENDER_SCRIPTS = Path(_settings.PATH_DCCSI_BLENDER_SCRIPTS).resolve(strict=True)
+add_site_dir(_BLENDER_SCRIPTS)
+from DccScriptingInterface.Tools.DCC.Blender.constants import ENVAR_BLENDER_USER_SCRIPTS
+os.environ[ENVAR_BLENDER_USER_SCRIPTS] = _BLENDER_SCRIPTS.as_posix()
+
+_DEFAULT_BOOTSTRAP = Path(_settings.PATH_DCCSI_BLENDER_BOOTSTRAP).resolve(strict=True)
 
 from DccScriptingInterface.azpy.config_utils import check_is_ascii
 
@@ -98,10 +100,6 @@ blender_env = os.environ.copy()
 
 # prunes non-string key:value envars
 blender_env = {key: value for key, value in blender_env.items() if check_is_ascii(key) and check_is_ascii(value)}
-
-# will prune QT_ envars, to be used with QT bases apps like Maya or Wing
-# Blender is not QT based, so we should be able to disable this
-#blender_env = {key: value for key, value in blender_env.items() if not key.startswith("QT_")}
 
 if DCCSI_GDEBUG:
     # we can see what was pruned
@@ -115,7 +113,10 @@ if DCCSI_GDEBUG:
 
 
 # -------------------------------------------------------------------------
-# https://docs.blender.org/manual/en/ latest / advanced / command_line / arguments.html
+#https://tinyurl.com/o3de-dccsi-blender-cli-help
+# command args but be seperated properly
+#https://blender.stackexchange.com/questions/169259/issue-running-blender-command-line-arguments-using-python-subprocess
+# https://docs.blender.org/manual/en/latest/advanced/command_line/arguments.html
 
 # some notes
 # from cmd, use a startup script (we should be able to use to bootstrap)
@@ -130,38 +131,10 @@ if DCCSI_GDEBUG:
 # from cmd, enable addons, load file, start script
 #    ./blender -b --addons animation_nodes,meshlint [file] --python [myscript.py]
 
-from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_TOOLS_DCC_BLENDER
-
-from DccScriptingInterface.Tools.DCC.Blender import SLUG_DCCSI_BLENDER_VERSION
-from DccScriptingInterface.Tools.DCC.Blender import SLUG_BLENDER_EXE
-from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_BLENDER_LOCATION
-from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_BLENDER_EXE
-
-_BLENDER_EXE = Path(PATH_DCCSI_BLENDER_EXE).resolve(strict=True)
-#_BLENDER_EXE = Path(blender_config.settings.PATH_DCCSI_BLENDER_EXE)
-
-# this ensures we are in blenders location
-#os.chdir(_BLENDER_EXE.parent)
-from DccScriptingInterface.Tools.DCC.Blender import ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS
-from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS
-_BLENDER_SCRIPTS = Path(PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS).resolve(strict=True)
-from DccScriptingInterface import add_site_dir
-add_site_dir(_BLENDER_SCRIPTS)
-os.environ[ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS] = _BLENDER_SCRIPTS.as_posix()
-
-from DccScriptingInterface.Tools.DCC.Blender import SLUG_DCCSI_BLENDER_BOOTSTRAP
-from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_BLENDER_BOOTSTRAP
-
-_DEFAULT_BOOTSTRAP = Path(PATH_DCCSI_BLENDER_BOOTSTRAP).resolve(strict=True)
-#_DEFAULT_BOOTSTRAP = Path(blender_config.settings.PATH_DCCSI_BLENDER_BOOTSTRAP)
-
 # default launch command
 _LAUNCH_COMMAND = [f'{str(_BLENDER_EXE)}',
                    f'--python', # this must be seperate from the .py file
                    f'{str(_DEFAULT_BOOTSTRAP)}']
-
-# command args but be seperated properly
-#https://blender.stackexchange.com/questions/169259/issue-running-blender-command-line-arguments-using-python-subprocess
 
 # suggestion for future PR is to refactor this method into something like
 # DccScriptingInterface.azpy.utils.start.popen()
@@ -191,12 +164,6 @@ def popen(command: list = _LAUNCH_COMMAND,
         _LOGGER.info(f'Success: {_PACKAGENAME} started correctly!')
 
     return process
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-#
-#https://docs.blender.org/manual/en/2.79/advanced/command_line/introduction.html#:~:text=Microsoft%20Windows&text=To%20display%20the%20console%20again,Window%20%E2%80%A3%20Toggle%20System%20Console.&text=Blender's%20Console%20Window%20on%20Microsoft,along%20with%20the%20relevant%20messages.
 # -------------------------------------------------------------------------
 
 

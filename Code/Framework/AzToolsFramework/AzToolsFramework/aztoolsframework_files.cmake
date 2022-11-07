@@ -792,6 +792,11 @@ set(FILES
     Prefab/Instance/TemplateInstanceMapperInterface.h
     Prefab/Link/Link.h
     Prefab/Link/Link.cpp
+    Prefab/Overrides/PrefabOverrideHandler.h
+    Prefab/Overrides/PrefabOverrideHandler.cpp
+    Prefab/Overrides/PrefabOverridePublicInterface.h
+    Prefab/Overrides/PrefabOverridePublicHandler.h
+    Prefab/Overrides/PrefabOverridePublicHandler.cpp
     Prefab/Procedural/ProceduralPrefabAsset.h
     Prefab/Procedural/ProceduralPrefabAsset.cpp
     Prefab/PrefabPublicHandler.h
