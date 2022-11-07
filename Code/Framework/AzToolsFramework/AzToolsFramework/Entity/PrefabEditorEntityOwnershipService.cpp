@@ -185,18 +185,19 @@ namespace AzToolsFramework
     {
         AZ_Assert(IsInitialized(), "Tried to destroy an entity without initializing the Entity Ownership Service");
         OnEntityRemoved(entityId);
+        bool destroyResult = false;
         if (auto owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId); owningInstance.has_value())
         {
             if (owningInstance->get().GetContainerEntityId() == entityId)
             {
-                owningInstance->get().DestroyContainerEntity();
+                destroyResult = owningInstance->get().DestroyContainerEntity();
             }
             else
             {
-                owningInstance->get().DestroyEntity(entityId);
+                destroyResult = owningInstance->get().DestroyEntity(entityId);
             }
         }
-        return true;
+        return destroyResult;
     }
 
     void PrefabEditorEntityOwnershipService::GetNonPrefabEntities(EntityList& entities)

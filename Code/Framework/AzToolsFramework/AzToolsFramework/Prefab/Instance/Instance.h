@@ -100,7 +100,14 @@ namespace AzToolsFramework
             bool AddEntity(AZStd::unique_ptr<AZ::Entity>&& entity, EntityAlias entityAlias);
             AZStd::unique_ptr<AZ::Entity> DetachEntity(const AZ::EntityId& entityId);
             void DetachEntities(const AZStd::function<void(AZStd::unique_ptr<AZ::Entity>)>& callback);
+
+            /**
+             * Detaches the specified entity from the instance and deletes the entity.
+             * 
+             * @return true when entity has been destroyed, false otherwise.
+             */
             bool DestroyEntity(const AZ::EntityId& entityId);
+
             /**
              * Replaces the entity stored under the provided alias with a new one.
              *

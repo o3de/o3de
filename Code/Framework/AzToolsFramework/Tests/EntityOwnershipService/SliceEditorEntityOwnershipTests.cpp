@@ -261,6 +261,10 @@ namespace UnitTest
         m_sliceEditorEntityOwnershipService->GetNonPrefabEntities(looseEntitiesAfterDetach);
         EXPECT_TRUE(looseEntitiesAfterDetach.size() == 1);
 
+        // Verify that there are no entities in the slice
+        EntityList entitiesInSliceAfterDetach = sliceInstanceIterator->GetInstantiated()->m_entities;
+        EXPECT_TRUE(entitiesInSliceAfterDetach.size() == 0);
+
         // Restore the entity
         const auto& entityRestore = restoreInfos[0];
         const AZ::EntityId& entityId = entityRestore.first;
