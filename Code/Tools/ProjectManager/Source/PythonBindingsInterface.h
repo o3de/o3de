@@ -109,6 +109,14 @@ namespace O3DE::ProjectManager
         virtual AZ::Outcome<GemInfo> CreateGem(const QString& templatePath, const GemInfo& gemInfo, bool registerGem = true) = 0;
 
         /**
+         * Edit a Gem from the Edit Gem Wizard
+         * @param oldGemName the gem name that existed prior to the update request
+         * @param newGemInfo the gem updates that the user is requesting
+         * @return an outcome with GemInfo on success
+         */
+         virtual AZ::Outcome<GemInfo> EditGem(const QString& oldGemName, const GemInfo& newGemInfo) = 0;
+
+        /**
          * Get info about a Gem.
          * @param path The absolute path to the Gem
          * @param projectPath (Optional) The absolute path to the Gem project
