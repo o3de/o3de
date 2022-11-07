@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{7DE0F2F0-1ADC-4B4B-ADDB-CA21B8D97816}",
         "category": "Math Functions",
-        "title": "multiply",
+        "title": "Multiply",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue1",

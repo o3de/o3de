@@ -6,6 +6,10 @@
         "id": "{9867FE60-6682-498C-B0FA-58D179F0C3E1}",
         "category": "Material Inputs",
         "title": "UInt Input",
+        "titlePaletteName": "MaterialInputNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "propertySlots": [
             {
                 "name": "inGroup",

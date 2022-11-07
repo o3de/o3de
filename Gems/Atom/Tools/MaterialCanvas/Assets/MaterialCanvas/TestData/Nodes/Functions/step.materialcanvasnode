@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{5A76042C-CDD1-44E2-A87A-52A1B440BA11}",
         "category": "Math Functions",
-        "title": "step",
+        "title": "Step",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue1",

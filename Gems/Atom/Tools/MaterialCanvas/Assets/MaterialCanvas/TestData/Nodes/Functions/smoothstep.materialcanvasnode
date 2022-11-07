@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{8C2C6CEF-76DB-4567-A9E5-F39491A23454}",
         "category": "Math Functions",
-        "title": "smoothstep",
+        "title": "Smoothstep",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2|inValue3|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue1",

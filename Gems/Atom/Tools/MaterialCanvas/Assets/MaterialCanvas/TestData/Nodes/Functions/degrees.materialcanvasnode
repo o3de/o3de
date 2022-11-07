@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{970F7947-E032-45C2-B52E-C91ED9706197}",
         "category": "Math Functions",
-        "title": "degrees",
+        "title": "Degrees",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",

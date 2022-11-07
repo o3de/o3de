@@ -6,6 +6,10 @@
         "id": "{03C534CA-436F-40CB-80A2-56229D1E4DBC}",
         "category": "Constants",
         "title": "UInt Constant",
+        "titlePaletteName": "ConstantNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",

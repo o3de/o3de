@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{FEA94EB4-72AA-4CC2-80F5-75A62ED9B7CA}",
         "category": "Math Functions",
-        "title": "add",
+        "title": "Add",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue1",

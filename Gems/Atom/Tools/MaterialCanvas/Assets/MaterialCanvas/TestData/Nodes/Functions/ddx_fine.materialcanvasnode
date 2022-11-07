@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{8BCDA3AE-9E08-4C83-B454-A21D1C25113C}",
         "category": "Math Functions",
-        "title": "ddx_fine",
+        "title": "Ddx Fine",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",

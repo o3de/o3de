@@ -6,6 +6,10 @@
         "id": "{0ED5EA90-466F-421C-9BF6-7EE65D7962C0}",
         "category": "Constants",
         "title": "Bool Constant",
+        "titlePaletteName": "ConstantNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",

@@ -6,6 +6,10 @@
         "id": "{E51F2A07-BDD2-45C9-850D-5BCF2DFE07E9}",
         "category": "Material Inputs",
         "title": "Float Input",
+        "titlePaletteName": "MaterialInputNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "propertySlots": [
             {
                 "name": "inGroup",

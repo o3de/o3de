@@ -5,7 +5,12 @@
     "ClassData": {
         "id": "{25CFD95F-BC52-4B65-BC1B-E4AD36960FB9}",
         "category": "Math Functions",
-        "title": "any",
+        "title": "Any",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue",
+            "outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",

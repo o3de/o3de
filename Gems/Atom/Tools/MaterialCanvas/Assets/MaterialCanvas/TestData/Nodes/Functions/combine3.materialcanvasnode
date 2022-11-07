@@ -5,7 +5,12 @@
     "ClassData": {
         "id": "{E5729A3B-D265-4ECC-B542-0BB5D6BA5829}",
         "category": "Math Functions",
-        "title": "combine3",
+        "title": "Combine3",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inX|inY|inZ",
+            "outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inX",

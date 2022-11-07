@@ -6,6 +6,7 @@
         "id": "{B352A2E4-D6A6-4178-9406-57716051024F}",
         "category": "Material Templates",
         "title": "Experimental PBR",
+        "titlePaletteName": "MaterialTemplateNodeTitlePalette",
         "settings": {
             "templatePaths": [
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName_Common.azsli",

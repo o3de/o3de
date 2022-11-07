@@ -6,6 +6,11 @@
         "id": "{0F7B6190-E8B8-4CCD-AE61-D5B8E2C22CDE}",
         "category": "Object",
         "title": "Normal",
+        "titlePaletteName": "ObjectNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "outNormal",
+            "outX|outY|outZ"
+        ],
         "outputSlots": [
             {
                 "name": "outNormal",

@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{5B845EBE-180E-42AE-9BCC-27559E6CBA56}",
         "category": "Math Functions",
-        "title": "rcp",
+        "title": "Rcp",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",

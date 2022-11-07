@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{8DD887CA-DA8E-4F55-9DFE-1B89EA0310AB}",
         "category": "Math Functions",
-        "title": "lerp",
+        "title": "Lerp",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2|inValue3|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue1",

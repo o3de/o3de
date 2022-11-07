@@ -6,6 +6,11 @@
         "id": "{6B6603B9-A89E-403B-9AE9-C7E424093EC5}",
         "category": "Constants",
         "title": "Color Constant",
+        "titlePaletteName": "ConstantNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue",
+            "outR|outG|outB|outA"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",

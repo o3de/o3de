@@ -6,6 +6,11 @@
         "id": "{AD1CEDD5-B944-4817-B157-586B0A6C9406}",
         "category": "Object",
         "title": "Position",
+        "titlePaletteName": "ObjectNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "outPosition",
+            "outX|outY|outZ"
+        ],
         "outputSlots": [
             {
                 "name": "outPosition",

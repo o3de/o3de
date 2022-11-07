@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{2A4AF0CF-EFA0-4213-AFF5-4F08C802310B}",
         "category": "Math Functions",
-        "title": "divide",
+        "title": "Divide",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue1",

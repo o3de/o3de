@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{F24A3388-E35C-411E-B8A8-165D302A094E}",
         "category": "Math Functions",
-        "title": "mad",
+        "title": "Multiply Add",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2|inValue3|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue1",

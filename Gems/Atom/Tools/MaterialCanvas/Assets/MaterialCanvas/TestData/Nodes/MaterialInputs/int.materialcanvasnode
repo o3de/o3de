@@ -6,6 +6,10 @@
         "id": "{F7C989FD-71DA-4E9D-A1DA-C5E4678BCE12}",
         "category": "Material Inputs",
         "title": "Int Input",
+        "titlePaletteName": "MaterialInputNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "propertySlots": [
             {
                 "name": "inGroup",

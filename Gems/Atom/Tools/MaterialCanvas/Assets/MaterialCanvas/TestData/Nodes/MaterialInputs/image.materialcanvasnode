@@ -6,6 +6,10 @@
         "id": "{077E3608-4B65-44F7-9735-7CDA1CEEA568}",
         "category": "Material Inputs",
         "title": "Image Input",
+        "titlePaletteName": "MaterialInputNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "propertySlots": [
             {
                 "name": "inGroup",

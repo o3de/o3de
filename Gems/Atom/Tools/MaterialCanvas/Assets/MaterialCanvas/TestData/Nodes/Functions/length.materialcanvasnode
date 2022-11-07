@@ -5,7 +5,12 @@
     "ClassData": {
         "id": "{3E3DB3D2-D6EB-4688-8A06-6A47DE3A3327}",
         "category": "Math Functions",
-        "title": "length",
+        "title": "Length",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue",
+            "outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
@@ -34,8 +39,8 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypeRegex": "float4",
-                "defaultDataType": "float4",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = length(inValue);"

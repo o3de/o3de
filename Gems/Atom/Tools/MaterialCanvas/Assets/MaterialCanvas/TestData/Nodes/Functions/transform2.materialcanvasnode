@@ -5,7 +5,12 @@
     "ClassData": {
         "id": "{4614DBDC-25EB-4C71-B5FB-26C072962DD1}",
         "category": "Math Functions",
-        "title": "transform2",
+        "title": "Transform2",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inVector|outVector",
+            "inMatrix"
+        ],
         "inputSlots": [
             {
                 "name": "inVector",

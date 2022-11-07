@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{844BB980-CAFA-4997-B741-72A05911A549}",
         "category": "Math Functions",
-        "title": "floor",
+        "title": "Floor",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",

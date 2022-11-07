@@ -6,6 +6,11 @@
         "id": "{28516866-1A10-48B6-9D7F-D78570F7011C}",
         "category": "Material Inputs",
         "title": "Float4x3 Input",
+        "titlePaletteName": "MaterialInputNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inRow1|inRow2|inRow3",
+            "outValue"
+        ],
         "propertySlots": [
             {
                 "name": "inGroup",

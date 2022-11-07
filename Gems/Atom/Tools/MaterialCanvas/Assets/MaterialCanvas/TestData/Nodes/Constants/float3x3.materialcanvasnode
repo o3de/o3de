@@ -6,6 +6,11 @@
         "id": "{5B7EBEFB-298D-45A1-88A4-A702468C8A60}",
         "category": "Constants",
         "title": "Float3x3 Constant",
+        "titlePaletteName": "ConstantNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inRow1|inRow2|inRow3",
+            "outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inRow1",

@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{B957E7E8-6F5A-4C95-9BAC-1B221B562AFA}",
         "category": "Math Functions",
-        "title": "ddy",
+        "title": "Ddy",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",

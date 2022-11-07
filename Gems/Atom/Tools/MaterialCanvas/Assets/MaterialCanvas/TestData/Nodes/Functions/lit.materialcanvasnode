@@ -5,22 +5,22 @@
     "ClassData": {
         "id": "{7FBA0105-F37E-4E23-A884-EBBC7CB2D817}",
         "category": "Math Functions",
-        "title": "lit",
+        "title": "Lit",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2|inValue3",
+            "outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue1",
                 "displayName": "Value1",
                 "description": "Value1",
                 "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
-                "defaultDataType": "float4",
+                "defaultDataType": "float",
                 "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
+                    "$type": "float",
+                    "Value": 0.0
                 },
                 "settings": {
                     "instructions": [
@@ -33,15 +33,10 @@
                 "displayName": "Value2",
                 "description": "Value2",
                 "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
-                "defaultDataType": "float4",
+                "defaultDataType": "float",
                 "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
+                    "$type": "float",
+                    "Value": 0.0
                 },
                 "settings": {
                     "instructions": [
@@ -54,15 +49,10 @@
                 "displayName": "Value3",
                 "description": "Value3",
                 "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
-                "defaultDataType": "float4",
+                "defaultDataType": "float",
                 "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
+                    "$type": "float",
+                    "Value": 0.0
                 },
                 "settings": {
                     "instructions": [

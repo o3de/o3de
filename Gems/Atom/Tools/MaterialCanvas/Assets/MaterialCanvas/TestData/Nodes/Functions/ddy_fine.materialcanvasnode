@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{CD10027A-FBCB-480B-9DE3-9B71591513C9}",
         "category": "Math Functions",
-        "title": "ddy_fine",
+        "title": "Ddy Fine",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",

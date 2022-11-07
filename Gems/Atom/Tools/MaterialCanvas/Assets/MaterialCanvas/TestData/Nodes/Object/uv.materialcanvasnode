@@ -6,6 +6,12 @@
         "id": "{8E836C09-FA68-42B0-B302-CAC3FD6E4EA2}",
         "category": "Object",
         "title": "UV",
+        "titlePaletteName": "ObjectNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inIndex",
+            "outUV",
+            "outU|outV"
+        ],
         "settings": {
             "instructions": [
                 "float2 outUV = O3DE_MC_UV(inIndex);"

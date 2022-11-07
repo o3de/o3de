@@ -6,6 +6,11 @@
         "id": "{2A23578C-FB72-4A9F-AC95-06B278CEA913}",
         "category": "Material Inputs",
         "title": "Color Input",
+        "titlePaletteName": "MaterialInputNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue",
+            "outR|outG|outB|outA"
+        ],
         "propertySlots": [
             {
                 "name": "inGroup",

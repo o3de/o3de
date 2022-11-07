@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{18CE520D-1DF4-40C4-BE30-4A0045B9ED0E}",
         "category": "Math Functions",
-        "title": "ldexp",
+        "title": "Ldexp",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue1",

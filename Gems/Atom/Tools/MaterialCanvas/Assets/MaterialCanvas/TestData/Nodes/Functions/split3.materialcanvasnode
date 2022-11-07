@@ -5,7 +5,12 @@
     "ClassData": {
         "id": "{1F53AECF-F416-4AD1-9777-A7E6049383A8}",
         "category": "Math Functions",
-        "title": "split3",
+        "title": "Split3",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue",
+            "outX|outY|outZ"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",

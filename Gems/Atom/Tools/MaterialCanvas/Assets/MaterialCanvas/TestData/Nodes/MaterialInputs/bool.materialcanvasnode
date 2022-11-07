@@ -6,6 +6,10 @@
         "id": "{959F7818-527E-4AC4-A01E-29EECD50ACD5}",
         "category": "Material Inputs",
         "title": "Bool Input",
+        "titlePaletteName": "MaterialInputNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "propertySlots": [
             {
                 "name": "inGroup",

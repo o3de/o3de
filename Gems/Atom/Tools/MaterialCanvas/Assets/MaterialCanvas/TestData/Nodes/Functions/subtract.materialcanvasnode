@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{B3EA186B-20DB-4D94-89FD-18AFA1454328}",
         "category": "Math Functions",
-        "title": "subtract",
+        "title": "Subtract",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue1",

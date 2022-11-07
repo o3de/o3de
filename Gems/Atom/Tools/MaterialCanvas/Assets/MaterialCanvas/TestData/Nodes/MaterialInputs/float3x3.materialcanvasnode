@@ -6,6 +6,11 @@
         "id": "{0CEDEE3B-0A53-438D-9876-38F867C55483}",
         "category": "Material Inputs",
         "title": "Float3x3 Input",
+        "titlePaletteName": "MaterialInputNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inRow1|inRow2|inRow3",
+            "outValue"
+        ],
         "propertySlots": [
             {
                 "name": "inGroup",

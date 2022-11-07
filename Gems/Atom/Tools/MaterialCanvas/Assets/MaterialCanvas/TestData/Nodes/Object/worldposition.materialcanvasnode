@@ -6,6 +6,11 @@
         "id": "{20D18D54-9A1D-4C4E-B676-F72097AC3A93}",
         "category": "Object",
         "title": "World Position",
+        "titlePaletteName": "ObjectNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "outPosition",
+            "outX|outY|outZ"
+        ],
         "outputSlots": [
             {
                 "name": "outPosition",

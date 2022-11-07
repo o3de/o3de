@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{CE4FA344-ED93-448F-9651-018CEADC228D}",
         "category": "Math Functions",
-        "title": "fwidth",
+        "title": "Fwidth",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",

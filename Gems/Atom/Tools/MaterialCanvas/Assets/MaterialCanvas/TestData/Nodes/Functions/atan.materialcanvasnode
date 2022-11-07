@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{EF7DCA0D-C6C0-42F8-B79E-D9E91ADFA89C}",
         "category": "Math Functions",
-        "title": "atan",
+        "title": "Atan",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
