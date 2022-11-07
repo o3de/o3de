@@ -16,6 +16,7 @@
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Utils/TypeHash.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzNetworking/Utilities/IpAddress.h>
@@ -119,9 +120,9 @@ namespace Multiplayer
     struct ComponentVersionMessageData
     {
         AZ::Name m_componentName;
-        AZ::HashValue64 m_componentVersionHash;
+        uint64_t m_componentVersionHash; // @todo Change this from uint64_t to AZ::HashValue64 once GHI-13019 is complete
         ComponentVersionMessageData() = default;
-        explicit ComponentVersionMessageData(AZ::Name name, AZ::HashValue64 versionHash);
+        explicit ComponentVersionMessageData(AZ::Name name, uint64_t versionHash);
         bool operator==(const ComponentVersionMessageData& rhs) const;
         bool operator!=(const ComponentVersionMessageData& rhs) const;
         bool Serialize(AzNetworking::ISerializer& serializer);
@@ -185,7 +186,7 @@ namespace Multiplayer
         return "Unknown";
     }
 
-    inline ComponentVersionMessageData::ComponentVersionMessageData(AZ::Name name, AZ::HashValue64 versionHash)
+    inline ComponentVersionMessageData::ComponentVersionMessageData(AZ::Name name, uint64_t versionHash)
         : m_componentName(name)
         , m_componentVersionHash(versionHash)
     {
