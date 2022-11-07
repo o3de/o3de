@@ -8,6 +8,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzTest/Printers.h>
@@ -78,6 +79,8 @@ namespace AZ
             ~ScopedAutoTempDirectory();
 
             const char* GetDirectory() const;
+            AZ::IO::Path GetDirectoryAsPath() const;
+            AZ::IO::FixedMaxPath GetDirectoryAsFixedMaxPath() const;
             AZ::IO::Path Resolve(const char* path) const;
         private:
             char m_tempDirectory[AZ::IO::MaxPathLength] = { '\0' };

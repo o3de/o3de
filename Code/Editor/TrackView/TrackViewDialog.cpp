@@ -113,8 +113,11 @@ void CTrackViewDialog::RegisterViewClass()
     opts.showOnToolsToolbar = true;
     opts.toolbarIcon = ":/Menu/trackview_editor.svg";
 
-    AzToolsFramework::RegisterViewPane<CTrackViewDialog>(LyViewPane::TrackView, LyViewPane::CategoryTools, opts);
-    GetIEditor()->GetSettingsManager()->AddToolName(s_kTrackViewLayoutSection, LyViewPane::TrackView);
+    if (GetIEditor()->GetMovieSystem())
+    {
+        AzToolsFramework::RegisterViewPane<CTrackViewDialog>(LyViewPane::TrackView, LyViewPane::CategoryTools, opts);
+        GetIEditor()->GetSettingsManager()->AddToolName(s_kTrackViewLayoutSection, LyViewPane::TrackView);
+    }
 }
 
 const GUID& CTrackViewDialog::GetClassID()
@@ -820,8 +823,15 @@ void CTrackViewDialog::UpdateActions()
         m_actions[ID_ADDNODE]->setEnabled(false);
     }
 
+    if (GetIEditor()->GetMovieSystem())
+    {
+        m_actions[ID_TOOLS_BATCH_RENDER]->setEnabled(GetIEditor()->GetMovieSystem()->GetNumSequences() > 0 && !m_enteringGameOrSimModeLock);
+    }
+    else
+    {
+        m_actions[ID_TOOLS_BATCH_RENDER]->setEnabled(false);
+    }
 
-    m_actions[ID_TOOLS_BATCH_RENDER]->setEnabled(GetIEditor()->GetMovieSystem()->GetNumSequences() > 0 && !m_enteringGameOrSimModeLock);
     m_actions[ID_TV_ADD_SEQUENCE]->setEnabled(GetIEditor()->GetDocument() && GetIEditor()->GetDocument()->IsDocumentReady() && !m_enteringGameOrSimModeLock);
     m_actions[ID_TV_SEQUENCE_NEW]->setEnabled(GetIEditor()->GetDocument() && GetIEditor()->GetDocument()->IsDocumentReady() && !m_enteringGameOrSimModeLock);
 }
@@ -881,25 +891,28 @@ void CTrackViewDialog::Update()
     // The active camera node means two conditions:
     // 1. Sequence camera is currently active.
     // 2. The camera which owns this node has been set as the current camera by the director node.
-    bool bSequenceCamInUse = gEnv->pMovieSystem->GetCallback() == nullptr ||
-        gEnv->pMovieSystem->GetCallback()->IsSequenceCamUsed();
-    AZ::EntityId camId = gEnv->pMovieSystem->GetCameraParams().cameraEntityId;
-    if (camId.IsValid() && bSequenceCamInUse)
+    if (gEnv->pMovieSystem)
     {
-        AZ::Entity* entity = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, camId);
-        if (entity)
+        bool bSequenceCamInUse = gEnv->pMovieSystem->GetCallback() == nullptr ||
+            gEnv->pMovieSystem->GetCallback()->IsSequenceCamUsed();
+        AZ::EntityId camId = gEnv->pMovieSystem->GetCameraParams().cameraEntityId;
+        if (camId.IsValid() && bSequenceCamInUse)
         {
-            m_activeCamStatic->setText(entity->GetName().c_str());
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, camId);
+            if (entity)
+            {
+                m_activeCamStatic->setText(entity->GetName().c_str());
+            }
+            else
+            {
+                m_activeCamStatic->setText("Active Camera");
+            }
         }
         else
         {
             m_activeCamStatic->setText("Active Camera");
         }
-    }
-    else
-    {
-        m_activeCamStatic->setText("Active Camera");
     }
 
     if (m_wndNodesCtrl)

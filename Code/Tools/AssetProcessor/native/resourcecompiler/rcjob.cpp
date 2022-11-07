@@ -96,7 +96,7 @@ namespace AssetProcessor
     void RCJob::Init(JobDetails& details)
     {
         m_jobDetails = AZStd::move(details);
-        m_queueElementID = QueueElementID(GetJobEntry().m_databaseSourceName, GetPlatformInfo().m_identifier.c_str(), GetJobKey());
+        m_queueElementID = QueueElementID(GetJobEntry().m_sourceAssetReference, GetPlatformInfo().m_identifier.c_str(), GetJobKey());
     }
 
     const JobEntry& RCJob::GetJobEntry() const
@@ -234,9 +234,9 @@ namespace AssetProcessor
         processJobRequest.m_jobDescription.m_priority = GetPriority();
         processJobRequest.m_platformInfo = GetPlatformInfo();
         processJobRequest.m_builderGuid = GetBuilderGuid();
-        processJobRequest.m_sourceFile = GetJobEntry().m_pathRelativeToWatchFolder.toUtf8().data();
+        processJobRequest.m_sourceFile = GetJobEntry().m_sourceAssetReference.RelativePath().c_str();
         processJobRequest.m_sourceFileUUID = GetInputFileUuid();
-        processJobRequest.m_watchFolder = GetJobEntry().m_watchFolderPath.toUtf8().data();
+        processJobRequest.m_watchFolder = GetJobEntry().m_sourceAssetReference.ScanFolderPath().c_str();
         processJobRequest.m_fullPath = GetJobEntry().GetAbsoluteSourcePath().toUtf8().data();
         processJobRequest.m_jobId = GetJobEntry().m_jobRunKey;
     }
@@ -517,7 +517,11 @@ namespace AssetProcessor
                         AssetServerBus::BroadcastResult(assetServerMode, &AssetServerBus::Events::GetRemoteCachingMode);
 
                         QFileInfo fileInfo(builderParams.m_processJobRequest.m_sourceFile.c_str());
-                        builderParams.m_serverKey = QString("%1_%2_%3_%4").arg(fileInfo.completeBaseName(), builderParams.m_processJobRequest.m_jobDescription.m_jobKey.c_str(), builderParams.m_processJobRequest.m_platformInfo.m_identifier.c_str()).arg(builderParams.m_rcJob->GetOriginalFingerprint());
+                        builderParams.m_serverKey = QString("%1_%2_%3_%4")
+                            .arg(fileInfo.completeBaseName(),
+                                 builderParams.m_processJobRequest.m_jobDescription.m_jobKey.c_str(),
+                                 builderParams.m_processJobRequest.m_platformInfo.m_identifier.c_str())
+                            .arg(builderParams.m_rcJob->GetOriginalFingerprint());
                         bool operationResult = false;
                         if (assetServerMode == AssetServerMode::Server)
                         {
@@ -539,8 +543,15 @@ namespace AssetProcessor
                                 if (!operationResult)
                                 {
                                     AZ_TracePrintf(AssetProcessor::DebugChannel, "Unable to save job (%s, %s, %s) with fingerprint (%u) to the server.\n",
-                                        builderParams.m_rcJob->GetJobEntry().m_pathRelativeToWatchFolder.toUtf8().data(), builderParams.m_rcJob->GetJobKey().toUtf8().data(),
+                                        builderParams.m_rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str(), builderParams.m_rcJob->GetJobKey().toUtf8().data(),
                                         builderParams.m_rcJob->GetPlatformInfo().m_identifier.c_str(), builderParams.m_rcJob->GetOriginalFingerprint());
+                                }
+                                else
+                                {
+                                    for (auto& product : result.m_outputProducts)
+                                    {
+                                        product.m_outputFlags |= AssetBuilderSDK::ProductOutputFlags::CachedAsset;
+                                    }
                                 }
                             }
                         }
@@ -557,8 +568,16 @@ namespace AssetProcessor
                             else
                             {
                                 AZ_TracePrintf(AssetProcessor::DebugChannel, "Unable to get job (%s, %s, %s) with fingerprint (%u) from the server. Processing locally.\n",
-                                    builderParams.m_rcJob->GetJobEntry().m_pathRelativeToWatchFolder.toUtf8().data(), builderParams.m_rcJob->GetJobKey().toUtf8().data(),
+                                    builderParams.m_rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str(), builderParams.m_rcJob->GetJobKey().toUtf8().data(),
                                     builderParams.m_rcJob->GetPlatformInfo().m_identifier.c_str(), builderParams.m_rcJob->GetOriginalFingerprint());
+                            }
+
+                            if (operationResult)
+                            {
+                                for (auto& product : result.m_outputProducts)
+                                {
+                                    product.m_outputFlags |= AssetBuilderSDK::ProductOutputFlags::CachedAsset;
+                                }
                             }
 
                             runProcessJob = !operationResult;
@@ -973,7 +992,7 @@ namespace AssetProcessor
         }
         AzToolsFramework::AssetSystem::JobInfo jobInfo;
         AzToolsFramework::AssetSystem::AssetJobLogResponse jobLogResponse;
-        jobInfo.m_sourceFile = builderParams.m_rcJob->GetJobEntry().m_databaseSourceName.toUtf8().data();
+        jobInfo.m_sourceFile = builderParams.m_rcJob->GetJobEntry().m_sourceAssetReference.RelativePath().c_str();
         jobInfo.m_platform = builderParams.m_rcJob->GetPlatformInfo().m_identifier.c_str();
         jobInfo.m_jobKey = builderParams.m_rcJob->GetJobKey().toUtf8().data();
         jobInfo.m_builderGuid = builderParams.m_rcJob->GetBuilderGuid();
@@ -1018,7 +1037,7 @@ namespace AssetProcessor
         if (!jobLogResponse.m_isSuccess)
         {
             AZ_TracePrintf(AssetProcessor::DebugChannel, "Job log request was unsuccessful for job (%s, %s, %s) from the server.\n",
-                builderParams.m_rcJob->GetJobEntry().m_pathRelativeToWatchFolder.toUtf8().data(), builderParams.m_rcJob->GetJobKey().toUtf8().data(),
+                builderParams.m_rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str(), builderParams.m_rcJob->GetJobKey().toUtf8().data(),
                 builderParams.m_rcJob->GetPlatformInfo().m_identifier.c_str());
 
             if(jobLogResponse.m_jobLog.find("No log file found") != AZStd::string::npos)

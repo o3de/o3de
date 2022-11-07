@@ -8,10 +8,15 @@
         "title": "Experimental PBR",
         "settings": {
             "templatePaths": [
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName_ForwardPass.azsl.template",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName_ForwardPass.shader.template",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName.materialtype.template",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName.material.template"
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName_Common.azsli",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName_DepthPass.azsl",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName_DepthPass.shader",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName_ForwardPass.azsl",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName_ForwardPass.shader",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName_ShadowPass.azsl",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName_ShadowPass.shader",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName.materialtype",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName.material"
             ]
         },
         "propertySlots": [
@@ -19,9 +24,12 @@
                 "name": "inDescription",
                 "displayName": "Description",
                 "description": "Description",
-                "supportedDataTypes": [
-                    "string"
-                ],
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                },
                 "supportsEditingOnNode": false
             }
         ],
@@ -30,20 +38,14 @@
                 "name": "inPositionOffset",
                 "displayName": "Position Offset",
                 "description": "Position Offset",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
+                "defaultDataType": "float3",
                 "defaultValue": {
-                    "$type": "Vector4",
+                    "$type": "Vector3",
                     "Value": [
                         0.0,
                         0.0,
-                        0.0,
-                        1.0
+                        0.0
                     ]
                 },
                 "settings": {
@@ -56,17 +58,11 @@
                 "name": "inBaseColor",
                 "displayName": "Base Color",
                 "description": "Base Color",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
+                "defaultDataType": "float3",
                 "defaultValue": {
-                    "$type": "Vector4",
+                    "$type": "Vector3",
                     "Value": [
-                        1.0,
                         1.0,
                         1.0,
                         1.0
@@ -82,13 +78,8 @@
                 "name": "inMetallic",
                 "displayName": "Metallic",
                 "description": "Metallic",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float",
                 "defaultValue": {
                     "$type": "float",
                     "Value": 0.0
@@ -103,13 +94,8 @@
                 "name": "inSpecularF0Factor",
                 "displayName": "Specular F0 Factor",
                 "description": "Specular F0 Factor",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float",
                 "defaultValue": {
                     "$type": "float",
                     "Value": 0.0
@@ -124,13 +110,8 @@
                 "name": "inRoughness",
                 "displayName": "Roughness",
                 "description": "Roughness",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float",
                 "defaultValue": {
                     "$type": "float",
                     "Value": 0.0
@@ -145,21 +126,31 @@
                 "name": "inEmissive",
                 "displayName": "Emissive",
                 "description": "Emissive",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
+                "defaultDataType": "float3",
                 "defaultValue": {
-                    "$type": "Vector4",
+                    "$type": "Vector3",
                     "Value": [
                         0.0,
                         0.0,
-                        0.0,
-                        1.0
+                        0.0
                     ]
+                },
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inAlpha",
+                "displayName": "Alpha",
+                "description": "Alpha",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
                 },
                 "settings": {
                     "instructions": [

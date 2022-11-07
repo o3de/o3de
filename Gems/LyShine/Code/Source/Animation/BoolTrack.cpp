@@ -69,7 +69,7 @@ void UiBoolTrack::SetDefaultValue(const bool bDefaultValue)
 template<>
 inline void TUiAnimTrack<IBoolKey>::Reflect(AZ::SerializeContext* serializeContext)
 {
-    serializeContext->ClassDeprecate("TUiAnimTrack_IBoolKey", "{7C2942C1-0ACE-404E-BF2B-E095A1B69A5B}",
+    serializeContext->ClassDeprecate("TUiAnimTrack_IBoolKey", AZ::Uuid("{7C2942C1-0ACE-404E-BF2B-E095A1B69A5B}"),
         [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
     {
         AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;

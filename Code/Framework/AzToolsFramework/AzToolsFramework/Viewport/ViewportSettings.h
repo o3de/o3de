@@ -37,6 +37,14 @@ namespace AzToolsFramework
         return value;
     }
 
+    inline void ClearRegistry(const AZStd::string_view setting)
+    {
+        if (auto* registry = AZ::SettingsRegistry::Get())
+        {
+            registry->Remove(setting);
+        }
+    }
+
     inline constexpr float DefaultManipulatorViewBaseScale = 1.0f;
     inline constexpr float MinManipulatorViewBaseScale = 0.25f;
     inline constexpr float MaxManipulatorViewBaseScale = 2.0f;
@@ -77,6 +85,12 @@ namespace AzToolsFramework
     bool HelpersVisible();
     void SetHelpersVisible(bool visible);
 
+    bool OnlyShowHelpersForSelectedEntities();
+    void SetOnlyShowHelpersForSelectedEntities(bool visible);
+
     bool ComponentSwitcherEnabled();
+
+    bool PrefabEditModeEffectEnabled();
+    void SetPrefabEditModeEffectEnabled(bool enabled);
 
 } // namespace AzToolsFramework

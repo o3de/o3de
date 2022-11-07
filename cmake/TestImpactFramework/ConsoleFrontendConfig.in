@@ -54,7 +54,9 @@
         "root": "${native_temp_dir}",
         "run_artifact_dir": "${LY_TEST_IMPACT_NATIVE_TEST_RUN_DIR}",
         "coverage_artifact_dir": "${native_temp_dir}/Coverage",
-        "enumeration_cache_dir": "${native_temp_dir}/EnumerationCache"
+        "enumeration_cache_dir": "${native_temp_dir}/EnumerationCache",
+        "change_list" : "${native_temp_dir}/Changelists",
+        "reports" : "${native_temp_dir}/Reports"
       },
       "active": {
         "root": "${native_active_dir}",
@@ -103,7 +105,9 @@
         "root": "${python_temp_dir}",
         "run_artifact_dir": "${LY_TEST_IMPACT_PYTHON_TEST_RUN_DIR}",
         "coverage_artifact_dir": "${python_temp_dir}/Coverage",
-        "enumeration_cache_dir": "${python_temp_dir}/EnumerationCache"
+        "enumeration_cache_dir": "${python_temp_dir}/EnumerationCache",
+        "change_list" : "${python_temp_dir}/Changelists",
+        "reports" : "${python_temp_dir}/Reports"
       },
       "active": {
         "root": "${python_active_dir}",

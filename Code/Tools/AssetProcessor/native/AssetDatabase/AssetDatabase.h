@@ -18,6 +18,7 @@
 #include <QtCore/QString>
 
 #include "AzToolsFramework/API/EditorAssetSystemAPI.h"
+#include <native/AssetManager/SourceAssetReference.h>
 
 class QStringList;
 
@@ -46,7 +47,7 @@ namespace AssetProcessor
 
     protected:
         void CreateStatements() override;
-        bool PostOpenDatabase() override;
+        bool PostOpenDatabase(bool ignoreFutureAssetDBVersionError) override;
         //////////////////////////////////////////////////////////////////////////
 
     public:
@@ -111,7 +112,7 @@ namespace AssetProcessor
         bool GetJobByProductID(AZ::s64 productID, AzToolsFramework::AssetDatabase::JobDatabaseEntry& entry);
 
         bool GetJobsBySourceID(AZ::s64 sourceID, AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
-        bool GetJobsBySourceName(QString exactSourceName, AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
+        bool GetJobsBySourceName(const AssetProcessor::SourceAssetReference& sourceAsset, AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
         bool GetJobsLikeSourceName(QString likeSourceName, LikeType likeType, AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
 
         bool GetJobsByProductName(QString exactProductName, AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
@@ -148,7 +149,7 @@ namespace AssetProcessor
         bool GetJobInfoByJobID(AZ::s64 jobID, AzToolsFramework::AssetSystem::JobInfo& jobInfo);
         bool GetJobInfoByJobKey(AZStd::string jobKey, AzToolsFramework::AssetSystem::JobInfoContainer& container);
         bool GetJobInfoByJobRunKey(AZ::u64 jobRunKey, AzToolsFramework::AssetSystem::JobInfoContainer& container);
-        bool GetJobInfoBySourceName(QString exactSourceName, AzToolsFramework::AssetSystem::JobInfoContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
+        bool GetJobInfoBySourceNameScanFolderId(QString exactSourceName, AZ::s64 scanfolderId, AzToolsFramework::AssetSystem::JobInfoContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
 
         /* --------------------- Source Dependency Table -------------------
         *    For example, this table records when a source file depends on another source file either directly (DEP_SourceToSource)
@@ -171,11 +172,16 @@ namespace AssetProcessor
         // The following functions are all search functions (as opposed to the above functions which fetch or operate on specific rows)
         // They tend to take a "Type of Dependency" filter - you can use DEP_Any to query all kinds of dependencies.
         /// Given a source file, what does it DEPEND ON?
-        bool GetDependsOnSourceBySource(const char* source, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer& container);
+        bool GetDependsOnSourceBySource(AZ::Uuid sourceUuid, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer& container);
         /// Given a source file and a builder UUID, does it DEPEND ON?
-        bool GetSourceFileDependenciesByBuilderGUIDAndSource(const AZ::Uuid& builderGuid, const char* source, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer& container);
+        bool GetSourceFileDependenciesByBuilderGUIDAndSource(const AZ::Uuid& builderGuid, AZ::Uuid sourceGuid, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer& container);
         /// Given a source file, what depends ON IT? ('reverse dependency')
-        bool GetSourceFileDependenciesByDependsOnSource(const QString& dependsOnSource, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer& container);
+        bool GetSourceFileDependenciesByDependsOnSource(
+            AZ::Uuid sourceGuid,
+            const char* sourceName,
+            const char* absolutePath,
+            AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency,
+            AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer& container);
 
         // --------------------- Legacy SUBID table -------------------
         bool CreateOrUpdateLegacySubID(AzToolsFramework::AssetDatabase::LegacySubIDsEntry& entry);  // create or overwrite operation.

@@ -21,12 +21,14 @@ namespace AZ
 }
 
 //! Macros to self-register AutoGen node into ScriptCanvas
+#define REGISTER_SCRIPTCANVAS_AUTOGEN_DATA(LIBRARY)\
+    static ScriptCanvas::LIBRARY##DataRegistry s_##LIBRARY##AutoGenDataRegistry;
 #define REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(LIBRARY)\
-    static ScriptCanvas::LIBRARY##FunctionRegistry s_AutoGenFunctionRegistry;
+    static ScriptCanvas::LIBRARY##FunctionRegistry s_##LIBRARY##AutoGenFunctionRegistry;
 #define REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(LIBRARY)\
-    static ScriptCanvas::LIBRARY##NodeableRegistry s_AutoGenNodeableRegistry;
+    static ScriptCanvas::LIBRARY##NodeableRegistry s_##LIBRARY##AutoGenNodeableRegistry;
 #define REGISTER_SCRIPTCANVAS_AUTOGEN_GRAMMAR(LIBRARY)\
-    static ScriptCanvas::LIBRARY##GrammarRegistry s_AutoGenGrammarRegistry;
+    static ScriptCanvas::LIBRARY##GrammarRegistry s_##LIBRARY##AutoGenGrammarRegistry;
 
 //! Not used anymore, keep it for backward compatibility
 #define INIT_SCRIPTCANVAS_AUTOGEN(LIBRARY)
@@ -41,9 +43,9 @@ namespace ScriptCanvas
     {
     public:
         virtual ~ScriptCanvasRegistry() = default;
-        virtual void Init(NodeRegistry* nodeRegistry) = 0;
-        virtual void Reflect(AZ::ReflectContext* context) = 0;
-        virtual AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors() = 0;
+        virtual void Init([[maybe_unused]] NodeRegistry* nodeRegistry) {}
+        virtual void Reflect([[maybe_unused]] AZ::ReflectContext* context) {}
+        virtual AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors() { return {}; }
         void ReleaseDescriptors();
     protected:
         AZStd::vector<AZ::ComponentDescriptor*> m_cachedDescriptors;

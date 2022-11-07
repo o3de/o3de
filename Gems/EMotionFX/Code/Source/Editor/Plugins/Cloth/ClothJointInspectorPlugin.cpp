@@ -77,6 +77,11 @@ namespace EMotionFX
             return;
         }
 
+        if (selectedRowIndices.size() == 1 && SkeletonModel::IndexIsRootNode(selectedRowIndices[0]))
+        {
+            return;
+        }
+
         const Actor* actor = selectedRowIndices[0].data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
         const AZStd::shared_ptr<PhysicsSetup>& physicsSetup = actor->GetPhysicsSetup();
         if (!physicsSetup)
@@ -127,7 +132,7 @@ namespace EMotionFX
 
     void ClothJointInspectorPlugin::OnAddCollider()
     {
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+        AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (!selectedRowIndicesOutcome.IsSuccess())
         {
@@ -149,7 +154,7 @@ namespace EMotionFX
 
     void ClothJointInspectorPlugin::OnClearColliders()
     {
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+        AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (!selectedRowIndicesOutcome.IsSuccess())
         {

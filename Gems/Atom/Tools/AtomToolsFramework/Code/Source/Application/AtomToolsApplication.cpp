@@ -104,10 +104,11 @@ namespace AtomToolsFramework
 
         AzToolsFramework::QTreeViewWithStateSaving::Reflect(context);
         AzToolsFramework::QWidgetSavedState::Reflect(context);
+        ReflectUtilFunctions(context);
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            // this will put these methods into the 'azlmbr.AtomTools.general' module
+            // This will put these methods into the 'azlmbr.atomtools.general' module
             auto addGeneral = [](AZ::BehaviorContext::GlobalMethodBuilder methodBuilder)
             {
                 methodBuilder->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
@@ -121,6 +122,9 @@ namespace AtomToolsFramework
             addGeneral(behaviorContext->Method(
                 "exit", &AtomToolsApplication::PyExit, nullptr,
                 "Exit application. Primarily used for auto-testing."));
+            addGeneral(behaviorContext->Method(
+                "crash", &AtomToolsApplication::PyCrash, nullptr,
+                "Crashes the application, useful for testing crash reporting and other automation tools."));
             addGeneral(behaviorContext->Method(
                 "test_output", &AtomToolsApplication::PyTestOutput, nullptr,
                 "Report test information."));
@@ -246,7 +250,7 @@ namespace AtomToolsFramework
 
         // This will only save modified registry settings that match the following filters
         const AZStd::vector<AZStd::string> filters = {
-            "/O3DE/AtomToolsFramework", AZStd::string::format("/O3DE/Atom/%s", m_targetName.c_str()) }; 
+            "/O3DE/AtomToolsFramework", "/O3DE/Atom/Tools", AZStd::string::format("/O3DE/Atom/%s", m_targetName.c_str()) }; 
 
         SaveSettingsToFile(settingsFilePath, filters);
 
@@ -267,7 +271,7 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::RunMainLoop()
     {
-        // Start initial command line processing and application update as part of the Qt event loop 
+        // Start initial command line processing and application update as part of the Qt event loop
         QTimer::singleShot(0, this, [this]() { OnIdle(); ProcessCommandLine(m_commandLine); });
         exec();
     }
@@ -349,7 +353,7 @@ namespace AtomToolsFramework
             AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
             AzFramework::AssetSystemRequestBus::BroadcastResult(
                 status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, assetFilters);
-            if (status != AzFramework::AssetSystem::AssetStatus_Compiled)
+            if (status != AzFramework::AssetSystem::AssetStatus_Compiled && status != AzFramework::AssetSystem::AssetStatus_Unknown)
             {
                 failedAssets.append(assetFilters.c_str());
             }
@@ -434,14 +438,14 @@ namespace AtomToolsFramework
             AtomToolsMainWindowRequestBus::Event(m_toolId, &AtomToolsMainWindowRequestBus::Handler::ActivateWindow);
         }
 
-        const AZStd::string timeoputSwitchName = "timeout";
-        if (commandLine.HasSwitch(timeoputSwitchName))
+        const AZStd::string timeoutSwitchName  = "timeout";
+        if (commandLine.HasSwitch(timeoutSwitchName ))
         {
-            const AZStd::string& timeoutValue = commandLine.GetSwitchValue(timeoputSwitchName, 0);
+            const AZStd::string& timeoutValue = commandLine.GetSwitchValue(timeoutSwitchName , 0);
             const uint32_t timeoutInMs = atoi(timeoutValue.c_str());
             AZ_Printf(m_targetName.c_str(), "Timeout scheduled, shutting down in %u ms", timeoutInMs);
-            QTimer::singleShot(timeoutInMs, this, [this]{
-                AZ_Printf(m_targetName.c_str(), "Timeout reached, shutting down");
+            QTimer::singleShot(timeoutInMs, this, [targetName = m_targetName]{
+                AZ_Printf(targetName.c_str(), "Timeout reached, shutting down");
                 AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
             });
         }
@@ -682,6 +686,11 @@ namespace AtomToolsFramework
     void AtomToolsApplication::PyExit()
     {
         AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+    }
+
+    void AtomToolsApplication::PyCrash()
+    {
+        AZ_Crash();
     }
 
     void AtomToolsApplication::PyTestOutput(const AZStd::string& output)

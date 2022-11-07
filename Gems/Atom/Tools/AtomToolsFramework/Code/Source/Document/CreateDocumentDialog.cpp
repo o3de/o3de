@@ -37,30 +37,41 @@ namespace AtomToolsFramework
         , m_initialPath(initialPath)
     {
         setModal(true);
-        resize(400, 128);
-        setMinimumSize(QSize(400, 128));
-        setMaximumSize(QSize(16777215, 128));
+        setMinimumWidth(600);
+        resize(500, 128);
         setWindowTitle(title);
 
-        auto sourceSelectionComboBoxLabel = new QLabel(this);
-        sourceSelectionComboBoxLabel->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred));
-        sourceSelectionComboBoxLabel->setText(sourceLabel);
+        // Create the layout for all the widgets to be stacked vertically.
+        auto verticalLayout = new QVBoxLayout();
+
+        // The source selection combo box is used to pick from a set of source files or templates that can be used as a starting point or
+        // parent for a new document. If there is no filter then no source selection widgets or connections will be made.
+        if (filterCallback)
+        {
+            auto sourceSelectionComboBoxLabel = new QLabel(this);
+            sourceSelectionComboBoxLabel->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
+            sourceSelectionComboBoxLabel->setText(sourceLabel);
+            verticalLayout->addWidget(sourceSelectionComboBoxLabel);
+
+            m_sourceSelectionComboBox = new AssetSelectionComboBox(filterCallback, this);
+            m_sourceSelectionComboBox->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
+            m_sourceSelectionComboBox->SelectAsset(defaultSourceAssetId);
+            m_sourcePath = m_sourceSelectionComboBox->GetSelectedAssetSourcePath().c_str();
+            QObject::connect(m_sourceSelectionComboBox, &AssetSelectionComboBox::AssetSelected, this, [this]() {
+                m_sourcePath = m_sourceSelectionComboBox->GetSelectedAssetSourcePath().c_str();
+            });
+            verticalLayout->addWidget(m_sourceSelectionComboBox);
+        }
 
         auto targetSelectionBrowserLabel = new QLabel(this);
-        targetSelectionBrowserLabel->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred));
+        targetSelectionBrowserLabel->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
         targetSelectionBrowserLabel->setText(targetLabel);
-
-        m_sourceSelectionComboBox = new AssetSelectionComboBox(filterCallback, this);
-        m_sourceSelectionComboBox->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred));
-        m_sourceSelectionComboBox->SelectAsset(defaultSourceAssetId);
-        m_sourcePath = m_sourceSelectionComboBox->GetSelectedAssetSourcePath().c_str();
-        QObject::connect(m_sourceSelectionComboBox, &AssetSelectionComboBox::AssetSelected, this, [this]() {
-            m_sourcePath = m_sourceSelectionComboBox->GetSelectedAssetSourcePath().c_str();
-        });
+        verticalLayout->addWidget(targetSelectionBrowserLabel);
 
         m_targetSelectionBrowser = new AzQtComponents::BrowseEdit(this);
-        m_targetSelectionBrowser->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred));
+        m_targetSelectionBrowser->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
         m_targetSelectionBrowser->setLineEditReadOnly(true);
+        verticalLayout->addWidget(m_targetSelectionBrowser);
 
         // Select a default location and unique name for the new document
         UpdateTargetPath(QFileInfo(GetUniqueFilePath(
@@ -73,17 +84,11 @@ namespace AtomToolsFramework
 
         // Connect ok and cancel buttons
         auto buttonBox = new QDialogButtonBox(this);
-        buttonBox->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred));
+        buttonBox->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
         QObject::connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
         QObject::connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
-
-        auto verticalLayout = new QVBoxLayout();
-        verticalLayout->addWidget(sourceSelectionComboBoxLabel);
-        verticalLayout->addWidget(m_sourceSelectionComboBox);
-        verticalLayout->addWidget(targetSelectionBrowserLabel);
-        verticalLayout->addWidget(m_targetSelectionBrowser);
         verticalLayout->addWidget(buttonBox);
 
         auto gridLayout = new QGridLayout(this);
@@ -92,12 +97,14 @@ namespace AtomToolsFramework
 
     CreateDocumentDialog::CreateDocumentDialog(const DocumentTypeInfo& documentType, const QString& initialPath, QWidget* parent)
         : CreateDocumentDialog(
-              tr("Create %1").arg(documentType.m_documentTypeName.c_str()),
-              tr("Select Type"),
-              tr("Select %1 Path").arg(documentType.m_documentTypeName.c_str()),
+              tr("Create %1 Document").arg(documentType.m_documentTypeName.c_str()),
+              tr("Select source file, type, or template to create %1 document").arg(documentType.m_documentTypeName.c_str()),
+              tr("Select target path to save %1 document").arg(documentType.m_documentTypeName.c_str()),
               initialPath,
               { documentType.GetDefaultExtensionToSave().c_str() },
               documentType.m_defaultAssetIdToCreate,
+              documentType.m_supportedExtensionsToCreate.empty() ?
+              AZStd::function<bool(const AZ::Data::AssetInfo&)>():
               [documentType](const AZ::Data::AssetInfo& assetInfo)
               {
                   // If any asset types are specified, do early rejection tests to avoid expensive string comparisons

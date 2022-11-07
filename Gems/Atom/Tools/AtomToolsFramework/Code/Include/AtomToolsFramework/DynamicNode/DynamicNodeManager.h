@@ -36,13 +36,17 @@ namespace AtomToolsFramework
         DynamicNodeConfig GetConfigById(const AZ::Uuid& configId) const override;
         void Clear() override;
         GraphCanvas::GraphCanvasTreeItem* CreateNodePaletteTree() const override;
+        void RegisterEditDataForSetting(const AZStd::string& settingName, const AZ::Edit::ElementData& editData) override;
+        const AZ::Edit::ElementData* GetEditDataForSetting(const AZStd::string& settingName) const override;
 
     private:
         bool ValidateSlotConfig(const AZ::Uuid& configId, const DynamicNodeSlotConfig& slotConfig) const;
         bool ValidateSlotConfigVec(const AZ::Uuid& configId, const AZStd::vector<DynamicNodeSlotConfig>& slotConfigVec) const;
+        bool IsNodeConfigLoggingEnabled() const;
 
         const AZ::Crc32 m_toolId = {};
         GraphModel::DataTypeList m_registeredDataTypes;
         AZStd::unordered_map<AZ::Uuid, DynamicNodeConfig> m_nodeConfigMap;
+        AZStd::unordered_map<AZStd::string, AZ::Edit::ElementData> m_editDataForSettingName;
     };
 } // namespace AtomToolsFramework

@@ -40,23 +40,7 @@ namespace ScriptCanvas
 
         AZ_TYPE_INFO(RuntimeAssetDescription, "{7F49CB81-0655-4AF6-A1B5-95417A6FD568}");
 
-        RuntimeAssetDescription()
-            : AssetDescription(
-                azrtti_typeid<RuntimeAsset>(),
-                "Script Canvas Runtime",
-                "Script Canvas Runtime Graph",
-                "@projectroot@/scriptcanvas",
-                ".scriptcanvas_compiled",
-                "Script Canvas Runtime",
-                "Untitled-%i",
-                "Script Canvas Files (*.scriptcanvas_compiled)",
-                "Script Canvas Runtime",
-                "Script Canvas Runtime",
-                "Icons/ScriptCanvas/Viewport/ScriptCanvas.png",
-                AZ::Color(1.0f, 0.0f, 0.0f, 1.0f),
-                false
-            )
-        {}
+        RuntimeAssetDescription();
     };
 
     struct RuntimeData
@@ -171,23 +155,7 @@ namespace ScriptCanvas
 
         AZ_TYPE_INFO(SubgraphInterfaceAssetDescription, "{7F7BE1A5-9447-41C2-9190-18580075094C}");
 
-        SubgraphInterfaceAssetDescription()
-            : AssetDescription(
-                azrtti_typeid<SubgraphInterfaceAsset>(),
-                "Script Canvas Function Interface",
-                "Script Canvas Function Interface",
-                "@projectroot@/scriptcanvas",
-                ".scriptcanvas_fn_compiled",
-                "Script Canvas Function Interface",
-                "Untitled-Function-%i",
-                "Script Canvas Compiled Function Interfaces (*.scriptcanvas_fn_compiled)",
-                "Script Canvas Function Interface",
-                "Script Canvas Function Interface",
-                "Icons/ScriptCanvas/Viewport/ScriptCanvas_Function.png",
-                AZ::Color(1.0f, 0.0f, 0.0f, 1.0f),
-                false
-            )
-        {}
+        SubgraphInterfaceAssetDescription();
     };
 
     struct SubgraphInterfaceData

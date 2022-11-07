@@ -87,6 +87,7 @@ namespace AssetProcessor
     class PlatformConfiguration;
     class ScanFolderInfo;
     class PathDependencyManager;
+    class LfsPointerFileValidator;
 
     //! The Asset Processor Manager is the heart of the pipeline
     //! It is what makes the critical decisions about what should and should not be processed
@@ -120,11 +121,11 @@ namespace AssetProcessor
             QString m_fileName;
             bool m_isDelete = false;
             bool m_isFromScanner = false;
-            AZStd::chrono::system_clock::time_point m_initialProcessTime{};
+            AZStd::chrono::steady_clock::time_point m_initialProcessTime{};
 
             FileEntry() = default;
 
-            FileEntry(const QString& fileName, bool isDelete, bool isFromScanner = false, AZStd::chrono::system_clock::time_point initialProcessTime = {})
+            FileEntry(const QString& fileName, bool isDelete, bool isFromScanner = false, AZStd::chrono::steady_clock::time_point initialProcessTime = {})
                 : m_fileName(fileName)
                 , m_isDelete(isDelete)
                 , m_isFromScanner(isFromScanner)
@@ -166,8 +167,7 @@ namespace AssetProcessor
         //! Internal structure that will hold all the necessary source info
         struct SourceFileInfo
         {
-            QString m_databasePath; // clarification: this is the database path
-            QString m_pathRelativeToScanFolder;
+            SourceAssetReference m_sourceAssetReference;
             AZ::Uuid m_uuid;
             const ScanFolderInfo* m_scanFolder{ nullptr };
         };
@@ -212,7 +212,7 @@ namespace AssetProcessor
         {
             bool operator<(const JobToProcessEntry& other)
             {
-                return m_sourceFileInfo.m_pathRelativeToScanFolder < other.m_sourceFileInfo.m_pathRelativeToScanFolder;
+                return m_sourceFileInfo.m_sourceAssetReference.RelativePath() < other.m_sourceFileInfo.m_sourceAssetReference.RelativePath();
             }
 
             SourceFileInfo m_sourceFileInfo;
@@ -260,9 +260,9 @@ namespace AssetProcessor
 
         void EscalateJobs(AssetProcessor::JobIdEscalationList jobIdEscalationList);
 
-        void SourceDeleted(QString relSourceFile);
+        void SourceDeleted(SourceAssetReference sourceAsset);
         void SourceFolderDeleted(QString folderPath);
-        void SourceQueued(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid, QString rootPath, QString relativeFilePath);
+        void SourceQueued(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid, SourceAssetReference sourceAssetReference);
         void SourceFinished(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid);
         void JobRemoved(AzToolsFramework::AssetSystem::JobInfo jobInfo);
 
@@ -330,14 +330,14 @@ namespace AssetProcessor
         void CheckMissingJobs(QString relativeSourceFile, const ScanFolderInfo* scanFolder, const AZStd::vector<JobDetails>& jobsThisTime);
         void CheckDeletedProductFile(QString normalizedPath);
         void CheckDeletedSourceFile(
-            QString normalizedPath, QString relativePath, QString databaseSourceFile,
-            AZStd::chrono::system_clock::time_point initialProcessTime);
+            const SourceAssetReference& sourceAsset,
+            AZStd::chrono::steady_clock::time_point initialProcessTime);
         void CheckModifiedSourceFile(QString normalizedPath, QString databaseSourceFile, const ScanFolderInfo* scanFolderInfo);
         bool AnalyzeJob(JobDetails& details);
         void CheckDeletedCacheFolder(QString normalizedPath);
         void CheckDeletedSourceFolder(QString normalizedPath, QString relativePath, const ScanFolderInfo* scanFolderInfo);
         void CheckCreatedSourceFolder(QString normalizedPath);
-        void FailTopLevelSourceForIntermediate(AZ::IO::PathView relativePathToIntermediateProduct, AZStd::string_view errorMessage);
+        void FailTopLevelSourceForIntermediate(const SourceAssetReference& intermediateAsset, AZStd::string_view errorMessage);
         void CheckMetaDataRealFiles(QString relativePath);
         bool DeleteProducts(const AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer& products);
         void DispatchFileChange();
@@ -366,18 +366,9 @@ namespace AssetProcessor
         void ProcessBuilders(QString normalizedPath, QString relativePathToFile, const ScanFolderInfo* scanFolder, const AssetProcessor::BuilderInfoList& builderInfoList);
         AZStd::vector<AZStd::string> GetExcludedFolders();
 
-        struct SourceInfo
-        {
-            QString m_watchFolder;
-            QString m_sourceRelativeToWatchFolder;
-            QString m_sourceDatabaseName;
-        };
-
         struct SourceInfoWithFingerprints
         {
-            QString m_watchFolder;
-            QString m_sourceRelativeToWatchFolder;
-            QString m_sourceDatabaseName;
+            SourceAssetReference m_sourceAssetReference;
             QString m_analysisFingerprint;
         };
 
@@ -388,21 +379,22 @@ namespace AssetProcessor
                 None,
                 //! Indicates the conflict occurred because of a new intermediate overriding an existing source
                 Intermediate,
-                //! Indicates the conflict occurred because of a new source overriding an existing intermediate
-                Source
             };
 
             ConflictType m_type;
 
-            //! Full path to the file that has caused the conflict.  If ConflictType == Intermediate, this is the path to the source, if ConflictType == Source, this is the intermediate
-            AZ::IO::Path m_conflictingFile;
+            //! The file that has caused the conflict.  If ConflictType == Intermediate, this is the source
+            SourceAssetReference m_conflictingFile;
         };
 
         //! Search the database and the the source dependency maps for the the sourceUuid. if found returns the cached info
-        bool SearchSourceInfoBySourceUUID(const AZ::Uuid& sourceUuid, AssetProcessorManager::SourceInfo& result);
+        bool SearchSourceInfoBySourceUUID(const AZ::Uuid& sourceUuid, SourceAssetReference& result);
 
         //!  Adds the source to the database and returns the corresponding sourceDatabase Entry
-        void AddSourceToDatabase(AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceDatabaseEntry, const ScanFolderInfo* scanFolder, QString relativeSourceFilePath);
+        void AddSourceToDatabase(AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceDatabaseEntry, const ScanFolderInfo* scanFolder, const SourceAssetReference& sourceAsset);
+
+        // ! Get the engine, project and active gem root directories which could potentially be separate repositories.
+        AZStd::vector<AZStd::string> GetPotentialRepositoryRoots();
 
     protected:
         // given a set of file info that definitely exist, warm the file cache up so
@@ -453,11 +445,16 @@ namespace AssetProcessor
         bool IsInIntermediateAssetsFolder(AZ::IO::PathView path) const;
         bool IsInIntermediateAssetsFolder(QString path) const;
 
-        ConflictResult CheckIntermediateProductConflict(bool isIntermediateProduct, const char* searchSourcePath);
+        // Checks if an intermediate product conflicts with an existing source asset
+        // searchSourcePath should be the path of the intermediate to use to search for existing sources of the same name
+        ConflictResult CheckIntermediateProductConflict(const char* searchSourcePath);
 
-        bool CheckForIntermediateAssetLoop(AZStd::string_view currentAsset, AZStd::string_view productAsset);
+        bool CheckForIntermediateAssetLoop(const SourceAssetReference& sourceAsset, const SourceAssetReference& productAsset);
 
         void UpdateForCacheServer(JobDetails& jobDetails);
+
+        //! Check whether the specified file is an LFS pointer file.
+        bool IsLfsPointerFile(const AZStd::string& filePath);
 
         AssetProcessor::PlatformConfiguration* m_platformConfig = nullptr;
 
@@ -492,8 +489,8 @@ namespace AssetProcessor
         JobRunKeyToJobInfoMap m_jobRunKeyToJobInfoMap;
         AZStd::multimap<AZStd::string, AZ::u64> m_jobKeyToJobRunKeyMap;
 
-        using SourceUUIDToSourceInfoMap = AZStd::unordered_map<AZ::Uuid, SourceInfo>;
-        SourceUUIDToSourceInfoMap m_sourceUUIDToSourceInfoMap; // contains UUID -> SourceInfo, which includes database name and relative to watch folder:
+        using SourceUUIDToSourceInfoMap = AZStd::unordered_map<AZ::Uuid, SourceAssetReference>;
+        SourceUUIDToSourceInfoMap m_sourceUUIDToSourceInfoMap; // contains Source Asset UUID -> SourceAssetReference
         AZStd::mutex m_sourceUUIDToSourceInfoMapMutex;
 
         QString m_normalizedCacheRootPath;
@@ -516,6 +513,7 @@ namespace AssetProcessor
 
         AZStd::unique_ptr<PathDependencyManager> m_pathDependencyManager;
         AZStd::unique_ptr<SourceFileRelocator> m_sourceFileRelocator;
+        AZStd::unique_ptr<LfsPointerFileValidator> m_lfsPointerFileValidator;
 
         JobDiagnosticTracker m_jobDiagnosticTracker{};
 
@@ -555,7 +553,7 @@ namespace AssetProcessor
           * if a source file is missing from disk, it will not be included in the result set, since this returns
           * full absolute paths.
           */
-        void QueryAbsolutePathDependenciesRecursive(QString inputDatabasePath, SourceFilesForFingerprintingContainer& finalDependencyList, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType, bool reverseQuery);
+        void QueryAbsolutePathDependenciesRecursive(AZ::Uuid sourceUuid, SourceFilesForFingerprintingContainer& finalDependencyList, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType);
 
         // we can't write a job to the database as not needing analysis the next time around,
         // until all jobs related to it are finished.  This is becuase the jobs themselves are not written to the database

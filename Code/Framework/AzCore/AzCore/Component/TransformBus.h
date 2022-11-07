@@ -344,10 +344,10 @@ namespace AZ
     using TransformNotificationBus = AZ::EBus<TransformNotification>;
 
     //! The typeId of game component AzFramework::TransformComponent.
-    static const TypeId TransformComponentTypeId = "{22B10178-39B6-4C12-BB37-77DB45FDD3B6}";
+    static constexpr TypeId TransformComponentTypeId{ AZStd::string_view("{22B10178-39B6-4C12-BB37-77DB45FDD3B6}") };
 
     //! The typeId of editor component AzToolsFramework::Components::TransformComponent.
-    static const TypeId EditorTransformComponentTypeId = "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0}";
+    static constexpr TypeId EditorTransformComponentTypeId{ AZStd::string_view("{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0}") };
 
     //! Component configuration for the transform component.
     class TransformConfig

@@ -16,9 +16,8 @@ set(FILES
     CommonWidgets/OverlayWidget.h
     CommonWidgets/JobWatcher.h
     CommonWidgets/JobWatcher.cpp
-    CommonWidgets/ProcessingOverlayWidget.h
-    CommonWidgets/ProcessingOverlayWidget.cpp
-    CommonWidgets/ProcessingOverlayWidget.ui
+    CommonWidgets/SceneSettingsCard.h
+    CommonWidgets/SceneSettingsCard.cpp
     CommonWidgets/ExpandCollapseToggler.h
     CommonWidgets/ExpandCollapseToggler.cpp
     Handlers/ProcessingHandlers/ProcessingHandler.h

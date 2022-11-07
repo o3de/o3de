@@ -26,6 +26,14 @@ namespace AtomToolsFramework
                 ->Field("toolId", &DynamicNode::m_toolId)
                 ->Field("configId", &DynamicNode::m_configId)
                 ;
+
+
+            if (auto editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<DynamicNode>("DynamicNode", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ_CRC_CE("TitlePaletteOverride"), &DynamicNode::GetTitlePaletteName);
+            }
         }
     }
 
@@ -58,6 +66,11 @@ namespace AtomToolsFramework
         return m_config;
     }
 
+    AZStd::string DynamicNode::GetTitlePaletteName() const
+    {
+        return !m_config.m_titlePaletteName.empty() ? m_config.m_titlePaletteName : "DefaultNodeTitlePalette";
+    }
+
     void DynamicNode::RegisterSlots()
     {
         m_config = {};
@@ -69,26 +82,7 @@ namespace AtomToolsFramework
         {
             // Input slots support incoming connections from multiple data types. We must build a container of all of the data type objects
             // for all of the supported types to create the input slot.
-            GraphModel::DataTypeList dataTypes;
-            dataTypes.reserve(slotConfig.m_supportedDataTypes.size());
-            for (const AZStd::string& dataTypeName : slotConfig.m_supportedDataTypes)
-            {
-                GraphModel::DataTypePtr dataType = GetGraphContext()->GetDataType(dataTypeName);
-                if (!dataType)
-                {
-                    AZ_Error(
-                        "DynamicNode",
-                        false,
-                        "Unable to register input slot \"%s\" with unsupported data type \"%s\", from DynamicNodeConfig \"%s\"",
-                        slotConfig.m_displayName.c_str(),
-                        dataTypeName.c_str(),
-                        m_configId.ToFixedString().c_str());
-                    continue;
-                }
-
-                dataTypes.push_back(dataType);
-            }
-
+            const GraphModel::DataTypeList dataTypes = slotConfig.GetSupportedDataTypes();
             if (dataTypes.empty())
             {
                 AZ_Error(
@@ -101,8 +95,7 @@ namespace AtomToolsFramework
             }
 
             // Assigning the default value from the slot configuration or the first data type
-            const AZStd::any& defaultValue =
-                !slotConfig.m_defaultValue.empty() ? slotConfig.m_defaultValue : dataTypes.front()->GetDefaultValue();
+            const AZStd::any& defaultValue = slotConfig.GetDefaultValue();
             if (defaultValue.empty())
             {
                 AZ_Error(
@@ -127,16 +120,7 @@ namespace AtomToolsFramework
         for (const auto& slotConfig : m_config.m_outputSlots)
         {
             // Output slots only support one data type. Search for the first valid supported data type.
-            GraphModel::DataTypePtr dataType;
-            for (const AZStd::string& dataTypeName : slotConfig.m_supportedDataTypes)
-            {
-                dataType = GetGraphContext()->GetDataType(dataTypeName);
-                if (dataType)
-                {
-                    break;
-                }
-            }
-
+            GraphModel::DataTypePtr dataType = slotConfig.GetDefaultDataType();
             if (!dataType)
             {
                 AZ_Error(
@@ -160,16 +144,7 @@ namespace AtomToolsFramework
         for (const auto& slotConfig : m_config.m_propertySlots)
         {
             // Property slots only support one data type. Search for the first valid supported data type.
-            GraphModel::DataTypePtr dataType;
-            for (const AZStd::string& dataTypeName : slotConfig.m_supportedDataTypes)
-            {
-                dataType = GetGraphContext()->GetDataType(dataTypeName);
-                if (dataType)
-                {
-                    break;
-                }
-            }
-
+            GraphModel::DataTypePtr dataType = slotConfig.GetDefaultDataType();
             if (!dataType)
             {
                 AZ_Error(
@@ -182,7 +157,7 @@ namespace AtomToolsFramework
             }
 
             // Assigning the default value from the slot configuration or the first data type
-            const AZStd::any& defaultValue = !slotConfig.m_defaultValue.empty() ? slotConfig.m_defaultValue : dataType->GetDefaultValue();
+            const AZStd::any& defaultValue = slotConfig.GetDefaultValue();
             if (defaultValue.empty())
             {
                 AZ_Error(

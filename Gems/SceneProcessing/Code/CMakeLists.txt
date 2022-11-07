@@ -91,9 +91,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         RUNTIME_DEPENDENCIES
             Gem::SceneProcessing
     )
-    ly_add_googletest(
-        NAME Gem::SceneProcessing.Tests
-    )
+    # Commented out as currently there are no SceneProcessing tests
+    # ly_add_googletest(
+        # NAME Gem::SceneProcessing.Tests
+    # )
 
     if (PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(

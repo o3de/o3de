@@ -155,6 +155,30 @@ class TestHelper:
         Report.critical_result(("Unexpected line not found: " + line, "Unexpected line found: " + line), not TestHelper.find_line(window, line, print_infos))
 
     @staticmethod
+    def all_expected_log_lines_found(section_tracer, lines):
+        """
+        function for parsing game mode's console output for expected test lines. duplicate lines and error lines are not
+        handled by this function.
+
+        param section_tracer: python editor tracer object
+        param lines: list of expected lines
+
+
+        returns true if all the expected lines were detected in the parsed output
+        """
+        found_lines = [printInfo.message.strip() for printInfo in section_tracer.prints]
+
+        expected_lines = len(lines)
+        matching_lines = 0
+
+        for line in lines:
+            for found_line in found_lines:
+                if line == found_line:
+                    matching_lines += 1
+
+        return matching_lines >= expected_lines
+
+    @staticmethod
     def multiplayer_enter_game_mode(msgtuple_success_fail: Tuple[str, str]) -> None:
         """
         :param msgtuple_success_fail: The tuple with the expected/unexpected messages for entering game mode.

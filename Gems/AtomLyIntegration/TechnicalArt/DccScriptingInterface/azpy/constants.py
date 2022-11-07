@@ -26,6 +26,7 @@ _MODULE_START = timeit.default_timer()  # start tracking
 import os
 import sys
 import site
+from pathlib import Path
 from os.path import expanduser
 import logging as _logging
 # -------------------------------------------------------------------------
@@ -33,27 +34,25 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-_MODULENAME = 'azpy.constants'
+from DccScriptingInterface.azpy import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.constants'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug(f'Initializing: {_MODULENAME}')
+_MODULE_PATH = Path(__file__)  # what if frozen?
+_LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# This sets up basic code access to the DCCsi
-# <o3de>/Gems/AtomLyIntegration/TechnicalArt/<DCCsi>
-_MODULE_PATH = os.path.realpath(__file__)  # To Do: what if frozen?
-_PATH_DCCSIG = os.path.normpath(os.path.join(_MODULE_PATH, '../..'))
-_PATH_DCCSIG = os.getenv('PATH_DCCSIG', _PATH_DCCSIG)
-site.addsitedir(_PATH_DCCSIG)
-
 # Ideally this module is standalone with minimal dependancies
 # Most logic, such as a search to derive a path, should happen outside of this module.
 # To Do: place best defaults here and logical derivations in a config.py
 
-# now we have azpy api access
-import azpy
-from azpy.env_bool import env_bool
+# This sets up basic code access to the DCCsi
+from DccScriptingInterface.azpy import PATH_DCCSIG  # root DCCsi path
+# DCCsi imports
+from DccScriptingInterface.azpy.env_bool import env_bool
+
 from azpy.config_utils import return_stub_dir
 from azpy.config_utils import get_stub_check_path
 # -------------------------------------------------------------------------
@@ -61,42 +60,37 @@ from azpy.config_utils import get_stub_check_path
 
 # -------------------------------------------------------------------------
 # This is the first set of defined constants (and we use them here)
-# to do: remove str(), those were added to improve py2/3 unicode
-ENVAR_DCCSI_GDEBUG = str('DCCSI_GDEBUG')
-ENVAR_DCCSI_DEV_MODE = str('DCCSI_DEV_MODE')
-ENVAR_DCCSI_GDEBUGGER = str('DCCSI_GDEBUGGER')
-ENVAR_DCCSI_LOGLEVEL = str('DCCSI_LOGLEVEL')
-ENVAR_DCCSI_TESTS = str('DCCSI_TESTS')
+from DccScriptingInterface.constants import ENVAR_DCCSI_GDEBUG
+from DccScriptingInterface.constants import ENVAR_DCCSI_DEV_MODE
+from DccScriptingInterface.constants import ENVAR_DCCSI_GDEBUGGER
+from DccScriptingInterface.constants import ENVAR_DCCSI_LOGLEVEL
+from DccScriptingInterface.constants import ENVAR_DCCSI_TESTS
 
-# defaults, can be overriden/forced here for development
-_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-_DCCSI_LOGLEVEL = env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO)
-_DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
+from DccScriptingInterface.globals import *
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
 # utility: constants, like pretty print strings
-STR_CROSSBAR = str('{0}'.format('-' * 74))
-STR_CROSSBAR_RL = str('{0}\r'.format(STR_CROSSBAR))
-STR_CROSSBAR_NL = str('{0}\n'.format(STR_CROSSBAR))
+from DccScriptingInterface.constants import STR_CROSSBAR
+from DccScriptingInterface.constants import STR_CROSSBAR_RL
+from DccScriptingInterface.constants import STR_CROSSBAR_NL
 # Log formating
-FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
-FRMT_LOG_SHRT = "[%(asctime)s][%(name)s][%(levelname)s] >> %(message)s"
+from DccScriptingInterface.constants import FRMT_LOG_LONG
+from DccScriptingInterface.constants import FRMT_LOG_SHRT
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
 # common: constants like os, sys utils
-TAG_DIR_REGISTRY = str('Registry')
+from DccScriptingInterface.constants import SLUG_DIR_REGISTRY
 
 # string literals
 BITDEPTH64 = str('64bit')
 
 #  some common paths
-PATH_PROGRAMFILES_X86 = str(os.environ['PROGRAMFILES(X86)'])
-PATH_PROGRAMFILES_X64 = str(os.environ['PROGRAMFILES'])
+from DccScriptingInterface.constants import PATH_PROGRAMFILES_X86
+from DccScriptingInterface.constants import PATH_PROGRAMFILES_X64
 
 # os.path.expanduser("~") returns different values in py2.7 vs 3
 PATH_USER_HOME = expanduser("~")
@@ -127,7 +121,7 @@ TAG_DIR_O3DE_BUILD_FOLDER = str('build')
 TAG_O3DE_FOLDER = str('.o3de')
 TAG_O3DE_BOOTSTRAP = str('bootstrap.setreg')
 TAG_DCCSI_CONFIG = str('dccsi_configuration.setreg')
-TAG_DCCSI_LOCAL_SETTINGS_SLUG = str('settings.local.json')
+from DccScriptingInterface.constants import DCCSI_SETTINGS_LOCAL_FILENAME
 
 # py path string, parts, etc.
 TAG_DEFAULT_PY = str('Launch_pyBASE.bat')
@@ -135,8 +129,8 @@ TAG_DEFAULT_PY = str('Launch_pyBASE.bat')
 # python related
 #python and site-dir
 TAG_DCCSI_PY_VERSION_MAJOR = str(3)
-TAG_DCCSI_PY_VERSION_MINOR = str(7)
-TAG_DCCSI_PY_VERSION_RELEASE = str(10)
+TAG_DCCSI_PY_VERSION_MINOR = str(10)
+TAG_DCCSI_PY_VERSION_RELEASE = str(5)
 TAG_PYTHON_EXE = str('python.exe')
 TAG_TOOLS_DIR = str('Tools\\Python')
 TAG_PLATFORM = str('windows')
@@ -194,16 +188,18 @@ FLAG_PATH_BLOCKROOT = str('blockRoot')
 # O3DE
 # base env var key as str
 ENVAR_COMPANY = str('COMPANY')
-ENVAR_O3DE_PROJECT = str('O3DE_PROJECT') # project name
-ENVAR_PATH_O3DE_PROJECT = str('PATH_O3DE_PROJECT') # path to project
-ENVAR_O3DE_DEV = str('O3DE_DEV')
 ENVAR_O3DE_BUILD_DIR_NAME = str('O3DE_BUILD_DIR_NAME')
 ENVAR_PATH_O3DE_BUILD = str('PATH_O3DE_BUILD')
 ENVAR_PATH_O3DE_BIN = str('PATH_O3DE_BIN')
 ENVAR_PATH_O3DE_PYTHON_INSTALL = str('PATH_O3DE_PYTHON_INSTALL')
 
+# MOVED to DccScriptingInterface __init__
+ENVAR_O3DE_PROJECT = str('O3DE_PROJECT') # project name
+ENVAR_PATH_O3DE_PROJECT = str('PATH_O3DE_PROJECT') # path to project
+ENVAR_O3DE_DEV = str('O3DE_DEV')
+
 # DCCSI
-ENVAR_PATH_DCCSIG = str('PATH_DCCSIG')
+from DccScriptingInterface.constants import ENVAR_PATH_DCCSIG
 ENVAR_DCCSI_AZPY_PATH = str('DCCSI_AZPY_PATH')
 ENVAR_PATH_DCCSI_TOOLS = str('PATH_DCCSI_TOOLS')
 ENVAR_DCCSI_LOG_PATH = str('DCCSI_LOG_PATH')
@@ -216,7 +212,7 @@ ENVAR_DCCSI_PYTHONPATH = str('DCCSI_PYTHONPATH')
 ENVAR_DCCSI_PY_VERSION_MAJOR = str('DCCSI_PY_VERSION_MAJOR')
 ENVAR_DCCSI_PY_VERSION_MINOR = str('DCCSI_PY_VERSION_MINOR')
 ENVAR_PATH_DCCSI_PYTHON = str('PATH_DCCSI_PYTHON')
-ENVAR_PATH_DCCSI_PYTHON_LIB = str('PATH_DCCSI_PYTHON_LIB')
+from DccScriptingInterface.constants import ENVAR_PATH_DCCSI_PYTHON_LIB
 ENVAR_DCCSI_PY_BASE = str('DCCSI_PY_BASE')
 ENVAR_DCCSI_PY_DCCSI = str('DCCSI_PY_DCCSI')
 ENVAR_DCCSI_PY_DEFAULT = str('DCCSI_PY_DEFAULT')
@@ -229,60 +225,7 @@ ENVAR_QTFORPYTHON_PATH = str('QTFORPYTHON_PATH')
 
 
 # -------------------------------------------------------------------------
-# IDE: constants, like wing ENVARS
-TAG_DEFAULT_WING_MAJOR_VER = str(7)
-TAG_DEFAULT_WING_MINOR_VER = str(2)  # I had to bump so I could locally debug
-TAG_WING_IDE = str('Wing IDE ')  # old, pre 7
-TAG_WING_PRO = str('Wing Pro ')  # new 7+
-
-ENVAR_WINGHOME = str('WINGHOME')
-ENVAR_DCCSI_WING_VERSION_MAJOR = str('DCCSI_WING_VERSION_MAJOR')
-ENVAR_DCCSI_WING_VERSION_MINOR = str('DCCSI_WING_VERSION_MINOR')
-
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
 # dcc:(all) API constants
-
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-# To do: deprecate this block and redcode it, it has moved to:
-# DccScriptingInterface\Tools\DCC\Maya\constants.py
-# dcc: Maya ENVAR constants
-TAG_O3DE_DCC_MAYA_MEL = 'dccsi_setup.mel'
-TAG_MAYA_WORKSPACE = 'workspace.mel'
-
-ENVAR_DCCSI_PY_MAYA = str('DCCSI_PY_MAYA')
-
-ENVAR_MAYA_VERSION = str('MAYA_VERSION')
-ENVAR_MAYA_LOCATION = str('MAYA_LOCATION')
-
-ENVAR_PATH_DCCSI_TOOLS_MAYA = str('PATH_DCCSI_TOOLS_MAYA')
-ENVAR_MAYA_MODULE_PATH = str('MAYA_MODULE_PATH')
-ENVAR_MAYA_BIN_PATH = str('MAYA_BIN_PATH')
-
-ENVAR_DCCSI_MAYA_PLUG_IN_PATH = str('DCCSI_MAYA_PLUG_IN_PATH')
-ENVAR_MAYA_PLUG_IN_PATH = str('MAYA_PLUG_IN_PATH')
-
-ENVAR_DCCSI_MAYA_SHELF_PATH = str('DCCSI_MAYA_SHELF_PATH')
-ENVAR_MAYA_SHELF_PATH = str('MAYA_SHELF_PATH')
-
-ENVAR_DCCSI_MAYA_XBMLANGPATH = str('DCCSI_MAYA_XBMLANGPATH')
-ENVAR_XBMLANGPATH = str('XBMLANGPATH')
-
-ENVAR_DCCSI_MAYA_SCRIPT_MEL_PATH = str('DCCSI_MAYA_SCRIPT_MEL_PATH')
-ENVAR_DCCSI_MAYA_SCRIPT_PY_PATH = str('DCCSI_MAYA_SCRIPT_PY_PATH')
-ENVAR_MAYA_SCRIPT_PATH = str('MAYA_SCRIPT_PATH')
-
-ENVAR_DCCSI_MAYA_SET_CALLBACKS = str('DCCSI_MAYA_SET_CALLBACKS')
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-# dcc:Blender API constants
 
 # -------------------------------------------------------------------------
 
@@ -296,10 +239,9 @@ DCCSI_IMAGE_TYPES = ['.tif', '.tiff', '.png', '.jpg', '.jpeg', '.tga']
 
 
 # -------------------------------------------------------------------------
-# To Do: these should not be here
-# Let's avoid the need for constants.py to call other modules!
-PATH_O3DE_DEV = str(return_stub_dir(STUB_O3DE_DEV))
-PATH_DCCSIG = str(return_stub_dir(STUB_O3DE_ROOT_DCCSI))
+# To Do: these really should not be here
+from DccScriptingInterface import O3DE_DEV
+from DccScriptingInterface import PATH_DCCSIG
 PATH_DCCSI_AZPY_PATH = str(return_stub_dir(STUB_O3DE_DCCSI_AZPY))
 # -------------------------------------------------------------------------
 
@@ -316,7 +258,7 @@ PATH_DCCSI_LOG_PATH = str('{PATH_O3DE_PROJECT}\\user\\log\{TAG_DCCSI_NICKNAME}')
 
 # dev \ <build> \
 STR_CONSTRUCT_PATH_O3DE_BUILD = str('{0}\\{1}')
-PATH_O3DE_BUILD = str(STR_CONSTRUCT_PATH_O3DE_BUILD.format(PATH_O3DE_DEV,
+PATH_O3DE_BUILD = str(STR_CONSTRUCT_PATH_O3DE_BUILD.format(O3DE_DEV,
                                                             TAG_DIR_O3DE_BUILD_FOLDER))
 
 # ENVAR_QT_PLUGIN_PATH = TAG_QT_PLUGIN_PATH
@@ -325,21 +267,21 @@ STR_QTFORPYTHON_PATH = str('{0}\\Gems\\QtForPython\\3rdParty\\pyside2\\windows\\
 STR_PATH_O3DE_BIN = str('{0}\\bin\\profile')
 
 STR_PATH_O3DE_BUILD = str('{0}\\{1}')
-PATH_O3DE_BUILD = STR_PATH_O3DE_BUILD.format(PATH_O3DE_DEV, TAG_DIR_O3DE_BUILD_FOLDER)
+PATH_O3DE_BUILD = STR_PATH_O3DE_BUILD.format(O3DE_DEV, TAG_DIR_O3DE_BUILD_FOLDER)
 
-PATH_QTFORPYTHON_PATH = str(STR_QTFORPYTHON_PATH.format(PATH_O3DE_DEV))
+PATH_QTFORPYTHON_PATH = str(STR_QTFORPYTHON_PATH.format(O3DE_DEV))
 PATH_QT_PLUGIN_PATH = str(STR_QTPLUGIN_DIR).format(PATH_O3DE_BUILD)
 PATH_O3DE_BIN = str(STR_PATH_O3DE_BIN).format(PATH_O3DE_BUILD)
 
 STR_USER_O3DE_REGISTRY_PATH = str('{0}\\{1}')
-PATH_USER_O3DE_REGISTRY = str(STR_USER_O3DE_REGISTRY_PATH).format(PATH_USER_O3DE, TAG_DIR_REGISTRY)
+PATH_USER_O3DE_REGISTRY = str(STR_USER_O3DE_REGISTRY_PATH).format(PATH_USER_O3DE, SLUG_DIR_REGISTRY)
 
 STR_USER_O3DE_BOOTSTRAP_PATH = str('{reg}\\{file}')
 PATH_USER_O3DE_BOOTSTRAP = str(STR_USER_O3DE_BOOTSTRAP_PATH).format(reg=PATH_USER_O3DE_REGISTRY,
                                                                     file=TAG_O3DE_BOOTSTRAP)
 
 STR_CONSTRUCT_PATH_O3DE_PYTHON_INSTALL = str('{0}\\{1}\\{2}.{3}.{4}\\{5}')
-PATH_DCCSI_PYTHON = str(STR_CONSTRUCT_PATH_O3DE_PYTHON_INSTALL.format(PATH_O3DE_DEV,
+PATH_DCCSI_PYTHON = str(STR_CONSTRUCT_PATH_O3DE_PYTHON_INSTALL.format(O3DE_DEV,
                                                                        TAG_TOOLS_DIR,
                                                                        TAG_DCCSI_PY_VERSION_MAJOR,
                                                                        TAG_DCCSI_PY_VERSION_MINOR,
@@ -349,19 +291,8 @@ PATH_DCCSI_PY_BASE = str('{0}\\{1}').format(PATH_DCCSI_PYTHON, TAG_PYTHON_EXE)
 PATH_DCCSI_PY_DEFAULT = PATH_DCCSI_PY_BASE
 
 # bootstrap site-packages by version
-STR_PATH_DCCSI_PYTHON_LIB = str('{0}\\3rdParty\\Python\\Lib\\{1}.x\\{1}.{2}.x\\site-packages')
-PATH_DCCSI_PYTHON_LIB = STR_PATH_DCCSI_PYTHON_LIB.format(PATH_DCCSIG,
-                                                              TAG_PY_MAJOR,
-                                                              TAG_PY_MINOR)
+from DccScriptingInterface import PATH_DCCSI_PYTHON_LIB
 
-
-# wing paths
-STR_CONSTRUCT_WING_PATH = str(f'{PATH_PROGRAMFILES_X86}\\{TAG_WING_PRO} {TAG_DEFAULT_WING_MAJOR_VER}.{TAG_DEFAULT_WING_MINOR_VER}')
-PATH_DEFAULT_WINGHOME = str('{0}\\{1}{2}.{3}'
-                            ''.format(PATH_PROGRAMFILES_X86,
-                                      TAG_WING_PRO,
-                                      TAG_DEFAULT_WING_MAJOR_VER,
-                                      TAG_DEFAULT_WING_MINOR_VER))
 
 PATH_SAT_INSTALL_PATH = str('{0}\\{1}\\{2}\\{3}\\{4}'
                             ''.format(PATH_PROGRAMFILES_X64,
@@ -379,10 +310,10 @@ if __name__ == '__main__':
     """Run this file as a standalone script"""
 
     # turn all of these off/on for testing
-    _DCCSI_GDEBUG = False
-    _DCCSI_DEV_MODE = False
+    DCCSI_GDEBUG = False
+    DCCSI_DEV_MODE = False
     _DCCSI_LOGLEVEL = _logging.INFO
-    _DCCSI_GDEBUGGER = 'WING'
+    DCCSI_GDEBUGGER = 'WING'
 
     # configure basic logger
     from azpy.constants import FRMT_LOG_LONG
@@ -408,7 +339,7 @@ if __name__ == '__main__':
     from pathlib import Path
 
     _stash_dict = {}
-    _stash_dict['O3DE_DEV'] = Path(PATH_O3DE_DEV)
+    _stash_dict['O3DE_DEV'] = Path(O3DE_DEV)
     _stash_dict['PATH_DCCSIG'] = Path(PATH_DCCSIG)
     _stash_dict['DCCSI_AZPY_PATH'] = Path(PATH_DCCSI_AZPY_PATH)
     _stash_dict['PATH_DCCSI_TOOLS'] = Path(PATH_DCCSI_TOOLS)

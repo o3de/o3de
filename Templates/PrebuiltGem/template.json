@@ -3,7 +3,7 @@
     "origin": "The primary repo for PrebuiltGem goes here: i.e. http://www.mydomain.com",
     "license": "Apache-2.0 or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
-    "display_name": "Prebuilt Gem Tenokate",
+    "display_name": "Prebuilt Gem Template",
     "summary": "Gem Template that can be used to create a Gem that where pre-built libraries can be hooked into",
     "canonical_tags": [
         "Template",

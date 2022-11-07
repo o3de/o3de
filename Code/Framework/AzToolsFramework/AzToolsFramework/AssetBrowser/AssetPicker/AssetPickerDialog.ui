@@ -140,6 +140,9 @@
            <height>16777215</height>
           </size>
          </property>
+         <property name="editTriggers">
+          <set>QAbstractItemView::EditKeyPressed</set>
+         </property>
          <property name="dragDropMode">
           <enum>QAbstractItemView::DragOnly</enum>
          </property>

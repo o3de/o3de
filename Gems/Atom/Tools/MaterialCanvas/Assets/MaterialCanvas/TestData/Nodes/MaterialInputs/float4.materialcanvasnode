@@ -11,38 +11,55 @@
                 "name": "inGroup",
                 "displayName": "Group",
                 "description": "Group",
-                "supportedDataTypes": [
-                    "string"
-                ],
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                },
                 "supportsEditingOnNode": false
             },
             {
                 "name": "inName",
                 "displayName": "Name",
                 "description": "Name",
-                "supportedDataTypes": [
-                    "string"
-                ]
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                }
             },
             {
                 "name": "inDescription",
                 "displayName": "Description",
                 "description": "Description",
-                "supportedDataTypes": [
-                    "string"
-                ],
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                },
                 "supportsEditingOnNode": false
             },
             {
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "float4"
-                ],
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4",
+                "defaultValue": {
+                    "$type": "Vector4",
+                    "Value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
                 "settings": {
                     "materialInputs": [
-                        "SLOTTYPE NODEINPUTID;"
+                        "SLOTSTANDARDSRGMEMBER"
                     ]
                 }
             }
@@ -52,12 +69,59 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "float4"
-                ],
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEINPUTID;"
+                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue;"
+                    ]
+                }
+            },
+            {
+                "name": "outX",
+                "displayName": "X",
+                "description": "X",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.x;"
+                    ]
+                }
+            },
+            {
+                "name": "outY",
+                "displayName": "Y",
+                "description": "Y",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.y;"
+                    ]
+                }
+            },
+            {
+                "name": "outZ",
+                "displayName": "Z",
+                "description": "Z",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.z;"
+                    ]
+                }
+            },
+            {
+                "name": "outW",
+                "displayName": "W",
+                "description": "W",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.w;"
                     ]
                 }
             }

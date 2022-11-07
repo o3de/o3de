@@ -265,7 +265,7 @@ namespace WhiteBox
         debugDisplay.PushMatrix(worldFromLocal);
 
         DrawEdges(
-            debugDisplay, cl_whiteBoxEdgeUserColor, renderData.m_whiteBoxIntersectionData.m_edgeBounds,
+            debugDisplay, ed_whiteBoxEdgeDefault, renderData.m_whiteBoxIntersectionData.m_edgeBounds,
             FindInteractiveEdgeHandles(*whiteBox));
 
         DrawVertices(
@@ -478,11 +478,7 @@ namespace WhiteBox
 
             if (auto modifier = AZStd::get_if<AZStd::unique_ptr<PolygonTranslationModifier>>(&m_selectedModifier))
             {
-                (*modifier)->SetColors(
-                    AZ::Color::CreateFromVector3AndFloat(
-                        static_cast<AZ::Color>(cl_whiteBoxSelectedModifierColor).GetAsVector3(), 0.5f),
-                    AZ::Color::CreateFromVector3AndFloat(
-                        static_cast<AZ::Color>(cl_whiteBoxSelectedModifierColor).GetAsVector3(), 1.0f));
+                (*modifier)->SetColors(ed_whiteBoxPolygonSelection, ed_whiteBoxOutlineSelection);
                 (*modifier)->CreateView();
             }
 
@@ -504,7 +500,7 @@ namespace WhiteBox
 
             if (auto modifier = AZStd::get_if<AZStd::unique_ptr<EdgeTranslationModifier>>(&m_selectedModifier))
             {
-                (*modifier)->SetColors(cl_whiteBoxSelectedModifierColor, cl_whiteBoxSelectedModifierColor);
+                (*modifier)->SetColors(ed_whiteBoxOutlineSelection, ed_whiteBoxOutlineSelection);
                 (*modifier)->SetWidths(cl_whiteBoxSelectedEdgeVisualWidth, cl_whiteBoxSelectedEdgeVisualWidth);
                 (*modifier)->CreateView();
             }
@@ -527,7 +523,7 @@ namespace WhiteBox
 
             if (auto modifier = AZStd::get_if<AZStd::unique_ptr<VertexTranslationModifier>>(&m_selectedModifier))
             {
-                (*modifier)->SetColor(cl_whiteBoxVertexSelectedModifierColor);
+                (*modifier)->SetColor(ed_whiteBoxVertexSelection);
                 (*modifier)->CreateView();
             }
 

@@ -80,7 +80,7 @@ namespace AzPhysics::Automation
         };
 
         // AZ::BehaviorEBusHandler interface
-        void Disconnect() override;
+        void Disconnect(AZ::BehaviorArgument* id = nullptr) override;
         bool Connect(AZ::BehaviorArgument* id = nullptr) override;
         bool IsConnected() override;
         bool IsConnectedId(AZ::BehaviorArgument* id) override;
@@ -127,7 +127,7 @@ namespace AzPhysics::Automation
         };
 
         // AZ::BehaviorEBusHandler interface
-        void Disconnect() override;
+        void Disconnect(AZ::BehaviorArgument* id = nullptr) override;
         bool Connect(AZ::BehaviorArgument* id = nullptr) override;
         bool IsConnected() override;
         bool IsConnectedId(AZ::BehaviorArgument* id) override;

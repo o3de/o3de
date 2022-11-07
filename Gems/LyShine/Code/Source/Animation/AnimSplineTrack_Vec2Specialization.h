@@ -224,7 +224,7 @@ inline bool TUiAnimSplineTrack<Vec2>::SerializeSelection(XmlNodeRef& xmlNode, bo
         int numCur = GetNumKeys();
         int num = xmlNode->getChildCount();
 
-        int type;
+        unsigned int type;
         xmlNode->getAttr("TrackType", type);
 
         if (type != GetCurveType())

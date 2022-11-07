@@ -103,12 +103,12 @@ namespace AZ
             TransformRowWidget::TransformRowWidget(QWidget* parent)
                 : QWidget(parent)
             {
-                QWidget* hider = new QWidget();
+                m_containerWidget = new QWidget();
                 QGridLayout* layout = new QGridLayout();
                 layout->setMargin(0);
                 QGridLayout* layout2 = new QGridLayout();
                 setLayout(layout);
-                AzToolsFramework::PropertyRowWidget* parentWidget = reinterpret_cast<AzToolsFramework::PropertyRowWidget*>(parent);
+                AzToolsFramework::PropertyRowWidget* parentWidget = static_cast<AzToolsFramework::PropertyRowWidget*>(parent);
                 QToolButton* toolButton = parentWidget->GetIndicatorButton();
                 QVBoxLayout* layoutOriginal = parentWidget->GetLeftHandSideLayoutParent();
                 parentWidget->SetAsCustom(true);
@@ -146,22 +146,22 @@ namespace AZ
                 parentWidget->SetIndentSize(1);
                 toolButton->setVisible(true);
 
-                hider->setLayout(layout2);
-                layoutOriginal->addWidget(hider);
+                m_containerWidget->setLayout(layout2);
+                layoutOriginal->addWidget(m_containerWidget);
 
-                connect(toolButton, &QToolButton::clicked, this, [this, hider, toolButton]
+                connect(toolButton, &QToolButton::clicked, this, [&, toolButton]
                 {
                     m_expanded = !m_expanded;
                     if (m_expanded)
                     {
-                        this->show();
-                        hider->show();
+                        show();
+                        m_containerWidget->show();
                         toolButton->setArrowType(Qt::DownArrow);
                     }
                     else
                     {
-                        this->hide();
-                        hider->hide();
+                        hide();
+                        m_containerWidget->hide();
                         toolButton->setArrowType(Qt::RightArrow);
                     }
                 });
@@ -195,6 +195,14 @@ namespace AZ
                     m_transform.SetScale(scale);
                     AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestWrite, this);
                 });
+            }
+
+            TransformRowWidget::~TransformRowWidget()
+            {
+                if (m_containerWidget)
+                {
+                    m_containerWidget->deleteLater();
+                }
             }
 
             void TransformRowWidget::SetEnableEdit(bool enableEdit)

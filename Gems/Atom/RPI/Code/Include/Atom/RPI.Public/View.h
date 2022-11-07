@@ -53,7 +53,8 @@ namespace AZ
                 UsageNone = 0u,
                 UsageCamera = (1u << 0),
                 UsageShadow = (1u << 1),
-                UsageReflectiveCubeMap = (1u << 2)
+                UsageReflectiveCubeMap = (1u << 2),
+                UsageXR = (1u << 3)
             };
             //! Only use this function to create a new view object. And force using smart pointer to manage view's life time
             static ViewPtr CreateView(const AZ::Name& name, UsageFlags usage);
@@ -86,6 +87,9 @@ namespace AZ
 
             //! Sets the viewToClip matrix and recalculates the other matrices
             void SetViewToClipMatrix(const AZ::Matrix4x4& viewToClip);
+
+            //! Sets the viewToClip matrix and recalculates the other matrices for stereoscopic projection
+            void SetStereoscopicViewToClipMatrix(const AZ::Matrix4x4& viewToClip, bool reverseDepth = true);
 
             //! Sets a pixel offset on the view, usually used for jittering the camera for anti-aliasing techniques.
             void SetClipSpaceOffset(float xOffset, float yOffset);
@@ -173,7 +177,7 @@ namespace AZ
             RHI::ShaderInputNameIndex m_projectionMatrixInverseConstantIndex = "m_projectionMatrixInverse";
             RHI::ShaderInputNameIndex m_clipToWorldMatrixConstantIndex = "m_viewProjectionInverseMatrix";
             RHI::ShaderInputNameIndex m_worldToClipPrevMatrixConstantIndex = "m_viewProjectionPrevMatrix";
-            RHI::ShaderInputNameIndex m_zConstantsConstantIndex = "m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ";
+            RHI::ShaderInputNameIndex m_zConstantsConstantIndex = "m_linearizeDepthConstants";
             RHI::ShaderInputNameIndex m_unprojectionConstantsIndex = "m_unprojectionConstants";
 
             // The context containing draw lists associated with the view.
@@ -183,13 +187,14 @@ namespace AZ
             Matrix4x4 m_worldToViewMatrix;
             Matrix4x4 m_viewToWorldMatrix;
             Matrix4x4 m_viewToClipMatrix;
+            Matrix4x4 m_clipToViewMatrix;
             Matrix4x4 m_clipToWorldMatrix;
 
             // View's position in world space
             Vector3 m_position;
 
             // Precached constants for linearZ process
-            Vector4 m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ;
+            Vector4 m_linearizeDepthConstants;
 
             // Constants used to unproject depth values and reconstruct the view-space position (Z-forward & Y-up)
             Vector4 m_unprojectionConstants;

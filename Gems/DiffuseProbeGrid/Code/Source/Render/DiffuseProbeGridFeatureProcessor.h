@@ -42,13 +42,16 @@ namespace AZ
             void SetProbeSpacing(const DiffuseProbeGridHandle& probeGrid, const AZ::Vector3& probeSpacing) override;
             void SetViewBias(const DiffuseProbeGridHandle& probeGrid, float viewBias) override;
             void SetNormalBias(const DiffuseProbeGridHandle& probeGrid, float normalBias) override;
-            void SetNumRaysPerProbe(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridNumRaysPerProbe& numRaysPerProbe) override;
+            void SetNumRaysPerProbe(const DiffuseProbeGridHandle& probeGrid, DiffuseProbeGridNumRaysPerProbe numRaysPerProbe) override;
             void SetAmbientMultiplier(const DiffuseProbeGridHandle& probeGrid, float ambientMultiplier) override;
             void Enable(const DiffuseProbeGridHandle& probeGrid, bool enable) override;
             void SetGIShadows(const DiffuseProbeGridHandle& probeGrid, bool giShadows) override;
             void SetUseDiffuseIbl(const DiffuseProbeGridHandle& probeGrid, bool useDiffuseIbl) override;
             void SetMode(const DiffuseProbeGridHandle& probeGrid, DiffuseProbeGridMode mode) override;
             void SetScrolling(const DiffuseProbeGridHandle& probeGrid, bool scrolling) override;
+            void SetEdgeBlendIbl(const DiffuseProbeGridHandle& probeGrid, bool edgeBlendIbl) override;
+            void SetFrameUpdateCount(const DiffuseProbeGridHandle& probeGrid, uint32_t frameUpdateCount) override;
+            void SetTransparencyMode(const DiffuseProbeGridHandle& probeGrid, DiffuseProbeGridTransparencyMode transparencyMode) override;
             void SetBakedTextures(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridBakedTextures& bakedTextures) override;
             void SetVisualizationEnabled(const DiffuseProbeGridHandle& probeGrid, bool visualizationEnabled) override;
             void SetVisualizationShowInactiveProbes(const DiffuseProbeGridHandle& probeGrid, bool visualizationShowInactiveProbes) override;
@@ -130,10 +133,11 @@ namespace AZ
             // RPI::SceneNotificationBus::Handler overrides
             void OnBeginPrepareRender() override;
             void OnEndPrepareRender() override;
-            void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
-            void OnRenderPipelineAdded(RPI::RenderPipelinePtr renderPipeline) override;
-            void OnRenderPipelineRemoved(RPI::RenderPipeline* renderPipeline) override;
-
+            void OnRenderPipelineChanged(RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
+            
+            // FeatureProcessor overrides
+            void AddRenderPasses(RPI::RenderPipeline* renderPipeline) override;
+            
             void AddPassRequest(RPI::RenderPipeline* renderPipeline, const char* passRequestAssetFilePath, const char* insertionPointPassName);
             void UpdatePipelineStates();
             void UpdatePasses();

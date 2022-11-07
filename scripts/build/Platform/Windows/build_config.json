@@ -29,6 +29,17 @@
       "test_impact_analysis_profile_python"
     ]
   },
+  "profile_pipe_tiaf": {
+    "TAGS": [
+      "tiaf-testing"
+    ],
+    "steps": [
+      "profile",
+      "asset_profile",
+      "test_impact_analysis_profile_native",
+      "test_impact_analysis_profile_python"
+    ]
+  },
   "scrubbing": {
     "TAGS": [],
     "COMMAND": "python_windows.cmd",
@@ -55,7 +66,7 @@
       "CONFIGURATION": "profile",
       "SCRIPT_PATH": "scripts/build/TestImpactAnalysis/tiaf_driver.py",
       "SCRIPT_PARAMETERS": 
-      "--config=\"%OUTPUT_DIRECTORY%/bin/TestImpactFramework/profile/Persistent/tiaf.json\" --src-branch=%BRANCH_NAME% --dst-branch=%CHANGE_TARGET% --commit=%CHANGE_ID% --s3-bucket=%TEST_IMPACT_S3_BUCKET% --mars-index-prefix=jcurtisk --s3-top-level-dir=%REPOSITORY_NAME% --build-number=%BUILD_NUMBER% --suite=main --test-failure-policy=continue --runtime-type=native"
+      "--config=\"%OUTPUT_DIRECTORY%/bin/TestImpactFramework/profile/Persistent/tiaf.json\" --src-branch=%BRANCH_NAME% --dst-branch=%CHANGE_TARGET% --commit=%CHANGE_ID% --s3-bucket=%TEST_IMPACT_S3_BUCKET% --mars-index-prefix=o3de-tiaf --s3-top-level-dir=%REPOSITORY_NAME% --build-number=%BUILD_NUMBER% --suite=main --test-failure-policy=continue --runtime-type=native"
     }
   },
   "test_impact_analysis_profile_python": {
@@ -67,7 +78,7 @@
       "CONFIGURATION": "profile",
       "SCRIPT_PATH": "scripts/build/TestImpactAnalysis/tiaf_driver.py",
       "SCRIPT_PARAMETERS": 
-      "--config=\"%OUTPUT_DIRECTORY%/bin/TestImpactFramework/profile/Persistent/tiaf.json\" --src-branch=%BRANCH_NAME% --dst-branch=%CHANGE_TARGET% --commit=%CHANGE_ID% --s3-bucket=%TEST_IMPACT_S3_BUCKET% --mars-index-prefix=jcurtisk --s3-top-level-dir=%REPOSITORY_NAME% --build-number=%BUILD_NUMBER% --suite=main --test-failure-policy=continue --sequence-override=seed --runtime-type=python"
+      "--config=\"%OUTPUT_DIRECTORY%/bin/TestImpactFramework/profile/Persistent/tiaf.json\" --src-branch=%BRANCH_NAME% --dst-branch=%CHANGE_TARGET% --commit=%CHANGE_ID% --s3-bucket=%TEST_IMPACT_S3_BUCKET% --mars-index-prefix=o3de-tiaf --s3-top-level-dir=%REPOSITORY_NAME% --build-number=%BUILD_NUMBER% --suite=main --test-failure-policy=continue --runtime-type=python --testrunner=null"
     }
   },
   "debug": {
@@ -222,7 +233,7 @@
       "CMAKE_TARGET": "AssetProcessorBatch",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
       "ASSET_PROCESSOR_BINARY": "bin\\profile\\AssetProcessorBatch.exe",
-      "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
+      "ASSET_PROCESSOR_OPTIONS": "--zeroAnalysisMode --ignoreFutureAssetDatabaseVersionError",
       "ASSET_PROCESSOR_PLATFORMS": "pc,server"
     }
   },

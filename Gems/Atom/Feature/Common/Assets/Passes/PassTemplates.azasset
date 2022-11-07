@@ -489,6 +489,14 @@
                 "Path": "Passes/LowEndPipeline.pass"
             },
             {
+                "Name": "LowEndPipelineXRLeftTemplate",
+                "Path": "Passes/LowEndPipelineXRLeft.pass"
+            },
+            {
+                "Name": "LowEndPipelineXRRightTemplate",
+                "Path": "Passes/LowEndPipelineXRRight.pass"
+            },
+            {
                 "Name": "KawaseShadowBlurTemplate",
                 "Path": "Passes/KawaseShadowBlur.pass"
             },

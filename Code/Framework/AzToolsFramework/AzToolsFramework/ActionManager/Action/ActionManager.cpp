@@ -16,6 +16,8 @@ namespace AzToolsFramework
     {
         AZ::Interface<ActionManagerInterface>::Register(this);
         AZ::Interface<ActionManagerInternalInterface>::Register(this);
+
+        EditorAction::Initialize();
     }
 
     ActionManager::~ActionManager()
@@ -88,6 +90,7 @@ namespace AzToolsFramework
                 actionIdentifier,
                 EditorAction(
                     actionContextIterator->second->GetWidget(),
+                    actionContextIterator->first,
                     actionIdentifier,
                     properties.m_name,
                     properties.m_description,
@@ -99,6 +102,7 @@ namespace AzToolsFramework
                 )
             }
         );
+        actionContextIterator->second->AddAction(actionIdentifier);
 
         return AZ::Success();
     }
@@ -133,6 +137,7 @@ namespace AzToolsFramework
                 actionIdentifier,
                 EditorAction(
                     actionContextIterator->second->GetWidget(),
+                    actionContextIterator->first,
                     actionIdentifier,
                     properties.m_name,
                     properties.m_description,
@@ -145,6 +150,7 @@ namespace AzToolsFramework
                 )
             }
         );
+        actionContextIterator->second->AddAction(actionIdentifier);
 
         return AZ::Success();
     }
@@ -479,11 +485,120 @@ namespace AzToolsFramework
         {
             return AZ::Failure(AZStd::string::format(
                 "Action Manager - Could not set category of widget action \"%s\" as no widget action with that identifier was registered.",
-                widgetActionIdentifier.c_str()));
+                widgetActionIdentifier.c_str())
+            );
         }
 
         widgetActionIterator->second.SetCategory(category);
         return AZ::Success();
+    }
+
+    ActionManagerOperationResult ActionManager::RegisterActionContextMode(
+        const AZStd::string& actionContextIdentifier, const AZStd::string& modeIdentifier)
+    {
+        auto actionContextIterator = m_actionContexts.find(actionContextIdentifier);
+        if (actionContextIterator == m_actionContexts.end())
+        {
+            return AZ::Failure(
+                AZStd::string::format(
+                    "Action Manager - Could not register mode \"%s\" for action context \"%s\" as this context has not been registered.",
+                    modeIdentifier.c_str(),
+                    actionContextIdentifier.c_str()
+                )
+            );
+        }
+
+        if (actionContextIterator->second->HasMode(modeIdentifier))
+        {
+            return AZ::Failure(
+                AZStd::string::format(
+                    "Action Manager - Could not register mode \"%s\" for action context \"%s\" - mode with the same identifier already exists.",
+                    modeIdentifier.c_str(),
+                    actionContextIdentifier.c_str()
+                )
+            );
+        }
+
+        actionContextIterator->second->AddMode(modeIdentifier);
+        return AZ::Success();
+    }
+
+    ActionManagerOperationResult ActionManager::AssignModeToAction(
+        const AZStd::string& modeIdentifier, const AZStd::string& actionIdentifier)
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            return AZ::Failure(
+                AZStd::string::format(
+                    "Action Manager - Could not set mode \"%s\" to action \"%s\" as no action with that identifier was registered.",
+                    modeIdentifier.c_str(),
+                    actionIdentifier.c_str()
+                )
+            );
+        }
+
+        auto actionContextIterator = m_actionContexts.find(actionIterator->second.GetActionContextIdentifier());
+        if (!actionContextIterator->second->HasMode(modeIdentifier))
+        {
+            return AZ::Failure(
+                AZStd::string::format(
+                    "Action Manager - Could not set mode \"%s\" to action \"%s\" as no mode with that identifier was registered.",
+                    modeIdentifier.c_str(),
+                    actionIdentifier.c_str()
+                )
+            );
+        }
+
+        actionIterator->second.AssignToMode(modeIdentifier);
+        return AZ::Success();
+    }
+
+    ActionManagerOperationResult ActionManager::SetActiveActionContextMode(
+        const AZStd::string& actionContextIdentifier, const AZStd::string& modeIdentifier)
+    {
+        auto actionContextIterator = m_actionContexts.find(actionContextIdentifier);
+        if (actionContextIterator == m_actionContexts.end())
+        {
+            return AZ::Failure(
+                AZStd::string::format(
+                    "Action Manager - Could not set active mode for action context \"%s\" to \"%s\" as the action context has not been registered.",
+                    actionContextIdentifier.c_str(),
+                    modeIdentifier.c_str()
+                )
+            );
+        }
+
+        if (!actionContextIterator->second->HasMode(modeIdentifier))
+        {
+            return AZ::Failure(
+                AZStd::string::format(
+                    "Action Manager - Could not set active mode for action context \"%s\" to \"%s\" as the mode has not been registered.",
+                    actionContextIdentifier.c_str(),
+                    modeIdentifier.c_str()
+                )
+            );
+        }
+
+        if (actionContextIterator->second->SetActiveMode(modeIdentifier))
+        {
+            UpdateAllActionsInActionContext(actionContextIdentifier);
+        }
+
+        return AZ::Success();
+    }
+
+    ActionManagerGetterResult ActionManager::GetActiveActionContextMode(const AZStd::string& actionContextIdentifier) const
+    {
+        auto actionContextIterator = m_actionContexts.find(actionContextIdentifier);
+        if (actionContextIterator == m_actionContexts.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not retrieve active mode for action context \"%s\" as it has not been registered.",
+                actionContextIdentifier.c_str()));
+        }
+
+        return AZ::Success(AZStd::move(actionContextIterator->second->GetActiveMode()));
     }
 
     QAction* ActionManager::GetAction(const AZStd::string& actionIdentifier)
@@ -563,6 +678,23 @@ namespace AzToolsFramework
         }
 
         return widgetActionIterator->second.GenerateWidget();
+    }
+
+    void ActionManager::UpdateAllActionsInActionContext(const AZStd::string& actionContextIdentifier)
+    {
+        auto actionContextIterator = m_actionContexts.find(actionContextIdentifier);
+        if (actionContextIterator == m_actionContexts.end())
+        {
+            return;
+        }
+
+        actionContextIterator->second->IterateActionIdentifiers(
+            [&](const AZStd::string& actionIdentifier)
+            {
+                UpdateAction(actionIdentifier);
+                return true;
+            }
+        );
     }
 
 } // namespace AzToolsFramework

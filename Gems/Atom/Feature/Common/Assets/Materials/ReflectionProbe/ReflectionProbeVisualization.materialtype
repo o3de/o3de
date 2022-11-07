@@ -509,7 +509,7 @@
     },
     "shaders": [
         {
-            "file": "../Types/StandardPBR_ForwardPass.shader"
+            "file": "Shaders/Materials/StandardPBR/StandardPBR_ForwardPass.shader"
         }
     ]
 }

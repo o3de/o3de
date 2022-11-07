@@ -121,7 +121,7 @@ namespace EditorPythonBindings
             if (behaviorParameter.m_azRtti)
             {
                 // If the underlying type of the supplied type is different, then T is an enum
-                const AZ::TypeId& underlyingTypeId = AZ::Internal::GetUnderlyingTypeId(*behaviorParameter.m_azRtti);
+                AZ::TypeId underlyingTypeId = AZ::Internal::GetUnderlyingTypeId(*behaviorParameter.m_azRtti);
                 if (underlyingTypeId != behaviorParameter.m_typeId)
                 {
                     return AZStd::make_optional(underlyingTypeId);
@@ -147,7 +147,7 @@ namespace EditorPythonBindings
             {
                 return AZStd::nullopt;
             }
-            const AZ::TypeId& underlyingTypeId = AZ::Internal::GetUnderlyingTypeId(*behaviorValue.m_azRtti);
+            AZ::TypeId underlyingTypeId = AZ::Internal::GetUnderlyingTypeId(*behaviorValue.m_azRtti);
             if (underlyingTypeId != behaviorValue.m_typeId)
             {
                 AZ::s64 outboundPythonValue = 0;

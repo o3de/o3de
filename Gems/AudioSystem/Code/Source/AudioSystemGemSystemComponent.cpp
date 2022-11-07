@@ -123,6 +123,7 @@ namespace AudioSystemGem
     {
         Audio::Gem::SystemRequestBus::Handler::BusConnect();
         AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
+        AzFramework::LevelSystemLifecycleNotificationBus::Handler::BusConnect();
 
     #if defined(AUDIO_SYSTEM_EDITOR)
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
@@ -137,6 +138,7 @@ namespace AudioSystemGem
     {
         Audio::Gem::SystemRequestBus::Handler::BusDisconnect();
         AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
+        AzFramework::LevelSystemLifecycleNotificationBus::Handler::BusDisconnect();
 
     #if defined(AUDIO_SYSTEM_EDITOR)
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
@@ -160,8 +162,6 @@ namespace AudioSystemGem
             if (initImplSuccess)
             {
                 PrepareAudioSystem();
-
-                GetISystem()->GetISystemEventDispatcher()->RegisterListener(this);
             }
             else
             {
@@ -187,25 +187,16 @@ namespace AudioSystemGem
         AZ::Interface<Audio::IAudioSystem>::Get()->Release();
 
         Audio::Gem::EngineRequestBus::Broadcast(&Audio::Gem::EngineRequestBus::Events::Release);
-
-        GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
     }
 
-    void AudioSystemGemSystemComponent::OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
+    void AudioSystemGemSystemComponent::OnLoadingStart([[maybe_unused]] const char* levelName)
     {
-        switch (event)
-        {
-            case ESYSTEM_EVENT_LEVEL_LOAD_START:
-            {
-                AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Get().GarbageCollect();
-                break;
-            }
-            case ESYSTEM_EVENT_LEVEL_POST_UNLOAD:
-            {
-                AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Get().GarbageCollect();
-                break;
-            }
-        }
+        AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Get().GarbageCollect();
+    }
+
+    void AudioSystemGemSystemComponent::OnUnloadComplete([[maybe_unused]] const char* levelName)
+    {
+        AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Get().GarbageCollect();
     }
 
     void AudioSystemGemSystemComponent::OnApplicationConstrained(Event)

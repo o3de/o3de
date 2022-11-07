@@ -29,7 +29,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString SurfaceMaskFilterNode::TITLE = QObject::tr("Surface Mask Filter");
+    const char* SurfaceMaskFilterNode::TITLE = "Surface Mask Filter";
 
     SurfaceMaskFilterNode::SurfaceMaskFilterNode(GraphModel::GraphPtr graph)
         : BaseAreaFilterNode(graph)

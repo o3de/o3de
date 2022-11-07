@@ -126,34 +126,31 @@ namespace AtomToolsFramework
             m_documentId,
             [&](AtomToolsDocumentRequests* documentRequests)
             {
-                if (documentRequests->IsOpen())
+                // Create a unique settings prefix string per document using a CRC of the document path
+                const AZStd::string groupSettingsPrefix = m_documentSettingsPrefix +
+                    AZStd::string::format("/%08x/GroupSettings", aznumeric_cast<AZ::u32>(AZ::Crc32(documentRequests->GetAbsolutePath())));
+                SetGroupSettingsPrefix(groupSettingsPrefix);
+
+                // This will automatically expose all document contents to an inspector with a collapsible group per object.
+                // In the case of the material editor, this will be one inspector group per property group.
+                for (auto& objectInfo : documentRequests->GetObjectInfo())
                 {
-                    // Create a unique settings prefix string per document using a CRC of the document path
-                    const AZStd::string groupSettingsPrefix = m_documentSettingsPrefix +
-                        AZStd::string::format("/%08x/GroupSettings", aznumeric_cast<AZ::u32>(AZ::Crc32(documentRequests->GetAbsolutePath())));
-                    SetGroupSettingsPrefix(groupSettingsPrefix);
+                    // Passing in same main and comparison instance to enable custom value comparison
+                    const AZ::Crc32 groupSaveStateKey(
+                        AZStd::string::format("%s/%s", groupSettingsPrefix.c_str(), objectInfo.m_name.c_str()));
+                    auto propertyGroupWidget = new InspectorPropertyGroupWidget(
+                        objectInfo.m_objectPtr,
+                        objectInfo.m_objectPtr,
+                        objectInfo.m_objectType,
+                        this,
+                        this,
+                        groupSaveStateKey,
+                        {},
+                        objectInfo.m_nodeIndicatorFunction,
+                        0);
 
-                    // This will automatically expose all document contents to an inspector with a collapsible group per object.
-                    // In the case of the material editor, this will be one inspector group per property group.
-                    for (auto& objectInfo : documentRequests->GetObjectInfo())
-                    {
-                        // Passing in same main and comparison instance to enable custom value comparison
-                        const AZ::Crc32 groupSaveStateKey(
-                            AZStd::string::format("%s/%s", groupSettingsPrefix.c_str(), objectInfo.m_name.c_str()));
-                        auto propertyGroupWidget = new InspectorPropertyGroupWidget(
-                            objectInfo.m_objectPtr,
-                            objectInfo.m_objectPtr,
-                            objectInfo.m_objectType,
-                            this,
-                            this,
-                            groupSaveStateKey,
-                            {},
-                            objectInfo.m_nodeIndicatorFunction,
-                            0);
-
-                        AddGroup(objectInfo.m_name, objectInfo.m_displayName, objectInfo.m_description, propertyGroupWidget);
-                        SetGroupVisible(objectInfo.m_name, objectInfo.m_visible);
-                    }
+                    AddGroup(objectInfo.m_name, objectInfo.m_displayName, objectInfo.m_description, propertyGroupWidget);
+                    SetGroupVisible(objectInfo.m_name, objectInfo.m_visible);
                 }
 
                 InspectorRequestBus::Handler::BusConnect(m_documentId);

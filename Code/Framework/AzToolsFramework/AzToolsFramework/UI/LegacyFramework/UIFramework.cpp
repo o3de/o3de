@@ -623,7 +623,7 @@ namespace AzToolsFramework
         QVariant qv = action->data();
         if (qv.isValid())
         {
-            AZ::Uuid id(qv.toString().toUtf8());
+            AZ::Uuid id(qv.toString().toUtf8().constData());
             EBUS_EVENT(LegacyFramework::CoreMessageBus, ApplicationShow, id);
         }
     }

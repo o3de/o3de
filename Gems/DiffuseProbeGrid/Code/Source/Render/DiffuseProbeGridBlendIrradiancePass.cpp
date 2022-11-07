@@ -183,6 +183,8 @@ namespace AZ
                 uint32_t probeCountY;
                 diffuseProbeGrid->GetTexture2DProbeCount(probeCountX, probeCountY);
 
+                probeCountX = AZ::DivideAndRoundUp(probeCountX, diffuseProbeGrid->GetFrameUpdateCount());
+
                 RHI::DispatchItem dispatchItem;
                 dispatchItem.m_arguments = shader.m_dispatchArgs;
                 dispatchItem.m_pipelineState = shader.m_pipelineState;

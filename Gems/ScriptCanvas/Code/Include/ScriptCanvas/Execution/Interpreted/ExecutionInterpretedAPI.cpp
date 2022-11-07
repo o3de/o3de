@@ -34,21 +34,6 @@ namespace ExecutionInterpretedAPICpp
     using namespace ScriptCanvas;
     using namespace ScriptCanvas::Execution;
 
-    constexpr size_t k_StringFastSize = 32;
-
-    constexpr size_t k_UuidSize = 16;
-
-    constexpr unsigned char k_Bad = 77;
-
-    constexpr const char* const k_fastDigits = "0123456789ABCDEF";
-
-    constexpr unsigned char k_fastValues[] =
-    {
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, k_Bad,k_Bad,k_Bad,k_Bad,k_Bad,k_Bad,k_Bad, 10, 11, 12, 13, 14, 15
-    };
-
-    [[maybe_unused]] constexpr unsigned char k_FastValuesIndexSentinel = 'G' - '0';
-
     template<typename T>
     T* GetAs(AZ::BehaviorArgument& argument)
     {
@@ -149,7 +134,7 @@ namespace ExecutionInterpretedAPICpp
             const char* aztypeidStr = lua_tostring(lua, -1);
             AZ::TypeId typeId = CreateIdFromStringFast(aztypeidStr);
             lua_pop(lua, 2);
-            // Lua: 
+            // Lua:
             AZStd::pair<void*, AZ::BehaviorContext*> multipleResults = ScriptCanvas::BehaviorContextUtils::ConstructTupleGetContext(typeId);
             AZ_Assert(multipleResults.first, "failure to construct a tuple by typeid from behavior context");
             AZ::BehaviorArgument parameter;
@@ -288,55 +273,15 @@ namespace ScriptCanvas
 
         AZStd::string CreateStringFastFromId(const AZ::Uuid& uuid)
         {
-            using namespace ExecutionInterpretedAPICpp;
-            static_assert(sizeof(AZ::Uuid) == k_UuidSize, "size of uuid has changed");
-
-            AZStd::string fastString;
-            fastString.resize(k_StringFastSize);
-            char* fastDigit = fastString.begin();
-
-            for (size_t i = 0; i < k_UuidSize; ++i)
-            {
-                const unsigned char value = uuid.data[i];
-                *fastDigit = k_fastDigits[value >> 4];
-                ++fastDigit;
-                *fastDigit = k_fastDigits[value & 15];
-                ++fastDigit;
-            }
-
-            return fastString;
+            constexpr bool formatBrackets = false;
+            constexpr bool formatDashes = false;
+            return uuid.ToString<AZStd::string>(formatBrackets, formatDashes);
         }
 
         AZ::Uuid CreateIdFromStringFast(const char* string)
         {
-            using namespace ExecutionInterpretedAPICpp;
-
-            AZ_Assert(string, "string argument must not be null");
-            AZ_Assert(strlen(string) == k_StringFastSize, "invalid length of string, fast format must be: 0123456789ABCDEF0123456789ABCDEF");
-            const char* current = string;
-
-            AZ::Uuid id;
-            auto data = id.begin();
-            auto sentinel = id.end();
-
-            do
-            {
-                const auto index0 = *current - '0';
-                AZ_Assert(index0 < k_FastValuesIndexSentinel, "invalid value index in found in fast string, fast format must be: 0123456789ABCDEF0123456789ABCDEF");
-                const auto value0 = k_fastValues[index0];
-                AZ_Assert(value0 != k_Bad, "invalid value in fast string, fast format must be: 0123456789ABCDEF0123456789ABCDEF");
-                ++current;
-
-                const auto index1 = *current - '0';
-                AZ_Assert(index1 < k_FastValuesIndexSentinel, "invalid value index in found in fast string, fast format must be: 0123456789ABCDEF0123456789ABCDEF");
-                const auto value1 = k_fastValues[index1];
-                AZ_Assert(value1 != k_Bad, "invalid value in fast string, fast format must be: 0123456789ABCDEF0123456789ABCDEF");
-                ++current;
-
-                *data = (value0 << 4) | value1;
-            }             while ((++data) != sentinel);
-
-            return id;
+            AZ_Assert(string != nullptr, "string argument must not be null");
+            return AZ::Uuid(string);
         }
 
         void PushActivationArgs(lua_State* lua, AZ::BehaviorArgument* arguments, size_t numArguments)
@@ -483,7 +428,7 @@ namespace ScriptCanvas
         int SetExecutionOut(lua_State* lua)
         {
             // \note Return values could become necessary.
-            
+
             AZ_Assert(lua_isuserdata(lua, -3), "Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
             AZ_Assert(lua_isnumber(lua, -2), "Error in compiled lua file, 2nd argument to SetExecutionOut is not a number");
             AZ_Assert(lua_isfunction(lua, -1), "Error in compiled lua file, 3rd argument to SetExecutionOut is not a function (lambda need to get around atypically routed arguments)");

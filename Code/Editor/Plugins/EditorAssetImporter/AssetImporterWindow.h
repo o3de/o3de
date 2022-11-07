@@ -15,13 +15,20 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/PlatformIncl.h>
-#include <QMainWindow>
-#include <AssetImporterDocument.h>
-#include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Math/Guid.h>
+#include <AzCore/PlatformIncl.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <SceneAPI/SceneUI/CommonWidgets/OverlayWidget.h>
+#include <SceneAPI/SceneUI/CommonWidgets/SceneSettingsCard.h>
+#include <QFileSystemWatcher>
+#include <QMainWindow>
 #endif
+
+
+namespace AzQtComponents
+{
+    class Card;
+}
 
 namespace AZStd
 {
@@ -39,14 +46,11 @@ namespace AZ
 
     namespace SceneAPI
     {
-        namespace UI
+        namespace Containers
         {
-            class OverlayWidget;
+            class Scene;
         }
-        namespace SceneUI
-        {
-            class ProcessingOverlayWidget;
-        }
+
         namespace DataTypes
         {
             class IScriptProcessorRule;
@@ -54,10 +58,13 @@ namespace AZ
     }
 }
 
-class ImporterRootDisplay;
+class AssetImporterDocument;
+class ImporterRootDisplayWidget;
 class QCloseEvent;
 class QMenu;
 class QAction;
+class QVBoxLayout;
+class QScrollArea;
 
 class AssetImporterWindow
     : public QMainWindow
@@ -80,13 +87,15 @@ public:
     
     void OpenFile(const AZStd::string& filePath);
     
-    void closeEvent(QCloseEvent* ev);
+    void closeEvent(QCloseEvent* ev) override;
 
 public slots:
     void OnSceneResetRequested();
     void OnAssignScript();
     void OnOpenDocumentation();
     void OnInspect();
+    void SceneSettingsCardDestroyed();
+    void SceneSettingsCardProcessingCompleted();
 
 private:
     void Init();
@@ -103,14 +112,20 @@ private:
     void ResetMenuAccess(WindowState state);
     void SetTitle(const char* filePath);
     void HandleAssetLoadingCompleted();
-    void ClearProcessingOverlay();
+
+    SceneSettingsCard* CreateSceneSettingsCard(
+        QString fileName,
+        SceneSettingsCard::Layout layout,
+        SceneSettingsCard::State state);
 
 private slots:
-    void UpdateClicked();
+    void SaveClicked();
     
     void OverlayLayerAdded();
     void OverlayLayerRemoved();
     void UpdateSceneDisplay(const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene> scene = {}) const;
+
+    void FileChanged(QString path);
 
 private:
     static const AZ::Uuid s_browseTag;
@@ -119,15 +134,18 @@ private:
     QScopedPointer<Ui::AssetImporterWindow> ui;
     QScopedPointer<AssetImporterDocument> m_assetImporterDocument;
     QScopedPointer<AZ::SceneAPI::UI::OverlayWidget> m_overlay;
+    int m_openSceneSettingsCards = 0;
+    int m_sceneSettingsCardOverlay = AZ::SceneAPI::UI::OverlayWidget::s_invalidOverlayIndex;
+
+    // Monitor the scene file, and scene settings file in case they are changed outside the scene settings tool.
+    QFileSystemWatcher m_qtFileWatcher;
 
     AZ::SerializeContext* m_serializeContext;
     AZStd::string m_fullSourcePath;
 
-    QScopedPointer<ImporterRootDisplay> m_rootDisplay;
+    QScopedPointer<ImporterRootDisplayWidget> m_rootDisplay;
     bool m_isClosed;
-
-    int m_processingOverlayIndex;
-    QSharedPointer<AZ::SceneAPI::SceneUI::ProcessingOverlayWidget> m_processingOverlay;
+    bool m_isSaving = false;
 
     AZStd::string m_scriptProcessorRuleFilename;
 };

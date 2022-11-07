@@ -10,6 +10,7 @@
 
 #include <AzCore/DOM/DomUtils.h>
 #include <AzCore/DOM/DomValue.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/Outcome/Outcome.h>
@@ -112,7 +113,7 @@ namespace AZ::DocumentPropertyEditor
         //! Retrieves the name of this attribute, as used as a key in the DOM.
         virtual Name GetName() const = 0;
         //! Gets this attribute's type ID.
-        virtual const AZ::TypeId& GetTypeId() const = 0;
+        virtual AZ::TypeId GetTypeId() const = 0;
         //! Converts this attribute to an AZ::Attribute usable by the ReflectedPropertyEditor.
         virtual AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value) const = 0;
         //! Converts this attribute from an AZ::Attribute to a Dom::Value usable in the DocumentPropertyEditor.
@@ -168,7 +169,7 @@ namespace AZ::DocumentPropertyEditor
             return DomToValue(memberIt->second);
         }
 
-        const AZ::TypeId& GetTypeId() const override
+        AZ::TypeId GetTypeId() const override
         {
             return azrtti_typeid<AttributeType>();
         }
@@ -181,7 +182,7 @@ namespace AZ::DocumentPropertyEditor
             }
             else
             {
-                AZStd::optional<AttributeType> attributeValue = AZ::Dom::Utils::ValueToType<AttributeType>(value);
+                AZStd::optional<AttributeType> attributeValue = DomToValue(value);
                 return attributeValue.has_value()
                     ? AZStd::make_shared<AZ::AttributeData<AttributeType>>(AZStd::move(attributeValue.value()))
                     : nullptr;
@@ -207,7 +208,7 @@ namespace AZ::DocumentPropertyEditor
                 {
                     return AZ::Dom::Value();
                 }
-                return AZ::Dom::Utils::ValueFromType(value);
+                return ValueToDom(value);
             }
         }
 
@@ -244,6 +245,23 @@ namespace AZ::DocumentPropertyEditor
         AZStd::optional<AZ::Name> DomToValue(const Dom::Value& value) const override;
         AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value) const override;
         AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override;
+    };
+
+    using EnumValuesContainer = AZStd::vector<AZ::Edit::EnumConstant<AZ::u64>>;
+
+    class EnumValuesAttributeDefinition final : public AttributeDefinition<EnumValuesContainer>
+    {
+    public:
+        static constexpr const char* EntryDescriptionKey = "description";
+        static constexpr const char* EntryValueKey = "value";
+
+        explicit constexpr EnumValuesAttributeDefinition(AZStd::string_view name)
+            : AttributeDefinition<EnumValuesContainer>(name)
+        {
+        }
+
+        Dom::Value ValueToDom(const EnumValuesContainer& attribute) const override;
+        AZStd::optional<EnumValuesContainer> DomToValue(const Dom::Value& value) const override;
     };
 
     //! Defines a callback applicable to a Node.

@@ -32,17 +32,17 @@ namespace UnitTest
             AZ::Vector3(1.0f, 0.0f, 0.0f),
             AZ::Vector3(0.0f, 1.0f, 0.0f)
         }};
-        
+
         const AZStd::vector<NvCloth::SimIndexType> MeshIndices = {{
             0, 1, 2
         }};
-        
+
         const AZStd::vector<VertexSkinInfluences> MeshSkinningInfo = {{
             VertexSkinInfluences{ SkinInfluence(0, 1.0f) },
             VertexSkinInfluences{ SkinInfluence(0, 1.0f) },
             VertexSkinInfluences{ SkinInfluence(0, 1.0f) }
         }};
-        
+
         const AZStd::vector<AZ::Vector2> MeshUVs = {{
             AZ::Vector2(0.0f, 0.0f),
             AZ::Vector2(1.0f, 0.0f),
@@ -97,7 +97,7 @@ namespace UnitTest
         EXPECT_TRUE(renderData.m_bitangents.empty());
         EXPECT_TRUE(renderData.m_normals.empty());
     }
-    
+
     TEST_F(NvClothComponentMesh, ClothComponentMesh_InitWithEmptyActor_ReturnsEmptyRenderData)
     {
         {
@@ -116,7 +116,7 @@ namespace UnitTest
         EXPECT_TRUE(renderData.m_bitangents.empty());
         EXPECT_TRUE(renderData.m_normals.empty());
     }
-    
+
     TEST_F(NvClothComponentMesh, ClothComponentMesh_InitWithActorWithNoMesh_ReturnsEmptyRenderData)
     {
         {
@@ -229,7 +229,7 @@ namespace UnitTest
             const float deltaTimeSim = 1.0f / 60.0f;
             AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick,
                 deltaTimeSim,
-                AZ::ScriptTimePoint(AZStd::chrono::system_clock::now()));
+                AZ::ScriptTimePoint(AZStd::chrono::steady_clock::now()));
         }
 
         const AZStd::vector<NvCloth::SimParticleFormat> particlesAfter = clothComponentMesh.GetRenderData().m_particles;
@@ -355,7 +355,7 @@ namespace UnitTest
     TEST_F(NvClothComponentMesh, DISABLED_ClothComponentMesh_UpdateConfigurationNewMeshNode_ReturnsRenderDataFromNewMeshNode)
     {
         const AZStd::string meshNode2Name = "cloth_node_2";
-        
+
         const AZStd::vector<AZ::Vector3> mesh2Vertices = {{
             AZ::Vector3(-2.3f, 0.0f, 0.0f),
             AZ::Vector3(4.0f, 0.0f, 0.0f),
@@ -419,7 +419,7 @@ namespace UnitTest
             const float deltaTimeSim = 1.0f / 60.0f;
             AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick,
                 deltaTimeSim,
-                AZ::ScriptTimePoint(AZStd::chrono::system_clock::now()));
+                AZ::ScriptTimePoint(AZStd::chrono::steady_clock::now()));
         }
 
         const AZStd::vector<NvCloth::SimParticleFormat> particlesAfter = clothComponentMesh.GetRenderData().m_particles;
@@ -457,7 +457,7 @@ namespace UnitTest
             const float deltaTimeSim = 1.0f / 60.0f;
             AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick,
                 deltaTimeSim,
-                AZ::ScriptTimePoint(AZStd::chrono::system_clock::now()));
+                AZ::ScriptTimePoint(AZStd::chrono::steady_clock::now()));
         }
 
         /*

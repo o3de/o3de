@@ -144,7 +144,7 @@ namespace Multiplayer
             m_serverMigrateFrameId = GetNetworkTime()->GetHostFrameId();
         }
 
-        if (IsAutonomous())
+        if (IsNetEntityRoleAutonomous())
         {
             m_autonomousUpdateEvent.Enqueue(AZ::TimeMs{ 1 }, true);
             GetMultiplayer()->AddClientMigrationStartEventHandler(m_migrateStartHandler);
@@ -154,7 +154,7 @@ namespace Multiplayer
 
     void LocalPredictionPlayerInputComponentController::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
-        if (IsAutonomous())
+        if (IsNetEntityRoleAutonomous())
         {
             m_autonomousUpdateEvent.RemoveFromQueue();
             m_migrateStartHandler.Disconnect();

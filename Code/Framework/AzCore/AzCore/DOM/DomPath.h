@@ -68,6 +68,8 @@ namespace AZ::Dom
     class Path final
     {
     public:
+        AZ_TYPE_INFO(AZ::Dom::Path, "{C0081C45-F15D-4F46-9680-19535D33C312}")
+
         using ContainerType = AZStd::vector<PathEntry>;
         static constexpr char PathSeparator = '/';
         static constexpr char EscapeCharacter = '~';
@@ -105,6 +107,10 @@ namespace AZ::Dom
         Path& operator/=(const Path&);
 
         bool operator==(const Path&) const;
+        bool operator!=(const Path& rhs) const
+        {
+            return !operator==(rhs);
+        }
 
         const ContainerType& GetEntries() const;
         void Push(PathEntry entry);
@@ -151,6 +157,9 @@ namespace AZ::Dom
         //! "/path/to/foo/0"
         //! "path/to/foo/0"
         void FromString(AZStd::string_view pathString);
+
+        //! Returns true if this path contains any "EndOfArray" entries that require a target DOM to look up.
+        bool ContainsNormalizedEntries() const;
 
     private:
         ContainerType m_entries;

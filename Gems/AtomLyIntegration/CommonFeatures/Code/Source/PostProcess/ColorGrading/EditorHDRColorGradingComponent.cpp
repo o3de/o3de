@@ -254,10 +254,13 @@ namespace AZ
             }
 
             const char* LutAttachment = "LutOutput";
-            auto renderPipelineName = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()
-                                            ->GetDefaultViewportContext()
-                                            ->GetCurrentPipeline()
-                                            ->GetId();
+            auto currentPipeline =
+                AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->GetDefaultViewportContext()->GetCurrentPipeline();
+            if (!currentPipeline)
+            {
+                return;
+            }
+            auto renderPipelineName = currentPipeline->GetId();
             const AZStd::vector<AZStd::string> LutGenerationPassHierarchy{
                 renderPipelineName.GetCStr(),
                 "LutGenerationPass"
@@ -270,7 +273,7 @@ namespace AZ
             AzFramework::StringFunc::Path::GetFolderPath(resolvedOutputFilePath, lutGenerationCacheFolder);
             AZ::IO::SystemFile::CreateDir(lutGenerationCacheFolder.c_str());
 
-            uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
+            AZ::Render::FrameCaptureId frameCaptureId = AZ::Render::InvalidFrameCaptureId;
             AZ::Render::FrameCaptureRequestBus::BroadcastResult(
                 frameCaptureId,
                 &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment,
@@ -279,20 +282,17 @@ namespace AZ
                 m_currentTiffFilePath,
                 AZ::RPI::PassAttachmentReadbackOption::Output);
 
-            if (frameCaptureId != AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId)
+            if (frameCaptureId != AZ::Render::InvalidFrameCaptureId)
             {
-                m_frameCaptureId = frameCaptureId;
+                AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect(frameCaptureId);
                 AZ::TickBus::Handler::BusDisconnect();
-                AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
             }
         }
 
-        void EditorHDRColorGradingComponent::OnCaptureFinished(uint32_t frameCaptureId, [[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]]const AZStd::string& info)
+        void EditorHDRColorGradingComponent::OnFrameCaptureFinished([[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]]const AZStd::string& info)
         {
-            if (m_frameCaptureId == AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId || frameCaptureId != m_frameCaptureId)
-            {
-                return;
-            }
+            AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
+
             char resolvedInputFilePath[AZ_MAX_PATH_LEN] = { 0 };
             AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(m_currentTiffFilePath.c_str(), resolvedInputFilePath, AZ_MAX_PATH_LEN);
             char resolvedOutputFilePath[AZ_MAX_PATH_LEN] = { 0 };
@@ -320,8 +320,6 @@ namespace AZ
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
                 &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
                 AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
-
-            AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
 
             EditorHDRColorGradingNotificationBus::Event(GetEntityId(), &EditorHDRColorGradingNotificationBus::Handler::OnGenerateLutCompleted, m_generatedLutAbsolutePath);
         }
