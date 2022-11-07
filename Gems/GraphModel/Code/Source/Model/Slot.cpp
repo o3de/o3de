@@ -412,7 +412,25 @@ namespace GraphModel
 
     AZStd::any Slot::GetValue() const
     {
-        return m_value;
+        if (SupportsValues() && SupportsConnections())
+        {
+            for (const auto& connection : GetGraph()->GetConnections())
+            {
+                const auto& sourceSlot = connection->GetSourceSlot();
+                const auto& targetSlot = connection->GetTargetSlot();
+                if (targetSlot && sourceSlot && targetSlot != sourceSlot && targetSlot.get() == this)
+                {
+                    return sourceSlot->GetValue();
+                }
+            }
+        }
+
+        if (!m_value.empty())
+        {
+            return m_value;
+        }
+
+        return GetDefaultValue();
     }
 
     Slot::ConnectionList Slot::GetConnections() const

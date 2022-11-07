@@ -61,6 +61,7 @@ namespace MaterialCanvas
         AZStd::string GetGraphName() const override;
         const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const override;
         bool CompileGraph() const override;
+        void BuildSlotValueTable(const AZStd::vector<GraphModel::ConstNodePtr>& allNodes) const;
         void QueueCompileGraph() const override;
         bool IsCompileGraphQueued() const override;
 
@@ -91,6 +92,19 @@ namespace MaterialCanvas
         // Find and replace a whole word or symbol using regular expressions.
         void ReplaceSymbolsInContainer(
             const AZStd::string& findText, const AZStd::string& replaceText, AZStd::vector<AZStd::string>& container) const;
+
+        void ReplaceSymbolsInContainer(
+            const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& substitutionSymbols,
+            AZStd::vector<AZStd::string>& container) const;
+
+        // Functions assisting with conversions between different vector and scalar types. Functions like these will eventually be moved out
+        // of the document class so that they can be registered more flexibly and extensively.
+        unsigned int GetVectorSize(const AZStd::any& slotValue) const;
+        AZStd::any ConvertToScalar(const AZStd::any& slotValue) const;
+
+        template<typename T>
+        AZStd::any ConvertToVector(const AZStd::any& slotValue) const;
+        AZStd::any ConvertToVector(const AZStd::any& slotValue, unsigned int score) const;
 
         // Convert special slot type names, like color, into one compatible with AZSL shader code.
         AZStd::string GetAzslTypeFromSlot(GraphModel::ConstSlotPtr slot) const;
