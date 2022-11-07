@@ -11,16 +11,12 @@ Object to house all the Qt Objects and behavior used in testing the script canva
 
 from editor_python_test_tools.utils import TestHelper as helper
 from PySide2 import QtWidgets, QtTest, QtCore
-import pyside_utils
+from editor_python_test_tools.QtPyCommon import CheckBoxStates
 from consts.scripting import (PROPERTY_EDITOR_QT, INITIAL_VALUE_SOURCE_QT, NODE_INSPECTOR_QT)
 from consts.general import (WAIT_TIME_SEC_3)
 from enum import IntEnum
 
-class CheckBoxStates(IntEnum):
-    Off = 0
-    On = 1
-
-class QtPyScriptCanvasNodeInspector:
+class QtPyScriptCanvasNodeInspector():
 
     def __init__(self, sc_editor):
         self.node_inspector = sc_editor.sc_editor.findChild(QtWidgets.QDockWidget, NODE_INSPECTOR_QT)
@@ -63,7 +59,7 @@ class QtPyScriptCanvasNodeInspector:
             case default:
                 assert False, "An invalid variable type was provided"
 
-    def __change_variable_value_Boolean(self, variable_qobject: QtWidgets.QFrame, new_value: CheckBoxStates) -> None:
+    def __change_variable_value_Boolean(self, variable_qobject: QtWidgets.QFrame, new_value: IntEnum) -> None:
         """
         helper function for the change_variable initial_value branch (boolean variable type)
         """
@@ -91,8 +87,7 @@ class QtPyScriptCanvasNodeInspector:
 
         qline_edit.setText(f"{new_value}")
 
-
-    def change_variable_initial_value_source(self, value_source: CheckBoxStates):
+    def change_variable_initial_value_source(self, value_source: IntEnum) -> None:
         """
         Function for changing the scope of a variable. if you change the value source to 'from component' the variable
         will be exposed the script canvas component.

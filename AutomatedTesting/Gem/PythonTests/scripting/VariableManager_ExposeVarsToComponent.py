@@ -37,7 +37,7 @@ def VariableManager_ExposeVarsToComponent():
     # Preconditions
     from editor_python_test_tools.QtPyO3DEEditor import QtPyO3DEEditor
     from scripting_utils.script_canvas_component import ScriptCanvasComponent, VariableState
-    from editor_python_test_tools.QtPyScriptCanvasNodeInspector import CheckBoxStates
+    from editor_python_test_tools.QtPyCommon import CheckBoxStates
     import azlmbr.legacy.general as general
     from consts.scripting import (SCRIPT_CANVAS_TEST_FILE_PATH)
     from editor_python_test_tools.editor_entity_utils import EditorEntity
@@ -72,7 +72,7 @@ def VariableManager_ExposeVarsToComponent():
     node_inspector.change_variable_initial_value_source(CheckBoxStates.On)
 
     # 8) Save the file to disk
-    # This step requires engineering support. See github FR: 12668
+    # This step requires engineering support. See github GH-12668
 
     # 8) Create an entity w/ component in the O3DE editor and attach the file
     position = math.Vector3(512.0, 512.0, 32.0)
