@@ -233,7 +233,7 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        // Loads instance obejct from the generated instance DOM.
+                        // Loads instance object from the generated instance DOM.
                         EntityList newEntities;
                         if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDom,
                             PrefabDomUtils::LoadFlags::UseSelectiveDeserialization))

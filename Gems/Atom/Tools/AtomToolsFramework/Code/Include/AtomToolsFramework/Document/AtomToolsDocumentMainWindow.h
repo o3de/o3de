@@ -111,8 +111,7 @@ namespace AtomToolsFramework
         void dropEvent(QDropEvent* event) override;
 
         template<typename Functor>
-        QAction* CreateActionAtPosition(
-            QMenu* parent, QAction* position, const QString& text, Functor functor, const QKeySequence& shortcut = 0);
+        QAction* CreateActionAtPosition(QMenu* menu, QAction* position, const QString& name, Functor fn, const QKeySequence& shortcut = 0);
 
         QMenu* m_menuOpenRecent = {};
 

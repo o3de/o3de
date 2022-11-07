@@ -11,7 +11,7 @@
 #include <native/resourcecompiler/rccontroller.h>
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <native/unittests/RCcontrollerUnitTests.h>
-#include <native/unittests/UnitTestRunner.h>
+#include <native/unittests/UnitTestUtils.h>
 
 #include <QCoreApplication>
 
@@ -19,6 +19,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #endif
+#include <tests/UnitTestUtilities.h>
+#include <tests/AssetProcessorTest.h>
 
 using namespace AssetProcessor;
 using namespace AzFramework::AssetSystem;
@@ -27,7 +29,7 @@ namespace
 {
     constexpr NetworkRequestID RequestID(1, 1234);
     constexpr int MaxProcessingWaitTimeMs = 60 * 1000; // Wait up to 1 minute.  Give a generous amount of time to allow for slow CPUs
-    const ScanFolderInfo TestScanFolderInfo("samplepath", "sampledisplayname", "samplekey", false, false);
+    const ScanFolderInfo TestScanFolderInfo("c:/samplepath", "sampledisplayname", "samplekey", false, false);
     const AZ::Uuid BuilderUuid = AZ::Uuid::CreateRandom();
 }
 
@@ -63,9 +65,7 @@ void RCcontrollerUnitTests::PrepareRCJobListModelTest()
     m_rcQueueSortModel = &m_rcController->m_RCQueueSortModel;
 
     AssetProcessor::JobDetails jobDetails;
-    jobDetails.m_jobEntry.m_pathRelativeToWatchFolder = "someFile0.txt";
-    jobDetails.m_jobEntry.m_watchFolderPath = QCoreApplication::applicationDirPath();
-    jobDetails.m_jobEntry.m_databaseSourceName = "someFile0.txt";
+    jobDetails.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference("c:/somerandomfolder/someFile0.txt");
     jobDetails.m_jobEntry.m_platformInfo = { "pc", { "desktop", "renderer" } };
     jobDetails.m_jobEntry.m_jobKey = "Text files";
 
@@ -74,35 +74,35 @@ void RCcontrollerUnitTests::PrepareRCJobListModelTest()
     m_rcJobListModel->addNewJob(job0);
 
     RCJob* job1 = new RCJob(m_rcJobListModel);
-    jobDetails.m_jobEntry.m_databaseSourceName = jobDetails.m_jobEntry.m_pathRelativeToWatchFolder = "someFile1.txt";
+    jobDetails.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference("c:/somerandomfolder/someFile1.txt");
     jobDetails.m_jobEntry.m_platformInfo = { "pc", { "desktop", "renderer" } };
     jobDetails.m_jobEntry.m_jobKey = "Text files";
     job1->Init(jobDetails);
     m_rcJobListModel->addNewJob(job1);
 
     RCJob* job2 = new RCJob(m_rcJobListModel);
-    jobDetails.m_jobEntry.m_databaseSourceName = jobDetails.m_jobEntry.m_pathRelativeToWatchFolder = "someFile2.txt";
+    jobDetails.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference("c:/somerandomfolder/someFile2.txt");
     jobDetails.m_jobEntry.m_platformInfo = { "pc",{ "desktop", "renderer" } };
     jobDetails.m_jobEntry.m_jobKey = "Text files";
     job2->Init(jobDetails);
     m_rcJobListModel->addNewJob(job2);
 
     RCJob* job3 = new RCJob(m_rcJobListModel);
-    jobDetails.m_jobEntry.m_databaseSourceName = jobDetails.m_jobEntry.m_pathRelativeToWatchFolder = "someFile3.txt";
+    jobDetails.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference("c:/somerandomfolder/someFile3.txt");
     jobDetails.m_jobEntry.m_platformInfo = { "pc",{ "desktop", "renderer" } };
     jobDetails.m_jobEntry.m_jobKey = "Text files";
     job3->Init(jobDetails);
     m_rcJobListModel->addNewJob(job3);
 
     RCJob* job4 = new RCJob(m_rcJobListModel);
-    jobDetails.m_jobEntry.m_databaseSourceName = jobDetails.m_jobEntry.m_pathRelativeToWatchFolder = "someFile4.txt";
+    jobDetails.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference("c:/somerandomfolder/someFile4.txt");
     jobDetails.m_jobEntry.m_platformInfo = { "pc",{ "desktop", "renderer" } };
     jobDetails.m_jobEntry.m_jobKey = "Text files";
     job4->Init(jobDetails);
     m_rcJobListModel->addNewJob(job4);
 
     RCJob* job5 = new RCJob(m_rcJobListModel);
-    jobDetails.m_jobEntry.m_databaseSourceName = jobDetails.m_jobEntry.m_pathRelativeToWatchFolder = "someFile5.txt";
+    jobDetails.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference("c:/somerandomfolder/someFile5.txt");
     jobDetails.m_jobEntry.m_platformInfo = { "pc",{ "desktop", "renderer" } };
     jobDetails.m_jobEntry.m_jobKey = "Text files";
     job5->Init(jobDetails);
@@ -163,8 +163,7 @@ void RCcontrollerUnitTests::PrepareCompileGroupTests(bool& gotCreated, bool& got
         AZ::Uuid uuidOfSource = AZ::Uuid::CreateName(name.toUtf8().constData());
         RCJob* job = new RCJob(m_rcJobListModel);
         AssetProcessor::JobDetails jobDetails;
-        jobDetails.m_jobEntry.m_watchFolderPath = "c:/somerandomfolder/dev";
-        jobDetails.m_jobEntry.m_databaseSourceName = jobDetails.m_jobEntry.m_pathRelativeToWatchFolder = name;
+        jobDetails.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference("c:/somerandomfolder/dev", name);
         jobDetails.m_jobEntry.m_platformInfo = { "pc",{ "desktop", "renderer" } };
         jobDetails.m_jobEntry.m_jobKey = "Compile Stuff";
         jobDetails.m_jobEntry.m_sourceFileUUID = uuidOfSource;
@@ -179,7 +178,7 @@ void RCcontrollerUnitTests::PrepareCompileGroupTests(bool& gotCreated, bool& got
         AZ::Uuid uuidOfSource = AZ::Uuid::CreateName(name.toUtf8().constData());
         RCJob* job0 = new RCJob(m_rcJobListModel);
         AssetProcessor::JobDetails jobDetails;
-        jobDetails.m_jobEntry.m_databaseSourceName = jobDetails.m_jobEntry.m_pathRelativeToWatchFolder = name;
+        jobDetails.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference("c:/somerandomfolder/dev", name);
         jobDetails.m_jobEntry.m_platformInfo = { "android" ,{ "mobile", "renderer" } };
         jobDetails.m_jobEntry.m_jobKey = "Compile Other Stuff";
         jobDetails.m_jobEntry.m_sourceFileUUID = uuidOfSource;
@@ -256,6 +255,16 @@ void RCcontrollerUnitTests::SetUp()
 {
     UnitTest::AssetProcessorUnitTestBase::SetUp();
     m_rcController = AZStd::make_unique<AssetProcessor::RCController>(1, 4);
+
+    QDir assetRootPath(m_assetDatabaseRequestsHandler->GetAssetRootDir().c_str());
+
+    m_appManager->m_platformConfig->AddScanFolder(TestScanFolderInfo);
+    m_appManager->m_platformConfig->AddScanFolder(
+        AssetProcessor::ScanFolderInfo{ "c:/somerandomfolder", "scanfolder", "scanfolder", true, true, {}, 0, 1 });
+    m_appManager->m_platformConfig->AddScanFolder(
+        AssetProcessor::ScanFolderInfo{ "d:/test", "scanfolder2", "scanfolder2", true, true, {}, 0, 2 });
+    m_appManager->m_platformConfig->AddScanFolder(
+        AssetProcessor::ScanFolderInfo{ assetRootPath.absoluteFilePath("subfolder4"), "subfolder4", "subfolder4", false, true, {}, 0, 3 });
 
     using namespace AssetProcessor;
     m_rcJobListModel = m_rcController->GetQueueModel();
@@ -335,7 +344,7 @@ TEST_F(RCcontrollerUnitTests, TestCompileGroup_RequestExactMatchCompileGroup_Suc
 }
 
 TEST_F(RCcontrollerUnitTests, TestCompileGroup_RequestNoMatchCompileGroup_Succeeds)
-{  
+{
     bool gotCreated = false;
     bool gotCompleted = false;
     NetworkRequestID gotGroupID;
@@ -551,7 +560,7 @@ TEST_F(RCcontrollerUnitTests, TestRCController_FeedDuplicateJobs_NotAccept)
 
     AZ::Uuid sourceId = AZ::Uuid("{2206A6E0-FDBC-45DE-B6FE-C2FC63020BD5}");
     JobDetails details;
-    details.m_jobEntry = JobEntry("d:/test", "test1.txt", "test1.txt", AZ::Uuid("{7954065D-CFD1-4666-9E4C-3F36F417C7AC}"), { "pc" , {"desktop", "renderer"} }, "Test Job", 1234, 1, sourceId);
+    details.m_jobEntry = JobEntry(AssetProcessor::SourceAssetReference("d:/test", "test1.txt"), AZ::Uuid("{7954065D-CFD1-4666-9E4C-3F36F417C7AC}"), { "pc" , {"desktop", "renderer"} }, "Test Job", 1234, 1, sourceId);
     gotJobsInQueueCall = false;
     int priorJobs = jobsInQueueCount;
     m_rcController->JobSubmitted(details);
@@ -563,13 +572,13 @@ TEST_F(RCcontrollerUnitTests, TestRCController_FeedDuplicateJobs_NotAccept)
     gotJobsInQueueCall = false;
 
     // submit same job, different run key
-    details.m_jobEntry = JobEntry("d:/test", "/test1.txt", "test1.txt", AZ::Uuid("{7954065D-CFD1-4666-9E4C-3F36F417C7AC}"), { "pc" ,{ "desktop", "renderer" } }, "Test Job", 1234, 2, sourceId);
+    details.m_jobEntry = JobEntry(AssetProcessor::SourceAssetReference("d:/test", "test1.txt"), AZ::Uuid("{7954065D-CFD1-4666-9E4C-3F36F417C7AC}"), { "pc" ,{ "desktop", "renderer" } }, "Test Job", 1234, 2, sourceId);
     m_rcController->JobSubmitted(details);
     QCoreApplication::processEvents(QEventLoop::AllEvents);
     EXPECT_FALSE(gotJobsInQueueCall);
 
     // submit same job but different platform:
-    details.m_jobEntry = JobEntry("d:/test", "test1.txt", "test1.txt", AZ::Uuid("{7954065D-CFD1-4666-9E4C-3F36F417C7AC}"), { "android" ,{ "mobile", "renderer" } }, "Test Job", 1234, 3, sourceId);
+    details.m_jobEntry = JobEntry(AssetProcessor::SourceAssetReference("d:/test", "test1.txt"), AZ::Uuid("{7954065D-CFD1-4666-9E4C-3F36F417C7AC}"), { "android" ,{ "mobile", "renderer" } }, "Test Job", 1234, 3, sourceId);
     m_rcController->JobSubmitted(details);
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 
@@ -600,8 +609,7 @@ TEST_F(RCcontrollerUnitTests, TestRCController_StartRCJobWithCriticalLocking_Blo
     AZ::Uuid uuidOfSource = AZ::Uuid("{D013122E-CF2C-4534-A87D-F82570FBC2CD}");
     MockRCJob rcJob;
     AssetProcessor::JobDetails jobDetailsToInitWith;
-    jobDetailsToInitWith.m_jobEntry.m_watchFolderPath = assetRootPath.absoluteFilePath("subfolder4");
-    jobDetailsToInitWith.m_jobEntry.m_databaseSourceName = jobDetailsToInitWith.m_jobEntry.m_pathRelativeToWatchFolder = "needsLock.tiff";
+    jobDetailsToInitWith.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference(fileInUsePath);
     jobDetailsToInitWith.m_jobEntry.m_platformInfo = { "pc", { "tools", "editor"} };
     jobDetailsToInitWith.m_jobEntry.m_jobKey = "Text files";
     jobDetailsToInitWith.m_jobEntry.m_sourceFileUUID = uuidOfSource;
@@ -679,8 +687,7 @@ TEST_F(RCcontrollerUnitTests, TestRCController_FeedJobsWithDependencies_Dispatch
     JobDetails jobdetailsA;
     jobdetailsA.m_scanFolder = &TestScanFolderInfo;
     jobdetailsA.m_assetBuilderDesc = m_assetBuilderDesc;
-    jobdetailsA.m_jobEntry.m_databaseSourceName = jobdetailsA.m_jobEntry.m_pathRelativeToWatchFolder = "fileA.txt";
-    jobdetailsA.m_jobEntry.m_watchFolderPath = TestScanFolderInfo.ScanPath();
+    jobdetailsA.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference(TestScanFolderInfo.ScanPath(), "fileA.txt");
     jobdetailsA.m_jobEntry.m_platformInfo = { "pc" ,{ "desktop", "renderer" } };
     jobdetailsA.m_jobEntry.m_jobKey = "TestJobA";
     jobdetailsA.m_jobEntry.m_builderGuid = BuilderUuid;
@@ -707,19 +714,15 @@ TEST_F(RCcontrollerUnitTests, TestRCController_FeedJobsWithDependencies_Dispatch
     JobDetails jobdetailsB;
     jobdetailsB.m_scanFolder = &TestScanFolderInfo;
     jobdetailsA.m_assetBuilderDesc = m_assetBuilderDesc;
-    jobdetailsB.m_jobEntry.m_databaseSourceName = jobdetailsB.m_jobEntry.m_pathRelativeToWatchFolder = "fileB.txt";
+    jobdetailsB.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference(TestScanFolderInfo.ScanPath(), "fileB.txt");
     jobdetailsB.m_jobEntry.m_platformInfo = { "pc" ,{ "desktop", "renderer" } };
-    jobdetailsB.m_jobEntry.m_watchFolderPath = TestScanFolderInfo.ScanPath();
     jobdetailsB.m_jobEntry.m_jobKey = "TestJobB";
     jobdetailsB.m_jobEntry.m_builderGuid = BuilderUuid;
 
     jobdetailsB.m_critical = true; //make jobB critical so that it will be analyzed first even though we want JobA to run first
 
-    AssetBuilderSDK::SourceFileDependency sourceFileBDependency;
-    sourceFileBDependency.m_sourceFileDependencyPath = "fileB.txt";
-
     AssetBuilderSDK::SourceFileDependency sourceFileADependency;
-    sourceFileADependency.m_sourceFileDependencyPath = "fileA.txt";
+    sourceFileADependency.m_sourceFileDependencyPath = (AZ::IO::Path(TestScanFolderInfo.ScanPath().toUtf8().constData()) / "fileA.txt").Native();
 
     // Make job B has an order job dependency on Job A
     AssetBuilderSDK::JobDependency jobDependencyA("TestJobA", "pc", AssetBuilderSDK::JobDependencyType::Order, sourceFileADependency);
@@ -773,26 +776,26 @@ TEST_F(RCcontrollerUnitTests, TestRCController_FeedJobsWithCyclicDependencies_Al
     JobDetails jobdetailsC;
     jobdetailsC.m_scanFolder = &TestScanFolderInfo;
     jobdetailsC.m_assetBuilderDesc = m_assetBuilderDesc;
-    jobdetailsC.m_jobEntry.m_databaseSourceName = jobdetailsC.m_jobEntry.m_pathRelativeToWatchFolder = "fileC.txt";
+    jobdetailsC.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference(TestScanFolderInfo.ScanPath(), "fileC.txt");
     jobdetailsC.m_jobEntry.m_platformInfo = { "pc" ,{ "desktop", "renderer" } };
-    jobdetailsC.m_jobEntry.m_watchFolderPath = TestScanFolderInfo.ScanPath();
     jobdetailsC.m_jobEntry.m_jobKey = "TestJobC";
     jobdetailsC.m_jobEntry.m_builderGuid = BuilderUuid;
 
     AssetBuilderSDK::SourceFileDependency sourceFileCDependency;
-    sourceFileCDependency.m_sourceFileDependencyPath = "fileC.txt";
+    sourceFileCDependency.m_sourceFileDependencyPath =
+        (AZ::IO::Path(TestScanFolderInfo.ScanPath().toUtf8().constData()) / "fileC.txt").Native();
 
     //Setting up Job D
     JobDetails jobdetailsD;
     jobdetailsD.m_scanFolder = &TestScanFolderInfo;
     jobdetailsD.m_assetBuilderDesc = m_assetBuilderDesc;
-    jobdetailsD.m_jobEntry.m_databaseSourceName = jobdetailsD.m_jobEntry.m_pathRelativeToWatchFolder = "fileD.txt";
+    jobdetailsD.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference(TestScanFolderInfo.ScanPath(), "fileD.txt");
     jobdetailsD.m_jobEntry.m_platformInfo = { "pc" ,{ "desktop", "renderer" } };
-    jobdetailsD.m_jobEntry.m_watchFolderPath = TestScanFolderInfo.ScanPath();
     jobdetailsD.m_jobEntry.m_jobKey = "TestJobD";
     jobdetailsD.m_jobEntry.m_builderGuid = BuilderUuid;
     AssetBuilderSDK::SourceFileDependency sourceFileDDependency;
-    sourceFileDDependency.m_sourceFileDependencyPath = "fileD.txt";
+    sourceFileDDependency.m_sourceFileDependencyPath =
+        (AZ::IO::Path(TestScanFolderInfo.ScanPath().toUtf8().constData()) / "fileD.txt").Native();
 
     //creating cyclic job order dependencies i.e  JobC and JobD have order job dependency on each other
     AssetBuilderSDK::JobDependency jobDependencyC("TestJobC", "pc", AssetBuilderSDK::JobDependencyType::Order, sourceFileCDependency);
@@ -820,7 +823,8 @@ TEST_F(RCcontrollerUnitTests, TestRCController_FeedJobsWithCyclicDependencies_Al
         int prevJobCount = m_rcJobListModel->itemCount();
         MockRCJob rcJobAddAndDelete;
         AssetProcessor::JobDetails jobDetailsToInitWithInsideScope;
-        jobDetailsToInitWithInsideScope.m_jobEntry.m_pathRelativeToWatchFolder = jobDetailsToInitWithInsideScope.m_jobEntry.m_databaseSourceName = "someFile0.txt";
+        jobDetailsToInitWithInsideScope.m_jobEntry.m_sourceAssetReference =
+            AssetProcessor::SourceAssetReference(TestScanFolderInfo.ScanPath(), "someFile0.txt");
         jobDetailsToInitWithInsideScope.m_jobEntry.m_platformInfo = { "pc",{ "tools", "editor" } };
         jobDetailsToInitWithInsideScope.m_jobEntry.m_jobKey = "Text files";
         jobDetailsToInitWithInsideScope.m_jobEntry.m_sourceFileUUID = AZ::Uuid("{D013122E-CF2C-4534-A87D-F82570FBC2CD}");
@@ -830,7 +834,7 @@ TEST_F(RCcontrollerUnitTests, TestRCController_FeedJobsWithCyclicDependencies_Al
 
         // verify that job was added
         EXPECT_EQ(m_rcJobListModel->itemCount(), prevJobCount + 1);
-        m_rcController->RemoveJobsBySource("someFile0.txt");
+        m_rcController->RemoveJobsBySource(AssetProcessor::SourceAssetReference(TestScanFolderInfo.ScanPath(), "someFile0.txt"));
         // verify that job was removed
         EXPECT_EQ(m_rcJobListModel->itemCount(), prevJobCount);
     }

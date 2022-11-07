@@ -1,0 +1,37 @@
+{
+    "entries": [
+        {
+            "base": "NetworkTransformComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Network Transform Component"
+            },
+            "methods": [
+                {
+                    "base": "IncrementResetCount",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Increment Reset Count."
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Increment Reset Count is invoked."
+                    },
+                    "details": {
+                        "name": "Increment Reset Count"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

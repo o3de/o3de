@@ -257,9 +257,9 @@ namespace EMotionFX
         }
     }
 
-    AZ::Outcome<const QModelIndexList&> SkeletonOutlinerPlugin::GetSelectedRowIndices()
+    AZ::Outcome<QModelIndexList> SkeletonOutlinerPlugin::GetSelectedRowIndices()
     {
-        return AZ::Success(m_treeView->selectionModel()->selectedRows());
+        return m_treeView->selectionModel()->selectedRows();
     }
 
     void SkeletonOutlinerPlugin::OnSelectionChanged([[maybe_unused]] const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)

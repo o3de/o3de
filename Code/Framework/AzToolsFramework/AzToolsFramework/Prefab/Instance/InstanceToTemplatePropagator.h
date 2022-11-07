@@ -37,7 +37,10 @@ namespace AzToolsFramework
 
             AZStd::string GenerateEntityAliasPath(AZ::EntityId entityId) override;
 
-            void AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, AZStd::string prefix = "") override;
+            AZ::Dom::Path GenerateEntityPathFromFocusedPrefab(AZ::EntityId entityId) override;
+
+            void AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, const AZStd::string& prefix = "") override;
+            void AppendEntityAliasPathToPatchPaths(PrefabDom& providedPatch, const AZStd::string& entityAliasPath) override;
 
             InstanceOptionalReference GetTopMostInstanceInHierarchy(AZ::EntityId entityId) override;
 
@@ -45,12 +48,11 @@ namespace AzToolsFramework
 
             void ApplyPatchesToInstance(const AZ::EntityId& entityId, PrefabDom& patches, const Instance& instanceToAddPatches) override;
 
-            void AddPatchesToLink(const PrefabDom& patches, Link& link);
-
         private:
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
             InstanceDomGenerator m_instanceDomGenerator;
+            static AzFramework::EntityContextId s_editorEntityContextId;
         };
     }
 }

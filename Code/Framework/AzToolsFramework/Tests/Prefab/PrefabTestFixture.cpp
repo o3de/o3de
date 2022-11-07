@@ -9,10 +9,12 @@
 #include <Prefab/PrefabTestFixture.h>
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
-#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <Prefab/PrefabTestComponent.h>
 #include <Prefab/PrefabTestDomUtils.h>
 
@@ -38,16 +40,19 @@ namespace UnitTest
         m_prefabSystemComponent = systemEntity->FindComponent<AzToolsFramework::Prefab::PrefabSystemComponent>();
         EXPECT_TRUE(m_prefabSystemComponent);
 
-        m_prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
+        m_prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
         EXPECT_TRUE(m_prefabLoaderInterface);
 
-        m_prefabPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabPublicInterface>::Get();
+        m_prefabPublicInterface = AZ::Interface<PrefabPublicInterface>::Get();
         EXPECT_TRUE(m_prefabPublicInterface);
 
-        m_instanceUpdateExecutorInterface = AZ::Interface<AzToolsFramework::Prefab::InstanceUpdateExecutorInterface>::Get();
+        m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
+        EXPECT_TRUE(m_instanceEntityMapperInterface);
+
+        m_instanceUpdateExecutorInterface = AZ::Interface<InstanceUpdateExecutorInterface>::Get();
         EXPECT_TRUE(m_instanceUpdateExecutorInterface);
 
-        m_instanceToTemplateInterface = AZ::Interface<AzToolsFramework::Prefab::InstanceToTemplateInterface>::Get();
+        m_instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
         EXPECT_TRUE(m_instanceToTemplateInterface);
 
         m_prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
@@ -99,6 +104,10 @@ namespace UnitTest
             {
                 rootContainerEntity->get().Init();
             }
+
+            auto* prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
+            ASSERT_TRUE(prefabFocusPublicInterface != nullptr);
+            prefabFocusPublicInterface->FocusOnOwningPrefab(rootContainerEntity->get().GetId());
         }
     }
 
@@ -107,9 +116,9 @@ namespace UnitTest
         m_prefabSystemComponent->OnSystemTick();
     }
 
-    AZ::Entity* PrefabTestFixture::CreateEntity(AZStd::string entityName, const bool shouldActivate)
+    AZ::Entity* PrefabTestFixture::CreateEntity(const AZStd::string& entityName, bool shouldActivate)
     {
-        // Circumvent the EntityContext system and generate a new entity with a transformcomponent
+        // Circumvent the EntityContext system and generate a new entity with a transform component
         AZ::Entity* newEntity = aznew AZ::Entity(entityName);
         
         if(shouldActivate)
@@ -154,6 +163,22 @@ namespace UnitTest
         m_prefabSystemComponent->OnSystemTick();
 
         return entityId;
+    }
+
+    AZ::EntityId PrefabTestFixture::CreatePrefab(const AzToolsFramework::EntityIdList& entityIds, AZ::IO::PathView filePath)
+    {
+        CreatePrefabResult createPrefabResult = m_prefabPublicInterface->CreatePrefabInMemory(entityIds, filePath);
+
+        // Verify that a valid prefab container entity is created.
+        AZ::EntityId prefabContainerId = createPrefabResult.GetValue();
+        AZ_Assert(prefabContainerId.IsValid(), "CreatePrefab operation resulted in an invalid container entity id.");
+        AZ::Entity* prefabContainerEntity = AzToolsFramework::GetEntityById(prefabContainerId);
+        AZ_Assert(prefabContainerEntity != nullptr, "ContainerEntity created with CreatePrefab() is a nullptr.");
+
+        // PrefabTestFixture won't add required editor components by default. Hence we add them here.
+        AddRequiredEditorComponents(prefabContainerEntity);
+
+        return prefabContainerId;
     }
 
     void PrefabTestFixture::CompareInstances(const AzToolsFramework::Prefab::Instance& instanceA,

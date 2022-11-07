@@ -847,7 +847,7 @@ namespace AZ
 
             IncludedFilesParser::IncludedFilesParser()
             {
-                AZStd::regex regex(R"(#\s*include\s+[<|"]([\w|/|\\|\.|-]+)[>|"])", AZStd::regex::ECMAScript);
+                AZStd::regex regex(R"(#\s*include\s+[<|"]([\w|/|\\|\.|\-|\:]+)[>|"])", AZStd::regex::ECMAScript);
                 m_includeRegex.swap(regex);
             }
 

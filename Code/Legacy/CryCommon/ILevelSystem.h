@@ -65,7 +65,15 @@ struct ILevelSystem
 
     virtual bool LoadLevel(const char* levelName) = 0;
     virtual void UnloadLevel() = 0;
-    virtual bool IsLevelLoaded() = 0;
+
+    //! Deprecated.
+    //! @deprecated ILevelSystem is part of the legacy CryCommon module, please use AzFramework::LevelSystemLifecycleInterface::Get()->IsLevelLoaded instead.
+    //! O3DE_DEPRECATION_NOTICE(GHI-12715)
+    virtual bool IsLevelLoaded() const = 0;
+
+    //! Deprecated.
+    //! @deprecated ILevelSystem is part of the legacy CryCommon module, please use AzFramework::LevelSystemLifecycleInterface::Get()->GetCurrentLevelName instead.
+    //! O3DE_DEPRECATION_NOTICE(GHI-12715)
     virtual const char* GetCurrentLevelName() const = 0;
 
     // If the level load failed then we need to have a different shutdown procedure vs when a level is naturally unloaded

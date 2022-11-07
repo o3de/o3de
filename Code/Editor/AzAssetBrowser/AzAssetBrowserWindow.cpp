@@ -32,6 +32,8 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 AZ_CVAR_EXTERNED(bool, ed_useNewAssetBrowserTableView);
 
+AZ_CVAR(bool, ed_useWIPAssetBrowserDesign, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the in-progress new Asset Browser design");
+
 namespace AzToolsFramework
 {
     namespace AssetBrowser
@@ -135,6 +137,21 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
         m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
     }
+
+    if (!ed_useWIPAssetBrowserDesign)
+    {
+        m_ui->m_middleStackWidget->hide();
+        m_ui->m_thumbnailViewButton->hide();
+        m_ui->m_listViewButton->hide();
+    }
+
+    m_ui->horizontalLayout->setAlignment(m_ui->m_listViewButton, Qt::AlignTop);
+    m_ui->horizontalLayout->setAlignment(m_ui->m_thumbnailViewButton, Qt::AlignTop);
+    m_ui->horizontalLayout->setAlignment(m_ui->m_toggleDisplayViewBtn, Qt::AlignTop);
+    m_ui->horizontalLayout->setAlignment(m_ui->m_collapseAllButton, Qt::AlignTop);
+
+    connect(m_ui->m_thumbnailViewButton, &QAbstractButton::clicked, this, [this] { m_ui->m_middleStackWidget->setCurrentIndex(0); });
+    connect(m_ui->m_listViewButton, &QAbstractButton::clicked, this, [this] { m_ui->m_middleStackWidget->setCurrentIndex(1); });
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
 

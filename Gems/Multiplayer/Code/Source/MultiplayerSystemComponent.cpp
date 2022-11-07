@@ -188,7 +188,16 @@ namespace Multiplayer
                 })
                 ->Attribute(
                     AZ::Script::Attributes::AzEventDescription,
-                    AZ::BehaviorAzEventDescription{"On Client Disconnected Event"});
+                    AZ::BehaviorAzEventDescription{"On Client Disconnected Event"})
+                ->Method("GetCurrentBlendFactor", []()
+                    {
+                        if (GetMultiplayer())
+                        {
+                            return GetMultiplayer()->GetCurrentBlendFactor();
+                        }
+                        return 0.f;
+                    })
+            ;
         }
 
         MultiplayerComponent::Reflect(context);
@@ -233,11 +242,12 @@ namespace Multiplayer
         DECLARE_PERFORMANCE_STAT_GROUP(MultiplayerGroup_Networking, "Networking");
         DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_EntityCount, "NumEntities");
         DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_FrameTime, "FrameTimeUs");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_ClientConnectionCount, "ClientConnections");
 
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
         SessionNotificationBus::Handler::BusConnect();
-        AzFramework::LevelSystemLifecycleRequestBus::Handler::BusConnect();
+        AzFramework::LevelLoadBlockerBus::Handler::BusConnect();
         const AZ::Name interfaceName = AZ::Name(MpNetworkInterfaceName);
         m_networkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(interfaceName, sv_protocol, TrustZone::ExternalClientToServer, *this);
 
@@ -263,7 +273,7 @@ namespace Multiplayer
         m_consoleCommandHandler.Disconnect();
         const AZ::Name interfaceName = AZ::Name(MpNetworkInterfaceName);
         AZ::Interface<INetworking>::Get()->DestroyNetworkInterface(interfaceName);
-        AzFramework::LevelSystemLifecycleRequestBus::Handler::BusDisconnect();
+        AzFramework::LevelLoadBlockerBus::Handler::BusDisconnect();
         SessionNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         AzFramework::RootSpawnableNotificationBus::Handler::BusDisconnect();
@@ -990,6 +1000,7 @@ namespace Multiplayer
             if (m_networkInterface->GetConnectionSet().GetActiveConnectionCount() == 0)
             {
                 Terminate(DisconnectReason::TerminatedByServer);
+                AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
             }
         }
     }
@@ -1001,6 +1012,8 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::InitializeMultiplayer(MultiplayerAgentType multiplayerType)
     {
+        m_lastReplicatedHostFrameId = HostFrameId{0};
+
         if (m_agentType == multiplayerType)
         {
             return;
