@@ -34,15 +34,10 @@ namespace GraphModelIntegration
 
         double GetNumber() const
         {
-            if (GraphModel::SlotPtr slot = m_slot.lock())
-            {
-                return slot->GetValue<T>();
-            }
-            else
-            {
-                return 0.0;
-            }
+            GraphModel::SlotPtr slot = m_slot.lock();
+            return static_cast<double>(slot ? slot->GetValue<T>() : 0.0);
         }
+
         void SetNumber(double value)
         {
             if (GraphModel::SlotPtr slot = m_slot.lock())
@@ -73,12 +68,12 @@ namespace GraphModelIntegration
 
         double GetMin() const
         {
-            return std::numeric_limits<T>::min();
+            return static_cast<double>(AZStd::numeric_limits<T>::min());
         }
 
         double GetMax() const
         {
-            return std::numeric_limits<T>::max();
+            return static_cast<double>(AZStd::numeric_limits<T>::max());
         }
 
     private:
