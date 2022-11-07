@@ -97,7 +97,9 @@ namespace Multiplayer
         "slow down quicker and may be better suited to connections with highly variable latency");
     AZ_CVAR(bool, bg_multiplayerDebugDraw, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables debug draw for the multiplayer gem");
     AZ_CVAR(bool, cl_connect_onstartup, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to call connect as soon as the Multiplayer SystemComponent is activated.");
-    
+    AZ_CVAR(bool, sv_versionMismatch_autoDisconnect, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Should the server automatically disconnect a client that is attempting connect who is running a build containing different/modified multiplayer components.");
+    AZ_CVAR(bool, sv_versionMismatch_sendAllComponentHashesToClient, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Should the server send all its individual multiplayer component version hashes to the client when there's a mismatch? Upon receiving the information, the client will print the mismatch information to the game log. This is good for debugging during development, but you may want to mark false for release builds.");
+
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         NetworkSpawnable::Reflect(context);
@@ -578,64 +580,13 @@ namespace Multiplayer
         return reinterpret_cast<IConnectionData*>(connection->GetUserData())->DidHandshake();
     }
 
-    bool MultiplayerSystemComponent::HandleRequest
-    (
-        AzNetworking::IConnection* connection,
-        [[maybe_unused]] const IPacketHeader& packetHeader,
-        MultiplayerPackets::Connect& packet
-    )
+    bool MultiplayerSystemComponent::AttemptPlayerConnect(AzNetworking::IConnection* connection, MultiplayerPackets::Connect& packet)
     {
-        PlayerConnectionConfig config;
-        config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
-        config.m_playerSessionId = packet.GetTicket();
-
-        // Validate our session with the provider if any
-        ISessionHandlingProviderRequests* sessionRequests = AZ::Interface<ISessionHandlingProviderRequests>::Get();
-        if (sessionRequests != nullptr)
-        {
-            if (!sessionRequests->ValidatePlayerJoinSession(config))
-            {
-                auto visitor = [](IConnection& connection) { connection.Disconnect(DisconnectReason::TerminatedByUser, TerminationEndpoint::Local); };
-                m_networkInterface->GetConnectionSet().VisitConnections(visitor);
-                return true;
-            }
-        }
-
-        // Make sure the client that's trying to connect has the same multiplayer components
-        if (GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHolisticHash() !=
-            packet.GetMultiplayerComponentVersionHash())
-        {
-            // There's a multiplayer component mismatch. Send the server's component information back to the client so they can compare.
-            MultiplayerPackets::SyncComponentMismatch componentMismatchPacket;
-            const uint32_t totalMultiplayerComponentCount = aznumeric_cast<uint32_t>(GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes().size());
-            componentMismatchPacket.SetTotalComponentCount(totalMultiplayerComponentCount);
-
-            for (const auto& multiplayerComponentData : GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes())
-            {
-                componentMismatchPacket.ModifyComponentVersions().emplace_back(multiplayerComponentData.first, multiplayerComponentData.second);
-
-                if (componentMismatchPacket.GetComponentVersions().full())
-                {
-                    // we've hit the packet limit, send the current packet, and begin filling up another
-                    connection->SendReliablePacket(componentMismatchPacket);
-                    componentMismatchPacket.ModifyComponentVersions().clear();
-                }
-            }
-
-            // Send any remaining multiplayer component version data
-            if (!componentMismatchPacket.GetComponentVersions().empty())
-            {
-                connection->SendReliablePacket(componentMismatchPacket);
-            }
-
-            return true;
-        }
-
         reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
 
         // Hosts will handle spawning for a player on connect
         if (GetAgentType() == MultiplayerAgentType::ClientServer
-         || GetAgentType() == MultiplayerAgentType::DedicatedServer)
+            || GetAgentType() == MultiplayerAgentType::DedicatedServer)
         {
             // We use a temporary userId over the clients address so we can maintain client lookups even in the event of wifi handoff
             IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get();
@@ -686,6 +637,7 @@ namespace Multiplayer
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(sv_map)))
         {
             reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
+
             if (packet.GetTemporaryUserId() == 0)
             {
                 // Sync our console
@@ -695,6 +647,52 @@ namespace Multiplayer
             return true;
         }
         return false;
+    }
+
+    bool MultiplayerSystemComponent::HandleRequest
+    (
+        AzNetworking::IConnection* connection,
+        [[maybe_unused]] const IPacketHeader& packetHeader,
+        MultiplayerPackets::Connect& packet
+    )
+    {
+        PlayerConnectionConfig config;
+        config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
+        config.m_playerSessionId = packet.GetTicket();
+
+        // Validate our session with the provider if any
+        ISessionHandlingProviderRequests* sessionRequests = AZ::Interface<ISessionHandlingProviderRequests>::Get();
+        if (sessionRequests != nullptr)
+        {
+            if (!sessionRequests->ValidatePlayerJoinSession(config))
+            {
+                auto visitor = [](IConnection& connection) { connection.Disconnect(DisconnectReason::TerminatedByUser, TerminationEndpoint::Local); };
+                m_networkInterface->GetConnectionSet().VisitConnections(visitor);
+                return true;
+            }
+        }
+
+        // Make sure the client that's trying to connect has the same multiplayer components
+        if (GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHolisticHash() != packet.GetMultiplayerComponentVersionHash())
+        {
+            // There's a multiplayer component mismatch. Send the server's component information back to the client so they can compare.
+            if (sv_versionMismatch_sendAllComponentHashesToClient)
+            {
+                SendAllMultiplayerComponentVersionData(connection);                
+            }
+            else
+            {
+                // sv_versionMismatch_sendAllComponentHashesToClient is false; don't send any individual components, just let the client know there was a mismatch.
+                MultiplayerPackets::SyncComponentMismatch componentMismatchPacket;
+                componentMismatchPacket.SetTotalComponentCount(0);
+                connection->SendReliablePacket(componentMismatchPacket);
+            }
+
+            m_originalConnectPackets[connection->GetConnectionId()] = packet;
+            return true;
+        }
+
+        return AttemptPlayerConnect(connection, packet);
     }
 
     bool MultiplayerSystemComponent::HandleRequest
@@ -878,7 +876,7 @@ namespace Multiplayer
         [[maybe_unused]] const IPacketHeader& packetHeader,
         MultiplayerPackets::SyncComponentMismatch& packet)
     {
-        // If this is the first packet containing component version data from this connection id, start a new vector for tracking the data
+        // If this is the first packet containing component version data from this connection, start a new vector for tracking the data.
         if (!m_connectedAppsComponentVersions.contains(connection->GetConnectionId()))
         {
             m_connectedAppsComponentVersions[connection->GetConnectionId()] = AZStd::vector<ComponentVersionMessageData>();
@@ -908,7 +906,7 @@ namespace Multiplayer
                     theirComponent.m_componentName, localComponentHash))
             {
                 
-                if (theirComponent.m_componentVersionHash != localComponentHash)
+                if (aznumeric_cast<AZ::HashValue64>(theirComponent.m_componentVersionHash) != localComponentHash)
                 {
                     AZLOG_ERROR(
                         "Multiplayer component mismatch! %s has a different version hash. Please make sure both client and server have "
@@ -930,31 +928,65 @@ namespace Multiplayer
         }
 
         // One last iteration over our components this time to check if we have a component the connected app is missing.
-        for (const auto& ourComponent : GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes())
+        if (packet.GetTotalComponentCount() > 0)
         {
-            AZ::Name ourComponentName = ourComponent.first;
-
-            bool theyHaveComponent = false;
-            for (const auto& theirComponent : theirMultiplayerComponents)
+            for (const auto& ourComponent : GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes())
             {
-                if (ourComponentName == theirComponent.m_componentName)
+                AZ::Name ourComponentName = ourComponent.first;
+
+                bool theyHaveComponent = false;
+                for (const auto& theirComponent : theirMultiplayerComponents)
                 {
-                    theyHaveComponent = true;
-                    break;
+                    if (ourComponentName == theirComponent.m_componentName)
+                    {
+                        theyHaveComponent = true;
+                        break;
+                    }
                 }
-            }
 
-            if (!theyHaveComponent)
-            {
-                AZLOG_ERROR(
-                    "Multiplayer component mismatch! We have a component named %s which the connected application is missing!",
-                    ourComponentName.GetCStr());
+                if (!theyHaveComponent)
+                {
+                    AZLOG_ERROR(
+                        "Multiplayer component mismatch! We have a component named %s which the connected application is missing!",
+                        ourComponentName.GetCStr());
+                }
             }
         }
 
-        // Disconnect and clear out the list of components in case the user fixes up their end and tries to reconnect
+        // We've received all the multiplayer components for debugging.
+        // If we're the connector, send all our component information back to the acceptor.
+        if (connection->GetConnectionRole() == ConnectionRole::Connector)
+        {
+            SendAllMultiplayerComponentVersionData(connection);
+        }
+
+        // Clear out the list of components in case the other side fixes up their end (ie rebuilds using latest auto-components) and tries to reconnect
         theirMultiplayerComponents.clear();
-        connection->Disconnect(DisconnectReason::VersionMismatch, TerminationEndpoint::Local);
+        m_connectedAppsComponentVersions.erase(connection->GetConnectionId());
+
+        if (connection->GetConnectionRole() == ConnectionRole::Acceptor)
+        {
+            if (sv_versionMismatch_autoDisconnect)
+            {
+                // Disconnect from the connector; we have all the mismatch information we need now for debugging.
+                connection->Disconnect(DisconnectReason::VersionMismatch, TerminationEndpoint::Local);
+            }
+            else if (m_originalConnectPackets.contains(connection->GetConnectionId()))
+            {
+                // DANGER: We're accepting the player connection even though there's a component mismatch
+                AZLOG_WARN(
+                    "Multiplayer component mismatch was found but we're allowing the player to connect anyways. Please set sv_versionMismatch_autoDisconnect=true if this is undesired behavior!");
+                AttemptPlayerConnect(connection, m_originalConnectPackets[connection->GetConnectionId()]);
+                m_originalConnectPackets.erase(connection->GetConnectionId());
+            }
+            else
+            {
+                AZLOG_ERROR(
+                    "Multiplayer component mismatch finished comparing components; "
+                    "attempting to accept connection, but we no longer have a connection packet. This should not happen, please file a bug.");
+            }
+        }
+
         return true;
     }
 
@@ -1603,6 +1635,32 @@ namespace Multiplayer
             {
                 connectionData->SetCanSendUpdates(true);
             }
+        }
+    }
+
+    void MultiplayerSystemComponent::SendAllMultiplayerComponentVersionData(AzNetworking::IConnection* connection)
+    {
+        MultiplayerPackets::SyncComponentMismatch componentMismatchPacket;
+        const uint32_t totalMultiplayerComponentCount = aznumeric_cast<uint32_t>(GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes().size());
+        componentMismatchPacket.SetTotalComponentCount(totalMultiplayerComponentCount);
+
+        for (const auto& multiplayerComponentData : GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes())
+        {
+            componentMismatchPacket.ModifyComponentVersions().emplace_back(
+                multiplayerComponentData.first, aznumeric_cast<uint64_t>(multiplayerComponentData.second));
+
+            if (componentMismatchPacket.GetComponentVersions().full())
+            {
+                // we've hit the packet limit, send the current packet, and begin filling up another
+                connection->SendReliablePacket(componentMismatchPacket);
+                componentMismatchPacket.ModifyComponentVersions().clear();
+            }
+        }
+
+        // Send any remaining multiplayer component version data
+        if (!componentMismatchPacket.GetComponentVersions().empty())
+        {
+            connection->SendReliablePacket(componentMismatchPacket);
         }
     }
 
