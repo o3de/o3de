@@ -17,7 +17,6 @@
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Module/ModuleManager.h>
-#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -43,6 +42,10 @@ namespace AZ
 namespace AZ::Metrics
 {
     class IEventLoggerFactory;
+
+    enum class EventLoggerId : AZ::u32;
+
+    extern const EventLoggerId CoreEventLoggerId;
 }
 
 namespace AZ
@@ -300,6 +303,13 @@ namespace AZ
         void LoadDynamicModules();
 
     protected:
+        void InitializeSettingsRegistry();
+        void InitializeEventLoggerFactory();
+        void InitializeLifecyleEvents(SettingsRegistryInterface& settingsRegistry);
+        void InitializeConsole(SettingsRegistryInterface& settingsRegistry);
+
+        void RegisterCoreEventLogger();
+
         virtual void CreateReflectionManager();
         void DestroyReflectionManager();
 
@@ -404,5 +414,15 @@ namespace AZ
         AZStd::unique_ptr<AZ::Entity>               m_systemEntity; ///< Track the system entity to ensure we free it on shutdown.
 
         AZStd::unique_ptr<AZ::Metrics::IEventLoggerFactory> m_eventLoggerFactory;
+
+        using TickTimepoint = AZStd::chrono::steady_clock::time_point;
+        TickTimepoint m_lastTickTime{};
+
+        //! Callback function for determining whether a call to record metrics in the Tick() member function
+        //! functionshould take place
+        //! @param currentMonotonicTime - The monotonic tick time of the application since launch
+        //! @return true to indicate a record event operation should occur in the current Tick() call
+        using RecordMetricsCallback = AZStd::function<bool(AZStd::chrono::steady_clock::time_point)>;
+        RecordMetricsCallback m_recordMetricsOnTickCallback;
     };
 }

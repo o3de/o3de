@@ -162,6 +162,18 @@ namespace EMotionFX
          */
         void InitFrom(const AnimGraphNodeGroup& other);
 
+        /**
+         * Toggles the rendering of a QLineEdit widget to edit the name of the group from the graph widget.
+         * @param nameEditOngoing Whether to trigger the rendering of a text edit widget to change the group name.
+         */
+        void SetNameEditOngoing(bool nameEditOngoing);
+
+        /**
+         * Checks whether the group name is currently being edited from the graph widget.
+         * @result True if the group name is currently being edited, false otherwise.
+         */
+        bool IsNameEditOngoing() const;
+
         static void Reflect(AZ::ReflectContext* context);
 
     protected:
@@ -169,5 +181,6 @@ namespace EMotionFX
         AZStd::string           m_name;             /**< The unique identification number for the node group name. */
         AZ::u32                 m_color;            /**< The color the nodes of the group will be filled with. */
         bool                    m_isVisible;
+        bool m_nameEditOngoing = false; /**< Whether the user is currently typing a new name */
     };
 } // namespace EMotionFX

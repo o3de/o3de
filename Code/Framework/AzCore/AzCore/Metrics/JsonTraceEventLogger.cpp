@@ -14,6 +14,7 @@
 #include <AzCore/Metrics/JsonTraceEventLogger.h>
 #include <AzCore/std/parallel/scoped_lock.h>
 #include <AzCore/std/ranges/repeat_view.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 namespace AZ::Metrics
 {
@@ -146,11 +147,43 @@ namespace AZ::Metrics
         JsonTraceLoggerEventConfig config)
         : m_stream(AZStd::move(stream))
         , m_name(AZStd::move(config.m_loggerName))
+        , m_settingsRegistry{ config.m_settingsRegistry }
     {
+        ResetSettingsHandler();
         if (m_stream != nullptr)
         {
             Start(*m_stream);
         }
+    }
+
+
+    // Static function which is used to initialize the active state of this JsonTraceEventLogger
+    // based on the build configuration
+    bool JsonTraceEventLogger::GetDefaultActiveState()
+    {
+#if !defined(AZ_RELEASE_BUILD)
+        return true;
+#else
+        return false;
+#endif
+    }
+
+    void JsonTraceEventLogger::SetName(AZStd::string_view name)
+    {
+        // Detect if the name has changed and reset
+        // the active state and the settings handler if so
+        const bool nameChanged = m_name != name;
+        m_name = name;
+        if (nameChanged)
+        {
+            // Reset the settings handler if the name has changed
+            ResetSettingsHandler();
+        }
+    }
+
+    AZStd::string_view JsonTraceEventLogger::GetName() const
+    {
+        return m_name;
     }
 
     void JsonTraceEventLogger::Flush()
@@ -160,6 +193,12 @@ namespace AZ::Metrics
 
     auto JsonTraceEventLogger::RecordDurationEventBegin(const DurationArgs& durationArgs) -> ResultOutcome
     {
+        if (!m_active)
+        {
+            // Event logger isn't active, return success
+            return AZ::Success();
+        }
+
         if (m_stream == nullptr)
         {
             return AZ::Failure(ErrorString("Logger has no output stream associated. The duration begin event cannot be recorded"));
@@ -189,6 +228,12 @@ namespace AZ::Metrics
 
     auto JsonTraceEventLogger::RecordDurationEventEnd(const DurationArgs& durationArgs) -> ResultOutcome
     {
+        if (!m_active)
+        {
+            // Event logger isn't active, return success
+            return AZ::Success();
+        }
+
         if (m_stream == nullptr)
         {
             return AZ::Failure(ErrorString("Logger has no output stream associated. The duration end event cannot be recorded"));
@@ -218,6 +263,11 @@ namespace AZ::Metrics
 
     auto JsonTraceEventLogger::RecordCompleteEvent(const CompleteArgs& completeArgs) -> ResultOutcome
     {
+        if (!m_active)
+        {
+            return AZ::Success();
+        }
+
         if (m_stream == nullptr)
         {
             return AZ::Failure(ErrorString("Logger has no output stream associated. The complete event cannot be recorded"));
@@ -260,6 +310,11 @@ namespace AZ::Metrics
 
     auto JsonTraceEventLogger::RecordInstantEvent(const InstantArgs& instantArgs) -> ResultOutcome
     {
+        if (!m_active)
+        {
+            return AZ::Success();
+        }
+
         if (m_stream == nullptr)
         {
             return AZ::Failure(ErrorString("Logger has no output stream associated. The instant event cannot be recorded"));
@@ -284,7 +339,7 @@ namespace AZ::Metrics
         constexpr size_t MaxExtraFieldCount = 8;
         AZStd::fixed_vector<EventField, MaxExtraFieldCount> extraParams;
         char scopeChar = static_cast<char>(instantArgs.m_scope);
-        extraParams.emplace_back(ScopeKey, EventValue{ AZStd::in_place_type<AZStd::string_view>, &scopeChar });
+        extraParams.emplace_back(ScopeKey, EventValue{ AZStd::in_place_type<AZStd::string_view>, &scopeChar, 1 });
 
         eventDesc.SetExtraParams(extraParams);
 
@@ -298,6 +353,11 @@ namespace AZ::Metrics
 
     auto JsonTraceEventLogger::RecordCounterEvent(const CounterArgs& counterArgs) -> ResultOutcome
     {
+        if (!m_active)
+        {
+            return AZ::Success();
+        }
+
         if (m_stream == nullptr)
         {
             return AZ::Failure(ErrorString("Logger has no output stream associated. The counter event cannot be recorded"));
@@ -327,6 +387,11 @@ namespace AZ::Metrics
 
     auto JsonTraceEventLogger::RecordAsyncEventStart(const AsyncArgs& asyncArgs) -> ResultOutcome
     {
+        if (!m_active)
+        {
+            return AZ::Success();
+        }
+
         if (m_stream == nullptr)
         {
             return AZ::Failure(ErrorString("Logger has no output stream associated. The async start event cannot be recorded"));
@@ -367,6 +432,11 @@ namespace AZ::Metrics
 
     auto JsonTraceEventLogger::RecordAsyncEventInstant(const AsyncArgs& asyncArgs) -> ResultOutcome
     {
+        if (!m_active)
+        {
+            return AZ::Success();
+        }
+
         if (m_stream == nullptr)
         {
             return AZ::Failure(ErrorString("Logger has no output stream associated. The async instant event cannot be recorded"));
@@ -407,6 +477,11 @@ namespace AZ::Metrics
 
     auto JsonTraceEventLogger::RecordAsyncEventEnd(const AsyncArgs& asyncArgs) -> ResultOutcome
     {
+        if (!m_active)
+        {
+            return AZ::Success();
+        }
+
         if (m_stream == nullptr)
         {
             return AZ::Failure(ErrorString("Logger has no output stream associated. The async end event cannot be recorded"));
@@ -540,6 +615,11 @@ namespace AZ::Metrics
         return result;
     }
 
+    bool JsonTraceEventLogger::Start(AZ::IO::GenericStream& stream)
+    {
+        return stream.Write(ArrayStart.size(), ArrayStart.data()) == ArrayStart.size();
+    }
+
     bool JsonTraceEventLogger::Complete(AZ::IO::GenericStream& stream)
     {
         constexpr auto jsonCompleteString = []()
@@ -552,8 +632,41 @@ namespace AZ::Metrics
         return stream.Write(jsonCompleteString.size(), jsonCompleteString.data()) == jsonCompleteString.size();
     }
 
-    bool JsonTraceEventLogger::Start(AZ::IO::GenericStream& stream)
+    void JsonTraceEventLogger::ResetSettingsHandler()
     {
-        return stream.Write(ArrayStart.size(), ArrayStart.data()) == ArrayStart.size();
+        // Reset the active option back to default active state based on the build configuration
+        // and then query it from the Settings Registry again
+        m_active = GetDefaultActiveState();
+
+        if (auto settingsRegistry = m_settingsRegistry != nullptr ? m_settingsRegistry : AZ::SettingsRegistry::Get();
+            settingsRegistry != nullptr)
+        {
+            // Read the "/O3DE/Metrics/<Name>/Active" setting from the Settings Registry
+            const AZStd::fixed_string<128> eventLoggerActiveSettingKey(SettingsKey(m_name + "/Active"));
+            settingsRegistry->Get(m_active, eventLoggerActiveSettingKey);
+
+            auto ActiveStateUpdateFunc = [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyArgs)
+            {
+                const AZStd::fixed_string<128> activeSettingKey(SettingsKey(m_name + "/Active"));
+                if (AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(notifyArgs.m_jsonKeyPath, activeSettingKey))
+                {
+                    if (auto settingsRegistry = m_settingsRegistry != nullptr ? m_settingsRegistry : AZ::SettingsRegistry::Get();
+                        settingsRegistry != nullptr)
+                    {
+                        // If the key has been deleted, then reset the active state to the default active state
+                        if (settingsRegistry->GetType(activeSettingKey).m_type == AZ::SettingsRegistryInterface::Type::NoType)
+                        {
+                            m_active = GetDefaultActiveState();
+                        }
+                        else
+                        {
+                            settingsRegistry->Get(m_active, activeSettingKey);
+                        }
+                    }
+                }
+            };
+            m_settingsHandler = settingsRegistry->RegisterNotifier(ActiveStateUpdateFunc);
+        }
     }
+
 } // namespace AZ::Metrics

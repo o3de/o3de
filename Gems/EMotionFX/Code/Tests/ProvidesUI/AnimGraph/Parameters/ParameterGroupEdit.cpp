@@ -18,7 +18,6 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyStringLineEditCtrl.hxx>
 #include <QApplication>
 #include <QComboBox>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodeGroupWindow.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterEditor/ParameterEditorFactory.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterEditor/ValueParameterEditor.h>
@@ -48,9 +47,7 @@ namespace EMotionFX
             const AZ::u32 animGraphId = 1;
             const AZStd::string command = AZStd::string::format("CreateAnimGraph -animGraphID %d", animGraphId);
             AZStd::string commandResult;
-            auto animGraphPlugin = static_cast<EMStudio::AnimGraphPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::AnimGraphPlugin::CLASS_ID));
 
-            m_groupWindow = animGraphPlugin->GetNodeGroupWidget();
             EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand(command, commandResult)) << commandResult.c_str();
             m_animGraph = GetAnimGraphManager().FindAnimGraphByID(animGraphId);
             EXPECT_NE(m_animGraph, nullptr) << "Cannot find the newly created anim graph.";
@@ -65,7 +62,6 @@ namespace EMotionFX
 
     public:
         AnimGraph* m_animGraph = nullptr;
-        EMStudio::NodeGroupWindow* m_groupWindow = nullptr;
     };
 
     TEST_F(EditGroupFixture, CanEditParameterGroup)
