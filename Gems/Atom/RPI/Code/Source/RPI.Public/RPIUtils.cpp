@@ -107,7 +107,30 @@ namespace AZ
 
             float ScaleValue(float value, float origMin, float origMax, float scaledMin, float scaledMax)
             {
+                // This method assumes that origMin <= value <= origMax. Since this is a private helper method only
+                // used by ScaleSNorm8Value and ScaleSNorm16Value below, we'll avoid using asserts to verify the
+                // condition in the interest of performance in assert-enabled builds.
                 return ((value - origMin) / (origMax - origMin)) * (scaledMax - scaledMin) + scaledMin;
+            }
+
+            float ScaleSNorm8Value(int8_t value)
+            {
+                // Scale the value from AZ::s8 min/max to -1 to 1
+                // We need to treat -128 and -127 the same, so that we get a symmetric
+                // range of -127 to 127 with complementary scaled values of -1 to 1
+                constexpr float signedMax = static_cast<float>(AZStd::numeric_limits<int8_t>::max());
+                constexpr float signedMin = -signedMax;
+                return ScaleValue(AZStd::max(aznumeric_cast<float>(value), signedMin), signedMin, signedMax, -1.0f, 1.0f);
+            }
+
+            float ScaleSNorm16Value(int16_t value)
+            {
+                // Scale the value from AZ::s16 min/max to -1 to 1
+                // We need to treat -32768 and -32767 the same, so that we get a symmetric
+                // range of -32767 to 32767 with complementary scaled values of -1 to 1
+                constexpr float signedMax = static_cast<float>(AZStd::numeric_limits<int16_t>::max());
+                constexpr float signedMin = -signedMax;
+                return ScaleValue(AZStd::max(aznumeric_cast<float>(value), signedMin), signedMin, signedMax, -1.0f, 1.0f);
             }
 
             // Pre-compute a lookup table for converting SRGB gamma to linear
@@ -120,7 +143,7 @@ namespace AZ
 
                 for (size_t i = 0; i < lookupTable.array_size; ++i)
                 {
-                    float srgbValue = i / static_cast<float>(std::numeric_limits<AZ::u8>::max());
+                    float srgbValue = i / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max());
                     lookupTable[i] = AZ::Color::ConvertSrgbGammaToLinear(srgbValue);
                 }
 
@@ -139,83 +162,274 @@ namespace AZ
                 case AZ::RHI::Format::R8G8_UNORM:
                 case AZ::RHI::Format::R8G8B8A8_UNORM:
                 case AZ::RHI::Format::A8B8G8R8_UNORM:
-                {
-                    return mem[indices.first + componentIndex] / static_cast<float>(std::numeric_limits<AZ::u8>::max());
-                }
+                    {
+                        return mem[indices.first + componentIndex] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max());
+                    }
                 case AZ::RHI::Format::R8_UNORM_SRGB:
                 case AZ::RHI::Format::R8G8_UNORM_SRGB:
                 case AZ::RHI::Format::R8G8B8A8_UNORM_SRGB:
                 case AZ::RHI::Format::A8B8G8R8_UNORM_SRGB:
-                {
-                    // Use a lookup table that takes an AZ::u8 instead of a float
-                    // for better performance
-                    return s_SrgbGammaToLinearLookupTable[mem[indices.first + componentIndex]];
-                }
+                    {
+                        // Use a lookup table that takes an AZ::u8 instead of a float
+                        // for better performance
+                        return s_SrgbGammaToLinearLookupTable[mem[indices.first + componentIndex]];
+                    }
                 case AZ::RHI::Format::R8_SNORM:
                 case AZ::RHI::Format::R8G8_SNORM:
                 case AZ::RHI::Format::R8G8B8A8_SNORM:
                 case AZ::RHI::Format::A8B8G8R8_SNORM:
-                {
-                    // Scale the value from AZ::s8 min/max to -1 to 1
-                    // We need to treat -128 and -127 the same, so that we get a symmetric
-                    // range of -127 to 127 with complementary scaled values of -1 to 1
-                    auto actualMem = reinterpret_cast<const AZ::s8*>(mem);
-                    AZ::s8 signedMax = std::numeric_limits<AZ::s8>::max();
-                    AZ::s8 signedMin = aznumeric_cast<AZ::s8>(-signedMax);
-                    return ScaleValue(
-                        AZStd::max(actualMem[indices.first + componentIndex], signedMin), signedMin, signedMax, -1.0f, 1.0f);
-                }
+                    {
+                        auto actualMem = reinterpret_cast<const AZ::s8*>(mem);
+                        return ScaleSNorm8Value(actualMem[indices.first + componentIndex]);
+                    }
                 case AZ::RHI::Format::D16_UNORM:
                 case AZ::RHI::Format::R16_UNORM:
                 case AZ::RHI::Format::R16G16_UNORM:
                 case AZ::RHI::Format::R16G16B16A16_UNORM:
-                {
-                    auto actualMem = reinterpret_cast<const AZ::u16*>(mem);
-                    return actualMem[indices.first + componentIndex] / static_cast<float>(std::numeric_limits<AZ::u16>::max());
-                }
+                    {
+                        auto actualMem = reinterpret_cast<const AZ::u16*>(mem);
+                        return actualMem[indices.first + componentIndex] / static_cast<float>(AZStd::numeric_limits<AZ::u16>::max());
+                    }
                 case AZ::RHI::Format::R16_SNORM:
                 case AZ::RHI::Format::R16G16_SNORM:
                 case AZ::RHI::Format::R16G16B16A16_SNORM:
-                {
-                    // Scale the value from AZ::s16 min/max to -1 to 1
-                    // We need to treat -32768 and -32767 the same, so that we get a symmetric
-                    // range of -32767 to 32767 with complementary scaled values of -1 to 1
-                    auto actualMem = reinterpret_cast<const AZ::s16*>(mem);
-                    AZ::s16 signedMax = std::numeric_limits<AZ::s16>::max();
-                    AZ::s16 signedMin = aznumeric_cast<AZ::s16>(-signedMax);
-                    return ScaleValue(
-                        AZStd::max(actualMem[indices.first + componentIndex], signedMin), signedMin, signedMax, -1.0f, 1.0f);
-                }
+                    {
+                        auto actualMem = reinterpret_cast<const AZ::s16*>(mem);
+                        return ScaleSNorm16Value(actualMem[indices.first + componentIndex]);
+                    }
                 case AZ::RHI::Format::R16_FLOAT:
                 case AZ::RHI::Format::R16G16_FLOAT:
                 case AZ::RHI::Format::R16G16B16A16_FLOAT:
-                {
-                    auto actualMem = reinterpret_cast<const float*>(mem);
-                    return SHalf(actualMem[indices.first + componentIndex]);
-                }
+                    {
+                        auto actualMem = reinterpret_cast<const float*>(mem);
+                        return SHalf(actualMem[indices.first + componentIndex]);
+                    }
                 case AZ::RHI::Format::D32_FLOAT:
                 case AZ::RHI::Format::R32_FLOAT:
                 case AZ::RHI::Format::R32G32_FLOAT:
                 case AZ::RHI::Format::R32G32B32_FLOAT:
                 case AZ::RHI::Format::R32G32B32A32_FLOAT:
-                {
-                    auto actualMem = reinterpret_cast<const float*>(mem);
-                    return actualMem[indices.first + componentIndex];
-                }
+                    {
+                        auto actualMem = reinterpret_cast<const float*>(mem);
+                        return actualMem[indices.first + componentIndex];
+                    }
                 case AZ::RHI::Format::BC1_UNORM:
-                {
-                    auto actualMem = reinterpret_cast<const BC1Block*>(mem);
-                    return actualMem[indices.first].GetBlockColor(indices.second, componentIndex);
-                }
+                    {
+                        auto actualMem = reinterpret_cast<const BC1Block*>(mem);
+                        return actualMem[indices.first].GetBlockColor(indices.second).GetElement(componentIndex);
+                    }
                 case AZ::RHI::Format::BC1_UNORM_SRGB:
-                {
-                    auto actualMem = reinterpret_cast<const BC1Block*>(mem);
-                    float color = actualMem[indices.first].GetBlockColor(indices.second, componentIndex);
-                    return s_SrgbGammaToLinearLookupTable[aznumeric_cast<uint8_t>(color * AZStd::numeric_limits<AZ::u8>::max())];
-                }
+                    {
+                        auto actualMem = reinterpret_cast<const BC1Block*>(mem);
+                        float color = actualMem[indices.first].GetBlockColor(indices.second).GetElement(componentIndex);
+                        return s_SrgbGammaToLinearLookupTable[aznumeric_cast<uint8_t>(color * AZStd::numeric_limits<AZ::u8>::max())];
+                    }
                 default:
                     AZ_Assert(false, "Unsupported pixel format: %s", AZ::RHI::ToString(format));
                     return 0.0f;
+                }
+            }
+
+            AZ::Color RetrieveColorValue(const AZ::u8* mem, AZStd::pair<size_t, size_t> indices, AZ::RHI::Format format)
+            {
+                switch (format)
+                {
+                case AZ::RHI::Format::R8_UNORM:
+                    {
+                        return AZ::Color(mem[indices.first] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()), 0.0f, 0.0f, 1.0f);
+                    }
+                case AZ::RHI::Format::A8_UNORM:
+                    {
+                        return AZ::Color(0.0f, 0.0f, 0.0f, mem[indices.first] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()));
+                    }
+                case AZ::RHI::Format::R8G8_UNORM:
+                    {
+                        return AZ::Color(
+                            mem[indices.first + 0] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()),
+                            mem[indices.first + 1] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()),
+                            0.0f,
+                            1.0f);
+                    }
+                case AZ::RHI::Format::R8G8B8A8_UNORM:
+                    {
+                        return AZ::Color(
+                            mem[indices.first + 0] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()),
+                            mem[indices.first + 1] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()),
+                            mem[indices.first + 2] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()),
+                            mem[indices.first + 3] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()));
+                    }
+                case AZ::RHI::Format::A8B8G8R8_UNORM:
+                    {
+                        return AZ::Color(
+                            mem[indices.first + 3] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()),
+                            mem[indices.first + 2] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()),
+                            mem[indices.first + 1] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()),
+                            mem[indices.first + 0] / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max()));
+                    }
+                case AZ::RHI::Format::R8_UNORM_SRGB:
+                    {
+                        return AZ::Color(s_SrgbGammaToLinearLookupTable[mem[indices.first]], 0.0f, 0.0f, 1.0f);
+                    }
+                case AZ::RHI::Format::R8G8_UNORM_SRGB:
+                    {
+                        return AZ::Color(
+                            s_SrgbGammaToLinearLookupTable[mem[indices.first + 0]],
+                            s_SrgbGammaToLinearLookupTable[mem[indices.first + 1]],
+                            0.0f,
+                            1.0f);
+                    }
+                case AZ::RHI::Format::R8G8B8A8_UNORM_SRGB:
+                    {
+                        return AZ::Color(
+                            s_SrgbGammaToLinearLookupTable[mem[indices.first + 0]],
+                            s_SrgbGammaToLinearLookupTable[mem[indices.first + 1]],
+                            s_SrgbGammaToLinearLookupTable[mem[indices.first + 2]],
+                            s_SrgbGammaToLinearLookupTable[mem[indices.first + 3]]);
+                    }
+                case AZ::RHI::Format::A8B8G8R8_UNORM_SRGB:
+                    {
+                        return AZ::Color(
+                            s_SrgbGammaToLinearLookupTable[mem[indices.first + 3]],
+                            s_SrgbGammaToLinearLookupTable[mem[indices.first + 2]],
+                            s_SrgbGammaToLinearLookupTable[mem[indices.first + 1]],
+                            s_SrgbGammaToLinearLookupTable[mem[indices.first + 0]]);
+                    }
+                case AZ::RHI::Format::R8_SNORM:
+                    {
+                        auto actualMem = reinterpret_cast<const AZ::s8*>(mem);
+                        return AZ::Color(ScaleSNorm8Value(actualMem[indices.first]), 0.0f, 0.0f, 1.0f);
+                    }
+                case AZ::RHI::Format::R8G8_SNORM:
+                    {
+                        auto actualMem = reinterpret_cast<const AZ::s8*>(mem);
+                        return AZ::Color(
+                            ScaleSNorm8Value(actualMem[indices.first + 0]), ScaleSNorm8Value(actualMem[indices.first + 1]), 0.0f, 1.0f);
+                    }
+                case AZ::RHI::Format::R8G8B8A8_SNORM:
+                    {
+                        auto actualMem = reinterpret_cast<const AZ::s8*>(mem);
+                        return AZ::Color(
+                            ScaleSNorm8Value(actualMem[indices.first + 0]),
+                            ScaleSNorm8Value(actualMem[indices.first + 1]),
+                            ScaleSNorm8Value(actualMem[indices.first + 2]),
+                            ScaleSNorm8Value(actualMem[indices.first + 3]));
+                    }
+                case AZ::RHI::Format::A8B8G8R8_SNORM:
+                    {
+                        auto actualMem = reinterpret_cast<const AZ::s8*>(mem);
+                        return AZ::Color(
+                            ScaleSNorm8Value(actualMem[indices.first + 3]),
+                            ScaleSNorm8Value(actualMem[indices.first + 2]),
+                            ScaleSNorm8Value(actualMem[indices.first + 1]),
+                            ScaleSNorm8Value(actualMem[indices.first + 0]));
+                    }
+                case AZ::RHI::Format::D16_UNORM:
+                case AZ::RHI::Format::R16_UNORM:
+                    {
+                        auto actualMem = reinterpret_cast<const AZ::u16*>(mem);
+                        return AZ::Color(
+                            actualMem[indices.first] / static_cast<float>(AZStd::numeric_limits<AZ::u16>::max()), 0.0f, 0.0f, 1.0f);
+                    }
+                case AZ::RHI::Format::R16G16_UNORM:
+                    {
+                        auto actualMem = reinterpret_cast<const AZ::u16*>(mem);
+                        return AZ::Color(
+                            actualMem[indices.first + 0] / static_cast<float>(AZStd::numeric_limits<AZ::u16>::max()),
+                            actualMem[indices.first + 1] / static_cast<float>(AZStd::numeric_limits<AZ::u16>::max()),
+                            0.0f,
+                            1.0f);
+                    }
+                case AZ::RHI::Format::R16G16B16A16_UNORM:
+                    {
+                        auto actualMem = reinterpret_cast<const AZ::u16*>(mem);
+                        return AZ::Color(
+                            actualMem[indices.first + 0] / static_cast<float>(AZStd::numeric_limits<AZ::u16>::max()),
+                            actualMem[indices.first + 1] / static_cast<float>(AZStd::numeric_limits<AZ::u16>::max()),
+                            actualMem[indices.first + 2] / static_cast<float>(AZStd::numeric_limits<AZ::u16>::max()),
+                            actualMem[indices.first + 3] / static_cast<float>(AZStd::numeric_limits<AZ::u16>::max()));
+                    }
+                case AZ::RHI::Format::R16_SNORM:
+                    {
+                        auto actualMem = reinterpret_cast<const AZ::s16*>(mem);
+                        return AZ::Color(ScaleSNorm16Value(actualMem[indices.first]), 0.0f, 0.0f, 1.0f);
+                    }
+                case AZ::RHI::Format::R16G16_SNORM:
+                    {
+                        auto actualMem = reinterpret_cast<const AZ::s16*>(mem);
+                        return AZ::Color(
+                            ScaleSNorm16Value(actualMem[indices.first + 0]), ScaleSNorm16Value(actualMem[indices.first + 1]), 0.0f, 1.0f);
+                    }
+                case AZ::RHI::Format::R16G16B16A16_SNORM:
+                    {
+                        auto actualMem = reinterpret_cast<const AZ::s16*>(mem);
+                        return AZ::Color(
+                            ScaleSNorm16Value(actualMem[indices.first + 0]),
+                            ScaleSNorm16Value(actualMem[indices.first + 1]),
+                            ScaleSNorm16Value(actualMem[indices.first + 2]),
+                            ScaleSNorm16Value(actualMem[indices.first + 3]));
+                    }
+                case AZ::RHI::Format::R16_FLOAT:
+                    {
+                        auto actualMem = reinterpret_cast<const float*>(mem);
+                        return AZ::Color(SHalf(actualMem[indices.first]), 0.0f, 0.0f, 1.0f);
+                    }
+                case AZ::RHI::Format::R16G16_FLOAT:
+                    {
+                        auto actualMem = reinterpret_cast<const float*>(mem);
+                        return AZ::Color(SHalf(actualMem[indices.first + 0]), SHalf(actualMem[indices.first + 1]), 0.0f, 1.0f);
+                    }
+                case AZ::RHI::Format::R16G16B16A16_FLOAT:
+                    {
+                        auto actualMem = reinterpret_cast<const float*>(mem);
+                        return AZ::Color(
+                            SHalf(actualMem[indices.first + 0]),
+                            SHalf(actualMem[indices.first + 1]),
+                            SHalf(actualMem[indices.first + 2]),
+                            SHalf(actualMem[indices.first + 3]));
+                    }
+                case AZ::RHI::Format::D32_FLOAT:
+                case AZ::RHI::Format::R32_FLOAT:
+                    {
+                        auto actualMem = reinterpret_cast<const float*>(mem);
+                        return AZ::Color(actualMem[indices.first], 0.0f, 0.0f, 1.0f);
+                    }
+                case AZ::RHI::Format::R32G32_FLOAT:
+                    {
+                        auto actualMem = reinterpret_cast<const float*>(mem);
+                        return AZ::Color(actualMem[indices.first + 0], actualMem[indices.first + 1], 0.0f, 1.0f);
+                    }
+                case AZ::RHI::Format::R32G32B32_FLOAT:
+                    {
+                        auto actualMem = reinterpret_cast<const float*>(mem);
+                        return AZ::Color(actualMem[indices.first + 0], actualMem[indices.first + 1], actualMem[indices.first + 2], 1.0f);
+                    }
+                case AZ::RHI::Format::R32G32B32A32_FLOAT:
+                    {
+                        auto actualMem = reinterpret_cast<const float*>(mem);
+                        return AZ::Color(
+                            actualMem[indices.first + 0],
+                            actualMem[indices.first + 1],
+                            actualMem[indices.first + 2],
+                            actualMem[indices.first + 3]);
+                    }
+                case AZ::RHI::Format::BC1_UNORM:
+                    {
+                        auto actualMem = reinterpret_cast<const BC1Block*>(mem);
+                        return actualMem[indices.first].GetBlockColor(indices.second);
+                    }
+                case AZ::RHI::Format::BC1_UNORM_SRGB:
+                    {
+                        auto actualMem = reinterpret_cast<const BC1Block*>(mem);
+                        AZ::Color color = actualMem[indices.first].GetBlockColor(indices.second);
+                        return AZ::Color(
+                            s_SrgbGammaToLinearLookupTable[aznumeric_cast<uint8_t>(color.GetR() * AZStd::numeric_limits<AZ::u8>::max())],
+                            s_SrgbGammaToLinearLookupTable[aznumeric_cast<uint8_t>(color.GetG() * AZStd::numeric_limits<AZ::u8>::max())],
+                            s_SrgbGammaToLinearLookupTable[aznumeric_cast<uint8_t>(color.GetB() * AZStd::numeric_limits<AZ::u8>::max())],
+                            s_SrgbGammaToLinearLookupTable[aznumeric_cast<uint8_t>(color.GetA() * AZStd::numeric_limits<AZ::u8>::max())]);
+                    }
+                default:
+                    AZ_Assert(false, "Unsupported pixel format: %s", AZ::RHI::ToString(format));
+                    return AZ::Color::CreateZero();
                 }
             }
 
@@ -227,24 +441,24 @@ namespace AZ
                 case AZ::RHI::Format::R8_UINT:
                 case AZ::RHI::Format::R8G8_UINT:
                 case AZ::RHI::Format::R8G8B8A8_UINT:
-                {
-                    return mem[indices.first + componentIndex] / static_cast<AZ::u32>(std::numeric_limits<AZ::u8>::max());
-                }
+                    {
+                        return mem[indices.first + componentIndex] / static_cast<AZ::u32>(AZStd::numeric_limits<AZ::u8>::max());
+                    }
                 case AZ::RHI::Format::R16_UINT:
                 case AZ::RHI::Format::R16G16_UINT:
                 case AZ::RHI::Format::R16G16B16A16_UINT:
-                {
-                    auto actualMem = reinterpret_cast<const AZ::u16*>(mem);
-                    return actualMem[indices.first + componentIndex] / static_cast<AZ::u32>(std::numeric_limits<AZ::u16>::max());
-                }
+                    {
+                        auto actualMem = reinterpret_cast<const AZ::u16*>(mem);
+                        return actualMem[indices.first + componentIndex] / static_cast<AZ::u32>(AZStd::numeric_limits<AZ::u16>::max());
+                    }
                 case AZ::RHI::Format::R32_UINT:
                 case AZ::RHI::Format::R32G32_UINT:
                 case AZ::RHI::Format::R32G32B32_UINT:
                 case AZ::RHI::Format::R32G32B32A32_UINT:
-                {
-                    auto actualMem = reinterpret_cast<const AZ::u32*>(mem);
-                    return actualMem[indices.first + componentIndex];
-                }
+                    {
+                        auto actualMem = reinterpret_cast<const AZ::u32*>(mem);
+                        return actualMem[indices.first + componentIndex];
+                    }
                 default:
                     AZ_Assert(false, "Unsupported pixel format: %s", AZ::RHI::ToString(format));
                     return 0;
@@ -259,24 +473,24 @@ namespace AZ
                 case AZ::RHI::Format::R8_SINT:
                 case AZ::RHI::Format::R8G8_SINT:
                 case AZ::RHI::Format::R8G8B8A8_SINT:
-                {
-                    return mem[indices.first + componentIndex] / static_cast<AZ::s32>(std::numeric_limits<AZ::s8>::max());
-                }
+                    {
+                        return mem[indices.first + componentIndex] / static_cast<AZ::s32>(AZStd::numeric_limits<AZ::s8>::max());
+                    }
                 case AZ::RHI::Format::R16_SINT:
                 case AZ::RHI::Format::R16G16_SINT:
                 case AZ::RHI::Format::R16G16B16A16_SINT:
-                {
-                    auto actualMem = reinterpret_cast<const AZ::s16*>(mem);
-                    return actualMem[indices.first + componentIndex] / static_cast<AZ::s32>(std::numeric_limits<AZ::s16>::max());
-                }
+                    {
+                        auto actualMem = reinterpret_cast<const AZ::s16*>(mem);
+                        return actualMem[indices.first + componentIndex] / static_cast<AZ::s32>(AZStd::numeric_limits<AZ::s16>::max());
+                    }
                 case AZ::RHI::Format::R32_SINT:
                 case AZ::RHI::Format::R32G32_SINT:
                 case AZ::RHI::Format::R32G32B32_SINT:
                 case AZ::RHI::Format::R32G32B32A32_SINT:
-                {
-                    auto actualMem = reinterpret_cast<const AZ::s32*>(mem);
-                    return actualMem[indices.first + componentIndex];
-                }
+                    {
+                        auto actualMem = reinterpret_cast<const AZ::s32*>(mem);
+                        return actualMem[indices.first + componentIndex];
+                    }
                 default:
                     AZ_Assert(false, "Unsupported pixel format: %s", AZ::RHI::ToString(format));
                     return 0;
@@ -309,7 +523,7 @@ namespace AZ
                 }
             }
         } // namespace Internal
-                
+
         bool IsNullRenderer()
         {
             return RPI::RPISystemInterface::Get()->IsNullRenderer();
@@ -324,8 +538,7 @@ namespace AZ
                 &Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
                 shaderFilePath.c_str(),
                 azrtti_typeid<ShaderAsset>(),
-                false
-            );
+                false);
 
             if (!shaderAssetId.IsValid())
             {
@@ -361,14 +574,20 @@ namespace AZ
 
             if (!shaderAsset.IsReady())
             {
-                AZ_Error("RPI Utils", false, "Failed to find shader asset [%s] with asset ID [%s]", shaderFilePath.c_str(), shaderAssetId.ToString<AZStd::string>().c_str());
+                AZ_Error(
+                    "RPI Utils",
+                    false,
+                    "Failed to find shader asset [%s] with asset ID [%s]",
+                    shaderFilePath.c_str(),
+                    shaderAssetId.ToString<AZStd::string>().c_str());
                 return Data::Asset<ShaderAsset>();
             }
 
             return shaderAsset;
         }
 
-        Data::Instance<Shader> LoadShader(Data::AssetId shaderAssetId, const AZStd::string& shaderFilePath, const AZStd::string& supervariantName)
+        Data::Instance<Shader> LoadShader(
+            Data::AssetId shaderAssetId, const AZStd::string& shaderFilePath, const AZStd::string& supervariantName)
         {
             auto shaderAsset = FindShaderAsset(shaderAssetId, shaderFilePath);
             if (!shaderAsset)
@@ -379,7 +598,12 @@ namespace AZ
             Data::Instance<Shader> shader = Shader::FindOrCreate(shaderAsset, AZ::Name(supervariantName));
             if (!shader)
             {
-                AZ_Error("RPI Utils", false, "Failed to find or create a shader instance from shader asset [%s] with asset ID [%s]", shaderFilePath.c_str(), shaderAssetId.ToString<AZStd::string>().c_str());
+                AZ_Error(
+                    "RPI Utils",
+                    false,
+                    "Failed to find or create a shader instance from shader asset [%s] with asset ID [%s]",
+                    shaderFilePath.c_str(),
+                    shaderAssetId.ToString<AZStd::string>().c_str());
                 return nullptr;
             }
 
@@ -418,19 +642,24 @@ namespace AZ
             AZ_Error(
                 "RPIUtils",
                 status == AzFramework::AssetSystem::AssetStatus_Compiled || status == AzFramework::AssetSystem::AssetStatus_Unknown,
-                "Could not compile image at '%s'", path.data());
+                "Could not compile image at '%s'",
+                path.data());
 
             Data::AssetId streamingImageAssetId;
             Data::AssetCatalogRequestBus::BroadcastResult(
-                streamingImageAssetId, &Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
-                path.data(), azrtti_typeid<RPI::StreamingImageAsset>(), false);
+                streamingImageAssetId,
+                &Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                path.data(),
+                azrtti_typeid<RPI::StreamingImageAsset>(),
+                false);
             if (!streamingImageAssetId.IsValid())
             {
                 AZ_Error("RPI Utils", false, "Failed to get streaming image asset id with path " AZ_STRING_FORMAT, AZ_STRING_ARG(path));
                 return AZ::Data::Instance<RPI::StreamingImage>();
             }
 
-            auto streamingImageAsset = Data::AssetManager::Instance().GetAsset<RPI::StreamingImageAsset>(streamingImageAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+            auto streamingImageAsset = Data::AssetManager::Instance().GetAsset<RPI::StreamingImageAsset>(
+                streamingImageAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
 
             streamingImageAsset.BlockUntilLoadComplete();
 
@@ -444,7 +673,13 @@ namespace AZ
         }
 
         //! A helper function for GetComputeShaderNumThreads(), to consolidate error messages, etc.
-        static bool GetAttributeArgumentByIndex(const Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& attributeName, const RHI::ShaderStageAttributeArguments& args, const size_t argIndex, uint16_t* value, AZStd::string& errorMsg)
+        static bool GetAttributeArgumentByIndex(
+            const Data::Asset<ShaderAsset>& shaderAsset,
+            const AZ::Name& attributeName,
+            const RHI::ShaderStageAttributeArguments& args,
+            const size_t argIndex,
+            uint16_t* value,
+            AZStd::string& errorMsg)
         {
             if (value)
             {
@@ -457,20 +692,33 @@ namespace AZ
                     }
                     else
                     {
-                        errorMsg = AZStd::string::format("Was expecting argument '%zu' in attribute '%s' to be of type 'int' from shader asset '%s'", argIndex, attributeName.GetCStr(), shaderAsset.GetHint().c_str());
+                        errorMsg = AZStd::string::format(
+                            "Was expecting argument '%zu' in attribute '%s' to be of type 'int' from shader asset '%s'",
+                            argIndex,
+                            attributeName.GetCStr(),
+                            shaderAsset.GetHint().c_str());
                         return false;
                     }
                 }
                 else
                 {
-                     errorMsg = AZStd::string::format("Was expecting at least '%zu' arguments in attribute '%s' from shader asset '%s'", argIndex + 1, attributeName.GetCStr(), shaderAsset.GetHint().c_str());
-                     return false;
+                    errorMsg = AZStd::string::format(
+                        "Was expecting at least '%zu' arguments in attribute '%s' from shader asset '%s'",
+                        argIndex + 1,
+                        attributeName.GetCStr(),
+                        shaderAsset.GetHint().c_str());
+                    return false;
                 }
             }
             return true;
         }
 
-        AZ::Outcome<void, AZStd::string> GetComputeShaderNumThreads(const Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& attributeName, uint16_t* numThreadsX, uint16_t* numThreadsY, uint16_t* numThreadsZ)
+        AZ::Outcome<void, AZStd::string> GetComputeShaderNumThreads(
+            const Data::Asset<ShaderAsset>& shaderAsset,
+            const AZ::Name& attributeName,
+            uint16_t* numThreadsX,
+            uint16_t* numThreadsY,
+            uint16_t* numThreadsZ)
         {
             // Set default 1, 1, 1 now. In case of errors later this is what the caller will get.
             if (numThreadsX)
@@ -488,7 +736,8 @@ namespace AZ
             const auto numThreads = shaderAsset->GetAttribute(RHI::ShaderStage::Compute, attributeName);
             if (!numThreads)
             {
-                return AZ::Failure(AZStd::string::format("Couldn't find attribute '%s' in shader asset '%s'", attributeName.GetCStr(), shaderAsset.GetHint().c_str()));
+                return AZ::Failure(AZStd::string::format(
+                    "Couldn't find attribute '%s' in shader asset '%s'", attributeName.GetCStr(), shaderAsset.GetHint().c_str()));
             }
             const RHI::ShaderStageAttributeArguments& args = *numThreads;
             AZStd::string errorMsg;
@@ -507,14 +756,17 @@ namespace AZ
             return AZ::Success();
         }
 
-        AZ::Outcome<void, AZStd::string> GetComputeShaderNumThreads(const Data::Asset<ShaderAsset>& shaderAsset, uint16_t* numThreadsX, uint16_t* numThreadsY, uint16_t* numThreadsZ)
+        AZ::Outcome<void, AZStd::string> GetComputeShaderNumThreads(
+            const Data::Asset<ShaderAsset>& shaderAsset, uint16_t* numThreadsX, uint16_t* numThreadsY, uint16_t* numThreadsZ)
         {
             return GetComputeShaderNumThreads(shaderAsset, Name{ "numthreads" }, numThreadsX, numThreadsY, numThreadsZ);
         }
 
-        AZ::Outcome<void, AZStd::string> GetComputeShaderNumThreads(const Data::Asset<ShaderAsset>& shaderAsset, RHI::DispatchDirect& dispatchDirect)
+        AZ::Outcome<void, AZStd::string> GetComputeShaderNumThreads(
+            const Data::Asset<ShaderAsset>& shaderAsset, RHI::DispatchDirect& dispatchDirect)
         {
-            return GetComputeShaderNumThreads(shaderAsset, &dispatchDirect.m_threadsPerGroupX, &dispatchDirect.m_threadsPerGroupY, &dispatchDirect.m_threadsPerGroupZ);
+            return GetComputeShaderNumThreads(
+                shaderAsset, &dispatchDirect.m_threadsPerGroupX, &dispatchDirect.m_threadsPerGroupY, &dispatchDirect.m_threadsPerGroupZ);
         }
 
         bool IsImageDataPixelAPISupported(AZ::RHI::Format format)
@@ -579,6 +831,18 @@ namespace AZ
             }
 
             return false;
+        }
+
+        template<>
+        AZ::Color GetImageDataPixelValue<AZ::Color>(
+            AZStd::span<const uint8_t> imageData,
+            const AZ::RHI::ImageDescriptor& imageDescriptor,
+            uint32_t x,
+            uint32_t y,
+            [[maybe_unused]] uint32_t componentIndex)
+        {
+            auto imageDataIndices = Internal::GetImageDataIndex(imageDescriptor, x, y);
+            return Internal::RetrieveColorValue(imageData.data(), imageDataIndices, imageDescriptor.m_format);
         }
 
         template<>
@@ -705,7 +969,8 @@ namespace AZ
                 {
                     auto imageDataIndices = Internal::GetImageDataIndex(imageDescriptor, x, y);
 
-                    float value = Internal::RetrieveFloatValue(imageData.data(), imageDataIndices, componentIndex, imageDescriptor.m_format);
+                    float value =
+                        Internal::RetrieveFloatValue(imageData.data(), imageDataIndices, componentIndex, imageDescriptor.m_format);
                     callback(x, y, value);
                 }
             }
@@ -741,7 +1006,8 @@ namespace AZ
                 {
                     auto imageDataIndices = Internal::GetImageDataIndex(imageDescriptor, x, y);
 
-                    AZ::u32 value = Internal::RetrieveUintValue(imageData.data(), imageDataIndices, componentIndex, imageDescriptor.m_format);
+                    AZ::u32 value =
+                        Internal::RetrieveUintValue(imageData.data(), imageDataIndices, componentIndex, imageDescriptor.m_format);
                     callback(x, y, value);
                 }
             }
@@ -777,7 +1043,8 @@ namespace AZ
                 {
                     auto imageDataIndices = Internal::GetImageDataIndex(imageDescriptor, x, y);
 
-                    AZ::s32 value = Internal::RetrieveIntValue(imageData.data(), imageDataIndices, componentIndex, imageDescriptor.m_format);
+                    AZ::s32 value =
+                        Internal::RetrieveIntValue(imageData.data(), imageDataIndices, componentIndex, imageDescriptor.m_format);
                     callback(x, y, value);
                 }
             }
@@ -785,10 +1052,11 @@ namespace AZ
             return true;
         }
 
-        AZStd::optional<RenderPipelineDescriptor> GetRenderPipelineDescriptorFromAsset(const AZStd::string& pipelineAssetPath, AZStd::string_view nameSuffix)
+        AZStd::optional<RenderPipelineDescriptor> GetRenderPipelineDescriptorFromAsset(
+            const AZStd::string& pipelineAssetPath, AZStd::string_view nameSuffix)
         {
-            AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
-                pipelineAssetPath.c_str(), AssetUtils::TraceLevel::Error);
+            AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset =
+                AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(pipelineAssetPath.c_str(), AssetUtils::TraceLevel::Error);
             if (!pipelineAsset.IsReady())
             {
                 // Error already reported by LoadAssetByProductPath

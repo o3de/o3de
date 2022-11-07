@@ -171,4 +171,13 @@ namespace LmbrCentral
     {
         return AZ::Vector3(m_aaboxShape.GetCurrentTransform().GetUniformScale());
     }
+
+    AZ::Aabb EditorAxisAlignedBoxShapeComponent::GetLocalBounds()
+    {
+        AZ::Transform transform = AZ::Transform::CreateIdentity();
+        AZ::Aabb aabb = AZ::Aabb::CreateNull();
+        m_aaboxShape.GetTransformAndLocalBounds(transform, aabb);
+        return aabb.GetTransformedAabb(AZ::Transform::CreateFromQuaternion(GetWorldTM().GetRotation().GetInverseFast()));
+    }
 } // namespace LmbrCentral
+

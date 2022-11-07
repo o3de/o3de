@@ -46,19 +46,34 @@ namespace AzToolsFramework
         return m_settings;
     }
 
+    PaintBrushMode PaintBrushSettingsSystemComponent::GetBrushMode() const
+    {
+        return m_settings.GetBrushMode();
+    }
+
+    void PaintBrushSettingsSystemComponent::SetBrushMode(PaintBrushMode brushMode)
+    {
+        m_settings.SetBrushMode(brushMode);
+    }
+
+    PaintBrushColorMode PaintBrushSettingsSystemComponent::GetBrushColorMode() const
+    {
+        return m_settings.GetColorMode();
+    }
+
+    void PaintBrushSettingsSystemComponent::SetBrushColorMode(PaintBrushColorMode colorMode)
+    {
+        m_settings.SetColorMode(colorMode);
+    }
+
     float PaintBrushSettingsSystemComponent::GetSize() const
     {
         return m_settings.GetSize();
     }
 
-    float PaintBrushSettingsSystemComponent::GetIntensityPercent() const
+    AZ::Color PaintBrushSettingsSystemComponent::GetColor() const
     {
-        return m_settings.GetIntensityPercent();
-    }
-
-    float PaintBrushSettingsSystemComponent::GetOpacityPercent() const
-    {
-        return m_settings.GetOpacityPercent();
+        return m_settings.GetColor();
     }
 
     float PaintBrushSettingsSystemComponent::GetHardnessPercent() const
@@ -81,19 +96,19 @@ namespace AzToolsFramework
         return m_settings.GetBlendMode();
     }
 
+    PaintBrushSmoothMode PaintBrushSettingsSystemComponent::GetSmoothMode() const
+    {
+        return m_settings.GetSmoothMode();
+    }
+
     void PaintBrushSettingsSystemComponent::SetSize(float size)
     {
         m_settings.SetSize(size);
     }
 
-    void PaintBrushSettingsSystemComponent::SetIntensityPercent(float intensityPercent)
+    void PaintBrushSettingsSystemComponent::SetColor(const AZ::Color& color)
     {
-        m_settings.SetIntensityPercent(intensityPercent);
-    }
-
-    void PaintBrushSettingsSystemComponent::SetOpacityPercent(float opacityPercent)
-    {
-        m_settings.SetOpacityPercent(opacityPercent);
+        m_settings.SetColor(color);
     }
 
     void PaintBrushSettingsSystemComponent::SetHardnessPercent(float hardnessPercent)
@@ -114,5 +129,10 @@ namespace AzToolsFramework
     void PaintBrushSettingsSystemComponent::SetBlendMode(PaintBrushBlendMode blendMode)
     {
         m_settings.SetBlendMode(blendMode);
+    }
+
+    void PaintBrushSettingsSystemComponent::SetSmoothMode(PaintBrushSmoothMode smoothMode)
+    {
+        m_settings.SetSmoothMode(smoothMode);
     }
 } // namespace AzToolsFramework

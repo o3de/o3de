@@ -92,6 +92,6 @@ namespace NumericalMethods::DoublePrecisionMath
 
     Quaternion Quaternion::GetConjugate() const
     {
-        return Quaternion(m_x, m_y, m_z, -m_w);
+        return Quaternion(-m_x, -m_y, -m_z, m_w);
     }
 } // namespace NumericalMethods::DoublePrecisionMath
