@@ -173,6 +173,11 @@ namespace AzToolsFramework
     bool PrefabEditorEntityOwnershipService::DestroyEntity(AZ::Entity* entity)
     {
         AZ_Assert(entity, "Tried to destroy a null entity");
+        if (!entity)
+        {
+            return false;
+        }
+
         return DestroyEntityById(entity->GetId());
     }
 
