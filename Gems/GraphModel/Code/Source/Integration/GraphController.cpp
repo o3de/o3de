@@ -371,16 +371,6 @@ namespace GraphModelIntegration
 
         AZ_Assert(graphCanvasNode, "Unable to create GraphCanvas Node");
         const AZ::EntityId nodeUiId = graphCanvasNode->GetId();
-        GraphCanvas::NodeTitleRequestBus::Event(nodeUiId, &GraphCanvas::NodeTitleRequests::SetTitle, node->GetTitle());
-        GraphCanvas::NodeTitleRequestBus::Event(nodeUiId, &GraphCanvas::NodeTitleRequests::SetSubTitle, node->GetSubTitle());
-
-        // Set the palette override for this node if one has been specified
-        AZStd::string paletteOverride = Helpers::GetTitlePaletteOverride(node.get(), azrtti_typeid(node.get()));
-        if (!paletteOverride.empty())
-        {
-            GraphCanvas::NodeTitleRequestBus::Event(nodeUiId, &GraphCanvas::NodeTitleRequests::SetPaletteOverride, paletteOverride);
-        }
-
         m_elementMap.Add(nodeUiId, node);
 
         // Add the node to the scene at a specific position...
@@ -393,6 +383,16 @@ namespace GraphModelIntegration
         //     the slots
         //        first will cause the node to be stretched way too wide.
         AddNodeUiToScene(nodeUiId, getScenePosition(nodeUiId));
+
+        GraphCanvas::NodeTitleRequestBus::Event(nodeUiId, &GraphCanvas::NodeTitleRequests::SetTitle, node->GetTitle());
+        GraphCanvas::NodeTitleRequestBus::Event(nodeUiId, &GraphCanvas::NodeTitleRequests::SetSubTitle, node->GetSubTitle());
+
+        // Set the palette override for this node if one has been specified
+        AZStd::string paletteOverride = Helpers::GetTitlePaletteOverride(node.get(), azrtti_typeid(node.get()));
+        if (!paletteOverride.empty())
+        {
+            GraphCanvas::NodeTitleRequestBus::Event(nodeUiId, &GraphCanvas::NodeTitleRequests::SetPaletteOverride, paletteOverride);
+        }
 
         // Create the slots...
         //    Note that SlotDefinitions are stored in a list in the order defined by the author.
