@@ -225,7 +225,7 @@ namespace UnitTest
 
         // Helper function to generate source AnyAsset and save it to specified folder
         template<typename T>
-        void SaveClassToAnyAssetSourceFile(T& data, const char* saveFileName)
+        void SaveClassToAnyAssetSourceFile(T& data, const AZStd::string& saveFileName)
         {
             JsonSerializationUtils::SaveObjectToFile<T>(&data, saveFileName);
         }
@@ -263,8 +263,7 @@ namespace UnitTest
         const char* testAssetName = "AnyAssetTest.source";
         AZ::Test::ScopedAutoTempDirectory productDir;
         AZ::Test::ScopedAutoTempDirectory sourceDir;
-        AZStd::string sourceFilePath;
-        AzFramework::StringFunc::Path::Join(sourceDir.GetDirectory(), testAssetName, sourceFilePath, true, true);
+        AZ::IO::Path sourceFilePath = sourceDir.Resolve(testAssetName);
 
         // Basic test: test data before and after are same. Test data class doesn't have converter or asset reference.
         RPI::AnyAssetBuilder builder;
@@ -272,12 +271,12 @@ namespace UnitTest
         AssetBuilderSDK::ProcessJobResponse response;
 
         // Initial job request
-        request.m_fullPath = sourceFilePath;
+        request.m_fullPath = sourceFilePath.Native();
         request.m_tempDirPath = productDir.GetDirectory();
 
         Test1 test1;
         test1.m_data = "first";
-        SaveClassToAnyAssetSourceFile<Test1>(test1, sourceFilePath.c_str());
+        SaveClassToAnyAssetSourceFile<Test1>(test1, sourceFilePath.Native());
 
         // Process
         builder.ProcessJob(request, response);
@@ -298,20 +297,19 @@ namespace UnitTest
         const char* testAssetName = "AnyAssetTest.source";
         AZ::Test::ScopedAutoTempDirectory productDir;
         AZ::Test::ScopedAutoTempDirectory sourceDir;
-        AZStd::string sourceFilePath;
-        AzFramework::StringFunc::Path::Join(sourceDir.GetDirectory(), testAssetName, sourceFilePath, true, true);
+        AZ::IO::Path sourceFilePath = sourceDir.Resolve(testAssetName);
 
         RPI::AnyAssetBuilder builder;
         AssetBuilderSDK::ProcessJobRequest request;
         AssetBuilderSDK::ProcessJobResponse response;
 
         // Initial job request 
-        request.m_fullPath = sourceFilePath;
+        request.m_fullPath = sourceFilePath.Native();
         request.m_tempDirPath = productDir.GetDirectory();
         
         // Test data class which has a converter
         Test2Source test2;
-        SaveClassToAnyAssetSourceFile<Test2Source>(test2, sourceFilePath.c_str());
+        SaveClassToAnyAssetSourceFile<Test2Source>(test2, sourceFilePath.Native());
 
         builder.ProcessJob(request, response);
         EXPECT_TRUE(response.m_resultCode == AssetBuilderSDK::ProcessJobResult_Success);
@@ -327,21 +325,20 @@ namespace UnitTest
         const char* testAssetName = "AnyAssetTest.source";
         AZ::Test::ScopedAutoTempDirectory productDir;
         AZ::Test::ScopedAutoTempDirectory sourceDir;
-        AZStd::string sourceFilePath;
-        AzFramework::StringFunc::Path::Join(sourceDir.GetDirectory(), testAssetName, sourceFilePath, true, true);
+        AZ::IO::Path sourceFilePath = sourceDir.Resolve(testAssetName);
 
         RPI::AnyAssetBuilder builder;
         AssetBuilderSDK::ProcessJobRequest request;
             AssetBuilderSDK::ProcessJobResponse response;
 
         // Initial job request once
-        request.m_fullPath = sourceFilePath;
+        request.m_fullPath = sourceFilePath.Native();
         request.m_tempDirPath = productDir.GetDirectory();
 
         // Test class which has asset id and asset reference as member variables
         TestAssetIdReference objectHasAssetIds;
         objectHasAssetIds.Init();
-        SaveClassToAnyAssetSourceFile<TestAssetIdReference>(objectHasAssetIds, sourceFilePath.c_str());
+        SaveClassToAnyAssetSourceFile<TestAssetIdReference>(objectHasAssetIds, sourceFilePath.Native());
         
         builder.ProcessJob(request, response);
         EXPECT_TRUE(response.m_resultCode == AssetBuilderSDK::ProcessJobResult_Success);
@@ -357,21 +354,20 @@ namespace UnitTest
         const char* testAssetName = "AnyAssetTest.source";
         AZ::Test::ScopedAutoTempDirectory productDir;
         AZ::Test::ScopedAutoTempDirectory sourceDir;
-        AZStd::string sourceFilePath;
-        AzFramework::StringFunc::Path::Join(sourceDir.GetDirectory(), testAssetName, sourceFilePath, true, true);
+        AZ::IO::Path sourceFilePath = sourceDir.Resolve(testAssetName);
 
         RPI::AnyAssetBuilder builder;
         AssetBuilderSDK::ProcessJobRequest request;
         AssetBuilderSDK::ProcessJobResponse response;
 
         // Initial job request once
-        request.m_fullPath = sourceFilePath;
+        request.m_fullPath = sourceFilePath.Native();
         request.m_tempDirPath = productDir.GetDirectory();
                 
         // Test class includes member which its class has asset id and asset reference as children
         TestIndirectAssetIdReference test4;
         test4.Init();
-        SaveClassToAnyAssetSourceFile<TestIndirectAssetIdReference>(test4, sourceFilePath.c_str());
+        SaveClassToAnyAssetSourceFile<TestIndirectAssetIdReference>(test4, sourceFilePath.Native());
 
         builder.ProcessJob(request, response);
         EXPECT_TRUE(response.m_resultCode == AssetBuilderSDK::ProcessJobResult_Success);

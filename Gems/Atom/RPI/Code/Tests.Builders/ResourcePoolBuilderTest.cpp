@@ -67,11 +67,10 @@ namespace UnitTest
         AZ::Test::ScopedAutoTempDirectory productDir;
         AZ::Test::ScopedAutoTempDirectory sourceDir;
         const char* testAssetName = "TestBufferPool.resourcepool";
-        AZStd::string sourceFilePath;
-        AzFramework::StringFunc::Path::Join(sourceDir.GetDirectory(), testAssetName, sourceFilePath, true, true);
+        AZ::IO::Path sourceFilePath = sourceDir.Resolve(testAssetName);
 
         // Initial job request
-        request.m_fullPath = sourceFilePath;
+        request.m_fullPath = sourceFilePath.Native();
         request.m_tempDirPath = productDir.GetDirectory();
 
         RPI::ResourcePoolSourceData sourceData;
@@ -83,7 +82,7 @@ namespace UnitTest
         sourceData.m_bufferPoolBindFlags = RHI::BufferBindFlags::InputAssembly;
 
         Outcome<void, AZStd::string> saveResult = AZ::JsonSerializationUtils::SaveObjectToFile<RPI::ResourcePoolSourceData>(&sourceData,
-            sourceFilePath);
+            sourceFilePath.Native());
         
         // Process
         builder.ProcessJob(request, response);
@@ -115,11 +114,10 @@ namespace UnitTest
         AZ::Test::ScopedAutoTempDirectory productDir;
         AZ::Test::ScopedAutoTempDirectory sourceDir;
         const char* testAssetName = "TestImagePool.resourcepool";
-        AZStd::string sourceFilePath;
-        AzFramework::StringFunc::Path::Join(sourceDir.GetDirectory(), testAssetName, sourceFilePath, true, true);
+        AZ::IO::Path sourceFilePath = sourceDir.Resolve(testAssetName);
 
         // Initial job request
-        request.m_fullPath = sourceFilePath;
+        request.m_fullPath = sourceFilePath.Native();
         request.m_tempDirPath = productDir.GetDirectory();
 
         RPI::ResourcePoolSourceData sourceData;
@@ -129,7 +127,7 @@ namespace UnitTest
         sourceData.m_imagePoolBindFlags = RHI::ImageBindFlags::Color;
 
         Outcome<void, AZStd::string> saveResult = AZ::JsonSerializationUtils::SaveObjectToFile<RPI::ResourcePoolSourceData>(&sourceData,
-            sourceFilePath);
+            sourceFilePath.Native());
 
         // Process
         builder.ProcessJob(request, response);
@@ -159,11 +157,10 @@ namespace UnitTest
         AZ::Test::ScopedAutoTempDirectory productDir;
         AZ::Test::ScopedAutoTempDirectory sourceDir;
         const char* testAssetName = "TestStreamingImagePool.resourcepool";
-        AZStd::string sourceFilePath;
-        AzFramework::StringFunc::Path::Join(sourceDir.GetDirectory(), testAssetName, sourceFilePath, true, true);
+        AZ::IO::Path sourceFilePath = sourceDir.Resolve(testAssetName);
 
         // Initial job request
-        request.m_fullPath = sourceFilePath;
+        request.m_fullPath = sourceFilePath.Native();
         request.m_tempDirPath = productDir.GetDirectory();
 
         RPI::ResourcePoolSourceData sourceData;
@@ -172,7 +169,7 @@ namespace UnitTest
         sourceData.m_budgetInBytes = 2147483648;
 
         Outcome<void, AZStd::string> saveResult = AZ::JsonSerializationUtils::SaveObjectToFile<RPI::ResourcePoolSourceData>(&sourceData,
-            sourceFilePath);
+            sourceFilePath.Native());
 
         // Process
         builder.ProcessJob(request, response);

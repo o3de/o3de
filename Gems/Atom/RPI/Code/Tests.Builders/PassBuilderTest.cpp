@@ -97,14 +97,13 @@ namespace UnitTest
         const char* testAssetName = "PassTestAsset.pass";
         AZ::Test::ScopedAutoTempDirectory productDir;
         AZ::Test::ScopedAutoTempDirectory sourceDir;
-        AZStd::string testAssetPath;
-        AzFramework::StringFunc::Path::Join(sourceDir.GetDirectory(), testAssetName, testAssetPath, true, true);
+        AZ::IO::Path sourceFilePath = sourceDir.Resolve(testAssetName);
 
         // Basic test: test data before and after are same. Test data class doesn't have converter or asset reference.
         AssetBuilderSDK::ProcessJobRequest request;
 
         // Initial job request
-        request.m_fullPath = testAssetPath;
+        request.m_fullPath = sourceFilePath.Native();
         request.m_tempDirPath = productDir.GetDirectory();
 
         // Dummy pass template
@@ -119,7 +118,7 @@ namespace UnitTest
         // Create and write pass data
         RPI::PassAsset passAsset;
         SetPassTemplateForTestingOnly(passAsset, passTemplate);
-        JsonSerializationUtils::SaveObjectToFile(&passAsset, testAssetPath);
+        JsonSerializationUtils::SaveObjectToFile(&passAsset, sourceFilePath.Native());
 
         // Process job
         RPI::PassBuilder builder;
