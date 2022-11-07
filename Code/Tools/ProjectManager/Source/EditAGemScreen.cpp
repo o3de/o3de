@@ -13,7 +13,7 @@
 #include <QPushButton>
 #include <QRadioButton>
 #include <QStackedWidget>
-
+#include <QMessageBox>
 
 namespace O3DE::ProjectManager
 {
