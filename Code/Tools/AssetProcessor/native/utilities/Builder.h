@@ -13,6 +13,7 @@
 #include <utilities/assetUtils.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicatorTracePrinter.h>
+#include <QObject>
 #endif
 
 namespace AssetProcessor
