@@ -164,7 +164,7 @@ class ExampleResources(Stack):
         function = lambda_.Function(
             self,
             f'{self._project_name}-{self._feature_name}-Lambda-Function',
-            runtime=lambda_.Runtime.PYTHON_3_8,
+            runtime=lambda_.Runtime.PYTHON_3_9,
             handler="lambda-handler.main",
             code=lambda_.Code.from_asset(os.path.join(os.path.dirname(__file__), 'lambda'))
         )

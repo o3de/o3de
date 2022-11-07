@@ -25,19 +25,19 @@ the prerequisites for CDK development.
 To manually create a virtualenv on macOS and Linux:
 
 ```
-$ python -m venv .env
+$ python -m venv .venv
 ```
 
 Once the virtualenv is created, you can use the following step to activate your virtualenv.
 
 ```
-$ source .env/bin/activate
+$ source .venv/bin/activate
 ```
 
 If you are a Windows platform, you would activate the virtualenv like this:
 
 ```
-% .env\Scripts\activate.bat
+% .venv\Scripts\activate.bat
 ```
 
 Once the virtualenv is activated, you can install the required dependencies.
@@ -96,7 +96,7 @@ build id is required.
 
 > Ensure you have set a valid ip address to `ip_range` in fleet_configurations.py to enable you to connect to your fleet.
 
-For example, `0.0.0.0/32` where 0.0.0.0 should be replaced with your IP address for your development machine. Its not best practice to allow any machine to connect, you should only allow specific machines that need access.
+For example, `0.0.0.0/32` where 0.0.0.0 should be replaced with the IP address of your development machine. Best practice is to not make RDP or SSH ports open to any machine but only allow connections from specific ip addresses.
 
 ### Deploy the AWS resources
 ```
