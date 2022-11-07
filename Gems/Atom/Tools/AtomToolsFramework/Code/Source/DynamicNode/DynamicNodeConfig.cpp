@@ -169,7 +169,7 @@ namespace AtomToolsFramework
         AZStd::vector<AZStd::string> slotNames;
         VisitDynamicNodeSlotConfigs(
             *this,
-            [&](const DynamicNodeSlotConfig& slotConfig)
+            [&slotNames](const DynamicNodeSlotConfig& slotConfig)
             {
                 slotNames.push_back(slotConfig.m_name);
             });
