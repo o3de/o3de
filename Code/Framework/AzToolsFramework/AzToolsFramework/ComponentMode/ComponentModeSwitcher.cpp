@@ -155,15 +155,10 @@ namespace AzToolsFramework::ComponentModeFramework
                     for (const auto& entityComponent : entity->GetComponents())
                     {
                         const auto entityComponentIdPair = AZ::EntityComponentIdPair(entity->GetId(), entityComponent->GetId());
-                        const auto handlerCount =
-                            AzToolsFramework::ComponentModeFramework::ComponentModeDelegateRequestBus::GetNumOfEventHandlers(
-                                entityComponentIdPair);
-                        if (handlerCount < 1)
+                        if (AzToolsFramework::ComponentModeFramework::ComponentModeDelegateRequestBus::HasHandlers(entityComponentIdPair))
                         {
-                            continue;
+                            AddComponentButton(entityComponentIdPair);
                         }
-
-                        AddComponentButton(entityComponentIdPair);
                     }
                 }
             }

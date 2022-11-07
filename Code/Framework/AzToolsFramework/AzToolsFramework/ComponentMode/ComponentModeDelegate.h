@@ -82,7 +82,7 @@ namespace AzToolsFramework
             bool IsConnected() const
             {
                 return m_entityComponentIdPair != AZ::EntityComponentIdPair(AZ::EntityId(), AZ::InvalidComponentId) &&
-                       m_componentType != AZ::Uuid::CreateNull();  
+                    !(m_componentType.IsNull());  
             }
 
         private:

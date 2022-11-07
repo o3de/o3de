@@ -25,12 +25,6 @@ namespace AzToolsFramework
 {
     namespace ComponentModeFramework
     {
-        enum class AddOrRemoveComponent
-        {
-            Add,
-            Remove
-        };
-
         //! Struct containing relevant information about component for the switcher.
         struct ComponentData
         {
@@ -118,13 +112,11 @@ namespace AzToolsFramework
 
             // Member variables
             AZ::Component* m_activeSwitcherComponent = nullptr; //!< The component that is currently in component mode
-            AZStd::vector<ComponentData> m_addedComponents; //!< Vector of ComponentData elements.
-            EntityIdList m_entityIds; //!< List of entities active in the switcher.
+            AZStd::vector<ComponentData> m_addedComponents; //!< Vector of ComponentData elements..
             ViewportUi::ButtonId m_transformButtonId; //!< Id of the default button of the switcher, used to exit component mode.
             AZ::Event<ViewportUi::ButtonId>::Handler m_handler; //!< Handler for onclick of switcher buttons, activates component mode.
             ViewportUi::SwitcherId m_switcherId; //!< Id of linked switcher.
             AZ::EntityComponentIdPair m_componentModePair; //!< The component mode pair in onEntityCompositionChanged.
-            AddOrRemoveComponent m_addOrRemove = AddOrRemoveComponent::Add; //!< Setting to either add or remove component.
             //! Protects the switcher from being opened by OnImGuiDropDownShown if it has been hidden elsewhere.
             bool m_hiddenByImGui = false;
         };
