@@ -46,7 +46,7 @@ namespace AZ
                 // RGA did support DX12, but some how it couldn't build our hlsl
                 // So for now we only use vulkan offline mode
                 // To activate it:
-                //     1. Set LY_RADEON_GPU_ANALYZER_ENABLED in {ProjectRoot}/{BuildFolder}/CMakeCache.txt to TRUE, rerun cmake so RGA can be downloaded
+                //     1. Set O3DE_RADEON_GPU_ANALYZER_ENABLED in {Build Folder Path (e.g. build/windows)}/CMakeCache.txt to TRUE, rerun cmake so RGA can be downloaded
                 //     2. Set EnableAnalysis to true in your shader variant in .shadervariantlist
                 bool m_enableRegisterAnalysis = false;
 
