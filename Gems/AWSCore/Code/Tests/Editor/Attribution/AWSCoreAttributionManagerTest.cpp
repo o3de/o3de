@@ -459,7 +459,7 @@ namespace AWSAttributionUnitTest
         AZStd::string serializedMetricValue = metric.SerializeToJson();
         ASSERT_TRUE(serializedMetricValue.find("\"o3de_version\":\"1.0.0.0\"") != AZStd::string::npos);
         const auto platformValue = serializedMetricValue.find(expectedPlatform);
-        ASSERT_TRUE(platformValue != AZStd::string::npos);
+        ASSERT_NE(platformValue, AZStd::string::npos);
         EXPECT_NE(AZStd::find(m_validPlatformValues.begin(), m_validPlatformValues.end(), metric.GetPlatform()), m_validPlatformValues.end());
 
         ASSERT_TRUE(serializedMetricValue.find(QSysInfo::prettyProductName().toStdString().c_str()) != AZStd::string::npos);
