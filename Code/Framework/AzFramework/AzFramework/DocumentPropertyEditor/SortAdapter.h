@@ -43,10 +43,10 @@ namespace AZ::DocumentPropertyEditor
             size_t m_domIndex;
 
             //! holds the row childNodes in DOM order
-            AZStd::set<AZStd::unique_ptr<SortInfoNode>, IndexSortType> m_indexSortedChildren;
+            AZStd::multiset<AZStd::unique_ptr<SortInfoNode>, IndexSortType> m_indexSortedChildren;
             
             //! holds a sorted list of the above children as defined by their RowSortAdapter::lessThan
-            AZStd::set<SortInfoNode*, AdapterSortType> m_adapterSortedChildren;
+            AZStd::multiset<SortInfoNode*, AdapterSortType> m_adapterSortedChildren;
 
             protected:
                 SortInfoNode(AdapterSortType adapterSortFunc)
