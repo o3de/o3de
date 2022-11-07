@@ -9,10 +9,11 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzCore/Instance/InstancePool.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/IPropertyEditor.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
-#include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h>
 
 #include <QHBoxLayout>
 #include <QScrollArea>
@@ -21,6 +22,11 @@
 
 class QCheckBox;
 class QTimer;
+
+namespace AzQtComponents
+{
+    class ElidingLabel;
+};
 
 namespace AzToolsFramework
 {
@@ -37,7 +43,9 @@ namespace AzToolsFramework
 
         // todo: look into caching and QLayoutItem::invalidate()
     public:
-        DPELayout(int depth, QWidget* parentWidget = nullptr);
+        DPELayout(QWidget* parent);
+        void Init(int depth, QWidget* parentWidget = nullptr);
+        void Clear();
         virtual ~DPELayout();
 
         void SetExpanderShown(bool shouldShow);
@@ -87,10 +95,11 @@ namespace AzToolsFramework
         friend class DocumentPropertyEditor;
         friend class DPELayout;
     public:
-        explicit DPERowWidget(int depth, DPERowWidget* parentRow);
+        explicit DPERowWidget();
+        void Init(int depth, DPERowWidget* parentRow);
+        void Clear(); //!< destroy all layout contents and clear DOM children
         ~DPERowWidget();
 
-        void Clear(); //!< destroy all layout contents and clear DOM children
         void AddChildFromDomValue(const AZ::Dom::Value& childValue, size_t domIndex);
 
         //! clears and repopulates all children from a given DOM array
@@ -104,7 +113,7 @@ namespace AzToolsFramework
         //! handles a patch operation at the given path, or delegates to a child that will
         void HandleOperationAtPath(const AZ::Dom::PatchOperation& domOperation, size_t pathIndex = 0);
 
-        //! returns the last descendent of this row in its own layout
+        //! returns the last descendant of this row in its own layout
         DPERowWidget* GetLastDescendantInLayout();
 
         void SetExpanded(bool expanded, bool recurseToChildRows = false);
@@ -199,12 +208,26 @@ namespace AzToolsFramework
         // but can be overridden here
         void SetSpawnDebugView(bool shouldSpawn);
 
-        static constexpr const char* GetEnableDPECVarName() { return "ed_enableDPE"; }
+        static constexpr const char* GetEnableDPECVarName()
+        {
+            return "ed_enableDPE";
+        }
         static bool ShouldReplaceRPE();
 
         AZStd::vector<size_t> GetPathToRoot(DPERowWidget* row) const;
         bool IsRecursiveExpansionOngoing() const;
         void SetRecursiveExpansionOngoing(bool isExpanding);
+
+        // shared pools of recycled widgets
+        auto GetRowPool()
+        {
+            return m_rowPool;
+        }
+
+        auto GetLabelPool()
+        {
+            return m_labelPool;
+        }
 
     public slots:
         //! set the DOM adapter for this DPE to inspect
@@ -235,5 +258,17 @@ namespace AzToolsFramework
         QTimer* m_handlerCleanupTimer;
         AZStd::vector<AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_unusedHandlers;
         DPERowWidget* m_rootNode = nullptr;
+
+        // keep pools of frequently used widgets that can be recycled for efficiency without
+        // incurring the cost of creating and destroying them
+        AZStd::shared_ptr<AZ::InstancePool<DPERowWidget>> m_rowPool;
+        AZStd::shared_ptr<AZ::InstancePool<AzQtComponents::ElidingLabel>> m_labelPool;
     };
 } // namespace AzToolsFramework
+
+// expose type info for external classes so that they can be used with the InstancePool system
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::DPERowWidget, "{C457A594-6E19-4674-A617-3CC09CF7E532}");
+    AZ_TYPE_INFO_SPECIALIZE(AzQtComponents::ElidingLabel, "{02674C46-1401-4237-97F1-2774A067BF80}");
+}
