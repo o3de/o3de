@@ -221,10 +221,6 @@ namespace AssetProcessor
             AZStd::vector<AZStd::pair<AZ::Uuid, AssetBuilderSDK::SourceFileDependency>> m_sourceFileDependencies;
         };
 
-        //! Request to invalidate and reprocess a source asset or folder containing source assets
-        AZ::u64 RequestReprocess(const QString& sourcePath);
-        AZ::u64 RequestReprocess(const AZStd::list<AZStd::string>& reprocessList);
-
         //! Retrieves the scan folder ID for the intermediate asset scan folder, if available.
         //! Calls GetIntermediateAssetsScanFolderId for the platform config, which returns an optional.
         //! If the scan folder ID is not available, returns nullopt, otherwise returns the scan folder ID.
@@ -276,6 +272,10 @@ namespace AssetProcessor
         void AddedToCatalog(JobEntry jobEntry);
 
     public Q_SLOTS:
+        //! Request to invalidate and reprocess a source asset or folder containing source assets
+        AZ::u64 RequestReprocess(const QString& sourcePath);
+        AZ::u64 RequestReprocess(const AZStd::list<AZStd::string>& reprocessList);
+
         void AssetProcessed(JobEntry jobEntry, AssetBuilderSDK::ProcessJobResponse response);
         void AssetProcessed_Impl();
 
