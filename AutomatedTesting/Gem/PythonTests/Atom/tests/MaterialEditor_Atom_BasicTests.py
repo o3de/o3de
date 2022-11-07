@@ -34,6 +34,9 @@ class Tests:
     verify_all_documents_are_opened = (
         "Expected material documents are opened.",
         "P0: Failed to verify the expected material documents are opened.")
+    lighting_background_changed = (
+        "Lighting background changed successfully.",
+        "P0: Lighting background change failed.")
 
 
 def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
@@ -54,7 +57,8 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
     7) Change the baseColor.color property of the test_material_1 material document.
     8) Revert the baseColor.color property of the test_material_1 material document using undo.
     9) Use redo to change the baseColor.color property again.
-    10) Look for errors and asserts.
+    10) Change the lighting background displayed behind the material model in the viewport.
+    11) Look for errors and asserts.
 
     :return: None
     """
@@ -74,6 +78,8 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
             "StandardPBR.materialtype")
         test_data_path = os.path.join(
             azlmbr.paths.engroot, "Gems", "Atom", "TestData", "TestData", "Materials", "StandardPbrTestCases")
+        lighting_background_path = os.path.join(
+            azlmbr.paths.engroot, "Gems", "Atom", "TestData", "TestData", "LightingPresets")
         test_material_1 = "001_DefaultWhite.material"
         test_material_2 = "002_BaseColorLerp.material"
         test_material_3 = "003_MetalMatte.material"
@@ -157,7 +163,14 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
             Tests.redo_material_asset_color_change,
             material_editor_utils.get_property(document_id, base_color_property_name) == expected_color)
 
-        # 10. Look for errors and asserts.
+        # 10. Change the lighting background displayed behind the material model in the viewport.
+        lighting_background_asset_path = os.path.join(lighting_background_path, "greenwich_park.lightingpreset")
+        lighting_background_asset_id = atom_tools_utils.select_lighting_config(lighting_background_asset_path)
+        Report.result(
+            Tests.lighting_background_changed,
+            atom_tools_utils.get_lighting_config(lighting_background_asset_id) == lighting_background_asset_id)
+
+        # 11. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

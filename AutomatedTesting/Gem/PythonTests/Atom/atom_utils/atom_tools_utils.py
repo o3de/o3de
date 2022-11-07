@@ -90,10 +90,16 @@ def set_pane_visibility(pane_name: str, value: bool) -> None:
     azlmbr.atomtools.AtomToolsMainWindowRequestBus(bus.Broadcast, "SetDockWidgetVisible", pane_name, value)
 
 
-def select_lighting_config(asset_path: str) -> None:
+def select_lighting_config(asset_path: str) -> azlmbr.math.Uuid:
     asset_id = asset_utils.Asset.find_asset_by_path(asset_path)
     azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
         azlmbr.bus.Broadcast, "LoadLightingPresetByAssetId", asset_id)
+    return asset_id
+
+
+def get_lighting_config(asset_id: azlmbr.math.Uuid) -> azlmbr.math.Uuid:
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
+        azlmbr.bus.Broadcast, "GetLastLightingPresetAssetId", asset_id)
 
 
 def set_grid_enabled(value: bool) -> None:
