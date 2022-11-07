@@ -28,6 +28,45 @@
 #define ENABLE_PHYSX_TIMESTEP_WARNING
 #endif
 
+AZ_CVAR(AZ::u32, physx_metricsFrameCountPerCaptureBatch, 60, [](const AZ::u32& newValue)
+    {
+        PhysX::GetPhysXSystem()->GetPerformanceCollector()->UpdateFrameCountPerCaptureBatch(newValue);
+    },
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "Number of frames in which performance will be measured per batch.");
+
+AZ_CVAR(AZ::u32, physx_metricsNumberOfCaptureBatches,
+    0, // Starts at 0, which means "do not capture performance data". When this variable changes to >0 we'll start performance capture.
+    [](const AZ::u32& newValue)
+    {
+        PhysX::GetPhysXSystem()->GetPerformanceCollector()->UpdateNumberOfCaptureBatches(newValue);
+    },
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "Collects and reports PhysX performance in this number of batches.");
+
+AZ_CVAR(AZ::CVarFixedString, physx_metricsDataLogType,
+    "statistical", // (s)(S)tatistical Summary (average, min, max, stdev) / (a)(A)ll Samples. Default=s.
+    [](const AZ::CVarFixedString& newValue)
+    {
+        AZ::Debug::PerformanceCollector::DataLogType logType = (newValue[0] == 'a' || newValue[0] == 'A')
+            ? AZ::Debug::PerformanceCollector::DataLogType::LogAllSamples
+            : AZ::Debug::PerformanceCollector::DataLogType::LogStatistics;
+
+        PhysX::GetPhysXSystem()->GetPerformanceCollector()->UpdateDataLogType(logType);
+    },
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "Defines the kind of data collection and logging. If starts with 's' it will log statistical summaries, if starts with 'a' will log "
+    "each sample of data (high verbosity).");
+
+AZ_CVAR(AZ::u32,physx_metricsWaitTimePerCaptureBatch,0,
+    [](const AZ::u32& newValue)
+    {
+        PhysX::GetPhysXSystem()->GetPerformanceCollector()->UpdateWaitTimeBeforeEachBatch(AZStd::chrono::seconds(newValue));
+    },
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "How many seconds to wait before each batch of performance capture.");
+
+
 namespace PhysX
 {
     AZ_CLASS_ALLOCATOR_IMPL(PhysXSystem, AZ::SystemAllocator, 0);
@@ -73,6 +112,11 @@ namespace PhysX
             [](AZ::u32)
             {
             });
+
+        m_performanceCollector->UpdateDataLogType(AZ::Debug::PerformanceCollector::DataLogType::LogStatistics);
+        m_performanceCollector->UpdateFrameCountPerCaptureBatch(physx_metricsFrameCountPerCaptureBatch);
+        m_performanceCollector->UpdateWaitTimeBeforeEachBatch(AZStd::chrono::seconds(physx_metricsWaitTimePerCaptureBatch));
+        m_performanceCollector->UpdateNumberOfCaptureBatches(physx_metricsNumberOfCaptureBatches);
     }
 
     PhysXSystem::~PhysXSystem()
@@ -451,6 +495,11 @@ namespace PhysX
     void PhysXSystem::CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group)
     {
         m_systemConfig.m_collisionConfig.m_collisionGroups.CreateGroup(groupName, group);
+    }
+
+    AZ::Debug::PerformanceCollector* PhysXSystem::GetPerformanceCollector()
+    {
+        return m_performanceCollector.get();
     }
 
     PhysXSystem* GetPhysXSystem()

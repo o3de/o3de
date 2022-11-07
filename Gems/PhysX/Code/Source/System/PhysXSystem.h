@@ -84,6 +84,9 @@ namespace PhysX
         void SetCollisionLayerName(int index, const AZStd::string& layerName);
         void CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group);
         //TEMP -- until these are fully moved over here
+
+        AZ::Debug::PerformanceCollector* GetPerformanceCollector();
+
     private:
         //! Initializes the PhysX SDK.
         //! This sets up the PhysX Foundation, Cooking, and other PhysX sub-systems.
