@@ -129,7 +129,7 @@ void FileServer::ConnectionAdded(unsigned int connId, Connection* connection)
 
                 // note that the cache folder is auto-created only upon first use of VFS.
             }
-        });
+        }, Qt::BlockingQueuedConnection);
 
     std::shared_ptr<AZ::IO::FileIOBase> fileIO = std::make_shared<AZ::IO::LocalFileIO>();
     m_fileIOs[connId] = fileIO;
