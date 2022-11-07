@@ -138,7 +138,7 @@
                 "defaultDataType": "float4x4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = float4x4(MaterialSrg::NODEID_inRow1, MaterialSrg::NODEID_inRow2, MaterialSrg::NODEID_inRow3, MaterialSrg::NODEID_inRow4);"
+                        "SLOTTYPE SLOTNAME = float4x4(MaterialSrg::inRow1, MaterialSrg::inRow2, MaterialSrg::inRow3, MaterialSrg::inRow4);"
                     ]
                 }
             }

@@ -8,7 +8,7 @@
         "title": "clip",
         "settings": {
             "instructions": [
-                "clip(NODEID_inValue);"
+                "clip(inValue);"
             ]
         },
         "inputSlots": [
@@ -29,7 +29,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }

@@ -24,7 +24,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -38,7 +38,7 @@
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue;"
+                        "SLOTTYPE SLOTNAME = inValue;"
                     ]
                 }
             },
@@ -50,7 +50,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.x;"
+                        "SLOTTYPE SLOTNAME = inValue.x;"
                     ]
                 }
             },
@@ -62,7 +62,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.y;"
+                        "SLOTTYPE SLOTNAME = inValue.y;"
                     ]
                 }
             },
@@ -74,7 +74,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.z;"
+                        "SLOTTYPE SLOTNAME = inValue.z;"
                     ]
                 }
             },
@@ -86,7 +86,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.w;"
+                        "SLOTTYPE SLOTNAME = inValue.w;"
                     ]
                 }
             }

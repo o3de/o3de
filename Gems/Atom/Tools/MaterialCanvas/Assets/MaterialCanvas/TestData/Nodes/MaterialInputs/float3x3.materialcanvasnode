@@ -114,7 +114,7 @@
                 "defaultDataType": "float3x3",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = float3x3(MaterialSrg::NODEID_inRow1, MaterialSrg::NODEID_inRow2, MaterialSrg::NODEID_inRow3);"
+                        "SLOTTYPE SLOTNAME = float3x3(MaterialSrg::inRow1, MaterialSrg::inRow2, MaterialSrg::inRow3);"
                     ]
                 }
             }

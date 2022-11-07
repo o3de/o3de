@@ -73,7 +73,7 @@
                 "defaultDataType": "float2",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue;"
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue;"
                     ]
                 }
             },
@@ -85,7 +85,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.x;"
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.x;"
                     ]
                 }
             },
@@ -97,7 +97,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.y;"
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.y;"
                     ]
                 }
             }

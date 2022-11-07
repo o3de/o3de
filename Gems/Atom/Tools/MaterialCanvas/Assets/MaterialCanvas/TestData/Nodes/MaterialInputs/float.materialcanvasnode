@@ -70,7 +70,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue;"
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue;"
                     ]
                 }
             }

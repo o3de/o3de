@@ -49,6 +49,7 @@
                         0.0
                     ]
                 },
+                "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -69,6 +70,7 @@
                         1.0
                     ]
                 },
+                "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -85,6 +87,7 @@
                     "$type": "float",
                     "Value": 0.0
                 },
+                "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -101,6 +104,7 @@
                     "$type": "float",
                     "Value": 0.0
                 },
+                "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -117,6 +121,7 @@
                     "$type": "float",
                     "Value": 0.0
                 },
+                "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -137,6 +142,7 @@
                         0.0
                     ]
                 },
+                "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -153,6 +159,7 @@
                     "$type": "float",
                     "Value": 1.0
                 },
+                "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"

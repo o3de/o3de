@@ -3,28 +3,32 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "id": "{F43D854D-3336-436C-8E28-D4BD95291DE4}",
+        "id": "{25CFD95F-BC52-4B65-BC1B-E4AD36960FB9}",
         "category": "Math Functions",
-        "title": "asfloat",
+        "title": "any",
         "inputSlots": [
             {
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
-                "defaultDataType": "float4",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?x[1-4]?",
+                "defaultDataType": "float2x2",
                 "defaultValue": {
-                    "$type": "Vector4",
+                    "$type": "AZStd::array<Vector2, 2>",
                     "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
+                        [
+                            1.0,
+                            0.0
+                        ],
+                        [
+                            0.0,
+                            1.0
+                        ]
                     ]
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -34,11 +38,11 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypeRegex": "float4",
-                "defaultDataType": "float4",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = asfloat(NODEID_inValue);"
+                        "SLOTTYPE SLOTNAME = any(inValue);"
                     ]
                 }
             }

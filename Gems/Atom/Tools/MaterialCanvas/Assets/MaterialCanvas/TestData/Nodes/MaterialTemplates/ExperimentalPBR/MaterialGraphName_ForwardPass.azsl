@@ -38,7 +38,7 @@ VSOutput MainVS(CommonVSInput IN)
     Evaluate_CommonVSInput(IN, commonVSOut);
 
     VSOutput OUT;
-    OUT.m_worldPosition = (float3)commonVSOut.m_worldPosition;
+    OUT.m_worldPosition = commonVSOut.m_worldPosition;
     OUT.m_position = commonVSOut.m_position;
     OUT.m_normal = commonVSOut.m_normal;
     OUT.m_tangent = commonVSOut.m_tangent;
@@ -81,7 +81,7 @@ ForwardPassOutput MainPS(VSOutput IN)
     // ------- Surface -------
 
     Surface surface;
-    surface.position = (float3)IN.m_worldPosition;
+    surface.position = IN.m_worldPosition;
     surface.normal = (float3)vertexNormal;
     surface.vertexNormal = (float3)vertexNormal;
     surface.roughnessLinear = (float)inRoughness;

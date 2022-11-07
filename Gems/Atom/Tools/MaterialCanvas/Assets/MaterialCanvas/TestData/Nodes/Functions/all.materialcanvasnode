@@ -3,23 +3,27 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "id": "{26129B8D-5E3D-4843-B0BD-2017F2CD5AED}",
+        "id": "{FD177A1D-AFFD-4251-9C65-FD9ABB2F4F5C}",
         "category": "Math Functions",
-        "title": "trunc",
+        "title": "all",
         "inputSlots": [
             {
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
-                "defaultDataType": "float4",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?x[1-4]?",
+                "defaultDataType": "float2x2",
                 "defaultValue": {
-                    "$type": "Vector4",
+                    "$type": "AZStd::array<Vector2, 2>",
                     "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
+                        [
+                            1.0,
+                            0.0
+                        ],
+                        [
+                            0.0,
+                            1.0
+                        ]
                     ]
                 },
                 "settings": {
@@ -34,11 +38,11 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypeRegex": "float4",
-                "defaultDataType": "float4",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = trunc(inValue);"
+                        "SLOTTYPE SLOTNAME = all(inValue);"
                     ]
                 }
             }

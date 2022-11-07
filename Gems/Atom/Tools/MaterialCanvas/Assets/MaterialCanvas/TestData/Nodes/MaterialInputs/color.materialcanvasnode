@@ -75,7 +75,7 @@
                 "defaultDataType": "color",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue;"
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue;"
                     ]
                 }
             },
@@ -87,7 +87,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.r;"
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.r;"
                     ]
                 }
             },
@@ -99,7 +99,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.g;"
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.g;"
                     ]
                 }
             },
@@ -111,7 +111,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.b;"
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.b;"
                     ]
                 }
             },
@@ -123,7 +123,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.a;"
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.a;"
                     ]
                 }
             }

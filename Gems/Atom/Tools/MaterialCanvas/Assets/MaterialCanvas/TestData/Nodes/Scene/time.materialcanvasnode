@@ -15,7 +15,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SceneSrg::m_time;"
+                        "SLOTTYPE SLOTNAME = SceneSrg::m_time;"
                     ]
                 }
             }

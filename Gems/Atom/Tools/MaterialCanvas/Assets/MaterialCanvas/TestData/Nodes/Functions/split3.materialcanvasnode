@@ -23,7 +23,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "float3 NODEID_SLOTNAME = SLOTVALUE;"
+                        "float3 SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -37,7 +37,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.x;"
+                        "SLOTTYPE SLOTNAME = inValue.x;"
                     ]
                 }
             },
@@ -49,7 +49,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.y;"
+                        "SLOTTYPE SLOTNAME = inValue.y;"
                     ]
                 }
             },
@@ -61,7 +61,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.z;"
+                        "SLOTTYPE SLOTNAME = inValue.z;"
                     ]
                 }
             }

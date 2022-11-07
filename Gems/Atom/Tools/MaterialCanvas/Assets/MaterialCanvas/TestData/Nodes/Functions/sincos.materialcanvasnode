@@ -8,9 +8,9 @@
         "title": "sincos",
         "settings": {
             "instructions": [
-                "float4 NODEID_outSin = float4(0, 0, 0, 0);",
-                "float4 NODEID_outCos = float4(0, 0, 0, 0);",
-                "sincos(NODEID_inValue, NODEID_outSin, NODEID_outCos);"
+                "float4 outSin = {0, 0, 0, 0};",
+                "float4 outCos = {0, 0, 0, 0};",
+                "sincos(inValue, outSin, outCos);"
             ]
         },
         "inputSlots": [
@@ -31,7 +31,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }

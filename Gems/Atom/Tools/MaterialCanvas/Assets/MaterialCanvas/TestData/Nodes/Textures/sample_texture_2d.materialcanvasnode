@@ -8,7 +8,7 @@
         "title": "Sample Texture 2d",
         "settings": {
             "instructions": [
-                "float4 NODEID_outColor = MaterialSrg::NODEID_inValue.Sample(MaterialSrg::NODEID_inSampler, (float2)NODEID_inUV);"
+                "float4 outColor = MaterialSrg::inValue.Sample(MaterialSrg::inSampler, (float2)inUV);"
             ]
         },
         "propertySlots": [
@@ -97,7 +97,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -121,7 +121,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_outColor.r;"
+                        "SLOTTYPE SLOTNAME = outColor.r;"
                     ]
                 }
             },
@@ -133,7 +133,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_outColor.g;"
+                        "SLOTTYPE SLOTNAME = outColor.g;"
                     ]
                 }
             },
@@ -145,7 +145,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_outColor.b;"
+                        "SLOTTYPE SLOTNAME = outColor.b;"
                     ]
                 }
             },
@@ -157,7 +157,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_outColor.a;"
+                        "SLOTTYPE SLOTNAME = outColor.a;"
                     ]
                 }
             }

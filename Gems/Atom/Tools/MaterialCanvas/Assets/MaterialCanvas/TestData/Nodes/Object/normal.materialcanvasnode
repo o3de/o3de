@@ -15,7 +15,7 @@
                 "defaultDataType": "float3",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = O3DE_MC_NORMAL;"
+                        "SLOTTYPE SLOTNAME = O3DE_MC_NORMAL;"
                     ]
                 }
             },
@@ -27,7 +27,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = O3DE_MC_NORMAL.x;"
+                        "SLOTTYPE SLOTNAME = O3DE_MC_NORMAL.x;"
                     ]
                 }
             },
@@ -39,7 +39,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = O3DE_MC_NORMAL.y;"
+                        "SLOTTYPE SLOTNAME = O3DE_MC_NORMAL.y;"
                     ]
                 }
             },
@@ -51,7 +51,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = O3DE_MC_NORMAL.z;"
+                        "SLOTTYPE SLOTNAME = O3DE_MC_NORMAL.z;"
                     ]
                 }
             }
