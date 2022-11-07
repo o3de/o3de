@@ -102,7 +102,6 @@ from DccScriptingInterface.azpy.config_class import ConfigClass
 # but it is suggested that when the core <dccsi>\config.py is re-written
 # as a ConfigClass, that the WingConfig inherits from that instead
 
-
 # wing_config is a class object of WingConfig
 # WingConfig is a child class of ConfigClass
 class WingConfig(ConfigClass):

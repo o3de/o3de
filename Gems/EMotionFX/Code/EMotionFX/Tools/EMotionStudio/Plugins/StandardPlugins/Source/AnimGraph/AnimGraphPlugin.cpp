@@ -14,7 +14,6 @@
 #include "GraphNode.h"
 #include "NavigateWidget.h"
 #include "AttributesWindow.h"
-#include "NodeGroupWindow.h"
 #include "BlendTreeVisualNode.h"
 #include "StateGraphNode.h"
 #include "ParameterWindow.h"
@@ -93,12 +92,11 @@ namespace EMStudio
     {
         m_graphWidget                    = nullptr;
         m_navigateWidget                 = nullptr;
-        m_nodeGroupDock                  = nullptr;
         m_paletteWidget                  = nullptr;
         m_nodePaletteDock                = nullptr;
         m_parameterDock                  = nullptr;
         m_parameterWindow                = nullptr;
-        m_nodeGroupWindow                = nullptr;
+
         m_attributesWindow               = nullptr;
         m_activeAnimGraph                = nullptr;
         m_animGraphObjectFactory        = nullptr;
@@ -143,13 +141,6 @@ namespace EMStudio
             m_attributesWindow = nullptr;
         }
 
-        // remove the node group dock widget
-        if (m_nodeGroupDock)
-        {
-            EMStudio::GetMainWindow()->removeDockWidget(m_nodeGroupDock);
-            delete m_nodeGroupDock;
-        }
-
         // remove the blend node palette
         if (m_nodePaletteDock)
         {
@@ -191,16 +182,11 @@ namespace EMStudio
         {
             m_dockWindowActions[WINDOWS_PARAMETERWINDOW] = parent->addAction("Parameter Window");
             m_dockWindowActions[WINDOWS_PARAMETERWINDOW]->setCheckable(true);
-            m_dockWindowActions[WINDOWS_NODEGROUPWINDOW] = parent->addAction("Node Group Window");
-            m_dockWindowActions[WINDOWS_NODEGROUPWINDOW]->setCheckable(true);
             m_dockWindowActions[WINDOWS_PALETTEWINDOW] = parent->addAction("Palette Window");
             m_dockWindowActions[WINDOWS_PALETTEWINDOW]->setCheckable(true);
 
             connect(m_dockWindowActions[WINDOWS_PARAMETERWINDOW], &QAction::triggered, this, [this](bool checked) {
                 UpdateWindowVisibility(WINDOWS_PARAMETERWINDOW, checked);
-            });
-            connect(m_dockWindowActions[WINDOWS_NODEGROUPWINDOW], &QAction::triggered, this, [this](bool checked) {
-                UpdateWindowVisibility(WINDOWS_NODEGROUPWINDOW, checked);
             });
             connect(m_dockWindowActions[WINDOWS_PALETTEWINDOW], &QAction::triggered, this, [this](bool checked) {
                 UpdateWindowVisibility(WINDOWS_PALETTEWINDOW, checked);
@@ -220,9 +206,6 @@ namespace EMStudio
         {
         case WINDOWS_PARAMETERWINDOW:
             dockWidget = GetParameterDock();
-            break;
-        case WINDOWS_NODEGROUPWINDOW:
-            dockWidget = GetNodeGroupDock();
             break;
         case WINDOWS_PALETTEWINDOW:
             dockWidget = GetNodePaletteDock();
@@ -264,7 +247,6 @@ namespace EMStudio
     {
         SetOptionFlag(WINDOWS_PARAMETERWINDOW, GetParameterDock()->isVisible());
         SetOptionFlag(WINDOWS_PALETTEWINDOW, GetNodePaletteDock()->isVisible());
-        SetOptionFlag(WINDOWS_NODEGROUPWINDOW, GetNodeGroupDock()->isVisible());
 
     }
 
@@ -389,17 +371,7 @@ namespace EMStudio
         m_attributesWindow = new AttributesWindow(this);
         m_attributesWindow->hide();
 
-        // create the node group dock window
-        m_nodeGroupDock = new AzQtComponents::StyledDockWidget("Node Groups", mainWindow);
-        mainWindow->addDockWidget(Qt::RightDockWidgetArea, m_nodeGroupDock);
-        QDockWidget::DockWidgetFeatures features = QDockWidget::NoDockWidgetFeatures;
-        //features |= QDockWidget::DockWidgetClosable;
-        features |= QDockWidget::DockWidgetFloatable;
-        features |= QDockWidget::DockWidgetMovable;
-        m_nodeGroupDock->setFeatures(features);
-        m_nodeGroupDock->setObjectName("AnimGraphPlugin::m_nodeGroupDock");
-        m_nodeGroupWindow = new NodeGroupWindow(this);
-        m_nodeGroupDock->setWidget(m_nodeGroupWindow);
+        QDockWidget::DockWidgetFeatures features;
 
         // create the node palette dock.
         // By default, it's hidden in AnimGraph.layout. Users should mostly use
@@ -497,7 +469,6 @@ namespace EMStudio
 
         SetOptionFlag(WINDOWS_PARAMETERWINDOW, GetParameterDock()->isVisible());
         SetOptionFlag(WINDOWS_PALETTEWINDOW, GetNodePaletteDock()->isVisible());
-        SetOptionFlag(WINDOWS_NODEGROUPWINDOW, GetNodeGroupDock()->isVisible());
     }
 
 
@@ -510,7 +481,6 @@ namespace EMStudio
         EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::Update, m_attributesWindow);
 
         m_parameterWindow->Reinit();
-        m_nodeGroupWindow->Init();
         m_viewWidget->UpdateAnimGraphOptions();
     }
 

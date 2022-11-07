@@ -145,6 +145,11 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_listViewButton->hide();
     }
 
+    m_ui->horizontalLayout->setAlignment(m_ui->m_listViewButton, Qt::AlignTop);
+    m_ui->horizontalLayout->setAlignment(m_ui->m_thumbnailViewButton, Qt::AlignTop);
+    m_ui->horizontalLayout->setAlignment(m_ui->m_toggleDisplayViewBtn, Qt::AlignTop);
+    m_ui->horizontalLayout->setAlignment(m_ui->m_collapseAllButton, Qt::AlignTop);
+
     connect(m_ui->m_thumbnailViewButton, &QAbstractButton::clicked, this, [this] { m_ui->m_middleStackWidget->setCurrentIndex(0); });
     connect(m_ui->m_listViewButton, &QAbstractButton::clicked, this, [this] { m_ui->m_middleStackWidget->setCurrentIndex(1); });
 

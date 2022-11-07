@@ -62,7 +62,7 @@ namespace AzToolsFramework
             SetLink(linkId);
 
             //Cache current link DOM for undo link update.
-            m_undoPatch.CopyFrom(m_link->get().GetLinkDom(), m_undoPatch.GetAllocator());
+            m_link->get().GetLinkDom(m_undoPatch, m_undoPatch.GetAllocator());
 
             //Get DOM of the link's source template.
             TemplateId sourceTemplateId = m_link->get().GetSourceTemplateId();
