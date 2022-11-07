@@ -66,9 +66,6 @@ namespace AzToolsFramework
             bool AddedToComponentMode(
                 const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid& componentType);
 
-            /// Return if the Component pair is connected to Component mode delegate.
-            bool IsConnectedToDelegate(const AZ::EntityComponentIdPair& entityComponentIdPair);
-
             /// Move to the next active ComponentMode so the Actions for that mode become available (it is now 'selected').
             bool SelectNextActiveComponentMode();
 

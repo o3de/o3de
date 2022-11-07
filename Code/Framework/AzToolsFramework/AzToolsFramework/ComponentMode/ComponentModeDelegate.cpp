@@ -15,7 +15,6 @@
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegateNotificationBus.h>
 
-
 namespace AzToolsFramework
 {
     namespace ComponentModeFramework

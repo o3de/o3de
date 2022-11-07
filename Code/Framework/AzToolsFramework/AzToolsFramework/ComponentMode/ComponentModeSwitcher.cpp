@@ -112,7 +112,6 @@ namespace AzToolsFramework::ComponentModeFramework
     void ComponentModeSwitcher::UpdateSwitcher(
         const EntityIdList& newlySelectedEntityIds, const EntityIdList& newlyDeselectedEntityIds)
     {
-        
         auto selectedEntityIds = GetSelectedEntities();
 
         if (!newlyDeselectedEntityIds.empty())
@@ -163,6 +162,7 @@ namespace AzToolsFramework::ComponentModeFramework
                         {
                             continue;
                         }
+
                         AddComponentButton(entityComponentIdPair);
                     }
                 }
@@ -180,9 +180,6 @@ namespace AzToolsFramework::ComponentModeFramework
 
     void ComponentModeSwitcher::AddComponentButton(const AZ::EntityComponentIdPair pairId)
     {
-        // check if the component has a component mode
-        
-
         ComponentData newComponentData = ComponentData(pairId);
 
         // if the component has not already been added as a button, add the button

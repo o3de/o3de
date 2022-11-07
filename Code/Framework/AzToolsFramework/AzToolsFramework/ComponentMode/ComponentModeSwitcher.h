@@ -105,7 +105,6 @@ namespace AzToolsFramework
             // ToolsApplicationBus overrides ...
             void AfterEntitySelectionChanged(
                 const EntityIdList& newlySelectedEntities, const EntityIdList& newlyDeselectedEntities) override;
-            //void AfterUndoRedo() override;
 
             // ViewportImGuiNotificationBus overrides ...
             void OnImGuiDropDownShown() override;

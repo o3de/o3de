@@ -11,7 +11,6 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/optional.h>
 #include <AzFramework/Viewport/ViewportId.h>
-#include <AzCore/Component/ComponentBus.h>
 
 namespace AZ
 {
