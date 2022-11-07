@@ -302,6 +302,25 @@ namespace GradientSignal
 
         AzToolsFramework::PaintBrushNotificationBus::Handler::BusConnect(entityComponentIdPair);
 
+        // Set our paint brush min/max world size range. The minimum size should be large enough to paint at least one pixel, and
+        // the max size is clamped so that we can't paint more than 256 x 256 pixels per brush stamp.
+        // 256 is an arbitrary number, but if we start getting much larger, performance can drop precipitously.
+        // Note: To truly control performance, additional clamping is still needed, because large mouse movements in world space with
+        // a tiny brush can still cause extremely large numbers of brush points to get calculated and checked.
+
+        constexpr float MaxBrushPixelSize = 256.0f;
+        AZ::Vector2 imagePixelsPerMeter(0.0f);
+        ImageGradientRequestBus::EventResult(imagePixelsPerMeter, GetEntityId(), &ImageGradientRequestBus::Events::GetImagePixelsPerMeter);
+
+        float minBrushSize = AZStd::min(imagePixelsPerMeter.GetX(), imagePixelsPerMeter.GetY());
+        float maxBrushSize = AZStd::max(imagePixelsPerMeter.GetX(), imagePixelsPerMeter.GetY());
+
+        minBrushSize = (minBrushSize <= 0.0f) ? 0.0f : (1.0f / minBrushSize);
+        maxBrushSize = (maxBrushSize <= 0.0f) ? 0.0f : (MaxBrushPixelSize / maxBrushSize);
+
+        AzToolsFramework::PaintBrushSettingsRequestBus::Broadcast(
+            &AzToolsFramework::PaintBrushSettingsRequestBus::Events::SetSizeRange, minBrushSize, maxBrushSize);
+
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldFromLocal, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
 
@@ -320,6 +339,7 @@ namespace GradientSignal
 
         AzToolsFramework::PaintBrushNotificationBus::Handler::BusDisconnect();
         m_brushManipulator->Unregister();
+        m_brushManipulator.reset();
 
         EndUndoBatch();
 
@@ -456,6 +476,12 @@ namespace GradientSignal
 
         const int32_t xPoints = aznumeric_cast<int32_t>((maxDistances.GetX() - minDistances.GetX()) / m_paintStrokeData.m_metersPerPixelX);
         const int32_t yPoints = aznumeric_cast<int32_t>((maxDistances.GetY() - minDistances.GetY()) / m_paintStrokeData.m_metersPerPixelY);
+
+        // Early out if the dirty area is smaller than our point size.
+        if ((xPoints <= 0) || (yPoints <= 0))
+        {
+            return;
+        }
 
         // Calculate the minimum set of world space points that map to those pixels.
         AZStd::vector<AZ::Vector3> points;

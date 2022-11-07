@@ -88,11 +88,9 @@ namespace AzToolsFramework
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_size, "Size",
                         "Size/diameter of the brush stamp in meters.")
-                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                        ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
-                        ->Attribute(AZ::Edit::Attributes::Max, 1024.0f)
-                        ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
-                        ->Attribute(AZ::Edit::Attributes::Step, 0.25f)
+                        ->Attribute(AZ::Edit::Attributes::Min, &PaintBrushSettings::GetSizeMin)
+                        ->Attribute(AZ::Edit::Attributes::Max, &PaintBrushSettings::GetSizeMax)
+                        ->Attribute(AZ::Edit::Attributes::Step, &PaintBrushSettings::GetSizeStep)
                         ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 2)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " m")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetSizeVisibility)
@@ -258,6 +256,37 @@ namespace AzToolsFramework
         return true;
     }
 
+    // Make the brush size ranges configurable so that it can be appropriate for whatever type of data is being painted.
+
+    float PaintBrushSettings::GetSizeMin() const
+    {
+        return m_sizeMin;
+    }
+
+    float PaintBrushSettings::GetSizeMax() const
+    {
+        return m_sizeMax;
+    }
+
+    float PaintBrushSettings::GetSizeStep() const
+    {
+        // Set the step size to give us 100 values across the range.
+        // This is an arbitrary choice, but it seems like a good number of step sizes for a slider control.
+        return (GetSizeMax() - GetSizeMin()) / 100.0f;
+    }
+
+    void PaintBrushSettings::SetSizeRange(float minSize, float maxSize)
+    {
+        // Make sure the min and max sizes are valid ranges
+        m_sizeMax = AZStd::max(maxSize, 0.0f);
+        m_sizeMin = AZStd::clamp(minSize, 0.0f, m_sizeMax);
+
+        // Clamp our current paintbrush size to fall within the new min/max ranges.
+        m_size = AZStd::clamp(m_size, m_sizeMin, m_sizeMax);
+
+        PaintBrushSettingsNotificationBus::Broadcast(&PaintBrushSettingsNotificationBus::Events::OnVisiblePropertiesChanged);
+        OnSettingsChanged();
+    }
 
     void PaintBrushSettings::SetBrushMode(PaintBrushMode brushMode)
     {
@@ -298,7 +327,7 @@ namespace AzToolsFramework
 
     void PaintBrushSettings::SetSize(float size)
     {
-        m_size = AZStd::max(size, 0.0f);
+        m_size = AZStd::clamp(size, m_sizeMin, m_sizeMax);
         OnSettingsChanged();
     }
 
