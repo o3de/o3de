@@ -374,7 +374,7 @@ class TestManifestGetRegistered:
         return self
 
     @staticmethod
-    def samefile(self, otherFile ):
+    def samefile(self, otherFile):
         return self.as_posix() == otherFile.as_posix()
 
     @pytest.mark.parametrize("template_name, expected_path", [
