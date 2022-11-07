@@ -58,6 +58,8 @@ namespace AzToolsFramework
         {
             setSortingEnabled(true);
             setItemDelegate(m_delegate);
+            connect(m_delegate, &EntryDelegate::RenameEntry, this, &AssetBrowserTreeView::AfterRename);
+
             header()->hide();
             setSelectionMode(QAbstractItemView::ExtendedSelection);
             setDragEnabled(true);

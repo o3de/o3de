@@ -61,15 +61,27 @@ namespace AZ
             };
             RPI::ShaderSystemInterface::Get()->Connect(m_handleGlobalShaderOptionUpdate);
             EnableSceneNotification();
+
+            // Must read cvar from AZ::Console due to static variable in multiple libraries, see ghi-5537
+            bool enablePerMeshShaderOptionFlagsCvar = false;
+            if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+            {
+                console->GetCvarValue("r_enablePerMeshShaderOptionFlags", enablePerMeshShaderOptionFlagsCvar);
+
+                // push the cvars value so anything in this dll can access it directly.
+                console->PerformCommand(AZStd::string::format("r_enablePerMeshShaderOptionFlags %s", enablePerMeshShaderOptionFlagsCvar ? "true" : "false").c_str());
+            }
         }
 
         void MeshFeatureProcessor::Deactivate()
         {
+            m_flagRegistry.reset();
+
             m_handleGlobalShaderOptionUpdate.Disconnect();
 
             DisableSceneNotification();
             AZ_Warning("MeshFeatureProcessor", m_modelData.size() == 0,
-                "Deactivaing the MeshFeatureProcessor, but there are still outstanding mesh handles.\n"
+                "Deactivating the MeshFeatureProcessor, but there are still outstanding mesh handles.\n"
             );
             m_transformService = nullptr;
             m_forceRebuildDrawPackets = false;
@@ -163,11 +175,76 @@ namespace AZ
         void MeshFeatureProcessor::OnBeginPrepareRender()
         {
             m_meshDataChecker.soft_lock();
+
+            if (!r_enablePerMeshShaderOptionFlags && m_enablePerMeshShaderOptionFlags)
+            {
+                // Per mesh shader option flags was on, but now turned off, so reset all the shader options.
+                for (auto& model : m_modelData)
+                {
+                    for (RPI::MeshDrawPacketList& drawPacketList : model.m_drawPacketListsByLod)
+                    {
+                        for (RPI::MeshDrawPacket& drawPacket : drawPacketList)
+                        {
+                            m_flagRegistry->VisitTags(
+                                [&](AZ::Name shaderOption, [[maybe_unused]] FlagRegistry::TagType tag)
+                                {
+                                    drawPacket.UnsetShaderOption(shaderOption);
+                                }
+                            );
+                            drawPacket.Update(*GetParentScene(), true);
+                        }
+                    }
+                    model.m_cullable.m_flags = 0;
+                    model.m_cullable.m_prevFlags = 0;
+                    model.m_cullableNeedsRebuild = true;
+                    model.BuildCullable();
+                }
+            }
+
+            m_enablePerMeshShaderOptionFlags = r_enablePerMeshShaderOptionFlags;
+
+            if (m_enablePerMeshShaderOptionFlags)
+            {
+                for (auto& model : m_modelData)
+                {
+                    if (model.m_cullable.m_prevFlags != model.m_cullable.m_flags)
+                    {
+                        // Per mesh shader option flags have changed, so rebuild the draw packet with the new shader options.
+                        for (RPI::MeshDrawPacketList& drawPacketList : model.m_drawPacketListsByLod)
+                        {
+                            for (RPI::MeshDrawPacket& drawPacket : drawPacketList)
+                            {
+                                m_flagRegistry->VisitTags(
+                                    [&](AZ::Name shaderOption, FlagRegistry::TagType tag)
+                                    {
+                                        bool shaderOptionValue = (model.m_cullable.m_flags & tag.GetIndex()) > 0;
+                                        drawPacket.SetShaderOption(shaderOption, AZ::RPI::ShaderOptionValue(shaderOptionValue));
+                                    }
+                                );
+                                drawPacket.Update(*GetParentScene(), true);
+                            }
+                        }
+                        model.m_cullableNeedsRebuild = true;
+                        model.BuildCullable();
+                    }
+                }
+            }
+
         }
 
         void MeshFeatureProcessor::OnEndPrepareRender()
         {
             m_meshDataChecker.soft_unlock();
+
+            if (m_reportShaderOptionFlags)
+            {
+                m_reportShaderOptionFlags = false;
+                PrintShaderOptionFlags();
+            }
+            for (auto& model : m_modelData)
+            {
+                model.m_cullable.m_prevFlags = model.m_cullable.m_flags.exchange(0);
+            }
         }
 
         MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::AcquireMesh(
@@ -513,6 +590,16 @@ namespace AZ
             }
         }
 
+
+        RHI::Ptr<MeshFeatureProcessor::FlagRegistry> MeshFeatureProcessor::GetFlagRegistry()
+        {
+            if (m_flagRegistry == nullptr)
+            {
+                m_flagRegistry = FlagRegistry::Create();
+            }
+            return m_flagRegistry;
+        };
+
         void MeshFeatureProcessor::ForceRebuildDrawPackets([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
         {
             m_forceRebuildDrawPackets = true;
@@ -536,7 +623,67 @@ namespace AZ
             }
         }
 
+        void MeshFeatureProcessor::ReportShaderOptionFlags([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+        {
+            m_reportShaderOptionFlags = true;
+        }
+
+        void MeshFeatureProcessor::PrintShaderOptionFlags()
+        {
+            AZStd::map<FlagRegistry::TagType, AZ::Name> tags;
+            AZStd::string registeredFoundMessage = "Registered flags: ";
+
+            auto gatherTags = [&](const Name& name, FlagRegistry::TagType tag)
+            {
+                tags[tag] = name;
+                registeredFoundMessage.append(name.GetCStr() + AZStd::string(", "));
+            };
+
+            m_flagRegistry->VisitTags(gatherTags);
+
+            registeredFoundMessage.erase(registeredFoundMessage.end() - 2);
+
+            AZ_Printf("MeshFeatureProcessor", registeredFoundMessage.c_str());
+
+            AZStd::map<uint32_t, uint32_t> flagStats;
+
+            for (auto& model : m_modelData)
+            {
+                ++flagStats[model.m_cullable.m_flags.load()];
+            }
+
+            for (auto [flag, references] : flagStats)
+            {
+                AZStd::string flagList;
+
+                if (flag == 0)
+                {
+                    flagList = "(None)";
+                }
+                else
+                {
+                    for (auto [tag, name] : tags)
+                    {
+                        if ((tag.GetIndex() & flag) > 0)
+                        {
+                            flagList.append(name.GetCStr());
+                            flagList.append(", ");
+                        }
+                    }
+                    flagList.erase(flagList.end() - 2);
+                }
+
+                AZ_Printf("MeshFeatureProcessor", "Found %u references to [%s]", references, flagList.c_str());
+            }
+        }
+
+        MeshFeatureProcessorInterface::ModelChangedEvent& ModelDataInstance::MeshLoader::GetModelChangedEvent()
+        {
+            return m_modelChangedEvent;
+        }
+
         // ModelDataInstance::MeshLoader...
+
         ModelDataInstance::MeshLoader::MeshLoader(const Data::Asset<RPI::ModelAsset>& modelAsset, ModelDataInstance* parent)
             : m_modelAsset(modelAsset)
             , m_parent(parent)
@@ -562,10 +709,7 @@ namespace AZ
             Data::AssetBus::Handler::BusDisconnect();
         }
 
-        MeshFeatureProcessorInterface::ModelChangedEvent& ModelDataInstance::MeshLoader::GetModelChangedEvent()
-        {
-            return m_modelChangedEvent;
-        }
+        // ModelDataInstance...
 
         //! AssetBus::Handler overrides...
         void ModelDataInstance::MeshLoader::OnAssetReady(Data::Asset<Data::AssetData> asset)
@@ -660,8 +804,6 @@ namespace AZ
                     });
             }
         }
-
-        // ModelDataInstance...
 
         void ModelDataInstance::DeInit()
         {
@@ -1370,8 +1512,6 @@ namespace AZ
             {
                 cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
             }
-
-            cullData.m_scene = m_scene;     //[GFX_TODO][ATOM-13796] once the IVisibilitySystem supports multiple octree scenes, remove this
 
 #ifdef AZ_CULL_DEBUG_ENABLED
             m_cullable.SetDebugName(AZ::Name(AZStd::string::format("%s - objectId: %u", m_model->GetModelAsset()->GetName().GetCStr(), m_objectId.GetIndex())));

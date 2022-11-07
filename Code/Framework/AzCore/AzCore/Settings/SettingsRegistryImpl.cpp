@@ -564,7 +564,7 @@ namespace AZ
         if (pointer.IsValid())
         {
             rapidjson::Value store;
-            JsonSerializationResult::ResultCode jsonResult = JsonSerialization::Store(store, m_settings.GetAllocator(), 
+            JsonSerializationResult::ResultCode jsonResult = JsonSerialization::Store(store, m_settings.GetAllocator(),
                 value, nullptr, valueTypeID, m_serializationSettings);
             if (jsonResult.GetProcessing() != JsonSerializationResult::Processing::Halted)
             {
@@ -597,8 +597,17 @@ namespace AZ
             return false;
         }
 
-        AZStd::scoped_lock lock(LockForWriting());
-        return pointerPath.Erase(m_settings);
+        bool removeSuccess;
+        {
+            AZStd::scoped_lock lock(LockForWriting());
+            removeSuccess = pointerPath.Erase(m_settings);
+        }
+
+        // The removal type is Type::NoType
+        constexpr SettingsType removeType;
+        SignalNotifier(path, removeType);
+
+        return removeSuccess;
     }
 
     bool SettingsRegistryImpl::MergeCommandLineArgument(AZStd::string_view argument, AZStd::string_view rootKey,
@@ -1162,7 +1171,7 @@ namespace AZ
         const Specializations& specializations, const rapidjson::Pointer& historyPointer, AZStd::string_view folderPath)
     {
         using namespace rapidjson;
-        
+
         if (&lhs == &rhs)
         {
             // Early return to avoid setting the collisionFound reference to true

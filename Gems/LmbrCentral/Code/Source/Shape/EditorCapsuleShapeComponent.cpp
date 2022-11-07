@@ -84,10 +84,18 @@ namespace LmbrCentral
         AzFramework::DebugDisplayRequests& debugDisplay)
     {
         DisplayShape(
-            debugDisplay, [this]() { return CanDraw(); },
+            debugDisplay,
+            [this]()
+            {
+                return CanDraw();
+            },
             [this](AzFramework::DebugDisplayRequests& debugDisplay)
             {
-                DrawShape(debugDisplay, { m_shapeColor, m_shapeWireColor, m_displayFilled }, m_capsuleShapeMesh);
+                DrawShape(
+                    debugDisplay,
+                    ShapeDrawParams{ m_shapeColor, m_shapeWireColor, m_displayFilled },
+                    m_capsuleShapeMesh,
+                    m_capsuleShape.GetTranslationOffset());
             },
             m_capsuleShape.GetCurrentTransform());
     }

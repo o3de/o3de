@@ -75,22 +75,23 @@ def process_object_materials(controller, operation, output_path, source):
     target_objects = source if source else controller.get_selected_objects()
     for target_object in target_objects:
         try:
-            _LOGGER.info(f'TargetObject: {target_object}')
+            _LOGGER.info(f'\n\n+++++++++++++++\nTargetObject: {target_object}')
             temp_dict = {}
             target_object = target_object[1:] if target_object.startswith('|') else target_object
             object_export_path, object_materials = controller.prepare_material_export(target_object, output_path)
             _LOGGER.info(f'ExportPath: {object_export_path}  Materials: {object_materials}')
             for target_material in object_materials:
+                _LOGGER.info(f'TARGETMATERIAL:::: {target_material}')
                 temp_dict[target_material] = controller.get_material_info(target_material)
-                temp_dict[target_material].update({'mesh_export_location': object_export_path})
+                temp_dict[target_material].update({'mesh_export_location': object_export_path.as_posix()})
                 temp_dict[target_material].update({'parent_hierarchy': controller.get_object_hierarchy(target_object)})
             process_dictionary[source_file].update({target_object: temp_dict})
             _LOGGER.info(f'TempDict: {temp_dict}')
         except Exception as e:
             _LOGGER.info(f'ProcessObjectMaterials Fail [{type(e)}]: {e}')
 
-    _LOGGER.info(f'ProcessDictionary: {process_dictionary}')
-    # controller.run_operation(process_dictionary, operation, output)
+    _LOGGER.info(f'\n\n\n************************\nProcessDictionary: {process_dictionary}')
+    _LOGGER.info('\n************************\n')
     controller.cleanup(target_objects)
 
     return process_dictionary if process_dictionary else []
@@ -133,7 +134,10 @@ def get_master_paths(process_dictionary):
                         if 'path' in texture_values.keys():
                             target_path = texture_values['path']
                             if target_path not in master_paths.keys():
-                                master_paths.update({target_path: {'source': scene_file, 'object': object_name}})
+                                master_paths.update({target_path: {'source': scene_file, 'objects': [object_name]}})
+                            else:
+                                master_paths[target_path]['objects'].append(object_name)
+    _LOGGER.info(f'MasterPaths: {master_paths}')
     return master_paths
 
 

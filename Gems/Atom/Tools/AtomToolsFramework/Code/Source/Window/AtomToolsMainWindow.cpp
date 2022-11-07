@@ -19,6 +19,7 @@
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
 
+#include <QClipboard>
 #include <QCloseEvent>
 #include <QFileDialog>
 #include <QInputDialog>
@@ -250,10 +251,18 @@ namespace AtomToolsFramework
 
         m_menuHelp->addAction(tr("&Help..."), [this]() {
             OpenHelpDialog();
-        });
+        }, QKeySequence::HelpContents);
 
         m_menuHelp->addAction(tr("&About..."), [this]() {
             OpenAboutDialog();
+        });
+
+        connect(m_menuEdit, &QMenu::aboutToShow, menuBar, [toolId = m_toolId](){
+            AtomToolsMainWindowRequestBus::Event(toolId, &AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, false);
+        });
+
+        connect(QApplication::clipboard(), &QClipboard::dataChanged, menuBar, [toolId = m_toolId](){
+            AtomToolsMainWindowRequestBus::Event(toolId, &AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, false);
         });
     }
 

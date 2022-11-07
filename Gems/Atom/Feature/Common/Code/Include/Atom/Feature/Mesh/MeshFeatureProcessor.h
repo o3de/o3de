@@ -8,21 +8,27 @@
 
 #pragma once
 
-#include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/Console/Console.h>
+
+#include <AzFramework/Asset/AssetCatalogBus.h>
+
+#include <AtomCore/std/parallel/concurrency_checker.h>
+
+#include <Atom/RHI/TagBitRegistry.h>
+
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
+
+#include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/Feature/Material/MaterialAssignmentBus.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
-#include <AzCore/Asset/AssetCommon.h>
-#include <AtomCore/std/parallel/concurrency_checker.h>
-#include <AzCore/Console/Console.h>
-#include <AzFramework/Asset/AssetCatalogBus.h>
 
-#include <AzCore/Component/TickBus.h>
+#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {
@@ -132,6 +138,10 @@ namespace AZ
 
             AZ_RTTI(AZ::Render::MeshFeatureProcessor, "{6E3DFA1D-22C7-4738-A3AE-1E10AB88B29B}", AZ::Render::MeshFeatureProcessorInterface);
 
+            AZ_CONSOLEFUNC(MeshFeatureProcessor, ReportShaderOptionFlags, AZ::ConsoleFunctorFlags::Null, "Report currently used shader option flags.");
+
+            using FlagRegistry = RHI::TagBitRegistry<RPI::Cullable::FlagType>;
+
             static void Reflect(AZ::ReflectContext* context);
 
             MeshFeatureProcessor() = default;
@@ -190,9 +200,16 @@ namespace AZ
             bool GetVisible(const MeshHandle& meshHandle) const override;
             void SetUseForwardPassIblSpecular(const MeshHandle& meshHandle, bool useForwardPassIblSpecular) override;
 
+            RHI::Ptr <FlagRegistry> GetFlagRegistry();
+
             // called when reflection probes are modified in the editor so that meshes can re-evaluate their probes
             void UpdateMeshReflectionProbes();
+
+            void ReportShaderOptionFlags(const AZ::ConsoleCommandContainer& arguments);
+
         private:
+            MeshFeatureProcessor(const MeshFeatureProcessor&) = delete;
+
             void ForceRebuildDrawPackets(const AZ::ConsoleCommandContainer& arguments);
             AZ_CONSOLEFUNC(MeshFeatureProcessor,
                 ForceRebuildDrawPackets,
@@ -200,7 +217,7 @@ namespace AZ
                 "(For Testing) Invalidates all mesh draw packets, causing them to rebuild on the next frame."
             );
 
-            MeshFeatureProcessor(const MeshFeatureProcessor&) = delete;
+            void PrintShaderOptionFlags();
 
             // RPI::SceneNotificationBus::Handler overrides...
             void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
@@ -211,7 +228,10 @@ namespace AZ
             RayTracingFeatureProcessor* m_rayTracingFeatureProcessor = nullptr;
             AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
             RPI::MeshDrawPacketLods m_emptyDrawPacketLods;
+            RHI::Ptr<FlagRegistry> m_flagRegistry = nullptr;
             bool m_forceRebuildDrawPackets = false;
+            bool m_reportShaderOptionFlags = false;
+            bool m_enablePerMeshShaderOptionFlags = false;
         };
     } // namespace Render
 } // namespace AZ

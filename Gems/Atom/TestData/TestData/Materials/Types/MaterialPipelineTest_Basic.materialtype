@@ -45,6 +45,7 @@
             }
         ]
     },
+    "lightingModel": "Base",
     "materialShaderCode": "./MaterialPipelineTest_Basic.azsli",
     "functors": [
     ]

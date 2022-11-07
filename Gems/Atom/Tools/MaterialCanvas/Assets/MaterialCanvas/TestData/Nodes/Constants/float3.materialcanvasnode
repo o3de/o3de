@@ -6,14 +6,21 @@
         "id": "{2C991213-E9B1-4380-A6E9-82F47E3C3B51}",
         "category": "Constants",
         "title": "Float3 Constant",
-        "propertySlots": [
+        "inputSlots": [
             {
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "float3"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
+                "defaultDataType": "float3",
+                "defaultValue": {
+                    "$type": "Vector3",
+                    "Value": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
@@ -26,12 +33,47 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "float3"
-                ],
+                "supportedDataTypeRegex": "float3",
+                "defaultDataType": "float3",
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue;"
+                    ]
+                }
+            },
+            {
+                "name": "outX",
+                "displayName": "X",
+                "description": "X",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.x;"
+                    ]
+                }
+            },
+            {
+                "name": "outY",
+                "displayName": "Y",
+                "description": "Y",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.y;"
+                    ]
+                }
+            },
+            {
+                "name": "outZ",
+                "displayName": "Z",
+                "description": "Z",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.z;"
                     ]
                 }
             }
