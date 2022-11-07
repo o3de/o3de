@@ -284,7 +284,7 @@ namespace AtomToolsFramework
     {
         AZStd::vector<AZ::Uuid> documentIds;
         documentIds.reserve(m_tabWidget->count());
-        for (int index = 0; index < m_tabWidget->count(); index++)
+        for (int index = 0; index < m_tabWidget->count(); ++index)
         {
             documentIds.push_back(GetDocumentTabId(index));
         }
