@@ -69,7 +69,7 @@ namespace PaintBrush
             }
 
         private:
-            void OnColorModeChanged([[maybe_unused]] const AzToolsFramework::PaintBrushSettings& newSettings) override;
+            void OnVisiblePropertiesChanged() override;
             void OnSettingsChanged([[maybe_unused]] const AzToolsFramework::PaintBrushSettings& newSettings) override;
 
             // RPE Support

@@ -409,17 +409,19 @@ namespace AZ
                 if (pipelineAsset)
                 {
                     RPI::RenderPipelineDescriptor renderPipelineDescriptor =
-                        *RPI::GetDataFromAnyAsset<RPI::RenderPipelineDescriptor>(pipelineAsset);
+                        *RPI::GetDataFromAnyAsset<RPI::RenderPipelineDescriptor>(pipelineAsset); // Copy descriptor from asset
+                    pipelineAsset.Release();
+
                     renderPipelineDescriptor.m_name =
                         AZStd::string::format("%s_%i", renderPipelineDescriptor.m_name.c_str(), viewportContext->GetId());
 
                     multisampleState = renderPipelineDescriptor.m_renderSettings.m_multisampleState;
 
+                    // Create and add render pipeline to the scene (when not added already)
                     if (!scene->GetRenderPipeline(AZ::Name(renderPipelineDescriptor.m_name)))
                     {
                         RPI::RenderPipelinePtr renderPipeline = RPI::RenderPipeline::CreateRenderPipelineForWindow(
                             renderPipelineDescriptor, *viewportContext->GetWindowContext().get(), viewType);
-                        pipelineAsset.Release();
                         scene->AddRenderPipeline(renderPipeline);
                     }
                     return true;

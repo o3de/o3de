@@ -36,8 +36,9 @@ from DccScriptingInterface.azpy.dcc.maya.helpers import convert_stingray_materia
 
 # maya, pyside imports, etc
 import maya.cmds as mc
+import maya.mel
 
-_LOGGER = _logging.getLogger('DCCsi.azpy.dcc.maya.utils.maya_materials_conversion')
+_LOGGER = _logging.getLogger('DCCsi.azpy.dcc.maya.helpers.maya_materials_conversion')
 
 
 # TODO - You need to provide for creating new files while Maya is already open
@@ -143,12 +144,14 @@ def run_operation(process_dictionary, operation, output):
 
 
 def get_object_hierarchy(target_object):
+    _LOGGER.info(f'================================')
     object_hierarchy = [[get_object_type(target_object), target_object]]
     while True:
         parent = mc.listRelatives(target_object, allParents=True)
         if parent:
             parent_type = get_object_type(parent[0])
-            if parent_type in ['mesh', 'locator']:
+            _LOGGER.info(f'[{target_object}] -- Parent type: {parent_type}')
+            if parent_type in ['mesh', 'group']:
                 object_hierarchy.append([parent_type, parent[0]])
                 target_object = parent[0]
             else:
@@ -158,9 +161,23 @@ def get_object_hierarchy(target_object):
 
 
 def get_object_type(target_object):
-    mc.select(target_object, hi=True)
-    current_shape = mc.ls(sl=True, shapes=True)[0]
-    return mc.objectType(current_shape)
+    mc.select(target_object)
+    if is_group(mc.ls(sl=1)):
+        return 'group'
+    else:
+        current_shape = mc.listRelatives(mc.ls(sl=True), shapes=True)
+        return mc.objectType(current_shape)
+
+
+def is_group(node):
+    if mc.objectType(node, isType = 'joint'):
+        return False
+    children = mc.listRelatives(node, c=1)
+    if children:
+        for child in children:
+            if not mc.objectType(child, isType = 'transform'):
+                return False
+    return True
 
 
 def get_materials_in_scene():
@@ -485,13 +502,35 @@ def set_textures(material_name: str, texture_dict: dict):
 
 
 def export_mesh(target_object, mesh_export_location, export_options):
-    _LOGGER.info(f'Export Mesh firing[{target_object}]: {mesh_export_location}')
+    _LOGGER.info(f'Export Mesh ::::: [{target_object}] --> {mesh_export_location}')
+    target_directory_path = Path(mesh_export_location).parent
+    if not os.path.exists(target_directory_path):
+        os.makedirs(target_directory_path)
+
+    maya.mel.eval("FBXExportSmoothingGroups -v true;")
+    maya.mel.eval("FBXExportSmoothMesh -v true;")
+
     object_position = get_object_position(target_object)
     try:
+        ##########
         if 'Preserve Transform Values' not in export_options:
             mc.move(0, 0, 0, target_object, absolute=True)
+
         mc.select(target_object, replace=True)
+
+        ##########
+        if 'Triangulate Exported Objects' in export_options:
+            maya.mel.eval("FBXExportTriangulate -v true;")
+        else:
+            maya.mel.eval("FBXExportTriangulate -v false;")
         mc.file(str(mesh_export_location), force=True, type='FBX export', exportSelected=True)
+
+        ##########
+        if 'Force Z-up Export' in export_options:
+            maya.mel.eval("FBXExportUpAxis z;")
+        else:
+            maya.mel.eval("FBXExportUpAxis y;")
+
         mc.move(object_position[0], object_position[1], object_position[2], target_object, absolute=True)
         return True
     except Exception as e:
@@ -501,6 +540,21 @@ def export_mesh(target_object, mesh_export_location, export_options):
 def export_grouped_meshes(mesh_list, mesh_export_location, export_options):
     for mesh in mesh_list:
         mc.select(mesh, add=True)
+
+    maya.mel.eval("FBXExportSmoothingGroups -v true;")
+    maya.mel.eval("FBXExportSmoothMesh -v true;")
+
+    ##########
+    if 'Force Z-up Export' in export_options:
+        maya.mel.eval("FBXExportUpAxis z;")
+    else:
+        maya.mel.eval("FBXExportUpAxis y;")
+    
+    ##########
+    if 'Triangulate Exported Objects' in export_options:
+        maya.mel.eval("FBXExportTriangulate -v true;")
+    else:
+        maya.mel.eval("FBXExportTriangulate -v false;")
     mc.file(str(mesh_export_location), force=True, type='FBX export', exportSelected=True)
 
 

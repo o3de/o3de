@@ -38,6 +38,12 @@ namespace GradientSignal
         void OnPaintStrokeBegin(const AZ::Color& color) override;
         void OnPaintStrokeEnd() override;
         void OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn) override;
+        void OnSmooth(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, size_t kernelSize, SmoothFn& smoothFn) override;
+        AZ::Color OnGetColor(const AZ::Vector3& brushCenter) override;
+
+        void OnPaintSmoothInternal(
+            const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn,
+            AZStd::function<float(const AZ::Vector3& worldPosition, float gradientValue, float opacity)> combineFn);
 
         void BeginUndoBatch();
         void EndUndoBatch();
@@ -81,7 +87,9 @@ namespace GradientSignal
         PaintBrushUndoBuffer* m_paintBrushUndoBuffer = nullptr;
 
         AzToolsFramework::ViewportUi::ClusterId m_paintBrushControlClusterId;
-        AzToolsFramework::ViewportUi::ButtonId m_paintBrushSettingsButtonId;
+        AzToolsFramework::ViewportUi::ButtonId m_paintModeButtonId;
+        AzToolsFramework::ViewportUi::ButtonId m_eyedropperModeButtonId;
+        AzToolsFramework::ViewportUi::ButtonId m_smoothModeButtonId;
 
         AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler m_buttonSelectionHandler;
     };
