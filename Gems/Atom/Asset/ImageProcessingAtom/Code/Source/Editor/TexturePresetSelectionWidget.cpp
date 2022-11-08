@@ -96,7 +96,9 @@ namespace ImageProcessingAtomEditor
         AZ::RPI::ImageTagBus::BroadcastResult(textureTags, &AZ::RPI::ImageTagBus::Events::GetTags);
 
         for (const AZ::Name& tag : textureTags)
+        {
             m_ui->tagComboBox->addItem(tag.GetCStr());
+        }
 
         m_ui->tagList->setSortingEnabled(true);
 
