@@ -14,7 +14,7 @@
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/ViewportUi/Button.h>
-#include <AzToolsFramework/ComponentMode/ComponentModeDelegateNotificationBus.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeDelegateBus.h>
 
 namespace AZ
 {

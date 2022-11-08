@@ -112,7 +112,7 @@ namespace AzToolsFramework::ComponentModeFramework
     void ComponentModeSwitcher::UpdateSwitcher(
         const EntityIdList& newlySelectedEntityIds, const EntityIdList& newlyDeselectedEntityIds)
     {
-        auto selectedEntityIds = GetSelectedEntities();
+        const auto& selectedEntityIds = GetSelectedEntities();
 
         if (!newlyDeselectedEntityIds.empty())
         {
@@ -407,7 +407,7 @@ namespace AzToolsFramework::ComponentModeFramework
 
     void ComponentModeSwitcher::OnComponentModeDelegateConnect(const AZ::EntityComponentIdPair& pairId)
     {
-        auto selectedEntityIds = GetSelectedEntities();
+        const auto& selectedEntityIds = GetSelectedEntities();
         auto entityId = pairId.GetEntityId();
 
         if (AZStd::ranges::find(selectedEntityIds, entityId) != selectedEntityIds.end())
@@ -418,7 +418,7 @@ namespace AzToolsFramework::ComponentModeFramework
 
     void ComponentModeSwitcher::OnComponentModeDelegateDisconnect(const AZ::EntityComponentIdPair& pairId)
     {
-        auto selectedEntityIds = GetSelectedEntities();
+        const auto& selectedEntityIds = GetSelectedEntities();
         auto entityId = pairId.GetEntityId();
 
         if (AZStd::ranges::find(selectedEntityIds, entityId) != selectedEntityIds.end())

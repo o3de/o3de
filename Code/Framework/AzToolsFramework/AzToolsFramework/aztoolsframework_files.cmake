@@ -615,7 +615,7 @@ set(FILES
     ComponentMode/ComponentModeCollection.cpp
     ComponentMode/ComponentModeDelegate.h
     ComponentMode/ComponentModeDelegate.cpp
-    ComponentMode/ComponentModeDelegateNotificationBus.h
+    ComponentMode/ComponentModeDelegateBus.h
     ComponentMode/ComponentModeSwitcher.h
     ComponentMode/ComponentModeSwitcher.cpp
     ComponentMode/ComponentModeViewportUi.h

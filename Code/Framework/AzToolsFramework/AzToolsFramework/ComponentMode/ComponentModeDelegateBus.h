@@ -12,7 +12,7 @@
 
 namespace AzFramework
 {
-    //! Provides an interface to notify about ComponentModeDelegate states.
+    //! Provides an interface to notify changes to ComponentModeDelegate state.
     class ComponentModeDelegateNotifications : public AZ::EBusTraits
     {
     public:
