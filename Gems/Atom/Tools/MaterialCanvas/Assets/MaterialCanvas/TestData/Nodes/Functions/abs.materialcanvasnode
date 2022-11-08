@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{2E53F7CC-3C6D-4737-B092-2FB41204ECAC}",
         "category": "Math Functions",
-        "title": "abs",
+        "title": "Abs",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
@@ -24,7 +28,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -38,7 +42,7 @@
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = abs(NODEID_inValue);"
+                        "SLOTTYPE SLOTNAME = abs(inValue);"
                     ]
                 }
             }

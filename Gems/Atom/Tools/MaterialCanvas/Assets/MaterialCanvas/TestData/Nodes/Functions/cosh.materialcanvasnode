@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{58698BC4-16F6-4A01-90B5-B29319197B5C}",
         "category": "Math Functions",
-        "title": "cosh",
+        "title": "Cosh",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
@@ -24,7 +28,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -38,7 +42,7 @@
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = cosh(NODEID_inValue);"
+                        "SLOTTYPE SLOTNAME = cosh(inValue);"
                     ]
                 }
             }
