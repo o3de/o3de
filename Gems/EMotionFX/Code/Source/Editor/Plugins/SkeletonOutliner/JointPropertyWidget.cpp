@@ -306,6 +306,26 @@ namespace EMotionFX
             return;
         }
         auto configType = static_cast<PhysicsSetup::ColliderConfigType>(index.data(ItemRoles::ConfigType).toInt());
+        if (!index.data(ItemRoles::CopyFromType).isNull())
+        {
+            auto copyFromType = static_cast<PhysicsSetup::ColliderConfigType>(index.data(ItemRoles::CopyFromType).toInt());
+            // todo check if we could have less
+            AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+            SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
+            if (!selectedRowIndicesOutcome.IsSuccess())
+            {
+                return;
+            }
+
+            const QModelIndexList& selectedRowIndices = selectedRowIndicesOutcome.GetValue();
+            if (selectedRowIndices.empty())
+            {
+                return;
+            }
+
+            ColliderHelpers::CopyColliders(selectedRowIndices, copyFromType, configType);
+            return;
+        }
         auto colliderType = AZ::TypeId{index.data(ItemRoles::TypeId).toString().toStdString().c_str()};
 
         if (configType == PhysicsSetup::ColliderConfigType::Ragdoll)
