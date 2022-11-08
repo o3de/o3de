@@ -16,11 +16,6 @@ namespace AZ
         return planeId;
     }
 
-    AZ_MATH_INLINE Frustum Frustum::CreateUninitialized()
-    {
-        return Frustum();
-    }
-
     AZ_MATH_INLINE Frustum::Frustum()
     {
 #ifdef AZ_DEBUG_BUILD
@@ -41,7 +36,7 @@ namespace AZ
         using namespace Simd;
         m_serializedPlanes[planeId] = plane;
 
-        //normalize the plane by dividing each element by the length of the normal
+        // normalize the plane by dividing each element by the length of the normal
         const Vec4::FloatType lengthSquared = Vec4::FromVec1(Vec3::Dot(plane.GetNormal().GetSimdValue(), plane.GetNormal().GetSimdValue()));
         const Vec4::FloatType length = Vec4::Sqrt(lengthSquared);
         m_planes[planeId] = Vec4::Div(plane.GetSimdValue(), length);
@@ -84,7 +79,7 @@ namespace AZ
         for (PlaneId i = PlaneId::Near; i < PlaneId::MAX; ++i)
         {
             const Vector3 disjointSupport = aabb.GetSupport(-Vector3(Simd::Vec4::ToVec3(m_planes[i])));
-            const float   disjointDistance = Simd::Vec1::SelectFirst(Simd::Vec4::PlaneDistance(m_planes[i], disjointSupport.GetSimdValue()));
+            const float disjointDistance = Simd::Vec1::SelectFirst(Simd::Vec4::PlaneDistance(m_planes[i], disjointSupport.GetSimdValue()));
 
             if (disjointDistance < 0.0f)
             {
@@ -94,7 +89,8 @@ namespace AZ
             // We now know the interior point we just checked passes the plane check..
             // Check an exterior support point to determine whether or not the whole AABB is contained or if this is an intersection
             const Vector3 intersectSupport = aabb.GetSupport(Vector3(Simd::Vec4::ToVec3(m_planes[i])));
-            const float   intersectDistance = Simd::Vec1::SelectFirst(Simd::Vec4::PlaneDistance(m_planes[i], intersectSupport.GetSimdValue()));
+            const float intersectDistance =
+                Simd::Vec1::SelectFirst(Simd::Vec4::PlaneDistance(m_planes[i], intersectSupport.GetSimdValue()));
 
             if (intersectDistance >= 0.0f)
             {
@@ -109,12 +105,12 @@ namespace AZ
 
     AZ_MATH_INLINE bool Frustum::IsClose(const Frustum& rhs, float tolerance) const
     {
-        return Vector4(m_planes[PlaneId::Near  ]).IsClose(Vector4(rhs.m_planes[PlaneId::Near  ]), tolerance)
-            && Vector4(m_planes[PlaneId::Far   ]).IsClose(Vector4(rhs.m_planes[PlaneId::Far   ]), tolerance)
-            && Vector4(m_planes[PlaneId::Left  ]).IsClose(Vector4(rhs.m_planes[PlaneId::Left  ]), tolerance)
-            && Vector4(m_planes[PlaneId::Right ]).IsClose(Vector4(rhs.m_planes[PlaneId::Right ]), tolerance)
-            && Vector4(m_planes[PlaneId::Top   ]).IsClose(Vector4(rhs.m_planes[PlaneId::Top   ]), tolerance)
-            && Vector4(m_planes[PlaneId::Bottom]).IsClose(Vector4(rhs.m_planes[PlaneId::Bottom]), tolerance);
+        return Vector4(m_planes[PlaneId::Near]).IsClose(Vector4(rhs.m_planes[PlaneId::Near]), tolerance) &&
+            Vector4(m_planes[PlaneId::Far]).IsClose(Vector4(rhs.m_planes[PlaneId::Far]), tolerance) &&
+            Vector4(m_planes[PlaneId::Left]).IsClose(Vector4(rhs.m_planes[PlaneId::Left]), tolerance) &&
+            Vector4(m_planes[PlaneId::Right]).IsClose(Vector4(rhs.m_planes[PlaneId::Right]), tolerance) &&
+            Vector4(m_planes[PlaneId::Top]).IsClose(Vector4(rhs.m_planes[PlaneId::Top]), tolerance) &&
+            Vector4(m_planes[PlaneId::Bottom]).IsClose(Vector4(rhs.m_planes[PlaneId::Bottom]), tolerance);
     }
 
 } // namespace AZ

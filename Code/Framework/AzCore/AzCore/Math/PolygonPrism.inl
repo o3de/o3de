@@ -10,8 +10,5 @@
 
 namespace AZ
 {
-    AZ_MATH_INLINE PolygonPrism PolygonPrism::CreateUninitialized()
-    {
-        return PolygonPrism();
-    }
+
 } // namespace AZ

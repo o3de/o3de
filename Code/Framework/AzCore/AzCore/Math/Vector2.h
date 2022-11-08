@@ -28,7 +28,7 @@ namespace AZ
         //! @param context reflection context
         static void Reflect(ReflectContext* context);
 
-        Vector2() = default;
+        //Vector2() = default;
 
         Vector2(const Vector2& v) = default;
 

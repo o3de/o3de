@@ -30,7 +30,7 @@ namespace AZ
         static void Reflect(ReflectContext* context);
 
         //! Default constructor, components are uninitialized.
-        Vector4() = default;
+        //Vector4() = default;
         Vector4(const Vector4& v);
 
         // curly braces {} - zero initializes the Simd member
