@@ -80,7 +80,7 @@ namespace ImageProcessingAtom
         const AZStd::string m_fileName;
         const uint32_t m_subId = AZ::RPI::StreamingImageAsset::GetImageAssetSubId();
         const uint8_t m_numResidentMips = 0u;
-         AZStd::set<AZStd::string> m_tags;
+        AZStd::set<AZStd::string> m_tags;
 
         AZStd::vector<AssetBuilderSDK::JobProduct> m_jobProducts;
 
