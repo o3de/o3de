@@ -434,30 +434,33 @@ namespace ScriptCanvasEditor
 
         for (auto& node : sm->m_deprecatedNodes)
         {
-            ScriptCanvas::NodeReplacementConfiguration nodeConfig = node->GetReplacementNodeConfiguration();
-            // fallback to node replacement system, once fully migrated, all replacement config should come from replacement system
+            ScriptCanvas::NodeReplacementConfiguration nodeConfig;
+            auto replacementId = ScriptCanvasEditor::NodeReplacementSystem::GenerateReplacementId(node);
+            ScriptCanvasEditor::NodeReplacementRequestBus::BroadcastResult(
+                nodeConfig, &ScriptCanvasEditor::NodeReplacementRequestBus::Events::GetNodeReplacementConfiguration, replacementId);
+
             if (!nodeConfig.IsValid())
             {
-                auto replacementId = ScriptCanvasEditor::NodeReplacementSystem::GenerateReplacementId(node);
-                ScriptCanvasEditor::NodeReplacementRequestBus::BroadcastResult(
-                    nodeConfig, &ScriptCanvasEditor::NodeReplacementRequests::GetNodeReplacementConfiguration, replacementId);
+                nodeConfig = node->GetReplacementNodeConfiguration();
             }
 
             if (nodeConfig.IsValid())
             {
-                ScriptCanvas::NodeUpdateSlotReport nodeUpdateSlotReport;
                 auto nodeEntity = node->GetEntityId();
-                auto nodeOutcome = graph->ReplaceNodeByConfig(node, nodeConfig, nodeUpdateSlotReport);
-                if (nodeOutcome.IsSuccess())
+                ScriptCanvas::NodeUpdateReport nodeUpdateReport;
+                ScriptCanvasEditor::NodeReplacementRequestBus::BroadcastResult(nodeUpdateReport,
+                    &ScriptCanvasEditor::NodeReplacementRequestBus::Events::ReplaceNodeByReplacementConfiguration,
+                    graph->GetScriptCanvasId(), node, nodeConfig);
+                if (!nodeUpdateReport.IsEmpty())
                 {
-                    ScriptCanvas::MergeUpdateSlotReport(nodeEntity, sm->m_updateReport, nodeUpdateSlotReport);
+                    ScriptCanvas::MergeUpdateSlotReport(nodeEntity, sm->m_updateReport, nodeUpdateReport);
 
                     sm->m_allNodes.erase(node);
                     sm->m_outOfDateNodes.erase(node);
                     sm->m_sanityCheckRequiredNodes.erase(node);
                     sm->m_graphNeedsDirtying = true;
 
-                    auto replacedNode = nodeOutcome.GetValue();
+                    auto replacedNode = nodeUpdateReport.m_newNode;
                     sm->m_allNodes.insert(replacedNode);
 
                     if (replacedNode->IsOutOfDate(graph->GetVersion()))

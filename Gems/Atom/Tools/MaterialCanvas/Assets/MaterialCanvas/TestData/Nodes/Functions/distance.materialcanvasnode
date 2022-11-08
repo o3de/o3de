@@ -5,7 +5,12 @@
     "ClassData": {
         "id": "{31BEA4FF-36E1-4EB0-A0C3-B53F79AA31C7}",
         "category": "Math Functions",
-        "title": "distance",
+        "title": "Distance",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2",
+            "outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue1",
@@ -24,7 +29,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             },
@@ -45,7 +50,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -55,11 +60,11 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypeRegex": "float4",
-                "defaultDataType": "float4",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = distance(NODEID_inValue1, NODEID_inValue2);"
+                        "SLOTTYPE SLOTNAME = distance(inValue1, inValue2);"
                     ]
                 }
             }

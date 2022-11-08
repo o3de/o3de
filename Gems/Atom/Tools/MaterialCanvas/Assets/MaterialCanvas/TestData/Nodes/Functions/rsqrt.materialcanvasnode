@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{C0428164-40B8-4DC0-BD35-2A20F64E99EB}",
         "category": "Math Functions",
-        "title": "rsqrt",
+        "title": "Rsqrt",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
@@ -24,7 +28,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -38,7 +42,7 @@
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = rsqrt(NODEID_inValue);"
+                        "SLOTTYPE SLOTNAME = rsqrt(inValue);"
                     ]
                 }
             }

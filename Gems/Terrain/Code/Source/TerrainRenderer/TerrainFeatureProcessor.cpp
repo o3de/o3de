@@ -131,13 +131,9 @@ namespace Terrain
     }
 
     void TerrainFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] AZ::RPI::RenderPipeline* renderPipeline,
-        AZ::RPI::SceneNotification::RenderPipelineChangeType changeType)
+        [[maybe_unused]] AZ::RPI::SceneNotification::RenderPipelineChangeType changeType)
     {
-        if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::Added
-            || changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
-        {
-            CachePasses();
-        }
+        CachePasses();
     }
 
     void AddPassRequestToRenderPipeline(
@@ -196,7 +192,12 @@ namespace Terrain
     {
         // Get the pass requests to create passes from the asset
         AddPassRequestToRenderPipeline(renderPipeline, "Passes/TerrainPassRequest.azasset", "DepthPrePass", true);
-        AddPassRequestToRenderPipeline(renderPipeline, "Passes/TerrainDebugPassRequest.azasset", "DebugOverlayPass", false);
+
+        // Only add debug pass if the DebugOverlayPass exists
+        if (renderPipeline->FindFirstPass(AZ::Name("DebugOverlayPass")))
+        {
+            AddPassRequestToRenderPipeline(renderPipeline, "Passes/TerrainDebugPassRequest.azasset", "DebugOverlayPass", false);
+        }
     }
 
     void TerrainFeatureProcessor::PrepareMaterialData()

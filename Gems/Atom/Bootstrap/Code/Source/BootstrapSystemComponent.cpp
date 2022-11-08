@@ -314,9 +314,18 @@ namespace AZ
                 // Load the main default pipeline if applicable
                 if (loadDefaultRenderPipeline)
                 {
-                    const AZ::CVarFixedString pipelineName = xrSystem
-                        ? "passes/LowEndRenderPipeline.azasset" // OpenXr uses low end render pipeline
-                        : static_cast<AZ::CVarFixedString>(r_default_pipeline_name);
+                    AZ::CVarFixedString pipelineName = static_cast<AZ::CVarFixedString>(r_default_pipeline_name);
+                    if (xrSystem)
+                    {
+                        // When running launcher on PC having an XR system present then the default render pipeline is suppose to reflect
+                        // what's being rendered into XR device. XR render pipeline uses low end render pipeline.
+                        AZ::ApplicationTypeQuery appType;
+                        ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+                        if (appType.IsGame())
+                        {
+                            pipelineName = "passes/LowEndRenderPipeline.azasset";
+                        }
+                    }
 
                     if (!LoadPipeline(scene, viewportContext, pipelineName, AZ::RPI::ViewType::Default, multisampleState))
                     {
@@ -409,17 +418,19 @@ namespace AZ
                 if (pipelineAsset)
                 {
                     RPI::RenderPipelineDescriptor renderPipelineDescriptor =
-                        *RPI::GetDataFromAnyAsset<RPI::RenderPipelineDescriptor>(pipelineAsset);
+                        *RPI::GetDataFromAnyAsset<RPI::RenderPipelineDescriptor>(pipelineAsset); // Copy descriptor from asset
+                    pipelineAsset.Release();
+
                     renderPipelineDescriptor.m_name =
                         AZStd::string::format("%s_%i", renderPipelineDescriptor.m_name.c_str(), viewportContext->GetId());
 
                     multisampleState = renderPipelineDescriptor.m_renderSettings.m_multisampleState;
 
+                    // Create and add render pipeline to the scene (when not added already)
                     if (!scene->GetRenderPipeline(AZ::Name(renderPipelineDescriptor.m_name)))
                     {
                         RPI::RenderPipelinePtr renderPipeline = RPI::RenderPipeline::CreateRenderPipelineForWindow(
                             renderPipelineDescriptor, *viewportContext->GetWindowContext().get(), viewType);
-                        pipelineAsset.Release();
                         scene->AddRenderPipeline(renderPipeline);
                     }
                     return true;
