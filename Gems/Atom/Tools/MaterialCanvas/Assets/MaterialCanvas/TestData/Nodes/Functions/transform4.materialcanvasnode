@@ -5,7 +5,12 @@
     "ClassData": {
         "id": "{BC12CE33-9F84-4F51-BE83-382B65BB86B6}",
         "category": "Math Functions",
-        "title": "transform4",
+        "title": "Transform4",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inVector|outVector",
+            "inMatrix"
+        ],
         "inputSlots": [
             {
                 "name": "inVector",
@@ -24,7 +29,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             },
@@ -65,7 +70,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -79,7 +84,7 @@
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = mul((float4)NODEID_inVector, NODEID_inMatrix);"
+                        "SLOTTYPE SLOTNAME = mul((float4)inVector, inMatrix);"
                     ]
                 }
             }

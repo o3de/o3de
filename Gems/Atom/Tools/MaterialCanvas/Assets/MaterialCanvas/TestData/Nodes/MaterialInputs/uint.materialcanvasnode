@@ -6,6 +6,10 @@
         "id": "{9867FE60-6682-498C-B0FA-58D179F0C3E1}",
         "category": "Material Inputs",
         "title": "UInt Input",
+        "titlePaletteName": "MaterialInputNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "propertySlots": [
             {
                 "name": "inGroup",
@@ -17,7 +21,8 @@
                     "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
                     "Value": ""
                 },
-                "supportsEditingOnNode": false
+                "visibleOnNode": false,
+                "editableOnNode": false
             },
             {
                 "name": "inName",
@@ -40,7 +45,8 @@
                     "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
                     "Value": ""
                 },
-                "supportsEditingOnNode": false
+                "visibleOnNode": false,
+                "editableOnNode": false
             },
             {
                 "name": "inValue",
@@ -68,7 +74,7 @@
                 "defaultDataType": "uint",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue;"
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue;"
                     ]
                 }
             }

@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{A663809B-882E-4295-834C-F6A118356A11}",
         "category": "Math Functions",
-        "title": "normalize",
+        "title": "Normalize",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
@@ -24,7 +28,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -38,7 +42,7 @@
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = normalize(NODEID_inValue);"
+                        "SLOTTYPE SLOTNAME = normalize(inValue);"
                     ]
                 }
             }

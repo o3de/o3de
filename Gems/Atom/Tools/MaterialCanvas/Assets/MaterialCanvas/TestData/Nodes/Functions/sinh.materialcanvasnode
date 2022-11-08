@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{9041104C-C659-46FB-A363-84F4E733C766}",
         "category": "Math Functions",
-        "title": "sinh",
+        "title": "Sinh",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
@@ -24,7 +28,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -38,7 +42,7 @@
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = sinh(NODEID_inValue);"
+                        "SLOTTYPE SLOTNAME = sinh(inValue);"
                     ]
                 }
             }

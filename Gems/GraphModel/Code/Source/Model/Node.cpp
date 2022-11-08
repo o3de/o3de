@@ -308,6 +308,27 @@ namespace GraphModel
         return maxOutputDepth;
     }
 
+    bool Node::HasSlots() const
+    {
+        return !m_allSlots.empty();
+    }
+
+    bool Node::HasInputSlots() const
+    {
+        return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [](const auto& slotPair) {
+            const auto& slot = slotPair.second;
+            return slot->GetSlotDirection() == GraphModel::SlotDirection::Input;
+        });
+    }
+
+    bool Node::HasOutputSlots() const
+    {
+        return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [](const auto& slotPair) {
+            const auto& slot = slotPair.second;
+            return slot->GetSlotDirection() == GraphModel::SlotDirection::Output;
+        });
+    }
+
     bool Node::HasConnections() const
     {
         return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [](const auto& slotPair) {
