@@ -319,6 +319,14 @@ namespace AzNetworking
         return SerializeHelper(value, 0, false, unused, name);
     }
 
+    #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
+    bool DeltaSerializerApply::Serialize(AZ::s64& value, const char* name, [[maybe_unused]] AZ::s64 minValue, [[maybe_unused]] AZ::s64 maxValue)
+    {
+        uint32_t unused = 0;
+        return SerializeHelper(value, 0, false, unused, name);
+    }
+    #endif
+
     bool DeltaSerializerApply::Serialize(uint8_t& value, const char* name, [[maybe_unused]] uint8_t minValue, [[maybe_unused]] uint8_t maxValue)
     {
         uint32_t unused = 0;

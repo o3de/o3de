@@ -79,6 +79,7 @@ namespace AzNetworking
     }
 
     #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
+    template <typename BASE_TYPE>
     bool TrackChangedSerializer<BASE_TYPE>::Serialize(AZ::s64& value, const char* name, AZ::s64 minValue, AZ::s64 maxValue)
     {
         const AZ::s64 cached = value;

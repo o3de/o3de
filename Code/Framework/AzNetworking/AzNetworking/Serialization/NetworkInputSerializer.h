@@ -39,14 +39,14 @@ namespace AzNetworking
         bool Serialize(int32_t& value, const char* name, int32_t minValue, int32_t maxValue) override;
         bool Serialize(int64_t& value, const char* name, int64_t minValue, int64_t maxValue) override;
         #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
-        bool Serialize(AZ::s64& value, const char* name, AZ::s64 minValue = AZStd::numeric_limits<AZ::s64>::min(), AZ::s64 maxValue = AZStd::numeric_limits<AZ::s64>::max()) override;
+        bool Serialize(AZ::s64& value, const char* name, AZ::s64 minValue, AZ::s64 maxValue) override;
         #endif
         bool Serialize(uint8_t& value, const char* name, uint8_t minValue, uint8_t maxValue) override;
         bool Serialize(uint16_t& value, const char* name, uint16_t minValue, uint16_t maxValue) override;
         bool Serialize(uint32_t& value, const char* name, uint32_t minValue, uint32_t maxValue) override;
         bool Serialize(uint64_t& value, const char* name, uint64_t minValue, uint64_t maxValue) override;
         #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
-        bool Serialize(AZ::u64& value, const char* name, AZ::u64 minValue = AZStd::numeric_limits<AZ::u64>::min(), AZ::u64 maxValue = AZStd::numeric_limits<AZ::u64>::max()) override;
+        bool Serialize(AZ::u64& value, const char* name, AZ::u64 minValue, AZ::u64 maxValue) override;
         #endif
         bool Serialize(float& value, const char* name, float minValue, float maxValue) override;
         bool Serialize(double& value, const char* name, double minValue, double maxValue) override;

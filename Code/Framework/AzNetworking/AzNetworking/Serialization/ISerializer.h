@@ -9,6 +9,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <AzCore/base.h>
 #include <AzCore/std/limits.h>
 
 namespace AzNetworking
@@ -100,6 +101,12 @@ namespace AzNetworking
         //! @return boolean true for success, false for failure
         virtual bool Serialize(int64_t& value, const char* name, int64_t minValue = AZStd::numeric_limits<int64_t>::min(), int64_t maxValue = AZStd::numeric_limits<int64_t>::max()) = 0;
 
+        //! Serialize a signed 64-bit integer.
+        //! @param value    signed 64-bit integer input value to serialize
+        //! @param name     string name of the value being serialized
+        //! @param minValue the minimum value expected during serialization
+        //! @param maxValue the maximum value expected during serialization
+        //! @return boolean true for success, false for failure
         #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
         virtual bool Serialize(AZ::s64& value, const char* name, AZ::s64 minValue = AZStd::numeric_limits<AZ::s64>::min(), AZ::s64 maxValue = AZStd::numeric_limits<AZ::s64>::max()) = 0;
         #endif
