@@ -207,9 +207,13 @@ namespace AZ
                     // We want to store off the id, not the AssetData instance. This simplifies the fetch / evict logic which
                     // can do more strict assertions.
                     if (mipChainIndex >= highestMipChain)
+                    {
                         m_mipChains.push_back(Data::Asset<ImageMipChainAsset>(assetId, azrtti_typeid<ImageMipChainAsset>()));
+                    }
                     else
+                    {
                         m_mipChains.push_back(Data::Asset<ImageMipChainAsset>{});
+                    }
                 }
 
                 // Initialize the streaming state to have the tail mip active and ready.
