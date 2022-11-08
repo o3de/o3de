@@ -71,9 +71,9 @@ namespace AzToolsFramework
                 ->Field("Flow", &PaintBrushSettings::m_flowPercent)
                 ->Field("DistancePercent", &PaintBrushSettings::m_distancePercent)
                 ->Field("BlendMode", &PaintBrushSettings::m_blendMode)
+                ->Field("SmoothMode", &PaintBrushSettings::m_smoothMode)
                 ->Field("SmoothingRadius", &PaintBrushSettings::m_smoothingRadius)
                 ->Field("SmoothingSpacing", &PaintBrushSettings::m_smoothingSpacing)
-                ->Field("SmoothMode", &PaintBrushSettings::m_smoothMode)
                 ;
 
 
@@ -160,18 +160,6 @@ namespace AzToolsFramework
                         ->Attribute(AZ::Edit::Attributes::Suffix, " %")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetDistanceVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_smoothingRadius, "Smoothing Radius",
-                        "The number of pixels in each direction to use for smoothing calculations")
-                        ->Attribute(AZ::Edit::Attributes::Min, MinSmoothingRadius)
-                        ->Attribute(AZ::Edit::Attributes::Max, MaxSmoothingRadius)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetSmoothingRadiusVisibility)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_smoothingSpacing, "Smoothing Spacing",
-                        "The number of pixels to skip between each pixel used for smoothing calculations")
-                        ->Attribute(AZ::Edit::Attributes::Min, MinSmoothingSpacing)
-                        ->Attribute(AZ::Edit::Attributes::Max, MaxSmoothingSpacing)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetSmoothingSpacingVisibility)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox, &PaintBrushSettings::m_blendMode, "Blend Mode", "Blend mode of the brush stroke.")
                         ->EnumAttribute(PaintBrushBlendMode::Normal, "Normal")
@@ -192,6 +180,18 @@ namespace AzToolsFramework
                         ->EnumAttribute(PaintBrushSmoothMode::Mean, "Average (Mean)")
                         ->EnumAttribute(PaintBrushSmoothMode::Median, "Middle Value (Median)")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetSmoothModeVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_smoothingRadius, "Smoothing Values",
+                        "The number of values in each direction to use for smoothing calculations (1 value in each direction = 3x3 smoothing kernel).")
+                        ->Attribute(AZ::Edit::Attributes::Min, MinSmoothingRadius)
+                        ->Attribute(AZ::Edit::Attributes::Max, MaxSmoothingRadius)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetSmoothingRadiusVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_smoothingSpacing, "Smoothing Value Spacing",
+                        "The spacing of values used for smoothing calculations (0 uses adjacent values, 1 uses every other value, etc).")
+                        ->Attribute(AZ::Edit::Attributes::Min, MinSmoothingSpacing)
+                        ->Attribute(AZ::Edit::Attributes::Max, MaxSmoothingSpacing)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetSmoothingSpacingVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
                     ;
             }
@@ -237,11 +237,9 @@ namespace AzToolsFramework
         return (m_brushMode != PaintBrushMode::Eyedropper);
     }
 
-    // The following settings are only visible in Paint mode
-
     bool PaintBrushSettings::GetBlendModeVisibility() const
     {
-        return (m_brushMode == PaintBrushMode::Paintbrush);
+        return (m_brushMode != PaintBrushMode::Eyedropper);
     }
 
     // The following settings are only visible in Smooth mode

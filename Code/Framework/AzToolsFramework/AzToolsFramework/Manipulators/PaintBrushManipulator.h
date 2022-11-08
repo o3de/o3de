@@ -14,6 +14,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/PaintBrushSettings/PaintBrushSettings.h>
 #include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsNotificationBus.h>
+#include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
@@ -113,6 +114,10 @@ namespace AzToolsFramework
         //! @param brushSettings The current paintbrush settings.
         //! @param isFirstBrushStrokePoint True if the stroke is just starting, false if not.
         void PerformSmoothAction(const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings, bool isFirstBrushStrokePoint);
+
+        //! Smooth the underlying data based on brush movement and settings.
+        //! @param brushSettings The current paintbrush settings.
+        static PaintBrushNotifications::BlendFn GetBlendFunction(const PaintBrushSettings& brushSettings);
 
         //! Generates a list of brush stamp centers and an AABB around the brush stamps for the current brush stroke movement.
         //! @param brushCenter The current center of the paintbrush.

@@ -13,7 +13,6 @@
 #include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsNotificationBus.h>
 #include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsRequestBus.h>
 #include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsWindow.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -404,6 +403,82 @@ namespace AzToolsFramework
         }
     }
 
+    PaintBrushNotifications::BlendFn PaintBrushManipulator::GetBlendFunction(const PaintBrushSettings& brushSettings)
+    {
+        switch (brushSettings.GetBlendMode())
+        {
+        case PaintBrushBlendMode::Normal:
+            return [](float baseValue, float intensity, float opacity)
+            {
+                const float operationResult = intensity;
+                return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+            };
+            break;
+        case PaintBrushBlendMode::Add:
+            return [](float baseValue, float intensity, float opacity)
+            {
+                const float operationResult = baseValue + intensity;
+                return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+            };
+            break;
+        case PaintBrushBlendMode::Subtract:
+            return [](float baseValue, float intensity, float opacity)
+            {
+                const float operationResult = baseValue - intensity;
+                return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+            };
+            break;
+        case PaintBrushBlendMode::Multiply:
+            return [](float baseValue, float intensity, float opacity)
+            {
+                const float operationResult = baseValue * intensity;
+                return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+            };
+            break;
+        case PaintBrushBlendMode::Screen:
+            return [](float baseValue, float intensity, float opacity)
+            {
+                const float operationResult = 1.0f - ((1.0f - baseValue) * (1.0f - intensity));
+                return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+            };
+            break;
+        case PaintBrushBlendMode::Darken:
+            return [](float baseValue, float intensity, float opacity)
+            {
+                const float operationResult = AZStd::min(baseValue, intensity);
+                return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+            };
+            break;
+        case PaintBrushBlendMode::Lighten:
+            return [](float baseValue, float intensity, float opacity)
+            {
+                const float operationResult = AZStd::max(baseValue, intensity);
+                return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+            };
+            break;
+        case PaintBrushBlendMode::Average:
+            return [](float baseValue, float intensity, float opacity)
+            {
+                const float operationResult = (baseValue + intensity) / 2.0f;
+                return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+            };
+            break;
+        case PaintBrushBlendMode::Overlay:
+            return [](float baseValue, float intensity, float opacity)
+            {
+                const float operationResult =
+                    (baseValue >= 0.5f) ? (1.0f - (2.0f * (1.0f - baseValue) * (1.0f - intensity))) : (2.0f * baseValue * intensity);
+                return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+            };
+            break;
+        default:
+            AZ_Assert(false, "Unknown PaintBrushBlendMode type: %u", brushSettings.GetBlendMode());
+            break;
+        }
+
+        return {};
+    }
+
 
     void PaintBrushManipulator::PerformPaintAction(
         const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings, bool isFirstBrushStrokePoint)
@@ -431,77 +506,7 @@ namespace AzToolsFramework
         });
 
         // Set the blending operation based on the current paintbrush blend mode setting.
-        PaintBrushNotifications::BlendFn blendFn;
-        switch (brushSettings.GetBlendMode())
-        {
-            case PaintBrushBlendMode::Normal:
-                blendFn = [](float baseValue, float intensity, float opacity)
-                {
-                    const float operationResult = intensity;
-                    return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
-                };
-                break;
-            case PaintBrushBlendMode::Add:
-                blendFn = [](float baseValue, float intensity, float opacity)
-                {
-                    const float operationResult = baseValue + intensity;
-                    return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
-                };
-                break;
-            case PaintBrushBlendMode::Subtract:
-                blendFn = [](float baseValue, float intensity, float opacity)
-                {
-                    const float operationResult = baseValue - intensity;
-                    return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
-                };
-                break;
-            case PaintBrushBlendMode::Multiply:
-                blendFn = [](float baseValue, float intensity, float opacity)
-                {
-                    const float operationResult = baseValue * intensity;
-                    return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
-                };
-                break;
-            case PaintBrushBlendMode::Screen:
-                blendFn = [](float baseValue, float intensity, float opacity)
-                {
-                    const float operationResult = 1.0f - ((1.0f - baseValue) * (1.0f - intensity));
-                    return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
-                };
-                break;
-            case PaintBrushBlendMode::Darken:
-                blendFn = [](float baseValue, float intensity, float opacity)
-                {
-                    const float operationResult = AZStd::min(baseValue, intensity);
-                    return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
-                };
-                break;
-            case PaintBrushBlendMode::Lighten:
-                blendFn = [](float baseValue, float intensity, float opacity)
-                {
-                    const float operationResult = AZStd::max(baseValue, intensity);
-                    return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
-                };
-                break;
-            case PaintBrushBlendMode::Average:
-                blendFn = [](float baseValue, float intensity, float opacity)
-                {
-                    const float operationResult = (baseValue + intensity) / 2.0f;
-                    return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
-                };
-                break;
-            case PaintBrushBlendMode::Overlay:
-                blendFn = [](float baseValue, float intensity, float opacity)
-                {
-                    const float operationResult = (baseValue >= 0.5f) ? (1.0f - (2.0f * (1.0f - baseValue) * (1.0f - intensity)))
-                                                                        : (2.0f * baseValue * intensity);
-                    return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
-                };
-                break;
-            default:
-                AZ_Assert(false, "Unknown PaintBrushBlendMode type: %u", brushSettings.GetBlendMode());
-                break;
-        }
+        PaintBrushNotifications::BlendFn blendFn = GetBlendFunction(brushSettings);
 
         // Trigger the OnPaint notification, provide the listener with the valueLookupFn to find out the paint brush
         // values at specific world positions, and provide the blendFn to perform blending operations based on the provided base and
@@ -630,6 +635,9 @@ namespace AzToolsFramework
             }
         }
 
+        // Set the blending operation based on the current paintbrush blend mode setting.
+        PaintBrushNotifications::BlendFn blendFn = GetBlendFunction(brushSettings);
+
         // Select the appropriate smoothing function.
 
         PaintBrushNotifications::SmoothFn smoothFn;
@@ -639,7 +647,7 @@ namespace AzToolsFramework
         case AzToolsFramework::PaintBrushSmoothMode::Gaussian:
             gaussianWeights = CalculateGaussianWeights(brushSettings.GetSmoothingRadius());
 
-            smoothFn = [&gaussianWeights](float baseValue, AZStd::span<float> kernelValues, float opacity) -> float
+            smoothFn = [&gaussianWeights, &blendFn](float baseValue, AZStd::span<float> kernelValues, float opacity) -> float
             {
                 AZ_Assert(kernelValues.size() == gaussianWeights.size(), "Invalid number of points to smooth.");
 
@@ -652,12 +660,12 @@ namespace AzToolsFramework
                     smoothedValue += (kernelValues[index] * gaussianWeights[index]);
                 }
 
-                return AZStd::clamp(AZStd::lerp(baseValue, smoothedValue, opacity), 0.0f, 1.0f);
+                return blendFn(baseValue, smoothedValue, opacity);
             };
             break;
         case AzToolsFramework::PaintBrushSmoothMode::Mean:
             // We'll use a 3x3 kernel, but any kernel size here would work.
-            smoothFn = [](float baseValue, AZStd::span<float> kernelValues, float opacity) -> float
+            smoothFn = [&blendFn](float baseValue, AZStd::span<float> kernelValues, float opacity) -> float
             {
                 // Calculate the average value from the neighborhood of values surrounding (and including) the baseValue.
                 float smoothedValue = 0.0f;
@@ -666,18 +674,18 @@ namespace AzToolsFramework
                     smoothedValue += kernelValues[index];
                 }
 
-                return AZStd::clamp(AZStd::lerp(baseValue, smoothedValue / kernelValues.size(), opacity), 0.0f, 1.0f);
+                return blendFn(baseValue, smoothedValue / kernelValues.size(), opacity);
             };
             break;
         case AzToolsFramework::PaintBrushSmoothMode::Median:
-            smoothFn = [](float baseValue, AZStd::span<float> kernelValues, float opacity) -> float
+            smoothFn = [&blendFn](float baseValue, AZStd::span<float> kernelValues, float opacity) -> float
             {
                 // Find the middle value from the neighborhood of values surrounding (and including) the baseValue.
                 // This will change the order of the values in kernelValues!
                 AZStd::nth_element(kernelValues.begin(), kernelValues.begin() + (kernelValues.size() / 2), kernelValues.end());
                 float medianValue = kernelValues[kernelValues.size() / 2];
 
-                return AZStd::clamp(AZStd::lerp(baseValue, medianValue, opacity), 0.0f, 1.0f);
+                return blendFn(baseValue, medianValue, opacity);
             };
             break;
         }
