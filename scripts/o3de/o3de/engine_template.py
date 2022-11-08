@@ -1823,6 +1823,7 @@ def create_gem(gem_path: pathlib.Path,
                origin: str = None,
                origin_url: str = None,
                user_tags: list or str = None,
+               platforms: list or str = None,
                icon_path: str = None,
                documentation_url: str = None,
                repo_uri: str = None,
@@ -1858,6 +1859,7 @@ def create_gem(gem_path: pathlib.Path,
     :param origin: The name of the originator i.e. XYZ Inc.
     :param origin_url: The primary website for your Gem i.e. http://www.mydomain.com
     :param user_tags: A comma separated string of user tags
+    :param platforms: A comma separated string of platforms for your Gem
     :param icon_path: The relative path to the icon PNG image in your Gem i.e. preview.png
     :param documentation_url: Link to any documentation for your Gem i.e. https://o3de.org/docs/user-guide/gems/...
     :param repo_uri: Optional link to the gem repository for your Gem.
@@ -2118,6 +2120,16 @@ def create_gem(gem_path: pathlib.Path,
     tags_quoted = ','.join(f'"{word.strip()}"' for word in set(tags))
     # remove the first and last quote because those already exist in gem.json
     replacements.append(("${UserTags}", tags_quoted[1:-1]))
+
+    temp_platforms = []
+    if platforms:
+        #same as tags, allow commas or spaces as platform separators
+        new_platforms = platforms.replace(',', ' ').split() if isinstance(platforms, str) else platforms
+        temp_platforms.extend(new_platforms)
+    platforms_quoted = ','.join(f'"{word.strip()}"' for word in set(temp_platforms))
+    #remove the first and last quote because those already exist in gem.json
+    print("Temp platforms is : " + str(temp_platforms))
+    replacements.append(("${Platforms}", platforms_quoted[1:-1]))
 
     if icon_path:
         replacements.append(("${IconPath}", pathlib.PurePath(icon_path).as_posix()))
@@ -2740,6 +2752,8 @@ def add_args(subparsers) -> None:
                        help='The website for your Gem. i.e. http://www.mydomain.com')
     create_gem_subparser.add_argument('-ut', '--user-tags', type=str, nargs='*', required=False,
                        help='Adds tag(s) to user_tags property. Can be specified multiple times.')
+    create_gem_subparser.add_argument('-pl', '--platforms', type=str, nargs='*', required=False,
+                       help='Add platform(s) to platforms property. Can be specified multiple times.')
     create_gem_subparser.add_argument('-ip', '--icon-path', type=str, required=False, 
                        default="preview.png",
                        help='Select Gem icon path')
