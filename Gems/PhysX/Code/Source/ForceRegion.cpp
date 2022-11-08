@@ -238,7 +238,11 @@ namespace PhysX
         entityParams.m_id = entityId;
 
         AzPhysics::RigidBody* rigidBody = nullptr;
-        Physics::RigidBodyRequestBus::EventResultReverse(rigidBody, entityId, &Physics::RigidBodyRequestBus::Events::GetRigidBody);
+
+        if (auto* handler = Physics::RigidBodyRequestBus::FindFirstHandler(entityId))
+        {
+            rigidBody = handler->GetRigidBody();
+        }
 
         if (!rigidBody)
         {

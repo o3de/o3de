@@ -91,13 +91,13 @@ namespace PhysX
         {
         public:
             void Insert(AzPhysics::SimulatedBodyIndex bodyIndex);
-            void Reserve(size_t reserveSize);
+            void IncreaseCapacity(size_t extraSize);
             void Clear();
             void Apply(const AZStd::function<void(AzPhysics::SimulatedBodyIndex)>& applyFunction);
 
         private:
-            AZStd::unordered_set<AzPhysics::SimulatedBodyIndex> m_set;
-            AZStd::vector<AzPhysics::SimulatedBodyIndex> m_array;
+            AZStd::unordered_set<AzPhysics::SimulatedBodyIndex> m_uniqueIndices;
+            AZStd::vector<AzPhysics::SimulatedBodyIndex> m_packedIndices;
         };
 
         void EnableSimulationOfBodyInternal(AzPhysics::SimulatedBody& body);

@@ -612,7 +612,7 @@ namespace PhysX
 
             if (physx_batchTransformSync)
             {
-                m_queuedActiveBodyIndices.Reserve(activeBodyHandles.size());
+                m_queuedActiveBodyIndices.IncreaseCapacity(activeBodyHandles.size());
 
                 for (const AzPhysics::SimulatedBodyHandle& bodyHandle : activeBodyHandles)
                 {
@@ -1326,26 +1326,26 @@ namespace PhysX
 
     void PhysXScene::QueuedActiveBodyIndices::Insert(AzPhysics::SimulatedBodyIndex bodyIndex)
     {
-        if (m_set.insert(bodyIndex).second)
+        if (m_uniqueIndices.insert(bodyIndex).second)
         {
-            m_array.emplace_back(bodyIndex);
+            m_packedIndices.emplace_back(bodyIndex);
         }
     }
 
-    void PhysXScene::QueuedActiveBodyIndices::Reserve(size_t reserveSize)
+    void PhysXScene::QueuedActiveBodyIndices::IncreaseCapacity(size_t extraSize)
     {
-        m_array.reserve(m_array.size() + reserveSize);
+        m_packedIndices.reserve(m_packedIndices.size() + extraSize);
     }
 
     void PhysXScene::QueuedActiveBodyIndices::Clear()
     {
-        m_set.clear();
-        m_array.clear();
+        m_uniqueIndices.clear();
+        m_packedIndices.clear();
     }
 
     void PhysXScene::QueuedActiveBodyIndices::Apply(const AZStd::function<void(AzPhysics::SimulatedBodyIndex)>& applyFunction)
     {
-        AZStd::for_each(m_array.begin(), m_array.end(), applyFunction);
+        AZStd::for_each(m_packedIndices.begin(), m_packedIndices.end(), applyFunction);
     }
 
 } // namespace PhysX
