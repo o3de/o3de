@@ -22,6 +22,7 @@
 #include <Tests/TestAssetCode/SimpleActors.h>
 #include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Tests/UI/UIFixture.h>
+#include <Tests/UI/SkeletonOutlinerTestFixture.h>
 
 #include <Editor/ReselectingTreeView.h>
 #include <Tests/D6JointLimitConfiguration.h>
@@ -29,7 +30,7 @@
 
 namespace EMotionFX
 {
-    class RagdollEditTestsFixture : public UIFixture
+    class RagdollEditTestsFixture : public SkeletonOutlinerTestFixture
     {
     public:
         void SetUp() override
@@ -69,31 +70,8 @@ namespace EMotionFX
             UIFixture::TearDown();
         }
 
-        void CreateSkeletonAndModelIndices()
-        {
-            // Select the newly created actor
-            AZStd::string result;
-            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("Select -actorID 0", result)) << result.c_str();
-
-            // Change the Editor mode to Physics
-            EMStudio::GetMainWindow()->ApplicationModeChanged("Physics");
-
-            // Get the SkeletonOutlinerPlugin and find its treeview
-            m_skeletonOutliner = static_cast<EMotionFX::SkeletonOutlinerPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMotionFX::SkeletonOutlinerPlugin::CLASS_ID));
-            EXPECT_TRUE(m_skeletonOutliner);
-            m_treeView = m_skeletonOutliner->GetDockWidget()->findChild<ReselectingTreeView*>("EMFX.SkeletonOutlinerPlugin.SkeletonOutlinerTreeView");
-
-            m_indexList.clear();
-            m_treeView->RecursiveGetAllChildren(m_treeView->model()->index(0, 0, m_treeView->model()->index(0, 0)), m_indexList);
-        }
-
     protected:
         virtual bool ShouldReflectPhysicSystem() override { return true; }
-
-        QModelIndexList m_indexList;
-        ReselectingTreeView* m_treeView;
-        EMotionFX::SkeletonOutlinerPlugin* m_skeletonOutliner;
-        Physics::MockJointHelpersInterface m_jointHelpers;
     };
 
 
@@ -114,20 +92,15 @@ namespace EMotionFX
 
         EXPECT_EQ(m_indexList.size(), numJoints);
 
-        // Find the RagdollNodeInspectorPlugin and its button
-        auto ragdollNodeInspector = static_cast<EMotionFX::RagdollNodeInspectorPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMotionFX::RagdollNodeInspectorPlugin::CLASS_ID));
-        EXPECT_TRUE(ragdollNodeInspector) << "Ragdoll plugin not found!";
-
-        auto addAddToRagdollButton = ragdollNodeInspector->GetDockWidget()->findChild<QPushButton*>("EMFX.RagdollNodeWidget.PushButton.RagdollAddRemoveButton");
-        EXPECT_TRUE(addAddToRagdollButton) << "Add to ragdoll button not found!";
-
         // Find the 3rd joint after the RootJoint in the TreeView and select it
         SelectIndexes(m_indexList, m_treeView, 3, 3);
 
-        // Send the left button click directly to the button
-        QTest::mouseClick(addAddToRagdollButton, Qt::LeftButton);
+        auto* treeView = GetAddCollidersTreeView();
+        auto index = treeView->model()->index(2, 0);
+        treeView->clicked(index);
 
-        // Check the node is in the ragdoll
+
+        // Check the node is in the ragdoll        
         EXPECT_TRUE(RagdollNodeInspectorPlugin::IsNodeInRagdoll(m_indexList[3]));
     }
 

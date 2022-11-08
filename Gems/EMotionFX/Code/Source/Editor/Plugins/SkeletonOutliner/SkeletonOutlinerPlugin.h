@@ -80,11 +80,15 @@ namespace EMotionFX
         SkeletonSortFilterProxyModel*           m_filterProxyModel;
         static constexpr int s_iconSize = 16;
 
-        JointPropertyWidget* m_propertyWidget = nullptr;
         // Callbacks
         // Works for all commands that use the actor id as well as the joint name mixins
         MCORE_DEFINECOMMANDCALLBACK(DataChangedCallback);
         static bool DataChanged(AZ::u32 actorId, const AZStd::string& jointName);
         AZStd::vector<MCore::Command::Callback*> m_commandCallbacks;
+
+    protected:
+        JointPropertyWidget* m_propertyWidget = nullptr;
+
+        friend class SkeletonOutlinerTestFixture;
     };
 } // namespace EMotionFX
