@@ -167,6 +167,7 @@ namespace AZ::Reflection
                 void* m_containerElementOverride = nullptr;
             };
             AZStd::deque<StackEntry> m_stack;
+            AZStd::unordered_map<const char*, StackEntry> m_UIElements;
 
             using HandlerCallback = AZStd::function<bool()>;
             AZStd::unordered_map<AZ::TypeId, HandlerCallback> m_handlers;
@@ -236,6 +237,19 @@ namespace AZ::Reflection
                 if (classElement)
                 {
                     instance = AZ::Utils::ResolvePointer(instance, *classElement, *m_serializeContext);
+
+                    if (classElement->m_editData)
+                    {
+                        if (m_UIElements.contains(classElement->m_editData->m_name))
+                        {
+                            m_stack.push_back(m_UIElements.at(classElement->m_editData->m_name));
+                            CacheAttributes();
+                            m_stack.back().m_entryClosed = true;
+                            m_visitor->VisitObjectBegin(*this, *this);
+                            m_visitor->VisitObjectEnd(*this, *this);
+                            m_stack.pop_back();
+                        }
+                    }
                 }
 
                 StackEntry& parentData = m_stack.back();
@@ -262,7 +276,34 @@ namespace AZ::Reflection
                     { instance, parentData.m_instance, classData ? classData->m_typeId : Uuid::CreateNull(), classData, classElement });
                 StackEntry* nodeData = &m_stack.back();
                 nodeData->m_path = AZStd::move(path);
-
+                if (classData->m_editData)
+                {
+                    auto eltIt = classData->m_editData->m_elements.begin();
+                    while (eltIt != classData->m_editData->m_elements.end())
+                    {
+                        if (eltIt->m_elementId == AZ::Edit::ClassElements::UIElement)
+                        {
+                            AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
+                            UIElement->m_editData = &*eltIt;
+                            UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
+                            StackEntry entry = {parentData.m_instance, parentData.m_instance, classData->m_typeId, classData, UIElement};
+                            AZStd::advance(eltIt, 1);
+                            if (eltIt != classData->m_editData->m_elements.end())
+                            {
+                                m_UIElements[eltIt->m_name] = entry;
+                            }
+                            else
+                            {
+                                //last element in the hierarchy
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            AZStd::advance(eltIt, 1);
+                        }
+                    }
+                }
                 if (parentAssociativeInterface)
                 {
                     if (nodeData->m_instance ==
@@ -355,7 +396,7 @@ namespace AZ::Reflection
                         }
                     }
                 }
-                CacheAttributes(parentData);
+                CacheAttributes();
 
                 // Inherit the change notify attribute from our parent
                 const Name changeNotify = Name("ChangeNotify");
@@ -443,7 +484,7 @@ namespace AZ::Reflection
                 return m_stack.back().m_instance;
             }
 
-            void CacheAttributes([[maybe_unused]] StackEntry& parentData)
+            void CacheAttributes()
             {
                 StackEntry& nodeData = m_stack.back();
                 AZStd::vector<AttributeData>& cachedAttributes = nodeData.m_cachedAttributes;
@@ -689,40 +730,6 @@ namespace AZ::Reflection
                     nodeData.m_cachedAttributes.push_back(
                         { group, DescriptorAttributes::Container, Dom::Utils::ValueFromType<void*>(nodeData.m_classData->m_container) });
                 }
-
-                // If parent is a dynamic serializable field with edit reflection, default to visible.
-                
-                //if (nodeData.m_classElement &&
-                //    0 != (nodeData.m_classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_DYNAMIC_FIELD))
-                //{
-                //    if (parentData.m_classElement && parentData.m_classElement->m_editData)
-                //    {
-                //        visibility = PropertyVisibility::Show;
-                //    }
-                //}
-
-                //// Show UI Elements by default
-                //if (nodeData.m_classElement &&
-                //    0 != (nodeData.m_classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_UI_ELEMENT))
-                //{
-                //    visibility = PropertyVisibility::Show;
-                //}
-
-                //// Use class meta data as opposed to parent's reflection data if this is a root node or a container element.
-                //if (visibility == PropertyVisibility::ShowChildrenOnly &&
-                //    (parentData.m_classData->m_container))
-                //{
-                //    if (nodeData.m_classData && nodeData.m_classData->m_editData)
-                //    {
-                //        visibility = PropertyVisibility::Show;
-                //    }
-                //}
-
-                //// Child nodes must have edit data in their parent's reflection.
-                //if (visibility == PropertyVisibility::ShowChildrenOnly && nodeData.m_classElement && nodeData.m_classElement->m_editData)
-                //{
-                //    visibility = PropertyVisibility::Show;
-                //}
 
                 // Calculate our visibility, going through parent nodes in reverse order to see if we should be hidden
                 for (size_t i = 1; i < m_stack.size(); ++i)
