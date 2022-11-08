@@ -91,7 +91,7 @@ namespace AZ
             //! @param elevateWarnings Indicates whether to treat warnings as errors
             Outcome<Data::Asset<MaterialAsset>> CreateMaterialAsset(
                 Data::AssetId assetId,
-                AZStd::string_view materialSourceFilePath,
+                const AZStd::string& materialSourceFilePath,
                 MaterialAssetProcessingMode processingMode,
                 bool elevateWarnings = true) const;
 

@@ -54,7 +54,9 @@ namespace O3DE::ProjectManager
         virtual void GoToScreen([[maybe_unused]] ProjectManagerScreen screen)
         {
         }
-
+        virtual void Init()
+        {
+        }
         //! Notify this screen it is the current screen 
         virtual void NotifyCurrentScreen()
         {
