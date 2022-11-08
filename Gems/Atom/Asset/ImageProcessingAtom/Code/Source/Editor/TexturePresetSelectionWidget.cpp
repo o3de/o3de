@@ -102,7 +102,6 @@ namespace ImageProcessingAtomEditor
 
         m_ui->tagList->setSortingEnabled(true);
 
-        QString joinedTags;
         for (const AZStd::string& tag : m_textureSetting->GetMultiplatformTextureSetting().m_tags)
             m_ui->tagList->addItem(QString(tag.c_str()));
 
