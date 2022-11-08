@@ -29,7 +29,8 @@
             set O3DE_AWS_DEPLOY_REGION=us-east-1
             set ASSUME_ROLE_ARN=arn:aws:iam::{your_aws_account_id}:role/o3de-automation-tests
             set COMMIT_ID=HEAD
-            set CDK_VERSION=2.39.1
+            set CDK_VERSION=2.49.0 
+            set AWS_EC2_METADATA_DISABLED=true
         ```
     * Linux
         ```
@@ -37,7 +38,8 @@
             export O3DE_AWS_DEPLOY_REGION=us-east-1
             export ASSUME_ROLE_ARN=arn:aws:iam::{your_aws_account_id}:role/o3de-automation-tests
             export COMMIT_ID=HEAD
-            export CDK_VERSION=2.39.1
+            export CDK_VERSION=2.49.0
+            export AWS_EC2_METADATA_DISABLED=true
         ```
 4. In the same CLI window, Deploy the CDK applications for AWS gems by running deploy_cdk_applications.cmd.
    
@@ -53,7 +55,7 @@
             python/python.sh -m pytest {path_to_the_test_file} --build-directory {directory_to_the_profile_build}
         ```
 
-The main tests files can be found under this directory at the following paths:
+The main tests files can be found in the ```AutomatedTesting\Gem\PythonTests\AWS``` directory at the following paths:
 
 | Gem           | Test file                                      |
 |---------------|------------------------------------------------|
