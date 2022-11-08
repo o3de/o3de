@@ -25,14 +25,17 @@ QT_FORWARD_DECLARE_CLASS(QLabel)
 
 namespace EMotionFX
 {
+
+
     class SkeletonOutlinerPlugin
         : public EMStudio::DockWidgetPlugin
         , private EMotionFX::SkeletonOutlinerRequestBus::Handler
     {
-        Q_OBJECT //AUTOMOC
+        Q_OBJECT // AUTOMOC
 
     public:
-        enum {
+        enum
+        {
             CLASS_ID = 0x00754155
         };
 
@@ -41,12 +44,30 @@ namespace EMotionFX
 
         // EMStudioPlugin overrides
         void Reflect(AZ::ReflectContext* context) override;
-        const char* GetName() const override                { return "Skeleton Outliner"; }
-        uint32 GetClassID() const override                  { return CLASS_ID; }
-        bool GetIsClosable() const override                 { return true;  }
-        bool GetIsFloatable() const override                { return true;  }
-        bool GetIsVertical() const override                 { return false; }
-        EMStudioPlugin* Clone() const override              { return new SkeletonOutlinerPlugin(); }
+        const char* GetName() const override
+        {
+            return "Skeleton Outliner";
+        }
+        uint32 GetClassID() const override
+        {
+            return CLASS_ID;
+        }
+        bool GetIsClosable() const override
+        {
+            return true;
+        }
+        bool GetIsFloatable() const override
+        {
+            return true;
+        }
+        bool GetIsVertical() const override
+        {
+            return false;
+        }
+        EMStudioPlugin* Clone() const override
+        {
+            return new SkeletonOutlinerPlugin();
+        }
         bool Init() override;
 
         // SkeletalOutlinerRequestBus overrides
@@ -69,15 +90,15 @@ namespace EMotionFX
     private:
         bool eventFilter(QObject* object, QEvent* event) override;
 
-        QWidget*                                m_mainWidget;
-        QLabel*                                 m_noSelectionLabel;
+        QWidget* m_mainWidget;
+        QLabel* m_noSelectionLabel;
 
-        AzQtComponents::FilteredSearchWidget*   m_searchWidget;
-        QWidget*                                m_headerWidget;
-        QTreeView*                              m_treeView;
-        AZStd::unique_ptr<SkeletonModel>        m_skeletonModel;
-        QModelIndexList                         m_selectedRows;
-        SkeletonSortFilterProxyModel*           m_filterProxyModel;
+        AzQtComponents::FilteredSearchWidget* m_searchWidget;
+        QWidget* m_headerWidget;
+        QTreeView* m_treeView;
+        AZStd::unique_ptr<SkeletonModel> m_skeletonModel;
+        QModelIndexList m_selectedRows;
+        SkeletonSortFilterProxyModel* m_filterProxyModel;
         static constexpr int s_iconSize = 16;
 
         // Callbacks

@@ -85,7 +85,7 @@ namespace EMotionFX
             {
                 InternalReinit();
 
-                if (m_collidersWidget->HasVisibleColliders())
+                if (m_collidersWidget != nullptr && m_collidersWidget->HasVisibleColliders())
                 {
                     m_contentCard->show();
                 }
