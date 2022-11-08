@@ -190,9 +190,9 @@ namespace AZ
             return gpuTimestamp.GetDurationInNanoseconds();
         }
 
-        uint64_t GpuPassProfiler::MeasureRenderPipelineGpuTimeInNanoseconds(RHI::Ptr<RPI::ParentPass> rootPass)
+        uint64_t GpuPassProfiler::MeasureGpuTimeInNanoseconds(RHI::Ptr<RPI::ParentPass> rootPass)
         {
-            if (m_measureRenderPipelineGpuTime)
+            if (m_measureGpuTime)
             {
                 if (!rootPass->IsTimestampQueryEnabled())
                 {
@@ -208,10 +208,64 @@ namespace AZ
                 return 0;
             }
 
-            auto passEntryDatabase = CreatePassEntriesDatabase(rootPass);
-            auto sortedPassEntries = SortPassEntriesByTimestamps(passEntryDatabase);
-            return CalculateTotalGpuPassTime(sortedPassEntries);
+            // This would be the non-efficient way to measure GPU time per frame, but
+            // it is what ImGuiGpuProfiler would need to do as it needs to show more detailed data.
+            // If your FPS is at 300fps, running these three functions can make it drop to ~265fps.
+            //auto passEntryDatabase = CreatePassEntriesDatabase(rootPass);
+            //auto sortedPassEntries = SortPassEntriesByTimestamps(passEntryDatabase);
+            //return CalculateTotalGpuPassTime(sortedPassEntries);
 
+            AZ::RPI::TimestampResult resultBegin(AZStd::numeric_limits<uint64_t>::max(), AZStd::numeric_limits<uint64_t>::max(), RHI::HardwareQueueClass::Graphics);
+            AZ::RPI::TimestampResult resultEnd;
+
+            // NOTE: Write it all out, can't have recursive functions for lambdas.
+            const AZStd::function<void(const RPI::Pass*)> calculateResultEndRecursive = [&resultBegin, &resultEnd, &calculateResultEndRecursive](const RPI::Pass* pass) -> void
+            {
+                const RPI::ParentPass* passAsParent = pass->AsParent();
+                // Add new entry to the timestamp map.
+                AZ::RPI::TimestampResult passTime = pass->GetLatestTimestampResult();
+
+                if (passTime.GetDurationInTicks() > 0)
+                {
+                    const auto passBeginInTicks = passTime.GetTimestampBeginInTicks();
+                    if (passBeginInTicks < resultBegin.GetTimestampBeginInTicks())
+                    {
+                        resultBegin = passTime;
+                    }
+
+                    if (resultEnd.GetTimestampBeginInTicks() == passBeginInTicks)
+                    {
+                        if (resultEnd.GetDurationInTicks() < passTime.GetDurationInTicks())
+                        {
+                            resultEnd = passTime;
+                        }
+                    }
+                    else if (resultEnd.GetTimestampBeginInTicks() < passBeginInTicks)
+                    {
+                        resultEnd = passTime;
+                    }
+                }
+
+                // Recur if it's a parent.
+                if (passAsParent)
+                {
+                    for (const auto& childPass : passAsParent->GetChildren())
+                    {
+                        calculateResultEndRecursive(childPass.get());
+                    }
+                }
+            };
+            calculateResultEndRecursive(rootPass.get());
+
+            if (resultBegin.GetTimestampBeginInTicks() >= resultEnd.GetTimestampBeginInTicks())
+            {
+                // Bogus data. This is normal for the first 3 frames.
+                return 0;
+            }
+
+            // calculate the total GPU duration.
+            resultBegin.Add(resultEnd);
+            return resultBegin.GetDurationInNanoseconds();
         }
 
     }   // namespace RPI

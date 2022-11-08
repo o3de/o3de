@@ -35,15 +35,15 @@ namespace AZ
             ConsoleFunctorFlags::DontReplicate,
             "Number of frames in which performance will be measured per batch.");
 
-        // "Render Pipeline Gpu Time" is the only gated performance metric because it takes a considerable amount
+        // "Frame Gpu Time" is the only gated performance metric because it takes a considerable amount
         // of CPU time. For example, when NOT capturing this metric, the default level runs at 300fps on a GTX 3070,
         // if this metric is enabled, the FPS drops to 270. It is recommended that this metric is captured in isolation
         // so it doesn't affect the results of the "Engine Cpu Time" metric.
-        AZ_CVAR(bool, r_metricsEnableRenderPipelineGpuTime,
+        AZ_CVAR(bool, r_metricsMeasureGpuTime,
             false,
             nullptr,
             ConsoleFunctorFlags::DontReplicate,
-            "If true, The Root Pass Gpu Time is measured. By default it is false, as this measurement is CPU expensive.");
+            "If true, The Frame Gpu Time is measured. By default it is false, as this measurement is CPU expensive.");
 
         AZ_CVAR(bool, r_metricsQuitUponCompletion,
             false, // If true the application will quit when Number Of Capture Batches reaches 0.
@@ -87,15 +87,15 @@ namespace AZ
                 AZ_TracePrintf(LogName, "%s r_metricsWaitTimePerCaptureBatch=%u.\n", __FUNCTION__, metricsWaitTimePerCaptureBatch);
                 AZ::u32 metricsFrameCountPerCaptureBatch = r_metricsFrameCountPerCaptureBatch;
                 AZ_TracePrintf(LogName, "%s r_metricsFrameCountPerCaptureBatch=%u.\n", __FUNCTION__, metricsFrameCountPerCaptureBatch);
-                bool metricsEnableRenderPipelineGpuTime = r_metricsEnableRenderPipelineGpuTime;
-                AZ_TracePrintf(LogName, "%s value of r_metricsEnableRenderPipelineGpuTime=%s.\n", __FUNCTION__, metricsEnableRenderPipelineGpuTime ? "true" : "false");
+                bool metricsMeasureGpuTime = r_metricsMeasureGpuTime;
+                AZ_TracePrintf(LogName, "%s value of r_metricsMeasureGpuTime=%s.\n", __FUNCTION__, metricsMeasureGpuTime ? "true" : "false");
                 bool metricsQuitUponCompletion = r_metricsQuitUponCompletion;
                 AZ_TracePrintf(LogName, "%s value of r_metricsQuitUponCompletion=%s.\n", __FUNCTION__, metricsQuitUponCompletion ? "true" : "false");
 
                 auto gpuPassProfiler = performanceCollectorOwner->GetGpuPassProfiler();
                 if (gpuPassProfiler)
                 {
-                    gpuPassProfiler->SetRenderPipelineGpuTimeMeasurementEnabled(metricsEnableRenderPipelineGpuTime);
+                    gpuPassProfiler->SetGpuTimeMeasurementEnabled(metricsMeasureGpuTime);
                 }
                 performanceCollector->UpdateDataLogType(GetDataLogTypeFromCVar(metricsDataLogType));
                 performanceCollector->UpdateWaitTimeBeforeEachBatch(AZStd::chrono::seconds(metricsWaitTimePerCaptureBatch));

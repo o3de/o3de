@@ -20,11 +20,11 @@ namespace AZ
         class ParentPass;
 
         //! This is a helper class that can be used to measure, per frame, the time it takes
-        //! for the render pipeline to execute in the GPU from the first to the last pass.
-        //! The core functionality is provided by the function MeasureRenderPipelineGpuTimeInNanoseconds(),
+        //! for the rendering frame to execute in the GPU from the first to the last pass.
+        //! The core functionality is provided by the function MeasureGpuTimeInNanoseconds(),
         //! but other functions are available for tools who need to report more details, like time spent at each pass, etc.
-        //! REMARK: Use judiciously, as MeasureRenderPipelineGpuTimeInNanoseconds() can itself affect performance when called.
-        //! For example, if a scene is running at 300fps, calling MeasureRenderPipelineGpuTimeInNanoseconds(), each frame, can reduce the FPS to
+        //! REMARK: Use judiciously, as MeasureGpuTimeInNanoseconds() can itself affect performance when called.
+        //! For example, if a scene is running at 300fps, calling MeasureGpuTimeInNanoseconds(), each frame, can reduce the FPS to
         //! ~265fps.
         class GpuPassProfiler final
         {
@@ -91,29 +91,30 @@ namespace AZ
             GpuPassProfiler(const GpuPassProfiler& other) = delete;
             GpuPassProfiler& operator=(const GpuPassProfiler& other) = delete;
 
-            void SetRenderPipelineGpuTimeMeasurementEnabled(bool enabled) { m_measureRenderPipelineGpuTime = enabled; }
-            bool IsRenderPipelineGpuTimeMeasurementEnabled() { return m_measureRenderPipelineGpuTime; }
+            void SetGpuTimeMeasurementEnabled(bool enabled) { m_measureGpuTime = enabled; }
+            bool IsGpuTimeMeasurementEnabled() { return m_measureGpuTime; }
 
-            // Measures the total time spent by the Render Pipeline inside the GPU.
-            // It measures the time by using the functions CreatePassEntriesDatabase(), SortPassEntriesByTimestamps() & CalculateTotalGpuPassTime().
-            // The above functions are public and exist in split form to faciliate integration in tools like the ImGuiGpuProfiler, etc.
-            // if @m_measureRenderPipelineGpuTime is false this function returns 0.
-            uint64_t MeasureRenderPipelineGpuTimeInNanoseconds(RHI::Ptr<RPI::ParentPass> rootPass);
+            //! Measures the total time spent inside the GPU when rendering one frame.
+            //! if @m_measureGpuTime is false this function returns 0.
+            //! Remark: If running at 300fps, calling this function per frame can cause
+            //! a drop to ~290fps.
+            uint64_t MeasureGpuTimeInNanoseconds(RHI::Ptr<RPI::ParentPass> rootPass);
 
             //////////////////////////////////////////////////////////////////
             // Support Functions START
-            // The following functions provide all the details when measuring
-            // the render pipeline performance.
+            // The following functions when called in series can be used to also measure
+            // the Gpu Time per frame. Because it creates vectors of sorted data it is not as efficient
+            // as calling MeasureGpuTimeInNanoseconds().
             
-            // Returns the pass entry database where the key is PathName -> value is PassEntry
+            //! Returns the pass entry database where the key is PathName -> value is PassEntry
             AZStd::unordered_map<Name, PassEntry> CreatePassEntriesDatabase(RHI::Ptr<RPI::ParentPass> rootPass);
 
-            // Measures the time spent in the GPU for each pass.
-            // Returns the total amount of nanoseconds spent in the GPU for the Root Parent Pass.
+            //! Returns a sorted list of PassEntry pointers found in @timestampEntryDatabase.
+            //! PassEntries are sorted by timestamp.
             AZStd::vector<GpuPassProfiler::PassEntry*> SortPassEntriesByTimestamps(AZStd::unordered_map<Name, PassEntry>& timestampEntryDatabase);
 
-            // Returns the total amount spent in the GPU by the root pass. Assumes sortedPassEntries
-            // is sorted by timestamp.
+            //! Returns the total amount spent in the GPU by the root pass. Assumes sortedPassEntries
+            //! is sorted by timestamp.
             uint64_t CalculateTotalGpuPassTime(const AZStd::vector<GpuPassProfiler::PassEntry*>& sortedPassEntries);
 
             // Support Functions END
@@ -121,10 +122,10 @@ namespace AZ
 
 
         private:
-            // Interpolates the values of the PassEntries from the previous frame.
+            //! Interpolates the values of the PassEntries from the previous frame.
             void InterpolatePassEntries(AZStd::unordered_map<Name, PassEntry>& passEntryDatabase, float weight) const;
 
-            bool m_measureRenderPipelineGpuTime = false;
+            bool m_measureGpuTime = false;
  
         };
 
