@@ -2128,7 +2128,6 @@ def create_gem(gem_path: pathlib.Path,
         temp_platforms.extend(new_platforms)
     platforms_quoted = ','.join(f'"{word.strip()}"' for word in set(temp_platforms))
     #remove the first and last quote because those already exist in gem.json
-    print("Temp platforms is : " + str(temp_platforms))
     replacements.append(("${Platforms}", platforms_quoted[1:-1]))
 
     if icon_path:
