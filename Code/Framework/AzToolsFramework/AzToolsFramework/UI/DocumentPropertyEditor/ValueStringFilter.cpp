@@ -61,7 +61,7 @@ namespace AZ::DocumentPropertyEditor
                     auto childName = currChild.GetNodeName();
                     if (childName != Dpe::GetNodeName<Dpe::Nodes::Row>()) // don't cache child rows, they have they're own entries
                     {
-                        static const Name valueName = Name::FromStringLiteral("Value", AZ::Interface<AZ::NameDictionary>::Get());
+                        static const Name valueName = AZ::Dpe::Nodes::PropertyEditor::Value.GetName();
                         auto foundValue = currChild.FindMember(valueName);
                         if (foundValue != currChild.MemberEnd())
                         {
@@ -70,8 +70,7 @@ namespace AZ::DocumentPropertyEditor
 
                         if (m_includeDescriptions)
                         {
-                            static const Name descriptionName =
-                                Name::FromStringLiteral("Description", AZ::Interface<AZ::NameDictionary>::Get());
+                            static const Name descriptionName = AZ::Dpe::Nodes::PropertyEditor::Description.GetName();
                             auto foundDescription = currChild.FindMember(descriptionName);
                             if (foundDescription != currChild.MemberEnd())
                             {
