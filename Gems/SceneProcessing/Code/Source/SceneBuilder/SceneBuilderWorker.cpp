@@ -348,7 +348,7 @@ namespace SceneBuilder
 
         AZ_TracePrintf(Utilities::LogWindow, "Loading scene.\n");
 
-        SceneSerializationBus::BroadcastResult(result, &SceneSerializationBus::Events::LoadScene, request.m_fullPath, request.m_sourceFileUUID, "");
+        SceneSerializationBus::BroadcastResult(result, &SceneSerializationBus::Events::LoadScene, request.m_fullPath, request.m_sourceFileUUID, request.m_watchFolder);
         if (!result)
         {
             AZ_TracePrintf(Utilities::ErrorWindow, "Failed to load scene file.\n");
