@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{384DDCC9-834A-4FC0-9F7C-C340A20908FF}",
         "category": "Math Functions",
-        "title": "refract",
+        "title": "Refract",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2|inValue3|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue1",
@@ -24,7 +28,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             },
@@ -45,7 +49,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             },
@@ -66,7 +70,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -80,7 +84,7 @@
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = refract(NODEID_inValue1, NODEID_inValue2, NODEID_inValue3);"
+                        "SLOTTYPE SLOTNAME = refract(inValue1, inValue2, inValue3);"
                     ]
                 }
             }

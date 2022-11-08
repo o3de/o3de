@@ -142,7 +142,16 @@ public:
         // Add AWSCore as an active gem for unit test
         if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
-            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, AZ::Test::GetEngineRootPath());
+            auto projectPathKey =
+                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+            AZ::IO::FixedMaxPath enginePath;
+            settingsRegistry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            settingsRegistry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*settingsRegistry);
+
+            // Merge in the o3de manifest files gem root paths to the Settings Registry
+            // and set the AWSCore gem as an active gem which will add it to the active gem
+            // section of the Settings Registry as well as add a @gemroot@ alias for it
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ManifestGemsPaths(*settingsRegistry);
             AZ::Test::AddActiveGem("AWSCore", *settingsRegistry, m_localFileIO);
         }
