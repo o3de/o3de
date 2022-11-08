@@ -370,6 +370,10 @@ class TestGetAllGems:
 
 class TestManifestGetRegistered:
     @staticmethod
+    def get_this_engine_path() -> pathlib.Path:
+        return pathlib.Path('D:/o3de/o3de')
+
+    @staticmethod
     def resolve(self):
         return self
 
@@ -377,16 +381,16 @@ class TestManifestGetRegistered:
     def samefile(self, otherFile):
         return self.as_posix() == otherFile.as_posix()
 
-    @pytest.mark.parametrize("template_name, expected_path", [
-            pytest.param('DefaultProject', pathlib.Path('C:/o3de/o3de/Templates/DefaultProject')),
-            pytest.param('InvalidProject', None)
+    @pytest.mark.parametrize("template_name, relative_template_path, expected_path", [
+            pytest.param('DefaultProject', pathlib.Path('Templates/DefaultProject'), pathlib.Path('D:/o3de/o3de/Templates/DefaultProject'), ),
+            pytest.param('InvalidProject', pathlib.Path('Templates/DefaultProject'), None)
     ])
-    def test_get_registered_template(self, template_name, expected_path):
+    def test_get_registered_template(self, template_name, relative_template_path, expected_path):
             def get_engine_json_data(engine_name: str = None,
                                     engine_path: str or pathlib.Path = None) -> dict or None:
                 engine_payload = json.loads(TEST_ENGINE_JSON_PAYLOAD)
                 if expected_path:
-                    engine_payload['templates'] = [expected_path]
+                    engine_payload['templates'] = [relative_template_path]
                 return engine_payload
 
             def get_gem_json_data(gem_name: str = None,
@@ -416,7 +420,8 @@ class TestManifestGetRegistered:
                 patch('pathlib.Path.resolve', self.resolve) as _5, \
                 patch('pathlib.Path.samefile', self.samefile) as _6, \
                 patch('pathlib.Path.open', return_value=io.StringIO(TEST_PROJECT_TEMPLATE_JSON_PAYLOAD)) as _7, \
-                patch('pathlib.Path.is_file', new=is_file) as _8:
+                patch('pathlib.Path.is_file', new=is_file) as _8,\
+                patch('o3de.manifest.get_this_engine_path', side_effect=self.get_this_engine_path) as _9: 
 
                 path = manifest.get_registered(template_name=template_name)
                 assert path == expected_path
