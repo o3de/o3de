@@ -33,7 +33,7 @@ def PhysX_Collider_Component_CRUD():
     # Helper file Imports
     import os
 
-    from editor_python_test_tools.editor_component.physx_collider import EditorPhysxCollider as PhysxCollider
+    from editor_python_test_tools.editor_component.editor_physx_collider import EditorPhysxCollider as PhysxCollider
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Tracer, TestHelper
 
