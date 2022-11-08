@@ -18,8 +18,10 @@ namespace AZ::DocumentPropertyEditor
 
     void ValueStringSort::SetReversed(bool reverseSort)
     {
-        // <apm> shouldn't have to re-cache
         m_reverseSort = reverseSort;
+
+        // TODO: generate incremental patch here instead, no need to re-cache info
+        InvalidateSort();
     }
 
     void ValueStringSort::SetSortAttribute(AZStd::string_view attributeName)
@@ -57,7 +59,7 @@ namespace AZ::DocumentPropertyEditor
                 {
                     if (!IsRow(*childIter))
                     {
-                        // non children are, by definition, column children
+                        // non-row children are, by definition, column children
                         if (atColumn == column)
                         {
                             return &(*childIter);
