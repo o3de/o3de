@@ -237,16 +237,16 @@ namespace AzToolsFramework
 
         void ComponentModeDelegate::Disconnect()
         {
-            m_componentType = AZ::Uuid::CreateNull();
-            m_entityComponentIdPair = AZ::EntityComponentIdPair(AZ::EntityId(), AZ::InvalidComponentId);
-            m_handler = nullptr;
-
             EditorEntityLockComponentNotificationBus::Handler::BusDisconnect();
             EditorEntityVisibilityNotificationBus::Handler::BusDisconnect();
             EntitySelectionEvents::Bus::Handler::BusDisconnect();
 
             AzFramework::ComponentModeDelegateNotificationBus::Broadcast(
                 &AzFramework::ComponentModeDelegateNotificationBus::Events::OnComponentModeDelegateDisconnect, m_entityComponentIdPair);
+
+            m_componentType = AZ::Uuid::CreateNull();
+            m_entityComponentIdPair = AZ::EntityComponentIdPair(AZ::EntityId(), AZ::InvalidComponentId);
+            m_handler = nullptr;
         }
 
         void ComponentModeDelegate::OnSelected()
