@@ -9,7 +9,9 @@
 #pragma once
 
 #include <stdint.h>
+#if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
 #include <AzCore/base.h>
+#endif
 #include <AzCore/std/limits.h>
 
 namespace AzNetworking
