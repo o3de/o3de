@@ -10,16 +10,18 @@
 
 namespace Multiplayer
 {
+    //! Declares multiplayer metric group ids.
     enum MultiplayerGroupIds
     {
-        MultiplayerGroup_Networking = 101
+        MultiplayerGroup_Networking = 101           // A group of multiplayer metrics
     };
 
+    //! Declares multiplayer metric stat ids.
     enum MultiplayerStatIds
     {
-        MultiplayerStat_EntityCount = 1001,
-        MultiplayerStat_FrameTimeUs,
-        MultiplayerStat_ClientConnectionCount,
-        MultiplayerStat_ApplicationFrameTimeUs
+        MultiplayerStat_EntityCount = 1001,         // Number of multiplayer entities active
+        MultiplayerStat_FrameTimeUs,                // Multiplayer tick cost within a single application frame
+        MultiplayerStat_ClientConnectionCount,      // Current connection (applicable to a server)
+        MultiplayerStat_ApplicationFrameTimeUs      // The entire application frame time
     };
 }
