@@ -9,6 +9,7 @@ import azlmbr.physics as physics
 import azlmbr.math as math
 
 from editor_python_test_tools.editor_entity_utils import EditorEntity
+from editor_python_test_tools.editor_component.editor_component_validation import validate_xyz_is_float
 from editor_python_test_tools.asset_utils import Asset
 
 from consts.physics import PHYSX_COLLIDER
@@ -98,7 +99,9 @@ class EditorPhysxCollider:
 
         Used to set the PhysX Collider's Offset Property.
         """
-        self.component.set_component_property_value(self.Path.OFFSET, math.Vector3(float(x), float(y), float(z)))
+        validate_xyz_is_float(x, y, z, f"One of the offset inputs are not a float - X: {x}, Y: {y}, Z {z}")
+
+        self.component.set_component_property_value(self.Path.OFFSET, math.Vector3(x, y, z))
 
     def set_rotation(self, x: float, y: float, z: float) -> None:
         """
@@ -106,8 +109,10 @@ class EditorPhysxCollider:
 
         Used to set the PhysX Collider's Rotation Property.
         """
+        validate_xyz_is_float(x, y, z, f"One of the rotation inputs are not a float - X: {x}, Y: {y}, Z {z}")
+
         rotation = math.Quaternion()
-        rotation.SetFromEulerDegrees(math.Vector3(float(x), float(y), float(z)))
+        rotation.SetFromEulerDegrees(math.Vector3(x, y, z))
         self.component.set_component_property_value(self.Path.ROTATION, rotation)
 
     def set_tag(self, tag: chr) -> None:
@@ -121,21 +126,25 @@ class EditorPhysxCollider:
         assert NotImplementedError
         self.component.set_component_property_value(self.Path.TAG, tag)
 
-    def set_rest_offset(self, offset: float) -> None:
+    def set_rest_offset(self, rest_offset: float) -> None:
         """
         Property Type, Default Visibility - ('float', 'Visible')
 
         Used to set the PhysX Collider's Reset Offset Property.
         """
-        self.component.set_component_property_value(self.Path.RESET_OFFSET, offset)
+        assert isinstance(rest_offset), f"The value passed to Rest Offset \"{rest_offset}\" is not a float."
 
-    def set_contact_offset(self, offset: float) -> None:
+        self.component.set_component_property_value(self.Path.RESET_OFFSET, rest_offset)
+
+    def set_contact_offset(self, contact_offset: float) -> None:
         """
         Property Type, Default Visibility - ('float', 'Visible')
 
         Used to set the PhysX Collider's Contact Offset Property.
         """
-        self.component.set_component_property_value(self.Path.CONTACT_OFFSET, offset)
+        assert isinstance(contact_offset), f"The value passed to Contact Offset \"{contact_offset}\" is not a float."
+
+        self.component.set_component_property_value(self.Path.CONTACT_OFFSET, contact_offset)
 
     def toggle_draw_collider(self) -> None:
         """
@@ -175,11 +184,12 @@ class EditorPhysxCollider:
 
         Used to set the PhysX Collider's Box Shape's dimensions.
         """
+        validate_xyz_is_float(x, y, z, f"One of the Box Dimensions are not a float - X: {x}, Y: {y}, Z {z}")
         assert self.component.is_property_visible(self.Path.Box.DIMENSIONS), \
             f"Failure: Cannot set box dimensions when property is not visible."
 
         self.component.set_component_property_value(self.Path.Box.DIMENSIONS,
-                                                    math.Vector3(float(x), float(y), float(z)))
+                                                    math.Vector3(x, y, z))
 
     # Shape: Capsule
     def set_capsule_shape(self) -> None:
@@ -196,6 +206,7 @@ class EditorPhysxCollider:
 
         Used to set the PhysX Collider's Capsule Shape's height.
         """
+        assert isinstance(height), f"The value passed to Capsule Height \"{height}\" is not a float."
         assert self.component.is_property_visible(self.Path.Capsule.HEIGHT), \
             f"Failure: Cannot set capsule height when property is not visible. Set the shape to capsule first."
 
@@ -207,6 +218,7 @@ class EditorPhysxCollider:
 
         Used to set the PhysX Collider's Capsule Shape's radius.
         """
+        assert isinstance(radius), f"The value passed to Capsule Radius \"{radius}\" is not a float."
         assert self.component.is_property_visible(self.Path.Capsule.RADIUS), \
             f"Failure: Cannot set capsule radius when property is not visible. Set the shape to capsule first."
 
@@ -238,6 +250,7 @@ class EditorPhysxCollider:
 
         Used to set the PhysX Collider's Cylinder Shape's height.
         """
+        assert isinstance(height), f"The value passed to Cylinder Height \"{height}\" is not a float."
         assert self.component.is_property_visible(self.Path.Cylinder.HEIGHT), \
             f"Failure: Cannot set cylinder height when property is not visible. Set the shape to cylinder first."
 
@@ -249,6 +262,7 @@ class EditorPhysxCollider:
 
         Used to set the PhysX Collider's Cylinder Shape's radius.
         """
+        assert isinstance(radius), f"The value passed to Cylinder Radius \"{radius}\" is not a float."
         assert self.component.is_property_visible(self.Path.Cylinder.RADIUS), \
             f"Failure: Cannot set cylinder radius when property is not visible. Set the shape to cylinder first."
 
@@ -282,6 +296,8 @@ class EditorPhysxCollider:
 
         Used to set the PhysX Collider's PhysX Mesh Asset Scale.
         """
+        validate_xyz_is_float(x, y, z,
+                              f"One of the Physx Mesh Asset Scale inputs are not a float - X: {x}, Y: {y}, Z {z}")
         assert self.component.is_property_visible(self.Path.PhysicsAsset.ASSET_SCALE), \
             f"Failure: Cannot set Physics Mesh Asset Scale when property is not visible."
 
@@ -316,6 +332,7 @@ class EditorPhysxCollider:
 
         Used to set the PhysX Collider's Sphere radius property.
         """
+        assert isinstance(radius), f"The value passed to Sphere Radius \"{radius}\" is not a float."
         assert self.component.is_property_visible(self.Path.Sphere.RADIUS), \
             f"Failure: Cannot toggle Shpere Radius when property is not visible."
 
