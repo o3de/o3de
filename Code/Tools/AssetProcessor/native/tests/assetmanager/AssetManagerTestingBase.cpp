@@ -213,8 +213,8 @@ namespace UnitTests
         QCoreApplication::processEvents(); // Again to trigger the Finished event
     }
 
-    AssetBuilderSDK::CreateJobFunction CreateJobStage(
-        const AZStd::string& name, bool commonPlatform, const AZStd::string& sourceDependencyPath = "")
+    AssetBuilderSDK::CreateJobFunction AssetManagerTestingBase::CreateJobStage(
+        const AZStd::string& name, bool commonPlatform, const AZStd::string& sourceDependencyPath)
     {
         using namespace AssetBuilderSDK;
 
@@ -242,7 +242,7 @@ namespace UnitTests
         };
     }
 
-    AssetBuilderSDK::ProcessJobFunction ProcessJobStage(
+    AssetBuilderSDK::ProcessJobFunction AssetManagerTestingBase::ProcessJobStage(
         const AZStd::string& outputExtension, AssetBuilderSDK::ProductOutputFlags flags, bool outputExtraFile)
     {
         using namespace AssetBuilderSDK;

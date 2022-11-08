@@ -19,8 +19,6 @@ namespace UnitTests
         AssetManagerTestingBase::SetUp();
 
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
-
-
     }
 
     void IntermediateAssetTests::TearDown()

@@ -92,6 +92,12 @@ namespace UnitTests
             bool expectAutofail = false,
             bool hasExtraFile = false);
 
+        AssetBuilderSDK::CreateJobFunction CreateJobStage(
+            const AZStd::string& name, bool commonPlatform, const AZStd::string& sourceDependencyPath = "");
+
+        AssetBuilderSDK::ProcessJobFunction ProcessJobStage(
+            const AZStd::string& outputExtension, AssetBuilderSDK::ProductOutputFlags flags, bool outputExtraFile);
+
         void CreateBuilder(
             const char* name,
             const char* inputFilter,
