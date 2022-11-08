@@ -13,6 +13,7 @@
 #include <AzCore/Math/Random.h>
 #include <AzCore/Math/Geometry3DUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
 #include <random>
 #include <Tests/Math/IntersectionTestHelpers.h>
 
@@ -1338,8 +1339,8 @@ namespace UnitTest
 
         // We expect the ray to get clipped.
         EXPECT_TRUE(clipped);
-        EXPECT_EQ(rayStart, AZ::Vector3(5.0f, 5.0f, 10.0f));
-        EXPECT_EQ(rayEnd, AZ::Vector3(5.0f, 5.0f, -10.0f));
+        EXPECT_THAT(rayStart, IsClose(AZ::Vector3(5.0f, 5.0f, 10.0f)));
+        EXPECT_THAT(rayEnd, IsClose(AZ::Vector3(5.0f, 5.0f, -10.0f)));
         EXPECT_NEAR(tClipStart, 0.25f, 0.001f);
         EXPECT_NEAR(tClipEnd, 0.75f, 0.001f);
     }
@@ -1361,8 +1362,8 @@ namespace UnitTest
 
         // We expect the ray to get clipped.
         EXPECT_TRUE(clipped);
-        EXPECT_EQ(rayStart, AZ::Vector3(5.0f, 5.0f, 0.0f));
-        EXPECT_EQ(rayEnd, AZ::Vector3(5.0f, 5.0f, -10.0f));
+        EXPECT_THAT(rayStart, IsClose(AZ::Vector3(5.0f, 5.0f, 0.0f)));
+        EXPECT_THAT(rayEnd, IsClose(AZ::Vector3(5.0f, 5.0f, -10.0f)));
         EXPECT_NEAR(tClipStart, 0.0f, 0.001f);
         EXPECT_NEAR(tClipEnd, 0.5f, 0.001f);
     }
@@ -1384,8 +1385,8 @@ namespace UnitTest
 
         // We expect the ray to get clipped.
         EXPECT_TRUE(clipped);
-        EXPECT_EQ(rayStart, AZ::Vector3(5.0f, 5.0f, 10.0f));
-        EXPECT_EQ(rayEnd, AZ::Vector3(5.0f, 5.0f, 0.0f));
+        EXPECT_THAT(rayStart, IsClose(AZ::Vector3(5.0f, 5.0f, 10.0f)));
+        EXPECT_THAT(rayEnd, IsClose(AZ::Vector3(5.0f, 5.0f, 0.0f)));
         EXPECT_NEAR(tClipStart, 0.5f, 0.001f);
         EXPECT_NEAR(tClipEnd, 1.0f, 0.001f);
     }
