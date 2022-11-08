@@ -67,7 +67,7 @@ namespace AZ::DocumentPropertyEditor
         void SetFilterActive(bool activateFilter);
         void InvalidateFilter();
 
-        // DocumentAdapter overrides
+        // DocumentAdapter overrides ...
         Dom::Value GenerateContents() override;
 
         // MetaAdapter overrides
