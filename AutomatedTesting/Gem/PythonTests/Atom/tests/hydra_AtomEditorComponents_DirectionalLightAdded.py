@@ -234,30 +234,30 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
     15) Shadow Map size set to 256 then back to the default of 1024. (valid vales are 256, 512, 1024, 2048)
     16) Cascade Count set to 2 then back to the default of 4.
     17) Split ratio can be set to 0.3 then back to the default of 0.9.
-    18a) Turn Automatic Splitting off for subsequent tests.
+    18) Turn Automatic Splitting off for subsequent tests.
     19) Far depth cascade can be set to test value then back to the default value.
-    18b) Turn Automatic Splitting back on.
-    20a) Turn Cascade correction on for subsequent test.
-    21) Ground Height can be set to 10 then back to the default of 0.0.
-    20b) Turn Cascade correction back off.
-    22) Turn Debug Coloring on then back off.
-    23) Set Shadow filter method to PCF for subsequent tests.
-    24) Filtering sample count size set to 50 then back to the default of 32.
-    25) Turn Shadow Receiver Plane Bias Enable off then back on.
-    26) Shadow Bias can be set to 0.1 then back to the default of 0.002.
-    27) Normal Shadow Bias can be set to 7.0 then back to the default of 2.5.
-    28) Turn Blend Between Cascades on then back off.
-    29) Set Shadow filter method to ESM, PCF+ESM, then back to default of None.
-    30) Turn Fullscreen Blur off then back on.
-    31) Fullscreen Blur Strength can be set to 0.0 then back to the default of 0.667.
-    32) Fullscreen Blur Sharpness can be set to 240.0 then back to the default of 50.
-    33) Turn Affects GI Blur off then back on.
-    34) Factor can be set to 2.0 then back to the default of 1.0.
-    35) Enter/Exit game mode.
-    36) Delete Directional Light entity.
-    37) UNDO deletion.
-    38) REDO deletion.
-    39) Look for errors and asserts.
+    20) Turn Automatic Splitting back on.
+    21) Turn Cascade correction on for subsequent test.
+    22) Ground Height can be set to 10 then back to the default of 0.0.
+    23) Turn Cascade correction back off.
+    24) Turn Debug Coloring on then back off.
+    25) Set Shadow filter method to PCF for subsequent tests.
+    26) Filtering sample count size set to 50 then back to the default of 32.
+    27) Turn Shadow Receiver Plane Bias Enable off then back on.
+    28) Shadow Bias can be set to 0.1 then back to the default of 0.002.
+    29) Normal Shadow Bias can be set to 7.0 then back to the default of 2.5.
+    30) Turn Blend Between Cascades on then back off.
+    31) Set Shadow filter method to ESM, PCF+ESM, then back to default of None.
+    32) Turn Fullscreen Blur off then back on.
+    33) Fullscreen Blur Strength can be set to 0.0 then back to the default of 0.667.
+    34) Fullscreen Blur Sharpness can be set to 240.0 then back to the default of 50.
+    35) Turn Affects GI Blur off then back on.
+    36) Factor can be set to 2.0 then back to the default of 1.0.
+    37) Enter/Exit game mode.
+    38) Delete Directional Light entity.
+    39) UNDO deletion.
+    40) REDO deletion.
+    41) Look for errors and asserts.
 
     :return: None
     """
@@ -471,7 +471,7 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
                 directional_light_component.get_component_property_value(
                     AtomComponentProperties.directional_light('Split ratio')), 0.9))
 
-        # 18a. Turn Automatic Splitting off for subsequent tests.
+        # 18. Turn Automatic Splitting off for subsequent tests.
         directional_light_component.set_component_property_value(
             AtomComponentProperties.directional_light('Automatic splitting'), False)
         general.idle_wait_frames(1)
@@ -496,7 +496,7 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
             directional_light_component.get_component_property_value(
                 AtomComponentProperties.directional_light('Far depth cascade')) == Vector4(25.0, 50.0, 75.0, 100.0))
 
-        # 18b. Turn Automatic Splitting back on.
+        # 20. Turn Automatic Splitting back on.
         directional_light_component.set_component_property_value(
             AtomComponentProperties.directional_light('Automatic splitting'), True)
         Report.result(
@@ -504,7 +504,7 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
             directional_light_component.get_component_property_value(
                 AtomComponentProperties.directional_light('Automatic splitting')) is True)
 
-        # 20a. Turn Cascade correction on for subsequent test.
+        # 21. Turn Cascade correction on for subsequent test.
         directional_light_component.set_component_property_value(
             AtomComponentProperties.directional_light('Cascade correction'), True)
         general.idle_wait_frames(1)
@@ -513,7 +513,7 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
             directional_light_component.get_component_property_value(
                 AtomComponentProperties.directional_light('Cascade correction')) is True)
 
-        # 21. Ground Height can be set to 10 then back to the default of 0.0.
+        # 22. Ground Height can be set to 10 then back to the default of 0.0.
         directional_light_component.set_component_property_value(
             AtomComponentProperties.directional_light('Ground height'), 10.0)
         Report.result(
@@ -529,7 +529,7 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
             directional_light_component.get_component_property_value(
                     AtomComponentProperties.directional_light('Ground height')) == 0.0)
 
-        # 20b. Turn Cascade correction back off.
+        # 23. Turn Cascade correction back off.
         directional_light_component.set_component_property_value(
             AtomComponentProperties.directional_light('Cascade correction'), False)
         Report.result(
@@ -537,7 +537,7 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
             directional_light_component.get_component_property_value(
                 AtomComponentProperties.directional_light('Cascade correction')) is False)
 
-        # 22. Turn Debug Coloring on then back off.
+        # 24. Turn Debug Coloring on then back off.
         directional_light_component.set_component_property_value(
             AtomComponentProperties.directional_light('Debug coloring'), True)
         general.idle_wait_frames(1)
@@ -553,7 +553,7 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
             directional_light_component.get_component_property_value(
                 AtomComponentProperties.directional_light('Debug coloring')) is False)
 
-        # 23. Set Shadow filter method to PCF for subsequent tests.
+        # 25. Set Shadow filter method to PCF for subsequent tests.
         directional_light_component.set_component_property_value(
             AtomComponentProperties.directional_light(
                 'Shadow filter method'), DIRECTIONAL_LIGHT_SHADOW_FILTER_METHOD["PCF"])
@@ -563,7 +563,7 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
                 AtomComponentProperties.directional_light(
                     'Shadow filter method')) == DIRECTIONAL_LIGHT_SHADOW_FILTER_METHOD["PCF"])
 
-        # 24. Filtering sample count size set to 50 then back to the default of 32.
+        # 26. Filtering sample count size set to 50 then back to the default of 32.
         directional_light_component.set_component_property_value(
             AtomComponentProperties.directional_light('Filtering sample count'), 50.0)
         Report.result(
@@ -579,7 +579,7 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
             directional_light_component.get_component_property_value(
                 AtomComponentProperties.directional_light('Filtering sample count')) == 32.0)
 
-        # 25. Turn Shadow Receiver Plane Bias Enable off then back on.
+        # 27. Turn Shadow Receiver Plane Bias Enable off then back on.
         directional_light_component.set_component_property_value(
             AtomComponentProperties.directional_light('Shadow Receiver Plane Bias Enable'), False)
         general.idle_wait_frames(1)
@@ -595,7 +595,7 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
             directional_light_component.get_component_property_value(
                 AtomComponentProperties.directional_light('Shadow Receiver Plane Bias Enable')) is True)
 
-        # 26. Shadow Bias can be set to 0.1 then back to the default of 0.002.
+        # 28. Shadow Bias can be set to 0.1 then back to the default of 0.002.
         directional_light_component.set_component_property_value(
             AtomComponentProperties.directional_light('Shadow Bias'), 0.1)
         Report.result(
@@ -611,7 +611,7 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
                 directional_light_component.get_component_property_value(
                     AtomComponentProperties.directional_light('Shadow Bias')), 0.002))
 
-        # 27. Normal Shadow Bias can be set to 7.0 then back to the default of 2.5.
+        # 29. Normal Shadow Bias can be set to 7.0 then back to the default of 2.5.
         directional_light_component.set_component_property_value(
             AtomComponentProperties.directional_light('Normal Shadow Bias'), 7.0)
         Report.result(
@@ -627,7 +627,7 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
                 directional_light_component.get_component_property_value(
                     AtomComponentProperties.directional_light('Normal Shadow Bias')), 2.5))
 
-        # 28. Turn Blend Between Cascades on then back off.
+        # 30. Turn Blend Between Cascades on then back off.
         directional_light_component.set_component_property_value(
             AtomComponentProperties.directional_light('Blend between cascades'), True)
         general.idle_wait_frames(1)
@@ -643,7 +643,7 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
             directional_light_component.get_component_property_value(
                 AtomComponentProperties.directional_light('Blend between cascades')) is False)
 
-        # 29. Set Shadow filter method to ESM, PCF+ESM, then back to default of None.
+        # 31. Set Shadow filter method to ESM, PCF+ESM, then back to default of None.
         directional_light_component.set_component_property_value(
             AtomComponentProperties.directional_light(
                 'Shadow filter method'), DIRECTIONAL_LIGHT_SHADOW_FILTER_METHOD["ESM"])
@@ -671,7 +671,7 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
                 AtomComponentProperties.directional_light(
                     'Shadow filter method')) == DIRECTIONAL_LIGHT_SHADOW_FILTER_METHOD["None"])
 
-        # 30. Turn Fullscreen Blur off then back on.
+        # 32. Turn Fullscreen Blur off then back on.
         directional_light_component.set_component_property_value(
             AtomComponentProperties.directional_light('Fullscreen Blur'), False)
         general.idle_wait_frames(1)
@@ -687,7 +687,7 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
             directional_light_component.get_component_property_value(
                 AtomComponentProperties.directional_light('Fullscreen Blur')) is True)
 
-        # 31. Fullscreen Blur Strength can be set to 0.0 then back to the default of 0.667.
+        # 33. Fullscreen Blur Strength can be set to 0.0 then back to the default of 0.667.
         directional_light_component.set_component_property_value(
             AtomComponentProperties.directional_light('Fullscreen Blur Strength'), 0.0)
         Report.result(
@@ -703,7 +703,7 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
                 directional_light_component.get_component_property_value(
                     AtomComponentProperties.directional_light('Fullscreen Blur Strength')), 0.667))
 
-        # 32. Fullscreen Blur Sharpness can be set to 240.0 then back to the default of 50.0.
+        # 34. Fullscreen Blur Sharpness can be set to 240.0 then back to the default of 50.0.
         directional_light_component.set_component_property_value(
             AtomComponentProperties.directional_light('Fullscreen Blur Sharpness'), 240.0)
         Report.result(
@@ -719,7 +719,7 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
                 directional_light_component.get_component_property_value(
                     AtomComponentProperties.directional_light('Fullscreen Blur Sharpness')), 50.0))
 
-        # 33. Turn Affects GI Blur off then back on.
+        # 35. Turn Affects GI Blur off then back on.
         directional_light_component.set_component_property_value(
             AtomComponentProperties.directional_light('Affects GI'), False)
         general.idle_wait_frames(1)
@@ -735,7 +735,7 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
             directional_light_component.get_component_property_value(
                 AtomComponentProperties.directional_light('Affects GI')) is True)
 
-        # 34. Factor can be set to 2.0 then back to the default of 1.0.
+        # 36. Factor can be set to 2.0 then back to the default of 1.0.
         directional_light_component.set_component_property_value(
             AtomComponentProperties.directional_light('Factor'), 2.0)
         Report.result(
@@ -751,26 +751,26 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
                 directional_light_component.get_component_property_value(
                     AtomComponentProperties.directional_light('Factor')), 1.0))
 
-        # 35. Enter/Exit game mode.
+        # 37. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
         TestHelper.exit_game_mode(Tests.exit_game_mode)
 
-        # 36. Delete Directional Light entity.
+        # 38. Delete Directional Light entity.
         directional_light_entity.delete()
         Report.result(Tests.entity_deleted, not directional_light_entity.exists())
 
-        # 37. UNDO deletion.
+        # 39. UNDO deletion.
         general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, directional_light_entity.exists())
 
-        # 38. REDO deletion.
-        #general.redo()
-        #general.idle_wait_frames(1)
-        #Report.result(Tests.deletion_redo, not directional_light_entity.exists())
+        # 40. REDO deletion.
+        general.redo()
+        general.idle_wait_frames(1)
+        Report.result(Tests.deletion_redo, not directional_light_entity.exists())
 
-        # 39. Look for errors and asserts.
+        # 41. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
