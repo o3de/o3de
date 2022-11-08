@@ -33,7 +33,7 @@ namespace AZ::DocumentPropertyEditor
             }
             else
             {
-                //TODO: generate PatchToSource patch
+                // TODO: generate PatchToSource patch
             }
         }
     }
@@ -63,7 +63,7 @@ namespace AZ::DocumentPropertyEditor
         NotifyResetDocument(DocumentResetType::HardReset);
     }
 
-    void RowSortAdapter::HandleDomChange(const Dom::Patch& patch)
+    void RowSortAdapter::HandleDomChange([[maybe_unused]] const Dom::Patch& patch)
     {
         if (m_sortActive)
         {

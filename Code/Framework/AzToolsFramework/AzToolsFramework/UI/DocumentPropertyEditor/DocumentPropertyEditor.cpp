@@ -11,9 +11,9 @@
 #include <QCheckBox>
 #include <QDialog>
 #include <QLineEdit>
+#include <QSignalBlocker>
 #include <QTimer>
 #include <QVBoxLayout>
-#include <QSignalBlocker>
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/DOM/DomUtils.h>
@@ -33,8 +33,7 @@ AZ_CVAR(
     AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
     "If set, enables experimental Document Property Editor support, replacing the Reflected Property Editor where possible");
 
-
-template <class T>
+template<class T>
 void DetachAndHide(T* widget)
 {
     if (widget)
