@@ -103,7 +103,9 @@ namespace ImageProcessingAtomEditor
         m_ui->tagList->setSortingEnabled(true);
 
         for (const AZStd::string& tag : m_textureSetting->GetMultiplatformTextureSetting().m_tags)
+        {
             m_ui->tagList->addItem(QString(tag.c_str()));
+        }
 
         QObject::connect(m_ui->tagAddButton, &QPushButton::released, this, &TexturePresetSelectionWidget::OnTagAdded);
         QObject::connect(m_ui->tagRemoveButton, &QPushButton::released, this, &TexturePresetSelectionWidget::OnTagRemoved);
