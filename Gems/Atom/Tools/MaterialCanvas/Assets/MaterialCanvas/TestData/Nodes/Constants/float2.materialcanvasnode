@@ -6,6 +6,11 @@
         "id": "{C451808F-3604-46A8-9014-2D51293EAD55}",
         "category": "Constants",
         "title": "Float2 Constant",
+        "titlePaletteName": "ConstantNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue",
+            "outX|outY"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
@@ -22,7 +27,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -36,7 +41,7 @@
                 "defaultDataType": "float2",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue;"
+                        "SLOTTYPE SLOTNAME = inValue;"
                     ]
                 }
             },
@@ -48,7 +53,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.x;"
+                        "SLOTTYPE SLOTNAME = inValue.x;"
                     ]
                 }
             },
@@ -60,7 +65,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.y;"
+                        "SLOTTYPE SLOTNAME = inValue.y;"
                     ]
                 }
             }
