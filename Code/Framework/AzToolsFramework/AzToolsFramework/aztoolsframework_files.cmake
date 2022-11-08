@@ -381,7 +381,7 @@ set(FILES
     UI/DocumentPropertyEditor/DPEComponentAdapter.h
     UI/DocumentPropertyEditor/DPEComponentAdapter.cpp
     UI/DocumentPropertyEditor/ValueStringFilter.cpp
-    UI/DocumentPropertyEditor/VAlueStringFilter.h
+    UI/DocumentPropertyEditor/ValueStringFilter.h
     UI/DocumentPropertyEditor/FilteredDPE.cpp
     UI/DocumentPropertyEditor/FilteredDPE.h
     UI/DocumentPropertyEditor/FilteredDPE.ui
