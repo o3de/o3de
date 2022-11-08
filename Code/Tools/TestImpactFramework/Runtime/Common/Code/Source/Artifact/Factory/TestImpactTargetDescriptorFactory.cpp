@@ -69,6 +69,7 @@ namespace TestImpact
         {
             "target",
             "name",
+            "type",
             "output_name",
             "path",
             "sources",
@@ -77,13 +78,16 @@ namespace TestImpact
             "output",
             "dependencies",
             "build",
-            "runtime"
+            "runtime",
+            "production",
+            "test"
         };
 
         enum
         {
             TargetKey,
             NameKey,
+            TargetTypeKey,
             OutputNameKey,
             PathKey,
             SourcesKey,
@@ -92,7 +96,9 @@ namespace TestImpact
             OutputKey,
             DependenciesKey,
             BuildDependenciesKey,
-            RuntimeDependenciesKey
+            RuntimeDependenciesKey,
+            ProductionTargetTypeKey,
+            TestTargetTypeKey
         };
 
         AZ_TestImpact_Eval(!autogenMatcher.empty(), ArtifactException, "Autogen matcher cannot be empty");
@@ -108,7 +114,21 @@ namespace TestImpact
         const auto& target = buildTarget[Keys[TargetKey]];
         descriptor.m_name = target[Keys[NameKey]].GetString();
         descriptor.m_outputName = target[Keys[OutputNameKey]].GetString();
-        descriptor.m_path = target["path"].GetString();
+        descriptor.m_path = target[Keys[PathKey]].GetString();
+
+        if (const auto& targetType = target[Keys[TargetTypeKey]];
+            targetType == Keys[ProductionTargetTypeKey])
+        {
+            descriptor.m_type = TargetType::ProductionTarget;
+        }
+        else if (targetType == Keys[TestTargetTypeKey])
+        {
+            descriptor.m_type = TargetType::TestTarget;
+        }
+        else
+        {
+            throw(ArtifactException(AZStd::string::format("Unexpected target type '%s'", targetType.GetString())));
+        }
 
         AZ_TestImpact_Eval(!descriptor.m_name.empty(), ArtifactException, "Target name cannot be empty");
         AZ_TestImpact_Eval(!descriptor.m_outputName.empty(), ArtifactException, "Target output name cannot be empty");

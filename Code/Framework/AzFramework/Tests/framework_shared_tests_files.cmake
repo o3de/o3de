@@ -12,7 +12,7 @@ set(FILES
     Mocks/MockSpawnableEntitiesInterface.h
     Mocks/MockWindowRequests.h
     Utils/Utils.h
-    Utils/Utils.cpp
+
     Utils/Printers.h
     Utils/Printers.cpp
     FrameworkApplicationFixture.h

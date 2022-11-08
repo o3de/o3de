@@ -39,7 +39,7 @@ namespace ScriptAutomation
             return AzFramework::NativeWindow::SupportsClientAreaResizeOfDefaultWindow();
         }
 
-        void ResizeClientArea(uint32_t width, uint32_t height)
+        void ResizeClientArea(uint32_t width, uint32_t height, const AzFramework::WindowPosOptions& options)
         {
             AzFramework::NativeWindowHandle windowHandle = nullptr;
             AzFramework::WindowSystemRequestBus::BroadcastResult(
@@ -47,7 +47,7 @@ namespace ScriptAutomation
                 &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
 
             AzFramework::WindowSize clientAreaSize = {width, height};
-            AzFramework::WindowRequestBus::Event(windowHandle, &AzFramework::WindowRequestBus::Events::ResizeClientArea, clientAreaSize);
+            AzFramework::WindowRequestBus::Event(windowHandle, &AzFramework::WindowRequestBus::Events::ResizeClientArea, clientAreaSize, options);
             AzFramework::WindowSize newWindowSize;
             AzFramework::WindowRequestBus::EventResult(newWindowSize, windowHandle, &AzFramework::WindowRequests::GetClientAreaSize);
             AZ_Error("ResizeClientArea", newWindowSize.m_width == width && newWindowSize.m_height == height,
@@ -184,7 +184,9 @@ namespace ScriptAutomation
             {
                 if (Utils::SupportsResizeClientAreaOfDefaultWindow())
                 {
-                    Utils::ResizeClientArea(width, height);
+                    AzFramework::WindowPosOptions options;
+                    options.m_ignoreScreenSizeLimit = true;
+                    Utils::ResizeClientArea(width, height, options);
                 }
                 else
                 {
@@ -327,9 +329,9 @@ namespace ScriptAutomation
                 if (PrepareForScreenCapture(AZ::IO::FixedMaxPath(filePath)))
                 {
                     auto scriptAutomationInterface = ScriptAutomationInterface::Get();
-                    uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
+                    AZ::Render::FrameCaptureId frameCaptureId = AZ::Render::InvalidFrameCaptureId;
                     AZ::Render::FrameCaptureRequestBus::BroadcastResult(frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshot, filePath);
-                    if (frameCaptureId != AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId)
+                    if (frameCaptureId != AZ::Render::InvalidFrameCaptureId)
                     {
                         scriptAutomationInterface->SetFrameCaptureId(frameCaptureId);
                     }
@@ -352,9 +354,9 @@ namespace ScriptAutomation
                 if (PrepareForScreenCapture(AZ::IO::FixedMaxPath(filePath)))
                 {
                     auto scriptAutomationInterface = ScriptAutomationInterface::Get();
-                    uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
+                    AZ::Render::FrameCaptureId frameCaptureId = AZ::Render::InvalidFrameCaptureId;
                     AZ::Render::FrameCaptureRequestBus::BroadcastResult(frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshotWithPreview, filePath);
-                    if (frameCaptureId != AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId)
+                    if (frameCaptureId != AZ::Render::InvalidFrameCaptureId)
                     {
                         scriptAutomationInterface->SetFrameCaptureId(frameCaptureId);
                     }
@@ -451,9 +453,9 @@ namespace ScriptAutomation
                 if (PrepareForScreenCapture(AZ::IO::FixedMaxPath(outputFilePath)))
                 {
                     auto scriptAutomationInterface = ScriptAutomationInterface::Get();
-                    uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
+                    AZ::Render::FrameCaptureId frameCaptureId = AZ::Render::InvalidFrameCaptureId;
                     AZ::Render::FrameCaptureRequestBus::BroadcastResult(frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment, passHierarchy, slot, outputFilePath, readbackOption);
-                    if (frameCaptureId != AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId)
+                    if (frameCaptureId != AZ::Render::InvalidFrameCaptureId)
                     {
                         scriptAutomationInterface->SetFrameCaptureId(frameCaptureId);
                     }

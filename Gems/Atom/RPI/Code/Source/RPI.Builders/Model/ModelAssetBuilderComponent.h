@@ -275,6 +275,9 @@ namespace AZ
                 const RHI::ShaderSemantic& semantic,
                 const AZ::Name& uvCustomName = AZ::Name());
 
+            //! Returns true if the two meshes have the same type and count of vertex streams
+            bool VertexStreamLayoutMatches(const ProductMeshContent& lhs, const ProductMeshContent& rhs) const;
+
             //! Checks to see if a data buffer is the expected size
             template<typename T>
             bool ValidateStreamSize(size_t expectedVertexCount, const AZStd::vector<T>& bufferData, AZ::RHI::Format format, const char* streamName) const;

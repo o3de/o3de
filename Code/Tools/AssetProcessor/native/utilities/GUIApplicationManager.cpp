@@ -699,7 +699,7 @@ FileServer* GUIApplicationManager::GetFileServer() const
 
 void GUIApplicationManager::ShowTrayIconErrorMessage(QString msg)
 {
-    AZStd::chrono::system_clock::time_point currentTime = AZStd::chrono::system_clock::now();
+    AZStd::chrono::steady_clock::time_point currentTime = AZStd::chrono::steady_clock::now();
 
     if (m_trayIcon && m_mainWindow)
     {
@@ -805,7 +805,8 @@ ApplicationManager::RegistryCheckInstructions GUIApplicationManager::PopupRegist
 
 void GUIApplicationManager::InitSourceControl()
 {
-    QSettings settings;
+    // Look in the editor's settings for the Source Control value
+    QSettings settings(QApplication::organizationName(), QString("O3DE Editor"));
     settings.beginGroup("Settings");
     bool enableSourceControl = settings.value("EnableSourceControl", 1).toBool();
 

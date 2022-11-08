@@ -103,13 +103,14 @@ namespace LmbrCentral
             // Deprecate: SphereColliderConfiguration -> SphereShapeConfig
             serializeContext->ClassDeprecate(
                 "SphereColliderConfiguration",
-                "{0319AE62-3355-4C98-873D-3139D0427A53}",
+                AZ::Uuid("{0319AE62-3355-4C98-873D-3139D0427A53}"),
                 &ClassConverters::DeprecateSphereColliderConfiguration)
                 ;
 
             serializeContext->Class<SphereShapeConfig, ShapeComponentConfig>()
                 ->Version(2)
                 ->Field("Radius", &SphereShapeConfig::m_radius)
+                ->Field("TranslationOffset", &SphereShapeConfig::m_translationOffset)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -117,10 +118,17 @@ namespace LmbrCentral
                 editContext->Class<SphereShapeConfig>("Configuration", "Sphere shape configuration parameters")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SphereShapeConfig::m_radius, "Radius", "Radius of sphere")
-                        ->Attribute(AZ::Edit::Attributes::Min, 0.f)
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " m")
-                        ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
-                        ;
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.f)
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &SphereShapeConfig::m_translationOffset,
+                        "Translation Offset",
+                        "Translation offset of shape relative to its entity")
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &IsShapeComponentTranslationEnabled);
             }
         }
 
@@ -143,7 +151,7 @@ namespace LmbrCentral
             // Deprecate: SphereColliderComponent -> SphereShapeComponent
             serializeContext->ClassDeprecate(
                 "SphereColliderComponent",
-                "{99F33E4A-4EFB-403C-8918-9171D47A03A4}",
+                AZ::Uuid("{99F33E4A-4EFB-403C-8918-9171D47A03A4}"),
                 &ClassConverters::DeprecateSphereColliderComponent)
                 ;
 

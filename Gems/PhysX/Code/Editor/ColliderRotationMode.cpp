@@ -100,5 +100,6 @@ namespace PhysX
     {
         const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
         m_rotationManipulators.RefreshView(cameraState.m_position);
+        m_rotationManipulators.DisplayFeedback(debugDisplay, cameraState);
     }
 } // namespace PhysX

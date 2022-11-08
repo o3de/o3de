@@ -20,7 +20,6 @@
                 "Id": 14126657869720434043,
                 "Child Entity Order": [
                     "Entity_[1176639161715]",
-                    "Entity_[847003481225]",
                     "Entity_[847003481225]"
                 ]
             },
@@ -37,13 +36,14 @@
                 "$type": "EditorEntityIconComponent",
                 "Id": 5688118765544765547
             },
-            "Component_[6545738857812235305]": {
-                "$type": "SelectionComponent",
-                "Id": 6545738857812235305
-            },
             "Component_[7247035804068349658]": {
                 "$type": "EditorPrefabComponent",
                 "Id": 7247035804068349658
+            },
+            "Component_[738264805748297721]": {
+                "$type": "LocalViewBookmarkComponent",
+                "Id": 738264805748297721,
+                "LocalBookmarkFileName": "SC_Spawnables_DespawnOnEntityDeactivate_16663026257679467.setreg"
             },
             "Component_[9307224322037797205]": {
                 "$type": "EditorLockComponent",
@@ -60,10 +60,6 @@
             "Id": "Entity_[1155164325235]",
             "Name": "Sun",
             "Components": {
-                "Component_[10440557478882592717]": {
-                    "$type": "SelectionComponent",
-                    "Id": 10440557478882592717
-                },
                 "Component_[13620450453324765907]": {
                     "$type": "EditorLockComponent",
                     "Id": 13620450453324765907
@@ -140,7 +136,7 @@
                     "Controller": {
                         "Configuration": {
                             "Field of View": 55.0,
-                            "EditorEntityId": 5899776287740575311
+                            "EditorEntityId": 3504517753808730702
                         }
                     }
                 },
@@ -168,10 +164,6 @@
                             -43.623355865478516
                         ]
                     }
-                },
-                "Component_[18387556550380114975]": {
-                    "$type": "SelectionComponent",
-                    "Id": 18387556550380114975
                 },
                 "Component_[2654521436129313160]": {
                     "$type": "EditorVisibilityComponent",
@@ -224,10 +216,6 @@
                     "$type": "EditorLockComponent",
                     "Id": 14988041764659020032
                 },
-                "Component_[15808690248755038124]": {
-                    "$type": "SelectionComponent",
-                    "Id": 15808690248755038124
-                },
                 "Component_[15900837685796817138]": {
                     "$type": "EditorVisibilityComponent",
                     "Id": 15900837685796817138
@@ -277,10 +265,6 @@
                             }
                         }
                     }
-                },
-                "Component_[11980494120202836095]": {
-                    "$type": "SelectionComponent",
-                    "Id": 11980494120202836095
                 },
                 "Component_[1428633914413949476]": {
                     "$type": "EditorLockComponent",
@@ -353,13 +337,13 @@
                     "configuration": {
                         "sourceHandle": {
                             "id": "{092871A4-DB64-5081-958B-831CBB2498DF}",
-                            "path": "GitHub/o3de/AutomatedTesting/ScriptCanvas/Spawnables/DespawnOnEntityDeactivate.scriptcanvas"
+                            "path": "ScriptCanvas/Spawnables/DespawnOnEntityDeactivate.scriptcanvas"
                         },
                         "sourceName": "DespawnOnEntityDeactivate.scriptcanvas",
                         "propertyOverrides": {
                             "source": {
                                 "id": "{092871A4-DB64-5081-958B-831CBB2498DF}",
-                                "path": "GitHub/o3de/AutomatedTesting/ScriptCanvas/Spawnables/DespawnOnEntityDeactivate.scriptcanvas"
+                                "path": "ScriptCanvas/Spawnables/DespawnOnEntityDeactivate.scriptcanvas"
                             }
                         }
                     }
@@ -380,10 +364,6 @@
                 "Component_[4869312682071764998]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 4869312682071764998
-                },
-                "Component_[6651394572141082209]": {
-                    "$type": "SelectionComponent",
-                    "Id": 6651394572141082209
                 },
                 "Component_[7654762855449285314]": {
                     "$type": "EditorVisibilityComponent",

@@ -11,17 +11,20 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Slice/SliceComponent.h>
+#include <AzTest/Utils.h>
 
 namespace UnitTest
 {
-    AZStd::string GetTestFolderPath()
+    AZ::IO::Path GetTestFolderPath()
     {
-        return AZ_TRAIT_TEST_ROOT_FOLDER;
+        // Make sure the test folder path is a directory
+        static AZ::Test::ScopedAutoTempDirectory s_tempDirectory;
+        return s_tempDirectory.GetDirectoryAsPath();
     }
 
     void MakePathFromTestFolder(char* buffer, int bufferLen, const char* fileName)
     {
-        azsnprintf(buffer, bufferLen, "%s%s", GetTestFolderPath().c_str(), fileName);
+        azstrcpy(buffer, bufferLen, (GetTestFolderPath() / fileName).LexicallyNormal().c_str());
     }
 
     ErrorHandler::ErrorHandler(const char* errorPattern)

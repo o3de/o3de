@@ -28,7 +28,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString PolygonPrismShapeNode::TITLE = QObject::tr("Polygon Prism Shape");
+    const char* PolygonPrismShapeNode::TITLE = "Polygon Prism Shape";
 
     PolygonPrismShapeNode::PolygonPrismShapeNode(GraphModel::GraphPtr graph)
         : BaseShapeNode(graph)

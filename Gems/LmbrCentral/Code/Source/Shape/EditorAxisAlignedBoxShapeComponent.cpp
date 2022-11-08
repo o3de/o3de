@@ -10,11 +10,11 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
 
 #include "AxisAlignedBoxShapeComponent.h"
 #include "EditorAxisAlignedBoxShapeComponent.h"
+#include "EditorAxisAlignedBoxShapeComponentMode.h"
 #include "EditorShapeComponentConverters.h"
 #include "ShapeDisplay.h"
 
@@ -68,7 +68,7 @@ namespace LmbrCentral
 
         // ComponentMode
         m_componentModeDelegate.ConnectWithSingleComponentMode<
-            EditorAxisAlignedBoxShapeComponent, AzToolsFramework::BoxComponentMode>(
+            EditorAxisAlignedBoxShapeComponent, EditorAxisAlignedBoxShapeComponentMode>(
                 AZ::EntityComponentIdPair(GetEntityId(), GetId()), this);
     }
 
@@ -171,4 +171,13 @@ namespace LmbrCentral
     {
         return AZ::Vector3(m_aaboxShape.GetCurrentTransform().GetUniformScale());
     }
+
+    AZ::Aabb EditorAxisAlignedBoxShapeComponent::GetLocalBounds()
+    {
+        AZ::Transform transform = AZ::Transform::CreateIdentity();
+        AZ::Aabb aabb = AZ::Aabb::CreateNull();
+        m_aaboxShape.GetTransformAndLocalBounds(transform, aabb);
+        return aabb.GetTransformedAabb(AZ::Transform::CreateFromQuaternion(GetWorldTM().GetRotation().GetInverseFast()));
+    }
 } // namespace LmbrCentral
+

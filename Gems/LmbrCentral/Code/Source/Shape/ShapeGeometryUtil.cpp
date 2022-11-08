@@ -30,8 +30,14 @@ namespace LmbrCentral
         return vertices + 1;
     }
 
-    void DrawShape(AzFramework::DebugDisplayRequests& debugDisplay, const ShapeDrawParams& shapeDrawParams, const ShapeMesh& shapeMesh)
+    void DrawShape(
+        AzFramework::DebugDisplayRequests& debugDisplay,
+        const ShapeDrawParams& shapeDrawParams,
+        const ShapeMesh& shapeMesh,
+        const AZ::Vector3& shapeOffset)
     {
+        debugDisplay.PushMatrix(AZ::Transform::CreateTranslation(shapeOffset));
+
         if (shapeDrawParams.m_filled)
         {
             if (!shapeMesh.m_vertexBuffer.empty() && !shapeMesh.m_indexBuffer.empty())
@@ -44,6 +50,8 @@ namespace LmbrCentral
         {
             debugDisplay.DrawLines(shapeMesh.m_lineBuffer, shapeDrawParams.m_wireColor);
         }
+
+        debugDisplay.PopMatrix();
     }
 
     /// Determine if a list of vertices constitute a simple polygon

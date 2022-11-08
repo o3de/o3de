@@ -53,6 +53,11 @@ namespace AZ::SceneAPI::Behaviors
             RequestingApplication requester) override;
 
         SCENE_DATA_API void GetManifestDependencyPaths(AZStd::vector<AZStd::string>& paths) override;
+
+        SCENE_DATA_API void GetPolicyName(AZStd::string& result) const override
+        {
+            result = "ScriptProcessorRuleBehavior";
+        }
     protected:
         bool LoadPython(const AZ::SceneAPI::Containers::Scene& scene, AZStd::string& scriptPath, Events::ProcessingResult& fallbackResult);
         void UnloadPython();
@@ -61,7 +66,7 @@ namespace AZ::SceneAPI::Behaviors
     private:
         AzToolsFramework::EditorPythonEventsInterface* m_editorPythonEventsInterface = nullptr;
 
-        struct ExportEventHandler;
-        AZStd::shared_ptr<ExportEventHandler> m_exportEventHandler;
+        struct EventHandler;
+        AZStd::shared_ptr<EventHandler> m_eventHandler;
     };
 } // namespace AZ::SceneAPI::Behaviors

@@ -391,7 +391,7 @@ namespace AZ
             probeGrid->SetNormalBias(normalBias);
         }
 
-        void DiffuseProbeGridFeatureProcessor::SetNumRaysPerProbe(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridNumRaysPerProbe& numRaysPerProbe)
+        void DiffuseProbeGridFeatureProcessor::SetNumRaysPerProbe(const DiffuseProbeGridHandle& probeGrid, DiffuseProbeGridNumRaysPerProbe numRaysPerProbe)
         {
             AZ_Assert(probeGrid.get(), "SetNumRaysPerProbe called with an invalid handle");
             probeGrid->SetNumRaysPerProbe(numRaysPerProbe);
@@ -543,6 +543,24 @@ namespace AZ
         {
             AZ_Assert(probeGrid.get(), "SetScrolling called with an invalid handle");
             probeGrid->SetScrolling(scrolling);
+        }
+
+        void DiffuseProbeGridFeatureProcessor::SetEdgeBlendIbl(const DiffuseProbeGridHandle& probeGrid, bool edgeBlendIbl)
+        {
+            AZ_Assert(probeGrid.get(), "SetEdgeBlendIbl called with an invalid handle");
+            probeGrid->SetEdgeBlendIbl(edgeBlendIbl);
+        }
+
+        void DiffuseProbeGridFeatureProcessor::SetFrameUpdateCount(const DiffuseProbeGridHandle& probeGrid, uint32_t frameUpdateCount)
+        {
+            AZ_Assert(probeGrid.get(), "SetFrameUpdateCount called with an invalid handle");
+            probeGrid->SetFrameUpdateCount(frameUpdateCount);
+        }
+
+        void DiffuseProbeGridFeatureProcessor::SetTransparencyMode(const DiffuseProbeGridHandle& probeGrid, DiffuseProbeGridTransparencyMode transparencyMode)
+        {
+            AZ_Assert(probeGrid.get(), "SetTransparencyMode called with an invalid handle");
+            probeGrid->SetTransparencyMode(transparencyMode);
         }
 
         void DiffuseProbeGridFeatureProcessor::SetBakedTextures(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridBakedTextures& bakedTextures)
@@ -702,33 +720,37 @@ namespace AZ
 
             AZ::RHI::ValidateStreamBufferViews(m_boxStreamLayout, m_probeGridRenderData.m_boxPositionBufferView);
         }
-
-        void DiffuseProbeGridFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
+        
+        void DiffuseProbeGridFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline,
+                RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
-            // change the attachment on the AuxGeom pass to use the output of the visualization pass
-            RPI::PassFilter auxGeomPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("AuxGeomPass"), renderPipeline);
-            RPI::Pass* auxGeomPass = RPI::PassSystemInterface::Get()->FindFirstPass(auxGeomPassFilter);
-            RPI::PassFilter visualizationPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("DiffuseProbeGridVisualizationPass"), renderPipeline);
-            RPI::Pass* visualizationPass = RPI::PassSystemInterface::Get()->FindFirstPass(visualizationPassFilter);
-
-            if (auxGeomPass && visualizationPass && visualizationPass->GetInputOutputCount())
+            if (changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
             {
-                RPI::PassAttachmentBinding& visualizationBinding = visualizationPass->GetInputOutputBinding(0);
-                RPI::PassAttachmentBinding* auxGeomBinding = auxGeomPass->FindAttachmentBinding(AZ::Name("ColorInputOutput"));
-                if (auxGeomBinding)
-                {
-                    auxGeomBinding->SetAttachment(visualizationBinding.GetAttachment());
-                }
-            }
+                // change the attachment on the AuxGeom pass to use the output of the visualization pass
+                RPI::PassFilter auxGeomPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("AuxGeomPass"), renderPipeline);
+                RPI::Pass* auxGeomPass = RPI::PassSystemInterface::Get()->FindFirstPass(auxGeomPassFilter);
+                RPI::PassFilter visualizationPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("DiffuseProbeGridVisualizationPass"), renderPipeline);
+                RPI::Pass* visualizationPass = RPI::PassSystemInterface::Get()->FindFirstPass(visualizationPassFilter);
 
-            UpdatePasses();
+                if (auxGeomPass && visualizationPass && visualizationPass->GetInputOutputCount())
+                {
+                    RPI::PassAttachmentBinding& visualizationBinding = visualizationPass->GetInputOutputBinding(0);
+                    RPI::PassAttachmentBinding* auxGeomBinding = auxGeomPass->FindAttachmentBinding(AZ::Name("ColorInputOutput"));
+                    if (auxGeomBinding)
+                    {
+                        auxGeomBinding->SetAttachment(visualizationBinding.GetAttachment());
+                    }
+                }
+
+                UpdatePasses();
+            }
             m_needUpdatePipelineStates = true;
         }
-
-        void DiffuseProbeGridFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]] RPI::RenderPipelinePtr renderPipeline)
+                
+        void DiffuseProbeGridFeatureProcessor::AddRenderPasses(AZ::RPI::RenderPipeline* renderPipeline)
         {
             // only add to this pipeline if it contains the DiffuseGlobalFullscreen pass
-            RPI::PassFilter diffuseGlobalFullscreenPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("DiffuseGlobalFullscreenPass"), renderPipeline.get());
+            RPI::PassFilter diffuseGlobalFullscreenPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("DiffuseGlobalFullscreenPass"), renderPipeline);
             RPI::Pass* diffuseGlobalFullscreenPass = RPI::PassSystemInterface::Get()->FindFirstPass(diffuseGlobalFullscreenPassFilter);
             if (!diffuseGlobalFullscreenPass)
             {
@@ -736,20 +758,20 @@ namespace AZ
             }
 
             // check to see if the DiffuseProbeGrid passes were already added
-            RPI::PassFilter diffuseProbeGridUpdatePassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("DiffuseProbeGridUpdatePass"), renderPipeline.get());
+            RPI::PassFilter diffuseProbeGridUpdatePassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("DiffuseProbeGridUpdatePass"), renderPipeline);
             RPI::Pass* diffuseProbeGridUpdatePass = RPI::PassSystemInterface::Get()->FindFirstPass(diffuseProbeGridUpdatePassFilter);
 
             if (!diffuseProbeGridUpdatePass)
             {
-                AddPassRequest(renderPipeline.get(), "Passes/DiffuseProbeGridUpdatePassRequest.azasset", "DepthPrePass");
-                AddPassRequest(renderPipeline.get(), "Passes/DiffuseProbeGridRenderPassRequest.azasset", "ForwardSubsurface");
+                AddPassRequest(renderPipeline, "Passes/DiffuseProbeGridUpdatePassRequest.azasset", "DepthPrePass");
+                AddPassRequest(renderPipeline, "Passes/DiffuseProbeGridRenderPassRequest.azasset", "ForwardSubsurface");
 
                 // only add the visualization pass if there's an AuxGeom pass in the pipeline
-                RPI::PassFilter auxGeomPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("AuxGeomPass"), renderPipeline.get());
+                RPI::PassFilter auxGeomPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("AuxGeomPass"), renderPipeline);
                 RPI::Pass* auxGeomPass = RPI::PassSystemInterface::Get()->FindFirstPass(auxGeomPassFilter);
                 if (auxGeomPass)
                 {
-                    AddPassRequest(renderPipeline.get(), "Passes/DiffuseProbeGridVisualizationPassRequest.azasset", "PostProcessPass");
+                    AddPassRequest(renderPipeline, "Passes/DiffuseProbeGridVisualizationPassRequest.azasset", "PostProcessPass");
                 }
 
                 // disable the DiffuseGlobalFullscreenPass if it exists, since it is replaced with a DiffuseProbeGrid composite pass
@@ -759,12 +781,7 @@ namespace AZ
             UpdatePasses();
             m_needUpdatePipelineStates = true;
         }
-
-        void DiffuseProbeGridFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* pipeline)
-        {
-            m_needUpdatePipelineStates = true;
-        }
-
+        
         void DiffuseProbeGridFeatureProcessor::AddPassRequest(RPI::RenderPipeline* renderPipeline, const char* passRequestAssetFilePath, const char* insertionPointPassName)
         {
             auto passRequestAsset = RPI::AssetUtils::LoadAssetByProductPath<RPI::AnyAsset>(passRequestAssetFilePath, RPI::AssetUtils::TraceLevel::Warning);

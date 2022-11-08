@@ -15,11 +15,13 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Name/NameDictionary.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzCore/UnitTest/Mocks/MockITime.h>
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzFramework/Visibility/EntityVisibilityBoundsUnionSystem.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>
 #include <AzTest/AzTest.h>
@@ -57,12 +59,14 @@ namespace Multiplayer
 
             // register components involved in testing
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
+            m_behaviorContext = AZStd::make_unique<AZ::BehaviorContext>();
 
             m_transformDescriptor.reset(AzFramework::TransformComponent::CreateDescriptor());
             m_transformDescriptor->Reflect(m_serializeContext.get());
 
             m_netBindDescriptor.reset(NetBindComponent::CreateDescriptor());
             m_netBindDescriptor->Reflect(m_serializeContext.get());
+            m_netBindDescriptor->Reflect(m_behaviorContext.get());
 
             m_netTransformDescriptor.reset(NetworkTransformComponent::CreateDescriptor());
             m_netTransformDescriptor->Reflect(m_serializeContext.get());
@@ -82,6 +86,8 @@ namespace Multiplayer
             // Without Multiplayer::RegisterMultiplayerComponents() the stats go to invalid id, which is fine for unit tests
             GetMultiplayer()->GetStats().ReserveComponentStats(Multiplayer::InvalidNetComponentId, 50, 0);
 
+            m_visisbilitySystem = AZStd::make_unique<AzFramework::EntityVisibilityBoundsUnionSystem>();
+            m_visisbilitySystem->Connect();
             m_networkEntityManager = AZStd::make_unique<NetworkEntityManager>();
 
             m_mockTime = AZStd::make_unique<AZ::NiceTimeSystemMock>();
@@ -132,6 +138,8 @@ namespace Multiplayer
 
             m_networkEntityManager.reset();
             m_mockMultiplayer.reset();
+            m_visisbilitySystem->Disconnect();
+            m_visisbilitySystem.reset();
 
             m_testInputDriverComponentDescriptor.reset();
             m_testMultiplayerComponentDescriptor.reset();
@@ -140,6 +148,7 @@ namespace Multiplayer
             m_hierarchyRootDescriptor.reset();
             m_hierarchyChildDescriptor.reset();
             m_netBindDescriptor.reset();
+            m_behaviorContext.reset();
             m_serializeContext.reset();
             m_mockComponentApplicationRequests.reset();
 
@@ -151,6 +160,7 @@ namespace Multiplayer
 
         AZStd::unique_ptr<NiceMock<MockComponentApplicationRequests>> m_mockComponentApplicationRequests;
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
+        AZStd::unique_ptr<AZ::BehaviorContext> m_behaviorContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformDescriptor;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_netBindDescriptor;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_hierarchyRootDescriptor;
@@ -164,7 +174,7 @@ namespace Multiplayer
         AZStd::unique_ptr<AZ::EventSchedulerSystemComponent> m_eventScheduler;
         AZStd::unique_ptr<AZ::NiceTimeSystemMock> m_mockTime;
         AZStd::unique_ptr<NiceMock<MockNetworkTime>> m_mockNetworkTime;
-
+        AZStd::unique_ptr<AzFramework::EntityVisibilityBoundsUnionSystem> m_visisbilitySystem;
         AZStd::unique_ptr<NiceMock<IMultiplayerConnectionMock>> m_mockConnection;
         AZStd::unique_ptr<MockConnectionListener> m_mockConnectionListener;
 

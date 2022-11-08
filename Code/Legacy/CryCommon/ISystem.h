@@ -1426,6 +1426,7 @@ namespace Detail
 #define CryLog(...) ((void)0)
 #define CryComment(...) ((void)0)
 #define CryLogAlways(...) ((void)0)
+#define CryOutputToCallback(...) ((void)0)
 
 #else // EXCLUDE_NORMAL_LOG
 

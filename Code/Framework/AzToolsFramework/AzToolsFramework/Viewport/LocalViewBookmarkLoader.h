@@ -52,11 +52,11 @@ namespace AzToolsFramework
     private:
         LocalViewBookmarkComponent* FindOrCreateLocalViewBookmarkComponent();
 
-        void WriteViewBookmarksSettingsRegistryToFile(const AZStd::string& localBookmarksFileName);
-        bool ReadViewBookmarksSettingsRegistryFromFile(const AZStd::string& localBookmarksFileName);
+        void WriteViewBookmarksSettingsRegistryToFile(const AZ::IO::PathView& localBookmarksFileName);
+        bool ReadViewBookmarksSettingsRegistryFromFile(const AZ::IO::PathView& localBookmarksFileName);
 
         //! Writes the content of the string buffer to the stream.
-        bool Write(AZ::IO::GenericStream& genericStream, const AZStd::string& stringBuffer);
+        bool Write(AZ::IO::GenericStream& genericStream, AZStd::string_view stringBuffer);
 
         AZStd::vector<ViewBookmark> m_localBookmarks;
         AZStd::optional<ViewBookmark> m_lastKnownLocation;

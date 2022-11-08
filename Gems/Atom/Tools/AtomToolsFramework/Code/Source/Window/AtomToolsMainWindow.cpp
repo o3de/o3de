@@ -14,12 +14,15 @@
 #include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/std/containers/map.h>
 #include <AzCore/std/sort.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
 
+#include <QClipboard>
 #include <QCloseEvent>
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
@@ -193,7 +196,7 @@ namespace AtomToolsFramework
         if (!m_updateMenus)
         {
             m_updateMenus = true;
-            QTimer::singleShot(0, [this]() {
+            QTimer::singleShot(0, this, [this]() {
                 if (m_rebuildMenus)
                 {
                     // Clearing all actions that were added directly to the menu bar
@@ -201,14 +204,14 @@ namespace AtomToolsFramework
 
                     // Instead of destroying and recreating the menu bar, destroying the individual child menus to prevent the UI from
                     // popping when the menu bar is recreated
-                    auto menus = menuBar()->findChildren<QMenu*>();
-                    for (auto menu : menus)
+                    for (auto menu : menuBar()->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly))
                     {
                         delete menu;
                     }
 
                     AtomToolsMainMenuRequestBus::Event(m_toolId, &AtomToolsMainMenuRequestBus::Events::CreateMenus, menuBar());
                 }
+
                 AtomToolsMainMenuRequestBus::Event(m_toolId, &AtomToolsMainMenuRequestBus::Events::UpdateMenus, menuBar());
                 m_updateMenus = false;
                 m_rebuildMenus = false;
@@ -229,57 +232,37 @@ namespace AtomToolsFramework
         m_menuHelp = menuBar->addMenu("&Help");
         m_menuHelp->setObjectName("menuHelp");
 
-        m_menuFile->addAction("Run &Python...", [this]() {
-            const QString script = QFileDialog::getOpenFileName(
-                this, QObject::tr("Run Script"), QString(AZ::Utils::GetProjectPath().c_str()), QString("*.py"));
-            if (!script.isEmpty())
-            {
-                QTimer::singleShot(0, [script]() {
-                    AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
-                        &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilename, script.toUtf8().constData());
-                });
-            }
-        });
-
+        BuildScriptsMenu();
         m_menuFile->addSeparator();
 
-        m_menuFile->addAction("E&xit", [this]() {
+        m_menuFile->addAction(tr("E&xit"), [this]() {
             close();
         }, QKeySequence::Quit);
 
-        // Add menu options to toggle the visibility of all dock widgets
-        auto dockWidgets = findChildren<QDockWidget*>();
-        AZStd::sort(dockWidgets.begin(), dockWidgets.end(), [](QDockWidget* a, QDockWidget* b) {
-            return a->windowTitle() < b->windowTitle();
-        });
-
-        for (auto dockWidget : dockWidgets)
-        {
-            const auto dockWidgetName = dockWidget->windowTitle();
-            auto dockAction = m_menuTools->addAction(dockWidgetName, [this, dockWidgetName](const bool checked) {
-                SetDockWidgetVisible(dockWidgetName.toUtf8().constData(), checked);
-            });
-            dockAction->setCheckable(true);
-            dockAction->setChecked(dockWidget->isVisible());
-            connect(dockWidget, &QDockWidget::visibilityChanged, dockAction, &QAction::setChecked);
-        }
-
-        m_menuTools->addSeparator();
-        m_menuTools->addAction("Default Layout", [this]() {
-            m_advancedDockManager->restoreState(m_defaultWindowState);
-        });
+        BuildDockingMenu();
         m_menuTools->addSeparator();
 
-        m_menuTools->addAction("&Settings...", [this]() {
+        BuildLayoutsMenu();
+        m_menuView->addSeparator();
+
+        m_menuTools->addAction(tr("&Settings..."), [this]() {
             OpenSettingsDialog();
         }, QKeySequence::Preferences);
 
-        m_menuHelp->addAction("&Help...", [this]() {
+        m_menuHelp->addAction(tr("&Help..."), [this]() {
             OpenHelpDialog();
+        }, QKeySequence::HelpContents);
+
+        m_menuHelp->addAction(tr("&About..."), [this]() {
+            OpenAboutDialog();
         });
 
-        m_menuHelp->addAction("&About...", [this]() {
-            OpenAboutDialog();
+        connect(m_menuEdit, &QMenu::aboutToShow, menuBar, [toolId = m_toolId](){
+            AtomToolsMainWindowRequestBus::Event(toolId, &AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, false);
+        });
+
+        connect(QApplication::clipboard(), &QClipboard::dataChanged, menuBar, [toolId = m_toolId](){
+            AtomToolsMainWindowRequestBus::Event(toolId, &AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, false);
         });
     }
 
@@ -381,9 +364,7 @@ namespace AtomToolsFramework
             m_shownBefore = true;
             m_defaultWindowState = m_advancedDockManager->saveState();
             m_mainWindowWrapper->showFromSettings();
-            const AZStd::string windowState =
-                GetSettingsObject("/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string());
-            m_advancedDockManager->restoreState(QByteArray(windowState.data(), aznumeric_cast<int>(windowState.size())));
+            RestoreSavedLayout();
         }
 
         Base::showEvent(showEvent);
@@ -394,12 +375,170 @@ namespace AtomToolsFramework
         if (closeEvent->isAccepted())
         {
             const QByteArray windowState = m_advancedDockManager->saveState();
-            SetSettingsObject(
-                "/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string(windowState.begin(), windowState.end()));
+            SetSettingsObject("/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string(windowState.begin(), windowState.end()));
             AtomToolsMainWindowNotificationBus::Event(m_toolId, &AtomToolsMainWindowNotifications::OnMainWindowClosing);
         }
 
         Base::closeEvent(closeEvent);
+    }
+
+    void AtomToolsMainWindow::BuildDockingMenu()
+    {
+        auto dockWidgets = findChildren<QDockWidget*>();
+        AZStd::sort(
+            dockWidgets.begin(),
+            dockWidgets.end(),
+            [](QDockWidget* a, QDockWidget* b)
+            {
+                return a->windowTitle() < b->windowTitle();
+            });
+
+        for (auto dockWidget : dockWidgets)
+        {
+            const auto dockWidgetName = dockWidget->windowTitle();
+            if (!dockWidgetName.isEmpty())
+            {
+                auto dockAction = m_menuTools->addAction(
+                    dockWidgetName,
+                    [this, dockWidgetName](const bool checked)
+                    {
+                        SetDockWidgetVisible(dockWidgetName.toUtf8().constData(), checked);
+                    });
+
+                dockAction->setCheckable(true);
+                dockAction->setChecked(dockWidget->isVisible());
+                connect(dockWidget, &QDockWidget::visibilityChanged, dockAction, &QAction::setChecked);
+            }
+        }
+    }
+
+    void AtomToolsMainWindow::BuildLayoutsMenu()
+    {
+        QMenu* layoutSettingsMenu = m_menuView->addMenu(tr("Layouts"));
+        connect(
+            layoutSettingsMenu,
+            &QMenu::aboutToShow,
+            this,
+            [this, layoutSettingsMenu]()
+            {
+                // Delete all previously registered menu actions before it is repopulated from settings.
+                layoutSettingsMenu->clear();
+
+                // Register actions for all non deletable, predefined, system layouts declared in the registry.
+                for (const auto& layoutPair : GetSettingsObject(ToolLayoutSettingsKey, LayoutSettingsMap()))
+                {
+                    const auto& layoutName = layoutPair.first;
+                    const auto& windowState = layoutPair.second;
+                    if (!layoutName.empty() && layoutName != "Default" && !windowState.empty())
+                    {
+                        layoutSettingsMenu->addAction(
+                            layoutName.c_str(),
+                            [this, layoutName, windowState]()
+                            {
+                                m_advancedDockManager->restoreState(
+                                    QByteArray(windowState.data(), aznumeric_cast<int>(windowState.size())));
+                            });
+                    }
+                }
+
+                layoutSettingsMenu->addSeparator();
+
+                // Register actions for all of the layouts that were previously saved from within the application.
+                for (const auto& layoutPair : GetSettingsObject(UserLayoutSettingsKey, LayoutSettingsMap()))
+                {
+                    const auto& layoutName = layoutPair.first;
+                    const auto& windowState = layoutPair.second;
+                    if (!layoutName.empty() && layoutName != "Default" && !windowState.empty())
+                    {
+                        QMenu* layoutMenu = layoutSettingsMenu->addMenu(layoutName.c_str());
+
+                        // Since these layouts were created and saved by the user, give them the option to restore and delete them.
+                        layoutMenu->addAction(
+                            tr("Load"),
+                            [this, layoutName, windowState]()
+                            {
+                                m_advancedDockManager->restoreState(
+                                    QByteArray(windowState.data(), aznumeric_cast<int>(windowState.size())));
+                            });
+
+                        layoutMenu->addAction(
+                            tr("Delete"),
+                            [layoutName]()
+                            {
+                                auto userLayoutSettings = GetSettingsObject(UserLayoutSettingsKey, LayoutSettingsMap());
+                                userLayoutSettings.erase(layoutName);
+                                SetSettingsObject(UserLayoutSettingsKey, userLayoutSettings);
+                            });
+                    }
+                }
+
+                // Saving layouts prompts the user for a layout name then appends that layout to the existing settings which will be
+                // saved on shut down. The layout name is reformatted as a display name, so that the casing is consistent for all
+                // layouts.
+                layoutSettingsMenu->addAction(
+                    tr("Save Layout..."),
+                    [this]()
+                    {
+                        const AZStd::string layoutName =
+                            GetDisplayNameFromText(QInputDialog::getText(this, tr("Layout Name"), QString()).toUtf8().constData());
+                        if (!layoutName.empty() && layoutName != "Default")
+                        {
+                            auto userLayoutSettings = GetSettingsObject(UserLayoutSettingsKey, LayoutSettingsMap());
+                            const QByteArray windowState = m_advancedDockManager->saveState();
+                            userLayoutSettings[layoutName] = AZStd::string(windowState.begin(), windowState.end());
+                            SetSettingsObject(UserLayoutSettingsKey, userLayoutSettings);
+                        }
+                    });
+
+                layoutSettingsMenu->addSeparator();
+
+                layoutSettingsMenu->addAction(
+                    tr("Restore Default Layout"),
+                    [this]()
+                    {
+                        RestoreDefaultLayout();
+                    });
+            });
+    }
+
+    void AtomToolsMainWindow::BuildScriptsMenu()
+    {
+        QMenu* scriptsMenu = m_menuFile->addMenu(tr("Python Scripts"));
+        connect(scriptsMenu, &QMenu::aboutToShow, this, [scriptsMenu]() {
+            scriptsMenu->clear();
+            AddRegisteredScriptToMenu(scriptsMenu, "/O3DE/AtomToolsFramework/MainWindow/FileMenuScripts", {});
+        });
+    }
+
+    void AtomToolsMainWindow::RestoreDefaultLayout()
+    {
+        // Search all user and system layout settings for a data-driven default state before applying the hard-coded initial layout.
+        // Settings are being used for a data-driven default state because it was simply easier to configure the layout in the running
+        // application, save it, and restore it instead of attempting to achieve the desired layout through code.
+        const auto& toolLayoutSettings = GetSettingsObject(ToolLayoutSettingsKey, LayoutSettingsMap());
+        if (const auto it = toolLayoutSettings.find("Default"); it != toolLayoutSettings.end())
+        {
+            const auto& windowState = it->second;
+            m_advancedDockManager->restoreState(QByteArray(windowState.data(), aznumeric_cast<int>(windowState.size())));
+            return;
+        }
+
+        m_advancedDockManager->restoreState(m_defaultWindowState);
+    }
+
+    void AtomToolsMainWindow::RestoreSavedLayout()
+    {
+        // Attempt to restore the layout that was saved the last time the application was closed. 
+        const AZStd::string windowState = GetSettingsObject("/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string());
+        if (!windowState.empty())
+        {
+            m_advancedDockManager->restoreState(QByteArray(windowState.data(), aznumeric_cast<int>(windowState.size())));
+            return;
+        }
+
+        // If there are no settings for the last saved layout then attempt to restore the default layout from settings or the initial
+        // hardcoded layout.
+        RestoreDefaultLayout();
     }
 
     void AtomToolsMainWindow::SetupMetrics()

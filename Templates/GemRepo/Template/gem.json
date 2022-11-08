@@ -1,23 +1,24 @@
 {
     "gem_name": "${Name}",
-    "display_name": "${Name}",
-    "license": "What license ${Name} uses goes here: i.e. Apache-2.0 or MIT",
-    "license_url": "Link to the license web site goes here: i.e. https://opensource.org/licenses/Apache-2.0 Or https://opensource.org/licenses/MIT",
-    "origin": "The name of the originator goes here. i.e. XYZ Inc.",
-    "origin_url": "The primary repo for ${Name} goes here: i.e. http://www.mydomain.com",
+    "display_name": "${DisplayName}",
+    "license": "${License}",
+    "license_url": "${LicenseURL}",
+    "origin": "${Origin}",
+    "origin_url": "${OriginURL}",
     "type": "Code",
-    "summary": "A short description of ${Name} which is zipped up in an archive named gem.zip in the root of the Gem Repo. Though not required, it is recommended that the sha256 of the gem.zip file be placed in the sha256 field of this gem.json so the download can be verified.",
+    "summary": "${Summary}",
     "origin_uri": "${RepoURI}/gem.zip",
     "sha256": "",
     "canonical_tags": [
         "Gem"
     ],
     "user_tags": [
-        "${Name}"
+        "${UserTags}"
     ],
-    "icon_path": "preview.png",
-    "requirements": "",
-    "documentation_url": "",
+    "icon_path": "${IconPath}",
+    "requirements": "${Requirements}",
+    "documentation_url": "${DocumentationURL}",
     "dependencies": [
-    ]
+    ],
+    "repo_uri": "${RepoURI}"
 }

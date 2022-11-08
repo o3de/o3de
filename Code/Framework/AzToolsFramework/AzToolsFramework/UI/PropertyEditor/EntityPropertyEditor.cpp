@@ -195,7 +195,13 @@ namespace AzToolsFramework
                     continue;
                 }
 
-                for (auto& [dataNode, rowWidget] : componentEditor->GetPropertyEditor()->GetWidgets())
+                IPropertyEditor* editor = componentEditor->GetPropertyEditor();
+                auto reflectedPropertyEditor = azdynamic_cast<ReflectedPropertyEditor*>(editor);
+                if (!reflectedPropertyEditor)
+                {
+                    continue;
+                }
+                for (auto& [dataNode, rowWidget] : reflectedPropertyEditor->GetWidgets())
                 {
                     if (!rowWidget->isVisible())
                     {
@@ -1739,7 +1745,7 @@ namespace AzToolsFramework
                 componentEditor->mockDisabledState(true);
             }
 
-            if (!componentEditor->GetPropertyEditor()->HasFilteredOutNodes() || componentEditor->GetPropertyEditor()->HasVisibleNodes())
+            if (componentEditor->HasContents())
             {
                 for (AZ::Component* componentInstance : componentInstances)
                 {
@@ -4560,6 +4566,12 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::dragEnterEvent(QDragEnterEvent* event)
     {
+        if (m_selectionContainsReadOnlyEntity)
+        {
+            event->ignore();
+            return;
+        }
+
         if (UpdateDrag(event->pos(), event->mouseButtons(), event->mimeData()))
         {
             event->accept();
@@ -4572,6 +4584,12 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::dragMoveEvent(QDragMoveEvent* event)
     {
+        if (m_selectionContainsReadOnlyEntity)
+        {
+            event->ignore();
+            return;
+        }
+
         if (UpdateDrag(event->pos(), event->mouseButtons(), event->mimeData()))
         {
             event->accept();
@@ -4816,6 +4834,11 @@ namespace AzToolsFramework
             return false; // can't drop while tree is rebuilding itself!
         }
 
+        if (m_selectionContainsReadOnlyEntity)
+        {
+            return false;
+        }
+
         const QRect globalRect(globalPos, globalPos);
         if (!mimeData || m_selectedEntityIds.empty() || !DoesIntersectWidget(globalRect, this))
         {
@@ -4944,43 +4967,25 @@ namespace AzToolsFramework
 
         AZ_Assert(m_reorderRowWidgetEditor, "Missing editor for row widget drag.");
 
-        AzToolsFramework::ReflectedPropertyEditor::WidgetList widgets = m_reorderRowWidgetEditor->GetPropertyEditor()->GetWidgets();
-        for (auto widgetPair : widgets)
+        IPropertyEditor* editor = m_reorderRowWidgetEditor->GetPropertyEditor();
+        if (auto reflectedPropertyEditor = azdynamic_cast<ReflectedPropertyEditor*>(editor))
         {
-            PropertyRowWidget* widget = widgetPair.second;
-            if (!widget)
+            AzToolsFramework::ReflectedPropertyEditor::WidgetList widgets = reflectedPropertyEditor->GetWidgets();
+            for (auto widgetPair : widgets)
             {
-                continue;
-            }
-
-            if (DoesIntersectWidget(globalRect, reinterpret_cast<QWidget*>(widget)))
-            {
-                if (widget->CanBeReordered() && widget->GetParentRow() == m_reorderRowWidget->GetParentRow())
+                PropertyRowWidget* widget = widgetPair.second;
+                if (!widget)
                 {
-                    m_reorderDropTarget = widget;
-
-                    QRect widgetRect = GetWidgetAndVisibleChildrenGlobalRect(widget);
-                    if (globalPos.y() < widgetRect.center().y())
-                    {
-                        m_reorderDropArea = EntityPropertyEditor::DropArea::Above;
-                    }
-                    else
-                    {
-                        m_reorderDropArea = EntityPropertyEditor::DropArea::Below;
-                    }
-
-                    return true;
+                    continue;
                 }
 
-                // We're hovering over a child of a reorderable ancestor, use the ancestor as the drop target.
-                PropertyRowWidget* parent = widget->GetParentRow();
-                while (parent)
+                if (DoesIntersectWidget(globalRect, reinterpret_cast<QWidget*>(widget)))
                 {
-                    if (parent->CanBeReordered() && parent->GetParentRow() == m_reorderRowWidget->GetParentRow())
+                    if (widget->CanBeReordered() && widget->GetParentRow() == m_reorderRowWidget->GetParentRow())
                     {
-                        m_reorderDropTarget = parent;
+                        m_reorderDropTarget = widget;
 
-                        QRect widgetRect = GetWidgetAndVisibleChildrenGlobalRect(parent);
+                        QRect widgetRect = GetWidgetAndVisibleChildrenGlobalRect(widget);
                         if (globalPos.y() < widgetRect.center().y())
                         {
                             m_reorderDropArea = EntityPropertyEditor::DropArea::Above;
@@ -4992,7 +4997,29 @@ namespace AzToolsFramework
 
                         return true;
                     }
-                    parent = parent->GetParentRow();
+
+                    // We're hovering over a child of a reorderable ancestor, use the ancestor as the drop target.
+                    PropertyRowWidget* parent = widget->GetParentRow();
+                    while (parent)
+                    {
+                        if (parent->CanBeReordered() && parent->GetParentRow() == m_reorderRowWidget->GetParentRow())
+                        {
+                            m_reorderDropTarget = parent;
+
+                            QRect widgetRect = GetWidgetAndVisibleChildrenGlobalRect(parent);
+                            if (globalPos.y() < widgetRect.center().y())
+                            {
+                                m_reorderDropArea = EntityPropertyEditor::DropArea::Above;
+                            }
+                            else
+                            {
+                                m_reorderDropArea = EntityPropertyEditor::DropArea::Below;
+                            }
+
+                            return true;
+                        }
+                        parent = parent->GetParentRow();
+                    }
                 }
             }
         }
@@ -5084,12 +5111,16 @@ namespace AzToolsFramework
 
         for (auto componentEditor : componentEditors)
         {
-            AzToolsFramework::ReflectedPropertyEditor::WidgetList widgets = componentEditor->GetPropertyEditor()->GetWidgets();
-            for (auto& [dataNode, rowWidget] : widgets)
+            IPropertyEditor* editor = componentEditor->GetPropertyEditor();
+            if (auto reflectedPropertyEditor = azdynamic_cast<ReflectedPropertyEditor*>(editor))
             {
-                if (DoesIntersectWidget(globalRect, reinterpret_cast<QWidget*>(rowWidget)) && rowWidget->CanBeReordered())
+                AzToolsFramework::ReflectedPropertyEditor::WidgetList widgets = reflectedPropertyEditor->GetWidgets();
+                for (auto& [dataNode, rowWidget] : widgets)
                 {
-                    return rowWidget;
+                    if (DoesIntersectWidget(globalRect, reinterpret_cast<QWidget*>(rowWidget)) && rowWidget->CanBeReordered())
+                    {
+                        return rowWidget;
+                    }
                 }
             }
         }
@@ -5144,21 +5175,25 @@ namespace AzToolsFramework
         {
             for (auto componentEditor : componentEditors)
             {
-                AzToolsFramework::ReflectedPropertyEditor::WidgetList widgets = componentEditor->GetPropertyEditor()->GetWidgets();
-                for (AZStd::pair<InstanceDataNode*, PropertyRowWidget*> w : widgets)
+                IPropertyEditor* editor = componentEditor->GetPropertyEditor();
+                if (auto reflectedPropertyEditor = azdynamic_cast<ReflectedPropertyEditor*>(editor))
                 {
-                    if (w.second)
+                    AzToolsFramework::ReflectedPropertyEditor::WidgetList widgets = reflectedPropertyEditor->GetWidgets();
+                    for (AZStd::pair<InstanceDataNode*, PropertyRowWidget*> w : widgets)
                     {
-                        if (DoesIntersectWidget(dragRect, reinterpret_cast<QWidget*>(w.second)) && w.second->CanBeReordered())
+                        if (w.second)
                         {
-                            m_currentReorderState = EntityPropertyEditor::ReorderState::DraggingRowWidget;
-                            m_reorderRowWidget = w.second;
-                            m_reorderRowWidgetEditor = componentEditor;
-                            if (m_reorderDropTarget)
+                            if (DoesIntersectWidget(dragRect, reinterpret_cast<QWidget*>(w.second)) && w.second->CanBeReordered())
                             {
-                                m_reorderDropTarget = nullptr;
+                                m_currentReorderState = EntityPropertyEditor::ReorderState::DraggingRowWidget;
+                                m_reorderRowWidget = w.second;
+                                m_reorderRowWidgetEditor = componentEditor;
+                                if (m_reorderDropTarget)
+                                {
+                                    m_reorderDropTarget = nullptr;
+                                }
+                                break;
                             }
-                            break;
                         }
                     }
                 }
@@ -5642,8 +5677,7 @@ namespace AzToolsFramework
 
         for (auto componentEditor : m_componentEditors)
         {
-            componentEditor->GetPropertyEditor()->SetFilterString(m_filterString);
-            componentEditor->GetHeader()->SetFilterString(m_filterString);
+            componentEditor->SetFilterString(m_filterString);
         }
 
         UpdateContents();

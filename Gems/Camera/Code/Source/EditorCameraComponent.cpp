@@ -97,7 +97,7 @@ namespace Camera
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection);
         if (serializeContext)
         {
-            serializeContext->ClassDeprecate("EditorCameraComponent", "{B99EFE3D-3F1D-4630-8A7B-31C70CC1F53C}", &UpdateEditorCameraComponentToUseController);
+            serializeContext->ClassDeprecate("EditorCameraComponent", AZ::Uuid("{B99EFE3D-3F1D-4630-8A7B-31C70CC1F53C}"), &UpdateEditorCameraComponentToUseController);
             serializeContext->Class<EditorCameraComponent, EditorCameraComponentBase>()
                 ->Version(0)
                 ->Field("FrustumLengthPercent", &EditorCameraComponent::m_frustumViewPercentLength)

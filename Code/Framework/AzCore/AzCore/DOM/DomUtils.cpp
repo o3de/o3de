@@ -243,6 +243,11 @@ namespace AZ::Dom::Utils
                     const Array::ContainerType& ourChildren = ourNode.GetChildren();
                     const Array::ContainerType& theirChildren = theirNode.GetChildren();
 
+                    if (ourChildren.size() != theirChildren.size())
+                    {
+                        return false;
+                    }
+
                     for (size_t i = 0; i < ourChildren.size(); ++i)
                     {
                         const Value& lhsChild = ourChildren[i];
@@ -290,30 +295,41 @@ namespace AZ::Dom::Utils
 
     void* TryMarshalValueToPointer(const AZ::Dom::Value& value, const AZ::TypeId& expectedType)
     {
-        if (!value.IsObject())
+        if (value.IsObject())
         {
-            return nullptr;
-        }
-        auto typeIdIt = value.FindMember(TypeFieldName);
-        if (typeIdIt != value.MemberEnd() && typeIdIt->second.GetString() == PointerTypeName.GetStringView())
-        {
-            if (!expectedType.IsNull())
+            auto typeIdIt = value.FindMember(TypeFieldName);
+            if (typeIdIt != value.MemberEnd() && typeIdIt->second.GetString() == PointerTypeName.GetStringView())
             {
-                auto typeFieldIt = value.FindMember(PointerTypeFieldName);
-                if (typeFieldIt == value.MemberEnd())
+                if (!expectedType.IsNull())
                 {
-                    return nullptr;
+                    auto typeFieldIt = value.FindMember(PointerTypeFieldName);
+                    if (typeFieldIt == value.MemberEnd())
+                    {
+                        return nullptr;
+                    }
+                    AZ::TypeId actualTypeId = DomValueToTypeId(typeFieldIt->second);
+                    if (actualTypeId != expectedType)
+                    {
+                        return nullptr;
+                    }
                 }
-                AZ::TypeId actualTypeId = DomValueToTypeId(typeFieldIt->second);
-                if (actualTypeId != expectedType)
-                {
-                    return nullptr;
-                }
+                return reinterpret_cast<void*>(value[PointerValueFieldName].GetUint64());
             }
-            return reinterpret_cast<void*>(value[PointerValueFieldName].GetUint64());
         }
+        else if (value.IsOpaqueValue())
+        {
+            const auto& opaqueAny = value.GetOpaqueValue();
+            if (opaqueAny.type() == expectedType)
+            {
+                return AZStd::any_cast<void>(const_cast<AZStd::any*>(&opaqueAny));
+            }
+        }
+
         return nullptr;
     }
+
+    // remove dangerous implementation that could result in dangling references
+    void* TryMarshalValueToPointer(AZ::Dom::Value&& value, const AZ::TypeId& expectedType) = delete;
 
     Dom::Value MarshalTypedPointerToValue(void* value, const AZ::TypeId& typeId)
     {
@@ -328,7 +344,7 @@ namespace AZ::Dom::Utils
         return result;
     }
 
-    const AZ::TypeId& GetValueTypeId(const Dom::Value& value)
+    AZ::TypeId GetValueTypeId(const Dom::Value& value)
     {
         switch (value.GetType())
         {

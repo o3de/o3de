@@ -163,11 +163,11 @@ namespace Multiplayer
 
                             // Skip spawnables that live inside level folders, but isn't the level itself
                             AZ::IO::PathView spawnableFilePath(assetInfo.m_relativePath);
-                            AZ::IO::PathView filenameSansExtention = spawnableFilePath.Stem().Stem(); // Just the filename without the .network.spawnable extension
+                            AZ::IO::PathView filenameSansExtension = spawnableFilePath.Stem().Stem(); // Just the filename without the .network.spawnable extension
                             
                             AZ::IO::PathView::const_iterator parentFolderName = spawnableFilePath.end();
                             AZStd::advance(parentFolderName, -2);
-                            if (parentFolderName->Native() != filenameSansExtention.Native())
+                            if (parentFolderName->Native() != filenameSansExtension.Native())
                             {
                                 return;
                             }
@@ -180,7 +180,7 @@ namespace Multiplayer
                         AZ::Data::AssetCatalogRequestBus::Broadcast(
                             &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, enumerateCB, nullptr);
 
-                        if (multiplayerLevelFilePaths.size() > 0)
+                        if (!multiplayerLevelFilePaths.empty())
                         {
                             int levelIndex = 0;
                             for (const auto& multiplayerLevelFilePath : multiplayerLevelFilePaths)

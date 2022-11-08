@@ -8,6 +8,7 @@
 
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzCore/std/string/fixed_string.h>
 
 #include <android/log.h>
 

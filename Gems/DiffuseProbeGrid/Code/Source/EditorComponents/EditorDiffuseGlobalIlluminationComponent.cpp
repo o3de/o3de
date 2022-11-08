@@ -27,7 +27,7 @@ namespace AZ
                     editContext->Class<EditorDiffuseGlobalIlluminationComponent>(
                         "Diffuse Global Illumination", "Diffuse Global Illumination configuration")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                        ->Attribute(Edit::Attributes::Category, "Atom")
+                        ->Attribute(Edit::Attributes::Category, "Graphics/Lighting")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg")
                         ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC("Level", 0x9aeacc13) }))

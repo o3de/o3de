@@ -36,7 +36,7 @@
       </widget>
      </item>
      <item alignment="Qt::AlignTop">
-      <widget class="QPushButton" name="m_viewOptionButton">
+      <widget class="QToolButton" name="m_viewOptionButton">
        <property name="autoExclusive">
         <bool>false</bool>
        </property>
@@ -97,6 +97,9 @@
            <width>0</width>
            <height>0</height>
           </size>
+         </property>
+         <property name="editTriggers">
+          <set>QAbstractItemView::EditKeyPressed</set>
          </property>
          <property name="dragDropMode">
           <enum>QAbstractItemView::DragOnly</enum>

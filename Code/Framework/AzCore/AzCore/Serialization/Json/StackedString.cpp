@@ -7,9 +7,30 @@
  */
 
 #include <AzCore/Serialization/Json/StackedString.h>
+#include <AzCore/std/string/fixed_string.h>
+#include <AzCore/std/ranges/join_view.h>
+#include <AzCore/std/ranges/transform_view.h>
 
 namespace AZ
 {
+    //! For JSON Pointer "~" is the escape character and "/"
+    //! indicate the start of a reference token
+    //! They escape to '~' -> "~0' and `/` = "~1"
+    //! @return a fixed_string with max size for two characters
+    //! to accomodate the escape tokens
+    [[nodiscard]] static AZStd::fixed_string<2> EncodeJsonPointerCharacter(char elem)
+    {
+        switch (elem)
+        {
+        case JsonPointerEscape:
+            return AZStd::fixed_string<2>(JsonPointerEncodedEscape);
+        case JsonPointerReferenceTokenPrefix:
+            return AZStd::fixed_string<2>(JsonPointerEncodedReferenceTokenPrefix);
+        default:
+            return AZStd::fixed_string<2>{ elem };
+        }
+    }
+
     StackedString::StackedString(Format format)
         : m_format(format)
     {
@@ -28,19 +49,25 @@ namespace AZ
                 {
                     m_string += '.';
                 }
-                break;
+                m_string += value;
+                return;
             case Format::JsonPointer:
                 m_string += '/';
-                break;
+                // encode the escape characters in the reference token and flatten the view of fixed_strings
+                // to allow iteration over each chacter
+                for (char elem : value | AZStd::views::transform(&EncodeJsonPointerCharacter) | AZStd::views::join)
+                {
+                    m_string += elem;
+                }
+                return;
             default:
                 if (!m_string.empty())
                 {
                     m_string += ' ';
                 }
-                break;
+                m_string += value;
+                return;
             }
-
-            m_string.append(value.data(), value.length());
         }
     }
     

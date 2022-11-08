@@ -43,7 +43,7 @@ namespace EMotionFX
     {
         const AZ::u64 result = AZStd::stoull(text);
 
-        if (result == 0 || result == ULLONG_MAX)
+        if (result == 0 || result == AZStd::numeric_limits<unsigned long long>::max())
         {
             return ObjectId::InvalidId;
         }

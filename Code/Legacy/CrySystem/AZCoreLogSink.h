@@ -121,7 +121,7 @@ public:
 
         if (window == AZ::Debug::Trace::GetDefaultSystemWindow())
         {
-            auto WriteToStream = [message = AZStd::string_view(message)]
+            [[maybe_unused]] auto WriteToStream = [message = AZStd::string_view(message)]
             (AZ::IO::GenericStream& stream)
             {
                 constexpr AZStd::string_view newline = "\n";
@@ -134,7 +134,7 @@ public:
         }
         else
         {
-            auto WriteToStream = [window = AZStd::string_view(window), message = AZStd::string_view(message)]
+            [[maybe_unused]] auto WriteToStream = [window = AZStd::string_view(window), message = AZStd::string_view(message)]
             (AZ::IO::GenericStream& stream)
             {
                 constexpr AZStd::string_view windowMessageSeparator = " - ";
@@ -150,7 +150,7 @@ public:
             };
             CryOutputToCallback(ILog::eMessage, WriteToStream);
         }
-        
+
         return m_suppressSystemOutput;
     }
 

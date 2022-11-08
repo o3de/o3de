@@ -34,6 +34,42 @@ QTabBar::tab {
 QTabBar::tab:text {
     text-align:left;
 }
+
+#createAGemLHS QRadioButton{
+    font-size: 16px;
+    height: 40px;
+    min-width: 180px;
+    spacing: 10px;
+    color: #6b6b6b;
+}
+
+#createAGemLHS QRadioButton:enabled{
+    color: #aaaaaa;
+}
+
+#createAGemLHS QRadioButton:checked{
+    background-color: #333333;
+    spacing: 30px;
+    color: #FFFFFF;
+}
+
+#createAGemLHS QRadioButton::indicator{
+    image: url(:/nothing.png);
+}
+
+QStackedWidget#createAGemRHS{
+    background-color: #333333;
+    text-align:left;
+}
+
+#createAGemRHS #formFrame{
+    margin-left: 0px;
+}
+
+#createAGemRHS #formTagField{
+    margin-left: 0px;
+}
+
 QTabWidget::pane {
     background-color: #333333;
     border:0 none;
@@ -59,6 +95,38 @@ QTabBar::focus {
 QTabBar::tab:focus {
     background-color: #525252;
     color: #4082eb;
+}
+
+#createGemTab #formFrame {
+    margin-left: 0px;
+}
+
+#formFrame QComboBox {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    color:red;
+    min-width:810px;
+    max-width:810px;
+    line-height: 26px;
+    font-size: 18px;
+    height: 26px;
+    padding-left:0px;
+    padding-right:0px;
+}
+
+#formFrame QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    padding-right:20px;
+    min-width: 24px;
+    max-width: 24px;
+    width:24px;
+}
+
+#formFrame QComboBox QListView::item {
+    line-height: 30px;
+    font-size: 18px;
+    height: 40px;
 }
 
 #ToastNotification {
@@ -97,6 +165,34 @@ QTabBar::tab:focus {
     margin-left:50px;
 }
 
+#formTagField {
+    max-width: 840px;
+    background-color: #333333;
+    padding: 0px 10px 2px 6px;
+    margin-left:50px;
+}
+
+#formTagField QCheckBox{
+    background-color: #555555;
+    padding-left:7px;
+    padding-top:2px;
+    padding-bottom:2px;
+    padding-right:5px;
+    spacing:0px;
+    color:#94D2FF;
+}
+
+#formTagField QCheckBox::indicator{
+    background-color: transparent;
+    image:url(:/X.svg);
+    width: 10%;
+    padding-left:3px;
+}
+
+#createAGem #formFrame {
+    margin-left: 0px;
+}
+
 #formFrame[Focus="true"] {
     border:1px solid #1e70eb;
 }
@@ -124,6 +220,16 @@ QTabBar::tab:focus {
     qproperty-flat: true;
 }
 
+#formFrame QPushButton#dropDownButton{
+    background-color: transparent;
+    background: url(:/CarrotArrowDown.svg) no-repeat center;
+    qproperty-flat: true;
+    qproperty-iconSize: 40px;
+    padding-bottom:2px;
+    margin-left:-10px;
+    width: 35px;
+}
+
 #formFrame QPushButton:focus {
     border:none;
 }
@@ -143,7 +249,7 @@ QTabBar::tab:focus {
 }
 
 #formFrame QLineEdit:disabled {
-    color: #AAAAAA
+    color: #AAAAAA;
 }
 
 #formFrame QComboBox {
@@ -182,10 +288,58 @@ QTabBar::tab:focus {
     margin-left: 50px;
 }
 
+#createAGemBody #formErrorLabel {
+    margin-left: 0px;
+}
+
+#addRemoteProjectDialog #formErrorLabel {
+    margin-left: 0px;
+}
+
+#addRemoteTemplateDialog #formErrorLabel {
+    margin-left: 0px;
+}
+
 #formTitleLabel {
     font-size:21px;
     color:#ffffff;
     margin: 24px 0 10px 50px;
+}
+
+#rightPaneHeader {
+    font-size:21px;
+    qproperty-indent: 0;
+}
+
+#rightPaneDetailsHeader {
+    font-size:21px;
+}
+
+#rightPaneSubheader {
+    font-size:14px;
+    qproperty-indent: 0;
+    padding-bottom: 20px;
+}
+
+#createAGemRightPane {
+    padding-top: 25px;
+    padding-left: 60px;
+    min-width: 660;
+}
+
+#createAGem #QRadioButton{
+    padding-top: 15px;
+    font-size: 14px;
+}
+
+#createAGemRadioButtonSubtext {
+    padding-bottom: 20px;
+    padding-left: 23px;
+    font-size: 12;
+}
+
+#createAGemRadioButtonSubFormField #formFrame{
+    margin-left: 23px;
 }
 
 /************** General (Modal windows) **************/
@@ -238,11 +392,20 @@ QTabBar::tab:focus {
 #body {
     background-color:#333333;
 }
+
+#createAGemBody {
+    background-color:#444444;
+}
+
 #footer {
     /* settings min/max lets us use a fixed size */
     min-width: 50px;
     min-height:54px;
     max-height:54px;
+}
+
+#createAGemFooter {
+    background-color: #000000;
 }
 
 #footer > QPushButton {
@@ -913,4 +1076,14 @@ QProgressBar::chunk {
 #gemRepoInspectorAddInfoTitleLabel {
     font-size: 16px;
     color: #FFFFFF;
+}
+
+/************** Download object dialogs **************/
+
+#addRemoteTemplateDialog #formFrame {
+    margin-left: 0px;
+}
+
+#addRemoteProjectDialog #formFrame {
+    margin-left: 0px;
 }

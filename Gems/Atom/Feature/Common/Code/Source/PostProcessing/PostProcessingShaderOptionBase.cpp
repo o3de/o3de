@@ -74,7 +74,7 @@ namespace AZ
         const PostProcessingShaderOptionBase::ShaderVariantInformation* PostProcessingShaderOptionBase::GetShaderVariant(AZ::u64 key) const
         {
             auto result = m_shaderVariantTable.find(key);
-            return result != nullptr ? &result->second : nullptr;
+            return result != m_shaderVariantTable.end() ? &result->second : nullptr;
         }
 
     }   // namespace Render

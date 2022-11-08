@@ -87,6 +87,7 @@ namespace GraphModel
                 ->Event("WrapNode", &GraphModelIntegration::GraphControllerRequests::WrapNode)
                 ->Event("AddConnection", &GraphModelIntegration::GraphControllerRequests::AddConnection)
                 ->Event("AddConnectionBySlotId", &GraphModelIntegration::GraphControllerRequests::AddConnectionBySlotId)
+                ->Event("AreSlotsConnected", &GraphModelIntegration::GraphControllerRequests::AreSlotsConnected)
                 ->Event("RemoveConnection", &GraphModelIntegration::GraphControllerRequests::RemoveConnection)
                 ->Event("ExtendSlot", &GraphModelIntegration::GraphControllerRequests::ExtendSlot)
                 ;
@@ -105,12 +106,12 @@ namespace GraphModel
 
     void GraphModelSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("GraphModelService", 0xc798f75e));
+        provided.push_back(AZ_CRC_CE("GraphModelService"));
     }
 
     void GraphModelSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("GraphModelService", 0xc798f75e));
+        incompatible.push_back(AZ_CRC_CE("GraphModelService"));
     }
 
     void GraphModelSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -129,11 +130,11 @@ namespace GraphModel
 
     void GraphModelSystemComponent::Activate()
     {
-        m_graphControllerManager.Activate();
+        m_graphControllerManager = AZStd::make_unique<GraphModelIntegration::GraphControllerManager>();
     }
 
     void GraphModelSystemComponent::Deactivate()
     {
-        m_graphControllerManager.Deactivate();
+        m_graphControllerManager.reset();
     }
 }

@@ -74,6 +74,11 @@ namespace AzQtComponents
         //! Overrides the QLabel sizeHint function to return the elided text size.
         QSize sizeHint() const override;
 
+        void handleElision(bool updateGeometry);
+
+    Q_SIGNALS:
+        void elisionRequired(bool updateGeometry);
+
     protected:
         void resizeEvent(QResizeEvent* event) override;
         void paintEvent(QPaintEvent* event) override;

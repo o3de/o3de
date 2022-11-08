@@ -262,7 +262,6 @@ private:
 
     QPointer<ToolbarCustomizationDialog> m_toolbarCustomizationDialog;
     QScopedPointer<AzToolsFramework::QtSourceControlNotificationHandler> m_sourceControlNotifHandler;
-    AZ::Event<bool>::Handler m_handleImGuiStateChangeHandler;
 
     EditorActionsHandler m_editorActionsHandler;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING

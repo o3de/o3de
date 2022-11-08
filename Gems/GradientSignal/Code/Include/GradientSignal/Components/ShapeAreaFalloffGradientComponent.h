@@ -39,7 +39,7 @@ namespace GradientSignal
         bool m_is3dFalloff = false;
     };
 
-    static const AZ::Uuid ShapeAreaFalloffGradientComponentTypeId = "{F32A108B-7612-4AC2-B436-96DDDCE9E70B}";
+    inline constexpr AZ::TypeId ShapeAreaFalloffGradientComponentTypeId{ "{F32A108B-7612-4AC2-B436-96DDDCE9E70B}" };
 
     /**
     * calculates a gradient value based on distance from a shapes surface
@@ -100,10 +100,13 @@ namespace GradientSignal
         void Set3dFalloff(bool is3dFalloff) override;
 
         void CacheShapeBounds();
+
+        void NotifyRegionChanged(const AZ::Aabb& region);
+
     private:
         ShapeAreaFalloffGradientConfig m_configuration;
-        LmbrCentral::DependencyMonitor m_dependencyMonitor;
         mutable AZStd::shared_mutex m_queryMutex;
         AZ::Vector3 m_cachedShapeCenter;
+        AZ::Aabb m_cachedShapeBounds;
     };
 }

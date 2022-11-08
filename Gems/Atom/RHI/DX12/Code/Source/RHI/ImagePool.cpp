@@ -147,7 +147,7 @@ namespace AZ
                 }
             }
 
-            void QueuePrologueTransitionBarriers(CommandList& commandList) const override
+            void QueuePrologueTransitionBarriers(CommandList& commandList) override
             {
                 for (const auto& barrier : m_prologueBarriers)
                 {

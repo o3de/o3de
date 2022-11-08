@@ -129,10 +129,12 @@ namespace ScriptAutomation
         m_scriptIdleSeconds = numSeconds;
     }
 
-    void ScriptAutomationSystemComponent::SetFrameCaptureId(uint32_t frameCaptureId)
+    void ScriptAutomationSystemComponent::SetFrameCaptureId(AZ::Render::FrameCaptureId frameCaptureId)
     {
+         // FrameCapture system supports multiple active frame captures, Script Automation would need changes to support more than 1 active at a time.
+        AZ_Assert(m_scriptFrameCaptureId == AZ::Render::InvalidFrameCaptureId, "Attempting to start a frame capture while one is in progress");
         m_scriptFrameCaptureId = frameCaptureId;
-        AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
+        AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect(frameCaptureId);
     }
 
     void ScriptAutomationSystemComponent::StartProfilingCapture()
@@ -329,14 +331,9 @@ namespace ScriptAutomation
         ResumeAutomation();
     }
 
-    void ScriptAutomationSystemComponent::OnCaptureFinished(uint32_t frameCaptureId, AZ::Render::FrameCaptureResult result, const AZStd::string &info)
+    void ScriptAutomationSystemComponent::OnFrameCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string &info)
     {
-         // ignore captures that are not triggered by the script manager
-        if (m_scriptFrameCaptureId == AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId || frameCaptureId != m_scriptFrameCaptureId)
-        {
-            return;
-        }
-        m_scriptFrameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
+        m_scriptFrameCaptureId = AZ::Render::InvalidFrameCaptureId;
         AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
         ResumeAutomation();
 

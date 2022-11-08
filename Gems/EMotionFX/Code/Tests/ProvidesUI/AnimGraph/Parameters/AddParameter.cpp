@@ -14,7 +14,7 @@
 #include <EMotionFX/Source/AnimGraphManager.h>
 #include <EMotionFX/Source/Parameter/ParameterFactory.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditDialog.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterWindow.h>
 #include <QApplication>
 #include <QComboBox>
@@ -69,12 +69,12 @@ namespace EMotionFX
         parameterWindow->OnAddParameter();
 
         // Create parameter window.
-        QWidget* parameterCreateWidget = FindTopLevelWidget("ParameterCreateEditDialog");
-        ASSERT_NE(parameterCreateWidget, nullptr) << "Cannot find anim graph parameter create/edit dialog. Is the anim graph selected?";
-        auto parameterCreateDialog = qobject_cast<EMStudio::ParameterCreateEditDialog*>(parameterCreateWidget);
+        QWidget* parameterCreate = FindTopLevelWidget("ParameterCreateEditWidget");
+        ASSERT_NE(parameterCreate, nullptr) << "Cannot find anim graph parameter create/edit widget. Is the anim graph selected?";
+        auto parameterCreateWidget = qobject_cast<EMStudio::ParameterCreateEditWidget*>(parameterCreate);
 
         // Set the parameter type using the combo box.
-        QComboBox* valueTypeComboBox = parameterCreateDialog->GetValueTypeComboBox();
+        QComboBox* valueTypeComboBox = parameterCreateWidget->GetValueTypeComboBox();
         const int row = GetParam();
         valueTypeComboBox->setCurrentIndex(row);
         EXPECT_EQ(row, valueTypeComboBox->currentIndex()) << "Changing the value type failed. Out of bounds?";
@@ -87,7 +87,7 @@ namespace EMotionFX
             << "The parameter type id from the combo box do not match the type ids from the parameter factory.";
 
         // Accept the dialog (this creates the actual parameter object in the anim graph).
-        parameterCreateDialog->accept();
+        parameterCreateWidget->accept();
         
         // Verify the parameter in the anim graph.
         EXPECT_EQ(m_animGraph->GetNumParameters(), 1) << "Parameter creation failed. We should end up with exactly one parameter.";

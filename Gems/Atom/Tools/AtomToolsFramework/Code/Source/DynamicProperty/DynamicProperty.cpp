@@ -6,9 +6,10 @@
  *
  */
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <Atom/RPI.Edit/Common/ColorUtils.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/algorithm.h>
 
 namespace AtomToolsFramework
 {
@@ -88,7 +89,11 @@ namespace AtomToolsFramework
     const AZ::Edit::ElementData* DynamicProperty::GetPropertyEditData(const void* handlerPtr, [[maybe_unused]] const void* elementPtr, [[maybe_unused]] const AZ::Uuid& elementType)
     {
         const DynamicProperty* owner = reinterpret_cast<const DynamicProperty*>(handlerPtr);
-        return owner->GetEditData();
+        if (elementType == owner->m_value.type() && elementPtr == AZStd::any_cast<void>(&owner->m_value))
+        {
+            return owner->GetEditData();
+        }
+        return nullptr;
     }
 
     DynamicProperty::DynamicProperty(const DynamicPropertyConfig& config)
@@ -128,56 +133,53 @@ namespace AtomToolsFramework
             CheckRangeMetaDataValues();
 
             m_editData = {};
+            m_editData.m_name = nullptr;
             m_editData.m_elementId = AZ::Edit::UIHandlers::Default;
 
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::NameLabelOverride, &DynamicProperty::GetDisplayName);
-            AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::AssetPickerTitle, &DynamicProperty::GetAssetPickerTitle);
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::DescriptionTextOverride, &DynamicProperty::GetDescription);
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::ReadOnly, &DynamicProperty::IsReadOnly);
-            AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::EnumValues, &DynamicProperty::GetEnumValues);
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::ChangeNotify, &DynamicProperty::OnDataChanged);
+
+            // Moving the attributes outside of the switch statement for specific types because the dynamic property is moving away from
+            // using the enum. Even though these attributes only apply to specific property types, they can safely be applied to all
+            // property types because each property control will only process attributes they recognize.
+            AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::AssetPickerTitle, &DynamicProperty::GetAssetPickerTitle);
+            AddEditDataAttribute(AZ::Edit::Attributes::ShowProductAssetFileName, false);
+            AddEditDataAttribute(AZ_CRC_CE("Thumbnail"), m_config.m_showThumbnail);
+            AddEditDataAttribute(AZ_CRC_CE("SupportedAssetTypes"), m_config.m_supportedAssetTypes);
 
             if (m_config.m_customHandler)
             {
                 AddEditDataAttribute(AZ::Edit::Attributes::Handler, m_config.m_customHandler);
             }
 
-            switch (m_config.m_dataType)
+            ApplyRangeEditDataAttributesWithTypeCheck<int8_t>();
+            ApplyRangeEditDataAttributesWithTypeCheck<uint8_t>();
+            ApplyRangeEditDataAttributesWithTypeCheck<int16_t>();
+            ApplyRangeEditDataAttributesWithTypeCheck<uint16_t>();
+            ApplyRangeEditDataAttributesWithTypeCheck<int32_t>();
+            ApplyRangeEditDataAttributesWithTypeCheck<uint32_t>();
+            ApplyRangeEditDataAttributesWithTypeCheck<int64_t>();
+            ApplyRangeEditDataAttributesWithTypeCheck<uint64_t>();
+            ApplyRangeEditDataAttributesWithTypeCheck<float>();
+            ApplyRangeEditDataAttributesWithTypeCheck<double>();
+
+            if (m_value.is<AZ::Vector2>() || m_value.is<AZ::Vector3>() || m_value.is<AZ::Vector4>())
             {
-            case DynamicPropertyType::Int:
-                ApplyRangeEditDataAttributes<int32_t>();
-                ApplySliderEditDataAttributes<int32_t>();
-                break;
-            case DynamicPropertyType::UInt:
-                ApplyRangeEditDataAttributes<uint32_t>();
-                ApplySliderEditDataAttributes<uint32_t>();
-                break;
-            case DynamicPropertyType::Float:
-                ApplyRangeEditDataAttributes<float>();
-                ApplySliderEditDataAttributes<float>();
-                break;
-            case DynamicPropertyType::Vector2:
-            case DynamicPropertyType::Vector3:
-            case DynamicPropertyType::Vector4:
                 ApplyVectorLabels();
                 ApplyRangeEditDataAttributes<float>();
-                break;
-            case DynamicPropertyType::Color:
-                AddEditDataAttribute(AZ_CRC_CE("ColorEditorConfiguration"), AZ::RPI::ColorUtils::GetRgbEditorConfig());
-                break;
-            case DynamicPropertyType::Enum:
+            }
+
+            if (m_value.is<AZ::Color>())
+            {
+                AddEditDataAttribute(AZ_CRC_CE("ColorEditorConfiguration"), AZ::RPI::ColorUtils::GetLinearRgbEditorConfig());
+            }
+
+            if (!m_config.m_enumValues.empty() && (IsValueInteger() || m_value.is<AZStd::string>()))
+            {
                 m_editData.m_elementId = AZ::Edit::UIHandlers::ComboBox;
-                break;
-            case DynamicPropertyType::String:
-                m_editData.m_elementId = AZ::Edit::UIHandlers::LineEdit;
-                break;
-            case DynamicPropertyType::Asset:
-                AddEditDataAttribute(AZ::Edit::Attributes::ShowProductAssetFileName, false);
-                AddEditDataAttribute(AZ_CRC_CE("Thumbnail"), m_config.m_showThumbnail);
-                AddEditDataAttribute(AZ_CRC_CE("SupportedAssetTypes"), m_config.m_supportedAssetTypes);
-                break;
-            case DynamicPropertyType::Invalid:
-                break;
+                AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::EnumValues, &DynamicProperty::GetEnumValues);
             }
         }
     }
@@ -220,9 +222,7 @@ namespace AtomToolsFramework
 
     AZ::Crc32 DynamicProperty::GetVisibility() const
     {
-        return (IsValid() && m_config.m_visible) ?
-            AZ::Edit::PropertyVisibility::ShowChildrenOnly :
-            AZ::Edit::PropertyVisibility::Hide;
+        return (IsValid() && m_config.m_visible) ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
 
     bool DynamicProperty::IsReadOnly() const
@@ -250,162 +250,120 @@ namespace AtomToolsFramework
         return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
     }
 
-    template<typename T>
-    bool DynamicProperty::CheckRangeMetaDataValuesForType() const
+    bool DynamicProperty::CheckRangeMetaDataValuesForType(const AZ::Uuid& expectedTypeId) const
     {
-        auto checkAnyType = [&](const AZ::TypeId& expectedTypeId, const AZStd::any& any, [[maybe_unused]] const char* valueName)
+        auto isExpectedType = [&](const AZStd::any& any, [[maybe_unused]] const char* valueName)
         {
             if (!any.empty() && expectedTypeId != any.type())
             {
-                AZ_Error("AtomToolsFramework", false, "Property '%s': '%s' value data type does not match property data type.", m_config.m_id.GetCStr(), valueName);
+                AZ_Error(
+                    "AtomToolsFramework",
+                    false,
+                    "Property '%s': '%s' value data type does not match property data type.",
+                    m_config.m_id.GetCStr(),
+                    valueName);
                 return false;
             }
             return true;
         };
 
-        AZ::TypeId expectedRangeTypeId = azrtti_typeid<T>();
-
-        if (!checkAnyType(expectedRangeTypeId, m_config.m_min, "Min") ||
-            !checkAnyType(expectedRangeTypeId, m_config.m_max, "Max") ||
-            !checkAnyType(expectedRangeTypeId, m_config.m_softMin, "Soft Min") ||
-            !checkAnyType(expectedRangeTypeId, m_config.m_softMax, "Soft Max") ||
-            !checkAnyType(expectedRangeTypeId, m_config.m_step, "Step"))
-        {
-            return false;
-        }
-
-        if (!m_config.m_min.empty() &&
-            !m_config.m_max.empty() &&
-            AZStd::any_cast<T>(m_config.m_min) == AZStd::any_cast<T>(m_config.m_max))
-        {
-            AZ_Warning("AtomToolsFramework", false, "Property '%s': Min == Max, value may be frozen in the editor.", m_config.m_id.GetCStr());
-        }
-
-        if (!m_config.m_step.empty() && 0 == AZStd::any_cast<T>(m_config.m_step))
-        {
-            AZ_Warning("AtomToolsFramework", false, "Property '%s': Step is 0, value may be frozen in the editor.", m_config.m_id.GetCStr());
-        }
-
-        return true;
+        return isExpectedType(m_config.m_min, "Min") &&
+            isExpectedType(m_config.m_max, "Max") &&
+            isExpectedType(m_config.m_softMin, "Soft Min") &&
+            isExpectedType(m_config.m_softMax, "Soft Max") &&
+            isExpectedType(m_config.m_step, "Step");
     }
 
     bool DynamicProperty::CheckRangeMetaDataValues() const
     {
-        using namespace AZ::RPI;
-
-        auto warnIfNotEmpty = [&](const AZStd::any& any, [[maybe_unused]] const char* valueName)
+        if (IsValueInteger() || m_value.is<float>() || m_value.is<double>())
         {
-            if (!any.empty())
-            {
-                AZ_Warning("AtomToolsFramework", false, "Property '%s': '%s' is not supported by this property data type.", m_config.m_id.GetCStr(), valueName);
-            }
+            return CheckRangeMetaDataValuesForType(m_value.type());
+        }
+
+        if (m_value.is<AZ::Vector2>() || m_value.is<AZ::Vector3>() || m_value.is<AZ::Vector4>())
+        {
+            return CheckRangeMetaDataValuesForType(azrtti_typeid<float>());
+        }
+
+        auto warnIfNotEmpty = [&]([[maybe_unused]] const AZStd::any& any, [[maybe_unused]] const char* valueName)
+        {
+            AZ_Warning(
+                "AtomToolsFramework",
+                any.empty(),
+                "Property '%s': '%s' is not supported by this property data type.",
+                m_config.m_id.GetCStr(),
+                valueName);
         };
 
-        switch (m_config.m_dataType)
-        {
-        case DynamicPropertyType::Int:
-            return CheckRangeMetaDataValuesForType<int32_t>();
-        case DynamicPropertyType::UInt:
-            return CheckRangeMetaDataValuesForType<uint32_t>();
-        case DynamicPropertyType::Float:
-        case DynamicPropertyType::Vector2:
-        case DynamicPropertyType::Vector3:
-        case DynamicPropertyType::Vector4:
-            return CheckRangeMetaDataValuesForType<float>();
-        default:
-            warnIfNotEmpty(m_config.m_min, "Min");
-            warnIfNotEmpty(m_config.m_max, "Max");
-            warnIfNotEmpty(m_config.m_step, "Step");
-            return true;
-        }
+        warnIfNotEmpty(m_config.m_min, "Min");
+        warnIfNotEmpty(m_config.m_max, "Max");
+        warnIfNotEmpty(m_config.m_step, "Step");
+        return true;
+    }
+
+    bool DynamicProperty::IsValueInteger() const
+    {
+        return m_value.is<int8_t>() || m_value.is<uint8_t>() || m_value.is<int16_t>() || m_value.is<uint16_t>() || m_value.is<int32_t>() ||
+            m_value.is<uint32_t>() || m_value.is<int64_t>() || m_value.is<uint64_t>();
     }
 
     template<typename AttributeValueType>
     void DynamicProperty::AddEditDataAttribute(AZ::Crc32 crc, AttributeValueType attribute)
     {
-        m_editData.m_attributes.push_back(AZ::Edit::AttributePair(
-            crc, aznew AZ::AttributeContainerType<AttributeValueType>(attribute)));
+        m_editData.m_attributes.push_back(AZ::Edit::AttributePair(crc, aznew AZ::AttributeContainerType<AttributeValueType>(attribute)));
     }
 
     template<typename AttributeMemberFunctionType>
     void DynamicProperty::AddEditDataAttributeMemberFunction(AZ::Crc32 crc, AttributeMemberFunctionType memberFunction)
     {
-        m_editData.m_attributes.push_back(AZ::Edit::AttributePair(
-            crc, aznew AttributeFixedMemberFunction<AttributeMemberFunctionType>(this, memberFunction)));
+        m_editData.m_attributes.push_back(
+            AZ::Edit::AttributePair(crc, aznew AttributeFixedMemberFunction<AttributeMemberFunctionType>(this, memberFunction)));
+    }
+
+    template<typename AttributeValueType>
+    void DynamicProperty::ApplyRangeEditDataAttributesWithTypeCheck()
+    {
+        if (m_value.is<AttributeValueType>())
+        {
+            ApplyRangeEditDataAttributes<AttributeValueType>();
+            ApplySliderEditDataAttributes<AttributeValueType>();
+        }
     }
 
     template<typename AttributeValueType>
     void DynamicProperty::ApplyRangeEditDataAttributes()
     {
-        AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::Min, &DynamicProperty::GetMin<AttributeValueType>);
-        AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::Max, &DynamicProperty::GetMax<AttributeValueType>);
-        AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::SoftMin, &DynamicProperty::GetSoftMin<AttributeValueType>);
-        AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::SoftMax, &DynamicProperty::GetSoftMax<AttributeValueType>);
-        AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::Step, &DynamicProperty::GetStep<AttributeValueType>);
+        if (m_config.m_min.is<AttributeValueType>())
+        {
+            AddEditDataAttribute(AZ::Edit::Attributes::Min, AZStd::any_cast<AttributeValueType>(m_config.m_min));
+        }
+        if (m_config.m_max.is<AttributeValueType>())
+        {
+            AddEditDataAttribute(AZ::Edit::Attributes::Max, AZStd::any_cast<AttributeValueType>(m_config.m_max));
+        }
+        if (m_config.m_softMin.is<AttributeValueType>())
+        {
+            AddEditDataAttribute(AZ::Edit::Attributes::SoftMin, AZStd::any_cast<AttributeValueType>(m_config.m_softMin));
+        }
+        if (m_config.m_softMax.is<AttributeValueType>())
+        {
+            AddEditDataAttribute(AZ::Edit::Attributes::SoftMax, AZStd::any_cast<AttributeValueType>(m_config.m_softMax));
+        }
+        if (m_config.m_step.is<AttributeValueType>())
+        {
+            AddEditDataAttribute(AZ::Edit::Attributes::Step, AZStd::any_cast<AttributeValueType>(m_config.m_step));
+        }
     }
 
     template<typename AttributeValueType>
     void DynamicProperty::ApplySliderEditDataAttributes()
     {
-        if ((m_config.m_min.is<AttributeValueType>() || m_config.m_softMin.is<AttributeValueType>())
-            && (m_config.m_max.is<AttributeValueType>() || m_config.m_softMax.is<AttributeValueType>()))
+        if ((m_config.m_min.is<AttributeValueType>() || m_config.m_softMin.is<AttributeValueType>()) &&
+            (m_config.m_max.is<AttributeValueType>() || m_config.m_softMax.is<AttributeValueType>()))
         {
             m_editData.m_elementId = AZ::Edit::UIHandlers::Slider;
         }
-    }
-
-    template<typename AttributeValueType>
-    AttributeValueType DynamicProperty::GetMin() const
-    {
-        if (m_config.m_min.is<AttributeValueType>())
-        {
-            return AZStd::any_cast<AttributeValueType>(m_config.m_min);
-        }
-        return std::numeric_limits<AttributeValueType>::lowest();
-    }
-
-    template<typename AttributeValueType>
-    AttributeValueType DynamicProperty::GetMax() const
-    {
-        if (m_config.m_max.is<AttributeValueType>())
-        {
-            return AZStd::any_cast<AttributeValueType>(m_config.m_max);
-        }
-        return std::numeric_limits<AttributeValueType>::max();
-    }
-
-    template<typename AttributeValueType>
-    AttributeValueType DynamicProperty::GetSoftMin() const
-    {
-        if (m_config.m_softMin.is<AttributeValueType>())
-        {
-            return AZStd::any_cast<AttributeValueType>(m_config.m_softMin);
-        }
-        return GetMin<AttributeValueType>();
-    }
-
-    template<typename AttributeValueType>
-    AttributeValueType DynamicProperty::GetSoftMax() const
-    {
-        if (m_config.m_softMax.is<AttributeValueType>())
-        {
-            return AZStd::any_cast<AttributeValueType>(m_config.m_softMax);
-        }
-        return GetMax<AttributeValueType>();
-    }
-
-    template<typename AttributeValueType>
-    AttributeValueType DynamicProperty::GetStep() const
-    {
-        if (m_config.m_step.is<AttributeValueType>())
-        {
-            return AZStd::any_cast<AttributeValueType>(m_config.m_step);
-        }
-        if (m_config.m_step.is<float>())
-        {
-            return aznumeric_cast<AttributeValueType>(0.001f);
-        }
-        return aznumeric_cast<AttributeValueType>(1.0f);
     }
 
     void DynamicProperty::ApplyVectorLabels()
@@ -419,8 +377,7 @@ namespace AtomToolsFramework
     AZStd::string DynamicProperty::GetVectorLabel(const int index) const
     {
         static const char* defaultLabels[] = { "X", "Y", "Z", "W" };
-
-        return index < m_config.m_vectorLabels.size() ? m_config.m_vectorLabels[index] : defaultLabels[index];
+        return index < m_config.m_vectorLabels.size() ? m_config.m_vectorLabels[index] : defaultLabels[AZStd::clamp(index, 0, 3)];
     }
 
     AZStd::string DynamicProperty::GetVectorLabelX() const

@@ -26,7 +26,7 @@ namespace AZ
                     editContext->Class<EditorCubeMapCaptureComponent>(
                         "CubeMap Capture", "The CubeMap Capture component captures a specular or diffuse cubemap at a specific position in the level")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::Category, "Atom")
+                            ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Lighting")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))

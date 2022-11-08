@@ -49,7 +49,13 @@ namespace EMotionFX
 
         for (const QModelIndex& selectedIndex : modelIndices)
         {
+            if (SkeletonModel::IndexIsRootNode(selectedIndex))
+            {
+                continue;
+            }
+
             const Node* joint = selectedIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
+
             jointIndices.emplace_back(joint->GetNodeIndex());
         }
 

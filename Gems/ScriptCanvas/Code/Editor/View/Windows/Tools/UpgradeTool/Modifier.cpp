@@ -9,8 +9,8 @@
 #include <Editor/Include/ScriptCanvas/Components/EditorGraph.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/LogTraits.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Modifier.h>
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
 
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <ScriptCanvas/Core/Graph.h>
 
@@ -92,7 +92,7 @@ namespace ScriptCanvasEditor
         AZStd::sys_time_t Modifier::CalculateRemainingWaitTime(const AZStd::unordered_set<size_t>& dependencies) const
         {
             auto maxSeconds = AZStd::chrono::seconds(dependencies.size() * m_config.perDependencyWaitSecondsMax);
-            auto waitedSeconds = AZStd::chrono::seconds(AZStd::chrono::system_clock::now() - m_waitTimeStamp);
+            auto waitedSeconds = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::steady_clock::now() - m_waitTimeStamp);
             return (maxSeconds - waitedSeconds).count();
         }
 
@@ -106,8 +106,8 @@ namespace ScriptCanvasEditor
                     ( "dependencies found for %s, update will wait for the AP to finish processing them"
                     , m_result.asset.RelativePath().c_str());
 
-                m_waitTimeStamp = AZStd::chrono::system_clock::now();
-                m_waitLogTimeStamp = AZStd::chrono::system_clock::time_point{};
+                m_waitTimeStamp = AZStd::chrono::steady_clock::now();
+                m_waitLogTimeStamp = AZStd::chrono::steady_clock::time_point{};
                 m_modifyState = ModifyState::WaitingForDependencyProcessing;
             }
             else
@@ -398,7 +398,7 @@ namespace ScriptCanvasEditor
             m_dependencyOrderedAssetIndicies.reserve(m_assets.size());
             Sorter sorter;
             sorter.modifier = this;
-            sorter.Sort();           
+            sorter.Sort();
         }
 
         ModificationResults&& Modifier::TakeResult()
@@ -512,9 +512,9 @@ namespace ScriptCanvasEditor
             {
                 ReportModificationError("Dependency update time has taken too long, aborting modification.");
             }
-            else if (AZStd::chrono::seconds(AZStd::chrono::system_clock::now() - m_waitLogTimeStamp).count() > LogPeriodSeconds)
+            else if (AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::steady_clock::now() - m_waitLogTimeStamp).count() > LogPeriodSeconds)
             {
-                m_waitLogTimeStamp = AZStd::chrono::system_clock::now();
+                m_waitLogTimeStamp = AZStd::chrono::steady_clock::now();
 
                 AZ_TracePrintf
                     ( ScriptCanvas::k_VersionExplorerWindow.data()

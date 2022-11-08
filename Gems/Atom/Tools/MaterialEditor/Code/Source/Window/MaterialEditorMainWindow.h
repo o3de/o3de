@@ -41,8 +41,6 @@ namespace MaterialEditor
 
         // AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
-        void OnDocumentCleared(const AZ::Uuid& documentId) override;
-        void OnDocumentError(const AZ::Uuid& documentId) override;
 
         // AtomToolsFramework::AtomToolsDocumentMainWindow overrides...
         AZStd::string GetHelpDialogText() const override;

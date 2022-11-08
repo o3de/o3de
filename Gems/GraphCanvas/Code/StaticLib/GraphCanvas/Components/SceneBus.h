@@ -406,8 +406,6 @@ namespace GraphCanvas
         virtual void OnNodeAdded(const AZ::EntityId& /*nodeId*/, bool /*isPaste*/) {}
         //! A node has been removed from the scene.
         virtual void OnNodeRemoved(const AZ::EntityId& /*nodeId*/) {}
-        //! A node is about to be removed from the scene.
-        virtual void PreOnNodeRemoved(const AZ::EntityId& /*nodeId*/) {}
         //! A node in the scene has been selected
         virtual void OnNodeSelected(const AZ::EntityId& /*nodeId*/, bool /*selected*/) {}
 

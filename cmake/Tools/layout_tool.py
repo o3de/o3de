@@ -43,7 +43,7 @@ PAK_ONLY_BUILD_CONFIGS = ['RELEASE']
 # Save the platform system name. In our case, this will be one of:
 #  Windows
 #  Linux
-#  Darwin (Currently 'Darwin' with python 3.7). Should use 'Windows' and 'Linux' first and fallback to Darwin
+#  Darwin (Currently 'Darwin' with python 3.10). Should use 'Windows' and 'Linux' first and fallback to Darwin
 PLATFORM_NAME = platform.system()
 
 

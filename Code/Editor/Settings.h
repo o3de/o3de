@@ -116,12 +116,8 @@ struct SViewportsSettings
     bool bAlwaysShowRadiuses;
     //! True if 2D viewports will be synchronized with same view and origin.
     bool bSync2DViews;
-    //! Camera FOV for perspective View.
-    float fDefaultFov;
     //! Camera Aspect Ratio for perspective View.
     float fDefaultAspectRatio;
-    //! Show safe frame.
-    bool bShowSafeFrame;
     //! To highlight selected geometry.
     bool bHighlightSelectedGeometry;
     //! To highlight selected vegetation.
@@ -269,6 +265,7 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     SettingOutcome SetValue(const AZStd::string_view path, const AZStd::any& value) override;
     AzToolsFramework::ConsoleColorTheme GetConsoleColorTheme() const override;
     AZ::u64 GetMaxNumberOfItemsShownInSearchView() const override;
+    void SaveSettingsRegistryFile() override;
 
     void ConvertPath(const AZStd::string_view sourcePath, AZStd::string& category, AZStd::string& attribute);
 
@@ -278,7 +275,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     // need to expose updating of the source control enable/disable flag
     // because its state is updateable through the main status bar
     void SaveEnableSourceControlFlag(bool triggerUpdate = false);
-
     void LoadEnableSourceControlFlag();
 
     void PostInitApply();
@@ -353,7 +349,7 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     SSnapSettings snap;
 
     //! Source Control Enabling.
-    bool enableSourceControl;
+    bool enableSourceControl = false;
     bool clearConsoleOnGameModeStart;
 
     //! Text editor.
@@ -443,20 +439,6 @@ private:
     void LoadValue(const char* sSection, const char* sKey, QString& value);
 
     void SaveCloudSettings();
-
-    void SaveSettingsRegistryFile();
-
-    //! Set a boolean setting value from the registry.
-    //! \param key[in] The key to set.
-    //! \param value[in] The new value for the setting.
-    //! \return Whether the value for the key was correctly set in the registry.
-    bool SetSettingsRegistry_Bool(const char* key, bool value);
-
-    //! Gets a boolean setting value from the registry.
-    //! \param key[in] The key to query.
-    //! \param value[out] The variable the queried value will be saved to, by reference.
-    //! \return Whether a value for the key was found in the registry.
-    bool GetSettingsRegistry_Bool(const char* key, bool& value);
 };
 
 //! Single instance of editor settings for fast access.

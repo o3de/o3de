@@ -85,6 +85,11 @@ namespace EMotionFX
             return;
         }
 
+        if (SkeletonModel::IndicesContainRootNode(selectedRowIndices) && selectedRowIndices.size() == 1)
+        {
+            return;
+        }
+
         const int numSelectedNodes = selectedRowIndices.count();
         int ragdollNodeCount = 0;
         for (const QModelIndex& modelIndex : selectedRowIndices)
@@ -175,6 +180,11 @@ namespace EMotionFX
 
         for (const QModelIndex& selectedIndex : modelIndices)
         {
+            if (SkeletonModel::IndexIsRootNode(selectedIndex))
+            {
+                continue;
+            }
+
             const Node* joint = selectedIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
 
             jointNames.emplace_back(joint->GetNameString());
@@ -203,7 +213,13 @@ namespace EMotionFX
         AZStd::vector<AZStd::string> jointNamesToRemove;
         for (const QModelIndex& selectedIndex : modelIndices)
         {
+            if (SkeletonModel::IndexIsRootNode(selectedIndex))
+            {
+                continue;
+            }
+
             const Node* selectedJoint = selectedIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
+
             jointNamesToRemove.emplace_back(selectedJoint->GetNameString());
         }
         const Actor* actor = modelIndices[0].data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
@@ -231,6 +247,11 @@ namespace EMotionFX
 
         for (const QModelIndex& selectedIndex : modelIndices)
         {
+            if (SkeletonModel::IndexIsRootNode(selectedIndex))
+            {
+                continue;
+            }
+
             const Actor* actor = selectedIndex.data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
             const Node* selectedJoint = selectedIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
 
@@ -261,6 +282,11 @@ namespace EMotionFX
         const Actor* actor = modelIndices[0].data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
         for (const QModelIndex& selectedIndex : modelIndices)
         {
+            if (SkeletonModel::IndexIsRootNode(selectedIndex))
+            {
+                continue;
+            }
+
             const Node* joint = selectedIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
             const AZStd::shared_ptr<PhysicsSetup>& physicsSetup = actor->GetPhysicsSetup();
 
@@ -299,7 +325,7 @@ namespace EMotionFX
 
     void RagdollNodeInspectorPlugin::OnAddToRagdoll()
     {
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+        AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (!selectedRowIndicesOutcome.IsSuccess())
         {
@@ -317,7 +343,7 @@ namespace EMotionFX
 
     void RagdollNodeInspectorPlugin::OnAddCollider()
     {
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+        AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (!selectedRowIndicesOutcome.IsSuccess())
         {
@@ -339,7 +365,7 @@ namespace EMotionFX
 
     void RagdollNodeInspectorPlugin::OnRemoveFromRagdoll()
     {
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+        AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (!selectedRowIndicesOutcome.IsSuccess())
         {
@@ -357,7 +383,7 @@ namespace EMotionFX
 
     void RagdollNodeInspectorPlugin::OnClearColliders()
     {
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+        AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (!selectedRowIndicesOutcome.IsSuccess())
         {
@@ -375,7 +401,7 @@ namespace EMotionFX
 
     void RagdollNodeInspectorPlugin::OnPasteJointLimits()
     {
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+        AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (!selectedRowIndicesOutcome.IsSuccess())
         {

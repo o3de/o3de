@@ -50,7 +50,7 @@ namespace Benchmark
             const AZStd::string statName = AZStd::string::format("thread%03d", state.thread_index);
             const auto statId = UnitTest::ConvertNameToStatId<StatIdType>(statName);
 
-            for (auto _ : state)
+            for ([[maybe_unused]] auto _ : state)
             {
                 TimedScopeType timedScope(*m_profiler, statId);
                 benchmark::DoNotOptimize(m_profiler);
@@ -152,7 +152,7 @@ namespace Benchmark
             const AZStd::string statName = AZStd::string::format("thread%03d", state.thread_index);
             const auto statId = UnitTest::ConvertNameToStatId<StatIdType>(statName);
 
-            for (auto _ : state)
+            for ([[maybe_unused]] auto _ : state)
             {
                 TimedScopeType timedScope(UnitTest::ProfilerProxyGroup, statId);
                 benchmark::DoNotOptimize(m_proxy);

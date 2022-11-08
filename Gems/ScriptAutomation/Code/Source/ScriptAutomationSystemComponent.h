@@ -58,7 +58,7 @@ namespace ScriptAutomation
 
         void SetIdleFrames(int numFrames) override;
         void SetIdleSeconds(float numSeconds) override;
-        void SetFrameCaptureId(uint32_t frameCaptureId) override;
+        void SetFrameCaptureId(AZ::Render::FrameCaptureId frameCaptureId) override;
         void StartProfilingCapture() override;
 
     protected:
@@ -76,7 +76,7 @@ namespace ScriptAutomation
         void QueueScriptOperation(ScriptAutomationRequests::ScriptOperation&& operation) override;
 
         // FrameCaptureNotificationBus implementation
-        void OnCaptureFinished(uint32_t frameCaptureId, AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
+        void OnFrameCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
 
         // ProfilingCaptureNotificationBus implementation
         void OnCaptureQueryTimestampFinished(bool result, const AZStd::string& info) override;
@@ -99,7 +99,7 @@ namespace ScriptAutomation
 
         float m_scriptPauseTimeout = 0.0f;
         bool m_scriptPaused = false;
-        uint32_t m_scriptFrameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
+        AZ::Render::FrameCaptureId m_scriptFrameCaptureId = AZ::Render::InvalidFrameCaptureId;
 
         bool m_isStarted = false;
         bool m_exitOnFinish = false;

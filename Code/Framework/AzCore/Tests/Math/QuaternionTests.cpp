@@ -344,7 +344,7 @@ namespace UnitTest
         // for Euler -> quaternion -> Euler
         const AZ::Quaternion originalQuaternion = GetParam();
         const AZ::Vector3 euler = originalQuaternion.GetEulerRadians();
-        const AZ::Quaternion recoveredQuaternion = AZ::ConvertEulerRadiansToQuaternion(euler);
+        const AZ::Quaternion recoveredQuaternion = AZ::Quaternion::CreateFromEulerRadiansXYZ(euler);
         EXPECT_TRUE(recoveredQuaternion.IsClose(originalQuaternion) || recoveredQuaternion.IsClose(-originalQuaternion));
     }
 

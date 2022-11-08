@@ -17,6 +17,7 @@
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/span.h>
+#include <AzCore/std/ranges/join_view.h>
 #include <AzCore/std/ranges/transform_view.h>
 #include <AzCore/std/string/regex.h>
 #include <AzCore/std/string/wildcard.h>
@@ -2594,6 +2595,11 @@ namespace UnitTest
         // Test Range views
         testString = TypeParam(AZStd::from_range, testValue | AZStd::views::transform([](const char elem) -> char { return elem + 1; }));
         EXPECT_EQ("bcd", testString);
+
+        // Test Ranges with different sentinel types
+        testString = TypeParam(AZStd::from_range, testValue | AZStd::views::transform([](const char elem)
+            { return AZStd::fixed_string<2>{ char(elem + 1) }; }) | AZStd::views::join);
+        EXPECT_EQ("bcd", testString);
     }
 
     TYPED_TEST(StringTypeFixture, InsertRange_Succeeds)
@@ -2635,6 +2641,52 @@ namespace UnitTest
         // Replace 'b', 'c' with 'g', 'h', 'i'
         testString.replace_with_range(testString.begin() + 3, testString.end() + 5, testView | AZStd::views::transform([](const char elem) -> char { return elem + 3; }));
         EXPECT_EQ("defghi", testString);
+    }
+
+    TYPED_TEST(StringTypeFixture, ResizeAndOverwrite_AddChars_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "abcdef";
+        TypeParam testString("abc");
+        auto AppendCharacters = [oldSize = testString.size()](char* dataPtr, size_t newSize) -> size_t
+        {
+            constexpr AZStd::string_view appendChars = "def";
+            ::memcpy(dataPtr + oldSize, appendChars.data(), appendChars.size());
+            EXPECT_LE(oldSize + appendChars.size(), newSize);
+            return oldSize + appendChars.size();
+        };
+        testString.resize_and_overwrite(testView.size(), AppendCharacters);
+        ASSERT_EQ(testView.size(), testString.size());
+        EXPECT_EQ(testView, testString);
+
+        // Validate that a size larger than the new resize, shrinks to the
+        // exact size used
+        auto ReplaceCharacters = [&testView](char* dataPtr, size_t newSize) -> size_t
+        {
+            ::memcpy(dataPtr, testView.data(), testView.size());
+            EXPECT_LE(testView.size(), newSize);
+            return testView.size();
+        };
+        // Resize to 25 characters
+        testString.resize_and_overwrite(testView.size() + 25, ReplaceCharacters);
+        // Size of testString should be the size of the testView which is 6
+        ASSERT_EQ(testView.size(), testString.size());
+        EXPECT_EQ(testView, testString);
+    }
+
+    TYPED_TEST(StringTypeFixture, ResizeAndOverwrite_RemoveChars_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "abc";
+        TypeParam testString("abcdef");
+        auto RemoveCharacters = [&testView](char* dataPtr, size_t newSize) -> size_t
+        {
+            ::memcpy(dataPtr, testView.data(), testView.size());
+            EXPECT_LE(testView.size(), newSize);
+            return testView.size();
+        };
+        // Resize from 6 to 3 characters
+        testString.resize_and_overwrite(testView.size(), RemoveCharacters);
+        ASSERT_EQ(testView.size(), testString.size());
+        EXPECT_EQ(testView, testString);
     }
 }
 

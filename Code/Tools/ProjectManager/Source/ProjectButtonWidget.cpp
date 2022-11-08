@@ -419,7 +419,7 @@ namespace O3DE::ProjectManager
         m_projectNameLabel->refreshStyle(); // important for styles to work correctly
     }
 
-    void ProjectButton::SetState(enum ProjectButtonState state)
+    void ProjectButton::SetState(ProjectButtonState state)
     {
         m_currentState = state;
         ResetButtonWidgets();
@@ -445,6 +445,7 @@ namespace O3DE::ProjectManager
         case ProjectButtonState::NotDownloaded:
             ShowNotDownloadedState();
             break;
+        case ProjectButtonState::DownloadingBuildQueued:
         case ProjectButtonState::Downloading:
             ShowDownloadingState();
             break;
@@ -470,6 +471,8 @@ namespace O3DE::ProjectManager
     {
         // Hide button in-case it is still showing
         m_projectImageLabel->GetOpenEditorButton()->hide();
+
+        SetLaunchingEnabled(false);
 
         ShowMessage(tr("Opening Editor..."));
     }
@@ -509,16 +512,22 @@ namespace O3DE::ProjectManager
     {
         m_projectImageLabel->GetCloudIcon()->setVisible(true);
         m_projectImageLabel->GetWarningSpacer()->changeSize(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed);
+        m_projectMenuButton->setVisible(false);
+
+        SetLaunchingEnabled(false);
     }
 
     void ProjectButton::ShowDownloadingState()
     {
         m_projectImageLabel->GetCloudIcon()->setVisible(true);
         m_projectImageLabel->GetWarningSpacer()->changeSize(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed);
+        m_projectMenuButton->setVisible(false);
 
         m_projectImageLabel->GetDownloadMessageLabel()->setVisible(true);
         m_projectImageLabel->GetProgressPercentage()->setVisible(true);
         m_projectImageLabel->GetProgressBar()->setVisible(true);
+
+        SetLaunchingEnabled(false);
     }
 
     void ProjectButton::SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda)
@@ -599,7 +608,6 @@ namespace O3DE::ProjectManager
     void ProjectButton::ResetButtonWidgets()
     {
         HideContextualLabelButtonWidgets();
-        SetLaunchingEnabled(false);
         SetProjectBuilding(false);
         SetProgressBarPercentage(0);
 
@@ -672,6 +680,7 @@ namespace O3DE::ProjectManager
         if (isBuilding)
         {
             SetLaunchingEnabled(false);
+            m_projectImageLabel->GetActionCancelButton()->show();
         }
 
         buildingAnimation->movie()->setPaused(!isBuilding);

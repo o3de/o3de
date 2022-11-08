@@ -261,9 +261,13 @@ function(ly_add_test)
     # Check to see whether or not this test target has been stored in the global list for walking by the test impact analysis framework
     get_property(all_tests GLOBAL PROPERTY LY_ALL_TESTS)
     if(NOT "${test_target}" IN_LIST all_tests)
+        # Extract the test target name from the namespace::target_name composite
+        string(REGEX REPLACE ".*::" "" test_name "${test_target}")
+        # Store the test target name sans namespace so they can be looked up without the preceeding namespace
+        set_property(GLOBAL APPEND PROPERTY O3DE_ALL_TESTS_DE_NAMESPACED ${test_name})
         # This is the first reference to this test target so add it to the global list
         set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS ${test_target})
-        set_property(GLOBAL  PROPERTY LY_ALL_TESTS_${test_target}_TEST_LIBRARY ${ly_add_test_TEST_LIBRARY})
+        set_property(GLOBAL PROPERTY LY_ALL_TESTS_${test_target}_TEST_LIBRARY ${ly_add_test_TEST_LIBRARY})
     endif()
     # Add the test suite and timeout value to the test target params
     set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${ly_add_test_TEST_SUITE}")

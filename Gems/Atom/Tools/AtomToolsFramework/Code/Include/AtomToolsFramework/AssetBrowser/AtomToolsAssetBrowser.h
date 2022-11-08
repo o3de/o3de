@@ -49,7 +49,6 @@ namespace AtomToolsFramework
 
         void SelectEntries(const AZStd::string& absolutePath);
         void OpenSelectedEntries();
-        void OpenOptionsMenu();
 
     protected:
         AzToolsFramework::AssetBrowser::FilterConstType CreateFilter() const;

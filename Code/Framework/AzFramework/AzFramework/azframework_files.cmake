@@ -152,6 +152,8 @@ set(FILES
     DocumentPropertyEditor/CvarAdapter.h
     DocumentPropertyEditor/RoutingAdapter.cpp
     DocumentPropertyEditor/RoutingAdapter.h
+    DocumentPropertyEditor/SettingsRegistryAdapter.cpp
+    DocumentPropertyEditor/SettingsRegistryAdapter.h
     DocumentPropertyEditor/ReflectionAdapter.cpp
     DocumentPropertyEditor/ReflectionAdapter.h
     DocumentPropertyEditor/Reflection/Attribute.h

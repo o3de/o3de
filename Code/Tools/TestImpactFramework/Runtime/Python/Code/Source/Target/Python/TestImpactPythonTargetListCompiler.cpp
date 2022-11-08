@@ -24,13 +24,18 @@ namespace TestImpact
 
         for (auto&& descriptor : buildTargetDescriptors)
         {
-            productionTargets.emplace_back(AZStd::move(descriptor));
+            if(descriptor.m_type != TargetType::TestTarget)
+            {
+                // Python test targets are compiled and added programmatically in the steps that follow so ignore any discovered test targets
+                productionTargets.emplace_back(AZStd::move(descriptor));
+            }
         }
 
         for (auto&& testTargetMeta : testTargetMetaMap)
         {
             TargetDescriptor descriptor;
             descriptor.m_name = testTargetMeta.first;
+            descriptor.m_type = TargetType::ProductionTarget;
             descriptor.m_sources.m_staticSources.push_back(testTargetMeta.second.m_scriptMeta.m_scriptPath);
 
             testTargets.emplace_back(AZStd::move(descriptor), AZStd::move(testTargetMeta.second));

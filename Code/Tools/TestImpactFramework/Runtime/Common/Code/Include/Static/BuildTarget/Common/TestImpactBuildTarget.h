@@ -15,13 +15,6 @@
 
 namespace TestImpact
 {
-    //! Enumeration to facilitate runtime determination of build target types. 
-    enum class BuildTargetType : AZ::u8
-    {
-        TestTarget,
-        ProductionTarget
-    };
-
     //! Common wrapper for repository build targets, be they production targets or test targets.
     template<typename ProductionTarget, typename TestTarget>
     class BuildTarget
@@ -41,10 +34,7 @@ namespace TestImpact
     
         //! Returns the production target pointer for this parent (if any), otherwise nullptr.
         const ProductionTarget* GetProductionTarget() const;
-
-        //! Returns the target type at runtime.
-        BuildTargetType GetTargetType() const;
-    
+            
         //! Visits the target type at compile time.
         template<typename Visitor>
         void Visit(const Visitor& visitor) const;
@@ -60,22 +50,17 @@ namespace TestImpact
         static constexpr bool IsTestTarget =
             AZStd::is_same_v<TestTarget, AZStd::remove_const_t<AZStd::remove_pointer_t<AZStd::decay_t<Target>>>>;
         AZStd::variant<const TestTarget*, const ProductionTarget*> m_target;
-
-        //! The build target type (either production or test)/.
-        BuildTargetType m_type;
     };
 
     template<typename ProductionTarget, typename TestTarget>
     BuildTarget<ProductionTarget, TestTarget>::BuildTarget(const TestTarget* testTarget)
         : m_target(testTarget)
-        , m_type(BuildTargetType::TestTarget)
     {
     }
 
     template<typename ProductionTarget, typename TestTarget>
     BuildTarget<ProductionTarget, TestTarget>::BuildTarget(const ProductionTarget* productionTarget)
         : m_target(productionTarget)
-        , m_type(BuildTargetType::ProductionTarget)
     {
     }
 
@@ -122,12 +107,6 @@ namespace TestImpact
             });
 
         return productionTarget;
-    }
-
-    template<typename ProductionTarget, typename TestTarget>
-    BuildTargetType BuildTarget<ProductionTarget, TestTarget>::GetTargetType() const
-    {       
-        return m_type;
     }
 
     template<typename ProductionTarget, typename TestTarget>

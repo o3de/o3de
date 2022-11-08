@@ -76,10 +76,12 @@ namespace AtomToolsFramework
         void SetActiveGraphId(const GraphCanvas::GraphId& activeGraphId, bool notify);
 
     protected:
+        void CreateActions();
+
         // AtomToolsFramework::AtomToolsMainMenuRequestBus::Handler overrides...
-        AZ::s32 GetMainMenuPriority() const override;
         void CreateMenus(QMenuBar* menuBar) override;
         void UpdateMenus(QMenuBar* menuBar) override;
+        AZ::s32 GetMainMenuPriority() const override;
 
         // GraphCanvas::AssetEditorRequestBus::Handler overrides...
         AZ::EntityId CreateNewGraph() override;

@@ -15,7 +15,7 @@ namespace AZStd::ranges
 {
     template<class View, class = enable_if_t<conjunction_v<
         bool_constant<!common_range<View>>,
-        bool_constant<copyable<View>>
+        bool_constant<copyable<iterator_t<View>>>
         >
         >>
     class common_view;

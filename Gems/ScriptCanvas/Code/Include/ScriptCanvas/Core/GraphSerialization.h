@@ -49,6 +49,7 @@ namespace ScriptCanvas
     struct DeserializeResult
     {
         bool m_isSuccessful = false;
+        bool m_fromObjectStreamXML = false;
         AZStd::string m_jsonResults;
         AZStd::string m_errors;
         DataPtr m_graphDataPtr;

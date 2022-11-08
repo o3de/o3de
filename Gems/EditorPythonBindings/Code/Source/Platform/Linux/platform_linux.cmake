@@ -10,3 +10,8 @@ set(LY_COMPILE_OPTIONS
     PRIVATE
         -fexceptions # The macro PYBIND11_EMBEDDED_MODULE uses a try catch block
 )
+
+set(LY_COMPILE_DEFINITIONS 
+    PRIVATE 
+        PY_VERSION_MAJOR_MINOR="${LY_PYTHON_VERSION_MAJOR_MINOR}"
+)

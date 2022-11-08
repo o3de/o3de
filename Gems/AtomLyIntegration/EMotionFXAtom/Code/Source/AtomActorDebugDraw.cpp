@@ -39,7 +39,8 @@ namespace AZ::Render
     Physics::CharacterPhysicsDebugDraw::NodeDebugDrawData GetNodeDebugDrawData(
         const Physics::CharacterColliderNodeConfiguration& colliderNodeConfig,
         const EMotionFX::ActorInstance* instance,
-        const AZStd::unordered_set<size_t>* cachedSelectedJointIndices)
+        const AZStd::unordered_set<size_t>* cachedSelectedJointIndices,
+        size_t cachedHoveredJointIndex)
     {
         Physics::CharacterPhysicsDebugDraw::NodeDebugDrawData nodeDebugDrawData;
         const EMotionFX::Actor* actor = instance->GetActor();
@@ -53,6 +54,7 @@ namespace AZ::Render
         const size_t nodeIndex = joint->GetNodeIndex();
         nodeDebugDrawData.m_selected = cachedSelectedJointIndices &&
             (cachedSelectedJointIndices->empty() || cachedSelectedJointIndices->find(nodeIndex) != cachedSelectedJointIndices->end());
+        nodeDebugDrawData.m_hovered = (nodeIndex == cachedHoveredJointIndex);
 
         const EMotionFX::Transform& actorInstanceGlobalTransform = instance->GetWorldSpaceTransform();
         const EMotionFX::Transform& emfxNodeGlobalTransform =
@@ -66,7 +68,8 @@ namespace AZ::Render
     Physics::CharacterPhysicsDebugDraw::JointDebugDrawData GetJointDebugDrawData(
         const Physics::RagdollNodeConfiguration& ragdollNodeConfig,
         const EMotionFX::ActorInstance* instance,
-        const AZStd::unordered_set<size_t>* cachedSelectedJointIndices)
+        const AZStd::unordered_set<size_t>* cachedSelectedJointIndices,
+        [[maybe_unused]] size_t cachedHoveredJointIndex)
     {
         Physics::CharacterPhysicsDebugDraw::JointDebugDrawData jointDebugDrawData;
         const EMotionFX::Actor* actor = instance->GetActor();
@@ -229,34 +232,45 @@ namespace AZ::Render
         EMotionFX::JointSelectionRequestBus::BroadcastResult(
             cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, instance);
 
+        size_t cachedHoveredJointIndex = InvalidIndex;
+        EMotionFX::JointSelectionRequestBus::BroadcastResult(
+            cachedHoveredJointIndex, &EMotionFX::JointSelectionRequests::FindHoveredJointIndex, instance);
+
         Physics::CharacterPhysicsDebugDraw::NodeDebugDrawDataFunction nodeDebugDrawDataFunction =
-            [instance, cachedSelectedJointIndices](const Physics::CharacterColliderNodeConfiguration& colliderNodeConfig)
+            [instance, cachedSelectedJointIndices, cachedHoveredJointIndex](
+                const Physics::CharacterColliderNodeConfiguration& colliderNodeConfig)
         {
-            return GetNodeDebugDrawData(colliderNodeConfig, instance, cachedSelectedJointIndices);
+            return GetNodeDebugDrawData(colliderNodeConfig, instance, cachedSelectedJointIndices, cachedHoveredJointIndex);
         };
 
         Physics::CharacterPhysicsDebugDraw::JointDebugDrawDataFunction jointDebugDrawDataFunction =
-            [instance, cachedSelectedJointIndices](const Physics::RagdollNodeConfiguration& ragdollNodeConfig)
+            [instance, cachedSelectedJointIndices, cachedHoveredJointIndex](const Physics::RagdollNodeConfiguration& ragdollNodeConfig)
         {
-            return GetJointDebugDrawData(ragdollNodeConfig, instance, cachedSelectedJointIndices);
+            return GetJointDebugDrawData(ragdollNodeConfig, instance, cachedSelectedJointIndices, cachedHoveredJointIndex);
         };
 
         // Hit detection colliders
         if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::HitDetectionColliders))
         {
             m_characterPhysicsDebugDraw.RenderColliders(
-                debugDisplay, instance->GetActor()->GetPhysicsSetup()->GetColliderConfigByType(EMotionFX::PhysicsSetup::HitDetection),
+                debugDisplay,
+                instance->GetActor()->GetPhysicsSetup()->GetColliderConfigByType(EMotionFX::PhysicsSetup::HitDetection),
                 nodeDebugDrawDataFunction,
-                { renderActorSettings.m_hitDetectionColliderColor, renderActorSettings.m_selectedHitDetectionColliderColor });
+                Physics::CharacterPhysicsDebugDraw::ColorSettings{ renderActorSettings.m_hitDetectionColliderColor,
+                                                                   renderActorSettings.m_selectedHitDetectionColliderColor,
+                                                                   renderActorSettings.m_hoveredHitDetectionColliderColor });
         }
 
         // Cloth colliders
         if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::ClothColliders))
         {
             m_characterPhysicsDebugDraw.RenderColliders(
-                debugDisplay, instance->GetActor()->GetPhysicsSetup()->GetColliderConfigByType(EMotionFX::PhysicsSetup::Cloth),
+                debugDisplay,
+                instance->GetActor()->GetPhysicsSetup()->GetColliderConfigByType(EMotionFX::PhysicsSetup::Cloth),
                 nodeDebugDrawDataFunction,
-                { renderActorSettings.m_clothColliderColor, renderActorSettings.m_selectedClothColliderColor });
+                Physics::CharacterPhysicsDebugDraw::ColorSettings{ renderActorSettings.m_clothColliderColor,
+                                                                   renderActorSettings.m_selectedClothColliderColor,
+                                                                   renderActorSettings.m_hoveredClothColliderColor });
         }
 
         // Simulated object colliders
@@ -266,7 +280,9 @@ namespace AZ::Render
                 debugDisplay,
                 instance->GetActor()->GetPhysicsSetup()->GetColliderConfigByType(EMotionFX::PhysicsSetup::SimulatedObjectCollider),
                 nodeDebugDrawDataFunction,
-                { renderActorSettings.m_simulatedObjectColliderColor, renderActorSettings.m_selectedSimulatedObjectColliderColor });
+                Physics::CharacterPhysicsDebugDraw::ColorSettings{ renderActorSettings.m_simulatedObjectColliderColor,
+                                                                   renderActorSettings.m_selectedSimulatedObjectColliderColor,
+                                                                   renderActorSettings.m_hoveredSimulatedObjectColliderColor });
         }
 
         // Ragdoll
@@ -294,16 +310,25 @@ namespace AZ::Render
             }
 
             m_characterPhysicsDebugDraw.RenderRagdollColliders(
-                                debugDisplay, ragdollColliderConfiguration, nodeDebugDrawDataFunction, parentIndices,
-                                { renderActorSettings.m_ragdollColliderColor, renderActorSettings.m_selectedRagdollColliderColor,
-                                  renderActorSettings.m_violatedRagdollColliderColor });
+                debugDisplay,
+                ragdollColliderConfiguration,
+                nodeDebugDrawDataFunction,
+                parentIndices,
+                Physics::CharacterPhysicsDebugDraw::ColorSettings{ renderActorSettings.m_ragdollColliderColor,
+                                                                   renderActorSettings.m_selectedRagdollColliderColor,
+                                                                   renderActorSettings.m_hoveredRagdollColliderColor,
+                                                                   renderActorSettings.m_violatedRagdollColliderColor });
         }
         if (AZ::RHI::CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::RagdollJointLimits))
         {
             m_characterPhysicsDebugDraw.RenderJointLimits(
-                debugDisplay, instance->GetActor()->GetPhysicsSetup()->GetRagdollConfig(), jointDebugDrawDataFunction,
-                { renderActorSettings.m_ragdollColliderColor, renderActorSettings.m_selectedRagdollColliderColor,
-                  renderActorSettings.m_violatedJointLimitColor });
+                debugDisplay,
+                instance->GetActor()->GetPhysicsSetup()->GetRagdollConfig(),
+                jointDebugDrawDataFunction,
+                Physics::CharacterPhysicsDebugDraw::ColorSettings{ renderActorSettings.m_ragdollColliderColor,
+                                                                   renderActorSettings.m_selectedRagdollColliderColor,
+                                                                   renderActorSettings.m_hoveredRagdollColliderColor,
+                                                                   renderActorSettings.m_violatedJointLimitColor });
         }
     }
 
@@ -415,6 +440,26 @@ namespace AZ::Render
         }
     }
 
+    AZ::Color AtomActorDebugDraw::GetModifiedColor(
+        const AZ::Color& color,
+        size_t jointIndex,
+        const AZStd::unordered_set<size_t>* cachedSelectedJointIndices,
+        size_t cachedHoveredJointIndex) const
+    {
+        if (cachedSelectedJointIndices && cachedSelectedJointIndices->find(jointIndex) != cachedSelectedJointIndices->end())
+        {
+            return SelectedColor;
+        }
+        else if (cachedHoveredJointIndex == jointIndex)
+        {
+            return HoveredColor;
+        }
+        else
+        {
+            return color;
+        }
+    }
+
     void AtomActorDebugDraw::RenderLineSkeleton(AzFramework::DebugDisplayRequests* debugDisplay, EMotionFX::ActorInstance* instance, const AZ::Color& color) const
     {
         const EMotionFX::TransformData* transformData = instance->GetTransformData();
@@ -426,6 +471,10 @@ namespace AZ::Render
         const AZStd::unordered_set<size_t>* cachedSelectedJointIndices;
         EMotionFX::JointSelectionRequestBus::BroadcastResult(
             cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, instance);
+
+        size_t cachedHoveredJointIndex = InvalidIndex;
+        EMotionFX::JointSelectionRequestBus::BroadcastResult(
+            cachedHoveredJointIndex, &EMotionFX::JointSelectionRequests::FindHoveredJointIndex, instance);
 
         const AZ::u32 oldState = debugDisplay->GetState();
         debugDisplay->DepthTestOff();
@@ -445,14 +494,7 @@ namespace AZ::Render
                 continue;
             }
 
-            if (cachedSelectedJointIndices && cachedSelectedJointIndices->find(jointIndex) != cachedSelectedJointIndices->end())
-            {
-                renderColor = SelectedColor;
-            }
-            else
-            {
-                renderColor = color;
-            }
+            renderColor = GetModifiedColor(color, parentIndex, cachedSelectedJointIndices, cachedHoveredJointIndex);
 
             const AZ::Vector3 parentPos = pose->GetWorldSpaceTransform(parentIndex).m_position;
             const AZ::Vector3 bonePos = pose->GetWorldSpaceTransform(jointIndex).m_position;
@@ -474,6 +516,10 @@ namespace AZ::Render
         const AZStd::unordered_set<size_t>* cachedSelectedJointIndices;
         EMotionFX::JointSelectionRequestBus::BroadcastResult(
             cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, instance);
+
+        size_t cachedHoveredJointIndex = InvalidIndex;
+        EMotionFX::JointSelectionRequestBus::BroadcastResult(
+            cachedHoveredJointIndex, &EMotionFX::JointSelectionRequests::FindHoveredJointIndex, instance);
 
         const AZ::u32 oldState = debugDisplay->GetState();
         debugDisplay->DepthTestOff();
@@ -501,14 +547,7 @@ namespace AZ::Render
             const float parentBoneScale = CalculateBoneScale(instance, skeleton->GetNode(parentIndex));
             const float cylinderSize = boneLength - boneScale - parentBoneScale;
 
-            if (cachedSelectedJointIndices && cachedSelectedJointIndices->find(jointIndex) != cachedSelectedJointIndices->end())
-            {
-                renderColor = SelectedColor;
-            }
-            else
-            {
-                renderColor = color;
-            }
+            renderColor = GetModifiedColor(color, parentIndex, cachedSelectedJointIndices, cachedHoveredJointIndex);
             renderColor.SetA(0.75f);
             debugDisplay->SetColor(renderColor);
 

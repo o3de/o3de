@@ -21,13 +21,14 @@ namespace MaterialEditor
         m_assetBrowser->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
         m_assetBrowser->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
 
-        m_toolBar = new AtomToolsFramework::EntityPreviewViewportToolBar(m_toolId, this);
-        addToolBar(m_toolBar);
-
         m_documentInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
         m_documentInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialEditor/DocumentInspector");
         AddDockWidget("Inspector", m_documentInspector, Qt::RightDockWidgetArea);
 
+        // Set up the toolbar that controls the viewport settings
+        m_toolBar = new AtomToolsFramework::EntityPreviewViewportToolBar(m_toolId, this);
+
+        // Create the viewport widget that will be shared between all material editor documents
         m_materialViewport = new AtomToolsFramework::EntityPreviewViewportWidget(m_toolId, this);
 
         // Initialize the entity context that will be used to create all of the entities displayed in the viewport
@@ -47,6 +48,8 @@ namespace MaterialEditor
         // Inject the entity context, scene, content, and controller into the viewport widget
         m_materialViewport->Init(entityContext, viewportScene, viewportContent, viewportController);
 
+        // Register the toolbar in the viewport as the central widget, or main view of the material editor
+        centralWidget()->layout()->addWidget(m_toolBar);
         centralWidget()->layout()->addWidget(m_materialViewport);
 
         m_viewportSettingsInspector = new AtomToolsFramework::EntityPreviewViewportSettingsInspector(m_toolId, this);
@@ -59,18 +62,6 @@ namespace MaterialEditor
     void MaterialEditorMainWindow::OnDocumentOpened(const AZ::Uuid& documentId)
     {
         Base::OnDocumentOpened(documentId);
-        m_documentInspector->SetDocumentId(documentId);
-    }
-
-    void MaterialEditorMainWindow::OnDocumentCleared(const AZ::Uuid& documentId)
-    {
-        Base::OnDocumentCleared(documentId);
-        m_documentInspector->SetDocumentId(documentId);
-    }
-
-    void MaterialEditorMainWindow::OnDocumentError(const AZ::Uuid& documentId)
-    {
-        Base::OnDocumentError(documentId);
         m_documentInspector->SetDocumentId(documentId);
     }
 

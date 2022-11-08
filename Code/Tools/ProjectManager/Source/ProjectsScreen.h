@@ -19,8 +19,6 @@
 #include <QQueue>
 #endif
 
-//#define ADD_REMOTE_PROJECT_ENABLED
-
 QT_FORWARD_DECLARE_CLASS(QPaintEvent)
 QT_FORWARD_DECLARE_CLASS(QFrame)
 QT_FORWARD_DECLARE_CLASS(QStackedWidget)
@@ -65,7 +63,7 @@ namespace O3DE::ProjectManager
         void QueueBuildProject(const ProjectInfo& projectInfo);
         void UnqueueBuildProject(const ProjectInfo& projectInfo);
 
-        void StartProjectDownload(const QString& projectName);
+        void StartProjectDownload(const QString& projectName, const QString& destinationPath, bool queueBuild);
         void HandleDownloadProgress(const QString& projectName, DownloadController::DownloadObjectType objectType, int bytesDownloaded, int totalBytes);
         void HandleDownloadResult(const QString& projectName, bool succeeded);
 
@@ -90,9 +88,7 @@ namespace O3DE::ProjectManager
 
         QAction* m_createNewProjectAction = nullptr;
         QAction* m_addExistingProjectAction = nullptr;
-#ifdef ADD_REMOTE_PROJECT_ENABLED
         QAction* m_addRemoteProjectAction = nullptr;
-#endif
         QPixmap m_background;
         QFrame* m_firstTimeContent = nullptr;
         QFrame* m_projectsContent = nullptr;

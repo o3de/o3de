@@ -147,6 +147,12 @@ protected:
     WatchesDataModel m_DM;
     WatchesFilterModel* m_pFilterModel;
 
+    QMetaObject::Connection m_dataModelDataChangedConnection;
+    QMetaObject::Connection m_dataModelRestConnection;
+
+    void disconnectDataModelUpdate();
+    void connectDataModelUpdate();
+
 public Q_SLOTS:
 
     void OnItemChanged();

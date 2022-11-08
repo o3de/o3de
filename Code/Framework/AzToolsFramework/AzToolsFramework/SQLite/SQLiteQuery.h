@@ -15,6 +15,11 @@
 
 namespace AzToolsFramework
 {
+    namespace AssetDatabase
+    {
+        class PathOrUuid;
+    }
+
     namespace SQLite
     {
         struct SqlBlob;
@@ -25,6 +30,7 @@ namespace std
 {
     ostream& operator<<(ostream& out, const AZ::Uuid& uuid);
     ostream& operator<<(ostream& out, const AzToolsFramework::SQLite::SqlBlob&);
+    ostream& operator<<(ostream& out, const AzToolsFramework::AssetDatabase::PathOrUuid& pathOrUuid);
 }
 
 namespace AzToolsFramework
@@ -55,6 +61,7 @@ namespace AzToolsFramework
             void LogResultId(AZ::s64 rowId);
 
             bool Bind(Statement* statement, int index, const AZ::Uuid& value);
+            bool Bind(Statement* statement, int index, const AssetDatabase::PathOrUuid& value);
             bool Bind(Statement* statement, int index, double value);
             bool Bind(Statement* statement, int index, AZ::s32 value);
             bool Bind(Statement* statement, int index, AZ::u32 value);
@@ -111,7 +118,7 @@ namespace AzToolsFramework
             }
 
             //! Bind both prepares and binds the args - call it on an empty autoFinalizer and it will prepare
-            //! the query for you and return a ready-to-go autoFinalizer that has a valid statement ready to 
+            //! the query for you and return a ready-to-go autoFinalizer that has a valid statement ready to
             //! step()
             bool Bind(Connection& connection, StatementAutoFinalizer& autoFinalizer, const T&... args) const
             {
