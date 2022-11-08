@@ -669,6 +669,7 @@ namespace ScriptCanvas
         // Hook here to allow CodeGen to override this
         virtual bool IsDeprecated() const { return false; };
         virtual size_t GenerateFingerprint() const { return 0; }
+        // Use following function to backup node replacement configuration
         virtual NodeReplacementConfiguration GetReplacementNodeConfiguration() const { return {}; };
         virtual AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> GetReplacementSlotsMap() const { return {}; };
 
