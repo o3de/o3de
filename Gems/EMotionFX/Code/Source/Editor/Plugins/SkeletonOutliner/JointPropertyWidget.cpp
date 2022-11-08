@@ -83,6 +83,7 @@ namespace EMotionFX
 
         // create Add Component button
         m_addCollidersButton = new AddCollidersButton(propertyCard);
+        m_addCollidersButton->setObjectName("EMotionFX.SkeletonOutlinerPlugin.JointPropertyWidget.addCollidersButton");
         connect(m_addCollidersButton, &AddCollidersButton::AddCollider, this, &JointPropertyWidget::OnAddCollider);
         connect(m_addCollidersButton, &AddCollidersButton::AddToRagdoll, this, &JointPropertyWidget::OnAddToRagdoll);
         auto* marginLayout = new QVBoxLayout{this};
@@ -242,7 +243,20 @@ namespace EMotionFX
     enum ItemRoles
     {
         TypeId = Qt::UserRole + 1,
-        ConfigType = Qt::UserRole + 2
+        ConfigType = Qt::UserRole + 2,
+        CopyFromType = Qt::UserRole + 3
+    };
+    struct AddCollidersPallete : public QTreeView
+    {
+    public:
+        AddCollidersPallete(QWidget* parent)
+            : QTreeView(parent)
+        {
+        }
+        QSize GetViewportSizeHint()
+        {
+            return QTreeView::viewportSizeHint();
+        }
     };
     void AddCollidersButton::OnCreateContextMenu()
     {
@@ -252,8 +266,9 @@ namespace EMotionFX
         newFrame->setWindowFlags(Qt::FramelessWindowHint | Qt::Popup);
         newFrame->setFixedWidth(this->width());
         newFrame->move({ this->mapToGlobal({ 0, 0 }) });
-        auto* treeView = new QTreeView(newFrame);
+        auto* treeView = new AddCollidersPallete(newFrame);
         treeView->setModel(model);
+        treeView->setObjectName("EMotionFX.SkeletonOutlinerPlugin.AddCollidersButton.TreeView");
         // hide header for dropdown-style, single-column, tree
         treeView->header()->hide();
         connect(treeView, &QTreeView::clicked, this, &AddCollidersButton::OnAddColliderActionTriggered);
@@ -284,13 +299,41 @@ namespace EMotionFX
         model->appendRow(ragdollItem);
         ragdollItem->setData(PhysicsSetup::ColliderConfigType::Ragdoll, ItemRoles::ConfigType);
 
+
         // todo copy from other collider type
+        SkeletonModel* skeletonModel = nullptr;
+        SkeletonOutlinerRequestBus::BroadcastResult(skeletonModel, &SkeletonOutlinerRequests::GetModel);
+        for (const auto& s : sections)
+        {
+            const auto fromType = s.first;
+            const bool canCopyFrom = ColliderHelpers::CanCopyFrom(skeletonModel->GetSelectionModel().selectedIndexes(), fromType);
+            if (!canCopyFrom)
+            {
+                continue;
+            }
+            for (const auto& innerSection: sections)
+            {
+                if (innerSection.first == fromType)
+                {
+                    continue;
+                }
+                const auto toType = innerSection.first;
+                const char* visualName = PhysicsSetup::GetVisualNameForColliderConfigType(fromType);
+                const char* visualNameTo = PhysicsSetup::GetVisualNameForColliderConfigType(toType);
+                actionName = AZStd::string::format("Copy from %s to %s", visualName, visualNameTo);
+                auto* item = new QStandardItem{ actionName.c_str() };
+                item->setData(static_cast<int>(toType), ItemRoles::ConfigType);
+                item->setData(static_cast<int>(fromType), ItemRoles::CopyFromType);
+                model->appendRow(item);
+            }
+        }
         // todo paste (if there is a copied collider)
 
-        connect(treeView, &QTreeView::clicked, newFrame, &QFrame::deleteLater);
-        treeView->expandAll();
         newFrame->setFixedWidth(width());
         newFrame->show();
+        connect(treeView, &QTreeView::clicked, newFrame, &QFrame::deleteLater);
+        treeView->expandAll();
+        treeView->setFixedHeight(treeView->GetViewportSizeHint().height());
     }
 
     void AddCollidersButton::OnAddColliderActionTriggered(const QModelIndex& index)
