@@ -92,32 +92,6 @@ namespace AzToolsFramework
                 removeEntitiesUndoState->Redo();
             }
 
-            void DeleteEntitiesAndNestedInstances(
-                const AZStd::vector<AZStd::string>& entityAliasPathList,
-                const AZStd::vector<const Instance*>& nestedInstanceList,
-                const AZStd::vector<const AZ::Entity*> parentEntityList,
-                Instance& owningInstance,
-                Instance& focusedInstance,
-                UndoSystem::URSequencePoint* undoBatch)
-            {
-                if (&owningInstance == &focusedInstance)
-                {
-                    PrefabUndoDelete* deleteUndoState = aznew PrefabUndoDelete("Undo Deleting Entities and Instances");
-                    deleteUndoState->SetParent(undoBatch);
-                    deleteUndoState->Capture(entityAliasPathList, nestedInstanceList, parentEntityList, focusedInstance);
-                    deleteUndoState->Redo();
-                }
-                else
-                {
-                    PrefabUndoDeleteAsOverride* deleteUndoAsOverrideState =
-                        aznew PrefabUndoDeleteAsOverride("Undo Deleting Entities and Instances As Override");
-                    deleteUndoAsOverrideState->SetParent(undoBatch);
-                    deleteUndoAsOverrideState->Capture(
-                        entityAliasPathList, nestedInstanceList, parentEntityList, owningInstance, focusedInstance);
-                    deleteUndoAsOverrideState->Redo();
-                }
-            }
-
             void UpdateEntity(
                 const PrefabDomValue& entityDomBeforeUpdatingEntity,
                 const PrefabDomValue& entityDomAfterUpdatingEntity,
@@ -128,6 +102,37 @@ namespace AzToolsFramework
                 state->SetParent(undoBatch);
                 state->Capture(entityDomBeforeUpdatingEntity, entityDomAfterUpdatingEntity, entityId);
                 state->Redo();
+            }
+
+            void DeleteEntities(
+                const AZStd::vector<AZStd::string>& entityAliasPathList,
+                const AZStd::vector<const AZ::Entity*> parentEntityList,
+                Instance& focusedInstance,
+                UndoSystem::URSequencePoint* undoBatch)
+            {
+                PrefabUndoDeleteEntity* deleteUndoState = aznew PrefabUndoDeleteEntity("Undo Deleting Entities");
+                deleteUndoState->SetParent(undoBatch);
+                deleteUndoState->Capture(entityAliasPathList, parentEntityList, focusedInstance);
+                deleteUndoState->Redo();
+            }
+
+            void DeleteEntitiesAndPrefabsAsOverride(
+                const AZStd::vector<AZStd::string>& entityAliasPathList,
+                const AZStd::vector<AZStd::string>& instanceAliasPathList,
+                const AZStd::vector<const AZ::Entity*> parentEntityList,
+                Instance& owningInstance,
+                Instance& focusedInstance,
+                UndoSystem::URSequencePoint* undoBatch)
+            {
+                AZ_Assert(&owningInstance != &focusedInstance,
+                    "DeleteEntitiesAndPrefabsAsOverride does not support source template editing.");
+
+                PrefabUndoDeleteAsOverride* deleteUndoAsOverrideState =
+                    aznew PrefabUndoDeleteAsOverride("Undo Deleting Entities and Prefab Instances As Override");
+                deleteUndoAsOverrideState->SetParent(undoBatch);
+                deleteUndoAsOverrideState->Capture(
+                    entityAliasPathList, instanceAliasPathList, parentEntityList, owningInstance, focusedInstance);
+                deleteUndoAsOverrideState->Redo();
             }
         }
     } // namespace Prefab

@@ -18,14 +18,13 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        PrefabUndoDelete::PrefabUndoDelete(const AZStd::string& undoOperationName)
+        PrefabUndoDeleteEntity::PrefabUndoDeleteEntity(const AZStd::string& undoOperationName)
             : PrefabUndoBase(undoOperationName)
         {
         }
 
-        void PrefabUndoDelete::Capture(
+        void PrefabUndoDeleteEntity::Capture(
             const AZStd::vector<AZStd::string>& entityAliasPathList,
-            const AZStd::vector<const Instance*>& nestedInstanceList,
             const AZStd::vector<const AZ::Entity*> parentEntityList,
             Instance& focusedInstance)
         {
@@ -42,7 +41,7 @@ namespace AzToolsFramework
             {
                 if (entityAliasPath.empty())
                 {
-                    AZ_Error("Prefab", false, "PrefabUndoDelete::Capture - Entity alias path is empty. Skips removal.");
+                    AZ_Error("Prefab", false, "PrefabUndoDeleteEntity::Capture - Entity alias path is empty. Skips removal.");
                     continue;
                 }
 
@@ -59,37 +58,6 @@ namespace AzToolsFramework
                 }
             }
 
-            // Removes instance DOMs and links.
-            for (const Instance* nestedInstance : nestedInstanceList)
-            {
-                LinkReference nestedInstanceLink = m_prefabSystemComponentInterface->FindLink(nestedInstance->GetLinkId());
-                if (!nestedInstanceLink.has_value())
-                {
-                    AZ_Error("Prefab", false, "PrefabUndoDelete::Capture - Nested instance link could not be found.");
-                    continue;
-                }
-
-                PrefabDom patchesCopyForUndoSupport;
-                PrefabDom nestedInstanceLinkDom;
-                nestedInstanceLink->get().GetLinkDom(nestedInstanceLinkDom, nestedInstanceLinkDom.GetAllocator());
-                PrefabDomValueReference nestedInstanceLinkPatches =
-                    PrefabDomUtils::FindPrefabDomValue(nestedInstanceLinkDom, PrefabDomUtils::PatchesName);
-                if (nestedInstanceLinkPatches.has_value())
-                {
-                    patchesCopyForUndoSupport.CopyFrom(nestedInstanceLinkPatches->get(), patchesCopyForUndoSupport.GetAllocator());
-                }
-
-                PrefabUndoInstanceLink* removeLinkUndo = aznew PrefabUndoInstanceLink("Remove Link");
-                removeLinkUndo->Capture(
-                    focusedInstance.GetTemplateId(),
-                    nestedInstance->GetTemplateId(),
-                    nestedInstance->GetInstanceAlias(),
-                    AZStd::move(patchesCopyForUndoSupport),
-                    nestedInstance->GetLinkId());
-                removeLinkUndo->SetParent(GetParent());
-                removeLinkUndo->Redo();
-            }
-
             // Updates parent entity DOMs.
             for (const AZ::Entity* parentEntity : parentEntityList)
             {
@@ -103,7 +71,7 @@ namespace AzToolsFramework
                     const PrefabDomValue* parentEntityDomInFocusedTemplate = parentEntityAliasDomPathFromFocused.Get(focusedTempalteDom);
                     if (!parentEntityDomInFocusedTemplate)
                     {
-                        AZ_Error("Prefab", false, "PrefabUndoDelete::Capture - Cannot retrieve parent entity DOM from focused template.");
+                        AZ_Error("Prefab", false, "PrefabUndoDeleteEntity::Capture - Cannot retrieve parent entity DOM from focused template.");
                         continue;
                     }
 

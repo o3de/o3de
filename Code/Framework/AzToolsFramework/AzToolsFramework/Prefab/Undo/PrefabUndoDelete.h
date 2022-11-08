@@ -14,20 +14,19 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        //! Undo class for handling deletion of entities and prefab instances to the focused instance.
-        class PrefabUndoDelete
+        //! Undo class for handling deletion of entities to the focused instance.
+        class PrefabUndoDeleteEntity
             : public PrefabUndoBase
         {
         public:
-            AZ_RTTI(PrefabUndoDelete, "{63C3579D-9F8B-4B0F-AEE9-F8CF2E3E941A}", PrefabUndoBase);
-            AZ_CLASS_ALLOCATOR(PrefabUndoDelete, AZ::SystemAllocator, 0);
+            AZ_RTTI(PrefabUndoDeleteEntity, "{63C3579D-9F8B-4B0F-AEE9-F8CF2E3E941A}", PrefabUndoBase);
+            AZ_CLASS_ALLOCATOR(PrefabUndoDeleteEntity, AZ::SystemAllocator, 0);
 
-            explicit PrefabUndoDelete(const AZStd::string& undoOperationName);
+            explicit PrefabUndoDeleteEntity(const AZStd::string& undoOperationName);
 
-            //! The function helps generate undo/redo patches for deleting entities and prefab instances.
+            //! The function helps generate undo/redo patches for deleting entities.
             void Capture(
                 const AZStd::vector<AZStd::string>& entityAliasPathList,
-                const AZStd::vector<const Instance*>& nestedInstanceList,
                 const AZStd::vector<const AZ::Entity*> parentEntityList,
                 Instance& focusedInstance);
         };

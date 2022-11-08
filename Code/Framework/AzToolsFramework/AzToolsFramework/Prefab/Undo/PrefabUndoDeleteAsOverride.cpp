@@ -25,7 +25,7 @@ namespace AzToolsFramework
 
         void PrefabUndoDeleteAsOverride::Capture(
             const AZStd::vector<AZStd::string>& entityAliasPathList,
-            const AZStd::vector<const Instance*>& nestedInstanceList,
+            const AZStd::vector<AZStd::string>& instanceAliasPathList,
             const AZStd::vector<const AZ::Entity*> parentEntityList,
             Instance& owningInstance,
             Instance& focusedInstance)
@@ -72,19 +72,15 @@ namespace AzToolsFramework
                 }
             }
 
-            // Removes instance DOMs and links.
-            for (const Instance* nestedInstance : nestedInstanceList)
+            // Removes instance DOMs.
+            for (const AZStd::string& instanceAliasPath : instanceAliasPathList)
             {
-                const AZStd::string nestedInstanceAliasPath =
-                    PrefabDomUtils::PathStartingWithInstances + nestedInstance->GetInstanceAlias();
-
-                PrefabUndoUtils::AppendRemovePatch(m_redoPatch, overridePatchPathToOwningInstance + nestedInstanceAliasPath);
+                PrefabUndoUtils::AppendRemovePatch(m_redoPatch, overridePatchPathToOwningInstance + instanceAliasPath);
 
                 // Preemptively updates the cached DOM to prevent reloading instance.
                 if (cachedOwningInstanceDom.has_value())
                 {
-                    PrefabUndoUtils::UpdateCachedOwningInstanceDomWithRemoval(
-                        cachedOwningInstanceDom->get(), nestedInstanceAliasPath);
+                    PrefabUndoUtils::UpdateCachedOwningInstanceDomWithRemoval(cachedOwningInstanceDom->get(), instanceAliasPath);
                 }
             }
 

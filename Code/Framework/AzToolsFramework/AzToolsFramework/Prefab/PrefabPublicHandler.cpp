@@ -1302,7 +1302,7 @@ namespace AzToolsFramework
             SelectionCommand* deselectAllCommand = aznew SelectionCommand(deselection, "Deselect Entities");
             deselectAllCommand->SetParent(undoBatch.GetUndoBatch());
 
-            // Removing instances and entities...
+            // Removing instances and entities for one owning instance...
             // - Detach instance objects and entity objects.
             // - Update focused template DOM accordingly with undo/redo support.
 
@@ -1320,69 +1320,84 @@ namespace AzToolsFramework
             // Set of parent entities that need to be updated. It should not include entities that will be moved.
             AZStd::unordered_set<const AZ::Entity*> parentEntitysThatNeedUpdate;
 
-            // List of detached entity alias paths for template DOM manipulation.
+            // List of detached entity alias paths to owning instance.
             AZStd::vector<AZStd::string> detachedEntityAliasPaths;
 
-            // Lists of detached nested instance pointers for template DOM manipulation.
-            // Unique pointer list is used to take instance ownerships and for calling reset at the end of the function.
-            AZStd::vector<const Instance*> detachedInstanceList;
-            AZStd::vector<AZStd::unique_ptr<Instance>> detachedInstanceUniquePtrList;
+            // List of detached instance alias paths to owning instance. It is only used for override editing.
+            [[maybe_unused]] AZStd::vector<AZStd::string> detachedInstanceAliasPaths;
 
-            // Detaches nested instance objects.
-            for (const Instance* nestedInstance : instanceList)
+            // Flag that determines if it is source template editing or override editing to focused template.
+            const bool isOverrideEditing = &(commonOwningInstance->get()) != &(focusedInstance->get());
+
+            // 1. Detaches instance objects.
+            for (const Instance* instance : instanceList)
             {
+                const InstanceAlias instanceAlias = instance->GetInstanceAlias();
+
                 // Captures the parent entity that needs to be updated.
                 AZ::EntityId parentEntityId;
-                AZ::TransformBus::EventResult(
-                    parentEntityId, nestedInstance->GetContainerEntityId(), &AZ::TransformBus::Events::GetParentId);
+                AZ::TransformBus::EventResult(parentEntityId, instance->GetContainerEntityId(), &AZ::TransformBus::Events::GetParentId);
 
                 if (parentEntityId.IsValid() && (entitiesThatWillBeRemoved.find(parentEntityId) == entitiesThatWillBeRemoved.end()))
                 {
                     parentEntitysThatNeedUpdate.insert(GetEntityById(parentEntityId));
                 }
 
-                AZStd::unique_ptr<Instance> outInstance =
-                    commonOwningInstance->get().DetachNestedInstance(nestedInstance->GetInstanceAlias());
-                AZ::TransformBus::Event(outInstance->GetContainerEntityId(), &AZ::TransformBus::Events::SetParent, AZ::EntityId());
+                AZStd::unique_ptr<Instance> detachedInstance = commonOwningInstance->get().DetachNestedInstance(instanceAlias);
 
-                detachedInstanceList.push_back(outInstance.get());
-                detachedInstanceUniquePtrList.emplace_back(AZStd::move(outInstance));
+                if (isOverrideEditing)
+                {
+                    detachedInstanceAliasPaths.push_back(AZStd::move(PrefabDomUtils::PathStartingWithInstances + instanceAlias));
+                }
+                else
+                {
+                    // Removes the link if it is source template editing.
+                    RemoveLink(detachedInstance, commonOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch());
+                }
+
+                detachedInstance.reset();
             }
 
-            // Detaches entity objects.
-            for (const AZ::Entity* nestedEntity : entityList)
+            // 2. Detaches entity objects.
+            for (const AZ::Entity* entity : entityList)
             {
-                const AZ::EntityId nestedEntityId = nestedEntity->GetId();
-                const AZStd::string nestedEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(nestedEntityId);
+                const AZ::EntityId entityId = entity->GetId();
+                const AZStd::string nestedEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId);
 
                 // Captures the parent entity that needs to be updated.
                 AZ::EntityId parentEntityId;
-                AZ::TransformBus::EventResult(parentEntityId, nestedEntityId, &AZ::TransformBus::Events::GetParentId);
+                AZ::TransformBus::EventResult(parentEntityId, entityId, &AZ::TransformBus::Events::GetParentId);
 
                 if (parentEntityId.IsValid() && (entitiesThatWillBeRemoved.find(parentEntityId) == entitiesThatWillBeRemoved.end()))
                 {
                     parentEntitysThatNeedUpdate.insert(GetEntityById(parentEntityId));
                 }
 
-                commonOwningInstance->get().DetachEntity(nestedEntityId).release();
-                AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, nestedEntityId);
+                commonOwningInstance->get().DetachEntity(entityId).release();
+                AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, entityId);
 
-                detachedEntityAliasPaths.push_back(nestedEntityAliasPath);
+                detachedEntityAliasPaths.push_back(AZStd::move(nestedEntityAliasPath));
             }
 
-            // Updates template DOM with undo/redo support.
-            PrefabUndoHelpers::DeleteEntitiesAndNestedInstances(
-                detachedEntityAliasPaths,
-                detachedInstanceList,
-                { parentEntitysThatNeedUpdate.begin(), parentEntitysThatNeedUpdate.end() }, // convert set to vector
-                commonOwningInstance->get(),
-                focusedInstance->get(),
-                undoBatch.GetUndoBatch());
-
-            // Resets instance unique pointers.
-            for (AZStd::unique_ptr<Instance>& instancePtr : detachedInstanceUniquePtrList)
+            // 3. Updates template DOM with undo/redo support.
+            if (isOverrideEditing)
             {
-                instancePtr.reset();
+                PrefabUndoHelpers::DeleteEntitiesAndPrefabsAsOverride(
+                    detachedEntityAliasPaths,
+                    detachedInstanceAliasPaths,
+                    { parentEntitysThatNeedUpdate.begin(), parentEntitysThatNeedUpdate.end() }, // convert set to vector
+                    commonOwningInstance->get(),
+                    focusedInstance->get(),
+                    undoBatch.GetUndoBatch());
+            }
+            else
+            {
+                // Note: Detached instances have been updated in RemoveLink.
+                PrefabUndoHelpers::DeleteEntities(
+                    detachedEntityAliasPaths,
+                    { parentEntitysThatNeedUpdate.begin(), parentEntitysThatNeedUpdate.end() }, // convert set to vector
+                    focusedInstance->get(),
+                    undoBatch.GetUndoBatch());
             }
 
             AzToolsFramework::ToolsApplicationRequestBus::Broadcast(

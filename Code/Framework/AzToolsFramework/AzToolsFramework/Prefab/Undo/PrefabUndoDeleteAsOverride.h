@@ -27,7 +27,7 @@ namespace AzToolsFramework
             //! The function helps generate undo/redo patches for deleting entities and prefab instances.
             void Capture(
                 const AZStd::vector<AZStd::string>& entityAliasPathList,
-                const AZStd::vector<const Instance*>& nestedInstanceList,
+                const AZStd::vector<AZStd::string>& instanceAliasPathList,
                 const AZStd::vector<const AZ::Entity*> parentEntityList,
                 Instance& owningInstance,
                 Instance& focusedInstance);
