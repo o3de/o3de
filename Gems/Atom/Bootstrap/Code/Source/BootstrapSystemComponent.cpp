@@ -314,9 +314,18 @@ namespace AZ
                 // Load the main default pipeline if applicable
                 if (loadDefaultRenderPipeline)
                 {
-                    const AZ::CVarFixedString pipelineName = xrSystem
-                        ? "passes/LowEndRenderPipeline.azasset" // OpenXr uses low end render pipeline
-                        : static_cast<AZ::CVarFixedString>(r_default_pipeline_name);
+                    AZ::CVarFixedString pipelineName = static_cast<AZ::CVarFixedString>(r_default_pipeline_name);
+                    if (xrSystem)
+                    {
+                        // When running launcher on PC having an XR system present then the default render pipeline is suppose to reflect
+                        // what's being rendered into XR device. XR render pipeline uses low end render pipeline.
+                        AZ::ApplicationTypeQuery appType;
+                        ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+                        if (appType.IsGame())
+                        {
+                            pipelineName = "passes/LowEndRenderPipeline.azasset";
+                        }
+                    }
 
                     if (!LoadPipeline(scene, viewportContext, pipelineName, AZ::RPI::ViewType::Default, multisampleState))
                     {
