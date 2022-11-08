@@ -89,7 +89,7 @@ namespace AZ
                 AZ_TracePrintf(LogName, "%s r_metricsFrameCountPerCaptureBatch=%u.\n", __FUNCTION__, metricsFrameCountPerCaptureBatch);
                 bool metricsMeasureGpuTime = r_metricsMeasureGpuTime;
                 AZ_TracePrintf(LogName, "%s value of r_metricsMeasureGpuTime=%s.\n", __FUNCTION__, metricsMeasureGpuTime ? "true" : "false");
-                bool metricsQuitUponCompletion = r_metricsQuitUponCompletion;
+                [[maybe_unused]] bool metricsQuitUponCompletion = r_metricsQuitUponCompletion;
                 AZ_TracePrintf(LogName, "%s value of r_metricsQuitUponCompletion=%s.\n", __FUNCTION__, metricsQuitUponCompletion ? "true" : "false");
 
                 auto gpuPassProfiler = performanceCollectorOwner->GetGpuPassProfiler();
