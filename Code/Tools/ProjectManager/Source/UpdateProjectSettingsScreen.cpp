@@ -169,7 +169,10 @@ namespace O3DE::ProjectManager
     {
         if (!m_userChangedPreview)
         {
-            m_projectPreview->lineEdit()->setText(QDir(m_projectPath->lineEdit()->text()).filePath(m_projectInfo.m_iconPath));
+            QString path = QDir(m_projectPath->lineEdit()->text()).filePath(m_projectInfo.m_iconPath);
+            QString text = QDir::toNativeSeparators(path);
+
+            m_projectPreview->lineEdit()->setText(text);
             // Setting the text sets m_userChangedPreview to true
             // Set it back to false because it should only be true when changed by user
             m_userChangedPreview = false;
