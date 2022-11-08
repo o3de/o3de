@@ -21,16 +21,19 @@ namespace AZ::DocumentPropertyEditor
             m_sortActive = active;
             if (active)
             {
+                // TODO: This method should genenerate patches to/from source once custom patching is implemented
+                HandleReset();
+
                 // we can use the currently cached tree, if it still exists. NB it will be cleared by DOM changes
                 if (!m_rootNode)
                 {
-                    GenerateFullTree();
+                    // TODO: GenerateFullTree();
                 }
-                // <apm> generate RemovalsFromSource patch
+                // TODO: generate RemovalsFromSource patch
             }
             else
             {
-                // <apm> GeneratePatch(PatchToSource);
+                //TODO: generate PatchToSource patch
             }
         }
     }
@@ -64,21 +67,8 @@ namespace AZ::DocumentPropertyEditor
     {
         if (m_sortActive)
         {
-            for (auto operationIterator = patch.begin(), endIterator = patch.end(); operationIterator != endIterator; ++operationIterator)
-            {
-                // const auto& patchPath = operationIterator->GetDestinationPath();
-                if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Remove)
-                {
-                }
-                else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Replace)
-                {
-                }
-                else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
-                {
-                }
-            }
-
-            // <apm> remove this!
+            // TODO: handle changes upstream by making  custom patches. This is not currently
+            // possible, because a sort change is mostly move operations, and the DPE doesn't handle moves yet.
             HandleReset();
         }
         else
@@ -90,10 +80,7 @@ namespace AZ::DocumentPropertyEditor
 
     void RowSortAdapter::InvalidateSort()
     {
-        // when invalidating filter, m_sortedChildren has to be cleared, then recache all children in m_children, then use them to
-        // repopulate m_sortedChildren
-
-        // <apm> generate patch here instead
+        // TODO: once the DPE supports move patch operations, generate a patch here instead
         HandleReset();
     }
 

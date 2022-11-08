@@ -13,6 +13,7 @@
 #include <QLineEdit>
 #include <QTimer>
 #include <QVBoxLayout>
+#include <QSignalBlocker>
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/DOM/DomUtils.h>
@@ -38,6 +39,7 @@ void DetachAndHide(T* widget)
 {
     if (widget)
     {
+        QSignalBlocker widgetBlocker(widget);
         widget->hide();
         widget->setParent(nullptr);
     }
