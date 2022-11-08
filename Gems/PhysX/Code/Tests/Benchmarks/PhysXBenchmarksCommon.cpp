@@ -11,6 +11,7 @@
 #include <Benchmarks/PhysXBenchmarksCommon.h>
 #include <PhysXTestUtil.h>
 #include <PhysXTestCommon.h>
+#include <Scene/PhysXScene.h>
 
 namespace PhysX::Benchmarks
 {
