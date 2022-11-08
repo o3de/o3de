@@ -2327,6 +2327,7 @@ def _run_create_gem(args: argparse) -> int:
                       args.origin,
                       args.origin_url,
                       args.user_tags,
+                      args.platforms,
                       args.icon_path,
                       args.documentation_url,
                       args.repo_uri,
