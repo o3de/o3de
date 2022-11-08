@@ -78,6 +78,16 @@ namespace AzNetworking
         return result;
     }
 
+    #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
+    bool TrackChangedSerializer<BASE_TYPE>::Serialize(AZ::s64& value, const char* name, AZ::s64 minValue, AZ::s64 maxValue)
+    {
+        const AZ::s64 cached = value;
+        const bool result = BASE_TYPE::Serialize(value, name, minValue, maxValue);
+        m_hasChanged |= (cached != value);
+        return result;
+    }
+    #endif
+
     template <typename BASE_TYPE>
     bool TrackChangedSerializer<BASE_TYPE>::Serialize(uint8_t& value, const char* name, uint8_t minValue, uint8_t maxValue)
     {
@@ -113,6 +123,17 @@ namespace AzNetworking
         m_hasChanged |= (cached != value);
         return result;
     }
+
+    #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
+    template<typename BASE_TYPE>
+    bool TrackChangedSerializer<BASE_TYPE>::Serialize(AZ::u64& value, const char* name, AZ::u64 minValue, AZ::u64 maxValue)
+    {
+        const AZ::u64 cached = value;
+        const bool result = BASE_TYPE::Serialize(value, name, minValue, maxValue);
+        m_hasChanged |= (cached != value);
+        return result;
+    }
+    #endif
 
     template <typename BASE_TYPE>
     bool TrackChangedSerializer<BASE_TYPE>::Serialize(float& value, const char* name, float minValue, float maxValue)

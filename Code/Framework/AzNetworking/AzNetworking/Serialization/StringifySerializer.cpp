@@ -61,6 +61,13 @@ namespace AzNetworking
         return ProcessData(name, value);
     }
 
+    #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
+    bool StringifySerializer::Serialize(AZ::s64& value, const char* name, AZ::s64, AZ::s64)
+    {
+        return ProcessData(name, value);
+    }
+    #endif
+
     bool StringifySerializer::Serialize(uint8_t& value, const char* name, uint8_t, uint8_t)
     {
         return ProcessData(name, value);
@@ -80,6 +87,14 @@ namespace AzNetworking
     {
         return ProcessData(name, value);
     }
+
+    #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
+    bool StringifySerializer::Serialize(AZ::u64& value, const char* name, AZ::u64, AZ::u64)
+    {
+        return ProcessData(name, value);
+    }
+    #endif
+
 
     bool StringifySerializer::Serialize(float& value, const char* name, float, float)
     {
