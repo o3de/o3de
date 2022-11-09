@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
-#include <AzToolsFramework/UI/DocumentPropertyEditor/FilterAdapter.h>
+#include <AzFramework/DocumentPropertyEditor/FilterAdapter.h>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -19,43 +18,10 @@ namespace AZ::DocumentPropertyEditor
         delete m_root;
     }
 
-    void RowFilterAdapter::SetSourceAdapter(DocumentAdapterPtr sourceAdapter)
-    {
-        m_sourceAdapter = sourceAdapter;
-        m_resetHandler = DocumentAdapter::ResetEvent::Handler(
-            [this]()
-            {
-                this->HandleReset();
-            });
-        m_sourceAdapter->ConnectResetHandler(m_resetHandler);
-
-        m_changedHandler = DocumentAdapter::ChangedEvent::Handler(
-            [this](const Dom::Patch& patch)
-            {
-                this->HandleDomChange(patch);
-            });
-        m_sourceAdapter->ConnectChangedHandler(m_changedHandler);
-
-        m_domMessageHandler = AZ::DocumentPropertyEditor::DocumentAdapter::MessageEvent::Handler(
-            [this](const AZ::DocumentPropertyEditor::AdapterMessage& message, AZ::Dom::Value& value)
-            {
-                this->HandleDomMessage(message, value);
-            });
-        m_sourceAdapter->ConnectMessageHandler(m_domMessageHandler);
-
-        // populate the filter data from the source's full adapter contents, just like a reset
-        HandleReset();
-    }
-
     void RowFilterAdapter::SetIncludeAllMatchDescendants(bool includeAll)
     {
         m_includeAllMatchDescendants = includeAll;
         UpdateMatchDescendants(m_root);
-    }
-
-    bool RowFilterAdapter::IsRow(const Dom::Value& domValue)
-    {
-        return (domValue.IsNode() && domValue.GetNodeName() == Dpe::GetNodeName<Dpe::Nodes::Row>());
     }
 
     RowFilterAdapter::MatchInfoNode* RowFilterAdapter::MakeNewNode(RowFilterAdapter::MatchInfoNode* parentNode, unsigned int creationFrame)
@@ -64,13 +30,6 @@ namespace AZ::DocumentPropertyEditor
         newNode->m_parentNode = parentNode;
         newNode->m_lastFilterUpdateFrame = creationFrame;
         return newNode;
-    }
-
-    bool RowFilterAdapter::IsRow(const Dom::Path& sourcePath) const
-    {
-        const auto& sourceRoot = m_sourceAdapter->GetContents();
-        auto sourceNode = sourceRoot[sourcePath];
-        return IsRow(sourceNode);
     }
 
     void RowFilterAdapter::SetFilterActive(bool activateFilter)
@@ -251,12 +210,6 @@ namespace AZ::DocumentPropertyEditor
             // pass through existing patch
             NotifyContentsChanged(patch);
         }
-    }
-
-    void RowFilterAdapter::HandleDomMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message, [[maybe_unused]] Dom::Value& value)
-    {
-        // forward all messages unaltered
-        DocumentAdapter::SendAdapterMessage(message);
     }
 
     RowFilterAdapter::MatchInfoNode* RowFilterAdapter::GetMatchNodeAtPath(const Dom::Path& sourcePath)
@@ -574,143 +527,6 @@ namespace AZ::DocumentPropertyEditor
                 UpdateMatchState(childNode);
                 UpdateMatchDescendants(childNode);
             }
-        }
-    }
-
-    Dom::Path RowFilterAdapter::GetRowPath(const Dom::Path& sourcePath) const
-    {
-        Dom::Path rowPath;
-        const auto& contents = m_sourceAdapter->GetContents();
-        const auto* currDomValue = &contents;
-        for (const auto& pathEntry : sourcePath)
-        {
-            currDomValue = &(*currDomValue)[pathEntry];
-            if (IsRow(*currDomValue))
-            {
-                rowPath.Push(pathEntry);
-            }
-        }
-        return rowPath;
-    }
-
-    ValueStringFilter::ValueStringFilter()
-        : RowFilterAdapter()
-    {
-    }
-
-    void ValueStringFilter::SetFilterString(AZStd::string filterString)
-    {
-        AZStd::to_lower(filterString.begin(), filterString.end());
-        if (m_filterString != filterString)
-        {
-            m_filterString = AZStd::move(filterString);
-
-            if (m_filterActive)
-            {
-                if (m_filterString.empty())
-                {
-                    SetFilterActive(false);
-                }
-                else
-                {
-                    InvalidateFilter();
-                }
-            }
-            else if (!m_filterString.empty())
-            {
-                SetFilterActive(true);
-            }
-        }
-    }
-
-    RowFilterAdapter::MatchInfoNode* ValueStringFilter::NewMatchInfoNode() const
-    {
-        return new StringMatchNode();
-    }
-
-    void ValueStringFilter::CacheDomInfoForNode(const Dom::Value& domValue, MatchInfoNode* matchNode) const
-    {
-        auto actualNode = static_cast<StringMatchNode*>(matchNode);
-        const bool nodeIsRow = IsRow(domValue);
-        AZ_Assert(nodeIsRow, "Only row nodes should be cached by a RowFilterAdapter");
-        if (nodeIsRow)
-        {
-            actualNode->m_matchableDomTerms.clear();
-            for (auto childIter = domValue.ArrayBegin(), endIter = domValue.ArrayEnd(); childIter != endIter; ++childIter)
-            {
-                auto& currChild = *childIter;
-                if (currChild.IsNode())
-                {
-                    auto childName = currChild.GetNodeName();
-                    if (childName != Dpe::GetNodeName<Dpe::Nodes::Row>()) // don't cache child rows, they have they're own entries
-                    {
-                        static const Name valueName = Name::FromStringLiteral("Value", AZ::Interface<AZ::NameDictionary>::Get());
-                        auto foundValue = currChild.FindMember(valueName);
-                        if (foundValue != currChild.MemberEnd())
-                        {
-                            actualNode->AddStringifyValue(foundValue->second);
-                        }
-
-                        if (m_includeDescriptions)
-                        {
-                            static const Name descriptionName =
-                                Name::FromStringLiteral("Description", AZ::Interface<AZ::NameDictionary>::Get());
-                            auto foundDescription = currChild.FindMember(descriptionName);
-                            if (foundDescription != currChild.MemberEnd())
-                            {
-                                actualNode->AddStringifyValue(foundDescription->second);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    bool ValueStringFilter::MatchesFilter(MatchInfoNode* matchNode) const
-    {
-        auto actualNode = static_cast<StringMatchNode*>(matchNode);
-        return (m_filterString.empty() || actualNode->m_matchableDomTerms.contains(m_filterString));
-    }
-
-    void ValueStringFilter::StringMatchNode::AddStringifyValue(const Dom::Value& domValue)
-    {
-        AZStd::string stringifiedValue;
-
-        if (domValue.IsNull())
-        {
-            stringifiedValue = "null";
-        }
-        else if (domValue.IsBool())
-        {
-            stringifiedValue = (domValue.GetBool() ? "true" : "false");
-        }
-        else if (domValue.IsInt())
-        {
-            stringifiedValue = AZStd::to_string(domValue.GetInt64());
-        }
-        else if (domValue.IsUint())
-        {
-            stringifiedValue = AZStd::to_string(domValue.GetUint64());
-        }
-        else if (domValue.IsDouble())
-        {
-            stringifiedValue = AZStd::to_string(domValue.GetDouble());
-        }
-        else if (domValue.IsString())
-        {
-            AZStd::string_view stringView = domValue.GetString();
-            stringifiedValue = stringView;
-            AZStd::to_lower(stringifiedValue.begin(), stringifiedValue.end());
-        }
-
-        if (!stringifiedValue.empty())
-        {
-            if (!m_matchableDomTerms.empty())
-            {
-                m_matchableDomTerms.append(" ");
-            }
-            m_matchableDomTerms.append(stringifiedValue);
         }
     }
 } // namespace AZ::DocumentPropertyEditor
