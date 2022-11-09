@@ -35,13 +35,6 @@ namespace AzToolsFramework
             };
         }
 
-        static const char* const s_componentModeEnterDescription =
-            "In this mode, you can only edit properties for this component. "
-            "All other components on the entity are locked.";
-
-        static const char* const s_componentModeLeaveDescription =
-            "Return to normal viewport editing";
-
         // was the double click on the component or off it (select/deselect)
         enum class DoubleClickOutcome
         {
@@ -49,16 +42,6 @@ namespace AzToolsFramework
             OffComponent,
             None,
         };
-
-        static bool EnterComponentModeButtonVisible()
-        {
-            return !InComponentMode();
-        }
-
-        static bool LeaveComponentModeButtonVisible()
-        {
-            return InComponentMode();
-        }
 
         static DoubleClickOutcome DoubleClickedComponent(
             const ViewportInteraction::MouseInteractionEvent& mouseInteraction,
@@ -127,24 +110,6 @@ namespace AzToolsFramework
                 serializeContext->Class<ComponentModeDelegate>()
                     ->Version(1)
                     ;
-
-                if (AZ::EditContext* editContext = serializeContext->GetEditContext())
-                {
-                    editContext->Class<ComponentModeDelegate>(
-                        "Component Mode", "Provides advanced editing of Components.")
-                        ->UIElement(AZ::Edit::UIHandlers::Button, "", s_componentModeEnterDescription)
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ComponentModeDelegate::OnComponentModeEnterButtonPressed)
-                            ->Attribute(AZ::Edit::Attributes::ButtonText, "Edit")
-                            ->Attribute(AZ::Edit::Attributes::Visibility, &EnterComponentModeButtonVisible)
-                            ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true)
-                            ->Attribute(AZ::Edit::Attributes::ReadOnly, &ComponentModeDelegate::ComponentModeButtonInactive)
-                        ->UIElement(AZ::Edit::UIHandlers::Button, "", s_componentModeLeaveDescription)
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ComponentModeDelegate::OnComponentModeLeaveButtonPressed)
-                            ->Attribute(AZ::Edit::Attributes::ButtonText, "Done")
-                            ->Attribute(AZ::Edit::Attributes::Visibility, &LeaveComponentModeButtonVisible)
-                            ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true)
-                            ;
-                }
             }
 
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -181,34 +146,6 @@ namespace AzToolsFramework
             const AZStd::function<void(const AZ::EntityComponentIdPair&)>& addComponentModeCallback)
         {
             m_addComponentMode = addComponentModeCallback;
-        }
-
-        void ComponentModeDelegate::OnComponentModeEnterButtonPressed()
-        {
-            // Check the entity hasn't been deselected but we haven't been told yet.
-            if (!IsSelected(m_entityComponentIdPair.GetEntityId()))
-            {
-                return;
-            }
-
-            // ensure we aren't already in ComponentMode and are not also attempting to enter game mode
-            if (!InComponentMode() && !EditorRequestingGame())
-            {
-                // move all selected components into ComponentMode
-                ComponentModeSystemRequestBus::Broadcast(
-                    &ComponentModeSystemRequests::AddSelectedComponentModesOfType,
-                    m_componentType);
-            }
-        }
-
-        void ComponentModeDelegate::OnComponentModeLeaveButtonPressed()
-        {
-            if (InComponentMode())
-            {
-                // move the editor out of ComponentMode
-                ComponentModeSystemRequestBus::Broadcast(
-                    &ComponentModeSystemRequests::EndComponentMode);
-            }
         }
 
         void ComponentModeDelegate::AddComponentMode()

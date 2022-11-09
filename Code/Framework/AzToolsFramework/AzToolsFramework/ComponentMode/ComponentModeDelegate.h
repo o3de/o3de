@@ -136,10 +136,6 @@ namespace AzToolsFramework
             EditorComponentSelectionRequestsBus::Handler* m_handler = nullptr; /**< Selection handler (used for double clicking
                                                                                  *  on a component to enter ComponentMode). */
             AZStd::function<void(const AZ::EntityComponentIdPair&)> m_addComponentMode; ///< Callback to add ComponentMode for this component.
-
-            /// ComponentMode Button
-            void OnComponentModeEnterButtonPressed();
-            void OnComponentModeLeaveButtonPressed();
         };
 
         /// If this Entity had a Component supporting a ComponentMode, would

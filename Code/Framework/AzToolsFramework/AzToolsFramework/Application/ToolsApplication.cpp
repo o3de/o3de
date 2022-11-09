@@ -73,7 +73,6 @@
 #include <AzToolsFramework/Undo/UndoCacheInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Viewport/ViewBookmarkSystemComponent.h>
-#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <Entity/EntityUtilityComponent.h>
 #include <AzToolsFramework/Script/LuaEditorSystemComponent.h>
 #include <AzToolsFramework/Script/LuaSymbolsReporterSystemComponent.h>
@@ -388,10 +387,7 @@ namespace AzToolsFramework
         SliceUtilities::Reflect(context);
         Prefab::PrefabIntegrationManager::Reflect(context);
 
-        if (!ComponentSwitcherEnabled())
-        {
-            ComponentModeFramework::ComponentModeDelegate::Reflect(context);
-        }
+        ComponentModeFramework::ComponentModeDelegate::Reflect(context);
 
         ViewportInteraction::ViewportInteractionReflect(context);
         ViewportEditorModeNotifications::Reflect(context);
