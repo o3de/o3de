@@ -10,7 +10,8 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 
-#include <ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
@@ -46,6 +47,7 @@ namespace AzToolsFramework
             , private PrefabFocusNotificationBus::Handler
             , private PrefabPublicNotificationBus::Handler
             , private EditorEntityContextNotificationBus::Handler
+            , private ActionManagerRegistrationNotificationBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(PrefabIntegrationManager, AZ::SystemAllocator, 0);
@@ -62,14 +64,13 @@ namespace AzToolsFramework
 
             // EditorEventsBus overrides ...
             void OnEscape() override;
-            void NotifyEditorInitialized() override;
 
             // EditorEntityContextNotificationBus overrides ...
             void OnStartPlayInEditorBegin() override;
             void OnStopPlayInEditor() override;
 
             // PrefabFocusNotificationBus
-            void OnPrefabFocusChanged() override;
+            void OnPrefabFocusChanged(AZ::EntityId previousContainerEntityId, AZ::EntityId newContainerEntityId) override;
             void OnPrefabFocusRefreshed() override;
 
             // PrefabInstanceContainerNotificationBus overrides ...
@@ -80,6 +81,12 @@ namespace AzToolsFramework
             AZ::EntityId CreateNewEntityAtPosition(const AZ::Vector3& position, AZ::EntityId parentId) override;
             int HandleRootPrefabClosure(TemplateId templateId) override;
             void SaveCurrentPrefab() override;
+
+            // ActionManagerRegistrationNotificationBus overrides ...
+            void OnActionUpdaterRegistrationHook() override;
+            void OnActionRegistrationHook() override;
+            void OnWidgetActionRegistrationHook() override;
+            void OnToolBarBindingHook() override;
 
         private:
             // PrefabPublicNotificationBus overrides ...
@@ -113,14 +120,9 @@ namespace AzToolsFramework
             void ContextMenu_DeleteSelected();
             void ContextMenu_DetachPrefab(AZ::EntityId containerEntity);
 
-            // Shortcut setup handlers
+            // Shortcut setup handlers (for legacy action manager)
             void InitializeShortcuts();
             void UninitializeShortcuts();
-
-            // Action Manager Initializers
-            void InitializeActionUpdaters();
-            void InitializeActions();
-            void InitializeWidgetActions();
 
             // Reference detection
             static void GatherAllReferencedEntitiesAndCompare(

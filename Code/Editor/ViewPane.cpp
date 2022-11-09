@@ -27,10 +27,14 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 
 #include <AzQtComponents/Components/Style.h>
+
+#include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
 
 // Editor
 #include "ViewManager.h"
@@ -43,6 +47,16 @@
 #include "QtViewPaneManager.h"
 #include "EditorViewportWidget.h"
 #include <Editor/EditorViewportSettings.h>
+
+static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
+
+static constexpr AZStd::string_view ViewportDisplayInfoStateChangedUpdaterIdentifier = "o3de.updater.onViewportDisplayInfoStateChanged";
+
+static constexpr AZStd::string_view ViewportCameraMenuIdentifier = "o3de.menu.editor.viewport.camera";
+static constexpr AZStd::string_view ViewportHelpersMenuIdentifier = "o3de.menu.editor.viewport.helpers";
+static constexpr AZStd::string_view ViewportDebugInfoMenuIdentifier = "o3de.menu.editor.viewport.debugInfo";
+
+static constexpr AZStd::string_view ViewportTopToolBarIdentifier = "o3de.toolbar.viewport.top";
 
 //////////////////////////////////////////////////////////////////////////
 // ViewportTitleExpanderWatcher
@@ -192,18 +206,12 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
     }
     else
     {
-        auto toolBarManagerInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get();
-
-        if (toolBarManagerInterface)
+        m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        m_toolBarManagerInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get();
+        if (m_actionManagerInterface && m_menuManagerInterface && m_toolBarManagerInterface)
         {
-            // Register top viewport toolbar.
-            AzToolsFramework::ToolBarProperties toolBarProperties;
-            toolBarProperties.m_name = "Viewport ToolBar";
-            toolBarManagerInterface->RegisterToolBar("o3de.toolbar.viewport.top", toolBarProperties);
-
-            // Add toolbar to top of viewport.
-            QToolBar* toolBar = toolBarManagerInterface->GetToolBar("o3de.toolbar.viewport.top");
-            addToolBar(Qt::TopToolBarArea, toolBar);
+            AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
         }
     }
 
@@ -211,16 +219,223 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
 }
 
 CLayoutViewPane::~CLayoutViewPane() 
-{ 
+{
+    if (m_actionManagerInterface && m_menuManagerInterface && m_toolBarManagerInterface)
+    {
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
+    }
+
     if (m_viewportScrollArea)
     {
         // We only ever add m_viewport into our scroll area, which we manage separately,
-        // so make sure to take it back before deleting m_scrollArea.  Otherwise it will
+        // so make sure to take it back before deleting m_scrollArea. Otherwise it will
         // try and get deleted as a part of deleting m_scrollArea.
         m_viewportScrollArea->takeWidget();
         delete m_viewportScrollArea;
     }
+
     OnDestroy(); 
+}
+
+void CLayoutViewPane::OnMenuRegistrationHook()
+{
+    {
+        AzToolsFramework::MenuProperties menuProperties;
+        menuProperties.m_name = "Viewport Camera Settings";
+        m_menuManagerInterface->RegisterMenu(ViewportCameraMenuIdentifier, menuProperties);
+    }
+    {
+        AzToolsFramework::MenuProperties menuProperties;
+        menuProperties.m_name = "Viewport Debug Info";
+        m_menuManagerInterface->RegisterMenu(ViewportDebugInfoMenuIdentifier, menuProperties);
+    }
+    {
+        AzToolsFramework::MenuProperties menuProperties;
+        menuProperties.m_name = "Viewport Helpers";
+        m_menuManagerInterface->RegisterMenu(ViewportHelpersMenuIdentifier, menuProperties);
+    }
+}
+
+void CLayoutViewPane::OnToolBarRegistrationHook()
+{
+    // Register top viewport toolbar.
+    AzToolsFramework::ToolBarProperties toolBarProperties;
+    toolBarProperties.m_name = "Viewport ToolBar";
+    m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.viewport.top", toolBarProperties);
+
+    // Add toolbar to top of viewport.
+    QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.viewport.top");
+    addToolBar(Qt::TopToolBarArea, toolBar);
+}
+
+void CLayoutViewPane::OnActionRegistrationHook()
+{
+    // Viewport Debug Information
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.info.toggle";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Toggle Between States";
+        actionProperties.m_category = "Viewport Debug Information";
+        actionProperties.m_iconPath = ":/Menu/debug.svg";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorMainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            [viewportTitleDlg = m_viewportTitleDlg]
+            {
+                viewportTitleDlg->OnToggleDisplayInfo();
+            },
+            []() -> bool
+            {
+                AZ::AtomBridge::ViewportInfoDisplayState currentState = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
+                AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
+                    currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
+
+                return currentState != AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
+            }
+        );
+
+        m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
+    }
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.info.normal";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Normal";
+        actionProperties.m_category = "Viewport Debug Information";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorMainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            [viewportTitleDlg = m_viewportTitleDlg]
+            {
+                viewportTitleDlg->SetNormalViewportInfo();
+            },
+            []() -> bool
+            {
+                AZ::AtomBridge::ViewportInfoDisplayState currentState = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
+                AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
+                    currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
+
+                return currentState == AZ::AtomBridge::ViewportInfoDisplayState::NormalInfo;
+            }
+        );
+
+        m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
+    }
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.info.full";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Full";
+        actionProperties.m_category = "Viewport Debug Information";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorMainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            [viewportTitleDlg = m_viewportTitleDlg]
+            {
+                viewportTitleDlg->SetFullViewportInfo();
+            },
+            []() -> bool
+            {
+                AZ::AtomBridge::ViewportInfoDisplayState currentState = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
+                AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
+                    currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
+
+                return currentState == AZ::AtomBridge::ViewportInfoDisplayState::FullInfo;
+            }
+        );
+
+        m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
+    }
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.info.compact";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Compact";
+        actionProperties.m_category = "Viewport Debug Information";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorMainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            [viewportTitleDlg = m_viewportTitleDlg]
+            {
+                viewportTitleDlg->SetCompactViewportInfo();
+            },
+            []() -> bool
+            {
+                AZ::AtomBridge::ViewportInfoDisplayState currentState = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
+                AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
+                    currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
+
+                return currentState == AZ::AtomBridge::ViewportInfoDisplayState::CompactInfo;
+            }
+        );
+
+        m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
+    }
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.info.none";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "None";
+        actionProperties.m_category = "Viewport Debug Information";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorMainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            [viewportTitleDlg = m_viewportTitleDlg]
+            {
+                viewportTitleDlg->SetNoViewportInfo();
+            },
+            []() -> bool
+            {
+                AZ::AtomBridge::ViewportInfoDisplayState currentState = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
+                AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
+                    currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
+
+                return currentState == AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
+            }
+        );
+
+        m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
+    }
+}
+
+void CLayoutViewPane::OnMenuBindingHook()
+{
+    // Camera
+    {
+        m_menuManagerInterface->AddActionToMenu(ViewportCameraMenuIdentifier, "o3de.action.view.goToPosition", 100);
+    }
+    // Debug Info
+    {
+        m_menuManagerInterface->AddActionToMenu(ViewportDebugInfoMenuIdentifier, "o3de.action.viewport.info.normal", 100);
+        m_menuManagerInterface->AddActionToMenu(ViewportDebugInfoMenuIdentifier, "o3de.action.viewport.info.full", 200);
+        m_menuManagerInterface->AddActionToMenu(ViewportDebugInfoMenuIdentifier, "o3de.action.viewport.info.compact", 300);
+        m_menuManagerInterface->AddActionToMenu(ViewportDebugInfoMenuIdentifier, "o3de.action.viewport.info.none", 400);
+    }
+
+    // Helpers
+    {
+        m_menuManagerInterface->AddActionToMenu(ViewportHelpersMenuIdentifier, "o3de.action.view.toggleHelpers", 100);
+        m_menuManagerInterface->AddActionToMenu(ViewportHelpersMenuIdentifier, "o3de.action.view.toggleIcons", 200);
+        m_menuManagerInterface->AddActionToMenu(ViewportHelpersMenuIdentifier, "o3de.action.view.toggleSelectedEntityHelpers", 300);
+    }
+}
+
+void CLayoutViewPane::OnToolBarBindingHook()
+{
+    m_toolBarManagerInterface->AddWidgetToToolBar(ViewportTopToolBarIdentifier, "o3de.widgetAction.expander", 300);
+    m_toolBarManagerInterface->AddWidgetToToolBar(ViewportTopToolBarIdentifier, "o3de.widgetAction.prefab.editVisualMode", 400);
+    auto outcome = m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
+        ViewportTopToolBarIdentifier, "o3de.action.view.goToPosition", ViewportCameraMenuIdentifier, 500);
+    m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
+        ViewportTopToolBarIdentifier, "o3de.action.viewport.info.toggle", ViewportDebugInfoMenuIdentifier, 600);
+    m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
+        ViewportTopToolBarIdentifier, "o3de.action.view.toggleHelpers", ViewportHelpersMenuIdentifier, 700);
 }
 
 //////////////////////////////////////////////////////////////////////////

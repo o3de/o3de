@@ -130,7 +130,7 @@ namespace AzToolsFramework
                 // Register an updater that will refresh actions when a level is loaded.
                 if (m_actionManagerInterface)
                 {
-                    InitializeActionUpdaters();
+                    ActionManagerRegistrationNotificationBus::Handler::BusConnect();
                 }
             }
             
@@ -148,6 +148,11 @@ namespace AzToolsFramework
         PrefabIntegrationManager::~PrefabIntegrationManager()
         {
             UninitializeShortcuts();
+
+            if (m_actionManagerInterface)
+            {
+                ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
+            }
 
             PrefabPublicNotificationBus::Handler::BusDisconnect();
             EditorEntityContextNotificationBus::Handler::BusDisconnect();
@@ -231,7 +236,7 @@ namespace AzToolsFramework
             m_actions.clear();
         }
 
-        void PrefabIntegrationManager::InitializeActionUpdaters()
+        void PrefabIntegrationManager::OnActionUpdaterRegistrationHook()
         {
             // Update actions whenever a new root prefab is loaded.
             m_actionManagerInterface->RegisterActionUpdater(LevelLoadedUpdaterIdentifier);
@@ -240,7 +245,7 @@ namespace AzToolsFramework
             m_actionManagerInterface->RegisterActionUpdater(PrefabFocusChangedUpdaterIdentifier);
         }
 
-        void PrefabIntegrationManager::InitializeActions()
+        void PrefabIntegrationManager::OnActionRegistrationHook()
         {
             {
                 AzToolsFramework::ActionProperties actionProperties;
@@ -271,7 +276,7 @@ namespace AzToolsFramework
             }
         }
 
-        void PrefabIntegrationManager::InitializeWidgetActions()
+        void PrefabIntegrationManager::OnWidgetActionRegistrationHook()
         {
             // Prefab Focus Path Widget
             {
@@ -288,6 +293,13 @@ namespace AzToolsFramework
                     }
                 );
             }
+        }
+
+        void PrefabIntegrationManager::OnToolBarBindingHook()
+        {
+            // Populate Viewport top menu with Prefab actions and widgets
+            m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.viewport.top", "o3de.action.prefabs.upOneLevel", 100);
+            m_toolBarManagerInterface->AddWidgetToToolBar("o3de.toolbar.viewport.top", "o3de.widgetAction.prefab.focusPath", 200);
         }
 
         int PrefabIntegrationManager::GetMenuPosition() const
@@ -620,22 +632,6 @@ namespace AzToolsFramework
             s_prefabFocusPublicInterface->FocusOnOwningPrefab(AZ::EntityId());
         }
         
-        void PrefabIntegrationManager::NotifyEditorInitialized()
-        {
-            if (m_actionManagerInterface)
-            {
-                InitializeActions();
-                InitializeWidgetActions();
-            }
-
-            if (m_toolBarManagerInterface)
-            {
-                // Populate Viewport top menu with Prefab actions and widgets
-                m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.viewport.top", "o3de.action.prefabs.upOneLevel", 100);
-                m_toolBarManagerInterface->AddWidgetToToolBar("o3de.toolbar.viewport.top", "o3de.widgetAction.prefab.focusPath", 200);
-            }
-        }
-
         void PrefabIntegrationManager::OnStartPlayInEditorBegin()
         {
             // Focus on the root prefab (AZ::EntityId() will default to it)
@@ -1164,7 +1160,8 @@ namespace AzToolsFramework
             }
         }
 
-        void PrefabIntegrationManager::OnPrefabFocusChanged()
+        void PrefabIntegrationManager::OnPrefabFocusChanged(
+            [[maybe_unused]] AZ::EntityId previousContainerEntityId, [[maybe_unused]] AZ::EntityId newContainerEntityId)
         {
             if (m_actionManagerInterface)
             {
