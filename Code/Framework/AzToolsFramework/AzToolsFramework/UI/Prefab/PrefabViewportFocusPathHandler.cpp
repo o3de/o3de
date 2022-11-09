@@ -142,7 +142,8 @@ namespace AzToolsFramework::Prefab
         PrefabFocusNotificationBus::Handler::BusDisconnect();
     }
 
-    void PrefabFocusPathWidget::OnPrefabFocusChanged()
+    void PrefabFocusPathWidget::OnPrefabFocusChanged(
+        [[maybe_unused]] AZ::EntityId previousContainerEntityId, [[maybe_unused]] AZ::EntityId newContainerEntityId)
     {
         Refresh();
     }

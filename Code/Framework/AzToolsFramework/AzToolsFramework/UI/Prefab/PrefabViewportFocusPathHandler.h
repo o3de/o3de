@@ -59,7 +59,7 @@ namespace AzToolsFramework::Prefab
         ~PrefabFocusPathWidget();
 
         // PrefabFocusNotificationBus overrides ...
-        void OnPrefabFocusChanged() override;
+        void OnPrefabFocusChanged(AZ::EntityId previousContainerEntityId, AZ::EntityId newContainerEntityId) override;
         void OnPrefabFocusRefreshed() override;
 
     private:
