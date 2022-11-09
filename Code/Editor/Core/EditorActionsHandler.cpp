@@ -1833,13 +1833,6 @@ void EditorActionsHandler::OnOnlyShowHelpersForSelectedEntitiesChanged([[maybe_u
     m_actionManagerInterface->TriggerActionUpdater(OnlyShowHelpersForSelectedEntitiesIdentifier);
 }
 
-/*
-void EditorActionsHandler::OnViewportInfoDisplayStateChanged([[maybe_unused]] AZ::AtomBridge::ViewportInfoDisplayState state)
-{
-    m_actionManagerInterface->TriggerActionUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier);
-}
-*/
-
 bool EditorActionsHandler::IsRecentFileActionActive(int index)
 {
     return (index < m_recentFileActionsCount);
