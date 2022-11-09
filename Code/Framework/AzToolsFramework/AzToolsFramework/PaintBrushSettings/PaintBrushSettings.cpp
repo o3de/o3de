@@ -181,14 +181,14 @@ namespace AzToolsFramework
                         ->EnumAttribute(PaintBrushSmoothMode::Median, "Middle Value (Median)")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetSmoothModeVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_smoothingRadius, "Smoothing Values",
-                        "The number of values in each direction to use for smoothing calculations (1 value in each direction = 3x3 smoothing kernel).")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_smoothingRadius, "Smoothing Radius",
+                        "The number of values in each direction to use for smoothing (a radius of 1 = 3x3 smoothing kernel).")
                         ->Attribute(AZ::Edit::Attributes::Min, MinSmoothingRadius)
                         ->Attribute(AZ::Edit::Attributes::Max, MaxSmoothingRadius)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetSmoothingRadiusVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_smoothingSpacing, "Smoothing Value Spacing",
-                        "The spacing of values used for smoothing calculations (0 uses adjacent values, 1 uses every other value, etc).")
+                        "The spacing of values used for smoothing (0 uses adjacent values, 1 uses every other value, etc).")
                         ->Attribute(AZ::Edit::Attributes::Min, MinSmoothingSpacing)
                         ->Attribute(AZ::Edit::Attributes::Max, MaxSmoothingSpacing)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetSmoothingSpacingVisibility)
