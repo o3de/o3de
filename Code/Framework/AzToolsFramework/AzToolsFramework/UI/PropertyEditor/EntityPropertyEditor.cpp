@@ -5891,6 +5891,7 @@ namespace AzToolsFramework
             SetPropertyEditorState(m_gui, false);
             const auto componentModeTypes = m_componentModeCollection->GetComponentTypes();
             m_disabled = true;
+            m_verticalScrollPos = m_gui->m_componentList->verticalScrollBar()->value();
             
             if (!componentModeTypes.empty())
             {
@@ -5899,7 +5900,12 @@ namespace AzToolsFramework
 
             for (auto componentEditor : m_componentEditors)
             {
-                componentEditor->EnteredComponentMode(componentModeTypes);
+                auto enteredComponentMode = componentEditor->EnteredComponentMode(componentModeTypes);
+                if (enteredComponentMode)
+                {
+                    // scroll to the relevant component card
+                    m_gui->m_componentList->verticalScrollBar()->setValue(componentEditor->pos().y());
+                }
             }
 
             // record the selected state after entering component mode
@@ -5921,6 +5927,9 @@ namespace AzToolsFramework
             {
                 componentEditor->LeftComponentMode(componentModeTypes);
             }
+
+            // return back to scroll position before EditorMode was activated
+            m_gui->m_componentList->verticalScrollBar()->setValue(m_verticalScrollPos);
 
             // record the selected state after leaving component mode
             SaveComponentEditorState();

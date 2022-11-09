@@ -101,7 +101,7 @@ namespace AzToolsFramework
 
         void SetComponentOverridden(const bool overridden);
 
-        void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes);
+        bool EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes);
         void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes);
         void ActiveComponentModeChanged(const AZ::Uuid& componentType);
 

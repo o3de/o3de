@@ -245,7 +245,7 @@ namespace AzToolsFramework
         void OnEntityStartStatusChanged(const AZ::EntityId& entityId) override;
         //////////////////////////////////////////////////////////////////////////
 
-        // EditorComponentModeNotificationBus
+        // EditorComponentModeNotificationBus overrides ...
         void ActiveComponentModeChanged(const AZ::Uuid& componentType) override;
 
         // ViewportEditorModeNotificationsBus overrides ...
@@ -253,6 +253,9 @@ namespace AzToolsFramework
             const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
         void OnEditorModeDeactivated(
             const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
+
+        // Save the position of the scroll bar which is returned to OnEditorModeDeactivated
+        int m_verticalScrollPos = 0; 
 
         // EntityPropertEditorRequestBus
         void GetSelectedAndPinnedEntities(EntityIdList& selectedEntityIds) override;
@@ -262,7 +265,7 @@ namespace AzToolsFramework
         // TickBus
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-        // EditorWindowRequestBus overrides
+        // EditorWindowRequestBus overrides ...
         void SetEditorUiEnabled(bool enable) override;
 
         // ReadOnlyEntityPublicNotificationBus overrides ...

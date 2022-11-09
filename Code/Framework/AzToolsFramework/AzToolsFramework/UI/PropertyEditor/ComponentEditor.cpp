@@ -855,6 +855,7 @@ namespace AzToolsFramework
         }
 
         AzQtComponents::Card::setSelected(selected);
+        //AzQtComponents::Card::scroll(0, 10);
     }
 
     bool ComponentEditor::IsSelected() const
@@ -922,7 +923,7 @@ namespace AzToolsFramework
         return false;
     }
 
-    void ComponentEditor::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)
+    bool ComponentEditor::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)
     {
         // disable all component cards not matching the ComponentMode type
         if (AZStd::find(
@@ -930,6 +931,7 @@ namespace AzToolsFramework
             componentModeTypes.end(), m_componentType) == componentModeTypes.end())
         {
             SetWidgetInteractEnabled(this, false);
+            return false;
         }
         else
         {
@@ -937,8 +939,10 @@ namespace AzToolsFramework
             {
                 // only set the first item to be selected/highlighted
                 SetSelected(componentModeTypes.front() == m_componentType);
+                return true;
             }
         }
+        return false;
     }
 
     void ComponentEditor::LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)
