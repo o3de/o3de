@@ -162,11 +162,12 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
             material_editor_utils.get_property(document_id, base_color_property_name) == expected_color)
 
         # 10. Change the lighting background displayed behind the material model in the viewport.
-        lighting_background_asset_path = os.path.join("lightingpresets", "greenwich_park.lightingpreset")
+        lighting_background_asset_path = os.path.join(
+            "TestData", "LightingPresets", "greenwich_park_03_2k_skyboxcm.exr.streamingimage")
         lighting_background_asset_id = atom_tools_utils.select_lighting_config(lighting_background_asset_path)
         Report.result(
             Tests.lighting_background_changed,
-            atom_tools_utils.get_lighting_config(lighting_background_asset_id) == lighting_background_asset_id)
+            atom_tools_utils.get_current_lighting_preset() == lighting_background_asset_id)
 
         # 11. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)

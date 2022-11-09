@@ -97,7 +97,11 @@ def select_lighting_config(asset_path: str) -> azlmbr.math.Uuid:
     return asset_id
 
 
-def get_lighting_config(asset_id: azlmbr.math.Uuid) -> azlmbr.math.Uuid:
+def get_current_lighting_preset() -> azlmbr.math.Uuid:
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetLightingPreset")
+
+
+def get_last_lighting_preset_asset_id(asset_id: azlmbr.math.Uuid) -> azlmbr.math.Uuid:
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
         azlmbr.bus.Broadcast, "GetLastLightingPresetAssetId", asset_id)
 
