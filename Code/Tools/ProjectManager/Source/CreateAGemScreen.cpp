@@ -269,6 +269,9 @@ namespace O3DE::ProjectManager
         m_requirements = new FormLineEditWidget(tr("Requirements"), "", tr("Notice of any requirements your Gem. i.e. This requires X other gem"), "");
         gemDetailsLayout->addWidget(m_requirements);
 
+        m_platformOptions = new FormOptionsWidget((QStringList() << tr("Windows") << tr("Linux") << tr("iOS") << tr("Android")), tr("All Platforms"));
+        gemDetailsLayout->addWidget(m_platformOptions);
+
         m_license = new FormLineEditWidget(
             tr("License*"), "", tr("License uses goes here: i.e. Apache-2.0 or MIT"), tr("License details are required."));
         gemDetailsLayout->addWidget(m_license);
