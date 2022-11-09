@@ -1478,7 +1478,7 @@ namespace UnitTest
         }
 
         // This is here just to give us a final tally of how many rays failed this test.
-        ASSERT_EQ(numFailures, 0);
+        EXPECT_EQ(numFailures, 0);
     }
 
     TEST_F(TerrainSystemTest, TerrainProcessAsyncCancellation)
