@@ -61,6 +61,7 @@ namespace Multiplayer
         static constexpr char OnBlockedLevelLoadMessage[] = "Blocked level load; see log for details.";
         static constexpr char OnNoServerLevelLoadedMessageClientSide[] = "Server accept message did not provide a level.\nEnsure server has level loaded before connecting.";
         static constexpr char OnNoServerLevelLoadedMessageServerSide[] = "A client has connected, but we're not in a level.\nPlease load a valid multiplayer level before accepting clients.";
+        static constexpr char OnComponentVersionMismatch[] = "Multiplayer Component Mismatch.\nEnsure server and client are both up to date.";
 
         AZ_COMPONENT(MultiplayerConnectionViewportMessageSystemComponent, "{7600cfcf-e380-4876-aa90-8120e57205e9}");
 
@@ -100,6 +101,9 @@ namespace Multiplayer
 
         void OnNoServerLevelLoadedEvent();
         NoServerLevelLoadedEvent::Handler m_noServerLevelLoadedHandler = NoServerLevelLoadedEvent::Handler([this](){OnNoServerLevelLoadedEvent();});
+
+        void OnComponentVersionMismatchEvent();
+        ComponentVersionMismatchEvent::Handler m_componentVersionMismatchEventHandler = ComponentVersionMismatchEvent::Handler([this](){OnComponentVersionMismatchEvent();});
         //! @}
 
         void DrawConnectionStatus(AzNetworking::ConnectionState connectionState, const AzNetworking::IpAddress& hostAddress);

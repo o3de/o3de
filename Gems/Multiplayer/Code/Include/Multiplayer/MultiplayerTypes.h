@@ -120,9 +120,9 @@ namespace Multiplayer
     struct ComponentVersionMessageData
     {
         AZ::Name m_componentName;
-        uint64_t m_componentVersionHash; // @todo Change this from uint64_t to AZ::HashValue64 once GHI-13019 is complete
+        AZ::HashValue64 m_componentVersionHash;
         ComponentVersionMessageData() = default;
-        explicit ComponentVersionMessageData(AZ::Name name, uint64_t versionHash);
+        explicit ComponentVersionMessageData(AZ::Name name, AZ::HashValue64 versionHash);
         bool operator==(const ComponentVersionMessageData& rhs) const;
         bool operator!=(const ComponentVersionMessageData& rhs) const;
         bool Serialize(AzNetworking::ISerializer& serializer);
@@ -186,7 +186,7 @@ namespace Multiplayer
         return "Unknown";
     }
 
-    inline ComponentVersionMessageData::ComponentVersionMessageData(AZ::Name name, uint64_t versionHash)
+    inline ComponentVersionMessageData::ComponentVersionMessageData(AZ::Name name, AZ::HashValue64 versionHash)
         : m_componentName(name)
         , m_componentVersionHash(versionHash)
     {

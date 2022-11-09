@@ -906,7 +906,7 @@ namespace Multiplayer
                     theirComponent.m_componentName, localComponentHash))
             {
                 
-                if (aznumeric_cast<AZ::HashValue64>(theirComponent.m_componentVersionHash) != localComponentHash)
+                if (theirComponent.m_componentVersionHash != localComponentHash)
                 {
                     AZLOG_ERROR(
                         "Multiplayer component mismatch! %s has a different version hash. Please make sure both client and server have "
@@ -918,9 +918,9 @@ namespace Multiplayer
             {
                 // Connected machine is using a multiplayer component we don't have
                 AZLOG_ERROR(
-                    "Multiplayer component mismatch! We're missing a component with version hash 0x%" PRIx64 ". "
+                    "Multiplayer component mismatch! We're missing a component with version hash 0x%llx. "
                     "Because we are missing this component, we don't know its name, only its hash. "
-                    "To find the missing component go to the other machine and search for 's_versionHash = AZ::HashValue64{ 0x%" PRIx64" }' "
+                    "To find the missing component go to the other machine and search for 's_versionHash = AZ::HashValue64{ 0x%llx }' "
                     "inside the generated multiplayer auto-component build folder.",
                     theirComponent.m_componentVersionHash,
                     theirComponent.m_componentVersionHash);
@@ -987,6 +987,7 @@ namespace Multiplayer
             }
         }
 
+        m_componentVersionMismatchEvent.Signal();
         return true;
     }
 
@@ -1283,6 +1284,11 @@ namespace Multiplayer
     void MultiplayerSystemComponent::AddNoServerLevelLoadedHandler(NoServerLevelLoadedEvent::Handler& handler)
     {
         handler.Connect(m_noServerLevelLoadedEvent);
+    }
+
+    void MultiplayerSystemComponent::AddComponentVersionMismatchEvent(NoServerLevelLoadedEvent::Handler& handler)
+    {
+        handler.Connect(m_componentVersionMismatchEvent);
     }
 
     void MultiplayerSystemComponent::SendNotifyClientMigrationEvent(AzNetworking::ConnectionId connectionId, const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId, NetEntityId controlledEntityId)
@@ -1647,7 +1653,7 @@ namespace Multiplayer
         for (const auto& multiplayerComponentData : GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes())
         {
             componentMismatchPacket.ModifyComponentVersions().emplace_back(
-                multiplayerComponentData.first, aznumeric_cast<uint64_t>(multiplayerComponentData.second));
+                multiplayerComponentData.first, multiplayerComponentData.second);
 
             if (componentMismatchPacket.GetComponentVersions().full())
             {
