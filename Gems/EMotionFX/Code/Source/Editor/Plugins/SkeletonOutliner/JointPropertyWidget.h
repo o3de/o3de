@@ -84,8 +84,7 @@ namespace EMotionFX
             azrtti_typeid<Physics::CapsuleShapeConfiguration>(),
             azrtti_typeid<Physics::SphereShapeConfiguration>()};
 
-        //QTreeView* m_treeView = nullptr;
         QStandardItemModel* model = nullptr;
     };
 
-} // ns EmotionFX
+} // namespace EMotionFX

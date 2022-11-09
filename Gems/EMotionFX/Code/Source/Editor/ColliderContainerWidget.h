@@ -73,7 +73,7 @@ namespace EMotionFX
         void Reset();
 
         void SetFilterString(QString str);
-        bool HasDisplayedNodes();
+        bool HasDisplayedNodes() const;
 
         Actor* GetActor() const { return m_actor; };
         Node* GetJoint() const { return m_joint; }

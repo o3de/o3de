@@ -59,7 +59,7 @@ namespace EMotionFX
         void OnModelReset();
 
     protected:
-        AzQtComponents::Card*   m_contentCard;
+        AzQtComponents::Card*   m_contentCard = nullptr;
         ColliderContainerWidget* m_collidersWidget = nullptr;
 
         QLabel*         m_jointNameLabel;
