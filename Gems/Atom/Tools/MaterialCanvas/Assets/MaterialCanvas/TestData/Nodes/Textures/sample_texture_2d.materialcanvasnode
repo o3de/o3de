@@ -6,9 +6,10 @@
         "id": "{C0ADB0F0-39DD-48D9-A4D2-58B40C76C285}",
         "category": "Texturing",
         "title": "Sample Texture 2d",
+        "titlePaletteName": "TexturingNodeTitlePalette",
         "settings": {
             "instructions": [
-                "float4 NODEID_outColor = MaterialSrg::NODEID_inValue.Sample(MaterialSrg::NODEID_inSampler, (float2)NODEID_inUV);"
+                "SLOTTYPE(outColor) outColor = MaterialSrg::inValue.Sample(MaterialSrg::inSampler, (float2)inUV);"
             ]
         },
         "propertySlots": [
@@ -22,7 +23,8 @@
                     "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
                     "Value": ""
                 },
-                "supportsEditingOnNode": false
+                "visibleOnNode": false,
+                "editableOnNode": false
             },
             {
                 "name": "inName",
@@ -45,7 +47,8 @@
                     "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
                     "Value": ""
                 },
-                "supportsEditingOnNode": false
+                "visibleOnNode": false,
+                "editableOnNode": false
             },
             {
                 "name": "inValue",
@@ -56,7 +59,8 @@
                 "defaultValue": {
                     "$type": "{403A7CFE-B218-5D57-8540-BD58E734BCFE} Asset<StreamingImageAsset>"
                 },
-                "supportsEditingOnNode": false,
+                "visibleOnNode": false,
+                "editableOnNode": false,
                 "settings": {
                     "materialInputs": [
                         "SLOTSTANDARDSRGMEMBER"
@@ -72,7 +76,8 @@
                 "defaultValue": {
                     "$type": "SamplerState"
                 },
-                "supportsEditingOnNode": false,
+                "visibleOnNode": false,
+                "editableOnNode": false,
                 "settings": {
                     "materialInputs": [
                         "SLOTSTANDARDSRGMEMBER"
@@ -86,14 +91,17 @@
                 "displayName": "UV",
                 "description": "UV",
                 "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
-                "defaultDataType": "float",
+                "defaultDataType": "float2",
                 "defaultValue": {
-                    "$type": "float",
-                    "Value": 0.0
+                    "$type": "Vector2",
+                    "Value": [
+                        0.0,
+                        0.0
+                    ]
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -104,10 +112,7 @@
                 "displayName": "Color",
                 "description": "Color",
                 "supportedDataTypeRegex": "color",
-                "defaultDataType": "color",
-                "settings": {
-                    "instructions": {}
-                }
+                "defaultDataType": "color"
             },
             {
                 "name": "outR",
@@ -117,7 +122,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_outColor.r;"
+                        "SLOTTYPE SLOTNAME = outColor.r;"
                     ]
                 }
             },
@@ -129,7 +134,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_outColor.g;"
+                        "SLOTTYPE SLOTNAME = outColor.g;"
                     ]
                 }
             },
@@ -141,7 +146,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_outColor.b;"
+                        "SLOTTYPE SLOTNAME = outColor.b;"
                     ]
                 }
             },
@@ -153,7 +158,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_outColor.a;"
+                        "SLOTTYPE SLOTNAME = outColor.a;"
                     ]
                 }
             }

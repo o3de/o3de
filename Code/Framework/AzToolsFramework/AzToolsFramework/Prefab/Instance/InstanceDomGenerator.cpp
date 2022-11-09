@@ -175,28 +175,29 @@ namespace AzToolsFramework
             relativePathFromTop.append(m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId));
             PrefabDomPath relativeDomPathFromTopToEntity(relativePathFromTop.c_str());
 
-            // Retrieves the entity DOM from the template of the focused or root instance.
-            PrefabDom focusedOrRootTemplateDomCopy;
-            focusedOrRootTemplateDomCopy.CopyFrom(
-                m_prefabSystemComponentInterface->FindTemplateDom(focusedOrRootInstance->GetTemplateId()),
-                entityDom.GetAllocator());
-
             // If it is the focused container entity, then replace the entity DOM's transform data (from template)
             // with the one seen from root.
             if (entityId == focusedInstance->get().GetContainerEntityId())
             {
-                UpdateContainerEntityInDomFromRoot(focusedOrRootTemplateDomCopy, focusedInstance->get());
+                GenerateContainerEntityDomFromRootInstance(entityDom, focusedInstance->get());
             }
-
-            const PrefabDomValue* entityDomFromTemplate = relativeDomPathFromTopToEntity.Get(focusedOrRootTemplateDomCopy);
-            if (!entityDomFromTemplate)
+            else
             {
-                AZ_Warning("Prefab", false, "InstanceDomGenerator::GenerateEntityDom - "
-                    "The entity DOM cannot be found in the template DOM. Output DOM will be null.");
-                return;
-            }
+                // Retrieves the entity DOM from the template of the focused or root instance.
+                const PrefabDom& focusedTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(focusedOrRootInstance->GetTemplateId());
+                const PrefabDomValue* entityDomFromTemplate = relativeDomPathFromTopToEntity.Get(focusedTemplateDom);
+                if (!entityDomFromTemplate)
+                {
+                    AZ_Warning(
+                        "Prefab",
+                        false,
+                        "InstanceDomGenerator::GenerateEntityDom - "
+                        "The entity DOM cannot be found in the template DOM. Output DOM will be null.");
+                    return;
+                }
 
-            entityDom.CopyFrom(*entityDomFromTemplate, entityDom.GetAllocator());
+                entityDom.CopyFrom(*entityDomFromTemplate, entityDom.GetAllocator());
+            }
         }
 
         void InstanceDomGenerator::UpdateContainerEntityInDomFromRoot(PrefabDom& instanceDom, const Instance& instance) const
@@ -231,6 +232,32 @@ namespace AzToolsFramework
             const AZStd::string containerEntityName = AZStd::string::format("/%s", PrefabDomUtils::ContainerEntityName);
             PrefabDomPath containerEntityPath(containerEntityName.c_str());
             containerEntityPath.Set(instanceDom, containerEntityDom, instanceDom.GetAllocator());
+        }
+
+        void InstanceDomGenerator::GenerateContainerEntityDomFromRootInstance(PrefabDom& containerEntityDom, const Instance& instance) const
+        {
+            // This function replaces the entire container entity DOM instead of just the transform component because right now, there is
+            // no good way to identify the transform component directly in a DOM. But essentially all we need to update here is the
+            // transform data and parent information in the transform component.
+
+            InstanceClimbUpResult climbUpResult = PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(instance, nullptr);
+            const Instance* rootInstancePtr = climbUpResult.m_reachedInstance;
+            AZ_Assert(rootInstancePtr, "Prefab - InstanceDomGenerator::GenerateContainerEntityDomFromRootInstance - Root instance is null");
+
+            AZStd::string relativePathFromRoot = PrefabInstanceUtils::GetRelativePathFromClimbedInstances(climbUpResult.m_climbedInstances);
+
+            // Creates a path from the root instance to container entity of the given insance.
+            const AZStd::string pathToContainerEntity =
+                AZStd::string::format("%s/%s", relativePathFromRoot.c_str(), PrefabDomUtils::ContainerEntityName);
+            PrefabDomPath domPathToContainerEntity(pathToContainerEntity.c_str());
+
+            // Retrieves the container entity DOM of the root template DOM.
+            {
+                // DOM reference can't be relied upon if the original DOM gets modified after reference creation.
+                // This scope is added to limit their usage and ensure DOM is not modified when it is being used.
+                const PrefabDom& rootTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom((*rootInstancePtr).GetTemplateId());
+                containerEntityDom.CopyFrom(*domPathToContainerEntity.Get(rootTemplateDom), containerEntityDom.GetAllocator());
+            }
         }
     } // namespace Prefab
 } // namespace AzToolsFramework

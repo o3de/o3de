@@ -56,7 +56,7 @@ class SceneExporter(QtWidgets.QWidget):
 
         self.setParent(maya_mainwindow)
         self.setWindowFlags(QtCore.Qt.Window)
-        self.setGeometry(200, 200, 450, 600)
+        self.setGeometry(200, 200, 390, 600)
         self.setObjectName('MayaSceneExporter')
         self.setWindowTitle('O3DE Scene Exporter')
         self.isTopLevel()
@@ -69,20 +69,15 @@ class SceneExporter(QtWidgets.QWidget):
         self.bold_font = QtGui.QFont("Plastique", 8, QtGui.QFont.Bold)
 
         self.main_container = QtWidgets.QVBoxLayout()
-        self.main_container.setSpacing(20)
-
         self.setLayout(self.main_container)
         self.main_container.setAlignment(QtCore.Qt.AlignTop)
-
-        # THack spacing (because I added menu, it's crunched)
-        self.spacing_label = QtWidgets.QLabel('    ')
-        self.main_container.addWidget(self.spacing_label)
+        self.main_container.setContentsMargins(10, 40, 10, 10)
 
         # Task Section
         self.test_label = QtWidgets.QLabel('Task')
         self.test_label.setFont(self.bold_font)
         self.main_container.addWidget(self.test_label)
-        self.main_container.addSpacing(10)
+        self.main_container.addSpacing(5)
 
         # Setup Help Menu
         self.menuBar = QtWidgets.QMenuBar(self) # HelpMenu wants menuBar
@@ -101,25 +96,43 @@ class SceneExporter(QtWidgets.QWidget):
         self.task_radio_two = QtWidgets.QRadioButton('Convert to O3DE Materials')
         self.task_button_container.addWidget(self.task_radio_two)
         self.task_button_group.addButton(self.task_radio_two, 1)
+        self.main_container.addSpacing(5)
         self.main_container.addLayout(self.create_spacer_line())
 
-        # Export Object Settings
-        self.object_settings_label = QtWidgets.QLabel('Export Object Settings')
+        # Export Settings
+        self.main_container.addSpacing(5)
+        self.object_settings_label = QtWidgets.QLabel('Export Settings')
         self.object_settings_label.setFont(self.bold_font)
         self.main_container.addWidget(self.object_settings_label)
         self.main_container.addSpacing(5)
-        self.object_settings_layout = QtWidgets.QHBoxLayout()
-        self.object_settings_layout.setAlignment(QtCore.Qt.AlignLeft)
-        self.main_container.addLayout(self.object_settings_layout)
+
+        # --> Row One - Export Settings
+        self.settings_rowOne_layout = QtWidgets.QHBoxLayout()
+        self.settings_rowOne_layout.setAlignment(QtCore.Qt.AlignLeft)
+        self.main_container.addLayout(self.settings_rowOne_layout)
+        self.z_up_checkbox = QtWidgets.QCheckBox('Force Z-up Export')
+        self.z_up_checkbox.setChecked(True)
+        self.settings_rowOne_layout.addWidget(self.z_up_checkbox)
+        self.settings_rowOne_layout.addSpacing(67)
         self.preserve_transforms_checkbox = QtWidgets.QCheckBox('Preserve Transform Values')
         self.preserve_transforms_checkbox.setChecked(True)
-        self.object_settings_layout.addWidget(self.preserve_transforms_checkbox)
-        self.object_settings_layout.addSpacing(30)
+        self.settings_rowOne_layout.addWidget(self.preserve_transforms_checkbox)
+        self.main_container.addSpacing(5)
+
+        # --> Row Two - Export Settings
+        self.settings_rowTwo_layout = QtWidgets.QHBoxLayout()
+        self.settings_rowTwo_layout.setAlignment(QtCore.Qt.AlignLeft)
+        self.main_container.addLayout(self.settings_rowTwo_layout)
         self.preserve_grouped_checkbox = QtWidgets.QCheckBox('Preserve Grouped Objects')
-        self.object_settings_layout.addWidget(self.preserve_grouped_checkbox)
+        self.settings_rowTwo_layout.addWidget(self.preserve_grouped_checkbox)
+        self.settings_rowTwo_layout.addSpacing(25)
+        self.triangulated_export_checkbox = QtWidgets.QCheckBox('Triangulate Exported Objects')
+        self.settings_rowTwo_layout.addWidget(self.triangulated_export_checkbox)
+        self.main_container.addSpacing(5)
         self.main_container.addLayout(self.create_spacer_line())
 
         # Scope Section
+        self.main_container.addSpacing(5)
         self.scope_label = QtWidgets.QLabel('Scope')
         self.scope_label.setFont(self.bold_font)
         self.main_container.addWidget(self.scope_label)
@@ -157,9 +170,11 @@ class SceneExporter(QtWidgets.QWidget):
         self.scope_set_button.clicked.connect(self.set_scope_clicked)
         self.scope_target_layout.addWidget(self.scope_set_button)
         self.scope_set_button.setFixedSize(30, 25)
+        self.main_container.addSpacing(5)
         self.main_container.addLayout(self.create_spacer_line())
 
         # Export Path
+        self.main_container.addSpacing(5)
         self.export_path_label = QtWidgets.QLabel('Export Path')
         self.export_path_label.setFont(self.bold_font)
         self.main_container.addWidget(self.export_path_label)
@@ -174,9 +189,11 @@ class SceneExporter(QtWidgets.QWidget):
         self.export_set_button.clicked.connect(self.set_output_location)
         self.export_path_layout.addWidget(self.export_set_button)
         self.export_set_button.setFixedSize(30, 25)
+        self.main_container.addSpacing(5)
         self.main_container.addLayout(self.create_spacer_line())
 
         # Output Window
+        self.main_container.addSpacing(5)
         self.output_label = QtWidgets.QLabel('Output')
         self.output_label.setFont(self.bold_font)
         self.main_container.addWidget(self.output_label)
@@ -200,7 +217,7 @@ class SceneExporter(QtWidgets.QWidget):
         if self.validate_task():
             # Include export options
             export_options = []
-            for checkbox in [self.preserve_grouped_checkbox, self.preserve_transforms_checkbox]:
+            for checkbox in [self.z_up_checkbox, self.preserve_grouped_checkbox, self.preserve_transforms_checkbox, self.triangulated_export_checkbox]:
                 if checkbox.isChecked():
                     export_options.append(checkbox.text())
 
@@ -277,7 +294,6 @@ class SceneExporter(QtWidgets.QWidget):
 
     def set_output_location(self):
         directory = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Target Directory', self.desktop_location)
-        _LOGGER.info(f'Directory: {directory}')
         if directory:
             self.export_line_edit.setText(directory)
             self.set_export_path()
@@ -314,6 +330,10 @@ class SceneExporter(QtWidgets.QWidget):
         if source_list:
             return source_list
         return None
+
+    def get_output_location(self):
+        if self.export_line_edit.text:
+            _LOGGER.info(f'Output location: {self.export_line_edit.text}')
 
     def get_scope_value(self):
         return self.scope_settings[self.scope]
@@ -379,7 +399,7 @@ class SceneExporter(QtWidgets.QWidget):
     def set_export_path(self):
         target_path = self.export_line_edit.text()
         self.output_location = target_path if Path(target_path).is_dir() else None
-        _LOGGER.info(f'-----> {self.output_location} -- {type(self.output_location)}')
+        _LOGGER.info(f'-----> {self.output_location}')
 
     def process_materials_clicked(self):
         self.process_materials()
@@ -421,8 +441,8 @@ def delete_instances():
     from DccScriptingInterface.Tools.DCC.Maya.Scripts.Python.export import _PACKAGENAME
 
     for obj in maya_mainwindow.children():
-        if str(type(obj)) == f"<class '{_PACKAGENAME}.MaterialsHelper'>":
-            if obj.__class__.__name__ == "MaterialsHelper":
+        if str(type(obj)) == f"<class '{_PACKAGENAME}.SceneExporter'>":
+            if obj.__class__.__name__ == "SceneExporter":
                 obj.setParent(None)
                 obj.deleteLater()
 

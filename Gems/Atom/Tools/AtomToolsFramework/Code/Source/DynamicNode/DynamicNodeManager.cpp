@@ -120,8 +120,11 @@ namespace AtomToolsFramework
             auto categoryItr = categoryMap.find(config.m_category);
             if (categoryItr == categoryMap.end())
             {
-                categoryItr = categoryMap.emplace(config.m_category,
-                    rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>(config.m_category, m_toolId)).first;
+                // Creating a new node palette tree item category and setting the title palette based on the 1st dynamic node config added
+                auto categoryTreeItem =
+                    rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>(config.m_category, m_toolId);
+                categoryTreeItem->SetTitlePalette(config.m_titlePaletteName);
+                categoryItr = categoryMap.emplace(config.m_category, categoryTreeItem).first;
             }
 
             categoryItr->second->CreateChildNode<DynamicNodePaletteItem>(m_toolId, config);

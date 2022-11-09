@@ -7,7 +7,7 @@
  */
 #pragma once
 #if !defined(Q_MOC_RUN)
-#include <native/unittests/UnitTestRunner.h>
+#include <native/unittests/UnitTestUtils.h>
 #include <native/utilities/AssetUtilEBusHelper.h>
 #include <native/unittests/AssetProcessorUnitTests.h>
 #endif

@@ -5,12 +5,14 @@
     "ClassData": {
         "id": "{229D9C2B-6AD4-45DC-83F0-AB5BE771298C}",
         "category": "Math Functions",
-        "title": "sincos",
+        "title": "Sincos",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outSin|outCos"
+        ],
         "settings": {
             "instructions": [
-                "float4 NODEID_outSin = float4(0, 0, 0, 0);",
-                "float4 NODEID_outCos = float4(0, 0, 0, 0);",
-                "sincos(NODEID_inValue, NODEID_outSin, NODEID_outCos);"
+                "SLOTTYPE(outSin) outSin;\nSLOTTYPE(outCos) outCos;\nsincos(inValue, outSin, outCos);"
             ]
         },
         "inputSlots": [
@@ -31,7 +33,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }

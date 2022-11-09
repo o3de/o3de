@@ -25,8 +25,7 @@
     "steps": [
       "profile",
       "asset_profile",
-      "test_cpu_profile",
-      "test_impact_analysis_profile_python"
+      "test_cpu_profile"
     ]
   },
   "profile_pipe_tiaf": {
@@ -78,7 +77,7 @@
       "CONFIGURATION": "profile",
       "SCRIPT_PATH": "scripts/build/TestImpactAnalysis/tiaf_driver.py",
       "SCRIPT_PARAMETERS": 
-      "--config=\"%OUTPUT_DIRECTORY%/bin/TestImpactFramework/profile/Persistent/tiaf.json\" --src-branch=%BRANCH_NAME% --dst-branch=%CHANGE_TARGET% --commit=%CHANGE_ID% --s3-bucket=%TEST_IMPACT_S3_BUCKET% --mars-index-prefix=o3de-tiaf --s3-top-level-dir=%REPOSITORY_NAME% --build-number=%BUILD_NUMBER% --suite=main --test-failure-policy=continue --runtime-type=python --testrunner=null"
+      "--config=\"%OUTPUT_DIRECTORY%/bin/TestImpactFramework/profile/Persistent/tiaf.json\" --src-branch=%BRANCH_NAME% --dst-branch=%CHANGE_TARGET% --commit=%CHANGE_ID% --s3-bucket=%TEST_IMPACT_S3_BUCKET% --mars-index-prefix=o3de-tiaf --s3-top-level-dir=%REPOSITORY_NAME% --build-number=%BUILD_NUMBER% --suite=main --test-failure-policy=continue --runtime-type=python --testrunner=live"
     }
   },
   "debug": {
