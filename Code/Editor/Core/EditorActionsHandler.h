@@ -81,13 +81,18 @@ private:
     void OnDrawHelpersChanged(bool enabled) override;
     void OnGridSnappingChanged(bool enabled) override;
     void OnIconsVisibilityChanged(bool enabled) override;
+    void OnOnlyShowHelpersForSelectedEntitiesChanged(bool enabled) override;
 
     // Layouts
     void RefreshLayoutActions();
 
     // Recent Files
+    const char* m_levelExtension = nullptr;
+    int m_recentFileActionsCount = 0;
     bool IsRecentFileActionActive(int index);
+    bool IsRecentFileEntryValid(const QString& entry, const QString& gameFolderPath);
     void UpdateRecentFileActions();
+    void OpenLevelByRecentFileEntryIndex(int index);
 
     // Toolbox Macros
     void RefreshToolboxMacroActions();

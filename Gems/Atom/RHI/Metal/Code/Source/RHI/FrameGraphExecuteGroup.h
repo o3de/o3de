@@ -52,6 +52,9 @@ namespace AZ
             
             const Scope* m_scope = nullptr;
             NSString* m_cbLabel = nullptr;
+            
+            //Metal command buffer associated with this group
+            id <MTLCommandBuffer> m_groupCommandBuffer = nil;
         };
     }
 }

@@ -1,0 +1,96 @@
+{
+    "O3DE": {
+        "NodeReplacement": {
+            "ScriptCanvas": [
+                {
+                    "OldNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Class": "Entity Transform",
+                        "Method": "Rotate"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Method": "ScriptCanvas_EntityFunctions_Rotate"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Class": "String",
+                        "Method": "Is Valid Find Position"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Method": "ScriptCanvas_StringFunctions_IsValidFindPosition"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Class": "String",
+                        "Method": "Contains String"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Method": "ScriptCanvas_StringFunctions_ContainsString"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Class": "String",
+                        "Method": "Starts With"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Method": "ScriptCanvas_StringFunctions_StartsWith"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Class": "String",
+                        "Method": "Ends With"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Method": "ScriptCanvas_StringFunctions_EndsWith"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Class": "String",
+                        "Method": "Split"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Method": "ScriptCanvas_StringFunctions_Split"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Class": "String",
+                        "Method": "Join"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Method": "ScriptCanvas_StringFunctions_Join"
+                    }
+                },
+                {
+                    "OldNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Class": "String",
+                        "Method": "Replace String"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Method": "ScriptCanvas_StringFunctions_ReplaceString"
+                    }
+                }
+            ]
+        }
+    }
+}

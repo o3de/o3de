@@ -130,8 +130,7 @@ SEditorSettings::SEditorSettings()
     viewports.bAlwaysShowRadiuses = false;
     viewports.bSync2DViews = false;
     viewports.fDefaultAspectRatio = 800.0f / 600.0f;
-    
-    viewports.bShowSafeFrame = false;
+
     viewports.bHighlightSelectedGeometry = false;
     viewports.bHighlightSelectedVegetation = true;
     viewports.bHighlightMouseOverGeometry = true;
@@ -472,7 +471,6 @@ void SEditorSettings::Save(bool isEditorClosing)
     SaveValue("Settings", "AlwaysShowRadiuses", viewports.bAlwaysShowRadiuses);
     SaveValue("Settings", "Sync2DViews", viewports.bSync2DViews);
     SaveValue("Settings", "AspectRatio", viewports.fDefaultAspectRatio);
-    SaveValue("Settings", "ShowSafeFrame", viewports.bShowSafeFrame);
     SaveValue("Settings", "HighlightSelectedGeometry", viewports.bHighlightSelectedGeometry);
     SaveValue("Settings", "HighlightSelectedVegetation", viewports.bHighlightSelectedVegetation);
     SaveValue("Settings", "HighlightMouseOverGeometry", viewports.bHighlightMouseOverGeometry);
@@ -667,7 +665,6 @@ void SEditorSettings::Load()
     LoadValue("Settings", "AlwaysShowRadiuses", viewports.bAlwaysShowRadiuses);
     LoadValue("Settings", "Sync2DViews", viewports.bSync2DViews);
     LoadValue("Settings", "AspectRatio", viewports.fDefaultAspectRatio);
-    LoadValue("Settings", "ShowSafeFrame", viewports.bShowSafeFrame);
     LoadValue("Settings", "HighlightSelectedGeometry", viewports.bHighlightSelectedGeometry);
     LoadValue("Settings", "HighlightSelectedVegetation", viewports.bHighlightSelectedVegetation);
     LoadValue("Settings", "HighlightMouseOverGeometry", viewports.bHighlightMouseOverGeometry);
@@ -823,7 +820,7 @@ void SEditorSettings::Load()
 AZ_CVAR(bool, ed_previewGameInFullscreen_once, false, nullptr, AZ::ConsoleFunctorFlags::IsInvisible, "Preview the game (Ctrl+G, \"Play Game\", etc.) in fullscreen once");
 AZ_CVAR(bool, ed_lowercasepaths, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Convert CCryFile paths to lowercase on Open");
 AZ_CVAR(int64_t, ed_backgroundSystemTickCap, 33, nullptr, AZ::ConsoleFunctorFlags::Null,"Delay between frame updates (ms) when window is out of focus but not minimized AND background update is disabled.");
-    
+
 void SEditorSettings::PostInitApply()
 {
     if (!gEnv || !gEnv->pConsole)
@@ -934,7 +931,7 @@ void SEditorSettings::SaveEnableSourceControlFlag(bool triggerUpdate /*= false*/
 void SEditorSettings::LoadEnableSourceControlFlag()
 {
     constexpr AZStd::string_view enableSourceControlKey = "/Amazon/Settings/EnableSourceControl";
-    
+
     if (const auto* registry = AZ::SettingsRegistry::Get())
     {
         bool potentialValue;
@@ -983,7 +980,8 @@ AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome SEditorSettings::Get
 {
     if (path.find("|") == AZStd::string_view::npos)
     {
-        return { AZStd::string("Invalid Path - could not find separator \"|\"") };
+        return AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome{ AZStd::unexpect,
+            AZStd::string("Invalid Path - could not find separator \"|\"") };
     }
 
     AZStd::string category, attribute;
@@ -1001,7 +999,8 @@ AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome SEditorSettings::Set
 {
     if (path.find("|") == AZStd::string_view::npos)
     {
-        return { AZStd::string("Invalid Path - could not find separator \"|\"") };
+        return AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome{ AZStd::unexpect,
+            AZStd::string("Invalid Path - could not find separator \"|\"") };
     }
 
     AZStd::string category, attribute;
@@ -1030,7 +1029,8 @@ AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome SEditorSettings::Set
     }
     else
     {
-        return { AZStd::string("Invalid Value Type - supported types: string, bool, int, float") };
+        return AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome{ AZStd::unexpect,
+            AZStd::string("Invalid Value Type - supported types: string, bool, int, float") };
     }
 
     // Reload the changes in the Settings object used in the Editor

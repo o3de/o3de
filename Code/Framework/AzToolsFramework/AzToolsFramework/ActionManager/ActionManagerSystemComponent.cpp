@@ -77,12 +77,14 @@ namespace AzToolsFramework
     {
     }
 
-    void ActionManagerSystemComponent::NotifyEditorInitialized()
+    void ActionManagerSystemComponent::NotifyMainWindowInitialized(QMainWindow* /* mainWindow */)
     {
         // Broadcast synchronization hooks.
         // Order is important since latter elements may have depencencies on earlier ones.
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Broadcast(
             &AzToolsFramework::ActionManagerRegistrationNotifications::OnActionContextRegistrationHook);
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Broadcast(
+            &AzToolsFramework::ActionManagerRegistrationNotifications::OnActionContextModeRegistrationHook);
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Broadcast(
             &AzToolsFramework::ActionManagerRegistrationNotifications::OnActionUpdaterRegistrationHook);
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Broadcast(

@@ -33,13 +33,28 @@ namespace AzToolsFramework
         void Deactivate() override;
 
         // PaintBrushSettingsRequestBus overrides...
-        PaintBrushSettings* GetSettings() override;
-        float GetRadius() const override;
-        float GetIntensity() const override;
-        float GetOpacity() const override;
-        void SetRadius(float radius) override;
-        void SetIntensity(float intensity) override;
-        void SetOpacity(float opacity) override;
+        PaintBrushSettings* GetSettingsPointerForPropertyEditor() override;
+        PaintBrushSettings GetSettings() const override;
+        PaintBrushMode GetBrushMode() const override;
+        void SetBrushMode(PaintBrushMode brushMode) override;
+        PaintBrushColorMode GetBrushColorMode() const override;
+        void SetBrushColorMode(PaintBrushColorMode colorMode) override;
+        float GetSize() const override;
+        AZStd::pair<float, float> GetSizeRange() const override;
+        AZ::Color GetColor() const override;
+        float GetHardnessPercent() const override;
+        float GetFlowPercent() const override;
+        float GetDistancePercent() const override;
+        PaintBrushBlendMode GetBlendMode() const override;
+        PaintBrushSmoothMode GetSmoothMode() const override;
+        void SetSize(float size) override;
+        void SetSizeRange(float minSize, float maxSize) override;
+        void SetColor(const AZ::Color& color) override;
+        void SetHardnessPercent(float hardnessPercent) override;
+        void SetFlowPercent(float flowPercent) override;
+        void SetDistancePercent(float distancePercent) override;
+        void SetBlendMode(PaintBrushBlendMode blendMode) override;
+        void SetSmoothMode(PaintBrushSmoothMode smoothMode) override;
 
         PaintBrushSettings m_settings;
     };

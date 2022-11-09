@@ -222,6 +222,23 @@ namespace AZStd
 
         AZ_FORCE_INLINE bool operator == (this_type rhs) const { return m_node == rhs.m_node; }
         AZ_FORCE_INLINE bool operator != (this_type rhs) const { return m_node != rhs.m_node;  }
+
+        // workaround MSVC C++17 reverse_iterator implementation, where it requires iterators supplied to reverse_iterator
+        // to have all the comparison operators and the subscript operator[] implemented due to checking
+        // those operators in a no-except block
+        // When real C++ concepts are enabled, it properly removes the reverse_iterator comparison operators
+        // and subscript operators from the candidate set
+        // The workaround is to declare the operator functions, but don't define them.
+        bool operator<(this_type rhs) const;
+        bool operator>(this_type rhs) const;
+        bool operator<=(this_type rhs) const;
+        bool operator>=(this_type rhs) const;
+        reference operator[](size_t) const;
+        rbtree_const_iterator operator+(difference_type) const;
+        rbtree_const_iterator& operator+=(difference_type);
+        rbtree_const_iterator operator-(difference_type) const;
+        rbtree_const_iterator& operator-=(difference_type);
+
     protected:
         node_ptr_type m_node;
     };
@@ -238,6 +255,7 @@ namespace AZStd
     public:
         typedef T*                          pointer;
         typedef T&                          reference;
+        using difference_type = typename base_type::difference_type;
 
         typedef typename base_type::base_node_ptr_type  base_node_ptr_type;
         typedef typename base_type::node_ptr_type       node_ptr_type;
@@ -263,6 +281,18 @@ namespace AZStd
             --*this;
             return temp;
         }
+
+        // workaround MSVC C++17 reverse_iterator implementation, where it requires iterators supplied to reverse_iterator
+        // to have all the comparison operators and the subscript operator[] implemented due to checking
+        // those operators in a no-except block
+        // When real C++ concepts are enabled, it properly removes the reverse_iterator comparison operators
+        // and subscript operators from the candidate set
+        // The workaround is to declare the operator functions, but don't define them.
+        reference operator[](size_t) const;
+        rbtree_iterator operator+(difference_type) const;
+        rbtree_iterator& operator+=(difference_type);
+        rbtree_iterator operator-(difference_type) const;
+        rbtree_iterator& operator-=(difference_type);
     };
 
     template <class Allocator, class NodeType>

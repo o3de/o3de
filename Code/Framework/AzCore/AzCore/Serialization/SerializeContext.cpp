@@ -456,6 +456,9 @@ namespace AZ
 
             // Reflects variant monostate class for serializing a variant with an empty alternative
             Class<AZStd::monostate>();
+
+            // Reflect the AZStd::unexpect_t
+            Class<AZStd::unexpect_t>();
         }
 
         if (createEditContext)

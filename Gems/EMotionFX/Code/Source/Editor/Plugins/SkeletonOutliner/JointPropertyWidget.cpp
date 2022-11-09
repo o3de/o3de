@@ -158,7 +158,7 @@ namespace EMotionFX
 
     void JointPropertyWidget::OnAddCollider(PhysicsSetup::ColliderConfigType configType, AZ::TypeId colliderType)
     {
-        AZ::Outcome<const QModelIndexList&> indicesOutcome;
+        AZ::Outcome<QModelIndexList> indicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(indicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (indicesOutcome.IsSuccess())
         {
@@ -168,7 +168,7 @@ namespace EMotionFX
 
     void JointPropertyWidget::OnAddToRagdoll()
     {
-        AZ::Outcome<const QModelIndexList&> indicesOutcome;
+        AZ::Outcome<QModelIndexList> indicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(indicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (!indicesOutcome.IsSuccess())
         {
@@ -353,14 +353,14 @@ namespace EMotionFX
         {
             auto copyFromType = static_cast<PhysicsSetup::ColliderConfigType>(index.data(ItemRoles::CopyFromType).toInt());
             // todo check if we could have less
-            AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+            AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
             SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
             if (!selectedRowIndicesOutcome.IsSuccess())
             {
                 return;
             }
 
-            const QModelIndexList& selectedRowIndices = selectedRowIndicesOutcome.GetValue();
+            const QModelIndexList selectedRowIndices = selectedRowIndicesOutcome.GetValue();
             if (selectedRowIndices.empty())
             {
                 return;

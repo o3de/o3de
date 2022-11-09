@@ -233,7 +233,7 @@
       "CMAKE_TARGET": "AssetProcessorBatch",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
       "ASSET_PROCESSOR_BINARY": "bin\\profile\\AssetProcessorBatch.exe",
-      "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
+      "ASSET_PROCESSOR_OPTIONS": "--zeroAnalysisMode --ignoreFutureAssetDatabaseVersionError",
       "ASSET_PROCESSOR_PLATFORMS": "pc,server"
     }
   },
@@ -515,7 +515,7 @@
     },
     "COMMAND": "deploy_cdk_applications.cmd",
     "PARAMETERS": {
-      "CDK_VERSION": "1.154.0"
+      "CDK_VERSION": "1.179.0"
     }
   },
   "awsi_destruction": {
@@ -525,7 +525,7 @@
     },
     "COMMAND": "destroy_cdk_applications.cmd",
     "PARAMETERS": {
-      "CDK_VERSION": "1.154.0"
+      "CDK_VERSION": "1.179.0"
     }
   }
 }

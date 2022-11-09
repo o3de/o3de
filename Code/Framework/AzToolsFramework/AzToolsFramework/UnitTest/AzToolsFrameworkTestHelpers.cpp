@@ -140,6 +140,11 @@ namespace UnitTest
         return m_helpersVisible;
     }
 
+    bool ViewportSettingsTestImpl::OnlyShowHelpersForSelectedEntities() const
+    {
+        return m_onlyShowForSelectedEntities;
+    }
+
     AZ::Vector3 ViewportSettingsTestImpl::DefaultEditorCameraPosition() const
     {
         return AZ::Vector3::CreateZero();
