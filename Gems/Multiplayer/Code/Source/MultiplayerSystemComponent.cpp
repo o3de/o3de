@@ -20,7 +20,10 @@
 #include <Source/AutoGen/AutoComponentTypes.h>
 #include <Multiplayer/Session/ISessionRequests.h>
 #include <Multiplayer/Session/SessionConfig.h>
+#include <Multiplayer/MultiplayerPerformanceStats.h>
+#include <Multiplayer/MultiplayerMetrics.h>
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Interface/Interface.h>
@@ -38,8 +41,6 @@
 #include <AzFramework/Process/ProcessWatcher.h>
 
 #include <cmath>
-#include <AzCore/Debug/Profiler.h>
-#include <Multiplayer/MultiplayerPerformanceStats.h>
 
 AZ_DEFINE_BUDGET(MULTIPLAYER);
 
