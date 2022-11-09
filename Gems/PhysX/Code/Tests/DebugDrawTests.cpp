@@ -269,6 +269,35 @@ namespace PhysXEditorTests
         EXPECT_THAT(debugDrawAabb.GetMax(), UnitTest::IsClose(AZ::Vector3(0.51f, 0.25f, 5.1f)));
     }
 
+    TEST_F(PhysXEditorFixture, ShapeCollider_BoxWithTranslationOffset_SamplePointsCorrect)
+    {
+        EntityPtr boxShapeEntity = CreateInactiveEditorEntity("BoxShape");
+        AZ::EntityId boxShapeEntityId = boxShapeEntity->GetId();
+        boxShapeEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
+        boxShapeEntity->CreateComponent(LmbrCentral::EditorBoxShapeComponentTypeId);
+        auto* shapeColliderComponent = boxShapeEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        boxShapeEntity->Activate();
+
+        AZ::Transform transform(AZ::Vector3(4.0f, 7.0f, -2.0f), AZ::Quaternion(0.5f, -0.1f, -0.7f, 0.5f), 1.5f);
+        AZ::TransformBus::Event(boxShapeEntityId, &AZ::TransformBus::Events::SetWorldTM, transform);
+        AZ::NonUniformScaleRequestBus::Event(boxShapeEntityId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(2.0f, 1.0f, 1.5f));
+        LmbrCentral::BoxShapeComponentRequestsBus::Event(
+            boxShapeEntityId, &LmbrCentral::BoxShapeComponentRequests::SetBoxDimensions, AZ::Vector3(6.0f, 2.0f, 7.0f));
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            boxShapeEntityId, &LmbrCentral::ShapeComponentRequests::SetTranslationOffset, AZ::Vector3(4.0f, 1.0f, 6.0f));
+
+        const AZStd::vector<AZ::Vector3> samplePoints = shapeColliderComponent->GetSamplePoints();
+        AZ::Vector3 sampleMin = AZ::Vector3(AZ::Constants::FloatMax);
+        AZ::Vector3 sampleMax = AZ::Vector3(-AZ::Constants::FloatMax);
+        for (const auto& point : samplePoints)
+        {
+            sampleMin = sampleMin.GetMin(point);
+            sampleMax = sampleMax.GetMax(point);
+        }
+
+        EXPECT_THAT(sampleMin, UnitTest::IsClose(AZ::Vector3(-13.1f, -18.935f, -11.9f)));
+        EXPECT_THAT(sampleMax, UnitTest::IsClose(AZ::Vector3(1.3f, 2.575f, 8.38f)));
+    }
 } // namespace PhysXEditorTests
 
 #pragma optimize("", on)

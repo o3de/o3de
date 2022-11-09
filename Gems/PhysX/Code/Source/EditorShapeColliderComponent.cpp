@@ -225,6 +225,7 @@ namespace PhysX
         }
 
         AZ::Transform transform = GetWorldTM() * AZ::Transform::CreateTranslation(m_colliderConfig.m_position);
+        transform.SetUniformScale(1.0f);
         const size_t numPoints = m_geometryCache.m_cachedSamplePoints.size();
         for (size_t pointIndex = 0; pointIndex < numPoints; ++pointIndex)
         {
