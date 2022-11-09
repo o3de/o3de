@@ -69,7 +69,7 @@ namespace AzToolsFramework
             void OnStartPlayInEditorBegin() override;
             void OnStopPlayInEditor() override;
 
-            // PrefabFocusNotificationBus
+            // PrefabFocusNotificationBus overrides ...
             void OnPrefabFocusChanged(AZ::EntityId previousContainerEntityId, AZ::EntityId newContainerEntityId) override;
             void OnPrefabFocusRefreshed() override;
 

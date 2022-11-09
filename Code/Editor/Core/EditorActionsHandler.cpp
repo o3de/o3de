@@ -94,7 +94,7 @@ static constexpr AZStd::string_view PlayControlsToolBarIdentifier = "o3de.toolba
 static const int maxRecentFiles = 10;
 
 class EditorViewportDisplayInfoHandler
-: private AZ::AtomBridge::AtomViewportInfoDisplayNotificationBus::Handler
+    : private AZ::AtomBridge::AtomViewportInfoDisplayNotificationBus::Handler
 {
 public:
     EditorViewportDisplayInfoHandler()
