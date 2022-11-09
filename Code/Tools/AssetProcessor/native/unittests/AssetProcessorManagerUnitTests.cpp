@@ -44,25 +44,6 @@ namespace AssetProcessor
         using GetFullSourcePathFromRelativeProductPathResponse = AzFramework::AssetSystem::GetFullSourcePathFromRelativeProductPathResponse;
     };
 
-    class FixedAssetBuilderInfoHandler
-        : public AssetProcessor::AssetBuilderInfoBus::Handler
-    {
-    public:
-        // AssetProcessor::AssetBuilderInfoBus::Handler
-        void GetMatchingBuildersInfo(const AZStd::string& assetPath, AssetProcessor::BuilderInfoList& builderInfoList)
-        {
-            AZ_UNUSED(assetPath);
-            builderInfoList.push_back(m_assetBuilderDesc);
-        }
-
-        void GetAllBuildersInfo(AssetProcessor::BuilderInfoList& builderInfoList)
-        {
-            builderInfoList.push_back(m_assetBuilderDesc);
-        }
-
-        AssetBuilderSDK::AssetBuilderDesc m_assetBuilderDesc;
-    };
-
     AssetProcessorManagerUnitTests::~AssetProcessorManagerUnitTests()
     {
     }
@@ -190,22 +171,44 @@ namespace AssetProcessor
         EXPECT_EQ(jobDetails.m_intermediatePath, intermediateAssetsFolder);
     };
 
-    namespace
+    namespace AssetProcessorManagerUnitTestUtils
     {
+        class MockAssetBuilderInfoHandler
+            : public AssetProcessor::AssetBuilderInfoBus::Handler
+        {
+        public:
+            // AssetProcessor::AssetBuilderInfoBus::Handler
+            void GetMatchingBuildersInfo(const AZStd::string& assetPath, AssetProcessor::BuilderInfoList& builderInfoList)
+            {
+                AZ_UNUSED(assetPath);
+                builderInfoList.push_back(m_assetBuilderDesc);
+            }
+
+            void GetAllBuildersInfo(AssetProcessor::BuilderInfoList& builderInfoList)
+            {
+                builderInfoList.push_back(m_assetBuilderDesc);
+            }
+
+            AssetBuilderSDK::AssetBuilderDesc m_assetBuilderDesc;
+        };
+
         void CreateExpectedFiles(const QSet<QString>& expectedFiles)
         {
+            QDateTime fileTime = QDateTime::currentDateTime();
             for (const QString& expect : expectedFiles)
             {
                 EXPECT_TRUE(CreateDummyFile(expect));
-                AZ_TracePrintf(AssetProcessor::DebugChannel, "Created file %s with msecs %llu\n", expect.toUtf8().constData(),
-                    QFileInfo(expect).lastModified().toMSecsSinceEpoch());
 
-#if defined(AZ_PLATFORM_WINDOWS)
-                QThread::msleep(35); // give at least some milliseconds so that the files never share the same timestamp exactly
-#else
-                // on platforms such as mac, the file time resolution is only a second :(
-                QThread::msleep(1001);
-#endif
+                // Set a different timestamp for each file.
+                QFile file(expect);
+                ASSERT_TRUE(file.open(QIODevice::Append | QIODevice::Text))
+                    << AZStd::string::format("Failed to open %s", expect.toUtf8().data()).c_str();
+                EXPECT_TRUE(file.setFileTime(fileTime, QFileDevice::FileModificationTime))
+                    << AZStd::string::format("Failed to modify the creation time of %s", expect.toUtf8().data()).c_str();
+                file.close();
+
+                //Add 2 seconds to the next file timestamp since the file time resolution is one second on platforms other than Windows. 
+                fileTime = fileTime.addSecs(2);
             }
         }
 
@@ -291,7 +294,7 @@ namespace AssetProcessor
         // subfolder3 is not recursive so none of these should show up in any scan or override check
         expectedFiles << m_sourceRoot.absoluteFilePath("subfolder3/aaa/basefile.txt");
         expectedFiles << m_sourceRoot.absoluteFilePath("subfolder3/uniquefile.ignore"); // only exists in subfolder3
-        CreateExpectedFiles(expectedFiles);
+        AssetProcessorManagerUnitTestUtils::CreateExpectedFiles(expectedFiles);
 
         // the following is a file which does exist but should not be processed as it is in a non-watched folder (not recursive)
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, m_sourceRoot.absoluteFilePath("subfolder3/aaa/basefile.txt")));
@@ -329,11 +332,10 @@ namespace AssetProcessor
         // block until no more events trickle in:
         QCoreApplication::processEvents(QEventLoop::AllEvents);
 
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         EXPECT_EQ(m_processResults.size(), 1); // 1, since we have one recognizer for .ignore, but the 'android' platform is marked as skip
         EXPECT_EQ(m_processResults[0].m_jobEntry.m_platformInfo.m_identifier, "pc");
-
 
         // block until no more events trickle in:
         QCoreApplication::processEvents(QEventLoop::AllEvents);
@@ -375,7 +377,7 @@ namespace AssetProcessor
         QString relativePathFromWatchFolder = "uniquefile.txt";
         QString watchFolderPath = m_sourceRoot.absoluteFilePath("subfolder3");
         QString absolutePath = AssetUtilities::NormalizeFilePath(watchFolderPath + "/" + relativePathFromWatchFolder);
-        CreateExpectedFiles({absolutePath});
+        AssetProcessorManagerUnitTestUtils::CreateExpectedFiles({absolutePath});
 
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
 
@@ -384,7 +386,7 @@ namespace AssetProcessor
         // block until no more events trickle in:
         QCoreApplication::processEvents(QEventLoop::AllEvents);
 
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         EXPECT_EQ(m_processResults.size(), 4); // 2 each for pc and android,since we have two recognizer for .txt file
         EXPECT_EQ(m_processResults[0].m_jobEntry.m_platformInfo.m_identifier, m_processResults[1].m_jobEntry.m_platformInfo.m_identifier);
@@ -931,7 +933,7 @@ namespace AssetProcessor
         QString pathToCheck = scanFolder.filePath(sourceFileChangedMessage.m_relativeSourcePath.c_str());
         EXPECT_EQ(QString::compare(absolutePath, pathToCheck, Qt::CaseSensitive), 0);
 
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         // --------- same result as above ----------
         EXPECT_EQ(m_processResults.size(), 4); // 2 each for pc and android,since we have two recognizer for .txt file
@@ -1077,7 +1079,7 @@ namespace AssetProcessor
         EXPECT_TRUE(CreateDummyFile(absolutePath + ".exportsettings", "new!"));
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath + ".exportsettings"));
         EXPECT_TRUE(BlockUntil(m_idling, 5000));
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         // --------- same result as above ----------
         EXPECT_EQ(m_processResults.size(), 4); // pc and android
@@ -1133,7 +1135,7 @@ namespace AssetProcessor
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessDeletedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath + ".exportsettings"));
         EXPECT_TRUE(BlockUntil(m_idling, 5000));
 
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         // --------- same result as above ----------
         EXPECT_EQ(m_processResults.size(), 4); // 2 each for pc and android,since we have two recognizer for .txt file
@@ -1249,7 +1251,7 @@ namespace AssetProcessor
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
         EXPECT_TRUE(BlockUntil(m_idling, 5000));
 
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         // --------- same result as above ----------
         EXPECT_EQ(m_processResults.size(), 4); // 2 each for pc and android,since we have two recognizer for .txt file
@@ -1423,11 +1425,11 @@ namespace AssetProcessor
         EXPECT_TRUE(mockAppManager.RegisterAssetRecognizerAsBuilder(rec));
         
         QString absolutePath = AssetUtilities::NormalizeFilePath(m_sourceRoot.absoluteFilePath("subfolder3/somerandomfile.random"));
-        CreateExpectedFiles({absolutePath});
+        AssetProcessorManagerUnitTestUtils::CreateExpectedFiles({absolutePath});
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
         EXPECT_TRUE(BlockUntil(m_idling, 5000));
 
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         EXPECT_EQ(m_processResults.size(), 1); // 1 for pc
         EXPECT_EQ(m_processResults[0].m_jobEntry.m_platformInfo.m_identifier, "pc");
@@ -1513,14 +1515,14 @@ namespace AssetProcessor
         expectedFiles << m_sourceRoot.absoluteFilePath("subfolder2/basefile.txt");
         expectedFiles << m_sourceRoot.absoluteFilePath(subfolder3BaseFilePath);
         expectedFiles << m_sourceRoot.absoluteFilePath("subfolder3/somefile.xxx");
-        CreateExpectedFiles(expectedFiles);
+        AssetProcessorManagerUnitTestUtils::CreateExpectedFiles(expectedFiles);
 
         // set up by letting it compile basefile.txt from subfolder3:
         QString absolutePath = AssetUtilities::NormalizeFilePath(m_sourceRoot.absoluteFilePath(subfolder3BaseFilePath));
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
         EXPECT_TRUE(BlockUntil(m_idling, 5000));
 
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         // --------- same result as above ----------
         EXPECT_EQ(m_processResults.size(), 4); // 2 each for pc and android,since we have two recognizer for .txt file
@@ -1585,7 +1587,7 @@ namespace AssetProcessor
         // ------------- setup complete, now do the test...
         // now feed it a file that has been overridden by a more important later file
         absolutePath = AssetUtilities::NormalizeFilePath(m_sourceRoot.absoluteFilePath("subfolder1/basefile.txt"));
-        CreateExpectedFiles({absolutePath});
+        AssetProcessorManagerUnitTestUtils::CreateExpectedFiles({absolutePath});
         m_changedInputResults.clear();
         m_assetMessages.clear();
         m_processResults.clear();
@@ -1614,7 +1616,7 @@ namespace AssetProcessor
 
         EXPECT_TRUE(BlockUntil(m_idling, 5000));
 
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         // On Linux, because we cannot change the case of the source file, the job fingerprint is not updated due the case-switch.
         // The reason the fingerprint for subfolder3/basefile.txt and subfolder2/basefile.txt are the same ON LINUX is because the
@@ -1651,13 +1653,13 @@ namespace AssetProcessor
         unsigned int fingerprintForPC = 0;
         unsigned int fingerprintForANDROID = 0;
 
-        ComputeFingerprints(fingerprintForPC, fingerprintForANDROID, m_config, watchFolderPath, relativePathFromWatchFolder);
+        AssetProcessorManagerUnitTestUtils::ComputeFingerprints(fingerprintForPC, fingerprintForANDROID, m_config, watchFolderPath, relativePathFromWatchFolder);
 
         m_processResults.clear();
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
         EXPECT_TRUE(BlockUntil(m_idling, 5000));
 
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         EXPECT_EQ(m_processResults.size(), 4); // // 2 each for pc and android,since we have two recognizer for .xxx file
         EXPECT_EQ(m_processResults[0].m_jobEntry.m_platformInfo.m_identifier, m_processResults[1].m_jobEntry.m_platformInfo.m_identifier);
@@ -1682,7 +1684,7 @@ namespace AssetProcessor
         EXPECT_TRUE(BlockUntil(m_idling, 5000));
 
         // we never actually submitted any fingerprints or indicated success, so the same number of jobs should occur as before
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         EXPECT_EQ(m_processResults.size(), 4); // // 2 each for pc and android,since we have two recognizer for .xxx file
         EXPECT_EQ(m_processResults[0].m_jobEntry.m_platformInfo.m_identifier, m_processResults[1].m_jobEntry.m_platformInfo.m_identifier);
@@ -1745,7 +1747,7 @@ namespace AssetProcessor
 
         QString absolutePath = m_sourceRoot.absoluteFilePath("subfolder2/folder/ship.tiff");
         absolutePath = AssetUtilities::NormalizeFilePath(absolutePath);
-        CreateExpectedFiles({absolutePath});
+        AssetProcessorManagerUnitTestUtils::CreateExpectedFiles({absolutePath});
 
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
         EXPECT_TRUE(BlockUntil(m_idling, 5000));
@@ -1849,7 +1851,7 @@ namespace AssetProcessor
         // Test: Rename a source folder
         QString fileToMove1 = m_sourceRoot.absoluteFilePath("subfolder1/rename_this/somefile1.txt");
         QString fileToMove2 = m_sourceRoot.absoluteFilePath("subfolder1/rename_this/somefolder/somefile2.txt");
-        CreateExpectedFiles({fileToMove1, fileToMove2});
+        AssetProcessorManagerUnitTestUtils::CreateExpectedFiles({fileToMove1, fileToMove2});
 
         m_processResults.clear();
         // put the two files on the map:
@@ -1857,7 +1859,7 @@ namespace AssetProcessor
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, fileToMove2));
 
         EXPECT_TRUE(BlockUntil(m_idling, 5000));
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         EXPECT_EQ(m_processResults.size(), 4); // 2 fils on 2 platforms
 
@@ -1890,7 +1892,7 @@ namespace AssetProcessor
 
         EXPECT_TRUE(BlockUntil(m_idling, 5000));
 
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         EXPECT_EQ(m_processResults.size(), 0); // nothing to process
 
@@ -1906,7 +1908,7 @@ namespace AssetProcessor
 
         EXPECT_TRUE(BlockUntil(m_idling, 5000));
 
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         EXPECT_EQ(m_processResults.size(), 4); // 2 files on 2 platforms
 
@@ -1943,7 +1945,7 @@ namespace AssetProcessor
 
         EXPECT_TRUE(BlockUntil(m_idling, 5000));
 
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         // at this point, we should NOT get 2 removed products - we should only get those messages later
         // once the processing queue actually processes these assets - not prematurely as it discovers them missing.
@@ -1957,7 +1959,7 @@ namespace AssetProcessor
 
         // Test: Rename folders that did not have files in them (but had child files, this was a bug at a point)
         fileToMove1 = m_sourceRoot.absoluteFilePath("subfolder1/rename_this_secondly/somefolder/somefile2.txt");
-        CreateExpectedFiles({fileToMove1});
+        AssetProcessorManagerUnitTestUtils::CreateExpectedFiles({fileToMove1});
 
         m_processResults.clear();
         // put the two files on the map:
@@ -1965,7 +1967,7 @@ namespace AssetProcessor
 
 
         EXPECT_TRUE(BlockUntil(m_idling, 5000));
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         EXPECT_EQ(m_processResults.size(), 2); // 1 file on 2 platforms
 
@@ -2002,7 +2004,7 @@ namespace AssetProcessor
 
         EXPECT_TRUE(BlockUntil(m_idling, 5000));
 
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         EXPECT_EQ(m_assetMessages.size(), 0); // we don't prematurely emit "AssetRemoved" until we actually finish process.
         EXPECT_EQ(m_processResults.size(), 1); // ONLY the PC files need to be re-processed because only those were renamed.
@@ -2032,13 +2034,13 @@ namespace AssetProcessor
 
         // first, set up a whole pipeline to create, notify, and consume the file:
         QString fileToMove1 = m_sourceRoot.absoluteFilePath("subfolder1/to_be_deleted/some_deleted_file.txt");
-        CreateExpectedFiles({fileToMove1});
+        AssetProcessorManagerUnitTestUtils::CreateExpectedFiles({fileToMove1});
 
         // put the two files on the map:
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, fileToMove1));
 
         EXPECT_TRUE(BlockUntil(m_idling, 5000));
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         EXPECT_EQ(m_processResults.size(), 2); // 1 file on 2 platforms
 
@@ -2070,7 +2072,7 @@ namespace AssetProcessor
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessDeletedFile", Qt::QueuedConnection, Q_ARG(QString, fileToMove1));
 
         EXPECT_TRUE(BlockUntil(m_idling, 5000));
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
         EXPECT_EQ(m_assetMessages.size(), 2); // all products must be removed
         EXPECT_EQ(m_processResults.size(), 0); // nothing should process
 
@@ -2111,14 +2113,14 @@ namespace AssetProcessor
 
         // first, set up a whole pipeline to create, notify, and consume the file:
         QString fileToMove1 = m_sourceRoot.absoluteFilePath("subfolder1/fewer_products/test.txt");
-        CreateExpectedFiles({fileToMove1});
+        AssetProcessorManagerUnitTestUtils::CreateExpectedFiles({fileToMove1});
 
         m_processResults.clear();
         // put the two files on the map:
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, fileToMove1));
 
         EXPECT_TRUE(BlockUntil(m_idling, 5000));
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         EXPECT_EQ(m_processResults.size(), 2); // 1 file on 2 platforms
 
@@ -2163,7 +2165,7 @@ namespace AssetProcessor
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, fileToMove1));
         EXPECT_TRUE(BlockUntil(m_idling, 5000));
 
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         EXPECT_EQ(m_processResults.size(), 2); // 1 file on 2 platforms
 
@@ -2189,7 +2191,7 @@ namespace AssetProcessor
         // let events bubble through:
         QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
 
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         // we should have gotten 2 product removed, 2 product changed, total of 4 asset messages
 
@@ -2247,7 +2249,7 @@ namespace AssetProcessor
         m_processResults.clear();
 
         QString absolutePath = AssetUtilities::NormalizeFilePath(m_sourceRoot.absoluteFilePath("subfolder3/uniquefile.txt"));
-        CreateExpectedFiles({absolutePath});
+        AssetProcessorManagerUnitTestUtils::CreateExpectedFiles({absolutePath});
 
         // Pass the txt file through the asset pipeline
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
@@ -2280,7 +2282,7 @@ namespace AssetProcessor
             builder->ResetCounters();
         }
 
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         EXPECT_EQ(m_processResults.size(), 2); // 1 for pc and android
         EXPECT_EQ(m_processResults[0].m_jobEntry.m_platformInfo.m_identifier, "android");
@@ -2309,7 +2311,7 @@ namespace AssetProcessor
         MockAssetBuilderInfoHandler mockAssetBuilderInfoHandler;
 
         QString sourceFile = m_sourceRoot.absoluteFilePath("subfolder1/basefile.foo");
-        CreateExpectedFiles({ sourceFile });
+        AssetProcessorManagerUnitTestUtils::CreateExpectedFiles({ sourceFile });
 
         mockAssetBuilderInfoHandler.m_numberOfJobsToCreate = 2; //Create two jobs for this file
 
@@ -2320,7 +2322,7 @@ namespace AssetProcessor
         // block until no more events trickle in:
         QCoreApplication::processEvents(QEventLoop::AllEvents);
 
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         EXPECT_EQ(m_processResults.size(), 2);
         for (int idx = 0; idx < m_processResults.size(); idx++)
@@ -2401,7 +2403,7 @@ namespace AssetProcessor
         // block until no more events trickle in:
         QCoreApplication::processEvents(QEventLoop::AllEvents);
 
-        SortAssetToProcessResultList(m_processResults);
+        AssetProcessorManagerUnitTestUtils::SortAssetToProcessResultList(m_processResults);
 
         EXPECT_EQ(m_processResults.size(), 1); // We should only have one job to process here
         for (int idx = 0; idx < m_processResults.size(); idx++)
@@ -2605,7 +2607,7 @@ namespace AssetProcessor
         bool changeJobAFingerprint = false;
         bool fileCJobDependentOnFileBJob = false;
 
-        FixedAssetBuilderInfoHandler assetBuilderInfoHandler;
+        AssetProcessorManagerUnitTestUtils::MockAssetBuilderInfoHandler assetBuilderInfoHandler;
         assetBuilderInfoHandler.m_assetBuilderDesc.m_name = "Job Dependency UnitTest";
         assetBuilderInfoHandler.m_assetBuilderDesc.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.txt", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
         assetBuilderInfoHandler.m_assetBuilderDesc.m_busId = builderUuid;
