@@ -20,6 +20,11 @@
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
+AZ_CVAR(bool, physx_batchTransformSync, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Batch entity transform syncs for the entire simulation pass. "
+    "True: Sync entity transform once per Simulate call. "
+    "False: Sync entity transform for every simulation sub-step.");
+
 // only enable physx timestep warning when not running debug or in Release
 #if !defined(DEBUG) && !defined(RELEASE)
 #define ENABLE_PHYSX_TIMESTEP_WARNING
@@ -161,6 +166,19 @@ namespace PhysX
 
             simulateScenes(tickTime);
         }
+
+        if (physx_batchTransformSync)
+        {
+            for (auto& scenePtr : m_sceneList)
+            {
+                if (scenePtr != nullptr && scenePtr->IsEnabled())
+                {
+                    PhysXScene* physxScene = static_cast<PhysXScene*>(scenePtr.get());
+                    physxScene->FlushTransformSync();
+                }
+            }
+        }
+
         m_postSimulateEvent.Signal(tickTime);
     }
 

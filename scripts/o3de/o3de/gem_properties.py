@@ -130,7 +130,10 @@ def _edit_gem_props(args: argparse) -> int:
                           args.gem_license_url,
                           args.add_tags,
                           args.remove_tags,
-                          args.replace_tags)
+                          args.replace_tags,
+                          args.add_platforms,
+                          args.remove_platforms,
+                          args.replace_platforms)
 
 
 def add_parser_args(parser):
