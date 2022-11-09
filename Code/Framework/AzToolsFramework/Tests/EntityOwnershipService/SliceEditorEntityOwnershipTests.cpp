@@ -231,59 +231,39 @@ namespace UnitTest
         AddEditorSlice(sliceAsset, AZ::Transform::CreateIdentity(), EntityList{ testEntity });
 
         // Verify that one slice exists
-        AZ::SliceComponent* rootSlice = GetRootSliceAsset()->GetComponent();
-        AZ::SliceComponent::SliceList& slicesUnderRootSlice = rootSlice->GetSlices();
+        AZ::SliceComponent::SliceList& slicesUnderRootSlice = GetRootSliceAsset()->GetComponent()->GetSlices();
         ASSERT_EQ(slicesUnderRootSlice.front().GetInstances().size(), 1);
 
         AZ::SliceComponent::SliceReference& sliceReference = slicesUnderRootSlice.front();
-        auto sliceInstanceIterator = sliceReference.GetInstances().begin();
 
-        // Verify that there is one entity in the slice
-        EntityList entitiesInSliceBeforeDetach = sliceInstanceIterator->GetInstantiated()->m_entities;
-        EXPECT_TRUE(entitiesInSliceBeforeDetach.size() == 1);
+        // Verify that one entity exists in the slice
+        EntityList entitiesOfSlice = sliceReference.GetInstances().begin()->GetInstantiated()->m_entities;
+        ASSERT_EQ(entitiesOfSlice.size(), 1);
 
-        // Verify that there are no loose entities in the editor
-        EntityList looseEntitiesBeforeDetach;
-        m_sliceEditorEntityOwnershipService->GetNonPrefabEntities(looseEntitiesBeforeDetach);
-        EXPECT_TRUE(looseEntitiesBeforeDetach.size() == 0);
+        // Get the slice entity ancestor and slice instance id before destroying the entity of the slice
+        AZ::SliceComponent::EntityAncestorList entityAncestorList;
+        sliceReference.GetInstanceEntityAncestry(entitiesOfSlice.front()->GetId(), entityAncestorList);
+        AZ::SliceComponent::SliceInstanceId sliceInstanceId = sliceReference.GetInstances().begin()->GetId();
 
-        // Detach entity
-        const AZ::SliceComponent::InstantiatedContainer* instContainer = sliceInstanceIterator->GetInstantiated();
-        AZ::EntityId entityToDetach = instContainer->m_entities.front()->GetId();
-        AZStd::vector<AZStd::pair<AZ::EntityId, AZ::SliceComponent::EntityRestoreInfo>> restoreInfos;
-        bool detachSuccess = false;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-            detachSuccess, &AzToolsFramework::ToolsApplicationRequestBus::Events::DetachEntities,  AzToolsFramework::EntityIdList{ entityToDetach }, restoreInfos);
-        EXPECT_TRUE(detachSuccess);
+        m_sliceEditorEntityOwnershipService->DestroyEntityById(entitiesOfSlice.front()->GetId());
 
-        // Verify that there is a loose entity in the editor
-        EntityList looseEntitiesAfterDetach;
-        m_sliceEditorEntityOwnershipService->GetNonPrefabEntities(looseEntitiesAfterDetach);
-        EXPECT_TRUE(looseEntitiesAfterDetach.size() == 1);
+        // Verify that no slices exists after slice entity is destroyed.
+        ASSERT_EQ(slicesUnderRootSlice.size(), 0);
 
-        // Verify that there are no entities in the slice
-        EntityList entitiesInSliceAfterDetach = sliceInstanceIterator->GetInstantiated()->m_entities;
-        EXPECT_TRUE(entitiesInSliceAfterDetach.size() == 0);
-
-        // Restore the entity
-        const auto& entityRestore = restoreInfos[0];
-        const AZ::EntityId& entityId = entityRestore.first;
-        const AZ::SliceComponent::EntityRestoreInfo& restoreInfo = entityRestore.second;
-        AZ::Entity* entity = rootSlice->FindEntity(entityId);
-        EXPECT_TRUE(entity != nullptr);
+        // Restore the slice entity
+        AZ::SliceComponent::EntityRestoreInfo entityRestoreInfo = AZ::SliceComponent::EntityRestoreInfo(
+            sliceAsset, sliceInstanceId, entityAncestorList.front().m_entity->GetId(), AZ::DataPatch::FlagsMap{});
         AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
             &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::RestoreSliceEntity,
-            entity,
-            restoreInfo,
-            AzToolsFramework::SliceEntityRestoreType::Detached);
+            entitiesOfSlice.front(),
+            entityRestoreInfo,
+            AzToolsFramework::SliceEntityRestoreType::Deleted);
+        AZ::TickBus::ExecuteQueuedEvents();
 
-        // Verify that there are no loose entities in the editor
-        EntityList looseEntitiesAfterRestore;
-        m_sliceEditorEntityOwnershipService->GetNonPrefabEntities(looseEntitiesAfterRestore);
-        EXPECT_TRUE(looseEntitiesAfterRestore.size() == 0);
-
-        // Verify that there is one entity in the slice
-        EntityList entitiesInSliceAfterRestore = sliceInstanceIterator->GetInstantiated()->m_entities;
-        EXPECT_TRUE(entitiesInSliceAfterRestore.size() == 1);
+        // Verify that slice is restored with the same entity it had before.
+        ASSERT_EQ(slicesUnderRootSlice.size(), 1);
+        EntityList entitiesOfSliceAfterRestore = sliceReference.GetInstances().begin()->GetInstantiated()->m_entities;
+        ASSERT_EQ(entitiesOfSliceAfterRestore.size(), 1);
+        EXPECT_EQ(entitiesOfSliceAfterRestore.front()->GetId(), entitiesOfSlice.front()->GetId());
     }
 }

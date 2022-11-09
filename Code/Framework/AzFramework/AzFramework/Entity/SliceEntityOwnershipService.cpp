@@ -134,7 +134,10 @@ namespace AzFramework
     {
         if (entity)
         {
-            return DestroyEntityById(entity->GetId());
+            AZ_Assert(m_rootAsset && m_rootAsset->GetComponent(), "Root slice has not been created.");
+            SliceEntityRequestBus::MultiHandler::BusDisconnect(entity->GetId());
+            m_entitiesRemovedCallback({ entity->GetId() });
+            return m_rootAsset->GetComponent()->RemoveEntity(entity);
         }
         return false;
     }
@@ -143,9 +146,15 @@ namespace AzFramework
     {
         AZ_Assert(m_rootAsset && m_rootAsset->GetComponent(), "Root slice has not been created.");
         AZ_Assert(m_entitiesRemovedCallback, "Callback function for DestroyEntityById has not been set.");
-        SliceEntityRequestBus::MultiHandler::BusDisconnect(entityId);
         m_entitiesRemovedCallback({ entityId });
-        return m_rootAsset->GetComponent()->RemoveEntity(entityId);
+
+        // Note: This function should actually be destroying the entity, but some legacy slice code already
+        // expects it to just detach the entity (such as RestoreSliceEntity_SliceEntityDeleted_SliceEntityRestored),
+        // so the behavior is left unchanged.
+
+        // Entities removed through the application (as in via manual 'delete'),
+        // should be removed from the root slice, but not again deleted.
+        return m_rootAsset->GetComponent()->RemoveEntity(entityId, false);
     }
 
     void SliceEntityOwnershipService::CreateRootSlice()
