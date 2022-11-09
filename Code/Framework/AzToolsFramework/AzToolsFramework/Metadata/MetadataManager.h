@@ -10,12 +10,12 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
-#include <AzCore/std/any.h>
-
-#include "Metadata.h"
+#include <AzCore/IO/FileReader.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Serialization/Json/StackedString.h>
+#include <AzCore/JSON/pointer.h>
 
 namespace AzToolsFramework
 {
@@ -25,10 +25,10 @@ namespace AzToolsFramework
 
         virtual ~IMetadataRequests() = default;
 
-        virtual AZStd::any Get(AZ::IO::PathView file, AZStd::string_view key) = 0;
-        virtual bool Set(AZ::IO::PathView file, AZStd::string_view key, AZStd::any value) = 0;
+        virtual bool Get(AZ::IO::PathView file, AZStd::string_view key, void* outValue, AZ::Uuid typeId) = 0;
+        virtual bool Set(AZ::IO::PathView file, AZStd::string_view key, const void* inValue, AZ::Uuid typeId) = 0;
     };
-
+#pragma optimize("", off)
     class MetadataManager :
         public AZ ::Component,
         public AZ::Interface<IMetadataRequests>::Registrar
@@ -38,9 +38,8 @@ namespace AzToolsFramework
 
         static inline constexpr const char* MetadataFileExtension = ".metadata";
 
-        static void Reflect(AZ::ReflectContext* context)
+        static void Reflect(AZ::ReflectContext* )
         {
-            Metadata::Reflect(context);
         }
 
     protected:
@@ -48,48 +47,72 @@ namespace AzToolsFramework
         void Deactivate() override{}
 
     public:
-        AZStd::any Get(AZ::IO::PathView file, AZStd::string_view key) override
-        {
-            auto metadata = LoadFile(ToMetadataPath(file));
-
-            if(!metadata)
-            {
-                return {};
-            }
-
-            return metadata->Get(key);
-        }
-
-        bool Set(AZ::IO::PathView file, AZStd::string_view key, AZStd::any value) override
+        bool Get(AZ::IO::PathView file, AZStd::string_view key, void* outValue, AZ::Uuid typeId) override
         {
             auto path = ToMetadataPath(file);
-            auto metadata = LoadFile(path);
 
-            if (!metadata)
+            auto result = AZ::JsonSerializationUtils::ReadJsonFile(path.Native());
+
+            if(!result)
             {
-                metadata = Metadata();
-            }
-
-            metadata->Set(key, value);
-
-            //Metadata defaultClass;
-            //AZ::JsonSerializerSettings settings;
-            //settings.m_reporting = [](AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view /*path*/)
-            //{
-            //    AZ_TracePrintf("MetadataManager", AZ_STRING_FORMAT, AZ_STRING_ARG(message));
-
-            //    return result;
-            //};
-
-            auto outcome = AZ::Utils::SaveObjectToFile(path.Native(), AZ::DataStream::ST_JSON, metadata.operator->());
-
-            if(!outcome)
-            {
-                //AZ_Error("MetadataManager", false, "%s", outcome.GetError().c_str());
                 return false;
             }
 
-            return true;
+            auto& document = result.GetValue();
+
+            rapidjson_ly::Pointer pointer(key.data(), key.length());
+
+            if(!pointer.IsValid())
+            {
+                return false;
+            }
+
+            const rapidjson_ly::Value* value = pointer.Get(document);
+
+            if(!value)
+            {
+                return false;
+            }
+
+            auto resultCode = AZ::JsonSerialization::Load(outValue, typeId, *value);
+
+            return resultCode.GetProcessing() != AZ::JsonSerializationResult::Processing::Halted;
+        }
+
+        bool Set(AZ::IO::PathView file, AZStd::string_view key, const void* inValue, AZ::Uuid typeId) override
+        {
+            auto path = ToMetadataPath(file);
+
+            rapidjson_ly::Pointer pointer(key.data(), key.length());
+
+            if (!pointer.IsValid())
+            {
+                return false;
+            }
+
+            auto result = AZ::JsonSerializationUtils::ReadJsonFile(path.Native());
+
+            rapidjson_ly::Document document;
+
+            if (result)
+            {
+                document = result.TakeValue();
+            }
+
+            rapidjson_ly::Value serializedValue;
+            auto resultCode = AZ::JsonSerialization::Store(serializedValue, document.GetAllocator(), inValue, nullptr, typeId);
+
+            if(resultCode.GetProcessing() != AZ::JsonSerializationResult::Processing::Halted)
+            {
+                rapidjson_ly::Value& store = pointer.Create(document, document.GetAllocator());
+                store = AZStd::move(serializedValue);
+
+                auto saveResult = AZ::JsonSerializationUtils::WriteJsonFile(document, path.Native());
+
+                return saveResult.IsSuccess();
+            }
+
+            return false;
         }
 
     private:
@@ -105,24 +128,25 @@ namespace AzToolsFramework
             return path;
         }
 
-        AZStd::optional<Metadata> LoadFile(AZ::IO::PathView file) const
-        {
-            AZ::IO::FileIOStream stream;
+        //AZStd::optional<rapidjson_ly::Document> LoadFile(AZ::IO::PathView file) const
+        //{
+        //    AZ::IO::FileIOStream stream;
 
-            if(!stream.Open(file.FixedMaxPathString().c_str(), AZ::IO::OpenMode::ModeRead))
-            {
-                return {};
-            }
+        //    if(!stream.Open(file.FixedMaxPathString().c_str(), AZ::IO::OpenMode::ModeRead))
+        //    {
+        //        return {};
+        //    }
 
-            Metadata metadata;
-            bool result = AZ::Utils::LoadObjectFromStreamInPlace(stream, metadata);
+        //    Metadata metadata;
+        //    bool result = AZ::Utils::LoadObjectFromStreamInPlace(stream, metadata);
 
-            if(!result)
-            {
-                return {};
-            }
+        //    if(!result)
+        //    {
+        //        return {};
+        //    }
 
-            return metadata;
-        }
+        //    return metadata;
+        //}
     };
+#pragma optimize("", on)
 } // namespace AzToolsFramework
