@@ -1,0 +1,56 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{25CFD95F-BC52-4B65-BC1B-E4AD36960FB9}",
+        "category": "Math Functions",
+        "title": "Any",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue",
+            "outValue"
+        ],
+        "inputSlots": [
+            {
+                "name": "inValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?x[1-4]?",
+                "defaultDataType": "float2x2",
+                "defaultValue": {
+                    "$type": "AZStd::array<Vector2, 2>",
+                    "Value": [
+                        [
+                            1.0,
+                            0.0
+                        ],
+                        [
+                            0.0,
+                            1.0
+                        ]
+                    ]
+                },
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = any(inValue);"
+                    ]
+                }
+            }
+        ]
+    }
+}

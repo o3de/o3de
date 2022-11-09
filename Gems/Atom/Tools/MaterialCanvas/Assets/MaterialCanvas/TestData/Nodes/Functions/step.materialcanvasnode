@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{5A76042C-CDD1-44E2-A87A-52A1B440BA11}",
         "category": "Math Functions",
-        "title": "step",
+        "title": "Step",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue1",
@@ -24,7 +28,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             },
@@ -45,7 +49,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -59,7 +63,7 @@
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = step(NODEID_inValue1, NODEID_inValue2);"
+                        "SLOTTYPE SLOTNAME = step(inValue1, inValue2);"
                     ]
                 }
             }

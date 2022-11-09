@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{1BCD7706-3ECC-4E01-B40F-2E70A62F6E78}",
         "category": "Math Functions",
-        "title": "frac",
+        "title": "Frac",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
@@ -24,7 +28,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -38,7 +42,7 @@
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = frac(NODEID_inValue);"
+                        "SLOTTYPE SLOTNAME = frac(inValue);"
                     ]
                 }
             }

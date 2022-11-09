@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{12C2A20A-99A0-4219-AB5C-DA81942D43BB}",
         "category": "Math Functions",
-        "title": "round",
+        "title": "Round",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
@@ -24,7 +28,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -38,7 +42,7 @@
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = round(NODEID_inValue);"
+                        "SLOTTYPE SLOTNAME = round(inValue);"
                     ]
                 }
             }

@@ -5,7 +5,12 @@
     "ClassData": {
         "id": "{7EFA6DFB-263B-47D6-AE3E-D68CE909CEBD}",
         "category": "Math Functions",
-        "title": "split2",
+        "title": "Split2",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue",
+            "outX|outY"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
@@ -22,7 +27,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "float2 NODEID_SLOTNAME = SLOTVALUE;"
+                        "float2 SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -36,7 +41,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.x;"
+                        "SLOTTYPE SLOTNAME = inValue.x;"
                     ]
                 }
             },
@@ -48,7 +53,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.y;"
+                        "SLOTTYPE SLOTNAME = inValue.y;"
                     ]
                 }
             }

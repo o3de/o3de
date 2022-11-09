@@ -346,6 +346,10 @@ namespace AtomToolsFramework
                 // extensions displayed in the dialog
                 const QString name = tr("Open %1 Document...").arg(documentType.m_documentTypeName.c_str());
                 CreateActionAtPosition(parentMenu, insertPostion, name, [documentType, toolId = m_toolId]() {
+                    // Visual Studio 2022 flags toolId as unused even though it is passed to the QueueFunction lambda below.
+                    // Use AZ_UNUSED to prevent the compiler error.
+                    AZ_UNUSED(toolId);
+
                     // Open all files selected in the dialog
                     const auto& paths =
                         GetOpenFilePathsFromDialog({}, documentType.m_supportedExtensionsToOpen, documentType.m_documentTypeName, true);

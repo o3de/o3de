@@ -40,6 +40,7 @@ namespace AzToolsFramework
         PaintBrushColorMode GetBrushColorMode() const override;
         void SetBrushColorMode(PaintBrushColorMode colorMode) override;
         float GetSize() const override;
+        AZStd::pair<float, float> GetSizeRange() const override;
         AZ::Color GetColor() const override;
         float GetHardnessPercent() const override;
         float GetFlowPercent() const override;
@@ -47,6 +48,7 @@ namespace AzToolsFramework
         PaintBrushBlendMode GetBlendMode() const override;
         PaintBrushSmoothMode GetSmoothMode() const override;
         void SetSize(float size) override;
+        void SetSizeRange(float minSize, float maxSize) override;
         void SetColor(const AZ::Color& color) override;
         void SetHardnessPercent(float hardnessPercent) override;
         void SetFlowPercent(float flowPercent) override;
