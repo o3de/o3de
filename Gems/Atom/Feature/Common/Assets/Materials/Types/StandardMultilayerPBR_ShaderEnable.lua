@@ -10,12 +10,13 @@
 ----------------------------------------------------------------------------------------------------
 
 function GetMaterialPropertyDependencies()
-    return {"parallax.enable", "parallax.pdo"}
+    return {"parallax.enable", "parallax.pdo", "general.castShadows"}
 end
 
 function Process(context)
     local parallaxEnabled = context:GetMaterialPropertyValue_bool("parallax.enable")
     local parallaxPdoEnabled = context:GetMaterialPropertyValue_bool("parallax.pdo")
+    local castShadows = context:GetMaterialPropertyValue_bool("general.castShadows")
     
     local depthPass = context:GetShaderByTag("DepthPass")
     local shadowMap = context:GetShaderByTag("Shadowmap")
@@ -27,10 +28,10 @@ function Process(context)
     local shadingAffectsDepth = parallaxEnabled and parallaxPdoEnabled;
     
     depthPass:SetEnabled(not shadingAffectsDepth)
-    shadowMap:SetEnabled(not shadingAffectsDepth)
+    shadowMap:SetEnabled(not shadingAffectsDepth and castShadows)
     forwardPassEDS:SetEnabled(not shadingAffectsDepth)
         
     depthPassWithPS:SetEnabled(shadingAffectsDepth)
-    shadowMapWithPS:SetEnabled(shadingAffectsDepth)
+    shadowMapWithPS:SetEnabled(shadingAffectsDepth and castShadows)
     forwardPass:SetEnabled(shadingAffectsDepth)
 end
