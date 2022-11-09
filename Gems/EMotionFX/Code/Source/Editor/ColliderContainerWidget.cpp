@@ -338,9 +338,9 @@ namespace EMotionFX
         }
     }
 
-    void ColliderWidget::SetFilterString(AZStd::string str)
+    void ColliderWidget::SetFilterString(QString filterString)
     {
-        m_editor->SetFilterString(str);
+        m_editor->SetFilterString(filterString);
 
         Update();
     }
@@ -522,11 +522,11 @@ namespace EMotionFX
         Update(nullptr, nullptr, PhysicsSetup::ColliderConfigType::Unknown, AzPhysics::ShapeColliderPairList(), nullptr);
     }
 
-    void ColliderContainerWidget::SetFilterString(AZStd::string str)
+    void ColliderContainerWidget::SetFilterString(QString filterString)
     {
         for (auto* widget : m_colliderWidgets)
         {
-            widget->SetFilterString(str);
+            widget->SetFilterString(filterString);
         }
     }
 

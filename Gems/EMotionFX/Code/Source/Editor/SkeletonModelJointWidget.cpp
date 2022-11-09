@@ -99,11 +99,11 @@ namespace EMotionFX
         Reinit();
     }
 
-    void SkeletonModelJointWidget::SetFilterString(AZStd::string str)
+    void SkeletonModelJointWidget::SetFilterString(QString filterString)
     {
         if (m_collidersWidget)
         {
-            m_collidersWidget->SetFilterString(str);
+            m_collidersWidget->SetFilterString(filterString);
         }
         Reinit();
     }

@@ -41,8 +41,7 @@ namespace EMotionFX
 
         void showEvent(QShowEvent* event) override;
 
-        // TODO QString
-        void SetFilterString([[maybe_unused]] AZStd::string str);
+        void SetFilterString(QString filterString);
 
         virtual QString GetCardTitle() const = 0;
         virtual QColor GetColor() const = 0;

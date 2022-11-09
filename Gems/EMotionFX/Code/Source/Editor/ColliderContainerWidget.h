@@ -72,7 +72,7 @@ namespace EMotionFX
         void Update();
         void Reset();
 
-        void SetFilterString([[maybe_unused]] AZStd::string str);
+        void SetFilterString(QString str);
         bool HasDisplayedNodes();
 
         Actor* GetActor() const { return m_actor; };
@@ -119,7 +119,7 @@ namespace EMotionFX
         void Update();
         void Reset();
 
-        void SetFilterString([[maybe_unused]] AZStd::string str);
+        void SetFilterString(QString str);
         bool HasVisibleColliders() const;
 
         PhysicsSetup::ColliderConfigType ColliderType() { return m_colliderType; }

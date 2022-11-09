@@ -61,7 +61,7 @@ namespace EMotionFX
         AZStd::unique_ptr<EMStudio::NodeInfo> m_nodeInfo;
 
         QLineEdit* m_filterEntityBox = nullptr;
-        AZStd::string m_filterString;
+        QString m_filterString;
     };
 
 

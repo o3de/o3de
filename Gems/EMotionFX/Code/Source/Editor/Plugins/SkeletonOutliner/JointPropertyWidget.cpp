@@ -86,7 +86,7 @@ namespace EMotionFX
         m_addCollidersButton->setObjectName("EMotionFX.SkeletonOutlinerPlugin.JointPropertyWidget.addCollidersButton");
         connect(m_addCollidersButton, &AddCollidersButton::AddCollider, this, &JointPropertyWidget::OnAddCollider);
         connect(m_addCollidersButton, &AddCollidersButton::AddToRagdoll, this, &JointPropertyWidget::OnAddToRagdoll);
-        auto* marginLayout = new QVBoxLayout{this};
+        auto* marginLayout = new QVBoxLayout{m_addCollidersButton};
         marginLayout->setContentsMargins(10, 0, 10, 10);
         marginLayout->addWidget(m_addCollidersButton);
         mainLayout->addLayout(marginLayout);
@@ -221,7 +221,7 @@ namespace EMotionFX
 
     void JointPropertyWidget::OnSearchTextChanged()
     {
-        m_filterString = m_filterEntityBox->text().toLatin1().data();
+        m_filterString = m_filterEntityBox->text();
 
         m_clothJointWidget->SetFilterString(m_filterString);
         m_hitDetectionJointWidget->SetFilterString(m_filterString);
