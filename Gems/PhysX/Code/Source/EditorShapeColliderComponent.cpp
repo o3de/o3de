@@ -767,6 +767,7 @@ namespace PhysX
         m_currentNonUniformScale = scale;
 
         UpdateShapeConfigs();
+        UpdateTranslationOffset();
 
         CreateStaticEditorCollider();
         m_geometryCache.m_cachedSamplePointsDirty = true;
