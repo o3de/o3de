@@ -6,12 +6,14 @@
  *
  */
 
-#include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/UnitTest/MockComponentApplication.h>
 
 #include <Editor/Include/ScriptCanvas/Components/NodeReplacementSystem.h>
+#include <Include/ScriptCanvas/Core/Node.h>
 #include <Include/ScriptCanvas/Libraries/Core/Method.h>
+#include <Include/ScriptCanvas/Utils/VersioningUtils.h>
 #include <Tests/Framework/ScriptCanvasUnitTestFixture.h>
 
 namespace ScriptCanvasEditorUnitTest
@@ -20,34 +22,59 @@ namespace ScriptCanvasEditorUnitTest
     using namespace ScriptCanvas;
     using namespace ScriptCanvasEditor;
 
-    static constexpr const char ValidClassMethodNodeKey[] = "{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}_Old Test Class_Old Test Method";
-    static constexpr const char ValidFreeMethodNodeKey[] = "{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}_Old Test Free Method";
-    static constexpr const char ValidNodeReplacement[] =
+    static constexpr const int ValidGraphId = 1234567890;
+    static constexpr const char ValidClassMethodNodeKey1[] = "{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}_Old Test Class1_Old Test Method1";
+    static constexpr const char ValidFreeMethodNodeKey1[] = "{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}_Old Test Free Method1";
+    static constexpr const char ValidFreeMethodNodeKey2[] = "{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}_Old Test Free Method2";
+    static constexpr const char ValidOldCustomNodeKey[] = "{F1030112-BA70-4786-BBEB-43ACADA5B846}";
+    static constexpr const char ValidNewMethodNodeKey[] = "{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}";
+    static constexpr const char ValidNodeReplacement1[] =
 R"({
     "O3DE": {
         "NodeReplacement": {
-            "ScriptCanvas": [
+            "ScriptCanvas1": [
                 {
                     "OldNode" : {
                         "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
-                        "Class": "Old Test Class",
-                        "Method": "Old Test Method"
+                        "Class": "Old Test Class1",
+                        "Method": "Old Test Method1"
                     },
                     "NewNode" : {
                         "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
-                        "Class": "New Test Class",
-                        "Method": "New Test Method"
+                        "Class": "New Test Class1",
+                        "Method": "New Test Method1"
                     }
                 },
                 {
                     "OldNode" : {
                         "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
-                        "Method": "Old Test Free Method"
+                        "Method": "Old Test Free Method1"
                     },
                     "NewNode" : {
                         "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
-                        "Class": "New Test Class",
-                        "Method": "New Test Method"
+                        "Class": "New Test Class1",
+                        "Method": "New Test Method1"
+                    }
+                }
+            ]
+        }
+    }
+})";
+
+    static constexpr const char ValidNodeReplacement2[] =
+R"({
+    "O3DE": {
+        "NodeReplacement": {
+            "ScriptCanvas2": [
+                {
+                    "OldNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Method": "Old Test Free Method2"
+                    },
+                    "NewNode" : {
+                        "Uuid": "E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF",
+                        "Class": "New Test Class2",
+                        "Method": "New Test Method2"
                     }
                 }
             ]
@@ -67,9 +94,15 @@ R"({
         void OldTestMethod() {}
     };
 
+    class OldTestCustomNode
+        : public Node
+    {
+    public:
+        AZ_COMPONENT(OldTestCustomNode, ValidOldCustomNodeKey, Node);
+    };
+
     class ScriptCanvasEditorUnitTest
         : public ScriptCanvasUnitTest::ScriptCanvasUnitTestFixture
-        , public ComponentApplicationBus::Handler
     {
     public:
         void SetUp() override
@@ -78,70 +111,158 @@ R"({
 
             m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
             AZ::SettingsRegistry::Register(m_settingsRegistry.get());
-
-            m_behaviorContext = aznew BehaviorContext();
-            m_behaviorContext->Method("Old Test Free Method", [](){});
-            m_behaviorContext->Class<OldTestClass>("Old Test Class")->Method("Old Test Method", &OldTestClass::OldTestMethod);
-
-            AZ::ComponentApplicationBus::Handler::BusConnect();
+            m_componentApplicationMock = AZStd::make_unique<testing::NiceMock<UnitTest::MockComponentApplication>>();
         }
 
         void TearDown() override
         {
-            AZ::ComponentApplicationBus::Handler::BusDisconnect();
-
-            delete m_behaviorContext;
-            m_behaviorContext = nullptr;
-
+            m_componentApplicationMock.reset();
             AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
             m_settingsRegistry.reset();
 
             ScriptCanvasUnitTest::ScriptCanvasUnitTestFixture::TearDown();
         }
 
-        //////////////////////////////////////////////////////////////////////////
-        // ComponentApplicationMessages
-        ComponentApplication* GetApplication() override { return nullptr; }
-        void RegisterComponentDescriptor(const ComponentDescriptor*) override { }
-        void UnregisterComponentDescriptor(const ComponentDescriptor*) override { }
-        void RegisterEntityAddedEventHandler(EntityAddedEvent::Handler&) override { }
-        void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler&) override { }
-        void RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler&) override { }
-        void RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler&) override { }
-        void SignalEntityActivated(Entity*) override { }
-        void SignalEntityDeactivated(Entity*) override { }
-        bool AddEntity(Entity*) override { return true; }
-        bool RemoveEntity(Entity*) override { return true; }
-        bool DeleteEntity(const AZ::EntityId&) override { return true; }
-        Entity* FindEntity(const AZ::EntityId&) override { return nullptr; }
-        SerializeContext* GetSerializeContext() override { return nullptr; }
-        BehaviorContext* GetBehaviorContext() override { return m_behaviorContext; }
-        JsonRegistrationContext* GetJsonRegistrationContext() override { return nullptr; }
-        const char* GetEngineRoot() const override { return nullptr; }
-        const char* GetExecutableFolder() const override { return nullptr; }
-        void EnumerateEntities(const EntityCallback& /*callback*/) override {}
-        void QueryApplicationType(AZ::ApplicationTypeQuery& /*appType*/) const override {}
-        //////////////////////////////////////////////////////////////////////////
-
+    protected:
         AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
-        BehaviorContext* m_behaviorContext;
+        AZStd::unique_ptr<testing::NiceMock<UnitTest::MockComponentApplication>> m_componentApplicationMock;
     };
+
+    TEST_F(ScriptCanvasEditorUnitTest, GenerateReplacementId_GetExpectedKey_WhileGivingClassMethodMetadata)
+    {
+        auto replacementId = NodeReplacementSystem::GenerateReplacementId(
+            AZ::Uuid::CreateString("E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF"), "Old Test Class1", "Old Test Method1");
+        EXPECT_EQ(replacementId, ValidClassMethodNodeKey1);
+    }
+
+    TEST_F(ScriptCanvasEditorUnitTest, GenerateReplacementId_GetExpectedKey_WhileGivingClassMethodMetadataFromJson)
+    {
+        auto replacementId = NodeReplacementSystem::GenerateReplacementId(
+            AZ::Uuid::CreateString("E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF"), "Old Test Class1", "Old Test Method1");
+        EXPECT_EQ(replacementId, ValidClassMethodNodeKey1);
+    }
+
+    TEST_F(ScriptCanvasEditorUnitTest, GenerateReplacementId_GetExpectedKey_WhileGivingFreeMethodMetadata)
+    {
+        auto replacementId = NodeReplacementSystem::GenerateReplacementId(
+            AZ::Uuid::CreateString("E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF"), "", "Old Test Free Method1");
+        EXPECT_EQ(replacementId, ValidFreeMethodNodeKey1);
+    }
+
+    TEST_F(ScriptCanvasEditorUnitTest, GenerateReplacementId_GetExpectedKey_WhileGivingCustomNodeMetadata)
+    {
+        AZ::Uuid testUuid = AZ::Uuid::CreateRandom();
+        auto replacementId = NodeReplacementSystem::GenerateReplacementId(testUuid);
+        EXPECT_EQ(replacementId, testUuid.ToFixedString().c_str());
+    }
+
+    TEST_F(ScriptCanvasEditorUnitTest, GenerateReplacementId_GetExpectedKey_WhileGivingClassMethodNode)
+    {
+        ON_CALL(*m_componentApplicationMock, AddEntity(::testing::_))
+            .WillByDefault(
+                []([[maybe_unused]] AZ::Entity*)
+                {
+                    return true;
+                });
+        AZ::BehaviorContext testBehaviorContext;
+        testBehaviorContext.Class<OldTestClass>("Old Test Class1").Method("Old Test Method1", &OldTestClass::OldTestMethod);
+        ON_CALL(*m_componentApplicationMock, GetBehaviorContext())
+            .WillByDefault(
+                [&testBehaviorContext]()
+                {
+                    return &testBehaviorContext;
+                });
+
+        Nodes::Core::Method* testMethodNode = aznew Nodes::Core::Method();
+        AZ::Entity* testMethodEntity = aznew AZ::Entity();
+        testMethodEntity->Init();
+        testMethodEntity->AddComponent(testMethodNode);
+        testMethodNode->InitializeBehaviorMethod({}, "Old Test Class1", "Old Test Method1", PropertyStatus::None);
+        auto replacementId = NodeReplacementSystem::GenerateReplacementId(testMethodNode);
+        EXPECT_EQ(replacementId, ValidClassMethodNodeKey1);
+
+        testMethodEntity->Reset();
+        delete testMethodEntity;
+        testMethodEntity = nullptr;
+        testMethodNode = nullptr;
+    }
+
+    TEST_F(ScriptCanvasEditorUnitTest, GenerateReplacementId_GetExpectedKey_WhileGivingFreeMethodNode)
+    {
+        ON_CALL(*m_componentApplicationMock, AddEntity(::testing::_))
+            .WillByDefault(
+                []([[maybe_unused]] AZ::Entity*)
+                {
+                    return true;
+                });
+        AZ::BehaviorContext testBehaviorContext;
+        testBehaviorContext.Method("Old Test Free Method1", [](){});
+        ON_CALL(*m_componentApplicationMock, GetBehaviorContext())
+            .WillByDefault(
+                [&testBehaviorContext]()
+                {
+                    return &testBehaviorContext;
+                });
+        
+        Nodes::Core::Method* testMethodNode = aznew Nodes::Core::Method();
+        AZ::Entity* testMethodEntity = aznew AZ::Entity();
+        testMethodEntity->Init();
+        testMethodEntity->AddComponent(testMethodNode);
+        testMethodNode->InitializeBehaviorMethod({}, "", "Old Test Free Method1", PropertyStatus::None);
+        auto replacementId = NodeReplacementSystem::GenerateReplacementId(testMethodNode);
+        EXPECT_EQ(replacementId, ValidFreeMethodNodeKey1);
+
+        testMethodEntity->Reset();
+        delete testMethodEntity;
+        testMethodEntity = nullptr;
+        testMethodNode = nullptr;
+    }
+
+    TEST_F(ScriptCanvasEditorUnitTest, GenerateReplacementId_GetExpectedKey_WhileGivingCustomNode)
+    {
+        OldTestCustomNode* testCustomNode = aznew OldTestCustomNode();
+        auto replacementId = NodeReplacementSystem::GenerateReplacementId(testCustomNode);
+        EXPECT_EQ(replacementId, ValidOldCustomNodeKey);
+
+        delete testCustomNode;
+        testCustomNode = nullptr;
+    }
+
+    TEST_F(ScriptCanvasEditorUnitTest, GenerateReplacementId_GetEmptyKey_WhileGivingNullPointer)
+    {
+        auto replacementId = NodeReplacementSystem::GenerateReplacementId(nullptr);
+        EXPECT_EQ(replacementId, "");
+    }
 
     TEST_F(ScriptCanvasEditorUnitTest, GetNodeReplacementConfiguration_GetValidConfig_WhileLookingForExistingMethodKey)
     {
-        m_settingsRegistry->MergeSettings(ValidNodeReplacement, AZ::SettingsRegistryInterface::Format::JsonMergePatch);
+        m_settingsRegistry->MergeSettings(ValidNodeReplacement1, AZ::SettingsRegistryInterface::Format::JsonMergePatch);
+        m_settingsRegistry->MergeSettings(ValidNodeReplacement2, AZ::SettingsRegistryInterface::Format::JsonMergePatch);
         NodeReplacementSystem testSystem;
         testSystem.LoadReplacementMetadata();
 
-        auto config = testSystem.GetNodeReplacementConfiguration(ValidClassMethodNodeKey);
+        auto config = testSystem.GetNodeReplacementConfiguration(ValidClassMethodNodeKey1);
         EXPECT_TRUE(config.IsValid());
-        EXPECT_EQ(config.m_className, "New Test Class");
-        EXPECT_EQ(config.m_methodName, "New Test Method");
+        EXPECT_EQ(config.m_className, "New Test Class1");
+        EXPECT_EQ(config.m_methodName, "New Test Method1");
+    }
+
+    TEST_F(ScriptCanvasEditorUnitTest, GetNodeReplacementConfiguration_GetValidConfig_WhileLoadingMultipleNodeReplacement)
+    {
+        m_settingsRegistry->MergeSettings(ValidNodeReplacement1, AZ::SettingsRegistryInterface::Format::JsonMergePatch);
+        m_settingsRegistry->MergeSettings(ValidNodeReplacement2, AZ::SettingsRegistryInterface::Format::JsonMergePatch);
+        NodeReplacementSystem testSystem;
+        testSystem.LoadReplacementMetadata();
+
+        auto config = testSystem.GetNodeReplacementConfiguration(ValidFreeMethodNodeKey2);
+        EXPECT_TRUE(config.IsValid());
+        EXPECT_EQ(config.m_className, "New Test Class2");
+        EXPECT_EQ(config.m_methodName, "New Test Method2");
     }
 
     TEST_F(ScriptCanvasEditorUnitTest, GetNodeReplacementConfiguration_GetInvalidConfig_WhileLookingForNonExistingKey)
     {
-        m_settingsRegistry->MergeSettings(ValidNodeReplacement, AZ::SettingsRegistryInterface::Format::JsonMergePatch);
+        m_settingsRegistry->MergeSettings(ValidNodeReplacement1, AZ::SettingsRegistryInterface::Format::JsonMergePatch);
         NodeReplacementSystem testSystem;
         testSystem.LoadReplacementMetadata();
 
@@ -149,46 +270,269 @@ R"({
         EXPECT_FALSE(config.IsValid());
     }
 
-    TEST_F(ScriptCanvasEditorUnitTest, GenerateReplacementId_GetExpectedKey_WhileGivingClassMethodMetadata)
+    TEST_F(ScriptCanvasEditorUnitTest, LoadReplacementMetadata_GetValidConfig_WhileBroadcastResultAfterLoading)
     {
-        auto replacementId = NodeReplacementSystem::GenerateReplacementId(
-            AZ::Uuid::CreateString("E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF"), "Old Test Class", "Old Test Method");
-        EXPECT_EQ(replacementId, ValidClassMethodNodeKey);
+        m_settingsRegistry->MergeSettings(ValidNodeReplacement1, AZ::SettingsRegistryInterface::Format::JsonMergePatch);
+        NodeReplacementSystem testSystem;
+        testSystem.LoadReplacementMetadata();
+
+        NodeReplacementConfiguration config;
+        ScriptCanvasEditor::NodeReplacementRequestBus::BroadcastResult(
+            config, &ScriptCanvasEditor::NodeReplacementRequestBus::Events::GetNodeReplacementConfiguration, ValidClassMethodNodeKey1);
+        EXPECT_TRUE(config.IsValid());
+        EXPECT_EQ(config.m_className, "New Test Class1");
+        EXPECT_EQ(config.m_methodName, "New Test Method1");
     }
 
-    TEST_F(ScriptCanvasEditorUnitTest, GenerateReplacementId_GetExpectedKey_WhileGivingClassMethodMetadataFromJson)
+    TEST_F(ScriptCanvasEditorUnitTest, ReplaceNodeByReplacementConfiguration_GetEmptyReport_WhileGraphIdInvalid)
     {
-        auto replacementId = NodeReplacementSystem::GenerateReplacementId(
-            AZ::Uuid::CreateString("E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF"), "Old Test Class", "Old Test Method");
-        EXPECT_EQ(replacementId, ValidClassMethodNodeKey);
+        ON_CALL(*m_componentApplicationMock, AddEntity(::testing::_))
+            .WillByDefault(
+                []([[maybe_unused]] AZ::Entity*)
+                {
+                    return true;
+                });
+        NodeReplacementConfiguration config;
+        OldTestCustomNode* testCustomNode = aznew OldTestCustomNode();
+        AZ::Entity* testCustomEntity =  aznew AZ::Entity();
+        testCustomEntity->Init();
+        testCustomEntity->AddComponent(testCustomNode);
+        NodeReplacementSystem testSystem;
+        auto report = testSystem.ReplaceNodeByReplacementConfiguration(AZ::EntityId(), testCustomNode, config);
+        EXPECT_TRUE(report.IsEmpty());
+
+        delete testCustomNode;
+        testCustomNode = nullptr;
+        delete testCustomEntity;
+        testCustomEntity = nullptr;
     }
 
-    TEST_F(ScriptCanvasEditorUnitTest, GenerateReplacementId_GetExpectedKey_WhileGivingFreeMethodMetadata)
+    TEST_F(ScriptCanvasEditorUnitTest, ReplaceNodeByReplacementConfiguration_GetEmptyReport_WhileNodeIsNotAttachedToEntity)
     {
-        auto replacementId = NodeReplacementSystem::GenerateReplacementId(
-            AZ::Uuid::CreateString("E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF"), "", "Old Test Free Method");
-        EXPECT_EQ(replacementId, ValidFreeMethodNodeKey);
+        NodeReplacementConfiguration config;
+        OldTestCustomNode* testCustomNode = aznew OldTestCustomNode();
+        NodeReplacementSystem testSystem;
+        auto report = testSystem.ReplaceNodeByReplacementConfiguration(AZ::EntityId(ValidGraphId), testCustomNode, config);
+        EXPECT_TRUE(report.IsEmpty());
+
+        delete testCustomNode;
+        testCustomNode = nullptr;
     }
 
-    TEST_F(ScriptCanvasEditorUnitTest, GenerateReplacementId_GetExpectedKey_WhileGivingClassMethodNode)
+    TEST_F(ScriptCanvasEditorUnitTest, ReplaceNodeByReplacementConfiguration_GetEmptyReport_WhileSerializeContextIsNull)
     {
-        Nodes::Core::Method* testMethodNode = aznew Nodes::Core::Method();
-        testMethodNode->InitializeBehaviorMethod({}, "Old Test Class", "Old Test Method", PropertyStatus::None);
-        auto replacementId = NodeReplacementSystem::GenerateReplacementId(testMethodNode);
-        EXPECT_EQ(replacementId, ValidClassMethodNodeKey);
+        ON_CALL(*m_componentApplicationMock, AddEntity(::testing::_))
+            .WillByDefault(
+                []([[maybe_unused]] AZ::Entity*)
+                {
+                    return true;
+                });
+        ON_CALL(*m_componentApplicationMock, GetSerializeContext())
+            .WillByDefault(
+                []()
+                {
+                    return nullptr;
+                });
+        NodeReplacementConfiguration config;
+        OldTestCustomNode* testCustomNode = aznew OldTestCustomNode();
+        AZ::Entity* testCustomEntity = aznew AZ::Entity();
+        testCustomEntity->Init();
+        testCustomEntity->AddComponent(testCustomNode);
 
-        delete testMethodNode;
-        testMethodNode = nullptr;
+        NodeReplacementSystem testSystem;
+        auto report = testSystem.ReplaceNodeByReplacementConfiguration(AZ::EntityId(ValidGraphId), testCustomNode, config);
+        EXPECT_TRUE(report.IsEmpty());
+
+        delete testCustomNode;
+        testCustomNode = nullptr;
+        delete testCustomEntity;
+        testCustomEntity = nullptr;
     }
 
-    TEST_F(ScriptCanvasEditorUnitTest, GenerateReplacementId_GetExpectedKey_WhileGivingFreeMethodNode)
+    TEST_F(ScriptCanvasEditorUnitTest, ReplaceNodeByReplacementConfiguration_GetEmptyReport_WhileSerializeContextHasNoReplacementNode)
     {
-        Nodes::Core::Method* testMethodNode = aznew Nodes::Core::Method();
+        ON_CALL(*m_componentApplicationMock, AddEntity(::testing::_))
+            .WillByDefault(
+                []([[maybe_unused]] AZ::Entity*)
+                {
+                    return true;
+                });
+        AZ::SerializeContext testSerializeContext;
+        ON_CALL(*m_componentApplicationMock, GetSerializeContext())
+            .WillByDefault(
+                [&testSerializeContext]()
+                {
+                    return &testSerializeContext;
+                });
+        NodeReplacementConfiguration config;
+        config.m_type = AZ::Uuid::CreateRandom();
+        OldTestCustomNode* testCustomNode = aznew OldTestCustomNode();
+        AZ::Entity* testCustomEntity = aznew AZ::Entity();
+        testCustomEntity->Init();
+        testCustomEntity->AddComponent(testCustomNode);
+
+        NodeReplacementSystem testSystem;
+        auto report = testSystem.ReplaceNodeByReplacementConfiguration(AZ::EntityId(ValidGraphId), testCustomNode, config);
+        EXPECT_TRUE(report.IsEmpty());
+
+        delete testCustomNode;
+        testCustomNode = nullptr;
+        delete testCustomEntity;
+        testCustomEntity = nullptr;
+    }
+
+    TEST_F(ScriptCanvasEditorUnitTest, ReplaceNodeByReplacementConfiguration_GetValidReport_WhileNoDataSlotMethodTopologyMatch)
+    {
+        AZ::BehaviorContext testBehaviorContext;
+        testBehaviorContext.Method("Old Test Free Method", [](){});
+        testBehaviorContext.Method("New Test Free Method", [](){});
+        ON_CALL(*m_componentApplicationMock, GetBehaviorContext())
+            .WillByDefault(
+                [&testBehaviorContext]()
+                {
+                    return &testBehaviorContext;
+                });
+        ON_CALL(*m_componentApplicationMock, AddEntity(::testing::_))
+            .WillByDefault(
+                []([[maybe_unused]] AZ::Entity*)
+                {
+                    return true;
+                });
+        AZ::SerializeContext testSerializeContext;
+        Nodes::Core::Method::Reflect(&testSerializeContext);
+        ON_CALL(*m_componentApplicationMock, GetSerializeContext())
+            .WillByDefault(
+                [&testSerializeContext]()
+                {
+                    return &testSerializeContext;
+                });
+        NodeReplacementConfiguration config;
+        config.m_type = AZ::Uuid(ValidNewMethodNodeKey);
+        config.m_methodName = "New Test Free Method";
+        Nodes::Core::Method* testMethodNode = aznew ScriptCanvas::Nodes::Core::Method();
+        AZ::Entity* testMethodEntity = aznew AZ::Entity();
+        testMethodEntity->Init();
+        testMethodEntity->AddComponent(testMethodNode);
         testMethodNode->InitializeBehaviorMethod({}, "", "Old Test Free Method", PropertyStatus::None);
-        auto replacementId = NodeReplacementSystem::GenerateReplacementId(testMethodNode);
-        EXPECT_EQ(replacementId, ValidFreeMethodNodeKey);
 
-        delete testMethodNode;
+        NodeReplacementSystem testSystem;
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto report = testSystem.ReplaceNodeByReplacementConfiguration(AZ::EntityId(ValidGraphId), testMethodNode, config);
+        AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
+        EXPECT_FALSE(report.IsEmpty());
+        EXPECT_EQ(report.m_oldSlotsToNewSlots.size(), 2); // two execution slots
+
         testMethodNode = nullptr;
+        testMethodEntity->Reset();
+        delete testMethodEntity;
+        testMethodEntity = nullptr;
+        report.m_newNode = nullptr;
+    }
+
+    TEST_F(ScriptCanvasEditorUnitTest, ReplaceNodeByReplacementConfiguration_GetValidReport_WhileDataSlotMethodTopologyMatch)
+    {
+        AZ::BehaviorContext testBehaviorContext;
+        testBehaviorContext.Method("Old Test Free Method", [](float input){ return input;});
+        testBehaviorContext.Method("New Test Free Method", [](float input){ return input;});
+        ON_CALL(*m_componentApplicationMock, GetBehaviorContext())
+            .WillByDefault(
+                [&testBehaviorContext]()
+                {
+                    return &testBehaviorContext;
+                });
+        ON_CALL(*m_componentApplicationMock, AddEntity(::testing::_))
+            .WillByDefault(
+                []([[maybe_unused]] AZ::Entity*)
+                {
+                    return true;
+                });
+        AZ::SerializeContext testSerializeContext;
+        Nodes::Core::Method::Reflect(&testSerializeContext);
+        ON_CALL(*m_componentApplicationMock, GetSerializeContext())
+            .WillByDefault(
+                [&testSerializeContext]()
+                {
+                    return &testSerializeContext;
+                });
+        NodeReplacementConfiguration config;
+        config.m_type = AZ::Uuid(ValidNewMethodNodeKey);
+        config.m_methodName = "New Test Free Method";
+        Nodes::Core::Method* testMethodNode = aznew ScriptCanvas::Nodes::Core::Method();
+        AZ::Entity* testMethodEntity = aznew AZ::Entity();
+        testMethodEntity->Init();
+        testMethodEntity->AddComponent(testMethodNode);
+        testMethodNode->InitializeBehaviorMethod({}, "", "Old Test Free Method", PropertyStatus::None);
+
+        NodeReplacementSystem testSystem;
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto report = testSystem.ReplaceNodeByReplacementConfiguration(AZ::EntityId(ValidGraphId), testMethodNode, config);
+        AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
+        EXPECT_FALSE(report.IsEmpty());
+        EXPECT_EQ(report.m_oldSlotsToNewSlots.size(), 4); // two execution slots and two data slots
+
+        testMethodNode = nullptr;
+        testMethodEntity->Reset();
+        delete testMethodEntity;
+        testMethodEntity = nullptr;
+        report.m_newNode = nullptr;
+    }
+
+    TEST_F(ScriptCanvasEditorUnitTest, ReplaceNodeByReplacementConfiguration_GetEmptyReport_WhileMethodTopologyNotMatch)
+    {
+        AZ::BehaviorContext testBehaviorContext;
+        testBehaviorContext.Method("Old Test Free Method", [](AZStd::string input){ return input;});
+        testBehaviorContext.Method("New Test Free Method", [](float input){ return input;});
+        ON_CALL(*m_componentApplicationMock, GetBehaviorContext())
+            .WillByDefault(
+                [&testBehaviorContext]()
+                {
+                    return &testBehaviorContext;
+                });
+        ON_CALL(*m_componentApplicationMock, AddEntity(::testing::_))
+            .WillByDefault(
+                []([[maybe_unused]] AZ::Entity*)
+                {
+                    return true;
+                });
+        AZ::SerializeContext testSerializeContext;
+        Nodes::Core::Method::Reflect(&testSerializeContext);
+        ON_CALL(*m_componentApplicationMock, GetSerializeContext())
+            .WillByDefault(
+                [&testSerializeContext]()
+                {
+                    return &testSerializeContext;
+                });
+        NodeReplacementConfiguration config;
+        config.m_type = AZ::Uuid(ValidNewMethodNodeKey);
+        config.m_methodName = "New Test Free Method";
+        Nodes::Core::Method* testMethodNode = aznew ScriptCanvas::Nodes::Core::Method();
+        AZ::Entity* testMethodEntity = aznew AZ::Entity();
+        testMethodEntity->Init();
+        testMethodEntity->AddComponent(testMethodNode);
+        testMethodNode->InitializeBehaviorMethod({}, "", "Old Test Free Method", PropertyStatus::None);
+
+        NodeReplacementSystem testSystem;
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto report = testSystem.ReplaceNodeByReplacementConfiguration(AZ::EntityId(ValidGraphId), testMethodNode, config);
+        AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
+        EXPECT_TRUE(report.IsEmpty());
+
+        testMethodEntity->Reset();
+        delete testMethodEntity;
+        testMethodEntity = nullptr;
+        testMethodNode = nullptr;
+    }
+
+    TEST_F(ScriptCanvasEditorUnitTest, UnloadReplacementMetadata_GetInvalidConfig_WhileBroadcastResultAfterUnloading)
+    {
+        m_settingsRegistry->MergeSettings(ValidNodeReplacement1, AZ::SettingsRegistryInterface::Format::JsonMergePatch);
+        NodeReplacementSystem testSystem;
+        testSystem.LoadReplacementMetadata();
+        testSystem.UnloadReplacementMetadata();
+
+        NodeReplacementConfiguration config;
+        ScriptCanvasEditor::NodeReplacementRequestBus::BroadcastResult(
+            config, &ScriptCanvasEditor::NodeReplacementRequestBus::Events::GetNodeReplacementConfiguration, ValidClassMethodNodeKey1);
+        EXPECT_FALSE(config.IsValid());
     }
 }

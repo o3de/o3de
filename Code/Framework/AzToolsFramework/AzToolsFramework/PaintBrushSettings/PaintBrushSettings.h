@@ -143,6 +143,11 @@ namespace AzToolsFramework
             return m_size;
         }
 
+        AZStd::pair<float, float> GetSizeRange() const
+        {
+            return { m_sizeMin, m_sizeMax };
+        }
+
         float GetHardnessPercent() const
         {
             return m_hardnessPercent;
@@ -157,6 +162,7 @@ namespace AzToolsFramework
         }
 
         void SetSize(float size);
+        void SetSizeRange(float minSize, float maxSize);
         void SetHardnessPercent(float hardnessPercent);
         void SetFlowPercent(float flowPercent);
         void SetDistancePercent(float distancePercent);
@@ -182,6 +188,10 @@ namespace AzToolsFramework
         bool GetBlendModeVisibility() const;
         bool GetSmoothModeVisibility() const;
 
+        float GetSizeMin() const;
+        float GetSizeMax() const;
+        float GetSizeStep() const;
+
         //! Brush settings brush mode
         PaintBrushMode m_brushMode = PaintBrushMode::Paintbrush;
 
@@ -197,6 +207,9 @@ namespace AzToolsFramework
 
         //! Brush stamp diameter in meters
         float m_size = 10.0f;
+        float m_sizeMin = 0.0f;
+        float m_sizeMax = 1024.0f;
+
         //! Brush stamp hardness percent (0=soft falloff, 100=hard edge)
         float m_hardnessPercent = 100.0f;
         //! Brush stamp flow percent (0=transparent stamps, 100=opaque stamps)

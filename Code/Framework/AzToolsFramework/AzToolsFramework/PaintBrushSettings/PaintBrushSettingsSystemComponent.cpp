@@ -71,6 +71,11 @@ namespace AzToolsFramework
         return m_settings.GetSize();
     }
 
+    AZStd::pair<float, float> PaintBrushSettingsSystemComponent::GetSizeRange() const
+    {
+        return m_settings.GetSizeRange();
+    }
+
     AZ::Color PaintBrushSettingsSystemComponent::GetColor() const
     {
         return m_settings.GetColor();
@@ -104,6 +109,11 @@ namespace AzToolsFramework
     void PaintBrushSettingsSystemComponent::SetSize(float size)
     {
         m_settings.SetSize(size);
+    }
+
+    void PaintBrushSettingsSystemComponent::SetSizeRange(float minSize, float maxSize)
+    {
+        m_settings.SetSizeRange(minSize, maxSize);
     }
 
     void PaintBrushSettingsSystemComponent::SetColor(const AZ::Color& color)
