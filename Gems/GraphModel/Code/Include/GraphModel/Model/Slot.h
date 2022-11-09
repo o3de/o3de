@@ -260,32 +260,9 @@ namespace GraphModel
         //! Valid for Input Data and Property slots.
         void SetValue(const AZStd::any& value);
 
-        // CJS TODO: More functions to add a bit later...
-        // CJS TODO: Also cache connection information here so Slot doesn't have to search the Graph for connections
-
-        //! Whether it's connected to other Slots in the Graph
-        //! (Property slots will never have connections)
-        // bool IsConnected() const;
-
         //! Returns the list of connections to this Slot.
         //! (Property slots will never have connections)
         ConnectionList GetConnections() const;
-
-        //! Returns the list of other Slots that this Slot is connected to
-        //! (Property slots will never have connections)
-        // AZStd::vector<SlotPtr> GetConnectedSlots();    
-
-        //! Returns the list of all Nodes that this Slot is connected to
-        //! (Property slots will never have connections)
-        //AZStd::vector<NodePtr> GetConnectedNodes();
-
-        //! Returns the list of IDs for other Slots that this Slot is connected to
-        //! (Property slots will never have connections)
-        // AZStd::vector<Endpoint> GetConnectedEndpoints();
-
-        //! Returns the list of IDs for all Nodes that this Slot is connected to
-        //! (Property slots will never have connections)
-        // AZStd::vector<NodeId> GetConnectedNodeIds();
 
     private:
 
@@ -295,10 +272,8 @@ namespace GraphModel
         DataTypePtr GetDataTypeForTypeId(const AZ::Uuid& typeId) const;
         DataTypePtr GetDataTypeForValue(const AZStd::any& value) const;
 
-        mutable AZStd::weak_ptr<Node> m_parentNode; //!< This is a mutable because it is just-in-time initialized in a const accessor function. This is okay because it's just a cache.
         SlotDefinitionPtr m_slotDefinition;         //!< Pointer to the SlotDefinition in the parent Node, that defines this slot.
         AZStd::any m_value;                         //!< This is the value that gets used for a Property slot or an Input Data slot that doesn't have any connection.
-        WeakConnectionList m_connections;           //!< List of connections to this Slot. Not reflected/serialized because this is just a cache of information owned by the Graph.
         SlotSubId m_subId = 0;                      //!< SubId to uniquely identify extendable slots of the same name (regular slots will always have a SubId of 0)
     };
         

@@ -13,7 +13,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/Application/Application.h>
 #include <native/utilities/assetUtils.h>
-#include <native/unittests/UnitTestRunner.h> // for the assert absorber.
+#include <native/unittests/UnitTestUtils.h> // for the assert absorber.
 #include <AssetManager/FileStateCache.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <tests/ApplicationManagerTests.h>

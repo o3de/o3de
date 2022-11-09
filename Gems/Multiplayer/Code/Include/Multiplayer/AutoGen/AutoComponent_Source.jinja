@@ -322,21 +322,11 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ PrintRpcParam
 {%     set paramTypes   = [] %}
 {%     set paramDefines = [] %}
 {{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
-            ->Method("{{ UpperFirst(Property.attrib['Name']) }}", []({{ ClassName }}* self{{ PrintRpcParameters(', ', paramDefines) }}){
-{%            if (InvokeFrom == 'Server')  %}
-                self->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
-{%            elif (InvokeFrom == 'Authority') or (InvokeFrom == 'Autonomous') %}
-                if (self->m_controller)
-                {
-                    self->m_controller->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
-                }
-                else
-                {
-                    AZ_Warning("Network RPC", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }} method failed. Entity '%s' (id: %s) {{ ClassName }} is missing the network controller. This remote-procedure can only be invoked from {{InvokeFrom}} network entities, because this entity doesn't have a controller, it must not be a {{InvokeFrom}} entity. Please check your network context before attempting to call {{ UpperFirst(Property.attrib['Name']) }}.", self->GetEntity()->GetName().c_str(), self->GetEntityId().ToString().c_str())
-                }
-{%            endif %}
-            })
-            ->Method("{{ UpperFirst(Property.attrib['Name']) }}ByEntityId", [](AZ::EntityId id{{ PrintRpcParameters(', ', paramDefines) }}) {
+            ->Method("{{ UpperFirst(Property.attrib['Name']) }}ByEntityId", []() {
+                AZ_Warning("Network RPC", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }}ByEntityId has been deprecated. Please use {{ UpperFirst(Property.attrib['Name']) }} instead.");
+            }, {}, "Deprecated. Please use {{ UpperFirst(Property.attrib['Name']) }} instead.")
+                ->Attribute(AZ::Script::Attributes::Deprecated, true)
+            ->Method("{{ UpperFirst(Property.attrib['Name']) }}", [](AZ::EntityId id{{ PrintRpcParameters(', ', paramDefines) }}) {
                 AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
                 if (!entity)
                 {
@@ -395,16 +385,13 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ PrintRpcParam
 {%     set paramTypes   = [] %}
 {%     set paramDefines = [] %}
 {{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
-        ->Method("Get{{ UpperFirst(Property.attrib['Name']) }}Event", []({{ ClassName }}* self) -> AZ::Event<{{ ', '.join(paramTypes) }}>&
+        ->Method("Get{{ UpperFirst(Property.attrib['Name']) }}EventByEntityId", []()
         {
-{%        if HandleOn == 'Client' %}
-            return self->Get{{ UpperFirst(Property.attrib['Name']) }}Event();
-{%        elif (HandleOn == 'Authority') or (HandleOn == 'Autonomous') %}
-            return self->m_controller->Get{{ UpperFirst(Property.attrib['Name']) }}Event();
-{%        endif %}
+            AZ_Warning("Network RPC", false, "{{ ClassName }} Get{{ UpperFirst(Property.attrib['Name']) }}EventByEntityId has been deprecated. Please use Get{{ UpperFirst(Property.attrib['Name']) }}Event instead.");
         })
             ->Attribute(AZ::Script::Attributes::AzEventDescription, {{ LowerFirst(Property.attrib['Name']) }}EventDesc)
-        ->Method("Get{{ UpperFirst(Property.attrib['Name']) }}EventByEntityId", [](AZ::EntityId id) -> AZ::Event<{{ ', '.join(paramTypes) }}>*
+            ->Attribute(AZ::Script::Attributes::Deprecated, true)
+        ->Method("Get{{ UpperFirst(Property.attrib['Name']) }}Event", [](AZ::EntityId id) -> AZ::Event<{{ ', '.join(paramTypes) }}>*
         {
             AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
             if (!entity)
@@ -1299,6 +1286,13 @@ namespace {{ Component.attrib['Namespace'] }}
         {
             serializeContext->Class<{{ ComponentName }}NetworkInput>()
                 ->Version(1)
+{%                  set ScriptableNetInputNames = [] %}
+{%                  call (netInput) AutoComponentMacros.ParseNetworkInputsExposedToScript(Component) %}
+{%                      set ScriptableNetInputNames = ScriptableNetInputNames.append(netInput.attrib['Name']) %}
+{%                  endcall %}
+{%                  for param_name in ScriptableNetInputNames %}
+                ->Field("{{ param_name }}", &{{ ComponentName }}NetworkInput::m_{{ LowerFirst(param_name) }})
+{%                  endfor %}
                 ;
         }
 
@@ -1307,22 +1301,28 @@ namespace {{ Component.attrib['Namespace'] }}
         {
             behaviorContext->Class<{{ ComponentName }}NetworkInput>("{{ ComponentName }}NetworkInput")
                 ->Attribute(AZ::Script::Attributes::Module, "{{ LowerFirst(Component.attrib['Namespace']) }}")
-                ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }}")
-{%                  set ScriptableNetInputNames = [] %}
-{%                  call (netInput) AutoComponentMacros.ParseNetworkInputsExposedToScript(Component) %}
-{%                      set ScriptableNetInputNames = ScriptableNetInputNames.append(netInput.attrib['Name']) %}
-{%                  endcall %}
+                ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }} {{ ComponentName }}")
                     ->Method("CreateFromValues", &Construct{{ ComponentName }}NetworkInput, { { {% for param_name in ScriptableNetInputNames %}{"{{ LowerFirst(param_name) }}"}{% if not loop.last %}, {% endif %}{% endfor -%} } })
 
 {%                  for param_name in ScriptableNetInputNames %}
-                    ->Property("{{ param_name }}", BehaviorValueProperty(&{{ ComponentName }}NetworkInput::m_{{ LowerFirst(param_name) }}))
+                    ->Method("Get{{ param_name }}", [](const {{ ComponentName }}NetworkInput& input)
+                    {
+                        return input.m_{{ LowerFirst(param_name) }};
+                    })
+                    ->Method("Set{{ param_name }}", []({{ ComponentName }}NetworkInput& input,
+                            decltype({{ ComponentName }}NetworkInput::m_{{ LowerFirst(param_name) }}) {{ LowerFirst(param_name) }})
+                    {
+                        input.m_{{ LowerFirst(param_name) }} = {{ LowerFirst(param_name) }};
+                        return input;
+                    })
+                    
 {%                  endfor %}
             ;
 
             behaviorContext->EBus<{{ ComponentName }}RequestBus>("{{ ComponentName }}BusHandler")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "{{ LowerFirst(Component.attrib['Namespace']) }}")
-                ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }}")
+                ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }} {{ ComponentName }}")
                     ->Handler<{{ ComponentName }}BusHandler>()
                 ;
         }

@@ -17,13 +17,15 @@
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Component/TickBus.h>
 
-
 #include <AzCore/Memory/AllocationRecords.h>
 
 #include <AzCore/Memory/OverrunDetectionAllocator.h>
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Memory/MallocSchema.h>
+
 #include <AzCore/Metrics/EventLoggerFactoryImpl.h>
+#include <AzCore/Metrics/JsonTraceEventLogger.h>
+#include <AzCore/Metrics/EventLoggerUtils.h>
 
 #include <AzCore/NativeUI/NativeUIRequests.h>
 
@@ -71,31 +73,45 @@
 
 #include <AzCore/Module/Environment.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/std/utility/charconv.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
 #include <AzCore/Time/TimeSystem.h>
 
-static void PrintEntityName(const AZ::ConsoleCommandContainer& arguments)
+
+namespace AZ::Metrics
 {
-    if (arguments.empty())
-    {
-        return;
-    }
-
-    const auto entityIdStr = AZStd::string(arguments.front());
-    const auto entityIdValue = AZStd::stoull(entityIdStr);
-
-    AZStd::string entityName;
-    AZ::ComponentApplicationBus::BroadcastResult(
-        entityName, &AZ::ComponentApplicationBus::Events::GetEntityName, AZ::EntityId(entityIdValue));
-
-    AZ_Printf("Entity Debug", "EntityId: %" PRIu64 ", Entity Name: %s", entityIdValue, entityName.c_str());
+    const EventLoggerId CoreEventLoggerId{ static_cast<AZ::u32>(AZStd::hash<AZStd::string_view>{}("Core")) };
+    constexpr const char* CoreMetricsFilenameStem = "Metrics/core_metrics";
+    // Settings key used which indicates the rate in microseconds seconds to record core metrics in the Tick() function
+    constexpr AZStd::string_view CoreMetricsRecordRateMicrosecondsKey = "/O3DE/Metrics/Core/RecordRateMicroseconds";
 }
-
-AZ_CONSOLEFREEFUNC(
-    PrintEntityName, AZ::ConsoleFunctorFlags::Null, "Parameter: EntityId value, Prints the name of the entity to the console");
 
 namespace AZ
 {
+    static void PrintEntityName(const AZ::ConsoleCommandContainer& arguments)
+    {
+        if (arguments.empty())
+        {
+            return;
+        }
+
+        AZStd::string_view entityIdStr(arguments.front());
+        AZ::u64 entityIdValue;
+        AZStd::from_chars(entityIdStr.begin(), entityIdStr.end(), entityIdValue);
+
+        AZStd::string entityName;
+        if (auto componentApplicationRequests = AZ::Interface<ComponentApplicationRequests>::Get();
+            componentApplicationRequests != nullptr)
+        {
+            entityName = componentApplicationRequests->GetEntityName(AZ::EntityId(entityIdValue));
+        }
+
+        AZ_Printf("Entity Debug", "EntityId: %llu, Entity Name: %s", entityIdValue, entityName.c_str());
+    }
+
+    AZ_CONSOLEFREEFUNC(PrintEntityName, AZ::ConsoleFunctorFlags::Null,
+        "Parameter: EntityId value, Prints the name of the entity to the console");
+
     static EnvironmentVariable<OverrunDetectionSchema> s_overrunDetectionSchema;
 
     static EnvironmentVariable<MallocSchema> s_mallocSchema;
@@ -419,16 +435,8 @@ namespace AZ
         CreateOSAllocator();
         CreateSystemAllocator();
 
-        // Create the EventLoggerFactory as soon as the Allocators are available
-        m_eventLoggerFactory = AZStd::make_unique<AZ::Metrics::EventLoggerFactoryImpl>();
-        if (AZ::Metrics::EventLoggerFactory::Get() == nullptr)
-        {
-            AZ::Metrics::EventLoggerFactory::Register(m_eventLoggerFactory.get());
-        }
-
         // Now that the Allocators are initialized, the Command Line parameters can be parsed
         m_commandLine.Parse(m_argC, m_argV);
-
 
         m_nameDictionary = AZStd::make_unique<NameDictionary>();
 
@@ -440,76 +448,16 @@ namespace AZ
             m_nameDictionary->LoadDeferredNames(AZ::Name::GetDeferredHead());
         }
 
-        SettingsRegistryMergeUtils::ParseCommandLine(m_commandLine);
+        InitializeSettingsRegistry();
 
-        // Create the settings registry and register it with the AZ interface system
-        // This is done after the AppRoot has been calculated so that the Bootstrap.cfg
-        // can be read to determine the Game folder and the asset platform
-        m_settingsRegistry = AZStd::make_unique<SettingsRegistryImpl>();
+        InitializeEventLoggerFactory();
 
-        // Register the Settings Registry with the AZ Interface if there isn't one registered already
-        if (SettingsRegistry::Get() == nullptr)
-        {
-            SettingsRegistry::Register(m_settingsRegistry.get());
-        }
-
-        m_settingsRegistryOriginTracker = AZStd::make_unique<SettingsRegistryOriginTracker>(*m_settingsRegistry);
-
-        // Register the Settings Registry Origin Tracker with the AZ Interface system
-        if (AZ::Interface<AZ::SettingsRegistryOriginTracker>::Get() == nullptr)
-        {
-            AZ::Interface<AZ::SettingsRegistryOriginTracker>::Register(m_settingsRegistryOriginTracker.get());
-        }
-
-        // Add the Command Line arguments into the SettingsRegistry
-        SettingsRegistryMergeUtils::StoreCommandLineToRegistry(*m_settingsRegistry, m_commandLine);
-
-        // Add a notifier to update the project_settings when
-        // 1. The 'project_path' key changes
-        // 2. The project specialization when the 'project-name' key changes
-        // 3. The ComponentApplication command line when the command line is stored to the registry
-        m_projectPathChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectPathChangedEventHandler{
-            *m_settingsRegistry });
-        m_projectNameChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectNameChangedEventHandler{
-            *m_settingsRegistry });
-        m_commandLineUpdatedHandler = m_settingsRegistry->RegisterNotifier(UpdateCommandLineEventHandler{
-            *m_settingsRegistry, m_commandLine });
-
-        // Merge Command Line arguments
-        constexpr bool executeRegDumpCommands = false;
-
-#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
-        // Skip over merging the User Registry in non-debug and profile configurations
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
-#endif
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
-
-        // The /O3DE/Application/LifecycleEvents array contains a valid set of lifecycle events
-        // Those lifecycle events are normally read from the <engine-root>/Registry
-        // which isn't merged until ComponentApplication::Create invokes MergeSettingsToRegistry
-        // So pre-populate the valid lifecycle even entries
-        ComponentApplicationLifecycle::RegisterEvent(*m_settingsRegistry, "SystemAllocatorCreated");
-        ComponentApplicationLifecycle::RegisterEvent(*m_settingsRegistry, "SettingsRegistryAvailable");
-        ComponentApplicationLifecycle::RegisterEvent(*m_settingsRegistry, "ConsoleAvailable");
-        ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "SystemAllocatorCreated", R"({})");
-        ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "SettingsRegistryAvailable", R"({})");
+        InitializeLifecyleEvents(*m_settingsRegistry);
 
         // Create the Module Manager
         m_moduleManager = AZStd::make_unique<ModuleManager>();
 
-        // Az Console initialization..
-        // note that tests destroy and construct the application over and over, which is not a desirable pattern
-        // so we allow the console to construct once and skip destruction / construction on consecutive runs
-        m_console = AZStd::make_unique<AZ::Console>(*m_settingsRegistry);
-        if (AZ::Interface<AZ::IConsole>::Get() == nullptr)
-        {
-            AZ::Interface<AZ::IConsole>::Register(m_console.get());
-            m_console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
-            m_settingsRegistryConsoleFunctors = AZ::SettingsRegistryConsoleUtils::RegisterAzConsoleCommands(*m_settingsRegistry, *m_console);
-            m_settingsRegistryOriginTrackerConsoleFunctors = AZ::SettingsRegistryConsoleUtils::RegisterAzConsoleCommands(*m_settingsRegistryOriginTracker, *m_console);
-            ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "ConsoleAvailable", R"({})");
-        }
+        InitializeConsole(*m_settingsRegistry);
     }
 
     //=========================================================================
@@ -587,6 +535,170 @@ namespace AZ
         DestroyAllocator();
     }
 
+    void ComponentApplication::InitializeSettingsRegistry()
+    {
+        SettingsRegistryMergeUtils::ParseCommandLine(m_commandLine);
+
+        // Create the settings registry and register it with the AZ interface system
+        // This is done after the AppRoot has been calculated so that the Bootstrap.cfg
+        // can be read to determine the Game folder and the asset platform
+        m_settingsRegistry = AZStd::make_unique<SettingsRegistryImpl>();
+
+        // Register the Settings Registry with the AZ Interface if there isn't one registered already
+        if (SettingsRegistry::Get() == nullptr)
+        {
+            SettingsRegistry::Register(m_settingsRegistry.get());
+        }
+
+        m_settingsRegistryOriginTracker = AZStd::make_unique<SettingsRegistryOriginTracker>(*m_settingsRegistry);
+
+        // Register the Settings Registry Origin Tracker with the AZ Interface system
+        if (AZ::Interface<AZ::SettingsRegistryOriginTracker>::Get() == nullptr)
+        {
+            AZ::Interface<AZ::SettingsRegistryOriginTracker>::Register(m_settingsRegistryOriginTracker.get());
+        }
+
+        // Add the Command Line arguments into the SettingsRegistry
+        SettingsRegistryMergeUtils::StoreCommandLineToRegistry(*m_settingsRegistry, m_commandLine);
+
+        // Add a notifier to update the project_settings when
+        // 1. The 'project_path' key changes
+        // 2. The project specialization when the 'project-name' key changes
+        // 3. The ComponentApplication command line when the command line is stored to the registry
+        m_projectPathChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectPathChangedEventHandler{
+            *m_settingsRegistry });
+        m_projectNameChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectNameChangedEventHandler{
+            *m_settingsRegistry });
+        m_commandLineUpdatedHandler = m_settingsRegistry->RegisterNotifier(UpdateCommandLineEventHandler{
+            *m_settingsRegistry, m_commandLine });
+
+        // Merge Command Line arguments
+        constexpr bool executeRegDumpCommands = false;
+
+#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
+        // Only merge the Global User Registry (~/.o3de/Registry) in debug and profile configurations
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
+#endif
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
+    }
+
+    void ComponentApplication::InitializeEventLoggerFactory()
+    {
+        // Create the EventLoggerFactory as soon as the Allocators are available
+        m_eventLoggerFactory = AZStd::make_unique<AZ::Metrics::EventLoggerFactoryImpl>();
+        if (AZ::Metrics::EventLoggerFactory::Get() == nullptr)
+        {
+            AZ::Metrics::EventLoggerFactory::Register(m_eventLoggerFactory.get());
+        }
+    }
+
+    void ComponentApplication::InitializeLifecyleEvents(AZ::SettingsRegistryInterface& settingsRegistry)
+    {
+        // The /O3DE/Application/LifecycleEvents array contains a valid set of lifecycle events
+        // Those lifecycle events are normally read from the <engine-root>/Registry
+        // which isn't merged until ComponentApplication::Create invokes MergeSettingsToRegistry
+        // So pre-populate the valid lifecycle even entries
+        ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "SystemAllocatorCreated");
+        ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "SettingsRegistryAvailable");
+        ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "ConsoleAvailable");
+        ComponentApplicationLifecycle::SignalEvent(settingsRegistry, "SystemAllocatorCreated", R"({})");
+        ComponentApplicationLifecycle::SignalEvent(settingsRegistry, "SettingsRegistryAvailable", R"({})");
+    }
+
+    void ComponentApplication::InitializeConsole(SettingsRegistryInterface& settingsRegistry)
+    {
+        // Az Console initialization.
+        // note that tests destroy and construct the application over and over, which is not a desirable pattern
+        m_console = AZStd::make_unique<AZ::Console>(settingsRegistry);
+        if (AZ::Interface<AZ::IConsole>::Get() == nullptr)
+        {
+            AZ::Interface<AZ::IConsole>::Register(m_console.get());
+            m_console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
+            m_settingsRegistryConsoleFunctors = AZ::SettingsRegistryConsoleUtils::RegisterAzConsoleCommands(settingsRegistry, *m_console);
+            m_settingsRegistryOriginTrackerConsoleFunctors = AZ::SettingsRegistryConsoleUtils::RegisterAzConsoleCommands(*m_settingsRegistryOriginTracker, *m_console);
+            ComponentApplicationLifecycle::SignalEvent(settingsRegistry, "ConsoleAvailable", R"({})");
+        }
+    }
+
+    void ComponentApplication::RegisterCoreEventLogger()
+    {
+        // Register Core Event logger with Component Application
+
+        // Use the name of the running build target as part of the event logger name
+        // If it is not available, then an event logger will not be created
+        AZ::IO::FixedMaxPath uniqueFilenameSuffix = AZ::Metrics::CoreMetricsFilenameStem;
+        if (AZ::IO::FixedMaxPathString buildTargetName;
+            m_settingsRegistry->Get(buildTargetName, AZ::SettingsRegistryMergeUtils::BuildTargetNameKey))
+        {
+            // append the build target name as injected from CMake if known
+            uniqueFilenameSuffix.Native() += AZ::IO::FixedMaxPathString::format(".%s", buildTargetName.c_str());
+        }
+        else
+        {
+            return;
+        }
+
+        // Append the build configuration(debug, release, profile) to the metrics filename
+        if (AZStd::string_view buildConfig{ AZ_BUILD_CONFIGURATION_TYPE }; !buildConfig.empty())
+        {
+            uniqueFilenameSuffix.Native() += AZ::IO::FixedMaxPathString::format(".%.*s", AZ_STRING_ARG(buildConfig));
+        }
+
+        // Use the process ID to provide uniqueness to the metrics json files
+        AZStd::fixed_string<32> processIdString;
+        AZStd::to_string(processIdString, AZ::Platform::GetCurrentProcessId());
+        uniqueFilenameSuffix.Native() += AZ::IO::FixedMaxPathString::format(".%s", processIdString.c_str());
+        // Append .json extension
+        uniqueFilenameSuffix.Native() += ".json";
+
+        // Append the relative file name portion to the <project-root>/user directory
+        auto metricsFilePath = (AZ::IO::FixedMaxPath{ AZ::Utils::GetProjectUserPath(m_settingsRegistry.get()) }
+            / uniqueFilenameSuffix).LexicallyNormal();
+
+        // Open up the metrics file in write mode and truncate the contents if it exist(it shouldn't since a millisecond
+        // is being used
+        constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath;
+        if (auto fileStream = AZStd::make_unique<AZ::IO::SystemFileStream>(metricsFilePath.c_str(), openMode);
+            fileStream != nullptr && fileStream->IsOpen())
+        {
+            // Configure core event logger with the name of "Core"
+            AZ::Metrics::JsonTraceLoggerEventConfig config{ "Core" };
+            auto coreEventLogger = AZStd::make_unique<AZ::Metrics::JsonTraceEventLogger>(AZStd::move(fileStream), config);
+            m_eventLoggerFactory->RegisterEventLogger(AZ::Metrics::CoreEventLoggerId, AZStd::move(coreEventLogger));
+        }
+        else
+        {
+            AZ_Error("ComponentApplication", false, R"(unable to open core metrics with with path "%s")",
+                metricsFilePath.c_str());
+        }
+
+        // Record metrics every X microseconds based on the /O3DE/Metrics/Core/RecordRateMicroseconds setting
+        // or every 10 secondsif not supplied
+        m_recordMetricsOnTickCallback = [&registry = *m_settingsRegistry.get(),
+            lastRecordTime = AZStd::chrono::steady_clock::now()]
+            (AZStd::chrono::steady_clock::time_point monotonicTime) mutable -> bool
+        {
+            // Retrieve the record rate setting from the Setting Registry
+            using namespace AZStd::chrono_literals;
+            AZStd::chrono::microseconds recordTickMicroseconds = 10s;
+            if (AZ::s64 recordRateMicrosecondValue;
+                registry.Get(recordRateMicrosecondValue, AZ::Metrics::CoreMetricsRecordRateMicrosecondsKey))
+            {
+                recordTickMicroseconds = AZStd::chrono::microseconds(recordRateMicrosecondValue);
+            }
+
+            if ((monotonicTime - lastRecordTime) >= recordTickMicroseconds)
+            {
+                // Reset the recordTime to the current steady clock time and return true to record the metrics
+                lastRecordTime = monotonicTime;
+                return true;
+            }
+
+            return false;
+        };
+    }
+
     void ReportBadEngineRoot()
     {
         AZStd::string errorMessage = {"Unable to determine a valid path to the engine.\n"
@@ -641,6 +753,9 @@ namespace AZ
         // to the settings registry.
 
         MergeSettingsToRegistry(*m_settingsRegistry);
+
+        // Register the Core metrics Event logger with the IEventLoggerFactory
+        RegisterCoreEventLogger();
 
         m_systemEntity = AZStd::make_unique<AZ::Entity>(SystemEntityId, "SystemEntity");
         CreateCommon();
@@ -1352,6 +1467,33 @@ namespace AZ
     void ComponentApplication::Tick()
     {
         AZ_PROFILE_SCOPE(System, "Component application simulation tick");
+
+        // Only record when the record metrics on tick callback is set
+        if (m_recordMetricsOnTickCallback)
+        {
+            auto currentMonotonicTime = AZStd::chrono::steady_clock::now();
+
+            if (m_recordMetricsOnTickCallback(currentMonotonicTime))
+            {
+                AZ::Metrics::EventObjectStorage argsContainer;
+                argsContainer.emplace_back("frameTimeMicroseconds", static_cast<AZ::u64>(
+                    AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(currentMonotonicTime - m_lastTickTime).count()));
+                AZ::Metrics::AsyncArgs asyncArgs;
+                asyncArgs.m_name = "FrameTime";
+                asyncArgs.m_cat = "Core";
+                asyncArgs.m_args = argsContainer;
+                asyncArgs.m_id = "Simulation";
+                asyncArgs.m_scope = "Engine";
+
+                [[maybe_unused]] auto metricsOutcome = AZ::Metrics::RecordAsyncEventInstant(AZ::Metrics::CoreEventLoggerId, asyncArgs, m_eventLoggerFactory.get());
+
+                AZ_ErrorOnce("ComponentApplication", metricsOutcome.IsSuccess(),
+                    "Failed to record frame time metrics. Error %s", metricsOutcome.GetError().c_str());
+            }
+
+            // Update the m_lastTickTime to the current monotonic time
+            m_lastTickTime = currentMonotonicTime;
+        }
 
         {
             AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:ExecuteQueuedEvents");

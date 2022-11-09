@@ -1653,11 +1653,6 @@ bool CCryEditApp::InitInstance()
         return false;
     }
 
-    // Reflect property control classes to the serialize context...
-    AZ::SerializeContext* serializeContext = nullptr;
-    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-    AZ_Assert(serializeContext, "Serialization context not available");
-    ReflectedVarInit::setupReflection(serializeContext);
     RegisterReflectedVarHandlers();
 
     CreateSplashScreen();

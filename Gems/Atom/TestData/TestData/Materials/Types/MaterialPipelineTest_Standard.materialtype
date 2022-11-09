@@ -1,0 +1,101 @@
+{
+    "description": "This material type demonstrates how to use the material pipeline system. This is temporary and can be removed after the core material types are ported to the new system.",
+    "version": 3,
+    "propertyLayout": {
+        "propertyGroups": [
+            {
+                "name": "base",
+                "displayName": "Base Layer",
+                "properties": [
+                    {
+                        "name": "color",
+                        "displayName": "Color",
+                        "type": "Color",
+                        "defaultValue": [ 1.0, 1.0, 1.0 ],
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_baseColor"
+                        }
+                    },
+                    {
+                        "name": "metallic",
+                        "displayName": "Metallic",
+                        "type": "Float",
+                        "defaultValue": 0.0,
+                        "min": 0.0,
+                        "max": 1.0,
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_metallic"
+                        }
+                    },
+                    {
+                        "name": "roughness",
+                        "displayName": "Roughness",
+                        "type": "Float",
+                        "defaultValue": 1.0,
+                        "min": 0.0,
+                        "max": 1.0,
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_roughness"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "clearCoat",
+                "displayName": "Clear Coat",
+                "properties": [
+                    {
+                        "name": "enable",
+                        "displayName": "Enable",
+                        "description": "Enable clear coat",
+                        "type": "Bool",
+                        "defaultValue": false,
+                        "connection": [
+                            {
+                                "type": "ShaderOption",
+                                "name": "o_clearCoat_feature_enabled"
+                            },
+                            {
+                                "type": "ShaderOption",
+                                "name": "o_materialUseForwardPassIBLSpecular"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "factor",
+                        "displayName": "Factor",
+                        "description": "Strength factor for scaling the percentage of effect applied",
+                        "type": "Float",
+                        "defaultValue": 1.0,
+                        "min": 0.0,
+                        "max": 1.0,
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_clearCoatFactor"
+                        }
+                    },
+                    {
+                        "name": "roughness",
+                        "displayName": "Roughness",
+                        "description": "Clear coat layer roughness",
+                        "type": "Float",
+                        "defaultValue": 0.0,
+                        "min": 0.0,
+                        "max": 1.0,
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_clearCoatRoughness"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "lightingModel": "Standard",
+    "materialShaderCode": "./MaterialPipelineTest_Standard.azsli",
+    "functors": [
+    ]
+}

@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AssetProcessorServerUnitTests.h"
-#include "UnitTestRunner.h"
+#include <native/unittests/AssetProcessorServerUnitTests.h>
+#include <native/unittests/UnitTestUtils.h>
 
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>

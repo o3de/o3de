@@ -112,7 +112,7 @@ namespace AzToolsFramework
             auto result = m_spawnableAssetContainer.CreateInMemorySpawnableAsset(prefabFilePath, spawnableName);
             if (result.IsSuccess())
             {
-                return AZ::Success(result.GetValue().GetId());
+                return AZ::Success(result.GetValue().get().GetId());
             }
             else
             {

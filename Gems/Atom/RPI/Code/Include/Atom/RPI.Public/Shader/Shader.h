@@ -142,14 +142,14 @@ namespace AZ
             //! @param shaderOptions The shader option values will be stored in the SRG's shader variant fallback key (if there is one).
             //! @param compileTheSrg If you need to set other values in the SRG, set this to false, and the call Compile() when you are done.
             //! @return The DrawSrg instance, or null if the shader does not include a DrawSrg.
-            Data::Instance<ShaderResourceGroup> CreateDrawSrgForShaderVariant(const ShaderOptionGroup& shaderOptions, bool compileTheSrg=true);
+            Data::Instance<ShaderResourceGroup> CreateDrawSrgForShaderVariant(const ShaderOptionGroup& shaderOptions, bool compileTheSrg);
 
             //! Creates a DrawSrg that contains the shader variant fallback key, initialized to the default shader options values.
             //! This SRG must be included in the DrawPacket for any shader that has shader options,
             //! otherwise the CommandList will fail validation for SRG being null.
             //! @param compileTheSrg If you need to set other values in the SRG, set this to false, and the call Compile() when you are done.
             //! @return The DrawSrg instance, or null if the shader does not include a DrawSrg.
-            Data::Instance<ShaderResourceGroup> CreateDefaultDrawSrg(bool compileTheSrg = true);
+            Data::Instance<ShaderResourceGroup> CreateDefaultDrawSrg(bool compileTheSrg);
 
             //! Returns a reference to the asset used to initialize this shader.
             const Data::Asset<ShaderAsset>& GetAsset() const;
