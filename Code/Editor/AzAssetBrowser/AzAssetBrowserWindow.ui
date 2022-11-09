@@ -116,6 +116,23 @@
           </widget>
          </item>
          <item>
+          <widget class="QToolButton" name="m_treeViewButton">
+           <property name="text">
+            <string>...</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+             <normaloff>:/stylesheet/img/UI20/browse-edit-select-files.svg</normaloff>:/stylesheet/img/UI20/browse-edit-select-files.svg</iconset>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">m_viewSelectButtonGroup</string>
+           </attribute>
+          </widget>
+         </item>
+         <item>
           <widget class="QToolButton" name="m_thumbnailViewButton">
            <property name="icon">
             <iconset resource="../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
@@ -133,7 +150,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QToolButton" name="m_listViewButton">
+          <widget class="QToolButton" name="m_tableViewButton">
            <property name="text">
             <string>...</string>
            </property>
@@ -272,13 +289,13 @@
             <height>0</height>
            </size>
           </property>
-          <widget class="QWidget" name="m_iconView">
+          <widget class="QWidget" name="m_thumbnailView">
            <layout class="QVBoxLayout" name="m_iconViewLayout">
             <property name="spacing">
              <number>0</number>
             </property>
             <item>
-             <widget class="QLabel" name="m_iconViewPlaceholder">
+             <widget class="QLabel" name="m_thumbnailViewPlaceholder">
               <property name="text">
                <string>Icon view placeholder</string>
               </property>

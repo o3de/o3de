@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{37B8B4B9-EDEB-424A-A486-2999C534A058}",
         "category": "Math Functions",
-        "title": "tan",
+        "title": "Tan",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
@@ -24,7 +28,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -38,7 +42,7 @@
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = tan(NODEID_inValue);"
+                        "SLOTTYPE SLOTNAME = tan(inValue);"
                     ]
                 }
             }

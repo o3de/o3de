@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{A597FC44-043F-42A0-8CB6-FF43A5A889DC}",
         "category": "Math Functions",
-        "title": "log",
+        "title": "Log",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
@@ -24,7 +28,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -38,7 +42,7 @@
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = log(NODEID_inValue);"
+                        "SLOTTYPE SLOTNAME = log(inValue);"
                     ]
                 }
             }

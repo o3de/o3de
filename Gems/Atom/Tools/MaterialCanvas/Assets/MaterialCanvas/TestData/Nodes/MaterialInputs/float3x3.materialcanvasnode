@@ -6,6 +6,11 @@
         "id": "{0CEDEE3B-0A53-438D-9876-38F867C55483}",
         "category": "Material Inputs",
         "title": "Float3x3 Input",
+        "titlePaletteName": "MaterialInputNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inRow1|inRow2|inRow3",
+            "outValue"
+        ],
         "propertySlots": [
             {
                 "name": "inGroup",
@@ -17,7 +22,8 @@
                     "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
                     "Value": ""
                 },
-                "supportsEditingOnNode": false
+                "visibleOnNode": false,
+                "editableOnNode": false
             },
             {
                 "name": "inName",
@@ -40,7 +46,8 @@
                     "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
                     "Value": ""
                 },
-                "supportsEditingOnNode": false
+                "visibleOnNode": false,
+                "editableOnNode": false
             },
             {
                 "name": "inRow1",
@@ -112,7 +119,7 @@
                 "defaultDataType": "float3x3",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = float3x3(MaterialSrg::NODEID_inRow1, MaterialSrg::NODEID_inRow2, MaterialSrg::NODEID_inRow3);"
+                        "SLOTTYPE SLOTNAME = float3x3(MaterialSrg::inRow1, MaterialSrg::inRow2, MaterialSrg::inRow3);"
                     ]
                 }
             }

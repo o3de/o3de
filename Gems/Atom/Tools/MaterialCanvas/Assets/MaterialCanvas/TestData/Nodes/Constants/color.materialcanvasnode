@@ -6,6 +6,11 @@
         "id": "{6B6603B9-A89E-403B-9AE9-C7E424093EC5}",
         "category": "Constants",
         "title": "Color Constant",
+        "titlePaletteName": "ConstantNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue",
+            "outR|outG|outB|outA"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
@@ -24,7 +29,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -38,7 +43,7 @@
                 "defaultDataType": "color",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue;"
+                        "SLOTTYPE SLOTNAME = inValue;"
                     ]
                 }
             },
@@ -50,7 +55,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.r;"
+                        "SLOTTYPE SLOTNAME = inValue.r;"
                     ]
                 }
             },
@@ -62,7 +67,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.g;"
+                        "SLOTTYPE SLOTNAME = inValue.g;"
                     ]
                 }
             },
@@ -74,7 +79,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.b;"
+                        "SLOTTYPE SLOTNAME = inValue.b;"
                     ]
                 }
             },
@@ -86,7 +91,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.a;"
+                        "SLOTTYPE SLOTNAME = inValue.a;"
                     ]
                 }
             }

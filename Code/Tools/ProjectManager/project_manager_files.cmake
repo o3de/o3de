@@ -102,6 +102,8 @@ set(FILES
     Source/TextOverflowWidget.cpp
     Source/CreateAGemScreen.h
     Source/CreateAGemScreen.cpp
+    Source/EditAGemScreen.h
+    Source/EditAGemScreen.cpp
     Source/GemCatalog/GemCatalogHeaderWidget.h
     Source/GemCatalog/GemCatalogHeaderWidget.cpp
     Source/GemCatalog/GemCatalogScreen.h
