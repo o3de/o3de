@@ -104,6 +104,24 @@ namespace AZ::DocumentPropertyEditor
         return Dom::Value(result.GetStringView(), false);
     }
 
+    Dom::Value EnumValueAttributeDefinition::ValueToDom(const EnumConstantValue& attribute) const
+    {
+        Dom::Value result(Dom::Type::Object);
+        result[EntryDescriptionKey] = Dom::Value(attribute.m_description, true);
+        result[EntryValueKey] = Dom::Value(static_cast<uint64_t>(attribute.m_value));
+        return result;
+    }
+
+    AZStd::optional<EnumConstantValue> EnumValueAttributeDefinition::DomToValue(const Dom::Value& value) const
+    {
+        if (!value.IsObject() || !value.HasMember(EntryDescriptionKey) || !value.HasMember(EntryValueKey))
+        {
+            return {};
+        }
+
+        return EnumConstantValue{ static_cast<AZ::u64>(value[EntryValueKey].GetUint64()), value[EntryDescriptionKey].GetString() };
+    }
+
     Dom::Value EnumValuesAttributeDefinition::ValueToDom(const EnumValuesContainer& attribute) const
     {
         Dom::Value result(Dom::Type::Array);
