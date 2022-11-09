@@ -500,49 +500,54 @@ class AtomComponentProperties:
         Directional Light component properties.
           - 'Camera' an EditorEntity.id reference to the Camera component that controls cascaded shadow view frustum.
                Must be a different entity than the one which hosts Directional Light component.
-          - 'Color' Color of the Light. (Color variable from azlmbr.math (0.0, 0.0, 0.0, 0.0))
-          - 'Intensity mode' Allows specifying light values in Lux or Ev100. (Lux, Ev100)
+          - 'Color' Color of the Light. (Color imported from azlmbr.math (0.0, 0.0, 0.0, 0.0))
+          - 'Intensity mode' Allows specifying light values in Lux or Ev100. (enum, Lux, Ev100)
                (Uses above dictionary DIRECTIONAL_LIGHT_INTENSITY_MODE)
-          - 'Intensity' Intensity of the light in the set photometric unit. (default 4.0, range -4.0 to 16.0)
+          - 'Intensity' Intensity of the light in the set photometric unit. (float, default 4.0, range -4.0 to 16.0)
           - 'Angular diameter' Angular diameter of the directional light in degrees. The sun is about 0.5.
-               (Default 0.5, range 0.0 - 1.0)
+               (float, Default 0.5, range 0.0 - 1.0)
           - 'Camera' Entity of the camera for cascaded shadowmap view frustum.
           - 'Shadow far clip' Shadow specific far clip distance. (default 100.0, range -INF to INF)
-          - 'Shadowmap size' Width/Height of shadowmap. (4 values allowed: 256, 512, 1024, 2048)
-          - 'Cascade count' Number of cascades. (default 4, range 0 to 4)
+          - 'Shadowmap size' Width/Height of shadowmap. (4 enum values selectable from dropdown: 256, 512, 1024, 2048))
+          - 'Cascade count' Number of cascades. (integer default 4, range 0 to 4)
           - 'Automatic splitting' Switch splitting of shadowmap frustum to cascades automatically or not. (bool)
-          - 'Split ratio' Ratio to lerp between the two types of frustrum splitting scheme. (default 0.9, range 0.0 - 1.0)
+          - 'Split ratio' Ratio to lerp between the two types of frustrum splitting scheme.
+               (float, default 0.9, range 0.0 - 1.0)
                0 = Uniform scheme which will split the frustum evenly across all cascades.
                1 = Logarithmic scheme which is designed to split the frustrum in a logarithmic fashion in order to
                    enable us
               to produce a more optimal perspective aliasing across the frustrum.
           - 'Far depth cascade' Far depth of each cascade. The value of the index greater than or equal to cascade
-               count is ignored. (four value (X,Y,Z,W) range 0 to current value of Shadow far clip.)
-          - 'Ground height' Height of the ground.  Used to correct position of cascades. (default 0.0, range -INF - INF)
+               count is ignored.
+               (Vector4 imported from azlmbr.math (0.0, 0.0, 0.0, 0.0) each value should be greater than the previous,
+               range 0 to current value of Shadow far clip.)
+          - 'Ground height' Height of the ground.  Used to correct position of cascades.
+               (float, default 0.0, range -INF - INF)
           - 'Cascade correction' Enable position correction of cascades to optimize the appearance for certain
                camera positions. (bool)
           - 'Debug coloring' Enable coloring to see how cascades places 0:red, 1:green, 2:blue, 3:yellow.
           - 'Shadow filter method' Filtering method of edge-softening of shadows.
-               (Uses above dictionary DIRECTIONAL_LIGHT_SHADOW_FILTER_METHOD)
+               (enum, Uses above dictionary DIRECTIONAL_LIGHT_SHADOW_FILTER_METHOD)
                None: no Filtering
                PCF: Percentage-closer filtering
                ESM: Exponential shadow maps
                ESM+PCF: ESM with a PCF fallback
                For BehaviorContext (or TrackView), None=0, PCF=1, ESM=2, ESM=PCF=3
           - 'Filtering sample count' This is used only when the pixel is predicted to be on the boundary.
-               (default 32, range 4 to 64)
+               (integer, default 32, range 4 to 64)
           - 'Shadow Receiver Plan Bias Enable' This reduces shadow acne when using large pcf kernels. (bool)
           - 'Shadow Bias' Reduces acne by applying a fixed bias along z in shadow-space.
-               If this is 0, no biasing is applied. (default 0.002, range 0.002 to 0.2)
+               If this is 0, no biasing is applied. (float, default 0.002, range 0.002 to 0.2)
           - 'Normal Shadow Bias' Reducing acne by biasing the shadowmap lookup along the geometric normal.
-               If this is 0, no biasing is applied. (default 2.5, range 0.0 to 10.0)
+               If this is 0, no biasing is applied. (float, default 2.5, range 0.0 to 10.0)
           - 'Blend between cascades' Enable smooth blending between shadowmap cascades. (bool)
           - 'Fullscreen Blur' Enables fullscreen blur on fullscreen sunlight shadows. (bool)
-          - 'Fullscreen Blur Strength' Affects how strong the fullscreen is. (default is 0.667 range 0 to 0.95)
+          - 'Fullscreen Blur Strength' Affects how strong the fullscreen is. (float, default is 0.667 range 0 to 0.95)
           - 'Fullscreen Blur Sharpness' Affect how sharp the fullscreen shadow blur appears around edges.
-               (default 50.0 range 0.0 to 400.0)
+               (float, default 50.0 range 0.0 to 400.0)
           - 'Affects GI' Controls whether this light affects diffuse global illumination. (bool)
-          - 'Factor' Multiplier on the amount of contribution to diffuse global illumination. (default 1.0 rangr 0.0 to 2.0)
+          - 'Factor' Multiplier on the amount of contribution to diffuse global illumination.
+                (float, default 1.0 range 0.0 to 2.0)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
