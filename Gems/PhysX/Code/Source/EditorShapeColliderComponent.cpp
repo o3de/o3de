@@ -32,6 +32,8 @@
 #include <RigidBodyStatic.h>
 #include <System/PhysXSystem.h>
 
+#pragma optimize("", off)
+
 namespace PhysX
 {
     EditorShapeColliderComponent::EditorShapeColliderComponent()
@@ -151,7 +153,6 @@ namespace PhysX
     void EditorShapeColliderComponent::UpdateCachedSamplePoints() const
     {
         m_geometryCache.m_cachedSamplePoints.clear();
-
         switch (m_shapeType)
         {
         case ShapeType::Box:
@@ -223,8 +224,7 @@ namespace PhysX
             break;
         }
 
-        AZ::Transform transform = GetWorldTM();
-        transform.ExtractUniformScale();
+        AZ::Transform transform = GetWorldTM() * AZ::Transform::CreateTranslation(m_colliderConfig.m_position);
         const size_t numPoints = m_geometryCache.m_cachedSamplePoints.size();
         for (size_t pointIndex = 0; pointIndex < numPoints; ++pointIndex)
         {
@@ -235,6 +235,13 @@ namespace PhysX
     const Physics::ColliderConfiguration& EditorShapeColliderComponent::GetColliderConfiguration() const
     {
         return m_colliderConfig;
+    }
+
+    Physics::ColliderConfiguration EditorShapeColliderComponent::GetColliderConfigurationScaled() const
+    {
+        Physics::ColliderConfiguration colliderConfigurationScaled = m_colliderConfig;
+        colliderConfigurationScaled.m_position *= m_cachedWorldTransform.GetUniformScale();
+        return colliderConfigurationScaled;
     }
 
     const AZStd::vector<AZStd::shared_ptr<Physics::ShapeConfiguration>>& EditorShapeColliderComponent::GetShapeConfigurations() const
@@ -281,7 +288,7 @@ namespace PhysX
         for (const auto& shapeConfig : m_shapeConfigs)
         {
             colliderShapePairs.emplace_back(
-                AZStd::make_shared<Physics::ColliderConfiguration>(m_colliderConfig), shapeConfig);
+                AZStd::make_shared<Physics::ColliderConfiguration>(GetColliderConfigurationScaled()), shapeConfig);
         }
         configuration.m_colliderAndShapeData = colliderShapePairs;
 
@@ -694,6 +701,7 @@ namespace PhysX
         UpdateSingleSidedSettings();
         UpdateShapeConfigs();
         UpdateTriggerSettings();
+        UpdateTranslationOffset();
 
         // Debug drawing
         m_colliderDebugDraw.Connect(GetEntityId());
@@ -841,6 +849,7 @@ namespace PhysX
         {
             UpdateShapeConfigs();
             UpdateTriggerSettings();
+            UpdateTranslationOffset();
 
             CreateStaticEditorCollider();
             Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
@@ -888,8 +897,10 @@ namespace PhysX
                 {
                 case Physics::ShapeType::Box:
                 {
+                    Physics::ColliderConfiguration unscaledColliderConfig = m_colliderConfig;
+                    unscaledColliderConfig.m_position /= m_currentNonUniformScale;
                     const auto& boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(*shapeConfig);
-                    m_colliderDebugDraw.DrawBox(debugDisplay, m_colliderConfig, boxConfig, m_currentNonUniformScale, false);
+                    m_colliderDebugDraw.DrawBox(debugDisplay, unscaledColliderConfig, boxConfig, m_currentNonUniformScale, false);
                     break;
                 }
                 case Physics::ShapeType::Capsule:
@@ -947,6 +958,15 @@ namespace PhysX
         }
     }
 
+    void EditorShapeColliderComponent::UpdateTranslationOffset()
+    {
+        AZ::Vector3 translationOffset = AZ::Vector3::CreateZero();
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            translationOffset, GetEntityId(), &LmbrCentral::ShapeComponentRequests::GetTranslationOffset);
+
+        m_colliderConfig.m_position = m_currentNonUniformScale * translationOffset;
+    }
+
     void EditorShapeColliderComponent::UpdateSingleSidedSettings()
     {
         if (GetEntity()->FindComponent<EditorRigidBodyComponent>())
@@ -967,3 +987,5 @@ namespace PhysX
         }
     }
 } // namespace PhysX
+
+#pragma optimize("", on)

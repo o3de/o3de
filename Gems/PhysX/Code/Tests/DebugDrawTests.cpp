@@ -9,8 +9,14 @@
 #include <AzFramework/UnitTest/TestDebugDisplayRequests.h>
 #include <EditorTestUtilities.h>
 #include <EditorColliderComponent.h>
+#include <EditorShapeColliderComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
+#include <AZTestShared/Utils/Utils.h>
+#include <LmbrCentral/Shape/BoxShapeComponentBus.h>
+#include <LmbrCentral/Shape/EditorShapeComponentBus.h>
+
+#pragma optimize("", off)
 
 namespace PhysXEditorTests
 {
@@ -230,4 +236,39 @@ namespace PhysXEditorTests
 
         EXPECT_TRUE(debugDrawAabb.IsClose(colliderAabb, 1e-3f));
     }
+
+    TEST_F(PhysXEditorFixture, ShapeCollider_BoxWithTranslationOffset_DebugDrawCorrect)
+    {
+        EntityPtr boxShapeEntity = CreateInactiveEditorEntity("BoxShape");
+        AZ::EntityId boxShapeEntityId = boxShapeEntity->GetId();
+        boxShapeEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
+        boxShapeEntity->CreateComponent(LmbrCentral::EditorBoxShapeComponentTypeId);
+        boxShapeEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        boxShapeEntity->Activate();
+
+        AZ::Transform transform(AZ::Vector3(1.0f, 2.0f, 3.0f), AZ::Quaternion(0.4f, -0.2f, -0.4f, 0.8f), 0.7f);
+        AZ::TransformBus::Event(boxShapeEntityId, &AZ::TransformBus::Events::SetWorldTM, transform);
+        AZ::NonUniformScaleRequestBus::Event(boxShapeEntityId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(1.0f, 1.5f, 2.0f));
+        LmbrCentral::BoxShapeComponentRequestsBus::Event(
+            boxShapeEntityId, &LmbrCentral::BoxShapeComponentRequests::SetBoxDimensions, AZ::Vector3(3.0f, 4.0f, 5.0f));
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            boxShapeEntityId, &LmbrCentral::ShapeComponentRequests::SetTranslationOffset, AZ::Vector3(2.0f, -5.0f, 3.0f));
+        // turn off the shape visibility, so that only the shape collider component debug draws
+        LmbrCentral::EditorShapeComponentRequestsBus::Event(
+            boxShapeEntityId, &LmbrCentral::EditorShapeComponentRequests::SetVisibleInEditor, false);
+
+        UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
+        AzFramework::EntityDebugDisplayEventBus::Event(
+            boxShapeEntityId,
+            &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
+            AzFramework::ViewportInfo{ 0 },
+            testDebugDisplayRequests);
+        const AZ::Aabb debugDrawAabb = testDebugDisplayRequests.GetAabb();
+
+        EXPECT_THAT(debugDrawAabb.GetMin(), UnitTest::IsClose(AZ::Vector3(-7.246f, -6.302f, -2.46f)));
+        EXPECT_THAT(debugDrawAabb.GetMax(), UnitTest::IsClose(AZ::Vector3(0.51f, 0.25f, 5.1f)));
+    }
+
 } // namespace PhysXEditorTests
+
+#pragma optimize("", on)

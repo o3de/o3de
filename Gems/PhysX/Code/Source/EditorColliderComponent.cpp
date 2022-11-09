@@ -38,6 +38,8 @@
 #include <Editor/ConfigurationWindowBus.h>
 #include <Editor/ColliderComponentMode.h>
 
+#pragma optimize("", off)
+
 namespace PhysX
 {
     void EditorProxyCylinderShapeConfig::Reflect(AZ::ReflectContext* context)
@@ -1597,3 +1599,5 @@ namespace PhysX
         }
     }
 } // namespace PhysX
+
+#pragma optimize("", on)

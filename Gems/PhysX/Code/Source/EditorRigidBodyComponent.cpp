@@ -20,6 +20,8 @@
 #include <Source/NameConstants.h>
 #include <Source/Utils.h>
 
+#pragma optimize("", off)
+
 namespace PhysX
 {
     namespace Internal
@@ -88,7 +90,7 @@ namespace PhysX
             const AZStd::vector<EditorShapeColliderComponent*> shapeColliders = entity->FindComponents<EditorShapeColliderComponent>();
             for (const EditorShapeColliderComponent* shapeCollider : shapeColliders)
             {
-                const Physics::ColliderConfiguration& colliderConfig = shapeCollider->GetColliderConfiguration();
+                Physics::ColliderConfiguration colliderConfig = shapeCollider->GetColliderConfigurationScaled();
                 const AZStd::vector<AZStd::shared_ptr<Physics::ShapeConfiguration>>& shapeConfigs =
                     shapeCollider->GetShapeConfigurations();
                 for (const auto& shapeConfig : shapeConfigs)
@@ -576,3 +578,5 @@ namespace PhysX
         }
     }
 } // namespace PhysX
+
+#pragma optimize("", on)

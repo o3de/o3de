@@ -12,6 +12,7 @@
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
+#include <AZTestShared/Utils/Utils.h>
 
 #include <System/PhysXSystem.h>
 
@@ -43,6 +44,7 @@ namespace PhysXEditorTests
     class PhysXEditorFixture
         : public UnitTest::AllocatorsTestFixture
         , public Physics::DefaultWorldBus::Handler
+        , public UnitTest::RegistryTestHelper
     {
     public:
         void SetUp() override;

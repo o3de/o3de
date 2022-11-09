@@ -83,6 +83,9 @@ namespace PhysX
         virtual const Physics::ColliderConfiguration& GetColliderConfiguration() const;
         virtual const AZStd::vector<AZStd::shared_ptr<Physics::ShapeConfiguration>>& GetShapeConfigurations() const;
 
+        //! Returns a collider configuration with the entity scale and non-uniform scale applied to the collider position.
+        Physics::ColliderConfiguration GetColliderConfigurationScaled() const;
+
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
     private:
@@ -145,6 +148,7 @@ namespace PhysX
 
         void UpdateTriggerSettings();
         void UpdateSingleSidedSettings();
+        void UpdateTranslationOffset();
 
         Physics::ColliderConfiguration m_colliderConfig; //!< Stores collision layers, whether the collider is a trigger, etc.
         DebugDraw::Collider m_colliderDebugDraw; //!< Handles drawing the collider based on global and local

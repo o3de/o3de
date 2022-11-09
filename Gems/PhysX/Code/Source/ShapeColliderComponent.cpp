@@ -13,6 +13,8 @@
 #include <LmbrCentral/Shape/CapsuleShapeComponentBus.h>
 #include <Source/Utils.h>
 
+#pragma optimize("", off)
+
 namespace PhysX
 {
     namespace Utils
@@ -34,6 +36,29 @@ namespace PhysX
         }
     }
 
+    void ShapeColliderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    {
+        provided.push_back(AZ_CRC_CE("PhysicsColliderService"));
+        provided.push_back(AZ_CRC_CE("PhysicsTriggerService"));
+        provided.push_back(AZ_CRC_CE("PhysicsShapeColliderService"));
+    }
+
+    void ShapeColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    {
+        required.push_back(AZ_CRC_CE("TransformService"));
+        required.push_back(AZ_CRC_CE("ShapeService"));
+    }
+
+    void ShapeColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("PhysicsShapeColliderService"));
+        incompatible.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
+        incompatible.push_back(AZ_CRC_CE("CompoundShapeService"));
+        incompatible.push_back(AZ_CRC_CE("DiskShapeService"));
+        incompatible.push_back(AZ_CRC_CE("TubeShapeService"));
+        incompatible.push_back(AZ_CRC_CE("ReferenceShapeService"));
+    }
+
     // BaseColliderComponent
     void ShapeColliderComponent::UpdateScaleForShapeConfigs()
     {
@@ -48,3 +73,6 @@ namespace PhysX
         }
     }
 } // namespace PhysX
+
+#pragma optimize("", on)
+

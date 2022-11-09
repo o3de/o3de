@@ -25,6 +25,8 @@
 #include <PhysX/PhysXLocks.h>
 #include <Scene/PhysXScene.h>
 
+#pragma optimize("", off)
+
 namespace PhysX
 {
     // ShapeInfoCache
@@ -329,3 +331,5 @@ namespace PhysX
     }
 
 }
+
+#pragma optimize("", on)

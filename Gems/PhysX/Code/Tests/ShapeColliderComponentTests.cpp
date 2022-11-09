@@ -7,26 +7,27 @@
  */
 
 #include <AzCore/UnitTest/TestTypes.h>
-#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
-#include <Tests/EditorTestUtilities.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <EditorColliderComponent.h>
-#include <EditorShapeColliderComponent.h>
-#include <EditorRigidBodyComponent.h>
 #include <EditorForceRegionComponent.h>
-#include <ShapeColliderComponent.h>
-#include <RigidBodyComponent.h>
-#include <StaticRigidBodyComponent.h>
-#include <RigidBodyStatic.h>
+#include <EditorRigidBodyComponent.h>
+#include <EditorShapeColliderComponent.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
+#include <LmbrCentral/Shape/CompoundShapeComponentBus.h>
 #include <LmbrCentral/Shape/CylinderShapeComponentBus.h>
 #include <LmbrCentral/Shape/PolygonPrismShapeComponentBus.h>
-#include <LmbrCentral/Shape/SphereShapeComponentBus.h>
-#include <LmbrCentral/Shape/CompoundShapeComponentBus.h>
 #include <LmbrCentral/Shape/QuadShapeComponentBus.h>
+#include <LmbrCentral/Shape/SphereShapeComponentBus.h>
 #include <PhysX/ForceRegionComponentBus.h>
+#include <PhysX/MathConversion.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/SystemComponentBus.h>
+#include <RigidBodyComponent.h>
+#include <RigidBodyStatic.h>
+#include <ShapeColliderComponent.h>
+#include <StaticRigidBodyComponent.h>
+#include <Tests/EditorTestUtilities.h>
 #include <Tests/PhysXTestCommon.h>
 
 namespace PhysXEditorTests
@@ -149,6 +150,123 @@ namespace PhysXEditorTests
         AZ::Aabb aabb = staticBody->GetAabb();
         EXPECT_TRUE(aabb.GetMax().IsClose(0.5f * boxDimensions));
         EXPECT_TRUE(aabb.GetMin().IsClose(-0.5f * boxDimensions));
+    }
+
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithBoxAndTranslationOffset_CorrectEditorStaticBodyGeometry)
+    {
+        // create an editor entity with a shape collider component, a non-uniform scale component and a box shape component
+        EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
+        editorEntity->CreateComponent(LmbrCentral::EditorBoxShapeComponentTypeId);
+        editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
+        editorEntity->Activate();
+        AZ::EntityId editorEntityId = editorEntity->GetId();
+
+        AZ::Transform transform(AZ::Vector3(2.0f, -6.0f, 5.0f), AZ::Quaternion(0.3f, -0.3f, 0.1f, 0.9f), 1.6f);
+        AZ::TransformBus::Event(editorEntityId, &AZ::TransformBus::Events::SetWorldTM, transform);
+        AZ::NonUniformScaleRequestBus::Event(editorEntityId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(2.0f, 2.5f, 0.5f));
+        LmbrCentral::BoxShapeComponentRequestsBus::Event(
+            editorEntityId, &LmbrCentral::BoxShapeComponentRequests::SetBoxDimensions, AZ::Vector3(5.0f, 8.0f, 6.0f));
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            editorEntityId, &LmbrCentral::ShapeComponentRequests::SetTranslationOffset, AZ::Vector3(-4.0f, 3.0f, -1.0f));
+
+        AzPhysics::SimulatedBody* simulatedBody = nullptr;
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(simulatedBody, editorEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        const auto* pxRigidStatic = static_cast<const physx::PxRigidStatic*>(simulatedBody->GetNativePointer());
+
+        AZ::Aabb aabb = PxMathConvert(pxRigidStatic->getWorldBounds(1.0f));
+        EXPECT_THAT(aabb.GetMin(), UnitTest::IsClose(AZ::Vector3(-25.488f, -10.16f, -11.448f)));
+        EXPECT_THAT(aabb.GetMax(), UnitTest::IsClose(AZ::Vector3(1.136f, 18.32f, 16.584f)));
+    }
+
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithBoxAndTranslationOffset_CorrectEditorDynamicBodyGeometry)
+    {
+        // create an editor entity with a shape collider component, a non-uniform scale component and a box shape component
+        EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
+        editorEntity->CreateComponent(LmbrCentral::EditorBoxShapeComponentTypeId);
+        editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
+        editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
+        editorEntity->Activate();
+        AZ::EntityId editorEntityId = editorEntity->GetId();
+
+        AZ::Transform transform(AZ::Vector3(-5.0f, -1.0f, 3.0f), AZ::Quaternion(0.7f, 0.5f, -0.1f, 0.5f), 1.2f);
+        AZ::TransformBus::Event(editorEntityId, &AZ::TransformBus::Events::SetWorldTM, transform);
+        AZ::NonUniformScaleRequestBus::Event(editorEntityId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(1.5f, 1.5f, 4.0f));
+        LmbrCentral::BoxShapeComponentRequestsBus::Event(
+            editorEntityId, &LmbrCentral::BoxShapeComponentRequests::SetBoxDimensions, AZ::Vector3(6.0f, 4.0f, 1.0f));
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            editorEntityId, &LmbrCentral::ShapeComponentRequests::SetTranslationOffset, AZ::Vector3(6.0f, -5.0f, -4.0f));
+
+        editorEntity->Deactivate();
+        editorEntity->Activate();
+
+        AzPhysics::SimulatedBody* simulatedBody = nullptr;
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(simulatedBody, editorEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        const auto* pxRigidDynamic = static_cast<const physx::PxRigidDynamic*>(simulatedBody->GetNativePointer());
+
+        AZ::Aabb aabb = PxMathConvert(pxRigidDynamic->getWorldBounds(1.0f));
+        EXPECT_THAT(aabb.GetMin(), UnitTest::IsClose(AZ::Vector3(-20.264f, 15.68f, -6.864f)));
+        EXPECT_THAT(aabb.GetMax(), UnitTest::IsClose(AZ::Vector3(-7.592f, 26.0f, 6.672f)));
+    }
+
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithBoxAndTranslationOffset_CorrectRuntimeStaticBodyGeometry)
+    {
+        // create an editor entity with a shape collider component, a non-uniform scale component and a box shape component
+        EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
+        editorEntity->CreateComponent(LmbrCentral::EditorBoxShapeComponentTypeId);
+        editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
+        editorEntity->Activate();
+        AZ::EntityId editorEntityId = editorEntity->GetId();
+
+        AZ::Transform transform(AZ::Vector3(7.0f, 2.0f, 4.0f), AZ::Quaternion(0.4f, -0.8f, 0.4f, 0.2f), 2.5f);
+        AZ::TransformBus::Event(editorEntityId, &AZ::TransformBus::Events::SetWorldTM, transform);
+        AZ::NonUniformScaleRequestBus::Event(editorEntityId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(0.8f, 2.0f, 1.5f));
+        LmbrCentral::BoxShapeComponentRequestsBus::Event(
+            editorEntityId, &LmbrCentral::BoxShapeComponentRequests::SetBoxDimensions, AZ::Vector3(1.0f, 4.0f, 7.0f));
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            editorEntityId, &LmbrCentral::ShapeComponentRequests::SetTranslationOffset, AZ::Vector3(6.0f, -1.0f, -2.0f));
+
+        EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
+
+        AzPhysics::SimulatedBody* simulatedBody = nullptr;
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(simulatedBody, gameEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        const auto* pxRigidStatic = static_cast<const physx::PxRigidStatic*>(simulatedBody->GetNativePointer());
+
+        AZ::Aabb aabb = PxMathConvert(pxRigidStatic->getWorldBounds(1.0f));
+        EXPECT_THAT(aabb.GetMin(), UnitTest::IsClose(AZ::Vector3(-4.8f, -14.14f, 5.265f)));
+        EXPECT_THAT(aabb.GetMax(), UnitTest::IsClose(AZ::Vector3(12.4f, 15.02f, 31.895f)));
+    }
+
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithBoxAndTranslationOffset_CorrectRuntimeDynamicBodyGeometry)
+    {
+        // create an editor entity with a shape collider component, a non-uniform scale component and a box shape component
+        EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
+        editorEntity->CreateComponent(LmbrCentral::EditorBoxShapeComponentTypeId);
+        editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
+        editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
+        editorEntity->Activate();
+        AZ::EntityId editorEntityId = editorEntity->GetId();
+
+        AZ::Transform transform(AZ::Vector3(4.0f, 4.0f, 2.0f), AZ::Quaternion(0.1f, 0.3f, 0.9f, 0.3f), 0.8f);
+        AZ::TransformBus::Event(editorEntityId, &AZ::TransformBus::Events::SetWorldTM, transform);
+        AZ::NonUniformScaleRequestBus::Event(editorEntityId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(2.5f, 1.0f, 2.0f));
+        LmbrCentral::BoxShapeComponentRequestsBus::Event(
+            editorEntityId, &LmbrCentral::BoxShapeComponentRequests::SetBoxDimensions, AZ::Vector3(4.0f, 2.0f, 7.0f));
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            editorEntityId, &LmbrCentral::ShapeComponentRequests::SetTranslationOffset, AZ::Vector3(-2.0f, 7.0f, -1.0f));
+
+        EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
+
+        AzPhysics::SimulatedBody* simulatedBody = nullptr;
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(simulatedBody, gameEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        const auto* pxRigidDynamic = static_cast<const physx::PxRigidDynamic*>(simulatedBody->GetNativePointer());
+
+        AZ::Aabb aabb = PxMathConvert(pxRigidDynamic->getWorldBounds(1.0f));
+        EXPECT_THAT(aabb.GetMin(), UnitTest::IsClose(AZ::Vector3(-1.664f, -8.352f, -0.88f)));
+        EXPECT_THAT(aabb.GetMax(), UnitTest::IsClose(AZ::Vector3(9.536f, 2.848f, 9.04f)));
     }
 
     void SetPolygonPrismVertices(AZ::EntityId entityId, const AZStd::vector<AZ::Vector2>& vertices)
