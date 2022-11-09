@@ -7,8 +7,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 Object to house all the Qt Objects and behavior used in testing the script canvas variable manager
 """
 from PySide2.QtCore import Qt
+import types
 from editor_python_test_tools.utils import TestHelper as helper
-from PySide2 import QtWidgets, QtCore
+from PySide2 import QtWidgets, QtCore, QtTest
 import pyside_utils
 from types import SimpleNamespace
 from consts.scripting import (VARIABLE_MANAGER_QT, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, GRAPH_VARIABLES_QT, GRAPH_VARIABLES_PAGE_QT)
@@ -31,7 +32,7 @@ VARIABLE_TYPES_DICT = {
 }
 
 
-class QtPyScriptCanvasVariableManager():
+class QtPyScriptCanvasVariableManager:
     """
     QtPy class for handling the behavior of the script canvas variable manager
     """
@@ -139,7 +140,7 @@ class QtPyScriptCanvasVariableManager():
         selection = selection_model.selection()
         selection_model.clear()
         has_selection = helper.wait_for_condition(lambda: selection_model.hasSelection() is False, WAIT_TIME_SEC_3)
-        
+
         assert has_selection, "Failed to clear selection from Variable Manager"
 
         return selection
@@ -160,7 +161,31 @@ class QtPyScriptCanvasVariableManager():
 
         assert has_selection, "Failed to get selection from Variable Manager table"
 
-    def get_basic_variable_types(self):
+    def delete_variable(self, variable_name: str) -> None:
+        """
+        Function for deleting a variable from the variable manager. Function selects each entry in the table and
+        looks for the provided name. If it's found the variable manager is given focus and then the delete key is pressed.
+
+        params variable_name: The name of the variable
+
+        returns None
+        """
+
+        variable_table_view = self.variable_manager.findChild(QtWidgets.QTableView, GRAPH_VARIABLES_QT)
+        variables_table_model = variable_table_view.model()
+        row_count = variables_table_model.rowCount(QtCore.QModelIndex())
+
+        for row in range(row_count):
+            name_index = variables_table_model.index(row, 0)
+            data = variables_table_model.data(name_index)
+            if data == variable_name:
+                variable_table_view.selectRow(row)
+                self.variable_manager.activateWindow()
+                helper.wait_for_condition(lambda: self.variable_manager.isActiveWindow(), WAIT_TIME_SEC_3)
+                QtTest.QTest.keyClick(self.variable_manager, Qt.Key_Delete, Qt.NoModifier)
+                break
+
+    def get_basic_variable_types(self) -> types.SimpleNamespace:
         """
         function for getting easy to use container of variable types out of the dictionary
 
@@ -169,7 +194,7 @@ class QtPyScriptCanvasVariableManager():
 
         return SimpleNamespace(**VARIABLE_TYPES_DICT)
 
-    def get_variable_count(self):
+    def get_variable_count(self) -> int:
         """
         function for retrieving the number of variables in the variable manager's list
 
@@ -240,3 +265,20 @@ class QtPyScriptCanvasVariableManager():
 
         return pinned_toggle_state_before != pinned_toggle_state_after
 
+    def get_q_objects(self, qobject):
+
+        children = qobject.children()
+        depth = 0
+        for child in children:
+            print(f"{depth}->Name:{child.objectName()}: {type(child)}")
+            self.print_types_recursive(child, "", depth)
+
+    def print_types_recursive(self, container, string, depth):
+
+        children = container.children()
+        string += "="
+        depth += 1
+        for child in children:
+            if child is not None:
+                print(f"{depth}->{string}: Name:{child.objectName()}: {type(child)}")
+                self.print_types_recursive(child, string, depth)
