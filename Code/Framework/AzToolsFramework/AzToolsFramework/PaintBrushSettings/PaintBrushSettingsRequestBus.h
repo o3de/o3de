@@ -73,6 +73,12 @@ namespace AzToolsFramework
         //! @return The size of the paintbrush in meters
         virtual float GetSize() const = 0;
 
+        //! Returns the brush stamp min/max size range.
+        //! The range is used to ensure that our brush size is appropriately sized relative to the world size of the data we're painting.
+        //! If we let it get too big, we can run into serious performance issues.
+        //! @return A pair containing the min size and max size that constrain the range of sizes in meters for the paintbrush.
+        virtual AZStd::pair<float, float> GetSizeRange() const = 0;
+
         //! Returns the brush stamp hardness (0=soft falloff, 100=hard edge).
         virtual float GetHardnessPercent() const = 0;
 
@@ -85,6 +91,13 @@ namespace AzToolsFramework
         //! Sets the brush stamp size (diameter).
         //! @param size The new size, in meters.
         virtual void SetSize(float size) = 0;
+
+        //! Sets the brush stamp min/max size range.
+        //! The range is used to ensure that our brush size is appropriately sized relative to the world size of the data we're painting.
+        //! If we let it get too big, we can run into serious performance issues.
+        //! @param minSize The minimum size of the paint brush in meters.
+        //! @param maxSize The maximum size of the paint brush in meters.
+        virtual void SetSizeRange(float minSize, float maxSize) = 0;
 
         //! Sets the brush stamp hardness.
         //! @param hardness The new hardness, in 0-100 range.

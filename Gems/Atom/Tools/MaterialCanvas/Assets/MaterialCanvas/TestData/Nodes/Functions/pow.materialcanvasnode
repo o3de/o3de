@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{31851737-6638-45F5-A28C-B7F578B1F0F3}",
         "category": "Math Functions",
-        "title": "pow",
+        "title": "Pow",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue1",
@@ -24,7 +28,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             },
@@ -45,7 +49,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -59,7 +63,7 @@
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = pow(NODEID_inValue1, NODEID_inValue2);"
+                        "SLOTTYPE SLOTNAME = pow(inValue1, inValue2);"
                     ]
                 }
             }

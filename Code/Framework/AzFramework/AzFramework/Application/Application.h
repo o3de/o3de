@@ -13,6 +13,7 @@
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
+#include <AzCore/Instance/InstancePool.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/fixed_string.h>
@@ -175,6 +176,8 @@ namespace AzFramework
         AZStd::unique_ptr<AZ::IO::Archive> m_archive; ///> The AZ::IO::Instance
         AZStd::unique_ptr<Implementation> m_pimpl;
         AZStd::unique_ptr<AZ::NativeUI::NativeUIRequests> m_nativeUI;
+        AZStd::unique_ptr<AZ::InstancePoolManager> m_poolManager;
+
         bool m_ownsConsole = false;
 
         bool m_exitMainLoopRequested = false;

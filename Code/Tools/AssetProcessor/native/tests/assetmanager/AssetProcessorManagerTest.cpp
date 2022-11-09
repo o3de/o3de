@@ -19,6 +19,7 @@
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Jobs/JobManagerDesc.h>
+#include <tests/assetmanager/AssetManagerTestingBase.h>
 
 using namespace AssetProcessor;
 
@@ -278,6 +279,183 @@ TEST_F(AssetProcessorManagerTest, UnitTestForGettingJobInfoBySourceUUIDSuccess)
     ASSERT_EQ(m_errorAbsorber->m_numWarningsAbsorbed, 0);
     ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
     ASSERT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
+}
+
+using AssetProcessorManagerFinishTests = UnitTests::AssetManagerTestingBase;
+
+TEST_F(AssetProcessorManagerFinishTests, IntermediateAsset_AnalysisCountHitsZero)
+{
+    // Test that FinishedAnalysis occurs and that we can reliably determine both APM and RC have finished working when intermediate assets
+    // are involved
+    using namespace AssetBuilderSDK;
+
+    CreateBuilder("stage1", "*.stage1", "stage2", true, ProductOutputFlags::IntermediateAsset);
+    CreateBuilder("stage2", "*.stage2", "stage3", false, ProductOutputFlags::ProductAsset);
+
+    int remainingFiles = 0;
+    int maxWaitingFiles = 0;
+    bool finishedAnalysisOccurred = false;
+    bool finishedAnalysisAndIdle = false;
+    bool idle = false;
+
+    QObject::connect(
+        m_assetProcessorManager.get(),
+        &AssetProcessor::AssetProcessorManager::FinishedAnalysis,
+        [&remainingFiles, &maxWaitingFiles, &finishedAnalysisOccurred, &idle, &finishedAnalysisAndIdle, this](int count)
+        {
+            finishedAnalysisOccurred = true;
+
+            if (count > maxWaitingFiles)
+            {
+                maxWaitingFiles = count;
+            }
+
+            remainingFiles = count;
+
+            if (idle && remainingFiles == 0 && finishedAnalysisOccurred && m_rc->IsIdle())
+            {
+                EXPECT_FALSE(finishedAnalysisAndIdle);
+                finishedAnalysisAndIdle = true;
+            }
+        });
+
+    QObject::connect(
+        m_assetProcessorManager.get(),
+        &AssetProcessor::AssetProcessorManager::AssetProcessorManagerIdleState,
+        [&idle, &remainingFiles, &finishedAnalysisAndIdle, &finishedAnalysisOccurred, this](bool state)
+        {
+            idle = state;
+
+            if (idle && remainingFiles == 0 && finishedAnalysisOccurred && m_rc->IsIdle())
+            {
+                EXPECT_FALSE(finishedAnalysisAndIdle);
+                finishedAnalysisAndIdle = true;
+            }
+        });
+
+    ProcessFileMultiStage(2, true);
+
+    QCoreApplication::processEvents(); // Execute FinishAnalysis
+
+    EXPECT_TRUE(finishedAnalysisOccurred);
+    EXPECT_TRUE(finishedAnalysisAndIdle);
+}
+
+TEST_F(AssetProcessorManagerFinishTests, MultipleFiles_WithDuplicateJobs_AnalysisCountHitsZero)
+{
+    // Test that FinishedAnalysis emits a non-zero value when multiple files are queued up and that having the same file submitted twice
+    // does not result in the counter being stuck at a non-zero value.
+    using namespace AssetBuilderSDK;
+
+    CreateBuilder("stage1", "*.stage1", "stage2", false, ProductOutputFlags::ProductAsset);
+
+    // Connect RC to APM
+    QObject::connect(
+        m_rc.get(),
+        &AssetProcessor::RCController::FileCompiled,
+        m_assetProcessorManager.get(),
+        &AssetProcessor::AssetProcessorManager::AssetProcessed,
+        Qt::UniqueConnection);
+    QObject::connect(
+        m_rc.get(),
+        &AssetProcessor::RCController::FileFailed,
+        m_assetProcessorManager.get(),
+        &AssetProcessor::AssetProcessorManager::AssetFailed);
+    QObject::connect(
+        m_rc.get(),
+        &AssetProcessor::RCController::FileCancelled,
+        m_assetProcessorManager.get(),
+        &AssetProcessor::AssetProcessorManager::AssetCancelled);
+
+    int remainingFiles = 0;
+    int maxWaitingFiles = 0;
+    bool finishedAnalysisOccurred = false;
+
+    QObject::connect(
+        m_assetProcessorManager.get(),
+        &AssetProcessor::AssetProcessorManager::FinishedAnalysis,
+        [&remainingFiles, &maxWaitingFiles, &finishedAnalysisOccurred](int count)
+        {
+            finishedAnalysisOccurred = true;
+
+            if (count > maxWaitingFiles)
+            {
+                maxWaitingFiles = count;
+            }
+
+            remainingFiles = count;
+        });
+
+    // Set up a second file to process
+    AZ::IO::Path scanFolderDir(m_scanfolder.m_scanFolder);
+    AZStd::string testFilename = "second.stage1";
+    QString testFilePath = (scanFolderDir / testFilename).AsPosix().c_str();
+
+    UnitTestUtils::CreateDummyFile(testFilePath.toUtf8().constData(), "unit test file");
+
+    const char* file = m_testFilePath.c_str();
+    int endStage = 1;
+
+    int expectedJobCount = 1;
+    int expectedFileCount = 1;
+
+    // Process the first file
+    QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessAddedFile", Qt::QueuedConnection, Q_ARG(QString, file));
+    QCoreApplication::processEvents();
+
+    RunFile(expectedJobCount, expectedFileCount);
+
+    // Copy out the job since it will get cleared next time we call RunFile
+    auto jobListCopy = m_jobDetailsList;
+
+    // Process the first file again, this will record 2 jobs for analysis in APM
+    QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessAddedFile", Qt::QueuedConnection, Q_ARG(QString, file));
+    QCoreApplication::processEvents();
+
+    RunFile(expectedJobCount, expectedFileCount);
+
+    // Add the first job back in
+    jobListCopy.push_back(m_jobDetailsList[0]);
+
+    // Process the 2nd file so there are 2 different files waiting for analysis
+    QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessAddedFile", Qt::QueuedConnection, Q_ARG(QString, testFilePath));
+    QCoreApplication::processEvents();
+
+    RunFile(expectedJobCount, expectedFileCount);
+
+    jobListCopy.push_back(m_jobDetailsList[0]);
+    m_jobDetailsList = jobListCopy;
+
+    std::stable_sort(
+        m_jobDetailsList.begin(),
+        m_jobDetailsList.end(),
+        [](const AssetProcessor::JobDetails& a, const AssetProcessor::JobDetails& b) -> bool
+        {
+            return a.m_jobEntry.m_sourceAssetReference < b.m_jobEntry.m_sourceAssetReference;
+        });
+
+    ASSERT_EQ(m_jobDetailsList.size(), 3);
+
+    // Run all 3 jobs through RC.  The duplicate should get discarded and marked as cancelled which allows APM to clear it from the analysis
+    // list
+    ProcessJob(*m_rc, m_jobDetailsList[0]);
+    ProcessJob(*m_rc, m_jobDetailsList[1]);
+    ProcessJob(*m_rc, m_jobDetailsList[2]);
+
+    ASSERT_TRUE(m_fileCompiled);
+
+    m_assetProcessorManager->CheckFilesToExamine(0);
+    m_assetProcessorManager->CheckActiveFiles(0);
+    m_assetProcessorManager->CheckJobEntries(0);
+
+    QCoreApplication::processEvents(); // Execute FinishAnalysis
+
+    CheckProduct(AZStd::string::format("test.stage%d", endStage + 1).c_str());
+
+    // FinishAnalysis should have run and reported no files left waiting for analysis
+    EXPECT_TRUE(finishedAnalysisOccurred);
+    EXPECT_EQ(remainingFiles, 0);
+    EXPECT_EQ(maxWaitingFiles, 1);
 }
 
 TEST_F(AssetProcessorManagerTest, WarningsAndErrorsReported_SuccessfullySavedToDatabase)

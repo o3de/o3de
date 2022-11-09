@@ -30,6 +30,12 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     class test_InstantiatePrefab_WithNestedEntitiesAndNestedPrefabs(EditorSharedTest):
         from .tests.instantiate_prefab import InstantiatePrefab_WithNestedEntitiesandNestedPrefabs as test_module
 
+    class test_DuplicateEntity_WithNestedEntities(EditorSharedTest):
+        from .tests.duplicate_prefab import DuplicateEntity_WithNestedEntities as test_module
+
+    class test_DuplicateEntity_WithNestedEntitiesAndNestedPrefabs(EditorSharedTest):
+        from .tests.duplicate_prefab import DuplicateEntity_WithNestedEntitiesAndNestedPrefabs as test_module
+
 
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
