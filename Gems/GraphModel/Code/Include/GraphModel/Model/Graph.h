@@ -145,9 +145,6 @@ namespace GraphModel
         bool Contains(SlotPtr slot) const;
         ConnectionPtr FindConnection(ConstSlotPtr sourceSlot, ConstSlotPtr targetSlot);
 
-        //! Common implementation for removing a specific connection from m_connections
-        bool RemoveConnection(ConnectionList::iterator iter);
-
     private:
         NodeMap m_nodes;
 

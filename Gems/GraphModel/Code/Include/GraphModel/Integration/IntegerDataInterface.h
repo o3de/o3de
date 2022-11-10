@@ -12,29 +12,71 @@
 #include <GraphCanvas/Components/NodePropertyDisplay/NumericDataInterface.h>
 
 // Graph Model
+#include <GraphModel/GraphModelBus.h>
+#include <GraphModel/Integration/IntegrationBus.h>
 #include <GraphModel/Model/Slot.h>
 
 namespace GraphModelIntegration
 {
     //! Satisfies GraphCanvas API requirements for showing int property widgets in nodes.
-    class IntegerDataInterface
-        : public GraphCanvas::NumericDataInterface
+    template<typename T>
+    class IntegerDataInterface : public GraphCanvas::NumericDataInterface
     {
     public:
         AZ_CLASS_ALLOCATOR(IntegerDataInterface, AZ::SystemAllocator, 0);
 
-        IntegerDataInterface(GraphModel::SlotPtr slot);
-        ~IntegerDataInterface() = default;
-        
-        double GetNumber() const override;
-        void SetNumber(double value) override;
+        IntegerDataInterface(GraphModel::SlotPtr slot)
+            : m_slot(slot)
+        {
+        }
 
-        int GetDecimalPlaces() const override;
-        int GetDisplayDecimalPlaces() const override;
-        double GetMin() const override;
-        double GetMax() const override;
+        ~IntegerDataInterface() = default;
+
+        double GetNumber() const
+        {
+            GraphModel::SlotPtr slot = m_slot.lock();
+            return static_cast<double>(slot ? slot->GetValue<T>() : 0.0);
+        }
+
+        void SetNumber(double value)
+        {
+            if (GraphModel::SlotPtr slot = m_slot.lock())
+            {
+                if (static_cast<T>(value) != slot->GetValue<T>())
+                {
+                    const GraphCanvas::GraphId graphCanvasSceneId = GetDisplay()->GetSceneId();
+                    GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
+
+                    slot->SetValue(static_cast<T>(value));
+                    GraphControllerNotificationBus::Event(
+                        graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelSlotModified, slot);
+                    GraphControllerNotificationBus::Event(
+                        graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, slot->GetParentNode());
+                }
+            }
+        }
+
+        int GetDecimalPlaces() const
+        {
+            return 0;
+        }
+
+        int GetDisplayDecimalPlaces() const
+        {
+            return 0;
+        }
+
+        double GetMin() const
+        {
+            return static_cast<double>(AZStd::numeric_limits<T>::min());
+        }
+
+        double GetMax() const
+        {
+            return static_cast<double>(AZStd::numeric_limits<T>::max());
+        }
 
     private:
         AZStd::weak_ptr<GraphModel::Slot> m_slot;
     };
-}
+} // namespace GraphModelIntegration

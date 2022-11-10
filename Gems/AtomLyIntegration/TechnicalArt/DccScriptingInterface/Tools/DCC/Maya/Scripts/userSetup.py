@@ -269,14 +269,14 @@ def post_startup():
     DccScriptingInterface.Tools.DCC.Maya.Scripts.set_defaults.set_defaults()
 
     # Setup UI tools
-    if not maya.cmds.about(batch=True):
-        _LOGGER.info('Add UI dependent tools')
-        # wrap in a try, because we haven't implmented it yet
-        try:
-            mel.eval(str(r'source "{}"'.format(SLUG_O3DE_DCC_MAYA_MEL)))
-        except Exception as e:
-            _LOGGER.exception(f'{e} , traceback =', exc_info=True)
-            pass
+    # if not maya.cmds.about(batch=True):
+    #     _LOGGER.info('Add UI dependent tools')
+    #     # wrap in a try, because we haven't implmented it yet
+    #     try:
+    #         mel.eval(str(r'source "{}"'.format(SLUG_O3DE_DCC_MAYA_MEL)))
+    #     except Exception as e:
+    #         _LOGGER.exception(f'{e} , traceback =', exc_info=True)
+    #         pass
 
     # manage custom menu in a sub-module
     import DccScriptingInterface.Tools.DCC.Maya.Scripts.set_menu

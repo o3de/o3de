@@ -32,6 +32,8 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 AZ_CVAR_EXTERNED(bool, ed_useNewAssetBrowserTableView);
 
+AZ_CVAR(bool, ed_useWIPAssetBrowserDesign, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the in-progress new Asset Browser design");
+
 namespace AzToolsFramework
 {
     namespace AssetBrowser
@@ -135,6 +137,24 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
         m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
     }
+
+    if (!ed_useWIPAssetBrowserDesign)
+    {
+        m_ui->m_middleStackWidget->hide();
+        m_ui->m_treeViewButton->hide();
+        m_ui->m_thumbnailViewButton->hide();
+        m_ui->m_tableViewButton->hide();
+    }
+
+    m_ui->horizontalLayout->setAlignment(m_ui->m_toggleDisplayViewBtn, Qt::AlignTop);
+    m_ui->horizontalLayout->setAlignment(m_ui->m_collapseAllButton, Qt::AlignTop);
+    m_ui->horizontalLayout->setAlignment(m_ui->m_treeViewButton, Qt::AlignTop);
+    m_ui->horizontalLayout->setAlignment(m_ui->m_tableViewButton, Qt::AlignTop);
+    m_ui->horizontalLayout->setAlignment(m_ui->m_thumbnailViewButton, Qt::AlignTop);
+
+    connect(m_ui->m_thumbnailViewButton, &QAbstractButton::clicked, this, [this] { SetTwoColumnMode(m_ui->m_thumbnailView); });
+    connect(m_ui->m_tableViewButton, &QAbstractButton::clicked, this, [this] { SetTwoColumnMode(m_ui->m_tableView); });
+    connect(m_ui->m_treeViewButton, &QAbstractButton::clicked, this, &AzAssetBrowserWindow::SetOneColumnMode);
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
 
@@ -314,6 +334,17 @@ void AzAssetBrowserWindow::UpdatePreview() const
     }
 
     m_ui->m_previewerFrame->Display(selectedAssets.front());
+}
+
+void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
+{
+    m_ui->m_middleStackWidget->show();
+    m_ui->m_middleStackWidget->setCurrentWidget(viewToShow);
+}
+
+void AzAssetBrowserWindow::SetOneColumnMode()
+{
+    m_ui->m_middleStackWidget->hide();
 }
 
 static void ExpandTreeToIndex(QTreeView* treeView, const QModelIndex& index)

@@ -17,6 +17,7 @@
 namespace AZ
 {
     class SettingsRegistryInterface;
+    enum class PlatformID;
 }
 
 namespace AWSCore
@@ -34,6 +35,8 @@ namespace AWSCore
 
         //! Run metric check
         void MetricCheck();
+
+        static AZStd::string MapPlatform(AZ::PlatformID platform);
 
     protected:
         virtual void SubmitMetric(AttributionMetric& metric);
