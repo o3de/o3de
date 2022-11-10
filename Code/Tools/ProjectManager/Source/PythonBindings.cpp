@@ -60,6 +60,16 @@ namespace Platform
 #define QString_To_Py_String(value) pybind11::str(value.toStdString())
 #define QString_To_Py_Path(value) m_pathlib.attr("Path")(value.toStdString())
 
+pybind11::list QStringList_To_Py_List(const QStringList& values)
+{
+    std::list<std::string> newValues;
+    for (const auto& i : values)
+    {
+        newValues.push_back(i.toStdString());
+    }
+    return pybind11::list(pybind11::cast(newValues));
+};
+
 namespace RedirectOutput
 {
     using RedirectOutputFunc = AZStd::function<void(const char*)>;
@@ -320,6 +330,7 @@ namespace O3DE::ProjectManager
             m_register = pybind11::module::import("o3de.register");
             m_manifest = pybind11::module::import("o3de.manifest");
             m_engineTemplate = pybind11::module::import("o3de.engine_template");
+            m_gemProperties = pybind11::module::import("o3de.gem_properties");
             m_engineProperties = pybind11::module::import("o3de.engine_properties");
             m_enableGemProject = pybind11::module::import("o3de.enable_gem");
             m_disableGemProject = pybind11::module::import("o3de.disable_gem");
@@ -535,6 +546,8 @@ namespace O3DE::ProjectManager
 
     IPythonBindings::DetailedOutcome PythonBindings::SetEngineInfo(const EngineInfo& engineInfo, bool force)
     {
+        using namespace pybind11::literals;
+
         bool registrationSuccess = false;
         bool pythonSuccess = ExecuteWithLock([&] {
 
@@ -559,24 +572,25 @@ namespace O3DE::ProjectManager
             }
 
             auto result = m_register.attr("register")(
-                QString_To_Py_Path(engineInfo.m_path),
-                pybind11::none(), // project_path
-                pybind11::none(), // gem_path
-                pybind11::none(), // external_subdir_path
-                pybind11::none(), // template_path
-                pybind11::none(), // restricted_path
-                pybind11::none(), // repo_uri
-                pybind11::none(), // default_engines_folder
-                QString_To_Py_Path(engineInfo.m_defaultProjectsFolder),
-                QString_To_Py_Path(engineInfo.m_defaultGemsFolder),
-                QString_To_Py_Path(engineInfo.m_defaultTemplatesFolder),
-                pybind11::none(), // default_restricted_folder
-                QString_To_Py_Path(engineInfo.m_thirdPartyPath),
-                pybind11::none(), // external_subdir_engine_path
-                pybind11::none(), // external_subdir_project_path
-                false, // remove
-                force
-            );
+                "engine_path"_a                  = QString_To_Py_Path(engineInfo.m_path),
+                "project_path"_a                 = pybind11::none(),
+                "gem_path"_a                     = pybind11::none(),
+                "external_subdir_path"_a         = pybind11::none(),
+                "template_path"_a                = pybind11::none(),
+                "restricted_path"_a              = pybind11::none(),
+                "repo_uri"_a                     = pybind11::none(),
+                "default_engines_folder"_a       = pybind11::none(),
+                "default_projects_folder"_a      = QString_To_Py_Path(engineInfo.m_defaultProjectsFolder),
+                "default_gems_folder"_a          = QString_To_Py_Path(engineInfo.m_defaultGemsFolder),
+                "default_templates_folder"_a     = QString_To_Py_Path(engineInfo.m_defaultTemplatesFolder),
+                "default_restricted_folder"_a    = pybind11::none(),
+                "default_third_party_folder"_a   = QString_To_Py_Path(engineInfo.m_thirdPartyPath),
+                "external_subdir_engine_path"_a  = pybind11::none(),
+                "external_subdir_project_path"_a = pybind11::none(),
+                "external_subdir_gem_path"_a     = pybind11::none(),
+                "remove"_a                       = false,
+                "force"_a                        = force
+                );
 
             registrationSuccess = result.cast<int>() == 0;
         });
@@ -697,29 +711,34 @@ namespace O3DE::ProjectManager
 
     AZ::Outcome<void, AZStd::string> PythonBindings::GemRegistration(const QString& gemPath, const QString& projectPath, bool remove)
     {
+        using namespace pybind11::literals;
+
         bool registrationResult = false;
         auto result = ExecuteWithLockErrorHandling(
             [&]
         {
             auto externalProjectPath = projectPath.isEmpty() ? pybind11::none() : QString_To_Py_Path(projectPath);
             auto pythonRegistrationResult = m_register.attr("register")(
-                pybind11::none(), // engine_path
-                pybind11::none(), // project_path
-                QString_To_Py_Path(gemPath), // gem folder
-                pybind11::none(), // external subdirectory
-                pybind11::none(), // template_path
-                pybind11::none(), // restricted folder 
-                pybind11::none(), // repo uri 
-                pybind11::none(), // default_engines_folder
-                pybind11::none(), // default_projects_folder
-                pybind11::none(), // default_gems_folder
-                pybind11::none(), // default_templates_folder
-                pybind11::none(), // default_restricted_folder
-                pybind11::none(), // default_third_party_folder
-                pybind11::none(), // external_subdir_engine_path
-                externalProjectPath, // external_subdir_project_path
-                remove            // remove
+                "engine_path"_a                  = pybind11::none(),
+                "project_path"_a                 = pybind11::none(),
+                "gem_path"_a                     = QString_To_Py_Path(gemPath),
+                "external_subdir_path"_a         = pybind11::none(),
+                "template_path"_a                = pybind11::none(),
+                "restricted_path"_a              = pybind11::none(),
+                "repo_uri"_a                     = pybind11::none(),
+                "default_engines_folder"_a       = pybind11::none(),
+                "default_projects_folder"_a      = pybind11::none(),
+                "default_gems_folder"_a          = pybind11::none(),
+                "default_templates_folder"_a     = pybind11::none(),
+                "default_restricted_folder"_a    = pybind11::none(),
+                "default_third_party_folder"_a   = pybind11::none(),
+                "external_subdir_engine_path"_a  = pybind11::none(),
+                "external_subdir_project_path"_a = externalProjectPath,
+                "external_subdir_gem_path"_a     = pybind11::none(),
+                "remove"_a = remove
                 );
+
+
 
             // Returns an exit code so boolify it then invert result
             registrationResult = !pythonRegistrationResult.cast<bool>();
@@ -766,28 +785,31 @@ namespace O3DE::ProjectManager
 
     bool PythonBindings::RemoveProject(const QString& path)
     {
+        using namespace pybind11::literals;
+
         bool registrationResult = false;
         bool result = ExecuteWithLock(
             [&]
         {
             auto pythonRegistrationResult = m_register.attr("register")(
-                pybind11::none(),   // engine_path
-                QString_To_Py_Path(path), // project_path
-                pybind11::none(),   // gem_path
-                pybind11::none(),   // external_subdir_path
-                pybind11::none(),   // template_path
-                pybind11::none(),   // restricted_path
-                pybind11::none(),   // repo_uri
-                pybind11::none(),   // default_engines_folder
-                pybind11::none(),   // default_projects_folder
-                pybind11::none(),   // default_gems_folder
-                pybind11::none(),   // default_templates_folder
-                pybind11::none(),   // default_restricted_folder
-                pybind11::none(),   // default_third_party_folder
-                pybind11::none(),   // external_subdir_engine_path
-                pybind11::none(),   // external_subdir_project_path
-                true,               // remove
-                false               // force
+                "engine_path"_a                  = pybind11::none(),
+                "project_path"_a                 = QString_To_Py_Path(path),
+                "gem_path"_a                     = pybind11::none(),
+                "external_subdir_path"_a         = pybind11::none(),
+                "template_path"_a                = pybind11::none(),
+                "restricted_path"_a              = pybind11::none(),
+                "repo_uri"_a                     = pybind11::none(),
+                "default_engines_folder"_a       = pybind11::none(),
+                "default_projects_folder"_a      = pybind11::none(),
+                "default_gems_folder"_a          = pybind11::none(),
+                "default_templates_folder"_a     = pybind11::none(),
+                "default_restricted_folder"_a    = pybind11::none(),
+                "default_third_party_folder"_a   = pybind11::none(),
+                "external_subdir_engine_path"_a  = pybind11::none(),
+                "external_subdir_project_path"_a = pybind11::none(),
+                "external_subdir_gem_path"_a     = pybind11::none(),
+                "remove"_a                       = true,
+                "force"_a                        = false
                 );
 
             // Returns an exit code so boolify it then invert result
@@ -867,6 +889,51 @@ namespace O3DE::ProjectManager
         }
         else
         {
+            //Make sure directory link is a normalized path that can be rendered in "View Directory" dialog
+            gemInfoResult.m_directoryLink = QDir::cleanPath(gemInfoResult.m_directoryLink);
+            return AZ::Success(AZStd::move(gemInfoResult));
+        }
+    }
+
+    AZ::Outcome<GemInfo> PythonBindings::EditGem(const QString& oldGemName, const GemInfo& newGemInfo)
+    {
+        using namespace pybind11::literals;
+
+        GemInfo gemInfoResult;
+        bool result = ExecuteWithLock(
+            [&]
+            {
+                auto gemPath = QString_To_Py_Path(newGemInfo.m_path);
+
+                auto editGemResult = m_gemProperties.attr("edit_gem_props")(
+                    "gem_path"_a = gemPath,
+                    "gem_name"_a = QString_To_Py_String(oldGemName),
+                    "new_name"_a = QString_To_Py_String(newGemInfo.m_name),
+                    "new_display"_a = QString_To_Py_String(newGemInfo.m_displayName),
+                    "new_origin"_a = QString_To_Py_String(newGemInfo.m_origin),
+                    "new_summary"_a = QString_To_Py_String(newGemInfo.m_summary),
+                    "new_icon"_a = QString_To_Py_String(newGemInfo.m_iconPath),
+                    "new_requirements"_a = QString_To_Py_String(newGemInfo.m_requirement),
+                    "new_documentation_url"_a = QString_To_Py_String(newGemInfo.m_documentationLink),
+                    "new_license"_a = QString_To_Py_String(newGemInfo.m_licenseText),
+                    "new_license_url"_a = QString_To_Py_String(newGemInfo.m_licenseLink),   
+                    "replace_tags"_a = QStringList_To_Py_List(newGemInfo.m_features)) //the python code seems to interpret these lists as space separated
+                    ;
+                
+                if (editGemResult.cast<int>() == 0)
+                {
+                    gemInfoResult = GemInfoFromPath(gemPath, pybind11::none());
+                }
+            });
+        
+        if(!result || !gemInfoResult.IsValid())
+        {
+            return AZ::Failure();
+        }
+        else
+        {
+            //Make sure directory link is a normalized path that can be rendered in "View Directory" dialog
+            gemInfoResult.m_directoryLink = QDir::cleanPath(gemInfoResult.m_directoryLink);
             return AZ::Success(AZStd::move(gemInfoResult));
         }
     }
@@ -1426,25 +1493,28 @@ namespace O3DE::ProjectManager
         bool result = ExecuteWithLock(
             [&]
             {
+                using namespace pybind11::literals;
+
                 auto pythonRegistrationResult = m_register.attr("register")(
-                    pybind11::none(), // engine_path
-                    pybind11::none(), // project_path
-                    pybind11::none(), // gem_path
-                    pybind11::none(), // external_subdir_path
-                    pybind11::none(), // template_path
-                    pybind11::none(), // restricted_path
-                    QString_To_Py_String(repoUri), // repo_uri
-                    pybind11::none(), // default_engines_folder
-                    pybind11::none(), // default_projects_folder
-                    pybind11::none(), // default_gems_folder
-                    pybind11::none(), // default_templates_folder
-                    pybind11::none(), // default_restricted_folder
-                    pybind11::none(), // default_third_party_folder
-                    pybind11::none(), // external_subdir_engine_path
-                    pybind11::none(), // external_subdir_project_path
-                    true, // remove
-                    false // force
-                );
+                    "engine_path"_a                  = pybind11::none(),
+                    "project_path"_a                 = pybind11::none(),
+                    "gem_path"_a                     = pybind11::none(),
+                    "external_subdir_path"_a         = pybind11::none(),
+                    "template_path"_a                = pybind11::none(),
+                    "restricted_path"_a              = pybind11::none(),
+                    "repo_uri"_a                     = QString_To_Py_String(repoUri),
+                    "default_engines_folder"_a       = pybind11::none(),
+                    "default_projects_folder"_a      = pybind11::none(),
+                    "default_gems_folder"_a          = pybind11::none(),
+                    "default_templates_folder"_a     = pybind11::none(),
+                    "default_restricted_folder"_a    = pybind11::none(),
+                    "default_third_party_folder"_a   = pybind11::none(),
+                    "external_subdir_engine_path"_a  = pybind11::none(),
+                    "external_subdir_project_path"_a = pybind11::none(),
+                    "external_subdir_gem_path"_a     = pybind11::none(),
+                    "remove"_a                       = true,
+                    "force"_a                        = false
+                    );
 
                 // Returns an exit code so boolify it then invert result
                 registrationResult = !pythonRegistrationResult.cast<bool>();

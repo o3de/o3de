@@ -5,19 +5,18 @@
     "ClassData": {
         "id": "{7DAE735C-CC7B-49C9-9B18-CC3314792650}",
         "category": "Math Functions",
-        "title": "atan2",
+        "title": "Atan2",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inY|inX|outValue"
+        ],
         "inputSlots": [
             {
-                "name": "inValue1",
-                "displayName": "Value1",
-                "description": "Value1",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "name": "inY",
+                "displayName": "Y",
+                "description": "Y",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float4",
                 "defaultValue": {
                     "$type": "Vector4",
                     "Value": [
@@ -29,21 +28,16 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             },
             {
-                "name": "inValue2",
-                "displayName": "Value2",
-                "description": "Value2",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "name": "inX",
+                "displayName": "X",
+                "description": "X",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float4",
                 "defaultValue": {
                     "$type": "Vector4",
                     "Value": [
@@ -55,7 +49,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -65,21 +59,11 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "float4"
-                ],
-                "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = atan2(NODEID_inValue1, NODEID_inValue2);"
+                        "SLOTTYPE SLOTNAME = atan2(inY, inX);"
                     ]
                 }
             }

@@ -6,26 +6,30 @@
         "id": "{6B6603B9-A89E-403B-9AE9-C7E424093EC5}",
         "category": "Constants",
         "title": "Color Constant",
-        "propertySlots": [
+        "titlePaletteName": "ConstantNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue",
+            "outR|outG|outB|outA"
+        ],
+        "inputSlots": [
             {
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[14]?",
+                "defaultDataType": "color",
                 "defaultValue": {
                     "$type": "Color",
                     "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
+                        1.0,
+                        1.0,
+                        1.0,
                         1.0
                     ]
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -35,21 +39,59 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "color"
-                ],
-                "defaultValue": {
-                    "$type": "Color",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        1.0
-                    ]
-                },
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue;"
+                        "SLOTTYPE SLOTNAME = inValue;"
+                    ]
+                }
+            },
+            {
+                "name": "outR",
+                "displayName": "R",
+                "description": "R",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = inValue.r;"
+                    ]
+                }
+            },
+            {
+                "name": "outG",
+                "displayName": "G",
+                "description": "G",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = inValue.g;"
+                    ]
+                }
+            },
+            {
+                "name": "outB",
+                "displayName": "B",
+                "description": "B",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = inValue.b;"
+                    ]
+                }
+            },
+            {
+                "name": "outA",
+                "displayName": "A",
+                "description": "A",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = inValue.a;"
                     ]
                 }
             }

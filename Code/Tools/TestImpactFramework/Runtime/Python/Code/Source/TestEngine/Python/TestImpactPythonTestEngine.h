@@ -32,8 +32,7 @@ namespace TestImpact
     class PythonTestEngine
     {
     public:
-        using TestTargetType = PythonTestTarget;
-        using TestCaseCoverageType = TestCoverage;
+        using TestTarget = PythonTestTarget;
 
         //! Configures the test engine with the necessary path information for launching test targets and managing the artifacts they
         //! produce.
@@ -45,7 +44,7 @@ namespace TestImpact
             const RepoPath& repoDir,
             const RepoPath& buildDir,
             const ArtifactDir& artifactDir,
-            bool useNullTestRunner = false);
+            Policy::TestRunner testRunnerPolicy);
 
         ~PythonTestEngine();
 
@@ -62,7 +61,7 @@ namespace TestImpact
         //! empty).
         //! @param callback The client callback function to handle completed test target runs.
         //! @ returns The sequence result and the test run results and test coverages for the test targets that were run.
-        [[nodiscard]] TestEngineInstrumentedRunResult<TestTargetType, TestCaseCoverageType>
+        [[nodiscard]] TestEngineInstrumentedRunResult<TestTarget, TestCoverage>
         InstrumentedRun(
             const AZStd::vector<const PythonTestTarget*>& testTargets,
             Policy::ExecutionFailure executionFailurePolicy,
@@ -80,6 +79,6 @@ namespace TestImpact
         AZStd::unique_ptr<PythonTestRunner> m_testRunner;
         AZStd::unique_ptr<PythonNullTestRunner> m_nullTestRunner;
         ArtifactDir m_artifactDir;
-        bool m_useNullTestRunner = false;
+        Policy::TestRunner m_testRunnerPolicy;
     };
 } // namespace TestImpact

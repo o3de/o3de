@@ -61,7 +61,7 @@ namespace AzToolsFramework
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<SelectionComponent, EditorComponentBase>()->Version(2);
-                serializeContext->ClassDeprecate("SelectionComponent", "{73B724FC-43D1-4C75-ACF5-79AA8A3BF89D}");
+                serializeContext->ClassDeprecate("SelectionComponent", AZ::Uuid("{73B724FC-43D1-4C75-ACF5-79AA8A3BF89D}"));
             }
 
             if (AZ::JsonRegistrationContext* jsonRegistration = azrtti_cast<AZ::JsonRegistrationContext*>(context))

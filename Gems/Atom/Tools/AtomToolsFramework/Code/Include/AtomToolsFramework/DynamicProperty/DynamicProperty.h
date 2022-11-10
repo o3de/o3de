@@ -16,25 +16,6 @@
 
 namespace AtomToolsFramework
 {
-    enum class DynamicPropertyType : uint32_t
-    {
-        Unspecified,
-
-        Bool,
-        Int,
-        UInt,
-        Float,
-        Vector2,
-        Vector3,
-        Vector4,
-        Color,
-        Asset,
-        Enum,
-        String,
-
-        Count
-    };
-
     //! Configures the initial state, data type, attributes, and values that describe
     //! the dynamic property and how it is presented
     struct DynamicPropertyConfig
@@ -42,7 +23,6 @@ namespace AtomToolsFramework
         AZ_TYPE_INFO(DynamicPropertyConfig, "{9CA40E92-7F03-42BE-B6AA-51F30EE5796C}");
         AZ_CLASS_ALLOCATOR(DynamicPropertyConfig, AZ::SystemAllocator, 0);
 
-        DynamicPropertyType m_dataType = DynamicPropertyType::Unspecified;
         AZ::Name m_id; //!< The full property ID, which will normally be "groupName.propertyName"
         AZStd::string m_name;
         AZStd::string m_displayName;
@@ -119,9 +99,9 @@ namespace AtomToolsFramework
         // Handles changes from the ReflectedPropertyEditor and sends notification.
         AZ::u32 OnDataChanged() const;
 
-        template<typename T>
-        bool CheckRangeMetaDataValuesForType() const;
+        bool CheckRangeMetaDataValuesForType(const AZ::Uuid& expectedTypeId) const;
         bool CheckRangeMetaDataValues() const;
+        bool IsValueInteger() const;
 
         // Registers attributes with the dynamic edit data that will be used to configure the ReflectedPropertyEditor.
         template<typename AttributeValueType>
@@ -139,19 +119,11 @@ namespace AtomToolsFramework
         // Register is actually use for range-based control types.
         // If all the necessary data is present a slider control will be presented.
         template<typename AttributeValueType>
+        void ApplyRangeEditDataAttributesWithTypeCheck();
+        template<typename AttributeValueType>
         void ApplyRangeEditDataAttributes();
         template<typename AttributeValueType>
         void ApplySliderEditDataAttributes();
-        template<typename AttributeValueType>
-        AttributeValueType GetMin() const;
-        template<typename AttributeValueType>
-        AttributeValueType GetMax() const;
-        template<typename AttributeValueType>
-        AttributeValueType GetSoftMin() const;
-        template<typename AttributeValueType>
-        AttributeValueType GetSoftMax() const;
-        template<typename AttributeValueType>
-        AttributeValueType GetStep() const;
 
         const AZ::Edit::ElementData* GetEditData() const;
 

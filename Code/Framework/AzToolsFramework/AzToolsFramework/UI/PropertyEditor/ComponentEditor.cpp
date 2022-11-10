@@ -147,26 +147,27 @@ namespace AzToolsFramework
     {
         GetHeader()->SetTitle(ComponentEditorConstants::kUnknownComponentTitle);
 
-        // create property editor
-        m_propertyEditor = new ReflectedPropertyEditor(this);
-        m_propertyEditor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-        m_propertyEditor->setObjectName(ComponentEditorConstants::kPropertyEditorId);
-        m_propertyEditor->Setup(context, notifyTarget, false, ComponentEditorConstants::kPropertyLabelWidth, this);
-        m_propertyEditor->SetHideRootProperties(true);
-        m_propertyEditor->setProperty("ComponentBlock", true); // used by stylesheet
-        connect(m_propertyEditor, &ReflectedPropertyEditor::OnExpansionContractionDone, this, &ComponentEditor::OnExpansionContractionDone);
-
         if (DocumentPropertyEditor::ShouldReplaceRPE())
         {
-            // since the RPE and the ComponentEditor/EntityPropertyEditor are so entwined,
-            // leave m_propertyEditor in place, but replace it in the UI with the DPE
-            m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>();
+            // Instantiate the DPE without the RPE
+            m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ComponentAdapter>();
+            m_filterAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringFilter>();
             m_dpe = new DocumentPropertyEditor(this);
-            m_dpe->SetAdapter(m_adapter);
+            m_filterAdapter->SetSourceAdapter(m_adapter);
+            m_dpe->SetAdapter(m_filterAdapter);
             setContentWidget(m_dpe);
         }
         else
         {
+            // create property editor
+            m_propertyEditor = new ReflectedPropertyEditor(this);
+            m_propertyEditor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+            m_propertyEditor->setObjectName(ComponentEditorConstants::kPropertyEditorId);
+            m_propertyEditor->Setup(context, notifyTarget, false, ComponentEditorConstants::kPropertyLabelWidth, this);
+            m_propertyEditor->SetHideRootProperties(true);
+            m_propertyEditor->setProperty("ComponentBlock", true); // used by stylesheet
+            connect(m_propertyEditor, &ReflectedPropertyEditor::OnExpansionContractionDone, this, &ComponentEditor::OnExpansionContractionDone);
+
             setContentWidget(m_propertyEditor);
         }
 
@@ -197,17 +198,20 @@ namespace AzToolsFramework
 
         m_components.push_back(componentInstance);
 
-        // Use our seed to make a unique save state key for each entity, so the property editor is stored per-entity for the component editor
-        auto entityUniqueSavedStateKey = m_savedKeySeed;
-        auto entityId = m_components[0]->GetEntityId();
-        entityUniqueSavedStateKey.Add(reinterpret_cast<void*>(&entityId), sizeof(entityId));
-        m_propertyEditor->SetSavedStateKey(entityUniqueSavedStateKey);
-
-        m_propertyEditor->AddInstance(componentInstance, instanceTypeId, aggregateInstance, compareInstance);
-
         if (DocumentPropertyEditor::ShouldReplaceRPE())
         {
-            m_adapter->SetValue(componentInstance, instanceTypeId);
+            m_adapter->SetComponent(componentInstance);
+        }
+        else
+        {
+            // Use our seed to make a unique save state key for each entity, so the property editor is stored per-entity for the component
+            // editor
+            auto entityUniqueSavedStateKey = m_savedKeySeed;
+            auto entityId = m_components[0]->GetEntityId();
+            entityUniqueSavedStateKey.Add(reinterpret_cast<void*>(&entityId), sizeof(entityId));
+            GetPropertyEditor()->SetSavedStateKey(entityUniqueSavedStateKey);
+
+            GetPropertyEditor()->AddInstance(componentInstance, instanceTypeId, aggregateInstance, compareInstance);
         }
 
         // When first instance is set, use its data to fill out the header.
@@ -221,7 +225,7 @@ namespace AzToolsFramework
 
     void ComponentEditor::ClearInstances(bool invalidateImmediately)
     {
-        m_propertyEditor->SetDynamicEditDataProvider(nullptr);
+        GetPropertyEditor()->SetDynamicEditDataProvider(nullptr);
 
         //clear warning flag and icon
         GetHeader()->SetWarning(false);
@@ -231,10 +235,10 @@ namespace AzToolsFramework
         //clear component cache
         m_components.clear();
 
-        m_propertyEditor->ClearInstances();
+        GetPropertyEditor()->ClearInstances();
         if (invalidateImmediately)
         {
-            m_propertyEditor->InvalidateAll();
+            GetPropertyEditor()->InvalidateAll();
         }
 
         InvalidateComponentType();
@@ -518,24 +522,49 @@ namespace AzToolsFramework
         return combinedPendingComponentInfo;
     }
 
+    bool ComponentEditor::HasContents()
+    {
+        if (m_dpe)
+        {
+            return !m_filterAdapter->IsEmpty();
+        }
+        else
+        {
+            return (!GetPropertyEditor()->HasFilteredOutNodes() || GetPropertyEditor()->HasVisibleNodes());
+        }
+    }
+
+    void ComponentEditor::SetFilterString(AZStd::string filterString)
+    {
+        if (m_dpe)
+        {
+            m_filterAdapter->SetFilterString(filterString);
+        }
+        else
+        {
+            GetPropertyEditor()->SetFilterString(filterString);
+        }
+        GetHeader()->SetFilterString(filterString);
+    }
+
     void ComponentEditor::InvalidateAll(const char* filter)
     {
-        m_propertyEditor->InvalidateAll(filter);
+        GetPropertyEditor()->InvalidateAll(filter);
     }
 
     void ComponentEditor::QueuePropertyEditorInvalidation(PropertyModificationRefreshLevel refreshLevel)
     {
-        m_propertyEditor->QueueInvalidation(refreshLevel);
+        GetPropertyEditor()->QueueInvalidation(refreshLevel);
     }
 
     void ComponentEditor::CancelQueuedRefresh()
     {
-        m_propertyEditor->CancelQueuedRefresh();
+        GetPropertyEditor()->CancelQueuedRefresh();
     }
 
     void ComponentEditor::PreventRefresh(bool shouldPrevent)
     {
-        m_propertyEditor->PreventDataAccess(shouldPrevent);
+        GetPropertyEditor()->PreventDataAccess(shouldPrevent);
     }
 
     void ComponentEditor::SetComponentOverridden(const bool overridden)
@@ -581,7 +610,7 @@ namespace AzToolsFramework
 
         m_componentType = componentType;
 
-        m_propertyEditor->SetSavedStateKey(AZ::Crc32(componentType.ToString<AZStd::string>().data()));
+        GetPropertyEditor()->SetSavedStateKey(AZ::Crc32(componentType.ToString<AZStd::string>().data()));
 
         GetHeader()->SetTitle(GetFriendlyComponentName(&componentInstance).c_str());
 
@@ -858,9 +887,16 @@ namespace AzToolsFramework
         return static_cast<ComponentEditorHeader*>(header());
     }
 
-    AzToolsFramework::ReflectedPropertyEditor* ComponentEditor::GetPropertyEditor()
+    AzToolsFramework::IPropertyEditor* ComponentEditor::GetPropertyEditor()
     {
-        return m_propertyEditor;
+        if (m_propertyEditor)
+        {
+            return m_propertyEditor;
+        }
+        else
+        {
+            return m_dpe;
+        }
     }
 
     AZStd::vector<AZ::Component*>& ComponentEditor::GetComponents()

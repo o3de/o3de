@@ -26,6 +26,7 @@ namespace EMotionFX
             MOTION_CHUNK_SUBMOTIONS            = 202,
             MOTION_CHUNK_MORPHSUBMOTIONS       = 204,
             MOTION_CHUNK_MOTIONDATA            = 210,   // The new motion data system.
+            MOTION_CHUNK_ROOTMOTIONEXTRACTION  = 211,   // Root motion extraction settings.
             MOTION_FORCE_32BIT                 = 0xFFFFFFFF
         };
 

@@ -30,7 +30,8 @@ namespace AZ
         template <typename ObjectType>
         ObjectType* LoadObjectFromStream(IO::GenericStream& stream, SerializeContext* context = nullptr, const FilterDescriptor& filterDesc = FilterDescriptor())
         {
-            return reinterpret_cast<ObjectType*>(LoadObjectFromStream(stream, context, &AzTypeInfo<ObjectType>::Uuid(), filterDesc));
+            constexpr Uuid objectTypeId = AzTypeInfo<ObjectType>::Uuid();
+            return reinterpret_cast<ObjectType*>(LoadObjectFromStream(stream, context, &objectTypeId, filterDesc));
         }
 
         template <typename ObjectType>
@@ -102,7 +103,7 @@ namespace AZ
                     if (reader.Read<AZ::Edit::EnumConstant<T>>(enumPair))
                     {
                         T* enumValue = reinterpret_cast<T*>(instance);
-                        if (enumPair.m_value == *enumValue)
+                        if (static_cast<T>(enumPair.m_value) == *enumValue)
                         {
                             value = enumPair.m_description;
                             return true;

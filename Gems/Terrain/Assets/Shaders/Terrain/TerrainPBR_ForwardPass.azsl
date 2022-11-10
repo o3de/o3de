@@ -16,11 +16,12 @@
 #include <TerrainMacroHelpers.azsli>
 #include <ClipmapComputeHelpers.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-#include <Atom/Features/PBR/ForwardPassSrg.azsli>
-#include <Atom/Features/PBR/ForwardPassOutput.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
 #include <Atom/Features/PBR/AlphaUtils.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 #include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
+#include <Atom/Features/PBR/Lights/IblForward.azsli>
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
 
@@ -182,7 +183,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     ApplyDirectLighting(surface, lightingData, input.m_position);
 
     // Apply Image Based Lighting (IBL)
-    ApplyIBL(surface, lightingData);
+    ApplyIblForward(surface, lightingData);
 
     // Finalize Lighting
     lightingData.FinalizeLighting();

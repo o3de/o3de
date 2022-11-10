@@ -84,6 +84,27 @@ namespace
             emit ViewportInfoStatusUpdated(aznumeric_cast<int>(state));
         }
     };
+
+    // simple override of QMenu that does not respond to keyboard events
+    // note: this prevents the menu from being prematurely closed
+    class IgnoreKeyboardMenu : public QMenu
+    {
+    public:
+        IgnoreKeyboardMenu(QWidget* parent = nullptr)
+            : QMenu(parent)
+        {
+        }
+
+    private:
+        void keyPressEvent(QKeyEvent* event) override
+        {
+            // regular escape key handling
+            if (event->key() == Qt::Key_Escape)
+            {
+                QMenu::keyPressEvent(event);
+            }
+        }
+    };
 } // end anonymous namespace
 
 CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
@@ -97,7 +118,7 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     layout->addWidget(container);
     container->setObjectName("ViewportTitleDlgContainer");
 
-    m_prevMoveSpeed = 0;
+    m_prevMoveSpeedScale = 0;
 
     m_pViewPane = nullptr;
     GetIEditor()->RegisterNotifyListener(this);
@@ -115,23 +136,6 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     if (!AzToolsFramework::IsNewActionManagerEnabled())
     {
         SetupHelpersButton();
-    }
-    else
-    {
-        // Temporary Helpers menu setup until this toolbar is refactored.
-        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
-        auto menuManagerInternalInterface = AZ::Interface<AzToolsFramework::MenuManagerInternalInterface>::Get();
-        if (menuManagerInterface && menuManagerInternalInterface)
-        {
-            const AZStd::string helpersMenuIdentifier = "o3de.menu.viewport.helpers";
-            AzToolsFramework::MenuProperties menuProperties;
-            menuProperties.m_name = "Helpers State";
-            menuManagerInterface->RegisterMenu(helpersMenuIdentifier, menuProperties);
-
-            QMenu* helpersMenu = menuManagerInternalInterface->GetMenu(helpersMenuIdentifier);
-            m_ui->m_helpers->setMenu(helpersMenu);
-            m_ui->m_helpers->setPopupMode(QToolButton::InstantPopup);
-        }
     }
 
     SetupOverflowMenu();
@@ -164,46 +168,45 @@ CViewportTitleDlg::~CViewportTitleDlg()
 void CViewportTitleDlg::SetupCameraDropdownMenu()
 {
     // Setup the camera dropdown menu
-    QMenu* cameraMenu = new QMenu(this);
+    auto cameraMenu = new IgnoreKeyboardMenu(this);
     cameraMenu->addMenu(GetFovMenu());
     m_ui->m_cameraMenu->setMenu(cameraMenu);
     m_ui->m_cameraMenu->setPopupMode(QToolButton::InstantPopup);
     QObject::connect(cameraMenu, &QMenu::aboutToShow, this, &CViewportTitleDlg::CheckForCameraSpeedUpdate);
+    QObject::connect(cameraMenu, &QMenu::aboutToHide, &QWidget::clearFocus);
 
     QAction* gotoPositionAction = new QAction("Go to position", cameraMenu);
     connect(gotoPositionAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedGotoPosition);
     cameraMenu->addAction(gotoPositionAction);
+
     cameraMenu->addSeparator();
 
     auto cameraSpeedActionWidget = new QWidgetAction(cameraMenu);
     auto cameraSpeedContainer = new QWidget(cameraMenu);
-    auto cameraSpeedLabel = new QLabel(tr("Camera Speed"), cameraMenu);
-    m_cameraSpeed = new QComboBox(cameraMenu);
-    m_cameraSpeed->setEditable(true);
-    m_cameraSpeed->setValidator(new QDoubleValidator(m_minSpeed, m_maxSpeed, m_numDecimals, m_cameraSpeed));
-    m_cameraSpeed->installEventFilter(this);
+    auto cameraSpeedLabel = new QLabel(tr("Camera Speed Scale"), cameraMenu);
+    m_cameraSpinBox = new AzQtComponents::DoubleSpinBox();
+    m_cameraSpinBox->setRange(m_speedScaleMin, m_speedScaleMax);
+    m_cameraSpinBox->SetDisplayDecimals(m_speedScaleDecimalCount);
+    m_cameraSpinBox->setSingleStep(m_speedScaleStep);
+    m_cameraSpinBox->setValue(SandboxEditor::CameraSpeedScale());
 
+    QObject::connect(m_cameraSpinBox, &AzQtComponents::DoubleSpinBox::editingFinished, &QWidget::clearFocus);
+    QObject::connect(
+        m_cameraSpinBox,
+        QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged),
+        [](const double value)
+        {
+            SandboxEditor::SetCameraSpeedScale(aznumeric_cast<float>(value));
+        });
+
+    // the padding to give to the layout to align with the QAction entries in the list
+    const int CameraSpeedLayoutPadding = 16;
     QHBoxLayout* cameraSpeedLayout = new QHBoxLayout;
+    cameraSpeedLayout->setContentsMargins(QMargins(CameraSpeedLayoutPadding, 0, CameraSpeedLayoutPadding, 0));
     cameraSpeedLayout->addWidget(cameraSpeedLabel);
-    cameraSpeedLayout->addWidget(m_cameraSpeed);
+    cameraSpeedLayout->addWidget(m_cameraSpinBox);
     cameraSpeedContainer->setLayout(cameraSpeedLayout);
     cameraSpeedActionWidget->setDefaultWidget(cameraSpeedContainer);
-
-    // Save off the move speed here since setting up the combo box can cause it to update values in the background.
-    const float cameraMoveSpeed = SandboxEditor::CameraTranslateSpeed();
-    // Populate the presets in the ComboBox
-    for (float presetValue : m_speedPresetValues)
-    {
-        m_cameraSpeed->addItem(QString().setNum(presetValue, 'f', m_numDecimals), presetValue);
-    }
-
-    auto comboBoxTextChanged = static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentTextChanged);
-
-    SetSpeedComboBox(cameraMoveSpeed);
-    m_cameraSpeed->setInsertPolicy(QComboBox::InsertAtBottom);
-    m_cameraSpeed->setDuplicatesEnabled(false);
-    connect(m_cameraSpeed, comboBoxTextChanged, this, &CViewportTitleDlg::OnUpdateMoveSpeedText);
-    connect(m_cameraSpeed->lineEdit(), &QLineEdit::returnPressed, this, &CViewportTitleDlg::OnSpeedComboBoxEnter);
 
     cameraMenu->addAction(cameraSpeedActionWidget);
 }
@@ -235,6 +238,11 @@ void CViewportTitleDlg::SetupViewportInformationMenu()
     m_ui->m_debugInformationMenu->setPopupMode(QToolButton::MenuButtonPopup);
 }
 
+static bool ShouldHelpersBeChecked()
+{
+    return AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible() || AzToolsFramework::OnlyShowHelpersForSelectedEntities();
+}
+
 void CViewportTitleDlg::SetupHelpersButton()
 {
     if (m_helpersMenu == nullptr)
@@ -246,15 +254,27 @@ void CViewportTitleDlg::SetupHelpersButton()
             helperAction, &QAction::triggered, this,
             [this]
             {
-                m_ui->m_helpers->setChecked(AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible());
+                m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
             });
 
         auto iconAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::Icons);
         connect(
-            iconAction, &QAction::triggered, this,
+            iconAction,
+            &QAction::triggered,
+            this,
             [this]
             {
-                m_ui->m_helpers->setChecked(AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible());
+                m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
+            });
+
+        auto onlySelectedAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::OnlyShowHelpersForSelectedEntitiesAction);
+        connect(
+            onlySelectedAction,
+            &QAction::triggered,
+            this,
+            [this]
+            {
+                m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
             });
 
         m_helpersAction = new QAction(tr("Helpers"), m_helpersMenu);
@@ -275,8 +295,20 @@ void CViewportTitleDlg::SetupHelpersButton()
                 iconAction->trigger();
             });
 
+        m_onlySelectedAction = new QAction(tr("Helpers for Selected Entities Only"), m_helpersMenu);
+        m_onlySelectedAction->setCheckable(true);
+        connect(
+             m_onlySelectedAction,
+            &QAction::triggered,
+            this,
+            [onlySelectedAction]
+            {
+                onlySelectedAction->trigger();
+            });
+
         m_helpersMenu->addAction(m_helpersAction);
         m_helpersMenu->addAction(m_iconsAction);
+        m_helpersMenu->addAction(m_onlySelectedAction);
 
         connect(
             m_helpersMenu, &QMenu::aboutToShow, this,
@@ -284,6 +316,7 @@ void CViewportTitleDlg::SetupHelpersButton()
             {
                 m_helpersAction->setChecked(AzToolsFramework::HelpersVisible());
                 m_iconsAction->setChecked(AzToolsFramework::IconsVisible());
+                m_onlySelectedAction->setChecked(AzToolsFramework::OnlyShowHelpersForSelectedEntities());
             });
 
         m_ui->m_helpers->setCheckable(true);
@@ -291,31 +324,11 @@ void CViewportTitleDlg::SetupHelpersButton()
         m_ui->m_helpers->setPopupMode(QToolButton::InstantPopup);
     }
 
-    m_ui->m_helpers->setChecked(AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible());
+    m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
 }
 
 void CViewportTitleDlg::SetupOverflowMenu()
 {
-    // simple override of QMenu that does not respond to keyboard events
-    // note: this prevents the menu from being prematurely closed
-    class IgnoreKeyboardMenu : public QMenu
-    {
-    public:
-        IgnoreKeyboardMenu(QWidget *parent = nullptr) : QMenu(parent)
-        {
-        }
-
-    private:
-        void keyPressEvent(QKeyEvent* event) override
-        {
-            // regular escape key handling
-            if (event->key() == Qt::Key_Escape)
-            {
-                QMenu::keyPressEvent(event);
-            }
-        }
-    };
-
     // setup the overflow menu
     auto* overflowMenu = new IgnoreKeyboardMenu(this);
     overflowMenu->setMinimumWidth(MiniumOverflowMenuWidth);
@@ -409,11 +422,6 @@ void CViewportTitleDlg::OnInitDialog()
     auto displayInfoHelper = new CViewportTitleDlgDisplayInfoHelper(this);
     connect(displayInfoHelper, &CViewportTitleDlgDisplayInfoHelper::ViewportInfoStatusUpdated, this, &CViewportTitleDlg::UpdateDisplayInfo);
     UpdateDisplayInfo();
-
-    QFontMetrics metrics({});
-    int width = aznumeric_cast<int>(metrics.boundingRect("-9999.99").width() * m_fieldWidthMultiplier);
-
-    m_cameraSpeed->setFixedWidth(width);
 
     bool isPrefabSystemEnabled = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
@@ -626,7 +634,7 @@ void CViewportTitleDlg::AddFOVMenus(QMenu* menu, std::function<void(float)> call
                 break;
             }
 
-            float fov = gSettings.viewports.fDefaultFov;
+            float fov = SandboxEditor::CameraDefaultFovRadians();
             bool ok;
             float f = customPreset.toFloat(&ok);
             if (ok)
@@ -1035,21 +1043,6 @@ void CViewportTitleDlg::UpdateCustomPresets(const QString& text, QStringList& cu
 
 bool CViewportTitleDlg::eventFilter(QObject* object, QEvent* event)
 {
-    if (object == m_cameraSpeed)
-    {
-        if (event->type() == QEvent::FocusIn)
-        {
-            QTimer::singleShot(
-                0, this,
-                [this]
-                {
-                    m_cameraSpeed->lineEdit()->selectAll();
-                });
-        }
-
-        return m_cameraSpeed->eventFilter(object, event);
-    }
-
     bool consumeEvent = false;
 
     // These events are forwarded from the toolbar that took ownership of our widgets
@@ -1116,38 +1109,13 @@ inline double Round(double fVal, double fStep)
     return fVal;
 }
 
-void CViewportTitleDlg::SetSpeedComboBox(double value)
-{
-    value = AZStd::clamp(Round(value, m_speedStep), m_minSpeed, m_maxSpeed);
-
-    int index = m_cameraSpeed->findData(value);
-    if (index != -1)
-    {
-        m_cameraSpeed->setCurrentIndex(index);
-    }
-    else
-    {
-        m_cameraSpeed->lineEdit()->setText(QString().setNum(value, 'f', m_numDecimals));
-    }
-}
-
-void CViewportTitleDlg::OnSpeedComboBoxEnter()
-{
-    m_cameraSpeed->clearFocus();
-}
-
-void CViewportTitleDlg::OnUpdateMoveSpeedText(const QString& text)
-{
-    SandboxEditor::SetCameraTranslateSpeed(aznumeric_cast<float>(Round(text.toDouble(), m_speedStep)));
-}
-
 void CViewportTitleDlg::CheckForCameraSpeedUpdate()
 {
-    const float currentCameraMoveSpeed = SandboxEditor::CameraTranslateSpeed();
-    if (currentCameraMoveSpeed != m_prevMoveSpeed && !m_cameraSpeed->lineEdit()->hasFocus())
+    const float currentCameraSpeedScale = SandboxEditor::CameraSpeedScale();
+    if (currentCameraSpeedScale != m_prevMoveSpeedScale && !m_cameraSpinBox->hasFocus())
     {
-        m_prevMoveSpeed = currentCameraMoveSpeed;
-        SetSpeedComboBox(currentCameraMoveSpeed);
+        m_prevMoveSpeedScale = currentCameraSpeedScale;
+        m_cameraSpinBox->setValue(currentCameraSpeedScale);
     }
 }
 

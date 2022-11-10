@@ -35,10 +35,10 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     class test_BasicEditorWorkflows_LevelEntityComponentCRUD(EditorSingleTest):
 
         # Custom setup and teardown to remove level created during test
-        def setup(self, request, workspace, editor_test_results, launcher_platform):
+        def setup(self, request, workspace):
             TestAutomationNoAutoTestMode.cleanup_test_level(self, workspace)
 
-        def teardown(self, request, workspace, editor_test_results, launcher_platform):
+        def teardown(self, request, workspace, editor_test_results):
             TestAutomationNoAutoTestMode.cleanup_test_level(self, workspace)
 
         from .EditorScripts import BasicEditorWorkflows_LevelEntityComponentCRUD as test_module
@@ -49,10 +49,10 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
         use_null_renderer = False
 
         # Custom teardown to remove level created during test
-        def setup(self, request, workspace, editor_test_results, launcher_platform):
+        def setup(self, request, workspace):
             TestAutomationNoAutoTestMode.cleanup_test_level(self, workspace)
 
-        def teardown(self, request, workspace, editor_test_results, launcher_platform):
+        def teardown(self, request, workspace, editor_test_results):
             TestAutomationNoAutoTestMode.cleanup_test_level(self, workspace)
 
         from .EditorScripts import BasicEditorWorkflows_LevelEntityComponentCRUD as test_module

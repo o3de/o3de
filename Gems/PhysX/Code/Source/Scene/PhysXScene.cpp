@@ -23,7 +23,9 @@
 #include <PhysX/MathConversion.h>
 #include <Joint/PhysXJoint.h>
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/ProfilerBus.h>
+#include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -33,6 +35,9 @@
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
+
+
+AZ_CVAR_EXTERNED(bool, physx_batchTransformSync);
 
 namespace PhysX
 {
@@ -586,20 +591,41 @@ namespace PhysX
         {
             AZ_PROFILE_SCOPE(Physics, "PhysXScene::ActiveActors");
 
-            PHYSX_SCENE_READ_LOCK(m_pxScene);
-
-            physx::PxU32 numActiveActors = 0;
-            physx::PxActor** activeActors = m_pxScene->getActiveActors(numActiveActors);
             AzPhysics::SimulatedBodyHandleList activeBodyHandles;
-            activeBodyHandles.reserve(numActiveActors);
-            for (physx::PxU32 i = 0; i < numActiveActors; ++i)
+
             {
-                if (ActorData* actorData = Utils::GetUserData(activeActors[i]))
+                PHYSX_SCENE_READ_LOCK(m_pxScene);
+                physx::PxU32 numActiveActors = 0;
+                physx::PxActor** activeActors = m_pxScene->getActiveActors(numActiveActors);
+                activeBodyHandles.reserve(numActiveActors);
+                for (physx::PxU32 i = 0; i < numActiveActors; ++i)
                 {
-                    activeBodyHandles.emplace_back(actorData->GetBodyHandle());
+                    if (ActorData* actorData = Utils::GetUserData(activeActors[i]))
+                    {
+                        activeBodyHandles.emplace_back(actorData->GetBodyHandle());
+                    }
                 }
             }
-            m_sceneActiveSimulatedBodies.Signal(m_sceneHandle, activeBodyHandles);
+
+            // Keep the event signal outside of the scene lock since there may be handlers that want to lock the scene for write
+            m_sceneActiveSimulatedBodies.Signal(m_sceneHandle, activeBodyHandles, m_currentDeltaTime);
+
+            if (physx_batchTransformSync)
+            {
+                m_queuedActiveBodyIndices.IncreaseCapacity(activeBodyHandles.size());
+
+                for (const AzPhysics::SimulatedBodyHandle& bodyHandle : activeBodyHandles)
+                {
+                    AzPhysics::SimulatedBodyIndex bodyIndex = AZStd::get<1>(bodyHandle);
+                    m_queuedActiveBodyIndices.Insert(bodyIndex);
+                }
+
+                m_accumulatedDeltaTime += m_currentDeltaTime;
+            }
+            else
+            {
+                SyncActiveBodyTransform(activeBodyHandles);
+            }
         }
 
         FlushQueuedEvents();
@@ -861,6 +887,12 @@ namespace PhysX
         {
             newJoint = Internal::CreateJoint<PhysXHingeJoint, HingeJointConfiguration>(
                 azdynamic_cast<const HingeJointConfiguration*>(jointConfig),
+                m_sceneHandle, parentBody, childBody, newJointCrc);
+        }
+        else if (azrtti_istypeof<PhysX::PrismaticJointConfiguration*>(jointConfig))
+        {
+            newJoint = Internal::CreateJoint<PhysXPrismaticJoint, PrismaticJointConfiguration>(
+                azdynamic_cast<const PrismaticJointConfiguration*>(jointConfig),
                 m_sceneHandle, parentBody, childBody, newJointCrc);
         }
         else
@@ -1260,4 +1292,61 @@ namespace PhysX
         AZ_PROFILE_DATAPOINT(Physics, stats.nbLostTouches, RootCategory, CollisionsSubCategory, "LostTouches");
         AZ_PROFILE_DATAPOINT(Physics, stats.nbPartitions, RootCategory, CollisionsSubCategory, "Partitions");
     }
-}
+
+    void PhysXScene::SyncActiveBodyTransform(const AzPhysics::SimulatedBodyHandleList& activeBodyHandles)
+    {
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            for (const AzPhysics::SimulatedBodyHandle& bodyHandle : activeBodyHandles)
+            {
+                if (AzPhysics::SimulatedBody* simBody = sceneInterface->GetSimulatedBodyFromHandle(m_sceneHandle, bodyHandle))
+                {
+                    simBody->SyncTransform(m_currentDeltaTime);
+                }
+            }
+        }
+    }
+
+    void PhysXScene::FlushTransformSync()
+    {
+        AZ_PROFILE_SCOPE(Physics, "PhysX::FlushTransformSync");
+
+        m_queuedActiveBodyIndices.Apply(
+            [this](AzPhysics::SimulatedBodyIndex bodyIndex)
+            {
+                if (bodyIndex < m_simulatedBodies.size() && m_simulatedBodies[bodyIndex].second)
+                {
+                    m_simulatedBodies[bodyIndex].second->SyncTransform(m_accumulatedDeltaTime);
+                }
+            });
+
+        m_queuedActiveBodyIndices.Clear();
+        m_accumulatedDeltaTime = 0.0f;
+    }
+
+    void PhysXScene::QueuedActiveBodyIndices::Insert(AzPhysics::SimulatedBodyIndex bodyIndex)
+    {
+        if (m_uniqueIndices.insert(bodyIndex).second)
+        {
+            m_packedIndices.emplace_back(bodyIndex);
+        }
+    }
+
+    void PhysXScene::QueuedActiveBodyIndices::IncreaseCapacity(size_t extraSize)
+    {
+        m_packedIndices.reserve(m_packedIndices.size() + extraSize);
+    }
+
+    void PhysXScene::QueuedActiveBodyIndices::Clear()
+    {
+        m_uniqueIndices.clear();
+        m_packedIndices.clear();
+    }
+
+    void PhysXScene::QueuedActiveBodyIndices::Apply(const AZStd::function<void(AzPhysics::SimulatedBodyIndex)>& applyFunction)
+    {
+        AZStd::for_each(m_packedIndices.begin(), m_packedIndices.end(), applyFunction);
+    }
+
+} // namespace PhysX
+

@@ -14,10 +14,10 @@
 namespace LmbrCentral
 {
     //! Type ID for QuadShapeComponent
-    static const AZ::Uuid QuadShapeComponentTypeId = "{A2205305-1087-4D34-A23F-2A68D6CA333A}";
+    inline constexpr AZ::TypeId QuadShapeComponentTypeId{ "{A2205305-1087-4D34-A23F-2A68D6CA333A}" };
 
     //! Type ID for EditorQuadShapeComponent
-    static const AZ::Uuid EditorQuadShapeComponentTypeId = "{E8E60770-40E9-426F-B134-3964BF8BDD84}";
+    inline constexpr AZ::TypeId EditorQuadShapeComponentTypeId{ "{E8E60770-40E9-426F-B134-3964BF8BDD84}" };
 
     //! Configuration data for QuadShapeComponent
     class QuadShapeConfig

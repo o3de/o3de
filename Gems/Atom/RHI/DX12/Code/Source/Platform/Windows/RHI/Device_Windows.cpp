@@ -551,10 +551,10 @@ namespace AZ
                     AZ::IO::SystemFile dredLog;
                     if (!dredLog.Open(filename.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
                     {
-                        AZ_TracePrintf("DRED", "Failed to open file %s for writing", filename.c_str());
+                        AZ_TracePrintf("DRED", "Failed to open file %s for writing\n", filename.c_str());
                         return;
                     }
-                    AZ_TracePrintf("DRED", "Device removed! Writing DRED log to %s", filename.c_str());
+                    AZ_TracePrintf("DRED", "Device removed! Writing DRED log to %s\n", filename.c_str());
 
                     AZStd::string line = AZStd::string::format("===BEGIN DRED LOG===\n"
                         "\nRemoval reason: %s\n", removedReasonString);
@@ -683,7 +683,7 @@ namespace AZ
                         const auto* node = pageFaultOutput.pHeadExistingAllocationNode;
                         while (node)
                         {
-                            line = AZStd::string::format("    0x%zx (%S) %s\n",
+                            line = AZStd::string::format("    0x%p (%S) %s\n",
 #ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
                                 node->pObject,
 #else
@@ -699,7 +699,7 @@ namespace AZ
                         node = pageFaultOutput.pHeadRecentFreedAllocationNode;
                         while (node)
                         {
-                            line = AZStd::string::format("    0x%zx (%S) %s\n",
+                            line = AZStd::string::format("    0x%p (%S) %s\n",
 #ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
                                 node->pObject,
 #else
@@ -721,23 +721,23 @@ namespace AZ
                     line = "===END DRED LOG===\n";
                     dredLog.Write(line.data(), line.size());
                     dredLog.Close();
-                    AZ_TracePrintf("DRED", "Finished writing DRED log to %s", filename.c_str());
+                    AZ_TracePrintf("DRED", "Finished writing DRED log to %s\n", filename.c_str());
                 }
                 else
                 {
                     switch (hr)
                     {
                     case DXGI_ERROR_NOT_CURRENTLY_AVAILABLE:
-                        AZ_TracePrintf("Device", "Could not retrieve DRED bread crumbs: DXGI_ERROR_NOT_CURRENTLY_AVAILABLE");
+                        AZ_TracePrintf("Device", "Could not retrieve DRED bread crumbs: DXGI_ERROR_NOT_CURRENTLY_AVAILABLE\n");
                         break;
 
                     case DXGI_ERROR_UNSUPPORTED:
                         AZ_TracePrintf(
-                            "Device", "Could not retrieve DRED bread crumbs (auto-breadcrumbs not enabled): DXGI_ERROR_UNSUPPORTED");
+                            "Device", "Could not retrieve DRED bread crumbs (auto-breadcrumbs not enabled): DXGI_ERROR_UNSUPPORTED\n");
                         break;
 
                     default:
-                        AZ_TracePrintf("Device", "Could not retrieve DRED bread crumbs (reason unknown)");
+                        AZ_TracePrintf("Device", "Could not retrieve DRED bread crumbs (reason unknown)\n");
                         break;
                     }
                 }

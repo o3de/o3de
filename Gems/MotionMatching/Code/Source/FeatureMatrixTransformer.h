@@ -25,7 +25,7 @@ namespace EMotionFX::MotionMatching
 
         struct Settings
         {
-            float m_featureMin = 0.0f; //!< Minimum value after the transformation.
+            float m_featureMin = -1.0f; //!< Minimum value after the transformation.
             float m_featureMax = 1.0f; //!< Maximum value after the transformation.
 
             //! Depending on the transformer to be used there might be some outliers from range [m_featureMin, m_featureMax].

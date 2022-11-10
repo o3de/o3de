@@ -131,6 +131,7 @@ namespace Multiplayer
 
     void NetworkRigidBodyComponentController::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
+        m_transformChangedHandler.Disconnect();
         GetParent().m_physicsRigidBodyComponent->SetKinematic(true);
     }
 

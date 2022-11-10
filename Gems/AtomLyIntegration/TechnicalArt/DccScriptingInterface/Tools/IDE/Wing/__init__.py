@@ -93,8 +93,8 @@ framework is broken and inoperable.
 """
 # -------------------------------------------------------------------------
 # standard imports
+import sys
 import os
-import site
 from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
@@ -102,7 +102,8 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-_PACKAGENAME = 'DCCsi.Tools.IDE.Wing'
+from DccScriptingInterface.Tools.IDE import _PACKAGENAME
+_PACKAGENAME = f'{_PACKAGENAME}.Wing'
 
 __all__ = ['globals',
            'config',
@@ -121,47 +122,47 @@ _LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 _MODULE_PATH = Path(__file__)
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
 
+from DccScriptingInterface import add_site_dir
+from DccScriptingInterface import SETTINGS_FILE_SLUG
+from DccScriptingInterface import LOCAL_SETTINGS_FILE_SLUG
+
+# these are here to support debugging with wing now during development
+from DccScriptingInterface import SLUG_DCCSI_WING_TYPE
+from DccScriptingInterface import SLUG_DCCSI_WING_VERSION_MAJOR
+
+from DccScriptingInterface import PATH_WINGHOME
+from DccScriptingInterface import PATH_WING_APPDATA
+
+from DccScriptingInterface.constants import PATH_PROGRAMFILES_X86
+from DccScriptingInterface.constants import USER_HOME
+from DccScriptingInterface.constants import ENVAR_PATH_DCCSI_TOOLS_IDE_WING
+
 # last two parents
 from DccScriptingInterface.Tools.IDE import PATH_DCCSI_TOOLS
 from DccScriptingInterface.Tools.IDE import PATH_DCCSI_TOOLS_IDE
 from DccScriptingInterface.globals import *
 
 # set up access to this Wing IDE folder as a pkg
-_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
 _DCCSI_TOOLS_IDE_WING = Path(_MODULE_PATH.parent)
-site.addsitedir(_DCCSI_TOOLS_IDE_WING.as_posix())
-
-from DccScriptingInterface.constants import ENVAR_PATH_DCCSI_TOOLS_IDE_WING
+add_site_dir(_DCCSI_TOOLS_IDE_WING.as_posix())
 
 # the path to this < dccsi >/Tools/IDE pkg
 PATH_DCCSI_TOOLS_IDE_WING = Path(_MODULE_PATH.parent)
 PATH_DCCSI_TOOLS_IDE_WING = Path(os.getenv(ENVAR_PATH_DCCSI_TOOLS_IDE_WING,
                                            PATH_DCCSI_TOOLS_IDE_WING.as_posix()))
-site.addsitedir(PATH_DCCSI_TOOLS_IDE_WING.as_posix())
+add_site_dir(PATH_DCCSI_TOOLS_IDE_WING.as_posix())
 _LOGGER.debug(f'{ENVAR_PATH_DCCSI_TOOLS_IDE_WING}: {PATH_DCCSI_TOOLS_IDE_WING}')
-# -------------------------------------------------------------------------
+_LOGGER.debug(STR_CROSSBAR)
 
+# from dynaconf import LazySettings
 
-# -------------------------------------------------------------------------
-from azpy.config_utils import attach_debugger
-from azpy import test_imports
+PATH_DCCSI_TOOLS_IDE_WING_SETTINGS = PATH_DCCSI_TOOLS_IDE_WING.joinpath(SETTINGS_FILE_SLUG).resolve()
+PATH_DCCSI_TOOLS_IDE_WING_LOCAL_SETTINGS = PATH_DCCSI_TOOLS_IDE_WING.joinpath(LOCAL_SETTINGS_FILE_SLUG).resolve()
 
-# suggestion would be to turn this into a method to reduce boilerplate
-# but where to put it that makes sense?
-if DCCSI_DEV_MODE:
-    # if dev mode, this will attempt to auto-attach the debugger
-    # at the earliest possible point in this module
-    attach_debugger(debugger_type=DCCSI_GDEBUGGER)
-
-    _LOGGER.debug(f'Testing Imports from {_PACKAGENAME}')
-
-    # If in dev mode and test is flagged this will force imports of __all__
-    # although slower and verbose, this can help detect cyclical import
-    # failure and other issues
-
-    # the DCCSI_TESTS flag needs to be properly added in .bat env
-    if DCCSI_TESTS:
-        test_imports(_all=__all__,
-                     _pkg=_PACKAGENAME,
-                     _logger=_LOGGER)
+# settings = LazySettings(
+#     SETTINGS_FILE_FOR_DYNACONF=PATH_DCCSI_TOOLS_IDE_WING.as_posix(),
+#     INCLUDES_FOR_DYNACONF=[PATH_DCCSI_TOOLS_IDE_WING_LOCAL_SETTINGS.as_posix()]
+# )
+#
+# settings.setenv()
 # -------------------------------------------------------------------------

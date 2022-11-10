@@ -190,7 +190,7 @@ namespace UnitTest
                 m_file02Name = m_fileRoot / "file02.asdf";
                 m_file03Name = m_fileRoot / "test123.wha";
             }
-        
+
             void TearDown() override
             {
             }
@@ -422,7 +422,7 @@ namespace UnitTest
             void run()
             {
                 LocalFileIO local;
-                
+
                 AZ_TEST_ASSERT(local.CreatePath(m_fileRoot.c_str()));
                 AZ_TEST_ASSERT(local.IsDirectory(m_fileRoot.c_str()));
                 {
@@ -797,6 +797,32 @@ namespace UnitTest
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
 
+        TEST_F(AliasTest, ReplaceAlias_CanReplaceAliasInplace_Succeeds)
+        {
+            AZ::IO::LocalFileIO local;
+            AZ::IO::FixedMaxPathString aliasFolder;
+            auto CreateTestAbsPath = [&local](char* ptr, size_t size) -> size_t
+            {
+                // If the path was successfully converted to an absolute path
+                // then take the string length of it to figure out where to resize
+                // the fixed_string downwards
+                return local.ConvertToAbsolutePath("/temp", ptr, size) ?
+                    AZStd::char_traits<char>::length(ptr) : 0;
+            };
+            aliasFolder.resize_and_overwrite(aliasFolder.max_size(), CreateTestAbsPath);
+            local.SetAlias("@test@", aliasFolder.c_str());
+
+            // First replace the alias into a new FixedMaxPath
+            const AZ::IO::FixedMaxPath testValue = "@test@/Assets/Materials/Types/MaterialInputs/BaseColorPropertyGroup.json";
+            AZ::IO::FixedMaxPath expectedResolvedValue;
+            EXPECT_TRUE(local.ReplaceAlias(expectedResolvedValue, testValue));
+
+            // Make a copy of the testValue into a FixedMaxPath and resolve it inplace
+            AZ::IO::FixedMaxPath testPath = testValue;
+            EXPECT_TRUE(local.ReplaceAlias(testPath, testPath));
+            EXPECT_EQ(expectedResolvedValue, testPath);
+        }
+
         TEST_F(AliasTest, GetAlias_LogsError_WhenAccessingDeprecatedAlias_Succeeds)
         {
             AZ::IO::LocalFileIO local;
@@ -897,7 +923,7 @@ namespace UnitTest
                 testString[0] = '\0';
                 localFileIO.Read(fileHandle1, testString, testStringLen);
 
-                // try swapping files when the destination file is open for read only, 
+                // try swapping files when the destination file is open for read only,
                 // since window is unable to move files that are open for read, this will fail.
                 AZ_TEST_ASSERT(!AZ::IO::SmartMove(m_file01Name.c_str(), m_file02Name.c_str()));
                 localFileIO.Close(fileHandle1);

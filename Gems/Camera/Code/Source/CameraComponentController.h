@@ -13,9 +13,11 @@
 #include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/ViewGroup.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewProviderBus.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
+#include <Atom/RPI.Public/XR/XRRenderingInterface.h>
 
 namespace Camera
 {
@@ -107,6 +109,7 @@ namespace Camera
         void SetFrustumHeight(float height) override;
         void SetOrthographic(bool orthographic) override;
         void SetOrthographicHalfWidth(float halfWidth) override;
+        void SetXRViewQuaternion(const AZ::Quaternion& viewQuat, uint32_t xrViewIndex) override;
 
         void MakeActiveView() override;
         bool IsActiveView() override;
@@ -125,6 +128,7 @@ namespace Camera
 
         // AZ::RPI::ViewProviderBus::Handler interface
         AZ::RPI::ViewPtr GetView() const override;
+        AZ::RPI::ViewPtr GetStereoscopicView(AZ::RPI::ViewType viewType) const override;
 
     private:
         AZ_DISABLE_COPY(CameraComponentController);
@@ -139,9 +143,12 @@ namespace Camera
         AZ::EntityId m_entityId;
 
         // Atom integration
-        AZ::RPI::ViewPtr m_atomCamera;
+        AZ::RPI::ViewGroupPtr m_atomCameraViewGroup = nullptr;
+        AZ::RPI::XRRenderingInterface* m_xrSystem = nullptr;
+        AZ::u32 m_numSterescopicViews = 0;
+
         AZ::RPI::AuxGeomDrawPtr m_atomAuxGeom;
-        AZ::Event<const AZ::Matrix4x4&>::Handler m_onViewMatrixChanged;
+       
         bool m_updatingTransformFromEntity = false;
         bool m_isActiveView = false;
 

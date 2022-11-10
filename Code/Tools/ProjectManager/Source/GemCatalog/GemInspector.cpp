@@ -275,6 +275,13 @@ namespace O3DE::ProjectManager
 
         m_mainLayout->addSpacing(10);
 
+        m_editGemButton = new QPushButton(tr("Edit Gem"));
+        m_editGemButton->setObjectName("gemCatalogUpdateGemButton");
+        m_mainLayout->addWidget(m_editGemButton);
+        connect(m_editGemButton, &QPushButton::clicked, this , [this]{ emit EditGem(m_curModelIndex); });
+
+        m_mainLayout->addSpacing(10);
+
         m_uninstallGemButton = new QPushButton(tr("Uninstall Gem"));
         m_uninstallGemButton->setObjectName("gemCatalogUninstallGemButton");
         m_mainLayout->addWidget(m_uninstallGemButton);

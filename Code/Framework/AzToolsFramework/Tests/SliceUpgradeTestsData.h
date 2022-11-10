@@ -38,7 +38,7 @@ namespace UnitTest
         }
     };
 
-    static const char* TestComponentATypeId = "{C802148B-7EDC-4518-9780-FB9F99880446}";
+    inline constexpr AZ::TypeId TestComponentATypeId{ "{C802148B-7EDC-4518-9780-FB9F99880446}" };
     class TestComponentA_V0
         : public AzToolsFramework::Components::EditorComponentBase
     {
@@ -129,7 +129,7 @@ namespace UnitTest
         }
     };
 
-    static const char* TestDataB_TypeId = "{20E6777B-6857-409B-B27F-9E505D4378EF}";
+    inline constexpr AZ::TypeId TestDataB_TypeId { "{20E6777B-6857-409B-B27F-9E505D4378EF}" };
 
     struct TestDataB_V0
     {
@@ -239,7 +239,7 @@ namespace UnitTest
         float m_info = 27.5f;
     };
 
-    static const char* TestComponentBTypeId = "{10778D96-4860-4690-9A0E-B1066C00136B}";
+    inline constexpr AZ::TypeId TestComponentBTypeId{ "{10778D96-4860-4690-9A0E-B1066C00136B}" };
 
     class TestComponentB_V0
         : public AzToolsFramework::Components::EditorComponentBase
@@ -359,7 +359,7 @@ namespace UnitTest
         }
     };
 
-    static const char* TestComponentDTypeId = "{77655B67-3E03-418C-B010-D272DBCEAE25}";
+    inline constexpr AZ::TypeId TestComponentDTypeId{ "{77655B67-3E03-418C-B010-D272DBCEAE25}" };
 
     // Initial Test Values
     static const int Value1_Initial = 3;
@@ -507,7 +507,7 @@ namespace UnitTest
     // 2. float (V4) -> int (V5), int (V5) -> double (V6)       // Applies 2 incremental upgrades to upgrade a data patch created using TestComponentE_V4 so that it can be applied to TestComponentE_V6_1 (Expected data loss)
     // 3. float (V4) -> double (V6)                             // Applies a skip-version patch to go directly from TestComponentE_V4 to TestComponentE_V6_2 to avoid the data loss in the previous scenario.
 
-    static const char* TestComponentETypeId = "{835E5A78-2283-4113-91BC-BFC022619388}";
+    inline constexpr AZ::TypeId TestComponentETypeId{ "{835E5A78-2283-4113-91BC-BFC022619388}" };
 
     // Original data for our test TestComponentE_V4
     static const float V4_DefaultData = 3.75f;

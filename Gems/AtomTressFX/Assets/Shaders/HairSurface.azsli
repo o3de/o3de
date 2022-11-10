@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include <Atom/Features/PBR/Surfaces/BasePbrSurfaceData.azsli>
+#include <Atom/Features/PBR/MaterialUtils.azsli>
+#include <Atom/Features/PBR/SpecularAA.azsli>
 #include <Atom/Features/PBR/Surfaces/TransmissionSurfaceData.azsli>
 
 class Surface

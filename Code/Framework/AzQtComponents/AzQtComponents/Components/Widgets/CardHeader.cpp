@@ -25,6 +25,7 @@
 namespace AzQtComponents
 {
     static QString g_containerCardHeaderClass = QStringLiteral("ContainerCardHeader");
+    static QString g_sectionCardHeaderClass = QStringLiteral("SectionCardHeader");
 
     namespace HeaderBarConstants
     {
@@ -46,6 +47,12 @@ namespace AzQtComponents
     void CardHeader::applyContainerStyle(CardHeader* header)
     {
         Style::addClass(header, g_containerCardHeaderClass);
+    }
+
+    void CardHeader::applySectionStyle(CardHeader* header)
+    {
+        Style::addClass(header, g_sectionCardHeaderClass);
+        header->setHasContextMenu(false);
     }
 
     int CardHeader::s_iconSize = CardHeader::defaultIconSize();
@@ -143,6 +150,12 @@ namespace AzQtComponents
         m_titleLabel->setVisible(!title.isEmpty());
     }
 
+    void CardHeader::setTitleToolTip(const QString& toolTip)
+    {
+        m_titleLabel->setToolTip(toolTip);
+        setToolTip(toolTip);
+    }
+
     void CardHeader::setFilter(const QString& filter)
     {
         m_titleLabel->setFilter(filter);
@@ -214,6 +227,7 @@ namespace AzQtComponents
     void CardHeader::setExpandable(bool expandable)
     {
         m_expanderButton->setEnabled(expandable);
+        m_expanderButton->setVisible(expandable);
     }
 
     bool CardHeader::isExpandable() const

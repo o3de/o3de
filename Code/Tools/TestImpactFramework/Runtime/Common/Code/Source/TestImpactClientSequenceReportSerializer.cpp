@@ -137,16 +137,28 @@ namespace TestImpact
             };
         } // namespace SequenceReportFields
 
-        AZ::u64 TimePointInMsAsInt64(AZStd::chrono::high_resolution_clock::time_point timePoint)
+        AZ::u64 TimePointInMsAsInt64(AZStd::chrono::steady_clock::time_point timePoint)
         {
             return AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(timePoint.time_since_epoch()).count();
+        }
+
+        AZStd::string GetNameSpaceOrTargetName(const Client::TestRunBase& testRun)
+        {
+            if (const auto testNamespace = testRun.GetTestNamespace(); !testNamespace.empty())
+            {
+                return testNamespace + "_" + testRun.GetTargetName();
+            }
+            else
+            {
+                return testRun.GetTargetName();
+            }
         }
 
         void SerializeTestRunMembers(const Client::TestRunBase& testRun, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
         {
             // Name
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::Name]);
-            writer.String(testRun.GetTargetName().c_str());
+            writer.String(GetNameSpaceOrTargetName(testRun).c_str());
 
             // Command string
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::CommandArgs]);
@@ -365,23 +377,23 @@ namespace TestImpact
             // Execution failure
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::ExecutionFailure]);
             writer.String(ExecutionFailurePolicyAsString(policyState.m_executionFailurePolicy).c_str());
-            
+
             // Failed test coverage
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::CoverageFailure]);
             writer.String(FailedTestCoveragePolicyAsString(policyState.m_failedTestCoveragePolicy).c_str());
-            
+
             // Test failure
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::TestFailure]);
             writer.String(TestFailurePolicyAsString(policyState.m_testFailurePolicy).c_str());
-            
+
             // Integrity failure
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::IntegrityFailure]);
             writer.String(IntegrityFailurePolicyAsString(policyState.m_integrityFailurePolicy).c_str());
-            
+
             // Test sharding
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::TestSharding]);
             writer.String(TestShardingPolicyAsString(policyState.m_testShardingPolicy).c_str());
-            
+
             // Target output capture
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::TargetOutputCapture]);
             writer.String(TargetOutputCapturePolicyAsString(policyState.m_targetOutputCapture).c_str());
@@ -604,9 +616,9 @@ namespace TestImpact
         return stringBuffer.GetString();
     }
 
-    AZStd::chrono::high_resolution_clock::time_point TimePointFromMsInt64(AZ::s64 ms)
+    AZStd::chrono::steady_clock::time_point TimePointFromMsInt64(AZ::s64 ms)
     {
-        return AZStd::chrono::high_resolution_clock::time_point(AZStd::chrono::milliseconds(ms));
+        return AZStd::chrono::steady_clock::time_point(AZStd::chrono::milliseconds(ms));
     }
 
     AZStd::vector<Client::Test> DeserializeTests(const rapidjson::Value& serialTests)
@@ -626,8 +638,11 @@ namespace TestImpact
     Client::TestRunBase DeserializeTestRunBase(const rapidjson::Value& serialTestRun)
     {
         return Client::TestRunBase(
+            "", // Namespace
             serialTestRun[SequenceReportFields::Keys[SequenceReportFields::Name]].GetString(),
             serialTestRun[SequenceReportFields::Keys[SequenceReportFields::CommandArgs]].GetString(),
+            "", // StdOut
+            "", // StdError
             TimePointFromMsInt64(serialTestRun[SequenceReportFields::Keys[SequenceReportFields::StartTime]].GetInt64()),
             AZStd::chrono::milliseconds(serialTestRun[SequenceReportFields::Keys[SequenceReportFields::Duration]].GetInt64()),
             TestRunResultFromString(serialTestRun[SequenceReportFields::Keys[SequenceReportFields::Result]].GetString()));

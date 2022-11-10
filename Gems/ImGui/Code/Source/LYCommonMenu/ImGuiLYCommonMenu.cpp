@@ -303,13 +303,16 @@ namespace ImGui
 
                 // View Maps ( pending valid ILevelSystem )
                 auto lvlSystem = (gEnv && gEnv->pSystem) ? gEnv->pSystem->GetILevelSystem() : nullptr;
-                if (lvlSystem && ImGui::BeginMenu("Levels"))
+                if (lvlSystem && AzFramework::LevelSystemLifecycleInterface::Get() && ImGui::BeginMenu("Levels"))
                 {
-                    if (lvlSystem->IsLevelLoaded())
+                    if (AzFramework::LevelSystemLifecycleInterface::Get()->IsLevelLoaded())
                     {
                         ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Current Level: ");
                         ImGui::SameLine();
-                        ImGui::TextColored(ImGui::Colors::s_NiceLabelColor, "%s", lvlSystem->GetCurrentLevelName());
+                        ImGui::TextColored(
+                            ImGui::Colors::s_NiceLabelColor,
+                            "%s",
+                            AzFramework::LevelSystemLifecycleInterface::Get()->GetCurrentLevelName());
                     }
 
                     bool usePrefabSystemForLevels = false;
@@ -658,8 +661,18 @@ namespace ImGui
                     ImGui::EndMenu();
                 }
 
+                if (ImGui::MenuItem("ImGui Demo"))
+                {
+                    m_showImGuiDemo = true;
+                }
+
                 // End LY Common Tools menu
                 ImGui::EndMenu();
+            }
+
+            if (m_showImGuiDemo)
+            {
+                ImGui::ShowDemoWindow(&m_showImGuiDemo);
             }
 
             const float labelSize = dpiAwareSizeFn(100.0f + viewportBorderPadding.m_right) + rightAlignedBorderOffset;

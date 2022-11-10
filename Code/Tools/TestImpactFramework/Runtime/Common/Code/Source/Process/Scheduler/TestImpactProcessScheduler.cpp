@@ -17,7 +17,7 @@ namespace TestImpact
     struct ProcessInFlight
     {
         AZStd::unique_ptr<Process> m_process;
-        AZStd::optional<AZStd::chrono::high_resolution_clock::time_point> m_startTime;
+        AZStd::optional<AZStd::chrono::steady_clock::time_point> m_startTime;
         AZStd::string m_stdOutput;
         AZStd::string m_stdError;
     };
@@ -47,7 +47,7 @@ namespace TestImpact
         AZStd::optional<ProcessStdContentCallback> m_processStdContentCallback;
         AZStd::optional<AZStd::chrono::milliseconds> m_processTimeout;
         AZStd::optional<AZStd::chrono::milliseconds> m_scheduleTimeout;
-        AZStd::chrono::high_resolution_clock::time_point m_startTime;
+        AZStd::chrono::steady_clock::time_point m_startTime;
         AZStd::vector<ProcessInFlight> m_processPool;
         AZStd::queue<ProcessInfo> m_processQueue;
     };
@@ -82,7 +82,7 @@ namespace TestImpact
     ProcessSchedulerResult ProcessScheduler::ExecutionState::MonitorProcesses(const AZStd::vector<ProcessInfo>& processes)
     {
         AZ_TestImpact_Eval(!processes.empty(), ProcessException, "Number of processes to launch cannot be 0");
-        m_startTime = AZStd::chrono::high_resolution_clock::now();
+        m_startTime = AZStd::chrono::steady_clock::now();
         const size_t numConcurrentProcesses = AZStd::min(processes.size(), m_maxConcurrentProcesses);
         m_processPool.resize(numConcurrentProcesses);
 
@@ -106,7 +106,7 @@ namespace TestImpact
             // Check to see whether or not the scheduling has exceeded its specified runtime
             if (m_scheduleTimeout.has_value())
             {
-                const auto shedulerRunTime = AZStd::chrono::milliseconds(AZStd::chrono::high_resolution_clock::now() - m_startTime);
+                const auto shedulerRunTime = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - m_startTime);
 
                 if (shedulerRunTime > m_scheduleTimeout)
                 {
@@ -133,7 +133,7 @@ namespace TestImpact
                         // Process has exited of its own accord
                         const ReturnCode returnCode = processInFlight.m_process->GetReturnCode().value();
                         processInFlight.m_process.reset();
-                        const auto exitTime = AZStd::chrono::high_resolution_clock::now();
+                        const auto exitTime = AZStd::chrono::steady_clock::now();
 
                         // Inform the client that the processes has exited
                         if (ProcessCallbackResult::Abort == m_processExitCallback(
@@ -166,8 +166,8 @@ namespace TestImpact
                     else
                     {
                         // Process is still in-flight
-                        const auto exitTime = AZStd::chrono::high_resolution_clock::now();
-                        const auto runTime = AZStd::chrono::milliseconds(exitTime - processInFlight.m_startTime.value());
+                        const auto exitTime = AZStd::chrono::steady_clock::now();
+                        const auto runTime = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(exitTime - processInFlight.m_startTime.value());
 
                         // Check to see whether or not the processes has exceeded its specified flight time
                         if (m_processTimeout.has_value() && runTime > m_processTimeout)
@@ -226,7 +226,7 @@ namespace TestImpact
     {
         auto processInfo = m_processQueue.front();
         m_processQueue.pop();
-        const auto createTime = AZStd::chrono::high_resolution_clock::now();
+        const auto createTime = AZStd::chrono::steady_clock::now();
         LaunchResult createResult = LaunchResult::Success;
 
         try
@@ -288,7 +288,7 @@ namespace TestImpact
 
                 if (isCallingBackToClient)
                 {
-                    const auto exitTime = AZStd::chrono::high_resolution_clock::now();
+                    const auto exitTime = AZStd::chrono::steady_clock::now();
                     if (ProcessCallbackResult::Abort == m_processExitCallback(
                         processInFlight.m_process->GetProcessInfo().GetId(),
                         exitStatus,

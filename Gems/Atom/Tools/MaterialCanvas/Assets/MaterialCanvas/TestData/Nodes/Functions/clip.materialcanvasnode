@@ -5,10 +5,14 @@
     "ClassData": {
         "id": "{438D0A3D-4109-4E9B-8182-27CF466520F4}",
         "category": "Math Functions",
-        "title": "clip",
+        "title": "Clip",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue"
+        ],
         "settings": {
             "instructions": [
-                "clip(NODEID_inValue);"
+                "clip(inValue);"
             ]
         },
         "inputSlots": [
@@ -16,13 +20,8 @@
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float4",
                 "defaultValue": {
                     "$type": "Vector4",
                     "Value": [
@@ -34,26 +33,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
-                    ]
-                }
-            }
-        ],
-        "outputSlots": [
-            {
-                "name": "outValue",
-                "displayName": "Value",
-                "description": "Value",
-                "supportedDataTypes": [
-                    "float4"
-                ],
-                "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }

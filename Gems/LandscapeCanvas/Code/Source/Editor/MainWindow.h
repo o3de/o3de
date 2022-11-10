@@ -113,6 +113,7 @@ namespace LandscapeCanvasEditor
         void PreOnGraphModelNodeRemoved(GraphModel::NodePtr node) override;
         void OnGraphModelConnectionAdded(GraphModel::ConnectionPtr connection) override;
         void OnGraphModelConnectionRemoved(GraphModel::ConnectionPtr connection) override;
+        void PreOnGraphModelNodeWrapped(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node) override;
         void OnGraphModelNodeWrapped(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node) override;
         void OnGraphModelGraphModified(GraphModel::NodePtr node) override;
         ////////////////////////////////////////////////////////////////////////
@@ -226,7 +227,10 @@ namespace LandscapeCanvasEditor
 
         AZ::EntityId GetRootEntityIdForGraphId(const GraphCanvas::GraphId& graphId);
 
-        AZ::ComponentId AddComponentTypeIdToEntity(const AZ::EntityId& entityId, AZ::TypeId componentToAddTypeId);
+        AZ::ComponentId AddComponentTypeIdToEntity(
+            const AZ::EntityId& entityId,
+            AZ::TypeId componentToAddTypeId,
+            const AZ::ComponentDescriptor::DependencyArrayType& optionalServices = {});
         void AddComponentForNode(GraphModel::NodePtr node, const AZ::EntityId& entityId);
         void HandleNodeCreated(GraphModel::NodePtr node);
         void HandleNodeAdded(GraphModel::NodePtr node);
@@ -238,7 +242,7 @@ namespace LandscapeCanvasEditor
             Invalid = -1,
             Shapes = 0,
             Gradients,
-            VegetationAreas,
+            WrapperNodes,
             Count
         };
 
@@ -280,6 +284,7 @@ namespace LandscapeCanvasEditor
 
         using DeletedNodePositionsMap = AZStd::unordered_map<AZ::EntityComponentIdPair, AZ::Vector2>;
         AZStd::unordered_map<GraphCanvas::GraphId, DeletedNodePositionsMap> m_deletedNodePositions;
+        GraphModel::NodePtrList m_addedWrappedNodes;
         GraphModel::NodePtrList m_deletedWrappedNodes;
         GraphModel::NodePtrList m_deserializedNodes;
         AzToolsFramework::EntityIdList m_queuedEntityDeletes;

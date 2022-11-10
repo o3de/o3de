@@ -267,7 +267,6 @@ void ApplicationManagerBase::InitAssetProcessorManager(AZStd::vector<Application
 
         AssetUtilities::SetTruncateFingerprintTimestamp(precision);
     }
-
 }
 
 void ApplicationManagerBase::HandleCommandLineHelp(AZStd::vector<ApplicationManagerBase::APCommandLineSwitch>& commandLineInfo)
@@ -571,6 +570,9 @@ void ApplicationManagerBase::InitConnectionManager()
     [[maybe_unused]] bool result = QObject::connect(GetAssetCatalog(), &AssetProcessor::AssetCatalog::SendAssetMessage, connectionAndChangeMessagesThreadContext, forwardMessageFunction, Qt::QueuedConnection);
     AZ_Assert(result, "Failed to connect to AssetCatalog signal");
 
+    result = QObject::connect(m_connectionManager, &ConnectionManager::ConnectionReady, GetAssetCatalog(), &AssetProcessor::AssetCatalog::OnConnect, Qt::QueuedConnection);
+    AZ_Assert(result, "Failed to connect to AssetCatalog signal");
+
     //Application manager related stuff
 
     // The AssetCatalog has to be rebuilt on connection, so we force the incoming connection messages to be serialized as they connect to the ApplicationManagerBase
@@ -596,7 +598,7 @@ void ApplicationManagerBase::InitConnectionManager()
     result = QObject::connect(GetRCController(), &AssetProcessor::RCController::FileCompiled, this,
             [](AssetProcessor::JobEntry entry, AssetBuilderSDK::ProcessJobResponse /*response*/)
             {
-                AssetNotificationMessage message(entry.m_pathRelativeToWatchFolder.toUtf8().constData(), AssetNotificationMessage::JobCompleted, AZ::Data::s_invalidAssetType, entry.m_platformInfo.m_identifier.c_str());
+                AssetNotificationMessage message(entry.m_sourceAssetReference.RelativePath().c_str(), AssetNotificationMessage::JobCompleted, AZ::Data::s_invalidAssetType, entry.m_platformInfo.m_identifier.c_str());
                 EBUS_EVENT(AssetProcessor::ConnectionBus, SendPerPlatform, 0, message, QString::fromUtf8(entry.m_platformInfo.m_identifier.c_str()));
             }
             );
@@ -605,7 +607,7 @@ void ApplicationManagerBase::InitConnectionManager()
     result = QObject::connect(GetRCController(), &AssetProcessor::RCController::FileFailed, this,
             [](AssetProcessor::JobEntry entry)
             {
-                AssetNotificationMessage message(entry.m_pathRelativeToWatchFolder.toUtf8().constData(), AssetNotificationMessage::JobFailed, AZ::Data::s_invalidAssetType, entry.m_platformInfo.m_identifier.c_str());
+                AssetNotificationMessage message(entry.m_sourceAssetReference.RelativePath().c_str(), AssetNotificationMessage::JobFailed, AZ::Data::s_invalidAssetType, entry.m_platformInfo.m_identifier.c_str());
                 EBUS_EVENT(AssetProcessor::ConnectionBus, SendPerPlatform, 0, message, QString::fromUtf8(entry.m_platformInfo.m_identifier.c_str()));
             }
             );
@@ -873,6 +875,7 @@ ApplicationManager::BeforeRunStatus ApplicationManagerBase::BeforeRun()
 
     qRegisterMetaType<QSet<QString> >("QSet<QString>");
     qRegisterMetaType<QSet<AssetProcessor::AssetFileInfo>>("QSet<AssetFileInfo>");
+    qRegisterMetaType<AssetProcessor::SourceAssetReference>("SourceAssetReference");
 
     AssetBuilderSDK::AssetBuilderBus::Handler::BusConnect();
     AssetProcessor::AssetBuilderRegistrationBus::Handler::BusConnect();
@@ -1179,7 +1182,7 @@ void ApplicationManagerBase::HandleFileRelocation() const
 
 bool ApplicationManagerBase::CheckFullIdle()
 {
-    bool isIdle = m_rcController->IsIdle() && m_AssetProcessorManagerIdleState;
+    bool isIdle = m_rcController->IsIdle() && m_AssetProcessorManagerIdleState && m_remainingAssetsToFinalize == 0;
     if (isIdle != m_fullIdle)
     {
         m_fullIdle = isIdle;
@@ -1187,7 +1190,6 @@ bool ApplicationManagerBase::CheckFullIdle()
     }
     return isIdle;
 }
-
 
 void ApplicationManagerBase::CheckForIdle()
 {
@@ -1412,14 +1414,9 @@ bool ApplicationManagerBase::Activate()
     AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
 
     AZStd::vector<APCommandLineSwitch> commandLineInfo;
-    const APCommandLineSwitch Command_ignoreFutureDBError(
-        commandLineInfo,
-        "ignoreFutureAssetDatabaseVersionError",
-        "When not set, if the Asset Processor encounters an Asset Database "
-        "with a future version, it will emit an error and shut down. When set, instead it will print the error as a log and erase the "
-        "Asset Database, then it will proceed to initialize. "
-        "This is intended for use with automated builds, and shouldn't be used by individuals. If an individual finds they want to use "
-        "this flag frequently, the team should "
+    const APCommandLineSwitch Command_ignoreFutureDBError(commandLineInfo, "ignoreFutureAssetDatabaseVersionError", "When not set, if the Asset Processor encounters an Asset Database "
+        "with a future version, it will emit an error and shut down. When set, instead it will print the error as a log and erase the Asset Database, then it will proceed to initialize. "
+        "This is intended for use with automated builds, and shouldn't be used by individuals. If an individual finds they want to use this flag frequently, the team should "
         "examine their workflows to determine why some team members encounter issues with future versioned Asset Databases.");
 
     if (!InitAssetDatabase(commandLine->HasSwitch(Command_ignoreFutureDBError.m_switch)))
@@ -1488,6 +1485,11 @@ bool ApplicationManagerBase::Activate()
     m_connectionsToRemoveOnShutdown << QObject::connect(
         m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::AssetProcessorManagerIdleState,
         this, &ApplicationManagerBase::OnAssetProcessorManagerIdleState);
+
+    m_connectionsToRemoveOnShutdown << QObject::connect(m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::FinishedAnalysis, this, [this](int count)
+    {
+        m_remainingAssetsToFinalize = count;
+    });
 
     m_connectionsToRemoveOnShutdown << QObject::connect(
         m_rcController, &AssetProcessor::RCController::BecameIdle,
@@ -1599,7 +1601,7 @@ static void HandleConditionalRetry(const AssetProcessor::BuilderRunJobOutcome& r
             builderRef.release();
 
             AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, purpose);
-            
+
             if (builderRef)
             {
                 AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new builder %s (Attempt %d with %d second delay)",
@@ -1727,7 +1729,7 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                     {
                         return; // exit early if you're shutting down!
                     }
-                    
+
                     retryCount++;
                     result = builderRef->RunJob<AssetBuilder::ProcessJobNetRequest, AssetBuilder::ProcessJobNetResponse>(
                         request, response, s_MaximumProcessJobsTimeSeconds, "process", "", &jobCancelListener, request.m_tempDirPath);

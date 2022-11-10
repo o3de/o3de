@@ -78,9 +78,13 @@
 #include <Editor/Nodes/Shapes/ReferenceShapeNode.h>
 #include <Editor/Nodes/Shapes/SphereShapeNode.h>
 #include <Editor/Nodes/Shapes/TubeShapeNode.h>
+#include <Editor/Nodes/Terrain/PhysXHeightfieldColliderNode.h>
 #include <Editor/Nodes/Terrain/TerrainHeightGradientListNode.h>
 #include <Editor/Nodes/Terrain/TerrainLayerSpawnerNode.h>
+#include <Editor/Nodes/Terrain/TerrainMacroMaterialNode.h>
+#include <Editor/Nodes/Terrain/TerrainPhysicsHeightfieldColliderNode.h>
 #include <Editor/Nodes/Terrain/TerrainSurfaceGradientListNode.h>
+#include <Editor/Nodes/Terrain/TerrainSurfaceMaterialsListNode.h>
 
 namespace LandscapeCanvas
 {
@@ -88,37 +92,41 @@ namespace LandscapeCanvas
     {
         // The FastNoise gem is optional, so we need to keep track of its component type ID
         // ourselves since we can't rely on the headers being there.
-        static constexpr const char* EditorFastNoiseGradientComponentTypeId = "{FD018DE5-5EB4-4219-9D0C-CB3C55DE656B}";
+        static constexpr AZ::TypeId EditorFastNoiseGradientComponentTypeId{ "{FD018DE5-5EB4-4219-9D0C-CB3C55DE656B}" };
 
         // The Terrain gem is optional, so we need to keep track of the component type IDs
         // ourselves since we can't rely on the headers being there.
         namespace Terrain
         {
-            static constexpr const char* EditorTerrainHeightGradientListComponentTypeId = "{2D945B90-ADAB-4F9A-A113-39E714708068}";
-            static constexpr const char* EditorTerrainLayerSpawnerComponentTypeId = "{9403FC94-FA38-4387-BEFD-A728C7D850C1}";
-            static constexpr const char* EditorTerrainSurfaceGradientListComponentTypeId = "{49831E91-A11F-4EFF-A824-6D85C284B934}";
+            static constexpr AZ::TypeId EditorPhysXHeightfieldColliderComponentTypeId{ "{C388C3DB-8D2E-4D26-96D3-198EDC799B77}" };
+            static constexpr AZ::TypeId EditorTerrainHeightGradientListComponentTypeId{ "{2D945B90-ADAB-4F9A-A113-39E714708068}" };
+            static constexpr AZ::TypeId EditorTerrainLayerSpawnerComponentTypeId{ "{9403FC94-FA38-4387-BEFD-A728C7D850C1}" };
+            static constexpr AZ::TypeId EditorTerrainMacroMaterialComponentTypeId{ "{24D87D5F-6845-4F1F-81DC-05B4CEBA3EF4}" };
+            static constexpr AZ::TypeId EditorTerrainPhysicsHeightfieldColliderComponentTypeId{ "{C43FAB8F-3968-46A6-920E-E84AEDED3DF5}" };
+            static constexpr AZ::TypeId EditorTerrainSurfaceGradientListComponentTypeId{ "{49831E91-A11F-4EFF-A824-6D85C284B934}" };
+            static constexpr AZ::TypeId EditorTerrainSurfaceMaterialsListComponentTypeId{ "{335CDED5-2E76-4342-8675-A60F66C471BF}" };
         }
 
         // The Vegetation gem is optional, so we need to keep track of the component type IDs
         // ourselves since we can't rely on the headers being there.
         namespace Vegetation
         {
-            static constexpr const char* EditorAreaBlenderComponentTypeId = "{374A5C69-A252-4C4B-AE10-A673EF7AFE82}";
-            static constexpr const char* EditorBlockerComponentTypeId = "{9E765835-9CEB-4AEC-A913-787D3D21451D}";
-            static constexpr const char* EditorMeshBlockerComponentTypeId = "{130F5DFF-EF6F-4B37-8717-194876DE12DB}";
-            static constexpr const char* EditorSpawnerComponentTypeId = "{DD96FD51-A86B-48BC-A6AB-89183B538269}";
-            static constexpr const char* EditorDistanceBetweenFilterComponentTypeId = "{78DE1245-7023-40D6-B365-CC45EB4CE622}";
-            static constexpr const char* EditorDistributionFilterComponentTypeId = "{8EDD1DA2-B597-4BCE-9285-C68886504EC7}";
-            static constexpr const char* EditorShapeIntersectionFilterComponentTypeId = "{8BCE1190-6681-4C27-834A-AFFC8FBBDCD1}";
-            static constexpr const char* EditorSurfaceAltitudeFilterComponentTypeId = "{CD722D14-9C3B-4F89-B695-65B584279EB3}";
-            static constexpr const char* EditorSurfaceMaskDepthFilterComponentTypeId = "{A5441713-89DF-49C1-BA4E-3429FF23B43F}";
-            static constexpr const char* EditorSurfaceMaskFilterComponentTypeId = "{D2F223B4-60BE-4AC5-A1AA-260B91119918}";
-            static constexpr const char* EditorSurfaceSlopeFilterComponentTypeId = "{5130DA4B-6586-4249-9B86-6496EB2B1A78}";
-            static constexpr const char* EditorPositionModifierComponentTypeId = "{E1A2D544-B54A-437F-A40D-1FA5C5999D1C}";
-            static constexpr const char* EditorRotationModifierComponentTypeId = "{6E4B91BC-DAD7-4630-A78C-261D96EEA979}";
-            static constexpr const char* EditorScaleModifierComponentTypeId = "{D2391F8A-BB54-463E-9691-9290A802C6DE}";
-            static constexpr const char* EditorSlopeAlignmentModifierComponentTypeId = "{B0C62968-562B-4A8C-9969-E2AAB5379F66}";
-            static constexpr const char* EditorDescriptorWeightSelectorComponentTypeId = "{0FB90550-149B-4E05-B22C-2753F6526E97}";
+            static constexpr AZ::TypeId EditorAreaBlenderComponentTypeId{ "{374A5C69-A252-4C4B-AE10-A673EF7AFE82}" };
+            static constexpr AZ::TypeId EditorBlockerComponentTypeId{ "{9E765835-9CEB-4AEC-A913-787D3D21451D}" };
+            static constexpr AZ::TypeId EditorMeshBlockerComponentTypeId{ "{130F5DFF-EF6F-4B37-8717-194876DE12DB}" };
+            static constexpr AZ::TypeId EditorSpawnerComponentTypeId{ "{DD96FD51-A86B-48BC-A6AB-89183B538269}" };
+            static constexpr AZ::TypeId EditorDistanceBetweenFilterComponentTypeId{ "{78DE1245-7023-40D6-B365-CC45EB4CE622}" };
+            static constexpr AZ::TypeId EditorDistributionFilterComponentTypeId{ "{8EDD1DA2-B597-4BCE-9285-C68886504EC7}" };
+            static constexpr AZ::TypeId EditorShapeIntersectionFilterComponentTypeId{ "{8BCE1190-6681-4C27-834A-AFFC8FBBDCD1}" };
+            static constexpr AZ::TypeId EditorSurfaceAltitudeFilterComponentTypeId{ "{CD722D14-9C3B-4F89-B695-65B584279EB3}" };
+            static constexpr AZ::TypeId EditorSurfaceMaskDepthFilterComponentTypeId{ "{A5441713-89DF-49C1-BA4E-3429FF23B43F}" };
+            static constexpr AZ::TypeId EditorSurfaceMaskFilterComponentTypeId{ "{D2F223B4-60BE-4AC5-A1AA-260B91119918}" };
+            static constexpr AZ::TypeId EditorSurfaceSlopeFilterComponentTypeId{ "{5130DA4B-6586-4249-9B86-6496EB2B1A78}" };
+            static constexpr AZ::TypeId EditorPositionModifierComponentTypeId{ "{E1A2D544-B54A-437F-A40D-1FA5C5999D1C}" };
+            static constexpr AZ::TypeId EditorRotationModifierComponentTypeId{ "{6E4B91BC-DAD7-4630-A78C-261D96EEA979}" };
+            static constexpr AZ::TypeId EditorScaleModifierComponentTypeId{ "{D2391F8A-BB54-463E-9691-9290A802C6DE}" };
+            static constexpr AZ::TypeId EditorSlopeAlignmentModifierComponentTypeId{ "{B0C62968-562B-4A8C-9969-E2AAB5379F66}" };
+            static constexpr AZ::TypeId EditorDescriptorWeightSelectorComponentTypeId{ "{0FB90550-149B-4E05-B22C-2753F6526E97}" };
         }
     }
 
@@ -157,9 +165,13 @@ namespace LandscapeCanvas
     VISITOR_FUNCTION<SphereShapeNode>(LmbrCentral::EditorSphereShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<TubeShapeNode>(LmbrCentral::EditorTubeShapeComponentTypeId, ##__VA_ARGS__);     \
     /* Terrain nodes */    \
+    VISITOR_FUNCTION<PhysXHeightfieldColliderNode>(Internal::Terrain::EditorPhysXHeightfieldColliderComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<TerrainHeightGradientListNode>(Internal::Terrain::EditorTerrainHeightGradientListComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<TerrainLayerSpawnerNode>(Internal::Terrain::EditorTerrainLayerSpawnerComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<TerrainMacroMaterialNode>(Internal::Terrain::EditorTerrainMacroMaterialComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<TerrainPhysicsHeightfieldColliderNode>(Internal::Terrain::EditorTerrainPhysicsHeightfieldColliderComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<TerrainSurfaceGradientListNode>(Internal::Terrain::EditorTerrainSurfaceGradientListComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<TerrainSurfaceMaterialsListNode>(Internal::Terrain::EditorTerrainSurfaceMaterialsListComponentTypeId, ##__VA_ARGS__);     \
     /* Gradient generator nodes */    \
     VISITOR_FUNCTION<FastNoiseGradientNode>(Internal::EditorFastNoiseGradientComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<PerlinNoiseGradientNode>(GradientSignal::EditorPerlinGradientComponentTypeId, ##__VA_ARGS__);     \

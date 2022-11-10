@@ -58,7 +58,8 @@ namespace TestImpact
     };
 
     //! Generates job information for the different test job runner types.
-    class NativeRegularTestRunJobInfoGenerator : public TestJobInfoGenerator<NativeRegularTestRunner, NativeTestTarget>
+    class NativeRegularTestRunJobInfoGenerator
+        : public TestJobInfoGenerator<NativeRegularTestRunner, NativeTestTarget>
     {
     public:
         //! Configures the test job info generator with the necessary path information for launching test targets.
@@ -83,7 +84,8 @@ namespace TestImpact
     };
 
     //! Generates job information for the different test job runner types.
-    class NativeInstrumentedTestRunJobInfoGenerator : public TestJobInfoGenerator<NativeInstrumentedTestRunner, NativeTestTarget>
+    class NativeInstrumentedTestRunJobInfoGenerator
+        : public TestJobInfoGenerator<NativeInstrumentedTestRunner, NativeTestTarget>
     {
     public:
         //! Configures the test job info generator with the necessary path information for launching test targets.

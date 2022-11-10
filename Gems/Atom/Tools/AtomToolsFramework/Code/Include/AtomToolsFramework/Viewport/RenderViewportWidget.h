@@ -111,7 +111,7 @@ namespace AtomToolsFramework
         // AzFramework::WindowRequestBus::Handler overrides ...
         void SetWindowTitle(const AZStd::string& title) override;
         AzFramework::WindowSize GetClientAreaSize() const override;
-        void ResizeClientArea(AzFramework::WindowSize clientAreaSize) override;
+        void ResizeClientArea(AzFramework::WindowSize clientAreaSize, const AzFramework::WindowPosOptions& options) override;
         bool SupportsClientAreaResize() const override;
         bool GetFullScreenState() const override;
         void SetFullScreenState(bool fullScreenState) override;
@@ -144,8 +144,9 @@ namespace AtomToolsFramework
         // Rather than handling input and supplemental rendering within the viewport or a subclass,
         // we provide this controller list to allow handlers to listen for input and update events.
         AzFramework::ViewportControllerListPtr m_controllerList;
-        // The default camera for our viewport i.e. the one used when a camera entity hasn't been activated.
-        AZ::RPI::ViewPtr m_defaultCamera;
+        // The default camera group for our viewport i.e. the one used when a camera entity hasn't been activated.
+        // The group contains stereoscopic and non-stereoscopic views.
+        AZ::RPI::ViewGroupPtr m_defaultCameraGroup;
         // Our viewport-local aux geom pipeline for supplemental rendering.
         AZ::RPI::AuxGeomDrawPtr m_auxGeom;
         // Tracks whether the cursor is currently over our viewport, used for mouse input event book-keeping.

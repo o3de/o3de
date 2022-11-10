@@ -30,6 +30,9 @@ then
 elif [ "$UBUNTU_DISTRO" == "focal" ]
 then
     echo "Setup for Ubuntu 20.04 LTS ($UBUNTU_DISTRO)"
+elif [ "$UBUNTU_DISTRO" == "jammy" ]
+then
+    echo "Setup for Ubuntu 22.04 LTS ($UBUNTU_DISTRO)"
 else
     echo "Unsupported version of Ubuntu $UBUNTU_DISTRO"
     exit 1
@@ -44,6 +47,7 @@ then
     echo "Installing curl"
     apt-get install curl -y
 fi
+
 
 #
 # Add the kitware repository for cmake if necessary
@@ -67,6 +71,10 @@ then
     then
         CMAKE_DISTRO_VERSION=3.20.1-0kitware1ubuntu20.04.1
         apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main'
+    elif [ "$UBUNTU_DISTRO" == "jammy" ]
+    then
+        # Ubuntu 22.04 already has an acceptable version of cmake
+        echo "Ubuntu 22.04's cmake package already at version 3.22.1"
     fi
     apt-get update
 else

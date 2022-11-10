@@ -59,8 +59,9 @@ class TestTerminalReport(object):
         mock_report.config.getoption.assert_not_called()
         mock_report.section.assert_not_called()
 
+    @mock.patch('ly_test_tools._internal.pytest_plugin.terminal_report._add_ownership')
     @mock.patch('ly_test_tools._internal.pytest_plugin.terminal_report._add_commands')
-    def test_TerminalSummary_ErrorsAndFailures_SectionsAdded(self, mock_add_commands):
+    def test_TerminalSummary_ErrorsAndFailures_SectionsAdded(self, mock_add_commands, mock_add_ownership):
         mock_report = mock.MagicMock()
         mock_node = mock.MagicMock()
         mock_node.nodeid = 'something'
@@ -70,9 +71,11 @@ class TestTerminalReport(object):
         terminal_report.pytest_terminal_summary(mock_report, 0, mock_config)
 
         assert len(mock_add_commands.mock_calls) == 2
+        mock_add_ownership.assert_called()
         mock_report.config.getoption.assert_called()
         mock_report.section.assert_called_once()
 
+    @mock.patch('ly_test_tools._internal.pytest_plugin.terminal_report._add_ownership', mock.MagicMock())
     @mock.patch('ly_test_tools._internal.pytest_plugin.terminal_report._add_commands', mock.MagicMock())
     @mock.patch('os.path.basename')
     def test_TerminalSummary_Failures_CallsWithBasename(self, mock_basename):
@@ -88,6 +91,7 @@ class TestTerminalReport(object):
 
         mock_basename.assert_called_with(node_id)
 
+    @mock.patch('ly_test_tools._internal.pytest_plugin.terminal_report._add_ownership', mock.MagicMock())
     @mock.patch('ly_test_tools._internal.pytest_plugin.terminal_report._add_commands', mock.MagicMock())
     @mock.patch('os.path.basename')
     def test_TerminalSummary_Errors_CallsWithBasename(self, mock_basename):

@@ -44,7 +44,7 @@ namespace UnitTest
     class MockEditorComponent : public AzToolsFramework::Components::EditorComponentBase
     {
     public:
-        static constexpr const char* const s_MockEditorComponentTypeId = "{1D01FB53-1453-4250-A561-B2A657816B03}";
+        static inline constexpr AZ::TypeId s_MockEditorComponentTypeId{ "{1D01FB53-1453-4250-A561-B2A657816B03}" };
         AZ_COMPONENT(MockEditorComponent, s_MockEditorComponentTypeId, AzToolsFramework::Components::EditorComponentBase);
 
         void SetPrimaryAsset(const AZ::Data::AssetId& assetId) override
@@ -226,17 +226,17 @@ namespace UnitTest
                         {
                             if (comptype != AZ::Uuid(MockEditorComponent::s_MockEditorComponentTypeId))
                             {
-                                return ThisOutcome(AZStd::string("Failed - wrong component"));
+                                return ThisOutcome(AZStd::unexpect, AZStd::string("Failed - wrong component"));
                             }
                         }
                         if (componentsToAdd.size() != 1)
                         {
-                            return ThisOutcome(AZStd::string("Failed - too many components"));
+                            return ThisOutcome(AZStd::unexpect, AZStd::string("Failed - too many components"));
                         }
                         // to 1 entity
                         if (entities.size() != 1)
                         {
-                            return ThisOutcome(AZStd::string("Failed - requires exactly 1 entity"));
+                            return ThisOutcome(AZStd::unexpect, AZStd::string("Failed - requires exactly 1 entity"));
                         }
                         // record what components were attempted to be added:
                         m_componentsAddedToEntites.assign(componentsToAdd.begin(), componentsToAdd.end());

@@ -17,5 +17,6 @@ ly_install_directory(
         MinimalProject
         GemRepo
         DefaultComponent
+        ScriptCanvasNode
     VERBATIM
 )

@@ -129,7 +129,9 @@ def generate_mars_job(tiaf_result, driver_args, build_number: int):
         constants.S3_BUCKET_KEY,
         constants.RUNTIME_ARGS_KEY,
         constants.RUNTIME_RETURN_CODE_KEY,
-        constants.RUNTIME_TYPE_KEY
+        constants.RUNTIME_TYPE_KEY,
+        constants.MISMATCHED_TESTS_KEY,
+        constants.MISMATCHED_TESTS_COUNT_KEY
     ]}
 
     mars_job[constants.DRIVER_ARGS_KEY] = driver_args

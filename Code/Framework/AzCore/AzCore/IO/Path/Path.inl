@@ -1479,7 +1479,7 @@ namespace AZStd
     template <>
     struct hash<AZ::IO::PathView>
     {
-        constexpr size_t operator()(const AZ::IO::PathView& pathToHash) noexcept
+        constexpr size_t operator()(const AZ::IO::PathView& pathToHash) const noexcept
         {
             auto pathParser = AZ::IO::parser::PathParser::CreateBegin(pathToHash.Native(), pathToHash.m_preferred_separator);
             return AZ::IO::parser::HashPath(pathParser);
@@ -1488,7 +1488,7 @@ namespace AZStd
     template <typename StringType>
     struct hash<AZ::IO::BasicPath<StringType>>
     {
-        constexpr size_t operator()(const AZ::IO::BasicPath<StringType>& pathToHash) noexcept
+        constexpr size_t operator()(const AZ::IO::BasicPath<StringType>& pathToHash) const noexcept
         {
             return AZStd::hash<AZ::IO::PathView>{}(pathToHash);
         }

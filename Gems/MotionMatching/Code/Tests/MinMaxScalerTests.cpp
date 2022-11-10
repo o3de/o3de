@@ -67,7 +67,7 @@ namespace EMotionFX::MotionMatching
         m(2,0) = 1.0f;    m(2,1) = 0.5f;    m(2,2) =-5.0f;     m(2, 3) = 3.0f;
 
         MinMaxScaler minMaxScaler;
-        EXPECT_TRUE(minMaxScaler.Fit(m)); // default to normalization (feature range = [0, 1]
+        EXPECT_TRUE(minMaxScaler.Fit(m, {/*featureMin=*/0.0f, /*featureMax=*/1.0f, /*clip=*/false }));
         FeatureMatrix t = minMaxScaler.Transform(m);
 
         EXPECT_NEAR(t(0,0), 0.0f, s_testEpsilon); EXPECT_NEAR(t(0, 1), 0.0f, s_testEpsilon); EXPECT_NEAR(t(0, 2), 1.0f, s_testEpsilon); EXPECT_NEAR(t(0, 3), 3.0f, s_testEpsilon);
@@ -83,7 +83,7 @@ namespace EMotionFX::MotionMatching
         m(1, 0) = 2.0f; // range = 4.0
 
         MinMaxScaler minMaxScaler;
-        EXPECT_TRUE(minMaxScaler.Fit(m));
+        EXPECT_TRUE(minMaxScaler.Fit(m, {/*featureMin=*/0.0f, /*featureMax=*/1.0f, /*clip=*/false }));
 
         EXPECT_NEAR(minMaxScaler.Transform(-6.0f, 0), -1.0f, s_testEpsilon);
         EXPECT_NEAR(minMaxScaler.Transform(4.0f, 0), 1.5f, s_testEpsilon);

@@ -25,10 +25,14 @@ namespace Multiplayer
     {
     public:
         static constexpr int MaxMessageLength = 256;
+        static constexpr float ScrimAlpha = 0.6f;
 
-        // Messaging for clients
+        static constexpr AZ::TimeMs CenterViewportDebugToastTimePerWord = AZ::TimeMs{ 300 }; // Consider reading speed to be 200 words per minute (300 ms)
+        static constexpr AZ::TimeMs CenterViewportDebugToastTimePrefix = AZ::TimeMs{ 2000 }; // Give viewers 2.0 seconds to notice the toast
+        static constexpr AZ::TimeMs CenterViewportDebugToastTimeFade = AZ::TimeMs{ 1000 }; // Milliseconds toast takes to fade out
+
+        // Messaging for client during editor play mode
         static constexpr char CenterViewportDebugTitle[] = "Multiplayer Editor";
-        static constexpr char ClientStatusTitle[] = "Multiplayer Client Status:";
         static constexpr char OnServerLaunchedMessage[] = "(1/3) Launching server...";
         static constexpr char OnServerLaunchFailMessage[] = "(1/3) Could not launch editor server.\nSee console for more info.";
         static constexpr char OnEditorConnectionAttemptMessage[] = "(2/3) Attempting to connect to server in order to send level data.\nAttempt %i of %i";
@@ -36,6 +40,9 @@ namespace Multiplayer
         static constexpr char OnEditorSendingLevelDataMessage[] = "(3/3) Editor is sending the editor-server the level data packet.";
         static constexpr char OnConnectToSimulationFailMessage[] = "EditorServerReady packet was received, but connecting to the editor-server's network simulation failed! Is the editor and server using the same sv_port (%i)?";
         static constexpr char OnEditorServerStoppedUnexpectedly[] ="Editor server has unexpectedly stopped running!";
+
+        // Messaging for clients
+        static constexpr char ClientStatusTitle[] = "Multiplayer Client Status:";
 
         // Messaging common for both dedicated server and client-server
         static constexpr char ServerHostingPort[] = "Hosting on port %i";
@@ -48,6 +55,12 @@ namespace Multiplayer
         // Messaging for client-server
         static constexpr char ClientServerStatusTitle[] = "Multiplayer Client-Server Status:";
         static constexpr char ClientServerHostingClientCount[] = "%i client(s) (including self)";
+
+        // Toast Messages
+        static constexpr char CenterViewportToastTitle[] = "Multiplayer Alert";
+        static constexpr char OnBlockedLevelLoadMessage[] = "Blocked level load; see log for details.";
+        static constexpr char OnNoServerLevelLoadedMessageClientSide[] = "Server accept message did not provide a level.\nEnsure server has level loaded before connecting.";
+        static constexpr char OnNoServerLevelLoadedMessageServerSide[] = "A client has connected, but we're not in a level.\nPlease load a valid multiplayer level before accepting clients.";
 
         AZ_COMPONENT(MultiplayerConnectionViewportMessageSystemComponent, "{7600cfcf-e380-4876-aa90-8120e57205e9}");
 
@@ -80,13 +93,38 @@ namespace Multiplayer
         void OnEditorServerProcessStoppedUnexpectedly() override;
         //! @}
 
+        //! IMultiplayer AZ::Event handlers.
+        //! @{
+        void OnBlockedLevelLoad();
+        LevelLoadBlockedEvent::Handler m_levelLoadBlockedHandler = LevelLoadBlockedEvent::Handler([this](){OnBlockedLevelLoad();});
+
+        void OnNoServerLevelLoadedEvent();
+        NoServerLevelLoadedEvent::Handler m_noServerLevelLoadedHandler = NoServerLevelLoadedEvent::Handler([this](){OnNoServerLevelLoadedEvent();});
+        //! @}
+
         void DrawConnectionStatus(AzNetworking::ConnectionState connectionState, const AzNetworking::IpAddress& hostAddress);
         void DrawConnectionStatusLine(const char* line, const AZ::Color& color);
 
+        // Render a scrim (a gentle background shading) to create contrast in order that the debug text in the foreground is readable.
+        // Make scrim most pronounced from the center of the screen and fade out towards the top and bottom on the screen.
+        void DrawScrim(float alphaMultiplier = 1.0f) const;
+
+        // Draws a message in the center of the viewport
+        // @param title text is displayed over the message
+        // @param title color is color of the title. Generally yellow or red (in the case of an error)
+        // @param message to display
+        // @param alpha value of the message (useful for fading out the message over time)
+        void DrawCenterViewportMessage(const char* title, const AZ::Color& titleColor, const char* message, float alpha);
+
         AZStd::fixed_string<MaxMessageLength> m_centerViewportDebugText;
         AZ::Color m_centerViewportDebugTextColor = AZ::Colors::Yellow;
+
+        AZStd::fixed_string<MaxMessageLength> m_centerViewportDebugToastText;
+        AZ::TimeMs m_centerViewportDebugToastStartTime;
+
         AzFramework::FontDrawInterface* m_fontDrawInterface = nullptr;
         AzFramework::TextDrawParameters m_drawParams;
+
         float m_lineSpacing = 0.0f;
         AzNetworking::IpAddress m_hostIpAddress;
         int m_currentConnectionsDrawCount = 0;

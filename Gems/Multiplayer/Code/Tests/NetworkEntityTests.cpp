@@ -441,4 +441,112 @@ namespace Multiplayer
         netBindComponent->MarkDirty();
         m_networkEntityManager->NotifyEntitiesDirtied();
     }
+
+    TEST_F(MultiplayerNetworkEntityTests, TestNetBindPropertyValidateAuthority)
+    {
+        AZStd::unique_ptr<EntityInfo> testEntity = AZStd::make_unique<EntityInfo>(3, "root", NetEntityId{ 3 }, EntityInfo::Role::None);
+        PopulateNetworkEntity(*testEntity);
+        SetupEntity(testEntity->m_entity, testEntity->m_netId, NetEntityRole::Authority);
+        testEntity->m_entity->Activate();
+        ConstNetworkEntityHandle handle(testEntity->m_entity.get(), m_networkEntityManager->GetNetworkEntityTracker());
+        NetBindComponent* netBindComponent = handle.GetNetBindComponent();
+
+        EXPECT_TRUE(netBindComponent->ValidatePropertyRead("TestProperty", NetEntityRole::Authority, NetEntityRole::Server));
+        EXPECT_TRUE(netBindComponent->ValidatePropertyRead("TestProperty", NetEntityRole::Authority, NetEntityRole::Autonomous));
+        EXPECT_TRUE(netBindComponent->ValidatePropertyRead("TestProperty", NetEntityRole::Authority, NetEntityRole::Client));
+        EXPECT_TRUE(netBindComponent->ValidatePropertyRead("TestProperty", NetEntityRole::Autonomous, NetEntityRole::Authority));
+
+        const bool predictable(true);
+        EXPECT_TRUE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Server, predictable));
+        EXPECT_TRUE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Autonomous, predictable));
+        EXPECT_TRUE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Client, predictable));
+        EXPECT_FALSE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Autonomous, NetEntityRole::Authority, predictable));
+
+        const bool notPredictable(false);
+        EXPECT_TRUE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Server, notPredictable));
+        EXPECT_TRUE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Autonomous, notPredictable));
+        EXPECT_TRUE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Client, notPredictable));
+        EXPECT_FALSE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Autonomous, NetEntityRole::Authority, notPredictable));
+    }
+
+    TEST_F(MultiplayerNetworkEntityTests, TestNetBindPropertyValidateServer)
+    {
+        AZStd::unique_ptr<EntityInfo> testEntity = AZStd::make_unique<EntityInfo>(4, "root", NetEntityId{ 4 }, EntityInfo::Role::None);
+        PopulateNetworkEntity(*testEntity);
+        SetupEntity(testEntity->m_entity, testEntity->m_netId, NetEntityRole::Server);
+        testEntity->m_entity->Activate();
+        ConstNetworkEntityHandle handle(testEntity->m_entity.get(), m_networkEntityManager->GetNetworkEntityTracker());
+        NetBindComponent* netBindComponent = handle.GetNetBindComponent();
+
+        EXPECT_TRUE(netBindComponent->ValidatePropertyRead("TestProperty", NetEntityRole::Authority, NetEntityRole::Server));
+        EXPECT_TRUE(netBindComponent->ValidatePropertyRead("TestProperty", NetEntityRole::Authority, NetEntityRole::Autonomous));
+        EXPECT_TRUE(netBindComponent->ValidatePropertyRead("TestProperty", NetEntityRole::Authority, NetEntityRole::Client));
+        EXPECT_FALSE(netBindComponent->ValidatePropertyRead("TestProperty", NetEntityRole::Autonomous, NetEntityRole::Authority));
+
+        const bool predictable(true);
+        EXPECT_FALSE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Server, predictable));
+        EXPECT_FALSE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Autonomous, predictable));
+        EXPECT_FALSE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Client, predictable));
+        EXPECT_FALSE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Autonomous, NetEntityRole::Authority, predictable));
+
+        const bool notPredictable(false);
+        EXPECT_FALSE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Server, notPredictable));
+        EXPECT_FALSE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Autonomous, notPredictable));
+        EXPECT_FALSE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Client, notPredictable));
+        EXPECT_FALSE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Autonomous, NetEntityRole::Authority, notPredictable));
+    }
+
+    TEST_F(MultiplayerNetworkEntityTests, TestNetBindPropertyValidateAutonomous)
+    {
+        AZStd::unique_ptr<EntityInfo> testEntity = AZStd::make_unique<EntityInfo>(5, "root", NetEntityId{ 5 }, EntityInfo::Role::None);
+        PopulateNetworkEntity(*testEntity);
+        SetupEntity(testEntity->m_entity, testEntity->m_netId, NetEntityRole::Autonomous);
+        testEntity->m_entity->Activate();
+        ConstNetworkEntityHandle handle(testEntity->m_entity.get(), m_networkEntityManager->GetNetworkEntityTracker());
+        NetBindComponent* netBindComponent = handle.GetNetBindComponent();
+
+        EXPECT_FALSE(netBindComponent->ValidatePropertyRead("TestProperty", NetEntityRole::Authority, NetEntityRole::Server));
+        EXPECT_TRUE(netBindComponent->ValidatePropertyRead("TestProperty", NetEntityRole::Authority, NetEntityRole::Autonomous));
+        EXPECT_TRUE(netBindComponent->ValidatePropertyRead("TestProperty", NetEntityRole::Authority, NetEntityRole::Client));
+        EXPECT_TRUE(netBindComponent->ValidatePropertyRead("TestProperty", NetEntityRole::Autonomous, NetEntityRole::Authority));
+
+        const bool predictable(true);
+        EXPECT_TRUE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Server, predictable));
+        EXPECT_TRUE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Autonomous, predictable));
+        EXPECT_TRUE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Client, predictable));
+        EXPECT_TRUE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Autonomous, NetEntityRole::Authority, predictable));
+
+        const bool notPredictable(false);
+        EXPECT_FALSE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Server, notPredictable));
+        EXPECT_FALSE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Autonomous, notPredictable));
+        EXPECT_FALSE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Client, notPredictable));
+        EXPECT_TRUE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Autonomous, NetEntityRole::Authority, notPredictable));
+    }
+
+    TEST_F(MultiplayerNetworkEntityTests, TestNetBindPropertyValidateClient)
+    {
+        AZStd::unique_ptr<EntityInfo> testEntity = AZStd::make_unique<EntityInfo>(6, "root", NetEntityId{ 6 }, EntityInfo::Role::None);
+        PopulateNetworkEntity(*testEntity);
+        SetupEntity(testEntity->m_entity, testEntity->m_netId, NetEntityRole::Client);
+        testEntity->m_entity->Activate();
+        ConstNetworkEntityHandle handle(testEntity->m_entity.get(), m_networkEntityManager->GetNetworkEntityTracker());
+        NetBindComponent* netBindComponent = handle.GetNetBindComponent();
+
+        EXPECT_FALSE(netBindComponent->ValidatePropertyRead("TestProperty", NetEntityRole::Authority, NetEntityRole::Server));
+        EXPECT_FALSE(netBindComponent->ValidatePropertyRead("TestProperty", NetEntityRole::Authority, NetEntityRole::Autonomous));
+        EXPECT_TRUE(netBindComponent->ValidatePropertyRead("TestProperty", NetEntityRole::Authority, NetEntityRole::Client));
+        EXPECT_FALSE(netBindComponent->ValidatePropertyRead("TestProperty", NetEntityRole::Autonomous, NetEntityRole::Authority));
+
+        const bool predictable(true);
+        EXPECT_FALSE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Server, predictable));
+        EXPECT_FALSE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Autonomous, predictable));
+        EXPECT_FALSE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Client, predictable));
+        EXPECT_FALSE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Autonomous, NetEntityRole::Authority, predictable));
+
+        const bool notPredictable(false);
+        EXPECT_FALSE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Server, notPredictable));
+        EXPECT_FALSE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Autonomous, notPredictable));
+        EXPECT_FALSE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Authority, NetEntityRole::Client, notPredictable));
+        EXPECT_FALSE(netBindComponent->ValidatePropertyWrite("TestProperty", NetEntityRole::Autonomous, NetEntityRole::Authority, notPredictable));
+    }
 } // namespace Multiplayer

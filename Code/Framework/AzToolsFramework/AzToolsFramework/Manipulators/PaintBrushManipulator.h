@@ -12,43 +12,14 @@
 
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzToolsFramework/Manipulators/PaintBrushRequestBus.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettings.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsNotificationBus.h>
+#include <AzToolsFramework/Viewport/ActionBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework
 {
     class ManipulatorViewProjectedCircle;
-
-    //! PaintBrushConfig exposes the paint brush configuration properties so that we can edit them via the component editor.
-    //! Currently, for this to work, we end up needing two copies of the configuration. One needs to be on the Editor component
-    //! that's supporting the painting, and one is internal to the PaintBrushManipulator. The two are manually kept in sync
-    //! through PaintBrush Request/Notification EBus calls.
-    //!
-    //! If we ever add support for modifying these via in-viewport UX, we could then make these settings internal to the
-    //! manipulator and simplify the logic.
-    class PaintBrushConfig
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(PaintBrushConfig, AZ::SystemAllocator, 0);
-        AZ_RTTI(PaintBrushConfig, "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}");
-        static void Reflect(AZ::ReflectContext* context);
-
-        virtual ~PaintBrushConfig() = default;
-
-        //! Paintbrush radius
-        float m_radius = 5.0f;
-        //! Paintbrush intensity (black to white)
-        float m_intensity = 1.0f;
-        //! Paintbrush opacity (transparent to opaque)
-        float m_opacity = 0.5f;
-
-        //! The entity/component that owns this paintbrush.
-        AZ::EntityComponentIdPair m_ownerEntityComponentId;
-
-        AZ::u32 OnIntensityChange();
-        AZ::u32 OnOpacityChange();
-        AZ::u32 OnRadiusChange();
-    };
 
     //! PaintBrushManipulator contains the core logic for painting functionality.
     //! It handles the paintbrush settings, the logic for converting mouse events into paintbrush actions,
@@ -70,11 +41,11 @@ namespace AzToolsFramework
     class PaintBrushManipulator
         : public BaseManipulator
         , public ManipulatorSpace
-        , public PaintBrushRequestBus::Handler
+        , protected PaintBrushSettingsNotificationBus::Handler
     {
         //! Private constructor.
         PaintBrushManipulator(
-            const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair);
+            const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair, PaintBrushColorMode colorMode);
 
     public:
         AZ_RTTI(PaintBrushManipulator, "{0621CB58-21FD-474A-A296-5B1192E714E7}", BaseManipulator);
@@ -88,43 +59,97 @@ namespace AzToolsFramework
 
         //! A Manipulator must only be created and managed through a shared_ptr.
         static AZStd::shared_ptr<PaintBrushManipulator> MakeShared(
-            const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair);
+            const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair, PaintBrushColorMode colorMode);
 
         //! Draw the current manipulator state.
         void Draw(
             const ManipulatorManagerState& managerState, AzFramework::DebugDisplayRequests& debugDisplay,
             const AzFramework::CameraState& cameraState, const ViewportInteraction::MouseInteraction& mouseInteraction) override;
 
-        void SetView(AZStd::shared_ptr<ManipulatorViewProjectedCircle> view);
-
-        // Handle mouse events
+        //! Handle mouse events
         bool HandleMouseInteraction(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
-        // PaintBrushRequestBus overrides for getting/setting the paintbrush settings...
-        float GetRadius() const override;
-        float GetIntensity() const override;
-        float GetOpacity() const override;
-        void SetRadius(float radius) override;
-        void SetIntensity(float intensity) override;
-        void SetOpacity(float opacity) override;
+        //! Returns the actions that we want any Component Mode using the Paint Brush Manipulator to support.
+        AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl();
+
+        //! Adjusts the size of the paintbrush
+        void AdjustSize(float sizeDelta);
 
     private:
-        void MovePaintBrush(int viewportId, const AzFramework::ScreenPoint& screenCoordinates, bool isFirstPaintedPoint);
+        //! Create the manipulator view(s) for the paintbrush.
+        void SetView(
+            AZStd::shared_ptr<ManipulatorViewProjectedCircle> innerCircle, AZStd::shared_ptr<ManipulatorViewProjectedCircle> outerCircle);
 
-        AZStd::shared_ptr<ManipulatorViewProjectedCircle> m_manipulatorView;
+        //! Calculate the radius for the inner and out circles for the paintbrush manipulator views based on the given brush settings.
+        //! @param settings The paint brush settings to use for calculating the two radii
+        //! @return The inner radius and the outer radius for the brush manipulator views
+        AZStd::pair<float, float> GetBrushRadii(const PaintBrushSettings& settings) const;
+
+        //! PaintBrushSettingsNotificationBus overrides...
+        void OnSettingsChanged(const PaintBrushSettings& newSettings) override;
+
+        //! Move the paint brush and perform any appropriate brush actions if in the middle of a brush stroke.
+        //! @param viewportId The viewport to move the paint brush in.
+        //! @param screenCoordinates The screen coordinates of the current mouse location.
+        //! @param isFirstBrushStrokePoint True if the stroke is just starting, false if not.
+        void MovePaintBrush(int viewportId, const AzFramework::ScreenPoint& screenCoordinates, bool isFirstBrushStrokePoint);
+
+        //! Apply a paint color to the underlying data based on brush movement and settings.
+        //! @param brushCenter The current center of the paintbrush.
+        //! @param brushSettings The current paintbrush settings.
+        //! @param isFirstBrushStrokePoint True if the stroke is just starting, false if not.
+        void PerformPaintAction(const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings, bool isFirstBrushStokePoint);
+
+        //! Get the color from the underlying data that's located at the brush center and set it in our paintbrush settings.
+        //! @param brushCenter The current center of the paintbrush.
+        //! @param brushSettings The current paintbrush settings.
+        void PerformEyedropperAction(const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings);
+
+        //! Smooth the underlying data based on brush movement and settings.
+        //! @param brushCenter The current center of the paintbrush.
+        //! @param brushSettings The current paintbrush settings.
+        //! @param isFirstBrushStrokePoint True if the stroke is just starting, false if not.
+        void PerformSmoothAction(const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings, bool isFirstBrushStrokePoint);
+
+        //! Generates a list of brush stamp centers and an AABB around the brush stamps for the current brush stroke movement.
+        //! @param brushCenter The current center of the paintbrush.
+        //! @param brushSettings The current paintbrush settings.
+        //! @param isFirstBrushStrokePoint True if the stroke is just starting, false if not.
+        //! @param brushStampCenters [out] The list of brush centers to use for this brush stroke movement.
+        //! @param strokeRegion [out] The AABB around the brush stamps in the brushStampCenters list.
+        void CalculateBrushStampCentersAndStrokeRegion(
+            const AZ::Vector3& brushCenter,
+            const PaintBrushSettings& brushSettings,
+            bool isFirstBrushStrokePoint,
+            AZStd::vector<AZ::Vector2>& brushStampCenters,
+            AZ::Aabb& strokeRegion);
+
+        //! Determine which of the passed-in points are within our current brush stroke, and calculate the opacity at each point.
+        //! @param brushSettings The current paintbrush settings.
+        //! @param brushStampCenters The list of brush centers for each stamp in our current brush stroke
+        //! @param points The list of points to calculate values for within our brush stroke
+        //! @param validPoints [out] The subset of the input points that are within the brush stroke
+        //! @param opacities [out] For each point in validPoints, the opacity of the brush at that point
+        static void CalculatePointsInBrush(
+            const PaintBrushSettings& brushSettings,
+            const AZStd::vector<AZ::Vector2>& brushStampCenters,
+            AZStd::span<const AZ::Vector3> points,
+            AZStd::vector<AZ::Vector3>& validPoints,
+            AZStd::vector<float>& opacities);
+
+        AZStd::shared_ptr<ManipulatorViewProjectedCircle> m_innerCircle;
+        AZStd::shared_ptr<ManipulatorViewProjectedCircle> m_outerCircle;
 
         //! The entity/component that owns this paintbrush.
         AZ::EntityComponentIdPair m_ownerEntityComponentId;
 
-        //! True if we're currently painting, false if not.
-        bool m_isPainting = false;
+        //! True if we're currently in a brush stroke, false if not.
+        bool m_isInBrushStroke = false;
 
-        //! Tracks the previous location we painted so that we can generate a continuous brush stroke.
-        AZ::Vector3 m_previousCenter;
+        //! Location of the last mouse point that we processed while painting.
+        AZ::Vector2 m_lastBrushCenter;
 
-        //! Current center of the paintbrush in world space.
-        AZ::Vector3 m_center;
-
-        PaintBrushConfig m_config;
+        //! Distance that the mouse has traveled since the last time we drew a paint stamp.
+        float m_distanceSinceLastDraw = 0.0f;
     };
 } // namespace AzToolsFramework

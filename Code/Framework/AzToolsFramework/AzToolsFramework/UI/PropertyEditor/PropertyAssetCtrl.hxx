@@ -283,7 +283,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(AssetPropertyHandlerDefault, AZ::SystemAllocator, 0);
 
-        virtual const AZ::Uuid& GetHandledType() const override;
+        virtual AZ::TypeId GetHandledType() const override;
         virtual AZ::u32 GetHandlerName(void) const override { return AZ_CRC_CE("Asset"); }
         virtual bool IsDefaultHandler() const override { return true; }
         virtual QWidget* GetFirstInTabOrder(PropertyAssetCtrl* widget) override { return widget->GetFirstInTabOrder(); }

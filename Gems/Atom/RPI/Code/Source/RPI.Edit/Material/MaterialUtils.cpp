@@ -15,6 +15,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialPipelineSourceData.h>
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
@@ -56,7 +57,7 @@ namespace AZ
                     }
 
                     Outcome<Data::AssetId> imageAssetId = AssetUtils::MakeAssetId(materialSourceFilePath, imageFilePath, subId, AssetUtils::TraceLevel::None);
-                    
+
                     if (!imageAssetId.IsSuccess())
                     {
                         // When the AssetId cannot be found, we don't want to outright fail, because the runtime has mechanisms for displaying fallback textures which gives the
@@ -64,11 +65,11 @@ namespace AZ
                         // no value was present and result in using no texture, and this would amount to a silent failure.
                         // So we use a randomly generated (well except for the "BADA55E7" bit ;) UUID which the runtime and tools will interpret as a missing asset and represent
                         // it as such.
-                        static const Uuid InvalidAssetPlaceholderId = "{BADA55E7-1A1D-4940-B655-9D08679BD62F}";
+                        static constexpr Uuid InvalidAssetPlaceholderId{ "{BADA55E7-1A1D-4940-B655-9D08679BD62F}" };
                         imageAsset = Data::Asset<ImageAsset>{InvalidAssetPlaceholderId, azrtti_typeid<StreamingImageAsset>(), imageFilePath};
                         return GetImageAssetResult::Missing;
                     }
-                    
+
                     imageAsset = Data::Asset<ImageAsset>{imageAssetId.GetValue(), typeId, imageFilePath};
                     imageAsset.SetAutoLoadBehavior(Data::AssetLoadBehavior::PreLoad);
                     return GetImageAssetResult::Found;
@@ -80,14 +81,15 @@ namespace AZ
                 uint32_t enumValue = propertyDescriptor->GetEnumValue(enumName);
                 if (enumValue == MaterialPropertyDescriptor::InvalidEnumValue)
                 {
-                    AZ_Error("Material", false, "Enum name \"%s\" can't be found in property \"%s\".", enumName.GetCStr(), propertyDescriptor->GetName().GetCStr());
+                    AZ_Error("MaterialUtils", false, "Enum name \"%s\" can't be found in property \"%s\".", enumName.GetCStr(), propertyDescriptor->GetName().GetCStr());
                     return false;
                 }
                 outResolvedValue = enumValue;
                 return true;
             }
-            
-            AZ::Outcome<MaterialTypeSourceData> LoadMaterialTypeSourceData(const AZStd::string& filePath, rapidjson::Document* document, ImportedJsonFiles* importedFiles)
+
+            template<typename SourceDataType>
+            AZ::Outcome<SourceDataType> LoadJsonSourceDataWithImports(const AZStd::string& filePath, rapidjson::Document* document, ImportedJsonFiles* importedFiles)
             {
                 rapidjson::Document localDocument;
 
@@ -103,7 +105,7 @@ namespace AZ
                     localDocument = loadOutcome.TakeValue();
                     document = &localDocument;
                 }
-                
+
                 AZ::BaseJsonImporter jsonImporter;
                 AZ::JsonImportSettings importSettings;
                 importSettings.m_importer = &jsonImporter;
@@ -120,16 +122,14 @@ namespace AZ
                     *importedFiles = importSettings.m_importer->GetImportedFiles();
                 }
 
-                MaterialTypeSourceData materialType;
+                SourceDataType sourceData;
 
                 JsonDeserializerSettings settings;
 
                 JsonReportingHelper reportingHelper;
                 reportingHelper.Attach(settings);
 
-                JsonSerialization::Load(materialType, *document, settings);
-                materialType.ConvertToNewDataFormat();
-                materialType.ResolveUvEnums();
+                JsonSerialization::Load(sourceData, *document, settings);
 
                 if (reportingHelper.ErrorsReported())
                 {
@@ -137,10 +137,26 @@ namespace AZ
                 }
                 else
                 {
-                    return AZ::Success(AZStd::move(materialType));
+                    return AZ::Success(AZStd::move(sourceData));
                 }
             }
-            
+
+            AZ::Outcome<MaterialPipelineSourceData> LoadMaterialPipelineSourceData(const AZStd::string& filePath, rapidjson::Document* document, ImportedJsonFiles* importedFiles)
+            {
+                return LoadJsonSourceDataWithImports<MaterialPipelineSourceData>(filePath, document, importedFiles);
+            }
+
+            AZ::Outcome<MaterialTypeSourceData> LoadMaterialTypeSourceData(const AZStd::string& filePath, rapidjson::Document* document, ImportedJsonFiles* importedFiles)
+            {
+                AZ::Outcome<MaterialTypeSourceData> outcome = LoadJsonSourceDataWithImports<MaterialTypeSourceData>(filePath, document, importedFiles);
+                if (outcome.IsSuccess())
+                {
+                    outcome.GetValue().UpgradeLegacyFormat();
+                    outcome.GetValue().ResolveUvEnums();
+                }
+                return outcome;
+            }
+
             AZ::Outcome<MaterialSourceData> LoadMaterialSourceData(const AZStd::string& filePath, const rapidjson::Value* document, bool warningsAsErrors)
             {
                 AZ::Outcome<rapidjson::Document, AZStd::string> loadOutcome;
@@ -164,7 +180,7 @@ namespace AZ
                 reportingHelper.Attach(settings);
 
                 JsonSerialization::Load(material, *document, settings);
-                material.ConvertToNewDataFormat();
+                material.UpgradeLegacyFormat();
 
                 if (reportingHelper.ErrorsReported())
                 {
@@ -203,25 +219,12 @@ namespace AZ
                     }
                 }
             }
-            
-            bool BuildersShouldFinalizeMaterialAssets()
+
+            bool LooksLikeImageFileReference(const MaterialPropertyValue& value)
             {
-                // Disable this registry setting to improve iteration times when making changes to widely used shaders and material types,
-                // like standard PBR, that require a large number of model assets to be reprocessed by the AP. Disabling finalization will
-                // also disable build dependencies between materials and material types. Without those dependencies in place, loading and
-                // reloading material assets will require special handling because typical asset notifications will not be sent when
-                // dependencies are changed. Before, this option was disabled by default because of the long iteration times, but caused hot
-                // reload problems so we enabled it again. We should explore options for handling dependencies on standard PBR differently
-                // at the model builder level, and hopefully improve the iteration times that way. In that case, we should come back and
-                // remove the deferred-finalize option entirely.
-                bool shouldFinalize = true;
-
-                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-                {
-                    settingsRegistry->Get(shouldFinalize, "/O3DE/Atom/RPI/MaterialBuilder/FinalizeMaterialAssets");
-                }
-
-                return shouldFinalize;
+                // If the source value type is a string, there are two possible property types: Image and Enum. If there is a "." in
+                // the string (for the extension) we can assume it's an Image file path.
+                return value.Is<AZStd::string>() && AzFramework::StringFunc::Contains(value.GetValue<AZStd::string>(), ".");
             }
         }
     }

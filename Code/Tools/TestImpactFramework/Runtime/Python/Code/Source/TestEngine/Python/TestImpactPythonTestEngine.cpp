@@ -10,12 +10,13 @@
 
 #include <Target/Python/TestImpactPythonTestTarget.h>
 #include <TestEngine/Common/TestImpactTestEngineException.h>
-#include <TestEngine/Python/TestImpactPythonErrorCodeChecker.h>
+#include <TestRunner/Python/TestImpactPythonErrorCodeChecker.h>
 #include <TestEngine/Python/TestImpactPythonTestEngine.h>
 #include <TestRunner/Python/Job/TestImpactPythonTestJobInfoGenerator.h>
 #include <TestRunner/Python/TestImpactPythonTestRunner.h>
 #include <TestRunner/Python/TestImpactPythonNullTestRunner.h>
 
+#include <iostream>
 namespace TestImpact
 {
     AZStd::optional<Client::TestRunResult> PythonInstrumentedTestRunnerErrorCodeChecker(
@@ -39,26 +40,26 @@ namespace TestImpact
     template<>
     struct TestJobRunnerTrait<PythonTestRunner>
     {
-        using TestEngineJobType = TestEngineInstrumentedRun<typename PythonTestEngine::TestTargetType, typename PythonTestEngine::TestCaseCoverageType>;
+        using TestEngineJobType = TestEngineInstrumentedRun<PythonTestTarget, TestCoverage>;
     };
 
     template<>
     struct TestJobRunnerTrait<PythonNullTestRunner>
     {
-        using TestEngineJobType = TestEngineInstrumentedRun<typename PythonTestEngine::TestTargetType, typename PythonTestEngine::TestCaseCoverageType>;
+        using TestEngineJobType = TestEngineInstrumentedRun<PythonTestTarget, TestCoverage>;
     };
 
     PythonTestEngine::PythonTestEngine(
         const RepoPath& repoDir,
         const RepoPath& buildDir,
         const ArtifactDir& artifactDir,
-        bool useNullTestRunner)
+        Policy::TestRunner testRunnerPolicy)
         : m_testJobInfoGenerator(AZStd::make_unique<PythonTestRunJobInfoGenerator>(
               repoDir, buildDir, artifactDir))
         , m_testRunner(AZStd::make_unique<PythonTestRunner>(artifactDir))
         , m_nullTestRunner(AZStd::make_unique<PythonNullTestRunner>(artifactDir))
         , m_artifactDir(artifactDir)
-        , m_useNullTestRunner(useNullTestRunner)
+        , m_testRunnerPolicy(testRunnerPolicy)
     {
     }
 
@@ -70,40 +71,19 @@ namespace TestImpact
         DeleteFiles(m_artifactDir.m_coverageArtifactDirectory, "*.pycoverage");
     }
 
-    TestEngineInstrumentedRunResult<typename PythonTestEngine::TestTargetType, typename PythonTestEngine::TestCaseCoverageType>
+    TestEngineInstrumentedRunResult<PythonTestTarget, TestCoverage>
         PythonTestEngine::
         InstrumentedRun(
-        [[maybe_unused]] const AZStd::vector<const PythonTestTarget*>& testTargets,
-        [[maybe_unused]] Policy::ExecutionFailure executionFailurePolicy,
-        [[maybe_unused]] Policy::IntegrityFailure integrityFailurePolicy,
-        [[maybe_unused]] Policy::TestFailure testFailurePolicy,
-        [[maybe_unused]] Policy::TargetOutputCapture targetOutputCapture,
-        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        [[maybe_unused]] AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const
+        const AZStd::vector<const PythonTestTarget*>& testTargets,
+        Policy::ExecutionFailure executionFailurePolicy,
+        Policy::IntegrityFailure integrityFailurePolicy,
+        Policy::TestFailure testFailurePolicy,
+        Policy::TargetOutputCapture targetOutputCapture,
+        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+        AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const
     {
-        // We currently don't have a std out/error callback for the test engine users so output the Python
-        // error and output here for the time being
-        const auto stdPrint = []([[maybe_unused]] const typename PythonNullTestRunner::JobInfo& jobInfo,
-                                 [[maybe_unused]] const AZStd::string& stdOutput,
-                                 [[maybe_unused]] const AZStd::string& stdError,
-                                 AZStd::string&& stdOutDelta,
-                                 [[maybe_unused]] AZStd::string&& stdErrDelta)
-        {
-            if (!stdOutDelta.empty())
-            {
-                AZ_Printf("StdOut", stdOutDelta.c_str());
-            }
-
-            if (!stdErrDelta.empty())
-            {
-                AZ_Printf("StdError", stdErrDelta.c_str());
-            }
-
-            return TestImpact::ProcessCallbackResult::Continue;
-        };
-
-        if (m_useNullTestRunner)
+        if (m_testRunnerPolicy == Policy::TestRunner::UseNullTestRunner)
         {
             // We don't delete the artifacts as they have been left by another test runner (e.g. ctest)
             return GenerateInstrumentedRunResult(
@@ -118,7 +98,7 @@ namespace TestImpact
                 testTargetTimeout,
                 globalTimeout,
                 callback,
-                stdPrint),
+                std::nullopt), // For real-time stdout/err output of test targets
             integrityFailurePolicy);
         }
         else
@@ -136,7 +116,7 @@ namespace TestImpact
                     testTargetTimeout,
                     globalTimeout,
                     callback,
-                    stdPrint),
+                    std::nullopt), // For real-time stdout/err output of test targets
                 integrityFailurePolicy);
         }
     }

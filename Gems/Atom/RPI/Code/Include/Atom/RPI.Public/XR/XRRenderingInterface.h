@@ -20,6 +20,9 @@ namespace AZ::RHI
 
 namespace AZ::RPI
 {
+    static const int XRMaxNumControllers = 2;
+    static const int XRMaxNumViews = 2;
+
     //! XR View specific Fov data (in radians).
     struct FovData
     {
@@ -36,8 +39,8 @@ namespace AZ::RPI
     //! XR pose specific data 
     struct PoseData
     {
-        AZ::Quaternion orientation;
-        AZ::Vector3 position;
+        AZ::Quaternion m_orientation = AZ::Quaternion::CreateIdentity();
+        AZ::Vector3 m_position = AZ::Vector3::CreateZero();
     };
 
     //! This class contains the interface related to XR but significant to RPI level functionality
@@ -54,7 +57,7 @@ namespace AZ::RPI
         virtual AZ::RHI::ResultCode InitInstance() = 0;
 
         //! This api is used to acquire swapchain image for the provided view index. 
-        virtual void AcquireSwapChainImage(AZ::u32 viewIndex) = 0;
+        virtual void AcquireSwapChainImage(const AZ::u32 viewIndex) = 0;
 
         //! Return the number of views associated with the device.
         virtual AZ::u32 GetNumViews() const  = 0;
@@ -63,35 +66,67 @@ namespace AZ::RPI
         virtual bool ShouldRender() const = 0;
 
         //! Return the swapChain width (in pixels) associated with the view index.
-        virtual AZ::u32 GetSwapChainWidth(AZ::u32 viewIndex) const = 0;
+        virtual AZ::u32 GetSwapChainWidth(const AZ::u32 viewIndex) const = 0;
 
         //! Return the swapChain height (in pixels) associated with the view index.
-        virtual AZ::u32 GetSwapChainHeight(AZ::u32 viewIndex) const = 0;
+        virtual AZ::u32 GetSwapChainHeight(const AZ::u32 viewIndex) const = 0;
 
         //! Return the swapChain format associated with the view index.
-        virtual AZ::RHI::Format GetSwapChainFormat(AZ::u32 viewIndex) const = 0;
+        virtual AZ::RHI::Format GetSwapChainFormat(const AZ::u32 viewIndex) const = 0;
 
         //! Return the Fov data (in radians) associated with provided view index.
-        virtual FovData GetViewFov(AZ::u32 viewIndex) const = 0;
+        virtual AZ::RHI::ResultCode GetViewFov(const AZ::u32 viewIndex, AZ::RPI::FovData& outFovData) const = 0;
 
         //! Return the Pose data associated with provided view index.
-        virtual PoseData GetViewPose(AZ::u32 viewIndex) const = 0;
+        virtual RHI::ResultCode GetViewPose(const AZ::u32 viewIndex, PoseData& outPoseData) const = 0;
 
         //! Return the controller Pose data associated with provided hand Index.
-        virtual PoseData GetControllerPose(AZ::u32 handIndex) const = 0;
+        virtual RHI::ResultCode GetControllerPose(const AZ::u32 handIndex, PoseData& outPoseData) const = 0;
 
         //! Return the Pose data associated with front view.
-        virtual PoseData GetViewFrontPose() const = 0;
+        virtual RHI::ResultCode GetViewFrontPose(PoseData& outPoseData) const = 0;
+
+        //! Return the Pose data associated with local view.
+        //! This pose tracks center Local space which is world-locked origin, gravity-aligned to exclude
+        //! pitch and roll, with +Y up, +X to the right, and -Z forward.
+        virtual RHI::ResultCode GetViewLocalPose(PoseData& outPoseData) const = 0;
+
+        //! Return the Pose data associated with local view translated and Rotated by 60 deg left or right based on handIndex
+        virtual RHI::ResultCode GetControllerStagePose(const AZ::u32 handIndex, PoseData& outPoseData) const = 0;
 
         //! Return the controller scale data associated with provided hand Index.
-        virtual float GetControllerScale(AZ::u32 handIndex) const = 0;
+        virtual float GetControllerScale(const AZ::u32 handIndex) const = 0;
 
-        //! Creates an off-center projection matrix suitable for VR. Angles are in radians and distance is in meters
-        virtual AZ::Matrix4x4 CreateProjectionOffset(
-            float angleLeft, float angleRight, float angleBottom, float angleTop, float nearDist, float farDist) = 0;
+        //! Creates an off-center projection matrix suitable for VR. Angles are in radians and distance is in meters.
+        virtual AZ::Matrix4x4 CreateStereoscopicProjection(
+            float angleLeft, float angleRight, float angleBottom, float angleTop, float nearDist, float farDist, bool reverseDepth) = 0;
 
         //! Returns the XR specific RHI rendering interface.
         virtual AZ::RHI::XRRenderingInterface* GetRHIXRRenderingInterface() = 0;
+
+        //! Return the X button state from the controller.
+        virtual float GetXButtonState() const = 0;
+
+        //! Return the Y button state from the controller.
+        virtual float GetYButtonState() const = 0;
+
+        //! Return the A button state from the controller.
+        virtual float GetAButtonState() const = 0;
+
+        //! Return the B button state from the controller.
+        virtual float GetBButtonState() const = 0;
+
+        //! Return the controller related joystick state for x-axis.
+        virtual float GetXJoyStickState(const AZ::u32 handIndex) const = 0;
+
+        //! Return the controller related joystick state for y-axis.
+        virtual float GetYJoyStickState(const AZ::u32 handIndex) const = 0;
+
+        //! Return the X button state from the controller.
+        virtual float GetSqueezeState(const AZ::u32 handIndex) const = 0;
+
+        //! Return the X button state from the controller.
+        virtual float GetTriggerState(const AZ::u32 handIndex) const = 0;
     };
 
     //! This class contains the interface that will be used to register the XR system with RPI and RHI.

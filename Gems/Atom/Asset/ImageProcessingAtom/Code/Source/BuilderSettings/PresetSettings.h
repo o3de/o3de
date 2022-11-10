@@ -37,10 +37,10 @@ namespace ImageProcessingAtom
         PresetSettings& operator= (const PresetSettings& other);
         bool operator== (const PresetSettings& other) const;
         static void Reflect(AZ::ReflectContext* context);
-        
+
         // unique id for the preset
         // this uuid will be deprecated. The preset name will be used as an unique id for the preset
-        AZ::Uuid m_uuid = 0;
+        AZ::Uuid m_uuid;
 
         PresetName m_name;
 
@@ -91,7 +91,7 @@ namespace ImageProcessingAtom
 
         //settings for mipmap generation. it's null if this preset disable mipmap.
         AZStd::unique_ptr<MipmapSettings> m_mipmapSetting;
-        
+
         //"glossfromnormals". Bake normal variance into smoothness stored in alpha channel
         AZ::u32 m_glossFromNormals = 0;
 
@@ -116,7 +116,7 @@ namespace ImageProcessingAtom
     protected:
         void DeepCopyMembers(const PresetSettings& other);
     };
-    
+
     class MultiplatformPresetSettings
     {
     public:
@@ -144,7 +144,7 @@ namespace ImageProcessingAtom
         PresetSettings m_defaultPreset;
         AZStd::unordered_map<PlatformName, PresetSettings> m_presets;
     };
-    
+
 } // namespace ImageProcessingAtom
 
 namespace AZ
