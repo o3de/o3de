@@ -8,17 +8,17 @@
 
 #include <Tests/EditorTestUtilities.h>
 
+#include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <EditorShapeColliderComponent.h>
 #include <LmbrCentral/Shape/CylinderShapeComponentBus.h>
+#include <LmbrCentral/Shape/SphereShapeComponentBus.h>
 #include <PhysX/PhysXLocks.h>
+#include <PhysXCharacters/Components/EditorCharacterControllerComponent.h>
 #include <RigidBodyStatic.h>
 #include <StaticRigidBodyComponent.h>
-#include <Tests/PhysXTestUtil.h>
-#include <AzFramework/Physics/Collision/CollisionEvents.h>
-
 #include <System/PhysXCookingParams.h>
 #include <Tests/PhysXTestCommon.h>
-#include <PhysXCharacters/Components/EditorCharacterControllerComponent.h>
+#include <Tests/PhysXTestUtil.h>
 
 namespace PhysXEditorTests
 {
@@ -39,6 +39,22 @@ namespace PhysXEditorTests
         gameEntity->Init();
         gameEntity->Activate();
         return gameEntity;
+    }
+
+    EntityPtr CreateSphereShapeColliderEditorEntity(const AZ::Transform& transform, float radius, const AZ::Vector3& translationOffset)
+    {
+        EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
+        editorEntity->CreateComponent(LmbrCentral::EditorSphereShapeComponentTypeId);
+        editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->Activate();
+        AZ::EntityId editorEntityId = editorEntity->GetId();
+
+        AZ::TransformBus::Event(editorEntityId, &AZ::TransformBus::Events::SetWorldTM, transform);
+        LmbrCentral::SphereShapeComponentRequestsBus::Event(editorEntityId, &LmbrCentral::SphereShapeComponentRequests::SetRadius, radius);
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            editorEntityId, &LmbrCentral::ShapeComponentRequests::SetTranslationOffset, translationOffset);
+
+        return editorEntity;
     }
 
     void PhysXEditorFixture::SetUp()

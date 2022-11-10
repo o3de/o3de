@@ -31,6 +31,9 @@ namespace PhysXEditorTests
     //! Creates and activates a game entity from an editor entity.
     EntityPtr CreateActiveGameEntityFromEditorEntity(AZ::Entity* editorEntity);
 
+    //! Creates an active editor entity with shape collider and sphere shape components.
+    EntityPtr CreateSphereShapeColliderEditorEntity(const AZ::Transform& transform, float radius, const AZ::Vector3& translationOffset);
+
     //! Class used for loading system components from this gem.
     class PhysXEditorSystemComponentEntity
         : public AZ::Entity
