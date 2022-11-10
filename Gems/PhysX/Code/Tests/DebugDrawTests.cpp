@@ -239,27 +239,20 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, ShapeCollider_BoxWithTranslationOffset_DebugDrawCorrect)
     {
-        EntityPtr boxShapeEntity = CreateInactiveEditorEntity("BoxShape");
-        AZ::EntityId boxShapeEntityId = boxShapeEntity->GetId();
-        boxShapeEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
-        boxShapeEntity->CreateComponent(LmbrCentral::EditorBoxShapeComponentTypeId);
-        boxShapeEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
-        boxShapeEntity->Activate();
-
         AZ::Transform transform(AZ::Vector3(1.0f, 2.0f, 3.0f), AZ::Quaternion(0.4f, -0.2f, -0.4f, 0.8f), 0.7f);
-        AZ::TransformBus::Event(boxShapeEntityId, &AZ::TransformBus::Events::SetWorldTM, transform);
-        AZ::NonUniformScaleRequestBus::Event(boxShapeEntityId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(1.0f, 1.5f, 2.0f));
-        LmbrCentral::BoxShapeComponentRequestsBus::Event(
-            boxShapeEntityId, &LmbrCentral::BoxShapeComponentRequests::SetBoxDimensions, AZ::Vector3(3.0f, 4.0f, 5.0f));
-        LmbrCentral::ShapeComponentRequestsBus::Event(
-            boxShapeEntityId, &LmbrCentral::ShapeComponentRequests::SetTranslationOffset, AZ::Vector3(2.0f, -5.0f, 3.0f));
+        AZ::Vector3 nonUniformScale(1.0f, 1.5f, 2.0f);
+        AZ::Vector3 boxDimensions(3.0f, 4.0f, 5.0f);
+        AZ::Vector3 translationOffset(2.0f, -5.0f, 3.0f);
+
+        EntityPtr boxShapeEntity = CreateBoxShapeColliderEditorEntity(transform, nonUniformScale, boxDimensions, translationOffset);
+
         // turn off the shape visibility, so that only the shape collider component debug draws
         LmbrCentral::EditorShapeComponentRequestsBus::Event(
-            boxShapeEntityId, &LmbrCentral::EditorShapeComponentRequests::SetVisibleInEditor, false);
+            boxShapeEntity->GetId(), &LmbrCentral::EditorShapeComponentRequests::SetVisibleInEditor, false);
 
         UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
         AzFramework::EntityDebugDisplayEventBus::Event(
-            boxShapeEntityId,
+            boxShapeEntity->GetId(),
             &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
             AzFramework::ViewportInfo{ 0 },
             testDebugDisplayRequests);
@@ -271,22 +264,15 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, ShapeCollider_BoxWithTranslationOffset_SamplePointsCorrect)
     {
-        EntityPtr boxShapeEntity = CreateInactiveEditorEntity("BoxShape");
-        AZ::EntityId boxShapeEntityId = boxShapeEntity->GetId();
-        boxShapeEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
-        boxShapeEntity->CreateComponent(LmbrCentral::EditorBoxShapeComponentTypeId);
-        auto* shapeColliderComponent = boxShapeEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
-        boxShapeEntity->Activate();
-
         AZ::Transform transform(AZ::Vector3(4.0f, 7.0f, -2.0f), AZ::Quaternion(0.5f, -0.1f, -0.7f, 0.5f), 1.5f);
-        AZ::TransformBus::Event(boxShapeEntityId, &AZ::TransformBus::Events::SetWorldTM, transform);
-        AZ::NonUniformScaleRequestBus::Event(boxShapeEntityId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(2.0f, 1.0f, 1.5f));
-        LmbrCentral::BoxShapeComponentRequestsBus::Event(
-            boxShapeEntityId, &LmbrCentral::BoxShapeComponentRequests::SetBoxDimensions, AZ::Vector3(6.0f, 2.0f, 7.0f));
-        LmbrCentral::ShapeComponentRequestsBus::Event(
-            boxShapeEntityId, &LmbrCentral::ShapeComponentRequests::SetTranslationOffset, AZ::Vector3(4.0f, 1.0f, 6.0f));
+        AZ::Vector3 nonUniformScale(2.0f, 1.0f, 1.5f);
+        AZ::Vector3 boxDimensions(6.0f, 2.0f, 7.0f);
+        AZ::Vector3 translationOffset(4.0f, 1.0f, 6.0f);
 
-        const AZStd::vector<AZ::Vector3> samplePoints = shapeColliderComponent->GetSamplePoints();
+        EntityPtr boxShapeEntity = CreateBoxShapeColliderEditorEntity(transform, nonUniformScale, boxDimensions, translationOffset);
+
+        const AZStd::vector<AZ::Vector3> samplePoints =
+            boxShapeEntity->FindComponent<PhysX::EditorShapeColliderComponent>()->GetSamplePoints();
         AZ::Vector3 sampleMin = AZ::Vector3(AZ::Constants::FloatMax);
         AZ::Vector3 sampleMax = AZ::Vector3(-AZ::Constants::FloatMax);
         for (const auto& point : samplePoints)

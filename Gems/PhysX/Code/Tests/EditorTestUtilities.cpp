@@ -9,7 +9,9 @@
 #include <Tests/EditorTestUtilities.h>
 
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
+#include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 #include <EditorShapeColliderComponent.h>
+#include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <LmbrCentral/Shape/CapsuleShapeComponentBus.h>
 #include <LmbrCentral/Shape/CylinderShapeComponentBus.h>
 #include <LmbrCentral/Shape/SphereShapeComponentBus.h>
@@ -40,6 +42,29 @@ namespace PhysXEditorTests
         gameEntity->Init();
         gameEntity->Activate();
         return gameEntity;
+    }
+
+    EntityPtr CreateBoxShapeColliderEditorEntity(
+        const AZ::Transform& transform,
+        const AZ::Vector3& nonUniformScale,
+        const AZ::Vector3& boxDimensions,
+        const AZ::Vector3& translationOffset)
+    {
+        EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
+        editorEntity->CreateComponent(LmbrCentral::EditorBoxShapeComponentTypeId);
+        editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
+        editorEntity->Activate();
+        AZ::EntityId editorEntityId = editorEntity->GetId();
+
+        AZ::TransformBus::Event(editorEntityId, &AZ::TransformBus::Events::SetWorldTM, transform);
+        AZ::NonUniformScaleRequestBus::Event(editorEntityId, &AZ::NonUniformScaleRequests::SetScale, nonUniformScale);
+        LmbrCentral::BoxShapeComponentRequestsBus::Event(
+            editorEntityId, &LmbrCentral::BoxShapeComponentRequests::SetBoxDimensions, boxDimensions);
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            editorEntityId, &LmbrCentral::ShapeComponentRequests::SetTranslationOffset, translationOffset);
+
+        return editorEntity;
     }
 
     EntityPtr CreateCapsuleShapeColliderEditorEntity(
