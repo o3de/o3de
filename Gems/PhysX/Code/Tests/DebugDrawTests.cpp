@@ -340,6 +340,52 @@ namespace PhysXEditorTests
 
         EXPECT_NEAR(maxDist, 1.5f, 0.01f);
     }
+
+    TEST_F(PhysXEditorFixture, ShapeCollider_CapsuleWithTranslationOffset_DebugDrawCorrect)
+    {
+        EntityPtr sphereShapeEntity = CreateCapsuleShapeColliderEditorEntity(
+            AZ::Transform(AZ::Vector3(2.0f, 6.0f, -1.0f), AZ::Quaternion(0.9f, 0.1f, 0.3f, 0.3f), 2.0f),
+            1.5f,
+            6.0f,
+            AZ::Vector3(-3.0f, -4.0f, -5.0f)
+        );
+
+        UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
+        AzFramework::EntityDebugDisplayEventBus::Event(
+            sphereShapeEntity->GetId(),
+            &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
+            AzFramework::ViewportInfo{ 0 },
+            testDebugDisplayRequests);
+        const AZ::Aabb debugDrawAabb = testDebugDisplayRequests.GetAabb();
+
+        // use a large tolerance because the debug draw will only approximate a perfect capsule
+        EXPECT_THAT(debugDrawAabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(-13.6f, 10.6f, -7.2f), 0.1f));
+        EXPECT_THAT(debugDrawAabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(-4.0f, 19.48f, 2.64f), 0.1f));
+    }
+
+    TEST_F(PhysXEditorFixture, ShapeCollider_CapsuleWithTranslationOffset_SamplePointsCorrect)
+    {
+        EntityPtr sphereShapeEntity = CreateCapsuleShapeColliderEditorEntity(
+            AZ::Transform(AZ::Vector3(2.0f, 6.0f, -1.0f), AZ::Quaternion(0.9f, 0.1f, 0.3f, 0.3f), 2.0f),
+            1.5f,
+            6.0f,
+            AZ::Vector3(-3.0f, -4.0f, -5.0f)
+        );
+
+        const AZStd::vector<AZ::Vector3> samplePoints =
+            sphereShapeEntity->FindComponent<PhysX::EditorShapeColliderComponent>()->GetSamplePoints();
+        float maxDistSq = 0.0f;
+
+        // the points should be on the surface of a capsule of radius 3
+        for (const auto& point : samplePoints)
+        {
+            float distSq =
+                AZ::Intersect::PointSegmentDistanceSq(point, AZ::Vector3(-10.6f, 16.48f, -0.36f), AZ::Vector3(-7.0f, 13.6f, -4.2f));
+            maxDistSq = AZ::GetMax(maxDistSq, distSq);
+        }
+
+        EXPECT_NEAR(maxDistSq, 9.0f, 0.01f);
+    }
 } // namespace PhysXEditorTests
 
 #pragma optimize("", on)

@@ -10,6 +10,7 @@
 
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <EditorShapeColliderComponent.h>
+#include <LmbrCentral/Shape/CapsuleShapeComponentBus.h>
 #include <LmbrCentral/Shape/CylinderShapeComponentBus.h>
 #include <LmbrCentral/Shape/SphereShapeComponentBus.h>
 #include <PhysX/PhysXLocks.h>
@@ -39,6 +40,26 @@ namespace PhysXEditorTests
         gameEntity->Init();
         gameEntity->Activate();
         return gameEntity;
+    }
+
+    EntityPtr CreateCapsuleShapeColliderEditorEntity(
+        const AZ::Transform& transform, float radius, float height, const AZ::Vector3& translationOffset)
+    {
+        EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
+        editorEntity->CreateComponent(LmbrCentral::EditorCapsuleShapeComponentTypeId);
+        editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->Activate();
+        AZ::EntityId editorEntityId = editorEntity->GetId();
+
+        AZ::TransformBus::Event(editorEntityId, &AZ::TransformBus::Events::SetWorldTM, transform);
+        LmbrCentral::CapsuleShapeComponentRequestsBus::Event(
+            editorEntityId, &LmbrCentral::CapsuleShapeComponentRequests::SetRadius, radius);
+        LmbrCentral::CapsuleShapeComponentRequestsBus::Event(
+            editorEntityId, &LmbrCentral::CapsuleShapeComponentRequests::SetHeight, height);
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            editorEntityId, &LmbrCentral::ShapeComponentRequests::SetTranslationOffset, translationOffset);
+
+        return editorEntity;
     }
 
     EntityPtr CreateSphereShapeColliderEditorEntity(const AZ::Transform& transform, float radius, const AZ::Vector3& translationOffset)

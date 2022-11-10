@@ -31,6 +31,10 @@ namespace PhysXEditorTests
     //! Creates and activates a game entity from an editor entity.
     EntityPtr CreateActiveGameEntityFromEditorEntity(AZ::Entity* editorEntity);
 
+    //! Creates an active editor entity with shape collider and capsule shape components.
+    EntityPtr CreateCapsuleShapeColliderEditorEntity(
+        const AZ::Transform& transform, float radius, float height, const AZ::Vector3& translationOffset);
+
     //! Creates an active editor entity with shape collider and sphere shape components.
     EntityPtr CreateSphereShapeColliderEditorEntity(const AZ::Transform& transform, float radius, const AZ::Vector3& translationOffset);
 
