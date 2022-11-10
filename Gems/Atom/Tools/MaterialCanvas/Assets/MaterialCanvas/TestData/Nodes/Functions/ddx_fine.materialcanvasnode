@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{8BCDA3AE-9E08-4C83-B454-A21D1C25113C}",
         "category": "Math Functions",
-        "title": "ddx_fine",
+        "title": "Ddx Fine",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
@@ -24,7 +28,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -38,7 +42,7 @@
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = ddx_fine(NODEID_inValue);"
+                        "SLOTTYPE SLOTNAME = ddx_fine(inValue);"
                     ]
                 }
             }

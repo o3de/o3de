@@ -14,6 +14,7 @@ set(FILES
     Include/Multiplayer/MultiplayerConstants.h
     Include/Multiplayer/MultiplayerDebug.h
     Include/Multiplayer/MultiplayerDebug.inl
+    Include/Multiplayer/MultiplayerMetrics.h
     Include/Multiplayer/MultiplayerStats.h
     Include/Multiplayer/MultiplayerTypes.h
     Include/Multiplayer/MultiplayerEditorServerBus.h

@@ -15,7 +15,7 @@
 #include <native/utilities/assetUtils.h>
 #include <native/utilities/ByteArrayStream.h>
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
-#include <native/unittests/UnitTestRunner.h>
+#include <native/unittests/UnitTestUtils.h>
 #include <native/unittests/AssetProcessorUnitTests.h>
 
 #include <QThread>

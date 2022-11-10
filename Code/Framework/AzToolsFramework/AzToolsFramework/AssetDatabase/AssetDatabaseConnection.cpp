@@ -2448,11 +2448,23 @@ namespace AzToolsFramework
                     [&](JobDatabaseEntry& entry)
                     {
                         AzToolsFramework::AssetSystem::JobInfo jobinfo;
+                        AZ::s64 scanFolderId{};
+
                         succeeded = QuerySourceBySourceID(entry.m_sourcePK,
                                 [&](SourceDatabaseEntry& sourceEntry)
                                 {
                                     found = true;
                                     jobinfo.m_sourceFile = AZStd::move(sourceEntry.m_sourceName);
+                                    scanFolderId = sourceEntry.m_scanFolderPK;
+                                    return true;
+                                });
+
+                        succeeded = succeeded && found &&
+                            QueryScanFolderByScanFolderID(
+                                scanFolderId,
+                                [&jobinfo](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanfolder)
+                                {
+                                    jobinfo.m_watchFolder = scanfolder.m_scanFolder;
                                     return true;
                                 });
 

@@ -31,6 +31,8 @@
 #include <AzToolsFramework/Prefab/Template/Template.h>
 #include <Prefab/PrefabSystemScriptingHandler.h>
 
+AZ_DECLARE_BUDGET(PrefabSystem);
+
 namespace AZ
 {
     class Entity;
