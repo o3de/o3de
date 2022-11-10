@@ -165,9 +165,10 @@ namespace AZ::Reflection
                 AZ::SerializeContext::IDataContainer* m_parentContainerInfo = nullptr;
                 void* m_parentContainerOverride = nullptr;
                 void* m_containerElementOverride = nullptr;
+                int m_insertIndex = 0;
             };
             AZStd::deque<StackEntry> m_stack;
-            AZStd::unordered_map<const char*, StackEntry> m_UIElements;
+            AZStd::deque<StackEntry> m_UIElements;
 
             using HandlerCallback = AZStd::function<bool()>;
             AZStd::unordered_map<AZ::TypeId, HandlerCallback> m_handlers;
@@ -210,7 +211,7 @@ namespace AZ::Reflection
                 {
                     return;
                 }
-            SerializeContext::EnumerateInstanceCallContext context(
+                SerializeContext::EnumerateInstanceCallContext context(
                     [this](
                         void* instance,
                         const AZ::SerializeContext::ClassData* classData,
@@ -237,19 +238,6 @@ namespace AZ::Reflection
                 if (classElement)
                 {
                     instance = AZ::Utils::ResolvePointer(instance, *classElement, *m_serializeContext);
-
-                    if (classElement->m_editData)
-                    {
-                        if (m_UIElements.contains(classElement->m_editData->m_name))
-                        {
-                            m_stack.push_back(m_UIElements.at(classElement->m_editData->m_name));
-                            CacheAttributes();
-                            m_stack.back().m_entryClosed = true;
-                            m_visitor->VisitObjectBegin(*this, *this);
-                            m_visitor->VisitObjectEnd(*this, *this);
-                            m_stack.pop_back();
-                        }
-                    }
                 }
 
                 StackEntry& parentData = m_stack.back();
@@ -272,38 +260,64 @@ namespace AZ::Reflection
                         path.append(elementName);
                     }
                 }
-                m_stack.push_back(
-                    { instance, parentData.m_instance, classData ? classData->m_typeId : Uuid::CreateNull(), classData, classElement });
-                StackEntry* nodeData = &m_stack.back();
-                nodeData->m_path = AZStd::move(path);
+
+                //! Iterate over all found UIElements, insert a UIElement before this element if this element's parent is also the UIElement's parent,
+                //! and this child element's index is the same as the UIElement's insertion index, and this element is going to be visible in the component
+                for (auto iter = m_UIElements.begin(); iter != m_UIElements.end(); ++iter)
+                {
+                    if (iter->m_classData->m_name == parentData.m_classData->m_name && iter->m_insertIndex == parentData.m_childElementIndex && classElement && classElement->m_editData)
+                    {
+                        m_stack.push_back(m_UIElements.back());
+                        CacheAttributes();
+                        m_stack.back().m_entryClosed = true;
+                        m_visitor->VisitObjectBegin(*this, *this);
+                        m_visitor->VisitObjectEnd(*this, *this);
+                        m_stack.pop_back();
+                    }
+                }
+
+                // Search through classData for UIElements, indexing elements so we know where in the hierarchy to insert each UIElement
                 if (classData->m_editData)
                 {
-                    auto eltIt = classData->m_editData->m_elements.begin();
-                    while (eltIt != classData->m_editData->m_elements.end())
+                    int insertIndex = 0;
+                    bool addedElement = false;
+
+                    for (auto eltIt = classData->m_editData->m_elements.begin(); eltIt != classData->m_editData->m_elements.end(); ++eltIt)
                     {
+                        if (eltIt->m_serializeClassElement)
+                        {
+                            insertIndex++;
+                        }
                         if (eltIt->m_elementId == AZ::Edit::ClassElements::UIElement)
                         {
                             AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
                             UIElement->m_editData = &*eltIt;
                             UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
-                            StackEntry entry = {parentData.m_instance, parentData.m_instance, classData->m_typeId, classData, UIElement};
-                            AZStd::advance(eltIt, 1);
-                            if (eltIt != classData->m_editData->m_elements.end())
-                            {
-                                m_UIElements[eltIt->m_name] = entry;
-                            }
-                            else
-                            {
-                                //last element in the hierarchy
-                                continue;
-                            }
+                            StackEntry entry = { parentData.m_instance, parentData.m_instance, classData->m_typeId, classData, UIElement };
+                            entry.m_insertIndex = insertIndex;
+                            m_UIElements.push_back(entry);
+                            addedElement = true;
                         }
-                        else
+                    }
+                    // Special case for classes that only have UI elements inside of them (like Component Mode)
+                    if (insertIndex == 0 && addedElement)
+                    {
+                        for (auto& UIElement : m_UIElements)
                         {
-                            AZStd::advance(eltIt, 1);
+                            m_stack.push_back(UIElement);
+                            CacheAttributes();
+                            m_stack.back().m_entryClosed = true;
+                            m_visitor->VisitObjectBegin(*this, *this);
+                            m_visitor->VisitObjectEnd(*this, *this);
+                            m_stack.pop_back();
                         }
                     }
                 }
+                m_stack.push_back(
+                    { instance, parentData.m_instance, classData ? classData->m_typeId : Uuid::CreateNull(), classData, classElement });
+                StackEntry* nodeData = &m_stack.back();
+                nodeData->m_path = AZStd::move(path);
+
                 if (parentAssociativeInterface)
                 {
                     if (nodeData->m_instance ==
@@ -456,7 +470,7 @@ namespace AZ::Reflection
                     m_visitor->VisitObjectEnd(*this, *this);
                 }
                 m_stack.pop_back();
-                if (!m_stack.empty())
+                if (!m_stack.empty() && nodeData.m_computedVisibility == DocumentPropertyEditor::Nodes::PropertyVisibility::Show)
                 {
                     ++m_stack.back().m_childElementIndex;
                 }
