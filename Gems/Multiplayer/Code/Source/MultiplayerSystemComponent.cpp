@@ -971,19 +971,22 @@ namespace Multiplayer
                 // Disconnect from the connector; we have all the mismatch information we need now for debugging.
                 connection->Disconnect(DisconnectReason::VersionMismatch, TerminationEndpoint::Local);
             }
-            else if (m_originalConnectPackets.contains(connection->GetConnectionId()))
-            {
-                // DANGER: We're accepting the player connection even though there's a component mismatch
-                AZLOG_WARN(
-                    "Multiplayer component mismatch was found but we're allowing the player to connect anyways. Please set sv_versionMismatch_autoDisconnect=true if this is undesired behavior!");
-                AttemptPlayerConnect(connection, m_originalConnectPackets[connection->GetConnectionId()]);
-                m_originalConnectPackets.erase(connection->GetConnectionId());
-            }
             else
             {
-                AZLOG_ERROR(
-                    "Multiplayer component mismatch finished comparing components; "
-                    "attempting to accept connection, but we no longer have a connection packet. This should not happen, please file a bug.");
+                if (m_originalConnectPackets.contains(connection->GetConnectionId()))
+                {
+                    // DANGER: We're accepting the player connection even though there's a component mismatch
+                    AZLOG_WARN("Multiplayer component mismatch was found but we're allowing the player to connect anyways. Please set "
+                               "sv_versionMismatch_autoDisconnect=true if this is undesired behavior!");
+                    AttemptPlayerConnect(connection, m_originalConnectPackets[connection->GetConnectionId()]);
+                    m_originalConnectPackets.erase(connection->GetConnectionId());
+                }
+                else
+                {
+                    AZLOG_ERROR("Multiplayer component mismatch finished comparing components; "
+                                "failed to accept connection because the original connection packet is missing. This should not happen, "
+                                "please file a bug.");
+                }   
             }
         }
 
