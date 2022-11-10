@@ -9,9 +9,6 @@
            Category="String"
            Version="0"
            Deprecated="True"
-           DeprecationUUID="{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}"
-           ReplacementClassName="String"
-           ReplacementMethodName="Replace"
            Description="Allows replacing a substring from a given string.">
         <In Name="In" Description="Input signal"/>
         <Out Name="Out" Description=""/>

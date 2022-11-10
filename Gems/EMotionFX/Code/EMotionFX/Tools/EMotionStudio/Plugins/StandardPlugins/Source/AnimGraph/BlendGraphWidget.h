@@ -111,10 +111,8 @@ namespace EMStudio
         bool CheckIfIsStateMachine();
 
         // context menu shared function (definitions in ContextMenu.cpp)
-        void AddNodeGroupSubmenu(QMenu* menu, EMotionFX::AnimGraph* animGraph, const AZStd::vector<EMotionFX::AnimGraphNode*>& selectedNodes);
+        void AddAssignNodeToGroupSubmenu(QMenu* menu, EMotionFX::AnimGraph* animGraph);
         void AddPreviewMotionSubmenu(QMenu* menu, AnimGraphActionManager* actionManager, const EMotionFX::AnimGraphNode* selectedNode);
-        void AddCategoryToNodePalette(EMotionFX::AnimGraphNode::ECategory category, GraphCanvas::NodePaletteTreeItem* rootNode,
-            EMotionFX::AnimGraphObject* focusedGraphObject);
 
         void OnContextMenuEvent(QWidget* parentWidget, QPoint localMousePos, QPoint globalMousePos, AnimGraphPlugin* plugin,
             const AZStd::vector<EMotionFX::AnimGraphNode*>& selectedNodes, bool graphWidgetOnlyMenusEnabled, bool selectingAnyReferenceNodeFromNavigation,
@@ -146,7 +144,14 @@ namespace EMStudio
         void DeleteSelectedItems();
         void OnContextMenuCreateNode(const BlendGraphMimeEvent* event);
         void CreateNodeFromMimeEvent(const BlendGraphMimeEvent* event, const QPoint& location);
-        void OnNodeGroupSelected();
+
+        void CreateNodeGroup();
+        void AssignSelectedNodesToGroup();
+        void RenameNodeGroup(EMotionFX::AnimGraphNodeGroup* nodeGroup);
+        void ChangeNodeGroupColor(EMotionFX::AnimGraphNodeGroup* nodeGroup);
+        void DeleteNodeGroup(EMotionFX::AnimGraphNodeGroup* nodeGroup);
+        void DeleteNodeGroupAndNodes(EMotionFX::AnimGraphNodeGroup* nodeGroup);
+
         void EnableSelectedTransitions()                    { SetSelectedTransitionsEnabled(true); }
         void DisableSelectedTransitions()                   { SetSelectedTransitionsEnabled(false); }
 
@@ -160,6 +165,9 @@ namespace EMStudio
 
         EMotionFX::AnimGraphStateTransition* FindTransitionForConnection(NodeConnection* connection) const;
         EMotionFX::BlendTreeConnection* FindBlendTreeConnection(NodeConnection* connection) const;
+
+        void AssignNodesToGroup(
+            EMotionFX::AnimGraph* animGraph, const AZStd::vector<EMotionFX::AnimGraphNode*>& nodes, EMotionFX::AnimGraphNodeGroup* group);
 
         // We are going to cache the NodeGraph that we have been focusing on
         // so we can swap them quickly.

@@ -6,26 +6,30 @@
         "id": "{6B6603B9-A89E-403B-9AE9-C7E424093EC5}",
         "category": "Constants",
         "title": "Color Constant",
+        "titlePaletteName": "ConstantNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue",
+            "outR|outG|outB|outA"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[14]?",
+                "defaultDataType": "color",
                 "defaultValue": {
                     "$type": "Color",
                     "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
+                        1.0,
+                        1.0,
+                        1.0,
                         1.0
                     ]
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -35,12 +39,11 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue;"
+                        "SLOTTYPE SLOTNAME = inValue;"
                     ]
                 }
             },
@@ -48,12 +51,11 @@
                 "name": "outR",
                 "displayName": "R",
                 "description": "R",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.r;"
+                        "SLOTTYPE SLOTNAME = inValue.r;"
                     ]
                 }
             },
@@ -61,12 +63,11 @@
                 "name": "outG",
                 "displayName": "G",
                 "description": "G",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.g;"
+                        "SLOTTYPE SLOTNAME = inValue.g;"
                     ]
                 }
             },
@@ -74,12 +75,11 @@
                 "name": "outB",
                 "displayName": "B",
                 "description": "B",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.b;"
+                        "SLOTTYPE SLOTNAME = inValue.b;"
                     ]
                 }
             },
@@ -87,12 +87,11 @@
                 "name": "outA",
                 "displayName": "A",
                 "description": "A",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.a;"
+                        "SLOTTYPE SLOTNAME = inValue.a;"
                     ]
                 }
             }

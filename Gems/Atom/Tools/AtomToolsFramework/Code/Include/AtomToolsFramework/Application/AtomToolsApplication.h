@@ -32,8 +32,8 @@ namespace AtomToolsFramework
 {
     //! Base class for Atom tools to inherit from
     class AtomToolsApplication
-        : public AzFramework::Application
-        , public AzQtComponents::AzQtApplication
+        : public AzQtComponents::AzQtApplication
+        , public AzFramework::Application
         , protected AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler
         , protected AzToolsFramework::EditorPythonConsoleNotificationBus::Handler
         , protected AZ::UserSettingsOwnerRequestBus::Handler

@@ -61,7 +61,7 @@ namespace LmbrCentral
 
     void CapsuleShapeDebugDisplayComponent::Draw(AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        DrawShape(debugDisplay, m_capsuleShapeConfig.GetDrawParams(), m_capsuleShapeMesh);
+        DrawShape(debugDisplay, m_capsuleShapeConfig.GetDrawParams(), m_capsuleShapeMesh, m_capsuleShapeConfig.m_translationOffset);
     }
 
     bool CapsuleShapeDebugDisplayComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -128,22 +128,34 @@ namespace LmbrCentral
                 ->Version(2)
                 ->Field("Height", &CapsuleShapeConfig::m_height)
                 ->Field("Radius", &CapsuleShapeConfig::m_radius)
+                ->Field("TranslationOffset", &CapsuleShapeConfig::m_translationOffset)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<CapsuleShapeConfig>("Configuration", "Capsule shape configuration parameters")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &CapsuleShapeConfig::m_height, "Height", "End to end height of capsule, this includes the cylinder and both caps")
-                        ->Attribute(AZ::Edit::Attributes::Min, 0.f)
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " m")
-                        ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &CapsuleShapeConfig::m_height,
+                        "Height",
+                        "End to end height of capsule, this includes the cylinder and both caps")
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.f)
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CapsuleShapeConfig::m_radius, "Radius", "Radius of capsule")
-                        ->Attribute(AZ::Edit::Attributes::Min, 0.f)
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " m")
-                        ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
-                        ;
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.f)
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &CapsuleShapeConfig::m_translationOffset,
+                        "Translation Offset",
+                        "Translation offset of shape relative to its entity")
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &IsShapeComponentTranslationEnabled);
             }
         }
 

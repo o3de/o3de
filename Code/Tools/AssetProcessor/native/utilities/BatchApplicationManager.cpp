@@ -106,6 +106,15 @@ void BatchApplicationManager::InitSourceControl()
     }
 }
 
+void BatchApplicationManager::InitFileStateCache()
+{
+    // File state cache is disabled for batch mode because it relies on the file monitor to function properly.
+    // Since the file monitor is disabled, the cache must be disabled as well.
+    // Note the main reason this is disabled is because intermediate assets can be created during processing which would
+    // need to be recorded in the cache.
+    m_fileStateCache = AZStd::make_unique<AssetProcessor::FileStatePassthrough>();
+}
+
 void BatchApplicationManager::MakeActivationConnections()
 {
     QObject::connect(m_rcController, &AssetProcessor::RCController::FileCompiled,

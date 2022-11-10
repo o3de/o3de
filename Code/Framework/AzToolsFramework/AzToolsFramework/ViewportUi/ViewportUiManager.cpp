@@ -351,7 +351,7 @@ namespace AzToolsFramework::ViewportUi
 
     ClusterId ViewportUiManager::RegisterNewCluster(AZStd::shared_ptr<Internal::ButtonGroup>& buttonGroup)
     {
-        ClusterId newId = ClusterId(m_clusterButtonGroups.size() + 1);
+        ClusterId newId = ClusterId(++m_nextViewportUiElementId);
         m_clusterButtonGroups.insert({ newId, buttonGroup });
 
         return newId;
@@ -359,7 +359,7 @@ namespace AzToolsFramework::ViewportUi
 
     SwitcherId ViewportUiManager::RegisterNewSwitcher(AZStd::shared_ptr<Internal::ButtonGroup>& buttonGroup)
     {
-        SwitcherId newId = SwitcherId(m_switcherButtonGroups.size() + 1);
+        SwitcherId newId = SwitcherId(++m_nextViewportUiElementId);
         m_switcherButtonGroups.insert({ newId, buttonGroup });
 
         return newId;
@@ -367,7 +367,7 @@ namespace AzToolsFramework::ViewportUi
 
     TextFieldId ViewportUiManager::RegisterNewTextField(AZStd::shared_ptr<Internal::TextField>& textField)
     {
-        TextFieldId newId = TextFieldId(m_textFields.size() + 1);
+        TextFieldId newId = TextFieldId(++m_nextViewportUiElementId);
         textField->m_textFieldId = newId;
         m_textFields.insert({ newId, textField });
 
