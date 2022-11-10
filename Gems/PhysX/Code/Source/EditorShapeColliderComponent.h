@@ -96,9 +96,9 @@ namespace PhysX
         void UpdateShapeConfigs();
         void UpdateBoxConfig(const AZ::Vector3& scale);
         void UpdateQuadConfig(const AZ::Vector3& scale);
-        void UpdateCapsuleConfig(const AZ::Vector3& scale);
-        void UpdateSphereConfig(const AZ::Vector3& scale);
-        void UpdateCylinderConfig(const AZ::Vector3& scale);
+        void UpdateCapsuleConfig(const float scale);
+        void UpdateSphereConfig(const float scale);
+        void UpdateCylinderConfig(const float scale);
         void UpdatePolygonPrismDecomposition();
         void UpdatePolygonPrismDecomposition(const AZ::PolygonPrismPtr polygonPrismPtr);
 
