@@ -370,6 +370,8 @@ namespace AtomToolsFramework
             AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
         }
 
+        AZ_TracePrintf("AtomToolsApplication", "CriticalAssetsCompiled\n");
+
         AZ::ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "CriticalAssetsCompiled", R"({})");
 
         // Reload the assetcatalog.xml at this point again
