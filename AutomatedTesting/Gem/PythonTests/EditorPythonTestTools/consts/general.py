@@ -27,6 +27,13 @@ ENTITY_STATES = {
 }
 
 
+class ComponentPropertyVisibilityStates:
+    NOT_VISIBLE = "NotVisible"
+    VISIBLE = "Visible"
+    SHOW_CHILDREN_ONLY = "ShowChildrenOnly"
+    HIDE_CHILDREN = "HideChildren"
+
+
 class Strings:
     EMPTY_STRING = ""
     ONLY_SPACE = " "

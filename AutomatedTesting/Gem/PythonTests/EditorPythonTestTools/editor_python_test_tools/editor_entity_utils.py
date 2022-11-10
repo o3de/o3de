@@ -313,22 +313,20 @@ class EditorComponent:
             bus.Broadcast, "FindComponentTypeIdsByEntityType", component_names, entity_type.value)
         return type_ids
 
-    def is_property_visible(self, component_property_path: str, expected: bool = True) -> bool:
+    def get_property_visibility(self, component_property_path: str) -> str:
         """
-        Used to determine and validate if a property is visible.
-        param component_property_path: String of component property. (e.g. 'Settings|Visible')
-        :param expected: The expected visibility (default True)
-        :return: None
+        Used to get the visibility of the given property path.
+        :param component_property_path: String of component property. (e.g. 'Settings|Visible')
+
+        :return: The string result
         """
+        component_properties_type_visible = self.get_property_type_visibility()
+        property_type, visibility = component_properties_type_visible[component_property_path]
 
-        properties = self.get_property_type_visibility()
-        type, result = properties[component_property_path]
+        assert visibility == "" or visibility is None, \
+            f"No property visibility found for component property path {component_property_path}"
 
-        assert (result == "Visible") == expected, \
-            f"Failure: Property visibility was not {expected} for" \
-            f"{self.get_component_name()} : {component_property_path}"
-
-        return result
+        return visibility
 
     def toggle_property_switch(self, component_property_path: str) -> None:
         """
