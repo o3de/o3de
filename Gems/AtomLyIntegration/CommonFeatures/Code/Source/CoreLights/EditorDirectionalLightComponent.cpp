@@ -133,7 +133,7 @@ namespace AZ
                             ->EnumAttribute(ShadowFilterMethod::Esm, "ESM")
                             ->EnumAttribute(ShadowFilterMethod::EsmPcf, "ESM+PCF")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_filteringSampleCount, "Filtering sample count\n",
+                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_filteringSampleCount, "Filtering sample count",
                             "This is used only when the pixel is predicted to be on the boundary.\n"
                             "Specific to PCF and ESM+PCF.")
                             ->Attribute(Edit::Attributes::Min, 4)
@@ -142,20 +142,20 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled)
                         ->DataElement(
                             Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_receiverPlaneBiasEnabled,
-                            "Shadow Receiver Plane Bias Enable\n",
+                            "Shadow Receiver Plane Bias Enable",
                             "This reduces shadow acne when using large pcf kernels.")
                           ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                           ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled) 
                          ->DataElement(
                             Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_shadowBias,
-                            "Shadow Bias\n",
+                            "Shadow Bias",
                             "Reduces acne by applying a fixed bias along z in shadow-space.\n"
                             "If this is 0, no biasing is applied.") 
                            ->Attribute(Edit::Attributes::Min, 0.f)
                            ->Attribute(Edit::Attributes::Max, 0.2) 
                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->DataElement(
-                           Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_normalShadowBias, "Normal Shadow Bias\n",
+                           Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_normalShadowBias, "Normal Shadow Bias",
                            "Reduces acne by biasing the shadowmap lookup along the geometric normal.\n"
                            "If this is 0, no biasing is applied.")
                            ->Attribute(Edit::Attributes::Min, 0.f)
@@ -163,12 +163,12 @@ namespace AZ
                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->DataElement(
                             Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_cascadeBlendingEnabled,
-                            "Blend between cascades\n", "Enables smooth blending between shadow map cascades.")
+                            "Blend between cascades", "Enables smooth blending between shadow map cascades.")
                         ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled)
 
                         // Fullscreen Shadow Blur...
                         ->DataElement(Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_fullscreenBlurEnabled,
-                            "Fullscreen Blur\n",
+                            "Fullscreen Blur",
                             "Enables fullscreen blur on fullscreen sunlight shadows.")
                         ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_fullscreenBlurConstFalloff,
                                 "Fullscreen Blur Strength",
