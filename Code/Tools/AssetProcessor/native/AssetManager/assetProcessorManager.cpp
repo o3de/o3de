@@ -100,11 +100,16 @@ namespace AssetProcessor
 
             if (m_stateData->GetSourceByJobID(jobEntry.m_jobID, sourceEntry))
             {
-                JobDesc jobDesc(SourceAssetReference(sourceEntry.m_scanFolderPK, sourceEntry.m_sourceName.c_str()), jobEntry.m_jobKey, jobEntry.m_platform);
-                JobIndentifier jobIdentifier(jobDesc, jobEntry.m_builderGuid);
+                SourceAssetReference sourceAsset(sourceEntry.m_scanFolderPK, sourceEntry.m_sourceName.c_str());
 
-                m_jobDescToBuilderUuidMap[jobDesc].insert(jobEntry.m_builderGuid);
-                m_jobFingerprintMap[jobIdentifier] = jobEntry.m_fingerprint;
+                if (sourceAsset)
+                {
+                    JobDesc jobDesc(sourceAsset, jobEntry.m_jobKey, jobEntry.m_platform);
+                    JobIndentifier jobIdentifier(jobDesc, jobEntry.m_builderGuid);
+
+                    m_jobDescToBuilderUuidMap[jobDesc].insert(jobEntry.m_builderGuid);
+                    m_jobFingerprintMap[jobIdentifier] = jobEntry.m_fingerprint;
+                }
             }
         }
     }
@@ -498,10 +503,13 @@ namespace AssetProcessor
         // note that m_SourceFilesInDatabase is a map from (full absolute path) --> (database name for file)
         for (auto iter = m_sourceFilesInDatabase.begin(); iter != m_sourceFilesInDatabase.end(); iter++)
         {
-            // CheckDeletedSourceFile actually expects the database name as the second value
-            // iter.key is the full path normalized.  iter.value is the database path.
-            // we need the relative path too:
-            CheckDeletedSourceFile(iter.value().m_sourceAssetReference, AZStd::chrono::steady_clock::now());
+            if (iter.value().m_sourceAssetReference)
+            {
+                // CheckDeletedSourceFile actually expects the database name as the second value
+                // iter.key is the full path normalized.  iter.value is the database path.
+                // we need the relative path too:
+                CheckDeletedSourceFile(iter.value().m_sourceAssetReference, AZStd::chrono::steady_clock::now());
+            }
         }
 
         // we want to remove any left over scan folders from the database only after

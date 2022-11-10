@@ -34,10 +34,7 @@ namespace AssetProcessor
 
         explicit SourceAssetReference(AZ::IO::PathView absolutePath);
 
-        SourceAssetReference(AZ::s64 scanFolderId, AZ::IO::PathView pathRelativeToScanFolder)
-            : SourceAssetReference(AZ::Interface<IPathConversion>::Get()->GetScanFolderById(scanFolderId)->ScanPath().toUtf8().constData(), pathRelativeToScanFolder)
-        {
-        }
+        SourceAssetReference(AZ::s64 scanFolderId, AZ::IO::PathView pathRelativeToScanFolder);
 
         SourceAssetReference(QString scanFolderPath, QString pathRelativeToScanFolder)
             : SourceAssetReference(
