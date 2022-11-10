@@ -11,5 +11,6 @@
 namespace AzToolsFramework::Prefab
 {
     bool IsHotReloadingEnabled();
+    bool IsPrefabOverridesUxEnabled();
 
 } // namespace AzToolsFramework::Prefab

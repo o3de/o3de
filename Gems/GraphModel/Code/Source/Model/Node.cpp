@@ -60,6 +60,33 @@ namespace GraphModel
     {
         RegisterSlots();
 
+        // Moving slots between input data slot and property slot containers in case the layout of the slot definitions change.
+        for (const auto& def : m_inputDataSlotDefinitions)
+        {
+            for (const auto& slot : m_propertySlots)
+            {
+                if (def->GetName() == slot.first.m_name)
+                {
+                    m_inputDataSlots.insert(slot);
+                    m_propertySlots.erase(slot.first);
+                    break;
+                }
+            }
+        }
+
+        for (const auto& def : m_propertySlotDefinitions)
+        {
+            for (const auto& slot : m_inputDataSlots)
+            {
+                if (def->GetName() == slot.first.m_name)
+                {
+                    m_propertySlots.insert(slot);
+                    m_inputDataSlots.erase(slot.first);
+                    break;
+                }
+            }
+        }
+
         // Make sure the loaded Slot data aligns with the Node's input slot descriptions
         SyncAndSetupSlots(m_propertySlots, m_propertySlotDefinitions);
         SyncAndSetupSlots(m_inputDataSlots, m_inputDataSlotDefinitions);
@@ -71,9 +98,9 @@ namespace GraphModel
         CreateSlotData(m_outputEventSlots, m_outputEventSlotDefinitions);
 
         [[maybe_unused]] int numExtendableSlots = 0;
-        for (auto it = m_extendableSlots.begin(); it != m_extendableSlots.end(); it++)
+        for (const auto& slotPair : m_extendableSlots)
         {
-            numExtendableSlots += aznumeric_cast<int>(it->second.size());
+            numExtendableSlots += aznumeric_cast<int>(slotPair.second.size());
         }
 
         AZ_Assert(m_allSlots.size() == m_propertySlots.size() + m_inputDataSlots.size() + m_outputDataSlots.size() + m_inputEventSlots.size() + m_outputEventSlots.size() + numExtendableSlots, "Slot counts don't match");
@@ -110,8 +137,8 @@ namespace GraphModel
             slot->SetValue(slotDefinition->GetDefaultValue());
             
             SlotId slotId(slotDefinition->GetName());
+
             auto newEntry = AZStd::make_pair(slotId, slot);
-            
             slotMap.insert(newEntry);
             m_allSlots.insert(newEntry);
         }
@@ -140,9 +167,7 @@ namespace GraphModel
                 SlotPtr slot = AZStd::make_shared<Slot>(GetGraph(), slotDefinition, i);
                 slot->SetValue(slotDefinition->GetDefaultValue());
 
-                auto newEntry = AZStd::make_pair(slot->GetSlotId(), slot);
-                m_allSlots.insert(newEntry);
-
+                m_allSlots.insert(AZStd::make_pair(slot->GetSlotId(), slot));
                 extendableSet.insert(slot);
             }
 
@@ -160,18 +185,24 @@ namespace GraphModel
             const SlotName& slotName = slotId.m_name;
             SlotPtr slot = slotDataIter->second;
 
-            auto slotDefinitionIter = AZStd::find_if(slotDefinitions.begin(), slotDefinitions.end(), [&slotName](SlotDefinitionPtr slotDefinition) { return slotDefinition->GetName() == slotName; });
+            auto slotDefinitionIter = AZStd::find_if(
+                slotDefinitions.begin(),
+                slotDefinitions.end(),
+                [&slotName](SlotDefinitionPtr slotDefinition)
+                {
+                    return slotDefinition->GetName() == slotName;
+                });
 
             if (slotDefinitionIter == slotDefinitions.end())
             {
-                AZ_Warning(GetGraph()->GetSystemName(), false, "Found data for unrecognized slot [%s]. It will be ignored.", slotName.c_str());
+                AZ_Warning(
+                    GetGraph()->GetSystemName(), false, "Found data for unrecognized slot [%s]. It will be ignored.", slotName.c_str());
                 slotDataIter = slotData.erase(slotDataIter);
             }
             else
             {
-                // CJS TODO: Consider using AZ::Outcome for better error reporting, and if PostLoadSetup fails (could be due to type mismatch) 
+                // If PostLoadSetup fails (could be due to type mismatch)
                 slot->PostLoadSetup(GetGraph(), *slotDefinitionIter);
-
                 ++slotDataIter;
             }
         }
@@ -199,22 +230,27 @@ namespace GraphModel
         {
             const SlotName& slotName = slotDataIter->first;
 
-            auto slotDefinitionIter = AZStd::find_if(m_extendableSlotDefinitions.begin(), m_extendableSlotDefinitions.end(), [&slotName](SlotDefinitionPtr slotDefinition) { return slotDefinition->GetName() == slotName; });
+            auto slotDefinitionIter = AZStd::find_if(
+                m_extendableSlotDefinitions.begin(),
+                m_extendableSlotDefinitions.end(),
+                [&slotName](SlotDefinitionPtr slotDefinition)
+                {
+                    return slotDefinition->GetName() == slotName;
+                });
 
             if (slotDefinitionIter == m_extendableSlotDefinitions.end())
             {
-                AZ_Warning(GetGraph()->GetSystemName(), false, "Found data for unrecognized slot [%s]. It will be ignored.", slotName.c_str());
+                AZ_Warning(
+                    GetGraph()->GetSystemName(), false, "Found data for unrecognized slot [%s]. It will be ignored.", slotName.c_str());
                 slotDataIter = m_extendableSlots.erase(slotDataIter);
             }
             else
             {
                 for (SlotPtr slot : slotDataIter->second)
                 {
-                    // CJS TODO: Consider using AZ::Outcome for better error reporting, and if PostLoadSetup fails (could be due to type mismatch) 
+                    // If PostLoadSetup fails (could be due to type mismatch)
                     slot->PostLoadSetup(GetGraph(), *slotDefinitionIter);
-
-                    auto newEntry = AZStd::make_pair(slot->GetSlotId(), slot);
-                    m_allSlots.insert(newEntry);
+                    m_allSlots.insert(AZStd::make_pair(slot->GetSlotId(), slot));
                 }
 
                 ++slotDataIter;
@@ -225,10 +261,7 @@ namespace GraphModel
         CreateExtendableSlotData();
     }
 
-    
-//! Returns node type (general by default) which can be overriden for
-    //! other types, such as wrapper nodes
-
+    //! Returns node type (general by default) which can be overriden for other types, such as wrapper nodes
     NodeType Node::GetNodeType() const
     {
         return NodeType::GeneralNode;
@@ -239,103 +272,119 @@ namespace GraphModel
         return m_id;
     }
 
+    uint32_t Node::GetMaxInputDepth() const
+    {
+        uint32_t maxInputDepth = 0;
+        AZStd::for_each(m_allSlots.begin(), m_allSlots.end(), [&](const auto& slotPair) {
+            const auto& slot = slotPair.second;
+            if (slot->GetSlotDirection() == GraphModel::SlotDirection::Input)
+            {
+                const auto& connections = slot->GetConnections();
+                AZStd::for_each(connections.begin(), connections.end(), [&](const auto& connection) {
+                    AZ_Assert(connection->GetSourceNode().get() != this, "This should never be the source node on an input connection.");
+                    AZ_Assert(connection->GetTargetNode().get() == this, "This should always be the target node on an input connection.");
+                    maxInputDepth = AZStd::max(maxInputDepth, connection->GetSourceNode()->GetMaxInputDepth() + 1);
+                });
+            }
+        });
+        return maxInputDepth;
+    }
+
+    uint32_t Node::GetMaxOutputDepth() const
+    {
+        uint32_t maxOutputDepth = 0;
+        AZStd::for_each(m_allSlots.begin(), m_allSlots.end(), [&](const auto& slotPair) {
+            const auto& slot = slotPair.second;
+            if (slot->GetSlotDirection() == GraphModel::SlotDirection::Output)
+            {
+                const auto& connections = slot->GetConnections();
+                AZStd::for_each(connections.begin(), connections.end(), [&](const auto& connection) {
+                    AZ_Assert(connection->GetSourceNode().get() == this, "This should always be the source node on an output connection.");
+                    AZ_Assert(connection->GetTargetNode().get() != this, "This should never be the target node on an output connection.");
+                    maxOutputDepth = AZStd::max(maxOutputDepth, connection->GetTargetNode()->GetMaxOutputDepth() + 1);
+                });
+            }
+        });
+        return maxOutputDepth;
+    }
+
+    bool Node::HasSlots() const
+    {
+        return !m_allSlots.empty();
+    }
+
+    bool Node::HasInputSlots() const
+    {
+        return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [](const auto& slotPair) {
+            const auto& slot = slotPair.second;
+            return slot->GetSlotDirection() == GraphModel::SlotDirection::Input;
+        });
+    }
+
+    bool Node::HasOutputSlots() const
+    {
+        return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [](const auto& slotPair) {
+            const auto& slot = slotPair.second;
+            return slot->GetSlotDirection() == GraphModel::SlotDirection::Output;
+        });
+    }
+
     bool Node::HasConnections() const
     {
-        for (const auto& slotPair : GetSlots())
-        {
+        return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [](const auto& slotPair) {
             const auto& slot = slotPair.second;
-            if (!slot->GetConnections().empty())
-            {
-                return true;
-            }
-        }
-        return false;
+            return !slot->GetConnections().empty();
+        });
     }
 
     bool Node::HasInputConnections() const
     {
-        for (const auto& slotPair : GetSlots())
-        {
+        return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [](const auto& slotPair) {
             const auto& slot = slotPair.second;
-            if (slot->GetSlotDirection() == GraphModel::SlotDirection::Input && !slot->GetConnections().empty())
-            {
-                return true;
-            }
-        }
-        return false;
+            return slot->GetSlotDirection() == GraphModel::SlotDirection::Input && !slot->GetConnections().empty();
+        });
     }
 
     bool Node::HasOutputConnections() const
     {
-        for (const auto& slotPair : GetSlots())
-        {
+        return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [](const auto& slotPair) {
             const auto& slot = slotPair.second;
-            if (slot->GetSlotDirection() == GraphModel::SlotDirection::Output && !slot->GetConnections().empty())
-            {
-                return true;
-            }
-        }
-        return false;
+            return slot->GetSlotDirection() == GraphModel::SlotDirection::Output && !slot->GetConnections().empty();
+        });
     }
 
     bool Node::HasInputConnectionFromNode(ConstNodePtr node) const
     {
-        if (node)
-        {
-            for (const auto& slotPair : GetSlots())
-            {
-                const auto& slot = slotPair.second;
-                if (slot->GetSlotDirection() == GraphModel::SlotDirection::Input)
-                {
-                    for (const auto& connection : slot->GetConnections())
-                    {
-                        if (connection->GetSourceNode() == node || connection->GetSourceNode()->HasInputConnectionFromNode(node))
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
+        return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [&](const auto& slotPair) {
+            const auto& slot = slotPair.second;
+            const auto& connections = slot->GetConnections();
+            return slot->GetSlotDirection() == GraphModel::SlotDirection::Input &&
+                AZStd::any_of(connections.begin(), connections.end(), [&](const auto& connection) {
+                    AZ_Assert(connection->GetSourceNode().get() != this, "This should never be the source node on an input connection.");
+                    AZ_Assert(connection->GetTargetNode().get() == this, "This should always be the target node on an input connection.");
+                    return connection->GetSourceNode() == node || connection->GetSourceNode()->HasInputConnectionFromNode(node);
+                });
+        });
     }
 
     bool Node::HasOutputConnectionToNode(ConstNodePtr node) const
     {
-        if (node)
-        {
-            for (const auto& slotPair : GetSlots())
-            {
-                const auto& slot = slotPair.second;
-                if (slot->GetSlotDirection() == GraphModel::SlotDirection::Output)
-                {
-                    for (const auto& connection : slot->GetConnections())
-                    {
-                        if (connection->GetTargetNode() == node || connection->GetTargetNode()->HasOutputConnectionToNode(node))
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
+        return AZStd::any_of(m_allSlots.begin(), m_allSlots.end(), [&](const auto& slotPair) {
+            const auto& slot = slotPair.second;
+            const auto& connections = slot->GetConnections();
+            return slot->GetSlotDirection() == GraphModel::SlotDirection::Output &&
+                AZStd::any_of(connections.begin(), connections.end(), [&](const auto& connection) {
+                    AZ_Assert(connection->GetSourceNode().get() == this, "This should always be the source node on an output connection.");
+                    AZ_Assert(connection->GetTargetNode().get() != this, "This should never be the target node on an output connection.");
+                    return connection->GetTargetNode() == node || connection->GetTargetNode()->HasOutputConnectionToNode(node);
+                });
+        });
     }
 
     bool Node::Contains(ConstSlotPtr slot) const
     {
-        if (!slot)
-        {
-            return false;
-        }
-
-        auto iter = m_allSlots.find(slot->GetSlotId());
-        if (iter != m_allSlots.end() && iter->second == slot)
-        {
-            return true;
-        }
-
-        return false;
+        const auto slotItr = slot ? m_allSlots.find(slot->GetSlotId()) : m_allSlots.end();
+        return slotItr != m_allSlots.end() && slotItr->second == slot;
     }
 
     const Node::SlotDefinitionList& Node::GetSlotDefinitions() const
@@ -350,20 +399,13 @@ namespace GraphModel
 
     Node::ConstSlotMap Node::GetSlots() const
     {
-        Node::ConstSlotMap constSlots;
-        AZStd::for_each(m_allSlots.begin(), m_allSlots.end(), [&](auto pair) { constSlots.insert(pair); });
-        return constSlots;
+        return ConstSlotMap(m_allSlots.begin(), m_allSlots.end());
     }
 
     ConstSlotPtr Node::GetSlot(const SlotId& slotId) const
     {
-        auto slot = m_allSlots.find(slotId);
-        if (slot != m_allSlots.end())
-        {
-            return slot->second;
-        }
-
-        return nullptr;
+        const auto slotItr = m_allSlots.find(slotId);
+        return slotItr != m_allSlots.end() ? slotItr->second : nullptr;
     }
 
     SlotPtr Node::GetSlot(const SlotId& slotId)
@@ -386,49 +428,27 @@ namespace GraphModel
 
     const Node::ExtendableSlotSet& Node::GetExtendableSlots(const SlotName& name)
     {
-        auto it = m_extendableSlots.find(name);
-        if (it != m_extendableSlots.end())
-        {
-            return it->second;
-        }
-        else
-        {
-            static Node::ExtendableSlotSet defaultSet;
-            return defaultSet;
-        }
+        static Node::ExtendableSlotSet defaultSet;
+        const auto slotItr = m_extendableSlots.find(name);
+        return slotItr != m_extendableSlots.end() ? slotItr->second : defaultSet;
     }
 
-    int Node::GetExtendableSlotCount(const SlotName& name)
+    int Node::GetExtendableSlotCount(const SlotName& name) const
     {
-        auto it = m_extendableSlots.find(name);
-        if (it != m_extendableSlots.end())
-        {
-            return aznumeric_cast<int>(it->second.size());
-        }
-
-        return InvalidExtendableSlot;
+        const auto slotItr = m_extendableSlots.find(name);
+        return slotItr != m_extendableSlots.end() ? aznumeric_cast<int>(slotItr->second.size()) : InvalidExtendableSlot;
     }
 
     void Node::DeleteSlot(SlotPtr slot)
     {
         if (CanDeleteSlot(slot))
         {
-            SlotId slotId = slot->GetSlotId();
-
             // Remove this slot from our map tracking all slots on the node, as well as the extendable slots
-            auto allSlotsIt = m_allSlots.find(slotId);
-            if (allSlotsIt != m_allSlots.end())
-            {
-                m_allSlots.erase(allSlotsIt);
-            }
+            m_allSlots.erase(slot->GetSlotId());
             auto extendableSlotsIt = m_extendableSlots.find(slot->GetName());
             if (extendableSlotsIt != m_extendableSlots.end())
             {
-                auto slotIt = extendableSlotsIt->second.find(slot);
-                if (slotIt != extendableSlotsIt->second.end())
-                {
-                    extendableSlotsIt->second.erase(slotIt);
-                }
+                extendableSlotsIt->second.erase(slot);
             }
         }
     }
@@ -438,19 +458,9 @@ namespace GraphModel
         // Only extendable slots can be removed
         if (slot->SupportsExtendability())
         {
-            int currentNumSlots = 0;
-            auto it = m_extendableSlots.find(slot->GetName());
-            if (it != m_extendableSlots.end())
-            {
-                currentNumSlots = aznumeric_cast<int>(it->second.size());
-            }
-
             // Only allow this slot to be deleted if there are more than the required minimum
-            int minimumSlots = slot->GetMinimumSlots();
-            if (currentNumSlots > minimumSlots)
-            {
-                return true;
-            }
+            const int currentNumSlots = GetExtendableSlotCount(slot->GetName());
+            return currentNumSlots >= 0 && currentNumSlots > slot->GetMinimumSlots();
         }
 
         return false;
@@ -460,19 +470,9 @@ namespace GraphModel
     {
         if (slotDefinition->SupportsExtendability())
         {
-            int currentNumSlots = 0;
-            auto it = m_extendableSlots.find(slotDefinition->GetName());
-            if (it != m_extendableSlots.end())
-            {
-                currentNumSlots = aznumeric_cast<int>(it->second.size());
-            }
-
             // Only allow this slot to extended if we haven't reached the maximum
-            int maximumSlots = slotDefinition->GetMaximumSlots();
-            if (currentNumSlots < maximumSlots)
-            {
-                return true;
-            }
+            const int currentNumSlots = GetExtendableSlotCount(slotDefinition->GetName());
+            return currentNumSlots >= 0 && currentNumSlots < slotDefinition->GetMaximumSlots();
         }
 
         return false;
@@ -515,9 +515,7 @@ namespace GraphModel
         SlotPtr slot = AZStd::make_shared<Slot>(GetGraph(), slotDefinition, newSubId);
         slot->SetValue(slotDefinition->GetDefaultValue());
 
-        auto newEntry = AZStd::make_pair(slot->GetSlotId(), slot);
-        m_allSlots.insert(newEntry);
-
+        m_allSlots.insert(AZStd::make_pair(slot->GetSlotId(), slot));
         currentSlots.insert(slot);
 
         return slot;
@@ -584,26 +582,26 @@ namespace GraphModel
     void Node::AssertPointerIsNew([[maybe_unused]] SlotDefinitionPtr newSlotDefinition, [[maybe_unused]] const SlotDefinitionList& existingSlotDefinitions) const
     {
 #if defined(AZ_ENABLE_TRACING)
-        auto iter = AZStd::find(existingSlotDefinitions.begin(), existingSlotDefinitions.end(), newSlotDefinition);
-        AZ_Assert(iter == existingSlotDefinitions.end(), "This slot has already been registered");
+        auto slotItr = AZStd::find(existingSlotDefinitions.begin(), existingSlotDefinitions.end(), newSlotDefinition);
+        AZ_Assert(slotItr == existingSlotDefinitions.end(), "This slot has already been registered");
 #endif
     }
 
     void Node::AssertNameIsNew([[maybe_unused]] SlotDefinitionPtr newSlotDefinition, [[maybe_unused]] const SlotDefinitionList& existingSlotDefinitions) const
     {
 #if defined(AZ_ENABLE_TRACING)
-        auto iter = AZStd::find_if(existingSlotDefinitions.begin(), existingSlotDefinitions.end(),
+        auto slotItr = AZStd::find_if(existingSlotDefinitions.begin(), existingSlotDefinitions.end(),
             [newSlotDefinition](SlotDefinitionPtr existingSlotDefinition) { return newSlotDefinition->GetName() == existingSlotDefinition->GetName(); });
-        AZ_Assert(iter == existingSlotDefinitions.end(), "Another slot with name [%s] already exists", newSlotDefinition->GetName().c_str());
+        AZ_Assert(slotItr == existingSlotDefinitions.end(), "Another slot with name [%s] already exists", newSlotDefinition->GetName().c_str());
 #endif
     }
 
     void Node::AssertDisplayNameIsNew([[maybe_unused]] SlotDefinitionPtr newSlotDefinition, [[maybe_unused]] const SlotDefinitionList& existingSlotDefinitions) const
     {
 #if defined(AZ_ENABLE_TRACING)
-        auto iter = AZStd::find_if(existingSlotDefinitions.begin(), existingSlotDefinitions.end(),
+        auto slotItr = AZStd::find_if(existingSlotDefinitions.begin(), existingSlotDefinitions.end(),
             [newSlotDefinition](SlotDefinitionPtr existingSlotDefinition) { return newSlotDefinition->GetDisplayName() == existingSlotDefinition->GetDisplayName(); });
-        AZ_Assert(iter == existingSlotDefinitions.end(), "Another slot with display name [%s] already exists", newSlotDefinition->GetDisplayName().c_str());
+        AZ_Assert(slotItr == existingSlotDefinitions.end(), "Another slot with display name [%s] already exists", newSlotDefinition->GetDisplayName().c_str());
 #endif
     }
 

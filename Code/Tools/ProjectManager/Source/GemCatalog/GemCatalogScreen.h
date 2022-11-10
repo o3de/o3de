@@ -10,9 +10,10 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
+#include <ScreensCtrl.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzToolsFramework/UI/Notifications/ToastNotificationsView.h>
-
+#include <GemCatalog/GemInfo.h>
 #include <QSet>
 #include <QString>
 #endif
@@ -34,7 +35,7 @@ namespace O3DE::ProjectManager
         : public ScreenWidget
     {
     public:
-        explicit GemCatalogScreen(bool readOnly = false, QWidget* parent = nullptr);
+        explicit GemCatalogScreen(DownloadController* downloadController, bool readOnly = false, QWidget* parent = nullptr);
         ~GemCatalogScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
@@ -43,6 +44,10 @@ namespace O3DE::ProjectManager
         QString GetTabText() override;
         bool IsTab() override;
         void NotifyCurrentScreen() override;
+
+        void AddToGemModel(const GemInfo& gemInfo);
+
+        void ShowStandardToastNotification(const QString& notification);
 
         GemModel* GetGemModel() const { return m_gemModel; }
         DownloadController* GetDownloadController() const { return m_downloadController; }
@@ -56,6 +61,8 @@ namespace O3DE::ProjectManager
         void Refresh();
         void UpdateGem(const QModelIndex& modelIndex);
         void UninstallGem(const QModelIndex& modelIndex);
+        void HandleGemCreated(const GemInfo& gemInfo);
+        void HandleGemEdited(const GemInfo& newGemInfo);
 
     protected:
         void hideEvent(QHideEvent* event) override;
@@ -68,6 +75,8 @@ namespace O3DE::ProjectManager
 
     private slots:
         void HandleOpenGemRepo();
+        void HandleCreateGem();
+        void HandleEditGem(const QModelIndex& currentModelIndex);
         void UpdateAndShowGemCart(QWidget* cartWidget);
         void ShowInspector();
 
@@ -89,8 +98,12 @@ namespace O3DE::ProjectManager
         QVBoxLayout* m_filterWidgetLayout = nullptr;
         GemFilterWidget* m_filterWidget = nullptr;
         DownloadController* m_downloadController = nullptr;
+        ScreensCtrl* m_screensControl = nullptr;
         bool m_notificationsEnabled = true;
         QString m_projectPath;
         bool m_readOnly;
+
+        QModelIndex m_curEditedIndex;
+
     };
 } // namespace O3DE::ProjectManager

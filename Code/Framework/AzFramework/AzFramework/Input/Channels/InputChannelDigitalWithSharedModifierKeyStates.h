@@ -53,14 +53,13 @@ namespace AzFramework
         //! \return True if the modifier key is active, false otherwise
         bool IsActive(ModifierKeyMask modifierKey) const;
 
-    private:
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Set the active state of the specified modifier key
         //! \param[in] modifierKey The modifier key to set
         //! \param[in] active The active state to set
         void SetActive(ModifierKeyMask modifierKey, bool active);
-        friend class InputChannelDigitalWithSharedModifierKeyStates;
 
+    private:
         ModifierKeyMask m_activeModifierKeys = ModifierKeyMask::None; //!< Active modifier keys
     };
 

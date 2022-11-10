@@ -248,11 +248,18 @@ def ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templ
                     currentFile.truncate()
                     with open(outputFile, 'w+') as currentFile:
                         currentFile.write(compareFD.getvalue())
-                        print('Generating %s with template %s and inputs %s' % (outputFile, templateFile, ", ".join(dataInputFiles)))
+                        if autogenConfig.verbose == True:
+                            print(f'Generated {outputFile} with template {templateFile} and inputs, '.join(dataInputFiles))
+                        else:
+                            print('Generated %s' % (os.path.basename(outputFile)))
         else:
             with open(outputFile, 'w+') as outputFD:
-                outputFD.write(compareFD.getvalue())                
-                print('Generating %s using template %s and inputs %s' % (outputFile, templateFile, ", ".join(dataInputFiles)))
+                outputFD.write(compareFD.getvalue())
+                if autogenConfig.verbose == True:
+                    print(f'Generated {outputFile} using template {templateFile} and inputs, '.join(dataInputFiles))
+                else:
+                    print('Generated %s' % (os.path.basename(outputFile)))
+
     except IOError as e:
         PrintError('%s(%s) : error I/O(%s) accessing %s : %s' % (fileinput.filename(), str(fileinput.filelineno()), e.errno, e.filename, e.strerror))
     except:

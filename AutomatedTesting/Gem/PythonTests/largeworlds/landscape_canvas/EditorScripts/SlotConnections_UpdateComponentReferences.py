@@ -192,7 +192,7 @@ def SlotConnections_UpdateComponentReferences():
     # Verify the Preview EntityId property on our Random Noise Gradient component has been set to our Box Shape's
     # EntityId
     previewEntityId = getEntityIdFromComponentProperty(randomNoiseEntityId, 'Random Noise Gradient',
-                                                       'Preview Settings|Pin Preview to Shape')
+                                                       'Previewer|Preview Settings|Pin Preview to Shape')
     random_gradient_success = previewEntityId and boxShapeEntityId.invoke("Equal", previewEntityId)
     Report.result(Tests.preview_entity_set, random_gradient_success)
 

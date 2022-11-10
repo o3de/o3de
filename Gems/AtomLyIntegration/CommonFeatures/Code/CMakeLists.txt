@@ -20,6 +20,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         INTERFACE
             Gem::Atom_Feature_Common.Public
+            Gem::AtomImGuiTools.Public
 )
 
 ly_add_target(
@@ -170,6 +171,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                     AZ::AzToolsFrameworkTestCommon
                     Gem::AtomLyIntegration_CommonFeatures.Static
                     Gem::AtomLyIntegration_CommonFeatures.Editor.Static
+            RUNTIME_DEPENDENCIES
+                Gem::LmbrCentral.Editor
         )
         ly_add_googletest(
             NAME Gem::AtomLyIntegration_CommonFeatures.Editor.Tests

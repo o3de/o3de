@@ -87,7 +87,7 @@ namespace AtomToolsFramework
 
     void AssetSelectionGrid::SelectAsset(const AZ::Data::AssetId& assetId)
     {
-        const QVariant assetIdItemData(assetId.ToString<AZStd::string>().c_str());
+        const QVariant assetIdItemData(assetId.ToFixedString().c_str());
         for (int i = 0; i < m_ui->m_assetList->count(); ++i)
         {
             QListWidgetItem* item = m_ui->m_assetList->item(i);
@@ -137,7 +137,7 @@ namespace AtomToolsFramework
     {
         if (m_filterCallback && m_filterCallback(assetInfo))
         {
-            const QVariant assetIdItemData(assetInfo.m_assetId.ToString<AZStd::string>().c_str());
+            const QVariant assetIdItemData(assetInfo.m_assetId.ToFixedString().c_str());
             for (int i = 0; i < m_ui->m_assetList->count(); ++i)
             {
                 QListWidgetItem* item = m_ui->m_assetList->item(i);
@@ -153,7 +153,7 @@ namespace AtomToolsFramework
     QListWidgetItem* AssetSelectionGrid::CreateListItem(const AZ::Data::AssetId& assetId, const QString& title)
     {
         // Skip creating this list item if one with the same asset ID is already registered
-        const QVariant assetIdItemData(assetId.ToString<AZStd::string>().c_str());
+        const QVariant assetIdItemData(assetId.ToFixedString().c_str());
         for (int i = 0; i < m_ui->m_assetList->count(); ++i)
         {
             QListWidgetItem* item = m_ui->m_assetList->item(i);

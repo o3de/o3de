@@ -21,6 +21,8 @@ set(FILES
     Source/EngineInfo.cpp
     Source/FormLineEditWidget.h
     Source/FormLineEditWidget.cpp
+    Source/FormLineEditTagsWidget.h
+    Source/FormLineEditTagsWidget.cpp
     Source/FormBrowseEditWidget.h
     Source/FormBrowseEditWidget.cpp
     Source/FormComboBoxWidget.h
@@ -42,7 +44,6 @@ set(FILES
     Source/ProjectManagerWindow.h
     Source/ProjectManagerWindow.cpp
     Source/ProjectTemplateInfo.h
-    Source/ProjectTemplateInfo.cpp
     Source/ProjectGemCatalogScreen.h
     Source/ProjectGemCatalogScreen.cpp
     Source/PythonBindings.h
@@ -85,14 +86,24 @@ set(FILES
     Source/TagWidget.cpp
     Source/TemplateButtonWidget.h
     Source/TemplateButtonWidget.cpp
+    Source/TemplateInfo.cpp
+    Source/TemplateInfo.h
     Source/ExternalLinkDialog.h
     Source/ExternalLinkDialog.cpp
     Source/AdjustableHeaderWidget.h
     Source/AdjustableHeaderWidget.cpp
     Source/AddRemoteProjectDialog.h
     Source/AddRemoteProjectDialog.cpp
+    Source/AddRemoteTemplateDialog.h
+    Source/AddRemoteTemplateDialog.cpp
+    Source/DownloadRemoteTemplateDialog.h
+    Source/DownloadRemoteTemplateDialog.cpp
     Source/TextOverflowWidget.h
     Source/TextOverflowWidget.cpp
+    Source/CreateAGemScreen.h
+    Source/CreateAGemScreen.cpp
+    Source/EditAGemScreen.h
+    Source/EditAGemScreen.cpp
     Source/GemCatalog/GemCatalogHeaderWidget.h
     Source/GemCatalog/GemCatalogHeaderWidget.cpp
     Source/GemCatalog/GemCatalogScreen.h

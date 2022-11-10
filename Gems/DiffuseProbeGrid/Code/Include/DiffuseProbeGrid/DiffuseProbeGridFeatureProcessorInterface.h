@@ -83,6 +83,13 @@ namespace AZ
         static constexpr const char* DiffuseProbeGridDistanceFileName = "Distance_lutrg32f.dds";
         static constexpr const char* DiffuseProbeGridProbeDataFileName = "ProbeData_lutrgba16f.dds";
 
+        enum class DiffuseProbeGridTransparencyMode : uint8_t
+        {
+            Full,
+            ClosestOnly,
+            None
+        };
+
         using DiffuseProbeGridBakeTexturesCallback = AZStd::function<void(
             DiffuseProbeGridTexture irradianceTexture,
             DiffuseProbeGridTexture distanceTexture,
@@ -118,13 +125,16 @@ namespace AZ
             virtual void SetProbeSpacing(const DiffuseProbeGridHandle& probeGrid, const AZ::Vector3& probeSpacing) = 0;
             virtual void SetViewBias(const DiffuseProbeGridHandle& probeGrid, float viewBias) = 0;
             virtual void SetNormalBias(const DiffuseProbeGridHandle& probeGrid, float normalBias) = 0;
-            virtual void SetNumRaysPerProbe(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridNumRaysPerProbe& numRaysPerProbe) = 0;
+            virtual void SetNumRaysPerProbe(const DiffuseProbeGridHandle& probeGrid, DiffuseProbeGridNumRaysPerProbe numRaysPerProbe) = 0;
             virtual void SetAmbientMultiplier(const DiffuseProbeGridHandle& probeGrid, float ambientMultiplier) = 0;
             virtual void Enable(const DiffuseProbeGridHandle& probeGrid, bool enable) = 0;
             virtual void SetGIShadows(const DiffuseProbeGridHandle& probeGrid, bool giShadows) = 0;
             virtual void SetUseDiffuseIbl(const DiffuseProbeGridHandle& probeGrid, bool useDiffuseIbl) = 0;
             virtual void SetMode(const DiffuseProbeGridHandle& probeGrid, DiffuseProbeGridMode mode) = 0;
             virtual void SetScrolling(const DiffuseProbeGridHandle& probeGrid, bool scrolling) = 0;
+            virtual void SetEdgeBlendIbl(const DiffuseProbeGridHandle& probeGrid, bool edgeBlendIbl) = 0;
+            virtual void SetFrameUpdateCount(const DiffuseProbeGridHandle& probeGrid, uint32_t frameUpdateCount) = 0;
+            virtual void SetTransparencyMode(const DiffuseProbeGridHandle& probeGrid, DiffuseProbeGridTransparencyMode transparencyMode) = 0;
             virtual void SetBakedTextures(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridBakedTextures& bakedTextures) = 0;
             virtual void SetVisualizationEnabled(const DiffuseProbeGridHandle& probeGrid, bool visualizationEnabled) = 0;
             virtual void SetVisualizationShowInactiveProbes(const DiffuseProbeGridHandle& probeGrid, bool visualizationShowInactiveProbes) = 0;

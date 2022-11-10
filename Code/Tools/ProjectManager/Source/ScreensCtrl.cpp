@@ -16,8 +16,9 @@
 
 namespace O3DE::ProjectManager
 {
-    ScreensCtrl::ScreensCtrl(QWidget* parent)
+    ScreensCtrl::ScreensCtrl(QWidget* parent, DownloadController* downloadController)
         : QWidget(parent)
+        , m_downloadController(downloadController)
     {
         setObjectName("ScreensCtrl");
 
@@ -167,7 +168,7 @@ namespace O3DE::ProjectManager
         DeleteScreen(screen);
 
         // Add new screen
-        ScreenWidget* newScreen = BuildScreen(this, screen);
+        ScreenWidget* newScreen = BuildScreen(this, screen, m_downloadController);
         if (newScreen->IsTab())
         {
             if (tabIndex > -1)

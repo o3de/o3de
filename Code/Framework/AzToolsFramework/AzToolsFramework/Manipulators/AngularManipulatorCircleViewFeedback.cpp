@@ -27,6 +27,14 @@ AZ_CVAR(
     AZ::ConsoleFunctorFlags::Null,
     "The color to use for the Angular Manipulator circle feedback display");
 
+AZ_CVAR(
+    AZ::Color,
+    ed_angularManipulatorCircleFeedbackRadiusSegmentColor,
+    AZ::Color::CreateFromRgba(255, 255, 255, 255),
+    nullptr,
+    AZ::ConsoleFunctorFlags::Null,
+    "The color to use for the begin / end angle radius segments in the Angular Manipulator circle feedback display");
+
 namespace AzToolsFramework
 {
     void AngularManipulatorCircleViewFeedback::Display(
@@ -78,7 +86,9 @@ namespace AzToolsFramework
         const auto angle = m_mostRecentAction.m_current.m_deltaRadians;
         const auto initialPointToCenter = (initialPointOnPlane - manipulatorState.m_localPosition).GetNormalized();
         const auto angleSign = Sign(angle);
-        for (auto step = 0.0f; step < AZ::GetAbs(angle); step += stepIncrement)
+        const auto maxAngle =
+            AZ::GetMin(AZ::GetAbs(angle), AZ::Constants::TwoPi);
+        for (auto step = 0.0f; step < maxAngle; step += stepIncrement)
         {
             const auto first = AZ::Quaternion::CreateFromAxisAngle(fixedAxis, step * angleSign).TransformVector(initialPointToCenter);
             const auto second =
@@ -88,6 +98,18 @@ namespace AzToolsFramework
                 manipulatorState.m_localPosition + first * view->m_radius * viewScale,
                 manipulatorState.m_localPosition + second * view->m_radius * viewScale);
         }
+
+        debugDisplay.SetColor(ed_angularManipulatorCircleFeedbackRadiusSegmentColor);
+
+        const auto drawRadiusSegment =
+            [&debugDisplay, &fixedAxis, &initialPointToCenter, &manipulatorState, view, viewScale](float angle)
+        {
+            const auto direction = AZ::Quaternion::CreateFromAxisAngle(fixedAxis, angle).TransformVector(initialPointToCenter);
+            debugDisplay.DrawLine(
+                manipulatorState.m_localPosition, manipulatorState.m_localPosition + direction * view->m_radius * viewScale);
+        };
+        drawRadiusSegment(0.f);
+        drawRadiusSegment(angle);
 
         debugDisplay.PopMatrix();
         debugDisplay.DepthTestOn();

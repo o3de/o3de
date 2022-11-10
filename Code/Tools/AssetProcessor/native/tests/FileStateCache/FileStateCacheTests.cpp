@@ -6,9 +6,9 @@
  *
  */
 
-#include "FileStateCacheTests.h"
+#include <native/tests/FileStateCache/FileStateCacheTests.h>
 #include <native/utilities/assetUtils.h>
-#include <native/unittests/UnitTestRunner.h>
+#include <native/unittests/UnitTestUtils.h>
 
 namespace UnitTests
 {

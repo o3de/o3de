@@ -1136,7 +1136,7 @@ namespace ScriptCanvas
 
             ReturnValueConnections connections = FindAssignments(execution, outputSlot);
 
-            // get/set methods 
+            // get/set methods
             if (IsVariableSet(execution) && !IsPropertyExtractionSlot(execution, &outputSlot))
             {
                 if (!out.m_output.size() == 1)
@@ -2210,12 +2210,12 @@ namespace ScriptCanvas
 
         void AbstractCodeModel::MarkParseStart()
         {
-            m_parseStartTime = AZStd::chrono::system_clock::now();
+            m_parseStartTime = AZStd::chrono::steady_clock::now();
         }
 
         void AbstractCodeModel::MarkParseStop()
         {
-            m_parseDuration = AZStd::chrono::microseconds(AZStd::chrono::system_clock::now() - m_parseStartTime).count();
+            m_parseDuration = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now() - m_parseStartTime).count();
         }
 
         AZStd::vector<ExecutionTreePtr> AbstractCodeModel::ModAllExecutionRoots()
@@ -2550,7 +2550,7 @@ namespace ScriptCanvas
             if (!outSlots.empty())
             {
                 start->AddChild({ outSlots[0], {}, nullptr });
-                
+
                 ParseExecutionMultipleOutSyntaxSugar(start, outNodes, outSlots);
                 PostParseProcess(start);
                 PostParseErrorDetect(start);
@@ -2692,7 +2692,7 @@ namespace ScriptCanvas
                 return inScopeVar;
             }
 
-            // do this exact thing for multiple out sequence sugar, and change the way those are translated 
+            // do this exact thing for multiple out sequence sugar, and change the way those are translated
             auto inPreviouslyExecutedScopeResult = FindConnectedInputInPreviouslyExecutedScope(executionWithInput, scriptCanvasNodesConnectedToInput, firstNode);
 
             if (!inPreviouslyExecutedScopeResult.m_connections.empty())
@@ -2980,7 +2980,7 @@ namespace ScriptCanvas
 
                     // #functions2 This search needs to recurse, and ignore the graphs in which the functions are defined, do this after the
                     // editor executed unit tests are restored
-                    // 
+                    //
                     // This layer of dependencies will only be one step deep.
                     // Currently, this problem is only detected by the asset processor
                     if (dependencies.userSubgraphs.find(m_source.m_namespacePath) != dependencies.userSubgraphs.end())
@@ -3370,7 +3370,7 @@ namespace ScriptCanvas
                         }
                         else
                         {
-                            // Interior node branches: This is required for highly custom or state-ful nodes, namely those that fire different, 
+                            // Interior node branches: This is required for highly custom or state-ful nodes, namely those that fire different,
                             // and/or unknown-at-compile-time outs based on the same in.
                             auto iter = m_nodeablesByNode.find(node);
                             if (iter == m_nodeablesByNode.end())

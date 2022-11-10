@@ -13,8 +13,10 @@
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
+#include <Editor/Plugins/SkeletonOutliner/JointPropertyWidget.h>
 #include <Editor/SkeletonModel.h>
 #include <Editor/SelectionProxyModel.h>
+#include <Editor/InspectorBus.h>
 #include <Editor/SkeletonSortFilterProxyModel.h>
 #include <QTreeView>
 #endif
@@ -38,6 +40,7 @@ namespace EMotionFX
         ~SkeletonOutlinerPlugin() override;
 
         // EMStudioPlugin overrides
+        void Reflect(AZ::ReflectContext* context) override;
         const char* GetName() const override                { return "Skeleton Outliner"; }
         uint32 GetClassID() const override                  { return CLASS_ID; }
         bool GetIsClosable() const override                 { return true;  }
@@ -49,7 +52,7 @@ namespace EMotionFX
         // SkeletalOutlinerRequestBus overrides
         Node* GetSingleSelectedNode() override;
         QModelIndex GetSingleSelectedModelIndex() override;
-        AZ::Outcome<const QModelIndexList&> GetSelectedRowIndices() override;
+        AZ::Outcome<QModelIndexList> GetSelectedRowIndices() override;
         SkeletonModel* GetModel() override;
         void DataChanged(const QModelIndex& modelIndex) override;
         void DataListChanged(const QModelIndexList& modelIndexList) override;
@@ -58,11 +61,14 @@ namespace EMotionFX
         void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
         void OnTextFilterChanged(const QString& text);
         void OnTypeFilterChanged(const AzQtComponents::SearchTypeFilterList& activeTypeFilters);
+        void OnEntered(const QModelIndex& index);
         void Reinit();
 
         void OnContextMenu(const QPoint& position);
 
     private:
+        bool eventFilter(QObject* object, QEvent* event) override;
+
         QWidget*                                m_mainWidget;
         QLabel*                                 m_noSelectionLabel;
 
@@ -74,6 +80,7 @@ namespace EMotionFX
         SkeletonSortFilterProxyModel*           m_filterProxyModel;
         static constexpr int s_iconSize = 16;
 
+        JointPropertyWidget* m_propertyWidget = nullptr;
         // Callbacks
         // Works for all commands that use the actor id as well as the joint name mixins
         MCORE_DEFINECOMMANDCALLBACK(DataChangedCallback);

@@ -190,7 +190,7 @@ namespace AzFramework
         , m_rawMovementSampleRate()
         , m_rawButtonEventQueuesById()
         , m_rawMovementEventQueuesById()
-        , m_timeOfLastRawMovementSample(AZStd::chrono::system_clock::now())
+        , m_timeOfLastRawMovementSample(AZStd::chrono::steady_clock::now())
     {
         SetRawMovementSampleRate(MovementSampleRateDefault);
     }
@@ -213,7 +213,7 @@ namespace AzFramework
     void InputDeviceMouse::Implementation::QueueRawMovementEvent(const InputChannelId& inputChannelId,
                                                                  float rawMovementDelta)
     {
-        auto now = AZStd::chrono::system_clock::now();
+        auto now = AZStd::chrono::steady_clock::now();
         auto deltaTime = now - m_timeOfLastRawMovementSample;
         auto& rawEventQueue = m_rawMovementEventQueuesById[inputChannelId];
 

@@ -1,0 +1,23 @@
+{
+    "gem_name": "Multiplayer_ScriptCanvas",
+    "display_name": "Multiplayer Script Canvas",
+    "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "type": "Code",
+    "summary": "The Script Canvas Multiplayer Gem provides Script Canvas nodes for multiplayer logic.",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Scripting",
+        "Multiplayer"
+    ],
+    "icon_path": "preview.png",
+    "requirements": "",
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/script/script-canvas-multiplayer/",
+    "dependencies": [
+        "ScriptCanvas"
+    ]
+}

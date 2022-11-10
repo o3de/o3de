@@ -11,8 +11,10 @@ set(FILES
     Include/GradientSignal/Editor/EditorGradientBakerRequestBus.h
     Include/GradientSignal/Editor/EditorGradientComponentBase.h
     Include/GradientSignal/Editor/EditorGradientComponentBase.inl
+    Include/GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h
     Include/GradientSignal/Editor/EditorGradientPreviewRenderer.h
     Include/GradientSignal/Editor/EditorGradientTypeIds.h
+    Include/GradientSignal/Editor/GradientPreviewer.h
     Source/UI/GradientPreviewDataWidget.cpp
     Source/UI/GradientPreviewDataWidget.h
     Source/UI/GradientPreviewWidget.cpp
@@ -22,12 +24,16 @@ set(FILES
     Source/Editor/EditorDitherGradientComponent.cpp
     Source/Editor/EditorDitherGradientComponent.h
     Source/Editor/EditorGradientBakerComponent.cpp
+    Source/Editor/EditorGradientImageCreatorUtils.cpp
+    Source/Editor/EditorGradientImageCreatorUtils.h
     Source/Editor/EditorGradientSurfaceDataComponent.cpp
     Source/Editor/EditorGradientSurfaceDataComponent.h
     Source/Editor/EditorGradientTransformComponent.cpp
     Source/Editor/EditorGradientTransformComponent.h
     Source/Editor/EditorImageGradientComponent.cpp
     Source/Editor/EditorImageGradientComponent.h
+    Source/Editor/EditorImageGradientComponentMode.cpp
+    Source/Editor/EditorImageGradientComponentMode.h
     Source/Editor/EditorInvertGradientComponent.cpp
     Source/Editor/EditorInvertGradientComponent.h
     Source/Editor/EditorLevelsGradientComponent.cpp
@@ -56,4 +62,5 @@ set(FILES
     Source/Editor/EditorSurfaceSlopeGradientComponent.h
     Source/Editor/EditorThresholdGradientComponent.cpp
     Source/Editor/EditorThresholdGradientComponent.h
+    Source/Editor/GradientPreviewer.cpp
 )

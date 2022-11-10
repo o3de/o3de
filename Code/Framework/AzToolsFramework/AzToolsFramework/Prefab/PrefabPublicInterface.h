@@ -44,34 +44,34 @@ namespace AzToolsFramework
             /**
              * Create a prefab out of the entities provided, at the path provided, and save it in disk immediately.
              * Automatically detects descendants of entities, and discerns between entities and child instances.
+             * Note: It calls CreatePrefabInMemory internally and then saves the new template in disk.
              * @param entityIds The entities that should form the new prefab (along with their descendants).
              * @param filePath The absolute path for the new prefab file.
              * @return An outcome object with an entityId of the new prefab's container entity;
              *  on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual CreatePrefabResult CreatePrefabInDisk(
-                const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
+            virtual CreatePrefabResult CreatePrefabInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
 
             /**
              * Create a prefab out of the entities provided, at the path provided, and keep it in memory.
              * Automatically detects descendants of entities, and discerns between entities and child instances.
+             * Note: The newly created prefab template cannot be undo/redo. Undo will not remove the templace in system.
              * @param entityIds The entities that should form the new prefab (along with their descendants).
              * @param filePath The absolute path for the new prefab file.
              * @return An outcome object with an entityId of the new prefab's container entity;
              *  on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual CreatePrefabResult CreatePrefabInMemory(
-                const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
+            virtual CreatePrefabResult CreatePrefabInMemory(const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
 
             /**
              * Instantiate a prefab from a prefab file.
              * @param filePath The path to the prefab file to instantiate.
-             * @param parent The entity the prefab should be a child of in the transform hierarchy.
+             * @param parentId The entity id the prefab should be a child of in the transform hierarchy.
              * @param position The position in world space the prefab should be instantiated in.
              * @return An outcome object with an entityId of the new prefab's container entity;
              *  on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) = 0;
+            virtual InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Vector3& position) = 0;
 
             /**
              * Saves changes to prefab to disk.
@@ -122,7 +122,15 @@ namespace AzToolsFramework
              * @return True if the entity is the container entity for the level prefab instance, false otherwise.
              */
             virtual bool IsLevelInstanceContainerEntity(AZ::EntityId entityId) const = 0;
-            
+
+            /**
+             * Detects if a list of entities are under the same instance. The instance of
+             * a container entity is special cased to be the parent instance of its instance.
+             * @param entityIds The list of entities to query.
+             * @return True if all entities in the list have the same instance, false otherwise.
+             */
+            virtual bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const = 0;
+
             /**
              * Gets the entity id for the instance container of the owning instance.
              * @param entityId The id of the entity to query.
@@ -150,14 +158,6 @@ namespace AzToolsFramework
              */
             virtual PrefabRequestResult HasUnsavedChanges(AZ::IO::Path prefabFilePath) const = 0;
 
-            /**
-             * [DEPRECATION]--This function is marked for deprecation. Please use DeleteEntitiesAndAllDescendantsInInstance instead.
-             * Deletes all entities from the owning instance. Bails if the entities don't all belong to the same instance.
-             * @param entities The entities to delete.
-             * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
-             */
-            virtual PrefabOperationResult DeleteEntitiesInInstance(const EntityIdList& entityIds) = 0;
-            
             /**
              * Deletes all entities and their descendants from the owning instance. Bails if the entities don't all belong to the same
              * instance.

@@ -183,7 +183,7 @@ namespace AZ
         return nullptr;
     }
 
-    const AZ::Uuid& ScriptPropertyNil::GetDataTypeUuid() const
+    AZ::TypeId ScriptPropertyNil::GetDataTypeUuid() const
     {
         return AZ::SerializeTypeInfo<void*>::GetUuid();
     }
@@ -271,7 +271,7 @@ namespace AZ
         return false;
     }
 
-    const AZ::Uuid& ScriptPropertyBoolean::GetDataTypeUuid() const
+    AZ::TypeId ScriptPropertyBoolean::GetDataTypeUuid() const
     {
         return AZ::SerializeTypeInfo<bool>::GetUuid();
     }
@@ -345,7 +345,7 @@ namespace AZ
         return false;
     }
 
-    const AZ::Uuid& ScriptPropertyNumber::GetDataTypeUuid() const
+    AZ::TypeId ScriptPropertyNumber::GetDataTypeUuid() const
     {
         return AZ::SerializeTypeInfo<double>::GetUuid();
     }
@@ -425,7 +425,7 @@ namespace AZ
         return readValue;
     }
 
-    const AZ::Uuid& ScriptPropertyString::GetDataTypeUuid() const
+    AZ::TypeId ScriptPropertyString::GetDataTypeUuid() const
     {
         return AZ::SerializeGenericTypeInfo<AZStd::string>::GetClassTypeId();
     }
@@ -789,7 +789,7 @@ namespace AZ
         }
     }
 
-    const AZ::Uuid& ScriptPropertyBooleanArray::GetDataTypeUuid() const
+    AZ::TypeId ScriptPropertyBooleanArray::GetDataTypeUuid() const
     {
         return AZ::SerializeGenericTypeInfo< AZStd::vector<bool> >::GetClassTypeId();
     }
@@ -915,7 +915,7 @@ namespace AZ
         }
     }
 
-    const AZ::Uuid& ScriptPropertyNumberArray::GetDataTypeUuid() const
+    AZ::TypeId ScriptPropertyNumberArray::GetDataTypeUuid() const
     {
         return AZ::SerializeGenericTypeInfo< AZStd::vector<double> >::GetClassTypeId();
     }
@@ -1041,7 +1041,7 @@ namespace AZ
         }
     }
 
-    const AZ::Uuid& ScriptPropertyStringArray::GetDataTypeUuid() const
+    AZ::TypeId ScriptPropertyStringArray::GetDataTypeUuid() const
     {
         return AZ::SerializeGenericTypeInfo< AZStd::vector<AZStd::string> >::GetClassTypeId();
     }
@@ -1199,7 +1199,7 @@ namespace AZ
         }
     }
 
-    const AZ::Uuid& ScriptPropertyGenericClassArray::GetDataTypeUuid() const
+    AZ::TypeId ScriptPropertyGenericClassArray::GetDataTypeUuid() const
     {
         return AZ::SerializeGenericTypeInfo< ValueArrayType >::GetClassTypeId();
     }
@@ -1324,7 +1324,7 @@ namespace AZ
         }
     }
 
-    const AZ::Uuid& ScriptPropertyAsset::GetDataTypeUuid() const
+    AZ::TypeId ScriptPropertyAsset::GetDataTypeUuid() const
     {
         return AZ::SerializeTypeInfo<AZ::Data::Asset<AZ::Data::AssetData> >::GetUuid();
     }

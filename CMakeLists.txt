@@ -6,8 +6,15 @@
 #
 #
 
-# Cmake version 3.20 is the minimum version needed for all of Open 3D Engine's supported platforms
-cmake_minimum_required(VERSION 3.20)
+# Cmake version 3.22 is the minimum version needed for all of Open 3D Engine's supported platforms
+cmake_minimum_required(VERSION 3.22)
+
+if(NOT ${CMAKE_VERSION} VERSION_LESS "3.24") 
+    # CMP0135 - controls whether, when unpacking an archive file, it should:
+    # (OLD) set the file timestamps to what they are in the archive (not recommended)
+    # (NEW) set the file timestamps to the time of extraction (recommended)
+    cmake_policy(SET CMP0135 NEW) 
+endif()
 
 include(cmake/LySet.cmake)
 include(cmake/Version.cmake)
@@ -41,20 +48,20 @@ include(cmake/UnitTest.cmake)
 include(cmake/LYTestWrappers.cmake)
 include(cmake/Monolithic.cmake)
 include(cmake/SettingsRegistry.cmake)
-include(cmake/TestImpactFramework/LYTestImpactFramework.cmake)
 include(cmake/CMakeFiles.cmake)
 include(cmake/O3DEJson.cmake)
 include(cmake/Subdirectories.cmake)
+include(cmake/TestImpactFramework/LYTestImpactFramework.cmake) # Put at end as nothing else depends on it
 
 # Gather the list of o3de_manifest external Subdirectories
-# into the LY_EXTERNAL_SUBDIRS_O3DE_MANIFEST_PROPERTY
+# into the O3DE_EXTERNAL_SUBDIRS_O3DE_MANIFEST_PROPERTY
 add_o3de_manifest_json_external_subdirectories()
 
 # Add the projects first so the Launcher can find them
 include(cmake/Projects.cmake)
 
 # Add external subdirectories listed in the engine.json.
-# LY_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
+# O3DE_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
 # external subdirectories.
 add_engine_json_external_subdirectories()
 

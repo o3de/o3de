@@ -585,7 +585,7 @@ namespace AzFramework
         EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnParentChanged, oldParent, parentId);
         m_parentChangedEvent.Signal(oldParent, parentId);
 
-        if (oldParent != parentId) // Don't send removal notification while activating.
+        if (oldParent.IsValid() && oldParent != parentId) // Don't send removal notification while activating.
         {
             EBUS_EVENT_ID(oldParent, AZ::TransformNotificationBus, OnChildRemoved, GetEntityId());
             auto oldParentTransform = AZ::TransformBus::FindFirstHandler(oldParent);
@@ -685,7 +685,7 @@ namespace AzFramework
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection);
         if (serializeContext)
         {
-            serializeContext->ClassDeprecate("NetBindable", "{80206665-D429-4703-B42E-94434F82F381}");
+            serializeContext->ClassDeprecate("NetBindable", AZ::Uuid("{80206665-D429-4703-B42E-94434F82F381}"));
 
             serializeContext->Class<TransformComponent, AZ::Component>()
                 ->Version(5, &TransformComponentVersionConverter)

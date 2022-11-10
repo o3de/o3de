@@ -8,19 +8,31 @@
 #
 #
 # -------------------------------------------------------------------------
-"""! @brief
-Module Documentation:
-    < DCCsi >:: Tools//DCC//Blender//start.py
+"""! O3DE DCCsi Blender DCC App start module
 
-This module is used to start blender with O3DE bootstrapping
+There are severl ways this can be used:
+1. From cli
+    - open a cmd
+    - change directory > cd c:\\path\\to\\DccScriptingInterface
+    - run command > python Tools\\DCC\\Blender\\start.py
+
+2. The O3DE editor uses this module to launch from menu and editor systems
+
+:file: DccScriptingInterface\\Tools\\DCC\\Blender\\start.py
+:Status: Prototype
+:Version: 0.0.1
+:Entrypoint: entrypoint, configures logging, includes cli
+:Notice:
+    Currently windows only (not tested on other platforms)
+    Currently only tested with Blender 3.0
 """
 # -------------------------------------------------------------------------
+import timeit
+_MODULE_START = timeit.default_timer()  # start tracking
+
 # standard imports
 import sys
 import os
-import site
-import timeit
-import inspect
 import subprocess
 from pathlib import Path
 import logging as _logging
@@ -28,21 +40,21 @@ import logging as _logging
 
 
 # -------------------------------------------------------------------------
-#os.environ['PYTHONINSPECT'] = 'True'
 # global scope
-_MODULENAME = 'Tools.DCC.Blender.start'
+_MODULE_PATH = Path(__file__)
+PATH_O3DE_TECHART_GEMS = _MODULE_PATH.parents[4].resolve()
+os.chdir(PATH_O3DE_TECHART_GEMS.as_posix())
+sys.path.insert(0, PATH_O3DE_TECHART_GEMS.as_posix())
 
-_START = timeit.default_timer() # start tracking
+from DccScriptingInterface import add_site_dir
+add_site_dir(PATH_O3DE_TECHART_GEMS) # cleaner add
 
-# we need to set up basic access to the DCCsi
-_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
-_PATH_DCCSIG = Path(_MODULE_PATH, '../../../..').resolve()
-site.addsitedir(_PATH_DCCSIG.as_posix())
+from DccScriptingInterface.Tools.DCC.Blender import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.start'
 
-# set envar so DCCsi synthetic env bootstraps with it (config.py)
-from azpy.constants import ENVAR_PATH_DCCSIG
-_PATH_DCCSIG = Path(os.getenv(ENVAR_PATH_DCCSIG,
-                              _PATH_DCCSIG.as_posix()))
+# get the global dccsi state
+from DccScriptingInterface.globals import *
+from DccScriptingInterface import add_site_dir
 
 from azpy.constants import FRMT_LOG_LONG
 _logging.basicConfig(level=_logging.DEBUG,
@@ -50,62 +62,109 @@ _logging.basicConfig(level=_logging.DEBUG,
                     datefmt='%m-%d %H:%M')
 
 _LOGGER = _logging.getLogger(_MODULENAME)
+
+# auto-attach ide debugging at the earliest possible point in module
+if DCCSI_DEV_MODE:
+    if DCCSI_GDEBUGGER == 'WING':
+        import DccScriptingInterface.azpy.test.entry_test
+        DccScriptingInterface.azpy.test.entry_test.connect_wing()
+    elif DCCSI_GDEBUGGER == 'PYCHARM':
+        _LOGGER.warning(f'{DCCSI_GDEBUGGER} debugger auto-attach not yet implemented')
+    else:
+        _LOGGER.warning(f'{DCCSI_GDEBUGGER} not a supported debugger')
+
 _LOGGER.debug(f'Initializing: {_MODULENAME}')
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
-_LOGGER.debug(f'PATH_DCCSIG: {_PATH_DCCSIG.as_posix()}')
+
+# this should execute the core config.py first and grab settings
+from DccScriptingInterface.Tools.DCC.Blender.config import blender_config
+_settings = blender_config.get_config_settings()
+_settings.setenv() # ensure env is set
+
+_BLENDER_EXE = Path(_settings.PATH_DCCSI_BLENDER_EXE).resolve(strict=True)
+
+_BLENDER_SCRIPTS = Path(_settings.PATH_DCCSI_BLENDER_SCRIPTS).resolve(strict=True)
+add_site_dir(_BLENDER_SCRIPTS)
+from DccScriptingInterface.Tools.DCC.Blender.constants import ENVAR_BLENDER_USER_SCRIPTS
+os.environ[ENVAR_BLENDER_USER_SCRIPTS] = _BLENDER_SCRIPTS.as_posix()
+
+_DEFAULT_BOOTSTRAP = Path(_settings.PATH_DCCSI_BLENDER_BOOTSTRAP).resolve(strict=True)
+
+from DccScriptingInterface.azpy.config_utils import check_is_ascii
+
+# store a copy, so we can inspect/compare later
+orig_env = os.environ.copy()
+
+# we are going to pass the system environ
+blender_env = os.environ.copy()
+
+# prunes non-string key:value envars
+blender_env = {key: value for key, value in blender_env.items() if check_is_ascii(key) and check_is_ascii(value)}
+
+if DCCSI_GDEBUG:
+    # we can see what was pruned
+    pruned = {k: blender_env[k] for k in set(blender_env) - set(orig_env)}
+
+    if len(pruned.items()):
+        _LOGGER.debug(f'prune diff is ...')
+        for p in pruned.items():
+            _LOGGER.debug(f'{p}')
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# now we have dccsi azpy api access
-from azpy.env_bool import env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
-from azpy.constants import ENVAR_DCCSI_LOGLEVEL
-from azpy.constants import ENVAR_DCCSI_GDEBUGGER
-from azpy.constants import FRMT_LOG_LONG
+#https://tinyurl.com/o3de-dccsi-blender-cli-help
+# command args but be seperated properly
+#https://blender.stackexchange.com/questions/169259/issue-running-blender-command-line-arguments-using-python-subprocess
+# https://docs.blender.org/manual/en/latest/advanced/command_line/arguments.html
 
-# these allow these ENVARs to be set externally
-# defaults can be overridden/forced here for development
-_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-_DCCSI_LOGLEVEL = env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO)
-_DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
+# some notes
+# from cmd, use a startup script (we should be able to use to bootstrap)
+#    ./blender --python [myscript.py]
+
+# from cmd, enable addons, then load file:
+#    ./blender -b --addons animation_nodes,meshlint [file]
+# we don't put our AddOns directly into Blender
+# we boostrap access to them.
+
+# automation
+# from cmd, enable addons, load file, start script
+#    ./blender -b --addons animation_nodes,meshlint [file] --python [myscript.py]
+
+# default launch command
+_LAUNCH_COMMAND = [f'{str(_BLENDER_EXE)}',
+                   f'--python', # this must be seperate from the .py file
+                   f'{str(_DEFAULT_BOOTSTRAP)}']
+
+# suggestion for future PR is to refactor this method into something like
+# DccScriptingInterface.azpy.utils.start.popen()
+def popen(command: list = _LAUNCH_COMMAND,
+          env: dict = blender_env) -> subprocess:
+
+    f"""Method call to start the DCC app {_PACKAGENAME}"""
+
+    _LOGGER.info(f'Attempting to start {_PACKAGENAME} ...')
+    _LOGGER.info(f'Command args: {command}')
+
+    process = subprocess.Popen(args = command,
+                               env = env,
+                               shell=True,
+                               stdout = subprocess.PIPE,
+                               stderr = subprocess.PIPE,
+                               close_fds=True)
+
+    out, err = process.communicate()
+
+    if process.returncode != 0:
+        _LOGGER.error(f'{_PACKAGENAME} did not start ...')
+        _LOGGER.error(f'{out}')
+        _LOGGER.error(f'{err}')
+        return None
+    else:
+        _LOGGER.info(f'Success: {_PACKAGENAME} started correctly!')
+
+    return process
 # -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-# default local dccsi related paths for Blender
-# the constants module doesn't set these as ENVARs, so we can do that here.
-# these defaults could then be picked up in bootstrap.py and/or config.py
-from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_TOOLS
-from Tools.DCC.Blender.constants import PATH_DCCSI_TOOLS
-os.environ[ENVAR_PATH_DCCSI_TOOLS] = PATH_DCCSI_TOOLS.as_posix()
-
-from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_TOOLS_DCC
-from Tools.DCC.Blender.constants import PATH_DCCSI_TOOLS_DCC
-os.environ[ENVAR_PATH_DCCSI_TOOLS_DCC] = PATH_DCCSI_TOOLS_DCC.as_posix()
-
-from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_TOOLS_BLENDER
-from Tools.DCC.Blender.constants import PATH_DCCSI_TOOLS_BLENDER
-os.environ[ENVAR_PATH_DCCSI_TOOLS_BLENDER] = PATH_DCCSI_TOOLS_BLENDER.as_posix()
-
-from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_VERSION
-from Tools.DCC.Blender.constants import TAG_DCCSI_BLENDER_VERSION
-os.environ[ENVAR_DCCSI_BLENDER_VERSION] = TAG_DCCSI_BLENDER_VERSION
-
-from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_BLENDER_LOC
-from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_LOC
-os.environ[ENVAR_PATH_DCCSI_BLENDER_LOC] = PATH_DCCSI_BLENDER_LOC.as_posix()
-
-from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_BLENDER_EXE
-from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_EXE
-os.environ[ENVAR_PATH_DCCSI_BLENDER_EXE] = PATH_DCCSI_BLENDER_EXE.as_posix()
-
-from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_PY_EXE
-from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_PY_EXE
-os.environ[ENVAR_DCCSI_BLENDER_PY_EXE] = PATH_DCCSI_BLENDER_PY_EXE.as_posix()
-# --- END -----------------------------------------------------------------
 
 
 ###########################################################################
@@ -113,57 +172,40 @@ os.environ[ENVAR_DCCSI_BLENDER_PY_EXE] = PATH_DCCSI_BLENDER_PY_EXE.as_posix()
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
     """Run this file as main (external commandline)"""
-    STR_CROSSBAR = f"{'-' * 74}"
 
-    if _DCCSI_GDEBUG:
-        # override loglevel if running debug
-        _DCCSI_LOGLEVEL = _logging.DEBUG
+    _MODULENAME = f'{_MODULENAME}.cli'
 
-    FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
+    from DccScriptingInterface.globals import *
+
+    from DccScriptingInterface.constants import STR_CROSSBAR
+    from DccScriptingInterface.constants import FRMT_LOG_LONG
 
     # configure basic logger
     # note: not using a common logger to reduce cyclical imports
-    _logging.basicConfig(level=_DCCSI_LOGLEVEL,
+    _logging.basicConfig(level=DCCSI_LOGLEVEL,
                          format=FRMT_LOG_LONG,
-                        datefmt='%m-%d %H:%M')
+                         datefmt='%m-%d %H:%M')
 
     _LOGGER = _logging.getLogger(_MODULENAME)
 
+    # log global state to cli
     _LOGGER.info(STR_CROSSBAR)
-    _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
-    _LOGGER.debug('_DCCSI_GDEBUG: {}'.format(_DCCSI_GDEBUG))
-    _LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
-    _LOGGER.debug('_DCCSI_LOGLEVEL: {}'.format(_DCCSI_LOGLEVEL))
+    _LOGGER.debug(f'_MODULENAME: {_MODULENAME}')
+    _LOGGER.debug(f'{ENVAR_DCCSI_GDEBUG}: {DCCSI_GDEBUG}')
+    _LOGGER.debug(f'{ENVAR_DCCSI_DEV_MODE}: {DCCSI_DEV_MODE}')
+    _LOGGER.debug(f'{ENVAR_DCCSI_LOGLEVEL}: {DCCSI_LOGLEVEL}')
 
     # commandline interface
     import argparse
     parser = argparse.ArgumentParser(
-        description='O3DE DCCsi.Tools.DCC.Blender.start',
-        epilog="Attempts to start Blender with the DCCsi and O3DE bootstrapping")
+        description=f'O3DE {_MODULENAME}',
+        epilog=(f"Attempts to start Blender with the DCCsi and O3DE bootstrapping"))
 
     parser.add_argument('-gd', '--global-debug',
                         type=bool,
                         required=False,
                         default=False,
                         help='Enables global debug flag.')
-
-    parser.add_argument('-dm', '--developer-mode',
-                        type=bool,
-                        required=False,
-                        default=False,
-                        help='Enables dev mode for early auto attaching debugger.')
-
-    parser.add_argument('-sd', '--set-debugger',
-                        type=str,
-                        required=False,
-                        default='WING',
-                        help='Default debugger: WING, (not implemented) others: PYCHARM and VSCODE.')
-
-    parser.add_argument('-be', '--blender-executable',
-                        type=str,
-                        required=False,
-                        default='Blender',
-                        help="Name of exe to start, options are: 'Blender', 'Launcher' (aka Blender-Launcher.exe),'Python' (blenders python) ")
 
     parser.add_argument('-ex', '--exit',
                         type=bool,
@@ -173,39 +215,20 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # easy overrides
-    if args.global_debug:
-        _DCCSI_GDEBUG = True
-        os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
-
-    if args.developer_mode:
-        from azpy.config_utils import attach_debugger
-        _DCCSI_DEV_MODE = True
-        attach_debugger()  # attempts to start debugger
-
-    if args.set_debugger:
-        _LOGGER.info('Setting and switching debugger type not implemented (default=WING)')
-        # To Do: implement debugger plugin pattern
-
-    if args.blender_executable:
-        if args.blender_executable == 'Blender':
-            _blender_exe = str(PATH_DCCSI_BLENDER_EXE.as_posix())
-            subprocess.Popen(f'{_blender_exe}',
-                             env=os.environ.copy(), shell=True)
-
-        elif args.blender_executable == 'Launcher':
-            _LOGGER.warn(f'Not Implemented Yet')
-
-        elif args.blender_executable == 'Python':
-            _LOGGER.warn(f'Not Implemented Yet')
-
-        else:
-            _LOGGER.error(f'Specified option {args.blender_executable}, is not supported!')
+    try:
+        process = popen(command = _LAUNCH_COMMAND,
+                        env = blender_env)
+    except Exception as e:
+        _LOGGER.warning(f'Could not start Wing')
+        _LOGGER.error(f'{e} , traceback =', exc_info=True)
+        if DCCSI_STRICT:
+            _LOGGER.exception(f'{e} , traceback =', exc_info=True)
+            raise e
 
     # -- DONE ----
     _LOGGER.info(STR_CROSSBAR)
 
-    _LOGGER.debug('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _START))
+    _LOGGER.debug('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _MODULE_START))
 
     if args.exit:
         import sys

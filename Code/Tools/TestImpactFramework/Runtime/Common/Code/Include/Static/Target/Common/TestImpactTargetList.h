@@ -26,8 +26,6 @@ namespace TestImpact
     class TargetList
     {
     public:
-        using TargetType = Target;
-
         TargetList(AZStd::vector<Target>&& targets);
 
         //! Returns the targets in the collection.

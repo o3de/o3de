@@ -46,13 +46,13 @@ SET PATH=%BLENDER_BIN_PATH%;%DCCSI_PY_IDE%;%DCCSI_PY_DEFAULT%;%PATH%
 :: the next line sets up too much, I beleive is causing a maya boot failure
 ::CALL %~dp0..\Env_O3DE_Python.bat
 
-:: shared location for 64bit python 3.7 DEV location
+:: shared location for 64bit python 3.10 DEV location
 :: this defines a DCCsi sandbox for lib site-packages by version
 :: <O3DE>\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib
 set "PATH_DCCSI_PYTHON=%PATH_DCCSIG%\3rdParty\Python"
 echo     PATH_DCCSI_PYTHON = %PATH_DCCSI_PYTHON%
 
-:: add access to a Lib location that matches the py version (example: 3.7.x)
+:: add access to a Lib location that matches the py version (example: 3.10.x)
 :: switch this for other python versions like maya (2.7.x)
 IF "%PATH_DCCSI_PYTHON_LIB%"=="" (set "PATH_DCCSI_PYTHON_LIB=%PATH_DCCSI_PYTHON%\Lib\%DCCSI_PY_VERSION_MAJOR%.x\%DCCSI_PY_VERSION_MAJOR%.%DCCSI_PY_VERSION_MINOR%.x\site-packages")
 echo     PATH_DCCSI_PYTHON_LIB = %PATH_DCCSI_PYTHON_LIB%
@@ -65,7 +65,7 @@ echo     PATH_DCCSI_PYTHON_LIB = %PATH_DCCSI_PYTHON_LIB%
 SET PATH=%DCCSI_BLENDER_LOCATION%;%DCCSI_BLENDER_PY_BIN%;%PATH%
 
 :: add all python related paths to PYTHONPATH for package imports
-set PYTHONPATH=%DCCSI_BLENDER_SCRIPT_PATH%;%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PYTHONPATH%
+set PYTHONPATH=%DCCSI_BLENDER_SCRIPT_PATH%;%PATH_O3DE_TECHART_GEMS%;%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PYTHONPATH%
 
 :: if the user has set up a custom env call it
 IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat

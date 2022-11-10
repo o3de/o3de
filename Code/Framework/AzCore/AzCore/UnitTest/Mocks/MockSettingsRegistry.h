@@ -20,7 +20,7 @@ namespace AZ
         : public AZ::SettingsRegistryInterface
     {
     public:
-        MOCK_CONST_METHOD1(GetType, Type(AZStd::string_view));
+        MOCK_CONST_METHOD1(GetType, SettingsType(AZStd::string_view));
         MOCK_CONST_METHOD2(Visit, bool(Visitor&, AZStd::string_view));
         MOCK_CONST_METHOD2(Visit, bool(const VisitorCallback&, AZStd::string_view));
         MOCK_METHOD1(RegisterNotifier, NotifyEventHandler(NotifyCallback));

@@ -38,6 +38,9 @@ namespace AZ::Reflection
         //! The container instance pointer for a container element row.
         //! Type: void*
         extern const Name ParentContainerInstance;
+        //! If specified, an override for the instance of the element referenced in a container operation.
+        //! Type: void*
+        extern const Name ContainerElementOverride;
     } // namespace DescriptorAttributes
 
     AZStd::shared_ptr<AZ::Attribute> WriteDomValueToGenericAttribute(const AZ::Dom::Value& value);

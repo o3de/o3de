@@ -651,7 +651,7 @@ namespace EditorPythonBindings
         {
             AZ_Warning("python", false, "Did not finalize since Py_IsInitialized() was false.");
         }
-        return !PyErr_Occurred();
+        return true;
     }
 
     void PythonSystemComponent::ExecuteByString(AZStd::string_view script, bool printResult)
@@ -775,7 +775,9 @@ namespace EditorPythonBindings
             return Result::Error_MissingFile;
         }
 
-        FILE* file = _Py_fopen(theFilename.data(), "rb");
+        FILE* file = nullptr;
+        azfopen(&file, theFilename.c_str(), "rb");
+
         if (!file)
         {
             AZ_Error("python", false, "Missing Python file named (%s)", theFilename.c_str());

@@ -40,7 +40,7 @@ namespace ScriptCanvas
     {
         // Validate that the Node which contains the target slot matches the stored nodeId in order validate
         // the restricted node contract
-        AZ::Outcome<void, AZStd::string> outcome(AZStd::string::format("Connection cannot be created between source slot"
+        AZ::Outcome<void, AZStd::string> outcome(AZStd::unexpect, AZStd::string::format("Connection cannot be created between source slot"
             R"( "%s" and target slot "%s". Connections to source slot can be only be made from a node with node ID)"
             R"([%s])", sourceSlot.GetName().c_str(), targetSlot.GetName().c_str(), m_nodeId.ToString().c_str()));
         return targetSlot.GetNodeId() == m_nodeId ? AZ::Success() : outcome;

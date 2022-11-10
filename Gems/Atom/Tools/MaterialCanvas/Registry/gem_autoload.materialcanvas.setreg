@@ -1,6 +1,27 @@
 {
     "O3DE": {
         "Gems": {
+            "PythonCoverage": {
+                "Targets": {
+                    "PythonCoverage.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "LyShine": {
+                "Targets": {
+                    "LyShine.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "AWSGameLift": {
+                "Targets": {
+                    "AWSGameLift.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
             "ImGui": {
                 "Targets": {
                     "ImGui.Editor": {

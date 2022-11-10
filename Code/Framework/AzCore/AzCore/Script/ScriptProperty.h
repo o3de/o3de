@@ -62,7 +62,7 @@ namespace AZ
             , m_name(name) {}
 
         virtual const void* GetDataAddress() const = 0;
-        virtual const AZ::Uuid& GetDataTypeUuid() const = 0;
+        virtual AZ::TypeId GetDataTypeUuid() const = 0;
 
         /**
          * Test if the value at the index valueIndex is of the same type as that of the instance of ScriptProperty's subclass.
@@ -137,7 +137,7 @@ namespace AZ
         ScriptPropertyNil(const char* name) : ScriptProperty(name) {}
 
         const void* GetDataAddress() const override;
-        const AZ::Uuid& GetDataTypeUuid() const override;
+        AZ::TypeId GetDataTypeUuid() const override;
 
         ScriptPropertyNil* Clone(const char* name) const override;
 
@@ -165,7 +165,7 @@ namespace AZ
             , m_value(value) {}
 
         const void* GetDataAddress() const override { return &m_value; }
-        const AZ::Uuid& GetDataTypeUuid() const override;
+        AZ::TypeId GetDataTypeUuid() const override;
 
         bool DoesTypeMatch(AZ::ScriptDataContext& context, int valueIndex) const override;
 
@@ -197,7 +197,7 @@ namespace AZ
             , m_value(value)  {}
 
         const void* GetDataAddress() const override { return &m_value; }
-        const AZ::Uuid& GetDataTypeUuid() const override;
+        AZ::TypeId GetDataTypeUuid() const override;
 
         bool DoesTypeMatch(AZ::ScriptDataContext& context, int valueIndex) const override;
 
@@ -228,7 +228,7 @@ namespace AZ
             , m_value(value) {}
 
         const void* GetDataAddress() const override { return &m_value; }
-        const AZ::Uuid& GetDataTypeUuid() const override;
+        AZ::TypeId GetDataTypeUuid() const override;
 
         bool DoesTypeMatch(AZ::ScriptDataContext& context, int valueIndex)  const override;
 
@@ -262,7 +262,7 @@ namespace AZ
         ~ScriptPropertyGenericClass() override;
 
         const void* GetDataAddress() const override { return m_value.m_data; }
-        const AZ::Uuid& GetDataTypeUuid() const override { return m_value.m_typeId; }
+        AZ::TypeId GetDataTypeUuid() const override { return m_value.m_typeId; }
 
         bool DoesTypeMatch(AZ::ScriptDataContext& context, int valueIndex) const override;
 
@@ -334,7 +334,7 @@ namespace AZ
             : ScriptProperty(name)      {}
 
         const void* GetDataAddress() const override { return &m_values; }
-        const AZ::Uuid& GetDataTypeUuid() const override;
+        AZ::TypeId GetDataTypeUuid() const override;
 
         bool DoesTypeMatch(AZ::ScriptDataContext& context, int valueIndex) const override;
 
@@ -365,7 +365,7 @@ namespace AZ
             : ScriptProperty(name)         {}
 
         const void* GetDataAddress() const override { return &m_values; }
-        const AZ::Uuid& GetDataTypeUuid() const override;
+        AZ::TypeId GetDataTypeUuid() const override;
 
         bool DoesTypeMatch(AZ::ScriptDataContext& context, int valueIndex) const override;
 
@@ -396,7 +396,7 @@ namespace AZ
             : ScriptProperty(name)      {}
 
         const void* GetDataAddress() const override { return &m_values; }
-        const AZ::Uuid& GetDataTypeUuid() const override;
+        AZ::TypeId GetDataTypeUuid() const override;
 
         bool DoesTypeMatch(AZ::ScriptDataContext& context, int valueIndex) const override;
 
@@ -435,7 +435,7 @@ namespace AZ
             }
         }
         const void* GetDataAddress() const override { return &m_values; }
-        const AZ::Uuid& GetDataTypeUuid() const override;
+        AZ::TypeId GetDataTypeUuid() const override;
         AZ::Uuid GetElementTypeUuid() const;
 
         void SetElementTypeUuid(const AZ::Uuid);
@@ -474,7 +474,7 @@ namespace AZ
         virtual ~ScriptPropertyAsset() = default;
 
         const void* GetDataAddress() const override { return &m_value; }
-        const AZ::Uuid& GetDataTypeUuid() const override;
+        AZ::TypeId GetDataTypeUuid() const override;
 
         bool DoesTypeMatch(AZ::ScriptDataContext& context, int valueIndex) const override;
 

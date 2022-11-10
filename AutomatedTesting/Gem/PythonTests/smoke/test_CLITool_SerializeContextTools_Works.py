@@ -24,5 +24,5 @@ class TestCLIToolSerializeContextToolsWorks(object):
         # Launch SerializeContextTools
         output = subprocess.run([file_path, "--help"], capture_output=True, timeout=10)
         assert (
-            len(output.stdout) > 0 and output.returncode == 0
+            (len(output.stdout) > 0 or len(output.stderr) > 0) and output.returncode == 0
         ), f"Error occurred while launching {file_path}: {output.stdout}"

@@ -10,10 +10,16 @@
 #include <Multiplayer/IMultiplayerTools.h>
 #include <Multiplayer/INetworkSpawnableLibrary.h>
 #include <Multiplayer/MultiplayerConstants.h>
+#include <Multiplayer/Components/NetBindComponent.h>
+#include <Multiplayer/Components/NetworkTransformComponent.h>
 
 #include <MultiplayerSystemComponent.h>
 #include <PythonEditorEventsBus.h>
+#include <Editor/MultiplayerEditorAutomation.h>
 #include <Editor/MultiplayerEditorSystemComponent.h>
+#include <Editor/EditorViewportSettings.h>
+#include <Editor/Viewport.h>
+#include <Editor/ViewManager.h>
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
@@ -21,16 +27,29 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzNetworking/Framework/INetworking.h>
+#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
+#include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/ViewportSelection/EditorHelpers.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+
+#include <QMenu>
+#include <QAction>
+
 namespace Multiplayer
 {
     using namespace AzNetworking;
 
     AZ_CVAR(bool, editorsv_enabled, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Whether Editor launching a local server to connect to is supported");
+    AZ_CVAR(bool, editorsv_clientserver, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "If true, the editor will act as both the server and a client. No dedicated server will be launched.");
     AZ_CVAR(bool, editorsv_launch, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Whether Editor should launch a server when the server address is localhost");
     AZ_CVAR(AZ::CVarFixedString, editorsv_process, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
@@ -47,6 +66,7 @@ namespace Multiplayer
         "Whether Editor should print its server's logs to the Editor console. Useful for seeing server prints, warnings, and errors without having to open up the server console or server.log file. Note: Must be set before entering the editor play mode.");
 
     AZ_CVAR_EXTERNED(uint16_t, editorsv_port);
+    AZ_CVAR_EXTERNED(bool, bg_enableNetworkingMetrics);
     
     //////////////////////////////////////////////////////////////////////////
     void PyEnterGameMode()
@@ -93,6 +113,8 @@ namespace Multiplayer
     
     void MultiplayerEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        Automation::MultiplayerEditorAutomationHandler::Reflect(context);
+
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<MultiplayerEditorSystemComponent, AZ::Component>()
@@ -139,10 +161,12 @@ namespace Multiplayer
         MultiplayerEditorServerRequestBus::Handler::BusConnect();
         AZ::Interface<IMultiplayer>::Get()->AddServerAcceptanceReceivedHandler(m_serverAcceptanceReceivedHandler);
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
+        AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
     }
 
     void MultiplayerEditorSystemComponent::Deactivate()
     {
+        AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         MultiplayerEditorServerRequestBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
@@ -190,7 +214,7 @@ namespace Multiplayer
             {
                 editorNetworkInterface->Disconnect(m_editorConnId, AzNetworking::DisconnectReason::TerminatedByClient);
             }
-            if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
+            if (const auto console = AZ::Interface<AZ::IConsole>::Get())
             {
                 console->PerformCommand("disconnect");
             }
@@ -251,7 +275,8 @@ namespace Multiplayer
 
         AZ_Error(
             "MultiplayerEditor", false,
-            "The ServerLauncher binary is missing! (%s), (%s) and (%s) were tried. Please build server launcher or specify using editorsv_process.",
+            "The ServerLauncher binary is missing! Attempted to find ServerLauncher in the editorsv_process path:\"%s\", relative to "
+            "editor:\"%s\" and relative to the current project:\"%s\". Please build ServerLauncher or specify its location using editorsv_process.",
             serverPathFromCvar.c_str(),
             serverPathFromEditorLocation.c_str(),
             serverPathFromProjectBin.c_str());
@@ -266,7 +291,7 @@ namespace Multiplayer
         if (!FindServerLauncher(serverPath))
         {
             return false;
-        }        
+        }
 
         // Start the configured server if it's available
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
@@ -279,11 +304,12 @@ namespace Multiplayer
         }
 
         processLaunchInfo.m_commandlineParameters = AZStd::string::format(
-            R"("%s" --project-path "%s" --editorsv_isDedicated true --bg_ConnectToAssetProcessor false --rhi "%s" --editorsv_port %i)",
+            R"("%s" --project-path "%s" --editorsv_isDedicated true --bg_ConnectToAssetProcessor false --rhi "%s" --editorsv_port %i --bg_enableNetworkingMetrics %i)",
             serverPath.c_str(),
             AZ::Utils::GetProjectPath().c_str(),
             server_rhi.GetCStr(),
-            static_cast<uint16_t>(editorsv_port)
+            static_cast<uint16_t>(editorsv_port),
+            (bg_enableNetworkingMetrics ? 1 : 0)
         );
         processLaunchInfo.m_showWindow = !editorsv_hidden;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
@@ -479,6 +505,14 @@ namespace Multiplayer
             return;
         }
 
+        if (editorsv_clientserver)
+        {
+            // Start hosting as a client-server
+            const bool isDedicated = false;
+            AZ::Interface<IMultiplayer>::Get()->StartHosting(editorsv_port, isDedicated);
+            return;
+        }
+
         AZ_Assert(m_preAliasedSpawnablesForServer.empty(), "MultiplayerEditorSystemComponent already has pre-aliased spawnables! Please update code to clean-up the table between entering and existing play mode.")
         AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotificationBus::Handler::BusConnect();
     }
@@ -489,6 +523,11 @@ namespace Multiplayer
         if (!editorsv_enabled || !mpTools)
         {
             // Early out if Editor server is not enabled.
+            return;
+        }
+
+        if (editorsv_clientserver)
+        {
             return;
         }
 
@@ -521,4 +560,86 @@ namespace Multiplayer
         constexpr bool autoRequeue = true;
         m_connectionEvent.Enqueue(AZ::SecondsToTimeMs(retrySeconds), autoRequeue);
     }
+
+    void MultiplayerEditorSystemComponent::PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, [[ maybe_unused ]] int flags)
+    {
+        AzToolsFramework::EntityIdList selected;
+        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(selected, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+
+        // Merge in highlighted entities..
+        // This stuff should probably be exposed from the SandboxIntegration class
+        {
+            AzToolsFramework::EntityIdList highlightedEntities;
+            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(highlightedEntities, &AzToolsFramework::ToolsApplicationRequests::GetHighlightedEntities);
+            for (AZ::EntityId highlightedId : highlightedEntities)
+            {
+                if (selected.end() == AZStd::find(selected.begin(), selected.end(), highlightedId))
+                {
+                    selected.push_back(highlightedId);
+                }
+            }
+        }
+
+        AZ::EntityId parentEntityId = AZ::EntityId();
+        AZ::Vector3 worldPosition = AZ::Vector3::CreateZero();
+        if (selected.size() == 1)
+        {
+            parentEntityId = selected.front();
+        }
+
+        auto readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
+        auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
+        if ((readOnlyEntityPublicInterface && !readOnlyEntityPublicInterface->IsReadOnly(parentEntityId)) &&
+            (containerEntityInterface && containerEntityInterface->IsContainerOpen(parentEntityId)))
+        {
+            menu->setToolTipsVisible(true);
+
+            if (CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport();
+                view && point.has_value())
+            {
+                worldPosition = AzToolsFramework::FindClosestPickIntersection(
+                    view->GetViewportId(), point.value(), AzToolsFramework::EditorPickRayLength,
+                    AzToolsFramework::GetDefaultEntityPlacementDistance());
+            }
+
+            QAction* action = nullptr;
+
+            action = menu->addAction(QObject::tr("Create multiplayer entity"));
+            action->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_M));
+            QObject::connect(action, &QAction::triggered, action, [this, parentEntityId, worldPosition]
+            {
+                ContextMenu_NewMultiplayerEntity(parentEntityId, worldPosition);
+            });
+        }
+    }
+
+    int MultiplayerEditorSystemComponent::GetMenuPosition() const
+    {
+        return aznumeric_cast<int>(AzToolsFramework::EditorContextMenuOrdering::TOP);
+    }
+
+    void MultiplayerEditorSystemComponent::ContextMenu_NewMultiplayerEntity(AZ::EntityId parentEntityId, const AZ::Vector3& worldPosition)
+    {
+        auto prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
+        AZ::EntityId newEntityId = prefabIntegrationInterface->CreateNewEntityAtPosition(worldPosition, parentEntityId);
+
+        AzToolsFramework::EntityCompositionRequestBus::Broadcast
+        (
+            &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities,
+            AzToolsFramework::EntityIdList{ newEntityId },
+            AZ::ComponentTypeList{ azrtti_typeid<NetBindComponent>(), azrtti_typeid<NetworkTransformComponent>() }
+        );
+    }
+    void MultiplayerEditorSystemComponent::OnStopPlayInEditorBegin()
+    {
+        if (GetMultiplayer()->GetAgentType() != MultiplayerAgentType::ClientServer || !editorsv_clientserver)
+        {
+            return;
+        }
+
+        // Make sure the client-server stops before the editor leaves play mode.
+        // Otherwise network entities will be left hanging around.
+        AZ::Interface<IMultiplayer>::Get()->Terminate(DisconnectReason::TerminatedByUser);
+    }
+
 } // namespace Multiplayer

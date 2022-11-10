@@ -2179,14 +2179,7 @@ namespace ScriptCanvas
 
     AZ::Crc32 Datum::GetDatumVisibility() const
     {
-        if (IS_A<Data::QuaternionType>())
-        {
-            return AZ::Edit::PropertyVisibility::Hide;
-        }
-        else
-        {
-            return AZ::Edit::PropertyVisibility::ShowChildrenOnly;
-        }
+        return AZ::Edit::PropertyVisibility::ShowChildrenOnly;
     }
 
     void Datum::SetNotificationsTarget(AZ::EntityId notificationId)

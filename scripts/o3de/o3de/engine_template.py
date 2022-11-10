@@ -1380,10 +1380,13 @@ def create_from_template(destination_path: pathlib.Path,
         replacements.append((replace_this, with_this))
 
     sanitized_cpp_name = utils.sanitize_identifier_for_cpp(destination_name)
+    lowercase_name = destination_name.lower()
+    sanitized_lowercase_name = utils.sanitize_identifier_for_cpp(lowercase_name)
     # dst name is Name
     replacements.append(("${Name}", destination_name))
     replacements.append(("${NameUpper}", destination_name.upper()))
-    replacements.append(("${NameLower}", destination_name.lower()))
+    replacements.append(("${NameLower}", lowercase_name))
+    replacements.append(("${SanitizedNameLower}", lowercase_name))
     replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
 
     if _instantiate_template(template_json_data,
@@ -1815,6 +1818,18 @@ def create_gem(gem_path: pathlib.Path,
                template_path: pathlib.Path = None,
                template_name: str = None,
                gem_name: str = None,
+               display_name: str = None,
+               summary: str = None,
+               requirements: str = None,
+               license: str = None,
+               license_url: str = None,
+               origin: str = None,
+               origin_url: str = None,
+               user_tags: list or str = None,
+               platforms: list or str = None,
+               icon_path: str = None,
+               documentation_url: str = None,
+               repo_uri: str = None,
                gem_restricted_path: pathlib.Path = None,
                gem_restricted_name: str = None,
                template_restricted_path: pathlib.Path = None,
@@ -1839,6 +1854,18 @@ def create_gem(gem_path: pathlib.Path,
        The placeholders of ${Name} and ${SanitizedCppName} will be replaced with gem name and a sanitized
        version of the gem name that is suitable as a C++ identifier. If not specified, defaults to the
        last path component of the gem_path
+    :param display_name: The colloquial name displayed throughout Project Manager, may contain spaces and special characters
+    :param summary: A short description of your Gem
+    :param requirements: Notice of any requirements for your Gem i.e. This requires X other gem
+    :param license: License used by your Gem i.e. Apache-2.0 or MIT
+    :param license_url: Link to the license web site i.e. https://opensource.org/licenses/Apache-2.0
+    :param origin: The name of the originator i.e. XYZ Inc.
+    :param origin_url: The primary website for your Gem i.e. http://www.mydomain.com
+    :param user_tags: A comma separated string of user tags
+    :param platforms: A comma separated string of platforms for your Gem
+    :param icon_path: The relative path to the icon PNG image in your Gem i.e. preview.png
+    :param documentation_url: Link to any documentation for your Gem i.e. https://o3de.org/docs/user-guide/gems/...
+    :param repo_uri: Optional link to the gem repository for your Gem.
     :param gem_restricted_path: path to the gems restricted folder, can be absolute or relative to the restricted='gems'
     :param gem_restricted_name: str = name of the registered gems restricted path, resolves gem_restricted_path
     :param template_restricted_path: the templates restricted path, can be absolute or relative to the restricted='templates'
@@ -2023,7 +2050,7 @@ def create_gem(gem_path: pathlib.Path,
         logger.error(f'Gem path {gem_path} already exists.')
         return 1
     else:
-        os.makedirs(gem_path, exist_ok=force)
+        os.makedirs(gem_path, exist_ok=True)
 
     # Default to the gem path basename component if gem_name has not been supplied
     if not gem_name:
@@ -2066,11 +2093,57 @@ def create_gem(gem_path: pathlib.Path,
         replacements.append((replace_this, with_this))
 
     sanitized_cpp_name = utils.sanitize_identifier_for_cpp(gem_name)
+    lowercase_name = gem_name.lower()
+    sanitized_lowercase_name = utils.sanitize_identifier_for_cpp(lowercase_name)
     # gem name
     replacements.append(("${Name}", gem_name))
     replacements.append(("${NameUpper}", gem_name.upper()))
-    replacements.append(("${NameLower}", gem_name.lower()))
+    replacements.append(("${NameLower}", lowercase_name))
+    replacements.append(("${SanitizedNameLower}", sanitized_lowercase_name))
     replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
+
+    if display_name:
+        replacements.append(("${DisplayName}", display_name))
+    else:
+        replacements.append(("${DisplayName}", gem_name))
+
+    if summary:
+        replacements.append(("${Summary}", summary))
+    if license:
+        replacements.append(("${License}", license))
+    if license_url:
+        replacements.append(("${LicenseURL}", license_url))
+    if origin:
+        replacements.append(("${Origin}", origin))
+    if origin_url:
+        replacements.append(("${OriginURL}", origin_url))
+    
+    tags = [gem_name]
+    if user_tags:
+        # Allow commas or spaces as tag separators
+        new_tags = user_tags.replace(',', ' ').split() if isinstance(user_tags, str) else user_tags
+        tags.extend(new_tags)
+    tags_quoted = ','.join(f'"{word.strip()}"' for word in set(tags))
+    # remove the first and last quote because those already exist in gem.json
+    replacements.append(("${UserTags}", tags_quoted[1:-1]))
+
+    temp_platforms = []
+    if platforms:
+        #same as tags, allow commas or spaces as platform separators
+        new_platforms = platforms.replace(',', ' ').split() if isinstance(platforms, str) else platforms
+        temp_platforms.extend(new_platforms)
+    platforms_quoted = ','.join(f'"{word.strip()}"' for word in set(temp_platforms))
+    #remove the first and last quote because those already exist in gem.json
+    replacements.append(("${Platforms}", platforms_quoted[1:-1]))
+
+    if icon_path:
+        replacements.append(("${IconPath}", pathlib.PurePath(icon_path).as_posix()))
+    if requirements:
+        replacements.append(("${Requirements}", requirements))
+    if documentation_url:
+        replacements.append(("${DocumentationURL}", documentation_url))
+    if repo_uri:
+        replacements.append(("${RepoURI}", repo_uri))
 
     # module id is a uuid with { and -
     if module_id:
@@ -2251,6 +2324,18 @@ def _run_create_gem(args: argparse) -> int:
                       args.template_path,
                       args.template_name,
                       args.gem_name,
+                      args.display_name,
+                      args.summary,
+                      args.requirements,
+                      args.license,
+                      args.license_url,
+                      args.origin,
+                      args.origin_url,
+                      args.user_tags,
+                      args.platforms,
+                      args.icon_path,
+                      args.documentation_url,
+                      args.repo_uri,
                       args.gem_restricted_path,
                       args.gem_restricted_name,
                       args.template_restricted_path,
@@ -2651,6 +2736,38 @@ def add_args(subparsers) -> None:
     create_gem_subparser.add_argument('--no-register', action='store_true', default=False,
                                       help='If the gem template is instantiated successfully, it will not register the'
                                            ' gem with the global, project or engine manifest file.')
+    create_gem_subparser.add_argument('-dn', '--display-name', type=str, required=False,
+                       help='The name displayed on the Gem Catalog')
+    create_gem_subparser.add_argument('-s', '--summary', type=str, required=False,
+                       default='A short description of this Gem',
+                       help='A short description of this Gem')
+    create_gem_subparser.add_argument('-req', '--requirements', type=str, required=False,
+                       default='Notice of any requirements for this Gem i.e. This requires X other gem',
+                       help='Notice of any requirements for this Gem i.e. This requires X other gem')
+    create_gem_subparser.add_argument('-l', '--license', type=str, required=False,
+                       default='License used i.e. Apache-2.0 or MIT',
+                       help='License used i.e. Apache-2.0 or MIT')
+    create_gem_subparser.add_argument('-lu', '--license-url', type=str, required=False,
+                       default='Link to the license web site i.e. https://opensource.org/licenses/Apache-2.0',
+                       help='Link to the license web site i.e. https://opensource.org/licenses/Apache-2.0')
+    create_gem_subparser.add_argument('-o', '--origin', type=str, required=False, 
+                       default='The name of the originator or creator',
+                       help='The name of the originator or creator i.e. XYZ Inc.')
+    create_gem_subparser.add_argument('-ou', '--origin-url', type=str, required=False, 
+                       default='The website for this Gem',
+                       help='The website for your Gem. i.e. http://www.mydomain.com')
+    create_gem_subparser.add_argument('-ut', '--user-tags', type=str, nargs='*', required=False,
+                       help='Adds tag(s) to user_tags property. Can be specified multiple times.')
+    create_gem_subparser.add_argument('-pl', '--platforms', type=str, nargs='*', required=False,
+                       help='Add platform(s) to platforms property. Can be specified multiple times.')
+    create_gem_subparser.add_argument('-ip', '--icon-path', type=str, required=False, 
+                       default="preview.png",
+                       help='Select Gem icon path')
+    create_gem_subparser.add_argument('-du', '--documentation-url', type=str, required=False,
+                       default='Link to any documentation of your Gem',
+                       help='Link to any documentation of your Gem i.e. https://o3de.org/docs/user-guide/gems/...')
+    create_gem_subparser.add_argument('-ru', '--repo-uri', type=str, required=False,
+                       help='An optional URI for the gem repository where your Gem can be downloaded')
     create_gem_subparser.set_defaults(func=_run_create_gem)
 
 

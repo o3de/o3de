@@ -157,6 +157,13 @@ def parse_args():
         required=False
     )
 
+    parser.add_argument(
+        "--testrunner-policy",
+        choices=["live","null"],
+        help="Test runner policy for TIAF.",
+        required=False
+    )
+
     args = parser.parse_args()
 
     return args

@@ -39,6 +39,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class PrefabFocusPublicInterface;
+        class PrefabPublicInterface;
     }
 }
 
@@ -112,6 +113,7 @@ namespace LandscapeCanvasEditor
         void PreOnGraphModelNodeRemoved(GraphModel::NodePtr node) override;
         void OnGraphModelConnectionAdded(GraphModel::ConnectionPtr connection) override;
         void OnGraphModelConnectionRemoved(GraphModel::ConnectionPtr connection) override;
+        void PreOnGraphModelNodeWrapped(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node) override;
         void OnGraphModelNodeWrapped(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node) override;
         void OnGraphModelGraphModified(GraphModel::NodePtr node) override;
         ////////////////////////////////////////////////////////////////////////
@@ -125,11 +127,13 @@ namespace LandscapeCanvasEditor
         QAction* AddFileSaveAction(QMenu* menu) override;
         QAction* AddFileSaveAsAction(QMenu* menu) override;
         QMenu* AddEditMenu() override;
+        QAction* AddEditCutAction(QMenu* menu) override;
+        QAction* AddEditCopyAction(QMenu* menu) override;
+        QAction* AddEditPasteAction(QMenu* menu) override;
         void HandleWrapperNodeActionWidgetClicked(GraphModel::NodePtr wrapperNode, const QRect& actionWidgetBoundingRect, const QPointF& scenePoint, const QPoint& screenPoint) override;
         GraphCanvas::Endpoint CreateNodeForProposal(const AZ::EntityId& connectionId, const GraphCanvas::Endpoint& endpoint, const QPointF& scenePoint, const QPoint& screenPoint) override;
         void OnSelectionChanged() override;
-        void OnEntitiesSerialized(GraphCanvas::GraphSerialization& serializationTarget) override;
-        void OnEntitiesDeserialized(const GraphCanvas::GraphSerialization&) override;
+        void OnEntitiesDeserialized(const GraphCanvas::GraphSerialization& serializationTarget) override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -223,7 +227,10 @@ namespace LandscapeCanvasEditor
 
         AZ::EntityId GetRootEntityIdForGraphId(const GraphCanvas::GraphId& graphId);
 
-        AZ::ComponentId AddComponentTypeIdToEntity(const AZ::EntityId& entityId, AZ::TypeId componentToAddTypeId);
+        AZ::ComponentId AddComponentTypeIdToEntity(
+            const AZ::EntityId& entityId,
+            AZ::TypeId componentToAddTypeId,
+            const AZ::ComponentDescriptor::DependencyArrayType& optionalServices = {});
         void AddComponentForNode(GraphModel::NodePtr node, const AZ::EntityId& entityId);
         void HandleNodeCreated(GraphModel::NodePtr node);
         void HandleNodeAdded(GraphModel::NodePtr node);
@@ -235,7 +242,7 @@ namespace LandscapeCanvasEditor
             Invalid = -1,
             Shapes = 0,
             Gradients,
-            VegetationAreas,
+            WrapperNodes,
             Count
         };
 
@@ -253,6 +260,7 @@ namespace LandscapeCanvasEditor
         void PlaceNewNode(GraphCanvas::GraphId graphId, LandscapeCanvas::BaseNode::BaseNodePtr node);
         int GetInboundDataSlotIndex(GraphModel::NodePtr node, GraphModel::DataTypePtr dataType, GraphModel::SlotPtr targetSlot);
         void HandleImageAssetSlot(GraphModel::NodePtr targetNode, const EntityIdNodeMap& gradientNodeMap, ConnectionsList& connections);
+        void HandleDeserializedNodes();
 
         //! Determines whether or not we should allow the user to interact with the graph
         //! This should be disabled when there is no level currently loaded
@@ -267,6 +275,7 @@ namespace LandscapeCanvasEditor
 
         static AzFramework::EntityContextId s_editorEntityContextId;
         AzToolsFramework::Prefab::PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
+        AzToolsFramework::Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         AzToolsFramework::ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
 
         bool m_ignoreGraphUpdates = false;
@@ -275,7 +284,11 @@ namespace LandscapeCanvasEditor
 
         using DeletedNodePositionsMap = AZStd::unordered_map<AZ::EntityComponentIdPair, AZ::Vector2>;
         AZStd::unordered_map<GraphCanvas::GraphId, DeletedNodePositionsMap> m_deletedNodePositions;
+        GraphModel::NodePtrList m_addedWrappedNodes;
+        GraphModel::NodePtrList m_deletedWrappedNodes;
+        GraphModel::NodePtrList m_deserializedNodes;
         AzToolsFramework::EntityIdList m_queuedEntityDeletes;
+        AzToolsFramework::EntityIdList m_queuedEntityRefresh;
 
         AzToolsFramework::EntityIdList m_ignoreEntityComponentPropertyChanges;
 

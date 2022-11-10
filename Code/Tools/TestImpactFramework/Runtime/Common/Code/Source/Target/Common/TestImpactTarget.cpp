@@ -20,6 +20,11 @@ namespace TestImpact
         return m_descriptor.m_name;
     }
 
+    TargetType Target::GetType() const
+    {
+        return m_descriptor.m_type;
+    }
+
     const RepoPath& Target::GetPath() const
     {
         return m_descriptor.m_path;

@@ -47,7 +47,7 @@ namespace Vegetation
         void AddTag(AZStd::string tag);
     };
 
-    static const AZ::Uuid SurfaceMaskDepthFilterComponentTypeId = "{A54BB0B2-8B30-4583-B44E-EFA17173040B}";
+    inline constexpr AZ::TypeId SurfaceMaskDepthFilterComponentTypeId{ "{A54BB0B2-8B30-4583-B44E-EFA17173040B}" };
 
     /**
     * This component filters based on the depth between two surface masks (using labels)

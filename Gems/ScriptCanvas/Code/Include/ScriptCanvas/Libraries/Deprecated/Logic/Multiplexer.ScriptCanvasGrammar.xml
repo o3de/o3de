@@ -6,7 +6,6 @@
 	       PreferredClassName="Multiplexer"
            Uuid="{2FE432CB-9969-4273-BE04-DEF949C288F0}"
            Base="ScriptCanvas::Node"
-           GeneratePropertyFriend="True"
            Deprecated="True"
            Description="Selects one of the [In#] inputs using [Index] and sends it to [Out]">
         <In Name="In0" Description="Input 0"/>

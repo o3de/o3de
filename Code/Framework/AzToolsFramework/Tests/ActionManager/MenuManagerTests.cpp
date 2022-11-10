@@ -35,14 +35,14 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, RegisterMenuBar)
     {
-        auto outcome = m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test");
+        auto outcome = m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test", m_mainWindow);
         EXPECT_TRUE(outcome.IsSuccess());
     }
 
     TEST_F(ActionManagerFixture, RegisterMenuBarTwice)
     {
-        m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test");
-        auto outcome = m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test");
+        m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test", m_mainWindow);
+        auto outcome = m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test", m_mainWindow);
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
@@ -491,7 +491,7 @@ namespace UnitTest
     
     TEST_F(ActionManagerFixture, AddMenuToMenuBar)
     {
-        m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test");
+        m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test", m_mainWindow);
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
 
         auto outcome = m_menuManagerInterface->AddMenuToMenuBar("o3de.menubar.test", "o3de.menu.test", 42);
@@ -500,7 +500,7 @@ namespace UnitTest
     
     TEST_F(ActionManagerFixture, AddMenuToMenuBarTwice)
     {
-        m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test");
+        m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test", m_mainWindow);
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
 
         m_menuManagerInterface->AddMenuToMenuBar("o3de.menubar.test", "o3de.menu.test", 42);
@@ -508,18 +508,9 @@ namespace UnitTest
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
-    TEST_F(ActionManagerFixture, GetMenuBar)
-    {
-        m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test");
-
-        QMenuBar* menuBar = m_menuManagerInternalInterface->GetMenuBar("o3de.menubar.test");
-        EXPECT_TRUE(menuBar != nullptr);
-    }
-
     TEST_F(ActionManagerFixture, VerifyMenuInMenuBar)
     {
-        // Register menu bar, get it and verify it's empty.
-        m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test");
+        m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test", m_mainWindow);
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
 
         // Add the menu to the menu bar.
@@ -529,7 +520,7 @@ namespace UnitTest
         m_menuManagerInternalInterface->RefreshMenuBars();
 
         // Verify the submenu is now in the menu.
-        QMenuBar* menubar = m_menuManagerInternalInterface->GetMenuBar("o3de.menubar.test");
+        QMenuBar* menubar = m_mainWindow->menuBar();
         QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         const auto& actions = menubar->actions();
 
@@ -540,7 +531,7 @@ namespace UnitTest
     TEST_F(ActionManagerFixture, VerifyComplexMenuBar)
     {
         // Register multiple menus.
-        m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test");
+        m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test", m_mainWindow);
         m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu1", {});
         m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu2", {});
         m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu3", {});
@@ -558,7 +549,7 @@ namespace UnitTest
         m_menuManagerInternalInterface->RefreshMenuBars();
 
         // Verify the menus are now in the menu bar in the expected order.
-        QMenuBar* menubar = m_menuManagerInternalInterface->GetMenuBar("o3de.menubar.test");
+        QMenuBar* menubar = m_mainWindow->menuBar();
         QMenu* testMenu1 = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu1");
         QMenu* testMenu2 = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu2");
         QMenu* testMenu3 = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu3");
@@ -690,7 +681,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, GetSortKeyOfMenuInMenuBar)
     {
-        m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test");
+        m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test", m_mainWindow);
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
 
         // Add the menu to the menu bar.
@@ -704,7 +695,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, GetSortKeyOfUnregisteredMenuInMenuBar)
     {
-        m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test");
+        m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test", m_mainWindow);
 
         // Verify the API fails as the menu is not registered.
         auto outcome = m_menuManagerInterface->GetSortKeyOfActionInMenu("o3de.menubar.test", "o3de.menu.test");
@@ -713,7 +704,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, GetSortKeyOfMenuNotInMenuBar)
     {
-        m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test");
+        m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test", m_mainWindow);
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
 
         // Verify the API fails as the menu is registered but was not added to the menu bar.

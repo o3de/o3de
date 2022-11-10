@@ -9,10 +9,15 @@
 #include <AzTest/AzTest.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/Math/Guid.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/UnitTest/Mocks/MockSettingsRegistry.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
 #include <SceneAPI/SceneCore/Components/LoadingComponent.h>
 #include <SceneAPI/SceneCore/Mocks/Events/MockAssetImportRequest.h>
+#include <SceneAPI/SceneCore/Mocks/DataTypes/Groups/MockIGroup.h>
+#include <SceneAPI/SceneCore/Utilities/Reporting.h>
 
 namespace AZ
 {
@@ -185,7 +190,7 @@ namespace AZ
                 EXPECT_CALL(handler, UpdateManifest(_, _, _)).Times(0);
 
                 AZStd::shared_ptr<Containers::Scene> result = 
-                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic, SceneCore::LoadingComponent::TYPEINFO_Uuid());
+                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic, SceneCore::LoadingComponent::TYPEINFO_Uuid(), "");
                 EXPECT_EQ(nullptr, result);
             }
 
@@ -227,7 +232,7 @@ namespace AZ
                 EXPECT_CALL(manifestHandler, LoadAsset(_, _, _, _)).Times(1);
 
                 AZStd::shared_ptr<Containers::Scene> result =
-                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic, SceneCore::LoadingComponent::TYPEINFO_Uuid());
+                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic, SceneCore::LoadingComponent::TYPEINFO_Uuid(), "");
                 EXPECT_NE(nullptr, result);
                 EXPECT_TRUE(anEmptyManifestWorks);
             }
@@ -251,7 +256,7 @@ namespace AZ
                 EXPECT_CALL(handler, UpdateManifest(_, _, _)).Times(0);
 
                 AZStd::shared_ptr<Containers::Scene> result = 
-                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic, SceneCore::LoadingComponent::TYPEINFO_Uuid());
+                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic, SceneCore::LoadingComponent::TYPEINFO_Uuid(), "");
                 EXPECT_EQ(nullptr, result);
             }
 
@@ -274,7 +279,7 @@ namespace AZ
                 EXPECT_CALL(handler, UpdateManifest(_, _, _)).Times(0);
 
                 AZStd::shared_ptr<Containers::Scene> result =
-                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic, SceneCore::LoadingComponent::TYPEINFO_Uuid());
+                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic, SceneCore::LoadingComponent::TYPEINFO_Uuid(), "");
                 EXPECT_EQ(nullptr, result);
             }
 
@@ -297,7 +302,7 @@ namespace AZ
                 EXPECT_CALL(handler, UpdateManifest(_, _, _)).Times(0);
 
                 AZStd::shared_ptr<Containers::Scene> result =
-                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic, SceneCore::LoadingComponent::TYPEINFO_Uuid());
+                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic, SceneCore::LoadingComponent::TYPEINFO_Uuid(), "");
                 EXPECT_EQ(nullptr, result);
             }
 
@@ -329,7 +334,7 @@ namespace AZ
                 EXPECT_CALL(manifestHandler, UpdateManifest(_, _, _)).Times(1);
 
                 AZStd::shared_ptr<Containers::Scene> result =
-                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic, SceneCore::LoadingComponent::TYPEINFO_Uuid());
+                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic, SceneCore::LoadingComponent::TYPEINFO_Uuid(), "");
                 EXPECT_EQ(nullptr, result);
             }
 
@@ -357,10 +362,168 @@ namespace AZ
                 EXPECT_CALL(manifestHandler, UpdateManifest(_, _, _)).Times(1);
 
                 AZStd::shared_ptr<Containers::Scene> result =
-                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic, SceneCore::LoadingComponent::TYPEINFO_Uuid());
+                    AssetImportRequest::LoadSceneFromVerifiedPath("test.asset", m_testId, Events::AssetImportRequest::RequestingApplication::Generic, SceneCore::LoadingComponent::TYPEINFO_Uuid(), "");
                 EXPECT_NE(nullptr, result);
             }
-            
+
+            /*
+            * AssetImporterRequestToolTests
+            */
+            class AssetImporterRequestToolTests
+                : public ::UnitTest::ScopedAllocatorSetupFixture
+            {
+            public:
+                void SetUp() override
+                {
+                    UnitTest::ScopedAllocatorSetupFixture::SetUp();
+
+                    m_settings.reset(new AZ::NiceSettingsRegistrySimpleMock);
+                    ON_CALL(*m_settings.get(), Get(::testing::Matcher<bool&>(::testing::_), ::testing::_))
+                        .WillByDefault([this](bool& value, AZStd::string_view key) -> bool
+                            {
+                                if (key == AZ::SceneAPI::Utilities::Key_AssetProcessorInDebugOutput)
+                                {
+                                    value = this->m_inDebugOutputMode;
+                                }
+                                else
+                                {
+                                    value = false;
+                                }
+                                return true;
+                            });
+                    AZ::SettingsRegistry::Register(m_settings.get());
+                }
+
+                void TearDown() override
+                {
+                    AZ::SettingsRegistry::Unregister(m_settings.get());
+                    m_settings.reset();
+
+                    UnitTest::ScopedAllocatorSetupFixture::TearDown();
+                }
+
+                void SetDefaultResults(StrictMock<MockAssetImportRequestHandler>& handler)
+                {
+                    using namespace AZ::SceneAPI;
+
+                    ON_CALL(handler, PrepareForAssetLoading(Matcher<Containers::Scene&>(_), Matcher<AssetImportRequest::RequestingApplication>(_)))
+                        .WillByDefault(Return(ProcessingResult::Ignored));
+
+                    ON_CALL(handler, LoadAsset)
+                        .WillByDefault([](Containers::Scene&, const AZStd::string&, const Uuid&, AssetImportRequest::RequestingApplication) -> Events::LoadingResult
+                            {
+                                return LoadingResult::AssetLoaded;
+                            }
+                    );
+
+                    ON_CALL(handler, UpdateManifest)
+                        .WillByDefault([](Containers::Scene& scene, AssetImportRequest::ManifestAction, AssetImportRequest::RequestingApplication) -> Events::ProcessingResult
+                            {
+                                scene.GetManifest().AddEntry(AZStd::make_shared<AZ::SceneAPI::DataTypes::MockIGroup>());
+                                return ProcessingResult::Success;
+                            });
+                }
+
+                AZStd::unique_ptr<AZ::NiceSettingsRegistrySimpleMock> m_settings;
+                bool m_inDebugOutputMode = false;
+            };
+
+            TEST_F(AssetImporterRequestToolTests, AssetImportRequestBus_UpdateSceneManifest_DoesNotLogHandlers)
+            {
+                using namespace AZ::SceneAPI::Events;
+                using namespace AZ::SceneAPI::SceneCore;
+
+                StrictMock<MockAssetImportRequestHandler> assetHandler;
+                assetHandler.SetDefaultExtensions();
+                assetHandler.SetDefaultProcessingResults(false);
+                ON_CALL(assetHandler, GetPolicyName).WillByDefault([](AZStd::string& result)
+                {
+                    result = "assetHandler";
+                });
+
+                StrictMock<MockAssetImportRequestHandler> manifestHandler;
+                manifestHandler.SetDefaultExtensions();
+                manifestHandler.SetDefaultProcessingResults(true);
+                ON_CALL(manifestHandler, GetPolicyName).WillByDefault([](AZStd::string& result)
+                {
+                    result = "manifestHandler";
+                });
+
+                EXPECT_CALL(assetHandler, GetManifestExtension(_)).Times(0);
+                EXPECT_CALL(assetHandler, GetSupportedFileExtensions(_)).Times(0);
+                EXPECT_CALL(assetHandler, PrepareForAssetLoading(_, _)).Times(1);
+                EXPECT_CALL(assetHandler, LoadAsset(_, _, _, _)).Times(1);
+                EXPECT_CALL(assetHandler, FinalizeAssetLoading(_, _)).Times(1);
+                EXPECT_CALL(assetHandler, UpdateManifest(_, _, _)).Times(1);
+                EXPECT_CALL(assetHandler, GetPolicyName(_)).Times(0);
+
+                EXPECT_CALL(manifestHandler, GetManifestExtension(_)).Times(0);
+                EXPECT_CALL(manifestHandler, GetSupportedFileExtensions(_)).Times(0);
+                EXPECT_CALL(manifestHandler, PrepareForAssetLoading(_, _)).Times(1);
+                EXPECT_CALL(manifestHandler, LoadAsset(_, _, _, _)).Times(1);
+                EXPECT_CALL(manifestHandler, FinalizeAssetLoading(_, _)).Times(1);
+                EXPECT_CALL(manifestHandler, UpdateManifest(_, _, _)).Times(1);
+                EXPECT_CALL(manifestHandler, GetPolicyName(_)).Times(0);
+
+                auto result = AssetImportRequest::LoadSceneFromVerifiedPath(
+                    "test.asset",
+                    AZ::Uuid("{B28DA8AF-B5F5-48E2-8E1A-3FE2CEFC2817}"),
+                    AssetImportRequest::RequestingApplication::Generic,
+                    LoadingComponent::TYPEINFO_Uuid(),
+                    "");
+
+                EXPECT_NE(nullptr, result);
+            }
+
+            TEST_F(AssetImporterRequestToolTests, AssetImportRequestBus_UpdateSceneManifest_DoesLogHandlers)
+            {
+                using namespace AZ::SceneAPI::Events;
+                using namespace AZ::SceneAPI::SceneCore;
+
+                m_inDebugOutputMode = true;
+
+                StrictMock<MockAssetImportRequestHandler> assetHandler;
+                assetHandler.SetDefaultExtensions();
+                ON_CALL(assetHandler, GetPolicyName)
+                    .WillByDefault([](AZStd::string& result)
+                    {
+                        result = "assetHandler";
+                    });
+                SetDefaultResults(assetHandler);
+
+                StrictMock<MockAssetImportRequestHandler> manifestHandler;
+                manifestHandler.SetDefaultExtensions();
+                ON_CALL(manifestHandler, GetPolicyName)
+                    .WillByDefault([](AZStd::string& result)
+                    {
+                        result = "manifestHandler";
+                    });
+                SetDefaultResults(manifestHandler);
+
+                EXPECT_CALL(assetHandler, GetManifestExtension(_)).Times(0);
+                EXPECT_CALL(assetHandler, GetSupportedFileExtensions(_)).Times(0);
+                EXPECT_CALL(assetHandler, PrepareForAssetLoading(_, _)).Times(1);
+                EXPECT_CALL(assetHandler, LoadAsset(_, _, _, _)).Times(1);
+                EXPECT_CALL(assetHandler, FinalizeAssetLoading(_, _)).Times(1);
+                EXPECT_CALL(assetHandler, UpdateManifest(_, _, _)).Times(1);
+                EXPECT_CALL(assetHandler, GetPolicyName(_)).Times(1);
+
+                EXPECT_CALL(manifestHandler, GetManifestExtension(_)).Times(0);
+                EXPECT_CALL(manifestHandler, GetSupportedFileExtensions(_)).Times(0);
+                EXPECT_CALL(manifestHandler, PrepareForAssetLoading(_, _)).Times(1);
+                EXPECT_CALL(manifestHandler, LoadAsset(_, _, _, _)).Times(1);
+                EXPECT_CALL(manifestHandler, FinalizeAssetLoading(_, _)).Times(1);
+                EXPECT_CALL(manifestHandler, UpdateManifest(_, _, _)).Times(1);
+                EXPECT_CALL(manifestHandler, GetPolicyName(_)).Times(1);
+
+                AssetImportRequest::LoadSceneFromVerifiedPath(
+                    "test.asset",
+                    AZ::Uuid("{B28DA8AF-B5F5-48E2-8E1A-3FE2CEFC2817}"),
+                    AssetImportRequest::RequestingApplication::Generic,
+                    LoadingComponent::TYPEINFO_Uuid(),
+                    "");
+            }
+
         } // Events
     } // SceneAPI
 } // AZ

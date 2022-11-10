@@ -10,12 +10,13 @@
 
 #include <Target/Python/TestImpactPythonTestTarget.h>
 #include <TestEngine/Common/TestImpactTestEngineException.h>
-#include <TestEngine/Python/TestImpactPythonErrorCodeChecker.h>
+#include <TestRunner/Python/TestImpactPythonErrorCodeChecker.h>
 #include <TestEngine/Python/TestImpactPythonTestEngine.h>
 #include <TestRunner/Python/Job/TestImpactPythonTestJobInfoGenerator.h>
 #include <TestRunner/Python/TestImpactPythonTestRunner.h>
 #include <TestRunner/Python/TestImpactPythonNullTestRunner.h>
 
+#include <iostream>
 namespace TestImpact
 {
     AZStd::optional<Client::TestRunResult> PythonInstrumentedTestRunnerErrorCodeChecker(
@@ -52,13 +53,13 @@ namespace TestImpact
         const RepoPath& repoDir,
         const RepoPath& buildDir,
         const ArtifactDir& artifactDir,
-        bool useNullTestRunner)
+        Policy::TestRunner testRunnerPolicy)
         : m_testJobInfoGenerator(AZStd::make_unique<PythonTestRunJobInfoGenerator>(
               repoDir, buildDir, artifactDir))
         , m_testRunner(AZStd::make_unique<PythonTestRunner>(artifactDir))
         , m_nullTestRunner(AZStd::make_unique<PythonNullTestRunner>(artifactDir))
         , m_artifactDir(artifactDir)
-        , m_useNullTestRunner(useNullTestRunner)
+        , m_testRunnerPolicy(testRunnerPolicy)
     {
     }
 
@@ -92,18 +93,18 @@ namespace TestImpact
         {
             if (!stdOutDelta.empty())
             {
-                AZ_Printf("StdOut", stdOutDelta.c_str());
+                std::cout << stdOutDelta.c_str() << "\n";
             }
 
             if (!stdErrDelta.empty())
             {
-                AZ_Printf("StdError", stdErrDelta.c_str());
+                std::cout << stdErrDelta.c_str() << "\n";
             }
 
             return TestImpact::ProcessCallbackResult::Continue;
         };
 
-        if (m_useNullTestRunner)
+        if (m_testRunnerPolicy == Policy::TestRunner::UseNullTestRunner)
         {
             // We don't delete the artifacts as they have been left by another test runner (e.g. ctest)
             return GenerateInstrumentedRunResult(

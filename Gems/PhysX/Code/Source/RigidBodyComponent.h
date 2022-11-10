@@ -10,7 +10,6 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
-#include <AzFramework/Entity/SliceGameEntityOwnershipServiceBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
@@ -21,6 +20,7 @@
 
 namespace AzPhysics
 {
+    class SceneInterface;
     struct SimulatedBody;
 }
 
@@ -34,7 +34,6 @@ namespace PhysX
         , public Physics::RigidBodyRequestBus::Handler
         , public AzPhysics::SimulatedBodyComponentRequestsBus::Handler
         , public AZ::TickBus::Handler
-        , public AzFramework::SliceGameEntityOwnershipServiceNotificationBus::Handler
         , protected AZ::TransformNotificationBus::MultiHandler
     {
     public:
@@ -127,11 +126,6 @@ namespace PhysX
         AzPhysics::SimulatedBody* GetSimulatedBody() override;
         AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
 
-        // SliceGameEntityOwnershipServiceNotificationBus
-        void OnSliceInstantiated(const AZ::Data::AssetId&, const AZ::SliceComponent::SliceInstanceAddress&,
-            const AzFramework::SliceInstantiationTicket&) override;
-        void OnSliceInstantiationFailed(const AZ::Data::AssetId&, const AzFramework::SliceInstantiationTicket&) override;
-
         AzPhysics::RigidBodyConfiguration& GetConfiguration()
         {
             return m_configuration;
@@ -160,7 +154,7 @@ namespace PhysX
         const AzPhysics::RigidBody* GetRigidBodyConst() const;
 
         std::unique_ptr<TransformForwardTimeInterpolator> m_interpolator;
-
+        AzPhysics::SceneInterface* m_cachedSceneInterface = nullptr;
         AzPhysics::RigidBodyConfiguration m_configuration; //!< Generic properties from AzPhysics.
         RigidBodyConfiguration
             m_physxSpecificConfiguration; //!< Properties specific to PhysX which might not have exact equivalents in other physics engines.
@@ -172,6 +166,7 @@ namespace PhysX
         bool m_rigidBodyTransformNeedsUpdateOnPhysReEnable = false; ///< True if rigid body transform needs to be synced to the entity's when physics is re-enabled
 
         AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
+        AzPhysics::SimulatedBodyEvents::OnSyncTransform::Handler m_activeBodySyncTransformHandler;
     };
 
     class TransformForwardTimeInterpolator

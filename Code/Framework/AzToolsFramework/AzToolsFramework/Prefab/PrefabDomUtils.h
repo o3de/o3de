@@ -19,6 +19,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class Instance;
+
         namespace PrefabDomUtils
         {
             inline static constexpr const char* InstancesName = "Instances";
@@ -115,12 +116,16 @@ namespace AzToolsFramework
             {
                 //! No flags used.
                 None = 0,
+
                 //! By default entities will get a stable id when they're deserialized. In cases where the new entities need to be kept
                 //! unique, e.g. when they are duplicates of live entities, this flag will assign them a random new id.
                 AssignRandomEntityId = 1 << 0,
 
                 //! Identifies the entities modified since the last deserialization and only loads them.
-                UseSelectiveDeserialization = 1 << 1
+                UseSelectiveDeserialization = 1 << 1,
+
+                //! Adds metadata to track and report deprecated components during deserialization
+                ReportDeprecatedComponents = 1 << 2
             };
             AZ_DEFINE_ENUM_BITWISE_OPERATORS(LoadFlags);
 

@@ -15,6 +15,11 @@
 
 class QMenu;
 
+namespace AzFramework
+{
+    struct ScreenPoint;
+}
+
 namespace AzToolsFramework
 {
     enum class EditorContextMenuOrdering
@@ -75,8 +80,12 @@ namespace AzToolsFramework
          * Appends menu items to the global editor context menu.
          * This is the menu that appears when right clicking the main editor window,
          * including the Entity Outliner and the Viewport.
+         * @param menu The QMenu to append menu items to.
+         * @param point An optional screen point indicating where the user clicked in the 3d viewport for entity placement.
+         *              note: AZStd::nullopt may be passed when the context menu is created outside of the 3d viewport.
+         * @param flags See EditorEvents::EditorContextMenuFlags for available flags to pass.
          */
-        virtual void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) = 0;
+        virtual void PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, int flags) = 0;
     };
 
     using EditorContextMenuBus = AZ::EBus<EditorContextMenuEvents>;

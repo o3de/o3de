@@ -30,6 +30,7 @@ namespace PhysX
     {
         EditorJointLimitConfig::Reflect(context);
         EditorJointLimitPairConfig::Reflect(context);
+        EditorJointLimitLinearPairConfig::Reflect(context);
         EditorJointLimitConeConfig::Reflect(context);
         EditorJointConfig::Reflect(context);
 
@@ -152,9 +153,9 @@ namespace PhysX
         }
     }
 
-    void EditorSystemComponent::PopulateEditorGlobalContextMenu([[maybe_unused]] QMenu* menu, [[maybe_unused]] const AZ::Vector2& point, [[maybe_unused]] int flags)
+    void EditorSystemComponent::PopulateEditorGlobalContextMenu(
+        [[maybe_unused]] QMenu* menu, [[maybe_unused]] const AZStd::optional<AzFramework::ScreenPoint>& point, [[maybe_unused]] int flags)
     {
-
     }
 
     void EditorSystemComponent::NotifyRegisterViews()

@@ -8,6 +8,7 @@
 
 #include <ProjectGemCatalogScreen.h>
 #include <GemRepo/GemRepoScreen.h>
+#include <CreateAGemScreen.h>
 #include <ProjectManagerDefs.h>
 #include <PythonBindingsInterface.h>
 #include <ScreenHeaderWidget.h>
@@ -28,7 +29,7 @@
 
 namespace O3DE::ProjectManager
 {
-    UpdateProjectCtrl::UpdateProjectCtrl(QWidget* parent)
+    UpdateProjectCtrl::UpdateProjectCtrl(DownloadController* downloadController, QWidget* parent)
         : ScreenWidget(parent)
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
@@ -41,7 +42,7 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(m_header);
 
         m_updateSettingsScreen = new UpdateProjectSettingsScreen();
-        m_projectGemCatalogScreen = new ProjectGemCatalogScreen();
+        m_projectGemCatalogScreen = new ProjectGemCatalogScreen(downloadController);
         m_gemRepoScreen = new GemRepoScreen(this);
 
         connect(m_projectGemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &UpdateProjectCtrl::OnChangeScreenRequest);
@@ -223,7 +224,7 @@ namespace O3DE::ProjectManager
         if (m_stack->currentIndex() == ScreenOrder::GemRepos)
         {
             m_header->setTitle(QString(tr("Edit Project Settings: \"%1\"")).arg(m_projectInfo.GetProjectDisplayName()));
-            m_header->setSubTitle(QString(tr("Gem Repositories")));
+            m_header->setSubTitle(QString(tr("Remote Sources")));
             m_nextButton->setVisible(false);
         }
         else if (m_stack->currentIndex() == ScreenOrder::Gems)

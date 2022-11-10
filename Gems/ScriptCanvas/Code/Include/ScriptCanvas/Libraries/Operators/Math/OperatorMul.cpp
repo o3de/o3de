@@ -51,7 +51,11 @@ namespace ScriptCanvas
                     Data::Type::Quaternion(),
                     Data::Type::Transform(),
                     Data::Type::Matrix3x3(),
-                    Data::Type::Matrix4x4()
+                    Data::Type::Matrix4x4(),
+                    Data::Type::Vector2(),
+                    Data::Type::Vector3(),
+                    Data::Type::Vector4(),
+                    Data::Type::Color()
                 };
             }
 
@@ -76,18 +80,22 @@ namespace ScriptCanvas
                 case Data::eType::Matrix4x4:
                     OperatorEvaluator::Evaluate<Data::Matrix4x4Type>(OperatorMulImpl<Data::Matrix4x4Type>(), operands, result);
                     break;
+                case Data::eType::Vector2:
+                    OperatorEvaluator::Evaluate<Data::Vector2Type>(OperatorMulImpl<Data::Vector2Type>(), operands, result);
+                    break;
+                case Data::eType::Vector3:
+                    OperatorEvaluator::Evaluate<Data::Vector3Type>(OperatorMulImpl<Data::Vector3Type>(), operands, result);
+                    break;
+                case Data::eType::Vector4:
+                    OperatorEvaluator::Evaluate<Data::Vector4Type>(OperatorMulImpl<Data::Vector4Type>(), operands, result);
+                    break;
+                case Data::eType::Color:
+                    OperatorEvaluator::Evaluate<Data::ColorType>(OperatorMulImpl<Data::ColorType>(), operands, result);
+                    break;
                 default:
                     AZ_Assert(false, "Multiplication operator not defined for type: %s", Data::ToAZType(type).ToString<AZStd::string>().c_str());
                     break;
                 }
-            }
-
-            void OperatorMul::InitializeSlot(const SlotId& slotId, [[maybe_unused]] const ScriptCanvas::Data::Type& dataType)
-            {
-                ModifiableDatumView datumView;
-                FindModifiableDatumView(slotId, datumView);
-
-                OnResetDatumToDefaultValue(datumView);
             }
 
             bool OperatorMul::IsValidArithmeticSlot(const SlotId& slotId) const
@@ -102,47 +110,16 @@ namespace ScriptCanvas
                         return !AZ::IsClose((*datum->GetAs<Data::NumberType>()), Data::NumberType(1.0), ScriptCanvas::Data::ToleranceEpsilon());
                     case Data::eType::Quaternion:
                         return !datum->GetAs<Data::QuaternionType>()->IsIdentity();
+                    case Data::eType::Matrix3x3:
+                        return !datum->GetAs<Data::Matrix3x3Type>()->IsClose(Data::Matrix3x3Type::CreateIdentity());
+                    case Data::eType::Matrix4x4:
+                        return !datum->GetAs<Data::Matrix4x4Type>()->IsClose(Data::Matrix4x4Type::CreateIdentity());
                     default:
                         break;
                     }
                 }
 
                 return (datum != nullptr);
-            }
-
-            void OperatorMul::OnResetDatumToDefaultValue(ModifiableDatumView& datumView)
-            {
-                Data::Type displayType = GetDisplayType(GetArithmeticDynamicTypeGroup());
-
-                if (datumView.IsValid() && displayType.IsValid())
-                {
-                    switch (displayType.GetType())
-                    {
-                    case Data::eType::Number:
-                        datumView.SetAs(ScriptCanvas::Data::One());
-                        break;
-                    case Data::eType::Vector2:
-                        datumView.SetAs(Data::Vector2Type::CreateOne());
-                        break;
-                    case Data::eType::Vector3:
-                        datumView.SetAs(Data::Vector3Type::CreateOne());
-                        break;
-                    case Data::eType::Vector4:
-                        datumView.SetAs(Data::Vector4Type::CreateOne());
-                        break;
-                    case Data::eType::Quaternion:
-                        datumView.SetAs(Data::QuaternionType::CreateIdentity());
-                        break;
-                    case Data::eType::Matrix3x3:
-                        datumView.SetAs(Data::Matrix3x3Type::CreateIdentity());
-                        break;
-                    case Data::eType::Matrix4x4:
-                        datumView.SetAs(Data::Matrix4x4Type::CreateIdentity());
-                        break;
-                    default:
-                        break;
-                    };
-                }
             }
         }
     }

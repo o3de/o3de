@@ -37,9 +37,10 @@ namespace TestImpact
             //! @param duration The duration that this test run took to complete.
             //! @param result The result of the run.
             TestRunBase(
+                const AZStd::string& testNamespace,
                 const AZStd::string& name,
                 const AZStd::string& commandString,
-                AZStd::chrono::high_resolution_clock::time_point startTime,
+                AZStd::chrono::steady_clock::time_point startTime,
                 AZStd::chrono::milliseconds duration,
                 TestRunResult result);
 
@@ -48,14 +49,17 @@ namespace TestImpact
             //! Returns the test target name.
             const AZStd::string& GetTargetName() const;
 
+            //! Returns the test target namespace.
+            const AZStd::string& GetTestNamespace() const;
+
             //! Returns the test run result.
             TestRunResult GetResult() const;
 
             //! Returns the test run start time.
-            AZStd::chrono::high_resolution_clock::time_point GetStartTime() const;
+            AZStd::chrono::steady_clock::time_point GetStartTime() const;
 
             //! Returns the end time, relative to the sequence start, that this run ended.
-            AZStd::chrono::high_resolution_clock::time_point GetEndTime() const;
+            AZStd::chrono::steady_clock::time_point GetEndTime() const;
 
             //! Returns the duration that this test run took to complete.
             AZStd::chrono::milliseconds GetDuration() const;
@@ -66,8 +70,9 @@ namespace TestImpact
         private:
             AZStd::string m_targetName;
             AZStd::string m_commandString;
+            AZStd::string m_testNamespace;
             TestRunResult m_result;
-            AZStd::chrono::high_resolution_clock::time_point m_startTime;
+            AZStd::chrono::steady_clock::time_point m_startTime;
             AZStd::chrono::milliseconds m_duration;
         };
 
@@ -81,7 +86,7 @@ namespace TestImpact
         };
 
         //! Representation of a test run that was terminated in-flight due to timing out.
-        class TimedOutTestRun 
+        class TimedOutTestRun
             : public TestRunBase
         {
         public:
@@ -90,7 +95,7 @@ namespace TestImpact
         };
 
         //! Representation of a test run that was not executed.
-        class UnexecutedTestRun 
+        class UnexecutedTestRun
             : public TestRunBase
         {
         public:
@@ -139,10 +144,11 @@ namespace TestImpact
             CompletedTestRun(
                 const AZStd::string& name,
                 const AZStd::string& commandString,
-                AZStd::chrono::high_resolution_clock::time_point startTime,
+                AZStd::chrono::steady_clock::time_point startTime,
                 AZStd::chrono::milliseconds duration,
                 TestRunResult result,
-                AZStd::vector<Test>&& tests);
+                AZStd::vector<Test>&& tests,
+                const AZStd::string& testNamespace);
 
             //! Constructs the test run from the specified test target executaion data.
             CompletedTestRun(TestRunBase&& testRun, AZStd::vector<Test>&& tests);
@@ -170,7 +176,7 @@ namespace TestImpact
         };
 
         //! Representation of a test run that completed with no test failures.
-        class PassingTestRun 
+        class PassingTestRun
             : public CompletedTestRun
         {
         public:
@@ -179,7 +185,7 @@ namespace TestImpact
         };
 
         //! Representation of a test run that completed with one or more test failures.
-        class FailingTestRun 
+        class FailingTestRun
             : public CompletedTestRun
         {
         public:

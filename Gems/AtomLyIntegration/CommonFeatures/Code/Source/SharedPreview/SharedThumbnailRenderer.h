@@ -13,6 +13,7 @@
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <Thumbnails/Thumbnail.h>
@@ -25,6 +26,7 @@ namespace AZ
         class SharedThumbnailRenderer final
             : public AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler
             , public SystemTickBus::Handler
+            , public AzFramework::AssetCatalogEventBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(SharedThumbnailRenderer, AZ::SystemAllocator, 0);
@@ -50,15 +52,14 @@ namespace AZ
             //! SystemTickBus::Handler interface overrides...
             void OnSystemTick() override;
 
+            // AzFramework::AssetCatalogEventBus::Handler overrides...
+            void OnCatalogLoaded(const char* catalogFile) override;
+
             // Default assets to be kept loaded and used for rendering if not overridden
-            static constexpr const char* DefaultLightingPresetPath = "lightingpresets/thumbnail.lightingpreset.azasset";
             Data::Asset<RPI::AnyAsset> m_defaultLightingPresetAsset;
-
-            static constexpr const char* DefaultModelPath = "models/sphere.azmodel";
             Data::Asset<RPI::ModelAsset> m_defaultModelAsset;
-
-            static constexpr const char* DefaultMaterialPath = "";
             Data::Asset<RPI::MaterialAsset> m_defaultMaterialAsset;
+            Data::Asset<RPI::MaterialAsset> m_reflectionMaterialAsset;
         };
     } // namespace LyIntegration
 } // namespace AZ

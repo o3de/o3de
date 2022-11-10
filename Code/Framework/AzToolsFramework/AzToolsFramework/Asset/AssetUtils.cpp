@@ -98,27 +98,25 @@ namespace AzToolsFramework::AssetUtils
         : AZ::SettingsRegistryInterface::Visitor
     {
         using AZ::SettingsRegistryInterface::Visitor::Visit;
-        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
+        void Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs, AZStd::string_view value) override
+        {
+            if (value == "enabled")
+            {
+                m_enabledPlatforms.emplace_back(visitArgs.m_fieldName);
+            }
+            else if (value == "disabled")
+            {
+                auto platformEntrySearch = [&visitArgs](AZStd::string_view platformEntry)
+                {
+                    return visitArgs.m_fieldName == platformEntry;
+                };
+                auto removeIt = AZStd::remove_if(m_enabledPlatforms.begin(), m_enabledPlatforms.end(), platformEntrySearch);
+                m_enabledPlatforms.erase(removeIt, m_enabledPlatforms.end());
+            }
+        }
 
         AZStd::vector<AZStd::string> m_enabledPlatforms;
     };
-
-    void EnabledPlatformsVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value)
-    {
-        if (value == "enabled")
-        {
-            m_enabledPlatforms.emplace_back(valueName);
-        }
-        else if (value == "disabled")
-        {
-            auto platformEntrySearch = [&valueName](AZStd::string_view platformEntry)
-            {
-                return valueName == platformEntry;
-            };
-            auto removeIt = AZStd::remove_if(m_enabledPlatforms.begin(), m_enabledPlatforms.end(), platformEntrySearch);
-            m_enabledPlatforms.erase(removeIt, m_enabledPlatforms.end());
-        }
-    }
 
     void ReadEnabledPlatformsFromSettingsRegistry(AZ::SettingsRegistryInterface& settingsRegistry,
         AZStd::vector<AZStd::string>& enabledPlatforms)

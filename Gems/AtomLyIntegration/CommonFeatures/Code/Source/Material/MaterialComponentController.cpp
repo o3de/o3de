@@ -58,6 +58,7 @@ namespace AZ
                     ->Event("ClearMaterialAssetId", &MaterialComponentRequestBus::Events::ClearMaterialAssetId, "ClearMaterialOverride")
                     ->Event("IsMaterialAssetIdOverridden", &MaterialComponentRequestBus::Events::IsMaterialAssetIdOverridden)
                     ->Event("SetPropertyValue", &MaterialComponentRequestBus::Events::SetPropertyValue, "SetPropertyOverride")
+                        ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
                     ->Event("SetPropertyValueBool", &MaterialComponentRequestBus::Events::SetPropertyValueT<bool>, "SetPropertyOverrideBool")
                     ->Event("SetPropertyValueInt32", &MaterialComponentRequestBus::Events::SetPropertyValueT<int32_t>, "SetPropertyOverrideInt32")
                     ->Event("SetPropertyValueUInt32", &MaterialComponentRequestBus::Events::SetPropertyValueT<uint32_t>, "SetPropertyOverrideUInt32")
@@ -70,6 +71,7 @@ namespace AZ
                     ->Event("SetPropertyValueString", &MaterialComponentRequestBus::Events::SetPropertyValueT<AZStd::string>, "SetPropertyOverrideString")
                     ->Event("SetPropertyValueEnum", &MaterialComponentRequestBus::Events::SetPropertyValueT<uint32_t>, "SetPropertyOverrideEnum")
                     ->Event("GetPropertyValue", &MaterialComponentRequestBus::Events::GetPropertyValue, "GetPropertyOverride")
+                        ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
                     ->Event("GetPropertyValueBool", &MaterialComponentRequestBus::Events::GetPropertyValueT<bool>, "GetPropertyOverrideBool")
                     ->Event("GetPropertyValueInt32", &MaterialComponentRequestBus::Events::GetPropertyValueT<int32_t>, "GetPropertyOverrideInt32")
                     ->Event("GetPropertyValueUInt32", &MaterialComponentRequestBus::Events::GetPropertyValueT<uint32_t>, "GetPropertyOverrideUInt32")
@@ -102,7 +104,7 @@ namespace AZ
 
         void MaterialComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC_CE("MaterialReceiverService"));
+            required.push_back(AZ_CRC_CE("MaterialConsumerService"));
         }
 
         MaterialComponentController::MaterialComponentController(const MaterialComponentConfig& config)
@@ -117,14 +119,14 @@ namespace AZ
             m_queuedMaterialUpdateNotification = false;
 
             MaterialComponentRequestBus::Handler::BusConnect(m_entityId);
-            MaterialReceiverNotificationBus::Handler::BusConnect(m_entityId);
+            MaterialConsumerNotificationBus::Handler::BusConnect(m_entityId);
             LoadMaterials();
         }
 
         void MaterialComponentController::Deactivate()
         {
             MaterialComponentRequestBus::Handler::BusDisconnect();
-            MaterialReceiverNotificationBus::Handler::BusDisconnect();
+            MaterialConsumerNotificationBus::Handler::BusDisconnect();
 
             ReleaseMaterials();
 
@@ -203,8 +205,8 @@ namespace AZ
             // Clear any previously loaded or queued material assets, instances, or notifications
             ReleaseMaterials();
 
-            MaterialReceiverRequestBus::EventResult(
-                m_defaultMaterialMap, m_entityId, &MaterialReceiverRequestBus::Events::GetDefautMaterialMap);
+            MaterialConsumerRequestBus::EventResult(
+                m_defaultMaterialMap, m_entityId, &MaterialConsumerRequestBus::Events::GetDefautMaterialMap);
 
             // Build tables of all referenced materials so that we can load and look up defaults
             for (const auto& [materialAssignmentId, materialAssignment] : m_defaultMaterialMap)
@@ -312,8 +314,8 @@ namespace AZ
             const MaterialAssignmentLodIndex lod, const AZStd::string& label) const
         {
             MaterialAssignmentId materialAssignmentId;
-            MaterialReceiverRequestBus::EventResult(
-                materialAssignmentId, m_entityId, &MaterialReceiverRequestBus::Events::FindMaterialAssignmentId, lod, label);
+            MaterialConsumerRequestBus::EventResult(
+                materialAssignmentId, m_entityId, &MaterialConsumerRequestBus::Events::FindMaterialAssignmentId, lod, label);
             return materialAssignmentId;
         }
 
@@ -326,7 +328,7 @@ namespace AZ
         AZStd::string MaterialComponentController::GetMaterialLabel(const MaterialAssignmentId& materialAssignmentId) const
         {
             MaterialAssignmentLabelMap labels;
-            MaterialReceiverRequestBus::EventResult(labels, m_entityId, &MaterialReceiverRequestBus::Events::GetMaterialLabels);
+            MaterialConsumerRequestBus::EventResult(labels, m_entityId, &MaterialConsumerRequestBus::Events::GetMaterialLabels);
 
             auto labelIt = labels.find(materialAssignmentId);
             return labelIt != labels.end() ? labelIt->second : "<unknown>";

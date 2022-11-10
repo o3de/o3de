@@ -113,6 +113,9 @@ namespace GraphModel
         //! Remove the wrapping from the specified node
         void UnwrapNode(ConstNodePtr node);
 
+        //! Return if the specified node is a wrapped node
+        bool IsNodeWrapped(NodePtr node) const;
+
         //! Return our full map of node wrappings
         const NodeWrappingMap& GetNodeWrappings();
 
@@ -141,9 +144,6 @@ namespace GraphModel
     protected:
         bool Contains(SlotPtr slot) const;
         ConnectionPtr FindConnection(ConstSlotPtr sourceSlot, ConstSlotPtr targetSlot);
-
-        //! Common implementation for removing a specific connection from m_connections
-        bool RemoveConnection(ConnectionList::iterator iter);
 
     private:
         NodeMap m_nodes;

@@ -14,7 +14,7 @@
 namespace LmbrCentral
 {
     // Type ID for Reference EditorReferenceShapeComponent
-    static constexpr const char* EditorReferenceShapeComponentTypeId = "{21BC79CA-C2F4-428F-AF2E-B76E233D4254}";
+    inline constexpr AZ::TypeId EditorReferenceShapeComponentTypeId{ "{21BC79CA-C2F4-428F-AF2E-B76E233D4254}" };
 
     class ReferenceShapeRequests
         : public AZ::ComponentBus

@@ -280,12 +280,19 @@ namespace Multiplayer
             }
         }
 
-        const AzNetworking::PacketId sentId = m_replicationWindow->SendEntityUpdateMessages(entityUpdates);
-
-        // Update the sent things with the packet id
-        for (EntityReplicator* replicator : replicatorUpdatedList)
+        if (m_replicationWindow)
         {
-            replicator->FinalizeSerialization(sentId);
+            const AzNetworking::PacketId sentId = m_replicationWindow->SendEntityUpdateMessages(entityUpdates);
+
+            // Update the sent things with the packet id
+            for (EntityReplicator* replicator : replicatorUpdatedList)
+            {
+                replicator->FinalizeSerialization(sentId);
+            }
+        }
+        else
+        {
+            AZ_Assert(false, "Failed to send entity update message, replication window does not exist");
         }
     }
 
@@ -325,13 +332,23 @@ namespace Multiplayer
                 rpcMessages.pop_front();
             }
 
-            m_replicationWindow->SendEntityRpcs(entityRpcs, reliable);
+            if (m_replicationWindow)
+            {
+                m_replicationWindow->SendEntityRpcs(entityRpcs, reliable);
+            }
+            else
+            {
+                AZ_Assert(false, "Failed to send entity rpc, replication window does not exist");
+            }
         }
     }
 
     void EntityReplicationManager::SendEntityResets()
     {
-        m_replicationWindow->SendEntityResets(m_replicatorsPendingReset);
+        if (m_replicationWindow)
+        {
+            m_replicationWindow->SendEntityResets(m_replicatorsPendingReset);
+        }
         m_replicatorsPendingReset.clear();
     }
 
@@ -536,7 +553,8 @@ namespace Multiplayer
         {
             if (entityReplicator->IsMarkedForRemoval())
             {
-                AZLOG(NET_RepDeletes, "Got a replicator delete message that is a duplicate id %llu remote host %s", static_cast<AZ::u64>(updateMessage.GetEntityId()), GetRemoteHostId().GetString().c_str());
+                AZLOG_WARN("Entity replicator for id %llu is already marked for deletion on remote host %s", static_cast<AZ::u64>(updateMessage.GetEntityId()), GetRemoteHostId().GetString().c_str());
+                return true;
             }
             else if (entityReplicator->OwnsReplicatorLifetime())
             {
@@ -549,6 +567,16 @@ namespace Multiplayer
                 entityReplicator->MarkForRemoval();
                 AZLOG(NET_RepDeletes, "Deleting replicater for entity id %llu remote host %s", static_cast<AZ::u64>(updateMessage.GetEntityId()), GetRemoteHostId().GetString().c_str());
             }
+        }
+        else
+        {
+            // Replicators are cleared on the server via ScheduledEvent. It's possible for redundant delete messages to be sent before the event fires.
+            AZLOG(
+                NET_RepDeletes,
+                "Replicator for id %llu is null on remote host %s. It likely has already been deleted.",
+                static_cast<AZ::u64>(updateMessage.GetEntityId()),
+                GetRemoteHostId().GetString().c_str());
+            return true;
         }
 
         // Handle entity cleanup
@@ -573,7 +601,7 @@ namespace Multiplayer
             }
         }
 
-        return true;
+        return shouldDeleteEntity;
     }
 
     bool EntityReplicationManager::HandlePropertyChangeMessage

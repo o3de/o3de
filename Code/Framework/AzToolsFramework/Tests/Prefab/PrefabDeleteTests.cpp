@@ -18,7 +18,7 @@ namespace UnitTest
 {
     using PrefabDeleteTest = PrefabTestFixture;
 
-    TEST_F(PrefabDeleteTest, DeleteEntitiesInInstance_DeleteSingleEntitySucceeds)
+    TEST_F(PrefabDeleteTest, DeleteEntitiesAndAllDescendantsInInstance_DeleteSingleEntitySucceeds)
     {
         PrefabEntityResult createEntityResult = m_prefabPublicInterface->CreateEntity(AZ::EntityId(), AZ::Vector3());
 
@@ -35,12 +35,10 @@ namespace UnitTest
         EXPECT_TRUE(testEntity == nullptr);
     }
 
-    TEST_F(PrefabDeleteTest, DeleteEntitiesInInstance_DeleteSinglePrefabSucceeds)
+    TEST_F(PrefabDeleteTest, DeleteEntitiesAndAllDescendantsInInstance_DeleteSinglePrefabSucceeds)
     {
-        PrefabEntityResult createEntityResult = m_prefabPublicInterface->CreateEntity(AZ::EntityId(), AZ::Vector3());
-
         // Verify that a valid entity is created.
-        AZ::EntityId createdEntityId = createEntityResult.GetValue();
+        AZ::EntityId createdEntityId = CreateEntityUnderRootPrefab("EntityUnderRootPrefab");
         ASSERT_TRUE(createdEntityId.IsValid());
         AZ::Entity* createdEntity = AzToolsFramework::GetEntityById(createdEntityId);
         ASSERT_TRUE(createdEntity != nullptr);
@@ -101,10 +99,8 @@ namespace UnitTest
 
     TEST_F(PrefabDeleteTest, DeleteEntitiesAndAllDescendantsInInstance_DeletingEntityDeletesChildPrefabToo)
     {
-        PrefabEntityResult entityToBePutUnderPrefabResult = m_prefabPublicInterface->CreateEntity(AZ::EntityId(), AZ::Vector3());
-
         // Verify that a valid entity is created that will be put in a prefab later.
-        AZ::EntityId entityToBePutUnderPrefabId = entityToBePutUnderPrefabResult.GetValue();
+        AZ::EntityId entityToBePutUnderPrefabId = CreateEntityUnderRootPrefab("EntityToBePutUnderPrefab");
         ASSERT_TRUE(entityToBePutUnderPrefabId.IsValid());
         AZ::Entity* entityToBePutUnderPrefab = AzToolsFramework::GetEntityById(entityToBePutUnderPrefabId);
         ASSERT_TRUE(entityToBePutUnderPrefab != nullptr);

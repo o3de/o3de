@@ -28,6 +28,7 @@ namespace AzToolsFramework
         class Instance;
         class InstanceEntityMapperInterface;
         class InstanceToTemplateInterface;
+        class InstanceDomGeneratorInterface;
         class PrefabLoaderInterface;
         class PrefabSystemComponentInterface;
 
@@ -42,12 +43,10 @@ namespace AzToolsFramework
             void UnregisterPrefabPublicHandlerInterface();
 
             // PrefabPublicInterface...
-            CreatePrefabResult CreatePrefabInDisk(
-                const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
-            CreatePrefabResult CreatePrefabInMemory(
-                const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
+            CreatePrefabResult CreatePrefabInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
+            CreatePrefabResult CreatePrefabInMemory(const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
             InstantiatePrefabResult InstantiatePrefab(
-                AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
+                AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Vector3& position) override;
             PrefabOperationResult SavePrefab(AZ::IO::Path filePath) override;
             PrefabEntityResult CreateEntity(AZ::EntityId parentId, const AZ::Vector3& position) override;
             
@@ -56,13 +55,11 @@ namespace AzToolsFramework
             bool IsOwnedByProceduralPrefabInstance(AZ::EntityId entityId) const override;
             bool IsInstanceContainerEntity(AZ::EntityId entityId) const override;
             bool IsLevelInstanceContainerEntity(AZ::EntityId entityId) const override;
+            bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
             AZ::EntityId GetInstanceContainerEntityId(AZ::EntityId entityId) const override;
             AZ::EntityId GetLevelInstanceContainerEntityId() const override;
             AZ::IO::Path GetOwningInstancePrefabPath(AZ::EntityId entityId) const override;
             PrefabRequestResult HasUnsavedChanges(AZ::IO::Path prefabFilePath) const override;
-
-            //! [DEPRECATION]--This function is marked for deprecation. Please use DeleteEntitiesAndAllDescendantsInInstance instead.
-            PrefabOperationResult DeleteEntitiesInInstance(const EntityIdList& entityIds) override;
 
             PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
             DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
@@ -81,8 +78,12 @@ namespace AzToolsFramework
             //! It will identify and exclude the container entity of the root prefab instance, and all read-only entities.
             EntityIdList SanitizeEntityIdList(const EntityIdList& entityIds) const;
 
+            //! Copies the entity DOM from owning template into the given map if the map sees
+            //! the entity id for the first time.
+            void CaptureInitialEntityDomFromOwningTemplate(AZStd::unordered_map<AZ::EntityId, PrefabDom>& entityIdDomMap,
+                const AZ::EntityId entityId, const PrefabDom& owningTemplateDom) const;
+
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
-            bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
             void AddNewEntityToSortOrder(Instance& owningInstance, PrefabDom& domToAddEntityUnder,
                 const EntityAlias& parentEntityAlias, const EntityAlias& entityToAddAlias);
 
@@ -112,19 +113,20 @@ namespace AzToolsFramework
             void DuplicateNestedInstancesInInstance(Instance& commonOwningInstance,
                 const AZStd::vector<Instance*>& instances, PrefabDom& domToAddDuplicatedInstancesUnder,
                 EntityIdList& duplicatedEntityIds, AZStd::unordered_map<InstanceAlias, Instance*>& newInstanceAliasToOldInstanceMap);
-            
+
             /**
-             * Applies the correct transform changes to the container entity based on the parent and child entities provided, and returns an appropriate patch.
-             * The container will be parented to parentId, moved to the average transform of the future direct children and its cache will be updated.
-             * This helper function won't support undo/redo, update the templates or create any links. All that needs to be done by the caller.
-             * 
+             * Applies the correct transform to the container entity, and returns an appropriate patch.
+             * This helper function won't support undo/redo, update the templates or create any links.
+             * All that needs to be done by the caller.
+             *
              * \param containerEntityId The container to apply the changes to.
              * \param parentEntityId The id of the entity the container should be parented to.
-             * \param childEntities A list of entities that will subsequently be parented to this container.
+             * \param translation New translation for the container entity.
+             * \param rotation New rotation for the container entity.
              * \return The PrefabDom containing the patches that should be stored in the parent link.
              */
-            PrefabDom ApplyContainerTransformAndGeneratePatch(
-                AZ::EntityId containerEntityId, AZ::EntityId parentEntityId, const EntityList& childEntities);
+            PrefabDom ApplyContainerTransformAndGeneratePatch(AZ::EntityId containerEntityId, AZ::EntityId parentEntityId,
+                const AZ::Vector3& translation, const AZ::Quaternion& rotation);
 
             /**
              * Creates a link between the templates of an instance and its parent.
@@ -190,10 +192,17 @@ namespace AzToolsFramework
 
             static Instance* GetParentInstance(Instance* instance);
             static Instance* GetAncestorOfInstanceThatIsChildOfRoot(const Instance* ancestor, Instance* descendant);
+
+            //! Generates the transform based on the input list of entities.
+            //! The transform will be based on the average transform of the direct children.
+            //! \param topLevelEntities The direct children entities provided to calculate the average transform.
+            //! \param[out] translation The output translation.
+            //! \param[out] rotation The output rotation.
             static void GenerateContainerEntityTransform(const EntityList& topLevelEntities, AZ::Vector3& translation, AZ::Quaternion& rotation);
 
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
+            InstanceDomGeneratorInterface* m_instanceDomGeneratorInterface = nullptr;
             PrefabFocusInterface* m_prefabFocusInterface = nullptr;
             PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
             PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;

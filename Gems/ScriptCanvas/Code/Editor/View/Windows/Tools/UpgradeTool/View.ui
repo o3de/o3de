@@ -96,9 +96,6 @@
          <property name="showGrid">
           <bool>true</bool>
          </property>
-         <property name="rowCount">
-          <number>1</number>
-         </property>
          <property name="columnCount">
           <number>4</number>
          </property>
@@ -126,7 +123,6 @@
          <attribute name="verticalHeaderStretchLastSection">
           <bool>false</bool>
          </attribute>
-         <row/>
          <column>
           <property name="text">
            <string>Asset</string>
@@ -351,6 +347,16 @@
              </property>
             </widget>
            </item>
+            <item row="6" column="1">
+              <widget class="QCheckBox" name="onlyShowXMLFiles">
+                <property name="text">
+                  <string>Only show graphs from legacy XML format</string>
+                </property>
+                <property name="checked">
+                  <bool>false</bool>
+                </property>
+              </widget>
+            </item>
            <item row="5" column="8">
             <widget class="QCheckBox" name="verbose">
              <property name="text">

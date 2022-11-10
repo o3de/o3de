@@ -18,6 +18,20 @@
       "test_profile_nounity"
     ]
   },
+  "profile_ubuntu22_nounity_pipe": {
+    "TAGS": [
+      "periodic-incremental-daily",
+      "periodic-clean-weekly-internal"
+    ],
+    "PIPELINE_ENV":{
+      "NODE_LABEL":"linux-ubuntu-22"
+    },
+    "steps": [
+      "profile_nounity",
+      "asset_profile_nounity",
+      "test_profile_nounity"
+    ]
+  },
   "metrics": {
     "TAGS": [
       "weekly"
@@ -30,7 +44,6 @@
   },
   "validation_pipe": {
     "TAGS": [
-      "default",
       "snapshot"
     ],
     "steps": [
@@ -92,6 +105,7 @@
  },
   "profile_nounity": {
     "TAGS": [
+      "daily-pipeline-metrics",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_linux.sh",
@@ -166,7 +180,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "AssetProcessorBatch",
       "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
-      "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
+      "ASSET_PROCESSOR_OPTIONS": "--zeroAnalysisMode --ignoreFutureAssetDatabaseVersionError",
       "ASSET_PROCESSOR_PLATFORMS": "linux,server"
     }
   },
@@ -183,7 +197,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "AssetProcessorBatch",
       "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
-      "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
+      "ASSET_PROCESSOR_OPTIONS": "--zeroAnalysisMode --ignoreFutureAssetDatabaseVersionError",
       "ASSET_PROCESSOR_PLATFORMS": "linux,server"
     }
   },
@@ -379,8 +393,8 @@
     "COMMAND": "deploy_cdk_applications.sh",
     "PARAMETERS": {
       "NVM_VERSION": "v0.39.1",
-      "CDK_VERSION": "1.154.0",
-      "PYTHON_RUNTIME": "python-3.7.12-rev2-linux"
+      "CDK_VERSION": "1.179.0",
+      "PYTHON_RUNTIME": "python-3.10.5-rev1-linux"
     }
   },
   "awsi_destruction": {
@@ -391,8 +405,8 @@
     "COMMAND": "destroy_cdk_applications.sh",
     "PARAMETERS": {
       "NVM_VERSION": "v0.39.1",
-      "CDK_VERSION": "1.154.0",
-      "PYTHON_RUNTIME": "python-3.7.12-rev2-linux"
+      "CDK_VERSION": "1.179.0",
+      "PYTHON_RUNTIME": "python-3.10.5-rev1-linux"
     }
   }
 }

@@ -469,6 +469,7 @@ void EditorViewportWidget::Update()
         }
     }
 
+    if(!m_hasUpdatedVisibility)
     {
         auto start = std::chrono::steady_clock::now();
 
@@ -480,6 +481,8 @@ void EditorViewportWidget::Update()
             std::chrono::duration<double> diff = stop - start;
             AZ_Printf("Visibility", "FindVisibleEntities (new) - Duration: %f", diff);
         }
+
+        m_hasUpdatedVisibility = true;
     }
 
     QtViewport::Update();
@@ -618,6 +621,10 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
 void EditorViewportWidget::OnBeginPrepareRender()
 {
+    AZ_PROFILE_FUNCTION(Editor);
+
+    m_hasUpdatedVisibility = false;
+
     if (!m_debugDisplay)
     {
         AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
@@ -647,12 +654,6 @@ void EditorViewportWidget::OnBeginPrepareRender()
     m_debugDisplay->DepthTestOff();
     auto prevState = m_debugDisplay->GetState();
     m_debugDisplay->SetState(e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeBack | e_DepthWriteOn | e_DepthTestOn);
-
-    if (gSettings.viewports.bShowSafeFrame)
-    {
-        UpdateSafeFrame();
-        RenderSafeFrame();
-    }
 
     AzFramework::ViewportDebugDisplayEventBus::Event(
         AzToolsFramework::GetEntityContextId(), &AzFramework::ViewportDebugDisplayEvents::DisplayViewport2d,
@@ -692,79 +693,6 @@ void EditorViewportWidget::RenderAll()
                 AztfVi::MouseButtons(AztfVi::TranslateMouseButtons(QGuiApplication::mouseButtons())), keyboardModifiers,
                 BuildMousePick(WidgetToViewport(mapFromGlobal(QCursor::pos())))));
         m_debugDisplay->DepthTestOn();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::UpdateSafeFrame()
-{
-    m_safeFrame = m_rcClient;
-
-    if (m_safeFrame.height() == 0)
-    {
-        return;
-    }
-
-    const bool allowSafeFrameBiggerThanViewport = false;
-
-    float safeFrameAspectRatio = float(m_safeFrame.width()) / m_safeFrame.height();
-    float targetAspectRatio = GetAspectRatio();
-    bool viewportIsWiderThanSafeFrame = (targetAspectRatio <= safeFrameAspectRatio);
-    if (viewportIsWiderThanSafeFrame || allowSafeFrameBiggerThanViewport)
-    {
-        float maxSafeFrameWidth = m_safeFrame.height() * targetAspectRatio;
-        float widthDifference = m_safeFrame.width() - maxSafeFrameWidth;
-
-        m_safeFrame.setLeft(static_cast<int>(m_safeFrame.left() + widthDifference * 0.5f));
-        m_safeFrame.setRight(static_cast<int>(m_safeFrame.right() - widthDifference * 0.5f));
-    }
-    else
-    {
-        float maxSafeFrameHeight = m_safeFrame.width() / targetAspectRatio;
-        float heightDifference = m_safeFrame.height() - maxSafeFrameHeight;
-
-        m_safeFrame.setTop(static_cast<int>(m_safeFrame.top() + heightDifference * 0.5f));
-        m_safeFrame.setBottom(static_cast<int>(m_safeFrame.bottom() - heightDifference * 0.5f));
-    }
-
-    m_safeFrame.adjust(0, 0, -1, -1); // <-- aesthetic improvement.
-
-    const float SAFE_ACTION_SCALE_FACTOR = 0.05f;
-    m_safeAction = m_safeFrame;
-    m_safeAction.adjust(
-        static_cast<int>(m_safeFrame.width() * SAFE_ACTION_SCALE_FACTOR), static_cast<int>(m_safeFrame.height() * SAFE_ACTION_SCALE_FACTOR),
-        static_cast<int>(-m_safeFrame.width() * SAFE_ACTION_SCALE_FACTOR),
-        static_cast<int>(-m_safeFrame.height() * SAFE_ACTION_SCALE_FACTOR));
-
-    const float SAFE_TITLE_SCALE_FACTOR = 0.1f;
-    m_safeTitle = m_safeFrame;
-    m_safeTitle.adjust(
-        static_cast<int>(m_safeFrame.width() * SAFE_TITLE_SCALE_FACTOR), static_cast<int>(m_safeFrame.height() * SAFE_TITLE_SCALE_FACTOR),
-        static_cast<int>(-m_safeFrame.width() * SAFE_TITLE_SCALE_FACTOR),
-        static_cast<int>(-m_safeFrame.height() * SAFE_TITLE_SCALE_FACTOR));
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::RenderSafeFrame()
-{
-    RenderSafeFrame(m_safeFrame, 0.75f, 0.75f, 0, 0.8f);
-    RenderSafeFrame(m_safeAction, 0, 0.85f, 0.80f, 0.8f);
-    RenderSafeFrame(m_safeTitle, 0.80f, 0.60f, 0, 0.8f);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::RenderSafeFrame(const QRect& frame, float r, float g, float b, float a)
-{
-    m_debugDisplay->SetColor(AZ::Color(r, g, b, a));
-
-    const int LINE_WIDTH = 2;
-    for (int i = 0; i < LINE_WIDTH; i++)
-    {
-        AZ::Vector3 topLeft(static_cast<float>(frame.left() + i), static_cast<float>(frame.top() + i), 0.0f);
-        AZ::Vector3 bottomRight(static_cast<float>(frame.right() - i), static_cast<float>(frame.bottom() - i), 0.0f);
-        m_debugDisplay->DrawWireBox(topLeft, bottomRight);
     }
 }
 
@@ -907,7 +835,7 @@ void EditorViewportWidget::SetViewportId(int id)
     }
     auto viewportContext = m_renderViewport->GetViewportContext();
     m_defaultViewportContextName = viewportContext->GetName();
-    m_defaultView = viewportContext->GetDefaultView();
+    m_defaultViewGroup = viewportContext->GetViewGroup();
     QBoxLayout* layout = new QBoxLayout(QBoxLayout::Direction::TopToBottom, this);
     layout->setContentsMargins(QMargins());
     layout->addWidget(m_renderViewport);
@@ -946,6 +874,20 @@ void EditorViewportWidget::SetViewportId(int id)
         }
     );
     m_editorViewportSettingsCallbacks->SetAngleSnappingChangedEvent(m_angleSnappingHandler);
+
+    m_perspectiveChangeHandler = SandboxEditor::PerspectiveChangedEvent::Handler(
+        [this](const float fovRadians)
+        {
+            if (m_viewSourceType == ViewSourceType::None)
+            {
+                if (m_viewPane)
+                {
+                    m_viewPane->OnFOVChanged(fovRadians);
+                }
+                SetFOV(fovRadians);
+            }
+        });
+    m_editorViewportSettingsCallbacks->SetPerspectiveChangedEvent(m_perspectiveChangeHandler);
 
     m_nearPlaneDistanceHandler = SandboxEditor::NearFarPlaneChangedEvent::Handler(
         [this]([[maybe_unused]] float nearPlaneDistance)
@@ -1041,7 +983,6 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
     action->setCheckable(true);
     action->setChecked(bDisplayLabels);
 
-    AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Safe Frame"), &gSettings.viewports.bShowSafeFrame);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Construction Plane"), &gSettings.snap.constructPlaneDisplay);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Trigger Bounds"), &gSettings.viewports.bShowTriggerBounds);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Helpers of Frozen Objects"), &gSettings.viewports.nShowFrozenHelpers);
@@ -1869,9 +1810,9 @@ void EditorViewportWidget::SetFOV(float fov)
     }
     else
     {
-        auto m = m_defaultView->GetViewToClipMatrix();
+        auto m = m_defaultViewGroup->GetView()->GetViewToClipMatrix();
         AZ::SetPerspectiveMatrixFOV(m, fov, aznumeric_cast<float>(width()) / aznumeric_cast<float>(height()));
-        m_defaultView->SetViewToClipMatrix(m);
+        m_defaultViewGroup->GetView()->SetViewToClipMatrix(m);
     }
 }
 
@@ -1886,7 +1827,7 @@ float EditorViewportWidget::GetFOV() const
     }
     else
     {
-        return AZ::GetPerspectiveMatrixFOV(m_defaultView->GetViewToClipMatrix());
+        return AZ::GetPerspectiveMatrixFOV(m_defaultViewGroup->GetView()->GetViewToClipMatrix());
     }
 }
 
@@ -1938,9 +1879,9 @@ void EditorViewportWidget::SetDefaultCamera()
     // synchronize the configured editor viewport FOV to the default camera
     if (m_viewPane)
     {
-        const float fov = gSettings.viewports.fDefaultFov;
-        m_viewPane->OnFOVChanged(fov);
-        SetFOV(fov);
+        const float fovRadians = SandboxEditor::CameraDefaultFovRadians();
+        m_viewPane->OnFOVChanged(fovRadians);
+        SetFOV(fovRadians);
     }
 
     // Update camera matrix according to near / far values
@@ -1954,7 +1895,7 @@ void EditorViewportWidget::SetDefaultCamera()
     if (auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get())
     {
         const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-        atomViewportRequests->PushView(contextName, m_defaultView);
+        atomViewportRequests->PushViewGroup(contextName, m_defaultViewGroup);
     }
 
     // check to see if we have an existing last known location for this level
@@ -1982,9 +1923,9 @@ void EditorViewportWidget::SetDefaultCamera()
 
 void EditorViewportWidget::SetDefaultCameraNearFar()
 {
-    auto viewToClip = m_defaultView->GetViewToClipMatrix();
+    auto viewToClip = m_defaultViewGroup->GetView()->GetViewToClipMatrix();
     AZ::SetPerspectiveMatrixNearFar(viewToClip, SandboxEditor::CameraDefaultNearPlaneDistance(), SandboxEditor::CameraDefaultFarPlaneDistance());
-    m_defaultView->SetViewToClipMatrix(viewToClip);
+    m_defaultViewGroup->GetView()->SetViewToClipMatrix(viewToClip);
 }
 
 
@@ -2452,7 +2393,7 @@ void EditorViewportWidget::SetAsActiveViewport()
         if (viewportContext)
         {
             // Remove the old viewport's camera from the stack, as it's no longer the owning viewport
-            viewportContextManager->PopView(defaultContextName, viewportContext->GetDefaultView());
+            viewportContextManager->PopViewGroup(defaultContextName, viewportContext->GetViewGroup());
             viewportContextManager->RenameViewportContext(viewportContext, m_pPrimaryViewport->m_defaultViewportContextName);
         }
     }
@@ -2465,7 +2406,7 @@ void EditorViewportWidget::SetAsActiveViewport()
         {
             // Push our camera onto the default viewport's view stack to preserve camera state continuity
             // Other views can still be pushed on top of our view for e.g. game mode
-            viewportContextManager->PushView(defaultContextName, viewportContext->GetDefaultView());
+            viewportContextManager->PushViewGroup(defaultContextName, viewportContext->GetViewGroup());
             viewportContextManager->RenameViewportContext(viewportContext, defaultContextName);
         }
     }
@@ -2539,6 +2480,11 @@ bool EditorViewportSettings::IconsVisible() const
 bool EditorViewportSettings::HelpersVisible() const
 {
     return AzToolsFramework::HelpersVisible();
+}
+
+bool EditorViewportSettings::OnlyShowHelpersForSelectedEntities() const
+{
+    return AzToolsFramework::OnlyShowHelpersForSelectedEntities();
 }
 
 AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);

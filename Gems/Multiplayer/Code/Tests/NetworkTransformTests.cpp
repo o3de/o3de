@@ -317,4 +317,19 @@ namespace Multiplayer
             AZ::EntityId(1)
         );
     }
+
+    TEST_F(ClientNetTransformTests, CorrectionSyncsTransform)
+    {
+        m_root->m_entity->Activate();
+        m_child->m_entity->Activate();
+
+        SetTranslationOnNetworkTransform(m_root->m_entity, AZ::Vector3::CreateOne());
+        SetParentIdOnNetworkTransform(m_child->m_entity, NetEntityId{ 1 });
+        m_root->m_entity->FindComponent<NetBindComponent>()->NotifyCorrection();
+        EXPECT_EQ(m_root->m_entity->GetTransform()->GetWorldTranslation(), AZ::Vector3::CreateOne());
+
+        SetTranslationOnNetworkTransform(m_child->m_entity, AZ::Vector3::CreateOne());
+        m_child->m_entity->FindComponent<NetBindComponent>()->NotifyCorrection();
+        EXPECT_EQ(m_child->m_entity->GetTransform()->GetLocalTranslation(), AZ::Vector3::CreateOne());
+    }
 }

@@ -13,7 +13,6 @@ import shutil
 import six
 import stat
 import tempfile
-import re
 
 import ly_test_tools.environment.file_system as file_system
 

@@ -300,7 +300,7 @@ namespace AZ
         {
             //gpuTimestamp in nanoseconds.
             auto timeInNano = AZStd::chrono::nanoseconds(gpuTimestamp);
-            return AZStd::chrono::microseconds(timeInNano);
+            return AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(timeInNano);
         }
     
         RHI::ResourceMemoryRequirements Device::GetResourceMemoryRequirements(const RHI::ImageDescriptor& descriptor)
@@ -379,6 +379,8 @@ namespace AZ
             m_limits.m_maxImageDimensionCube = 8192;
             m_limits.m_maxImageArraySize = 2048;
             m_limits.m_minConstantBufferViewOffset = Alignment::Constant;
+            m_limits.m_maxConstantBufferSize = m_metalDevice.maxBufferLength;
+            m_limits.m_maxBufferSize = m_metalDevice.maxBufferLength;
             
             AZ_Assert(m_metalDevice.argumentBuffersSupport, "Atom needs Argument buffer support to run");
         }

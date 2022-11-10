@@ -1,17 +1,7 @@
 {
-    "sources": {
-        "input": [
-${autogen_input_files}
-        ],
-        "output": [
-${autogen_output_files}
-        ],
-        "static": [
-${static_sources}
-        ]
-    },
     "target": {
         "name": "${target_name}",
+        "type": "${target_type}",
         "output_name": "${target_output_name}",
         "path": "${target_path}",
         "dependencies": {
@@ -22,5 +12,16 @@ ${static_sources}
                 ${runtime_dependencies}
             ]
         }
+    },
+    "sources": {
+        "input": [
+${autogen_input_files}
+        ],
+        "output": [
+${autogen_output_files}
+        ],
+        "static": [
+${static_sources}
+        ]
     }
 }

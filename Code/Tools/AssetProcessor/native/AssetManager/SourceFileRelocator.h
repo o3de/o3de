@@ -177,7 +177,9 @@ namespace AssetProcessor
         //! Takes a relocation set and builds a string report to output the result of what files will change and what dependencies will break
         virtual AZStd::string BuildReport(const SourceFileRelocationContainer& relocationEntries, const FileUpdateTasks& updateTasks, bool isMove, bool updateReference) const = 0;
 
-        AZ_DISABLE_COPY_MOVE(ISourceFileRelocation);
+         //! Takes a relocation set and builds a string report to output the result of what files will change and what dependencies will break formatted for use in a dialog box
+        virtual AZStd::string BuildChangeReport(const SourceFileRelocationContainer& relocationEntries, const FileUpdateTasks& updateTasks) const = 0;
+       AZ_DISABLE_COPY_MOVE(ISourceFileRelocation);
     };
 
     class SourceFileRelocator
@@ -227,6 +229,7 @@ namespace AssetProcessor
         AZ::Outcome<RelocationSuccess, MoveFailure> Move(const AZStd::string& source, const AZStd::string& destination, bool previewOnly = true, bool allowDependencyBreaking = false, bool removeEmptyFolders = true, bool updateReferences = false, bool excludeMetaDataFiles = false) override;
         AZ::Outcome<RelocationSuccess, AZStd::string> Delete(const AZStd::string& source, bool previewOnly = true, bool allowDependencyBreaking = false, bool removeEmptyFolders = true, bool excludeMetaDataFiles = false) override;
         AZStd::string BuildReport(const SourceFileRelocationContainer& relocationEntries, const FileUpdateTasks& updateTasks, bool isMove, bool updateReference) const override;
+        AZStd::string BuildChangeReport(const SourceFileRelocationContainer& relocationEntries, const FileUpdateTasks& updateTasks) const override;
 
     private:
         AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> m_stateData;

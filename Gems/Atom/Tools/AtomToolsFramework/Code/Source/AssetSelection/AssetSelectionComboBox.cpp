@@ -65,7 +65,7 @@ namespace AtomToolsFramework
 
     void AssetSelectionComboBox::SelectAsset(const AZ::Data::AssetId& assetId)
     {
-        const QVariant assetIdItemData(assetId.ToString<AZStd::string>().c_str());
+        const QVariant assetIdItemData(assetId.ToFixedString().c_str());
         const int index = findData(assetIdItemData);
         setCurrentIndex(index);
     }
@@ -118,7 +118,7 @@ namespace AtomToolsFramework
     {
         if (m_filterCallback && m_filterCallback(assetInfo))
         {
-            const QVariant assetIdItemData(assetId.ToString<AZStd::string>().c_str());
+            const QVariant assetIdItemData(assetId.ToFixedString().c_str());
             const int index = findData(assetIdItemData);
             removeItem(index);
         }
@@ -129,7 +129,7 @@ namespace AtomToolsFramework
         if (m_filterCallback && m_filterCallback(assetInfo))
         {
             // Only add the asset if no item exists with the incoming asset ID
-            const QVariant assetIdItemData(assetInfo.m_assetId.ToString<AZStd::string>().c_str());
+            const QVariant assetIdItemData(assetInfo.m_assetId.ToFixedString().c_str());
             const int index = findData(assetIdItemData);
             if (index < 0)
             {
@@ -164,7 +164,7 @@ namespace AtomToolsFramework
             auto thumbnailKeyItr = m_thumbnailKeys.find(assetId);
             if (thumbnailKeyItr != m_thumbnailKeys.end())
             {
-                const QVariant assetIdItemData(assetId.ToString<AZStd::string>().c_str());
+                const QVariant assetIdItemData(assetId.ToFixedString().c_str());
                 const int index = findData(assetIdItemData);
                 if (index >= 0)
                 {
