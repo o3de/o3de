@@ -9,17 +9,16 @@
 #pragma once
 
 #include <AzCore/std/containers/unordered_set.h>
-#include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
+#include <AzFramework/DocumentPropertyEditor/MetaAdapter.h>
 
 namespace AZ::DocumentPropertyEditor
 {
-    class RowFilterAdapter : public DocumentAdapter
+    class RowFilterAdapter : public MetaAdapter
     {
     public:
         RowFilterAdapter();
         ~RowFilterAdapter();
 
-        void SetSourceAdapter(DocumentAdapterPtr sourceAdapter);
         void SetIncludeAllMatchDescendants(bool includeAll);
 
     protected:
@@ -64,23 +63,16 @@ namespace AZ::DocumentPropertyEditor
         virtual bool MatchesFilter(MatchInfoNode* matchNode) const = 0;
 
         MatchInfoNode* MakeNewNode(MatchInfoNode* parentNode, unsigned int creationFrame);
-        static bool IsRow(const Dom::Value& domValue);
-        bool IsRow(const Dom::Path& sourcePath) const;
 
         void SetFilterActive(bool activateFilter);
         void InvalidateFilter();
 
+        // DocumentAdapter overrides ...
         Dom::Value GenerateContents() override;
 
-        DocumentAdapterPtr m_sourceAdapter;
-
-        void HandleReset();
-        void HandleDomChange(const Dom::Patch& patch);
-        void HandleDomMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message, Dom::Value& value);
-
-        DocumentAdapter::ResetEvent::Handler m_resetHandler;
-        ChangedEvent::Handler m_changedHandler;
-        MessageEvent::Handler m_domMessageHandler;
+        // MetaAdapter overrides
+        void HandleReset() override;
+        void HandleDomChange(const Dom::Patch& patch) override;
 
         MatchInfoNode* GetMatchNodeAtPath(const Dom::Path& sourcePath);
 
@@ -105,9 +97,6 @@ namespace AZ::DocumentPropertyEditor
         void UpdateMatchState(MatchInfoNode* rowState);
         void UpdateMatchDescendants(MatchInfoNode* startNode); //!< calls UpdateMatchState on the subtree starting at startNode
 
-        //! returns the first path in the ancestry of sourcePath that is of type Row, including self
-        Dom::Path GetRowPath(const Dom::Path& sourcePath) const;
-
         /*! this increases every time the source Adapter changes or resets to keep track of which
          *  node updates are new */
         unsigned int m_updateFrame = 0;
@@ -119,28 +108,5 @@ namespace AZ::DocumentPropertyEditor
     private:
         //! indicates whether all children of a direct match are considered matching as well
         bool m_includeAllMatchDescendants = true;
-    };
-
-    class ValueStringFilter : public RowFilterAdapter
-    {
-    public:
-        ValueStringFilter();
-        void SetFilterString(AZStd::string filterString);
-
-        struct StringMatchNode : public RowFilterAdapter::MatchInfoNode
-        {
-            void AddStringifyValue(const Dom::Value& domValue);
-
-            AZStd::string m_matchableDomTerms;
-        };
-
-    protected:
-        // pure virtual overrides
-        virtual MatchInfoNode* NewMatchInfoNode() const override;
-        virtual void CacheDomInfoForNode(const Dom::Value& domValue, MatchInfoNode* matchNode) const override;
-        virtual bool MatchesFilter(MatchInfoNode* matchNode) const override;
-
-        bool m_includeDescriptions = true;
-        AZStd::string m_filterString;
     };
 } // namespace AZ::DocumentPropertyEditor
