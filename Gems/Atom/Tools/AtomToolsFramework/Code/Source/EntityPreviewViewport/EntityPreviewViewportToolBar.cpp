@@ -125,6 +125,16 @@ namespace AtomToolsFramework
                 m_modelPresetComboBox->SelectPath(viewportRequests->GetLastModelPresetPath());
             });
     }
+
+    void EntityPreviewViewportToolBar::OnModelPresetAdded(const AZStd::string& path)
+    {
+        m_modelPresetComboBox->AddPath(path);
+    }
+
+    void EntityPreviewViewportToolBar::OnLightingPresetAdded(const AZStd::string& path)
+    {
+        m_lightingPresetComboBox->AddPath(path);
+    }
 } // namespace AtomToolsFramework
 
 #include <AtomToolsFramework/EntityPreviewViewport/moc_EntityPreviewViewportToolBar.cpp>

@@ -20,8 +20,10 @@ namespace AtomToolsFramework
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         typedef AZ::Crc32 BusIdType;
 
-        //! Notify when any setting changes
+        //! Notify when settings changes
         virtual void OnViewportSettingsChanged(){};
+        virtual void OnModelPresetAdded([[maybe_unused]] const AZStd::string& path){};
+        virtual void OnLightingPresetAdded([[maybe_unused]] const AZStd::string& path){};
     };
 
     using EntityPreviewViewportSettingsNotificationBus = AZ::EBus<EntityPreviewViewportSettingsNotifications>;

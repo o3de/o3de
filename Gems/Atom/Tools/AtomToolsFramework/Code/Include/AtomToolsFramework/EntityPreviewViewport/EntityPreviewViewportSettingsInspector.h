@@ -12,6 +12,7 @@
 #include <ACES/Aces.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
+#include <AtomToolsFramework/AssetSelection/AssetSelectionGrid.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettings.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsNotificationBus.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
@@ -53,8 +54,10 @@ namespace AtomToolsFramework
         // InspectorRequestBus::Handler overrides...
         void Reset() override;
 
-        // EntityPreviewViewportSettingsNotificationBus::Handler overrides...
+        // EntityPreviewViewportSettingsNotificationBus::Handlerc overrides...
         void OnViewportSettingsChanged() override;
+        void OnModelPresetAdded(const AZStd::string& path) override;
+        void OnLightingPresetAdded(const AZStd::string& path) override;
 
         // AzToolsFramework::IPropertyEditorNotify overrides...
         void BeforePropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode) override{};
@@ -68,8 +71,15 @@ namespace AtomToolsFramework
         AZ::Crc32 GetGroupSaveStateKey(const AZStd::string& groupName) const;
 
         const AZ::Crc32 m_toolId = {};
+
+        AZStd::string m_modelPresetPath;
         AZ::Render::ModelPreset m_modelPreset;
+        AssetSelectionGrid* m_modelPresetDialog = {};
+
+        AZStd::string m_lightingPresetPath;
         AZ::Render::LightingPreset m_lightingPreset;
+        AssetSelectionGrid* m_lightingPresetDialog = {};
+
         EntityPreviewViewportSettings m_viewportSettings;
     };
 } // namespace AtomToolsFramework

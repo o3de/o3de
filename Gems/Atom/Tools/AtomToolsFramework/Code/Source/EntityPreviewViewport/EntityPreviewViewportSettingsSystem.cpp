@@ -141,6 +141,9 @@ namespace AtomToolsFramework
         {
             SetSettingsValue("/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/LightingPresetPath", pathWithAlias);
             m_lightingPresetCache[pathWithAlias] = m_lightingPreset;
+            m_settingsNotificationPending = true;
+            EntityPreviewViewportSettingsNotificationBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsNotificationBus::Events::OnLightingPresetAdded, pathWithoutAlias);
             return true;
         }
         return false;
@@ -168,6 +171,8 @@ namespace AtomToolsFramework
                 m_lightingPreset = AZStd::any_cast<AZ::Render::LightingPreset>(loadResult.GetValue());
                 m_lightingPresetCache[pathWithAlias] = m_lightingPreset;
                 m_settingsNotificationPending = true;
+                EntityPreviewViewportSettingsNotificationBus::Event(
+                    m_toolId, &EntityPreviewViewportSettingsNotificationBus::Events::OnLightingPresetAdded, pathWithoutAlias);
                 return true;
             }
         }
@@ -211,6 +216,9 @@ namespace AtomToolsFramework
         {
             SetSettingsValue("/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/ModelPresetPath", pathWithAlias);
             m_modelPresetCache[pathWithAlias] = m_modelPreset;
+            m_settingsNotificationPending = true;
+            EntityPreviewViewportSettingsNotificationBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsNotificationBus::Events::OnModelPresetAdded, pathWithoutAlias);
             return true;
         }
         return false;
@@ -238,6 +246,8 @@ namespace AtomToolsFramework
                 m_modelPreset = AZStd::any_cast<AZ::Render::ModelPreset>(loadResult.GetValue());
                 m_modelPresetCache[pathWithAlias] = m_modelPreset;
                 m_settingsNotificationPending = true;
+                EntityPreviewViewportSettingsNotificationBus::Event(
+                    m_toolId, &EntityPreviewViewportSettingsNotificationBus::Events::OnModelPresetAdded, pathWithoutAlias);
                 return true;
             }
         }
@@ -358,8 +368,11 @@ namespace AtomToolsFramework
                     if (loadResult && loadResult.GetValue().is<AZ::Render::LightingPreset>())
                     {
                         const auto& pathWithAlias = GetPathWithAlias(path);
+                        const auto& pathWithoutAlias = GetPathWithoutAlias(path);
                         m_lightingPresetCache[pathWithAlias] = AZStd::any_cast<AZ::Render::LightingPreset>(loadResult.GetValue());
                         m_settingsNotificationPending = true;
+                        EntityPreviewViewportSettingsNotificationBus::Event(
+                            m_toolId, &EntityPreviewViewportSettingsNotificationBus::Events::OnLightingPresetAdded, pathWithoutAlias);
                     }
                 }
             });
@@ -376,8 +389,11 @@ namespace AtomToolsFramework
                     if (loadResult && loadResult.GetValue().is<AZ::Render::ModelPreset>())
                     {
                         const auto& pathWithAlias = GetPathWithAlias(path);
+                        const auto& pathWithoutAlias = GetPathWithoutAlias(path);
                         m_modelPresetCache[pathWithAlias] = AZStd::any_cast<AZ::Render::ModelPreset>(loadResult.GetValue());
                         m_settingsNotificationPending = true;
+                        EntityPreviewViewportSettingsNotificationBus::Event(
+                            m_toolId, &EntityPreviewViewportSettingsNotificationBus::Events::OnModelPresetAdded, pathWithoutAlias);
                     }
                 }
             });

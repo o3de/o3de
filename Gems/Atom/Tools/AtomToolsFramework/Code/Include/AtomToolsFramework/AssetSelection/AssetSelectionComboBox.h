@@ -9,13 +9,16 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <QComboBox>
 #endif
 
 namespace AtomToolsFramework
 {
-    class AssetSelectionComboBox : public QComboBox
+    class AssetSelectionComboBox
+        : public QComboBox
+        , private AzFramework::AssetCatalogEventBus::Handler
     {
         Q_OBJECT
     public:
@@ -23,6 +26,8 @@ namespace AtomToolsFramework
         ~AssetSelectionComboBox();
 
         void Reset();
+        void AddPath(const AZStd::string& path);
+        void RemovePath(const AZStd::string& path);
         void SetFilter(const AZStd::function<bool(const AZStd::string&)>& filterCallback);
         void SelectPath(const AZStd::string& path);
         AZStd::string GetSelectedPath() const;
@@ -36,7 +41,10 @@ namespace AtomToolsFramework
     private:
         AZ_DISABLE_COPY_MOVE(AssetSelectionComboBox);
 
-        void AddPath(const AZStd::string& path);
+        // AzFramework::AssetCatalogEventBus::Handler overrides ...
+        void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
+        void OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo) override;
+
         void RegisterThumbnail(const AZStd::string& path);
         void UpdateThumbnail(const AZStd::string& path);
         void QueueUpdateThumbnail(const AZStd::string& path);

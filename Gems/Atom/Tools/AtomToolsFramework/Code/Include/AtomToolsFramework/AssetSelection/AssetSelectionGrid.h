@@ -27,7 +27,9 @@ namespace Ui
 namespace AtomToolsFramework
 {
     //! Widget for managing and selecting from a library of assets
-    class AssetSelectionGrid : public QDialog
+    class AssetSelectionGrid
+        : public QDialog
+        , private AzFramework::AssetCatalogEventBus::Handler
     {
         Q_OBJECT
     public:
@@ -41,6 +43,8 @@ namespace AtomToolsFramework
 
         void Reset();
         void SetFilter(const AZStd::function<bool(const AZStd::string&)>& filterCallback);
+        void AddPath(const AZStd::string& path);
+        void RemovePath(const AZStd::string& path);
         void SelectPath(const AZStd::string& path);
         AZStd::string GetSelectedPath() const;
 
@@ -51,7 +55,10 @@ namespace AtomToolsFramework
     private:
         AZ_DISABLE_COPY_MOVE(AssetSelectionGrid);
 
-        void AddPath(const AZStd::string& path);
+        // AzFramework::AssetCatalogEventBus::Handler overrides ...
+        void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
+        void OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo) override;
+
         void SetupAssetList();
         void SetupSearchWidget();
         void SetupDialogButtons();
