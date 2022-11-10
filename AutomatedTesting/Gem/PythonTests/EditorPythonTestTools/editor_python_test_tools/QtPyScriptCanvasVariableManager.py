@@ -264,21 +264,3 @@ class QtPyScriptCanvasVariableManager:
                                                               WAIT_TIME_SEC_3)
 
         return pinned_toggle_state_before != pinned_toggle_state_after
-
-    def get_q_objects(self, qobject):
-
-        children = qobject.children()
-        depth = 0
-        for child in children:
-            print(f"{depth}->Name:{child.objectName()}: {type(child)}")
-            self.print_types_recursive(child, "", depth)
-
-    def print_types_recursive(self, container, string, depth):
-
-        children = container.children()
-        string += "="
-        depth += 1
-        for child in children:
-            if child is not None:
-                print(f"{depth}->{string}: Name:{child.objectName()}: {type(child)}")
-                self.print_types_recursive(child, string, depth)
