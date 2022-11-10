@@ -286,9 +286,6 @@ namespace O3DE::ProjectManager
         m_platformOptions = new FormOptionsWidget(tr("Target Platform(s)"), platformOptions, tr("All Platforms"), s_platformOptionItemSpacing);
         gemDetailsLayout->addWidget(m_platformOptions);
 
-        //handle workflow specific logic for platforms
-        LoadSupportedPlatforms();
-
         m_license = new FormLineEditWidget(
             tr("License*"), "", tr("License uses goes here: i.e. Apache-2.0 or MIT"), tr("License details are required."));
         gemDetailsLayout->addWidget(m_license);
@@ -562,6 +559,9 @@ namespace O3DE::ProjectManager
         m_gemSummary->lineEdit()->clear();
         m_requirements->lineEdit()->clear();
         
+        m_platformOptions->clear();
+        m_gemInfo.m_platforms = GemInfo::Platforms();
+
         m_license->lineEdit()->clear();
         m_license->setErrorLabelVisible(false);
         

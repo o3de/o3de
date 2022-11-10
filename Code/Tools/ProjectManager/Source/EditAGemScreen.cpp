@@ -108,6 +108,16 @@ namespace O3DE::ProjectManager
         m_repositoryURL->lineEdit()->setText(oldGemInfo.m_repoUri);
 
         m_oldGemName = oldGemInfo.m_name;
+
+        //load the supported platforms
+        for(int i = GemInfo::NumPlatforms-1; i >= 0; i--)
+        {
+            const GemInfo::Platform platform = static_cast<GemInfo::Platform>(1 << i);
+            if(platform & oldGemInfo.m_platforms)
+            {
+                m_platformOptions->enable(GemInfo::GetPlatformString(platform));
+            }
+        }
     }
 
 
@@ -134,18 +144,6 @@ namespace O3DE::ProjectManager
                 this,
                 tr("Failed to edit gem"),
                 tr("The gem failed to be edited"));
-        }
-    }
-
-    void EditGem::LoadSupportedPlatforms()
-    {
-        for(int i = GemInfo::NumPlatforms-1; i >= 0; i--)
-        {
-            const GemInfo::Platform platform = static_cast<GemInfo::Platform>(1 << i);
-            if(platform & m_gemInfo.m_platforms)
-            {
-                m_platformOptions->enable(GemInfo::GetPlatformString(platform));
-            }
         }
     }
 

@@ -40,8 +40,6 @@ namespace O3DE::ProjectManager
 
         bool ValidateGemLocation(const QDir& chosenGemLocation) const override;
 
-        void LoadSupportedPlatforms() override;
-
         QString m_oldGemName;
 
     };

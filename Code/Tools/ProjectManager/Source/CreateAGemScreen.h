@@ -64,10 +64,6 @@ namespace O3DE::ProjectManager
 
         virtual bool ValidateGemLocation(const QDir& chosenGemLocation) const;
 
-        virtual void LoadSupportedPlatforms()
-        {
-        }
-
         //Gem Setup
         QVector<TemplateInfo> m_gemTemplates;
         QButtonGroup* m_radioButtonGroup = nullptr;

@@ -918,8 +918,8 @@ namespace O3DE::ProjectManager
                     "new_documentation_url"_a = QString_To_Py_String(newGemInfo.m_documentationLink),
                     "new_license"_a = QString_To_Py_String(newGemInfo.m_licenseText),
                     "new_license_url"_a = QString_To_Py_String(newGemInfo.m_licenseLink),   
-                    "replace_tags"_a = QStringList_To_Py_List(newGemInfo.m_features)), //the python code seems to interpret these lists as space separated
-                    "replace_platforms"_a = QStringList_To_Py_List(newGemInfo.GetPlatformsAsStringList())
+                    "replace_tags"_a = QStringList_To_Py_List(newGemInfo.m_features), //the python code seems to interpret these lists as space separated
+                    "replace_platforms"_a = QStringList_To_Py_List(newGemInfo.GetPlatformsAsStringList()))
                     ;
                 
                 if (editGemResult.cast<int>() == 0)
@@ -1007,6 +1007,14 @@ namespace O3DE::ProjectManager
                     for (auto tag : data["user_tags"])
                     {
                         gemInfo.m_features.push_back(Py_To_String(tag));
+                    }
+                }
+
+                if (data.contains("platforms"))
+                {
+                    for (auto platform : data["platforms"])
+                    {
+                        gemInfo.m_platforms |= GemInfo::GetPlatformFromString(Py_To_String(platform));
                     }
                 }
 
