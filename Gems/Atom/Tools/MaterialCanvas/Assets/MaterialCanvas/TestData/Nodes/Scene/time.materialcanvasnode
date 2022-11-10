@@ -5,22 +5,21 @@
     "ClassData": {
         "id": "{5559A2B1-331C-4E52-8F3E-916CD114F41D}",
         "category": "Scene",
-        "title": "time",
+        "title": "Time",
+        "titlePaletteName": "TimeNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "outTime"
+        ],
         "outputSlots": [
             {
                 "name": "outTime",
                 "displayName": "Time",
                 "description": "Time",
-                "supportedDataTypes": [
-                    "float"
-                ],
-                "defaultValue": {
-                    "$type": "float",
-                    "Value": 0.0
-                },
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SceneSrg::m_time;"
+                        "SLOTTYPE SLOTNAME = SceneSrg::m_time;"
                     ]
                 }
             }

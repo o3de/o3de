@@ -6,9 +6,15 @@
         "id": "{8E836C09-FA68-42B0-B302-CAC3FD6E4EA2}",
         "category": "Object",
         "title": "UV",
+        "titlePaletteName": "ObjectNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inIndex",
+            "outUV",
+            "outU|outV"
+        ],
         "settings": {
             "instructions": [
-                "float2 NODEID_outUV = O3DE_MC_UV(NODEID_inIndex);"
+                "float2 outUV = O3DE_MC_UV(inIndex);"
             ]
         },
         "inputSlots": [
@@ -16,16 +22,15 @@
                 "name": "inIndex",
                 "displayName": "Index",
                 "description": "Index",
-                "supportedDataTypes": [
-                    "uint"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "uint",
                 "defaultValue": {
                     "$type": "unsigned int",
                     "Value": 1
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -35,20 +40,18 @@
                 "name": "outUV",
                 "displayName": "UV",
                 "description": "UV",
-                "supportedDataTypes": [
-                    "float2"
-                ]
+                "supportedDataTypeRegex": "float2",
+                "defaultDataType": "float2"
             },
             {
                 "name": "outU",
                 "displayName": "U",
                 "description": "X",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_outUV.x;"
+                        "SLOTTYPE SLOTNAME = outUV.x;"
                     ]
                 }
             },
@@ -56,12 +59,11 @@
                 "name": "outV",
                 "displayName": "V",
                 "description": "V",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_outUV.y;"
+                        "SLOTTYPE SLOTNAME = outUV.y;"
                     ]
                 }
             }

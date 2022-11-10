@@ -116,6 +116,7 @@ set(FILES
     Math/CrcTestsCompileTimeLiterals.h
     Math/FrustumTests.cpp
     Math/FrustumPerformanceTests.cpp
+    Math/Geometry3DUtilsTests.cpp
     Math/HemisphereTests.cpp
     Math/IntersectionPerformanceTests.cpp
     Math/IntersectionTestHelpers.cpp
@@ -174,7 +175,7 @@ set(FILES
     Name/NameTests.cpp
     OrderedEventBenchmarks.cpp
     OrderedEventTests.cpp
-    Outcome.cpp
+    OutcomeTests.cpp
     Patching.cpp
     RemappableId.cpp
     RTTI/TypeSafeIntegralTests.cpp

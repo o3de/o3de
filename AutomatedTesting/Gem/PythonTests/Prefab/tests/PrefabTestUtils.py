@@ -24,7 +24,7 @@ def get_linear_nested_items_name(nested_items_name_prefix, current_level):
     return f"{nested_items_name_prefix}{current_level}"
 
 
-def create_linear_nested_entities(nested_entities_name_prefix, level_count, pos):
+def create_linear_nested_entities(nested_entities_name_prefix, level_count, pos, parent_id=None):
     """
     This is a helper function which helps create nested entities 
     where each nested entity has only one child entity at most. For example:
@@ -37,12 +37,13 @@ def create_linear_nested_entities(nested_entities_name_prefix, level_count, pos)
     :param nested_entities_name_prefix: Name prefix which will be used to generate names of newly created nested entities.
     :param level_count: Number of levels which the newly constructed nested entities will have.
     :param pos: The position where the nested entities will be.
+    :param parent_id: EntityId of the intended parent to the root entity
     :return: Root of the newly created nested entities.
     """
     assert level_count > 0, "Can't create nested entities with less than one level"
 
     current_entity = EditorEntity.create_editor_entity_at(
-        pos, name=get_linear_nested_items_name(nested_entities_name_prefix, 0))
+        pos, name=get_linear_nested_items_name(nested_entities_name_prefix, 0), parent_id=parent_id)
     root_entity = current_entity
     for current_level in range(1, level_count):
         current_entity = EditorEntity.create_editor_entity(

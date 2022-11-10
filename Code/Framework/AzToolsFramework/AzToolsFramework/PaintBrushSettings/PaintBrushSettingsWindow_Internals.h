@@ -69,6 +69,7 @@ namespace PaintBrush
             }
 
         private:
+            void OnVisiblePropertiesChanged() override;
             void OnSettingsChanged([[maybe_unused]] const AzToolsFramework::PaintBrushSettings& newSettings) override;
 
             // RPE Support

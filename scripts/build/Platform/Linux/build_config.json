@@ -105,6 +105,7 @@
  },
   "profile_nounity": {
     "TAGS": [
+      "daily-pipeline-metrics",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_linux.sh",
@@ -392,7 +393,7 @@
     "COMMAND": "deploy_cdk_applications.sh",
     "PARAMETERS": {
       "NVM_VERSION": "v0.39.1",
-      "CDK_VERSION": "1.154.0",
+      "CDK_VERSION": "1.179.0",
       "PYTHON_RUNTIME": "python-3.10.5-rev1-linux"
     }
   },
@@ -404,7 +405,7 @@
     "COMMAND": "destroy_cdk_applications.sh",
     "PARAMETERS": {
       "NVM_VERSION": "v0.39.1",
-      "CDK_VERSION": "1.154.0",
+      "CDK_VERSION": "1.179.0",
       "PYTHON_RUNTIME": "python-3.10.5-rev1-linux"
     }
   }

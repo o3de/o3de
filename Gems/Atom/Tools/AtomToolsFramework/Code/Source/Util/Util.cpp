@@ -88,9 +88,15 @@ namespace AtomToolsFramework
     AZStd::string GetSymbolNameFromText(const AZStd::string& text)
     {
         QString symbolName(text.c_str());
+        // Replace non alphanumeric characters with space
         symbolName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
+        // Insert a space between a lowercase or numeric character followed by an uppercase character
         symbolName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1 \\2");
+        // Remove all trailing whitespace
+        symbolName.replace(QRegExp("\\s+\\Z"), "");
+        // Insert an underscore at the beginning of the string if it starts with a digit
         symbolName.replace(QRegExp("\\A(\\d)"), "_\\1");
+        // Replace every sequence of whitespace characters with underscores
         symbolName.replace(QRegExp("\\s+"), "_");
         return symbolName.toLower().toUtf8().constData();
     }
@@ -98,13 +104,20 @@ namespace AtomToolsFramework
     AZStd::string GetDisplayNameFromText(const AZStd::string& text)
     {
         QString displayName(text.c_str());
+        // Replace non alphanumeric characters with space
         displayName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
+        // Insert a space between a lowercase or numeric character followed by an uppercase character
         displayName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1 \\2");
+        // Remove all trailing whitespace
+        displayName.replace(QRegExp("\\s+\\Z"), "");
+        // Tokenize the string where separated by whitespace
         QStringList displayNameParts = displayName.split(QRegExp("\\s"), Qt::SkipEmptyParts);
         for (QString& part : displayNameParts)
         {
+            // Capitalize the first character of every token
             part.replace(0, 1, part[0].toUpper());
         }
+        // Recombine all of the strings separated by a single space
         return displayNameParts.join(" ").toUtf8().constData();
     }
 

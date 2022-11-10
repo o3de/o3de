@@ -41,6 +41,10 @@ namespace AtomToolsFramework
         //! @returns True if the operation succeeded, otherwise false
         bool Load(const AZStd::string& path);
 
+        void ValidateSlots();
+
+        AZStd::vector<AZStd::string> GetSlotNames() const;
+
         //! Globally unique identifier for referencing this node config inside of DynamicNodeManager and graphs
         AZ::Uuid m_id = AZ::Uuid::CreateRandom();
         //! The category will be used by the DynamicNodeManager to sort and group node palette tree items
@@ -51,6 +55,8 @@ namespace AtomToolsFramework
         AZStd::string m_subTitle;
         //! Name of the node title bar UI palette style sheet entry
         AZStd::string m_titlePaletteName;
+        //! Vector of delimited strings, each representing a group of slot names that should share the same type
+        AZStd::vector<AZStd::string> m_slotDataTypeGroups;
         //! Settings is a container of key value string pairs that can be used for any custom or application specific data
         DynamicNodeSettingsMap m_settings;
         //! Property slots is a container of DynamicNodeSlotConfig for property widgets that appear directly on the node

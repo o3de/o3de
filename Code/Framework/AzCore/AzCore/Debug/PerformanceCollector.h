@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Metrics/JsonTraceEventLogger.h>
 #include <AzCore/Statistics/StatisticsManager.h>
 #include <AzCore/std/chrono/chrono.h>
@@ -47,7 +48,7 @@ namespace AZ::Debug
         ~PerformanceCollector() = default;
 
         static constexpr char LogName[] = "PerformanceCollector";
-    
+
         enum class DataLogType
         {
             LogStatistics, //! Aggregates each sampled data using the StatiscalProfiler API.
@@ -55,15 +56,15 @@ namespace AZ::Debug
                            //! the IEventLogger API.
             LogAllSamples, //! Each sample becomes a unique record in the output file using the IEventLogger API.
         };
-    
+
         //! Returns true if the user has disabled performance capture or
         //! the performance collector is waiting for certain amount of time
         //! before starting to measure performance.
         bool IsWaitingBeforeCapture();
-    
+
         //! Records a measured value according to the current CaptureType.
         void RecordSample(AZStd::string_view metricName, AZStd::chrono::microseconds microSeconds);
-    
+
         //! This is similar to RecordSample(). Captures the elapsed time between
         //! two consecutive calls to this function for any given @metricName.
         //! The time delta is recorded according to the current CaptureType.
@@ -96,7 +97,7 @@ namespace AZ::Debug
         const AZ::IO::Path& GetOutputFilePath() { return m_outputFilePath;  }
 
         const AZStd::string& GetOutputDataBuffer() { return m_outputDataBuffer; }
-    
+
     private:
         //! A helper function that loops across all statistics in @m_statisticsManager
         //! and reports each result into @m_eventLogger.
@@ -117,10 +118,10 @@ namespace AZ::Debug
         AZStd::chrono::steady_clock::time_point m_startWaitTime;
         bool m_isWaitingBeforeNextBatch = true;
         OnBatchCompleteCallback m_onBatchCompleteCallback; // A notification will be sent each time a batch of frames is performance collected.
-   
+
         //! Only used when @m_captureType == CaptureType::LogStatistics.
         AZ::Statistics::StatisticsManager<AZStd::string> m_statisticsManager;
-    
+
         //! Only used to store the previous value when RecordPeriodicEvent() is called
         //! for any given metrics.
         AZStd::unordered_map<AZStd::string, AZStd::chrono::steady_clock::time_point> m_periodicEventStamps;
@@ -132,14 +133,14 @@ namespace AZ::Debug
         AZ::IO::Path m_outputFilePath; // We store here the file path of the most recently created output file.
         Metrics::JsonTraceEventLogger m_eventLogger;
     }; // class PerformanceCollector
-    
+
     //! A Convenience class used to measure time performance of scopes of code
     //! with constructor/destructor.
     class ScopeDuration
     {
     public:
         ScopeDuration() = delete;
-    
+
         ScopeDuration(PerformanceCollector* performanceCollector, const AZStd::string_view metricName)
             : m_performanceCollector(performanceCollector)
             , m_metricName(metricName)
@@ -155,7 +156,7 @@ namespace AZ::Debug
                 m_startTime = AZStd::chrono::steady_clock::now();
             }
         }
-    
+
         ~ScopeDuration()
         {
             if (!m_performanceCollector || !m_pushSample)
@@ -167,7 +168,7 @@ namespace AZ::Debug
             auto duration = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(stopTime - m_startTime);
             m_performanceCollector->RecordSample(m_metricName, duration);
         }
-    
+
     private:
         bool m_pushSample;
         PerformanceCollector* m_performanceCollector;

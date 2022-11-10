@@ -6,17 +6,21 @@
         "id": "{AD1CEDD5-B944-4817-B157-586B0A6C9406}",
         "category": "Object",
         "title": "Position",
+        "titlePaletteName": "ObjectNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "outPosition",
+            "outX|outY|outZ"
+        ],
         "outputSlots": [
             {
                 "name": "outPosition",
                 "displayName": "Position",
                 "description": "Position",
-                "supportedDataTypes": [
-                    "float3"
-                ],
+                "supportedDataTypeRegex": "float3",
+                "defaultDataType": "float3",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = O3DE_MC_POSITION;"
+                        "SLOTTYPE SLOTNAME = O3DE_MC_POSITION;"
                     ]
                 }
             },
@@ -24,12 +28,11 @@
                 "name": "outX",
                 "displayName": "X",
                 "description": "X",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = O3DE_MC_POSITION.x;"
+                        "SLOTTYPE SLOTNAME = O3DE_MC_POSITION.x;"
                     ]
                 }
             },
@@ -37,12 +40,11 @@
                 "name": "outY",
                 "displayName": "Y",
                 "description": "Y",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = O3DE_MC_POSITION.y;"
+                        "SLOTTYPE SLOTNAME = O3DE_MC_POSITION.y;"
                     ]
                 }
             },
@@ -50,12 +52,11 @@
                 "name": "outZ",
                 "displayName": "Z",
                 "description": "Z",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = O3DE_MC_POSITION.z;"
+                        "SLOTTYPE SLOTNAME = O3DE_MC_POSITION.z;"
                     ]
                 }
             }

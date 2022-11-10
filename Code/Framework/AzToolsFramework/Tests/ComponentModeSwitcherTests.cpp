@@ -427,11 +427,15 @@ namespace UnitTest
             AzToolsFramework::GetEntityContextId(),
             &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::OverrideComponentModeSwitcher,
             componentModeSwitcher);
+            
         AZ::Entity* entity = nullptr;
         AZ::EntityId entityId = CreateDefaultEditorEntity("ComponentModeEntity", &entity);
 
+        // connect to EditorDisabledCompositionRequestBus with entityId
+        Connect(entityId);
+
         entity->Deactivate();
-        const AZ::Component* placeholder1 = entity->CreateComponent<PlaceholderEditorComponent>();
+        AZ::Component* placeholder1 = entity->CreateComponent<PlaceholderEditorComponent>();
         entity->CreateComponent<AnotherPlaceholderEditorComponent>();
         entity->Activate();
 
@@ -441,16 +445,21 @@ namespace UnitTest
             &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, entityIds);
         EXPECT_EQ(2, componentModeSwitcher->GetComponentCount());
 
-        AzToolsFramework::EntityCompositionNotificationBus::Broadcast(
-            &AzToolsFramework::EntityCompositionNotificationBus::Events::OnEntityComponentDisabled, entity->GetId(), placeholder1->GetId());
+        AzToolsFramework::EntityCompositionRequestBus::Broadcast(
+            &AzToolsFramework::EntityCompositionRequests::DisableComponents, AZStd::vector<AZ::Component*>{ placeholder1 });
+
+        AzToolsFramework::EditorDisabledCompositionRequestBus::Event(
+            entityId, &AzToolsFramework::EditorDisabledCompositionRequests::AddDisabledComponent, placeholder1);
+
         EXPECT_EQ(1, componentModeSwitcher->GetComponentCount());
 
-        AzToolsFramework::EntityCompositionNotificationBus::Broadcast(
-            &AzToolsFramework::EntityCompositionNotificationBus::Events::OnEntityComponentEnabled, entity->GetId(), placeholder1->GetId());
+        AddDisabledComponentToBus(placeholder1);
 
-        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-            &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, entityIds);
+        AzToolsFramework::EntityCompositionRequestBus::Broadcast(
+            &AzToolsFramework::EntityCompositionRequests::EnableComponents, AZStd::vector<AZ::Component*>{ placeholder1 });
 
         EXPECT_EQ(2, componentModeSwitcher->GetComponentCount());
+
+        Disconnect();
     }
 } // namespace UnitTest

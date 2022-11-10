@@ -11,10 +11,9 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/document.h>
 #include <AzCore/JSON/error/en.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/std/ranges/ranges_algorithm.h>
-#include <AzCore/std/ranges/filter_view.h>
 #include <AzCore/std/ranges/zip_view.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
@@ -31,12 +30,34 @@ namespace UnitTest
         {
             return !::isspace(element);
         };
-        return AZStd::ranges::contains_subrange(lhs | AZStd::views::filter(TrimWhitespace),
-            rhs | AZStd::views::filter(TrimWhitespace));
+        AZStd::string sourceString;
+        for (char elem : lhs)
+        {
+            if (TrimWhitespace(elem))
+            {
+                sourceString += elem;
+            }
+        }
+
+        AZStd::string containsString;
+        for (char elem : rhs)
+        {
+            if (TrimWhitespace(elem))
+            {
+                containsString += elem;
+            }
+        }
+
+        return sourceString.contains(containsString);
     }
 
     size_t JsonStringCountAll(AZStd::string_view sourceView, AZStd::string_view containsView)
     {
+        if (containsView.empty())
+        {
+            return 0;
+        }
+
         auto TrimWhitespace = [](char element) -> bool
         {
             return !::isspace(element);
@@ -44,18 +65,36 @@ namespace UnitTest
 
         // Need persistent storage in this case to count all occurrences of JSON string inside of source string
         // Remove all whitespace from both strings
-        AZStd::string sourceString(AZStd::from_range, sourceView | AZStd::views::filter(TrimWhitespace));
-        AZStd::string containsString(AZStd::from_range, containsView | AZStd::views::filter(TrimWhitespace));
+
+        AZStd::string sourceString;
+        for (char elem : sourceView)
+        {
+            if (TrimWhitespace(elem))
+            {
+                sourceString += elem;
+            }
+        }
+
+        AZStd::string containsString;
+        for (char elem : containsView)
+        {
+            if (TrimWhitespace(elem))
+            {
+                containsString += elem;
+            }
+        }
 
         size_t count{};
-        AZStd::ranges::borrowed_subrange_t<decltype(sourceString)&> remainingRange(sourceString);
+        AZStd::string_view remainingRange(sourceString);
         for (;;)
         {
-            auto foundRange = AZStd::ranges::search(remainingRange, containsString);
-            if (foundRange.empty())
+            auto foundFirst = remainingRange.find(containsString);
+            if (foundFirst == AZStd::string_view::npos)
             {
                 break;
             }
+
+            AZStd::string_view foundRange = remainingRange.substr(foundFirst, containsString.size());
 
             // If the contains string has been found reduce the
             // remaining search range to be the end of the found string until the end of the source string
@@ -300,10 +339,190 @@ namespace UnitTest
         rapidjson::ParseResult parseResult = validateDoc.Parse(metricsOutput.c_str());
         EXPECT_TRUE(parseResult) << R"(JSON parse error ")" << rapidjson::GetParseError_En(parseResult.Code())
             << R"(" at offset (%u))";
+    }
 
-        // Log the metrics output to stdout so it appears for visualizing purposes
-        metricsOutput += '\n';
-        AZ::Debug::Trace::Instance().RawOutput("metrics", metricsOutput.c_str());
+
+    TEST_F(JsonTraceEventLoggerTest, TogglingActiveSetting_CanTurnOrOffEventRecording_Succeeds)
+    {
+        // local Settings Registry used for validating changes to the event logger active state
+        AZ::SettingsRegistryImpl settingsRegistry;
+
+        // Event Logger name used to read settings and set settings associated with the Event Logger
+        constexpr AZStd::string_view EventLoggerName = "JsonTraceEventTest";
+
+        AZStd::string metricsOutput;
+        auto metricsStream = AZStd::make_unique<AZ::IO::ByteContainerStream<AZStd::string>>(&metricsOutput);
+        {
+            AZ::Metrics::JsonTraceEventLogger googleTraceLogger(AZStd::move(metricsStream), { EventLoggerName, &settingsRegistry });
+
+            // Event logger is be active by default if there is no `/O3DE/Metrics/<Name>/Active` in the settings registry
+            AZStd::string eventMessage = "Hello world";
+            AZ::Metrics::EventObjectStorage argContainer{ {"Field1", eventMessage} };
+
+            AZ::Metrics::CompleteArgs completeArgs;
+
+            completeArgs.m_name = "StringEvent";
+            completeArgs.m_cat = "Test";
+            completeArgs.m_args = argContainer;
+            using ResultOutcome = AZ::Metrics::IEventLogger::ResultOutcome;
+            ResultOutcome resultOutcome = googleTraceLogger.RecordCompleteEvent(completeArgs);
+            EXPECT_TRUE(resultOutcome);
+
+            // As the event logger is active, the event data should have been recorded to the stream
+            EXPECT_TRUE(JsonStringContains(metricsOutput, R"("Field1":"Hello world")"));
+
+            // Set any event loggers with a name that matches EventLoggerName to inactive
+            settingsRegistry.Set(AZ::Metrics::SettingsKey(EventLoggerName) + "/Active", false);
+
+            // Update the event string for the complete event and attempt to record it again
+            eventMessage = "Unrecorded world";
+            argContainer[0].m_value = eventMessage;
+
+            resultOutcome = googleTraceLogger.RecordCompleteEvent(completeArgs);
+            EXPECT_TRUE(resultOutcome);
+
+            // No recording of the complete event to the stream should have occured
+            EXPECT_FALSE(JsonStringContains(metricsOutput, R"("Field1":"Unrecorded world")"));
+
+            // Set the active state for event loggers with the name matching the EventLoggerName constant
+            settingsRegistry.Set(AZ::Metrics::SettingsKey(EventLoggerName) + "/Active", true);
+
+            // Change the event string to 3rd different string and attempt to record again
+            eventMessage = "Re-recorded world";
+            argContainer[0].m_value = eventMessage;
+
+            resultOutcome = googleTraceLogger.RecordCompleteEvent(completeArgs);
+            EXPECT_TRUE(resultOutcome);
+
+            // The recording of the complete event should now have occured
+            EXPECT_TRUE(JsonStringContains(metricsOutput, R"("Field1":"Re-recorded world")"));
+        }
+    }
+
+    TEST_F(JsonTraceEventLoggerTest, InitialActiveSetting_SetToFalse_DoesNotRecord_Succeeds)
+    {
+        // Event Logger name used to read settings and set settings associated with the Event Logger
+        constexpr AZStd::string_view EventLoggerName = "JsonTraceEventTest";
+
+        // local Settings Registry used for validating changes to the event logger active state
+        AZ::SettingsRegistryImpl settingsRegistry;
+
+        // Default to the inactive state for event loggers matching the name of the EventLoggerName constant
+        settingsRegistry.Set(AZ::Metrics::SettingsKey(EventLoggerName) + "/Active", false);
+
+
+        AZStd::string metricsOutput;
+        auto metricsStream = AZStd::make_unique<AZ::IO::ByteContainerStream<AZStd::string>>(&metricsOutput);
+        {
+            AZ::Metrics::JsonTraceEventLogger googleTraceLogger(AZStd::move(metricsStream), { EventLoggerName, &settingsRegistry });
+
+            AZStd::string eventMessage = "Hello world";
+            AZ::Metrics::EventObjectStorage argContainer{ {"Field1", eventMessage} };
+
+            AZ::Metrics::CompleteArgs completeArgs;
+
+            completeArgs.m_name = "StringEvent";
+            completeArgs.m_cat = "Test";
+            completeArgs.m_args = argContainer;
+            using ResultOutcome = AZ::Metrics::IEventLogger::ResultOutcome;
+            ResultOutcome resultOutcome = googleTraceLogger.RecordCompleteEvent(completeArgs);
+            EXPECT_TRUE(resultOutcome);
+
+            // The event logger should be inactive, so recording to the output stream should not occur
+            EXPECT_FALSE(JsonStringContains(metricsOutput, R"("Field1":"Hello world")"));
+
+            // Set the active state for event loggers with the name matching the EventLoggerName constant
+            settingsRegistry.Set(AZ::Metrics::SettingsKey(EventLoggerName) + "/Active", true);
+
+            resultOutcome = googleTraceLogger.RecordCompleteEvent(completeArgs);
+            EXPECT_TRUE(resultOutcome);
+
+            // The recording to the event logger stream should have succeeded this time
+            EXPECT_TRUE(JsonStringContains(metricsOutput, R"("Field1":"Hello world")"));
+        }
+    }
+    TEST_F(JsonTraceEventLoggerTest, ChangingEventLoggerName_ResetsRecordingState_Succeeds)
+    {
+        // Event Logger name used to read settings and set settings associated with the Event Logger
+        constexpr AZStd::string_view EventLoggerName = "JsonTraceEventTest";
+        // name to use to reading a different section of the "/O3DE/Metrics/<Name>" setting
+        constexpr AZStd::string_view NewLoggerName = "NewName";
+
+        // local Settings Registry used for validating changes to the event logger active state
+        AZ::SettingsRegistryImpl settingsRegistry;
+
+        // Default to the inactive state
+        settingsRegistry.Set(AZ::Metrics::SettingsKey(EventLoggerName) + "/Active", false);
+
+
+        AZStd::string metricsOutput;
+        auto metricsStream = AZStd::make_unique<AZ::IO::ByteContainerStream<AZStd::string>>(&metricsOutput);
+        {
+            AZ::Metrics::JsonTraceEventLogger googleTraceLogger(AZStd::move(metricsStream), { EventLoggerName, &settingsRegistry });
+
+            AZStd::string eventMessage = "Hello world";
+            AZ::Metrics::EventObjectStorage argContainer{ {"Field1", eventMessage} };
+
+            AZ::Metrics::CompleteArgs completeArgs;
+
+            completeArgs.m_name = "StringEvent";
+            completeArgs.m_cat = "Test";
+            completeArgs.m_args = argContainer;
+            using ResultOutcome = AZ::Metrics::IEventLogger::ResultOutcome;
+            ResultOutcome resultOutcome = googleTraceLogger.RecordCompleteEvent(completeArgs);
+            EXPECT_TRUE(resultOutcome);
+
+            // The "JsonTraceEventTest" event logger should be inactive
+            EXPECT_FALSE(JsonStringContains(metricsOutput, R"("Field1":"Hello world")"));
+
+            // Change the name of the event loger to "NewName", it should be active by default
+            googleTraceLogger.SetName(NewLoggerName);
+            EXPECT_EQ(NewLoggerName, googleTraceLogger.GetName());
+
+            resultOutcome = googleTraceLogger.RecordCompleteEvent(completeArgs);
+            EXPECT_TRUE(resultOutcome);
+
+            // Recording to the event logger with "NewName" should have succeeded
+            EXPECT_TRUE(JsonStringContains(metricsOutput, R"("Field1":"Hello world")"));
+
+            // Set the "NewName" event logger to inactive
+            settingsRegistry.Set(AZ::Metrics::SettingsKey(NewLoggerName) + "/Active", false);
+
+            // Change event string value to validate that recording is not occuring
+            eventMessage = "Goodbye world";
+            argContainer[0].m_value = eventMessage;
+
+            resultOutcome = googleTraceLogger.RecordCompleteEvent(completeArgs);
+            EXPECT_TRUE(resultOutcome);
+
+            // Recording to the "NewName" event logger should not occur
+            EXPECT_FALSE(JsonStringContains(metricsOutput, R"("Field1":"Goodbye world")"));
+
+            // Reset the "NewName" event logger to active again by deleting 'Active' settings key
+            // (Setting the 'Active' setting to true also works
+            settingsRegistry.Remove(AZ::Metrics::SettingsKey(NewLoggerName) + "/Active");
+
+            resultOutcome = googleTraceLogger.RecordCompleteEvent(completeArgs);
+            EXPECT_TRUE(resultOutcome);
+
+            // Recording of the complete event should be succeeding again
+            EXPECT_TRUE(JsonStringContains(metricsOutput, R"("Field1":"Goodbye world")"));
+
+            // Finally change the name back to the original
+            // This will reset the active state back to the value associated with the "JsonTraceEventTest"
+            // name.
+            googleTraceLogger.SetName(EventLoggerName);
+
+            // As the original event logger had a setting with the active setting to false
+            // recording should not occur
+            eventMessage = "Metrics Elided";
+            argContainer[0].m_value = eventMessage;
+
+            resultOutcome = googleTraceLogger.RecordCompleteEvent(completeArgs);
+            EXPECT_TRUE(resultOutcome);
+
+            EXPECT_FALSE(JsonStringContains(metricsOutput, R"("Field1":"Metrics Elided")"));
+        }
     }
 } // namespace UnitTest
 
