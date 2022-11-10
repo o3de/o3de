@@ -529,15 +529,15 @@ namespace ScriptAutomation
                     AZ_Printf(
                         "ScriptAutomation",
                         "Diff score is %.5f from %s and %s.",
+                        result.m_diffScore,
                         resolvedPathA.c_str(),
-                        resolvedPathB.c_str(),
-                        result.m_diffScore);
+                        resolvedPathB.c_str());
                     AZ_Printf(
                         "ScriptAutomation",
                         "Filtered diff score is %.5f from %s and %s.",
+                        result.m_filteredDiffScore,
                         resolvedPathA.c_str(),
-                        resolvedPathB.c_str(),
-                        result.m_filteredDiffScore);
+                        resolvedPathB.c_str());
                 }
                 else
                 {
