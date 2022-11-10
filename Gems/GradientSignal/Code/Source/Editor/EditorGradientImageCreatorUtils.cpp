@@ -223,7 +223,7 @@ namespace GradientSignal::ImageCreatorUtils
         // Now that we're done saving the temporary image, rename it to the correct file name.
         [[maybe_unused]] auto moveResult = AZ::IO::SmartMove(tempSavePath.c_str(), absolutePath.c_str());
         AZ_Error("EditorImageGradientComponent", moveResult,
-            "Failed to rename temporary image asset %s", tempSavePath.c_str(), absolutePath.c_str());
+            "Failed to rename temporary image asset %s to %s", tempSavePath.c_str(), absolutePath.c_str());
 
         delete saveDialog;
         return result;
