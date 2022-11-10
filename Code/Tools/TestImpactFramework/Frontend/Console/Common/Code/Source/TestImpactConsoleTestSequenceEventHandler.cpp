@@ -199,12 +199,12 @@ namespace TestImpact
             const auto progress =
                 AZStd::string::format("(%03zu/%03zu)", numTestRunsCompleted, totalNumTestRuns);
 
-            if (not testRun.GetStdOutput().empty())
+            if (!testRun.GetStdOutput().empty())
             {
                 std::cout << testRun.GetStdOutput().c_str();
             }
 
-            if (not testRun.GetStdError().empty())
+            if (!testRun.GetStdError().empty())
             {
                 std::cout << testRun.GetStdError().c_str();
             }
