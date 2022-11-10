@@ -200,7 +200,6 @@ namespace AzToolsFramework
         bool GetFlowVisibility() const;
         bool GetDistanceVisibility() const;
         bool GetSmoothingRadiusVisibility() const;
-        bool GetSmoothingSpacingVisibility() const;
         bool GetBlendModeVisibility() const;
         bool GetSmoothModeVisibility() const;
 

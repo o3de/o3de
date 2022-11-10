@@ -73,7 +73,6 @@ namespace AzToolsFramework
                 ->Field("BlendMode", &PaintBrushSettings::m_blendMode)
                 ->Field("SmoothMode", &PaintBrushSettings::m_smoothMode)
                 ->Field("SmoothingRadius", &PaintBrushSettings::m_smoothingRadius)
-                ->Field("SmoothingSpacing", &PaintBrushSettings::m_smoothingSpacing)
                 ;
 
 
@@ -187,12 +186,6 @@ namespace AzToolsFramework
                         ->Attribute(AZ::Edit::Attributes::Max, MaxSmoothingRadius)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetSmoothingRadiusVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_smoothingSpacing, "Smoothing Value Spacing",
-                        "The spacing of values used for smoothing (0 uses adjacent values, 1 uses every other value, etc).")
-                        ->Attribute(AZ::Edit::Attributes::Min, MinSmoothingSpacing)
-                        ->Attribute(AZ::Edit::Attributes::Max, MaxSmoothingSpacing)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetSmoothingSpacingVisibility)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
                     ;
             }
         }
@@ -245,11 +238,6 @@ namespace AzToolsFramework
     // The following settings are only visible in Smooth mode
 
     bool PaintBrushSettings::GetSmoothingRadiusVisibility() const
-    {
-        return (m_brushMode == PaintBrushMode::Smooth);
-    }
-
-    bool PaintBrushSettings::GetSmoothingSpacingVisibility() const
     {
         return (m_brushMode == PaintBrushMode::Smooth);
     }
