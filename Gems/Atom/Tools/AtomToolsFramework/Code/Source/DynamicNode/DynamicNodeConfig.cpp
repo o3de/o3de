@@ -27,6 +27,7 @@ namespace AtomToolsFramework
                 ->Field("title", &DynamicNodeConfig::m_title)
                 ->Field("subTitle", &DynamicNodeConfig::m_subTitle)
                 ->Field("titlePaletteName", &DynamicNodeConfig::m_titlePaletteName)
+                ->Field("slotDataTypeGroups", &DynamicNodeConfig::m_slotDataTypeGroups)
                 ->Field("settings", &DynamicNodeConfig::m_settings)
                 ->Field("propertySlots", &DynamicNodeConfig::m_propertySlots)
                 ->Field("inputSlots", &DynamicNodeConfig::m_inputSlots)
@@ -45,6 +46,14 @@ namespace AtomToolsFramework
                     ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeConfig::m_title, "Title", "Title that will appear at the top of the node UI in a graph.")
                     ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeConfig::m_subTitle, "Sub Title", "Secondary title that will appear below the main title on the node UI in a graph.")
                     ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeConfig::m_titlePaletteName, "Title Palette Name", "Name of the node title bar UI palette style sheet entry.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeConfig::m_slotDataTypeGroups, "Slot Data Type Groups", "Groups of slots that should have the same types.")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+                        ->Attribute(AZ::Edit::Attributes::ClearNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->Attribute(AZ::Edit::Attributes::AddNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->Attribute(AZ::Edit::Attributes::RemoveNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->ElementAttribute(AZ::Edit::Attributes::Handler, AZ_CRC_CE("MultiStringSelectDelimited"))
+                        ->ElementAttribute(AZ_CRC_CE("Options"), &DynamicNodeConfig::GetSlotNames)
+                        ->ElementAttribute(AZ_CRC_CE("DelimitersForJoin"), "|")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeConfig::m_settings, "Settings", "Table of strings that can be used for any context specific or user defined data for each node.")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                         ->Attribute(AZ::Edit::Attributes::ClearNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
@@ -86,6 +95,7 @@ namespace AtomToolsFramework
                 ->Property("title", BehaviorValueProperty(&DynamicNodeConfig::m_title))
                 ->Property("subTitle", BehaviorValueProperty(&DynamicNodeConfig::m_subTitle))
                 ->Property("titlePaletteName", BehaviorValueProperty(&DynamicNodeConfig::m_titlePaletteName))
+                ->Property("slotDataTypeGroups", BehaviorValueProperty(&DynamicNodeConfig::m_slotDataTypeGroups))
                 ->Property("settings", BehaviorValueProperty(&DynamicNodeConfig::m_settings))
                 ->Property("inputSlots", BehaviorValueProperty(&DynamicNodeConfig::m_inputSlots))
                 ->Property("outputSlots", BehaviorValueProperty(&DynamicNodeConfig::m_outputSlots))
@@ -146,20 +156,25 @@ namespace AtomToolsFramework
 
     void DynamicNodeConfig::ValidateSlots()
     {
-        for (auto& slotConfig : m_propertySlots)
-        {
-            slotConfig.ValidateDataTypes();
-        }
-        for (auto& slotConfig : m_inputSlots)
-        {
-            slotConfig.ValidateDataTypes();
-        }
-        for (auto& slotConfig : m_outputSlots)
-        {
-            slotConfig.ValidateDataTypes();
-        }
+        VisitDynamicNodeSlotConfigs(
+            *this,
+            [](DynamicNodeSlotConfig& slotConfig)
+            {
+                slotConfig.ValidateDataTypes();
+            });
     }
 
+    AZStd::vector<AZStd::string> DynamicNodeConfig::GetSlotNames() const
+    {
+        AZStd::vector<AZStd::string> slotNames;
+        VisitDynamicNodeSlotConfigs(
+            *this,
+            [&slotNames](const DynamicNodeSlotConfig& slotConfig)
+            {
+                slotNames.push_back(slotConfig.m_name);
+            });
+        return slotNames;
+    }
 
     const AZ::Edit::ElementData* DynamicNodeConfig::GetDynamicEditData(
         const void* handlerPtr, const void* elementPtr, const AZ::Uuid& elementType)

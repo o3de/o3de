@@ -6,6 +6,11 @@
         "id": "{83A5C349-1E8F-4D26-85DD-193B43182835}",
         "category": "Constants",
         "title": "Float4x4 Constant",
+        "titlePaletteName": "ConstantNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inRow1|inRow2|inRow3|inRow4",
+            "outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inRow1",
@@ -24,7 +29,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             },
@@ -45,7 +50,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             },
@@ -66,7 +71,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             },
@@ -87,7 +92,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -101,7 +106,7 @@
                 "defaultDataType": "float4x4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = float4x4(NODEID_inRow1, NODEID_inRow2, NODEID_inRow3, NODEID_inRow4);"
+                        "SLOTTYPE SLOTNAME = float4x4(inRow1, inRow2, inRow3, inRow4);"
                     ]
                 }
             }

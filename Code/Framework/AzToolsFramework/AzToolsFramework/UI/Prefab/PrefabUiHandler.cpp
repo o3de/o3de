@@ -14,6 +14,7 @@
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
 #include <QAbstractItemModel>
 #include <QApplication>
@@ -50,6 +51,13 @@ namespace AzToolsFramework
         if (m_prefabFocusPublicInterface == nullptr)
         {
             AZ_Assert(false, "PrefabUiHandler - could not get PrefabFocusPublicInterface on PrefabUiHandler construction.");
+            return;
+        }
+
+        m_prefabOverridePublicInterface = AZ::Interface<Prefab::PrefabOverridePublicInterface>::Get();
+        if (m_prefabOverridePublicInterface == nullptr)
+        {
+            AZ_Assert(false, "PrefabUiHandler - could not get PrefabOverridePublicInterface on PrefabUiHandler construction.");
             return;
         }
 
@@ -232,6 +240,34 @@ namespace AzToolsFramework
         {
             AZ_Warning("PrefabUiHandler", false, "PrefabUiHandler - painter is nullptr, can't draw Prefab outliner background.");
             return;
+        }
+
+        if (descendantIndex.column() == EntityOutlinerListModel::ColumnName)
+        {
+            AZ::EntityId descendantEntityId = GetEntityIdFromIndex(descendantIndex);
+
+            // If the entity is not in the focus hierarchy, we needn't add override visualization
+            // as overrides are only shown from the current focused prefab.
+            if (m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(descendantEntityId))
+            {
+                // Container entities will always have overrides because they need to maintain unique positions in the scene.
+                // We are skipping checking for overrides on container entities for this reason.
+                if (!m_prefabPublicInterface->IsInstanceContainerEntity(descendantEntityId) &&
+                    m_prefabOverridePublicInterface->AreOverridesPresent(descendantEntityId))
+                {
+                    // Build the rect that will be used to paint the icon
+                    QRect overrideIconBounds =
+                        QRect(option.rect.topLeft() + s_overrideIconOffset, QSize(s_overrideIconSize * 2, s_overrideIconSize * 2));
+
+                    painter->save();
+                    painter->setRenderHint(QPainter::Antialiasing, true);
+                    painter->setPen(Qt::NoPen);
+                    painter->setBrush(s_overrideIconBackgroundColor);
+                    painter->drawEllipse(overrideIconBounds.center(), s_overrideIconSize, s_overrideIconSize);
+                    s_overrideIcon.paint(painter, overrideIconBounds);
+                    painter->restore();
+                }
+            }
         }
 
         AZ::EntityId entityId = GetEntityIdFromIndex(index);

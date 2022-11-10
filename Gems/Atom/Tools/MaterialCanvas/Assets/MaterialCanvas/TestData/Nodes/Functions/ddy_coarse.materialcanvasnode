@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{A9CB6C0C-A101-4780-9776-674D3EE48B0E}",
         "category": "Math Functions",
-        "title": "ddy_coarse",
+        "title": "Ddy Coarse",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
@@ -24,7 +28,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -38,7 +42,7 @@
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = ddy_coarse(NODEID_inValue);"
+                        "SLOTTYPE SLOTNAME = ddy_coarse(inValue);"
                     ]
                 }
             }

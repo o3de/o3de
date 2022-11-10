@@ -16,8 +16,6 @@
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelection.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 
-#include <QTimer>
-
 namespace AzToolsFramework::ComponentModeFramework
 {
     // ComponentData constructor to fill in component info
@@ -43,6 +41,7 @@ namespace AzToolsFramework::ComponentModeFramework
         EntityCompositionNotificationBus::Handler::BusConnect();
         ToolsApplicationNotificationBus::Handler::BusConnect();
         AzFramework::ViewportImGuiNotificationBus::Handler::BusConnect();
+        AzFramework::ComponentModeDelegateNotificationBus::Handler::BusConnect();
 
         // create the switcher
         ViewportUi::ViewportUiRequestBus::EventResult(
@@ -94,6 +93,7 @@ namespace AzToolsFramework::ComponentModeFramework
 
     ComponentModeSwitcher::~ComponentModeSwitcher()
     {
+        AzFramework::ComponentModeDelegateNotificationBus::Handler::BusDisconnect();
         AzFramework::ViewportImGuiNotificationBus::Handler::BusDisconnect();
         ToolsApplicationNotificationBus::Handler::BusDisconnect();
         EntityCompositionNotificationBus::Handler::BusDisconnect();
@@ -103,11 +103,16 @@ namespace AzToolsFramework::ComponentModeFramework
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveSwitcher, m_switcherId);
     }
 
+    static const EntityIdList& GetSelectedEntities()
+    {
+        auto* toolsApplicationRequests = AzToolsFramework::ToolsApplicationRequestBus::FindFirstHandler();
+        return toolsApplicationRequests->GetSelectedEntities();
+    }
+
     void ComponentModeSwitcher::UpdateSwitcher(
         const EntityIdList& newlySelectedEntityIds, const EntityIdList& newlyDeselectedEntityIds)
     {
-        auto* toolsApplicationRequests = AzToolsFramework::ToolsApplicationRequestBus::FindFirstHandler();
-        const auto& selectedEntityIds = toolsApplicationRequests->GetSelectedEntities();
+        const auto& selectedEntityIds = GetSelectedEntities();
 
         if (!newlyDeselectedEntityIds.empty())
         {
@@ -150,7 +155,10 @@ namespace AzToolsFramework::ComponentModeFramework
                     for (const auto& entityComponent : entity->GetComponents())
                     {
                         const auto entityComponentIdPair = AZ::EntityComponentIdPair(entity->GetId(), entityComponent->GetId());
-                        AddComponentButton(entityComponentIdPair);
+                        if (AzToolsFramework::ComponentModeFramework::ComponentModeDelegateRequestBus::HasHandlers(entityComponentIdPair))
+                        {
+                            AddComponentButton(entityComponentIdPair);
+                        }
                     }
                 }
             }
@@ -167,13 +175,6 @@ namespace AzToolsFramework::ComponentModeFramework
 
     void ComponentModeSwitcher::AddComponentButton(const AZ::EntityComponentIdPair pairId)
     {
-        // check if the component has a component mode
-        const auto handlerCount = AzToolsFramework::ComponentModeFramework::ComponentModeDelegateRequestBus::GetNumOfEventHandlers(pairId);
-        if (handlerCount < 1)
-        {
-            return;
-        }
-
         ComponentData newComponentData = ComponentData(pairId);
 
         // if the component has not already been added as a button, add the button
@@ -351,45 +352,6 @@ namespace AzToolsFramework::ComponentModeFramework
         }
     }
 
-    void ComponentModeSwitcher::OnEntityComponentDisabled(const AZ::EntityId& entityId, [[maybe_unused]] const AZ::ComponentId& componentId)
-    {
-        ClearSwitcher();
-        UpdateSwitcher({ entityId }, {});
-    }
-
-    void ComponentModeSwitcher::OnEntityComponentEnabled(const AZ::EntityId& entityId, [[maybe_unused]] const AZ::ComponentId& componentId)
-    {
-        UpdateSwitcher({ entityId }, {});
-    }
-
-    void ComponentModeSwitcher::OnEntityComponentAdded(const AZ::EntityId& entity, const AZ::ComponentId& component)
-    {
-        // when a component is added to an entity set a staging member variable to the entityComponentIdPair
-        m_componentModePair = AZ::EntityComponentIdPair(entity, component);
-        m_addOrRemove = AddOrRemoveComponent::Add;
-    }
-
-    void ComponentModeSwitcher::OnEntityComponentRemoved(const AZ::EntityId& entityId, const AZ::ComponentId& componentId)
-    {
-        m_componentModePair = AZ::EntityComponentIdPair(entityId, componentId);
-        m_addOrRemove = AddOrRemoveComponent::Remove;
-    }
-
-    // this is called twice when a component is added, once while the component is pending and
-    // once when it has been added fully to the entity. 
-    void ComponentModeSwitcher::OnEntityCompositionChanged(const AzToolsFramework::EntityIdList& entityIdList)
-    {
-        if (AZStd::ranges::find(entityIdList, m_componentModePair.GetEntityId()) != entityIdList.end())
-        {
-            if (m_addOrRemove == AddOrRemoveComponent::Remove)
-            {
-                ClearSwitcher();
-            }
-
-            UpdateSwitcher(entityIdList, {});
-        }
-    }
-
     void ComponentModeSwitcher::AfterEntitySelectionChanged(
         const EntityIdList& newlySelectedEntities, const EntityIdList& newlyDeselectedEntities)
     {
@@ -402,31 +364,6 @@ namespace AzToolsFramework::ComponentModeFramework
 
         // send a list of selected and deselected entities to the switcher to deal with updating the switcher view
         UpdateSwitcher(newlySelectedEntities, newlyDeselectedEntities);
-    }
-
-    void ComponentModeSwitcher::AfterUndoRedo()
-    {
-        // wait one frame for the undo stack to actually be updated
-        AZ::TickBus::QueueFunction(
-            [this]()
-            {
-                if (auto* toolsApplicationRequests = AzToolsFramework::ToolsApplicationRequestBus::FindFirstHandler())
-                {
-                    const auto& selectedEntityIds = toolsApplicationRequests->GetSelectedEntities();
-                    if (selectedEntityIds.size() == 1)
-                    {
-                        bool inComponentMode = false;
-                        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
-                            inComponentMode, &ComponentModeSystemRequests::InComponentMode);
-
-                        if (!inComponentMode)
-                        {
-                            ClearSwitcher();
-                            UpdateSwitcher(selectedEntityIds, {});
-                        }
-                    }
-                }
-            });
     }
 
     void ComponentModeSwitcher::OnImGuiDropDownShown()
@@ -465,6 +402,28 @@ namespace AzToolsFramework::ComponentModeFramework
         {
             ViewportUi::ViewportUiRequestBus::Event(
                 ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, m_switcherId, false);
+        }
+    }
+
+    void ComponentModeSwitcher::OnComponentModeDelegateConnect(const AZ::EntityComponentIdPair& pairId)
+    {
+        const auto& selectedEntityIds = GetSelectedEntities();
+        auto entityId = pairId.GetEntityId();
+
+        if (AZStd::ranges::find(selectedEntityIds, entityId) != selectedEntityIds.end())
+        {
+            AddComponentButton(pairId);
+        } 
+    }
+
+    void ComponentModeSwitcher::OnComponentModeDelegateDisconnect(const AZ::EntityComponentIdPair& pairId)
+    {
+        const auto& selectedEntityIds = GetSelectedEntities();
+        auto entityId = pairId.GetEntityId();
+
+        if (AZStd::ranges::find(selectedEntityIds, entityId) != selectedEntityIds.end())
+        {
+            RemoveComponentButton(pairId);
         }
     }
 } // namespace AzToolsFramework::ComponentModeFramework

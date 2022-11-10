@@ -20,18 +20,6 @@ namespace AzNetworking
 
 namespace Multiplayer
 {
-    enum MultiplayerGroupIds
-    {
-        MultiplayerGroup_Networking = 101
-    };
-
-    enum MultiplayerStatIds
-    {
-        MultiplayerStat_EntityCount = 1001,
-        MultiplayerStat_FrameTime,
-        MultiplayerStat_ClientConnectionCount
-    };
-
     struct MultiplayerStats
     {
         AZ::u64 m_entityCount = 0;

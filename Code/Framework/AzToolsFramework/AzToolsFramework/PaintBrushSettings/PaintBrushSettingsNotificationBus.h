@@ -10,21 +10,18 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettings.h>
 
 namespace AzToolsFramework
 {
-    enum class PaintBrushBlendMode : uint8_t;
-    class PaintBrushSettings;
-
     //! PaintBrushSettingsNotificationBus is used to send out notifications whenever the global paintbrush settings have changed.
     class PaintBrushSettingsNotifications : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
-        //! Notifies listeners that the paintbrush color mode has changed.
-        //! @param newSettings The settings after the change
-        virtual void OnColorModeChanged([[maybe_unused]] const PaintBrushSettings& newSettings)
+        //! Notifies listeners that the set of visible paintbrush settings has changed.
+        virtual void OnVisiblePropertiesChanged()
         {
         }
 

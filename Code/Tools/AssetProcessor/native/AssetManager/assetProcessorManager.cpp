@@ -1377,6 +1377,7 @@ namespace AssetProcessor
                 AssessFileInternal(affectedSourceFile.c_str(), false);
             }
 
+            // If there are any new or updated products, trigger any source dependencies which depend on a specific product
             if(!updatedProducts.empty())
             {
                 QStringList dependencies = GetSourceFilesWhichDependOnSourceFile(processedAsset.m_entry.GetAbsoluteSourcePath(), updatedProducts);
@@ -4952,6 +4953,9 @@ namespace AssetProcessor
             // if the job failed, we need to wipe the tracking column so that the next time we start the app we will try it again.
             // it may not be necessary to actually alter the database here.
             m_remainingJobsForEachSourceFile.erase(foundTrackingInfo);
+
+            Q_EMIT FinishedAnalysis(m_remainingJobsForEachSourceFile.size());
+
             return;
         }
 
@@ -5022,6 +5026,8 @@ namespace AssetProcessor
             AssetUtilities::GetFileHash(fileInfo.absoluteFilePath().toUtf8().constData()));
 
         m_remainingJobsForEachSourceFile.erase(foundTrackingInfo);
+
+        Q_EMIT FinishedAnalysis(m_remainingJobsForEachSourceFile.size());
     }
 
     void AssetProcessorManager::SetEnableModtimeSkippingFeature(bool enable)

@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{420447D4-780C-4E25-8FBC-65D1409E2CC0}",
         "category": "Math Functions",
-        "title": "ddx",
+        "title": "Ddx",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
@@ -24,7 +28,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -38,7 +42,7 @@
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = ddx(NODEID_inValue);"
+                        "SLOTTYPE SLOTNAME = ddx(inValue);"
                     ]
                 }
             }

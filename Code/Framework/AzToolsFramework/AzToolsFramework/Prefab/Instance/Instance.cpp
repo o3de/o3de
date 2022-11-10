@@ -223,10 +223,10 @@ namespace AzToolsFramework
                 }
             }
 
-            return DetachEntity(entityAliasToRemove);
+            return DetachEntityHelper(entityAliasToRemove);
         }
 
-        AZStd::unique_ptr<AZ::Entity> Instance::DetachEntity(const EntityAlias& entityAlias)
+        AZStd::unique_ptr<AZ::Entity> Instance::DetachEntityHelper(const EntityAlias& entityAlias)
         {
             AZStd::unique_ptr<AZ::Entity> removedEntity;
             auto&& entityIterator = m_entities.find(entityAlias);
@@ -283,14 +283,14 @@ namespace AzToolsFramework
             return result;
         }
 
-        void Instance::RemoveNestedEntities(
+        void Instance::RemoveEntitiesInHierarchy(
             const AZStd::function<bool(const AZStd::unique_ptr<AZ::Entity>&)>& filter)
         {
             RemoveEntities(filter);
 
             for (const auto& [instanceAlias, instance] : m_nestedInstances)
             {
-                instance->RemoveNestedEntities(filter);
+                instance->RemoveEntitiesInHierarchy(filter);
             }
         }
 
@@ -467,16 +467,6 @@ namespace AzToolsFramework
             return m_entities.size();
         }
 
-        void Instance::GetNestedEntityIds(const AZStd::function<bool(AZ::EntityId)>& callback) const
-        {
-            GetEntityIds(callback);
-
-            for (auto&&[instanceAlias, instance] : m_nestedInstances)
-            {
-                instance->GetNestedEntityIds(callback);
-            }
-        }
-
         void Instance::GetEntityIds(const AZStd::function<bool(AZ::EntityId)>& callback) const
         {
             for (auto&&[entityAlias, entityId] : m_templateToInstanceEntityIdMap)
@@ -595,6 +585,16 @@ namespace AzToolsFramework
         void Instance::GetConstEntities(const AZStd::function<bool(const AZ::Entity&)>& callback) const
         {
             GetConstEntities_Impl(callback);
+        }
+
+        void Instance::GetAllEntityIdsInHierarchy(const AZStd::function<bool(AZ::EntityId)>& callback) const
+        {
+            GetEntityIds(callback);
+
+            for (auto&& [instanceAlias, instance] : m_nestedInstances)
+            {
+                instance->GetAllEntityIdsInHierarchy(callback);
+            }
         }
 
         void Instance::GetAllEntitiesInHierarchy(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback)
@@ -730,6 +730,11 @@ namespace AzToolsFramework
             return nestedInstanceAliases;
         }
 
+        const InstanceAlias& Instance::GetInstanceAlias() const
+        {
+            return m_alias;
+        }
+
         AliasPath Instance::GetAbsoluteInstanceAliasPath() const
         {
             // Reset the path using our preferred separator
@@ -847,11 +852,6 @@ namespace AzToolsFramework
         bool Instance::HasParentInstance() const
         {
             return m_parent != nullptr;
-        }
-
-        const InstanceAlias& Instance::GetInstanceAlias() const
-        {
-            return m_alias;
         }
 
         bool Instance::IsParentInstance(const Instance& instance) const

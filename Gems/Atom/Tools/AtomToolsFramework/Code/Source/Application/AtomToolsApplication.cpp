@@ -48,8 +48,8 @@ namespace AtomToolsFramework
     AtomToolsApplication* AtomToolsApplication::m_instance = {};
 
     AtomToolsApplication::AtomToolsApplication(const char* targetName, int* argc, char*** argv)
-        : Application(argc, argv)
-        , AzQtApplication(*argc, *argv)
+        : AzQtApplication(*argc, *argv)
+        , Application(argc, argv)
         , m_targetName(targetName)
         , m_toolId(targetName)
     {

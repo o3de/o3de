@@ -43,10 +43,8 @@ namespace AzToolsFramework
             void UnregisterPrefabPublicHandlerInterface();
 
             // PrefabPublicInterface...
-            CreatePrefabResult CreatePrefabInDisk(
-                const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
-            CreatePrefabResult CreatePrefabInMemory(
-                const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
+            CreatePrefabResult CreatePrefabInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
+            CreatePrefabResult CreatePrefabInMemory(const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
             InstantiatePrefabResult InstantiatePrefab(
                 AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Vector3& position) override;
             PrefabOperationResult SavePrefab(AZ::IO::Path filePath) override;

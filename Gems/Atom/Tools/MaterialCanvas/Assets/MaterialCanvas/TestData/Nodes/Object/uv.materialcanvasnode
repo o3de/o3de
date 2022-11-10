@@ -6,9 +6,15 @@
         "id": "{8E836C09-FA68-42B0-B302-CAC3FD6E4EA2}",
         "category": "Object",
         "title": "UV",
+        "titlePaletteName": "ObjectNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inIndex",
+            "outUV",
+            "outU|outV"
+        ],
         "settings": {
             "instructions": [
-                "float2 NODEID_outUV = O3DE_MC_UV(NODEID_inIndex);"
+                "float2 outUV = O3DE_MC_UV(inIndex);"
             ]
         },
         "inputSlots": [
@@ -24,7 +30,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -45,7 +51,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_outUV.x;"
+                        "SLOTTYPE SLOTNAME = outUV.x;"
                     ]
                 }
             },
@@ -57,7 +63,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_outUV.y;"
+                        "SLOTTYPE SLOTNAME = outUV.y;"
                     ]
                 }
             }

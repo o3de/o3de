@@ -65,6 +65,7 @@ namespace O3DE::ProjectManager
         QVector<Tag> GetDependingGemTags(const QModelIndex& modelIndex);
         bool HasDependentGems(const QModelIndex& modelIndex) const;
 
+        static const GemInfo GetGemInfo(const QModelIndex& modelIndex);
         static QString GetName(const QModelIndex& modelIndex);
         static QString GetDisplayName(const QModelIndex& modelIndex);
         static QString GetCreator(const QModelIndex& modelIndex);
