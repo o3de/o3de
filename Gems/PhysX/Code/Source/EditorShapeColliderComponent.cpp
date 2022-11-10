@@ -900,13 +900,13 @@ namespace PhysX
                     Physics::ColliderConfiguration unscaledColliderConfig = m_colliderConfig;
                     unscaledColliderConfig.m_position /= m_currentNonUniformScale;
                     const auto& boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(*shapeConfig);
-                    m_colliderDebugDraw.DrawBox(debugDisplay, unscaledColliderConfig, boxConfig, m_currentNonUniformScale, false);
+                    m_colliderDebugDraw.DrawBox(debugDisplay, unscaledColliderConfig, boxConfig, m_currentNonUniformScale);
                     break;
                 }
                 case Physics::ShapeType::Capsule:
                 {
                     const auto& capsuleConfig = static_cast<const Physics::CapsuleShapeConfiguration&>(*shapeConfig);
-                    m_colliderDebugDraw.DrawCapsule(debugDisplay, m_colliderConfig, capsuleConfig, AZ::Vector3::CreateOne(), true);
+                    m_colliderDebugDraw.DrawCapsule(debugDisplay, m_colliderConfig, capsuleConfig, AZ::Vector3::CreateOne());
                     break;
                 }
                 case Physics::ShapeType::Sphere:
