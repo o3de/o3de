@@ -405,70 +405,68 @@ namespace AzToolsFramework
 
     PaintBrushNotifications::BlendFn PaintBrushManipulator::GetBlendFunction(const PaintBrushSettings& brushSettings)
     {
+        auto clampAndLerpFn = [](float baseValue, float newValue, float opacity)
+        {
+            return AZStd::clamp(AZStd::lerp(baseValue, newValue, opacity), 0.0f, 1.0f);
+        };
+
         switch (brushSettings.GetBlendMode())
         {
         case PaintBrushBlendMode::Normal:
-            return [](float baseValue, float intensity, float opacity)
+            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
             {
-                const float operationResult = intensity;
-                return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+                return clampAndLerpFn(baseValue, intensity, opacity);
             };
             break;
         case PaintBrushBlendMode::Add:
-            return [](float baseValue, float intensity, float opacity)
+            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
             {
-                const float operationResult = baseValue + intensity;
-                return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+                return clampAndLerpFn(baseValue, baseValue + intensity, opacity);
             };
             break;
         case PaintBrushBlendMode::Subtract:
-            return [](float baseValue, float intensity, float opacity)
+            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
             {
-                const float operationResult = baseValue - intensity;
-                return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+                return clampAndLerpFn(baseValue, baseValue - intensity, opacity);
             };
             break;
         case PaintBrushBlendMode::Multiply:
-            return [](float baseValue, float intensity, float opacity)
+            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
             {
-                const float operationResult = baseValue * intensity;
-                return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+                return clampAndLerpFn(baseValue, baseValue * intensity, opacity);
             };
             break;
         case PaintBrushBlendMode::Screen:
-            return [](float baseValue, float intensity, float opacity)
+            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
             {
                 const float operationResult = 1.0f - ((1.0f - baseValue) * (1.0f - intensity));
-                return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+                return clampAndLerpFn(baseValue, operationResult, opacity);
             };
             break;
         case PaintBrushBlendMode::Darken:
-            return [](float baseValue, float intensity, float opacity)
+            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
             {
-                const float operationResult = AZStd::min(baseValue, intensity);
-                return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+                return clampAndLerpFn(baseValue, AZStd::min(baseValue, intensity), opacity);
             };
             break;
         case PaintBrushBlendMode::Lighten:
-            return [](float baseValue, float intensity, float opacity)
+            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
             {
-                const float operationResult = AZStd::max(baseValue, intensity);
-                return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+                return clampAndLerpFn(baseValue, AZStd::max(baseValue, intensity), opacity);
             };
             break;
         case PaintBrushBlendMode::Average:
-            return [](float baseValue, float intensity, float opacity)
+            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
             {
-                const float operationResult = (baseValue + intensity) / 2.0f;
-                return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+                return clampAndLerpFn(baseValue, (baseValue + intensity) / 2.0f, opacity);
             };
             break;
         case PaintBrushBlendMode::Overlay:
-            return [](float baseValue, float intensity, float opacity)
+            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
             {
                 const float operationResult =
                     (baseValue >= 0.5f) ? (1.0f - (2.0f * (1.0f - baseValue) * (1.0f - intensity))) : (2.0f * baseValue * intensity);
-                return AZStd::clamp(AZStd::lerp(baseValue, operationResult, opacity), 0.0f, 1.0f);
+                return clampAndLerpFn(baseValue, operationResult, opacity);
             };
             break;
         default:
@@ -546,7 +544,7 @@ namespace AzToolsFramework
 
         // In practice, only pixels within a distance of 3 * sigma affect the result, so we'll pick a sigma that's 1/3 of the distance
         // in each direction.
-        const float sigma = AZStd::max(smoothingRadius / 3.0f, 1.0f);
+        const float sigma = AZStd::max(radius / 3.0f, 1.0f);
 
         // We can precompute the peakHeight and expConstant terms outside of the loop.
         const float peakHeight = (1.0f / (AZ::Constants::TwoPi * sigma * sigma));
@@ -561,9 +559,11 @@ namespace AzToolsFramework
         // gathered in the same order.
         for (float y = -radius; y <= radius; y++)
         {
+            const float ySquared = y * y;
+
             for (float x = -radius; x <= radius; x++)
             {
-                float kernelValue = peakHeight * AZStd::exp(expConstant * ((x * x) + (y * y)));
+                float kernelValue = peakHeight * AZStd::exp(expConstant * ((x * x) + ySquared));
                 sum += kernelValue;
 
                 gaussianWeights.emplace_back(kernelValue);
