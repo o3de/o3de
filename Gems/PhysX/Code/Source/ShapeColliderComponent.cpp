@@ -13,8 +13,6 @@
 #include <LmbrCentral/Shape/CapsuleShapeComponentBus.h>
 #include <Source/Utils.h>
 
-#pragma optimize("", off)
-
 namespace PhysX
 {
     namespace Utils
@@ -73,6 +71,4 @@ namespace PhysX
         }
     }
 } // namespace PhysX
-
-#pragma optimize("", on)
 

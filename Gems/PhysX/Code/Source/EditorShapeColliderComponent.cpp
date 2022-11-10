@@ -32,8 +32,6 @@
 #include <RigidBodyStatic.h>
 #include <System/PhysXSystem.h>
 
-#pragma optimize("", off)
-
 namespace PhysX
 {
     EditorShapeColliderComponent::EditorShapeColliderComponent()
@@ -989,5 +987,3 @@ namespace PhysX
         }
     }
 } // namespace PhysX
-
-#pragma optimize("", on)

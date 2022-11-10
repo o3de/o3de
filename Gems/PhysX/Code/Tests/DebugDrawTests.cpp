@@ -16,8 +16,6 @@
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <LmbrCentral/Shape/EditorShapeComponentBus.h>
 
-#pragma optimize("", off)
-
 namespace PhysXEditorTests
 {
     TEST_F(PhysXEditorFixture, BoxCollider_NonUniformScale_DebugDrawCorrect)
@@ -373,5 +371,3 @@ namespace PhysXEditorTests
         EXPECT_NEAR(maxDistSq, 9.0f, 0.01f);
     }
 } // namespace PhysXEditorTests
-
-#pragma optimize("", on)

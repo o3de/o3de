@@ -238,7 +238,8 @@ namespace PhysXEditorTests
         );
 
         AzPhysics::SimulatedBody* simulatedBody = nullptr;
-        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(simulatedBody, editorEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, editorEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
         const auto* pxRigidStatic = static_cast<const physx::PxRigidStatic*>(simulatedBody->GetNativePointer());
 
         AZ::Aabb aabb = PxMathConvert(pxRigidStatic->getWorldBounds(1.0f));
@@ -258,7 +259,8 @@ namespace PhysXEditorTests
         editorEntity->Activate();
 
         AzPhysics::SimulatedBody* simulatedBody = nullptr;
-        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(simulatedBody, editorEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, editorEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
         const auto* pxRigidDynamic = static_cast<const physx::PxRigidDynamic*>(simulatedBody->GetNativePointer());
 
         AZ::Aabb aabb = PxMathConvert(pxRigidDynamic->getWorldBounds(1.0f));
@@ -277,7 +279,8 @@ namespace PhysXEditorTests
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
         AzPhysics::SimulatedBody* simulatedBody = nullptr;
-        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(simulatedBody, gameEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, gameEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
         const auto* pxRigidStatic = static_cast<const physx::PxRigidStatic*>(simulatedBody->GetNativePointer());
 
         AZ::Aabb aabb = PxMathConvert(pxRigidStatic->getWorldBounds(1.0f));
@@ -296,7 +299,8 @@ namespace PhysXEditorTests
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
         AzPhysics::SimulatedBody* simulatedBody = nullptr;
-        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(simulatedBody, gameEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, gameEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
         const auto* pxRigidDynamic = static_cast<const physx::PxRigidDynamic*>(simulatedBody->GetNativePointer());
 
         AZ::Aabb aabb = PxMathConvert(pxRigidDynamic->getWorldBounds(1.0f));
@@ -314,7 +318,8 @@ namespace PhysXEditorTests
         );
 
         AzPhysics::SimulatedBody* simulatedBody = nullptr;
-        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(simulatedBody, editorEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, editorEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
         const auto* pxRigidStatic = static_cast<const physx::PxRigidStatic*>(simulatedBody->GetNativePointer());
 
         AZ::Aabb aabb = PxMathConvert(pxRigidStatic->getWorldBounds(1.0f));
@@ -335,7 +340,8 @@ namespace PhysXEditorTests
         editorEntity->Activate();
 
         AzPhysics::SimulatedBody* simulatedBody = nullptr;
-        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(simulatedBody, editorEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, editorEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
         const auto* pxRigidDynamic = static_cast<const physx::PxRigidDynamic*>(simulatedBody->GetNativePointer());
 
         AZ::Aabb aabb = PxMathConvert(pxRigidDynamic->getWorldBounds(1.0f));
@@ -355,7 +361,8 @@ namespace PhysXEditorTests
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
         AzPhysics::SimulatedBody* simulatedBody = nullptr;
-        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(simulatedBody, gameEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, gameEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
         const auto* pxRigidStatic = static_cast<const physx::PxRigidStatic*>(simulatedBody->GetNativePointer());
 
         AZ::Aabb aabb = PxMathConvert(pxRigidStatic->getWorldBounds(1.0f));
@@ -375,7 +382,8 @@ namespace PhysXEditorTests
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
         AzPhysics::SimulatedBody* simulatedBody = nullptr;
-        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(simulatedBody, gameEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, gameEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
         const auto* pxRigidDynamic = static_cast<const physx::PxRigidDynamic*>(simulatedBody->GetNativePointer());
 
         AZ::Aabb aabb = PxMathConvert(pxRigidDynamic->getWorldBounds(1.0f));

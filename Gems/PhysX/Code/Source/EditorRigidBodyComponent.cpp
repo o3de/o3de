@@ -20,8 +20,6 @@
 #include <Source/NameConstants.h>
 #include <Source/Utils.h>
 
-#pragma optimize("", off)
-
 namespace PhysX
 {
     namespace Internal
@@ -578,5 +576,3 @@ namespace PhysX
         }
     }
 } // namespace PhysX
-
-#pragma optimize("", on)
