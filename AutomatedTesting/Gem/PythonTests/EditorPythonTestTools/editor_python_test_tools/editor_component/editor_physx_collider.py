@@ -10,7 +10,7 @@ import azlmbr.math as math
 
 from editor_python_test_tools.editor_entity_utils import EditorEntity
 from editor_python_test_tools.editor_component.editor_component_validation import \
-    (_validate_xyz_is_float, _validate_property_visibility)
+    (_validate_xyz_is_float, _validate_property_visibility, validate_property_switch_toggle)
 from editor_python_test_tools.asset_utils import Asset
 
 from consts.physics import PHYSX_COLLIDER
@@ -77,7 +77,7 @@ class EditorPhysxCollider:
 
         Used to toggle the PhysX Collider's Trigger Property.
         """
-        self.component.toggle_property_switch(self.Path.TRIGGER)
+        validate_property_switch_toggle(self.component, self.Path.TRIGGER)
 
     def toggle_is_simulated(self) -> None:
         """
@@ -85,7 +85,7 @@ class EditorPhysxCollider:
 
         Used to toggle the PhysX Collider's Simulated Property.
         """
-        self.component.toggle_property_switch(self.Path.SIMULATED)
+        validate_property_switch_toggle(self.component, self.Path.SIMULATED)
 
     def toggle_in_scene_queries(self) -> None:
         """
@@ -93,7 +93,7 @@ class EditorPhysxCollider:
 
         Used to toggle the PhysX Collider's In Scene Queries Property.
         """
-        self.component.toggle_property_switch(self.Path.IN_SCENE_QUERIES)
+        validate_property_switch_toggle(self.component, self.Path.IN_SCENE_QUERIES)
 
     def set_offset(self, x: float, y: float, z: float) -> None:
         """
@@ -154,7 +154,7 @@ class EditorPhysxCollider:
 
         Used to toggle the PhysX Collider's Draw Collider Property.
         """
-        self.component.toggle_property_switch(self.Path.DRAW_COLLIDER)
+        validate_property_switch_toggle(self.component, self.Path.DRAW_COLLIDER)
 
     def set_physx_material_from_path(self, asset_product_path: str) -> None:
         """
@@ -307,7 +307,7 @@ class EditorPhysxCollider:
         _validate_property_visibility(self.component, self.Path.PhysicsAsset.PHYSICS_MATERIALS_FROM_ASSET,
                                       PropertyVisibility.VISIBLE)
 
-        self.component.toggle_property_switch(self.Path.PhysicsAsset.PHYSICS_MATERIALS_FROM_ASSET)
+        validate_property_switch_toggle(self.component, self.Path.PhysicsAsset.PHYSICS_MATERIALS_FROM_ASSET)
 
     # Shape: Sphere
     def set_sphere_shape(self) -> None:

@@ -328,21 +328,6 @@ class EditorComponent:
 
         return visibility
 
-    def toggle_property_switch(self, component_property_path: str) -> None:
-        """
-        Used to toggle a property switch and validate that it toggled.
-        param component_property_path: String of component property. (e.g. 'Settings|Visible')
-        :return: None
-        """
-        start_value = self.get_component_property_value(component_property_path)
-        self.set_component_property_value(component_property_path, not start_value)
-
-        end_value = self.get_component_property_value(component_property_path)
-
-        assert (start_value != end_value), \
-            f"Failure: Could not toggle the switch for " \
-            f"{self.get_component_name()} : {component_property_path}."
-
 
 def convert_to_azvector3(xyz) -> azlmbr.math.Vector3:
     """

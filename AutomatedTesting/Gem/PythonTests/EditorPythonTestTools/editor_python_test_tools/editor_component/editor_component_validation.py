@@ -30,8 +30,8 @@ def _validate_property_visibility(component: EditorComponent, component_property
 
     Valid values for Property Visibility found in EditorPythonTestTools.consts.general ComponentPropertyVisibilityStates
     """
-    Report.info(f"Validating that the visibility for component property for a {component.get_component_name()} at "
-                f"property path {component_property_path} is \"{expected}\"")
+    Report.info(f"Validating visibility for the {component.get_component_name()}'s component property "
+                f"{component_property_path} is set to \"{expected}\".")
     assert expected in vars(PropertyVisibility).values(), \
         f"Expected value of {expected} was not an expected visibility state of: {vars(PropertyVisibility).values()}"
 
@@ -39,3 +39,24 @@ def _validate_property_visibility(component: EditorComponent, component_property
     assert visibility == expected, \
         f"Error: {component.get_component_name()}'s component property visibility found at {component_property_path} " \
         f"was set to \"{visibility}\" when \"{expected}\" was expected."
+
+def validate_property_switch_toggle(component: EditorComponent, component_property_path: str):
+    """
+    Used to toggle a property switch and validate that it toggled.
+    param component_property_path: String of component property. (e.g. 'Settings|Visible')
+
+    :return: None
+    """
+    Report.info(f"Validating {component.get_component_name()}'s componenet property {component_property_path}'s "
+                f"toggle switch toggles.")
+
+    start_value = component.get_component_property_value(component_property_path)
+    component.set_component_property_value(component_property_path, not start_value)
+
+    end_value = component.get_component_property_value(component_property_path)
+
+    assert (start_value != end_value), \
+        f"Failure: Could not toggle the switch for " \
+        f"{component.get_component_name()} : {component_property_path}."
+
+    assert True, "message"
