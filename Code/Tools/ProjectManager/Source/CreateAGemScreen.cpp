@@ -269,8 +269,25 @@ namespace O3DE::ProjectManager
         m_requirements = new FormLineEditWidget(tr("Requirements"), "", tr("Notice of any requirements your Gem. i.e. This requires X other gem"), "");
         gemDetailsLayout->addWidget(m_requirements);
 
-        m_platformOptions = new FormOptionsWidget((QStringList() << tr("Windows") << tr("Linux") << tr("iOS") << tr("Android")), tr("All Platforms"));
+
+
+        QStringList platformOptions;
+        
+        //input the platform list in reverse alphabetical order
+        for(int i = GemInfo::NumPlatforms-1; i >= 0; i--)
+        {
+            const GemInfo::Platform platform = static_cast<GemInfo::Platform>(1 << i);
+            if(platform & m_platformSupportMask)
+            {
+                platformOptions << GemInfo::GetPlatformString(platform);
+            }
+        }
+
+        m_platformOptions = new FormOptionsWidget(tr("Target Platform(s)"), platformOptions, tr("All Platforms"), s_platformOptionItemSpacing);
         gemDetailsLayout->addWidget(m_platformOptions);
+
+        //handle workflow specific logic for platforms
+        LoadSupportedPlatforms();
 
         m_license = new FormLineEditWidget(
             tr("License*"), "", tr("License uses goes here: i.e. Apache-2.0 or MIT"), tr("License details are required."));

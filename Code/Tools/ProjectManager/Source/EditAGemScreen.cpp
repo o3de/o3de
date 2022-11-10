@@ -137,4 +137,16 @@ namespace O3DE::ProjectManager
         }
     }
 
+    void EditGem::LoadSupportedPlatforms()
+    {
+        for(int i = GemInfo::NumPlatforms-1; i >= 0; i--)
+        {
+            const GemInfo::Platform platform = static_cast<GemInfo::Platform>(1 << i);
+            if(platform & m_gemInfo.m_platforms)
+            {
+                m_platformOptions->enable(GemInfo::GetPlatformString(platform));
+            }
+        }
+    }
+
 } // namespace O3DE::ProjectManager

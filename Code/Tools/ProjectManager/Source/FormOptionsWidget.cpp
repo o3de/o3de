@@ -21,21 +21,34 @@
 namespace O3DE::ProjectManager
 {
 
-    FormOptionsWidget::FormOptionsWidget(const QStringList& options, const QString& allOptionsText, QWidget* parent) : QWidget(parent)
+    FormOptionsWidget::FormOptionsWidget(const QString& labelText,
+                                         const QStringList& options,
+                                         const QString& allOptionsText,
+                                         const int optionItemSpacing,
+                                         QWidget* parent)
+                                         : QWidget(parent)
     {
         setObjectName("formOptionsWidget");
 
         QVBoxLayout* mainLayout = new QVBoxLayout();
         mainLayout->setAlignment(Qt::AlignTop);
         {
-            m_optionFrame = QFrame(this);
+            m_optionFrame = new QFrame(this);
+            m_optionFrame->setObjectName("formOptionsFrame");
             QHBoxLayout* optionFrameLayout = new QHBoxLayout();
             {
+                QVBoxLayout* fieldLayout = new QVBoxLayout();
+
+                QLabel* label = new QLabel(labelText, this);
+                fieldLayout->addWidget(label);
+
+
+                QHBoxLayout* optionLayout = new QHBoxLayout();
                 //Add the options
                 for(const QString& option : options)
                 {
                     QCheckBox* optionCheckBox = new QCheckBox(option);
-                    optionFrameLayout->addWidget(optionCheckBox);
+                    optionLayout->addWidget(optionCheckBox);
                     connect(optionCheckBox, &QCheckBox::clicked, this, [=](bool checked){
                         if(checked)
                         {
@@ -47,6 +60,7 @@ namespace O3DE::ProjectManager
                         }
                     });
                     m_options.insert(option, optionCheckBox);
+                    optionLayout->addSpacing(optionItemSpacing);
                 }
 
                 //Add the platform option toggle
@@ -63,7 +77,12 @@ namespace O3DE::ProjectManager
                 });
                 AzQtComponents::CheckBox::applyToggleSwitchStyle(m_allOptionsToggle);
 
-                optionFrameLayout->addWidget(m_allOptionsToggle);
+                optionLayout->addWidget(m_allOptionsToggle);
+
+                optionLayout->addStretch();
+
+                fieldLayout->addLayout(optionLayout);
+                optionFrameLayout->addLayout(fieldLayout);
             }
 
             m_optionFrame->setLayout(optionFrameLayout);
@@ -77,15 +96,11 @@ namespace O3DE::ProjectManager
         if(m_options.contains(option))
         {
             auto checkbox = m_options.value(option);
-            if(!checkbox->isChecked())
-            {
-                m_currentlyActive++;
-                if(m_currentlyActive == m_options.keys().count())
-                {
-                    m_allOptionsToggle->setChecked(true);
-                }
-            }
             checkbox->setChecked(true);
+            if(getCheckedCount() == m_options.values().count())
+            {
+                m_allOptionsToggle->setChecked(true);
+            }
         }
     }
 
@@ -102,11 +117,7 @@ namespace O3DE::ProjectManager
         if(m_options.contains(option))
         {
             auto checkbox = m_options.value(option);
-            if(checkbox->isChecked())
-            {
-                m_currentlyActive--;
-                m_allOptionsToggle->setChecked(false);
-            }
+            m_allOptionsToggle->setChecked(false);
             checkbox->setChecked(false);
         }
     }
@@ -126,7 +137,6 @@ namespace O3DE::ProjectManager
             checkbox->setChecked(true);
         }
         m_allOptionsToggle->setChecked(true);
-        m_currentlyActive = m_options.keys().count();
     }
     
     void FormOptionsWidget::clear()
@@ -136,7 +146,6 @@ namespace O3DE::ProjectManager
             checkbox->setChecked(false);
         }
         m_allOptionsToggle->setChecked(false);
-        m_currentlyActive = 0;
     }
 
     QStringList FormOptionsWidget::getOptions() const
@@ -157,6 +166,16 @@ namespace O3DE::ProjectManager
         }
 
         return options;
+    }
+
+    int FormOptionsWidget::getCheckedCount() const
+    {
+        int count = 0;
+        for(const auto& checkbox : m_options.values())
+        {
+            count += static_cast<int>(checkbox->isChecked());
+        }
+        return count;
     }
 
 } // namespace O3DE::ProjectManager

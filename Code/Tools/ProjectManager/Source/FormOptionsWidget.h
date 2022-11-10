@@ -22,13 +22,16 @@ namespace AzQtComponents
 
 namespace O3DE::ProjectManager
 {
-    class FormOptionsWidget
-        : public QWidget
+    class FormOptionsWidget : public QWidget
     {
         Q_OBJECT
 
     public:
-        FormOptionsWidget(const QStringList& options, const QString& allOptionsText, QWidget* parent = nullptr);
+        FormOptionsWidget(const QString& labelText,
+                          const QStringList& options,
+                          const QString& allOptionsText,
+                          const int optionItemSpacing = 24,
+                          QWidget* parent = nullptr);
 
         void clear();
 
@@ -45,13 +48,11 @@ namespace O3DE::ProjectManager
         QStringList getOptions() const;
 
     private:
+        int getCheckedCount() const;
         QFrame* m_optionFrame = nullptr;
         QHash<QString, QCheckBox*> m_options;
         QCheckBox* m_allOptionsToggle = nullptr;
-
-        //! Represents active options in m_options. Should never exceed the count of keys in m_options
-        int m_currentlyActive = 0;
-    }
+    };
 
 } // namespace O3DE::ProjectManager
 

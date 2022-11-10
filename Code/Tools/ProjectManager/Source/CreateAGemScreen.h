@@ -64,6 +64,10 @@ namespace O3DE::ProjectManager
 
         virtual bool ValidateGemLocation(const QDir& chosenGemLocation) const;
 
+        virtual void LoadSupportedPlatforms()
+        {
+        }
+
         //Gem Setup
         QVector<TemplateInfo> m_gemTemplates;
         QButtonGroup* m_radioButtonGroup = nullptr;
@@ -107,9 +111,14 @@ namespace O3DE::ProjectManager
         static constexpr int GemDetailsScreen = 1;
         static constexpr int GemCreatorDetailsScreen = 2;
 
+        static inline constexpr int s_platformOptionItemSpacing = 24;
+
         int m_indexBackLimit = 0;
 
         QString m_gemActionString;
+
+        GemInfo::Platforms m_platformSupportMask = GemInfo::Platform::Windows | GemInfo::Platform::Linux |
+                                                 GemInfo::Platform::iOS | GemInfo::Platform::Android;
 
     private:
         void LoadButtonsFromGemTemplatePaths(QVBoxLayout* gemSetupLayout);
