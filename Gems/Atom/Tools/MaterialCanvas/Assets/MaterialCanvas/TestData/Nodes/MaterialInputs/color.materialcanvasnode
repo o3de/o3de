@@ -6,6 +6,11 @@
         "id": "{2A23578C-FB72-4A9F-AC95-06B278CEA913}",
         "category": "Material Inputs",
         "title": "Color Input",
+        "titlePaletteName": "MaterialInputNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue",
+            "outR|outG|outB|outA"
+        ],
         "propertySlots": [
             {
                 "name": "inGroup",
@@ -17,7 +22,8 @@
                     "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
                     "Value": ""
                 },
-                "supportsEditingOnNode": false
+                "visibleOnNode": false,
+                "editableOnNode": false
             },
             {
                 "name": "inName",
@@ -40,7 +46,8 @@
                     "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
                     "Value": ""
                 },
-                "supportsEditingOnNode": false
+                "visibleOnNode": false,
+                "editableOnNode": false
             },
             {
                 "name": "inValue",
@@ -73,7 +80,7 @@
                 "defaultDataType": "color",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue;"
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue;"
                     ]
                 }
             },
@@ -85,7 +92,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.r;"
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.r;"
                     ]
                 }
             },
@@ -97,7 +104,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.g;"
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.g;"
                     ]
                 }
             },
@@ -109,7 +116,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.b;"
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.b;"
                     ]
                 }
             },
@@ -121,7 +128,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue.a;"
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.a;"
                     ]
                 }
             }

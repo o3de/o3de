@@ -578,7 +578,7 @@ exportComponent, prefabProcessorContext);
                 exportEntitiesMap.emplace(entity->GetId(), entity);
             }
         );
-        sourceInstance.RemoveNestedEntities(
+        sourceInstance.RemoveEntitiesInHierarchy(
             [&exportEntitiesMap](const AZStd::unique_ptr<AZ::Entity>& entity)
             {
                 return exportEntitiesMap.find(entity->GetId()) == exportEntitiesMap.end();

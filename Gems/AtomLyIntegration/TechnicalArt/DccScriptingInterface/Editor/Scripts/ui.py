@@ -47,7 +47,7 @@ _settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=True,
 # as the list of slots/actions grows, refactor into sub-modules
 @Slot()
 def click_action_sampleui():
-    """! Creates a sandalone sample ui with button, this is provided for
+    """! Creates a standalone sample ui with button, this is provided for
     Technicl Artists learning, as one of the purposes of the dccsi is
     onboarding TAs to the editor extensibility experience.
 

@@ -6,6 +6,7 @@
         "id": "{B352A2E4-D6A6-4178-9406-57716051024F}",
         "category": "Material Templates",
         "title": "Experimental PBR",
+        "titlePaletteName": "MaterialTemplateNodeTitlePalette",
         "settings": {
             "templatePaths": [
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName_Common.azsli",
@@ -30,7 +31,8 @@
                     "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
                     "Value": ""
                 },
-                "supportsEditingOnNode": false
+                "visibleOnNode": false,
+                "editableOnNode": false
             }
         ],
         "inputSlots": [
@@ -48,6 +50,7 @@
                         0.0
                     ]
                 },
+                "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -68,6 +71,7 @@
                         1.0
                     ]
                 },
+                "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -84,6 +88,7 @@
                     "$type": "float",
                     "Value": 0.0
                 },
+                "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -100,6 +105,7 @@
                     "$type": "float",
                     "Value": 0.0
                 },
+                "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -116,6 +122,7 @@
                     "$type": "float",
                     "Value": 0.0
                 },
+                "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -136,6 +143,7 @@
                         0.0
                     ]
                 },
+                "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -152,6 +160,7 @@
                     "$type": "float",
                     "Value": 1.0
                 },
+                "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"

@@ -69,6 +69,8 @@ protected slots:
     void SetTreeViewMode();
     void SetListViewMode();
     void UpdateWidgetAfterFilter();
+    void SetTwoColumnMode(QWidget* viewToShow);
+    void SetOneColumnMode();
 
 private:
     QScopedPointer<Ui::AzAssetBrowserWindowClass> m_ui;

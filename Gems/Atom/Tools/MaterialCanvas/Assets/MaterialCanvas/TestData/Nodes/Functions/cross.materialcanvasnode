@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{E32BFDA0-21C9-4C9B-8522-3C4C674095C2}",
         "category": "Math Functions",
-        "title": "cross",
+        "title": "Cross",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue1",
@@ -23,7 +27,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             },
@@ -43,7 +47,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -57,7 +61,7 @@
                 "defaultDataType": "float3",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = cross((float3)NODEID_inValue1, (float3)NODEID_inValue2);"
+                        "SLOTTYPE SLOTNAME = cross((float3)inValue1, (float3)inValue2);"
                     ]
                 }
             }
