@@ -262,23 +262,45 @@ namespace ScriptCanvasEditor
 
         void Controller::OnScanBegin(size_t assetCount)
         {
+            // Reset rows
             m_handledAssetCount = 0;
             m_view->tableWidget->setRowCount(0);
-            m_view->progressBar->setVisible(true);
+
+            // Show progress bar and spinner
             m_view->progressBar->setRange(0, aznumeric_cast<int>(assetCount));
             m_view->progressBar->setValue(0);
-            m_view->scanButton->setEnabled(false);
-            m_view->upgradeAllButton->setEnabled(false);
-            m_view->onlyShowOutdated->setEnabled(false);
+            m_view->progressBar->setVisible(true);
 
             QString spinnerText = QStringLiteral("Scan in progress - gathering graphs that can be updated");
             m_view->spinner->SetText(spinnerText);
             SetSpinnerIsBusy(true);
+
+            // Disable buttons
+            m_view->scanButton->setEnabled(false);
+            m_view->upgradeAllButton->setEnabled(false);
+            m_view->closeButton->setEnabled(false);
+            m_view->makeBackupCheckbox->setEnabled(false);
+            m_view->onlyShowOutdated->setEnabled(false);
+            m_view->onlyShowXMLFiles->setEnabled(false);
         }
 
         void Controller::OnScanComplete(const ScanResult& result)
         {
+            // Enable buttons
+            m_view->onlyShowXMLFiles->setEnabled(true);
             m_view->onlyShowOutdated->setEnabled(true);
+            m_view->makeBackupCheckbox->setEnabled(true);
+            m_view->closeButton->setEnabled(true);
+            if (!result.m_unfiltered.empty())
+            {
+                m_view->upgradeAllButton->setEnabled(true);
+            }
+            m_view->scanButton->setEnabled(true);
+            EnableAllUpgradeButtons();
+
+            // Hide progress bar and show scan result
+            m_view->progressBar->setVisible(false);
+            m_view->progressBar->setValue(0);
 
             QString spinnerText = QStringLiteral("Scan Complete");
             spinnerText.append(QString::asprintf(" - Discovered: %zu, Failed: %zu, Upgradeable: %zu, Up-to-date: %zu"
@@ -286,16 +308,8 @@ namespace ScriptCanvasEditor
                 , result.m_loadErrors.size()
                 , result.m_unfiltered.size()
                 , result.m_filteredAssets.size()));
-
             m_view->spinner->SetText(spinnerText);
             SetSpinnerIsBusy(false);
-            m_view->progressBar->setVisible(false);
-            EnableAllUpgradeButtons();
-
-            if (!result.m_unfiltered.empty())
-            {
-                m_view->upgradeAllButton->setEnabled(true);
-            }
         }
 
         void Controller::OnScanFilteredGraph(const SourceHandle& info)
