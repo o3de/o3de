@@ -2103,15 +2103,29 @@ def create_gem(gem_path: pathlib.Path,
 
     if summary:
         replacements.append(("${Summary}", summary))
+    else:
+        replacements.append(("${Summary}", ""))
+    
     if license:
         replacements.append(("${License}", license))
+    else:
+        replacements.append(("${License}", ""))
+    
     if license_url:
         replacements.append(("${LicenseURL}", license_url))
+    else:
+        replacements.append(("${LicenseURL}", ""))
+    
     if origin:
         replacements.append(("${Origin}", origin))
+    else:
+        replacements.append(("${Origin}", ""))
+    
     if origin_url:
         replacements.append(("${OriginURL}", origin_url))
-    
+    else:
+        replacements.append(("${OriginURL}", ""))
+
     tags = [gem_name]
     if user_tags:
         # Allow commas or spaces as tag separators
@@ -2132,12 +2146,23 @@ def create_gem(gem_path: pathlib.Path,
 
     if icon_path:
         replacements.append(("${IconPath}", pathlib.PurePath(icon_path).as_posix()))
+    else:
+        replacements.append(("${IconPath}", ""))
+
     if requirements:
         replacements.append(("${Requirements}", requirements))
+    else:
+        replacements.append(("${Requirements}", ""))
+
     if documentation_url:
         replacements.append(("${DocumentationURL}", documentation_url))
+    else:
+        replacements.append(("${DocumentationURL}", ""))
+
     if repo_uri:
         replacements.append(("${RepoURI}", repo_uri))
+    else:
+        replacements.append(("${RepoURI}", ""))
 
     # module id is a uuid with { and -
     if module_id:

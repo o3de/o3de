@@ -19,8 +19,10 @@ logger = logging.getLogger('o3de.gem_properties')
 logging.basicConfig(format=utils.LOG_FORMAT)
 
 
-def update_values_in_key_list(existing_values: list, new_values: list or str, remove_values: list or str,
-                      replace_values: list or str):
+def update_values_in_key_list(existing_values: list,
+                              new_values: list or str = None,
+                              remove_values: list or str = None,
+                              replace_values: list or str = None):
     """
     Updates values within a list by first appending values in the new_values list, removing values in the remove_values
     list and then replacing values in the replace_values list
@@ -31,13 +33,13 @@ def update_values_in_key_list(existing_values: list, new_values: list or str, re
 
     returns updated existing value list
     """
-    if new_values:
+    if new_values is not None and new_values != []:
         new_values = new_values.split() if isinstance(new_values, str) else new_values
         existing_values.extend(new_values)
-    if remove_values:
+    if remove_values is not None and remove_values != []:
         remove_values = remove_values.split() if isinstance(remove_values, str) else remove_values
         existing_values = list(filter(lambda value: value not in remove_values, existing_values))
-    if replace_values:
+    if replace_values is not None:
         replace_values = replace_values.split() if isinstance(replace_values, str) else replace_values
         existing_values = replace_values
 
