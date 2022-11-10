@@ -6,6 +6,7 @@
 #
 #
 
+import io
 import json
 import pytest
 import pathlib
@@ -38,6 +39,12 @@ TEST_GEM_JSON_PAYLOAD = '''
     ],
     "external_subdirectories": [
     ]
+}
+'''
+
+TEST_PROJECT_TEMPLATE_JSON_PAYLOAD = '''
+{
+    "template_name": "DefaultProject"
 }
 '''
 
@@ -168,7 +175,7 @@ class TestGetTemplatesForCreation:
             pytest.param([pathlib.Path('D:/o3de/Templates/DefaultProject')])
         ]
     )
-    def test_get_templates_for_gem_creation(self, valid_project_json_paths, valid_gem_json_paths,
+    def test_get_templates_for_project_creation(self, valid_project_json_paths, valid_gem_json_paths,
                                                 expected_template_paths):
         def validate_project_json(project_json_path) -> bool:
             return pathlib.Path(project_json_path) in valid_project_json_paths
@@ -204,7 +211,7 @@ class TestGetTemplatesForCreation:
             pytest.param([pathlib.Path('D:/o3de/Templates/DefaultGem')])
         ]
     )
-    def test_get_templates_for_project_creation(self, valid_project_json_paths, valid_gem_json_paths,
+    def test_get_templates_for_gem_creation(self, valid_project_json_paths, valid_gem_json_paths,
                                                 expected_template_paths):
         def validate_project_json(project_json_path) -> bool:
             return pathlib.Path(project_json_path) in valid_project_json_paths
@@ -360,6 +367,64 @@ class TestGetAllGems:
             manifest.get_gem_external_subdirectories(gem_path, list())
 
             assert self.cycle_detected == expected_cycle_detected
+
+class TestManifestGetRegistered:
+    @staticmethod
+    def get_this_engine_path() -> pathlib.Path:
+        return pathlib.Path('D:/o3de/o3de')
+
+    @staticmethod
+    def is_file(self) -> bool:
+        # use a simple suffix check to avoid hitting the actual file system
+        return self.suffix != ''
+
+    @staticmethod
+    def resolve(self):
+        return self
+
+    @staticmethod
+    def samefile(self, otherFile):
+        return self.as_posix() == otherFile.as_posix()
+
+    @pytest.mark.parametrize("template_name, relative_template_path, expected_path", [
+            pytest.param('DefaultProject', pathlib.Path('Templates/DefaultProject'), pathlib.Path('D:/o3de/o3de/Templates/DefaultProject'), ),
+            pytest.param('InvalidProject', pathlib.Path('Templates/DefaultProject'), None)
+    ])
+    def test_get_registered_template(self, template_name, relative_template_path, expected_path):
+            def get_engine_json_data(engine_name: str = None,
+                                    engine_path: str or pathlib.Path = None) -> dict or None:
+                engine_payload = json.loads(TEST_ENGINE_JSON_PAYLOAD)
+                if expected_path:
+                    engine_payload['templates'] = [relative_template_path]
+                return engine_payload
+
+            def get_gem_json_data(gem_name: str = None,
+                                    gem_path: str or pathlib.Path = None) -> dict or None:
+                gem_payload = json.loads(TEST_GEM_JSON_PAYLOAD)
+                return gem_payload
+
+            def get_project_json_data(project_name: str = None,
+                                    project_path: str or pathlib.Path = None) -> dict or None:
+                project_payload = json.loads(TEST_PROJECT_JSON_PAYLOAD)
+                return project_payload
+
+            def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
+                manifest_payload = json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
+                manifest_payload['projects'] = []
+                return manifest_payload
+
+            with patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as _1, \
+                patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as _2, \
+                patch('o3de.manifest.get_gem_json_data', side_effect=get_gem_json_data) as _3, \
+                patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as _4, \
+                patch('pathlib.Path.resolve', self.resolve) as _5, \
+                patch('pathlib.Path.samefile', self.samefile) as _6, \
+                patch('pathlib.Path.open', return_value=io.StringIO(TEST_PROJECT_TEMPLATE_JSON_PAYLOAD)) as _7, \
+                patch('pathlib.Path.is_file', self.is_file) as _8,\
+                patch('o3de.manifest.get_this_engine_path', side_effect=self.get_this_engine_path) as _9: 
+
+                path = manifest.get_registered(template_name=template_name)
+                assert path == expected_path
 
 class TestManifestProjects:
     @staticmethod

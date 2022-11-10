@@ -78,7 +78,7 @@ namespace UnitTest
 
         //get the entity id
         AZStd::vector<AZ::EntityId> entityIdVector;
-        axleInstance->GetNestedEntityIds([&entityIdVector](AZ::EntityId entityId)
+        axleInstance->GetAllEntityIdsInHierarchy([&entityIdVector](AZ::EntityId entityId)
         {
             entityIdVector.push_back(entityId);
             return true;

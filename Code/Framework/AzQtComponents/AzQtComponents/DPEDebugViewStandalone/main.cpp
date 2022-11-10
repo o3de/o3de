@@ -82,9 +82,11 @@ namespace DPEDebugView
         }
 
         int m_simpleInt = 5;
+        int m_readOnlyInt = 33;
         double m_doubleSlider = 3.25;
         AZStd::vector<AZStd::string> m_vector;
         AZStd::map<AZStd::string, float> m_map;
+        AZStd::map<AZStd::string, float> m_readOnlyMap;
         AZStd::unordered_map<AZStd::pair<int, double>, int> m_unorderedMap;
         AZStd::unordered_map<EnumType, int> m_simpleEnum;
         AZStd::unordered_map<EnumType, double> m_immutableEnum;
@@ -102,9 +104,11 @@ namespace DPEDebugView
             {
                 serializeContext->Class<TestContainer>()
                     ->Field("simpleInt", &TestContainer::m_simpleInt)
+                    ->Field("readonlyInt", &TestContainer::m_readOnlyInt)
                     ->Field("doubleSlider", &TestContainer::m_doubleSlider)
                     ->Field("vector", &TestContainer::m_vector)
                     ->Field("map", &TestContainer::m_map)
+                    ->Field("map", &TestContainer::m_readOnlyMap)
                     ->Field("unorderedMap", &TestContainer::m_unorderedMap)
                     ->Field("simpleEnum", &TestContainer::m_simpleEnum)
                     ->Field("immutableEnum", &TestContainer::m_immutableEnum)
@@ -160,7 +164,13 @@ namespace DPEDebugView
                         ->UIElement(AZ::Edit::UIHandlers::Button, "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button2)
                         ->Attribute(AZ::Edit::Attributes::ButtonText, "Button 2 (should be at bottom)")
-                        ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true);
+                        ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true)
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "ReadOnly")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_readOnlyInt, "readonly int", "")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_readOnlyMap, "readonly map<string, float>", "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, true);
                 }
             }
         }
@@ -219,6 +229,10 @@ int main(int argc, char** argv)
     testContainer.m_map["One"] = 1.f;
     testContainer.m_map["Two"] = 2.f;
     testContainer.m_map["million"] = 1000000.f;
+
+    testContainer.m_readOnlyMap["A"] = 1.f;
+    testContainer.m_readOnlyMap["B"] = 2.f;
+    testContainer.m_readOnlyMap["C"] = 3.f;
 
     testContainer.m_unorderedMap[{1, 2.}] = 3;
     testContainer.m_unorderedMap[{ 4, 5. }] = 6;

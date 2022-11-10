@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{24660AF5-A063-45AD-83B1-7A3F834B9B7E}",
         "category": "Math Functions",
-        "title": "reflect",
+        "title": "Reflect",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue1",
@@ -24,7 +28,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             },
@@ -45,7 +49,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -59,7 +63,7 @@
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = reflect(NODEID_inValue1, NODEID_inValue2);"
+                        "SLOTTYPE SLOTNAME = reflect(inValue1, inValue2);"
                     ]
                 }
             }

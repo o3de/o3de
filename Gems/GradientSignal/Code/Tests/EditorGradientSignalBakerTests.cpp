@@ -13,10 +13,12 @@
 #include <AzCore/Math/Random.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/Utils.h>
 
 #include <GradientSignal/Editor/EditorGradientBakerComponent.h>
 
+#include <Tests/FileIOBaseTestTypes.h>
 // this needs to be included before OpenImageIO because of WIN32 GetObject macro conflicting with RegistrySettings::GetObject
 #include <Tests/GradientSignalTestFixtures.h>
 
@@ -33,6 +35,11 @@ namespace UnitTest
     protected:
         AZ::JobManager* m_jobManager = nullptr;
         AZ::JobContext* m_jobContext = nullptr;
+
+        // We need to use LocalFileIO for these tests so that the image saving code can properly save and rename the test files.
+        // If we use TestFileIOBase or no FileIOBase, the necessary File IO operations won't exist and the tests will fail.
+        AZ::IO::LocalFileIO m_fileIO;
+        AZ::IO::FileIOBase* m_prevFileIO{};
 
         void SetUp() override
         {
@@ -56,10 +63,15 @@ namespace UnitTest
                 m_jobContext = aznew AZ::JobContext(*m_jobManager);
                 AZ::JobContext::SetGlobalContext(m_jobContext);
             }
+
+            m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
+            AZ::IO::FileIOBase::SetInstance(&m_fileIO);
         }
 
         void TearDown() override
         {
+            AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
+
             if (m_jobContext)
             {
                 AZ::JobContext::SetGlobalContext(nullptr);

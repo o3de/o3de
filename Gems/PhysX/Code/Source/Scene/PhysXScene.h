@@ -28,7 +28,7 @@ namespace physx
 namespace PhysX
 {
     //! PhysX implementation of the AzPhysics::Scene.
-    class PhysXScene
+    class PhysXScene final
         : public AzPhysics::Scene
     {
     public:
@@ -79,7 +79,27 @@ namespace PhysX
 
         physx::PxControllerManager* GetOrCreateControllerManager();
 
+        //! Apply batched transform sync events for the current simulation pass. 
+        //! This will clear the batched data for the next simulation pass.
+        void FlushTransformSync();
+        
     private:
+
+        //! Data structure for efficient unique vector functionality.
+        //! Body indices are inserted avoiding duplicated data and stored in a vector for efficient iteration.
+        class QueuedActiveBodyIndices
+        {
+        public:
+            void Insert(AzPhysics::SimulatedBodyIndex bodyIndex);
+            void IncreaseCapacity(size_t extraSize);
+            void Clear();
+            void Apply(const AZStd::function<void(AzPhysics::SimulatedBodyIndex)>& applyFunction);
+
+        private:
+            AZStd::unordered_set<AzPhysics::SimulatedBodyIndex> m_uniqueIndices;
+            AZStd::vector<AzPhysics::SimulatedBodyIndex> m_packedIndices;
+        };
+
         void EnableSimulationOfBodyInternal(AzPhysics::SimulatedBody& body);
         void DisableSimulationOfBodyInternal(AzPhysics::SimulatedBody& body);
 
@@ -93,11 +113,24 @@ namespace PhysX
         void SyncActiveBodyTransform(const AzPhysics::SimulatedBodyHandleList& activeBodyHandles);
 
         bool m_isEnabled = true;
+
+        // Batch transform sync data. Here we store the indices of actors that have moved since the last simulation pass.
+        // After the full simulation pass (possibly made of multiple simulation sub-steps) is complete,
+        // we send the transform sync event once.
+        QueuedActiveBodyIndices m_queuedActiveBodyIndices;
+
+        // Accumulated delta time over multiple simulation sub-steps.
+        // When we run the batched transform sync, the accumulated simulation time is provided
+        // to tell how much time was simulated in this full pass.
+        float m_accumulatedDeltaTime = 0.0f;
+
         AzPhysics::SceneConfiguration m_config;
         AzPhysics::SceneHandle m_sceneHandle;
+
+        // Delta time for the current simulation sub-step
         float m_currentDeltaTime = 0.0f;
 
-        AZStd::vector<AZStd::pair<AZ::Crc32, AzPhysics::SimulatedBody*>> m_simulatedBodies; //this will become a SimulatedBody with LYN-1334
+        AZStd::vector<AZStd::pair<AZ::Crc32, AzPhysics::SimulatedBody*>> m_simulatedBodies;
         AZStd::vector<AzPhysics::SimulatedBody*> m_deferredDeletions;
         AZStd::queue<AzPhysics::SimulatedBodyIndex> m_freeSceneSlots;
 

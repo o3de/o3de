@@ -6,6 +6,11 @@
         "id": "{AD1CEDD5-B944-4817-B157-586B0A6C9406}",
         "category": "Object",
         "title": "Position",
+        "titlePaletteName": "ObjectNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "outPosition",
+            "outX|outY|outZ"
+        ],
         "outputSlots": [
             {
                 "name": "outPosition",
@@ -15,7 +20,7 @@
                 "defaultDataType": "float3",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = O3DE_MC_POSITION;"
+                        "SLOTTYPE SLOTNAME = O3DE_MC_POSITION;"
                     ]
                 }
             },
@@ -27,7 +32,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = O3DE_MC_POSITION.x;"
+                        "SLOTTYPE SLOTNAME = O3DE_MC_POSITION.x;"
                     ]
                 }
             },
@@ -39,7 +44,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = O3DE_MC_POSITION.y;"
+                        "SLOTTYPE SLOTNAME = O3DE_MC_POSITION.y;"
                     ]
                 }
             },
@@ -51,7 +56,7 @@
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = O3DE_MC_POSITION.z;"
+                        "SLOTTYPE SLOTNAME = O3DE_MC_POSITION.z;"
                     ]
                 }
             }

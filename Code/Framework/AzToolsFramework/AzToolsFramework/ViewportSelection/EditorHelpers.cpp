@@ -80,7 +80,7 @@ namespace AzToolsFramework
         return iconsVisible;
     }
 
-    // helper function to wrap Ebus call to check if helpers should only be drawn for selected entities
+    // helper function to wrap EBus call to check if helpers should only be drawn for selected entities
     static bool OnlyShowHelpersForSelectedEntities(const AzFramework::ViewportId viewportId)
     {
         bool onlyShowHelpersForSelectedEntities = false;
@@ -104,9 +104,6 @@ namespace AzToolsFramework
     static void DisplayComponents(
         const AZ::EntityId entityId, const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        const AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
         AzFramework::EntityDebugDisplayEventBus::Event(
             entityId, &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport, viewportInfo, debugDisplay);
 
@@ -121,10 +118,10 @@ namespace AzToolsFramework
 
         if (ed_visibility_showAggregateEntityTransformedLocalBounds)
         {
-            AZ::Transform worldFromLocal = entity->GetTransform()->GetWorldTM();
-
+            const AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
             if (const AZ::Aabb localAabb = AzFramework::CalculateEntityLocalBoundsUnion(entity); localAabb.IsValid())
             {
+                const AZ::Transform worldFromLocal = entity->GetTransform()->GetWorldTM();
                 const AZ::Aabb worldAabb = localAabb.GetTransformedAabb(worldFromLocal);
                 debugDisplay.SetColor(AZ::Colors::Turquoise);
                 debugDisplay.DrawWireBox(worldAabb.GetMin(), worldAabb.GetMax());
@@ -133,6 +130,7 @@ namespace AzToolsFramework
 
         if (ed_visibility_showAggregateEntityWorldBounds)
         {
+            const AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
             if (const AZ::Aabb worldAabb = AzFramework::CalculateEntityWorldBoundsUnion(entity); worldAabb.IsValid())
             {
                 debugDisplay.SetColor(AZ::Colors::Magenta);
@@ -198,7 +196,9 @@ namespace AzToolsFramework
         // selecting new entities
         AZ::EntityId entityIdUnderCursor;
         float closestDistance = AZStd::numeric_limits<float>::max();
-        for (size_t entityCacheIndex = 0; entityCacheIndex < m_entityDataCache->VisibleEntityDataCount(); ++entityCacheIndex)
+        for (size_t entityCacheIndex = 0, visibleEntityCount = m_entityDataCache->VisibleEntityDataCount();
+             entityCacheIndex < visibleEntityCount;
+             ++entityCacheIndex)
         {
             const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
 
@@ -297,7 +297,9 @@ namespace AzToolsFramework
 
         if (helpersVisible)
         {
-            for (size_t entityCacheIndex = 0; entityCacheIndex < m_entityDataCache->VisibleEntityDataCount(); ++entityCacheIndex)
+            for (size_t entityCacheIndex = 0, visibleEntityCount = m_entityDataCache->VisibleEntityDataCount();
+                 entityCacheIndex < visibleEntityCount;
+                 ++entityCacheIndex)
             {
                 if (const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
                     m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex))
@@ -323,7 +325,9 @@ namespace AzToolsFramework
                 return;
             }
 
-            for (size_t entityCacheIndex = 0; entityCacheIndex < m_entityDataCache->VisibleEntityDataCount(); ++entityCacheIndex)
+            for (size_t entityCacheIndex = 0, visibleEntityCount = m_entityDataCache->VisibleEntityDataCount();
+                 entityCacheIndex < visibleEntityCount;
+                 ++entityCacheIndex)
             {
                 if (const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
                     m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex) && IsSelectableInViewport(entityId))

@@ -5,7 +5,11 @@
     "ClassData": {
         "id": "{ACFD2852-1C39-4E11-9F48-56618DF90689}",
         "category": "Math Functions",
-        "title": "sin",
+        "title": "Sin",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
@@ -24,7 +28,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -38,7 +42,7 @@
                 "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = sin(NODEID_inValue);"
+                        "SLOTTYPE SLOTNAME = sin(inValue);"
                     ]
                 }
             }

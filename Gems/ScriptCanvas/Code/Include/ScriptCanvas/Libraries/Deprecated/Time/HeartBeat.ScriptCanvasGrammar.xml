@@ -8,8 +8,7 @@
            Base="ScriptCanvas::Nodes::Internal::BaseTimerNode"
            Category="Timing"
            Version="0"
-           DeprecationUUID="{E73DB180-A325-763B-A1FE-517B548AF66E}"
-           Deprecated="This node has been deprecated in favor of the nodeable form"
+           Deprecated="True"
            Description="While active, will signal the output at the given interval.">
         <In Name="Start" Description=""/>
         <In Name="Stop" Description=""/>
