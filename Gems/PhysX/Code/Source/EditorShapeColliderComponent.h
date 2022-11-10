@@ -83,7 +83,8 @@ namespace PhysX
         virtual const Physics::ColliderConfiguration& GetColliderConfiguration() const;
         virtual const AZStd::vector<AZStd::shared_ptr<Physics::ShapeConfiguration>>& GetShapeConfigurations() const;
 
-        //! Returns a collider configuration with the entity scale and non-uniform scale applied to the collider position.
+        //! Returns a collider configuration with the entity scale applied to the collider position.
+        //! Non-uniform scale is not applied here, because it is already stored in the collider position.
         Physics::ColliderConfiguration GetColliderConfigurationScaled() const;
 
         // EditorComponentBase

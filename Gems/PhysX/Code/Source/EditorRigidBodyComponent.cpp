@@ -88,7 +88,7 @@ namespace PhysX
             const AZStd::vector<EditorShapeColliderComponent*> shapeColliders = entity->FindComponents<EditorShapeColliderComponent>();
             for (const EditorShapeColliderComponent* shapeCollider : shapeColliders)
             {
-                Physics::ColliderConfiguration colliderConfig = shapeCollider->GetColliderConfigurationScaled();
+                const Physics::ColliderConfiguration colliderConfig = shapeCollider->GetColliderConfigurationScaled();
                 const AZStd::vector<AZStd::shared_ptr<Physics::ShapeConfiguration>>& shapeConfigs =
                     shapeCollider->GetShapeConfigurations();
                 for (const auto& shapeConfig : shapeConfigs)

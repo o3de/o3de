@@ -291,6 +291,10 @@ namespace PhysXEditorTests
             AZ::Vector3(4.0f, -4.0f, 6.0f)
         );
 
+        // turn off the shape visibility, so that only the shape collider component debug draws
+        LmbrCentral::EditorShapeComponentRequestsBus::Event(
+            sphereShapeEntity->GetId(), &LmbrCentral::EditorShapeComponentRequests::SetVisibleInEditor, false);
+
         UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
         AzFramework::EntityDebugDisplayEventBus::Event(
             sphereShapeEntity->GetId(),
@@ -327,16 +331,20 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, ShapeCollider_CapsuleWithTranslationOffset_DebugDrawCorrect)
     {
-        EntityPtr sphereShapeEntity = CreateCapsuleShapeColliderEditorEntity(
+        EntityPtr capsuleShapeEntity = CreateCapsuleShapeColliderEditorEntity(
             AZ::Transform(AZ::Vector3(2.0f, 6.0f, -1.0f), AZ::Quaternion(0.9f, 0.1f, 0.3f, 0.3f), 2.0f),
             1.5f,
             6.0f,
             AZ::Vector3(-3.0f, -4.0f, -5.0f)
         );
 
+        // turn off the shape visibility, so that only the shape collider component debug draws
+        LmbrCentral::EditorShapeComponentRequestsBus::Event(
+            capsuleShapeEntity->GetId(), &LmbrCentral::EditorShapeComponentRequests::SetVisibleInEditor, false);
+
         UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
         AzFramework::EntityDebugDisplayEventBus::Event(
-            sphereShapeEntity->GetId(),
+            capsuleShapeEntity->GetId(),
             &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
             AzFramework::ViewportInfo{ 0 },
             testDebugDisplayRequests);
