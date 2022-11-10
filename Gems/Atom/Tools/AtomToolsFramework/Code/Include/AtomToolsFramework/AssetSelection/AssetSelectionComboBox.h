@@ -9,51 +9,44 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <QComboBox>
 #endif
 
 namespace AtomToolsFramework
 {
-    class AssetSelectionComboBox
-        : public QComboBox
-        , private AzFramework::AssetCatalogEventBus::Handler
+    class AssetSelectionComboBox : public QComboBox
     {
         Q_OBJECT
     public:
-        AssetSelectionComboBox(const AZStd::function<bool(const AZ::Data::AssetInfo&)>& filterCallback, QWidget* parent = 0);
+        AssetSelectionComboBox(const AZStd::function<bool(const AZStd::string&)>& filterCallback, QWidget* parent = 0);
         ~AssetSelectionComboBox();
 
         void Reset();
-        void SetFilterCallback(const AZStd::function<bool(const AZ::Data::AssetInfo&)>& filterCallback);
-        void SelectAsset(const AZ::Data::AssetId& assetId);
-        AZ::Data::AssetId GetSelectedAsset() const;
-        AZStd::string GetSelectedAssetSourcePath() const;
-        AZStd::string GetSelectedAssetProductPath() const;
+        void SetFilter(const AZStd::function<bool(const AZStd::string&)>& filterCallback);
+        void SelectPath(const AZStd::string& path);
+        AZStd::string GetSelectedPath() const;
 
         void SetThumbnailsEnabled(bool enabled);
         void SetThumbnailDelayMs(AZ::u32 delay);
 
     Q_SIGNALS:
-        void AssetSelected(const AZ::Data::AssetId& assetId);
+        void PathSelected(const AZStd::string& path);
 
     private:
         AZ_DISABLE_COPY_MOVE(AssetSelectionComboBox);
 
-        // AzFramework::AssetCatalogEventBus::Handler overrides ...
-        void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
-        void OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo) override;
+        void AddPath(const AZStd::string& path);
+        void RegisterThumbnail(const AZStd::string& path);
+        void UpdateThumbnail(const AZStd::string& path);
+        void QueueUpdateThumbnail(const AZStd::string& path);
+        void QueueSort();
 
-        void AddAsset(const AZ::Data::AssetInfo& assetInfo);
-        void RegisterThumbnail(const AZ::Data::AssetId& assetId);
-        void UpdateThumbnail(const AZ::Data::AssetId& assetId);
-        void QueueUpdateThumbnail(const AZ::Data::AssetId& assetId);
-
-        AZStd::function<bool(const AZ::Data::AssetInfo&)> m_filterCallback;
+        AZStd::function<bool(const AZStd::string&)> m_filterCallback;
 
         bool m_thumbnailsEnabled = false;
         AZ::u32 m_thumbnailDelayMs = 2000;
-        AZStd::unordered_map<AZ::Data::AssetId, AzToolsFramework::Thumbnailer::SharedThumbnailKey> m_thumbnailKeys;
+        AZStd::unordered_map<AZStd::string, AzToolsFramework::Thumbnailer::SharedThumbnailKey> m_thumbnailKeys;
+        bool m_queueSort = false;
     };
 } // namespace AtomToolsFramework

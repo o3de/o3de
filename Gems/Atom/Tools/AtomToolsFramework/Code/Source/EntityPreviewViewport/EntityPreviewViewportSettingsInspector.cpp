@@ -118,24 +118,23 @@ namespace AtomToolsFramework
         const int itemSize = aznumeric_cast<int>(GetSettingsValue<AZ::u64>(
             "/O3DE/AtomToolsFramework/EntityPreviewViewportSettingsInspector/AssetSelectionGrid/ModelItemSize", 128));
 
-        AssetSelectionGrid dialog("Model Preset Browser", [](const AZ::Data::AssetInfo& assetInfo) {
-            return assetInfo.m_assetType == AZ::RPI::AnyAsset::RTTI_Type() &&
-                AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), AZ::Render::ModelPreset::Extension);
+        AssetSelectionGrid dialog("Model Preset Browser", [](const AZStd::string& path) {
+            return path.ends_with(AZ::Render::ModelPreset::Extension);
         }, QSize(itemSize, itemSize), GetToolMainWindow());
 
-        AZ::Data::AssetId assetId;
+        AZStd::string lastPresetPath;
         EntityPreviewViewportSettingsRequestBus::EventResult(
-            assetId, m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::GetLastModelPresetAssetId);
-        dialog.SelectAsset(assetId);
+            lastPresetPath, m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::GetLastModelPresetPath);
+        dialog.SelectPath(lastPresetPath);
 
-        connect(&dialog, &AssetSelectionGrid::AssetRejected, this, [this, assetId]() {
+        connect(&dialog, &AssetSelectionGrid::PathRejected, this, [this, lastPresetPath]() {
             EntityPreviewViewportSettingsRequestBus::Event(
-                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPresetByAssetId, assetId);
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset, lastPresetPath);
         });
 
-        connect(&dialog, &AssetSelectionGrid::AssetSelected, this, [this](const AZ::Data::AssetId& assetId) {
+        connect(&dialog, &AssetSelectionGrid::PathSelected, this, [this](const AZStd::string& path) {
             EntityPreviewViewportSettingsRequestBus::Event(
-                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPresetByAssetId, assetId);
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset, path);
         });
 
         dialog.setFixedSize(800, 400);
@@ -215,24 +214,23 @@ namespace AtomToolsFramework
         const int itemSize = aznumeric_cast<int>(GetSettingsValue<AZ::u64>(
             "/O3DE/AtomToolsFramework/EntityPreviewViewportSettingsInspector/AssetSelectionGrid/LightingItemSize", 128));
 
-        AssetSelectionGrid dialog("Lighting Preset Browser", [](const AZ::Data::AssetInfo& assetInfo) {
-            return assetInfo.m_assetType == AZ::RPI::AnyAsset::RTTI_Type() &&
-                AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), AZ::Render::LightingPreset::Extension);
+        AssetSelectionGrid dialog("Lighting Preset Browser", [](const AZStd::string& path) {
+            return path.ends_with(AZ::Render::LightingPreset::Extension);
         }, QSize(itemSize, itemSize), GetToolMainWindow());
 
-        AZ::Data::AssetId assetId;
+        AZStd::string lastPresetPath;
         EntityPreviewViewportSettingsRequestBus::EventResult(
-            assetId, m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::GetLastLightingPresetAssetId);
-        dialog.SelectAsset(assetId);
+            lastPresetPath, m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::GetLastLightingPresetPath);
+        dialog.SelectPath(lastPresetPath);
 
-        connect(&dialog, &AssetSelectionGrid::AssetRejected, this, [this, assetId]() {
+        connect(&dialog, &AssetSelectionGrid::PathRejected, this, [this, lastPresetPath]() {
             EntityPreviewViewportSettingsRequestBus::Event(
-                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPresetByAssetId, assetId);
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPreset, lastPresetPath);
         });
 
-        connect(&dialog, &AssetSelectionGrid::AssetSelected, this, [this](const AZ::Data::AssetId& assetId) {
+        connect(&dialog, &AssetSelectionGrid::PathSelected, this, [this](const AZStd::string& path) {
             EntityPreviewViewportSettingsRequestBus::Event(
-                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPresetByAssetId, assetId);
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPreset, path);
         });
 
         dialog.setFixedSize(800, 400);

@@ -30,8 +30,8 @@ namespace AtomToolsFramework
             const QString& targetLabel,
             const QString& initialPath,
             const QStringList& supportedExtensions,
-            const AZ::Data::AssetId& defaultSourceAssetId,
-            const AZStd::function<bool(const AZ::Data::AssetInfo&)>& filterCallback,
+            const QString& defaultSourcePath,
+            const AZStd::function<bool(const AZStd::string&)>& filterCallback,
             QWidget* parent = nullptr);
 
         CreateDocumentDialog(const DocumentTypeInfo& documentType, const QString& initialPath, QWidget* parent = nullptr);

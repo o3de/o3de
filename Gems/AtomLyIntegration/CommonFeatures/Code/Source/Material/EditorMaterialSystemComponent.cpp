@@ -135,11 +135,10 @@ namespace AZ
             m_materialPreviewModelAsset.Release();
             m_materialPreviewLightingPresetAsset.Release();
 
-            if (m_openMaterialEditorAction)
-            {
-                delete m_openMaterialEditorAction;
-                m_openMaterialEditorAction = nullptr;
-            }
+            delete m_openMaterialEditorAction;
+            m_openMaterialEditorAction = nullptr;
+            delete m_openMaterialCanvasAction;
+            m_openMaterialCanvasAction = nullptr;
         }
 
         void EditorMaterialSystemComponent::OpenMaterialEditor(const AZStd::string& sourcePath)
@@ -191,7 +190,7 @@ namespace AZ
             const AzToolsFramework::EntityIdSet& entityIdsToEdit,
             const AZ::Render::MaterialAssignmentId& materialAssignmentId)
         {
-            auto dockWidget = AzToolsFramework::InstanceViewPane("Material Property Inspector");
+            auto dockWidget = AzToolsFramework::InstanceViewPane("Material Instance Editor");
             if (dockWidget)
             {
                 auto inspector = static_cast<AZ::Render::EditorMaterialComponentInspector::MaterialPropertyInspector*>(dockWidget->widget());
@@ -377,16 +376,10 @@ namespace AZ
 
         void EditorMaterialSystemComponent::OnResetToolMenuItems()
         {
-            if (m_openMaterialEditorAction)
-            {
-                delete m_openMaterialEditorAction;
-                m_openMaterialEditorAction = nullptr;
-            }
-            if (m_openMaterialCanvasAction)
-            {
-                delete m_openMaterialCanvasAction;
-                m_openMaterialCanvasAction = nullptr;
-            }
+            delete m_openMaterialEditorAction;
+            m_openMaterialEditorAction = nullptr;
+            delete m_openMaterialCanvasAction;
+            m_openMaterialCanvasAction = nullptr;
         }
 
         void EditorMaterialSystemComponent::NotifyRegisterViews()
@@ -423,6 +416,12 @@ namespace AZ
             if (AzFramework::StringFunc::EndsWith(fullSourceFileName, AZ::RPI::MaterialTypeSourceData::Extension))
             {
                 return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/materialtype.svg");
+            }
+            if (AzFramework::StringFunc::EndsWith(fullSourceFileName, "materialgraph") ||
+                AzFramework::StringFunc::EndsWith(fullSourceFileName, "materialgraphnode") ||
+                AzFramework::StringFunc::EndsWith(fullSourceFileName, "materialgraphtempate"))
+            {
+                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Menu/material_canvas.svg");
             }
             return AzToolsFramework::AssetBrowser::SourceFileDetails();
         }

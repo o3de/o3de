@@ -20,7 +20,7 @@ namespace MaterialCanvas
         AZStd::string baseName = AZ::RPI::AssetUtils::SanitizeFileName(nodeConfig.m_title);
         AZStd::to_lower(baseName.begin(), baseName.end());
         return AZStd::string::format(
-            "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/Functions/%s.materialcanvasnode.azasset", baseName.c_str());
+            "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/Functions/%s.materialgraphnode.azasset", baseName.c_str());
     }
 
     void CreateTestNodes()
