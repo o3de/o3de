@@ -387,26 +387,20 @@ namespace O3DE::ProjectManager
         painter->setFont(platformFont);
         QString platformText = "";
 
-        if(!platforms)
+        
+        //UX prefers that we show platforms in reverse alphabetical order
+        for(int i = GemInfo::NumPlatforms-1; i >= 0; i--)
         {
-            platformText.append("Unspecified");
-        }
-        else
-        {
-            //UX prefers that we show platforms in reverse alphabetical order
-            for(int i = GemInfo::NumPlatforms-1; i >= 0; i--)
+            const GemInfo::Platform platform = static_cast<GemInfo::Platform>(1 << i);
+            if (platforms & platform)
             {
-                const GemInfo::Platform platform = static_cast<GemInfo::Platform>(1 << i);
-                if (platforms & platform)
+                QString singlePlatformText = GemInfo::GetPlatformString(platform);
+                if(i != GemInfo::NumPlatforms-1)
                 {
-                    QString singlePlatformText = GemInfo::GetPlatformString(platform);
-                    if(i != GemInfo::NumPlatforms-1)
-                    {
-                        platformText.append(", ");
-                    }
-                    platformText.append(singlePlatformText);
-                    
+                    platformText.append(", ");
                 }
+                platformText.append(singlePlatformText);
+                
             }
         }
         
