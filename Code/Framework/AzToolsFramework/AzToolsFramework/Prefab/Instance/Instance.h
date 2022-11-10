@@ -144,6 +144,11 @@ namespace AzToolsFramework
             //! @param callback A user provided callback that can be used to capture ownership and manipulate the detached entities.
             void DetachAllEntitiesInHierarchy(const AZStd::function<void(AZStd::unique_ptr<AZ::Entity>)>& callback);
 
+            //! Detaches and deletes an entity from the instance.
+            //! @param entityId The entity id to be detached and destroyed.
+            //! @return True if the entity was detached and destroyed, false otherwise.
+            bool DestroyEntity(const AZ::EntityId& entityId);
+
             //! Replaces the entity stored under the provided alias with a new one.
             //! @param entity The new entity.
             //! @param alias The alias of the entity that will be replaced.
@@ -285,6 +290,10 @@ namespace AzToolsFramework
             //! It unregisters the entity id and moves the entity ownership to the caller.
             //! @return Unique pointer to the container entity.
             AZStd::unique_ptr<AZ::Entity> DetachContainerEntity();
+
+            //! Detaches and deletes the container entity from the instance.
+            //! @return True if the container entity was detached and destroyed, false otherwise.
+            bool DestroyContainerEntity();
 
             //! Getter for instance alias.
             //! @return Instance alias string.
