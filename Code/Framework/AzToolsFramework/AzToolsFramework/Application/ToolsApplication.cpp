@@ -18,6 +18,7 @@
 
 #include <AzToolsFramework/AzToolsFrameworkModule.h>
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
+#include <AzToolsFramework/Archive/MissingAssetNotificationHandler.h>
 #include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsSystemComponent.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
@@ -394,6 +395,8 @@ namespace AzToolsFramework
 
         Camera::EditorCameraRequests::Reflect(context);
         AzToolsFramework::EditorTransformComponentSelectionRequests::Reflect(context);
+
+        AzToolsFramework::MissingAssetNotificationHandler::Reflect(context);
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {

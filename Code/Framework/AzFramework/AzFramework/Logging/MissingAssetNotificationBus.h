@@ -15,7 +15,7 @@ namespace AzFramework
         : public AZ::EBusTraits
     {
     public:
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         
         virtual void FileMissing(const char* filePath) = 0;
