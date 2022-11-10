@@ -54,7 +54,7 @@ namespace AtomToolsFramework
         // InspectorRequestBus::Handler overrides...
         void Reset() override;
 
-        // EntityPreviewViewportSettingsNotificationBus::Handlerc overrides...
+        // EntityPreviewViewportSettingsNotificationBus::Handler overrides...
         void OnViewportSettingsChanged() override;
         void OnModelPresetAdded(const AZStd::string& path) override;
         void OnLightingPresetAdded(const AZStd::string& path) override;
@@ -74,11 +74,11 @@ namespace AtomToolsFramework
 
         AZStd::string m_modelPresetPath;
         AZ::Render::ModelPreset m_modelPreset;
-        AssetSelectionGrid* m_modelPresetDialog = {};
+        AZStd::unique_ptr<AssetSelectionGrid> m_modelPresetDialog;
 
         AZStd::string m_lightingPresetPath;
         AZ::Render::LightingPreset m_lightingPreset;
-        AssetSelectionGrid* m_lightingPresetDialog = {};
+        AZStd::unique_ptr<AssetSelectionGrid> m_lightingPresetDialog;
 
         EntityPreviewViewportSettings m_viewportSettings;
     };

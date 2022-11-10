@@ -38,16 +38,16 @@ namespace AtomToolsFramework
         const int modelPresetDialogItemSize = aznumeric_cast<int>(GetSettingsValue<AZ::u64>(
             "/O3DE/AtomToolsFramework/EntityPreviewViewportSettingsInspector/AssetSelectionGrid/ModelItemSize", 128));
 
-        m_modelPresetDialog = new AssetSelectionGrid("Model Preset Browser", [](const AZStd::string& path) {
+        m_modelPresetDialog.reset(new AssetSelectionGrid("Model Preset Browser", [](const AZStd::string& path) {
             return path.ends_with(AZ::Render::ModelPreset::Extension);
-        }, QSize(modelPresetDialogItemSize, modelPresetDialogItemSize), GetToolMainWindow());
+        }, QSize(modelPresetDialogItemSize, modelPresetDialogItemSize), GetToolMainWindow()));
 
-        connect(m_modelPresetDialog, &AssetSelectionGrid::PathRejected, this, [this]() {
+        connect(m_modelPresetDialog.get(), &AssetSelectionGrid::PathRejected, this, [this]() {
             EntityPreviewViewportSettingsRequestBus::Event(
                 m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset, m_modelPresetPath);
         });
 
-        connect(m_modelPresetDialog, &AssetSelectionGrid::PathSelected, this, [this](const AZStd::string& path) {
+        connect(m_modelPresetDialog.get(), &AssetSelectionGrid::PathSelected, this, [this](const AZStd::string& path) {
             EntityPreviewViewportSettingsRequestBus::Event(
                 m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset, path);
         });
@@ -56,16 +56,16 @@ namespace AtomToolsFramework
         const int lightingPresetDialogItemSize = aznumeric_cast<int>(GetSettingsValue<AZ::u64>(
             "/O3DE/AtomToolsFramework/EntityPreviewViewportSettingsInspector/AssetSelectionGrid/LightingItemSize", 128));
 
-        m_lightingPresetDialog = new AssetSelectionGrid("Lighting Preset Browser", [](const AZStd::string& path) {
+        m_lightingPresetDialog.reset(new AssetSelectionGrid("Lighting Preset Browser", [](const AZStd::string& path) {
             return path.ends_with(AZ::Render::LightingPreset::Extension);
-        }, QSize(lightingPresetDialogItemSize, lightingPresetDialogItemSize), GetToolMainWindow());
+        }, QSize(lightingPresetDialogItemSize, lightingPresetDialogItemSize), GetToolMainWindow()));
 
-        connect(m_lightingPresetDialog, &AssetSelectionGrid::PathRejected, this, [this]() {
+        connect(m_lightingPresetDialog.get(), &AssetSelectionGrid::PathRejected, this, [this]() {
             EntityPreviewViewportSettingsRequestBus::Event(
                 m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPreset, m_lightingPresetPath);
         });
 
-        connect(m_lightingPresetDialog, &AssetSelectionGrid::PathSelected, this, [this](const AZStd::string& path) {
+        connect(m_lightingPresetDialog.get(), &AssetSelectionGrid::PathSelected, this, [this](const AZStd::string& path) {
             EntityPreviewViewportSettingsRequestBus::Event(
                 m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPreset, path);
         });
@@ -75,12 +75,7 @@ namespace AtomToolsFramework
 
     EntityPreviewViewportSettingsInspector::~EntityPreviewViewportSettingsInspector()
     {
-        delete m_lightingPresetDialog;
-        m_lightingPresetDialog = {};
         m_lightingPreset = {};
-
-        delete m_modelPresetDialog;
-        m_modelPresetDialog = {};
         m_modelPreset = {};
 
         EntityPreviewViewportSettingsNotificationBus::Handler::BusDisconnect();

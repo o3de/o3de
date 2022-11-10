@@ -29,7 +29,7 @@ namespace AtomToolsFramework
         ~EntityPreviewViewportToolBar();
 
     private:
-        // EntityPreviewViewportSettingsNotificationBus::Handlerc overrides...
+        // EntityPreviewViewportSettingsNotificationBus::Handler overrides...
         void OnViewportSettingsChanged() override;
         void OnModelPresetAdded(const AZStd::string& path) override;
         void OnLightingPresetAdded(const AZStd::string& path) override;

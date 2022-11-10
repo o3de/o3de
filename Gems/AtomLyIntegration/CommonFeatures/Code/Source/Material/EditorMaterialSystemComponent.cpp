@@ -409,17 +409,19 @@ namespace AZ
         AzToolsFramework::AssetBrowser::SourceFileDetails EditorMaterialSystemComponent::GetSourceFileDetails(
             const char* fullSourceFileName)
         {
-            if (AzFramework::StringFunc::EndsWith(fullSourceFileName, AZ::RPI::MaterialSourceData::Extension))
+            const AZStd::string_view path(fullSourceFileName);
+            if (path.ends_with(AZ::RPI::MaterialSourceData::Extension))
             {
                 return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/material.svg");
             }
-            if (AzFramework::StringFunc::EndsWith(fullSourceFileName, AZ::RPI::MaterialTypeSourceData::Extension))
+            if (path.ends_with(AZ::RPI::MaterialTypeSourceData::Extension))
             {
                 return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/materialtype.svg");
             }
-            if (AzFramework::StringFunc::EndsWith(fullSourceFileName, "materialgraph") ||
-                AzFramework::StringFunc::EndsWith(fullSourceFileName, "materialgraphnode") ||
-                AzFramework::StringFunc::EndsWith(fullSourceFileName, "materialgraphtempate"))
+
+            if (path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphExtensionWithDot) ||
+                path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphNodeExtensionWithDot) ||
+                path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphTemplateExtensionWithDot))
             {
                 return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Menu/material_canvas.svg");
             }
