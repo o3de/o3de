@@ -92,6 +92,10 @@ namespace AzToolsFramework
         //! to the current Editor Focus Mode and Container Entity setup.
         bool IsSelectableInViewport(AZ::EntityId entityId) const;
 
+        //! Returns whether the entityCacheId can be selected in the viewport according
+        //! to the current Editor Focus Mode and Container Entity setup.
+        bool IsSelectableInViewport(size_t entityCacheId) const;
+
     private:
         //! Returns whether the entityId can be selected in the viewport according
         //! to the current Editor Focus Mode setup.

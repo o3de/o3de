@@ -382,11 +382,28 @@ namespace AzToolsFramework
 
     bool EditorHelpers::IsSelectableInViewport(const AZ::EntityId entityId) const
     {
-        return IsSelectableAccordingToFocusMode(entityId) && IsSelectableAccordingToContainerEntities(entityId);
+        auto entityCacheId = m_entityDataCache->GetVisibleEntityIndexFromId(entityId);
+        if (entityCacheId.has_value())
+        {
+            return IsSelectableInViewport(entityCacheId.value());
+        }
+
+        return false;
+    }
+
+    bool EditorHelpers::IsSelectableInViewport(size_t entityCacheId) const
+    {
+        return m_entityDataCache->IsVisibleEntityIndividuallySelectableInViewport(entityCacheId);
     }
 
     bool EditorHelpers::IsSelectableAccordingToFocusMode(const AZ::EntityId entityId) const
     {
+        auto entityCacheId = m_entityDataCache->GetVisibleEntityIndexFromId(entityId);
+        if (entityCacheId.has_value())
+        {
+            return m_entityDataCache->IsVisibleEntityInFocusSubTree(entityCacheId.value());
+        }
+
         return m_focusModeInterface->IsInFocusSubTree(entityId);
     }
 
