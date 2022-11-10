@@ -5,12 +5,14 @@
     "ClassData": {
         "id": "{229D9C2B-6AD4-45DC-83F0-AB5BE771298C}",
         "category": "Math Functions",
-        "title": "sincos",
+        "title": "Sincos",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outSin|outCos"
+        ],
         "settings": {
             "instructions": [
-                "float4 NODEID_outValue1 = float4(0, 0, 0, 0);",
-                "float4 NODEID_outValue2 = float4(0, 0, 0, 0);",
-                "sincos(NODEID_inValue, NODEID_outValue1, NODEID_outValue2);"
+                "SLOTTYPE(outSin) outSin;\nSLOTTYPE(outCos) outCos;\nsincos(inValue, outSin, outCos);"
             ]
         },
         "inputSlots": [
@@ -18,13 +20,8 @@
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float4",
                 "defaultValue": {
                     "$type": "Vector4",
                     "Value": [
@@ -36,45 +33,25 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
         ],
         "outputSlots": [
             {
-                "name": "outValue1",
-                "displayName": "Value1",
-                "description": "Value1",
-                "supportedDataTypes": [
-                    "float4"
-                ],
-                "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                }
+                "name": "outSin",
+                "displayName": "Sin",
+                "description": "Sin",
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4"
             },
             {
-                "name": "outValue2",
-                "displayName": "Value2",
-                "description": "Value2",
-                "supportedDataTypes": [
-                    "float4"
-                ],
-                "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                }
+                "name": "outCos",
+                "displayName": "Cos",
+                "description": "Cos",
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4"
             }
         ]
     }

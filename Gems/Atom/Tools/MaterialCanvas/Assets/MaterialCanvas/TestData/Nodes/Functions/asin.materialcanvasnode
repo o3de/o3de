@@ -5,19 +5,18 @@
     "ClassData": {
         "id": "{1C753D24-A000-4357-98FF-3BF6F7E46883}",
         "category": "Math Functions",
-        "title": "asin",
+        "title": "Asin",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float4",
                 "defaultValue": {
                     "$type": "Vector4",
                     "Value": [
@@ -29,7 +28,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -39,21 +38,11 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "float4"
-                ],
-                "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = asin(NODEID_inValue);"
+                        "SLOTTYPE SLOTNAME = asin(inValue);"
                     ]
                 }
             }

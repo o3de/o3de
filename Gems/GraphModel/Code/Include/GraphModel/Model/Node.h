@@ -102,7 +102,7 @@ namespace GraphModel
         //! An alternative to the above PostLoadSetup when the
         //! nodeId isn't already known (e.g. a deserialized node that has been copy/pasted)
         virtual void PostLoadSetup();
-        
+
         //! Returns the name that will be displayed as the title of the Node in the UI
         virtual const char* GetTitle() const = 0;
 
@@ -114,13 +114,38 @@ namespace GraphModel
         virtual NodeType GetNodeType() const;
 
         NodeId GetId() const;
+
+        //! Return the greatest distance, number of connected nodes, between this node and other root nodes.
         uint32_t GetMaxInputDepth() const;
+
+        //! Return the greatest distance, number of connected nodes, between this node and other leaf nodes.
         uint32_t GetMaxOutputDepth() const;
+
+        //! Return true if this node contains any slots.
+        bool HasSlots() const;
+
+        //! Return true if this node contains any input slots.
+        bool HasInputSlots() const;
+
+        //! Return true if this node contains any output slots.
+        bool HasOutputSlots() const;
+
+        //! Returns true if the graph contains any connections referencing this node.
         bool HasConnections() const;
+
+        //! Returns true if the graph has any connections to input slots on this node.
         bool HasInputConnections() const;
+
+        //! Returns true if the graph has any connections to output slots on this node.
         bool HasOutputConnections() const;
+
+        //! Returns true if any of the input slots on this node have direct or indirect connections to output slots on the specified node.
         bool HasInputConnectionFromNode(ConstNodePtr node) const;
+
+        //! Returns true if any of the output slots on this node have direct or indirect connections to input slots on the specified node.
         bool HasOutputConnectionToNode(ConstNodePtr node) const;
+
+        //! Returns true if this node contains the specified slot.
         bool Contains(ConstSlotPtr slot) const;
 
         //! Returns SlotDefinitions for all available Slots
@@ -148,7 +173,7 @@ namespace GraphModel
 
         //! Returns the number of extendable slots for a given SlotName.
         //! Will return -1 if the specified slot is not extendable.
-        int GetExtendableSlotCount(const SlotName& name);
+        int GetExtendableSlotCount(const SlotName& name) const;
 
         //! Delete the specified slot, which is only allowed on extendable slots.
         //! This method does nothing if the slot is not extendable.

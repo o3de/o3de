@@ -38,6 +38,8 @@ namespace AssetProcessorMessagesTests
 
         }
 
+        using ApplicationManagerBase::InitFileStateCache;
+
         friend class AssetProcessorMessages;
     };
 
@@ -105,7 +107,7 @@ namespace AssetProcessorMessagesTests
             ASSERT_EQ(status, ApplicationManager::BeforeRunStatus::Status_Success);
 
             m_batchApplicationManager->m_platformConfiguration = new PlatformConfiguration();
-            
+
             AZStd::vector<ApplicationManagerBase::APCommandLineSwitch> commandLineInfo;
             m_batchApplicationManager->InitAssetProcessorManager(commandLineInfo);
 
@@ -182,6 +184,10 @@ namespace AssetProcessorMessagesTests
                 m_assetSystemComponent->Deactivate();
             }
             m_batchApplicationManager->Destroy();
+
+            m_assetCatalog.reset();
+            m_assetSystemComponent.reset();
+            m_batchApplicationManager.reset();
         }
 
         void RunNetworkRequest(AZStd::function<void()> func) const

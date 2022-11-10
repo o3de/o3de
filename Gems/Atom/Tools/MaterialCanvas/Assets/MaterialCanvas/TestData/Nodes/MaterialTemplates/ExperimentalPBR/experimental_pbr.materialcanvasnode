@@ -6,6 +6,7 @@
         "id": "{B352A2E4-D6A6-4178-9406-57716051024F}",
         "category": "Material Templates",
         "title": "Experimental PBR",
+        "titlePaletteName": "MaterialTemplateNodeTitlePalette",
         "settings": {
             "templatePaths": [
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExperimentalPBR/MaterialGraphName_Common.azsli",
@@ -24,10 +25,14 @@
                 "name": "inDescription",
                 "displayName": "Description",
                 "description": "Description",
-                "supportedDataTypes": [
-                    "string"
-                ],
-                "supportsEditingOnNode": false
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false
             }
         ],
         "inputSlots": [
@@ -35,22 +40,17 @@
                 "name": "inPositionOffset",
                 "displayName": "Position Offset",
                 "description": "Position Offset",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
+                "defaultDataType": "float3",
                 "defaultValue": {
-                    "$type": "Vector4",
+                    "$type": "Vector3",
                     "Value": [
                         0.0,
                         0.0,
-                        0.0,
-                        1.0
+                        0.0
                     ]
                 },
+                "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -61,22 +61,17 @@
                 "name": "inBaseColor",
                 "displayName": "Base Color",
                 "description": "Base Color",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
+                "defaultDataType": "float3",
                 "defaultValue": {
-                    "$type": "Vector4",
+                    "$type": "Vector3",
                     "Value": [
-                        1.0,
                         1.0,
                         1.0,
                         1.0
                     ]
                 },
+                "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -87,17 +82,13 @@
                 "name": "inMetallic",
                 "displayName": "Metallic",
                 "description": "Metallic",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float",
                 "defaultValue": {
                     "$type": "float",
                     "Value": 0.0
                 },
+                "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -108,17 +99,13 @@
                 "name": "inSpecularF0Factor",
                 "displayName": "Specular F0 Factor",
                 "description": "Specular F0 Factor",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float",
                 "defaultValue": {
                     "$type": "float",
                     "Value": 0.0
                 },
+                "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -129,17 +116,13 @@
                 "name": "inRoughness",
                 "displayName": "Roughness",
                 "description": "Roughness",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float",
                 "defaultValue": {
                     "$type": "float",
                     "Value": 0.0
                 },
+                "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -150,22 +133,34 @@
                 "name": "inEmissive",
                 "displayName": "Emissive",
                 "description": "Emissive",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
+                "defaultDataType": "float3",
                 "defaultValue": {
-                    "$type": "Vector4",
+                    "$type": "Vector3",
                     "Value": [
                         0.0,
                         0.0,
-                        0.0,
-                        1.0
+                        0.0
                     ]
                 },
+                "allowNameSubstitution": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inAlpha",
+                "displayName": "Alpha",
+                "description": "Alpha",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                },
+                "allowNameSubstitution": false,
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"

@@ -6,9 +6,10 @@
         "id": "{C0ADB0F0-39DD-48D9-A4D2-58B40C76C285}",
         "category": "Texturing",
         "title": "Sample Texture 2d",
+        "titlePaletteName": "TexturingNodeTitlePalette",
         "settings": {
             "instructions": [
-                "float4 NODEID_outColor = MaterialSrg::NODEID_inValue.Sample(MaterialSrg::NODEID_inSampler, NODEID_inUV);"
+                "SLOTTYPE(outColor) outColor = MaterialSrg::inValue.Sample(MaterialSrg::inSampler, (float2)inUV);"
             ]
         },
         "propertySlots": [
@@ -16,35 +17,50 @@
                 "name": "inGroup",
                 "displayName": "Group",
                 "description": "Group",
-                "supportedDataTypes": [
-                    "string"
-                ],
-                "supportsEditingOnNode": false
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false
             },
             {
                 "name": "inName",
                 "displayName": "Name",
                 "description": "Name",
-                "supportedDataTypes": [
-                    "string"
-                ]
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                }
             },
             {
                 "name": "inDescription",
                 "displayName": "Description",
                 "description": "Description",
-                "supportedDataTypes": [
-                    "string"
-                ],
-                "supportsEditingOnNode": false
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false
             },
             {
                 "name": "inValue",
                 "displayName": "Image",
                 "description": "Image",
-                "supportedDataTypes": [
-                    "image"
-                ],
+                "supportedDataTypeRegex": "image",
+                "defaultDataType": "image",
+                "defaultValue": {
+                    "$type": "{403A7CFE-B218-5D57-8540-BD58E734BCFE} Asset<StreamingImageAsset>"
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false,
                 "settings": {
                     "materialInputs": [
                         "SLOTSTANDARDSRGMEMBER"
@@ -55,9 +71,13 @@
                 "name": "inSampler",
                 "displayName": "Sampler",
                 "description": "Sampler",
-                "supportedDataTypes": [
-                    "sampler"
-                ],
+                "supportedDataTypeRegex": "sampler",
+                "defaultDataType": "sampler",
+                "defaultValue": {
+                    "$type": "SamplerState"
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false,
                 "settings": {
                     "materialInputs": [
                         "SLOTSTANDARDSRGMEMBER"
@@ -70,13 +90,8 @@
                 "name": "inUV",
                 "displayName": "UV",
                 "description": "UV",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float2",
                 "defaultValue": {
                     "$type": "Vector2",
                     "Value": [
@@ -86,7 +101,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -96,23 +111,18 @@
                 "name": "outColor",
                 "displayName": "Color",
                 "description": "Color",
-                "supportedDataTypes": [
-                    "color"
-                ],
-                "settings": {
-                    "instructions": {}
-                }
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color"
             },
             {
                 "name": "outR",
                 "displayName": "R",
                 "description": "R",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_outColor.r;"
+                        "SLOTTYPE SLOTNAME = outColor.r;"
                     ]
                 }
             },
@@ -120,12 +130,11 @@
                 "name": "outG",
                 "displayName": "G",
                 "description": "G",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_outColor.g;"
+                        "SLOTTYPE SLOTNAME = outColor.g;"
                     ]
                 }
             },
@@ -133,12 +142,11 @@
                 "name": "outB",
                 "displayName": "B",
                 "description": "B",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_outColor.b;"
+                        "SLOTTYPE SLOTNAME = outColor.b;"
                     ]
                 }
             },
@@ -146,12 +154,11 @@
                 "name": "outA",
                 "displayName": "A",
                 "description": "A",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_outColor.a;"
+                        "SLOTTYPE SLOTNAME = outColor.a;"
                     ]
                 }
             }

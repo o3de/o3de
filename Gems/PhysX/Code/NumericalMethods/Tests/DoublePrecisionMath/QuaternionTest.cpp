@@ -116,9 +116,9 @@ namespace NumericalMethods::DoublePrecisionMath
         const double w = 0.32;
         const Quaternion quaternion(x, y, z, w);
         const Quaternion conjugate = quaternion.GetConjugate();
-        EXPECT_NEAR(conjugate.GetX(), x, Tolerance);
-        EXPECT_NEAR(conjugate.GetY(), y, Tolerance);
-        EXPECT_NEAR(conjugate.GetZ(), z, Tolerance);
-        EXPECT_NEAR(conjugate.GetW(), -w, Tolerance);
+        EXPECT_NEAR(conjugate.GetX(), -x, Tolerance);
+        EXPECT_NEAR(conjugate.GetY(), -y, Tolerance);
+        EXPECT_NEAR(conjugate.GetZ(), -z, Tolerance);
+        EXPECT_NEAR(conjugate.GetW(), w, Tolerance);
     }
 } // namespace NumericalMethods::DoublePrecisionMath

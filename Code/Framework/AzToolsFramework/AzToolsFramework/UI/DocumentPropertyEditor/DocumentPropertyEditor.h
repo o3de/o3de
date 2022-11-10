@@ -9,10 +9,11 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzCore/Instance/InstancePool.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/IPropertyEditor.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
-#include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h>
 
 #include <QHBoxLayout>
 #include <QScrollArea>
@@ -22,31 +23,38 @@
 class QCheckBox;
 class QTimer;
 
+namespace AzQtComponents
+{
+    class ElidingLabel;
+};
+
 namespace AzToolsFramework
 {
     class DocumentPropertyEditor;
+    class DPERowWidget;
 
     class DPELayout : public QHBoxLayout
     {
         Q_OBJECT
 
+        friend class DPERowWidget;
     signals:
         void expanderChanged(bool expanded);
 
         // todo: look into caching and QLayoutItem::invalidate()
     public:
-        DPELayout(int depth, QWidget* parentWidget = nullptr);
+        DPELayout(QWidget* parent);
+        void Init(int depth, QWidget* parentWidget = nullptr);
+        void Clear();
         virtual ~DPELayout();
+
         void SetExpanderShown(bool shouldShow);
         void SetExpanded(bool expanded);
         bool IsExpanded() const;
-        void SharePriorColumn(QWidget* previousWidget);
-        void SetSharePrior(bool sharePrior);
-        bool ShouldSharePrior();
-        int SharedWidgetCount();
-        void WidgetAlignment(QWidget* alignedWidget, Qt::Alignment widgetAlignment);
-        void AddMinimumWidthWidget(QWidget* widget);
 
+        void AddSharePriorColumn(size_t previousIndex, size_t widgetIndex);
+        void RemoveSharePriorColumn(size_t widgetIndex);
+        int SharedWidgetCount();
 
         // QLayout overrides
         void invalidate() override;
@@ -60,6 +68,7 @@ namespace AzToolsFramework
 
     protected:
         DocumentPropertyEditor* GetDPE() const;
+        DPERowWidget* GetRow() const;
         void CreateExpanderWidget();
 
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
@@ -67,21 +76,9 @@ namespace AzToolsFramework
         bool m_expanded = true;
         QCheckBox* m_expanderWidget = nullptr;
 
-        //! boolean to keep track of whether we should add to an existing shared column or create a new shared column.
-        bool m_shouldSharePrior = false;
-
-        //! Vector containing pairs of widgets and integers, where each pair in the vector represents a unique shared column layout.
-        //! Each widget in a pair will be the first widget in the shared column,
-        //! while the integer in a pair represents the number of widgets in the shared column. 
-        AZStd::vector<AZStd::pair<QWidget*, int>> m_sharePriorColumn;
-
-        //! Map containing all widgets that have special alignment.
-        //! Each widget will be aligned according to its Qt::Alignment value.
-        AZStd::unordered_map<QWidget*, Qt::Alignment> m_widgetAlignment;
-
-        //! Vector containing all widgets that have the UseMinimumWidth attribute.
-        //! Dependent attribute that forces widgets to use their minimum width within a shared column.
-        AZStd::unordered_set<QWidget*> m_minimumWidthWidgets;
+        //! Vector containing vectors of widgets, where each vector represents a unique shared column group.
+        //! Each widget in a vector will be a widget that belongs to that shared column group.
+        AZStd::vector<AZStd::vector<size_t>> m_sharePriorColumn;
 
     private:
         // These cached sizes must be mutable since they are set inside of an overidden const function
@@ -96,22 +93,27 @@ namespace AzToolsFramework
         Q_PROPERTY(int getLevel READ GetLevel);
 
         friend class DocumentPropertyEditor;
-
+        friend class DPELayout;
     public:
-        explicit DPERowWidget(int depth, DPERowWidget* parentRow);
+        explicit DPERowWidget();
+        void Init(int depth, DPERowWidget* parentRow);
+        void Clear(); //!< destroy all layout contents and clear DOM children
         ~DPERowWidget();
 
-        void Clear(); //!< destroy all layout contents and clear DOM children
         void AddChildFromDomValue(const AZ::Dom::Value& childValue, size_t domIndex);
 
         //! clears and repopulates all children from a given DOM array
         void SetValueFromDom(const AZ::Dom::Value& domArray);
         void SetAttributesFromDom(const AZ::Dom::Value& domArray);
 
+        void SetPropertyEditorAttributes(size_t domIndex, const AZ::Dom::Value& domArray, QWidget* childWidget);
+        void RemoveAttributes(size_t domIndex);
+        void ClearAttributes();
+
         //! handles a patch operation at the given path, or delegates to a child that will
         void HandleOperationAtPath(const AZ::Dom::PatchOperation& domOperation, size_t pathIndex = 0);
 
-        //! returns the last descendent of this row in its own layout
+        //! returns the last descendant of this row in its own layout
         DPERowWidget* GetLastDescendantInLayout();
 
         void SetExpanded(bool expanded, bool recurseToChildRows = false);
@@ -144,6 +146,26 @@ namespace AzToolsFramework
 
         //! widget children in DOM specified order; mix of row and column widgets
         AZStd::deque<QWidget*> m_domOrderedChildren;
+
+        struct AttributeInfo
+        {
+            AZ::Dpe::Nodes::PropertyEditor::Align m_alignment = AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment;
+            bool m_sharePriorColumn = false;
+            bool m_minimumWidth = false;
+            AZStd::string_view m_descriptionString = {};
+            bool m_isDisabled = false;
+
+            bool IsDefault() const
+            {
+                return m_alignment == AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment &&
+                    !m_sharePriorColumn &&
+                    !m_minimumWidth &&
+                    m_descriptionString.empty() &&
+                    !m_isDisabled;
+            }
+        };
+        AZStd::unordered_map<size_t, AttributeInfo> m_childIndexToAttributeInfo;
+        AttributeInfo* GetAttributes(size_t domIndex);
 
         // row attributes extracted from the DOM
         AZStd::optional<bool> m_forceAutoExpand;
@@ -195,12 +217,26 @@ namespace AzToolsFramework
         // but can be overridden here
         void SetSpawnDebugView(bool shouldSpawn);
 
-        static constexpr const char* GetEnableDPECVarName() { return "ed_enableDPE"; }
+        static constexpr const char* GetEnableDPECVarName()
+        {
+            return "ed_enableDPE";
+        }
         static bool ShouldReplaceRPE();
 
         AZStd::vector<size_t> GetPathToRoot(DPERowWidget* row) const;
         bool IsRecursiveExpansionOngoing() const;
         void SetRecursiveExpansionOngoing(bool isExpanding);
+
+        // shared pools of recycled widgets
+        auto GetRowPool()
+        {
+            return m_rowPool;
+        }
+
+        auto GetLabelPool()
+        {
+            return m_labelPool;
+        }
 
     public slots:
         //! set the DOM adapter for this DPE to inspect
@@ -231,5 +267,17 @@ namespace AzToolsFramework
         QTimer* m_handlerCleanupTimer;
         AZStd::vector<AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_unusedHandlers;
         DPERowWidget* m_rootNode = nullptr;
+
+        // keep pools of frequently used widgets that can be recycled for efficiency without
+        // incurring the cost of creating and destroying them
+        AZStd::shared_ptr<AZ::InstancePool<DPERowWidget>> m_rowPool;
+        AZStd::shared_ptr<AZ::InstancePool<AzQtComponents::ElidingLabel>> m_labelPool;
     };
 } // namespace AzToolsFramework
+
+// expose type info for external classes so that they can be used with the InstancePool system
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::DPERowWidget, "{C457A594-6E19-4674-A617-3CC09CF7E532}");
+    AZ_TYPE_INFO_SPECIALIZE(AzQtComponents::ElidingLabel, "{02674C46-1401-4237-97F1-2774A067BF80}");
+}

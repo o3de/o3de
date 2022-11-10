@@ -5,19 +5,19 @@
     "ClassData": {
         "id": "{3E3DB3D2-D6EB-4688-8A06-6A47DE3A3327}",
         "category": "Math Functions",
-        "title": "length",
+        "title": "Length",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue",
+            "outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float4",
                 "defaultValue": {
                     "$type": "Vector4",
                     "Value": [
@@ -29,7 +29,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -39,21 +39,11 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "float4"
-                ],
-                "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = length(NODEID_inValue);"
+                        "SLOTTYPE SLOTNAME = length(inValue);"
                     ]
                 }
             }

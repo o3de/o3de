@@ -34,7 +34,7 @@ namespace Profiler
             GroupRegionName(const char* const group, const char* const region);
 
             const char* m_groupName = nullptr;
-            const char* m_regionName = nullptr;
+            AZ::Name m_regionName;
 
             struct Hash
             {
@@ -47,7 +47,7 @@ namespace Profiler
         explicit CachedTimeRegion(const GroupRegionName& groupRegionName);
         CachedTimeRegion(const GroupRegionName& groupRegionName, uint16_t stackDepth, uint64_t startTick, uint64_t endTick);
 
-        GroupRegionName m_groupRegionName{nullptr, nullptr};
+        GroupRegionName m_groupRegionName{nullptr, ""};
 
         uint16_t m_stackDepth = 0u;
         AZStd::sys_time_t m_startTick = 0;
@@ -227,5 +227,6 @@ namespace Profiler
         CpuProfilingStatisticsSerializer(const AZStd::ring_buffer<TimeRegionMap>& continuousData);
 
         AZStd::vector<CpuProfilingStatisticsSerializerEntry> m_cpuProfilingStatisticsSerializerEntries;
+        AZStd::sys_time_t m_timeTicksPerSecond = 0;
     };
 } // namespace Profiler

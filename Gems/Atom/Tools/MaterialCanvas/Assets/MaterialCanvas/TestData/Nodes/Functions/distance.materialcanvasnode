@@ -5,19 +5,19 @@
     "ClassData": {
         "id": "{31BEA4FF-36E1-4EB0-A0C3-B53F79AA31C7}",
         "category": "Math Functions",
-        "title": "distance",
+        "title": "Distance",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2",
+            "outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue1",
                 "displayName": "Value1",
                 "description": "Value1",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float4",
                 "defaultValue": {
                     "$type": "Vector4",
                     "Value": [
@@ -29,7 +29,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             },
@@ -37,13 +37,8 @@
                 "name": "inValue2",
                 "displayName": "Value2",
                 "description": "Value2",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float4",
                 "defaultValue": {
                     "$type": "Vector4",
                     "Value": [
@@ -55,7 +50,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -65,21 +60,11 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "float4"
-                ],
-                "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = distance(NODEID_inValue1, NODEID_inValue2);"
+                        "SLOTTYPE SLOTNAME = distance(inValue1, inValue2);"
                     ]
                 }
             }

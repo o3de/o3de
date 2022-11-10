@@ -67,6 +67,9 @@ namespace AZ
             //! Returns the number of allocated tags in the registry.
             size_t GetAllocatedTagCount() const;
 
+            template <class TagVisitor>
+            void VisitTags(TagVisitor visitor);
+
         private:
             TagRegistry() = default;
 
@@ -75,7 +78,6 @@ namespace AZ
                 Name m_name;
                 size_t m_refCount = 0;
             };
-
             mutable AZStd::shared_mutex m_mutex;
             AZStd::array<Entry, MaxTagCount> m_entriesByTag;
             size_t m_allocatedTagCount = 0;
@@ -186,6 +188,22 @@ namespace AZ
         size_t TagRegistry<IndexType, MaxTagCount>::GetAllocatedTagCount() const
         {
             return m_allocatedTagCount;
+        }
+
+        template<typename IndexType, size_t MaxTagCount>
+        template<class TagVisitor>
+        void TagRegistry<IndexType, MaxTagCount>::VisitTags(TagVisitor visitor)
+        {
+            size_t entriesToFind = m_allocatedTagCount;
+            for (uint32_t i = 0; entriesToFind > 0 && i < MaxTagCount; ++i)
+            {
+                const Entry& entry = m_entriesByTag.at(i);
+                if (entry.m_refCount > 0)
+                {
+                    visitor(entry.m_name, TagType(i));
+                    --entriesToFind;
+                }
+            }
         }
     }
 }

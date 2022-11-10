@@ -5,19 +5,18 @@
     "ClassData": {
         "id": "{37B8B4B9-EDEB-424A-A486-2999C534A058}",
         "category": "Math Functions",
-        "title": "tan",
+        "title": "Tan",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float4",
                 "defaultValue": {
                     "$type": "Vector4",
                     "Value": [
@@ -29,7 +28,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -39,21 +38,11 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "float4"
-                ],
-                "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = tan(NODEID_inValue);"
+                        "SLOTTYPE SLOTNAME = tan(inValue);"
                     ]
                 }
             }

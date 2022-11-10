@@ -117,7 +117,7 @@ namespace EMotionFX
 
     void HitDetectionJointInspectorPlugin::OnAddCollider()
     {
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+        AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (!selectedRowIndicesOutcome.IsSuccess())
         {
@@ -139,7 +139,7 @@ namespace EMotionFX
 
     void HitDetectionJointInspectorPlugin::OnClearColliders()
     {
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+        AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (!selectedRowIndicesOutcome.IsSuccess())
         {
