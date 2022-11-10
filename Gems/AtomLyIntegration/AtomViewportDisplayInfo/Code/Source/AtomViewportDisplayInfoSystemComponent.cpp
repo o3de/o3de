@@ -152,10 +152,13 @@ namespace AZ::Render
 
         if (m_updateRootPassQuery)
         {
-            if (auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass())
+            if (auto currentPipeline = viewportContext->GetCurrentPipeline())
             {
-                rootPass->SetPipelineStatisticsQueryEnabled(displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo);
-                m_updateRootPassQuery = false;
+                if (auto rootPass = currentPipeline->GetRootPass())
+                {
+                    rootPass->SetPipelineStatisticsQueryEnabled(displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo);
+                    m_updateRootPassQuery = false;
+                }
             }
         }
 
@@ -244,6 +247,10 @@ namespace AZ::Render
     void AtomViewportDisplayInfoSystemComponent::DrawPassInfo()
     {
         AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
+        if (!viewportContext->GetCurrentPipeline())
+        {
+            return;
+        }
         auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass();
         const RPI::PipelineStatisticsResult stats = rootPass->GetLatestPipelineStatisticsResult();
 
@@ -294,6 +301,10 @@ namespace AZ::Render
         {
             deviceReserved += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_reservedInBytes;
             deviceResident += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_residentInBytes;
+
+            // Add m_totalResidentInBytes and m_usedResidentInBytes to the states since they are used by StreamingImagePool
+            deviceReserved += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_totalResidentInBytes;
+            deviceResident += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_usedResidentInBytes;
         }
 
         // Query for available device memory
@@ -329,21 +340,21 @@ namespace AZ::Render
                 "VRAM (resident/reserved): %.2f / %.2f MiB | %.2f available", deviceResidentMB, deviceReservedMB, availableDeviceMemoryMB),
             deviceMemoryColor);
 
-        // RPI AssetStreamingImagePool usage
-        Data::Instance<RPI::StreamingImagePool> streamingImagePool = RPI::ImageSystemInterface::Get()->GetStreamingPool();
+        // RPI default StreamingImagePool usage
+        Data::Instance<RPI::StreamingImagePool> streamingImagePool = RPI::ImageSystemInterface::Get()->GetSystemStreamingPool();
         const RHI::HeapMemoryUsage& imagePoolMemoryUsage = streamingImagePool->GetRHIPool()->GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
 
-        float imagePoolUsedAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_usedResidentInBytes) / MB;
-        float imagePoolTotalAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_totalResidentInBytes) / MB;
+        float imagePoolUsedAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_usedResidentInBytes + imagePoolMemoryUsage.m_residentInBytes) / MB;
+        float imagePoolTotalAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_totalResidentInBytes + imagePoolMemoryUsage.m_reservedInBytes) / MB;
         float imagePoolBudgetMB = static_cast<float>(imagePoolMemoryUsage.m_budgetInBytes) / MB;
         AZ::Color fontColor = AZ::Colors::White;
-        if (imagePoolTotalAllocatedMB > 0.99f * imagePoolBudgetMB && imagePoolBudgetMB > 0)
+        if (streamingImagePool->IsMemoryLow())
         {
             fontColor = AZ::Colors::Red;
         }
 
         DrawLine(
-            AZStd::string::format("RPI AssetStreamingImagePool (used/allocated/budget): %.2f / %.2f/%.2f MiB", imagePoolUsedAllocatedMB, imagePoolTotalAllocatedMB, imagePoolBudgetMB),
+            AZStd::string::format("RPI SystemStreamingImagePool (used/allocated/budget): %.2f / %.2f/%.2f MiB", imagePoolUsedAllocatedMB, imagePoolTotalAllocatedMB, imagePoolBudgetMB),
             fontColor
         );
     }

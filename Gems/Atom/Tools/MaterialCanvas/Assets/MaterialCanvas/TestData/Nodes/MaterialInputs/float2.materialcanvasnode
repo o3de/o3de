@@ -6,40 +6,62 @@
         "id": "{D0F223FC-24FD-4EFA-85A5-7632463BC84B}",
         "category": "Material Inputs",
         "title": "Float2 Input",
+        "titlePaletteName": "MaterialInputNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue",
+            "outX|outY"
+        ],
         "propertySlots": [
             {
                 "name": "inGroup",
                 "displayName": "Group",
                 "description": "Group",
-                "supportedDataTypes": [
-                    "string"
-                ],
-                "supportsEditingOnNode": false
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false
             },
             {
                 "name": "inName",
                 "displayName": "Name",
                 "description": "Name",
-                "supportedDataTypes": [
-                    "string"
-                ]
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                }
             },
             {
                 "name": "inDescription",
                 "displayName": "Description",
                 "description": "Description",
-                "supportedDataTypes": [
-                    "string"
-                ],
-                "supportsEditingOnNode": false
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false
             },
             {
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "float2"
-                ],
+                "supportedDataTypeRegex": "float2",
+                "defaultDataType": "float2",
+                "defaultValue": {
+                    "$type": "Vector2",
+                    "Value": [
+                        0.0,
+                        0.0
+                    ]
+                },
                 "settings": {
                     "materialInputs": [
                         "SLOTSTANDARDSRGMEMBER"
@@ -52,12 +74,35 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "float2"
-                ],
+                "supportedDataTypeRegex": "float2",
+                "defaultDataType": "float2",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEID_inValue;"
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue;"
+                    ]
+                }
+            },
+            {
+                "name": "outX",
+                "displayName": "X",
+                "description": "X",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.x;"
+                    ]
+                }
+            },
+            {
+                "name": "outY",
+                "displayName": "Y",
+                "description": "Y",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.y;"
                     ]
                 }
             }

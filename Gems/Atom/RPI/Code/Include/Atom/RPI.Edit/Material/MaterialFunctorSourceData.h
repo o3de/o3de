@@ -45,6 +45,8 @@ namespace AZ
             AZ_RTTI(MaterialFunctorSourceData, "{2E8C6884-E136-4494-AEC1-5F23473278DC}");
             AZ_CLASS_ALLOCATOR(MaterialFunctorSourceData, AZ::SystemAllocator, 0);
 
+            static void Reflect(AZ::ReflectContext* context);
+
             //! This generally corresponds to AssetBuilderSDK's Job Dependencies.
             struct AssetDependency
             {

@@ -5,18 +5,26 @@
     "ClassData": {
         "id": "{E5729A3B-D265-4ECC-B542-0BB5D6BA5829}",
         "category": "Math Functions",
-        "title": "combine3",
+        "title": "Combine3",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inX|inY|inZ",
+            "outValue"
+        ],
         "inputSlots": [
             {
                 "name": "inX",
                 "displayName": "X",
                 "description": "X",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 0.0
+                },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             },
@@ -24,12 +32,15 @@
                 "name": "inY",
                 "displayName": "Y",
                 "description": "Y",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 0.0
+                },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             },
@@ -37,12 +48,15 @@
                 "name": "inZ",
                 "displayName": "Z",
                 "description": "Z",
-                "supportedDataTypes": [
-                    "float"
-                ],
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 0.0
+                },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -52,12 +66,11 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypes": [
-                    "float3"
-                ],
+                "supportedDataTypeRegex": "float3",
+                "defaultDataType": "float3",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTTYPE(NODEID_inX, NODEID_inY, NODEID_inZ);"
+                        "SLOTTYPE SLOTNAME = {(float)inX, (float)inY, (float)inZ};"
                     ]
                 }
             }

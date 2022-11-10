@@ -22,6 +22,9 @@
 #include <AzQtComponents/Components/SearchLineEdit.h>
 #include <AzQtComponents/Components/Style.h>
 
+#include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
+
+#include <Core/Widgets/PrefabEditVisualModeWidget.h>
 #include <CryEdit.h>
 #include <EditorCoreAPI.h>
 #include <Editor/Undo/Undo.h>
@@ -33,8 +36,10 @@
 #include <QtViewPaneManager.h>
 #include <ToolBox.h>
 #include <ToolsConfigPage.h>
+#include <Util/PathUtil.h>
 
 #include <QDesktopServices>
+#include <QDir>
 #include <QLabel>
 #include <QMainWindow>
 #include <QMenu>
@@ -55,6 +60,7 @@ static constexpr AZStd::string_view OnlyShowHelpersForSelectedEntitiesIdentifier
 static constexpr AZStd::string_view LevelLoadedUpdaterIdentifier = "o3de.updater.onLevelLoaded";
 static constexpr AZStd::string_view RecentFilesChangedUpdaterIdentifier = "o3de.updater.onRecentFilesChanged";
 static constexpr AZStd::string_view UndoRedoUpdaterIdentifier = "o3de.updater.onUndoRedo";
+static constexpr AZStd::string_view ViewportDisplayInfoStateChangedUpdaterIdentifier = "o3de.updater.onViewportDisplayInfoStateChanged";
 
 static constexpr AZStd::string_view EditorMainWindowMenuBarIdentifier = "o3de.menubar.editor.mainwindow";
 
@@ -87,6 +93,39 @@ static constexpr AZStd::string_view PlayControlsToolBarIdentifier = "o3de.toolba
 
 static const int maxRecentFiles = 10;
 
+class EditorViewportDisplayInfoHandler
+    : private AZ::AtomBridge::AtomViewportInfoDisplayNotificationBus::Handler
+{
+public:
+    EditorViewportDisplayInfoHandler()
+    {
+        m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(
+            m_actionManagerInterface, "EditorViewportDisplayInfoHandler - could not get ActionManagerInterface on EditorViewportDisplayInfoHandler construction.");
+
+        if (m_actionManagerInterface)
+        {
+            AZ::AtomBridge::AtomViewportInfoDisplayNotificationBus::Handler::BusConnect();
+        }
+    }
+
+    ~EditorViewportDisplayInfoHandler()
+    {
+        if (m_actionManagerInterface)
+        {
+            AZ::AtomBridge::AtomViewportInfoDisplayNotificationBus::Handler::BusDisconnect();
+        }
+    }
+
+    void OnViewportInfoDisplayStateChanged([[maybe_unused]] AZ::AtomBridge::ViewportInfoDisplayState state) override
+    {
+        m_actionManagerInterface->TriggerActionUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier);
+    }
+
+private:
+    AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
+};
+
 bool IsLevelLoaded()
 {
     auto cryEdit = CCryEditApp::instance();
@@ -111,6 +150,8 @@ void EditorActionsHandler::Initialize(MainWindow* mainWindow)
     m_mainWindow = mainWindow;
     m_cryEditApp = CCryEditApp::instance();
     m_qtViewPaneManager = QtViewPaneManager::instance();
+
+    m_levelExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
 
     m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
     AZ_Assert(m_actionManagerInterface, "EditorActionsHandler - could not get ActionManagerInterface on EditorActionsHandler construction.");
@@ -142,6 +183,9 @@ void EditorActionsHandler::Initialize(MainWindow* mainWindow)
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
     AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusConnect(DefaultViewportId);
+
+    m_editorViewportDisplayInfoHandler = new EditorViewportDisplayInfoHandler();
+
     m_initialized = true;
 }
 
@@ -154,6 +198,11 @@ EditorActionsHandler::~EditorActionsHandler()
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEventsBus::Handler::BusDisconnect();
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
+
+        if (m_editorViewportDisplayInfoHandler)
+        {
+            delete m_editorViewportDisplayInfoHandler;
+        }
     }
 }
 
@@ -176,6 +225,7 @@ void EditorActionsHandler::OnActionUpdaterRegistrationHook()
     m_actionManagerInterface->RegisterActionUpdater(IconsStateChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(RecentFilesChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(UndoRedoUpdaterIdentifier);
+    m_actionManagerInterface->RegisterActionUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier);
 
     // If the Prefab system is not enabled, have a backup to update actions based on level loading.
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
@@ -251,15 +301,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
                 EditorMainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [cryEdit = m_cryEditApp, index]
+                [&, index]
                 {
-                    RecentFileList* recentFiles = cryEdit->GetRecentFileList();
-                    const int recentFilesSize = recentFiles->GetSize();
-
-                    if (index < recentFilesSize)
-                    {
-                        cryEdit->OpenDocumentFile((*recentFiles)[index].toUtf8().data(), true, COpenSameLevelOptions::ReopenLevelIfSame);
-                    }
+                    OpenLevelByRecentFileEntryIndex(index);
                 }
             );
 
@@ -919,6 +963,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Go to Position...";
         actionProperties.m_description = "Move the editor camera to the position and rotation provided.";
         actionProperties.m_category = "View";
+        actionProperties.m_iconPath = ":/Menu/camera.svg";
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
@@ -972,6 +1017,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Show Helpers";
         actionProperties.m_description = "Show/Hide Helpers.";
         actionProperties.m_category = "View";
+        actionProperties.m_iconPath = ":/Menu/helpers.svg";
 
         m_actionManagerInterface->RegisterCheckableAction(
             EditorMainWindowActionContextIdentifier,
@@ -1261,7 +1307,23 @@ void EditorActionsHandler::OnWidgetActionRegistrationHook()
             }
         );
     }
-}
+
+    // Prefab Edit Visual Mode Selection Widget
+    {
+        AzToolsFramework::WidgetActionProperties widgetActionProperties;
+        widgetActionProperties.m_name = "Prefab Edit Visual Mode Selection";
+        widgetActionProperties.m_category = "Prefabs";
+
+        auto outcome = m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.prefab.editVisualMode",
+            widgetActionProperties,
+            []() -> QWidget*
+            {
+                return new PrefabEditVisualModeWidget();
+            }
+        );
+    }
+}     
 
 void EditorActionsHandler::OnMenuBarRegistrationHook()
 {
@@ -1482,7 +1544,7 @@ void EditorActionsHandler::OnMenuBindingHook()
             m_menuManagerInterface->AddSeparatorToMenu(GameDebuggingMenuIdentifier, 200);
             m_menuManagerInterface->AddSubMenuToMenu(GameDebuggingMenuIdentifier, ToolBoxMacrosMenuIdentifier, 300);
             {
-                // Some of the contents of the ToolBox Mactos menu are initialized in RefreshToolboxMacrosActions.
+                // Some of the contents of the ToolBox Macros menu are initialized in RefreshToolboxMacrosActions.
 
                 m_menuManagerInterface->AddSeparatorToMenu(ToolBoxMacrosMenuIdentifier, 200);
                 m_menuManagerInterface->AddActionToMenu(ToolBoxMacrosMenuIdentifier, "o3de.action.game.debugging.toolboxMacros", 300);
@@ -1551,14 +1613,6 @@ void EditorActionsHandler::OnMenuBindingHook()
         m_menuManagerInterface->AddActionToMenu(HelpMenuIdentifier, "o3de.action.help.abouto3de", 600);
         m_menuManagerInterface->AddActionToMenu(HelpMenuIdentifier, "o3de.action.help.welcome", 700);
     }
-
-    // Add helper actions to the Viewport top toolbar helpers button.
-    // This is temporary until that toolbar is completely refactored.
-    {
-        m_menuManagerInterface->AddActionToMenu("o3de.menu.viewport.helpers", "o3de.action.view.toggleHelpers", 100);
-        m_menuManagerInterface->AddActionToMenu("o3de.menu.viewport.helpers", "o3de.action.view.toggleIcons", 200);
-        m_menuManagerInterface->AddActionToMenu("o3de.menu.viewport.helpers", "o3de.action.view.toggleSelectedEntityHelpers", 300);
-    }
 }
 
 void EditorActionsHandler::OnToolBarAreaRegistrationHook()
@@ -1575,7 +1629,6 @@ void EditorActionsHandler::OnToolBarRegistrationHook()
         toolBarProperties.m_name = "Tools";
         m_toolBarManagerInterface->RegisterToolBar(ToolsToolBarIdentifier, toolBarProperties);
     }
-
     {
         AzToolsFramework::ToolBarProperties toolBarProperties;
         toolBarProperties.m_name = "Play Controls";
@@ -1782,8 +1835,77 @@ void EditorActionsHandler::OnOnlyShowHelpersForSelectedEntitiesChanged([[maybe_u
 
 bool EditorActionsHandler::IsRecentFileActionActive(int index)
 {
+    return (index < m_recentFileActionsCount);
+}
+
+bool EditorActionsHandler::IsRecentFileEntryValid(const QString& entry, const QString& gameFolderPath)
+{
+    if (entry.isEmpty())
+    {
+        return false;
+    }
+
+    QFileInfo info(entry);
+    if (!info.exists())
+    {
+        return false;
+    }
+
+    if (!entry.endsWith(m_levelExtension))
+    {
+        return false;
+    }
+
+    const QDir gameDir(gameFolderPath);
+    QDir dir(entry); // actually pointing at file, first cdUp() gets us the parent dir
+    while (dir.cdUp())
+    {
+        if (dir == gameDir)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void EditorActionsHandler::OpenLevelByRecentFileEntryIndex(int index)
+{
+    // Out of bounds, do nothing
+    if (index >= m_recentFileActionsCount)
+    {
+        return;
+    }
+
     RecentFileList* recentFiles = m_cryEditApp->GetRecentFileList();
-    return (index < recentFiles->GetSize());
+    const int recentFilesSize = recentFiles->GetSize();
+
+    QString sCurDir = QString(Path::GetEditingGameDataFolder().c_str()) + QDir::separator();
+    QFileInfo gameDir(sCurDir); // Pass it through QFileInfo so it comes out normalized
+    const QString gameDirPath = gameDir.absolutePath();
+
+    // Index is the index of the action in the menu, but in generating that list we skipped invalid files from other projects.
+    // As such, we need to actually go through the list again to find the correct index for the recentFiles array.
+
+    int counter = 0;
+    int fileIndex = 0;
+    for (; fileIndex < recentFilesSize; ++fileIndex)
+    {
+        if (!IsRecentFileEntryValid((*recentFiles)[fileIndex], gameDirPath))
+        {
+            continue;
+        }
+
+        if (counter == index)
+        {
+            break;
+        }
+
+        ++counter;
+    }
+
+    m_cryEditApp->OpenDocumentFile((*recentFiles)[fileIndex].toUtf8().data(), true, COpenSameLevelOptions::ReopenLevelIfSame);
+    
 }
 
 void EditorActionsHandler::UpdateRecentFileActions()
@@ -1791,19 +1913,39 @@ void EditorActionsHandler::UpdateRecentFileActions()
     RecentFileList* recentFiles = m_cryEditApp->GetRecentFileList();
     const int recentFilesSize = recentFiles->GetSize();
 
+    QString sCurDir = QString(Path::GetEditingGameDataFolder().c_str()) + QDir::separator();
+    QFileInfo gameDir(sCurDir); // Pass it through QFileInfo so it comes out normalized
+    const QString gameDirPath = gameDir.absolutePath();
+
+    m_recentFileActionsCount = 0;
+    int counter = 0;
+
     // Update all names
-    for (int index = 0; index < maxRecentFiles; ++index)
+    for (int index = 0; (index < maxRecentFiles) || (index < recentFilesSize); ++index)
     {
-        AZStd::string actionIdentifier = AZStd::string::format("o3de.action.file.recent.file%i", index + 1);
+        if (!IsRecentFileEntryValid((*recentFiles)[index], gameDirPath))
+        {
+            continue;
+        }
+
+        AZStd::string actionIdentifier = AZStd::string::format("o3de.action.file.recent.file%i", counter + 1);
+
         if (index < recentFilesSize)
         {
+            QString displayName;
+            recentFiles->GetDisplayName(displayName, index, sCurDir);
+
             m_actionManagerInterface->SetActionName(
-                actionIdentifier, AZStd::string::format("%i | %s", index + 1, (*recentFiles)[index].toUtf8().data()));
+                actionIdentifier, AZStd::string::format("%i | %s", counter + 1, displayName.toUtf8().data()));
+
+            ++m_recentFileActionsCount;
         }
         else
         {
-            m_actionManagerInterface->SetActionName(actionIdentifier, AZStd::string::format("Recent File #%i", index + 1));
+            m_actionManagerInterface->SetActionName(actionIdentifier, AZStd::string::format("Recent File #%i", counter + 1));
         }
+
+        ++counter;
     }
 
     // Trigger the updater

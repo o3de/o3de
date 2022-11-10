@@ -6,17 +6,57 @@
         "id": "{0F7B6190-E8B8-4CCD-AE61-D5B8E2C22CDE}",
         "category": "Object",
         "title": "Normal",
+        "titlePaletteName": "ObjectNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "outNormal",
+            "outX|outY|outZ"
+        ],
         "outputSlots": [
             {
-                "name": "outValue",
-                "displayName": "Value",
-                "description": "Value",
-                "supportedDataTypes": [
-                    "float3"
-                ],
+                "name": "outNormal",
+                "displayName": "Normal",
+                "description": "Normal",
+                "supportedDataTypeRegex": "float3",
+                "defaultDataType": "float3",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = O3DE_MC_NORMAL;"
+                        "SLOTTYPE SLOTNAME = O3DE_MC_NORMAL;"
+                    ]
+                }
+            },
+            {
+                "name": "outX",
+                "displayName": "X",
+                "description": "X",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_NORMAL.x;"
+                    ]
+                }
+            },
+            {
+                "name": "outY",
+                "displayName": "Y",
+                "description": "Y",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_NORMAL.y;"
+                    ]
+                }
+            },
+            {
+                "name": "outZ",
+                "displayName": "Z",
+                "description": "Z",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_NORMAL.z;"
                     ]
                 }
             }

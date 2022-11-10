@@ -8,8 +8,7 @@
            Base="ScriptCanvas::Node"
            Version="2"
            VersionConverter="ScriptCanvas::VersionConverters::DurationVersionConverter"
-           DeprecationUUID="{CCF1F41F-39C2-C847-9D9E-0155C8B46E1C}"
-           Deprecated="This node has been deprecated in favor of the nodeable form"
+           Deprecated="True"
            Description="Triggers a signal every frame during the specified duration.">
         <In Name="Start" Description="Starts the countdown"/>
         <OutLatent Name="Out" Description="Signaled every frame while the duration is active."/>

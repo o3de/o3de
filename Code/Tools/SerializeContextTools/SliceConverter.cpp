@@ -595,7 +595,7 @@ namespace AZ
             // throughout the entire nested hierarchy, then add the new patched entities back in at the appropriate place in the hierarchy.
             // (This is easier than trying to figure out what the patched data changes are - we can let the JSON patch handle it for us)
 
-            nestedInstance->RemoveNestedEntities(
+            nestedInstance->RemoveEntitiesInHierarchy(
                 [](const AZStd::unique_ptr<AZ::Entity>&)
                 {
                     return true;

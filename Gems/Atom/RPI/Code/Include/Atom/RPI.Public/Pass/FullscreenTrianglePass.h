@@ -62,8 +62,6 @@ namespace AZ
             // The stencil reference value for the draw item
             uint32_t m_stencilRef;
 
-            RPI::ShaderVariantStableId m_shaderVariantStableId = RPI::ShaderAsset::RootShaderVariantStableId;
-
             Data::Instance<ShaderResourceGroup> m_drawShaderResourceGroup;
 
             // Scope producer functions...

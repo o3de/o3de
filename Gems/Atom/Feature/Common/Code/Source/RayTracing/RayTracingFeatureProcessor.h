@@ -44,7 +44,8 @@ namespace AZ
             BaseColor   = AZ_BIT(0),
             Normal      = AZ_BIT(1),
             Metallic    = AZ_BIT(2),
-            Roughness   = AZ_BIT(3)
+            Roughness   = AZ_BIT(3),
+            Emissive    = AZ_BIT(4)
         };
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::Render::RayTracingSubMeshTextureFlags);
 
@@ -107,6 +108,7 @@ namespace AZ
                 AZ::Color m_baseColor = AZ::Color(0.0f);
                 float m_metallicFactor = 0.0f;
                 float m_roughnessFactor = 0.0f;
+                AZ::Color m_emissiveColor = AZ::Color(0.0f);
 
                 // material texture usage flags
                 RayTracingSubMeshTextureFlags m_textureFlags = RayTracingSubMeshTextureFlags::None;
@@ -116,6 +118,7 @@ namespace AZ
                 RHI::Ptr<const RHI::ImageView> m_normalImageView;
                 RHI::Ptr<const RHI::ImageView> m_metallicImageView;
                 RHI::Ptr<const RHI::ImageView> m_roughnessImageView;
+                RHI::Ptr<const RHI::ImageView> m_emissiveImageView;
 
                 // parent mesh
                 Mesh* m_mesh = nullptr;
@@ -284,11 +287,13 @@ namespace AZ
             // structure for data in the m_materialInfoBuffer, shaders that use the buffer must match this type
             struct MaterialInfo
             {
-                AZStd::array<float, 4> m_baseColor;   // float4
+                AZStd::array<float, 4> m_baseColor;     // float4
                 float m_metallicFactor = 0.0f;
                 float m_roughnessFactor = 0.0f;
+                AZStd::array<float, 3> m_emissiveColor; // float3
                 RayTracingSubMeshTextureFlags m_textureFlags = RayTracingSubMeshTextureFlags::None;
                 uint32_t m_textureStartIndex = 0;
+                float m_padding0;
             };
 
             // vector of MaterialInfo, transferred to the materialInfoGpuBuffer
@@ -320,7 +325,7 @@ namespace AZ
             static const uint32_t NumMeshBuffersPerMesh = 6;
             RayTracingIndexList<NumMeshBuffersPerMesh> m_meshBufferIndices;
 
-            static const uint32_t NumMaterialTexturesPerMesh = 4;
+            static const uint32_t NumMaterialTexturesPerMesh = 5;
             RayTracingIndexList<NumMaterialTexturesPerMesh> m_materialTextureIndices;
 
             // Gpu buffers for the mesh and material resources
