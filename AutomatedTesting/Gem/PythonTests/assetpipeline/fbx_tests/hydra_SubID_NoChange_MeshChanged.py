@@ -4,6 +4,8 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
+import assetpipeline.ap_fixtures.ap_idle_fixture
+
 
 class Tests:
     asset_id_no_change = (
@@ -11,6 +13,27 @@ class Tests:
         "P0: Model AssetId does not match expected output")
 
 def SubID_NoChange_MeshChanged():
+    """
+    Summary:
+    Opens a level with an entity containing a mesh component.
+    Verify updating a scene file where the product's asset subid remains the same still updates the mesh component.
+
+    Expected Behavior:
+    The updated asset's subid remains the same while the mesh referenced in the mesh component updates.
+
+    Test Steps:
+     1) Load the level
+     2) Start the Tracer to catch any errors and warnings
+     3) Record the original asset's subid and vert count
+     4) Add a scene settings file to update the scene products
+     5) Reload the level
+     6) Record the updated asset's subid and vert count
+     7) Verify there are no errors and warnings in the logs
+     8) Verify the subids match while the vert counts do not
+     9) Close the editor
+
+    :return: None
+    """
 
     import os
     import shutil
@@ -21,44 +44,50 @@ def SubID_NoChange_MeshChanged():
     from EditorPythonTestTools.editor_python_test_tools.editor_entity_utils import EditorEntity
     from EditorPythonTestTools.editor_python_test_tools.utils import Report, TestHelper, Tracer
     from EditorPythonTestTools.editor_python_test_tools.asset_utils import Asset
-    from assetpipeline.ap_fixtures.check_model_ready_fixture import OnModelReady
+    from assetpipeline.ap_fixtures.check_model_ready_fixture import OnModelReloaded
 
     with Tracer() as error_tracer:
-        # Test Setup: Wait for Editor idle before loading the level and executing Python hydra scripts.
+        # -- Test Setup Begins --
+        # Test Setup: Wait for Editor idle before loading the level and executing python hydra scripts.
         TestHelper.init_idle()
         TestHelper.open_level("AssetPipeline", "SceneTests")
 
-        # Test Setup: Set up source and destination for assetinfo file, then verify there is no file there already.
+        # Test Setup: Set source and destination paths for assetinfo file.
         parent_directory = 4  # This is how many folders up we need to move in the directory tree from the location of this test to locate AutomatedTesting.
         dirpath = Path(__file__).parents[parent_directory]
         src = os.path.join(dirpath, 'Objects', 'ShaderBall_simple', 'shaderball_simple_MeshChange_SameID.fbx.assetinfo')
         dst = os.path.join(dirpath, 'Objects', 'shaderball_simple.fbx.assetinfo')
-        if os.path.exists(dst):
-            os.remove(dst)
 
-        # Test Setup: Ensure level has enough time to load before attempting to find the entity
-        find_entity = EditorEntity.find_editor_entity(AtomComponentProperties.mesh())
-        find_component = find_entity.get_components_of_type([AtomComponentProperties.mesh()])[0]
+        # Test Setup: Find the asset by asset path
         model_path = os.path.join('objects', 'shaderball_simple.azmodel')
         model = Asset.find_asset_by_path(model_path)
-        checkModel = OnModelReady()
-        checkModel.wait_for_on_model_ready(find_entity.id, find_component, model.id)
+
+        # Test Setup: Ensure there is no assetinfo file in the dst path, if there is, remove it.
+        checkModel = OnModelReloaded()
+        if os.path.exists(dst):
+            os.remove(dst)
+            checkModel.wait_for_on_model_reloaded(model.id)
+
+        # Test Setup: Find the entity, and it's mesh component, within the level.
+        find_entity = EditorEntity.find_editor_entity(AtomComponentProperties.mesh())
+        find_component = find_entity.get_components_of_type([AtomComponentProperties.mesh()])[0]
+
+        #Test Setup: Record the initial values for the Model Asset and the Vertex Count of LOD0.
         original_component_id = find_component.get_component_property_value(AtomComponentProperties.mesh('Model Asset'))
         original_vert_count = find_component.get_component_property_value(AtomComponentProperties.mesh('Vertex Count LOD0'))
 
-        # 1. Copy an assetinfo file to change scene output
+        # -- Test Begins --
+        # 1. Copy an assetinfo file to change scene output.
         shutil.copyfile(src, dst)
-        checkModel.wait_for_on_model_ready(find_entity.id, find_component, model.id)
+        checkModel.wait_for_on_model_reloaded(model.id)
 
-        # 2. Reload the level to reflect changes
+        # 2. Reload the level to reflect changes.
         TestHelper.open_level("", "Base")
         time.sleep(0.2)
         TestHelper.open_level("AssetPipeline", "SceneTests")
         time.sleep(0.2)
 
-        # 3. Search the level for the expected entity, then record the component property results.
-        find_entity = EditorEntity.find_editor_entity(AtomComponentProperties.mesh())
-        find_component = find_entity.get_components_of_type([AtomComponentProperties.mesh()])[0]
+        # 3. Record the current values for the Model Asset and the Vertex Count of LOD0.
         current_component_id = find_component.get_component_property_value(AtomComponentProperties.mesh('Model Asset'))
         current_vert_count = find_component.get_component_property_value(AtomComponentProperties.mesh('Vertex Count LOD0'))
         result = current_component_id == original_component_id and original_vert_count != current_vert_count
@@ -70,9 +99,9 @@ def SubID_NoChange_MeshChanged():
         for assert_info in error_tracer.asserts:
             Report.info(f"Assert: {assert_info.filename} {assert_info.function} | {assert_info.message}")
 
-        # 5. Clean-up
+        # 5. Clean-up.
         os.remove(dst)
-        checkModel.wait_for_on_model_ready(find_entity.id, find_component, model.id)
+        checkModel.wait_for_on_model_reloaded(model.id)
 
         # 6. Report the test results gathered and end the test.
         Report.critical_result(Tests.asset_id_no_change, result)

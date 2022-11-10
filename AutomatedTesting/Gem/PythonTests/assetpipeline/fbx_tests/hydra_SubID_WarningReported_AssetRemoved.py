@@ -18,14 +18,38 @@ class Tests:
 
 
 def SubID_WarningReported_AssetRemoved():
+    """
+    Summary:
+    Opens a level with an entity containing a mesh component.
+    Verify updating a scene file where the product's asset subid remains the same still updates the mesh component.
+
+    Expected Behavior:
+    The updated asset's subid remains the same while the mesh referenced in the mesh component updates.
+
+    Test Steps:
+     1) Load the level
+     2) Start the Tracer to catch any errors and warnings
+     3) Record the original asset's subid and vert count
+     4) Add a scene settings file to update the scene products
+     5) Reload the level
+     6) Record the updated asset's subid and vert count
+     7) Verify there are no errors and warnings in the logs
+     8) Verify the subids match while the vert counts do not
+     9) Close the editor
+
+    :return: None
+    """
 
     import os
     import shutil
     import time
     from pathlib import Path
 
+    from assetpipeline.ap_fixtures.check_model_ready_fixture import OnModelReloaded
     from EditorPythonTestTools.editor_python_test_tools.utils import Report, TestHelper, Tracer
+    from EditorPythonTestTools.editor_python_test_tools.asset_utils import Asset
 
+    # -- Test Setup Begins --
     # Test Setup: Wait for Editor idle before loading the level and executing Python hydra scripts.
     TestHelper.init_idle()
     TestHelper.open_level("AssetPipeline", "SceneTests")
@@ -35,14 +59,21 @@ def SubID_WarningReported_AssetRemoved():
     dirpath = Path(__file__).parents[parent_directory]
     src = os.path.join(dirpath, 'Objects', 'ShaderBall_simple', 'shaderball_simple_NoMesh_NoID.fbx.assetinfo')
     dst = os.path.join(dirpath, 'Objects', 'shaderball_simple.fbx.assetinfo')
+
+    # Test Setup: Find the asset by asset path - Use azmaterial as we will be removing the azmodels during the test.
+    model_path = os.path.join('objects', 'shaderball_simple_phong_0_17699592688871882463.azmaterial')
+    model = Asset.find_asset_by_path(model_path)
+    checkModel = OnModelReloaded()
+
+    # Test Setup: Ensure there is no assetinfo file in the dst path, if there is, remove it.
     if os.path.exists(dst):
         os.remove(dst)
-        time.sleep(5)  # Allow enough time for AP to pick up and process the test asset, replace with AP Idle check once bus is exposed to python bindings.
+        checkModel.wait_for_on_model_reloaded(model.id)
 
-    # Test Start:
+    # -- Test Begins --
     # 1. Copy an assetinfo file to change scene output by removing all meshes
     shutil.copyfile(src, dst)
-    time.sleep(5)  # Replace with AP Idle check once bus is exposed to python bindings.
+    checkModel.wait_for_on_model_reloaded(model.id)
 
     # 2. Start the Tracer to catch any errors and warnings
     with Tracer() as error_tracer:
@@ -69,7 +100,7 @@ def SubID_WarningReported_AssetRemoved():
 
     # 5. Clean-up
     os.remove(dst)
-    time.sleep(5)  # Replace with AP Idle check once bus is exposed to python bindings.
+    checkModel.wait_for_on_model_reloaded(model.id)
 
     # 6. Report the test results gathered and end the test.
     Report.critical_result(Tests.asset_id_missing_warning_reported, warning_reported)

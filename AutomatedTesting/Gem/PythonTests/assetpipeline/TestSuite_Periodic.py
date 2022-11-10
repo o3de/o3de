@@ -8,15 +8,15 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import pytest
 
-from ly_test_tools.o3de.editor_test import EditorTestSuite, EditorBatchedTest
+from ly_test_tools.o3de.editor_test import EditorTestSuite, EditorSingleTest
 
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 class TestAutomation(EditorTestSuite):
 
-    class SubID_NoChange_MeshChanged(EditorBatchedTest):
+    class SubID_NoChange_MeshChanged(EditorSingleTest):
         from .fbx_tests import hydra_SubID_NoChange_MeshChanged as test_module
 
-    class SubID_WarningReported_AssetRemoved(EditorBatchedTest):
+    class SubID_WarningReported_AssetRemoved(EditorSingleTest):
         from .fbx_tests import hydra_SubID_WarningReported_AssetRemoved as test_module

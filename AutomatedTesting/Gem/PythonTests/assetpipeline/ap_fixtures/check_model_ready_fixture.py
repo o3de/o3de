@@ -5,35 +5,33 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 import azlmbr.bus
+import azlmbr.asset
 from functools import partial
 from editor_python_test_tools.utils import TestHelper
-from Atom.atom_utils.atom_constants import AtomComponentProperties
 
 
-class OnModelReady:
+class OnModelReloaded:
     def __init__(self):
-        self.isModelReady = False
+        self.isModelReloaded = False
 
-    def model_is_ready_predicate(self):
+    def model_is_reloaded_predicate(self):
         """
         A predicate function what will be used in wait_for_condition.
         """
-        return self.isModelReady
+        return self.isModelReloaded
 
-    def on_model_ready(self, parameters):
-        self.isModelReady = True
+    def on_model_reloaded(self, parameter):
+        self.isModelReloaded = True
 
-    def wait_for_on_model_ready(self, entityId, mesh_component, model_id):
-        self.isModelReady = False
-        # Connect to the MeshNotificationBus
-        # Listen for notifications when entities are created/deleted
-        self.onModelReadyHandler = azlmbr.bus.NotificationHandler('MeshComponentNotificationBus')
-        self.onModelReadyHandler.connect(entityId)
-        self.onModelReadyHandler.add_callback('OnModelReady', self.on_model_ready)
+    def wait_for_on_model_reloaded(self, asset_id):
+        self.isModelReloaded = False
+        # Listen for notifications when assets are reloaded
+        self.onModelReloadedHandler = azlmbr.asset.AssetBusHandler()
+        self.onModelReloadedHandler.connect(asset_id)
+        self.onModelReloadedHandler.add_callback('OnAssetReloaded', self.on_model_reloaded)
 
-        waitCondition = partial(self.model_is_ready_predicate)
+        waitCondition = partial(self.model_is_reloaded_predicate)
 
-        mesh_component.set_component_property_value(AtomComponentProperties.mesh('Model Asset'), model_id)
         if TestHelper.wait_for_condition(waitCondition, 20.0):
             return True
         else:
