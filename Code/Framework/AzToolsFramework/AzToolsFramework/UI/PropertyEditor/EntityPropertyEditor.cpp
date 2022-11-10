@@ -5928,7 +5928,7 @@ namespace AzToolsFramework
                 componentEditor->LeftComponentMode(componentModeTypes);
             }
 
-            // return back to scroll position before EditorMode was activated
+            // return to scroll position before EditorMode was activated
             m_gui->m_componentList->verticalScrollBar()->setValue(m_verticalScrollPos);
 
             // record the selected state after leaving component mode

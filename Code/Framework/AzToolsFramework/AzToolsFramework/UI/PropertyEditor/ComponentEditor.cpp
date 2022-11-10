@@ -855,7 +855,6 @@ namespace AzToolsFramework
         }
 
         AzQtComponents::Card::setSelected(selected);
-        //AzQtComponents::Card::scroll(0, 10);
     }
 
     bool ComponentEditor::IsSelected() const
