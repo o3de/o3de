@@ -36,6 +36,7 @@ namespace O3DE::ProjectManager
 
         // Colors
         const QColor m_textColor = QColor("#FFFFFF");
+        const QColor m_greyedOutTextColor =QColor("#888888");
         const QColor m_linkColor = QColor("#94D2FF");
         const QColor m_backgroundColor = QColor("#333333"); // Outside of the actual gem item
         const QColor m_itemBackgroundColor = QColor("#404040"); // Background color of the gem item
@@ -68,6 +69,13 @@ namespace O3DE::ProjectManager
         inline constexpr static int s_featureTagBorderMarginY = 3;
         inline constexpr static int s_featureTagSpacing = 7;
 
+        // Platform text
+        inline constexpr static int s_platformTextleftMarginCorrection = -3;
+        inline constexpr static int s_platformTextHeightAdjustment = 25;
+        inline constexpr static int s_platformTextWrapAroundMargin = 5;
+        inline constexpr static int s_platformTextLineBottomMargin = 5;
+        inline constexpr static int s_platformTextWrapAroundLineMaxCount = 2;
+
         // Status icon
         inline constexpr static int s_statusIconSize = 16;
         inline constexpr static int s_statusButtonSpacing = 5;
@@ -93,6 +101,7 @@ namespace O3DE::ProjectManager
         QRect CalcButtonRect(const QRect& contentRect) const;
         QRect CalcSummaryRect(const QRect& contentRect, bool hasTags) const;
         void DrawPlatformIcons(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const;
+        void DrawPlatformText(QPainter* painter, const QRect& contentRect,  const QFont& standardFont, const QModelIndex& modelIndex) const;
         void DrawButton(QPainter* painter, const QRect& buttonRect, const QModelIndex& modelIndex) const;
         void DrawFeatureTags(
             QPainter* painter,
@@ -100,7 +109,7 @@ namespace O3DE::ProjectManager
             const QStringList& featureTags,
             const QFont& standardFont,
             const QRect& summaryRect) const;
-        void DrawText(const QString& text, QPainter* painter, const QRect& rect, const QFont& standardFont) const;
+        void DrawText(const QString& text, QPainter* painter, const QRect& rect, const QFont& standardFont, const bool& greyedOut = false) const;
         void DrawDownloadStatusIcon(
             QPainter* painter, const QRect& contentRect, const QRect& buttonRect, const QModelIndex& modelIndex) const;
 
