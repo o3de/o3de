@@ -673,7 +673,7 @@ namespace Multiplayer
         }
 
         // Make sure the client that's trying to connect has the same multiplayer components
-        if (GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHolisticHash() != packet.GetMultiplayerComponentVersionHash())
+        if (GetMultiplayerComponentRegistry()->GetSystemVersionHash() != packet.GetMultiplayerComponentVersionHash())
         {
             // There's a multiplayer component mismatch. Send the server's component information back to the client so they can compare.
             if (sv_versionMismatch_sendAllComponentHashesToClient)
@@ -1018,7 +1018,7 @@ namespace Multiplayer
                 0,
                 m_temporaryUserIdentifier,
                 providerTicket.c_str(),
-                GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHolisticHash()));
+                GetMultiplayerComponentRegistry()->GetSystemVersionHash()));
         }
         else
         {

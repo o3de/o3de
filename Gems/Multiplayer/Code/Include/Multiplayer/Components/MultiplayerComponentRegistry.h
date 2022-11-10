@@ -67,9 +67,9 @@ namespace Multiplayer
         //! @return reference to the requested component data, an empty container will be returned if the NetComponentId does not exist
         const ComponentData& GetMultiplayerComponentData(NetComponentId netComponentId) const;
 
-        //! Returns the combined hashes of all the multiplayer components creating a single holistic version hash that can be compared between the server and client app.
-        //! @return a 64-bit hash value representing of all of the multiplayer components
-        AZ::HashValue64 GetMultiplayerComponentVersionHolisticHash() const;
+        //! Returns the combined hashes of all the multiplayer components creating a single system version hash that can be quickly compared between the server and client app.
+        //! @return a 64-bit system-wide hash value representing of all of the multiplayer components
+        AZ::HashValue64 GetSystemVersionHash() const;
 
         //! Gets the mapping of all the multiplayer components by AZ::Name and hash version value.
         //! @return a map of all the multiplayer components by name and hash version value
@@ -86,7 +86,7 @@ namespace Multiplayer
     private:
         NetComponentId m_nextNetComponentId = NetComponentId{ 0 };
         AZStd::unordered_map<NetComponentId, ComponentData> m_componentData;
-        AZ::HashValue64 m_componentVersionHolisticHash = AZ::HashValue64{ 0 };
+        AZ::HashValue64 m_systemVersionHash = AZ::HashValue64{ 0 };
         AZStd::unordered_map<AZ::Name, AZ::HashValue64> m_componentVersionHashes;
     };
 }

@@ -274,7 +274,7 @@ namespace Multiplayer
 
         // Send a connection request. This should cause another player to be spawned.
         MultiplayerPackets::Connect connectPacket(
-            0, 1, "connect_ticket", GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHolisticHash());
+            0, 1, "connect_ticket", GetMultiplayerComponentRegistry()->GetSystemVersionHash());
         IMultiplayerConnectionMock connection(
             ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
         ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
@@ -480,7 +480,7 @@ namespace Multiplayer
         m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
 
         MultiplayerPackets::Connect connectPacket(
-            0, 1, "connect_ticket", GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHolisticHash());
+            0, 1, "connect_ticket", GetMultiplayerComponentRegistry()->GetSystemVersionHash());
         IMultiplayerConnectionMock connection(
             ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Acceptor);
         ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
@@ -499,7 +499,7 @@ namespace Multiplayer
         m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
 
         MultiplayerPackets::Connect connectPacket(
-            0, 1, "connect_ticket", GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHolisticHash());
+            0, 1, "connect_ticket", GetMultiplayerComponentRegistry()->GetSystemVersionHash());
         IMultiplayerConnectionMock connection(
             ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Acceptor);
         ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
