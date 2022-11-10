@@ -374,6 +374,11 @@ class TestManifestGetRegistered:
         return pathlib.Path('D:/o3de/o3de')
 
     @staticmethod
+    def is_file(self) -> bool:
+        # use a simple suffix check to avoid hitting the actual file system
+        return self.suffix != ''
+
+    @staticmethod
     def resolve(self):
         return self
 
@@ -408,11 +413,6 @@ class TestManifestGetRegistered:
                 manifest_payload['projects'] = []
                 return manifest_payload
 
-            def is_file(path : pathlib.Path) -> bool:
-                if path.match("*.json"):
-                    return True
-                return False
-
             with patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as _1, \
                 patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as _2, \
                 patch('o3de.manifest.get_gem_json_data', side_effect=get_gem_json_data) as _3, \
@@ -420,7 +420,7 @@ class TestManifestGetRegistered:
                 patch('pathlib.Path.resolve', self.resolve) as _5, \
                 patch('pathlib.Path.samefile', self.samefile) as _6, \
                 patch('pathlib.Path.open', return_value=io.StringIO(TEST_PROJECT_TEMPLATE_JSON_PAYLOAD)) as _7, \
-                patch('pathlib.Path.is_file', new=is_file) as _8,\
+                patch('pathlib.Path.is_file', self.is_file) as _8,\
                 patch('o3de.manifest.get_this_engine_path', side_effect=self.get_this_engine_path) as _9: 
 
                 path = manifest.get_registered(template_name=template_name)
