@@ -469,6 +469,7 @@ namespace O3DE::ProjectManager
             m_gemInfo.m_name = m_gemName->lineEdit()->text();
             m_gemInfo.m_summary = m_gemSummary->lineEdit()->text();
             m_gemInfo.m_requirement = m_requirements->lineEdit()->text();
+            m_gemInfo.m_platforms = GemInfo::GetPlatformsFromStringList(m_platformOptions->getOptions());
             m_gemInfo.m_licenseText = m_license->lineEdit()->text();
             m_gemInfo.m_licenseLink = m_licenseURL->lineEdit()->text();
             m_gemInfo.m_documentationLink = m_documentationURL->lineEdit()->text();
