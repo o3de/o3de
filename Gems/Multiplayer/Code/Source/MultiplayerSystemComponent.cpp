@@ -996,7 +996,7 @@ namespace Multiplayer
                 }
                 else
                 {
-                    AZLOG_ERROR("Multiplayer component mismatch finished comparing components; "
+                    AZ_Assert(false, "Multiplayer component mismatch finished comparing components; "
                                 "failed to accept connection because the original connection packet is missing. This should not happen.");
                 }   
             }
