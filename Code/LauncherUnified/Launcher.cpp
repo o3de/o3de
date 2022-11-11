@@ -252,6 +252,8 @@ namespace O3DELauncher
             };
             AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(LoadCatalog));
 
+            AZ_TracePrintf("Launcher", "CriticalAssetsCompiled\n");
+
             // Broadcast that critical assets are ready
             AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "CriticalAssetsCompiled", R"({})");
         }
