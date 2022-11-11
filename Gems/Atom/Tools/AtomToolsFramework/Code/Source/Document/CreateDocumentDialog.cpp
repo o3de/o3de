@@ -29,7 +29,7 @@ namespace AtomToolsFramework
         const QString& initialPath,
         const QStringList& supportedExtensions,
         const QString& defaultSourcePath,
-        const AZStd::function<bool(const AZStd::string&)>& filterCallback,
+        const FilterFn& filterFn,
         QWidget* parent)
         : QDialog(parent)
         , m_sourceLabel(sourceLabel)
@@ -46,14 +46,14 @@ namespace AtomToolsFramework
 
         // The source selection combo box is used to pick from a set of source files or templates that can be used as a starting point or
         // parent for a new document. If there is no filter then no source selection widgets or connections will be made.
-        if (filterCallback)
+        if (filterFn)
         {
             auto sourceSelectionComboBoxLabel = new QLabel(this);
             sourceSelectionComboBoxLabel->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
             sourceSelectionComboBoxLabel->setText(sourceLabel);
             verticalLayout->addWidget(sourceSelectionComboBoxLabel);
 
-            m_sourceSelectionComboBox = new AssetSelectionComboBox(filterCallback, this);
+            m_sourceSelectionComboBox = new AssetSelectionComboBox(filterFn, this);
             m_sourceSelectionComboBox->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
             m_sourceSelectionComboBox->SelectPath(defaultSourcePath.toUtf8().constData());
             m_sourcePath = m_sourceSelectionComboBox->GetSelectedPath().c_str();
@@ -104,7 +104,7 @@ namespace AtomToolsFramework
               { documentType.GetDefaultExtensionToSave().c_str() },
               documentType.m_defaultDocumentTemplate.c_str(),
               documentType.m_supportedExtensionsToCreate.empty() ?
-              AZStd::function<bool(const AZStd::string&)>():
+              FilterFn():
               [documentType](const AZStd::string& path)
               {
                 // Only add source files with extensions supported by the document types creation rules

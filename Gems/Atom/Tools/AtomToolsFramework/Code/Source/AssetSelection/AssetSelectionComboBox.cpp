@@ -19,7 +19,7 @@
 
 namespace AtomToolsFramework
 {
-    AssetSelectionComboBox::AssetSelectionComboBox(const AZStd::function<bool(const AZStd::string&)>& filterCallback, QWidget* parent)
+    AssetSelectionComboBox::AssetSelectionComboBox(const FilterFn& filterFn, QWidget* parent)
         : QComboBox(parent)
     {
         QSignalBlocker signalBlocker(this);
@@ -32,7 +32,7 @@ namespace AtomToolsFramework
             this, static_cast<void (QComboBox::*)(const int)>(&QComboBox::currentIndexChanged), this,
             [this]() { emit PathSelected(GetSelectedPath()); });
 
-        SetFilter(filterCallback);
+        SetFilter(filterFn);
         AzFramework::AssetCatalogEventBus::Handler::BusConnect();
     }
 
@@ -46,9 +46,9 @@ namespace AtomToolsFramework
         clear();
         m_thumbnailKeys.clear();
 
-        if (m_filterCallback)
+        if (m_filterFn)
         {
-            for (const auto& path : GetPathsInSourceFoldersMatchingFilter(m_filterCallback))
+            for (const auto& path : GetPathsInSourceFoldersMatchingFilter(m_filterFn))
             {
                 AddPath(path);
             }
@@ -56,9 +56,9 @@ namespace AtomToolsFramework
         }
     }
 
-    void AssetSelectionComboBox::SetFilter(const AZStd::function<bool(const AZStd::string&)>& filterCallback)
+    void AssetSelectionComboBox::SetFilter(const FilterFn& filterFn)
     {
-        m_filterCallback = filterCallback;
+        m_filterFn = filterFn;
         Reset();
     }
 
@@ -118,10 +118,10 @@ namespace AtomToolsFramework
 
     void AssetSelectionComboBox::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
     {
-        if (m_filterCallback)
+        if (m_filterFn)
         {
             const auto& path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId);
-            if (m_filterCallback(path))
+            if (m_filterFn(path))
             {
                 AddPath(path);
             }
@@ -131,10 +131,10 @@ namespace AtomToolsFramework
     void AssetSelectionComboBox::OnCatalogAssetRemoved(
         const AZ::Data::AssetId& assetId, [[maybe_unused]] const AZ::Data::AssetInfo& assetInfo)
     {
-        if (m_filterCallback)
+        if (m_filterFn)
         {
             const auto& path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId);
-            if (m_filterCallback(path))
+            if (m_filterFn(path))
             {
                 RemovePath(path);
             }

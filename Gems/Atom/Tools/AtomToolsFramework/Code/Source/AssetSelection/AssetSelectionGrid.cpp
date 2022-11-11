@@ -27,7 +27,7 @@ namespace AtomToolsFramework
 {
     AssetSelectionGrid::AssetSelectionGrid(
         const QString& title,
-        const AZStd::function<bool(const AZStd::string&)>& filterCallback,
+        const FilterFn& filterFn,
         const QSize& tileSize,
         QWidget* parent)
         : QDialog(parent)
@@ -45,7 +45,7 @@ namespace AtomToolsFramework
         SetupDialogButtons();
         setModal(true);
 
-        SetFilter(filterCallback);
+        SetFilter(filterFn);
         AzFramework::AssetCatalogEventBus::Handler::BusConnect();
     }
 
@@ -58,9 +58,9 @@ namespace AtomToolsFramework
     {
         m_ui->m_assetList->clear();
 
-        if (m_filterCallback)
+        if (m_filterFn)
         {
-            for (const auto& path : GetPathsInSourceFoldersMatchingFilter(m_filterCallback))
+            for (const auto& path : GetPathsInSourceFoldersMatchingFilter(m_filterFn))
             {
                 AddPath(path);
             }
@@ -69,9 +69,9 @@ namespace AtomToolsFramework
         }
     }
 
-    void AssetSelectionGrid::SetFilter(const AZStd::function<bool(const AZStd::string&)>& filterCallback)
+    void AssetSelectionGrid::SetFilter(const FilterFn& filterFn)
     {
-        m_filterCallback = filterCallback;
+        m_filterFn = filterFn;
         Reset();
     }
 
@@ -174,10 +174,10 @@ namespace AtomToolsFramework
 
     void AssetSelectionGrid::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
     {
-        if (m_filterCallback)
+        if (m_filterFn)
         {
             const auto& path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId);
-            if (m_filterCallback(path))
+            if (m_filterFn(path))
             {
                 AddPath(path);
             }
@@ -186,10 +186,10 @@ namespace AtomToolsFramework
 
     void AssetSelectionGrid::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, [[maybe_unused]] const AZ::Data::AssetInfo& assetInfo)
     {
-        if (m_filterCallback)
+        if (m_filterFn)
         {
             const auto& path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId);
-            if (m_filterCallback(path))
+            if (m_filterFn(path))
             {
                 RemovePath(path);
             }

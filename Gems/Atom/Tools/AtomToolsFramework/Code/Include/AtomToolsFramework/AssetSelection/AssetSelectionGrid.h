@@ -33,16 +33,18 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
+        using FilterFn = AZStd::function<bool(const AZStd::string&)>;
+
         AssetSelectionGrid(
             const QString& title,
-            const AZStd::function<bool(const AZStd::string&)>& filterCallback,
+            const FilterFn& filterFn,
             const QSize& tileSize,
             QWidget* parent = nullptr);
 
         ~AssetSelectionGrid();
 
         void Reset();
-        void SetFilter(const AZStd::function<bool(const AZStd::string&)>& filterCallback);
+        void SetFilter(const FilterFn& filterFn);
         void AddPath(const AZStd::string& path);
         void RemovePath(const AZStd::string& path);
         void SelectPath(const AZStd::string& path);
@@ -67,6 +69,6 @@ namespace AtomToolsFramework
 
         QSize m_tileSize;
         QScopedPointer<Ui::AssetSelectionGrid> m_ui;
-        AZStd::function<bool(const AZStd::string&)> m_filterCallback;
+        FilterFn m_filterFn;
     };
 } // namespace AtomToolsFramework

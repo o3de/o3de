@@ -22,13 +22,15 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AssetSelectionComboBox(const AZStd::function<bool(const AZStd::string&)>& filterCallback, QWidget* parent = 0);
+        using FilterFn = AZStd::function<bool(const AZStd::string&)>;
+
+        AssetSelectionComboBox(const FilterFn& filterFn, QWidget* parent = 0);
         ~AssetSelectionComboBox();
 
         void Reset();
         void AddPath(const AZStd::string& path);
         void RemovePath(const AZStd::string& path);
-        void SetFilter(const AZStd::function<bool(const AZStd::string&)>& filterCallback);
+        void SetFilter(const FilterFn& filterFn);
         void SelectPath(const AZStd::string& path);
         AZStd::string GetSelectedPath() const;
 
@@ -50,7 +52,7 @@ namespace AtomToolsFramework
         void QueueUpdateThumbnail(const AZStd::string& path);
         void QueueSort();
 
-        AZStd::function<bool(const AZStd::string&)> m_filterCallback;
+        FilterFn m_filterFn;
 
         bool m_thumbnailsEnabled = false;
         AZ::u32 m_thumbnailDelayMs = 2000;
