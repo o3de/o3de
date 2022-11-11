@@ -30,25 +30,25 @@ namespace O3DE::ProjectManager
         FormOptionsWidget(const QString& labelText,
                           const QStringList& options,
                           const QString& allOptionsText,
-                          const int optionItemSpacing = 24,
+                          int optionItemSpacing = 24,
                           QWidget* parent = nullptr);
 
-        void clear();
+        void Clear();
 
-        void enable(const QString& option);
+        void Enable(const QString& option);
 
-        void enable(const QStringList& options);
+        void Enable(const QStringList& options);
 
-        void disable(const QString& option);
+        void Disable(const QString& option);
 
-        void disable(const QStringList& options);
+        void Disable(const QStringList& options);
 
-        void enableAll();
+        void EnableAll();
 
-        QStringList getOptions() const;
+        QStringList GetOptions() const;
 
     private:
-        int getCheckedCount() const;
+        int GetCheckedCount() const;
         QFrame* m_optionFrame = nullptr;
         QHash<QString, QCheckBox*> m_options;
         QCheckBox* m_allOptionsToggle = nullptr;

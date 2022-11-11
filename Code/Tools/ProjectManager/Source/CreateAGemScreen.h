@@ -10,14 +10,8 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
-#include <FormFolderBrowseEditWidget.h>
-#include <FormLineEditWidget.h>
-#include <FormLineEditTagsWidget.h>
-#include <FormOptionsWidget.h>
-#include <FormComboBoxWidget.h>
 #include <GemCatalog/GemInfo.h>
 #include <PythonBindings.h>
-#include <ScreenHeaderWidget.h>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QButtonGroup)
@@ -30,6 +24,18 @@ QT_FORWARD_DECLARE_CLASS(QDir)
 
 namespace O3DE::ProjectManager
 {
+    class FormFolderBrowseEditWidget;
+    
+    class FormLineEditWidget;
+    
+    class FormLineEditTagsWidget;
+    
+    class FormOptionsWidget;
+    
+    class FormComboBoxWidget;
+
+    class ScreenHeader;
+
     class CreateGem : public ScreenWidget
     {
         Q_OBJECT

@@ -52,11 +52,11 @@ namespace O3DE::ProjectManager
                     connect(optionCheckBox, &QCheckBox::clicked, this, [=](bool checked){
                         if(checked)
                         {
-                            enable(option);
+                            Enable(option);
                         }
                         else
                         {
-                            disable(option);
+                            Disable(option);
                         }
                     });
                     m_options.insert(option, optionCheckBox);
@@ -68,11 +68,11 @@ namespace O3DE::ProjectManager
                 connect(m_allOptionsToggle, &QCheckBox::clicked, this, [=](bool checked){
                     if(checked)
                     {
-                        enableAll();
+                        EnableAll();
                     }
                     else
                     {
-                        clear();
+                        Clear();
                     }
                 });
                 AzQtComponents::CheckBox::applyToggleSwitchStyle(m_allOptionsToggle);
@@ -91,28 +91,28 @@ namespace O3DE::ProjectManager
         setLayout(mainLayout);
     }
 
-    void FormOptionsWidget::enable(const QString& option)
+    void FormOptionsWidget::Enable(const QString& option)
     {
         if(m_options.contains(option))
         {
             auto checkbox = m_options.value(option);
             checkbox->setChecked(true);
-            if(getCheckedCount() == m_options.values().count())
+            if(GetCheckedCount() == m_options.values().count())
             {
                 m_allOptionsToggle->setChecked(true);
             }
         }
     }
 
-    void FormOptionsWidget::enable(const QStringList& options)
+    void FormOptionsWidget::Enable(const QStringList& options)
     {
         for(const QString& option : options)
         {
-            enable(option);   
+            Enable(option);   
         }
     }
 
-    void FormOptionsWidget::disable(const QString& option)
+    void FormOptionsWidget::Disable(const QString& option)
     {
         if(m_options.contains(option))
         {
@@ -122,15 +122,15 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void FormOptionsWidget::disable(const QStringList& options)
+    void FormOptionsWidget::Disable(const QStringList& options)
     {
         for (const QString& option : options)
         {
-            disable(option);
+            Disable(option);
         }
     }
 
-    void FormOptionsWidget::enableAll()
+    void FormOptionsWidget::EnableAll()
     {
         for(const auto& checkbox : m_options.values())
         {
@@ -139,7 +139,7 @@ namespace O3DE::ProjectManager
         m_allOptionsToggle->setChecked(true);
     }
     
-    void FormOptionsWidget::clear()
+    void FormOptionsWidget::Clear()
     {
         for(const auto& checkbox : m_options.values())
         {
@@ -148,7 +148,7 @@ namespace O3DE::ProjectManager
         m_allOptionsToggle->setChecked(false);
     }
 
-    QStringList FormOptionsWidget::getOptions() const
+    QStringList FormOptionsWidget::GetOptions() const
     {
         if(m_allOptionsToggle->isChecked())
         {
@@ -168,7 +168,7 @@ namespace O3DE::ProjectManager
         return options;
     }
 
-    int FormOptionsWidget::getCheckedCount() const
+    int FormOptionsWidget::GetCheckedCount() const
     {
         int count = 0;
         for(const auto& checkbox : m_options.values())

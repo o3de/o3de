@@ -117,7 +117,7 @@ namespace O3DE::ProjectManager
             const GemInfo::Platform platform = static_cast<GemInfo::Platform>(1 << i);
             if(platform & oldGemInfo.m_platforms)
             {
-                m_platformOptions->enable(GemInfo::GetPlatformString(platform));
+                m_platformOptions->Enable(GemInfo::GetPlatformString(platform));
             }
         }
     }
