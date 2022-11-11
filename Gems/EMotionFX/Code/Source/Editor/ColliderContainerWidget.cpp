@@ -330,7 +330,6 @@ namespace EMotionFX
         if (!m_editor->HasDisplayedNodes())
         {
             this->hide();
-            //m_editor->ClearInstances(true);
         }
         else
         {
