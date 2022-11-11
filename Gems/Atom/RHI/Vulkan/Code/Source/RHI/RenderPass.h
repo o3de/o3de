@@ -131,7 +131,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::DeviceObject
-            void Shutdown() override;
+            RHI::ResultCode Shutdown() override;
             //////////////////////////////////////////////////////////////////////////
 
             RHI::ResultCode BuildNativeRenderPass();

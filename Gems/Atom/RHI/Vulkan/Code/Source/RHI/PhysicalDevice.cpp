@@ -503,9 +503,10 @@ namespace AZ
             m_descriptor.m_heapSizePerLevel[static_cast<size_t>(RHI::HeapMemoryLevel::Host)] = static_cast<size_t>(memsize_host);
         }
 
-        void PhysicalDevice::Shutdown()
+        RHI::ResultCode PhysicalDevice::Shutdown()
         {
             m_vkPhysicalDevice = VK_NULL_HANDLE;
+            return RHI::ResultCode::Success;
         }
 
         bool PhysicalDevice::IsFeatureSupported(DeviceFeature feature) const

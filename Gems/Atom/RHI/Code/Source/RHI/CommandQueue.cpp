@@ -65,7 +65,7 @@ namespace AZ
             return resultCode;
         }
 
-        void CommandQueue::Shutdown()
+        ResultCode CommandQueue::Shutdown()
         {
             if (IsInitialized())
             {
@@ -83,6 +83,7 @@ namespace AZ
                 ShutdownInternal();
                 DeviceObject::Shutdown();
             }
+            return ResultCode::Success;
         }
 
         void CommandQueue::QueueCommand(Command command)

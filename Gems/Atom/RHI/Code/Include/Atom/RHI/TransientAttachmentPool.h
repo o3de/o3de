@@ -78,7 +78,7 @@ namespace AZ
             ResultCode Init(Device& device, const TransientAttachmentPoolDescriptor& descriptor);
 
             //! Called to shutdown the pool.
-            void Shutdown();
+            ResultCode Shutdown();
 
             //! This is called at the beginning of the compile phase for the current frame,
             //! before any allocations occur. The user should clear the backing allocator to

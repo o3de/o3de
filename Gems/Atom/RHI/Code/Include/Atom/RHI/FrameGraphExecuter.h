@@ -75,7 +75,7 @@ namespace AZ
 
             //! Shuts down the frame graph executer, releasing all internal allocations. The user
             //! may re-initialize.
-            void Shutdown() override final;
+            ResultCode Shutdown() override final;
             
             //! Returns the job policy for context groups. The policy dictates whether groups can be
             //! independently traversed across multiple threads. If the value is JobPolicy::Serial,

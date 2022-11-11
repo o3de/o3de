@@ -63,7 +63,7 @@ namespace AZ
              * with their lifecycle model (i.e. if they use an explicit Init / Shutdown).
              * By default, it is private in order to maintain consistency with a simpler RAII lifecycle.
              */
-            virtual void Shutdown() {};
+            virtual ResultCode Shutdown() { return ResultCode::Success; }
 
             virtual void SetNameInternal(const AZStd::string_view& name);
 
@@ -77,10 +77,14 @@ namespace AZ
             Object* object = const_cast<Object*>(static_cast<const Object*>(p));
 
             /// Shuts down the object before deletion.
-            object->Shutdown();
+            if(object->Shutdown() == ResultCode::Success)
+            {
 
-            /// Then invoke the base delete policy.
-            AZStd::intrusive_default_delete::operator () (object);
+                /// Then invoke the base delete policy, but only if the Shutdown succeeded
+                /// If Shutdown returns a failure, some system indicating that it is not
+                /// safe to delete the object
+                AZStd::intrusive_default_delete::operator () (object);
+            }
         }
     }
 }

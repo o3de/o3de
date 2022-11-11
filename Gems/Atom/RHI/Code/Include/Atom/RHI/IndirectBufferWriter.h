@@ -107,7 +107,7 @@ namespace AZ
 
             uint32_t GetCurrentSequenceIndex() const;
 
-            void Shutdown() override;
+            ResultCode Shutdown() override;
 
         private:
             bool ValidateArguments(uint32_t byteStride, uint32_t maxCommandSequences, const IndirectBufferSignature& signature) const;

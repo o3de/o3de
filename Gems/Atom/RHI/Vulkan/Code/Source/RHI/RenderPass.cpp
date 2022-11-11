@@ -173,7 +173,7 @@ namespace AZ
             }
         }
 
-        void RenderPass::Shutdown()
+        RHI::ResultCode RenderPass::Shutdown()
         {
             if (m_nativeRenderPass != VK_NULL_HANDLE)
             {
@@ -181,7 +181,7 @@ namespace AZ
                 device.GetContext().DestroyRenderPass(device.GetNativeDevice(), m_nativeRenderPass, nullptr);
                 m_nativeRenderPass = VK_NULL_HANDLE;
             }
-            Base::Shutdown();
+            return Base::Shutdown();
         }
 
         RHI::ResultCode RenderPass::BuildNativeRenderPass()

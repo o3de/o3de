@@ -20,9 +20,9 @@ namespace AZ
             return aznew ComputePipeline();
         }
 
-        void AZ::Vulkan::ComputePipeline::Shutdown()
+        RHI::ResultCode AZ::Vulkan::ComputePipeline::Shutdown()
         {
-            Base::Shutdown();
+            return Base::Shutdown();
         }
 
         RHI::ResultCode AZ::Vulkan::ComputePipeline::InitInternal(const Descriptor& descriptor, const PipelineLayout& pipelineLayout)

@@ -143,13 +143,14 @@ namespace AZ
             return resultCode;
         }
 
-        void PipelineState::Shutdown()
+        ResultCode PipelineState::Shutdown()
         {
             if (IsInitialized())
             {
                 ShutdownInternal();
                 DeviceObject::Shutdown();
             }
+            return ResultCode::Success;
         }
 
         PipelineStateType PipelineState::GetType() const

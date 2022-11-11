@@ -67,12 +67,13 @@ namespace AZ
             }
         }
 
-        void CommandList::Shutdown()
+        RHI::ResultCode CommandList::Shutdown()
         {
             if (IsInitialized())
             {
                 m_descriptorContext = nullptr;
             }
+            return RHI::ResultCode::Success;
         }
 
         void CommandList::Reset(ID3D12CommandAllocator* commandAllocator)

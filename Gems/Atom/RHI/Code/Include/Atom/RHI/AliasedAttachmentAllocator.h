@@ -129,7 +129,7 @@ namespace AZ
             void End();
 
             //! DeviceObject override.
-            void Shutdown() override;
+            ResultCode Shutdown() override;
 
             //! Get statistics for the pool (built during End).
             //! Statistics will be added at the end of the provided vector.
@@ -484,13 +484,14 @@ namespace AZ
         }
 
         template<class Heap>
-        void AliasedAttachmentAllocator<Heap>::Shutdown()
+        ResultCode AliasedAttachmentAllocator<Heap>::Shutdown()
         {
             m_attachmentToHeapMap.clear();
             m_heapPages.clear();
             m_garbageCollector.Shutdown();
             m_noAllocationHeap.Shutdown();
             FrameEventBus::Handler::BusDisconnect();
+            return ResultCode::Success;
         }
 
         template<class Heap>

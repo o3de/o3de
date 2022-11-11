@@ -67,7 +67,7 @@ namespace AZ
             }
         }
 
-        void ShaderModule::Shutdown()
+        RHI::ResultCode ShaderModule::Shutdown()
         {
             if (m_nativeShaderModule != VK_NULL_HANDLE)
             {
@@ -77,7 +77,7 @@ namespace AZ
             }
             m_alignedByteCode.clear();
 
-            Base::Shutdown();
+            return Base::Shutdown();
         }
     }
 }

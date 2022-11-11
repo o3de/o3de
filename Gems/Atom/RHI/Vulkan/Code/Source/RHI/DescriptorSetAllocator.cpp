@@ -191,7 +191,7 @@ namespace AZ
             m_poolAllocator.Collect();
         }
 
-        void DescriptorSetAllocator::Shutdown()
+        RHI::ResultCode DescriptorSetAllocator::Shutdown()
         {
             if (m_isInitialized)
             {
@@ -199,6 +199,7 @@ namespace AZ
                 m_poolAllocator.Shutdown();
                 m_isInitialized = false;
             }
+            return RHI::ResultCode::Success;
         }    
     }
 }

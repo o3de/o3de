@@ -108,7 +108,7 @@ namespace AZ
 
             ///////////////////////////////////////////////////////////////////
             // RHI::PhysicalDevice
-            void Shutdown() override;
+            RHI::ResultCode Shutdown() override;
            ///////////////////////////////////////////////////////////////////
 
             VkPhysicalDevice m_vkPhysicalDevice = VK_NULL_HANDLE;

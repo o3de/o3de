@@ -39,7 +39,7 @@ namespace AZ
             }
         }
 
-        void CommandPool::Shutdown()
+        RHI::ResultCode CommandPool::Shutdown()
         {
             m_freeCommandLists.clear();
             m_commandLists.clear();
@@ -49,7 +49,7 @@ namespace AZ
                 device.GetContext().DestroyCommandPool(device.GetNativeDevice(), m_nativeCommandPool, nullptr);
                 m_nativeCommandPool = VK_NULL_HANDLE;
             }
-            Base::Shutdown();
+            return Base::Shutdown();
         }
 
         RHI::ResultCode CommandPool::BuildNativeCommandPool()

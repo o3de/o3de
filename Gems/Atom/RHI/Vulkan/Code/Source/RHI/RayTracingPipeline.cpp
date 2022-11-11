@@ -20,9 +20,9 @@ namespace AZ
             return aznew RayTracingPipeline();
         }
 
-        void AZ::Vulkan::RayTracingPipeline::Shutdown()
+        RHI::ResultCode AZ::Vulkan::RayTracingPipeline::Shutdown()
         {
-            Base::Shutdown();
+            return Base::Shutdown();
         }
 
         RHI::ResultCode AZ::Vulkan::RayTracingPipeline::InitInternal([[maybe_unused]] const Descriptor& descriptor, const PipelineLayout&)

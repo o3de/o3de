@@ -30,7 +30,7 @@ namespace AZ
             ResultCode Init(Device& device, FenceState initialState);
 
             /// Shuts down the fence.
-            void Shutdown() override final;
+            ResultCode Shutdown() override final;
 
             /// Signals the fence from the calling thread.
             RHI::ResultCode SignalOnCpu();

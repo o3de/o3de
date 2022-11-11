@@ -173,7 +173,7 @@ namespace AZ
             }
         }
 
-        void PipelineLayout::Shutdown()
+        RHI::ResultCode PipelineLayout::Shutdown()
         {
             m_descriptorSetLayouts.clear();
             m_pushConstantRanges.clear();
@@ -186,7 +186,7 @@ namespace AZ
             }
             m_layoutDescriptor = nullptr;
 
-            Base::Shutdown();
+            return Base::Shutdown();
         }
 
         VkPipelineLayout PipelineLayout::GetNativePipelineLayout() const

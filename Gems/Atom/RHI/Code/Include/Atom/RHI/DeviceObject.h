@@ -40,7 +40,7 @@ namespace AZ
             void Init(Device& device);
 
             /// Clears the current bound device to null.
-            void Shutdown() override;
+            ResultCode Shutdown() override;
 
         private:
             Ptr<Device> m_device;

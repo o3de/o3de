@@ -91,7 +91,7 @@ namespace AZ
 
             ///////////////////////////////////////////////////////////////////
             // RHI::DeviceObject
-            void Shutdown() override;
+            RHI::ResultCode Shutdown() override;
             ///////////////////////////////////////////////////////////////////
 
             void BeginCommandBuffer(InheritanceInfo* inheritance = nullptr);

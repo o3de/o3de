@@ -135,7 +135,7 @@ namespace AZ
             void Deactivate();
 
             /// Shuts down the scope.
-            void Shutdown() override final;
+            ResultCode Shutdown() override final;
 
             /**
              * Queues resource pool resolves for queued upload operations from the resource pool database. operation

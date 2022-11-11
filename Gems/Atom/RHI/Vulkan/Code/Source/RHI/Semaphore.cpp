@@ -74,7 +74,7 @@ namespace AZ
             }
         }
 
-        void Semaphore::Shutdown()
+        RHI::ResultCode Semaphore::Shutdown()
         {
             if (m_nativeSemaphore != VK_NULL_HANDLE)
             {
@@ -84,7 +84,7 @@ namespace AZ
             }
             // Signal any pending threads.
             m_signalEvent.Signal();
-            Base::Shutdown();
+            return Base::Shutdown();
         }
     }
 }

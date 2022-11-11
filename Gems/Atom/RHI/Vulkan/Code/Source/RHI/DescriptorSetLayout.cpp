@@ -115,7 +115,7 @@ namespace AZ
             }
         }
 
-        void DescriptorSetLayout::Shutdown()
+        RHI::ResultCode DescriptorSetLayout::Shutdown()
         {
             if (m_nativeDescriptorSetLayout != VK_NULL_HANDLE)
             {
@@ -124,7 +124,7 @@ namespace AZ
                 m_nativeDescriptorSetLayout = VK_NULL_HANDLE;
             }
             m_shaderResourceGroupLayout = nullptr;
-            Base::Shutdown();
+            return Base::Shutdown();
         }
 
         RHI::ResultCode DescriptorSetLayout::BuildNativeDescriptorSetLayout()

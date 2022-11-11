@@ -54,7 +54,7 @@ namespace AZ
             }
         }
 
-        void DescriptorPool::Shutdown()
+        RHI::ResultCode DescriptorPool::Shutdown()
         {
             m_collector.Collect(true);
             if (m_nativeDescriptorPool != VK_NULL_HANDLE)
@@ -63,7 +63,7 @@ namespace AZ
                 device.GetContext().DestroyDescriptorPool(device.GetNativeDevice(), m_nativeDescriptorPool, nullptr);
                 m_nativeDescriptorPool = VK_NULL_HANDLE;
             }
-            Base::Shutdown();
+            return Base::Shutdown();
         }
 
         void DescriptorPool::Reset()

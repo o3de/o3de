@@ -30,17 +30,28 @@ namespace AZ
             return ResultCode::Success;
         }
 
-        void ResourceView::Shutdown()
+        ResultCode ResourceView::Shutdown()
         {
             if (IsInitialized())
             {
-                ResourceInvalidateBus::Handler::BusDisconnect(m_resource.get());
-                ShutdownInternal();
-                
-                m_resource->EraseResourceView(this);
-                m_resource = nullptr;
-                DeviceObject::Shutdown();
+                if (m_resource->EraseResourceView(this) == ResultCode::Success)
+                {
+                    ResourceInvalidateBus::Handler::BusDisconnect(m_resource.get());
+                    ShutdownInternal();
+
+                    m_resource = nullptr;
+                    DeviceObject::Shutdown();
+                }
+                else
+                {
+                    // In the time between the refcount reaching 0 on the current thread and EraseResourceView acquiring a lock on the cache,
+                    // another thread may have incremented the refcount. If so, EraseResourceView will return false,
+                    // and we should skip destroying the BufferView since it's still in use. We also return false
+                    // to tell the ObjectDeleter that it should not delete this object
+                    return ResultCode::Fail;
+                }
             }
+            return ResultCode::Success;
         }
 
         const Resource& ResourceView::GetResource() const

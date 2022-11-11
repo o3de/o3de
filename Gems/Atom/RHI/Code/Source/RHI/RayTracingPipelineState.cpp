@@ -141,10 +141,10 @@ namespace AZ
             return resultCode;
         }
 
-        void RayTracingPipelineState::Shutdown()
+        ResultCode RayTracingPipelineState::Shutdown()
         {
             ShutdownInternal();
-            DeviceObject::Shutdown();
+            return DeviceObject::Shutdown();
         }
     }
 }

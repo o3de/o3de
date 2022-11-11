@@ -129,7 +129,7 @@ namespace AZ
             }
         }
 
-        void CommandListAllocator::Shutdown()
+        RHI::ResultCode CommandListAllocator::Shutdown()
         {
             if (m_isInitialized)
             {
@@ -145,6 +145,7 @@ namespace AZ
                 }
                 m_isInitialized = false;
             }
+            return RHI::ResultCode::Success;
         }
     }
 }

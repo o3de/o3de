@@ -111,7 +111,7 @@ namespace AZ
             return m_frameAttachment;
         }
         
-        void Resource::Shutdown()
+        ResultCode Resource::Shutdown()
         {
             // Shutdown is delegated to the parent pool if this resource is registered on one.
             if (m_pool)
@@ -125,7 +125,7 @@ namespace AZ
 
                 m_pool->ShutdownResource(this);
             }
-            DeviceObject::Shutdown();
+            return DeviceObject::Shutdown();
         }
     
         Ptr<ImageView> Resource::GetResourceView(const ImageViewDescriptor& imageViewDescriptor) const
@@ -158,39 +158,53 @@ namespace AZ
             const HashValue64 hash = bufferViewDescriptor.GetHash();
             AZStd::lock_guard<AZStd::mutex> registryLock(m_cacheMutex);
             auto it = m_resourceViewCache.find(static_cast<uint64_t>(hash));
-            if (it == m_resourceViewCache.end())
-            {
-                Ptr<BufferView> bufferViewPtr = RHI::Factory::Get().CreateBufferView();
-                RHI::ResultCode resultCode = bufferViewPtr->Init(static_cast<const Buffer&>(*this), bufferViewDescriptor);
-                if (resultCode == RHI::ResultCode::Success)
-                {
-                    m_resourceViewCache[static_cast<uint64_t>(hash)] = static_cast<ResourceView*>(bufferViewPtr.get());
-                    return bufferViewPtr;
-                }
-                else
-                {
-                    return nullptr;
-                }
-            }
-            else
+            if (it != m_resourceViewCache.end() && it->second->use_count() > 0)
             {
                 return static_cast<BufferView*>(it->second);
             }
+            else
+            {
+                // In the case where a matching buffer view was found but the use_count is 0,
+                // the thread that dropped the use_count to 0 is going to come along and delete it soon.
+                // So we still create a new one to replace it. The other thread will find that new one does
+                // not have a use_count of 0, so it will not remove the new one.
+                return InsertNewResourceViewInCache(hash, bufferViewDescriptor);
+            }
+        }
+
+        Ptr<BufferView> Resource::InsertNewResourceViewInCache(HashValue64 hash, const BufferViewDescriptor& bufferViewDescriptor) const
+        {
+            Ptr<BufferView> bufferViewPtr = RHI::Factory::Get().CreateBufferView();
+            RHI::ResultCode resultCode = bufferViewPtr->Init(static_cast<const Buffer&>(*this), bufferViewDescriptor);
+            if (resultCode == RHI::ResultCode::Success)
+            {
+                m_resourceViewCache[static_cast<uint64_t>(hash)] = static_cast<ResourceView*>(bufferViewPtr.get());
+                return bufferViewPtr;
+            }
+            else
+            {
+                return nullptr;
+            }
         }
     
-        void Resource::EraseResourceView(ResourceView* resourceView) const
+        ResultCode Resource::EraseResourceView(ResourceView* resourceView) const
         {
             AZStd::lock_guard<AZStd::mutex> registryLock(m_cacheMutex);
             auto itr = m_resourceViewCache.begin();
             while (itr != m_resourceViewCache.end())
             {
-                if (itr->second == resourceView)
+                // Search for the resourceView in the cache
+                // Check to ensure the use_count is 0, in case another thread called GetResourceView
+                // after the current thread started releasing the resource view, but before the current thread
+                // called EraseResourceView and acquired the lock on the cache
+                if (itr->second == resourceView && resourceView->use_count() == 0)
                 {
                     m_resourceViewCache.erase(itr->first);
-                    break;
+                    return ResultCode::Success;
                 }
                 itr++;
             }
+            return ResultCode::Fail;
         }
     
         bool Resource::IsInResourceCache(const ImageViewDescriptor& imageViewDescriptor)

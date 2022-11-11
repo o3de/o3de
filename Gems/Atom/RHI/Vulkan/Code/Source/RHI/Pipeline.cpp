@@ -70,7 +70,7 @@ namespace AZ
             return m_nativePipeline;
         }
 
-        void Pipeline::Shutdown()
+        RHI::ResultCode Pipeline::Shutdown()
         {
             m_shaderModules.clear();
             if (m_nativePipeline != VK_NULL_HANDLE)
@@ -79,7 +79,7 @@ namespace AZ
                 device.GetContext().DestroyPipeline(device.GetNativeDevice(), m_nativePipeline, nullptr);
                 m_nativePipeline = VK_NULL_HANDLE;
             }
-            Base::Shutdown();
+            return Base::Shutdown();
         }
 
         void Pipeline::FillPipelineShaderStageCreateInfo(

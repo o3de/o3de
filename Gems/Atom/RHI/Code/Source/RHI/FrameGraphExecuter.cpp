@@ -56,7 +56,7 @@ namespace AZ
             return resultCode;
         }
 
-        void FrameGraphExecuter::Shutdown()
+        ResultCode FrameGraphExecuter::Shutdown()
         {
             if (IsInitialized())
             {
@@ -64,6 +64,7 @@ namespace AZ
                 ShutdownInternal();
                 DeviceObject::Shutdown();
             }
+            return ResultCode::Success;
         }
 
         void FrameGraphExecuter::Begin(const FrameGraph& frameGraph)

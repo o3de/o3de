@@ -162,7 +162,7 @@ namespace AZ
         private:
             ///////////////////////////////////////////////////////////////////
             // RHI::Object
-            void Shutdown() override final;
+            ResultCode Shutdown() override final;
             ///////////////////////////////////////////////////////////////////
 
             bool ValidateIsInitialized() const;

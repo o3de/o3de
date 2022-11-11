@@ -111,7 +111,7 @@ namespace AZ
             }
         }
 
-        void Framebuffer::Shutdown()
+        RHI::ResultCode Framebuffer::Shutdown()
         {
             for (const RHI::ConstPtr<ImageView>& imageView : m_attachments)
             {
@@ -119,7 +119,7 @@ namespace AZ
                 RHI::ResourceInvalidateBus::MultiHandler::BusDisconnect(&image);
             }
             Invalidate();
-            Base::Shutdown();
+            return Base::Shutdown();
         }
 
         RHI::ResultCode Framebuffer::OnResourceInvalidate()

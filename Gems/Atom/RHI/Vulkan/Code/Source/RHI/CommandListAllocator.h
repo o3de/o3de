@@ -105,7 +105,7 @@ namespace AZ
             RHI::ResultCode Init(const Descriptor& descriptor);
             RHI::Ptr<CommandList> Allocate(uint32_t familyQueueIndex, VkCommandBufferLevel level);
             void Collect();
-            void Shutdown();
+            RHI::ResultCode Shutdown();
 
         private:
 

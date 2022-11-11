@@ -62,13 +62,14 @@ namespace AZ
             return resultCode;
         }
 
-        void TransientAttachmentPool::Shutdown()
+        ResultCode TransientAttachmentPool::Shutdown()
         {
             if (IsInitialized())
             {
                 ShutdownInternal();
                 DeviceObject::Shutdown();
             }
+            return ResultCode::Success;
         }
 
         void TransientAttachmentPool::Begin(const TransientAttachmentPoolCompileFlags compileFlags, const TransientAttachmentStatistics::MemoryUsage* memoryHint)

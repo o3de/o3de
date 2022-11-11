@@ -50,7 +50,7 @@ namespace AZ
             }
         }
 
-        void Sampler::Shutdown()
+        RHI::ResultCode Sampler::Shutdown()
         {
             if (m_nativeSampler != VK_NULL_HANDLE)
             {
@@ -58,7 +58,7 @@ namespace AZ
                 device.GetContext().DestroySampler(device.GetNativeDevice(), m_nativeSampler, nullptr);
                 m_nativeSampler = VK_NULL_HANDLE;
             }
-            Base::Shutdown();
+            return Base::Shutdown();
         }
 
         RHI::ResultCode Sampler::BuildNativeSampler()

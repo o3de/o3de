@@ -75,7 +75,7 @@ namespace AZ
             m_queryPools.clear();
         }
 
-        void Scope::Shutdown()
+        ResultCode Scope::Shutdown()
         {
             AZ_Assert(m_isActive == false, "Scope is currently active.");
 
@@ -85,6 +85,7 @@ namespace AZ
                 ShutdownInternal();
                 m_isInitialized = false;
             }
+            return ResultCode::Success;
         }
 
         void Scope::QueueResourcePoolResolves(ResourcePoolDatabase& resourcePoolDatabase)

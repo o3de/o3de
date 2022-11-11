@@ -90,7 +90,7 @@ namespace AZ
             }
         }
 
-        void AsyncUploadQueue::Shutdown()
+        RHI::ResultCode AsyncUploadQueue::Shutdown()
         {
             if (m_copyQueue)
             {
@@ -106,7 +106,7 @@ namespace AZ
             }
             m_framePackets.clear();
             m_uploadFence.Shutdown();
-            Base::Shutdown();
+            return Base::Shutdown();
         }
 
         uint64_t AsyncUploadQueue::QueueUpload(const RHI::BufferStreamRequest& uploadRequest)

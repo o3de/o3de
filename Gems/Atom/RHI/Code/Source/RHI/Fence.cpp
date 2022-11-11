@@ -55,7 +55,7 @@ namespace AZ
             return resultCode;
         }
 
-        void Fence::Shutdown()
+        ResultCode Fence::Shutdown()
         {
             if (IsInitialized())
             {
@@ -67,6 +67,7 @@ namespace AZ
                 ShutdownInternal();
                 DeviceObject::Shutdown();
             }
+            return ResultCode::Success;
         }
 
         ResultCode Fence::SignalOnCpu()

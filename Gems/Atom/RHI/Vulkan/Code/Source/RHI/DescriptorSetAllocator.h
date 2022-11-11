@@ -111,7 +111,7 @@ namespace AZ
             RHI::Ptr<ObjectType> Allocate(DescriptorSetLayout& layout);
             void DeAllocate(RHI::Ptr<ObjectType> descriptor);
             void Collect();
-            void Shutdown() override;
+            RHI::ResultCode Shutdown() override;
 
         private:
             AZStd::mutex m_subAllocatorMutex;
