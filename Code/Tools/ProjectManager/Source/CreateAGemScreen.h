@@ -50,11 +50,11 @@ namespace O3DE::ProjectManager
     protected slots:
         void HandleBackButton();
         void HandleNextButton();
+        void HandleGemDetailsTab();
         
 
     private slots:
         void HandleGemTemplateSelectionTab();
-        void HandleGemDetailsTab();
         void HandleGemCreatorDetailsTab();
 
     protected:

@@ -917,7 +917,8 @@ namespace O3DE::ProjectManager
                     "new_requirements"_a = QString_To_Py_String(newGemInfo.m_requirement),
                     "new_documentation_url"_a = QString_To_Py_String(newGemInfo.m_documentationLink),
                     "new_license"_a = QString_To_Py_String(newGemInfo.m_licenseText),
-                    "new_license_url"_a = QString_To_Py_String(newGemInfo.m_licenseLink),   
+                    "new_license_url"_a = QString_To_Py_String(newGemInfo.m_licenseLink),
+                    "new_repo_uri"_a = QString_To_Py_String(newGemInfo.m_repoUri),
                     "replace_tags"_a = QStringList_To_Py_List(newGemInfo.m_features), //the python code seems to interpret these lists as space separated
                     "replace_platforms"_a = QStringList_To_Py_List(newGemInfo.GetPlatformsAsStringList()))
                     ;
