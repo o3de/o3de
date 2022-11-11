@@ -37,6 +37,7 @@ VsOutput EvaluateVertexGeometry_Eye(
 
     output.normal = normal;
     output.tangent = tangent;
+    // Bitangent is temporarily added back to fix the eye material screenshot test.
     output.bitangent = bitangent;
 
     output.localPosition = position.xyz;
