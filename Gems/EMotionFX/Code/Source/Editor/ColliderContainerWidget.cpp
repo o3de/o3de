@@ -345,7 +345,7 @@ namespace EMotionFX
         Update();
     }
 
-    bool ColliderWidget::HasDisplayedNodes()
+    bool ColliderWidget::HasDisplayedNodes() const
     {
         return m_editor->HasDisplayedNodes();
     }
@@ -532,8 +532,7 @@ namespace EMotionFX
 
     bool ColliderContainerWidget::HasVisibleColliders() const
     {
-        return m_colliderWidgets.size() > 0 &&
-            std::any_of(
+        return AZStd::any_of(
                    m_colliderWidgets.begin(),
                    m_colliderWidgets.end(),
                    [](auto w)
