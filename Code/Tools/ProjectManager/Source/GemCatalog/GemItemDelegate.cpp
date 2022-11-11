@@ -385,7 +385,7 @@ namespace O3DE::ProjectManager
         platformFont.setPixelSize(s_featureTagFontSize);
         platformFont.setBold(false);
         painter->setFont(platformFont);
-        QString platformText = "";
+        QStringList platformList;
 
         //If no platforms are specified, there is nothing to draw
         if(platforms == 0)
@@ -399,12 +399,7 @@ namespace O3DE::ProjectManager
             const GemInfo::Platform platform = static_cast<GemInfo::Platform>(1 << i);
             if (platforms & platform)
             {
-                const QString& singlePlatformText = GemInfo::GetPlatformString(platform);
-                if(i != GemInfo::NumPlatforms-1)
-                {
-                    platformText.append(", ");
-                }
-                platformText.append(singlePlatformText);
+                platformList.append(GemInfo::GetPlatformString(platform));
             }
         }
 
@@ -413,7 +408,7 @@ namespace O3DE::ProjectManager
                                    xbounds.second -xbounds.first - s_platformTextWrapAroundMargin,
                                    (s_featureTagFontSize + s_platformTextLineBottomMargin) * s_platformTextWrapAroundLineMaxCount);
 
-        DrawText(platformText, painter, platformRect, platformFont);     
+        DrawText(platformList.join(", "), painter, platformRect, platformFont);     
     }
 
     void GemItemDelegate::DrawFeatureTags(
