@@ -234,6 +234,8 @@ set(FILES
     Manipulators/ManipulatorSnapping.h
     Manipulators/ManipulatorSpace.cpp
     Manipulators/ManipulatorSpace.h
+    Manipulators/PaintBrush.cpp
+    Manipulators/PaintBrush.h
     Manipulators/PaintBrushManipulator.cpp
     Manipulators/PaintBrushManipulator.h
     Manipulators/PaintBrushNotificationBus.h

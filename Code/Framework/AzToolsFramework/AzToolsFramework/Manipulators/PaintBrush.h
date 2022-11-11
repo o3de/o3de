@@ -1,0 +1,134 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettings.h>
+#include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
+
+namespace AzToolsFramework
+{
+    //! PaintBrushManipulator contains the core logic for painting functionality.
+    //! It handles the paintbrush settings, the logic for converting mouse events into paintbrush actions,
+    //! the rendering of the paintbrush into the viewport,  and the specific value calculations for what
+    //! values are painted at each world space location.
+    //!
+    //! The component mode logic is handled separately by the component that is using the paintbrush.
+    //!
+    //! The general painting flow consists of the following:
+    //! 1. For each mouse movement while painting, the paintbrush sends OnPaint messages with the AABB of the region that has changed
+    //! and a callback for getting paint values for specific world positions.
+    //! 2. The listener calls the callback for each position in the region that it cares about.
+    //! 3. The paintbrush responds with the specific painted values for each of those positions based on the brush shape and settings.
+    //! This back-and-forth is needed so that we can keep a clean separation between the paintbrush and the listener. The paintbrush
+    //! doesn't have knowledge of which points in the world (or at which resolution) the listener needs, and the listener doesn't have
+    //! knowledge of the exact shape, size, and hardness of the paintbrush. The separation allows the paintbrush manipulator to add
+    //! features over time without having to change the listeners, and it enables more systems to use the paintbrush without requiring
+    //! specialized logic inside the paintbrush itself.
+    class PaintBrush
+    {
+
+    public:
+        AZ_RTTI(PaintBrush, "{D003175F-12BF-4E7E-BD51-2F4B010C9B5E}");
+        AZ_CLASS_ALLOCATOR(PaintBrush, AZ::SystemAllocator, 0);
+
+        PaintBrush() = delete;
+        PaintBrush(const PaintBrush&) = delete;
+        PaintBrush& operator=(const PaintBrush&) = delete;
+        explicit PaintBrush(const AZ::EntityComponentIdPair& entityComponentIdPair);
+
+        virtual ~PaintBrush();
+
+        //! Tell the PaintBrush to begin paint mode, which will send out the proper notifications to any listeners.
+        void BeginPaintMode();
+
+        //! Tell the PaintBrush to end paint mode, which will send out the proper notifications to any listeners.
+        void EndPaintMode();
+
+        //! Returns whether or not the paint mode is currently active.
+        //! @return True if paint mode is active, false if it isn't.
+        bool IsInPaintMode() const;
+
+        //! Start a brush stroke with the given brush settings for color/intensity/opacity.
+        void BeginBrushStroke(const PaintBrushSettings& brushSettings);
+
+        //! End the current brush stroke.
+        void EndBrushStroke();
+
+        //! Returns whether or not the brush is currently in a brush stroke.
+        //! @return True if a brush stroke has been started, false if not.
+        bool IsInBrushStroke() const;
+
+        //! Apply a paint color to the underlying data based on brush movement and settings.
+        //! @param brushCenter The current center of the paintbrush.
+        //! @param brushSettings The current paintbrush settings.
+        //! @param isFirstBrushStrokePoint True if the stroke is just starting, false if not.
+        void PerformPaintAction(const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings, bool isFirstBrushStrokePoint);
+
+        //! Get the color from the underlying data that's located at the brush center
+        //! @param brushCenter The current center of the paintbrush.
+        //! @param brushSettings The current paintbrush settings.
+        AZ::Color UseEyedropper(const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings);
+
+        //! Smooth the underlying data based on brush movement and settings.
+        //! @param brushCenter The current center of the paintbrush.
+        //! @param brushSettings The current paintbrush settings.
+        //! @param isFirstBrushStrokePoint True if the stroke is just starting, false if not.
+        void PerformSmoothAction(const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings, bool isFirstBrushStrokePoint);
+
+    private:
+        //! Smooth the underlying data based on brush movement and settings.
+        //! @param brushSettings The current paintbrush settings.
+        static PaintBrushNotifications::BlendFn GetBlendFunction(const PaintBrushSettings& brushSettings);
+
+        //! Generates a list of brush stamp centers and an AABB around the brush stamps for the current brush stroke movement.
+        //! @param brushCenter The current center of the paintbrush.
+        //! @param brushSettings The current paintbrush settings.
+        //! @param isFirstBrushStrokePoint True if the stroke is just starting, false if not.
+        //! @param brushStampCenters [out] The list of brush centers to use for this brush stroke movement.
+        //! @param strokeRegion [out] The AABB around the brush stamps in the brushStampCenters list.
+        void CalculateBrushStampCentersAndStrokeRegion(
+            const AZ::Vector3& brushCenter,
+            const PaintBrushSettings& brushSettings,
+            bool isFirstBrushStrokePoint,
+            AZStd::vector<AZ::Vector2>& brushStampCenters,
+            AZ::Aabb& strokeRegion);
+
+        //! Determine which of the passed-in points are within our current brush stroke, and calculate the opacity at each point.
+        //! @param brushSettings The current paintbrush settings.
+        //! @param brushStampCenters The list of brush centers for each stamp in our current brush stroke
+        //! @param points The list of points to calculate values for within our brush stroke
+        //! @param validPoints [out] The subset of the input points that are within the brush stroke
+        //! @param opacities [out] For each point in validPoints, the opacity of the brush at that point
+        static void CalculatePointsInBrush(
+            const PaintBrushSettings& brushSettings,
+            const AZStd::vector<AZ::Vector2>& brushStampCenters,
+            AZStd::span<const AZ::Vector3> points,
+            AZStd::vector<AZ::Vector3>& validPoints,
+            AZStd::vector<float>& opacities);
+
+        //! Calculate the Gaussian weights to use for combining all the sampled pixels for the smoothing function.
+        static AZStd::vector<float> CalculateGaussianWeights(size_t smoothingRadius);
+
+        //! The entity/component that owns this paintbrush.
+        AZ::EntityComponentIdPair m_ownerEntityComponentId;
+
+        //! Location of the last mouse point that we processed while painting.
+        AZ::Vector2 m_lastBrushCenter;
+
+        //! Distance that the mouse has traveled since the last time we drew a paint stamp.
+        float m_distanceSinceLastDraw = 0.0f;
+
+        //! Track whether or not the paintbrush is currently active.
+        bool m_isInPaintMode = false;
+
+        //! Track when a brush stroke is active.
+        bool m_isInBrushStroke = false;
+    };
+} // namespace AzToolsFramework

@@ -396,7 +396,7 @@ namespace GradientSignal
         }
     }
 
-    void EditorImageGradientComponentMode::OnPaintStrokeBegin(const AZ::Color& color)
+    void EditorImageGradientComponentMode::OnBrushStrokeBegin(const AZ::Color& color)
     {
         BeginUndoBatch();
 
@@ -426,7 +426,7 @@ namespace GradientSignal
         m_paintStrokeData.m_strokeBuffer = AZStd::make_unique<ImageTileBuffer>(imageWidth, imageHeight, GetEntityId());
     }
 
-    void EditorImageGradientComponentMode::OnPaintStrokeEnd()
+    void EditorImageGradientComponentMode::OnBrushStrokeEnd()
     {
         AZ_Assert(m_paintBrushUndoBuffer != nullptr, "Undo batch is expected to exist while painting");
 

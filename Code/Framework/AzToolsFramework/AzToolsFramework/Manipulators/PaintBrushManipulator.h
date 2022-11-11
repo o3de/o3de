@@ -10,10 +10,10 @@
 
 #include "BaseManipulator.h"
 
-#include <AzCore/Math/Quaternion.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/PaintBrushSettings/PaintBrushSettings.h>
 #include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsNotificationBus.h>
+#include <AzToolsFramework/Manipulators/PaintBrush.h>
 #include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -98,56 +98,6 @@ namespace AzToolsFramework
         //! @param isFirstBrushStrokePoint True if the stroke is just starting, false if not.
         void MovePaintBrush(int viewportId, const AzFramework::ScreenPoint& screenCoordinates, bool isFirstBrushStrokePoint);
 
-        //! Apply a paint color to the underlying data based on brush movement and settings.
-        //! @param brushCenter The current center of the paintbrush.
-        //! @param brushSettings The current paintbrush settings.
-        //! @param isFirstBrushStrokePoint True if the stroke is just starting, false if not.
-        void PerformPaintAction(const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings, bool isFirstBrushStokePoint);
-
-        //! Get the color from the underlying data that's located at the brush center and set it in our paintbrush settings.
-        //! @param brushCenter The current center of the paintbrush.
-        //! @param brushSettings The current paintbrush settings.
-        void PerformEyedropperAction(const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings);
-
-        //! Smooth the underlying data based on brush movement and settings.
-        //! @param brushCenter The current center of the paintbrush.
-        //! @param brushSettings The current paintbrush settings.
-        //! @param isFirstBrushStrokePoint True if the stroke is just starting, false if not.
-        void PerformSmoothAction(const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings, bool isFirstBrushStrokePoint);
-
-        //! Smooth the underlying data based on brush movement and settings.
-        //! @param brushSettings The current paintbrush settings.
-        static PaintBrushNotifications::BlendFn GetBlendFunction(const PaintBrushSettings& brushSettings);
-
-        //! Generates a list of brush stamp centers and an AABB around the brush stamps for the current brush stroke movement.
-        //! @param brushCenter The current center of the paintbrush.
-        //! @param brushSettings The current paintbrush settings.
-        //! @param isFirstBrushStrokePoint True if the stroke is just starting, false if not.
-        //! @param brushStampCenters [out] The list of brush centers to use for this brush stroke movement.
-        //! @param strokeRegion [out] The AABB around the brush stamps in the brushStampCenters list.
-        void CalculateBrushStampCentersAndStrokeRegion(
-            const AZ::Vector3& brushCenter,
-            const PaintBrushSettings& brushSettings,
-            bool isFirstBrushStrokePoint,
-            AZStd::vector<AZ::Vector2>& brushStampCenters,
-            AZ::Aabb& strokeRegion);
-
-        //! Determine which of the passed-in points are within our current brush stroke, and calculate the opacity at each point.
-        //! @param brushSettings The current paintbrush settings.
-        //! @param brushStampCenters The list of brush centers for each stamp in our current brush stroke
-        //! @param points The list of points to calculate values for within our brush stroke
-        //! @param validPoints [out] The subset of the input points that are within the brush stroke
-        //! @param opacities [out] For each point in validPoints, the opacity of the brush at that point
-        static void CalculatePointsInBrush(
-            const PaintBrushSettings& brushSettings,
-            const AZStd::vector<AZ::Vector2>& brushStampCenters,
-            AZStd::span<const AZ::Vector3> points,
-            AZStd::vector<AZ::Vector3>& validPoints,
-            AZStd::vector<float>& opacities);
-
-        //! Calculate the Gaussian weights to use for combining all the sampled pixels for the smoothing function.
-        static AZStd::vector<float> CalculateGaussianWeights(size_t smoothingRadius);
-
         AZStd::shared_ptr<ManipulatorViewProjectedCircle> m_innerCircle;
         AZStd::shared_ptr<ManipulatorViewProjectedCircle> m_outerCircle;
 
@@ -157,10 +107,6 @@ namespace AzToolsFramework
         //! True if we're currently in a brush stroke, false if not.
         bool m_isInBrushStroke = false;
 
-        //! Location of the last mouse point that we processed while painting.
-        AZ::Vector2 m_lastBrushCenter;
-
-        //! Distance that the mouse has traveled since the last time we drew a paint stamp.
-        float m_distanceSinceLastDraw = 0.0f;
+        PaintBrush m_paintBrush;
     };
 } // namespace AzToolsFramework
