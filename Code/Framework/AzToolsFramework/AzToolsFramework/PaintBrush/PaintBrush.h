@@ -9,8 +9,8 @@
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzToolsFramework/PaintBrush/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/PaintBrushSettings/PaintBrushSettings.h>
-#include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
 
 namespace AzToolsFramework
 {

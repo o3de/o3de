@@ -11,10 +11,10 @@
 #include "BaseManipulator.h"
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzToolsFramework/PaintBrush/PaintBrush.h>
+#include <AzToolsFramework/PaintBrush/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/PaintBrushSettings/PaintBrushSettings.h>
 #include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsNotificationBus.h>
-#include <AzToolsFramework/Manipulators/PaintBrush.h>
-#include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 

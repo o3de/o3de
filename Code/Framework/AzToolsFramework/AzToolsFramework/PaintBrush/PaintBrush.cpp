@@ -9,8 +9,8 @@
 #include <AzCore/Math/Geometry2DUtils.h>
 #include <AzCore/std/sort.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzToolsFramework/Manipulators/PaintBrush.h>
-#include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
+#include <AzToolsFramework/PaintBrush/PaintBrush.h>
+#include <AzToolsFramework/PaintBrush/PaintBrushNotificationBus.h>
 
 namespace AzToolsFramework
 {

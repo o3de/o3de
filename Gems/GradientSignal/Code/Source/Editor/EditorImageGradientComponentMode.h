@@ -10,7 +10,7 @@
 
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
-#include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
+#include <AzToolsFramework/PaintBrush/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 
