@@ -112,7 +112,6 @@ namespace AzNetworking
     }
     #endif
 
-
     template <typename TYPE>
     inline bool ISerializer::Serialize(TYPE& value, const char* name)
     {
