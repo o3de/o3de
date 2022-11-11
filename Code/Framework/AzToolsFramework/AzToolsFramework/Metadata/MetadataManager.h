@@ -28,7 +28,7 @@ namespace AzToolsFramework
         virtual bool Get(AZ::IO::PathView file, AZStd::string_view key, void* outValue, AZ::Uuid typeId) = 0;
         virtual bool Set(AZ::IO::PathView file, AZStd::string_view key, const void* inValue, AZ::Uuid typeId) = 0;
     };
-#pragma optimize("", off)
+
     class MetadataManager :
         public AZ ::Component,
         public AZ::Interface<IMetadataRequests>::Registrar
@@ -37,6 +37,8 @@ namespace AzToolsFramework
         AZ_COMPONENT(MetadataManager, "{CB738803-3B6C-4B62-9DC2-1980D340F288}", IMetadataRequests);
 
         static inline constexpr const char* MetadataFileExtension = ".metadata";
+        static inline constexpr const char* MetadataVersionKey = "/FileVersion";
+        static inline constexpr int MetadataVersion = 1;
 
         static void Reflect(AZ::ReflectContext* )
         {
@@ -84,6 +86,7 @@ namespace AzToolsFramework
             auto path = ToMetadataPath(file);
 
             rapidjson_ly::Pointer pointer(key.data(), key.length());
+            rapidjson_ly::Pointer versionPointer(MetadataVersionKey);
 
             if (!pointer.IsValid())
             {
@@ -99,11 +102,28 @@ namespace AzToolsFramework
                 document = result.TakeValue();
             }
 
+            AZ::JsonSerializerSettings settings;
+            settings.m_reporting = [](AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view path)
+            {
+                if (result.GetOutcome() > AZ::JsonSerializationResult::Outcomes::PartialDefaults)
+                {
+                    AZ_Warning(
+                        "MetadataManager", false, AZ_STRING_FORMAT ": " AZ_STRING_FORMAT "\n", AZ_STRING_ARG(path), AZ_STRING_ARG(message));
+                }
+                return result;
+            };
+
+            rapidjson_ly::Value serializedVersion;
+            AZ::JsonSerialization::Store(serializedVersion, document.GetAllocator(), &MetadataVersion, nullptr, azrtti_typeid<int>(), settings);
+
             rapidjson_ly::Value serializedValue;
-            auto resultCode = AZ::JsonSerialization::Store(serializedValue, document.GetAllocator(), inValue, nullptr, typeId);
+            auto resultCode = AZ::JsonSerialization::Store(serializedValue, document.GetAllocator(), inValue, nullptr, typeId, settings);
 
             if(resultCode.GetProcessing() != AZ::JsonSerializationResult::Processing::Halted)
             {
+                rapidjson_ly::Value& versionStore = versionPointer.Create(document, document.GetAllocator());
+                versionStore = AZStd::move(serializedVersion);
+
                 rapidjson_ly::Value& store = pointer.Create(document, document.GetAllocator());
                 store = AZStd::move(serializedValue);
 
@@ -127,26 +147,5 @@ namespace AzToolsFramework
 
             return path;
         }
-
-        //AZStd::optional<rapidjson_ly::Document> LoadFile(AZ::IO::PathView file) const
-        //{
-        //    AZ::IO::FileIOStream stream;
-
-        //    if(!stream.Open(file.FixedMaxPathString().c_str(), AZ::IO::OpenMode::ModeRead))
-        //    {
-        //        return {};
-        //    }
-
-        //    Metadata metadata;
-        //    bool result = AZ::Utils::LoadObjectFromStreamInPlace(stream, metadata);
-
-        //    if(!result)
-        //    {
-        //        return {};
-        //    }
-
-        //    return metadata;
-        //}
     };
-#pragma optimize("", on)
 } // namespace AzToolsFramework
