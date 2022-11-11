@@ -2147,6 +2147,16 @@ namespace AssetBundler
                     return false;
                 }
 
+                if (!AZ::IO::FileIOBase::GetInstance()->Exists(params.m_assetListFile.AbsolutePath().c_str()))
+                {
+                    AZ_Error(
+                        AppWindowName,
+                        false,
+                        "Cannot load Asset List file ( %.*s ): File does not exist.\n",
+                        AZ_STRING_ARG(params.m_assetListFile.AbsolutePath()));
+                    return false;
+                }
+
                 AZStd::vector<FilePath> allAssetListFilePaths = GetAllPlatformSpecificFilesOnDisk(params.m_assetListFile, params.m_platformFlags);
 
                 // Create temporary Bundle Settings structs for every Asset List file
