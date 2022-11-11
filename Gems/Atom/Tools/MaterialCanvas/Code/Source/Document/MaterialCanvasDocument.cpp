@@ -42,6 +42,7 @@
 
 namespace MaterialCanvas
 {
+#if defined(AZ_ENABLE_TRACING)
     namespace
     {
         bool IsCompileLoggingEnabled()
@@ -49,7 +50,7 @@ namespace MaterialCanvas
             return AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvasDocument/CompileLoggingEnabled", false);
         }
     } // namespace
-
+#endif // AZ_ENABLE_TRACING
     void MaterialCanvasDocument::Reflect(AZ::ReflectContext* context)
     {
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
