@@ -108,7 +108,7 @@ namespace AzNetworking
         //! @param maxValue the maximum value expected during serialization
         //! @return boolean true for success, false for failure
         #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
-        virtual bool Serialize(AZ::s64& value, const char* name, AZ::s64 minValue = AZStd::numeric_limits<AZ::s64>::min(), AZ::s64 maxValue = AZStd::numeric_limits<AZ::s64>::max());
+        bool Serialize(AZ::s64& value, const char* name, AZ::s64 minValue = AZStd::numeric_limits<AZ::s64>::min(), AZ::s64 maxValue = AZStd::numeric_limits<AZ::s64>::max());
         #endif
 
         //! Serialize an unsigned byte.
@@ -150,7 +150,7 @@ namespace AzNetworking
         //! @param maxValue the maximum value expected during serialization
         //! @return boolean true for success, false for failure
         #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
-        virtual bool Serialize(AZ::u64& value, const char* name, AZ::u64 minValue = AZStd::numeric_limits<AZ::u64>::min(), AZ::u64 maxValue = AZStd::numeric_limits<AZ::u64>::max());
+        bool Serialize(AZ::u64& value, const char* name, AZ::u64 minValue = AZStd::numeric_limits<AZ::u64>::min(), AZ::u64 maxValue = AZStd::numeric_limits<AZ::u64>::max());
         #endif
 
         //! Serialize a 32-bit floating point number.
