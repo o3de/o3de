@@ -95,17 +95,13 @@ namespace AzToolsFramework
         //! Move the paint brush and perform any appropriate brush actions if in the middle of a brush stroke.
         //! @param viewportId The viewport to move the paint brush in.
         //! @param screenCoordinates The screen coordinates of the current mouse location.
-        //! @param isFirstBrushStrokePoint True if the stroke is just starting, false if not.
-        void MovePaintBrush(int viewportId, const AzFramework::ScreenPoint& screenCoordinates, bool isFirstBrushStrokePoint);
+        void MovePaintBrush(int viewportId, const AzFramework::ScreenPoint& screenCoordinates);
 
         AZStd::shared_ptr<ManipulatorViewProjectedCircle> m_innerCircle;
         AZStd::shared_ptr<ManipulatorViewProjectedCircle> m_outerCircle;
 
         //! The entity/component that owns this paintbrush.
         AZ::EntityComponentIdPair m_ownerEntityComponentId;
-
-        //! True if we're currently in a brush stroke, false if not.
-        bool m_isInBrushStroke = false;
 
         PaintBrush m_paintBrush;
     };

@@ -188,10 +188,9 @@ namespace AzToolsFramework
 
         if (mouseInteraction.m_mouseEvent == AzToolsFramework::ViewportInteraction::MouseEvent::Move)
         {
-            const bool isFirstPaintedPoint = false;
             MovePaintBrush(
                 mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId,
-                mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates, isFirstPaintedPoint);
+                mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
 
             // For move events, always return false so that mouse movements with right clicks can still affect the Editor camera.
             return false;
@@ -205,13 +204,11 @@ namespace AzToolsFramework
                 PaintBrushSettingsRequestBus::BroadcastResult(brushSettings, &PaintBrushSettingsRequestBus::Events::GetSettings);
 
                 // Notify that a paint stroke has begun, and provide the paint color including opacity.
-                m_isInBrushStroke = true;
                 m_paintBrush.BeginBrushStroke(brushSettings);
 
-                const bool isFirstPaintedPoint = true;
                 MovePaintBrush(
                     mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId,
-                    mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates, isFirstPaintedPoint);
+                    mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
                 return true;
             }
         }
@@ -235,15 +232,18 @@ namespace AzToolsFramework
     }
 
     void PaintBrushManipulator::MovePaintBrush(
-        int viewportId, const AzFramework::ScreenPoint& screenCoordinates, bool isFirstBrushStrokePoint)
+        int viewportId, const AzFramework::ScreenPoint& screenCoordinates)
     {
         // Ray cast into the screen to find the closest collision point for the current mouse location.
         auto worldSurfacePosition =
             AzToolsFramework::FindClosestPickIntersection(viewportId, screenCoordinates, AzToolsFramework::EditorPickRayLength);
 
-        // If the mouse isn't colliding with anything, don't move the paintbrush, just leave it at its last location.
+        // If the mouse isn't colliding with anything, don't move the paintbrush, just leave it at its last location
+        // and don't perform any brush actions. We'll reset the stroke movement tracking though so that we don't draw unintended lines
+        // once the brush makes it back onto a valid surface.
         if (!worldSurfacePosition.has_value())
         {
+            m_paintBrush.ResetBrushStrokeTracking();
             return;
         }
 
@@ -252,8 +252,8 @@ namespace AzToolsFramework
         AZ::Transform space = AZ::Transform::CreateTranslation(brushCenter);
         SetSpace(space);
 
-        // If we're currently performing a brush stroke, then trigger the appropriate brush action.
-        if (m_isInBrushStroke)
+        // If we're currently performing a brush stroke, then trigger the appropriate brush action based on our selected paint mode.
+        if (m_paintBrush.IsInBrushStroke())
         {
             // Get our current paint brush settings.
             PaintBrushSettings brushSettings;
@@ -262,10 +262,10 @@ namespace AzToolsFramework
             switch (brushSettings.GetBrushMode())
             {
             case PaintBrushMode::Paintbrush:
-                m_paintBrush.PerformPaintAction(brushCenter, brushSettings, isFirstBrushStrokePoint);
+                m_paintBrush.PaintToLocation(brushCenter, brushSettings);
                 break;
             case PaintBrushMode::Smooth:
-                m_paintBrush.PerformSmoothAction(brushCenter, brushSettings, isFirstBrushStrokePoint);
+                m_paintBrush.SmoothToLocation(brushCenter, brushSettings);
                 break;
             case PaintBrushMode::Eyedropper:
                 AZ::Color eyedropperColor = m_paintBrush.UseEyedropper(brushCenter, brushSettings);

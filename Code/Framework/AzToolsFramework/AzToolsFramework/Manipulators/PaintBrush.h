@@ -65,38 +65,42 @@ namespace AzToolsFramework
         //! @return True if a brush stroke has been started, false if not.
         bool IsInBrushStroke() const;
 
+        //! Reset the brush tracking so that the next action will be considered the start of a stroke movement instead of a continuation.
+        //! This is useful for handling discontinuous movement (like moving off the edge of the surface on one side and back on from
+        //! a different side).
+        void ResetBrushStrokeTracking();
+
         //! Apply a paint color to the underlying data based on brush movement and settings.
         //! @param brushCenter The current center of the paintbrush.
         //! @param brushSettings The current paintbrush settings.
-        //! @param isFirstBrushStrokePoint True if the stroke is just starting, false if not.
-        void PerformPaintAction(const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings, bool isFirstBrushStrokePoint);
+        void PaintToLocation(const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings);
+
+        //! Smooth the underlying data based on brush movement and settings.
+        //! @param brushCenter The current center of the paintbrush.
+        //! @param brushSettings The current paintbrush settings.
+        void SmoothToLocation(const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings);
 
         //! Get the color from the underlying data that's located at the brush center
         //! @param brushCenter The current center of the paintbrush.
         //! @param brushSettings The current paintbrush settings.
         AZ::Color UseEyedropper(const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings);
 
-        //! Smooth the underlying data based on brush movement and settings.
-        //! @param brushCenter The current center of the paintbrush.
-        //! @param brushSettings The current paintbrush settings.
-        //! @param isFirstBrushStrokePoint True if the stroke is just starting, false if not.
-        void PerformSmoothAction(const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings, bool isFirstBrushStrokePoint);
-
     private:
-        //! Smooth the underlying data based on brush movement and settings.
-        //! @param brushSettings The current paintbrush settings.
-        static PaintBrushNotifications::BlendFn GetBlendFunction(const PaintBrushSettings& brushSettings);
+        //! Get an appropriate blend function for the requested blend mode.
+        //! @param blendMode The blend mode to use.
+        static PaintBrushNotifications::BlendFn GetBlendFunction(const PaintBrushBlendMode& blendMode);
+
+        //! Calculate the Gaussian weights to use for combining all the sampled pixels for the smoothing function.
+        static AZStd::vector<float> CalculateGaussianWeights(size_t smoothingRadius);
 
         //! Generates a list of brush stamp centers and an AABB around the brush stamps for the current brush stroke movement.
         //! @param brushCenter The current center of the paintbrush.
         //! @param brushSettings The current paintbrush settings.
-        //! @param isFirstBrushStrokePoint True if the stroke is just starting, false if not.
         //! @param brushStampCenters [out] The list of brush centers to use for this brush stroke movement.
         //! @param strokeRegion [out] The AABB around the brush stamps in the brushStampCenters list.
         void CalculateBrushStampCentersAndStrokeRegion(
             const AZ::Vector3& brushCenter,
             const PaintBrushSettings& brushSettings,
-            bool isFirstBrushStrokePoint,
             AZStd::vector<AZ::Vector2>& brushStampCenters,
             AZ::Aabb& strokeRegion);
 
@@ -113,9 +117,6 @@ namespace AzToolsFramework
             AZStd::vector<AZ::Vector3>& validPoints,
             AZStd::vector<float>& opacities);
 
-        //! Calculate the Gaussian weights to use for combining all the sampled pixels for the smoothing function.
-        static AZStd::vector<float> CalculateGaussianWeights(size_t smoothingRadius);
-
         //! The entity/component that owns this paintbrush.
         AZ::EntityComponentIdPair m_ownerEntityComponentId;
 
@@ -130,5 +131,8 @@ namespace AzToolsFramework
 
         //! Track when a brush stroke is active.
         bool m_isInBrushStroke = false;
+
+        //! The first point in a brush stroke movement starts the stroke, and subsequent points continue from the previous location.
+        bool m_isFirstPointInBrushStrokeMovement = false;
     };
 } // namespace AzToolsFramework

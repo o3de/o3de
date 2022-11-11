@@ -18,6 +18,7 @@ namespace AzToolsFramework
         : m_ownerEntityComponentId(entityComponentIdPair)
         , m_isInPaintMode(false)
         , m_isInBrushStroke(false)
+        , m_isFirstPointInBrushStrokeMovement(false)
     {
     }
 
@@ -67,7 +68,10 @@ namespace AzToolsFramework
         AZ_Assert(!m_isInBrushStroke, "BeginBrushStroke() called on a brush that's already in a brush stroke.");
 
         m_isInBrushStroke = true;
+        m_isFirstPointInBrushStrokeMovement = true;
+
         // Notify listeners that the brush stroke is beginning with the given color/intensity and opacity settings.
+        // The color/intensity and opacity is expected to remain invariant over the entire brush stroke.
         PaintBrushNotificationBus::Event(
             m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnBrushStrokeBegin, brushSettings.GetColor());
     }
@@ -78,6 +82,7 @@ namespace AzToolsFramework
         AZ_Assert(m_isInBrushStroke, "EndBrushStroke() called on a brush that isn't in a brush stroke.");
 
         m_isInBrushStroke = false;
+        m_isFirstPointInBrushStrokeMovement = false;
         // Notify listeners that the brush stroke has ended.
         PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnBrushStrokeEnd);
     }
@@ -87,10 +92,145 @@ namespace AzToolsFramework
         return m_isInBrushStroke;
     }
 
+    void PaintBrush::ResetBrushStrokeTracking()
+    {
+        m_isFirstPointInBrushStrokeMovement = true;
+    }
+
+    PaintBrushNotifications::BlendFn PaintBrush::GetBlendFunction(const PaintBrushBlendMode& blendMode)
+    {
+        auto clampAndLerpFn = [](float baseValue, float newValue, float opacity)
+        {
+            return AZStd::clamp(AZStd::lerp(baseValue, newValue, opacity), 0.0f, 1.0f);
+        };
+
+        switch (blendMode)
+        {
+        case PaintBrushBlendMode::Normal:
+            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
+            {
+                return clampAndLerpFn(baseValue, intensity, opacity);
+            };
+            break;
+        case PaintBrushBlendMode::Add:
+            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
+            {
+                return clampAndLerpFn(baseValue, baseValue + intensity, opacity);
+            };
+            break;
+        case PaintBrushBlendMode::Subtract:
+            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
+            {
+                return clampAndLerpFn(baseValue, baseValue - intensity, opacity);
+            };
+            break;
+        case PaintBrushBlendMode::Multiply:
+            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
+            {
+                return clampAndLerpFn(baseValue, baseValue * intensity, opacity);
+            };
+            break;
+        case PaintBrushBlendMode::Screen:
+            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
+            {
+                const float operationResult = 1.0f - ((1.0f - baseValue) * (1.0f - intensity));
+                return clampAndLerpFn(baseValue, operationResult, opacity);
+            };
+            break;
+        case PaintBrushBlendMode::Darken:
+            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
+            {
+                return clampAndLerpFn(baseValue, AZStd::min(baseValue, intensity), opacity);
+            };
+            break;
+        case PaintBrushBlendMode::Lighten:
+            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
+            {
+                return clampAndLerpFn(baseValue, AZStd::max(baseValue, intensity), opacity);
+            };
+            break;
+        case PaintBrushBlendMode::Average:
+            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
+            {
+                return clampAndLerpFn(baseValue, (baseValue + intensity) / 2.0f, opacity);
+            };
+            break;
+        case PaintBrushBlendMode::Overlay:
+            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
+            {
+                const float operationResult =
+                    (baseValue >= 0.5f) ? (1.0f - (2.0f * (1.0f - baseValue) * (1.0f - intensity))) : (2.0f * baseValue * intensity);
+                return clampAndLerpFn(baseValue, operationResult, opacity);
+            };
+            break;
+        default:
+            AZ_Assert(false, "Unknown PaintBrushBlendMode type: %u", blendMode);
+            break;
+        }
+
+        return {};
+    }
+
+    AZStd::vector<float> PaintBrush::CalculateGaussianWeights(size_t smoothingRadius)
+    {
+        // The Gaussian function is G(x, y) = (1 / 2*pi*sigma^2) * e^(-(x^2 + y^2) / (2*sigma^2)).
+        // This function produces a bell curve symmetric around the origin, where (1 / 2*pi*sigma^2) is the height of the peak,
+        // and sigma (the standard deviation) controls the width of the peak.
+        // x and y are the relative distances from the center.
+
+        // This will contain all of the Gaussian weights that we compute and return.
+        AZStd::vector<float> gaussianWeights;
+
+        // We track the sum of all the weights so that we can normalize them at the end.
+        float sum = 0.0f;
+
+        // Keep a floating-point version of this so that we don't have to do int/float conversions in our loops below.
+        const float radius = aznumeric_cast<float>(smoothingRadius);
+
+        // In practice, only pixels within a distance of 3 * sigma affect the result, so we'll pick a sigma that's 1/3 of the distance
+        // in each direction.
+        const float sigma = AZStd::max(radius / 3.0f, 1.0f);
+
+        // We can precompute the peakHeight and expConstant terms outside of the loop.
+        const float peakHeight = (1.0f / (AZ::Constants::TwoPi * sigma * sigma));
+        const float expConstant = -1.0f / (2.0f * sigma * sigma);
+
+        // Preallocate space for all our weights.
+        size_t kernelSize = (smoothingRadius * 2) + 1;
+        gaussianWeights.reserve(kernelSize * kernelSize);
+
+        // Compute the Gaussian weights for each point spreading outward from the origin.
+        // The order in which we compute this is important, because we'll expect the pixel values that we're smoothing to have been
+        // gathered in the same order.
+        for (float y = -radius; y <= radius; y++)
+        {
+            const float ySquared = y * y;
+
+            for (float x = -radius; x <= radius; x++)
+            {
+                float kernelValue = peakHeight * AZStd::exp(expConstant * ((x * x) + ySquared));
+                sum += kernelValue;
+
+                gaussianWeights.emplace_back(kernelValue);
+            }
+        }
+
+        // Normalize all the values.
+        AZStd::transform(
+            gaussianWeights.begin(),
+            gaussianWeights.end(),
+            gaussianWeights.begin(),
+            [sum](float value)
+            {
+                return value / sum;
+            });
+
+        return gaussianWeights;
+    }
+
     void PaintBrush::CalculateBrushStampCentersAndStrokeRegion(
         const AZ::Vector3& brushCenter,
         const PaintBrushSettings& brushSettings,
-        bool isFirstBrushStrokePoint,
         AZStd::vector<AZ::Vector2>& brushStampCenters,
         AZ::Aabb& strokeRegion)
     {
@@ -111,11 +251,12 @@ namespace AzToolsFramework
 
         // If this is the first point that we're painting, add this location to the list of brush stamps and use it
         // as the starting point.
-        if (isFirstBrushStrokePoint)
+        if (m_isFirstPointInBrushStrokeMovement)
         {
             brushStampCenters.emplace_back(currentCenter2D);
             m_lastBrushCenter = currentCenter2D;
             m_distanceSinceLastDraw = 0.0f;
+            m_isFirstPointInBrushStrokeMovement = false;
         }
 
         // Get the direction that we've moved the mouse since the last mouse movement we handled.
@@ -232,89 +373,14 @@ namespace AzToolsFramework
         }
     }
 
-    PaintBrushNotifications::BlendFn PaintBrush::GetBlendFunction(const PaintBrushSettings& brushSettings)
-    {
-        auto clampAndLerpFn = [](float baseValue, float newValue, float opacity)
-        {
-            return AZStd::clamp(AZStd::lerp(baseValue, newValue, opacity), 0.0f, 1.0f);
-        };
-
-        switch (brushSettings.GetBlendMode())
-        {
-        case PaintBrushBlendMode::Normal:
-            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
-            {
-                return clampAndLerpFn(baseValue, intensity, opacity);
-            };
-            break;
-        case PaintBrushBlendMode::Add:
-            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
-            {
-                return clampAndLerpFn(baseValue, baseValue + intensity, opacity);
-            };
-            break;
-        case PaintBrushBlendMode::Subtract:
-            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
-            {
-                return clampAndLerpFn(baseValue, baseValue - intensity, opacity);
-            };
-            break;
-        case PaintBrushBlendMode::Multiply:
-            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
-            {
-                return clampAndLerpFn(baseValue, baseValue * intensity, opacity);
-            };
-            break;
-        case PaintBrushBlendMode::Screen:
-            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
-            {
-                const float operationResult = 1.0f - ((1.0f - baseValue) * (1.0f - intensity));
-                return clampAndLerpFn(baseValue, operationResult, opacity);
-            };
-            break;
-        case PaintBrushBlendMode::Darken:
-            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
-            {
-                return clampAndLerpFn(baseValue, AZStd::min(baseValue, intensity), opacity);
-            };
-            break;
-        case PaintBrushBlendMode::Lighten:
-            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
-            {
-                return clampAndLerpFn(baseValue, AZStd::max(baseValue, intensity), opacity);
-            };
-            break;
-        case PaintBrushBlendMode::Average:
-            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
-            {
-                return clampAndLerpFn(baseValue, (baseValue + intensity) / 2.0f, opacity);
-            };
-            break;
-        case PaintBrushBlendMode::Overlay:
-            return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
-            {
-                const float operationResult =
-                    (baseValue >= 0.5f) ? (1.0f - (2.0f * (1.0f - baseValue) * (1.0f - intensity))) : (2.0f * baseValue * intensity);
-                return clampAndLerpFn(baseValue, operationResult, opacity);
-            };
-            break;
-        default:
-            AZ_Assert(false, "Unknown PaintBrushBlendMode type: %u", brushSettings.GetBlendMode());
-            break;
-        }
-
-        return {};
-    }
-
-
-    void PaintBrush::PerformPaintAction(
-        const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings, bool isFirstBrushStrokePoint)
+    void PaintBrush::PaintToLocation(
+        const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings)
     {
         // Track the list of center points for each brush stamp to draw for this mouse movement and the AABB around the stamps.
         AZStd::vector<AZ::Vector2> brushStampCenters;
         AZ::Aabb strokeRegion = AZ::Aabb::CreateNull(); 
 
-        CalculateBrushStampCentersAndStrokeRegion(brushCenter, brushSettings, isFirstBrushStrokePoint, brushStampCenters, strokeRegion);
+        CalculateBrushStampCentersAndStrokeRegion(brushCenter, brushSettings, brushStampCenters, strokeRegion);
 
         // If we don't have any stamps on this mouse movement, then we're done.
         if (brushStampCenters.empty())
@@ -333,7 +399,7 @@ namespace AzToolsFramework
         });
 
         // Set the blending operation based on the current paintbrush blend mode setting.
-        PaintBrushNotifications::BlendFn blendFn = GetBlendFunction(brushSettings);
+        PaintBrushNotifications::BlendFn blendFn = GetBlendFunction(brushSettings.GetBlendMode());
 
         // Trigger the OnPaint notification, provide the listener with the valueLookupFn to find out the paint brush
         // values at specific world positions, and provide the blendFn to perform blending operations based on the provided base and
@@ -342,80 +408,14 @@ namespace AzToolsFramework
             m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaint, strokeRegion, valueLookupFn, blendFn);
     }
 
-    AZ::Color PaintBrush::UseEyedropper(
+    void PaintBrush::SmoothToLocation(
         const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings)
-    {
-        AZ::Color brushColor = brushSettings.GetColor();
-
-        // Trigger the OnGetColor notification to get the current color at the given point.
-        PaintBrushNotificationBus::EventResult(brushColor,
-            m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnGetColor, brushCenter);
-
-        return brushColor;
-    }
-
-    AZStd::vector<float> PaintBrush::CalculateGaussianWeights(size_t smoothingRadius)
-    {
-        // The Gaussian function is G(x, y) = (1 / 2*pi*sigma^2) * e^(-(x^2 + y^2) / (2*sigma^2)).
-        // This function produces a bell curve symmetric around the origin, where (1 / 2*pi*sigma^2) is the height of the peak,
-        // and sigma (the standard deviation) controls the width of the peak.
-        // x and y are the relative distances from the center.
-
-        // This will contain all of the Gaussian weights that we compute and return.
-        AZStd::vector<float> gaussianWeights;
-
-        // We track the sum of all the weights so that we can normalize them at the end.
-        float sum = 0.0f;
-
-        // Keep a floating-point version of this so that we don't have to do int/float conversions in our loops below.
-        const float radius = aznumeric_cast<float>(smoothingRadius);
-
-        // In practice, only pixels within a distance of 3 * sigma affect the result, so we'll pick a sigma that's 1/3 of the distance
-        // in each direction.
-        const float sigma = AZStd::max(radius / 3.0f, 1.0f);
-
-        // We can precompute the peakHeight and expConstant terms outside of the loop.
-        const float peakHeight = (1.0f / (AZ::Constants::TwoPi * sigma * sigma));
-        const float expConstant = -1.0f / (2.0f * sigma * sigma);
-
-        // Preallocate space for all our weights.
-        size_t kernelSize = (smoothingRadius * 2) + 1;
-        gaussianWeights.reserve(kernelSize * kernelSize);
-
-        // Compute the Gaussian weights for each point spreading outward from the origin.
-        // The order in which we compute this is important, because we'll expect the pixel values that we're smoothing to have been
-        // gathered in the same order.
-        for (float y = -radius; y <= radius; y++)
-        {
-            const float ySquared = y * y;
-
-            for (float x = -radius; x <= radius; x++)
-            {
-                float kernelValue = peakHeight * AZStd::exp(expConstant * ((x * x) + ySquared));
-                sum += kernelValue;
-
-                gaussianWeights.emplace_back(kernelValue);
-            }
-        }
-
-        // Normalize all the values.
-        AZStd::transform(gaussianWeights.begin(), gaussianWeights.end(), gaussianWeights.begin(),
-            [sum](float value)
-            {
-                return value / sum;
-            });
-
-        return gaussianWeights;
-    }
-
-    void PaintBrush::PerformSmoothAction(
-        const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings, bool isFirstBrushStrokePoint)
     {
         // Track the list of center points for each brush stamp to draw for this mouse movement and the AABB around the stamps.
         AZStd::vector<AZ::Vector2> brushStampCenters;
         AZ::Aabb strokeRegion = AZ::Aabb::CreateNull();
 
-        CalculateBrushStampCentersAndStrokeRegion(brushCenter, brushSettings, isFirstBrushStrokePoint, brushStampCenters, strokeRegion);
+        CalculateBrushStampCentersAndStrokeRegion(brushCenter, brushSettings, brushStampCenters, strokeRegion);
 
         // If we don't have any stamps on this mouse movement, then we're done.
         if (brushStampCenters.empty())
@@ -464,7 +464,7 @@ namespace AzToolsFramework
         }
 
         // Set the blending operation based on the current paintbrush blend mode setting.
-        PaintBrushNotifications::BlendFn blendFn = GetBlendFunction(brushSettings);
+        PaintBrushNotifications::BlendFn blendFn = GetBlendFunction(brushSettings.GetBlendMode());
 
         // Select the appropriate smoothing function.
 
@@ -529,6 +529,17 @@ namespace AzToolsFramework
             valueLookupFn,
             valuePointOffsets,
             smoothFn);
+    }
+
+    AZ::Color PaintBrush::UseEyedropper(const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings)
+    {
+        AZ::Color brushColor = brushSettings.GetColor();
+
+        // Trigger the OnGetColor notification to get the current color at the given point.
+        PaintBrushNotificationBus::EventResult(
+            brushColor, m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnGetColor, brushCenter);
+
+        return brushColor;
     }
 
 } // namespace AzToolsFramework
