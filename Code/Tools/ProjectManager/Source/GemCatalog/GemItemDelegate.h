@@ -36,7 +36,6 @@ namespace O3DE::ProjectManager
 
         // Colors
         const QColor m_textColor = QColor("#FFFFFF");
-        const QColor m_greyedOutTextColor =QColor("#888888");
         const QColor m_linkColor = QColor("#94D2FF");
         const QColor m_backgroundColor = QColor("#333333"); // Outside of the actual gem item
         const QColor m_itemBackgroundColor = QColor("#404040"); // Background color of the gem item
@@ -109,7 +108,7 @@ namespace O3DE::ProjectManager
             const QStringList& featureTags,
             const QFont& standardFont,
             const QRect& summaryRect) const;
-        void DrawText(const QString& text, QPainter* painter, const QRect& rect, const QFont& standardFont, const bool& greyedOut = false) const;
+        void DrawText(const QString& text, QPainter* painter, const QRect& rect, const QFont& standardFont) const;
         void DrawDownloadStatusIcon(
             QPainter* painter, const QRect& contentRect, const QRect& buttonRect, const QModelIndex& modelIndex) const;
 

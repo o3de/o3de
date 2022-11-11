@@ -375,18 +375,23 @@ namespace O3DE::ProjectManager
     }
 
 
-    void GemItemDelegate::DrawPlatformText(QPainter* painter, const QRect& contentRect, const QFont& standardFont, [[maybe_unused]] const QModelIndex& modelIndex) const
+    void GemItemDelegate::DrawPlatformText(QPainter* painter, const QRect& contentRect, const QFont& standardFont, const QModelIndex& modelIndex) const
     {
         const GemInfo::Platforms platforms = GemModel::GetPlatforms(modelIndex);
         
         auto xbounds = CalcColumnXBounds(HeaderOrder::Name);
-        int startX = s_platformTextleftMarginCorrection + xbounds.first;
+        const int startX = s_platformTextleftMarginCorrection + xbounds.first;
         QFont platformFont(standardFont);
         platformFont.setPixelSize(s_featureTagFontSize);
         platformFont.setBold(false);
         painter->setFont(platformFont);
         QString platformText = "";
 
+        //If no platforms are specified, there is nothing to draw
+        if(platforms == 0)
+        {
+            return;
+        }
         
         //UX prefers that we show platforms in reverse alphabetical order
         for(int i = GemInfo::NumPlatforms-1; i >= 0; i--)
@@ -394,23 +399,21 @@ namespace O3DE::ProjectManager
             const GemInfo::Platform platform = static_cast<GemInfo::Platform>(1 << i);
             if (platforms & platform)
             {
-                QString singlePlatformText = GemInfo::GetPlatformString(platform);
+                const QString& singlePlatformText = GemInfo::GetPlatformString(platform);
                 if(i != GemInfo::NumPlatforms-1)
                 {
                     platformText.append(", ");
                 }
                 platformText.append(singlePlatformText);
-                
             }
         }
-        
 
         //figure out the ideal rect size for the platform text space constraints
-        QRect platformRect = QRect(contentRect.left() + startX, contentRect.bottom() - s_platformTextHeightAdjustment,
+        const QRect platformRect = QRect(contentRect.left() + startX, contentRect.bottom() - s_platformTextHeightAdjustment,
                                    xbounds.second -xbounds.first - s_platformTextWrapAroundMargin,
                                    (s_featureTagFontSize + s_platformTextLineBottomMargin) * s_platformTextWrapAroundLineMaxCount);
 
-        DrawText(platformText, painter, platformRect, platformFont, !platforms);
+        DrawText(platformText, painter, platformRect, platformFont);     
     }
 
     void GemItemDelegate::DrawFeatureTags(
@@ -470,7 +473,7 @@ namespace O3DE::ProjectManager
         return doc;
     }
 
-    void GemItemDelegate::DrawText(const QString& text, QPainter* painter, const QRect& rect, const QFont& standardFont, const bool& greyedOut) const 
+    void GemItemDelegate::DrawText(const QString& text, QPainter* painter, const QRect& rect, const QFont& standardFont) const 
     {
         painter->save();
 
@@ -489,14 +492,7 @@ namespace O3DE::ProjectManager
         else
         {
             painter->setFont(standardFont);
-            if(greyedOut)
-            {
-                painter->setPen(m_greyedOutTextColor);
-            }
-            else
-            {
-                painter->setPen(m_textColor);
-            }
+            painter->setPen(m_textColor);
             painter->drawText(rect, Qt::AlignLeft | Qt::TextWordWrap, text);
         }
 
