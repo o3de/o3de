@@ -470,7 +470,7 @@ namespace Multiplayer
             return false;
         }
 
-        const uint32_t packetComponentCount = static_cast<const MultiplayerPackets::SyncComponentMismatch&>(arg).GetTotalComponentCount();
+        const uint32_t packetComponentCount = aznumeric_cast<uint32_t>(static_cast<const MultiplayerPackets::SyncComponentMismatch&>(arg).GetComponentVersions().size());
         *result_listener << "where the packet is a SyncComponentMismatch packet with component count " << packetComponentCount;
         return packetComponentCount == totalComponentCount;
     }
@@ -544,7 +544,6 @@ namespace Multiplayer
         // Receive a multiplayer version mismatch packet and disconnect
         sv_versionMismatch_autoDisconnect = true;
         MultiplayerPackets::SyncComponentMismatch mismatchPacket;
-        mismatchPacket.SetTotalComponentCount(0);
         EXPECT_CALL(connection, Disconnect(DisconnectReason::VersionMismatch, TerminationEndpoint::Local)).Times(1);
         m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), mismatchPacket);
 

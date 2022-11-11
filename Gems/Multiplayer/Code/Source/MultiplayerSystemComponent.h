@@ -220,7 +220,6 @@ namespace Multiplayer
         AZStd::vector<PlayerWaitingToBeSpawned> m_playersWaitingToBeSpawned;
         bool m_blockClientLoadLevel = true;
 
-        AZStd::unordered_map<AzNetworking::ConnectionId, AZStd::unordered_map<AZ::Name, AZ::HashValue64>> m_connectedAppsComponentVersions;
         AZStd::unordered_map<AzNetworking::ConnectionId, MultiplayerPackets::Connect> m_originalConnectPackets;
 
 #if !defined(AZ_RELEASE_BUILD)

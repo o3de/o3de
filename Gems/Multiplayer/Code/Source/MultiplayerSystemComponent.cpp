@@ -888,35 +888,21 @@ namespace Multiplayer
         [[maybe_unused]] const IPacketHeader& packetHeader,
         MultiplayerPackets::SyncComponentMismatch& packet)
     {
-        // If this is the first packet containing component version data from this connection, start a new vector for tracking the data.
-        if (!m_connectedAppsComponentVersions.contains(connection->GetConnectionId()))
-        {
-            m_connectedAppsComponentVersions[connection->GetConnectionId()] = AZStd::unordered_map<AZ::Name, AZ::HashValue64>();
-        }
-
-        // Populate a list of the other app's multiplayer components.
-        // Once we have received all their components, we can begin comparing.
-        auto& theirMultiplayerComponents = m_connectedAppsComponentVersions[connection->GetConnectionId()];
-        for (const auto& theirComponentVersion : packet.GetComponentVersions())
-        {
-            theirMultiplayerComponents.emplace(theirComponentVersion.first, theirComponentVersion.second);
-        }
-
         // We've received all the component data from this connection
         // Iterate over each component and see what's been added, missing, or modified
-        for (const auto& [name, hash] : theirMultiplayerComponents)
+        for (const auto& [theirComponentName, theirComponentHash] : packet.GetComponentVersions())
         {
             // Check for modified components
             AZ::HashValue64 localComponentHash;
-            if (GetMultiplayerComponentRegistry()->FindComponentVersionHashByName(name, localComponentHash))
+            if (GetMultiplayerComponentRegistry()->FindComponentVersionHashByName(theirComponentName, localComponentHash))
             {
                 
-                if (hash != localComponentHash)
+                if (theirComponentHash != localComponentHash)
                 {
                     AZLOG_ERROR(
                         "Multiplayer component mismatch! %s has a different version hash. Please make sure both client and server have "
                         "matching multiplayer components.",
-                        name.GetCStr());
+                        theirComponentName.GetCStr());
                 }
             }
             else
@@ -927,8 +913,8 @@ namespace Multiplayer
                     "Because we are missing this component, we don't know its name, only its hash. "
                     "To find the missing component go to the other machine and search for 's_versionHash = AZ::HashValue64{ 0x%" PRIx64" }' "
                     "inside the generated multiplayer auto-component build folder.",
-                    hash,
-                    hash);
+                    theirComponentHash,
+                    theirComponentHash);
             }
         }
 
@@ -940,7 +926,7 @@ namespace Multiplayer
                 AZ::Name ourComponentName = ourComponent.first;
 
                 bool theyHaveComponent = false;
-                for (const auto& theirComponent : theirMultiplayerComponents)
+                for (const auto& theirComponent : packet.GetComponentVersions())
                 {
                     if (ourComponentName == theirComponent.first)
                     {
@@ -965,10 +951,7 @@ namespace Multiplayer
             SendAllMultiplayerComponentVersionData(connection);
         }
 
-        // Clear out the list of components in case the other side fixes up their end (ie rebuilds using latest auto-components) and tries to reconnect
-        theirMultiplayerComponents.clear();
-        m_connectedAppsComponentVersions.erase(connection->GetConnectionId());
-
+        // If this is the server, we've recieved all the information we need. Now either disconnect, or accept the connection even though there's a mismatch.
         if (connection->GetConnectionRole() == ConnectionRole::Acceptor)
         {
             if (sv_versionMismatch_autoDisconnect)
