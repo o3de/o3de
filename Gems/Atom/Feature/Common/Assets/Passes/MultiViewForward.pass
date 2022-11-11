@@ -1,0 +1,111 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MultiViewForwardPassTemplate",
+            "PassClass": "RasterPass",
+            "Slots": [
+                // Inputs...
+                {
+                    "Name": "BRDFTextureInput",
+                    "ShaderInputName": "m_brdfMap",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                // Outputs...
+                {
+                    "Name": "DepthStencilOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Type": "DepthStencil"
+                        },
+                        "LoadAction": "Clear",
+                        "LoadActionStencil": "Clear"
+                    }
+                },
+                {
+                    "Name": "LightingOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        "LoadAction": "Clear"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "LightingAttachment",
+                    "SizeSource": {
+                      "Source": {
+                        "Pass": "Parent",
+                        "Attachment": "PipelineOutput"
+                      }
+                    },
+                  "MultisampleSource": {
+                    "Pass": "Parent",
+                    "Attachment": "PipelineOutput"
+                  },
+                    "ImageDescriptor": {
+                      "Format": "R16G16B16A16_FLOAT",
+                      "SharedQueueMask": "Graphics"
+                    }
+                },
+                {
+                    "Name": "DepthAttachment",
+                    "SizeSource": {
+                      "Source": {
+                        "Pass": "Parent",
+                        "Attachment": "PipelineOutput"
+                      }
+                    },
+                    "ImageDescriptor": {
+                      "Format": "D32_FLOAT_S8X24_UINT",
+                      "SharedQueueMask": "Graphics"
+                    }
+                },
+                {
+                    "Name": "BRDFTexture",
+                    "Lifetime": "Imported",
+                    "AssetRef": {
+                        "FilePath": "Textures/BRDFTexture.attimage"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                  "LocalSlot": "DepthStencilOutput",
+                  "AttachmentRef": {
+                    "Pass": "This",
+                    "Attachment": "DepthAttachment"
+                  }
+                },
+                {
+                    "LocalSlot": "LightingOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "LightingAttachment"
+                    }
+                },
+                {
+                    "LocalSlot": "BRDFTextureInput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "BRDFTexture"
+                    }
+                }
+            ]
+        }
+    }
+}

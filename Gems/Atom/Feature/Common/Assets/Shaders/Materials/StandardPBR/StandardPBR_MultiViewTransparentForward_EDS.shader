@@ -5,36 +5,24 @@
     // DrawListTag. If your pipeline doesn't have a "lowEndForward" DrawListTag, no draw items
     // for this shader will be created.
 
-    "Source" : "./StandardPBR_LowEndForward.azsl",
+    "Source" : "./StandardPBR_MultiViewForward.azsl",
 
-    "Definitions" : ["QUALITY_LOW_END_TIER1=1"],
+    "Definitions" : ["QUALITY_LOW_END_TIER1=1", "QUALITY_LOW_END_TIER2=1"],
 
     "DepthStencilState" :
     {
         "Depth" :
         {
             "Enable" : true,
+            "WriteMask" : "Zero",
             "CompareFunc" : "GreaterEqual"
         },
-        "Stencil" :
-        {
+        "Stencil" : {
             "Enable" : true,
             "ReadMask" : "0x00",
             "WriteMask" : "0xFF",
-            "FrontFace" :
-            {
-                "Func" : "Always",
-                "DepthFailOp" : "Keep",
-                "FailOp" : "Keep",
-                "PassOp" : "Replace"
-            },
-            "BackFace" :
-            {
-                "Func" : "Always",
-                "DepthFailOp" : "Keep",
-                "FailOp" : "Keep",
-                "PassOp" : "Replace"
-            }
+            "FrontFace" : { "Func" : "Always", "DepthFailOp" : "Keep", "FailOp" : "Keep", "PassOp" : "Replace" },
+            "BackFace" : { "Func" : "Always", "DepthFailOp" : "Keep", "FailOp" : "Keep", "PassOp" : "Replace" }
         }
     },
 
@@ -53,5 +41,13 @@
         ]
     },
 
-    "DrawList" : "lowEndForward"
+    "GlobalTargetBlendState" : 
+    {
+            "Enable" : true,
+            "BlendSource" : "One",
+            "BlendDest" : "AlphaSourceInverse",
+            "BlendOp" : "Add"
+    },
+
+    "DrawList" : "multiviewTransparent"
 }

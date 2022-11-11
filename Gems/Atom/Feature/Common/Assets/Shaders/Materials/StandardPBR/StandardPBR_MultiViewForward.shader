@@ -5,9 +5,9 @@
     // DrawListTag. If your pipeline doesn't have a "lowEndForward" DrawListTag, no draw items
     // for this shader will be created.
 
-    "Source" : "./StandardPBR_LowEndForward.azsl",
+    "Source" : "./StandardPBR_MultiViewForward.azsl",
 
-    "Definitions" : ["QUALITY_LOW_END_TIER1=1"],
+    "Definitions": ["QUALITY_LOW_END_TIER1=1", "QUALITY_LOW_END_TIER2=1", "OUTPUT_DEPTH=1"],
 
     "DepthStencilState" :
     {
@@ -53,5 +53,5 @@
         ]
     },
 
-    "DrawList" : "lowEndForward"
+    "DrawList" : "multiViewForward"
 }

@@ -1,11 +1,13 @@
 {
     "Source" : "SkyBox.azsl",
-
-    "Definitions": ["SKYBOX_TWO_OUTPUTS=1"],
+        
+    "Definitions": ["QUALITY_LOW_END_TIER1=1", "QUALITY_LOW_END_TIER2=1"],
 
     "DepthStencilState" : { 
         "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }
     },
+
+    "DrawList" : "forward",
 
     "ProgramSettings":
     {

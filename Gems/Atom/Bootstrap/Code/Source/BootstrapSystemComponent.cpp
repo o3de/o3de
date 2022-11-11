@@ -323,7 +323,7 @@ namespace AZ
                         ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
                         if (appType.IsGame())
                         {
-                            pipelineName = "passes/LowEndRenderPipeline.azasset";
+                            pipelineName = "passes/MultiViewRenderPipeline.azasset";
                         }
                     }
 
