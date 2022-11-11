@@ -28,6 +28,7 @@ namespace EMotionFX
     HitDetectionJointWidget::HitDetectionJointWidget(QWidget* parent)
         : SkeletonModelJointWidget(parent)
     {
+        setObjectName("EMotionFX.HitDetectionJointWidget");
     }
 
     QWidget* HitDetectionJointWidget::CreateContentWidget(QWidget* parent)

@@ -24,20 +24,12 @@
 #include <QLabel>
 #include <QHeaderView>
 #include <QLineEdit>
+#include <QGuiApplication>
+#include <QClipboard>
+#include <QMimeData>
 
 namespace EMotionFX
 {
-    struct HLine : public QVBoxLayout
-    {
-        HLine(QWidget* parent = nullptr)
-        {
-            setContentsMargins(0, 5, 0, 5);
-            auto* frame = new QFrame{parent};
-            frame->setFrameShape(QFrame::HLine);
-            frame->setFrameShadow(QFrame::Sunken);
-            addWidget(frame);
-        }
-    };
 
 
     JointPropertyWidget::JointPropertyWidget(QWidget* parent)
@@ -86,16 +78,13 @@ namespace EMotionFX
         m_addCollidersButton->setObjectName("EMotionFX.SkeletonOutlinerPlugin.JointPropertyWidget.addCollidersButton");
         connect(m_addCollidersButton, &AddCollidersButton::AddCollider, this, &JointPropertyWidget::OnAddCollider);
         connect(m_addCollidersButton, &AddCollidersButton::AddToRagdoll, this, &JointPropertyWidget::OnAddToRagdoll);
-        auto* marginLayout = new QVBoxLayout{m_addCollidersButton};
+        auto* marginLayout = new QVBoxLayout;
         marginLayout->setContentsMargins(10, 0, 10, 10);
         marginLayout->addWidget(m_addCollidersButton);
         mainLayout->addLayout(marginLayout);
 
-        mainLayout->addLayout(new HLine);
         mainLayout->addWidget(m_clothJointWidget);
-        mainLayout->addLayout(new HLine);
         mainLayout->addWidget(m_hitDetectionJointWidget);
-        mainLayout->addLayout(new HLine);
         mainLayout->addWidget(m_ragdollJointWidget);
     }
 
@@ -244,7 +233,8 @@ namespace EMotionFX
     {
         TypeId = Qt::UserRole + 1,
         ConfigType = Qt::UserRole + 2,
-        CopyFromType = Qt::UserRole + 3
+        CopyFromType = Qt::UserRole + 3,
+        PasteCopiedCollider = Qt::UserRole + 4
     };
     struct AddCollidersPallete : public QTreeView
     {
@@ -260,6 +250,15 @@ namespace EMotionFX
     };
     void AddCollidersButton::OnCreateContextMenu()
     {
+        SkeletonModel* skeletonModel = nullptr;
+        SkeletonOutlinerRequestBus::BroadcastResult(skeletonModel, &SkeletonOutlinerRequests::GetModel);
+
+        if(skeletonModel == nullptr)
+        {
+            return;
+        }
+        auto selectedIndices = skeletonModel->GetSelectionModel().selectedIndexes();
+
         delete model;
         model = new QStandardItemModel;
         QFrame* newFrame = new QFrame{this};
@@ -277,16 +276,31 @@ namespace EMotionFX
         newFrame->layout()->addWidget(treeView);
 
         AZStd::string actionName;
-        auto sections = QList<QPair<PhysicsSetup::ColliderConfigType, QString>>{{PhysicsSetup::ColliderConfigType::Cloth, "Cloth"},
-                         {PhysicsSetup::ColliderConfigType::HitDetection, "Hit Detection"}};
+        struct ColliderTypeInfo{
+            PhysicsSetup::ColliderConfigType type;
+            std::string name;
+            QIcon icon;
+        };
+        auto sections = QList<ColliderTypeInfo>{
+            {PhysicsSetup::ColliderConfigType::Cloth, "Cloth", QIcon(SkeletonModel::s_clothColliderIconPath)},
+            {PhysicsSetup::ColliderConfigType::HitDetection, "Hit Detection", QIcon(SkeletonModel::s_hitDetectionColliderIconPath)}};
+        bool nodeInRagdoll = ColliderHelpers::IsInRagdoll(selectedIndices.last());
+        if (nodeInRagdoll)
+        {
+            sections.append({PhysicsSetup::ColliderConfigType::Ragdoll, "Ragdoll", QIcon(SkeletonModel::s_ragdollColliderIconPath)});
+        }
         for (const auto& s : sections)
         {
-            auto& configType = s.first;
-            auto* sectionItem = new QStandardItem{ s.second.toStdString().c_str() };
+            auto& configType = s.type;
+            auto* sectionItem = new QStandardItem{ s.name.data() };
 
             for (auto& typeId : m_supportedColliderTypes)
             {
-                actionName = AZStd::string::format("Add %s %s", s.second.toStdString().c_str(), GetNameForColliderType(typeId).c_str());
+                if (typeId == azrtti_typeid<Physics::BoxShapeConfiguration>() && configType == PhysicsSetup::ColliderConfigType::Cloth)
+                {
+                    continue;
+                }
+                actionName = AZStd::string::format("Add %s %s", s.name.c_str(), GetNameForColliderType(typeId).c_str());
                 auto* item = new QStandardItem{ actionName.c_str() };
                 item->setData(typeId.ToString<AZStd::string>().c_str(), ItemRoles::TypeId);
                 item->setData(static_cast<int>(configType), ItemRoles::ConfigType);
@@ -295,29 +309,30 @@ namespace EMotionFX
             model->appendRow(sectionItem);
         }
 
-        auto ragdollItem = new QStandardItem{ "Ragdoll" };
-        model->appendRow(ragdollItem);
-        ragdollItem->setData(PhysicsSetup::ColliderConfigType::Ragdoll, ItemRoles::ConfigType);
+        if (!nodeInRagdoll)
+        {
+            auto ragdollItem = new QStandardItem{ QIcon{SkeletonModel::s_ragdollColliderIconPath}, "Add to Ragdoll" };
+            model->appendRow(ragdollItem);
+            ragdollItem->setData(PhysicsSetup::ColliderConfigType::Ragdoll, ItemRoles::ConfigType);
+        }
 
 
-        // todo copy from other collider type
-        SkeletonModel* skeletonModel = nullptr;
-        SkeletonOutlinerRequestBus::BroadcastResult(skeletonModel, &SkeletonOutlinerRequests::GetModel);
+        // copy from other collider type
         for (const auto& s : sections)
         {
-            const auto fromType = s.first;
-            const bool canCopyFrom = ColliderHelpers::CanCopyFrom(skeletonModel->GetSelectionModel().selectedIndexes(), fromType);
+            const auto fromType = s.type;
+            const bool canCopyFrom = ColliderHelpers::CanCopyFrom(selectedIndices, fromType);
             if (!canCopyFrom)
             {
                 continue;
             }
             for (const auto& innerSection: sections)
             {
-                if (innerSection.first == fromType)
+                if (innerSection.type == fromType)
                 {
                     continue;
                 }
-                const auto toType = innerSection.first;
+                const auto toType = innerSection.type;
                 const char* visualName = PhysicsSetup::GetVisualNameForColliderConfigType(fromType);
                 const char* visualNameTo = PhysicsSetup::GetVisualNameForColliderConfigType(toType);
                 actionName = AZStd::string::format("Copy from %s to %s", visualName, visualNameTo);
@@ -328,6 +343,18 @@ namespace EMotionFX
             }
         }
         // todo paste (if there is a copied collider)
+        const QMimeData* mimeData = QGuiApplication::clipboard()->mimeData();
+        const QByteArray clipboardContents = mimeData->data(ColliderHelpers::GetMimeTypeForColliderShape());
+
+
+        //pasteNewColliderAction->setEnabled(!clipboardContents.isEmpty());
+        //connect(pasteNewColliderAction, &QAction::triggered, this, [this, index]() { PasteCollider(index, false); } );
+        if (!clipboardContents.isEmpty())
+        {
+            auto pasteNewColliderItem = new QStandardItem("Paste collider");
+            pasteNewColliderItem->setData(true, ItemRoles::PasteCopiedCollider);
+            model->appendRow(pasteNewColliderItem);
+        }
 
         newFrame->setFixedWidth(width());
         newFrame->show();
@@ -338,8 +365,27 @@ namespace EMotionFX
 
     void AddCollidersButton::OnAddColliderActionTriggered(const QModelIndex& index)
     {
-        if (!index.isValid())
+       if (!index.isValid())
         {
+            return;
+        }
+
+        AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
+        SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
+        if (!selectedRowIndicesOutcome.IsSuccess())
+        {
+            return;
+        }
+        const QModelIndexList selectedRowIndices = selectedRowIndicesOutcome.GetValue();
+        if (selectedRowIndices.empty())
+        {
+            return;
+        }
+
+        if (index.data(ItemRoles::PasteCopiedCollider).value<bool>())
+        {
+            // PasteCollider(index, false);
+            // ColliderHelpers::PasteColliderFromClipboard(selectedRowIndices.first(), );
             return;
         }
         if (index.data(ItemRoles::ConfigType).isNull())
@@ -353,25 +399,13 @@ namespace EMotionFX
         {
             auto copyFromType = static_cast<PhysicsSetup::ColliderConfigType>(index.data(ItemRoles::CopyFromType).toInt());
             // todo check if we could have less
-            AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
-            SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
-            if (!selectedRowIndicesOutcome.IsSuccess())
-            {
-                return;
-            }
-
-            const QModelIndexList selectedRowIndices = selectedRowIndicesOutcome.GetValue();
-            if (selectedRowIndices.empty())
-            {
-                return;
-            }
 
             ColliderHelpers::CopyColliders(selectedRowIndices, copyFromType, configType);
             return;
         }
         auto colliderType = AZ::TypeId{index.data(ItemRoles::TypeId).toString().toStdString().c_str()};
 
-        if (configType == PhysicsSetup::ColliderConfigType::Ragdoll)
+        if (configType == PhysicsSetup::ColliderConfigType::Ragdoll && index.data(ItemRoles::TypeId).isNull())
         {
             emit AddToRagdoll();
             return;

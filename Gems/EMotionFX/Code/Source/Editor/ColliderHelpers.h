@@ -40,5 +40,9 @@ namespace EMotionFX
 
         static void CopyColliderToClipboard(const QModelIndex& modelIndex, size_t shapeIndex, PhysicsSetup::ColliderConfigType type);
         static void PasteColliderFromClipboard(const QModelIndex& modelIndex, size_t shapeIndex, PhysicsSetup::ColliderConfigType type, bool replace);
+
+        static bool IsInRagdoll(const QModelIndex& modelIndex);
+        static bool NodeHasClothCollider(const QModelIndex& modelIndex);
+        static bool NodeHasHitDetection(const QModelIndex& modelIndex);
     };
 } // namespace EMotionFX

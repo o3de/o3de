@@ -326,7 +326,6 @@ namespace EMotionFX
         {
             return;
         }
-        m_editor->InvalidateAll();
         if (!m_editor->HasDisplayedNodes())
         {
             this->hide();

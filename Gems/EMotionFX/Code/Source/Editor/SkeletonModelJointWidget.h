@@ -14,6 +14,7 @@
 #include <EMotionFX/Source/ActorInstance.h>
 #include <QWidget>
 #include <QItemSelection>
+#include <QVBoxLayout>
 #endif
 
 

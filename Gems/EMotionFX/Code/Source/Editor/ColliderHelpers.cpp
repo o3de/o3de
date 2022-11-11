@@ -297,4 +297,37 @@ namespace EMotionFX
         AZStd::string result;
         CommandSystem::GetCommandManager()->ExecuteCommandGroup(commandGroup, result);
     }
+
+    bool ColliderHelpers::IsInRagdoll(const QModelIndex& modelIndex)
+    {
+        const Actor* actor = modelIndex.data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
+        const Node* joint = modelIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
+
+        const AZStd::shared_ptr<PhysicsSetup>& physicsSetup = actor->GetPhysicsSetup();
+        const Physics::RagdollConfiguration& ragdollConfig = physicsSetup->GetRagdollConfig();
+
+        return ragdollConfig.FindNodeConfigByName(joint->GetNameString()) != nullptr;
+    }
+
+    bool ColliderHelpers::NodeHasClothCollider(const QModelIndex& modelIndex)
+    {
+        const Actor* actor = modelIndex.data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
+        const Node* joint = modelIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
+
+        const AZStd::shared_ptr<PhysicsSetup>& physicsSetup = actor->GetPhysicsSetup();
+        const auto& ragdollConfig = physicsSetup->GetClothConfig();
+
+        return ragdollConfig.FindNodeConfigByName(joint->GetNameString()) != nullptr;
+    }
+
+    bool ColliderHelpers::NodeHasHitDetection(const QModelIndex& modelIndex)
+    {
+        const Actor* actor = modelIndex.data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
+        const Node* joint = modelIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
+
+        const AZStd::shared_ptr<PhysicsSetup>& physicsSetup = actor->GetPhysicsSetup();
+        const auto& ragdollConfig = physicsSetup->GetHitDetectionConfig();
+
+        return ragdollConfig.FindNodeConfigByName(joint->GetNameString()) != nullptr;
+    }
 } // namespace EMotionFX

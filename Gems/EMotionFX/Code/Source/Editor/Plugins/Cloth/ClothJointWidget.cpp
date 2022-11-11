@@ -29,6 +29,7 @@ namespace EMotionFX
     ClothJointWidget::ClothJointWidget(QWidget* parent)
         : SkeletonModelJointWidget(parent)
     {
+        setObjectName("EMotionFX.ClothJointWidget");
     }
 
     QWidget* ClothJointWidget::CreateContentWidget(QWidget* parent)

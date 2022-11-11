@@ -16,6 +16,7 @@
 #include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
 #include <Editor/Plugins/Ragdoll/RagdollNodeWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
+#include <Editor/ColliderHelpers.h>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
@@ -101,7 +102,7 @@ namespace EMotionFX
 
 
         // Check the node is in the ragdoll        
-        EXPECT_TRUE(RagdollNodeInspectorPlugin::IsNodeInRagdoll(m_indexList[3]));
+        EXPECT_TRUE(ColliderHelpers::IsInRagdoll(m_indexList[3]));
     }
 
     TEST_F(RagdollEditTestsFixture, RagdollAddJointsAndRemove)

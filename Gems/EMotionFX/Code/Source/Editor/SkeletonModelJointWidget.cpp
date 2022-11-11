@@ -21,6 +21,19 @@
 
 namespace EMotionFX
 {
+    struct HLineLayout : public QVBoxLayout
+    {
+        HLineLayout(QWidget* parent = nullptr)
+        {
+            setContentsMargins(0, 5, 0, 5);
+            auto* frame = new QFrame{parent};
+            frame->setFrameShape(QFrame::HLine);
+            frame->setFrameShadow(QFrame::Sunken);
+            addWidget(frame);
+        }
+    };
+
+
     int SkeletonModelJointWidget::s_jointLabelSpacing = 17;
     int SkeletonModelJointWidget::s_jointNameSpacing = 130;
 
@@ -37,6 +50,7 @@ namespace EMotionFX
         mainLayout->setMargin(0);
         mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
         mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
+        mainLayout->addLayout(new HLineLayout{});
 
         // Contents Card
         m_contentCard = new AzQtComponents::Card{this};
