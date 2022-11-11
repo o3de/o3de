@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Utils/Utils.h>
 #include <Editor/Include/ScriptCanvas/Components/EditorGraph.h>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -33,9 +34,7 @@ namespace ScriptEvents
         {
             if (sourceFilePath.empty())
             {
-                AZ::IO::FixedMaxPath resolvedProjectRoot;
-                AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedProjectRoot, "@projectroot@");
-
+                AZ::IO::FixedMaxPathString resolvedProjectRoot = AZ::Utils::GetProjectPath();
                 AZStd::string errorMessage;
 
                 const QStringList nameFilters = { "ScriptEvent Files Saved from the ScriptCanvas Editor (*.scriptevents)" };
@@ -60,8 +59,7 @@ namespace ScriptEvents
             }
             else
             {
-                AZ::IO::FixedMaxPath resolvedProjectRoot;
-                AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedProjectRoot, "@projectroot@");
+                AZ::IO::FixedMaxPathString resolvedProjectRoot = AZ::Utils::GetProjectPath();
                 const auto saveAsFilePath = QFileDialog::getSaveFileName(
                     nullptr, QObject::tr("Save As..."), resolvedProjectRoot.c_str(), QObject::tr("All ScriptEvent Files (*.scriptevents)"));
                 if (!saveAsFilePath.toUtf8().isEmpty())

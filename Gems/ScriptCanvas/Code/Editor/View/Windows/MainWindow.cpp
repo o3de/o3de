@@ -4490,7 +4490,7 @@ namespace ScriptCanvasEditor
 
     bool MainWindow::OnScriptEventSave(Save save)
     {
-        bool saveInPlace = save == Save::InPlace ? true : false;
+        bool saveInPlace = (save == Save::InPlace);
         auto savedSource = ScriptEvents::Editor::SaveAction(m_activeGraph, saveInPlace);
 
         if (savedSource.IsGraphValid())
