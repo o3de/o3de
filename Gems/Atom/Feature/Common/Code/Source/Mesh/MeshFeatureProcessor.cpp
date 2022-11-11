@@ -194,8 +194,8 @@ namespace AZ
                             drawPacket.Update(*GetParentScene(), true);
                         }
                     }
-                    model.m_cullable.m_flags = 0;
-                    model.m_cullable.m_prevFlags = 0;
+                    model.m_cullable.m_shaderOptionFlags = 0;
+                    model.m_cullable.m_prevShaderOptionFlags = 0;
                     model.m_cullableNeedsRebuild = true;
                     model.BuildCullable();
                 }
@@ -207,7 +207,7 @@ namespace AZ
             {
                 for (auto& model : m_modelData)
                 {
-                    if (model.m_cullable.m_prevFlags != model.m_cullable.m_flags)
+                    if (model.m_cullable.m_prevShaderOptionFlags != model.m_cullable.m_shaderOptionFlags)
                     {
                         // Per mesh shader option flags have changed, so rebuild the draw packet with the new shader options.
                         for (RPI::MeshDrawPacketList& drawPacketList : model.m_drawPacketListsByLod)
@@ -217,7 +217,7 @@ namespace AZ
                                 m_flagRegistry->VisitTags(
                                     [&](AZ::Name shaderOption, FlagRegistry::TagType tag)
                                     {
-                                        bool shaderOptionValue = (model.m_cullable.m_flags & tag.GetIndex()) > 0;
+                                        bool shaderOptionValue = (model.m_cullable.m_shaderOptionFlags & tag.GetIndex()) > 0;
                                         drawPacket.SetShaderOption(shaderOption, AZ::RPI::ShaderOptionValue(shaderOptionValue));
                                     }
                                 );
@@ -243,7 +243,8 @@ namespace AZ
             }
             for (auto& model : m_modelData)
             {
-                model.m_cullable.m_prevFlags = model.m_cullable.m_flags.exchange(0);
+                model.m_cullable.m_prevShaderOptionFlags = model.m_cullable.m_shaderOptionFlags.exchange(0);
+                model.m_cullable.m_hasMoved = false;
             }
         }
 
@@ -387,6 +388,7 @@ namespace AZ
                 ModelDataInstance& modelData = *meshHandle;
                 modelData.m_cullBoundsNeedsUpdate = true;
                 modelData.m_objectSrgNeedsUpdate = true;
+                modelData.m_cullable.m_hasMoved = true;
 
                 m_transformService->SetTransformForId(meshHandle->m_objectId, transform, nonUniformScale);
 
@@ -591,7 +593,7 @@ namespace AZ
         }
 
 
-        RHI::Ptr<MeshFeatureProcessor::FlagRegistry> MeshFeatureProcessor::GetFlagRegistry()
+        RHI::Ptr<MeshFeatureProcessor::FlagRegistry> MeshFeatureProcessor::GetShaderOptionFlagRegistry()
         {
             if (m_flagRegistry == nullptr)
             {
@@ -649,7 +651,7 @@ namespace AZ
 
             for (auto& model : m_modelData)
             {
-                ++flagStats[model.m_cullable.m_flags.load()];
+                ++flagStats[model.m_cullable.m_shaderOptionFlags.load()];
             }
 
             for (auto [flag, references] : flagStats)

@@ -51,6 +51,7 @@ namespace AZ::Render
         void SetNormalShadowBias(ShadowId id, float normalShadowBias) override;
         void SetShadowFilterMethod(ShadowId id, ShadowFilterMethod method) override;
         void SetFilteringSampleCount(ShadowId id, uint16_t count) override;
+        void SetUseCachedShadows(ShadowId id, bool useCachedShadows) override;
         void SetShadowProperties(ShadowId id, const ProjectedShadowDescriptor& descriptor) override;
         const ProjectedShadowDescriptor& GetShadowProperties(ShadowId id) override;
 
@@ -80,6 +81,7 @@ namespace AZ::Render
             RPI::ViewPtr m_shadowmapView;
             float m_bias = 0.1f;
             ShadowId m_shadowId;
+            bool m_useCachedShadows = false;
         };
 
         using FilterParameter = EsmShadowmapsPass::FilterParameter;

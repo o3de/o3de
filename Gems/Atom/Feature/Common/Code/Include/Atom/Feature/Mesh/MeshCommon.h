@@ -37,7 +37,7 @@ namespace AZ::Render::MeshCommon
                         if (nodeIsContainedInBounds || ShapeIntersection::Overlaps(boundsRef, cullable->m_cullData.m_boundingSphere))
                         {
                             // This flag is cleared by the mesh feature processor each frame in OnEndPrepareRender()
-                            cullable->m_flags.fetch_or(flag);
+                            cullable->m_shaderOptionFlags.fetch_or(flag);
                         }
                     }
                 }

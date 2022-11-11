@@ -208,6 +208,15 @@ namespace AZ::Render
         m_deviceBufferNeedsUpdate = true;
     }
 
+    void ProjectedShadowFeatureProcessor::SetUseCachedShadows(ShadowId id, bool useCachedShadows)
+    {
+        AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetUseCachedShadows().");
+        ShadowProperty& shadowProperty = GetShadowPropertyFromShadowId(id);
+        shadowProperty.m_useCachedShadows = useCachedShadows;
+
+        // TODO: switch between shadow map types, detect meshes that have moved for shadow re-render, and allow for manually re-rendering.
+    }
+
     void ProjectedShadowFeatureProcessor::SetShadowProperties(ShadowId id, const ProjectedShadowDescriptor& descriptor)
     {
         AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetShadowProperties().");

@@ -200,7 +200,7 @@ namespace AZ
             bool GetVisible(const MeshHandle& meshHandle) const override;
             void SetUseForwardPassIblSpecular(const MeshHandle& meshHandle, bool useForwardPassIblSpecular) override;
 
-            RHI::Ptr <FlagRegistry> GetFlagRegistry();
+            RHI::Ptr <FlagRegistry> GetShaderOptionFlagRegistry();
 
             // called when reflection probes are modified in the editor so that meshes can re-evaluate their probes
             void UpdateMeshReflectionProbes();
