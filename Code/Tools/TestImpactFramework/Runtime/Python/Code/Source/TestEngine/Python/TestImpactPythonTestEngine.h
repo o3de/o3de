@@ -32,8 +32,7 @@ namespace TestImpact
     class PythonTestEngine
     {
     public:
-        using TestTargetType = PythonTestTarget;
-        using TestCaseCoverageType = TestCoverage;
+        using TestTarget = PythonTestTarget;
 
         //! Configures the test engine with the necessary path information for launching test targets and managing the artifacts they
         //! produce.
@@ -62,7 +61,7 @@ namespace TestImpact
         //! empty).
         //! @param callback The client callback function to handle completed test target runs.
         //! @ returns The sequence result and the test run results and test coverages for the test targets that were run.
-        [[nodiscard]] TestEngineInstrumentedRunResult<TestTargetType, TestCaseCoverageType>
+        [[nodiscard]] TestEngineInstrumentedRunResult<TestTarget, TestCoverage>
         InstrumentedRun(
             const AZStd::vector<const PythonTestTarget*>& testTargets,
             Policy::ExecutionFailure executionFailurePolicy,

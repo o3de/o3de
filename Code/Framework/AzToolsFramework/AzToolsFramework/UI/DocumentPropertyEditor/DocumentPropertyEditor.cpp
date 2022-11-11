@@ -11,6 +11,7 @@
 #include <QCheckBox>
 #include <QDialog>
 #include <QLineEdit>
+#include <QSignalBlocker>
 #include <QTimer>
 #include <QVBoxLayout>
 
@@ -32,12 +33,12 @@ AZ_CVAR(
     AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
     "If set, enables experimental Document Property Editor support, replacing the Reflected Property Editor where possible");
 
-
-template <class T>
+template<class T>
 void DetachAndHide(T* widget)
 {
     if (widget)
     {
+        QSignalBlocker widgetBlocker(widget);
         widget->hide();
         widget->setParent(nullptr);
     }
@@ -1249,6 +1250,7 @@ namespace AzToolsFramework
     void DocumentPropertyEditor::Clear()
     {
         m_rowPool->RecycleInstance(m_rootNode);
+        m_rootNode = nullptr;
     }
 
     void DocumentPropertyEditor::AddAfterWidget(QWidget* precursor, QWidget* widgetToAdd)
