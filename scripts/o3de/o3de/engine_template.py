@@ -1380,10 +1380,13 @@ def create_from_template(destination_path: pathlib.Path,
         replacements.append((replace_this, with_this))
 
     sanitized_cpp_name = utils.sanitize_identifier_for_cpp(destination_name)
+    lowercase_name = destination_name.lower()
+    sanitized_lowercase_name = utils.sanitize_identifier_for_cpp(lowercase_name)
     # dst name is Name
     replacements.append(("${Name}", destination_name))
     replacements.append(("${NameUpper}", destination_name.upper()))
-    replacements.append(("${NameLower}", destination_name.lower()))
+    replacements.append(("${NameLower}", lowercase_name))
+    replacements.append(("${SanitizedNameLower}", lowercase_name))
     replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
 
     if _instantiate_template(template_json_data,
@@ -2090,10 +2093,13 @@ def create_gem(gem_path: pathlib.Path,
         replacements.append((replace_this, with_this))
 
     sanitized_cpp_name = utils.sanitize_identifier_for_cpp(gem_name)
+    lowercase_name = gem_name.lower()
+    sanitized_lowercase_name = utils.sanitize_identifier_for_cpp(lowercase_name)
     # gem name
     replacements.append(("${Name}", gem_name))
     replacements.append(("${NameUpper}", gem_name.upper()))
-    replacements.append(("${NameLower}", gem_name.lower()))
+    replacements.append(("${NameLower}", lowercase_name))
+    replacements.append(("${SanitizedNameLower}", sanitized_lowercase_name))
     replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
 
     if display_name:

@@ -411,62 +411,6 @@
                 }
             },
             {
-                "Key": 14,
-                "Value": {
-                    "$type": "DynamicNode",
-                    "m_inputDataSlots": [
-                        {
-                            "Key": {
-                                "m_name": "inW"
-                            },
-                            "Value": {
-                                "m_value": {
-                                    "$type": "float",
-                                    "Value": 0.0
-                                }
-                            }
-                        },
-                        {
-                            "Key": {
-                                "m_name": "inX"
-                            },
-                            "Value": {
-                                "m_value": {
-                                    "$type": "float",
-                                    "Value": 0.0
-                                }
-                            }
-                        },
-                        {
-                            "Key": {
-                                "m_name": "inY"
-                            },
-                            "Value": {
-                                "m_value": {
-                                    "$type": "float",
-                                    "Value": 0.0
-                                }
-                            }
-                        },
-                        {
-                            "Key": {
-                                "m_name": "inZ"
-                            },
-                            "Value": {
-                                "m_value": {
-                                    "$type": "float",
-                                    "Value": 0.0
-                                }
-                            }
-                        }
-                    ],
-                    "toolId": {
-                        "Value": 2034248906
-                    },
-                    "configId": "{B49B9177-73FD-4ADF-B9BC-489A3E1EA0DB}"
-                }
-            },
-            {
                 "Key": 15,
                 "Value": {
                     "$type": "DynamicNode",
@@ -793,20 +737,6 @@
             },
             {
                 "m_sourceEndpoint": [
-                    14,
-                    {
-                        "m_name": "outValue"
-                    }
-                ],
-                "m_targetEndpoint": [
-                    15,
-                    {
-                        "m_name": "inValue1"
-                    }
-                ]
-            },
-            {
-                "m_sourceEndpoint": [
                     9,
                     {
                         "m_name": "outValue"
@@ -849,48 +779,6 @@
             },
             {
                 "m_sourceEndpoint": [
-                    12,
-                    {
-                        "m_name": "outX"
-                    }
-                ],
-                "m_targetEndpoint": [
-                    14,
-                    {
-                        "m_name": "inX"
-                    }
-                ]
-            },
-            {
-                "m_sourceEndpoint": [
-                    12,
-                    {
-                        "m_name": "outY"
-                    }
-                ],
-                "m_targetEndpoint": [
-                    14,
-                    {
-                        "m_name": "inY"
-                    }
-                ]
-            },
-            {
-                "m_sourceEndpoint": [
-                    12,
-                    {
-                        "m_name": "outZ"
-                    }
-                ],
-                "m_targetEndpoint": [
-                    14,
-                    {
-                        "m_name": "inZ"
-                    }
-                ]
-            },
-            {
-                "m_sourceEndpoint": [
                     17,
                     {
                         "m_name": "outUV"
@@ -900,6 +788,20 @@
                     16,
                     {
                         "m_name": "inUV"
+                    }
+                ]
+            },
+            {
+                "m_sourceEndpoint": [
+                    12,
+                    {
+                        "m_name": "outNormal"
+                    }
+                ],
+                "m_targetEndpoint": [
+                    15,
+                    {
+                        "m_name": "inValue1"
                     }
                 ]
             }
@@ -920,8 +822,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    1160.0,
-                                    260.0
+                                    1180.0,
+                                    200.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -948,8 +850,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    -560.0,
-                                    -120.0
+                                    -460.0,
+                                    -180.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -976,8 +878,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    -480.0,
-                                    100.0
+                                    -540.0,
+                                    40.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -1004,8 +906,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    -360.0,
-                                    320.0
+                                    -340.0,
+                                    360.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -1032,8 +934,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    -200.0,
-                                    420.0
+                                    -180.0,
+                                    360.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -1060,8 +962,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    420.0,
-                                    360.0
+                                    440.0,
+                                    300.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -1088,8 +990,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    100.0,
-                                    420.0
+                                    120.0,
+                                    360.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -1116,8 +1018,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    420.0,
-                                    140.0
+                                    440.0,
+                                    80.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -1144,8 +1046,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    -200.0,
-                                    320.0
+                                    -180.0,
+                                    260.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -1196,8 +1098,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    420.0,
-                                    260.0
+                                    440.0,
+                                    200.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -1224,8 +1126,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    -360.0,
-                                    -560.0
+                                    -40.0,
+                                    -620.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -1280,8 +1182,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    -200.0,
-                                    -560.0
+                                    -240.0,
+                                    -740.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -1308,8 +1210,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    800.0,
-                                    400.0
+                                    820.0,
+                                    340.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -1336,8 +1238,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    -340.0,
-                                    -380.0
+                                    -180.0,
+                                    -440.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -1364,8 +1266,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    -500.0,
-                                    -380.0
+                                    -480.0,
+                                    -340.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {

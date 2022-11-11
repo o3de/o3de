@@ -68,6 +68,12 @@ public:
     QMenu* const GetAspectMenu();
     QMenu* const GetResolutionMenu();
 
+    void SetNoViewportInfo();
+    void SetNormalViewportInfo();
+    void SetFullViewportInfo();
+    void SetCompactViewportInfo();
+    void OnToggleDisplayInfo();
+
     void InitializePrefabViewportFocusPathHandler(AzQtComponents::BreadCrumbs* breadcrumbsWidget, QToolButton* backButton);
 
 Q_SIGNALS:
@@ -124,17 +130,11 @@ protected:
 
     void CreateViewportInformationMenu();
     QMenu* const GetViewportInformationMenu();
-    void SetNoViewportInfo();
-    void SetNormalViewportInfo();
-    void SetFullViewportInfo();
-    void SetCompactViewportInfo();
 
     void OnBnClickedGotoPosition();
     void OnBnClickedMuteAudio();
 
     void UpdateMuteActionText();
-
-    void OnToggleDisplayInfo();
 
     void CheckForCameraSpeedUpdate();
 

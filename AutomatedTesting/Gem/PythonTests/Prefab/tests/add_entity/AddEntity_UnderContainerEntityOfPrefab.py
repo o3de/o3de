@@ -41,7 +41,7 @@ def AddEntity_UnderContainerEntityOfPrefab():
     child_entity_inside_prefab = child_entity_ids_inside_prefab_instance[0]
     child_entity_inside_prefab.focus_on_owning_prefab()
 
-    second_entity = child_entity_inside_prefab.create_editor_entity(parent_id=child_instance.container_entity.id)
+    second_entity = EditorEntity.create_editor_entity(parent_id=child_instance.container_entity.id)
 
     # Wait till prefab propagation finishes before validating add second child entity
     PrefabWaiter.wait_for_propagation()

@@ -42,6 +42,7 @@
 
 namespace MaterialCanvas
 {
+#if defined(AZ_ENABLE_TRACING)
     namespace
     {
         bool IsCompileLoggingEnabled()
@@ -49,7 +50,7 @@ namespace MaterialCanvas
             return AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvasDocument/CompileLoggingEnabled", false);
         }
     } // namespace
-
+#endif // AZ_ENABLE_TRACING
     void MaterialCanvasDocument::Reflect(AZ::ReflectContext* context)
     {
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -125,7 +126,7 @@ namespace MaterialCanvas
     {
         // Setting up placeholder document type info and extensions.
         AtomToolsFramework::DocumentTypeInfo documentType;
-        documentType.m_documentTypeName = "Material Canvas";
+        documentType.m_documentTypeName = "Material Graph";
         documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo) {
             // A list of all registered data types is needed to create a graph context
             GraphModel::DataTypeList registeredDataTypes;
@@ -133,7 +134,7 @@ namespace MaterialCanvas
                 registeredDataTypes, toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::GetRegisteredDataTypes);
 
             // Creating a graph context per document by default. It can be overridden in the application to provide a shared context.
-            auto graphContext = AZStd::make_shared<GraphModel::GraphContext>("Material Canvas", ".materialcanvas.azasset", registeredDataTypes);
+            auto graphContext = AZStd::make_shared<GraphModel::GraphContext>("Material Graph", ".materialgraph", registeredDataTypes);
             graphContext->CreateModuleGraphManager();
             return aznew MaterialCanvasDocument(toolId, documentTypeInfo, graphContext);
         };
@@ -143,21 +144,18 @@ namespace MaterialCanvas
         // filters is used to determine how the create document dialog is populated. The base document class rejects file types that are not
         // listed in the extension supported for opening. Will change to make the base class support opening anything listed in open
         // or create and the create dialog look at the create list exclusively.
-        documentType.m_supportedExtensionsToCreate.push_back({ "Material Canvas Template", "materialcanvastemplate.azasset" });
-        documentType.m_supportedExtensionsToCreate.push_back({ "Material Canvas", "materialcanvas.azasset" });
-        documentType.m_supportedExtensionsToOpen.push_back({ "Material Canvas Template", "materialcanvastemplate.azasset" });
-        documentType.m_supportedExtensionsToOpen.push_back({ "Material Canvas", "materialcanvas.azasset" });
-        documentType.m_supportedExtensionsToSave.push_back({ "Material Canvas", "materialcanvas.azasset" });
-
-        // Currently using AnyAsset As a placeholder until proper asset types are created.
-        documentType.m_supportedAssetTypesToCreate.insert(azrtti_typeid<AZ::RPI::AnyAsset>());
+        documentType.m_supportedExtensionsToCreate.push_back({ "Material Graph Template", "materialgraphtemplate" });
+        documentType.m_supportedExtensionsToCreate.push_back({ "Material Graph", "materialgraph" });
+        documentType.m_supportedExtensionsToOpen.push_back({ "Material Graph", "materialgraph" });
+        documentType.m_supportedExtensionsToSave.push_back({ "Material Graph", "materialgraph" });
 
         // Using a blank template file to create a new document until UX and workflow can be revisited for creating new or empty documents.
         // However, there may be no need as this is an established pattern in other applications that provide multiple options and templates
         // to use as a starting point for a new document.
-        documentType.m_defaultAssetIdToCreate = AtomToolsFramework::GetSettingsObject<AZ::Data::AssetId>(
-            "/O3DE/Atom/MaterialCanvas/DefaultMaterialCanvasTemplateAsset",
-            AZ::RPI::AssetUtils::GetAssetIdForProductPath("materialCanvas/blank.materialcanvastemplate.azasset"));
+        documentType.m_defaultDocumentTemplate =
+            AtomToolsFramework::GetPathWithoutAlias(AtomToolsFramework::GetSettingsValue<AZStd::string>(
+                "/O3DE/Atom/MaterialCanvas/DefaultMaterialGraphTemplate",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/blank.materialgraphtemplate"));
         return documentType;
     }
 
@@ -326,7 +324,7 @@ namespace MaterialCanvas
         // Sanitize the document name to remove any illegal characters that could not be used as symbols in generated code
         AZStd::string documentName;
         AZ::StringFunc::Path::GetFullFileName(m_absolutePath.c_str(), documentName);
-        AZ::StringFunc::Replace(documentName, ".materialcanvas.azasset", "");
+        AZ::StringFunc::Replace(documentName, ".materialgraph", "");
         return AtomToolsFramework::GetSymbolNameFromText(documentName);
     }
 
@@ -1264,7 +1262,7 @@ namespace MaterialCanvas
         m_generatedFiles.clear();
 
         // Skip compilation if there is no graph or this is a template.
-        if (!m_graph || AZ::StringFunc::EndsWith(m_absolutePath, "materialcanvastemplate.azasset"))
+        if (!m_graph || m_absolutePath.ends_with("materialgraphtemplate"))
         {
             return false;
         }
@@ -1337,7 +1335,7 @@ namespace MaterialCanvas
                 TemplateFileData templateFileData;
                 templateFileData.m_inputPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
                 templateFileData.m_outputPath = GetOutputPathFromTemplatePath(templateFileData.m_inputPath);
-                if (!AZ::StringFunc::EndsWith(templateFileData.m_outputPath, ".materialtype"))
+                if (!templateFileData.m_outputPath.ends_with(".materialtype"))
                 {
                     // Attempt to load the template file to do symbol substitution and inject code or data
                     if (!templateFileData.Load())
@@ -1438,7 +1436,7 @@ namespace MaterialCanvas
             // generated shader files to prevent AP errors because of missing dependencies.
             for (const auto& templateFileData : templateFileDataVec)
             {
-                if (!AZ::StringFunc::EndsWith(templateFileData.m_outputPath, ".material"))
+                if (!templateFileData.m_outputPath.ends_with(".material"))
                 {
                     if (!templateFileData.Save())
                     {
@@ -1456,7 +1454,7 @@ namespace MaterialCanvas
                 // Remove any aliases to resolve the absolute path to the template file
                 const AZStd::string templateInputPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
                 const AZStd::string templateOutputPath = GetOutputPathFromTemplatePath(templateInputPath);
-                if (!AZ::StringFunc::EndsWith(templateOutputPath, ".materialtype"))
+                if (!templateOutputPath.ends_with(".materialtype"))
                 {
                     continue;
                 }
@@ -1473,7 +1471,7 @@ namespace MaterialCanvas
             // After the material types have been processed and saved, we can save the materials that reference them.
             for (const auto& templateFileData : templateFileDataVec)
             {
-                if (AZ::StringFunc::EndsWith(templateFileData.m_outputPath, ".material"))
+                if (templateFileData.m_outputPath.ends_with(".material"))
                 {
                     if (!templateFileData.Save())
                     {

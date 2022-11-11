@@ -810,6 +810,16 @@ namespace AzFramework
     // the results.  For this reason, it is a direct call and protects its structures with a lock.
     void AssetCatalog::AssetChanged(const AZStd::vector<AzFramework::AssetSystem::AssetNotificationMessage>& messages, bool isCatalogInitialize)
     {
+        if (isCatalogInitialize && !m_initialized)
+        {
+            // This can happen when running with VFS, where the AP connection is done first
+            // and it's too early to send asset changed messages since catalog is not initialized yet.
+            AZ_TracePrintf(
+                "AssetCatalog",
+                "Skipping AssetChanged to update the catalog since it's too early, catalog has not been initialized yet.");
+            return;
+        }
+
         for (const auto& message : messages)
         {
             AZStd::string relativePath = message.m_data;
