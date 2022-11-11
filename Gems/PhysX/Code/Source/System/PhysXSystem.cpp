@@ -53,7 +53,7 @@ namespace PhysX
     // A helper function.
     AZ::Debug::PerformanceCollector::DataLogType GetDataLogTypeFromCVar(const AZ::CVarFixedString& newCaptureType)
     {
-        if (newCaptureType[0] == 'a' || newCaptureType[0] == 'A')
+        if (newCaptureType.starts_with('a') || newCaptureType.starts_with('A'))
         {
             return AZ::Debug::PerformanceCollector::DataLogType::LogAllSamples;
         }
@@ -70,29 +70,31 @@ namespace PhysX
         },
         AZ::ConsoleFunctorFlags::DontReplicate, "Number of frames in which performance will be measured per batch.");
 
-    AZ_CVAR(AZ::u32, physx_metricsNumberOfCaptureBatches,
-        0, // Starts at 0, which means "do not capture performance data". When this variable changes to >0 we'll start performance capture.
+    AZ_CVAR(AZ::u32, physx_metricsNumberOfCaptureBatches, 0,
         [](const AZ::u32& newValue)
         {
             PhysX::GetPhysXSystem()->GetPerformanceCollector()->UpdateNumberOfCaptureBatches(newValue);
         },
-        AZ::ConsoleFunctorFlags::DontReplicate, "Collects and reports PhysX performance in this number of batches.");
+        AZ::ConsoleFunctorFlags::DontReplicate,
+            "Collects and reports PhysX performance in this number of batches. "
+            "Starts at 0, which means do not capture performance data. "
+            "When this variable changes to > 0 we'll start performance capture.");
 
-    AZ_CVAR(AZ::CVarFixedString, physx_metricsDataLogType,
-        "statistical", // (s)(S)tatistical Summary (average, min, max, stdev) / (a)(A)ll Samples. Default=s.
+    AZ_CVAR(AZ::CVarFixedString, physx_metricsDataLogType, "statistical",
         [](const AZ::CVarFixedString& newValue)
         {
             PhysX::GetPhysXSystem()->GetPerformanceCollector()->UpdateDataLogType(GetDataLogTypeFromCVar(newValue));
         },
         AZ::ConsoleFunctorFlags::DontReplicate, "Defines the kind of data collection and logging. "
-        "If starts with 's' it will log statistical summaries, if starts with 'a' will log each sample of data (high verbosity).");
+            "If starts with 's' it will log statistical summaries (average, min, max, stdev), "
+            "if starts with 'a' or 'A' will log all samples of data (high verbosity). Default=s");
 
     AZ_CVAR(AZ::u32, physx_metricsWaitTimePerCaptureBatch, 0,
         [](const AZ::u32& newValue)
         {
             PhysX::GetPhysXSystem()->GetPerformanceCollector()->UpdateWaitTimeBeforeEachBatch(AZStd::chrono::seconds(newValue));
         },
-        AZ::ConsoleFunctorFlags::DontReplicate,"How many seconds to wait before each batch of performance capture.");
+        AZ::ConsoleFunctorFlags::DontReplicate, "How many seconds to wait before each batch of performance capture.");
 
 
     PhysXSystem::PhysXSystem(AZStd::unique_ptr<PhysXSettingsRegistryManager> registryManager, const physx::PxCookingParams& cookingParams)
