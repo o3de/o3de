@@ -24,6 +24,7 @@
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Name/NameDictionary.h>
+#include <AzCore/Utils/TypeHash.h>
 #include <limits>
 
 namespace AzNetworking
@@ -196,6 +197,18 @@ namespace AzNetworking
                 }
             }
             return success;
+        }
+    };
+
+    
+    // Pair
+    template<class KeyType, class ValueType>
+    struct SerializeObjectHelper<AZStd::pair<KeyType, ValueType>>
+    {
+        static bool SerializeObject(ISerializer& serializer, AZStd::pair<KeyType, ValueType>& value)
+        {
+            bool result = serializer.Serialize(value.first, "key") && serializer.Serialize(value.second, "value");
+            return result;
         }
     };
 
