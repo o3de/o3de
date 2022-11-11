@@ -25,15 +25,10 @@ QT_FORWARD_DECLARE_CLASS(QDir)
 namespace O3DE::ProjectManager
 {
     class FormFolderBrowseEditWidget;
-    
     class FormLineEditWidget;
-    
     class FormLineEditTagsWidget;
-    
     class FormOptionsWidget;
-    
     class FormComboBoxWidget;
-
     class ScreenHeader;
 
     class CreateGem : public ScreenWidget

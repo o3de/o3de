@@ -112,9 +112,9 @@ namespace O3DE::ProjectManager
         m_oldGemName = oldGemInfo.m_name;
 
         //load the supported platforms
-        for(int i = GemInfo::NumPlatforms-1; i >= 0; i--)
+        for(int i = GemInfo::NumPlatforms; i > 0; i--)
         {
-            const GemInfo::Platform platform = static_cast<GemInfo::Platform>(1 << i);
+            const GemInfo::Platform platform = static_cast<GemInfo::Platform>(1 << (i - 1));
             if(platform & oldGemInfo.m_platforms)
             {
                 m_platformOptions->Enable(GemInfo::GetPlatformString(platform));

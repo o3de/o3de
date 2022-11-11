@@ -2096,35 +2096,13 @@ def create_gem(gem_path: pathlib.Path,
     replacements.append(("${NameLower}", gem_name.lower()))
     replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
 
-    if display_name:
-        replacements.append(("${DisplayName}", display_name))
-    else:
-        replacements.append(("${DisplayName}", gem_name))
-
-    if summary:
-        replacements.append(("${Summary}", summary))
-    else:
-        replacements.append(("${Summary}", ""))
+    replacements.append(("${DisplayName}", display_name if display_name else gem_name))
+    replacements.append(("${Summary}", summary if summary else ""))
+    replacements.append(("${License}", license if license else ""))
+    replacements.append(("${LicenseURL}", license_url if license_url else ""))
+    replacements.append(("${Origin}", origin if origin else ""))
+    replacements.append(("${OriginURL}", origin_url if origin_url else ""))
     
-    if license:
-        replacements.append(("${License}", license))
-    else:
-        replacements.append(("${License}", ""))
-    
-    if license_url:
-        replacements.append(("${LicenseURL}", license_url))
-    else:
-        replacements.append(("${LicenseURL}", ""))
-    
-    if origin:
-        replacements.append(("${Origin}", origin))
-    else:
-        replacements.append(("${Origin}", ""))
-    
-    if origin_url:
-        replacements.append(("${OriginURL}", origin_url))
-    else:
-        replacements.append(("${OriginURL}", ""))
 
     tags = [gem_name]
     if user_tags:
@@ -2144,25 +2122,10 @@ def create_gem(gem_path: pathlib.Path,
     #remove the first and last quote because those already exist in gem.json
     replacements.append(("${Platforms}", platforms_quoted[1:-1]))
 
-    if icon_path:
-        replacements.append(("${IconPath}", pathlib.PurePath(icon_path).as_posix()))
-    else:
-        replacements.append(("${IconPath}", ""))
-
-    if requirements:
-        replacements.append(("${Requirements}", requirements))
-    else:
-        replacements.append(("${Requirements}", ""))
-
-    if documentation_url:
-        replacements.append(("${DocumentationURL}", documentation_url))
-    else:
-        replacements.append(("${DocumentationURL}", ""))
-
-    if repo_uri:
-        replacements.append(("${RepoURI}", repo_uri))
-    else:
-        replacements.append(("${RepoURI}", ""))
+    replacements.append(("${IconPath}", pathlib.PurePath(icon_path).as_posix() if icon_path else ""))
+    replacements.append(("${Requirements}", requirements if requirements else ""))
+    replacements.append(("${DocumentationURL}", documentation_url if documentation_url else ""))
+    replacements.append(("${RepoURI}", repo_uri if repo_uri else ""))
 
     # module id is a uuid with { and -
     if module_id:

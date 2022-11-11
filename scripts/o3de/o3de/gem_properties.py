@@ -33,10 +33,10 @@ def update_values_in_key_list(existing_values: list,
 
     returns updated existing value list
     """
-    if new_values is not None and new_values != []:
+    if new_values:
         new_values = new_values.split() if isinstance(new_values, str) else new_values
         existing_values.extend(new_values)
-    if remove_values is not None and remove_values != []:
+    if remove_values:
         remove_values = remove_values.split() if isinstance(remove_values, str) else remove_values
         existing_values = list(filter(lambda value: value not in remove_values, existing_values))
     if replace_values is not None:
@@ -88,26 +88,17 @@ def edit_gem_props(gem_path: pathlib.Path = None,
                          f' characters, and start with a letter.  {new_name}')
             return 1
         update_key_dict['gem_name'] = new_name
-    if new_display is not None:
-        update_key_dict['display_name'] = new_display
-    if new_origin is not None:
-        update_key_dict['origin'] = new_origin
-    if new_type is not None:
-        update_key_dict['type'] = new_type
-    if new_summary is not None:
-        update_key_dict['summary'] = new_summary
-    if new_icon is not None:
-        update_key_dict['icon_path'] = new_icon
-    if new_requirements is not None:
-        update_key_dict['requirements'] = new_requirements
-    if new_documentation_url is not None:
-        update_key_dict['documentation_url'] = new_documentation_url
-    if new_license is not None:
-        update_key_dict['license'] = new_license
-    if new_license_url is not None:
-        update_key_dict['license_url'] = new_license_url
-    if new_repo_uri is not None:
-        update_key_dict['repo_uri'] = new_repo_uri
+    
+    update_key_dict['display_name'] = new_display if isinstance(new_display, str) else ""
+    update_key_dict['origin'] = new_origin if isinstance(new_origin, str) else ""
+    update_key_dict['type'] = new_type if isinstance(new_type, str) else ""
+    update_key_dict['summary'] = new_summary if isinstance(new_summary, str) else ""
+    update_key_dict['icon_path'] = new_icon if isinstance(new_icon, str) else ""
+    update_key_dict['requirements'] = new_requirements if isinstance(new_requirements, str) else ""
+    update_key_dict['documentation_url'] = new_documentation_url if isinstance(new_documentation_url, str) else ""
+    update_key_dict['license'] = new_license if isinstance(new_license, str) else ""
+    update_key_dict['license_url'] = new_license_url if isinstance(new_license_url, str) else ""
+    update_key_dict['repo_uri'] = new_repo_uri if isinstance(new_repo_uri, str) else ""
 
     update_key_dict['user_tags'] = update_values_in_key_list(gem_json_data.get('user_tags', []), new_tags,
                                                      remove_tags, replace_tags)
