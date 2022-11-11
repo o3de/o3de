@@ -116,9 +116,11 @@ namespace AzToolsFramework
         //! @param dirtyArea The AABB of the area that has been painted in.
         //! @param valueLookupFn The paintbrush value callback to use to get the intensities / opacities / valid flags for
         //! specific positions.
-        //! @param kernelSize The size of the NxN kernel to smooth together
+        //! @param valuePointOffsets A vector of relative positional offsets to use for looking up all the values to pass into smoothFn
         //! @param smoothFn The paintbrush callback to use to smooth values together.
-        virtual void OnSmooth(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, size_t kernelSize, SmoothFn& smoothFn) = 0;
+        virtual void OnSmooth(
+            const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn,
+            AZStd::span<const AZ::Vector3> valuePointOffsets, SmoothFn& smoothFn) = 0;
     };
 
     using PaintBrushNotificationBus = AZ::EBus<PaintBrushNotifications>;

@@ -14,6 +14,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/PaintBrushSettings/PaintBrushSettings.h>
 #include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsNotificationBus.h>
+#include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
@@ -75,6 +76,9 @@ namespace AzToolsFramework
         //! Adjusts the size of the paintbrush
         void AdjustSize(float sizeDelta);
 
+        //! Adjusts the paintbrush hardness percent
+        void AdjustHardnessPercent(float hardnessPercentDelta);
+
     private:
         //! Create the manipulator view(s) for the paintbrush.
         void SetView(
@@ -111,6 +115,10 @@ namespace AzToolsFramework
         //! @param isFirstBrushStrokePoint True if the stroke is just starting, false if not.
         void PerformSmoothAction(const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings, bool isFirstBrushStrokePoint);
 
+        //! Smooth the underlying data based on brush movement and settings.
+        //! @param brushSettings The current paintbrush settings.
+        static PaintBrushNotifications::BlendFn GetBlendFunction(const PaintBrushSettings& brushSettings);
+
         //! Generates a list of brush stamp centers and an AABB around the brush stamps for the current brush stroke movement.
         //! @param brushCenter The current center of the paintbrush.
         //! @param brushSettings The current paintbrush settings.
@@ -136,6 +144,9 @@ namespace AzToolsFramework
             AZStd::span<const AZ::Vector3> points,
             AZStd::vector<AZ::Vector3>& validPoints,
             AZStd::vector<float>& opacities);
+
+        //! Calculate the Gaussian weights to use for combining all the sampled pixels for the smoothing function.
+        static AZStd::vector<float> CalculateGaussianWeights(size_t smoothingRadius);
 
         AZStd::shared_ptr<ManipulatorViewProjectedCircle> m_innerCircle;
         AZStd::shared_ptr<ManipulatorViewProjectedCircle> m_outerCircle;

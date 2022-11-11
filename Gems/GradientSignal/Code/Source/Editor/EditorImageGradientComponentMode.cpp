@@ -586,45 +586,31 @@ namespace GradientSignal
     }
 
     void EditorImageGradientComponentMode::OnSmooth(
-        const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, size_t kernelSize, SmoothFn& smoothFn)
+        const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, AZStd::span<const AZ::Vector3> valuePointOffsets, SmoothFn& smoothFn)
     {
         AZ::EntityId entityId = GetEntityId();
 
-        AZ_Assert(kernelSize % 2, "Only odd-valued smoothing kernels are supported.");
-
         // Declare our vectors of kernel point locations and values once outside of the combine function so that we
         // don't keep reallocating them on every point.
-        AZStd::vector<AZ::Vector3> kernelPointOffsets;
         AZStd::vector<AZ::Vector3> kernelPoints;
         AZStd::vector<float> kernelValues;
 
-        kernelPointOffsets.reserve(kernelSize * kernelSize);
-        kernelPoints.reserve(kernelPointOffsets.size());
-        kernelValues.reserve(kernelPointOffsets.size());
+        const AZ::Vector3 valuePointOffsetScale(m_paintStrokeData.m_metersPerPixelX, m_paintStrokeData.m_metersPerPixelY, 0.0f);
 
-        // Calculate our list of kernel position offsets once for all points. We'll use this to calculate all of the relative positions
-        // around each point for fetching the blurring kernel values.
-        float halfKernelSize = aznumeric_cast<float>(kernelSize / 2);
-        for (float_t y = -halfKernelSize; y <= halfKernelSize; y += 1.0f)
-        {
-            for (float_t x = -halfKernelSize; x <= halfKernelSize; x += 1.0f)
-            {
-                kernelPointOffsets.emplace_back(
-                    AZ::Vector3(x * m_paintStrokeData.m_metersPerPixelX, y * m_paintStrokeData.m_metersPerPixelY, 0.0f));
-            }
-        }
+        kernelPoints.reserve(valuePointOffsets.size());
+        kernelValues.reserve(valuePointOffsets.size());
 
         // For smoothing notifications, we'll need to gather all of the neighboring gradient values to feed into the given smoothing
         // function for our blend operation.
-        auto combineFn = [this, entityId, smoothFn, &kernelPointOffsets, &kernelPoints, &kernelValues](
+        auto combineFn = [this, entityId, smoothFn, &valuePointOffsets, valuePointOffsetScale, &kernelPoints, &kernelValues](
                              const AZ::Vector3& worldPosition, float gradientValue, float opacityValue) -> float
         {
             kernelPoints.clear();
 
             // Calculate all of the world positions around our base position that we'll use for fetching our blurring kernel values.
-            for (auto& kernelPointOffset : kernelPointOffsets)
+            for (auto& valuePointOffset : valuePointOffsets)
             {
-                kernelPoints.emplace_back(worldPosition + kernelPointOffset);
+                kernelPoints.emplace_back(worldPosition + (valuePointOffset * valuePointOffsetScale));
             }
 
             kernelValues.assign(kernelPoints.size(), 0.0f);
