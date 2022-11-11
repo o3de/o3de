@@ -330,7 +330,7 @@ namespace AzToolsFramework
                  ++entityCacheIndex)
             {
                 if (const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
-                    m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex) && IsSelectableInViewport(entityId))
+                    m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex) && IsSelectableInViewport(entityCacheIndex))
                 {
                     if (m_entityDataCache->IsVisibleEntityIconHidden(entityCacheIndex) ||
                         (m_entityDataCache->IsVisibleEntitySelected(entityCacheIndex) && !showIconCheck(entityId)))
@@ -388,6 +388,11 @@ namespace AzToolsFramework
         }
 
         return false;
+    }
+
+    bool EditorHelpers::IsSelectableInViewport(size_t entityCacheIndex) const
+    {
+        return m_entityDataCache->IsVisibleEntityIndividuallySelectableInViewport(entityCacheIndex);
     }
 
     bool EditorHelpers::IsSelectableAccordingToFocusMode(const AZ::EntityId entityId) const
