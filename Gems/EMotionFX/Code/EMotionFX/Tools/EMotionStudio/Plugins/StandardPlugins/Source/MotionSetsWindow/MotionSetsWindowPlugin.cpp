@@ -87,12 +87,12 @@ namespace EMStudio
         // create the set management window
         m_motionSetManagementWindow = new MotionSetManagementWindow(this, m_dialogStack);
         m_motionSetManagementWindow->Init();
-        m_dialogStack->Add(m_motionSetManagementWindow, "Motion Set Management", /*closed=*/false, /*maximizeSize=*/false, /*closable=*/true, /*strecthWhenMaximize=*/false);
+        m_dialogStack->Add(m_motionSetManagementWindow, tr("Available Motion Sets"), /*closed=*/false, /*maximizeSize=*/false, /*closable=*/true, /*strecthWhenMaximize=*/false);
 
         // create the motion set properties window
         m_motionSetWindow = new MotionSetWindow(this, m_dialogStack);
         m_motionSetWindow->Init();
-        m_dialogStack->Add(m_motionSetWindow, "Motion Set", /*closed=*/false, /*maximizeSize=*/true);
+        m_dialogStack->Add(m_motionSetWindow, tr("Selected Motion Set"), /*closed=*/false, /*maximizeSize=*/true);
 
         ReInit();
         CommandSystem::CreateDefaultMotionSet();
