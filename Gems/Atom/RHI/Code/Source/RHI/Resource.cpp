@@ -158,16 +158,12 @@ namespace AZ
             const HashValue64 hash = bufferViewDescriptor.GetHash();
             AZStd::lock_guard<AZStd::mutex> registryLock(m_cacheMutex);
             auto it = m_resourceViewCache.find(static_cast<uint64_t>(hash));
-            if (it != m_resourceViewCache.end() && it->second->use_count() > 0)
+            if (it != m_resourceViewCache.end())
             {
                 return static_cast<BufferView*>(it->second);
             }
             else
             {
-                // In the case where a matching buffer view was found but the use_count is 0,
-                // the thread that dropped the use_count to 0 is going to come along and delete it soon.
-                // So we still create a new one to replace it. The other thread will find that new one does
-                // not have a use_count of 0, so it will not remove the new one.
                 return InsertNewResourceViewInCache(hash, bufferViewDescriptor);
             }
         }
