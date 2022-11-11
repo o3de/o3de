@@ -24,12 +24,17 @@ namespace AZ
 {
     class InstancePoolBase
     {
+    public:
+        AZ_RTTI(InstancePoolBase, "{B32CEB58-7744-4275-92BE-BFC850E3C4CD}");
+        virtual ~InstancePoolBase() = default;
     };
 
     template<typename T>
     class InstancePool : public InstancePoolBase
     {
     public:
+        AZ_RTTI(InstancePool, "{D4FBBAD7-AA9D-4350-B5A1-72A1A09A7F16}", InstancePoolBase);
+
         using ResetInstance = AZStd::function<void(T&)>;
 
         InstancePool(ResetInstance resetFunctor = [](T&){})
@@ -108,8 +113,16 @@ namespace AZ
                 else
                 {
                     m_nameToInstancePool.erase(insertResult.first);
-                    m_nameToInstancePool.insert({ name, instancePool });
-                    return AZ::Success(instancePool);
+                    insertResult = m_nameToInstancePool.insert({ name, instancePool });
+
+                    if (insertResult.second)
+                    {
+                        return AZ::Success(instancePool);
+                    }
+                    else
+                    {
+                        return AZ::Failure(AZStd::string::format("Could not add InstancePool with name %s.", name.GetCStr()));
+                    }
                 }
             }
             else
