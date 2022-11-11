@@ -222,7 +222,7 @@ namespace AzToolsFramework
 
             if (index.isValid())
             {
-                // allow retrieval of mimedata of sources or products only (i.e. cant drag folders or root)
+                // We can only drop items onto folders so set flags accordingly
                 AssetBrowserEntry* item = static_cast<AssetBrowserEntry*>(index.internalPointer());
                 if (item && (item->RTTI_IsTypeOf(ProductAssetBrowserEntry::RTTI_Type()) || item->RTTI_IsTypeOf(SourceAssetBrowserEntry::RTTI_Type())))
                 {
@@ -250,9 +250,15 @@ namespace AzToolsFramework
             Q_UNUSED(action);
             Q_UNUSED(row);
             Q_UNUSED(column);
-            Q_UNUSED(parent);
+            const AssetBrowserEntry* item = static_cast<const AssetBrowserEntry*>(parent.internalPointer());
 
-            return true;
+            // We can only drop onto a folder
+            if (item && (item->RTTI_IsTypeOf(FolderAssetBrowserEntry::RTTI_Type())))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         bool AssetBrowserModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
@@ -262,6 +268,42 @@ namespace AzToolsFramework
 
             if (action == Qt::IgnoreAction)
                 return true;
+
+            const AssetBrowserEntry* item = static_cast<const AssetBrowserEntry*>(parent.internalPointer());
+
+            // We should only have an item as a folder but will check
+            if (item && (item->RTTI_IsTypeOf(FolderAssetBrowserEntry::RTTI_Type())))
+            {
+                AZStd::vector<const AssetBrowserEntry*> entries;
+
+                if (Utils::FromMimeData(data, entries))
+                {
+                    for (auto entry : entries)
+                    {
+                        using namespace AZ::IO;
+                        Path fromPath;
+                        Path toPath;
+                        bool isFolder{ true };
+ 
+                        if (entry && (entry->RTTI_IsTypeOf(SourceAssetBrowserEntry::RTTI_Type())))
+                        {
+                            fromPath = entry->GetFullPath();
+                            PathView filename = fromPath.Filename();
+                            toPath = item->GetFullPath();
+                            toPath /= filename;
+                            isFolder = false;
+                        }
+                        else
+                        {
+                            fromPath = entry->GetFullPath() + "/*";
+                            Path filename = static_cast<Path>(entry->GetFullPath()).Filename();
+                            toPath = item->GetFullPath() + "/" + filename.c_str() + "/*";
+                        }
+                        MoveEntry(fromPath.c_str(), toPath.c_str(), isFolder);
+                    }
+                }
+                return true;
+            }
 
             return QAbstractItemModel::dropMimeData(data, action, row, column, parent);
 

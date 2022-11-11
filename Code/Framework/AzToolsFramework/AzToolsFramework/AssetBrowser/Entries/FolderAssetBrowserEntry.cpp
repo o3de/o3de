@@ -10,11 +10,26 @@
 
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/FolderThumbnail.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 
 namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        FolderAssetBrowserEntry::FolderAssetBrowserEntry()
+            : m_folderUuid(AZ::Uuid::CreateRandom())
+        {
+            EntryCache::GetInstance()->m_folderUuidMap[m_folderUuid] = this;
+        }
+
+        FolderAssetBrowserEntry::~FolderAssetBrowserEntry()
+        {
+            if (EntryCache* cache = EntryCache::GetInstance())
+            {
+                cache->m_folderUuidMap.erase(m_folderUuid);
+            }
+        }
+
         AssetBrowserEntry::AssetEntryType FolderAssetBrowserEntry::GetEntryType() const
         {
             return AssetEntryType::Folder;
@@ -23,6 +38,11 @@ namespace AzToolsFramework
         bool FolderAssetBrowserEntry::IsScanFolder() const
         {
             return m_isScanFolder;
+        }
+
+        const AZ::Uuid& FolderAssetBrowserEntry::GetFolderUuid() const
+        {
+            return m_folderUuid;
         }
 
         void FolderAssetBrowserEntry::UpdateChildPaths(AssetBrowserEntry* child) const
@@ -50,5 +70,15 @@ namespace AzToolsFramework
         {
             return MAKE_TKEY(FolderThumbnailKey, m_fullPath.c_str());
         }
+
+        const FolderAssetBrowserEntry* FolderAssetBrowserEntry::GetFolderByUuid(const AZ::Uuid& folderUuid)
+        {
+            if (EntryCache* cache = EntryCache::GetInstance())
+            {
+                return cache->m_folderUuidMap[folderUuid];
+            }
+            return nullptr;
+        }
+
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
