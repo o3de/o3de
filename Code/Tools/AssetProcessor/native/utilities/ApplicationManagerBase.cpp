@@ -894,8 +894,7 @@ void ApplicationManagerBase::Destroy()
     delete m_assetRequestHandler;
     m_assetRequestHandler = nullptr;
 
-    // Destroy file monitor early so now new events get generated to propogate through
-    // other systems during destroy.
+    // Destroy file monitor early so that no callbacks fire during shutdown.
     DestroyFileMonitor();
 
     ShutdownBuilderManager();
