@@ -128,7 +128,7 @@ namespace AZ
             }
 
             const auto& path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
-            if (assetInfo.m_assetType == RPI::AnyAsset::RTTI_Type() && AZ::StringFunc::EndsWith(path.c_str(), ".lightingpreset.azasset"))
+            if (assetInfo.m_assetType == RPI::AnyAsset::RTTI_Type() && path.ends_with(AZ::Render::LightingPreset::Extension))
             {
                 ThumbnailConfig thumbnailConfig;
                 LoadPreviewAsset(thumbnailConfig.m_lightingAsset, assetInfo.m_assetId);
@@ -143,7 +143,7 @@ namespace AZ
                 return thumbnailConfig;
             }
 
-            if (assetInfo.m_assetType == RPI::AnyAsset::RTTI_Type() && AZ::StringFunc::EndsWith(path.c_str(), ".modelpreset.azasset"))
+            if (assetInfo.m_assetType == RPI::AnyAsset::RTTI_Type() && path.ends_with(AZ::Render::ModelPreset::Extension))
             {
                 // Model preset assets are relatively small JSON files containing a reference to a model asset and possibly other
                 // parameters. The preset must be loaded to get the model asset ID. Then the preview will be rendered like any other model.
