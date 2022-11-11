@@ -80,7 +80,7 @@ namespace AtomToolsFramework
         const QVariant pathItemData(QString::fromUtf8(path.data(), static_cast<int>(path.size())));
         const QString title(GetDisplayNameFromPath(path).c_str());
 
-        // Skip creating this list item if one with the same asset ID is already registered
+        // Skip creating this list item if one with the same path is already registered
         for (int i = 0; i < m_ui->m_assetList->count(); ++i)
         {
             QListWidgetItem* item = m_ui->m_assetList->item(i);
