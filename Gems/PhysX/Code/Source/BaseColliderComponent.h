@@ -87,7 +87,6 @@ namespace PhysX
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC_CE("ShapeService"));
             dependent.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 

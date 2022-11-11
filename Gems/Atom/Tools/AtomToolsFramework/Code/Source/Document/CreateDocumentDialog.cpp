@@ -28,8 +28,8 @@ namespace AtomToolsFramework
         const QString& targetLabel,
         const QString& initialPath,
         const QStringList& supportedExtensions,
-        const AZ::Data::AssetId& defaultSourceAssetId,
-        const AZStd::function<bool(const AZ::Data::AssetInfo&)>& filterCallback,
+        const QString& defaultSourcePath,
+        const FilterFn& filterFn,
         QWidget* parent)
         : QDialog(parent)
         , m_sourceLabel(sourceLabel)
@@ -46,19 +46,19 @@ namespace AtomToolsFramework
 
         // The source selection combo box is used to pick from a set of source files or templates that can be used as a starting point or
         // parent for a new document. If there is no filter then no source selection widgets or connections will be made.
-        if (filterCallback)
+        if (filterFn)
         {
             auto sourceSelectionComboBoxLabel = new QLabel(this);
             sourceSelectionComboBoxLabel->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
             sourceSelectionComboBoxLabel->setText(sourceLabel);
             verticalLayout->addWidget(sourceSelectionComboBoxLabel);
 
-            m_sourceSelectionComboBox = new AssetSelectionComboBox(filterCallback, this);
+            m_sourceSelectionComboBox = new AssetSelectionComboBox(filterFn, this);
             m_sourceSelectionComboBox->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
-            m_sourceSelectionComboBox->SelectAsset(defaultSourceAssetId);
-            m_sourcePath = m_sourceSelectionComboBox->GetSelectedAssetSourcePath().c_str();
-            QObject::connect(m_sourceSelectionComboBox, &AssetSelectionComboBox::AssetSelected, this, [this]() {
-                m_sourcePath = m_sourceSelectionComboBox->GetSelectedAssetSourcePath().c_str();
+            m_sourceSelectionComboBox->SelectPath(defaultSourcePath.toUtf8().constData());
+            m_sourcePath = m_sourceSelectionComboBox->GetSelectedPath().c_str();
+            QObject::connect(m_sourceSelectionComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
+                m_sourcePath = QString::fromUtf8(path.data(), static_cast<int>(path.size()));
             });
             verticalLayout->addWidget(m_sourceSelectionComboBox);
         }
@@ -102,24 +102,14 @@ namespace AtomToolsFramework
               tr("Select target path to save %1 document").arg(documentType.m_documentTypeName.c_str()),
               initialPath,
               { documentType.GetDefaultExtensionToSave().c_str() },
-              documentType.m_defaultAssetIdToCreate,
+              documentType.m_defaultDocumentTemplate.c_str(),
               documentType.m_supportedExtensionsToCreate.empty() ?
-              AZStd::function<bool(const AZ::Data::AssetInfo&)>():
-              [documentType](const AZ::Data::AssetInfo& assetInfo)
+              FilterFn():
+              [documentType](const AZStd::string& path)
               {
-                  // If any asset types are specified, do early rejection tests to avoid expensive string comparisons
-                  const auto& assetTypes = documentType.m_supportedAssetTypesToCreate;
-                  if (assetTypes.empty() || assetTypes.find(assetInfo.m_assetType) != assetTypes.end())
-                  {
-                      // Additional filtering will be done against the path to the source file for this asset
-                      const auto& sourcePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
-
-                      // Only add source files with extensions supported by the document types creation rules
-                      // Ignore any files that are marked as non editable in the registry
-                      return documentType.IsSupportedExtensionToCreate(sourcePath) &&
-                          !documentType.IsSupportedExtensionToSave(sourcePath) && IsDocumentPathEditable(sourcePath);
-                  }
-                  return false;
+                // Only add source files with extensions supported by the document types creation rules
+                // Ignore any files that are marked as non editable in the registry
+                return documentType.IsSupportedExtensionToCreate(path) && !documentType.IsSupportedExtensionToSave(path) && IsDocumentPathEditable(path);
               },
               parent)
     {
