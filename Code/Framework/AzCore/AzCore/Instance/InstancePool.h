@@ -25,10 +25,8 @@ namespace AZ
     class InstancePoolBase
     {
     public:
-        virtual ~InstancePoolBase()
-        {
-        }
         AZ_RTTI(InstancePoolBase, "{B32CEB58-7744-4275-92BE-BFC850E3C4CD}");
+        virtual ~InstancePoolBase() = default;
     };
 
     template<typename T>
@@ -43,8 +41,6 @@ namespace AZ
             : m_resetFunction(resetFunctor)
         {
         }
-
-        virtual ~InstancePool() = default;
 
         // returns a recycled instance if present, but creates a new instance if necessary
         T* GetInstance()
@@ -125,7 +121,7 @@ namespace AZ
                     }
                     else
                     {
-                        return AZ::Failure(AZStd::string::format("Could not add InstancePool with name %.s", name.GetCStr()));
+                        return AZ::Failure(AZStd::string::format("Could not add InstancePool with name %s.", name.GetCStr()));
                     }
                 }
             }
