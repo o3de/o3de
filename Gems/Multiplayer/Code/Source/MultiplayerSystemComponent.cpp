@@ -691,7 +691,8 @@ namespace Multiplayer
             // There's a multiplayer component mismatch. Send the server's component information back to the client so they can compare.
             if (sv_versionMismatch_sendAllComponentHashesToClient)
             {
-                SendAllMultiplayerComponentVersionData(connection);                
+                MultiplayerPackets::SyncComponentMismatch componentMismatchPacket(GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes());
+                connection->SendReliablePacket(componentMismatchPacket);                
             }
             else
             {
@@ -909,9 +910,9 @@ namespace Multiplayer
             {
                 // Connected machine is using a multiplayer component we don't have
                 AZLOG_ERROR(
-                    "Multiplayer component mismatch! We're missing a component with version hash 0x%" PRIx64 ". "
+                    "Multiplayer component mismatch! We're missing a component with version hash 0x%llx. "
                     "Because we are missing this component, we don't know its name, only its hash. "
-                    "To find the missing component go to the other machine and search for 's_versionHash = AZ::HashValue64{ 0x%" PRIx64" }' "
+                    "To find the missing component go to the other machine and search for 's_versionHash = AZ::HashValue64{ 0x%llx }' "
                     "inside the generated multiplayer auto-component build folder.",
                     theirComponentHash,
                     theirComponentHash);
@@ -948,7 +949,8 @@ namespace Multiplayer
         // If we're the connector, send all our component information back to the acceptor.
         if (connection->GetConnectionRole() == ConnectionRole::Connector)
         {
-            SendAllMultiplayerComponentVersionData(connection);
+            MultiplayerPackets::SyncComponentMismatch componentMismatchPacket(GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes());
+            connection->SendReliablePacket(componentMismatchPacket);
         }
 
         // If this is the server, we've recieved all the information we need. Now either disconnect, or accept the connection even though there's a mismatch.
@@ -1626,13 +1628,6 @@ namespace Multiplayer
                 connectionData->SetCanSendUpdates(true);
             }
         }
-    }
-
-    void MultiplayerSystemComponent::SendAllMultiplayerComponentVersionData(AzNetworking::IConnection* connection)
-    {
-        MultiplayerPackets::SyncComponentMismatch componentMismatchPacket;
-        componentMismatchPacket.SetComponentVersions(GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes());
-        connection->SendReliablePacket(componentMismatchPacket);
     }
 
     void host([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)

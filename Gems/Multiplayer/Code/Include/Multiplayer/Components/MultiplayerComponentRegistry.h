@@ -73,7 +73,7 @@ namespace Multiplayer
 
         //! Gets the mapping of all the multiplayer components by AZ::Name and hash version value.
         //! @return a map of all the multiplayer components by name and hash version value
-        const AZStd::unordered_map<AZ::Name, AZ::HashValue64>& GetMultiplayerComponentVersionHashes() const;
+        const Multiplayer::ComponentVersionMap& GetMultiplayerComponentVersionHashes() const;
 
         //! Finds the multiplayer component version hash by name.
         //! @param hash value that will be set if the component is found.
@@ -87,6 +87,6 @@ namespace Multiplayer
         NetComponentId m_nextNetComponentId = NetComponentId{ 0 };
         AZStd::unordered_map<NetComponentId, ComponentData> m_componentData;
         AZ::HashValue64 m_systemVersionHash = AZ::HashValue64{ 0 };
-        AZStd::unordered_map<AZ::Name, AZ::HashValue64> m_componentVersionHashes;
+        Multiplayer::ComponentVersionMap m_componentVersionHashes;
     };
 }
