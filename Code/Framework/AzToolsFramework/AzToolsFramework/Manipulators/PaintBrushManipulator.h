@@ -25,7 +25,7 @@ namespace AzToolsFramework
     //! PaintBrushManipulator contains the core logic for managing the paintbrush in the Editor.
     //! It uses the global paintbrush settings for painting and provides logic for converting mouse events into paintbrush actions.
     //! It also draws the paintbrush circles in the viewport and provides the UX for switching paint modes.
-    //! The PaintBrushManipulator relies a PaintBrush instance to do the actual painting logic and on a component-specific
+    //! The PaintBrushManipulator relies on a PaintBrush instance to do the actual painting logic and on a component-specific
     //! Component Mode to manage the usage of the PaintBrushManipulator (and PaintBrush) to apply the painted values to a specific
     //! data source and to save the data appropriately.
     //! 

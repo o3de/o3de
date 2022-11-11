@@ -268,10 +268,12 @@ namespace AzToolsFramework
                 m_paintBrush.SmoothToLocation(brushCenter, brushSettings);
                 break;
             case PaintBrushMode::Eyedropper:
-                AZ::Color eyedropperColor = m_paintBrush.UseEyedropper(brushCenter, brushSettings);
+                {
+                    AZ::Color eyedropperColor = m_paintBrush.UseEyedropper(brushCenter, brushSettings);
 
-                // Set the color in our paintbrush settings to the color selected by the eyedropper.
-                PaintBrushSettingsRequestBus::Broadcast(&PaintBrushSettingsRequestBus::Events::SetColor, eyedropperColor);
+                    // Set the color in our paintbrush settings to the color selected by the eyedropper.
+                    PaintBrushSettingsRequestBus::Broadcast(&PaintBrushSettingsRequestBus::Events::SetColor, eyedropperColor);
+                }
                 break;
             default:
                 AZ_Assert(false, "Unsupported brush mode type: %u", brushSettings.GetBrushMode());
