@@ -36,12 +36,14 @@ def PhysX_Collider_Component_CRUD():
     from editor_python_test_tools.editor_component.editor_physx_collider import EditorPhysxCollider as PhysxCollider
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Tracer, TestHelper
+    from editor_python_test_tools.editor_component.editor_component_validation import validate_property_switch_toggle
 
     from consts.general import Strings
 
     # 0) Pre-conditions
     physx_mesh = os.path.join("objects", "_primitives", "_box_1x1.pxmesh")
     physx_material = os.path.join("physx", "glass.physxmaterial")
+    component_name = "PhysX Collider"
 
     TestHelper.init_idle()
     TestHelper.open_level("", "Base")
@@ -59,17 +61,17 @@ def PhysX_Collider_Component_CRUD():
         physx_collider.set_box_dimensions(256.0, 256.0, 256.0)
         physx_collider.set_box_dimensions(2.5, 2.5, 2.5)
         physx_collider.set_box_dimensions(0.0, 0.0, 0.0)
-        physx_collider.set_box_dimensions(-1.0, -10, -256.0)
+        physx_collider.set_box_dimensions(-1.0, -10.0, -256.0)
 
     # 4) Set Capsule Shape and Child Properties
         physx_collider.set_capsule_shape()
 
-        physx_collider.set_capsule_height(0)
+        physx_collider.set_capsule_height(0.0)
         physx_collider.set_capsule_height(-1.0)
         physx_collider.set_capsule_height(2.5)
         physx_collider.set_capsule_height(256.0)
 
-        physx_collider.set_capsule_radius(0)
+        #physx_collider.set_capsule_radius(0)
         physx_collider.set_capsule_radius(-1.0)
         physx_collider.set_capsule_radius(2.5)
         physx_collider.set_capsule_radius(256.0)
@@ -102,14 +104,14 @@ def PhysX_Collider_Component_CRUD():
         physx_collider.set_sphere_radius(256.0)
 
         # 7) Set General Properties
-        physx_collider.toggle_is_trigger()
-        physx_collider.toggle_is_trigger()
+        validate_property_switch_toggle(physx_collider.get_is_trigger, physx_collider.set_is_trigger, component_name, "Is Trigger")
+        validate_property_switch_toggle(physx_collider.get_is_trigger, physx_collider.set_is_trigger, component_name, "Is Trigger")
 
-        physx_collider.toggle_is_simulated()
-        physx_collider.toggle_is_simulated()
+        validate_property_switch_toggle(physx_collider.get_is_simulated, physx_collider.set_is_simulated, component_name, "Is Simulated")
+        validate_property_switch_toggle(physx_collider.get_is_simulated, physx_collider.set_is_simulated, component_name, "Is Simulated")
 
-        physx_collider.toggle_in_scene_queries()
-        physx_collider.toggle_in_scene_queries()
+        validate_property_switch_toggle(physx_collider.get_in_scene_queries, physx_collider.set_in_scene_queries, component_name, "In Scene Queries")
+        validate_property_switch_toggle(physx_collider.get_in_scene_queries, physx_collider.set_in_scene_queries, component_name, "In Scene Queries")
 
         physx_collider.set_offset(0.0, 0.0, 0.0)
         physx_collider.set_offset(-1.0, -1.0, -1.0)
@@ -139,8 +141,8 @@ def PhysX_Collider_Component_CRUD():
         physx_collider.set_contact_offset(2.5)
         physx_collider.set_contact_offset(255.0)
 
-        physx_collider.toggle_draw_collider()
-        physx_collider.toggle_draw_collider()
+        validate_property_switch_toggle(physx_collider.get_draw_collider, physx_collider.set_draw_collider, component_name, "Draw Collider")
+        validate_property_switch_toggle(physx_collider.get_is_trigger, physx_collider.set_is_trigger, component_name, "Draw Collider")
 
         # o3de/o3de#12503 PhysX Collider Component's Physic Material field(s) return unintuitive property tree paths.
         # physx_collider.set_physx_material_from_path(physx_material)
@@ -154,8 +156,8 @@ def PhysX_Collider_Component_CRUD():
         physx_collider.set_physx_mesh_asset_scale(2.5, 2.5, 2.5)
         physx_collider.set_physx_mesh_asset_scale(255.0, 255.0, 255.0)
 
-        physx_collider.toggle_use_physics_materials_from_asset()
-        physx_collider.toggle_use_physics_materials_from_asset()
+        validate_property_switch_toggle(physx_collider.get_use_physics_materials_from_asset, physx_collider.set_use_physics_materials_from_asset, component_name, "Use Physics Materials From Asset")
+        validate_property_switch_toggle(physx_collider.get_use_physics_materials_from_asset, physx_collider.set_use_physics_materials_from_asset, component_name, "Use Physics Materials From Asset")
 
     # 9) Delete Component
         physx_collider.component.remove()

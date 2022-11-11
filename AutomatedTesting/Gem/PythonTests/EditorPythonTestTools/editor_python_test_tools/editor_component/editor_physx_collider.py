@@ -10,7 +10,7 @@ import azlmbr.math as math
 
 from editor_python_test_tools.editor_entity_utils import EditorEntity
 from editor_python_test_tools.editor_component.editor_component_validation import \
-    (_validate_xyz_is_float, _validate_property_visibility, validate_property_switch_toggle)
+    (_validate_xyz_is_float, _validate_property_visibility)
 from editor_python_test_tools.asset_utils import Asset
 
 from consts.physics import PHYSX_COLLIDER
@@ -71,29 +71,53 @@ class EditorPhysxCollider:
     # General Properties
     # o3de/o3de#12632 - Figure out how to set dropdowns for Collison Layer and Collides With
 
-    def toggle_is_trigger(self) -> None:
+    def set_is_trigger(self, value: bool) -> None:
         """
         Property Type, Default Visibility - ('bool', 'Visible')
 
-        Used to toggle the PhysX Collider's Trigger Property.
+        Used to set the PhysX Collider's Trigger Property.
         """
-        validate_property_switch_toggle(self.component, self.Path.TRIGGER)
+        self.component.set_component_property_value(self.Path.TRIGGER, value)
 
-    def toggle_is_simulated(self) -> None:
+    def get_is_trigger(self) -> bool:
         """
         Property Type, Default Visibility - ('bool', 'Visible')
 
-        Used to toggle the PhysX Collider's Simulated Property.
+        Used to get the PhysX Collider's Trigger Property.
         """
-        validate_property_switch_toggle(self.component, self.Path.SIMULATED)
+        return self.component.get_component_property_value(self.Path.TRIGGER)
 
-    def toggle_in_scene_queries(self) -> None:
+    def set_is_simulated(self, value: bool) -> None:
         """
         Property Type, Default Visibility - ('bool', 'Visible')
 
-        Used to toggle the PhysX Collider's In Scene Queries Property.
+        Used to set the PhysX Collider's Simulated Property value.
         """
-        validate_property_switch_toggle(self.component, self.Path.IN_SCENE_QUERIES)
+        self.component.set_component_property_value(self.Path.SIMULATED, value)
+
+    def get_is_simulated(self) -> bool:
+        """
+        Property Type, Default Visibility - ('bool', 'Visible')
+
+        Used to get the PhysX Collider's Simulated Property value.
+        """
+        return self.component.get_component_property_value(self.Path.SIMULATED)
+
+    def set_in_scene_queries(self, value: bool) -> None:
+        """
+        Property Type, Default Visibility - ('bool', 'Visible')
+
+        Used to set the PhysX Collider's In Scene Queries Property value.
+        """
+        self.component.set_component_property_value(self.Path.IN_SCENE_QUERIES, value)
+
+    def get_in_scene_queries(self) -> bool:
+        """
+        Property Type, Default Visibility - ('bool', 'Visible')
+
+        Used to get the PhysX Collider's In Scene Queries Property value.
+        """
+        return self.component.get_component_property_value(self.Path.IN_SCENE_QUERIES)
 
     def set_offset(self, x: float, y: float, z: float) -> None:
         """
@@ -148,13 +172,21 @@ class EditorPhysxCollider:
 
         self.component.set_component_property_value(self.Path.CONTACT_OFFSET, contact_offset)
 
-    def toggle_draw_collider(self) -> None:
+    def set_draw_collider(self, value: bool) -> None:
         """
         Property Type, Default Visibility - ('bool', 'Visible')
 
-        Used to toggle the PhysX Collider's Draw Collider Property.
+        Used to set the PhysX Collider's Draw Collider Property value.
         """
-        validate_property_switch_toggle(self.component, self.Path.DRAW_COLLIDER)
+        self.component.set_component_property_value(self.Path.DRAW_COLLIDER, value)
+
+    def get_draw_collider(self) -> bool:
+        """
+        Property Type, Default Visibility - ('bool', 'Visible')
+
+        Used to get the PhysX Collider's Draw Collider Property value.
+        """
+        return self.component.get_component_property_value(self.Path.DRAW_COLLIDER)
 
     def set_physx_material_from_path(self, asset_product_path: str) -> None:
         """
@@ -296,18 +328,26 @@ class EditorPhysxCollider:
         self.component.set_component_property_value(self.Path.PhysicsAsset.ASSET_SCALE,
                                                     math.Vector3(float(x), float(y), float(z)))
 
-    def toggle_use_physics_materials_from_asset(self) -> None:
+    def set_use_physics_materials_from_asset(self, value: bool) -> None:
         """
-        Property Type, Default Visibility - ('bool', 'Visible')}
+        Property Type, Default Visibility - ('bool', 'Visible')
 
-        Used to toggle the PhysX Collider's Physics Materials From Asset. This allows the user to toggle between
+        Used to set the PhysX Collider's Physics Materials From Asset. This allows the user to toggle between
             using the asset provided PhysX Materials, or to override them using the PhysX Collider's PhysX Materials
             property.
         """
         _validate_property_visibility(self.component, self.Path.PhysicsAsset.PHYSICS_MATERIALS_FROM_ASSET,
                                       PropertyVisibility.VISIBLE)
 
-        validate_property_switch_toggle(self.component, self.Path.PhysicsAsset.PHYSICS_MATERIALS_FROM_ASSET)
+        self.component.set_component_property_value(self.Path.PhysicsAsset.PHYSICS_MATERIALS_FROM_ASSET, value)
+
+    def get_use_physics_materials_from_asset(self) -> bool:
+        """
+        Property Type, Default Visibility - ('bool', 'Visible')
+
+        Used to get the PhysX Collider's Draw Collider Property value.
+        """
+        return self.component.get_component_property_value(self.Path.PhysicsAsset.PHYSICS_MATERIALS_FROM_ASSET)
 
     # Shape: Sphere
     def set_sphere_shape(self) -> None:

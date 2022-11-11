@@ -7,6 +7,7 @@
 from editor_python_test_tools.utils import Report
 from editor_python_test_tools.editor_entity_utils import EditorComponent
 from consts.general import ComponentPropertyVisibilityStates as PropertyVisibility
+from typing import Callable
 
 def _validate_xyz_is_float(x: float, y: float, z: float, error_message: str) -> None:
     '''
@@ -30,8 +31,8 @@ def _validate_property_visibility(component: EditorComponent, component_property
 
     Valid values for Property Visibility found in EditorPythonTestTools.consts.general ComponentPropertyVisibilityStates
     """
-    Report.info(f"Validating visibility for the {component.get_component_name()}'s component property "
-                f"{component_property_path} is set to \"{expected}\".")
+    Report.info(f"Validating visibility for {component.get_component_name()}'s  "
+                f"component at property path {component_property_path} is \"{expected}\"")
     assert expected in vars(PropertyVisibility).values(), \
         f"Expected value of {expected} was not an expected visibility state of: {vars(PropertyVisibility).values()}"
 
@@ -40,23 +41,21 @@ def _validate_property_visibility(component: EditorComponent, component_property
         f"Error: {component.get_component_name()}'s component property visibility found at {component_property_path} " \
         f"was set to \"{visibility}\" when \"{expected}\" was expected."
 
-def validate_property_switch_toggle(component: EditorComponent, component_property_path: str):
+
+def validate_property_switch_toggle(get_toggle_value: Callable, set_toggle_value: Callable,
+                                    component_name, property_name):
     """
     Used to toggle a property switch and validate that it toggled.
     param component_property_path: String of component property. (e.g. 'Settings|Visible')
 
     :return: None
     """
-    Report.info(f"Validating {component.get_component_name()}'s componenet property {component_property_path}'s "
-                f"toggle switch toggles.")
+    Report.info(f"Validating {component_name}'s {property_name} property toggle switch toggles.")
 
-    start_value = component.get_component_property_value(component_property_path)
-    component.set_component_property_value(component_property_path, not start_value)
+    start_value = get_toggle_value()
+    set_toggle_value(not start_value)
 
-    end_value = component.get_component_property_value(component_property_path)
+    end_value = get_toggle_value
 
-    assert (start_value != end_value), \
-        f"Failure: Could not toggle the switch for " \
-        f"{component.get_component_name()} : {component_property_path}."
-
-    assert True, "message"
+    assert (start_value != end_value), f"Error: {component_name}'s {property_name} property toggle switch did not " \
+                                       f"toggle to {end_value} when it started at {start_value}"
