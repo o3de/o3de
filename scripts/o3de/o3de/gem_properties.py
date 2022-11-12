@@ -89,16 +89,26 @@ def edit_gem_props(gem_path: pathlib.Path = None,
             return 1
         update_key_dict['gem_name'] = new_name
     
-    update_key_dict['display_name'] = new_display if new_display else ""
-    update_key_dict['origin'] = new_origin if new_origin else ""
-    update_key_dict['type'] = new_type if new_type else ""
-    update_key_dict['summary'] = new_summary if new_summary else ""
-    update_key_dict['icon_path'] = new_icon if new_icon else ""
-    update_key_dict['requirements'] = new_requirements if new_requirements else ""
-    update_key_dict['documentation_url'] = new_documentation_url if new_documentation_url else ""
-    update_key_dict['license'] = new_license if new_license else ""
-    update_key_dict['license_url'] = new_license_url if new_license_url else ""
-    update_key_dict['repo_uri'] = new_repo_uri if new_repo_uri else ""
+    if isinstance(new_display, str):
+        update_key_dict['display_name'] = new_display
+    if isinstance(new_origin, str):
+        update_key_dict['origin'] = new_origin
+    if isinstance(new_type, str):
+        update_key_dict['type'] = new_type
+    if isinstance(new_summary, str):
+        update_key_dict['summary'] = new_summary
+    if isinstance(new_icon, str):
+        update_key_dict['icon_path'] = new_icon
+    if isinstance(new_requirements, str):
+        update_key_dict['requirements'] = new_requirements
+    if isinstance(new_documentation_url,str):
+        update_key_dict['documentation_url'] = new_documentation_url
+    if isinstance(new_license, str):
+        update_key_dict['license'] = new_license 
+    if isinstance(new_license_url, str):
+        update_key_dict['license_url'] = new_license_url
+    if isinstance(new_repo_uri, str):
+        update_key_dict['repo_uri'] = new_repo_uri
 
     update_key_dict['user_tags'] = update_values_in_key_list(gem_json_data.get('user_tags', []), new_tags,
                                                      remove_tags, replace_tags)
