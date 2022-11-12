@@ -23,6 +23,20 @@ namespace AZ
     {
         namespace EditorMaterialComponentUtil
         {
+            static constexpr AZStd::string_view MaterialExtension("material");
+            static constexpr AZStd::string_view MaterialTypeExtension("materialtype");
+            static constexpr AZStd::string_view MaterialGraphExtension("materialgraph");
+            static constexpr AZStd::string_view MaterialGraphNodeExtension("materialgraphnoode");
+            static constexpr AZStd::string_view MaterialGraphTemplateExtension("materialgraphtemplate");
+            static constexpr AZStd::string_view ShaderExtension("shader");
+
+            static constexpr AZStd::string_view MaterialExtensionWithDot(".material");
+            static constexpr AZStd::string_view MaterialTypeExtensionWithDot(".materialtype");
+            static constexpr AZStd::string_view MaterialGraphExtensionWithDot(".materialgraph");
+            static constexpr AZStd::string_view MaterialGraphNodeExtensionWithDot(".materialgraphnoode");
+            static constexpr AZStd::string_view MaterialGraphTemplateExtensionWithDot(".materialgraphtemplate");
+            static constexpr AZStd::string_view ShaderExtensionWithDot(".shader");
+
             struct MaterialEditData
             {
                 AZ::Data::AssetId m_materialAssetId = {};

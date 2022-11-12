@@ -83,7 +83,6 @@ namespace AtomToolsFramework
 
         mutable AZStd::unordered_map<AZStd::string, AZ::Render::LightingPreset> m_lightingPresetCache;
         mutable AZStd::unordered_map<AZStd::string, AZ::Render::ModelPreset> m_modelPresetCache;
-
-        bool m_settingsNotificationPending = {};
+        mutable bool m_settingsNotificationPending = {};
     };
 } // namespace AtomToolsFramework

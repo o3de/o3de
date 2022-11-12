@@ -558,7 +558,6 @@
     <file>img/UI20/spinbox-up-arrow.png</file>
 </qresource>
 <qresource prefix="/Breadcrumb">
-    <file>img/UI20/Breadcrumb/Next_level_arrow.svg</file>
     <file>img/UI20/Breadcrumb/arrow_left-default.svg</file>
     <file>img/UI20/Breadcrumb/arrow_left-default_hover.svg</file>
     <file>img/UI20/Breadcrumb/arrow_right-default.svg</file>
