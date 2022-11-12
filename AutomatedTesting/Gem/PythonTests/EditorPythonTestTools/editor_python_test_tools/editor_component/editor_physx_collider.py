@@ -435,6 +435,14 @@ class EditorPhysxCollider:
         self.component.set_component_property_value(self.Path.PhysicsAsset.ASSET_SCALE,
                                                     math.Vector3(float(x), float(y), float(z)))
 
+    def get_physx_mesh_asset_scale(self) -> None:
+        """
+        Property Type, Default Visibility - ('Vector3', 'Visible')
+
+        Used to get the PhysX Collider's PhysX Mesh Asset Scale.
+        """
+        return self.component.get_component_property_value(self.Path.PhysicsAsset.ASSET_SCALE)
+
     def set_use_physics_materials_from_asset(self, value: bool) -> None:
         """
         Property Type, Default Visibility - ('bool', 'Visible')

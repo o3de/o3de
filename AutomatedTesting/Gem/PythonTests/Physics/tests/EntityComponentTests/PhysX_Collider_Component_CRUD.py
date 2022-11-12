@@ -36,7 +36,9 @@ def PhysX_Collider_Component_CRUD():
     from editor_python_test_tools.editor_component.editor_physx_collider import EditorPhysxCollider as PhysxCollider
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Tracer, TestHelper
-    from editor_python_test_tools.editor_component.editor_component_validation import validate_property_switch_toggle
+    from editor_python_test_tools.editor_component.editor_component_validation import \
+        (validate_property_switch_toggle, validate_vector3_property)
+    from editor_python_test_tools.editor_component.test_values import VECTOR3_TESTS
 
     from consts.general import Strings
 
@@ -58,10 +60,8 @@ def PhysX_Collider_Component_CRUD():
     # 3) Set Box Shape and Child Properties
         physx_collider.set_box_shape()
 
-        physx_collider.set_box_dimensions(256.0, 256.0, 256.0)
-        physx_collider.set_box_dimensions(2.5, 2.5, 2.5)
-        physx_collider.set_box_dimensions(0.0, 0.0, 0.0)
-        physx_collider.set_box_dimensions(-1.0, -10.0, -256.0)
+        validate_vector3_property(physx_collider.get_box_dimensions, physx_collider.set_box_dimensions,
+                                  physx_collider.component.get_component_name(), "Box Dimensions", VECTOR3_TESTS)
 
     # 4) Set Capsule Shape and Child Properties
         physx_collider.set_capsule_shape()
@@ -113,15 +113,8 @@ def PhysX_Collider_Component_CRUD():
         validate_property_switch_toggle(physx_collider.get_in_scene_queries, physx_collider.set_in_scene_queries, component_name, "In Scene Queries")
         validate_property_switch_toggle(physx_collider.get_in_scene_queries, physx_collider.set_in_scene_queries, component_name, "In Scene Queries")
 
-        physx_collider.set_offset(0.0, 0.0, 0.0)
-        physx_collider.set_offset(-1.0, -1.0, -1.0)
-        physx_collider.set_offset(2.5, 2.5, 2.5)
-        physx_collider.set_offset(256.0, 256.0, 256.0)
-
-        physx_collider.set_rotation(0.0, 0.0, 0.0)
-        physx_collider.set_rotation(-1.0, -1.0, -1.0)
-        physx_collider.set_rotation(2.5, 2.5, 2.5)
-        physx_collider.set_rotation(255.0, 255.0, 255.0)
+        validate_vector3_property(physx_collider.get_offset, physx_collider.set_offset, physx_collider.component.get_component_name(), "Offset", VECTOR3_TESTS)
+        validate_vector3_property(physx_collider.get_rotation, physx_collider.set_rotation, physx_collider.component.get_component_name(), "Rotation", VECTOR3_TESTS)
 
         # o3de/o3de#12634 - For some reason I can't get this to work. Says it takes an AZStd::string,
         #  but it won't take a python string or a character.
@@ -151,17 +144,14 @@ def PhysX_Collider_Component_CRUD():
         physx_collider.set_physicsasset_shape()
         physx_collider.set_physx_mesh_from_path(physx_mesh)
 
-        physx_collider.set_physx_mesh_asset_scale(0.0, 0.0, 0.0)
-        physx_collider.set_physx_mesh_asset_scale(-1.0, -1.0, -1.0)
-        physx_collider.set_physx_mesh_asset_scale(2.5, 2.5, 2.5)
-        physx_collider.set_physx_mesh_asset_scale(255.0, 255.0, 255.0)
+        validate_vector3_property(physx_collider.get_physx_mesh_asset_scale, physx_collider.set_physx_mesh_asset_scale, physx_collider.component.get_component_name(), "PhysX Mesh Asset Scale", VECTOR3_TESTS)
 
         validate_property_switch_toggle(physx_collider.get_use_physics_materials_from_asset, physx_collider.set_use_physics_materials_from_asset, component_name, "Use Physics Materials From Asset")
         validate_property_switch_toggle(physx_collider.get_use_physics_materials_from_asset, physx_collider.set_use_physics_materials_from_asset, component_name, "Use Physics Materials From Asset")
 
     # 9) Delete Component
         physx_collider.component.remove()
-
+        
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report

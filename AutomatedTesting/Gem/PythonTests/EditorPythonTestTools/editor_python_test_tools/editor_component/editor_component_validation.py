@@ -3,11 +3,28 @@
 # For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT+
+import typing
+
+import azlmbr.math as math
 
 from editor_python_test_tools.utils import Report
 from editor_python_test_tools.editor_entity_utils import EditorComponent
 from consts.general import ComponentPropertyVisibilityStates as PropertyVisibility
-from typing import Callable
+
+def compare_vec3(expected: math.Vector3, actual: math.Vector3) -> bool:
+    """
+    Helper function to compare two Vector3s. This is useful due to floating point math.
+    expected: The expected Vector3 values
+    actual: The actual Vector3 values
+
+    return: boolean result of whether or not the two vector3s are the same.
+    """
+    x_is_close = math.Math_IsClose(expected.get_property('x'), actual.get_property('x'), 0.001)
+    y_is_close = math.Math_IsClose(expected.get_property('y'), actual.get_property('y'), 0.001)
+    z_is_close = math.Math_IsClose(expected.get_property('z'), actual.get_property('z'), 0.001)
+
+    return x_is_close and y_is_close and z_is_close
+
 
 def _validate_xyz_is_float(x: float, y: float, z: float, error_message: str) -> None:
     '''
@@ -42,8 +59,43 @@ def _validate_property_visibility(component: EditorComponent, component_property
         f"was set to \"{visibility}\" when \"{expected}\" was expected."
 
 
-def validate_property_switch_toggle(get_toggle_value: Callable, set_toggle_value: Callable,
-                                    component_name, property_name):
+def validate_vector3_property(get_vector3_value: typing.Callable, set_vector3_value: typing.Callable,
+                              component_name: str, property_name: str,
+                              tests: typing.Dict[str, typing.Tuple[float, float, float]]) -> None:
+    """
+    Function to validate the behavior of a property that gets and sets a vector3.
+
+    :get_vector3_value: The Editor Entity Component Property's get method.
+    :set_vector3_value: The Editor Entity Component Property's set method.
+    :component_name: The name of the Editor Entity Component under test.
+    :property_name: The name of the Editor Entity Component Property under test.
+    :tests: A dictionary that stores a vector3 value and the intent of the values being passed. The following
+    format is expected
+     {
+        "test_description": (x_value, y_value, z_value),
+        "test_description2": (x_value, y_value, z_value)
+     }
+    """
+    # Dictionary Keys
+    x, y, z = 0, 1, 2
+
+    Report.info(f"Validating {component_name}'s {property_name} Vector3 property can be set.")
+
+    for test_name in tests:
+        values = tests[test_name]
+
+        set_vector3_value(values[x], values[y], values[z])
+
+        set_value = get_vector3_value()
+        expected_value = math.Vector3(values[x], values[y], values[z])
+
+        assert compare_vec3(expected_value, set_value), \
+            f"Error: The {component_name}'s  {property_name} property failed to the \"{test_name}\" test. " \
+            f"{expected_value} was expected but {set_value} was retrieved."
+
+
+def validate_property_switch_toggle(get_toggle_value: typing.Callable, set_toggle_value: typing.Callable,
+                                    component_name: str, property_name:str) -> None:
     """
     Used to toggle a property switch and validate that it toggled.
     param component_property_path: String of component property. (e.g. 'Settings|Visible')
