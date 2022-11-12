@@ -71,7 +71,7 @@ def PhysX_Collider_Component_CRUD():
         physx_collider.set_capsule_height(2.5)
         physx_collider.set_capsule_height(256.0)
 
-        #physx_collider.set_capsule_radius(0)
+        physx_collider.set_capsule_radius(0.0)
         physx_collider.set_capsule_radius(-1.0)
         physx_collider.set_capsule_radius(2.5)
         physx_collider.set_capsule_radius(256.0)

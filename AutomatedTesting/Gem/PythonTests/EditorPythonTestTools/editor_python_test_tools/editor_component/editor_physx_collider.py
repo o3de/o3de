@@ -129,6 +129,14 @@ class EditorPhysxCollider:
 
         self.component.set_component_property_value(self.Path.OFFSET, math.Vector3(x, y, z))
 
+    def get_offset(self) -> math.Vector3:
+        """
+        Property Type, Default Visibility - ('Vector3', 'Visible')
+
+        Used to get the PhysX Collider's Offset Property value.
+        """
+        return self.component.get_component_property_value(self.Path.OFFSET)
+
     def set_rotation(self, x: float, y: float, z: float) -> None:
         """
         Property Type, Default Visibility - ('Quaternion', 'Visible')
@@ -141,6 +149,14 @@ class EditorPhysxCollider:
         rotation.SetFromEulerDegrees(math.Vector3(x, y, z))
         self.component.set_component_property_value(self.Path.ROTATION, rotation)
 
+    def get_rotation(self) -> math.Vector3:
+        """
+        Property Type, Default Visibility - ('Vector3', 'Visible')
+
+        Used to get the PhysX Collider's Rotation Property value.
+        """
+        return self.component.get_component_property_value(self.Path.ROTATION)
+
     def set_tag(self, tag: chr) -> None:
         """
         Property Type, Default Visibility - ('AZStd::string', 'Visible')
@@ -152,15 +168,31 @@ class EditorPhysxCollider:
         assert NotImplementedError
         self.component.set_component_property_value(self.Path.TAG, tag)
 
+    def get_tag(self) -> chr:
+        """
+        Property Type, Default Visibility - ('AZStd::string', 'Visible')
+
+        Used to get the PhysX Collider's Tag Property value.
+        """
+        return self.component.get_component_property_value(self.Path.TAG)
+
     def set_rest_offset(self, rest_offset: float) -> None:
         """
         Property Type, Default Visibility - ('float', 'Visible')
 
         Used to set the PhysX Collider's Reset Offset Property.
         """
-        assert isinstance(rest_offset), f"The value passed to Rest Offset \"{rest_offset}\" is not a float."
+        assert isinstance(rest_offset, float), f"The value passed to Rest Offset \"{rest_offset}\" is not a float."
 
         self.component.set_component_property_value(self.Path.RESET_OFFSET, rest_offset)
+
+    def get_reset_offset(self) -> float:
+        """
+        Property Type, Default Visibility - ('float', 'Visible')
+
+        Used to get the PhysX Collider's Reset Offset Property value.
+        """
+        return self.component.get_component_property_value(self.Path.RESET_OFFSET)
 
     def set_contact_offset(self, contact_offset: float) -> None:
         """
@@ -168,9 +200,17 @@ class EditorPhysxCollider:
 
         Used to set the PhysX Collider's Contact Offset Property.
         """
-        assert isinstance(contact_offset), f"The value passed to Contact Offset \"{contact_offset}\" is not a float."
+        assert isinstance(contact_offset, float), f"The value passed to Contact Offset \"{contact_offset}\" is not a float."
 
         self.component.set_component_property_value(self.Path.CONTACT_OFFSET, contact_offset)
+
+    def get_contact_offset(self) -> float:
+        """
+        Property Type, Default Visibility - ('float', 'Visible')
+
+        Used to get the PhysX Collider's Contact Offset Property value.
+        """
+        return self.component.get_component_property_value(self.Path.CONTACT_OFFSET)
 
     def set_draw_collider(self, value: bool) -> None:
         """
@@ -202,6 +242,17 @@ class EditorPhysxCollider:
         px_material = Asset.find_asset_by_path(asset_product_path)
         self.component.set_component_property_value(self.Path.PHYSX_MATERIAL_ASSET, px_material.id)
 
+    def get_physx_material(self) -> Asset:
+        """
+        Property Type, Default Visibility - ('Asset<Physics::MaterialAsset>', 'Visible')
+
+        Used to get the PhysX Collider's PhysX Material
+        """
+        # o3de/o3de#12503 PhysX Collider Component's Physic Material field(s) return unintuitive property tree paths.
+        assert NotImplementedError
+
+        return self.component.get_component_property_value(self.Path.PHYSX_MATERIAL_ASSET)
+
     # Shape: Box
     def set_box_shape(self) -> None:
         """
@@ -222,6 +273,14 @@ class EditorPhysxCollider:
 
         self.component.set_component_property_value(self.Path.Box.DIMENSIONS, math.Vector3(x, y, z))
 
+    def get_box_dimensions(self) -> math.Vector3:
+        """
+        Property Type, Default Visibility - ('BoxShapeConfiguration', 'NotVisible')
+
+        Used to get the PhysX Collider's Box Shape's dimensions.
+        """
+        return self.component.get_component_property_value(self.Path.Box.DIMENSIONS)
+
     # Shape: Capsule
     def set_capsule_shape(self) -> None:
         """
@@ -237,10 +296,18 @@ class EditorPhysxCollider:
 
         Used to set the PhysX Collider's Capsule Shape's height.
         """
-        assert isinstance(height), f"The value passed to Capsule Height \"{height}\" is not a float."
+        assert isinstance(height, float), f"The value passed to Capsule Height \"{height}\" is not a float."
         _validate_property_visibility(self.component, self.Path.Capsule.HEIGHT, PropertyVisibility.VISIBLE)
 
-        self.component.set_component_property_value(self.Path.Capsule.HEIGHT, float(height))
+        self.component.set_component_property_value(self.Path.Capsule.HEIGHT, height)
+
+    def get_capsule_height(self) -> float:
+        """
+        Property Type, Default Visibility - ('float', 'Visible')
+
+        Used to get the PhysX Collider's Capsule Shape's height.
+        """
+        return self.component.get_component_property_value(self.Path.Capsule.HEIGHT)
 
     def set_capsule_radius(self, radius: float) -> None:
         """
@@ -248,10 +315,18 @@ class EditorPhysxCollider:
 
         Used to set the PhysX Collider's Capsule Shape's radius.
         """
-        assert isinstance(radius), f"The value passed to Capsule Radius \"{radius}\" is not a float."
+        assert isinstance(radius, float), f"The value passed to Capsule Radius \"{radius}\" is not a float."
         _validate_property_visibility(self.component, self.Path.Capsule.RADIUS, PropertyVisibility.VISIBLE)
 
-        self.component.set_component_property_value(self.Path.Capsule.RADIUS, float(radius))
+        self.component.set_component_property_value(self.Path.Capsule.RADIUS, radius)
+
+    def get_capsule_radius(self) -> float:
+        """
+        Property Type, Default Visibility - ('float', 'Visible')
+
+        Used to get the PhysX Collider's Capsule Shape's radius.
+        """
+        return self.component.get_component_property_value(self.Path.Capsule.RADIUS)
 
     # Shape: Cylinder
     def set_cylinder_shape(self) -> None:
@@ -272,16 +347,32 @@ class EditorPhysxCollider:
 
         self.component.set_component_property_value(self.Path.Cylinder.SUBDIVISION, subdivisions)
 
+    def get_cylinder_subdivision(self) -> int:
+        """
+        Property Type, Default Visibility - ('unsigned char', 'Visible')
+
+        Used to get the PhysX Collider's Cylinder Shape's subdivision. Subdivision supports int values [3-125].
+        """
+        return self.component.set_component_property_value(self.Path.Cylinder.SUBDIVISION)
+
     def set_cylinder_height(self, height: float) -> None:
         """
         Property Type, Default Visibility - ('float', 'Visible')
 
         Used to set the PhysX Collider's Cylinder Shape's height.
         """
-        assert isinstance(height), f"The value passed to Cylinder Height \"{height}\" is not a float."
+        assert isinstance(height, float), f"The value passed to Cylinder Height \"{height}\" is not a float."
         _validate_property_visibility(self.component, self.Path.Cylinder.HEIGHT, PropertyVisibility.VISIBLE)
 
-        self.component.set_component_property_value(self.Path.Cylinder.HEIGHT, float(height))
+        self.component.set_component_property_value(self.Path.Cylinder.HEIGHT, height)
+
+    def get_cylinder_height(self) -> float:
+        """
+        Property Type, Default Visibility - ('float', 'Visible')
+
+        Used to get the PhysX Collider's Cylinder Shape's height.
+        """
+        return self.component.get_component_property_value(self.Path.Cylinder.HEIGHT)
 
     def set_cylinder_radius(self, radius: float) -> None:
         """
@@ -289,10 +380,18 @@ class EditorPhysxCollider:
 
         Used to set the PhysX Collider's Cylinder Shape's radius.
         """
-        assert isinstance(radius), f"The value passed to Cylinder Radius \"{radius}\" is not a float."
+        assert isinstance(radius, float), f"The value passed to Cylinder Radius \"{radius}\" is not a float."
         _validate_property_visibility(self.component, self.Path.Cylinder.RADIUS, PropertyVisibility.VISIBLE)
 
-        self.component.set_component_property_value(self.Path.Cylinder.RADIUS, float(radius))
+        self.component.set_component_property_value(self.Path.Cylinder.RADIUS, radius)
+
+    def get_cylinder_radius(self) -> float:
+        """
+        Property Type, Default Visibility - ('float', 'Visible')
+
+        Used to get the PhysX Collider's Cylinder Shape's radius.
+        """
+        return self.component.get_component_property_value(self.Path.Cylinder.RADIUS)
 
     # Shape: PhysicsAsset
     def set_physicsasset_shape(self) -> None:
@@ -314,6 +413,14 @@ class EditorPhysxCollider:
 
         px_asset = Asset.find_asset_by_path(asset_product_path)
         self.component.set_component_property_value(self.Path.PhysicsAsset.PHYSX_MESH, px_asset.id)
+
+    def get_physx_mesh(self) -> Asset:
+        """
+        Property Type, Default Visibility - ('Asset<MeshAsset>', 'Visible')
+
+        Used to get the currently set PhysX Collider's PhysicsAsset Shape's PhysX Mesh.
+        """
+        return self.component.get_component_property_value(self.Path.PhysicsAsset.PHYSX_MESH)
 
     def set_physx_mesh_asset_scale(self, x: float, y: float, z: float) -> None:
         """
@@ -364,7 +471,15 @@ class EditorPhysxCollider:
 
         Used to set the PhysX Collider's Sphere radius property.
         """
-        assert isinstance(radius), f"The value passed to Sphere Radius \"{radius}\" is not a float."
+        assert isinstance(radius, float), f"The value passed to Sphere Radius \"{radius}\" is not a float."
         _validate_property_visibility(self.component, self.Path.Sphere.RADIUS, PropertyVisibility.VISIBLE)
 
         self.component.set_component_property_value(self.Path.Sphere.RADIUS, radius)
+
+    def get_sphere_radius(self) -> float:
+        """
+        Property Type, Default Visibility - ('float', 'Visible')
+
+        Used to get the PhysX Collider's Sphere radius property.
+        """
+        return self.component.set_component_property_value(self.Path.Sphere.RADIUS)
