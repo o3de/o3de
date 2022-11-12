@@ -91,7 +91,7 @@ namespace AZ::Dom
     }
 
     template<class T>
-    bool DomPrefixTree<T>::AttachNodeAtPath(const Path& path, const Node& nodeToAttach)
+    bool DomPrefixTree<T>::AttachNodeAtPath(const Path& path, Node&& nodeToAttach)
     {
         Node* node = &m_rootNode;
         const size_t entriesToIterate = path.Size() - 1;
@@ -106,7 +106,7 @@ namespace AZ::Dom
             node = &nodeIt->second;
         }
 
-        node->m_values[path[path.Size() - 1]] = nodeToAttach;
+        node->m_values[path[path.Size() - 1]] = AZStd::move(nodeToAttach);
         return true;
     }
 
@@ -397,10 +397,10 @@ namespace AZ::Dom
     }
 
     template<class T>
-    bool DomPrefixTree<T>::AttachSubTree(const Path& path, const DomPrefixTree& subTree)
+    bool DomPrefixTree<T>::AttachSubTree(const Path& path, DomPrefixTree&& subTree)
     {
-        const Node* node = subTree.GetNodeForPath(AZ::Dom::Path());
-        return AttachNodeAtPath(path, *node);
+        Node* node = subTree.GetNodeForPath(AZ::Dom::Path());
+        return AttachNodeAtPath(path, AZStd::move(*node));
     }
 
     template<class T>

@@ -133,7 +133,7 @@ namespace AZ::Dom
         //! @param path The path which corresponds to the node at which the subtree should be attached.
         //! @param subTree The subtree to attach at the provided path.
         //! @return True if the subTree was attached successfully. Return false otherwise.
-        bool AttachSubTree(const Path& path, const DomPrefixTree& subTree);
+        bool AttachSubTree(const Path& path, DomPrefixTree&& subTree);
         //! Removes all entries from this tree.
         void Clear();
 
@@ -162,7 +162,7 @@ namespace AZ::Dom
         //! @param path The path which corresponds to the node at which the subtree should be attached.
         //! @param node The node to be attached.
         //! @return True if the node was attached successfully. Return false otherwise.
-        bool AttachNodeAtPath(const Path& path, const Node& node);
+        bool AttachNodeAtPath(const Path& path, Node&& node);
 
         Node m_rootNode;
     };
