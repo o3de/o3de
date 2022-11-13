@@ -64,6 +64,10 @@ namespace EMotionFX
             return treeView;
         }
 
+        // this is usefull for hands on testing
+        void ShowJointPropertyWidget();
+        void AddColliderViaAddComponentButton(QString label, QString subLevelLabel = {""});
+
     protected:
         QModelIndexList m_indexList;
         ReselectingTreeView* m_treeView;

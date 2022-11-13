@@ -24,6 +24,68 @@
 
 namespace EMotionFX
 {
+    void SkeletonOutlinerTestFixture::AddColliderViaAddComponentButton(QString label, QString subLevelLabel)
+    {
+        EXPECT_GT(m_indexList.size(), 3) << "Make sure to have a skeleton";
+        // Find the 3rd joint after the RootJoint in the TreeView and select it
+        SelectIndexes(m_indexList, m_treeView, 3, 3);
+
+        auto* treeView = GetAddCollidersTreeView();
+        auto* model = treeView->model();
+
+        //  find indices
+        QModelIndexList indices = model->match(
+            model->index(0, 0),
+            Qt::DisplayRole,
+            QVariant::fromValue(label),
+                    -1,
+            Qt::MatchExactly);
+
+        auto a =indices[0].data();
+        EXPECT_EQ(a, label);
+        auto d = model->index(0,0, indices[0]).data();
+        EXPECT_EQ(d, "Capsule");
+        auto e = model->index(1,0, indices[0]).data();
+        EXPECT_EQ(e, subLevelLabel);
+        if (subLevelLabel != "")
+        {
+            indices = model->match(
+                model->index(0, 0, indices[0]),
+                Qt::DisplayRole,
+                QVariant::fromValue(QString{"Capsule"}),
+                    -1,
+                Qt::MatchExactly);
+        }
+        //  check indices
+        if (indices.size() < 1)
+        {
+            EXPECT_GT(indices.size(), 0) << "Label not found";
+            return;
+        }
+        EXPECT_EQ(indices.size(), 1) << "Label is not eindeutig";
+
+        //  click first index
+        auto index = indices[0];
+        treeView->selectionModel()->select(index, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+        treeView->clicked(index);
+        auto b = index.data();
+        EXPECT_EQ(b, "Sphere");
+    }
+
+    void SkeletonOutlinerTestFixture::ShowJointPropertyWidget()
+    {
+        auto* widget = GetJointPropertyWidget();
+        auto* mw = new QMainWindow;
+        mw->setFixedHeight(900);
+        mw->layout()->addWidget(widget);
+        widget->setFixedHeight(800);
+
+        mw->show();
+        //for(int i = 0; i < 10000; i++)
+        while (true)
+        QApplication::processEvents();
+    }
+
     TEST_F(SkeletonOutlinerTestFixture, AddClothCollider)
     {
         const int numJoints = 6;
@@ -38,23 +100,10 @@ namespace EMotionFX
         // Find the 3rd joint after the RootJoint in the TreeView and select it
         SelectIndexes(m_indexList, m_treeView, 3, 3);
 
-        auto* treeView = GetAddCollidersTreeView();
-        auto index = treeView->model()->index(0, 0, treeView->model()->index(0, 0));
-        treeView->selectionModel()->select(index, QItemSelectionModel::Select | QItemSelectionModel::Rows);
-        treeView->clicked(index);
+        AddColliderViaAddComponentButton("Add To Cloth", "Sphere");
 
+        ShowJointPropertyWidget();
 
-        auto* widget = GetJointPropertyWidget();
-        auto* mw = new QMainWindow;
-        mw->setFixedHeight(900);
-        mw->layout()->addWidget(widget);
-        widget->setFixedHeight(500);
-
-        mw->show();
-        for(int i = 0; i < 10000; i++)
-            QApplication::processEvents();
-
-        // Check the node is in the ragdoll
         EXPECT_TRUE(ColliderHelpers::NodeHasClothCollider(m_indexList[3]));
     }
 
@@ -70,13 +119,6 @@ namespace EMotionFX
 
         EXPECT_EQ(m_indexList.size(), numJoints);
 
-        // Find the 3rd joint after the RootJoint in the TreeView and select it
-        SelectIndexes(m_indexList, m_treeView, 3, 3);
-
-        auto* treeView = GetAddCollidersTreeView();
-        auto index = treeView->model()->index(0, 0, treeView->model()->index(0, 0));
-        treeView->selectionModel()->select(index, QItemSelectionModel::Select | QItemSelectionModel::Rows);
-        treeView->clicked(index);
 
         // Check the node is in the ragdoll
         EXPECT_TRUE(ColliderHelpers::NodeHasClothCollider(m_indexList[3]));
@@ -120,4 +162,8 @@ namespace EMotionFX
             QApplication::processEvents();
 
     }
+   TEST_F(SkeletonOutlinerTestFixture, CopyAndPaste)
+   {
+        EXPECT_EQ(0, 1) << "This test is not implemented";
+   }
 } // namespace EMotionFX
