@@ -231,7 +231,7 @@ namespace EMotionFX
     // TODO subclass ItemModel
     enum ItemRoles
     {
-        TypeId = Qt::UserRole + 1,
+        Shape = Qt::UserRole + 1,
         ConfigType = Qt::UserRole + 2,
         CopyFromType = Qt::UserRole + 3,
         PasteCopiedCollider = Qt::UserRole + 4
@@ -292,17 +292,18 @@ namespace EMotionFX
         for (const auto& s : sections)
         {
             auto& configType = s.type;
-            auto* sectionItem = new QStandardItem{ s.name.data() };
+            auto* sectionItem = new QStandardItem{ QString("Add %1 Collider").arg(s.name.data()) };
 
-            for (auto& typeId : m_supportedColliderTypes)
+            for (auto& shape : m_supportedColliderTypes)
             {
-                if (typeId == azrtti_typeid<Physics::BoxShapeConfiguration>() && configType == PhysicsSetup::ColliderConfigType::Cloth)
+                if (shape == azrtti_typeid<Physics::BoxShapeConfiguration>() && configType == PhysicsSetup::ColliderConfigType::Cloth)
                 {
                     continue;
                 }
-                actionName = AZStd::string::format("Add %s %s", s.name.c_str(), GetNameForColliderType(typeId).c_str());
-                auto* item = new QStandardItem{ actionName.c_str() };
-                item->setData(typeId.ToString<AZStd::string>().c_str(), ItemRoles::TypeId);
+                auto capitalColliderTypeName = QString{GetNameForColliderType(shape).c_str()};
+                capitalColliderTypeName[0] = capitalColliderTypeName[0].toUpper();
+                auto* item = new QStandardItem{ capitalColliderTypeName };
+                item->setData(shape.ToString<AZStd::string>().c_str(), ItemRoles::Shape);
                 item->setData(static_cast<int>(configType), ItemRoles::ConfigType);
                 sectionItem->appendRow(item);
             }
@@ -384,6 +385,7 @@ namespace EMotionFX
 
         if (index.data(ItemRoles::PasteCopiedCollider).value<bool>())
         {
+            // todo
             // PasteCollider(index, false);
             // ColliderHelpers::PasteColliderFromClipboard(selectedRowIndices.first(), );
             return;
@@ -394,24 +396,24 @@ namespace EMotionFX
             index.row();
             return;
         }
-        auto configType = static_cast<PhysicsSetup::ColliderConfigType>(index.data(ItemRoles::ConfigType).toInt());
+        auto colliderType = static_cast<PhysicsSetup::ColliderConfigType>(index.data(ItemRoles::ConfigType).toInt());
         if (!index.data(ItemRoles::CopyFromType).isNull())
         {
             auto copyFromType = static_cast<PhysicsSetup::ColliderConfigType>(index.data(ItemRoles::CopyFromType).toInt());
             // todo check if we could have less
 
-            ColliderHelpers::CopyColliders(selectedRowIndices, copyFromType, configType);
+            ColliderHelpers::CopyColliders(selectedRowIndices, copyFromType, colliderType);
             return;
         }
-        auto colliderType = AZ::TypeId{index.data(ItemRoles::TypeId).toString().toStdString().c_str()};
+        auto shape = AZ::TypeId{index.data(ItemRoles::Shape).toString().toStdString().c_str()};
 
-        if (configType == PhysicsSetup::ColliderConfigType::Ragdoll && index.data(ItemRoles::TypeId).isNull())
+        if (colliderType == PhysicsSetup::ColliderConfigType::Ragdoll && index.data(ItemRoles::Shape).isNull())
         {
             emit AddToRagdoll();
             return;
         }
 
-        emit AddCollider(configType, colliderType);
+        emit AddCollider(colliderType, shape);
     }
 
     AZStd::string AddCollidersButton::GetNameForColliderType(AZ::TypeId colliderType) const

@@ -39,22 +39,16 @@ namespace EMotionFX
             Qt::DisplayRole,
             QVariant::fromValue(label),
                     -1,
-            Qt::MatchExactly);
+            Qt::MatchRecursive);
 
-        auto a =indices[0].data();
-        EXPECT_EQ(a, label);
-        auto d = model->index(0,0, indices[0]).data();
-        EXPECT_EQ(d, "Capsule");
-        auto e = model->index(1,0, indices[0]).data();
-        EXPECT_EQ(e, subLevelLabel);
         if (subLevelLabel != "")
         {
             indices = model->match(
                 model->index(0, 0, indices[0]),
                 Qt::DisplayRole,
-                QVariant::fromValue(QString{"Capsule"}),
+                QVariant::fromValue(subLevelLabel),
                     -1,
-                Qt::MatchExactly);
+                Qt::MatchRecursive);
         }
         //  check indices
         if (indices.size() < 1)
@@ -68,8 +62,6 @@ namespace EMotionFX
         auto index = indices[0];
         treeView->selectionModel()->select(index, QItemSelectionModel::Select | QItemSelectionModel::Rows);
         treeView->clicked(index);
-        auto b = index.data();
-        EXPECT_EQ(b, "Sphere");
     }
 
     void SkeletonOutlinerTestFixture::ShowJointPropertyWidget()
@@ -82,7 +74,7 @@ namespace EMotionFX
 
         mw->show();
         //for(int i = 0; i < 10000; i++)
-        while (true)
+        //while (true)
         QApplication::processEvents();
     }
 
@@ -100,7 +92,7 @@ namespace EMotionFX
         // Find the 3rd joint after the RootJoint in the TreeView and select it
         SelectIndexes(m_indexList, m_treeView, 3, 3);
 
-        AddColliderViaAddComponentButton("Add To Cloth", "Sphere");
+        AddColliderViaAddComponentButton("Add Cloth Collider", "Sphere");
 
         ShowJointPropertyWidget();
 
@@ -119,6 +111,7 @@ namespace EMotionFX
 
         EXPECT_EQ(m_indexList.size(), numJoints);
 
+        AddColliderViaAddComponentButton("Add Cloth Collider", "Capsule");
 
         // Check the node is in the ragdoll
         EXPECT_TRUE(ColliderHelpers::NodeHasClothCollider(m_indexList[3]));
@@ -126,13 +119,7 @@ namespace EMotionFX
         // get the widget
         //auto* widget = GetJointPropertyWidget()->findChild<ClothJointWidget*>("EMotionFX.ClothJointWidget");
         auto* widget = GetJointPropertyWidget();
-        auto* mw = new QMainWindow;
-        mw->setFixedHeight(900);
 
-        widget->setFixedHeight(800);
-        // widget->show();
-        mw->layout()->addWidget(widget);
-        mw->show();
         // get a value widget
         auto propertyEditor = widget->findChild<AzToolsFramework::ReflectedPropertyEditor*>("PropertyEditor");
 
@@ -150,7 +137,6 @@ namespace EMotionFX
             }
         }
 
-        QApplication::processEvents();
         // change it
         auto *lineEdit = static_cast<AzToolsFramework::PropertyDoubleSpinCtrl*>(propertyRow->GetChildWidget());
         //AZ_Assert(lineEdit) << "Did not find Editing handle";
@@ -158,9 +144,8 @@ namespace EMotionFX
         lineEdit->editingFinished();
 
         // watch the world burn
-        while (true)
-            QApplication::processEvents();
-
+        ShowJointPropertyWidget();
+        // We did not crash, at least
     }
    TEST_F(SkeletonOutlinerTestFixture, CopyAndPaste)
    {
