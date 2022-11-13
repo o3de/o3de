@@ -54,6 +54,7 @@ namespace MaterialCanvas
         bool IsModified() const override;
         bool BeginEdit() override;
         bool EndEdit() override;
+        void Clear() override;
 
         // MaterialCanvasDocumentRequestBus::Handler overrides...
         GraphModel::GraphPtr GetGraph() const override;
@@ -61,13 +62,14 @@ namespace MaterialCanvas
         AZStd::string GetGraphName() const override;
         const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const override;
         bool CompileGraph() const override;
-        void BuildSlotValueTable(const AZStd::vector<GraphModel::ConstNodePtr>& allNodes) const;
         void QueueCompileGraph() const override;
         bool IsCompileGraphQueued() const override;
 
     private:
-        // AtomToolsFramework::AtomToolsDocument overrides...
-        void Clear() override;
+        void BuildSlotValueTable() const;
+        void CompileGraphStarted() const;
+        void CompileGraphFailed() const;
+        void CompileGraphCompleted() const;
 
         // GraphModelIntegration::GraphControllerNotificationBus::Handler overrides...
         void OnGraphModelSlotModified(GraphModel::SlotPtr slot) override;
