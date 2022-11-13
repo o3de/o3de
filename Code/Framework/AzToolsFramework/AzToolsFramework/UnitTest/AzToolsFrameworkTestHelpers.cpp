@@ -549,10 +549,19 @@ namespace UnitTest
 
         entity->Deactivate();
 
-        // add required components for the Editor entity
-        entity->CreateComponent<Components::TransformComponent>();
-        entity->CreateComponent<Components::EditorLockComponent>();
-        entity->CreateComponent<Components::EditorVisibilityComponent>();
+        // Add required components for the Editor entity if they are not added.
+        if (!(entity->FindComponent<Components::TransformComponent>()))
+        {
+            entity->CreateComponent<Components::TransformComponent>();
+        }
+        if (!(entity->FindComponent<Components::EditorLockComponent>()))
+        {
+            entity->CreateComponent<Components::EditorLockComponent>();
+        }
+        if (!(entity->FindComponent<Components::EditorVisibilityComponent>()))
+        {
+            entity->CreateComponent<Components::EditorVisibilityComponent>();
+        }
 
         // This is necessary to prevent a warning in the undo system.
         AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
