@@ -14,6 +14,7 @@
 #include <AzCore/std/string/string.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
 #include <GraphModel/Model/DataType.h>
+#include <GraphModel/Model/Node.h>
 
 namespace AtomToolsFramework
 {
@@ -52,6 +53,12 @@ namespace AtomToolsFramework
 
         //! Generate the node palette tree from registered DynamicNodeConfig
         virtual GraphCanvas::GraphCanvasTreeItem* CreateNodePaletteTree() const = 0;
+
+        //! Create a dynamic node from the configuration matching the specified id.
+        virtual GraphModel::NodePtr CreateNodeById(GraphModel::GraphPtr graph, const AZ::Uuid& configId) = 0;
+
+        //! Create a dynamic node from the configuration matching the specified name.
+        virtual GraphModel::NodePtr CreateNodeByName(GraphModel::GraphPtr graph, const AZStd::string& name) = 0;
 
         //! Register dynamic edit data for dynamic node settings so that the edit context handler and attribute can be overridden for a
         //! particular settings group.
