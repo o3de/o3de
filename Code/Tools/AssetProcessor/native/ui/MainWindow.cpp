@@ -2211,13 +2211,13 @@ void MainWindow::BuildSourceAssetTreeContextMenu(QMenu& menu, const AssetProcess
 
     int intermediateCount = 0;
     int productCount = 0;
-    AZStd::string sourceName(sourceItemData->m_assetDbName);
+    SourceAssetReference sourceAsset(sourceItemData->m_scanFolderInfo.m_scanFolder.c_str(), sourceItemData->m_sourceInfo.m_sourceName.c_str());
     m_sharedDbConnection->QueryJobBySourceID(sourceItemData->m_sourceInfo.m_sourceID,
-        [&,sourceName](AzToolsFramework::AssetDatabase::JobDatabaseEntry& jobEntry)
+        [this, &jobMenu, &productAssetMenu, &intermediateAssetMenu, &intermediateCount, &productCount, sourceAsset](AzToolsFramework::AssetDatabase::JobDatabaseEntry& jobEntry)
     {
-        QAction* jobAction = jobMenu->addAction(tr("with key %1 for platform %2").arg(jobEntry.m_jobKey.c_str(), jobEntry.m_platform.c_str()), this, [&, jobEntry, sourceName]()
+        QAction* jobAction = jobMenu->addAction(tr("with key %1 for platform %2").arg(jobEntry.m_jobKey.c_str(), jobEntry.m_platform.c_str()), this, [this, jobEntry, sourceAsset]()
         {
-            QModelIndex jobIndex = m_jobsModel->GetJobFromSourceAndJobInfo(SourceAssetReference(sourceItemData->m_scanFolderInfo.m_scanFolder.c_str(), sourceItemData->m_sourceInfo.m_sourceName.c_str()), jobEntry.m_platform, jobEntry.m_jobKey);
+            QModelIndex jobIndex = m_jobsModel->GetJobFromSourceAndJobInfo(sourceAsset, jobEntry.m_platform, jobEntry.m_jobKey);
             SelectJobAndMakeVisible(jobIndex);
         });
         jobAction->setToolTip(tr("Show this job in the Jobs tab."));

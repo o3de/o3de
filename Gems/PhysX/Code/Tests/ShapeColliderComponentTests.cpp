@@ -7,26 +7,27 @@
  */
 
 #include <AzCore/UnitTest/TestTypes.h>
-#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
-#include <Tests/EditorTestUtilities.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <EditorColliderComponent.h>
-#include <EditorShapeColliderComponent.h>
-#include <EditorRigidBodyComponent.h>
 #include <EditorForceRegionComponent.h>
-#include <ShapeColliderComponent.h>
-#include <RigidBodyComponent.h>
-#include <StaticRigidBodyComponent.h>
-#include <RigidBodyStatic.h>
+#include <EditorRigidBodyComponent.h>
+#include <EditorShapeColliderComponent.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
+#include <LmbrCentral/Shape/CompoundShapeComponentBus.h>
 #include <LmbrCentral/Shape/CylinderShapeComponentBus.h>
 #include <LmbrCentral/Shape/PolygonPrismShapeComponentBus.h>
-#include <LmbrCentral/Shape/SphereShapeComponentBus.h>
-#include <LmbrCentral/Shape/CompoundShapeComponentBus.h>
 #include <LmbrCentral/Shape/QuadShapeComponentBus.h>
+#include <LmbrCentral/Shape/SphereShapeComponentBus.h>
 #include <PhysX/ForceRegionComponentBus.h>
+#include <PhysX/MathConversion.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/SystemComponentBus.h>
+#include <RigidBodyComponent.h>
+#include <RigidBodyStatic.h>
+#include <ShapeColliderComponent.h>
+#include <StaticRigidBodyComponent.h>
+#include <Tests/EditorTestUtilities.h>
 #include <Tests/PhysXTestCommon.h>
 
 namespace PhysXEditorTests
@@ -149,6 +150,245 @@ namespace PhysXEditorTests
         AZ::Aabb aabb = staticBody->GetAabb();
         EXPECT_TRUE(aabb.GetMax().IsClose(0.5f * boxDimensions));
         EXPECT_TRUE(aabb.GetMin().IsClose(-0.5f * boxDimensions));
+    }
+
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithBoxAndTranslationOffset_CorrectEditorStaticBodyGeometry)
+    {
+        AZ::Transform transform(AZ::Vector3(2.0f, -6.0f, 5.0f), AZ::Quaternion(0.3f, -0.3f, 0.1f, 0.9f), 1.6f);
+        AZ::Vector3 nonUniformScale(2.0f, 2.5f, 0.5f);
+        AZ::Vector3 boxDimensions(5.0f, 8.0f, 6.0f);
+        AZ::Vector3 translationOffset(-4.0f, 3.0f, -1.0f);
+        EntityPtr editorEntity = CreateBoxShapeColliderEditorEntity(transform, nonUniformScale, boxDimensions, translationOffset);
+
+        AzPhysics::SimulatedBody* simulatedBody = nullptr;
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, editorEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        const auto* pxRigidStatic = static_cast<const physx::PxRigidStatic*>(simulatedBody->GetNativePointer());
+
+        AZ::Aabb aabb = PxMathConvert(pxRigidStatic->getWorldBounds(1.0f));
+        EXPECT_THAT(aabb.GetMin(), UnitTest::IsClose(AZ::Vector3(-25.488f, -10.16f, -11.448f)));
+        EXPECT_THAT(aabb.GetMax(), UnitTest::IsClose(AZ::Vector3(1.136f, 18.32f, 16.584f)));
+    }
+
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithBoxAndTranslationOffset_CorrectEditorDynamicBodyGeometry)
+    {
+        AZ::Transform transform(AZ::Vector3(-5.0f, -1.0f, 3.0f), AZ::Quaternion(0.7f, 0.5f, -0.1f, 0.5f), 1.2f);
+        AZ::Vector3 nonUniformScale(1.5f, 1.5f, 4.0f);
+        AZ::Vector3 boxDimensions(6.0f, 4.0f, 1.0f);
+        AZ::Vector3 translationOffset(6.0f, -5.0f, -4.0f);
+        EntityPtr editorEntity = CreateBoxShapeColliderEditorEntity(transform, nonUniformScale, boxDimensions, translationOffset);
+
+        editorEntity->Deactivate();
+        editorEntity->Activate();
+
+        AzPhysics::SimulatedBody* simulatedBody = nullptr;
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, editorEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        const auto* pxRigidDynamic = static_cast<const physx::PxRigidDynamic*>(simulatedBody->GetNativePointer());
+
+        AZ::Aabb aabb = PxMathConvert(pxRigidDynamic->getWorldBounds(1.0f));
+        EXPECT_THAT(aabb.GetMin(), UnitTest::IsClose(AZ::Vector3(-20.264f, 15.68f, -6.864f)));
+        EXPECT_THAT(aabb.GetMax(), UnitTest::IsClose(AZ::Vector3(-7.592f, 26.0f, 6.672f)));
+    }
+
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithBoxAndTranslationOffset_CorrectRuntimeStaticBodyGeometry)
+    {
+        AZ::Transform transform(AZ::Vector3(7.0f, 2.0f, 4.0f), AZ::Quaternion(0.4f, -0.8f, 0.4f, 0.2f), 2.5f);
+        AZ::Vector3 nonUniformScale(0.8f, 2.0f, 1.5f);
+        AZ::Vector3 boxDimensions(1.0f, 4.0f, 7.0f);
+        AZ::Vector3 translationOffset(6.0f, -1.0f, -2.0f);
+        EntityPtr editorEntity = CreateBoxShapeColliderEditorEntity(transform, nonUniformScale, boxDimensions, translationOffset);
+        EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
+
+        AzPhysics::SimulatedBody* simulatedBody = nullptr;
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, gameEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        const auto* pxRigidStatic = static_cast<const physx::PxRigidStatic*>(simulatedBody->GetNativePointer());
+
+        AZ::Aabb aabb = PxMathConvert(pxRigidStatic->getWorldBounds(1.0f));
+        EXPECT_THAT(aabb.GetMin(), UnitTest::IsClose(AZ::Vector3(-4.8f, -14.14f, 5.265f)));
+        EXPECT_THAT(aabb.GetMax(), UnitTest::IsClose(AZ::Vector3(12.4f, 15.02f, 31.895f)));
+    }
+
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithBoxAndTranslationOffset_CorrectRuntimeDynamicBodyGeometry)
+    {
+        AZ::Transform transform(AZ::Vector3(4.0f, 4.0f, 2.0f), AZ::Quaternion(0.1f, 0.3f, 0.9f, 0.3f), 0.8f);
+        AZ::Vector3 nonUniformScale(2.5f, 1.0f, 2.0f);
+        AZ::Vector3 boxDimensions(4.0f, 2.0f, 7.0f);
+        AZ::Vector3 translationOffset(-2.0f, 7.0f, -1.0f);
+        EntityPtr editorEntity = CreateBoxShapeColliderEditorEntity(transform, nonUniformScale, boxDimensions, translationOffset);
+        EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
+
+        AzPhysics::SimulatedBody* simulatedBody = nullptr;
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, gameEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        const auto* pxRigidDynamic = static_cast<const physx::PxRigidDynamic*>(simulatedBody->GetNativePointer());
+
+        AZ::Aabb aabb = PxMathConvert(pxRigidDynamic->getWorldBounds(1.0f));
+        EXPECT_THAT(aabb.GetMin(), UnitTest::IsClose(AZ::Vector3(-1.664f, -8.352f, -0.88f)));
+        EXPECT_THAT(aabb.GetMax(), UnitTest::IsClose(AZ::Vector3(9.536f, 2.848f, 9.04f)));
+    }
+
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithSphereAndTranslationOffset_CorrectEditorStaticBodyGeometry)
+    {
+        EntityPtr editorEntity = CreateSphereShapeColliderEditorEntity(
+            AZ::Transform(AZ::Vector3(4.0f, 2.0f, -2.0f), AZ::Quaternion(-0.5f, -0.5f, 0.1f, 0.7f), 3.0f),
+            1.6f,
+            AZ::Vector3(2.0f, 3.0f, -7.0f)
+        );
+
+        AzPhysics::SimulatedBody* simulatedBody = nullptr;
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, editorEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        const auto* pxRigidStatic = static_cast<const physx::PxRigidStatic*>(simulatedBody->GetNativePointer());
+
+        AZ::Aabb aabb = PxMathConvert(pxRigidStatic->getWorldBounds(1.0f));
+        EXPECT_THAT(aabb.GetMin(), UnitTest::IsClose(AZ::Vector3(22.12f, -7.24f, -10.4f)));
+        EXPECT_THAT(aabb.GetMax(), UnitTest::IsClose(AZ::Vector3(31.72f, 2.36f, -0.8f)));
+    }
+
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithSphereAndTranslationOffset_CorrectEditorDynamicBodyGeometry)
+    {
+        EntityPtr editorEntity = CreateSphereShapeColliderEditorEntity(
+            AZ::Transform(AZ::Vector3(2.0f, -5.0f, -6.0f), AZ::Quaternion(0.7f, 0.1f, 0.7f, 0.1f), 0.4f),
+            3.5f,
+            AZ::Vector3(1.0f, 3.0f, -1.0f)
+        );
+
+        editorEntity->Deactivate();
+        editorEntity->Activate();
+
+        AzPhysics::SimulatedBody* simulatedBody = nullptr;
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, editorEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        const auto* pxRigidDynamic = static_cast<const physx::PxRigidDynamic*>(simulatedBody->GetNativePointer());
+
+        AZ::Aabb aabb = PxMathConvert(pxRigidDynamic->getWorldBounds(1.0f));
+        EXPECT_THAT(aabb.GetMin(), UnitTest::IsClose(AZ::Vector3(0.2f, -7.44f, -6.68f)));
+        EXPECT_THAT(aabb.GetMax(), UnitTest::IsClose(AZ::Vector3(3.0f, -4.64f, -3.88f)));
+    }
+
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithSphereAndTranslationOffset_CorrectRuntimeStaticBodyGeometry)
+    {
+        EntityPtr editorEntity = CreateSphereShapeColliderEditorEntity(
+            AZ::Transform(AZ::Vector3(4.0f, 4.0f, -1.0f), AZ::Quaternion(0.8f, -0.2f, 0.4f, 0.4f), 2.4f),
+            2.0f,
+            AZ::Vector3(5.0f, 6.0f, -8.0f)
+        );
+
+        EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
+
+        AzPhysics::SimulatedBody* simulatedBody = nullptr;
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, gameEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        const auto* pxRigidStatic = static_cast<const physx::PxRigidStatic*>(simulatedBody->GetNativePointer());
+
+        AZ::Aabb aabb = PxMathConvert(pxRigidStatic->getWorldBounds(1.0f));
+        EXPECT_THAT(aabb.GetMin(), UnitTest::IsClose(AZ::Vector3(-12.032f, 5.92f, 17.624f)));
+        EXPECT_THAT(aabb.GetMax(), UnitTest::IsClose(AZ::Vector3(-2.432f, 15.52f, 27.224f)));
+    }
+
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithSphereAndTranslationOffset_CorrectRuntimeDynamicBodyGeometry)
+    {
+        EntityPtr editorEntity = CreateSphereShapeColliderEditorEntity(
+            AZ::Transform(AZ::Vector3(2.0f, 2.0f, -5.0f), AZ::Quaternion(0.9f, 0.3f, 0.3f, 0.1f), 5.0f),
+            0.4f,
+            AZ::Vector3(4.0f, 7.0f, 3.0f)
+        );
+
+        EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
+
+        AzPhysics::SimulatedBody* simulatedBody = nullptr;
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, gameEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        const auto* pxRigidDynamic = static_cast<const physx::PxRigidDynamic*>(simulatedBody->GetNativePointer());
+
+        AZ::Aabb aabb = PxMathConvert(pxRigidDynamic->getWorldBounds(1.0f));
+        EXPECT_THAT(aabb.GetMin(), UnitTest::IsClose(AZ::Vector3(38.6f, -16.0f, 3.2f)));
+        EXPECT_THAT(aabb.GetMax(), UnitTest::IsClose(AZ::Vector3(42.6f, -12.0f, 7.2f)));
+    }
+
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithCapsuleAndTranslationOffset_CorrectEditorStaticBodyGeometry)
+    {
+        EntityPtr editorEntity = CreateCapsuleShapeColliderEditorEntity(
+            AZ::Transform(AZ::Vector3(2.0f, 1.0f, -2.0f), AZ::Quaternion(-0.2f, -0.8f, -0.4f, 0.4f), 4.0f),
+            2.0f,
+            8.0f,
+            AZ::Vector3(2.0f, 3.0f, 5.0f)
+        );
+
+        AzPhysics::SimulatedBody* simulatedBody = nullptr;
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, editorEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        const auto* pxRigidStatic = static_cast<const physx::PxRigidStatic*>(simulatedBody->GetNativePointer());
+
+        AZ::Aabb aabb = PxMathConvert(pxRigidStatic->getWorldBounds(1.0f));
+        EXPECT_THAT(aabb.GetMin(), UnitTest::IsClose(AZ::Vector3(-16.56f, 9.8f, -7.92f)));
+        EXPECT_THAT(aabb.GetMax(), UnitTest::IsClose(AZ::Vector3(7.12f, 38.6f, 13.84f)));
+    }
+
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithCapsuleAndTranslationOffset_CorrectEditorDynamicBodyGeometry)
+    {
+        EntityPtr editorEntity = CreateCapsuleShapeColliderEditorEntity(
+            AZ::Transform(AZ::Vector3(7.0f, -9.0f, 2.0f), AZ::Quaternion(0.7f, 0.1f, 0.7f, 0.1f), 0.2f),
+            1.0f,
+            5.0f,
+            AZ::Vector3(2.0f, 9.0f, -5.0f)
+        );
+
+        editorEntity->Deactivate();
+        editorEntity->Activate();
+
+        AzPhysics::SimulatedBody* simulatedBody = nullptr;
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, editorEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        const auto* pxRigidDynamic = static_cast<const physx::PxRigidDynamic*>(simulatedBody->GetNativePointer());
+
+        AZ::Aabb aabb = PxMathConvert(pxRigidDynamic->getWorldBounds(1.0f));
+        EXPECT_THAT(aabb.GetMin(), UnitTest::IsClose(AZ::Vector3(5.5f, -10.816f, 2.688f)));
+        EXPECT_THAT(aabb.GetMax(), UnitTest::IsClose(AZ::Vector3(6.5f, -10.416f, 3.088f)));
+    }
+
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithCapsuleAndTranslationOffset_CorrectRuntimeStaticBodyGeometry)
+    {
+        EntityPtr editorEntity = CreateCapsuleShapeColliderEditorEntity(
+            AZ::Transform(AZ::Vector3(-4.0f, -3.0f, -1.0f), AZ::Quaternion(0.5f, -0.7f, -0.1f, 0.5f), 0.8f),
+            2.0f,
+            11.0f,
+            AZ::Vector3(4.0f, 1.0f, -3.0f)
+        );
+
+        EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
+
+        AzPhysics::SimulatedBody* simulatedBody = nullptr;
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, gameEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        const auto* pxRigidStatic = static_cast<const physx::PxRigidStatic*>(simulatedBody->GetNativePointer());
+
+        AZ::Aabb aabb = PxMathConvert(pxRigidStatic->getWorldBounds(1.0f));
+        EXPECT_THAT(aabb.GetMin(), UnitTest::IsClose(AZ::Vector3(-6.4f, -6.92f, -0.36f)));
+        EXPECT_THAT(aabb.GetMax(), UnitTest::IsClose(AZ::Vector3(1.28f, -1.704f, 5.528f)));
+    }
+
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithCapsuleAndTranslationOffset_CorrectRuntimeDynamicBodyGeometry)
+    {
+        EntityPtr editorEntity = CreateCapsuleShapeColliderEditorEntity(
+            AZ::Transform(AZ::Vector3(7.0f, 6.0f, -3.0f), AZ::Quaternion(-0.3f, -0.1f, -0.3f, 0.9f), 6.0f),
+            0.4f,
+            3.0f,
+            AZ::Vector3(2.0f, -7.0f, 7.0f)
+        );
+
+        EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
+
+        AzPhysics::SimulatedBody* simulatedBody = nullptr;
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, gameEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        const auto* pxRigidDynamic = static_cast<const physx::PxRigidDynamic*>(simulatedBody->GetNativePointer());
+
+        AZ::Aabb aabb = PxMathConvert(pxRigidDynamic->getWorldBounds(1.0f));
+        EXPECT_THAT(aabb.GetMin(), UnitTest::IsClose(AZ::Vector3(-11.0f, -7.8f, 47.4f)));
+        EXPECT_THAT(aabb.GetMax(), UnitTest::IsClose(AZ::Vector3(-6.2f, 4.92f, 62.76f)));
     }
 
     void SetPolygonPrismVertices(AZ::EntityId entityId, const AZStd::vector<AZ::Vector2>& vertices)

@@ -36,6 +36,9 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     class test_DuplicateEntity_WithNestedEntitiesAndNestedPrefabs(EditorSharedTest):
         from .tests.duplicate_prefab import DuplicateEntity_WithNestedEntitiesAndNestedPrefabs as test_module
 
+    class test_AddEntity_UnderUnfocusedInstanceAsOverride(EditorSharedTest):
+        from .tests.overrides import AddEntity_UnderUnfocusedInstanceAsOverride as test_module
+
 
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])

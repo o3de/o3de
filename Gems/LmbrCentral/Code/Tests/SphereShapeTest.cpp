@@ -9,6 +9,7 @@
 #include <AzTest/AzTest.h>
 
 #include <AZTestShared/Math/MathTestHelpers.h>
+#include <AZTestShared/Utils/Utils.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -24,7 +25,7 @@ namespace UnitTest
 {
     class SphereShapeTest
         : public AllocatorsFixture
-        , public ShapeOffsetTestsBase
+        , public RegistryTestHelper
     {
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformShapeComponentDescriptor;
@@ -34,7 +35,7 @@ namespace UnitTest
         void SetUp() override
         {
             AllocatorsFixture::SetUp();
-            ShapeOffsetTestsBase::SetUp();
+            RegistryTestHelper::SetUp(LmbrCentral::ShapeComponentTranslationOffsetEnabled, true);
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
             m_transformShapeComponentDescriptor.reset(AzFramework::TransformComponent::CreateDescriptor());
             m_transformShapeComponentDescriptor->Reflect(&(*m_serializeContext));
@@ -50,7 +51,7 @@ namespace UnitTest
             m_sphereShapeComponentDescriptor.reset();
             m_sphereShapeDebugDisplayComponentDescriptor.reset();
             m_serializeContext.reset();
-            ShapeOffsetTestsBase::TearDown();
+            RegistryTestHelper::TearDown();
             AllocatorsFixture::TearDown();
         }
     };

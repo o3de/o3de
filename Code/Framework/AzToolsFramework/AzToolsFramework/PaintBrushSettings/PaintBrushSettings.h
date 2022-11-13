@@ -167,6 +167,20 @@ namespace AzToolsFramework
         void SetFlowPercent(float flowPercent);
         void SetDistancePercent(float distancePercent);
 
+        // Smoothing settings
+
+        size_t GetSmoothingRadius() const
+        {
+            return m_smoothingRadius;
+        }
+        size_t GetSmoothingSpacing() const
+        {
+            return m_smoothingSpacing;
+        }
+
+        void SetSmoothingRadius(size_t radius);
+        void SetSmoothingSpacing(size_t spacing);
+
     protected:
         AzToolsFramework::ColorEditorConfiguration GetColorEditorConfig();
 
@@ -185,6 +199,7 @@ namespace AzToolsFramework
         bool GetHardnessVisibility() const;
         bool GetFlowVisibility() const;
         bool GetDistanceVisibility() const;
+        bool GetSmoothingRadiusVisibility() const;
         bool GetBlendModeVisibility() const;
         bool GetSmoothModeVisibility() const;
 
@@ -216,6 +231,19 @@ namespace AzToolsFramework
         float m_flowPercent = 100.0f;
         //! Brush distance to move between stamps in % of paintbrush size. (25% is the default in Photoshop.)
         float m_distancePercent = 25.0f;
+
+        static inline constexpr size_t MinSmoothingRadius = 1;  // We need to use at least 1 pixel in each direction for smoothing
+        static inline constexpr size_t MaxSmoothingRadius = 10; // Limit the max to 10 pixels in each direction due to performance
+
+        //! Brush smoothing radius - the number of pixels in each direction to use for smoothing calculations.
+        size_t m_smoothingRadius = MinSmoothingRadius;
+
+        static inline constexpr size_t MinSmoothingSpacing = 0;     // A spacing of 0 means use adjacent pixels
+        static inline constexpr size_t MaxSmoothingSpacing = 50;    // Reasonable limit that doesn't spread the pixels too far out
+
+        //! Brush smoothing spacing - the number of pixels to skip between each pixel used in the smoothing calculations.
+        //! This is a way to use a larger area of the image for smoothing without needing to query more pixels and hurt performance.
+        size_t m_smoothingSpacing = MinSmoothingSpacing;
 
         //! These only exist for alternate editing controls. They get stored back into m_brushColor.
 

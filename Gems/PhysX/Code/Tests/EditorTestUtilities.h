@@ -12,6 +12,7 @@
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
+#include <AZTestShared/Utils/Utils.h>
 
 #include <System/PhysXSystem.h>
 
@@ -30,6 +31,20 @@ namespace PhysXEditorTests
     //! Creates and activates a game entity from an editor entity.
     EntityPtr CreateActiveGameEntityFromEditorEntity(AZ::Entity* editorEntity);
 
+    //! Creates an active editor entity with shape collider and box shape components.
+    EntityPtr CreateBoxShapeColliderEditorEntity(
+        const AZ::Transform& transform,
+        const AZ::Vector3& nonUniformScale,
+        const AZ::Vector3& boxDimensions,
+        const AZ::Vector3& translationOffset);
+
+    //! Creates an active editor entity with shape collider and capsule shape components.
+    EntityPtr CreateCapsuleShapeColliderEditorEntity(
+        const AZ::Transform& transform, float radius, float height, const AZ::Vector3& translationOffset);
+
+    //! Creates an active editor entity with shape collider and sphere shape components.
+    EntityPtr CreateSphereShapeColliderEditorEntity(const AZ::Transform& transform, float radius, const AZ::Vector3& translationOffset);
+
     //! Class used for loading system components from this gem.
     class PhysXEditorSystemComponentEntity
         : public AZ::Entity
@@ -43,6 +58,7 @@ namespace PhysXEditorTests
     class PhysXEditorFixture
         : public UnitTest::AllocatorsTestFixture
         , public Physics::DefaultWorldBus::Handler
+        , public UnitTest::RegistryTestHelper
     {
     public:
         void SetUp() override;

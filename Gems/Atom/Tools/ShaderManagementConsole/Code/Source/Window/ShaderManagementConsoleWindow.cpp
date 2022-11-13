@@ -48,14 +48,14 @@ namespace ShaderManagementConsole
         m_actionSaveAsChild->setVisible(false);
     }
 
-    AZStd::string ShaderManagementConsoleWindow::GetSaveDocumentParams(const AZStd::string& initialPath) const
+    AZStd::string ShaderManagementConsoleWindow::GetSaveDocumentParams(const AZStd::string& initialPath, const AZ::Uuid& documentId) const
     {
         // Get shader file path
         AZ::IO::Path shaderFullPath;
         AZ::RPI::ShaderVariantListSourceData shaderVariantList = {};
         ShaderManagementConsoleDocumentRequestBus::EventResult(
             shaderVariantList,
-            GetCurrentDocumentId(),
+            documentId,
             &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderVariantListSourceData);
         shaderFullPath = AZ::RPI::AssetUtils::ResolvePathReference(initialPath, shaderVariantList.m_shaderFilePath);
         

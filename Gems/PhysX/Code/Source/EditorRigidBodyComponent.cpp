@@ -88,7 +88,7 @@ namespace PhysX
             const AZStd::vector<EditorShapeColliderComponent*> shapeColliders = entity->FindComponents<EditorShapeColliderComponent>();
             for (const EditorShapeColliderComponent* shapeCollider : shapeColliders)
             {
-                const Physics::ColliderConfiguration& colliderConfig = shapeCollider->GetColliderConfiguration();
+                const Physics::ColliderConfiguration colliderConfig = shapeCollider->GetColliderConfigurationScaled();
                 const AZStd::vector<AZStd::shared_ptr<Physics::ShapeConfiguration>>& shapeConfigs =
                     shapeCollider->GetShapeConfigurations();
                 for (const auto& shapeConfig : shapeConfigs)
@@ -267,6 +267,7 @@ namespace PhysX
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         Physics::ColliderComponentEventBus::Handler::BusConnect(GetEntityId());
+        AzFramework::BoundsRequestBus::Handler::BusConnect(GetEntityId());
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             AzPhysics::SceneHandle editorSceneHandle = sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
@@ -303,6 +304,7 @@ namespace PhysX
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         m_nonUniformScaleChangedHandler.Disconnect();
         m_sceneStartSimHandler.Disconnect();
+        AzFramework::BoundsRequestBus::Handler::BusDisconnect();
         Physics::ColliderComponentEventBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
@@ -574,5 +576,21 @@ namespace PhysX
         {
             m_shouldBeRecreated = true;
         }
+    }
+
+    AZ::Aabb EditorRigidBodyComponent::GetWorldBounds()
+    {
+        return GetAabb();
+    }
+
+    AZ::Aabb EditorRigidBodyComponent::GetLocalBounds()
+    {
+        AZ::Aabb worldBounds = GetWorldBounds();
+        if (worldBounds.IsValid())
+        {
+            return worldBounds.GetTransformedAabb(GetWorldTM().GetInverse());
+        }
+
+        return AZ::Aabb::CreateNull();
     }
 } // namespace PhysX

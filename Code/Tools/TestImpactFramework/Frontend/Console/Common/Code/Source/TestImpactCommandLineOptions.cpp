@@ -477,7 +477,7 @@ namespace TestImpact
             "                                                                them to be drafted into future test runs and 'keep' will keep any existing \n"
             "                                                                coverage data and update the coverage data for failed tests that produce \n"
             "                                                                coverage.\n"
-            "    -targetout=<sdtout, file>                                   Capture of individual test run stdout, where 'stdout' will capture \n"
+            "    -targetout=<stdout, file>                                   Capture of individual test run stdout, where 'stdout' will capture \n"
             "                                                                each individual test target's stdout and output each one to stdout \n"
             "                                                                and 'file' will capture each individual test target's stdout and output \n"
             "                                                                each one individually to a file (multiple values are accepted).\n"
