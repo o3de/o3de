@@ -137,6 +137,9 @@ namespace AZ::Dom
         //! Removes all entries from this tree.
         void Clear();
 
+        //! Returns true if the root node is empty.
+        bool IsEmpty() const;
+
     private:
         struct Node
         {

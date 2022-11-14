@@ -56,7 +56,7 @@ namespace AZ::Dom
     template<class T>
     bool DomPrefixTree<T>::DomPrefixTree::Node::IsEmpty() const
     {
-        return (m_values.empty() && m_data);
+        return (m_values.empty() && !(m_data.has_value()));
     }
 
     template<class T>
@@ -407,5 +407,11 @@ namespace AZ::Dom
     void DomPrefixTree<T>::Clear()
     {
         m_rootNode = Node();
+    }
+
+    template<class T>
+    bool DomPrefixTree<T>::IsEmpty() const
+    {
+        return m_rootNode.IsEmpty();
     }
 } // namespace AZ::Dom
