@@ -61,6 +61,7 @@ namespace EMotionFX
         void OnModelReset();
 
     protected:
+        QWidget* m_content = nullptr;
         AzQtComponents::Card*   m_contentCard = nullptr;
         ColliderContainerWidget* m_collidersWidget = nullptr;
 

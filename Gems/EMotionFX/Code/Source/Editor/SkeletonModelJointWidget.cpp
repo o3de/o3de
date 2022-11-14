@@ -54,7 +54,6 @@ namespace EMotionFX
         mainLayout->setMargin(0);
         mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
         mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
-        mainLayout->addLayout(new HLineLayout{});
 
         // Contents Card
         m_contentCard = new AzQtComponents::Card{this};
@@ -63,13 +62,12 @@ namespace EMotionFX
         m_contentCard->header()->setHasContextMenu(false);
         m_contentCard->header()->setUnderlineColor(GetColor());
 
-        auto* content = new QWidget{m_contentCard};
-        QVBoxLayout* contentsLayout = new QVBoxLayout();
-        content->setLayout(contentsLayout);
-        contentsLayout->addWidget(CreateContentWidget(m_contentCard));
-        m_contentCard->setContentWidget(content);
+        m_content = new QWidget{this};
+        m_content->setLayout(new HLineLayout);
+        m_content->layout()->addWidget(m_contentCard);
+        m_contentCard->setContentWidget(CreateContentWidget(m_contentCard));
 
-        mainLayout->addWidget(m_contentCard);
+        mainLayout->addWidget(m_content);
         setLayout(mainLayout);
 
         Reinit();
@@ -94,7 +92,7 @@ namespace EMotionFX
             return;
         }
 
-        m_contentCard->hide();
+        m_content->hide();
         InternalReinit();
         if (GetActor())
         {
@@ -105,7 +103,7 @@ namespace EMotionFX
 
                 if (m_collidersWidget != nullptr && m_collidersWidget->HasVisibleColliders())
                 {
-                    m_contentCard->show();
+                    m_content->show();
                 }
             }
         }
