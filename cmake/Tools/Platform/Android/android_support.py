@@ -35,7 +35,7 @@ from cmake.Tools.layout_tool import remove_link
 
 
 ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP = {
-    '4.2.2': {'min_gradle_version': '7.0.2',
+    '4.2.2': {'min_gradle_version': '6.7.1',
               'sdk_build': '30.0.3',
               'default_ndk': '21.4.7075529',
               'min_cmake_version': '3.20'},
