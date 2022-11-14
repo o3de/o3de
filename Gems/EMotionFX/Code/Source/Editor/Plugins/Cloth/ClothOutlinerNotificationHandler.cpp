@@ -7,56 +7,50 @@
  */
 
 #include <AzFramework/Physics/SystemBus.h>
+#include <MCore/Source/ReflectionSerializer.h>
+#include <EMotionFX/CommandSystem/Source/CommandManager.h>
+#include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
 #include <Editor/SkeletonModel.h>
-#include <Editor/Plugins/HitDetection/HitDetectionJointInspectorPlugin.h>
-#include <Editor/Plugins/HitDetection/HitDetectionJointWidget.h>
+#include <Editor/Plugins/Cloth/ClothOutlinerNotificationHandler.h>
+#include <Editor/Plugins/Cloth/ClothJointWidget.h>
 #include <Integration/Rendering/RenderActorSettings.h>
 #include <QScrollArea>
-#include <MCore/Source/AzCoreConversions.h>
 
 
 namespace EMotionFX
 {
-    HitDetectionJointInspectorPlugin::HitDetectionJointInspectorPlugin()
-        : EMStudio::DockWidgetPlugin()
-        , m_nodeWidget(nullptr)
+    ClothOutlinerNotificationHandler::ClothOutlinerNotificationHandler(ClothJointWidget* colliderWidget)
+        :m_colliderWidget(colliderWidget)
     {
+        if (!IsNvClothGemAvailable() || !ColliderHelpers::AreCollidersReflected())
+        {
+            // m_dock->setWidget(CreateErrorContentWidget("Cloth collider editor depends on the NVIDIA Cloth gem. Please enable it in the Project Manager."));
+            return;
+        }
+         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusConnect();
     }
 
-    HitDetectionJointInspectorPlugin::~HitDetectionJointInspectorPlugin()
+    ClothOutlinerNotificationHandler::~ClothOutlinerNotificationHandler()
     {
         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusDisconnect();
     }
 
-    bool HitDetectionJointInspectorPlugin::Init()
+    bool ClothOutlinerNotificationHandler::IsNvClothGemAvailable() const
     {
-        if (ColliderHelpers::AreCollidersReflected())
-        {
-            m_nodeWidget = new HitDetectionJointWidget();
-            m_nodeWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-            m_nodeWidget->CreateGUI();
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
-            QScrollArea* scrollArea = new QScrollArea();
-            scrollArea->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-            scrollArea->setWidget(m_nodeWidget);
-            scrollArea->setWidgetResizable(true);
+        // TypeId of NvCloth::SystemComponent
+        const char* typeIDClothSystem = "{89DF5C48-64AC-4B8E-9E61-0D4C7A7B5491}";
 
-            m_dock->setWidget(scrollArea);
-
-            EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusConnect();
-        }
-        else
-        {
-            m_dock->setWidget(CreateErrorContentWidget("Hit detection collider editor depends on the PhysX gem. Please enable it in the Project Manager."));
-        }
-
-        return true;
+        return serializeContext
+            && serializeContext->FindClassData(AZ::TypeId::CreateString(typeIDClothSystem));
     }
 
-    void HitDetectionJointInspectorPlugin::OnContextMenu(QMenu* menu, const QModelIndexList& selectedRowIndices)
+    void ClothOutlinerNotificationHandler::OnContextMenu(QMenu* menu, const QModelIndexList& selectedRowIndices)
     {
         if (selectedRowIndices.empty())
         {
@@ -79,43 +73,44 @@ namespace EMotionFX
         int numJointsWithColliders = 0;
         for (const QModelIndex& modelIndex : selectedRowIndices)
         {
-            const bool hasColliders = modelIndex.data(SkeletonModel::ROLE_HITDETECTION).toBool();
+            const bool hasColliders = modelIndex.data(SkeletonModel::ROLE_CLOTH).toBool();
             if (hasColliders)
             {
                 numJointsWithColliders++;
             }
         }
 
-        QMenu* contextMenu = menu->addMenu("Hit detection");
+        QMenu* contextMenu = menu->addMenu("Cloth");
 
         if (numSelectedJoints > 0)
         {
             QMenu* addColliderMenu = contextMenu->addMenu("Add collider");
 
-            QAction* addBoxAction = addColliderMenu->addAction("Add box");
-            addBoxAction->setProperty("typeId", azrtti_typeid<Physics::BoxShapeConfiguration>().ToString<AZStd::string>().c_str());
-            connect(addBoxAction, &QAction::triggered, this, &HitDetectionJointInspectorPlugin::OnAddCollider);
-
             QAction* addCapsuleAction = addColliderMenu->addAction("Add capsule");
             addCapsuleAction->setProperty("typeId", azrtti_typeid<Physics::CapsuleShapeConfiguration>().ToString<AZStd::string>().c_str());
-            connect(addCapsuleAction, &QAction::triggered, this, &HitDetectionJointInspectorPlugin::OnAddCollider);
+            connect(addCapsuleAction, &QAction::triggered, this, &ClothOutlinerNotificationHandler::OnAddCollider);
 
             QAction* addSphereAction = addColliderMenu->addAction("Add sphere");
             addSphereAction->setProperty("typeId", azrtti_typeid<Physics::SphereShapeConfiguration>().ToString<AZStd::string>().c_str());
-            connect(addSphereAction, &QAction::triggered, this, &HitDetectionJointInspectorPlugin::OnAddCollider);
+            connect(addSphereAction, &QAction::triggered, this, &ClothOutlinerNotificationHandler::OnAddCollider);
 
 
-            ColliderHelpers::AddCopyFromMenu(this, contextMenu, PhysicsSetup::ColliderConfigType::HitDetection, selectedRowIndices);
+            ColliderHelpers::AddCopyFromMenu(this, contextMenu, PhysicsSetup::ColliderConfigType::Cloth, selectedRowIndices);
         }
 
         if (numJointsWithColliders > 0)
         {
             QAction* removeCollidersAction = contextMenu->addAction("Remove colliders");
-            connect(removeCollidersAction, &QAction::triggered, this, &HitDetectionJointInspectorPlugin::OnClearColliders);
+            connect(removeCollidersAction, &QAction::triggered, this, &ClothOutlinerNotificationHandler::OnClearColliders);
         }
     }
 
-    void HitDetectionJointInspectorPlugin::OnAddCollider()
+    bool ClothOutlinerNotificationHandler::IsJointInCloth(const QModelIndex& index)
+    {
+        return index.data(SkeletonModel::ROLE_CLOTH).toBool();
+    }
+
+    void ClothOutlinerNotificationHandler::OnAddCollider()
     {
         AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
@@ -134,10 +129,10 @@ namespace EMotionFX
         const QByteArray typeString = action->property("typeId").toString().toUtf8();
         const AZ::TypeId& colliderType = AZ::TypeId::CreateString(typeString.data(), typeString.size());
 
-        ColliderHelpers::AddCollider(selectedRowIndices, PhysicsSetup::HitDetection, colliderType);
+        ColliderHelpers::AddCollider(selectedRowIndices, PhysicsSetup::Cloth, colliderType);
     }
 
-    void HitDetectionJointInspectorPlugin::OnClearColliders()
+    void ClothOutlinerNotificationHandler::OnClearColliders()
     {
         AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
@@ -152,7 +147,6 @@ namespace EMotionFX
             return;
         }
 
-        ColliderHelpers::ClearColliders(selectedRowIndices, PhysicsSetup::HitDetection);
+        ColliderHelpers::ClearColliders(selectedRowIndices, PhysicsSetup::Cloth);
     }
-
 } // namespace EMotionFX

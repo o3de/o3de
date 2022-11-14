@@ -17,7 +17,7 @@
 #include <AzFramework/Physics/Character.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <Editor/ColliderContainerWidget.h>
-#include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
+#include <Editor/Plugins/Ragdoll/RagdollOutlinerNotificationHandler.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectColliderWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 #include <Editor/ReselectingTreeView.h>

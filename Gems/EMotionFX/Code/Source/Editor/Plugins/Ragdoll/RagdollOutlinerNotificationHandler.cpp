@@ -21,7 +21,7 @@
 #include <Editor/ColliderHelpers.h>
 #include <Editor/SkeletonModel.h>
 #include <Editor/Plugins/Ragdoll/RagdollJointLimitWidget.h>
-#include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
+#include <Editor/Plugins/Ragdoll/RagdollOutlinerNotificationHandler.h>
 #include <Editor/Plugins/Ragdoll/RagdollNodeWidget.h>
 #include <Integration/Rendering/RenderActorSettings.h>
 #include <QScrollArea>
@@ -30,18 +30,28 @@
 
 namespace EMotionFX
 {
-    RagdollNodeInspectorPlugin::RagdollNodeInspectorPlugin()
-        : EMStudio::DockWidgetPlugin()
-        , m_nodeWidget(nullptr)
+    RagdollOutlinerNotificationHandler::RagdollOutlinerNotificationHandler(RagdollNodeWidget *nodeWidget)
+        :m_nodeWidget(nodeWidget)
     {
+        if (!IsPhysXGemAvailable() && !ColliderHelpers::AreCollidersReflected())
+        {
+            /*
+            AzQtComponents::ToastNotification(
+                        m_mainWidget,
+                        AzQtComponents::ToastConfiguration{AzQtComponents::ToastType::Error,
+                                                           "PhysX disabled", "Ragdoll editor depends on the PhysX gem. Please enable it in the Project Manager."});
+            */
+            return;
+        }
+         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusConnect();
     }
 
-    RagdollNodeInspectorPlugin::~RagdollNodeInspectorPlugin()
+    RagdollOutlinerNotificationHandler::~RagdollOutlinerNotificationHandler()
     {
         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusDisconnect();
     }
 
-    bool RagdollNodeInspectorPlugin::IsPhysXGemAvailable() const
+    bool RagdollOutlinerNotificationHandler::IsPhysXGemAvailable() const
     {
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
@@ -53,32 +63,7 @@ namespace EMotionFX
             && serializeContext->FindClassData(AZ::TypeId::CreateString(typeIDPhysXSystem));
     }
 
-    bool RagdollNodeInspectorPlugin::Init()
-    {
-        if (IsPhysXGemAvailable() && ColliderHelpers::AreCollidersReflected())
-        {
-            m_nodeWidget = new RagdollNodeWidget();
-            m_nodeWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-            m_nodeWidget->CreateGUI();
-
-            QScrollArea* scrollArea = new QScrollArea();
-            scrollArea->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-            scrollArea->setWidget(m_nodeWidget);
-            scrollArea->setWidgetResizable(true);
-
-            m_dock->setWidget(scrollArea);
-
-            EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusConnect();
-        }
-        else
-        {
-            m_dock->setWidget(CreateErrorContentWidget("Ragdoll editor depends on the PhysX gem. Please enable it in the Project Manager."));
-        }
-
-        return true;
-    }
-
-    void RagdollNodeInspectorPlugin::OnContextMenu(QMenu* menu, const QModelIndexList& selectedRowIndices)
+    void RagdollOutlinerNotificationHandler::OnContextMenu(QMenu* menu, const QModelIndexList& selectedRowIndices)
     {
         if (selectedRowIndices.empty())
         {
@@ -107,7 +92,7 @@ namespace EMotionFX
         if (ragdollNodeCount < numSelectedNodes)
         {
             QAction* addToRagdollAction = contextMenu->addAction("Add to ragdoll");
-            connect(addToRagdollAction, &QAction::triggered, this, &RagdollNodeInspectorPlugin::OnAddToRagdoll);
+            connect(addToRagdollAction, &QAction::triggered, this, &RagdollOutlinerNotificationHandler::OnAddToRagdoll);
         }
 
         if (ragdollNodeCount == numSelectedNodes)
@@ -116,15 +101,15 @@ namespace EMotionFX
 
             QAction* addBoxAction = addColliderMenu->addAction("Add box");
             addBoxAction->setProperty("typeId", azrtti_typeid<Physics::BoxShapeConfiguration>().ToString<AZStd::string>().c_str());
-            connect(addBoxAction, &QAction::triggered, this, &RagdollNodeInspectorPlugin::OnAddCollider);
+            connect(addBoxAction, &QAction::triggered, this, &RagdollOutlinerNotificationHandler::OnAddCollider);
 
             QAction* addCapsuleAction = addColliderMenu->addAction("Add capsule");
             addCapsuleAction->setProperty("typeId", azrtti_typeid<Physics::CapsuleShapeConfiguration>().ToString<AZStd::string>().c_str());
-            connect(addCapsuleAction, &QAction::triggered, this, &RagdollNodeInspectorPlugin::OnAddCollider);
+            connect(addCapsuleAction, &QAction::triggered, this, &RagdollOutlinerNotificationHandler::OnAddCollider);
 
             QAction* addSphereAction = addColliderMenu->addAction("Add sphere");
             addSphereAction->setProperty("typeId", azrtti_typeid<Physics::SphereShapeConfiguration>().ToString<AZStd::string>().c_str());
-            connect(addSphereAction, &QAction::triggered, this, &RagdollNodeInspectorPlugin::OnAddCollider);
+            connect(addSphereAction, &QAction::triggered, this, &RagdollOutlinerNotificationHandler::OnAddCollider);
         }
 
         ColliderHelpers::AddCopyFromMenu(this, contextMenu, PhysicsSetup::ColliderConfigType::Ragdoll, selectedRowIndices,
@@ -136,19 +121,19 @@ namespace EMotionFX
         if (ragdollNodeCount > 0)
         {
             QAction* removeCollidersAction = contextMenu->addAction("Remove colliders");
-            connect(removeCollidersAction, &QAction::triggered, this, &RagdollNodeInspectorPlugin::OnClearColliders);
+            connect(removeCollidersAction, &QAction::triggered, this, &RagdollOutlinerNotificationHandler::OnClearColliders);
 
             QAction* removeToRagdollAction = contextMenu->addAction("Remove from ragdoll");
-            connect(removeToRagdollAction, &QAction::triggered, this, &RagdollNodeInspectorPlugin::OnRemoveFromRagdoll);
+            connect(removeToRagdollAction, &QAction::triggered, this, &RagdollOutlinerNotificationHandler::OnRemoveFromRagdoll);
 
             QAction* pasteJointLimits = contextMenu->addAction("Paste joint limits");
             pasteJointLimits->setObjectName("EMFX.RagdollNodeInspectorPlugin.PasteJointLimitsAction");
-            connect(pasteJointLimits, &QAction::triggered, this, &RagdollNodeInspectorPlugin::OnPasteJointLimits);
-            pasteJointLimits->setEnabled(m_nodeWidget->HasCopiedJointLimits());
+            connect(pasteJointLimits, &QAction::triggered, this, &RagdollOutlinerNotificationHandler::OnPasteJointLimits);
+            //todo pasteJointLimits->setEnabled(m_nodeWidget->HasCopiedJointLimits());
         }
     }
 
-    bool RagdollNodeInspectorPlugin::IsNodeInRagdoll(const QModelIndex& index)
+    bool RagdollOutlinerNotificationHandler::IsNodeInRagdoll(const QModelIndex& index)
     {
         const Actor* actor = index.data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
         const Node* joint = index.data(SkeletonModel::ROLE_POINTER).value<Node*>();
@@ -160,80 +145,7 @@ namespace EMotionFX
     }
 
 
-    void RagdollNodeInspectorPlugin::AddToRagdoll(const QModelIndexList& modelIndices)
-    {
-        if (modelIndices.empty())
-        {
-            return;
-        }
-
-        const AZStd::string groupName = AZStd::string::format("Add joint%s to ragdoll",
-                modelIndices.size() > 1 ? "s" : "");
-
-        MCore::CommandGroup commandGroup(groupName);
-
-        AZStd::vector<AZStd::string> jointNames;
-        jointNames.reserve(modelIndices.size());
-
-        // All the actor pointers should be the same
-        const uint32 actorId = modelIndices[0].data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>()->GetID();
-
-        for (const QModelIndex& selectedIndex : modelIndices)
-        {
-            if (SkeletonModel::IndexIsRootNode(selectedIndex))
-            {
-                continue;
-            }
-
-            const Node* joint = selectedIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
-
-            jointNames.emplace_back(joint->GetNameString());
-        }
-        CommandRagdollHelpers::AddJointsToRagdoll(actorId, jointNames, &commandGroup);
-
-        AZStd::string result;
-        if (!CommandSystem::GetCommandManager()->ExecuteCommandGroup(commandGroup, result))
-        {
-            AZ_Error("EMotionFX", false, result.c_str());
-        }
-    }
-
-    void RagdollNodeInspectorPlugin::RemoveFromRagdoll(const QModelIndexList& modelIndices)
-    {
-        if (modelIndices.empty())
-        {
-            return;
-        }
-
-        const AZStd::string groupName = AZStd::string::format("Remove joint%s from ragdoll",
-                modelIndices.size() > 1 ? "s" : "");
-
-        MCore::CommandGroup commandGroup(groupName);
-
-        AZStd::vector<AZStd::string> jointNamesToRemove;
-        for (const QModelIndex& selectedIndex : modelIndices)
-        {
-            if (SkeletonModel::IndexIsRootNode(selectedIndex))
-            {
-                continue;
-            }
-
-            const Node* selectedJoint = selectedIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
-
-            jointNamesToRemove.emplace_back(selectedJoint->GetNameString());
-        }
-        const Actor* actor = modelIndices[0].data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
-
-        CommandRagdollHelpers::RemoveJointsFromRagdoll(actor->GetID(), jointNamesToRemove, &commandGroup);
-
-        AZStd::string result;
-        if (!CommandSystem::GetCommandManager()->ExecuteCommandGroup(commandGroup, result))
-        {
-            AZ_Error("EMotionFX", false, result.c_str());
-        }
-    }
-
-    void RagdollNodeInspectorPlugin::AddCollider(const QModelIndexList& modelIndices, const AZ::TypeId& colliderType)
+    void RagdollOutlinerNotificationHandler::AddCollider(const QModelIndexList& modelIndices, const AZ::TypeId& colliderType)
     {
         if (modelIndices.empty())
         {
@@ -265,7 +177,7 @@ namespace EMotionFX
         }
     }
 
-    void RagdollNodeInspectorPlugin::CopyColliders(const QModelIndexList& modelIndices, PhysicsSetup::ColliderConfigType copyFrom)
+    void RagdollOutlinerNotificationHandler::CopyColliders(const QModelIndexList& modelIndices, PhysicsSetup::ColliderConfigType copyFrom)
     {
         if (modelIndices.empty())
         {
@@ -323,7 +235,7 @@ namespace EMotionFX
         }
     }
 
-    void RagdollNodeInspectorPlugin::OnAddToRagdoll()
+    void RagdollOutlinerNotificationHandler::OnAddToRagdoll()
     {
         AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
@@ -338,10 +250,10 @@ namespace EMotionFX
             return;
         }
 
-        AddToRagdoll(selectedRowIndices);
+        ColliderHelpers::AddToRagdoll(selectedRowIndices);
     }
 
-    void RagdollNodeInspectorPlugin::OnAddCollider()
+    void RagdollOutlinerNotificationHandler::OnAddCollider()
     {
         AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
@@ -363,7 +275,7 @@ namespace EMotionFX
         AddCollider(selectedRowIndices, colliderType);
     }
 
-    void RagdollNodeInspectorPlugin::OnRemoveFromRagdoll()
+    void RagdollOutlinerNotificationHandler::OnRemoveFromRagdoll()
     {
         AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
@@ -378,10 +290,10 @@ namespace EMotionFX
             return;
         }
 
-        RemoveFromRagdoll(selectedRowIndices);
+        ColliderHelpers::RemoveFromRagdoll(selectedRowIndices);
     }
 
-    void RagdollNodeInspectorPlugin::OnClearColliders()
+    void RagdollOutlinerNotificationHandler::OnClearColliders()
     {
         AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
@@ -399,7 +311,7 @@ namespace EMotionFX
         ColliderHelpers::ClearColliders(selectedRowIndices, PhysicsSetup::Ragdoll);
     }
 
-    void RagdollNodeInspectorPlugin::OnPasteJointLimits()
+    void RagdollOutlinerNotificationHandler::OnPasteJointLimits()
     {
         AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);

@@ -6,12 +6,13 @@
  *
  */
 
+#include "Editor/ColliderHelpers.h"
 #include <gtest/gtest.h>
 
 #include <QtTest>
 #include <QTreeView>
 
-#include <Editor/Plugins/Cloth/ClothJointInspectorPlugin.h>
+#include <Editor/Plugins/Cloth/ClothOutlinerNotificationHandler.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 #include <Editor/ReselectingTreeView.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
@@ -136,7 +137,7 @@ namespace EMotionFX
         // Check colliders are in model
         for (int i = firstIndex; i <= lastIndex; ++i)
         {
-            EXPECT_TRUE(ClothJointInspectorPlugin::IsJointInCloth(m_indexList[i]));
+            EXPECT_TRUE(ColliderHelpers::NodeHasClothCollider(m_indexList[i]));
         }
 
         // Remove context menu as it is rebuild below
@@ -159,7 +160,7 @@ namespace EMotionFX
         // Check colliders have been removed
         for (int i = firstIndex; i <= lastIndex; ++i)
         {
-            EXPECT_FALSE(ClothJointInspectorPlugin::IsJointInCloth(m_indexList[i]));
+            EXPECT_FALSE(ColliderHelpers::NodeHasClothCollider(m_indexList[i]));
         }
     }
 }

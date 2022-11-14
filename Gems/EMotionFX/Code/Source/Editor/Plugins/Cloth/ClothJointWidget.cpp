@@ -15,7 +15,7 @@
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
 #include <Editor/SkeletonModel.h>
-#include <Editor/Plugins/Cloth/ClothJointInspectorPlugin.h>
+#include <Editor/Plugins/Cloth/ClothOutlinerNotificationHandler.h>
 #include <Editor/Plugins/Cloth/ClothJointWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
 #include <QLabel>
@@ -28,6 +28,7 @@ namespace EMotionFX
 {
     ClothJointWidget::ClothJointWidget(QWidget* parent)
         : SkeletonModelJointWidget(parent)
+        , m_handler(this)
     {
         setObjectName("EMotionFX.ClothJointWidget");
     }

@@ -69,6 +69,7 @@ namespace EMotionFX
             return new SkeletonOutlinerPlugin();
         }
         bool Init() override;
+        void InitRagdoll();
 
         // SkeletalOutlinerRequestBus overrides
         Node* GetSingleSelectedNode() override;
@@ -89,6 +90,7 @@ namespace EMotionFX
 
     private:
         bool eventFilter(QObject* object, QEvent* event) override;
+        bool IsPhysXGemAvailable() const;
 
         QWidget* m_mainWidget;
         QLabel* m_noSelectionLabel;

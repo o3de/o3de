@@ -13,7 +13,7 @@
 #include <QTreeView>
 #include <QPushButton>
 
-#include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
+#include <Editor/Plugins/Ragdoll/RagdollOutlinerNotificationHandler.h>
 #include <Editor/Plugins/Ragdoll/RagdollNodeWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 #include <Editor/ColliderHelpers.h>
@@ -136,10 +136,10 @@ namespace EMotionFX
         addToRagdollAction->trigger();
 
         // Check the nodes are in the ragdoll
-        EXPECT_TRUE(RagdollNodeInspectorPlugin::IsNodeInRagdoll(m_indexList[3]));
-        EXPECT_TRUE(RagdollNodeInspectorPlugin::IsNodeInRagdoll(m_indexList[4]));
-        EXPECT_TRUE(RagdollNodeInspectorPlugin::IsNodeInRagdoll(m_indexList[5]));
-        EXPECT_TRUE(RagdollNodeInspectorPlugin::IsNodeInRagdoll(m_indexList[6]));
+        EXPECT_TRUE(ColliderHelpers::IsInRagdoll(m_indexList[3]));
+        EXPECT_TRUE(ColliderHelpers::IsInRagdoll(m_indexList[4]));
+        EXPECT_TRUE(ColliderHelpers::IsInRagdoll(m_indexList[5]));
+        EXPECT_TRUE(ColliderHelpers::IsInRagdoll(m_indexList[6]));
 
         // Remove context menu as it is rebuild below
         delete contextMenu;
@@ -158,9 +158,9 @@ namespace EMotionFX
         removeFromRagdollAction->trigger();
 
         // Check the nodes are removed from ragdoll
-        EXPECT_FALSE(RagdollNodeInspectorPlugin::IsNodeInRagdoll(m_indexList[3]));
-        EXPECT_FALSE(RagdollNodeInspectorPlugin::IsNodeInRagdoll(m_indexList[4]));
-        EXPECT_FALSE(RagdollNodeInspectorPlugin::IsNodeInRagdoll(m_indexList[5]));
-        EXPECT_FALSE(RagdollNodeInspectorPlugin::IsNodeInRagdoll(m_indexList[6]));
+        EXPECT_FALSE(ColliderHelpers::IsInRagdoll(m_indexList[3]));
+        EXPECT_FALSE(ColliderHelpers::IsInRagdoll(m_indexList[4]));
+        EXPECT_FALSE(ColliderHelpers::IsInRagdoll(m_indexList[5]));
+        EXPECT_FALSE(ColliderHelpers::IsInRagdoll(m_indexList[6]));
     }
 }

@@ -11,6 +11,7 @@
 #include <MCore/Source/ReflectionSerializer.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
+#include <EMotionFX/CommandSystem/Source/RagdollCommands.h>
 #include <Editor/ColliderHelpers.h>
 #include <Editor/SkeletonModel.h>
 #include <QAction>
@@ -190,6 +191,81 @@ namespace EMotionFX
 
         return false;
     }
+
+    void ColliderHelpers::AddToRagdoll(QModelIndexList modelIndices)
+    {
+        if (modelIndices.empty())
+        {
+            return;
+        }
+
+        const AZStd::string groupName = AZStd::string::format("Add joint%s to ragdoll",
+                modelIndices.size() > 1 ? "s" : "");
+
+        MCore::CommandGroup commandGroup(groupName);
+
+        AZStd::vector<AZStd::string> jointNames;
+        jointNames.reserve(modelIndices.size());
+
+        // All the actor pointers should be the same
+        const uint32 actorId = modelIndices[0].data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>()->GetID();
+
+        for (const QModelIndex& selectedIndex : modelIndices)
+        {
+            if (SkeletonModel::IndexIsRootNode(selectedIndex))
+            {
+                continue;
+            }
+
+            const Node* joint = selectedIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
+
+            jointNames.emplace_back(joint->GetNameString());
+        }
+        CommandRagdollHelpers::AddJointsToRagdoll(actorId, jointNames, &commandGroup);
+
+        AZStd::string result;
+        if (!CommandSystem::GetCommandManager()->ExecuteCommandGroup(commandGroup, result))
+        {
+            AZ_Error("EMotionFX", false, result.c_str());
+        }
+    }
+
+
+    void ColliderHelpers::RemoveFromRagdoll(const QModelIndexList& modelIndices)
+    {
+        if (modelIndices.empty())
+        {
+            return;
+        }
+
+        const AZStd::string groupName = AZStd::string::format("Remove joint%s from ragdoll",
+                modelIndices.size() > 1 ? "s" : "");
+
+        MCore::CommandGroup commandGroup(groupName);
+
+        AZStd::vector<AZStd::string> jointNamesToRemove;
+        for (const QModelIndex& selectedIndex : modelIndices)
+        {
+            if (SkeletonModel::IndexIsRootNode(selectedIndex))
+            {
+                continue;
+            }
+
+            const Node* selectedJoint = selectedIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
+
+            jointNamesToRemove.emplace_back(selectedJoint->GetNameString());
+        }
+        const Actor* actor = modelIndices[0].data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
+
+        CommandRagdollHelpers::RemoveJointsFromRagdoll(actor->GetID(), jointNamesToRemove, &commandGroup);
+
+        AZStd::string result;
+        if (!CommandSystem::GetCommandManager()->ExecuteCommandGroup(commandGroup, result))
+        {
+            AZ_Error("EMotionFX", false, result.c_str());
+        }
+    }
+
 
     void ColliderHelpers::AddCopyFromMenu(QObject* parent, QMenu* parentMenu, PhysicsSetup::ColliderConfigType createForType, const QModelIndexList& modelIndices,
         const AZStd::function<void(PhysicsSetup::ColliderConfigType copyFrom, PhysicsSetup::ColliderConfigType copyTo)>& copyFunc)

@@ -17,11 +17,14 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/NodeInfo.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/SubMeshInfo.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
+#include <Editor/ColliderHelpers.h>
 #include <Editor/ReselectingTreeView.h>
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QEvent>
+#include <AzQtComponents/Components/ToastNotification.h>
+#include <AzQtComponents/Components/ToastNotificationConfiguration.h>
 
 namespace EMotionFX
 {
@@ -159,7 +162,15 @@ namespace EMotionFX
         m_commandCallbacks.emplace_back(new DataChangedCallback(/*executePreUndo*/ false));
         CommandSystem::GetCommandManager()->RegisterCommandCallback(CommandRemoveRagdollJoint::s_commandName, m_commandCallbacks.back());
 
+        InitRagdoll();
+
         return true;
+    }
+
+    void SkeletonOutlinerPlugin::InitRagdoll()
+    {
+
+
     }
 
     void SkeletonOutlinerPlugin::Reinit()
@@ -209,6 +220,18 @@ namespace EMotionFX
             SkeletonOutlinerNotificationBus::Broadcast(&SkeletonOutlinerNotifications::JointHoveredChanged, InvalidIndex);
         }
         return false;
+    }
+
+    bool SkeletonOutlinerPlugin::IsPhysXGemAvailable() const
+    {
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+        // TypeId of PhysX::SystemComponent
+        const char* typeIDPhysXSystem = "{85F90819-4D9A-4A77-AB89-68035201F34B}";
+
+        return serializeContext
+            && serializeContext->FindClassData(AZ::TypeId::CreateString(typeIDPhysXSystem));
     }
 
     Node* SkeletonOutlinerPlugin::GetSingleSelectedNode()

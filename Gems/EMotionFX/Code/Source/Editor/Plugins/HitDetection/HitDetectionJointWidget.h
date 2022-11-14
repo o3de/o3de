@@ -9,6 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <Editor/Plugins/HitDetection/HitDetectionOutlinerNotificationHandler.h>
 #include <Editor/SkeletonModelJointWidget.h>
 #endif
 
@@ -39,6 +40,9 @@ namespace EMotionFX
         void OnCopyCollider(size_t colliderIndex);
         void OnPasteCollider(size_t colliderIndex, bool replace);
         void OnRemoveCollider(size_t colliderIndex);
+
+    protected:
+        HitDetectionOutlinerNotificationHandler m_handler;
 
     private:
         // SkeletonModelJointWidget

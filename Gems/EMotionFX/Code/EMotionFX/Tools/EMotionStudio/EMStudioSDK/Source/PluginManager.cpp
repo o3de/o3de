@@ -38,10 +38,10 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/NodeGroups/NodeGroupsPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
-#include <Editor/Plugins/HitDetection/HitDetectionJointInspectorPlugin.h>
+#include <Editor/Plugins/HitDetection/HitDetectionOutlinerNotificationHandler.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
-#include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
-#include <Editor/Plugins/Cloth/ClothJointInspectorPlugin.h>
+#include <Editor/Plugins/Ragdoll/RagdollOutlinerNotificationHandler.h>
+#include <Editor/Plugins/Cloth/ClothOutlinerNotificationHandler.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
 
 namespace EMStudio
@@ -227,10 +227,7 @@ namespace EMStudio
         RegisterPlugin(new MotionSetsWindowPlugin());
         RegisterPlugin(new NodeGroupsPlugin());
         RegisterPlugin(new AnimGraphPlugin());
-        RegisterPlugin(new EMotionFX::HitDetectionJointInspectorPlugin());
         RegisterPlugin(new EMotionFX::SkeletonOutlinerPlugin());
-        RegisterPlugin(new EMotionFX::RagdollNodeInspectorPlugin());
-        RegisterPlugin(new EMotionFX::ClothJointInspectorPlugin());
         RegisterPlugin(new EMotionFX::SimulatedObjectWidget());
         RegisterPlugin(new InspectorWindow());
 

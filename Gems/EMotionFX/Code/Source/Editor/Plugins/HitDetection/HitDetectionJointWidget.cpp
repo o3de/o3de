@@ -15,7 +15,7 @@
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
 #include <Editor/SkeletonModel.h>
-#include <Editor/Plugins/HitDetection/HitDetectionJointInspectorPlugin.h>
+#include <Editor/Plugins/HitDetection/HitDetectionOutlinerNotificationHandler.h>
 #include <Editor/Plugins/HitDetection/HitDetectionJointWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
 #include <QLabel>
@@ -27,6 +27,7 @@ namespace EMotionFX
 {
     HitDetectionJointWidget::HitDetectionJointWidget(QWidget* parent)
         : SkeletonModelJointWidget(parent)
+        , m_handler(this)
     {
         setObjectName("EMotionFX.HitDetectionJointWidget");
     }

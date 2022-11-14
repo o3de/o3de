@@ -11,6 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
+#include <QObject>
 #endif
 
 
@@ -21,28 +22,15 @@ namespace EMotionFX
     class Node;
     class ClothJointWidget;
 
-    class ClothJointInspectorPlugin
-        : public EMStudio::DockWidgetPlugin
+    class ClothOutlinerNotificationHandler
+        : public QObject
         , private EMotionFX::SkeletonOutlinerNotificationBus::Handler
     {
         Q_OBJECT //AUTOMOC
 
     public:
-        enum : uint32
-        {
-            CLASS_ID = 0x8efd2bee
-        };
-        ClothJointInspectorPlugin();
-        ~ClothJointInspectorPlugin();
-
-        // EMStudioPlugin overrides
-        const char* GetName() const override                { return "Cloth Colliders"; }
-        uint32 GetClassID() const override                  { return CLASS_ID; }
-        bool GetIsClosable() const override                 { return true;  }
-        bool GetIsFloatable() const override                { return true;  }
-        bool GetIsVertical() const override                 { return false; }
-        bool Init() override;
-        EMStudioPlugin* Clone() const override              { return new ClothJointInspectorPlugin(); }
+        ClothOutlinerNotificationHandler(ClothJointWidget* m_colliderWidget);
+        ~ClothOutlinerNotificationHandler();
 
         // SkeletonOutlinerNotificationBus overrides
         void OnContextMenu(QMenu* menu, const QModelIndexList& selectedRowIndices) override;
@@ -55,7 +43,6 @@ namespace EMotionFX
 
     private:
         bool IsNvClothGemAvailable() const;
-
-        ClothJointWidget* m_jointWidget;
+        ClothJointWidget* m_colliderWidget;
     };
 } // namespace EMotionFX

@@ -30,6 +30,8 @@ namespace EMotionFX
         static void AddCopyColliderCommandToGroup(const Actor* actor, const Node* joint, PhysicsSetup::ColliderConfigType copyFrom, PhysicsSetup::ColliderConfigType copyTo, MCore::CommandGroup& commandGroup);
         static void CopyColliders(const QModelIndexList& modelIndices, PhysicsSetup::ColliderConfigType copyFrom, PhysicsSetup::ColliderConfigType copyTo, bool removeExistingColliders = true);
         static void AddCollider(const QModelIndexList& modelIndices, PhysicsSetup::ColliderConfigType addTo, const AZ::TypeId& colliderType);
+        static void AddToRagdoll(QModelIndexList modelIndices);
+        static void RemoveFromRagdoll(const QModelIndexList &modelIndices);
         static void ClearColliders(const QModelIndexList& modelIndices, PhysicsSetup::ColliderConfigType removeFrom);
         static bool AreCollidersReflected();
         static bool CanCopyFrom(const QModelIndexList& modelIndices, PhysicsSetup::ColliderConfigType copyFrom);

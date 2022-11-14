@@ -19,7 +19,7 @@
 #include <Editor/ObjectEditor.h>
 #include <Editor/SkeletonModel.h>
 #include <Editor/Plugins/Ragdoll/RagdollJointLimitWidget.h>
-#include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
+#include <Editor/Plugins/Ragdoll/RagdollOutlinerNotificationHandler.h>
 #include <Editor/Plugins/Ragdoll/RagdollNodeWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
 #include <Integration/System/CVars.h>
@@ -47,6 +47,7 @@ namespace EMotionFX
 
     RagdollNodeWidget::RagdollNodeWidget(QWidget* parent)
         : SkeletonModelJointWidget(parent)
+        , m_handler(this)
         , m_ragdollNodeCard(nullptr)
         , m_ragdollNodeEditor(nullptr)
         , m_jointLimitWidget(nullptr)
@@ -194,12 +195,12 @@ namespace EMotionFX
         if (GetRagdollNodeConfig())
         {
             // The node is present in the ragdoll, remove it.
-            RagdollNodeInspectorPlugin::RemoveFromRagdoll(selectedModelIndices);
+            ColliderHelpers::RemoveFromRagdoll(selectedModelIndices);
         }
         else
         {
             // The node is not part of the ragdoll, add it.
-            RagdollNodeInspectorPlugin::AddToRagdoll(selectedModelIndices);
+            ColliderHelpers::AddToRagdoll(selectedModelIndices);
         }
     }
 

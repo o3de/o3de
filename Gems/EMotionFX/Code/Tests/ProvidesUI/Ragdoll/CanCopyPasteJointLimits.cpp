@@ -16,7 +16,7 @@
 #include <EMotionFX/CommandSystem/Source/RagdollCommands.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <Editor/Plugins/Ragdoll/RagdollJointLimitWidget.h>
-#include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
+#include <Editor/Plugins/Ragdoll/RagdollOutlinerNotificationHandler.h>
 #include <Editor/Plugins/Ragdoll/RagdollNodeWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 
@@ -26,10 +26,11 @@
 #include <Tests/TestAssetCode/SimpleActors.h>
 #include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Tests/UI/UIFixture.h>
+#include <Tests/UI/SkeletonOutlinerTestFixture.h>
 
 namespace EMotionFX
 {
-    class CopyPasteRagdollJointLimitsFixture : public UIFixture
+    class CopyPasteRagdollJointLimitsFixture : public SkeletonOutlinerTestFixture
     {
     protected:
         virtual bool ShouldReflectPhysicSystem() override { return true; }
@@ -44,9 +45,6 @@ namespace EMotionFX
         using testing::_;
 
         EMStudio::GetMainWindow()->ApplicationModeChanged("Physics");
-
-        auto ragdollPlugin = static_cast<EMotionFX::RagdollNodeInspectorPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMotionFX::RagdollNodeInspectorPlugin::CLASS_ID));
-        ASSERT_TRUE(ragdollPlugin) << "Ragdoll plugin not found.";
 
         Physics::MockPhysicsSystem physicsSystem;
         Physics::MockPhysicsInterface physicsInterface;
@@ -111,11 +109,11 @@ namespace EMotionFX
         QItemSelectionModel& selectionModel = model->GetSelectionModel();
         selectionModel.select(rootIndex, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
 
-        auto nodeWidget = ragdollPlugin->GetDockWidget()->findChild<RagdollNodeWidget*>();
+        auto nodeWidget = GetJointPropertyWidget()->findChild<RagdollNodeWidget*>();
         ASSERT_TRUE(nodeWidget);
         EXPECT_FALSE(nodeWidget->HasCopiedJointLimits());
 
-        auto jointLimitWidget = ragdollPlugin->GetDockWidget()->findChild<RagdollJointLimitWidget*>();
+        auto jointLimitWidget = GetJointPropertyWidget()->findChild<RagdollJointLimitWidget*>();
         ASSERT_TRUE(jointLimitWidget);
         {
             // Copy the joint limits for the rootJoint
@@ -169,7 +167,7 @@ namespace EMotionFX
         ASSERT_TRUE(skeletonTreeView);
         {
             skeletonTreeView->customContextMenuRequested({});
-            auto pasteAction = skeletonOutlinerPlugin->GetDockWidget()->findChild<QAction*>("EMFX.RagdollNodeInspectorPlugin.PasteJointLimitsAction");
+            auto pasteAction = GetJointPropertyWidget()->findChild<QAction*>("EMFX.RagdollNodeInspectorPlugin.PasteJointLimitsAction");
             ASSERT_TRUE(pasteAction);
             pasteAction->trigger();
             // Process events so that the menu is destroyed

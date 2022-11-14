@@ -17,7 +17,7 @@
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <EMotionFX/CommandSystem/Source/RagdollCommands.h>
 #include <Editor/ColliderContainerWidget.h>
-#include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
+#include <Editor/Plugins/Ragdoll/RagdollOutlinerNotificationHandler.h>
 #include <Editor/Plugins/Ragdoll/RagdollNodeWidget.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
@@ -28,17 +28,18 @@
 #include <Tests/TestAssetCode/SimpleActors.h>
 #include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Tests/UI/UIFixture.h>
+#include <UI/SkeletonOutlinerTestFixture.h>
 
 namespace EMotionFX
 {
-    class CopyPasteRagdollCollidersFixture : public UIFixture
+    class CopyPasteRagdollCollidersFixture : public SkeletonOutlinerTestFixture
     {
     public:
         void SetUp() override
         {
             using ::testing::_;
 
-            UIFixture::SetUp();
+            SkeletonOutlinerTestFixture::SetUp();
 
             EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeIds)
                 .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{ azrtti_typeid<D6JointLimitConfiguration>() }));
@@ -111,9 +112,6 @@ namespace EMotionFX
                 << result.c_str();
         }
 
-        auto* ragdollPlugin = EMStudio::GetPluginManager()->FindActivePlugin<RagdollNodeInspectorPlugin>();
-        ASSERT_TRUE(ragdollPlugin) << "Ragdoll plugin not found.";
-
         auto* skeletonOutlinerPlugin = EMStudio::GetPluginManager()->FindActivePlugin<SkeletonOutlinerPlugin>();
         ASSERT_TRUE(skeletonOutlinerPlugin) << "Skeleton outliner plugin not found.";
 
@@ -135,7 +133,7 @@ namespace EMotionFX
         QItemSelectionModel& selectionModel = model->GetSelectionModel();
         selectionModel.select(rootIndex, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
 
-        auto* ragdollColliderContainer = ragdollPlugin->GetDockWidget()->findChild<ColliderContainerWidget*>();
+        auto* ragdollColliderContainer = GetJointPropertyWidget()->findChild<ColliderContainerWidget*>();
         ASSERT_TRUE(ragdollColliderContainer);
 
         // Copy the Box collider

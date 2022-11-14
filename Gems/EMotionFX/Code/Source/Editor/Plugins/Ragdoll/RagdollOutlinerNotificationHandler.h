@@ -9,8 +9,8 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
+
 #endif
 
 
@@ -21,29 +21,16 @@ namespace EMotionFX
     class Node;
     class RagdollNodeWidget;
 
-    class RagdollNodeInspectorPlugin
-        : public EMStudio::DockWidgetPlugin
-        , private EMotionFX::SkeletonOutlinerNotificationBus::Handler
+    class RagdollOutlinerNotificationHandler
+            : public QObject
+            , private EMotionFX::SkeletonOutlinerNotificationBus::Handler
     {
         Q_OBJECT //AUTOMOC
 
     public:
-        enum
-        {
-            CLASS_ID = 0x4c0b81e2
-        };
 
-        RagdollNodeInspectorPlugin();
-        ~RagdollNodeInspectorPlugin() override;
-
-        // EMStudioPlugin overrides
-        const char* GetName() const override                { return "Ragdoll"; }
-        uint32 GetClassID() const override                  { return CLASS_ID; }
-        bool GetIsClosable() const override                 { return true;  }
-        bool GetIsFloatable() const override                { return true;  }
-        bool GetIsVertical() const override                 { return false; }
-        bool Init() override;
-        EMStudioPlugin* Clone() const override              { return new RagdollNodeInspectorPlugin(); }
+        RagdollOutlinerNotificationHandler(RagdollNodeWidget* nodeWidget );
+        ~RagdollOutlinerNotificationHandler() override;
 
         // SkeletonOutlinerNotificationBus overrides
         void OnContextMenu(QMenu* menu, const QModelIndexList& selectedRowIndices) override;
@@ -65,6 +52,6 @@ namespace EMotionFX
     private:
         bool IsPhysXGemAvailable() const;
 
-        RagdollNodeWidget* m_nodeWidget;
+        RagdollNodeWidget* m_nodeWidget = nullptr;
     };
 } // namespace EMotionFX

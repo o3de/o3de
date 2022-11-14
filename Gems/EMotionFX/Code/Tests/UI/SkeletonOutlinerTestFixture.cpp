@@ -87,7 +87,7 @@ namespace EMotionFX
 
         mw->show();
         //for(int i = 0; i < 10000; i++)
-        //while (true)
+        while (true)
         QApplication::processEvents();
     }
 
