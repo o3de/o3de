@@ -7,6 +7,7 @@
  */
 
 #include <AZTestShared/Math/MathTestHelpers.h>
+#include <AZTestShared/Utils/Utils.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Random.h>
@@ -23,7 +24,7 @@ namespace UnitTest
 {
     class BoxShapeTest
         : public AllocatorsFixture
-        , public ShapeOffsetTestsBase
+        , public RegistryTestHelper
     {
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformComponentDescriptor;
@@ -35,7 +36,7 @@ namespace UnitTest
         void SetUp() override
         {
             AllocatorsFixture::SetUp();
-            ShapeOffsetTestsBase::SetUp();
+            RegistryTestHelper::SetUp(LmbrCentral::ShapeComponentTranslationOffsetEnabled, true);
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
 
             m_transformComponentDescriptor = AZStd::unique_ptr<AZ::ComponentDescriptor>(AzFramework::TransformComponent::CreateDescriptor());
@@ -57,7 +58,7 @@ namespace UnitTest
             m_boxShapeDebugDisplayComponentDescriptor.reset();
             m_nonUniformScaleComponentDescriptor.reset();
             m_serializeContext.reset();
-            ShapeOffsetTestsBase::TearDown();
+            RegistryTestHelper::TearDown();
             AllocatorsFixture::TearDown();
         }
     };

@@ -46,6 +46,7 @@ namespace AWSAttributionUnitTest
             m_entity = AZStd::make_shared<AZ::Entity>();
             m_entity->SetName(name);
         }
+
         virtual ~ModuleDataMock()
         {
             m_entity.reset();
@@ -55,16 +56,19 @@ namespace AWSAttributionUnitTest
         {
             return nullptr;
         }
+
         /// Get the handle to the module class
         AZ::Module* GetModule() const override
         {
             return nullptr;
         }
+
         /// Get the entity this module uses as a System Entity
         AZ::Entity* GetEntity() const override
         {
             return m_entity.get();
         }
+
         /// Get the debug name of the module
         const char* GetDebugName() const override
         {
@@ -157,6 +161,9 @@ namespace AWSAttributionUnitTest
     public:
 
         virtual ~AttributionManagerTest() = default;
+
+        // List of expected platform values 
+        const AZStd::vector<AZStd::string> m_validPlatformValues={"PC", "Linux", "Mac"};
 
     protected:
         AZStd::shared_ptr<AZ::SerializeContext> m_serializeContext;
@@ -435,7 +442,7 @@ namespace AWSAttributionUnitTest
         // GIVEN
         AWSAttributionManagerMock manager;
         AttributionMetric metric;
-
+        AZStd::string expectedPlatform = AWSAttributionManager::MapPlatform(AZ::g_currentPlatform);
         AZStd::array<char, AZ::IO::MaxPathLength> engineJsonPath;
         m_localFileIO->ResolvePath("@user@/Registry/engine.json", engineJsonPath.data(), engineJsonPath.size());
         CreateFile(engineJsonPath.data(), R"({"O3DEVersion": "1.0.0.0"})");
@@ -451,7 +458,10 @@ namespace AWSAttributionUnitTest
         // THEN
         AZStd::string serializedMetricValue = metric.SerializeToJson();
         ASSERT_TRUE(serializedMetricValue.find("\"o3de_version\":\"1.0.0.0\"") != AZStd::string::npos);
-        ASSERT_TRUE(serializedMetricValue.find(AZ::GetPlatformName(AZ::g_currentPlatform)) != AZStd::string::npos);
+        const auto platformValue = serializedMetricValue.find(expectedPlatform);
+        ASSERT_NE(platformValue, AZStd::string::npos);
+        EXPECT_NE(AZStd::find(m_validPlatformValues.begin(), m_validPlatformValues.end(), metric.GetPlatform()), m_validPlatformValues.end());
+
         ASSERT_TRUE(serializedMetricValue.find(QSysInfo::prettyProductName().toStdString().c_str()) != AZStd::string::npos);
         ASSERT_TRUE(serializedMetricValue.find("AWSCore.Editor") != AZStd::string::npos);
         ASSERT_TRUE(serializedMetricValue.find("AWSClientAuth") != AZStd::string::npos);

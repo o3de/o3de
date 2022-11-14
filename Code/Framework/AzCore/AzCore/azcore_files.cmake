@@ -142,6 +142,7 @@ set(FILES
     EBus/Internal/Debug.h
     EBus/Internal/Handlers.h
     EBus/Internal/StoragePolicies.h
+    Instance/InstancePool.h
     Interface/Interface.h
     IO/ByteContainerStream.h
     IO/CompressionBus.h

@@ -275,6 +275,10 @@ namespace AssetProcessor
 
         void AddedToCatalog(JobEntry jobEntry);
 
+        //! Fired when FinishAnalysis is run for a file to notify that a source file has completely finished processing.
+        //! count is the number of files remaining waiting for FinishAnalysis to be called
+        void FinishedAnalysis(int count);
+
     public Q_SLOTS:
         void AssetProcessed(JobEntry jobEntry, AssetBuilderSDK::ProcessJobResponse response);
         void AssetProcessed_Impl();

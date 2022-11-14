@@ -113,7 +113,7 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
 
     class test_EditEntity_UnderNestedInstance(EditorSharedTest):
         from .tests.overrides import EditEntity_UnderNestedInstance as test_module
-
+        
     # Prefab Notifications Tests
 
     class test_PrefabNotifications_PropagationNotificationsReceived(EditorSharedTest):

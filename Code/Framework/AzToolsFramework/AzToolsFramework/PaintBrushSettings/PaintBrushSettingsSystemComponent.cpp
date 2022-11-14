@@ -71,6 +71,11 @@ namespace AzToolsFramework
         return m_settings.GetSize();
     }
 
+    AZStd::pair<float, float> PaintBrushSettingsSystemComponent::GetSizeRange() const
+    {
+        return m_settings.GetSizeRange();
+    }
+
     AZ::Color PaintBrushSettingsSystemComponent::GetColor() const
     {
         return m_settings.GetColor();
@@ -101,9 +106,24 @@ namespace AzToolsFramework
         return m_settings.GetSmoothMode();
     }
 
+    size_t PaintBrushSettingsSystemComponent::GetSmoothingRadius() const
+    {
+        return m_settings.GetSmoothingRadius();
+    }
+
+    size_t PaintBrushSettingsSystemComponent::GetSmoothingSpacing() const
+    {
+        return m_settings.GetSmoothingSpacing();
+    }
+
     void PaintBrushSettingsSystemComponent::SetSize(float size)
     {
         m_settings.SetSize(size);
+    }
+
+    void PaintBrushSettingsSystemComponent::SetSizeRange(float minSize, float maxSize)
+    {
+        m_settings.SetSizeRange(minSize, maxSize);
     }
 
     void PaintBrushSettingsSystemComponent::SetColor(const AZ::Color& color)
@@ -135,4 +155,15 @@ namespace AzToolsFramework
     {
         m_settings.SetSmoothMode(smoothMode);
     }
+
+    void PaintBrushSettingsSystemComponent::SetSmoothingRadius(size_t radius)
+    {
+        m_settings.SetSmoothingRadius(radius);
+    }
+
+    void PaintBrushSettingsSystemComponent::SetSmoothingSpacing(size_t spacing)
+    {
+        m_settings.SetSmoothingSpacing(spacing);
+    }
+
 } // namespace AzToolsFramework

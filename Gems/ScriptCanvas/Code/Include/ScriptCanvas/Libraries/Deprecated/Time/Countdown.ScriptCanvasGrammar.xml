@@ -6,8 +6,7 @@
 	       PreferredClassName="Time Delay"
            Uuid="{364F5AC9-8351-44B6-A069-03367B21F7AA}"
            Base="ScriptCanvas::Nodes::Internal::BaseTimerNode"
-           Deprecated="This node has been deprecated in favor of the nodeable form"
-           DeprecationUUID="{D3629902-02E9-AE59-0424-F366D342B433}"
+           Deprecated="True"
            Description="Delays all incoming execution for the specified number of ticks">
         <In Name="In" Description="When signaled, execution is delayed at this node for the specified amount of times." Contracts="DisallowReentrantExecutionContract"/>
         <OutLatent Name="Out" Description="Signaled after waiting for the specified amount of times."/>
@@ -17,8 +16,7 @@
 	       PreferredClassName="Tick Delay"
            Uuid="{399A2608-77E3-41F9-90FA-58A9B6E0E34D}"
            Base="ScriptCanvas::Node"
-           DeprecationUUID="{D3629902-02E9-AE59-0424-F366D342B433}"
-           Deprecated="This node has been deprecated in favor of the nodeable form"
+           Deprecated="True"
            Description="Delays all incoming execution for the specified number of ticks">
         <In Name="In" Description="When signaled, execution is delayed at this node for the specified amount of frames." Contracts="DisallowReentrantExecutionContract"/>
         <OutLatent Name="Out" Description="Signaled after waiting for the specified amount of frames."/>
@@ -41,8 +39,7 @@
            Uuid="{FAEADF5A-F7D9-415A-A3E8-F534BD379B9A}"
            Base="ScriptCanvas::Node"
            Version="3"
-           DeprecationUUID="{233C84A7-44DE-A948-D65C-46C11F1F7162}"
-           Deprecated="This node has been deprecated in favor of the nodeable form"
+           Deprecated="True"
            VersionConverter="ScriptCanvas::VersionConverters::DelayVersionConverter"
            Description="Counts down time from a specified value.">
         <In Name="In" Description="When signaled, execution is delayed at this node according to the specified properties." Contracts="DisallowReentrantExecutionContract"/>
