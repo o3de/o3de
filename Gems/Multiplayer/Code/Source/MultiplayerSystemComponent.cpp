@@ -97,8 +97,12 @@ namespace Multiplayer
         "slow down quicker and may be better suited to connections with highly variable latency");
     AZ_CVAR(bool, bg_multiplayerDebugDraw, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables debug draw for the multiplayer gem");
     AZ_CVAR(bool, cl_connect_onstartup, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to call connect as soon as the Multiplayer SystemComponent is activated.");
-    AZ_CVAR(bool, sv_versionMismatch_autoDisconnect, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Should the server automatically disconnect a client that is attempting connect who is running a build containing different/modified multiplayer components.");
-    AZ_CVAR(bool, sv_versionMismatch_sendAllComponentHashesToClient, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Should the server send all its individual multiplayer component version hashes to the client when there's a mismatch? Upon receiving the information, the client will print the mismatch information to the game log. Provided for debugging during development, but you may want to mark false for release builds.");
+    AZ_CVAR(bool, sv_versionMismatch_autoDisconnect, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "Should the server automatically disconnect a client that is attempting connect who is running a build containing different/modified multiplayer components.");
+    AZ_CVAR(bool, sv_versionMismatch_sendManifestToClient, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "Should the server send all its individual multiplayer component version information to the client when there's a mismatch? "
+        "Upon receiving the information, the client will print the mismatch information to the game log. "
+        "Provided for debugging during development, but you may want to mark false for release builds.");
 
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -688,14 +692,14 @@ namespace Multiplayer
         if (GetMultiplayerComponentRegistry()->GetSystemVersionHash() != packet.GetSystemVersionHash())
         {
             // There's a multiplayer component mismatch. Send the server's component information back to the client so they can compare.
-            if (sv_versionMismatch_sendAllComponentHashesToClient)
+            if (sv_versionMismatch_sendManifestToClient)
             {
                 MultiplayerPackets::SyncComponentMismatch componentMismatchPacket(GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes());
                 connection->SendReliablePacket(componentMismatchPacket);                
             }
             else
             {
-                // sv_versionMismatch_sendAllComponentHashesToClient is false; don't send any individual components, just let the client know there was a mismatch.
+                // sv_versionMismatch_sendManifestToClient is false; don't send any individual components, just let the client know there was a mismatch.
                 MultiplayerPackets::SyncComponentMismatch componentMismatchPacket;
                 connection->SendReliablePacket(componentMismatchPacket);
             }

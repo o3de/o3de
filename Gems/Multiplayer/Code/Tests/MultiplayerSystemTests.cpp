@@ -32,7 +32,7 @@ namespace Multiplayer
 {
     AZ_CVAR_EXTERNED(AZ::CVarFixedString, sv_map);
     AZ_CVAR_EXTERNED(bool, sv_versionMismatch_autoDisconnect);
-    AZ_CVAR_EXTERNED(bool, sv_versionMismatch_sendAllComponentHashesToClient);
+    AZ_CVAR_EXTERNED(bool, sv_versionMismatch_sendManifestToClient);
 
 
     class MultiplayerSystemTests : public AllocatorsFixture
@@ -517,7 +517,7 @@ namespace Multiplayer
     {
         // cvars affecting mismatch behavior:
         //   1. sv_versionMismatch_autoDisconnect
-        //   2. sv_versionMismatch_sendAllComponentHashesToClient
+        //   2. sv_versionMismatch_sendManifestToClient
 
         m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
 
@@ -530,13 +530,13 @@ namespace Multiplayer
         connection.SetUserData(&connectionUserData);
 
         // Mismatch, send client a mismatch packet will all our components
-        sv_versionMismatch_sendAllComponentHashesToClient = true;
+        sv_versionMismatch_sendManifestToClient = true;
         const auto ourMultiplayerComponentCount = aznumeric_cast<uint32_t>(GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes().size());
         EXPECT_CALL(connection, SendReliablePacket(IsMismatchPacketWithComponentCount(ourMultiplayerComponentCount))).Times(1);
         m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), connectPacket);
 
         // Mismatch, send client a mismatch packet but don't send all our components to the client
-        sv_versionMismatch_sendAllComponentHashesToClient = false;
+        sv_versionMismatch_sendManifestToClient = false;
         EXPECT_CALL(connection, SendReliablePacket(IsMismatchPacketWithComponentCount(uint32_t{ 0 }))).Times(1);
         m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), connectPacket);
 
