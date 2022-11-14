@@ -348,7 +348,7 @@ namespace SceneBuilder
 
         AZ_TracePrintf(Utilities::LogWindow, "Loading scene.\n");
 
-        SceneSerializationBus::BroadcastResult(result, &SceneSerializationBus::Events::LoadScene, request.m_fullPath, request.m_sourceFileUUID);
+        SceneSerializationBus::BroadcastResult(result, &SceneSerializationBus::Events::LoadScene, request.m_fullPath, request.m_sourceFileUUID, request.m_watchFolder);
         if (!result)
         {
             AZ_TracePrintf(Utilities::ErrorWindow, "Failed to load scene file.\n");
@@ -387,7 +387,7 @@ namespace SceneBuilder
         result += Process<GenerateLODEventContext>(*scene, platformIdentifier);
         AZ_TracePrintf(Utilities::LogWindow, "Generating additions...\n");
         result += Process<GenerateAdditionEventContext>(*scene, platformIdentifier);
-        AZ_TracePrintf(Utilities::LogWindow, "Simplifing scene...\n");
+        AZ_TracePrintf(Utilities::LogWindow, "Simplifying scene...\n");
         result += Process<GenerateSimplificationEventContext>(*scene, platformIdentifier);
         AZ_TracePrintf(Utilities::LogWindow, "Finalizing generation process.\n");
         result += Process<PostGenerateEventContext>(*scene, platformIdentifier);

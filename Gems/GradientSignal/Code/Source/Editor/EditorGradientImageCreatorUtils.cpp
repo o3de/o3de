@@ -7,6 +7,7 @@
  */
 
 #include <Editor/EditorGradientImageCreatorUtils.h>
+#include <AzFramework/IO/FileOperations.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
@@ -182,18 +183,21 @@ namespace GradientSignal::ImageCreatorUtils
             return false;
         }
 
-        // Create and save the image on disk
+        // Create and save the image on disk. We initially save it to a temporary name so that the Asset Processor won't start
+        // processing it, and then we'll move it to the correct name at the end.
+        AZStd::string tempSavePath;
+        AZ::IO::CreateTempFileName(absolutePath.c_str(), tempSavePath);
 
-        std::unique_ptr<OIIO::ImageOutput> outputImage = OIIO::ImageOutput::create(absolutePath.c_str());
+        std::unique_ptr<OIIO::ImageOutput> outputImage = OIIO::ImageOutput::create(tempSavePath.c_str());
         if (!outputImage)
         {
-            AZ_Error("EditorImageGradientComponent", false, "Failed to create image at path: %s", absolutePath.c_str());
+            AZ_Error("EditorImageGradientComponent", false, "Failed to create image at path: %s", tempSavePath.c_str());
             delete saveDialog;
             return false;
         }
 
         OIIO::ImageSpec spec(imageResolutionX, imageResolutionY, channels, pixelFormat);
-        outputImage->open(absolutePath.c_str(), spec);
+        outputImage->open(tempSavePath.c_str(), spec);
 
         // Callback to upgrade our progress dialog during image saving.
         auto WriteProgressCallback = [](void* opaqueData, float percentDone) -> bool
@@ -207,17 +211,22 @@ namespace GradientSignal::ImageCreatorUtils
             return false;
         };
 
-        bool result = outputImage->write_image(
+        bool writeResult = outputImage->write_image(
             pixelFormat, pixelBuffer.data(), OIIO::AutoStride, OIIO::AutoStride, OIIO::AutoStride, WriteProgressCallback, saveDialog);
-        if (!result)
+        if (!writeResult)
         {
-            AZ_Error("EditorImageGradientComponent", result, "Failed to write out gradient image to path: %s", absolutePath.c_str());
+            AZ_Error("EditorImageGradientComponent", writeResult, "Failed to write out gradient image to path: %s", tempSavePath.c_str());
         }
 
         outputImage->close();
 
+        // Now that we're done saving the temporary image, rename it to the correct file name.
+        auto moveResult = AZ::IO::SmartMove(tempSavePath.c_str(), absolutePath.c_str());
+        AZ_Error("EditorImageGradientComponent", moveResult,
+            "Failed to rename temporary image asset %s to %s", tempSavePath.c_str(), absolutePath.c_str());
+
         delete saveDialog;
-        return result;
+        return writeResult && moveResult;
     }
 
 }

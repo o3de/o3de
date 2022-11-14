@@ -302,6 +302,25 @@ namespace GradientSignal
 
         AzToolsFramework::PaintBrushNotificationBus::Handler::BusConnect(entityComponentIdPair);
 
+        // Set our paint brush min/max world size range. The minimum size should be large enough to paint at least one pixel, and
+        // the max size is clamped so that we can't paint more than 256 x 256 pixels per brush stamp.
+        // 256 is an arbitrary number, but if we start getting much larger, performance can drop precipitously.
+        // Note: To truly control performance, additional clamping is still needed, because large mouse movements in world space with
+        // a tiny brush can still cause extremely large numbers of brush points to get calculated and checked.
+
+        constexpr float MaxBrushPixelSize = 256.0f;
+        AZ::Vector2 imagePixelsPerMeter(0.0f);
+        ImageGradientRequestBus::EventResult(imagePixelsPerMeter, GetEntityId(), &ImageGradientRequestBus::Events::GetImagePixelsPerMeter);
+
+        float minBrushSize = AZStd::min(imagePixelsPerMeter.GetX(), imagePixelsPerMeter.GetY());
+        float maxBrushSize = AZStd::max(imagePixelsPerMeter.GetX(), imagePixelsPerMeter.GetY());
+
+        minBrushSize = (minBrushSize <= 0.0f) ? 0.0f : (1.0f / minBrushSize);
+        maxBrushSize = (maxBrushSize <= 0.0f) ? 0.0f : (MaxBrushPixelSize / maxBrushSize);
+
+        AzToolsFramework::PaintBrushSettingsRequestBus::Broadcast(
+            &AzToolsFramework::PaintBrushSettingsRequestBus::Events::SetSizeRange, minBrushSize, maxBrushSize);
+
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldFromLocal, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
 
@@ -320,6 +339,7 @@ namespace GradientSignal
 
         AzToolsFramework::PaintBrushNotificationBus::Handler::BusDisconnect();
         m_brushManipulator->Unregister();
+        m_brushManipulator.reset();
 
         EndUndoBatch();
 
@@ -410,16 +430,20 @@ namespace GradientSignal
     {
         AZ_Assert(m_paintBrushUndoBuffer != nullptr, "Undo batch is expected to exist while painting");
 
-        // Expand the dirty region for this brush stroke by one pixel in each direction
-        // to account for any data affected by bilinear filtering as well.
-        m_paintStrokeData.m_dirtyRegion.Expand(AZ::Vector3(m_paintStrokeData.m_metersPerPixelX, m_paintStrokeData.m_metersPerPixelY, 0.0f));
+        if (m_paintStrokeData.m_dirtyRegion.IsValid())
+        {
+            // Expand the dirty region for this brush stroke by one pixel in each direction
+            // to account for any data affected by bilinear filtering as well.
+            m_paintStrokeData.m_dirtyRegion.Expand(
+                AZ::Vector3(m_paintStrokeData.m_metersPerPixelX, m_paintStrokeData.m_metersPerPixelY, 0.0f));
 
-        // Expand the dirty region to encompass the full Z range since image gradients are 2D.
-        auto dirtyRegionMin = m_paintStrokeData.m_dirtyRegion.GetMin();
-        auto dirtyRegionMax = m_paintStrokeData.m_dirtyRegion.GetMax();
-        m_paintStrokeData.m_dirtyRegion.Set(
-            AZ::Vector3(dirtyRegionMin.GetX(), dirtyRegionMin.GetY(), AZStd::numeric_limits<float>::lowest()),
-            AZ::Vector3(dirtyRegionMax.GetX(), dirtyRegionMax.GetY(), AZStd::numeric_limits<float>::max()));
+            // Expand the dirty region to encompass the full Z range since image gradients are 2D.
+            auto dirtyRegionMin = m_paintStrokeData.m_dirtyRegion.GetMin();
+            auto dirtyRegionMax = m_paintStrokeData.m_dirtyRegion.GetMax();
+            m_paintStrokeData.m_dirtyRegion.Set(
+                AZ::Vector3(dirtyRegionMin.GetX(), dirtyRegionMin.GetY(), AZStd::numeric_limits<float>::lowest()),
+                AZ::Vector3(dirtyRegionMax.GetX(), dirtyRegionMax.GetY(), AZStd::numeric_limits<float>::max()));
+        }
 
         // Hand over ownership of the paint stroke buffer to the undo/redo buffer.
         m_paintBrushUndoBuffer->SetUndoBufferAndDirtyArea(
@@ -456,6 +480,12 @@ namespace GradientSignal
 
         const int32_t xPoints = aznumeric_cast<int32_t>((maxDistances.GetX() - minDistances.GetX()) / m_paintStrokeData.m_metersPerPixelX);
         const int32_t yPoints = aznumeric_cast<int32_t>((maxDistances.GetY() - minDistances.GetY()) / m_paintStrokeData.m_metersPerPixelY);
+
+        // Early out if the dirty area is smaller than our point size.
+        if ((xPoints <= 0) || (yPoints <= 0))
+        {
+            return;
+        }
 
         // Calculate the minimum set of world space points that map to those pixels.
         AZStd::vector<AZ::Vector3> points;
@@ -556,45 +586,31 @@ namespace GradientSignal
     }
 
     void EditorImageGradientComponentMode::OnSmooth(
-        const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, size_t kernelSize, SmoothFn& smoothFn)
+        const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, AZStd::span<const AZ::Vector3> valuePointOffsets, SmoothFn& smoothFn)
     {
         AZ::EntityId entityId = GetEntityId();
 
-        AZ_Assert(kernelSize % 2, "Only odd-valued smoothing kernels are supported.");
-
         // Declare our vectors of kernel point locations and values once outside of the combine function so that we
         // don't keep reallocating them on every point.
-        AZStd::vector<AZ::Vector3> kernelPointOffsets;
         AZStd::vector<AZ::Vector3> kernelPoints;
         AZStd::vector<float> kernelValues;
 
-        kernelPointOffsets.reserve(kernelSize * kernelSize);
-        kernelPoints.reserve(kernelPointOffsets.size());
-        kernelValues.reserve(kernelPointOffsets.size());
+        const AZ::Vector3 valuePointOffsetScale(m_paintStrokeData.m_metersPerPixelX, m_paintStrokeData.m_metersPerPixelY, 0.0f);
 
-        // Calculate our list of kernel position offsets once for all points. We'll use this to calculate all of the relative positions
-        // around each point for fetching the blurring kernel values.
-        float halfKernelSize = aznumeric_cast<float>(kernelSize / 2);
-        for (float_t y = -halfKernelSize; y <= halfKernelSize; y += 1.0f)
-        {
-            for (float_t x = -halfKernelSize; x <= halfKernelSize; x += 1.0f)
-            {
-                kernelPointOffsets.emplace_back(
-                    AZ::Vector3(x * m_paintStrokeData.m_metersPerPixelX, y * m_paintStrokeData.m_metersPerPixelY, 0.0f));
-            }
-        }
+        kernelPoints.reserve(valuePointOffsets.size());
+        kernelValues.reserve(valuePointOffsets.size());
 
         // For smoothing notifications, we'll need to gather all of the neighboring gradient values to feed into the given smoothing
         // function for our blend operation.
-        auto combineFn = [this, entityId, smoothFn, &kernelPointOffsets, &kernelPoints, &kernelValues](
+        auto combineFn = [this, entityId, smoothFn, &valuePointOffsets, valuePointOffsetScale, &kernelPoints, &kernelValues](
                              const AZ::Vector3& worldPosition, float gradientValue, float opacityValue) -> float
         {
             kernelPoints.clear();
 
             // Calculate all of the world positions around our base position that we'll use for fetching our blurring kernel values.
-            for (auto& kernelPointOffset : kernelPointOffsets)
+            for (auto& valuePointOffset : valuePointOffsets)
             {
-                kernelPoints.emplace_back(worldPosition + kernelPointOffset);
+                kernelPoints.emplace_back(worldPosition + (valuePointOffset * valuePointOffsetScale));
             }
 
             kernelValues.assign(kernelPoints.size(), 0.0f);

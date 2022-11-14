@@ -13,6 +13,7 @@
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeDelegateBus.h>
 
 namespace AzToolsFramework
 {
@@ -229,6 +230,9 @@ namespace AzToolsFramework
             EntitySelectionEvents::Bus::Handler::BusConnect(entityComponentIdPair.GetEntityId());
             EditorEntityVisibilityNotificationBus::Handler::BusConnect(entityComponentIdPair.GetEntityId());
             EditorEntityLockComponentNotificationBus::Handler::BusConnect(entityComponentIdPair.GetEntityId());
+
+            AzFramework::ComponentModeDelegateNotificationBus::Broadcast(
+                &AzFramework::ComponentModeDelegateNotificationBus::Events::OnComponentModeDelegateConnect, m_entityComponentIdPair);
         }
 
         void ComponentModeDelegate::Disconnect()
@@ -236,6 +240,13 @@ namespace AzToolsFramework
             EditorEntityLockComponentNotificationBus::Handler::BusDisconnect();
             EditorEntityVisibilityNotificationBus::Handler::BusDisconnect();
             EntitySelectionEvents::Bus::Handler::BusDisconnect();
+
+            AzFramework::ComponentModeDelegateNotificationBus::Broadcast(
+                &AzFramework::ComponentModeDelegateNotificationBus::Events::OnComponentModeDelegateDisconnect, m_entityComponentIdPair);
+
+            m_componentType = AZ::Uuid::CreateNull();
+            m_entityComponentIdPair = AZ::EntityComponentIdPair(AZ::EntityId(), AZ::InvalidComponentId);
+            m_handler = nullptr;
         }
 
         void ComponentModeDelegate::OnSelected()

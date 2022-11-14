@@ -13,8 +13,8 @@ import ly_test_tools
 import ly_test_tools.launchers.exceptions
 import ly_test_tools.o3de.multi_test_framework as multi_test_framework
 from ly_test_tools.o3de.editor_test_utils import prepare_asset_processor
-from ly_test_tools.launchers.platforms.linux.launcher import LinuxAtomToolsLauncher
-from ly_test_tools.launchers.platforms.win.launcher import WinAtomToolsLauncher
+from ly_test_tools.launchers.platforms.linux.launcher import LinuxAtomToolsLauncher, LinuxEditor
+from ly_test_tools.launchers.platforms.win.launcher import WinAtomToolsLauncher, WinEditor
 
 
 pytestmark = pytest.mark.SUITE_smoke
@@ -866,8 +866,9 @@ class TestRunningTests(unittest.TestCase):
         assert mock_collected_test_data.results.update.called
         mock_report_result.assert_called_with(mock_test_name, mock_result)
 
+    @mock.patch('ly_test_tools.o3de.multi_test_framework.MultiTestSuite._test_reporting')
     @mock.patch('ly_test_tools.o3de.multi_test_framework.MultiTestSuite._exec_multitest')
-    def test_RunBatchedTests_ValidTests_CallsCorrectly(self, mock_exec_multitest):
+    def test_RunBatchedTests_ValidTests_CallsCorrectly(self, mock_exec_multitest, mock_reporting):
         mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
         mock_test_suite.atom_tools_executable_name = "dummy_executable"
         mock_request = mock.MagicMock()
@@ -880,7 +881,7 @@ class TestRunningTests(unittest.TestCase):
             mock_request, mock_workspace, mock_collected_test_data, mock_test_spec_list, mock_extra_cmdline_args)
 
         assert mock_exec_multitest.called
-        assert mock_collected_test_data.results.update.called
+        assert mock_reporting.called
         assert type(mock_test_suite.executable) in [WinAtomToolsLauncher, LinuxAtomToolsLauncher]
         assert mock_test_suite.executable.workspace == mock_workspace
 
@@ -1017,6 +1018,121 @@ class TestRunningTests(unittest.TestCase):
         number_of_executables = mock_test_suite._get_number_parallel_executables(mock_request)
         assert number_of_executables == mock_test_suite.get_number_parallel_executables()
 
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.kill_all_ly_processes')
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.prepare_asset_processor')
+    @mock.patch('ly_test_tools.launchers.launcher_helper.create_editor')
+    @mock.patch('ly_test_tools.launchers.launcher_helper.create_atom_tools_launcher')
+    def test_SetupTest_AtomExe_SetsExecutable(self, mock_create_atom, mock_create_editor, mock_prepare_ap, 
+                                              mock_kill_processes):
+        mock_workspace = mock.MagicMock()
+        mock_exe = 'mock_atom_exe'
+        mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
+        mock_test_suite.atom_tools_executable_name = mock_exe
+        mock_test_suite.executable = mock.MagicMock()
+
+        mock_test_suite._setup_test(mock_workspace, mock.MagicMock())
+        mock_create_atom.assert_called_once_with(mock_workspace, mock_exe)
+        assert not mock_create_editor.called
+        assert mock_prepare_ap.called
+        assert mock_kill_processes.called
+        assert mock_test_suite.executable.configure_settings.called
+
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.kill_all_ly_processes')
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.prepare_asset_processor')
+    @mock.patch('ly_test_tools.launchers.launcher_helper.create_editor')
+    @mock.patch('ly_test_tools.launchers.launcher_helper.create_atom_tools_launcher')
+    def test_SetupTest_EditorExe_SetsExecutable(self, mock_create_atom, mock_create_editor, mock_prepare_ap, 
+                                                mock_kill_processes):
+        mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
+        mock_test_suite.atom_tools_executable_name = None
+        mock_test_suite.executable = mock.MagicMock()
+
+        mock_test_suite._setup_test(mock.MagicMock(), mock.MagicMock())
+        assert not mock_create_atom.called
+        assert mock_create_editor.called
+        assert mock_prepare_ap.called
+        assert mock_kill_processes.called
+        assert mock_test_suite.executable.configure_settings.called
+
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs')
+    def test_TestReporting_AllPassResults_NoSaveLogs(self, mock_save_logs):
+        mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
+        mock_collected_test_data = mock.MagicMock()
+        mock_pass = multi_test_framework.Result.Pass(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+        mock_results = [mock_pass]
+
+        mock_test_suite._test_reporting(mock_collected_test_data, mock_results, mock.MagicMock(), mock.MagicMock())
+        assert not mock_save_logs.called
+        assert mock_collected_test_data.results.update.called
+
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs')
+    def test_TestReporting_UnknownResults_SaveLogs(self, mock_save_logs):
+        mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
+        mock_collected_test_data = mock.MagicMock()
+        mock_results = [None]
+
+        mock_test_suite._test_reporting(mock_collected_test_data, mock_results, mock.MagicMock(), mock.MagicMock())
+        assert mock_save_logs.called
+        assert mock_collected_test_data.results.update.called
+
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs')
+    def test_TestReporting_BothResults_SaveLogs(self, mock_save_logs):
+        mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
+        mock_collected_test_data = mock.MagicMock()
+        mock_pass = multi_test_framework.Result.Pass(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+        mock_results = [mock_pass, None]
+
+        mock_test_suite._test_reporting(mock_collected_test_data, mock_results, mock.MagicMock(), mock.MagicMock())
+        assert mock_save_logs.called
+        assert mock_collected_test_data.results.update.called
+        
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs')
+    def test_TestReporting_ManyResults_SaveLogs(self, mock_save_logs):
+        mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
+        mock_collected_test_data = mock.MagicMock()
+        mock_pass = multi_test_framework.Result.Pass(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+        mock_fail = multi_test_framework.Result.Fail(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+        mock_results = [mock_pass, mock_fail, None]
+
+        mock_test_suite._test_reporting(mock_collected_test_data, mock_results, mock.MagicMock(), mock.MagicMock())
+        assert mock_save_logs.called
+        assert mock_collected_test_data.results.update.called
+ 
+    def test_SetupCmdlineArgs_EditorExe_EnablesPrefab(self):
+        mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
+        mock_executable = WinEditor(mock.MagicMock(), [])
+        mock_test_spec_list = mock.MagicMock()
+
+        under_test = mock_test_suite._setup_cmdline_args(None, mock_executable, mock_test_spec_list, mock.MagicMock())
+        assert "--regset=/Amazon/Preferences/EnablePrefabSystem=true" in under_test
+        assert "-rhi=null" in under_test
+        assert "--attach-debugger" not in under_test
+        assert "--wait-for-debugger" not in under_test
+
+    def test_SetupCmdlineArgs_AtomExe_NotEnablesPrefab(self):
+        mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
+        mock_executable = WinAtomToolsLauncher(mock.MagicMock(), [])
+        mock_test_spec_list = mock.MagicMock()
+
+        under_test = mock_test_suite._setup_cmdline_args(None, mock_executable, mock_test_spec_list, mock.MagicMock())
+        assert "--regset=/Amazon/Preferences/EnablePrefabSystem=true" not in under_test
+        assert "-rhi=null" in under_test
+        assert "--attach-debugger" not in under_test
+        assert "--wait-for-debugger" not in under_test
+
+    def test_SetupCmdlineArgs_Debugger_EnablesDebugger(self):
+        mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
+        mock_executable = WinAtomToolsLauncher(mock.MagicMock(), [])
+        mock_test_spec = mock.MagicMock()
+        mock_test_spec.attach_debugger = True
+        mock_test_spec.wait_for_debugger = True
+        mock_test_spec_list = [mock_test_spec]
+
+        under_test = mock_test_suite._setup_cmdline_args(None, mock_executable, mock_test_spec_list, mock.MagicMock())
+        assert "--regset=/Amazon/Preferences/EnablePrefabSystem=true" not in under_test
+        assert "-rhi=null" in under_test
+        assert "--attach-debugger" in under_test
+        assert "--wait-for-debugger" in under_test
 
 @mock.patch('_pytest.python.Class.collect')
 class TestMultiTestCollector(unittest.TestCase):

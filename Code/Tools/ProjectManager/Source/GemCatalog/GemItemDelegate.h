@@ -68,6 +68,13 @@ namespace O3DE::ProjectManager
         inline constexpr static int s_featureTagBorderMarginY = 3;
         inline constexpr static int s_featureTagSpacing = 7;
 
+        // Platform text
+        inline constexpr static int s_platformTextleftMarginCorrection = -3;
+        inline constexpr static int s_platformTextHeightAdjustment = 25;
+        inline constexpr static int s_platformTextWrapAroundMargin = 5;
+        inline constexpr static int s_platformTextLineBottomMargin = 5;
+        inline constexpr static int s_platformTextWrapAroundLineMaxCount = 2;
+
         // Status icon
         inline constexpr static int s_statusIconSize = 16;
         inline constexpr static int s_statusButtonSpacing = 5;
@@ -93,6 +100,7 @@ namespace O3DE::ProjectManager
         QRect CalcButtonRect(const QRect& contentRect) const;
         QRect CalcSummaryRect(const QRect& contentRect, bool hasTags) const;
         void DrawPlatformIcons(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const;
+        void DrawPlatformText(QPainter* painter, const QRect& contentRect,  const QFont& standardFont, const QModelIndex& modelIndex) const;
         void DrawButton(QPainter* painter, const QRect& buttonRect, const QModelIndex& modelIndex) const;
         void DrawFeatureTags(
             QPainter* painter,

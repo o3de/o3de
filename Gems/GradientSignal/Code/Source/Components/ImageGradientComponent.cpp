@@ -706,12 +706,13 @@ namespace GradientSignal
     void ImageGradientComponent::UpdateCachedImageBufferData(
         const AZ::RHI::ImageDescriptor& imageDescriptor, AZStd::span<const uint8_t> imageData)
     {
-        bool shouldClearModificationBuffer = false;
+        bool shouldRefreshModificationBuffer = false;
 
-        // If we're changing our image data from our modification buffer to something else, clear out the modification buffer.
+        // If we're changing our image data from our modification buffer to something else while it's active,
+        // let's refresh the modification buffer with the new data.
         if (ModificationBufferIsActive() && (imageData.data() != m_imageData.data()))
         {
-            shouldClearModificationBuffer = true;
+            shouldRefreshModificationBuffer = true;
         }
 
         m_imageDescriptor = imageDescriptor;
@@ -720,9 +721,10 @@ namespace GradientSignal
         m_maxX = imageDescriptor.m_size.m_width - 1;
         m_maxY = imageDescriptor.m_size.m_height - 1;
 
-        if (shouldClearModificationBuffer)
+        if (shouldRefreshModificationBuffer)
         {
-            ClearImageModificationBuffer();
+            m_modifiedImageData.resize(0);
+            CreateImageModificationBuffer();
         }
     }
 

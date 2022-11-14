@@ -8,6 +8,7 @@
 
 #include "CvarDPE.h"
 #include <AzFramework/DocumentPropertyEditor/CvarAdapter.h>
+#include <AzFramework/DocumentPropertyEditor/ValueStringSort.h>
 #include "QtViewPaneManager.h"
 
 
@@ -16,9 +17,11 @@ namespace AzToolsFramework
     CvarDPE::CvarDPE(QWidget* parentWidget)
         : FilteredDPE(parentWidget)
         , m_cvarAdapter(AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>())
+        , m_sortAdapter(AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringSort>())
     {
         setWindowTitle(tr("Console Variables"));
-        SetAdapter(m_cvarAdapter);
+        m_sortAdapter->SetSourceAdapter(m_cvarAdapter);
+        SetAdapter(m_sortAdapter);
     }
 
     void CvarDPE::RegisterViewClass()
