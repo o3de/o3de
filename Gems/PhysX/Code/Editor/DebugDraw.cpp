@@ -509,7 +509,7 @@ namespace PhysX
             const AZ::Vector3 resultantScale = Utils::GetTransformScale(m_entityId) * colliderScale;
 
             // Scale the box parameters using the desired method (uniform or non-uniform).
-            AZ::Vector3 scaledBoxParameters = boxShapeConfig.m_dimensions * 0.5f * resultantScale;
+            const AZ::Vector3 scaledBoxParameters = boxShapeConfig.m_dimensions * 0.5f * resultantScale;
 
             const AZ::Color& faceColor = CalcDebugColor(colliderConfig);
 
