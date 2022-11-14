@@ -18,11 +18,11 @@
 
 ### Using with DccScriptingInterface
 
-The [DccScriptingInterface Gem]([o3de/readme.md at development · o3de/o3de · GitHub](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md)) DCCsi includes some support for various DCC tools like Blender or Maya, as well as popular IDEs that Technical Artists use in development.  Using Wing Pro via the DCCsi is recommended as it streamlines some configuration, but it is not a hard requirement.
+The [DccScriptingInterface Gem](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md) DCCsi includes some support for various DCC tools like Blender or Maya, as well as popular IDEs that Technical Artists use in development.  Using Wing Pro via the DCCsi is recommended as it streamlines some configuration, but it is not a hard requirement.
 
-1. Enable the [DccScriptingInterface Gem]([o3de/readme.md at development · o3de/o3de · GitHub](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md)) in your game project, using either the [O3DE Project Manager]([Project Manager - Open 3D Engine](https://www.o3de.org/docs/user-guide/project-config/project-manager/)) or the o3de.py[ commandline tools]([Adding and Removing Gems in a Project - Open 3D Engine](https://www.o3de.org/docs/user-guide/project-config/add-remove-gems/))
+1. Enable the [DccScriptingInterface Gem](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md) in your game project, using either the [O3DE Project Manager](https://www.o3de.org/docs/user-guide/project-config/project-manager/) or the o3de.py [commandline tools](https://www.o3de.org/docs/user-guide/project-config/add-remove-gems/)
 
-2. After adding a Gem, you should [configure and rebuild your project]([Configure and Build - Open 3D Engine](https://www.o3de.org/docs/user-guide/build/configure-and-build/))
+2. After adding a Gem, you should [configure and rebuild your project](https://www.o3de.org/docs/user-guide/build/configure-and-build/))
 
 3. You should now be able to utilize wing, here are several ways to start wing
    
