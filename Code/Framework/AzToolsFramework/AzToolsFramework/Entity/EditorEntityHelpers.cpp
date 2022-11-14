@@ -653,11 +653,8 @@ namespace AzToolsFramework
 
     bool IsSelected(const AZ::EntityId entityId)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
         bool selected = false;
-        EditorEntityInfoRequestBus::EventResult(
-            selected, entityId, &EditorEntityInfoRequestBus::Events::IsSelected);
+        EditorEntityInfoRequestBus::EventResult(selected, entityId, &EditorEntityInfoRequestBus::Events::IsSelected);
         return selected;
     }
 
@@ -667,8 +664,7 @@ namespace AzToolsFramework
 
         // Detect if the Entity is Visible
         bool visible = false;
-        EditorEntityInfoRequestBus::EventResult(
-            visible, entityId, &EditorEntityInfoRequestBus::Events::IsVisible);
+        EditorEntityInfoRequestBus::EventResult(visible, entityId, &EditorEntityInfoRequestBus::Events::IsVisible);
 
         if (!visible)
         {

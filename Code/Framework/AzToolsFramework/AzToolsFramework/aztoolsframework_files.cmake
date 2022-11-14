@@ -236,7 +236,6 @@ set(FILES
     Manipulators/ManipulatorSpace.h
     Manipulators/PaintBrushManipulator.cpp
     Manipulators/PaintBrushManipulator.h
-    Manipulators/PaintBrushNotificationBus.h
     Manipulators/PlanarManipulator.cpp
     Manipulators/PlanarManipulator.h
     Manipulators/RotationManipulators.cpp
@@ -254,6 +253,9 @@ set(FILES
     Manipulators/TranslationManipulators.cpp
     Manipulators/TranslationManipulators.h
     Maths/TransformUtils.h
+    PaintBrush/PaintBrush.cpp
+    PaintBrush/PaintBrush.h
+    PaintBrush/PaintBrushNotificationBus.h
     PaintBrushSettings/PaintBrushSettings.cpp
     PaintBrushSettings/PaintBrushSettings.h
     PaintBrushSettings/PaintBrushSettingsNotificationBus.h
@@ -380,8 +382,8 @@ set(FILES
     UI/DocumentPropertyEditor/ContainerActionButtonHandler.h
     UI/DocumentPropertyEditor/DPEComponentAdapter.h
     UI/DocumentPropertyEditor/DPEComponentAdapter.cpp
-    UI/DocumentPropertyEditor/FilterAdapter.cpp
-    UI/DocumentPropertyEditor/FilterAdapter.h
+    UI/DocumentPropertyEditor/ValueStringFilter.cpp
+    UI/DocumentPropertyEditor/ValueStringFilter.h
     UI/DocumentPropertyEditor/FilteredDPE.cpp
     UI/DocumentPropertyEditor/FilteredDPE.h
     UI/DocumentPropertyEditor/FilteredDPE.ui

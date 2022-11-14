@@ -34,6 +34,7 @@
 #include <AzFramework/DocumentPropertyEditor/CvarAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/SettingsRegistryAdapter.h>
+#include <AzFramework/DocumentPropertyEditor/ValueStringSort.h>
 #include <AzQtComponents/DPEDebugViewStandalone/ExampleAdapter.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugWindow.h>
 
@@ -96,6 +97,12 @@ namespace DPEDebugView
         AZStd::unordered_map<AZ::EntityId, int> m_entityIdMap;
         EnumType m_enumValue = EnumType::Value1;
         AZ::EntityId m_entityId;
+
+        // For testing invocable ReadOnly attributes
+        bool IsDataReadOnly()
+        {
+            return true;
+        }
 
         static void Reflect(AZ::ReflectContext* context)
         {
@@ -166,7 +173,7 @@ namespace DPEDebugView
                         ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "ReadOnly")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_readOnlyInt, "readonly int", "")
-                        ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TestContainer::IsDataReadOnly)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_readOnlyMap, "readonly map<string, float>", "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, true);
@@ -262,8 +269,13 @@ int main(int argc, char** argv)
     QObject::connect(
         debugViewer.data(), &AzToolsFramework::DPEDebugWindow::AdapterChanged, filteredDPE, &AzToolsFramework::FilteredDPE::SetAdapter);
 
+    auto cvarAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>();
+    auto sortFilter = AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringSort>();
+
+    sortFilter->SetSourceAdapter(cvarAdapter);
+
+    debugViewer->AddAdapterToList("CVar Adapter", sortFilter);
     debugViewer->AddAdapterToList("Reflection Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>()));
-    debugViewer->AddAdapterToList("CVar Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>());
     debugViewer->AddAdapterToList("Example Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>());
     debugViewer->AddAdapterToList("Settings Registry Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::SettingsRegistryAdapter>());
 

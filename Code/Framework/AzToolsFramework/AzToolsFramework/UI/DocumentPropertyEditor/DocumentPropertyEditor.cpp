@@ -11,6 +11,7 @@
 #include <QCheckBox>
 #include <QDialog>
 #include <QLineEdit>
+#include <QSignalBlocker>
 #include <QTimer>
 #include <QVBoxLayout>
 
@@ -32,12 +33,12 @@ AZ_CVAR(
     AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
     "If set, enables experimental Document Property Editor support, replacing the Reflected Property Editor where possible");
 
-
-template <class T>
+template<class T>
 void DetachAndHide(T* widget)
 {
     if (widget)
     {
+        QSignalBlocker widgetBlocker(widget);
         widget->hide();
         widget->setParent(nullptr);
     }
@@ -1239,8 +1240,10 @@ namespace AzToolsFramework
             });
         m_adapter->ConnectMessageHandler(m_domMessageHandler);
 
-        // Free the settings ptr which in turn saves any in-memory settings to disk
+        // Free the settings ptr which saves any in-memory settings to disk and replace it
+        // with a default in-memory only settings object until a saved state key is specified
         m_dpeSettings.reset();
+        m_dpeSettings = AZStd::make_unique<DocumentPropertyEditorSettings>();
 
         // populate the view from the full adapter contents, just like a reset
         HandleReset();
@@ -1249,6 +1252,7 @@ namespace AzToolsFramework
     void DocumentPropertyEditor::Clear()
     {
         m_rowPool->RecycleInstance(m_rootNode);
+        m_rootNode = nullptr;
     }
 
     void DocumentPropertyEditor::AddAfterWidget(QWidget* precursor, QWidget* widgetToAdd)

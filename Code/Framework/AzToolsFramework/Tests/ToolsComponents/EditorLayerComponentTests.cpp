@@ -580,6 +580,8 @@ namespace AzToolsFramework
         m_layerEntity.m_layer->ClearUnsavedChanges();
 
         AZ::Entity* childEntity = CreateEditorReadyEntity("ChildEntity");
+        // An undo batch needs to begin before the entity can be registered as dirty
+        AzToolsFramework::ScopedUndoBatch undoBatch("Reparent Entity");
         AZ::TransformBus::Event(
             childEntity->GetId(),
             &AZ::TransformBus::Events::SetParent,
@@ -604,6 +606,8 @@ namespace AzToolsFramework
         m_layerEntity.m_layer->ClearUnsavedChanges();
 
         // Change the scale of the child entity so it registers as an unsaved change on the layer.
+        // An undo batch needs to begin before the entity can be registered as dirty
+        AzToolsFramework::ScopedUndoBatch undoBatch("Scale Entity");
         float scale = 0.0f;
         AZ::TransformBus::EventResult(
             scale,
