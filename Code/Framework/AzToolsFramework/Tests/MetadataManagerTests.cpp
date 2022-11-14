@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Utils/Utils.h>
 
 namespace UnitTest
 {
@@ -96,9 +97,9 @@ namespace UnitTest
 
             ON_CALL(*m_fileIOMock, Open(_, _, _))
                 .WillByDefault(Invoke(
-                    [](auto, auto, IO::HandleType& handle)
+                    [](auto filePath, auto, IO::HandleType& handle)
                     {
-                        handle = 1234;
+                        handle = AZ::u32(AZStd::hash<AZStd::string>{}( filePath ));
                         return AZ::IO::Result(AZ::IO::ResultCode::Success);
                     }));
 
@@ -108,6 +109,15 @@ namespace UnitTest
                     {
                         size = m_mockFiles[handle].size();
                         return AZ::IO::ResultCode::Success;
+                    }));
+
+            ON_CALL(*m_fileIOMock, Exists(_))
+                .WillByDefault(Invoke(
+                    [this](const char* filePath)
+                    {
+                        auto handle = AZ::u32(AZStd::hash<AZStd::string>{}(filePath));
+                        auto itr = m_mockFiles.find(handle);
+                        return itr != m_mockFiles.end() && itr->second.size() > 0;
                     }));
 
             ON_CALL(*m_fileIOMock, Read(_, _, _, _, _))
@@ -168,7 +178,9 @@ namespace UnitTest
     TEST_F(MetadataManagerTests, Get_FileDoesNotExist_ReturnsFalse)
     {
         MyTestType test;
+        AZ_TEST_START_ASSERTTEST;
         EXPECT_FALSE(m_metadata->Get("mockfile", "/Test", &test, azrtti_typeid<MyTestType>()));
+        AZ_TEST_STOP_ASSERTTEST(1);
     }
 
     TEST_F(MetadataManagerTests, Set_ReturnsTrue)
@@ -206,5 +218,15 @@ namespace UnitTest
         int version = 0;
         EXPECT_TRUE(m_metadata->Get("mockfile", AzToolsFramework::MetadataManager::MetadataVersionKey, &version, azrtti_typeid<int>()));
         EXPECT_EQ(version, AzToolsFramework::MetadataManager::MetadataVersion);
+    }
+
+    TEST_F(MetadataManagerTests, Set_InvalidMetadataFile_ReturnsFalse)
+    {
+        AZ::Utils::WriteFile("This is not a metadata file", AZStd::string("mockfile") + AzToolsFramework::MetadataManager::MetadataFileExtension);
+
+        MyTestType test;
+        AZ_TEST_START_ASSERTTEST;
+        EXPECT_FALSE(m_metadata->Set("mockfile", "/Test", &test, azrtti_typeid<MyTestType>()));
+        AZ_TEST_STOP_ASSERTTEST(1);
     }
 }
