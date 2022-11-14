@@ -328,8 +328,24 @@ namespace AZ::Reflection
                 {
                     if (auto readOnlyAttribute = classElement->m_editData->FindAttribute(AZ::Crc32("ReadOnly")); readOnlyAttribute)
                     {
-                        Dom::Value readOnlyValue = readOnlyAttribute->GetAsDomValue(instance);
-                        nodeData->m_disableEditor |= readOnlyValue.GetBool();
+                        Dom::Value readOnlyValue;
+                        if (readOnlyAttribute->CanDomInvoke(Dom::Value(Dom::Type::Array)))
+                        {
+                            readOnlyValue = readOnlyAttribute->DomInvoke(instance, Dom::Value(Dom::Type::Array));
+                        }
+                        else
+                        {
+                            readOnlyValue = readOnlyAttribute->GetAsDomValue(instance);
+                        }
+
+                        if (readOnlyValue.IsBool())
+                        {
+                            nodeData->m_disableEditor |= readOnlyValue.GetBool();
+                        }
+                        else
+                        {
+                            AZ_Warning("LegacyReflectionBridge", false, "ReadOnly attribute yielded non-bool Value");
+                        }
                     }
                 }
 
@@ -596,7 +612,7 @@ namespace AZ::Reflection
                     }
                     else
                     {
-                        AZ_Warning("DPE", false, "Unable to lookup name for attribute CRC: %" PRId32, it->first);
+                        AZ_Warning("LegacyReflectionBridge", false, "Unable to lookup name for attribute CRC: %" PRId32, it->first);
                     }
                 };
 
