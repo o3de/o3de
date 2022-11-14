@@ -1,6 +1,6 @@
 # O3DE DCCsi, Wing Pro IDE
 
-[Wing Pro](https://wingware.com/) is a Python IDE that can be used to develop, test, and debug Python code written for [Open 3D Engine (O3DE)](https://www.o3de.org/), an open source realtime3D engine, for video games and other uses cases.
+[Wing Pro](https://wingware.com/) is a Python IDE that can be used to develop, test, and debug Python code written for [Open 3D Engine (O3DE)](https://www.o3de.org/), an open source realtime3D engine, for video games and other uses cases.  Each IDE is different.  Wing is a popular IDE for many Technical Artists (TAs) because it's relatively easy to set up and works great with DCC apps like Maya with less configuration.  It is also pretty powerful and you can do a lot of data-driven configuration with it (which we will be covering some of.)  We aren't picking an IDE for you, that's a personal choice, we are just showing you how one like Wing can be set up to provide a better out-of-box developer experience (so that you don't have to do the setup and configuration yourself.)  In fact, we intend to do the same for other IDS like PyCharm and VScode (and maybe others in the future, join the o3de discord tech-art channel [come help us build the tooling foundation.](https://discord.com/channels/805939474655346758/842110573625081876))
 
 ### Status: Prototype
 
@@ -10,11 +10,11 @@
 
 #### Latest Features:
 
-- The latest version of Wing Pro 8 (8.3.3.1) is recommended, as there was a bug in the initial release that prevented Launch Configurations bound to a ENVAR (like above) to function properly. Wing Pro 9 likely works as well, you may just have to make slight adjustments to the configuration (covered in this document below)
+- The latest version of Wing Pro 8 (8.3.3.1) is recommended, as there was a bug in the initial release that prevented Launch Configurations bound to a ENVAR to function properly (as described in this readme), which has been fixed. Wing Pro 9 likely works as well, you may just have to make slight adjustments to the configuration (covered in this document below)
 
 - The DccScriptingInterface Gem (DCCsi) can be added to your Game Project. See [Registering Gems to a Project](https://www.o3de.org/docs/user-guide/project-config/register-gems/), and [Adding and Removing Gems in a Project](https://www.o3de.org/docs/user-guide/project-config/add-remove-gems/) which you can do through the Project Manager (o3de.exe) With the DCCsi enabled, you can launch Wing Pro 8 via menus in the main Editor.
 
-- Some additional testing and improvement have been mad in the current release (2210), including changes to better support Installer build folder patterns. See the [readme.md at the root of the DCCsi](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md) for more information about advanced configuration.
+- Some additional testing and improvements have been made and are in the in the current release (2210), including changes to better support Installer build folder patterns. See the [readme.md at the root of the DCCsi](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md) for more information about advanced configuration.
 
 ## TL/DR: Getting Started
 
@@ -89,6 +89,21 @@ This is necessary for attaching Wing as the debugger in scripts that are running
 import wingdbstub
 wingdbstub.Ensure()
 ```
+#### HELP
+
+Trouble attaching debugger?  Open your firewall and add an exception for wing.
+
+- In Windows 10:  
+  - Win + S and search for **Windows Defender Firewall**
+  - Select **Allow an app or feature through Windows Defender Firewall**
+- In the allowed apps window:
+  - Verify there isn't already an entry for Wing by scrolling through
+  - Click on **Change Settings**
+  - Then click on **Allow another app...**
+- In the Add an app window:
+  - click on **Browse...** and point it to your wing executable
+    - `C:\Program Files (x86)\Wing Pro 8\bin\wing.exe`
+  - click on **Add**
 
 #### Notes:
 
@@ -104,7 +119,7 @@ O3DE has a Gem called the DccScriptingInterface (DCCsi) that helps user manage t
 
 Most modern DCC tools come with a Python interpreter and APIs to customize and extend the editor experience.  Likewise, O3DE has a Python Interpreter and APIs for automation.  Many professional game studios use this to create custom tools, workflows, pipelines and automation for content creation.  Technical Artists (TAs) often are the discipline doing this type of development work, and utilize Python to do so, but may not be as fluent in developer tools as a C++ engineer; thus there is an importance on having good development environments.  
 
-The DCCsi integrations are workflow integrations with the intent to provide an improved ease-of-use experience when these tools are used to author source content for O3DE.  The same can be said for IDEs and custom tooling. These novice to intermediate TAs that want to just jump in a start creating, but don't know how to get started, are the target audience for this integration... the goal is to get you up and running with minimal set up.
+The DCCsi integrations are workflow integrations with the intent to provide an improved ease-of-use experience when these tools are used to author source content for O3DE.  The same can be said for IDEs and custom tooling. These novice to intermediate TAs that want to just jump in and start creating, but don't know how to get started, are the target audience for this integration... the goal is to get you up and running with minimal set up.
 
 The DCCsi helps with aspects such as, configuration and settings, launching DCC tools, and IDEs, and bootstrapping them with O3DE extensions (generally python scripts using the DCC tools APIs to automate tasks)
 
@@ -115,12 +130,14 @@ The project default is currently configured like this inside of wing:
   - `${O3DE_DEV}` = '${O3DE_DEV}\python\runtime\python-3.10.5-rev1-windows\python\python.exe'
 
 You can inspect the project default settings:
+
 `Wing > menubar > Project > Project properties ...`
 
 ![image](https://user-images.githubusercontent.com/23222931/201771477-ba8c5ca1-b1b4-4cf3-885e-b142d60513b0.png)
 
 
 After starting Wing using the DCCsi project, you can inspect which Launch Configurations have been defined with the following menu:
+
 `Wing > menubar > Project > Launch Configurations`
 
 ![image](https://user-images.githubusercontent.com/23222931/201770286-ad988b4b-ecde-451c-8379-93938c4b055c.png)
@@ -156,9 +173,7 @@ You can change the current Launch environment a couple of differenty ways:
 
 # Additional Information
 
-Each IDE is different.  Some TAs (like me) like Wing IDE because it's relatively easy to set up and works great with DCC apps like Maya with less configuration.  It's also pretty powerful and you can do a lot of data-driven configuration with it (which we will be covering some of.)  We aren't picking an IDE for you, that's a personal choice, we are just showing you how one like Wing can be set up to provide a better out-of-box experience (so that you don't have to do the setup and configuration yourself.)  In fact, we intend to do the same for other IDS like PyCharm and VScode (maybe others in the future.)
-
-To use Wing, there are a few things that you need to do locally to get set up (and we may automate some of these steps in the future.)  
+To use Wing, there may be things you need to do locally to get set up (and we may automate some of these steps in the future.)  
 
 ## What to know ...
 
@@ -175,6 +190,8 @@ There are many ways to work with O3DE, especially as a developer. Here are some 
 - What type of user are you?  Are you a C++ engine developer, a Technical Artist (TA) working in source, or a TA on a game team using a pre-built engine; or a end user that is a novice with little python experience?
 
 - O3DE has it's own python interpreter, the python version and/or location could change as upgrades happen. We may want to use this O3DE python as the IDE interpreter when running our code (likewise we may want to use a compatible  DCC tools interpreter); and this is one reason why the env is data-driven and configurable.)
+
+  - O3DE python is in a location such as: `c:\path\to\o3de\python\*`
 
 - O3DE builds it's own Qt dlls (and other binaries), provides it's own access to PySide2, installs python package dependencies during cmake configuration; we need to ensure we are bootstrapping access to these things, so we are developing and testing code with the same interpreter, using the same packages and code access, and operating in an environment similar to the editor! (and there are other ways to operate, like creating a standalone PySide2 gui application. A topic for another time perhaps.)
 
@@ -196,15 +213,15 @@ There are many ways to work with O3DE, especially as a developer. Here are some 
 
 - But you might be building from source.  You might have multiple engine repos cloned locally, they may be on different branches.  You can build in an engine-centric way, or a project-centric way, and developers choose their cmake configuration and build folder.  Configuration needs to account for these many options.  This guide is geared towards developers, and developers need to be aware of these things.
 
-- Be aware of your development set up. Here is an example of the location I work with the most locally on a day-to-day bases.  Generally I only work on windows, I build in an engine-centric way, because I branch hop a lot ... and I test branches with multiple projects I am also working on. I keep it simple and easy so I can do these things most efficiently.
+- Be aware of your development set up. Here is an example of a location a developer may work with locally on a day-to-day basis. This example would be a developer building from source, working on windows, building the Editor target in profile, with a custom build folder path, and building in an engine-centric way.  This might be common for a developer that does a lot of branch hoping.  If you have multiple test branches, and work with with multiple game projects, you might work this way.
   
   - `C:\depot\o3de-dev\build\bin\profile\editor.exe`
 
-- This is not a guide for actually developing python code and tools for the O3DE editor (that does exist however); this guide is focused on how Wing IDE is setup.
+- This is not a guide for actually developing python code and tools for the O3DE editor ([that does exist however](https://www.o3de.org/docs/learning-guide/tutorials/extend-the-editor/shape-example-py/)); this guide is focused on how Wing IDE is setup.
 
 - This guide likewise isn't focus very much on DCC tools or their configuration, however it does touch on these topics as they are concerned with Wing, like picking Blender, or MayaPy.exe as your IDE interpreter (aka Launch Configuration)
 
-- This is not an O3DE build guide, it assumes you either have built from source (and know where that is!), or that you have a pre-built install (and likewise know where that is located.)
+- This is not an [O3DE build guide](https://www.o3de.org/docs/user-guide/build/configure-and-build/), it assumes you either have built from source (and know where your build folder is!), or that you have a pre-built install (and likewise know where that is located, and have some knowledge of the folder structure.)
 
 ### Specifics ...
 
@@ -234,7 +251,7 @@ This is an alternative to launching from the editor menu, or using the scripted 
 
     `.\python.cmd Tools\IDE\Wing\start.py`
 
-Development is a catch-22, sometimes the script framework is buggy and broken (or simply a change is wip), and you need a reliable fallback for your dev environment.
+Development is a catch-22, sometimes the script framework is buggy and broken (or simply a change is wip), and you need a reliable fallback for your dev environment.  This is why there are multiple entrypoints, with the .bat file as a fallback if other methods do not function correctly.
 
 # Advanced Setup ...
 
@@ -277,7 +294,7 @@ If you are using a version of Wing 7, these ENVARscan be set
 `set DCCSI_WING_VERSION_MAJOR=7`
 `set DCCSI_WING_VERSION_MINOR=2`
 
-`set "WINGHOME=%PROGRAMFILES(X86)%\Wing Pro %DCCSI_WING_VERSION_MAJOR%.%DCCSI_WING_VERSION_MINOR%"``
+`set "WINGHOME=%PROGRAMFILES(X86)%\Wing Pro %DCCSI_WING_VERSION_MAJOR%.%DCCSI_WING_VERSION_MINOR%"`
 
 ## Configure O3DE Dynamic Python Env
 
@@ -345,22 +362,6 @@ cd C:\path\to\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
 ```batch
 python Tools\IDE\Wing\start.py
 ```
-
-## HELP
-
-Trouble attaching debugger?  Open your firewall and add an exception for wing.
-
-- In Windows 10:  
-  - Win + S and search for **Windows Defender Firewall**
-  - Select **Allow an app or feature through Windows Defender Firewall**
-- In the allowed apps window:
-  - Verify there isn't already an entry for Wing by scrolling through
-  - Click on **Change Settings**
-  - Then click on **Allow another app...**
-- In the Add an app window:
-  - click on **Browse...** and point it to your wing executable
-    - `C:\Program Files (x86)\Wing Pro 8\bin\wing.exe`
-  - click on **Add**
 
 # Revision Info:
 
