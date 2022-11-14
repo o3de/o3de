@@ -53,7 +53,7 @@ namespace AZ
 
         AZ::Debug::PerformanceCollector::DataLogType GetDataLogTypeFromCVar(const AZ::CVarFixedString& newCaptureType)
         {
-            if (newCaptureType[0] == 'a' || newCaptureType[0] == 'A')
+            if (newCaptureType.starts_with('a') || newCaptureType.starts_with('A'))
             {
                 return AZ::Debug::PerformanceCollector::DataLogType::LogAllSamples;
             }
