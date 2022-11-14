@@ -12,7 +12,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 ## Main Tests ##
 
     ly_add_pytest(
-        NAME AssetPipelineTests.Batch_2_Main
+        NAME APTests.Batch_2_Main
         PATH  ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_tests_2.py
         TEST_SUITE main
         PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
@@ -22,7 +22,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_pytest(
-        NAME AssetPipelineTests.ScriptCanvasAssetProcessorTests_Main
+        NAME APTests.ScriptCanvas_Main
         PATH ${CMAKE_CURRENT_LIST_DIR}/ScriptCanvasAssetProcessorTests.py
         TEST_SUITE main
         PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
@@ -36,7 +36,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 ## Periodic Tests ##
 
     ly_add_pytest(
-        NAME AssetPipelineTests.AssetBuilder_Periodic
+        NAME APTests.AssetBuilder_Periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_builder_tests.py
         TEST_SERIAL 
         TEST_SUITE periodic
@@ -45,7 +45,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_pytest(
-        NAME AssetPipelineTests.Batch_Periodic
+        NAME APTests.Batch_Periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_tests.py
         TEST_SUITE periodic        
         PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
@@ -55,7 +55,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
     
     ly_add_pytest(
-        NAME AssetPipelineTests.Batch_Periodic_Serial
+        NAME APTests.Batch_Periodic_Serial
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_periodic_serial_tests.py
         TEST_SERIAL
         TEST_SUITE periodic        
@@ -65,7 +65,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_pytest(
-        NAME AssetPipelineTests.BatchDependency_Periodic
+        NAME APTests.BatchDependency_Periodic
         PATH  ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_dependency_tests.py
         TEST_SUITE periodic
         PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
@@ -75,7 +75,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_pytest(
-        NAME AssetPipelineTests.BatchDependency_2_Periodic
+        NAME APTests.BatchDependency_2_Periodic
         PATH  ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_dependency_tests2.py
         TEST_SUITE periodic
         RUNTIME_DEPENDENCIES
@@ -84,7 +84,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_pytest(
-        NAME AssetPipelineTests.Gui_Periodic
+        NAME APTests.Gui_Periodic
         PATH  ${CMAKE_CURRENT_LIST_DIR}/asset_processor_gui_tests.py
         TEST_SUITE periodic
         PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
@@ -94,7 +94,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_pytest(
-        NAME AssetPipelineTests.Gui_2_Periodic
+        NAME APTests.Gui_2_Periodic
         PATH  ${CMAKE_CURRENT_LIST_DIR}/asset_processor_gui_tests_2.py
         TEST_SUITE periodic
         PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
@@ -104,7 +104,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_pytest(
-        NAME AssetPipelineTests.AssetRelocator_Periodic
+        NAME APTests.AssetRelocator_Periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_relocator_tests.py
         TEST_SUITE periodic
         PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
@@ -124,7 +124,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 ## Sandbox Tests ##
 
     ly_add_pytest(
-        NAME AssetPipelineTests.Batch_Sandbox
+        NAME APTests.Batch_Sandbox
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_tests.py
         TEST_SUITE sandbox
         PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
@@ -134,7 +134,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_pytest(
-        NAME AssetPipelineTests.Batch_2_Sandbox
+        NAME APTests.Batch_2_Sandbox
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_tests_2.py
         TEST_SUITE sandbox
         PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
@@ -144,7 +144,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_pytest(
-        NAME AssetPipelineTests.ScriptCanvasAssetProcessorTests_Sandbox
+        NAME APTests.ScriptCanvas_Sandbox
         PATH ${CMAKE_CURRENT_LIST_DIR}/ScriptCanvasAssetProcessorTests.py
         TEST_SUITE sandbox
         PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
@@ -156,7 +156,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
     
     ly_add_pytest(
-        NAME AssetPipelineTests.asset_builder_tests_Sandbox
+        NAME APTests.asset_builder_Sandbox
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_builder_tests.py
         TEST_SUITE sandbox
         PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
@@ -165,7 +165,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
     
     ly_add_pytest(
-        NAME AssetPipelineTests.asset_processor_batch_periodic_serial_tests_Sandbox
+        NAME APTests.batch_periodic_serial_Sandbox
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_periodic_serial_tests.py
         TEST_SERIAL
         TEST_SUITE sandbox
@@ -175,7 +175,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
     
     ly_add_pytest(
-        NAME AssetPipelineTests.asset_processor_batch_dependency_tests_Sandbox
+        NAME APTests.batch_dependency_Sandbox
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_dependency_tests.py
         TEST_SUITE sandbox
         PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
@@ -185,7 +185,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
     
     ly_add_pytest(
-        NAME AssetPipelineTests.asset_processor_batch_dependency_tests2_Sandbox
+        NAME APTests.batch_dependency_2_Sandbox
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_dependency_tests2.py
         TEST_SUITE sandbox
         PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
@@ -195,7 +195,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
     
     ly_add_pytest(
-        NAME AssetPipelineTests.asset_processor_gui_tests_Sandbox
+        NAME APTests.gui_Sandbox
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_gui_tests.py
         TEST_SUITE sandbox
         PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
@@ -205,7 +205,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
     
     ly_add_pytest(
-        NAME AssetPipelineTests.asset_processor_gui_tests_2_Sandbox
+        NAME APTests.gui_2_Sandbox
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_gui_tests_2.py
         TEST_SUITE sandbox
         PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
@@ -215,7 +215,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
     
     ly_add_pytest(
-        NAME AssetPipelineTests.asset_relocator_tests_Sandbox
+        NAME APTests.asset_relocator_Sandbox
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_relocator_tests.py
         TEST_SUITE sandbox
         PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
@@ -224,7 +224,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
     
     ly_add_pytest(
-        NAME AssetPipelineTests.asset_processor_cache_server_Sandbox
+        NAME APTests.cache_server_Sandbox
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_cache_server.py
         TEST_SUITE sandbox
         PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
@@ -243,7 +243,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 ## Periodic Tests ##
 
     ly_add_pytest(
-        NAME AssetPipelineTests.AssetBundler
+        NAME APTests.AssetBundler
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_bundler_batch_tests.py
         TEST_SERIAL 
         TEST_SUITE periodic
@@ -253,7 +253,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_pytest(
-        NAME AssetPipelineTests.MissingDependency
+        NAME APTests.MissingDependency
         PATH ${CMAKE_CURRENT_LIST_DIR}/missing_dependency_tests.py
         TEST_SERIAL 
         TEST_SUITE periodic
@@ -262,7 +262,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_pytest(
-        NAME AssetPipelineTests.BundleMode
+        NAME APTests.BundleMode
         PATH ${CMAKE_CURRENT_LIST_DIR}/bundle_mode_tests.py
         TEST_SERIAL
         TEST_SUITE periodic
