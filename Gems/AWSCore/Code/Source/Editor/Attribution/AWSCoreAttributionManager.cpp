@@ -293,9 +293,26 @@ namespace AWSCore
         return engineVersion;
     }
 
+    AZStd::string AWSAttributionManager::MapPlatform(AZ::PlatformID platform)
+    {
+        // Only map platforms running the editor to Attributions enums
+        // PC, Linux, Mac are supported values for now
+        switch (platform)
+        {
+        case AZ::PlatformID::PLATFORM_WINDOWS_64:
+            return "PC";
+        case AZ::PlatformID::PLATFORM_LINUX_64:
+            return "Linux";
+        case AZ::PlatformID::PLATFORM_APPLE_MAC:
+            return "Mac";
+        default:
+            return "Other";
+        }
+    }
+
     AZStd::string AWSAttributionManager::GetPlatform() const
     {
-        return AZ::GetPlatformName(AZ::g_currentPlatform);
+        return MapPlatform(AZ::g_currentPlatform);
     }
 
     void AWSAttributionManager::GetActiveAWSGems(AZStd::vector<AZStd::string>& gems)

@@ -16,6 +16,7 @@
 #include <LyShine/UiComponentTypes.h>
 #include <LyShine/Bus/UiEditorCanvasBus.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Math/Vector2.h>
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 
 #include <QKeyEvent>
@@ -724,16 +725,12 @@ bool ViewportInteraction::MouseWheelEvent(QWheelEvent* ev)
         // Angle delta returns distance rotated by mouse wheel in eigths of a
         // degree.
         static const int numStepsPerDegree = 8;
-        const float numScrollDegress = aznumeric_cast<float>(numDegrees.y() / numStepsPerDegree);
+        const float numScrollDegrees = aznumeric_cast<float>(numDegrees.y() / numStepsPerDegree);
 
         static const float zoomMultiplier = 1 / 100.0f;
-        Vec2i pivotPoint(
-            static_cast<int>(ev->position().x()),
-            static_cast<int>(ev->position().y()));
-
-        float newScale = m_canvasViewportMatrixProps.scale + numScrollDegress * zoomMultiplier;
-
-        SetCanvasToViewportScale(QuantizeZoomScale(newScale), &pivotPoint);
+        
+        float newScale = m_canvasViewportMatrixProps.scale + numScrollDegrees * zoomMultiplier;
+        SetCanvasToViewportScale(QuantizeZoomScale(newScale), AZ::Vector2(ev->position().x(), ev->position().y()));
     }
 
     return true;
@@ -983,8 +980,15 @@ void ViewportInteraction::SetCanvasZoomPercent(float percent)
     SetCanvasToViewportScale(percent / 100.0f);
 }
 
-void ViewportInteraction::SetCanvasToViewportScale(float newScale, Vec2i* optionalPivotPoint)
+void ViewportInteraction::SetCanvasToViewportScale(float newScale,  const AZStd::optional<AZ::Vector2>& pivotPoint)
 {
+    // only allow setting the viewport scale if current window is active
+    // OnTick for ViewportWidget is needed to reevaluate the layout, but does not happen when the window loses focus
+    if (!m_editorWindow->isActiveWindow())
+    {
+        return;
+    }
+
     static const float minZoom = 0.1f;
     static const float maxZoom = 10.0f;
     const float currentScale = m_canvasViewportMatrixProps.scale;
@@ -1002,30 +1006,14 @@ void ViewportInteraction::SetCanvasToViewportScale(float newScale, Vec2i* option
         const AZ::Vector2 newScaledCanvasSize(canvasSize * m_canvasViewportMatrixProps.scale);
         const AZ::Vector2 scaledCanvasSizeDiff(newScaledCanvasSize - scaledCanvasSize);
 
-        // Use the center of our viewport as the pivot point
-        Vec2i pivotPoint;
-        if (optionalPivotPoint)
-        {
-            pivotPoint = *optionalPivotPoint;
-        }
-        else
-        {
-            AZ::Vector2 viewportSize = m_editorWindow->GetViewport()->GetRenderViewportSize();
-            const float viewportWidth = viewportSize.GetX();
-            const float viewportHeight = viewportSize.GetY();
-            pivotPoint = Vec2i(
-                    static_cast<int>(viewportWidth * 0.5f),
-                    static_cast<int>(viewportHeight * 0.5f));
-        }
-
         // Get the distance between our pivot point and the upper-left corner of the
         // canvas (in viewport space)
-        const Vec2i canvasUpperLeft(
-            static_cast<int32_t>(m_canvasViewportMatrixProps.translation.GetX()),
-            static_cast<int32_t>(m_canvasViewportMatrixProps.translation.GetY()));
-        Vec2i delta = canvasUpperLeft - pivotPoint;
-        const AZ::Vector2 pivotDiff(aznumeric_cast<float>(delta.x), aznumeric_cast<float>(delta.y));
-
+        const AZ::Vector2 canvasUpperLeft(m_canvasViewportMatrixProps.translation);
+        // Use the center of our viewport as the pivot point if a pivot is not provided
+        const AZ::Vector2 pivotDiff = canvasUpperLeft - pivotPoint.value_or(([&]{
+            const AZ::Vector2 viewportSize = m_editorWindow->GetViewport()->GetRenderViewportSize();
+            return viewportSize * AZ::Vector2(0.5f,  0.5f);
+        })());
         // Calculate the pivot position relative to the current scaled canvas size. For
         // example, if the pivot position is the upper-left corner of the canvas, this
         // will be (0, 0), whereas if the pivot position is the bottom-right corner of

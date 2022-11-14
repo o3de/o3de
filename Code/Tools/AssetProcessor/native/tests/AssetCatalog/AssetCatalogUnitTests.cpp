@@ -13,7 +13,7 @@
 
 #include <QCoreApplication>
 
-#include <native/unittests/UnitTestRunner.h> // for UnitTestUtils like CreateDummyFile / AssertAbsorber.
+#include <native/unittests/UnitTestUtils.h> // for UnitTestUtils like CreateDummyFile / AssertAbsorber.
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <native/resourcecompiler/RCBuilder.h>
 

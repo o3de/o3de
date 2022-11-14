@@ -39,7 +39,9 @@ namespace LmbrCentral
     /// Draw a ShapeMesh (previously generated vertices, indices and lines).
     void DrawShape(
         AzFramework::DebugDisplayRequests& debugDisplay,
-        const ShapeDrawParams& shapeDrawParams, const ShapeMesh& shapeMesh);
+        const ShapeDrawParams& shapeDrawParams,
+        const ShapeMesh& shapeMesh,
+        const AZ::Vector3& shapeOffset = AZ::Vector3::CreateZero());
 
     /// Return a vector of vertices representing a list of triangles to render (CCW).
     /// This is implemented using the Ear Clipping method:

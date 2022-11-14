@@ -16,13 +16,14 @@
 #include <native/resourcecompiler/rcjob.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <unittests/UnitTestUtils.h>
 
 namespace UnitTests
 {
     void ApplicationManagerTest::SetUp()
     {
         ScopedAllocatorSetupFixture::SetUp();
-        
+
         AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
 
         // We need a QCoreApplication to run the event loop
@@ -41,7 +42,7 @@ namespace UnitTests
         m_applicationManager->m_platformConfiguration->PopulatePlatformsForScanFolder(platforms);
         m_applicationManager->m_platformConfiguration->AddScanFolder(
             AssetProcessor::ScanFolderInfo{ assetRootDir.c_str(), "test", "test", true, true, platforms });
-        
+
         m_apmThread = AZStd::make_unique<QThread>(nullptr);
         m_apmThread->setObjectName("APM Thread");
         m_applicationManager->m_assetProcessorManager->moveToThread(m_apmThread.get());
@@ -71,6 +72,27 @@ namespace UnitTests
         ScopedAllocatorSetupFixture::TearDown();
     }
 
+    using BatchApplicationManagerTest = UnitTest::ScopedAllocatorSetupFixture;
+
+    TEST_F(BatchApplicationManagerTest, FileCreatedOnDisk_ShowsUpInFileCache)
+    {
+        AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
+        AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
+
+        int argc = 0;
+
+        auto m_applicationManager = AZStd::make_unique<MockBatchApplicationManager>(&argc, nullptr);
+        m_applicationManager->InitFileStateCache();
+
+        auto* fileStateCache = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
+
+        ASSERT_TRUE(fileStateCache);
+
+        EXPECT_FALSE(fileStateCache->Exists((assetRootDir / "test").c_str()));
+        UnitTestUtils::CreateDummyFile((assetRootDir / "test").c_str());
+        EXPECT_TRUE(fileStateCache->Exists((assetRootDir / "test").c_str()));
+    }
+
     TEST_F(ApplicationManagerTest, FileWatcherEventsTriggered_ProperlySignalledOnCorrectThread)
     {
         AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
@@ -78,7 +100,7 @@ namespace UnitTests
         Q_EMIT m_fileWatcher->fileAdded((assetRootDir / "test").c_str());
         Q_EMIT m_fileWatcher->fileModified((assetRootDir / "test2").c_str());
         Q_EMIT m_fileWatcher->fileRemoved((assetRootDir / "test3").c_str());
-        
+
         EXPECT_TRUE(m_mockAPM->m_events[Added].WaitAndCheck()) << "APM Added event failed";
         EXPECT_TRUE(m_mockAPM->m_events[Modified].WaitAndCheck()) << "APM Modified event failed";
         EXPECT_TRUE(m_mockAPM->m_events[Deleted].WaitAndCheck()) << "APM Deleted event failed";

@@ -16,6 +16,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -45,6 +46,9 @@
 #include <BootstrapSystemComponent_Traits_Platform.h>
 
 AZ_CVAR(AZ::CVarFixedString, r_default_pipeline_name, AZ_TRAIT_BOOTSTRAPSYSTEMCOMPONENT_PIPELINE_NAME, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default Render pipeline name");
+AZ_CVAR(uint32_t, r_width, 1920, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting window width in pixels.");
+AZ_CVAR(uint32_t, r_height, 1080, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting window height in pixels.");
+AZ_CVAR(uint32_t, r_fullscreen, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting fullscreen state.");
 
 namespace AZ
 {
@@ -107,6 +111,72 @@ namespace AZ
                 m_viewportContext.reset();
             }
 
+            //! Helper function that parses the command line arguments
+            //! looking for r_width, r_height and r_fullscreen.
+            //! It is important to call this before using r_width, r_height or r_fullscreen
+            //! because at the moment this system component initializes before Legacy System.cpp gets to parse
+            //! command line arguments into cvars.
+            static void UpdateCVarsFromCommandLine()
+            {
+                AZ::CommandLine* pCmdLine = nullptr;
+                ComponentApplicationBus::BroadcastResult(pCmdLine, &AZ::ComponentApplicationBus::Events::GetAzCommandLine);
+                if (!pCmdLine)
+                {
+                    return;
+                }
+
+                const AZStd::string fullscreenCvarName("r_fullscreen");
+                if (pCmdLine->HasSwitch(fullscreenCvarName))
+                {
+                    auto numValues = pCmdLine->GetNumSwitchValues(fullscreenCvarName);
+                    if (numValues > 0)
+                    {
+                        auto valueStr = pCmdLine->GetSwitchValue(fullscreenCvarName);
+                        if (AZ::StringFunc::LooksLikeBool(valueStr.c_str()))
+                        {
+                            r_fullscreen = AZ::StringFunc::ToBool(valueStr.c_str());
+                        }
+                    }
+                }
+
+                const AZStd::string widthCvarName("r_width");
+                if (pCmdLine->HasSwitch(widthCvarName))
+                {
+                    auto numValues = pCmdLine->GetNumSwitchValues(widthCvarName);
+                    if (numValues > 0)
+                    {
+                        auto valueStr = pCmdLine->GetSwitchValue(widthCvarName);
+                        if (AZ::StringFunc::LooksLikeInt(valueStr.c_str()))
+                        {
+                            auto width = AZ::StringFunc::ToInt(valueStr.c_str());
+                            if (width > 0)
+                            {
+                                r_width = width;
+                            }
+                        }
+                    }
+                }
+
+                const AZStd::string heightCvarName("r_height");
+                if (pCmdLine->HasSwitch(heightCvarName))
+                {
+                    auto numValues = pCmdLine->GetNumSwitchValues(heightCvarName);
+                    if (numValues > 0)
+                    {
+                        auto valueStr = pCmdLine->GetSwitchValue(heightCvarName);
+                        if (AZ::StringFunc::LooksLikeInt(valueStr.c_str()))
+                        {
+                            auto height = AZ::StringFunc::ToInt(valueStr.c_str());
+                            if (height > 0)
+                            {
+                                r_height = height;
+                            }
+                        }
+                    }
+                }
+
+            }
+
             void BootstrapSystemComponent::Activate()
             {
                 // Create a native window only if it's a launcher (or standalone)
@@ -119,8 +189,14 @@ namespace AZ
 
                     auto projectTitle = AZ::Utils::GetProjectDisplayName();
 
-                    m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>(projectTitle.c_str(), AzFramework::WindowGeometry(0, 0, 1920, 1080));
+                    // It is important to call this before using r_width, r_height or r_fullscreen
+                    // because at the moment this system component initializes before Legacy System.cpp gets to parse
+                    // command line arguments into cvars.
+                    UpdateCVarsFromCommandLine();
+
+                    m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>(projectTitle.c_str(), AzFramework::WindowGeometry(0, 0, r_width, r_height));
                     AZ_Assert(m_nativeWindow, "Failed to create the game window\n");
+                    m_nativeWindow->SetFullScreenState(r_fullscreen);
 
                     m_nativeWindow->Activate();
 
@@ -314,9 +390,18 @@ namespace AZ
                 // Load the main default pipeline if applicable
                 if (loadDefaultRenderPipeline)
                 {
-                    const AZ::CVarFixedString pipelineName = xrSystem
-                        ? "passes/LowEndRenderPipeline.azasset" // OpenXr uses low end render pipeline
-                        : static_cast<AZ::CVarFixedString>(r_default_pipeline_name);
+                    AZ::CVarFixedString pipelineName = static_cast<AZ::CVarFixedString>(r_default_pipeline_name);
+                    if (xrSystem)
+                    {
+                        // When running launcher on PC having an XR system present then the default render pipeline is suppose to reflect
+                        // what's being rendered into XR device. XR render pipeline uses low end render pipeline.
+                        AZ::ApplicationTypeQuery appType;
+                        ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+                        if (appType.IsGame())
+                        {
+                            pipelineName = "passes/LowEndRenderPipeline.azasset";
+                        }
+                    }
 
                     if (!LoadPipeline(scene, viewportContext, pipelineName, AZ::RPI::ViewType::Default, multisampleState))
                     {
@@ -409,17 +494,19 @@ namespace AZ
                 if (pipelineAsset)
                 {
                     RPI::RenderPipelineDescriptor renderPipelineDescriptor =
-                        *RPI::GetDataFromAnyAsset<RPI::RenderPipelineDescriptor>(pipelineAsset);
+                        *RPI::GetDataFromAnyAsset<RPI::RenderPipelineDescriptor>(pipelineAsset); // Copy descriptor from asset
+                    pipelineAsset.Release();
+
                     renderPipelineDescriptor.m_name =
                         AZStd::string::format("%s_%i", renderPipelineDescriptor.m_name.c_str(), viewportContext->GetId());
 
                     multisampleState = renderPipelineDescriptor.m_renderSettings.m_multisampleState;
 
+                    // Create and add render pipeline to the scene (when not added already)
                     if (!scene->GetRenderPipeline(AZ::Name(renderPipelineDescriptor.m_name)))
                     {
                         RPI::RenderPipelinePtr renderPipeline = RPI::RenderPipeline::CreateRenderPipelineForWindow(
                             renderPipelineDescriptor, *viewportContext->GetWindowContext().get(), viewType);
-                        pipelineAsset.Release();
                         scene->AddRenderPipeline(renderPipeline);
                     }
                     return true;

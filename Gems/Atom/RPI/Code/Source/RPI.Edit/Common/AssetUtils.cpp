@@ -165,7 +165,7 @@ namespace AZ
                 if (!assetFound)
                 {
                     AssetUtilsInternal::ReportIssue(
-                        reporting, AZStd::string::format("Could not find asset [%s]", sourcePath.c_str()).c_str());
+                        reporting, AZStd::string::format("Could not find asset for source file [%s]", sourcePath.c_str()).c_str());
                     return AZ::Failure();
                 }
 

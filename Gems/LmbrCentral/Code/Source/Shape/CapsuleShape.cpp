@@ -142,7 +142,8 @@ namespace LmbrCentral
     {
         float halfHeight = AZ::GetMax(m_capsuleShapeConfig.m_height * 0.5f, m_capsuleShapeConfig.m_radius);
         const AZ::Vector3 extent(m_capsuleShapeConfig.m_radius, m_capsuleShapeConfig.m_radius, halfHeight);
-        bounds = AZ::Aabb::CreateFromMinMax(-extent, extent);
+        bounds = AZ::Aabb::CreateFromMinMax(
+            m_capsuleShapeConfig.m_translationOffset - extent, m_capsuleShapeConfig.m_translationOffset + extent);
         transform = m_currentTransform;
     }
 
@@ -151,7 +152,7 @@ namespace LmbrCentral
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_capsuleShapeConfig, &m_mutex);
 
-        const float radiusSquared = powf(m_intersectionDataCache.m_radius, 2.0f);
+        const float radiusSquared = m_intersectionDataCache.m_radius * m_intersectionDataCache.m_radius;
 
         // Check Bottom sphere
         if (AZ::Intersect::PointSphere(m_intersectionDataCache.m_basePlaneCenterPoint, radiusSquared, point))
@@ -174,7 +175,7 @@ namespace LmbrCentral
         // If its not in either sphere check the cylinder
         return AZ::Intersect::PointCylinder(
             m_intersectionDataCache.m_basePlaneCenterPoint, m_intersectionDataCache.m_axisVector,
-            powf(m_intersectionDataCache.m_internalHeight, 2.0f), radiusSquared, point);
+            m_intersectionDataCache.m_internalHeight * m_intersectionDataCache.m_internalHeight, radiusSquared, point);
     }
 
     float CapsuleShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
@@ -189,7 +190,8 @@ namespace LmbrCentral
         float t = 0.0f;
         float distance = Distance::Point_Lineseg(AZVec3ToLYVec3(point), lineSeg, t);
         distance -= m_intersectionDataCache.m_radius;
-        return powf(AZStd::max(distance, 0.0f), 2.0f);
+        const float clampedDistance = AZStd::max(distance, 0.0f);
+        return clampedDistance * clampedDistance;
     }
 
     bool CapsuleShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
@@ -213,31 +215,63 @@ namespace LmbrCentral
         return intersection;
     }
 
+    AZ::Vector3 CapsuleShape::GetTranslationOffset() const
+    {
+        return m_capsuleShapeConfig.m_translationOffset;
+    }
+
+    void CapsuleShape::SetTranslationOffset(const AZ::Vector3& translationOffset)
+    {
+        if (!IsShapeComponentTranslationEnabled())
+        {
+            return;
+        }
+
+        bool shapeChanged = false;
+        {
+            AZStd::unique_lock lock(m_mutex);
+            if (!m_capsuleShapeConfig.m_translationOffset.IsClose(translationOffset))
+            {
+                m_capsuleShapeConfig.m_translationOffset = translationOffset;
+                m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+                shapeChanged = true;
+            }
+        }
+
+        if (shapeChanged)
+        {
+            ShapeComponentNotificationsBus::Event(
+                m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
+                ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+        }
+    }
+
     void CapsuleShape::CapsuleIntersectionDataCache::UpdateIntersectionParamsImpl(
         const AZ::Transform& currentTransform, const CapsuleShapeConfig& configuration,
         [[maybe_unused]] const AZ::Vector3& currentNonUniformScale)
     {
         const float entityScale = currentTransform.GetUniformScale();
         m_axisVector = currentTransform.GetBasisZ().GetNormalizedSafe() * entityScale;
+        const AZ::Vector3 offsetPosition = currentTransform.TransformPoint(configuration.m_translationOffset);
 
         const float internalCylinderHeight = configuration.m_height - configuration.m_radius * 2.0f;
         if (internalCylinderHeight > std::numeric_limits<float>::epsilon())
         {
             const AZ::Vector3 currentPositionToPlanesVector = m_axisVector * (internalCylinderHeight * 0.5f);
-            m_topPlaneCenterPoint = currentTransform.GetTranslation() + currentPositionToPlanesVector;
-            m_basePlaneCenterPoint = currentTransform.GetTranslation() - currentPositionToPlanesVector;
+            m_topPlaneCenterPoint = offsetPosition + currentPositionToPlanesVector;
+            m_basePlaneCenterPoint = offsetPosition - currentPositionToPlanesVector;
             m_axisVector = m_axisVector * internalCylinderHeight;
             m_isSphere = false;
         }
         else
         {
-            m_basePlaneCenterPoint = currentTransform.GetTranslation();
-            m_topPlaneCenterPoint = currentTransform.GetTranslation();
+            m_basePlaneCenterPoint = offsetPosition;
+            m_topPlaneCenterPoint = offsetPosition;
             m_isSphere = true;
         }
 
         // scale intersection data cache radius by entity transform for internal calculations
         m_radius = configuration.m_radius * entityScale;
-        m_internalHeight = internalCylinderHeight;
+        m_internalHeight = entityScale * internalCylinderHeight;
     }
 } // namespace LmbrCentral

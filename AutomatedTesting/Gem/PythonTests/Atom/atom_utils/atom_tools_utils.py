@@ -133,6 +133,10 @@ def end_edit(document_id: azlmbr.math.Uuid) -> bool:
     return azlmbr.atomtools.AtomToolsDocumentRequestBus(azlmbr.bus.Event, "EndEdit", document_id)
 
 
+def crash() -> None:
+    azlmbr.atomtools.general.crash()
+
+
 def exit() -> None:
     """
     Closes the current Atom tools executable.
