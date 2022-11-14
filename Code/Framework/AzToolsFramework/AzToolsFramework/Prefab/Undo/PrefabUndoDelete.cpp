@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Interface/Interface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceDomGeneratorInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
@@ -59,36 +60,61 @@ namespace AzToolsFramework
             }
 
             // Updates parent entity DOMs.
+            // For each parent entity, it includes one or more than one patches to update EditorEntitySortComponent.
             for (const AZ::Entity* parentEntity : parentEntityList)
             {
                 // This is actually a from-focused path because focused instance is the owning instance in the current workflow.
                 const AZStd::string parentEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(parentEntity->GetId());
-                PrefabDomPath parentEntityAliasDomPathFromFocused(parentEntityAliasPath.c_str());
 
-                // This scope is added to limit usage and ensure DOM is not modified when it is being used.
+                PrefabDom parentEntityDomAfterRemovingChildren;
+                m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfterRemovingChildren, *parentEntity);
+
+                // If the parent is the focused container entity, we need to fetch from root template rather than
+                // retrieving from the focused template. The focused containter entity DOM in focused template does
+                // not contain transform data seen from root, but after-state entity DOM from serialization always
+                // contain the transform data, which may generate unexpected patches to update transform.
+                if (parentEntity->GetId() == focusedInstance.GetContainerEntityId())
                 {
-                    // DOM value pointers can't be relied upon if the original DOM gets modified after pointer creation.
-                    const PrefabDomValue* parentEntityDomInFocusedTemplate = parentEntityAliasDomPathFromFocused.Get(focusedTempalteDom);
-                    if (!parentEntityDomInFocusedTemplate)
+                    PrefabDom parentContainerEntityDom;
+                    m_instanceDomGeneratorInterface->GenerateEntityDom(parentContainerEntityDom, *parentEntity);
+
+                    if (parentContainerEntityDom.IsNull())
                     {
-                        AZ_Error("Prefab", false, "PrefabUndoDeleteEntity::Capture - Cannot retrieve parent entity DOM from focused template.");
+                        AZ_Error("Prefab", false, "PrefabUndoDeleteEntity::Capture - "
+                            "Cannot retrieve parent container entity DOM from root template from instance DOM generator.");
                         continue;
                     }
 
-                    PrefabDom parentEntityDomAfterRemovingChildren;
-                    m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfterRemovingChildren, *parentEntity);
+                    PrefabUndoUtils::AppendUpdateEntityPatch(
+                        m_redoPatch, parentContainerEntityDom, parentEntityDomAfterRemovingChildren, parentEntityAliasPath);
+                    PrefabUndoUtils::AppendUpdateEntityPatch(
+                        m_undoPatch, parentEntityDomAfterRemovingChildren, parentContainerEntityDom, parentEntityAliasPath);
+                }
+                else
+                {
+                    PrefabDomPath parentEntityAliasDomPathFromFocused(parentEntityAliasPath.c_str());
+
+                    // DOM value pointers can't be relied upon if the original DOM gets modified after pointer creation.
+                    const PrefabDomValue* parentEntityDomInFocusedTemplate = parentEntityAliasDomPathFromFocused.Get(focusedTempalteDom);
+
+                    if (!parentEntityDomInFocusedTemplate)
+                    {
+                        AZ_Error("Prefab", false, "PrefabUndoDeleteEntity::Capture - "
+                            "Cannot retrieve parent entity DOM from focused template.");
+                        continue;
+                    }
 
                     PrefabUndoUtils::AppendUpdateEntityPatch(
                         m_redoPatch, *parentEntityDomInFocusedTemplate, parentEntityDomAfterRemovingChildren, parentEntityAliasPath);
                     PrefabUndoUtils::AppendUpdateEntityPatch(
                         m_undoPatch, parentEntityDomAfterRemovingChildren, *parentEntityDomInFocusedTemplate, parentEntityAliasPath);
+                }
 
-                    // Preemptively updates the cached DOM to prevent reloading instance.
-                    if (cachedOwningInstanceDom.has_value())
-                    {
-                        PrefabUndoUtils::UpdateCachedOwningInstanceDom(
-                            cachedOwningInstanceDom->get(), parentEntityDomAfterRemovingChildren, parentEntityAliasPath);
-                    }
+                // Preemptively updates the cached DOM to prevent reloading instance.
+                if (cachedOwningInstanceDom.has_value())
+                {
+                    PrefabUndoUtils::UpdateCachedOwningInstanceDom(
+                        cachedOwningInstanceDom->get(), parentEntityDomAfterRemovingChildren, parentEntityAliasPath);
                 }
             }
         }

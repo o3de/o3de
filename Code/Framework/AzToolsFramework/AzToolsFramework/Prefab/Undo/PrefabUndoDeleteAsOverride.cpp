@@ -85,6 +85,7 @@ namespace AzToolsFramework
             }
 
             // Updates parent entity DOMs.
+            // For each parent entity, it includes one or more than one patches to update EditorEntitySortComponent.
             const AZStd::string owningInstanceAliasPathFromFocused = PrefabDomUtils::PathStartingWithInstances +
                 climbUpResult.m_climbedInstances.back()->GetInstanceAlias() + overridePatchPathToOwningInstance;
 
