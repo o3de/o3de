@@ -1,10 +1,102 @@
 # O3DE DCCsi, Wing Pro IDE
 
+[Wing Pro](https://wingware.com/) is a Python IDE that can be used to develop, test, and debug Python code written for [Open 3D Engine (O3DE)](https://www.o3de.org/), an open source realtime3D engine, for video games and other uses cases.
+
 ###### Status: Prototype
 
 ###### Version: 0.0.1
 
-###### Support: <u>Wing Pro 8+</u>, currently Windows only (other not tested but may work)
+###### Support: <u>Wing Pro 8+</u>, currently Windows only (others not tested but may work)
+
+## TL/DR: Getting Started
+
+1. If you do not already have Wing Pro installed, [download it now](https://wingware.com/downloads/wingpro).
+
+2. To get started using Wing as your Python IDE, please refer to the tutorial in Wing's Help menu or read the [Quickstart Guide](https://wingware.com/doc/howtos/quickstart).
+
+3. Setting up Wing for O3DE, is pretty similar to using it with a Digital Content Creation tool (DCC).  Related Links: [Using Wing with Autodesk Maya](https://wingware.com/doc/howtos/maya)
+
+### Using with DccScriptingInterface
+
+The [DccScriptingInterface Gem]([o3de/readme.md at development · o3de/o3de · GitHub](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md)) DCCsi includes some support for various DCC tools like Blender or Maya, as well as popular IDEs that Technical Artists use in development.  Using Wing Pro via the DCCsi is recommended as it streamlines some configuration, but it is not a hard requirement.
+
+1. Enable the [DccScriptingInterface Gem]([o3de/readme.md at development · o3de/o3de · GitHub](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md)) in your game project, using either the [O3DE Project Manager]([Project Manager - Open 3D Engine](https://www.o3de.org/docs/user-guide/project-config/project-manager/)) or the o3de.py[ commandline tools]([Adding and Removing Gems in a Project - Open 3D Engine](https://www.o3de.org/docs/user-guide/project-config/add-remove-gems/))
+
+2. After adding a Gem, you should [configure and rebuild your project]([Configure and Build - Open 3D Engine](https://www.o3de.org/docs/user-guide/build/configure-and-build/))
+
+3. You should now be able to utilize wing, here are several ways to start wing
+   
+   1. O3DE Editor > Menubar > StudioTools > IDE > Wing
+   
+   2. Using a .bat file: "DccScriptingInterface\Tools\IDE\Wing\win_launch_wingide.bat"
+   
+   3. From the commandline (seen below)
+
+To get started, you can launch Wing from a Win CMD prompt, first make sure your engine is initialized (if you are using an installer build, it already should be.)  If you are building from source, make sure Python is initialized before using Wing.
+
+```shell
+# First, ensure that your engine build has O3DE Python setup!
+> cd C:\path\to\o3de\
+> .\get_python.bat
+
+# change to the dccsi root
+cd C:\path\to\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
+# python.cmd in this folder, wraps o3de python
+> .\python.cmd Tools\IDE\Wing\start.py
+```
+
+Note: You will also want to set up fot using Wing as a external debugger (see the next Debugging section below)
+
+# Debugging
+
+When debugging Python code running under O3DE, the debug process is initiated from outside of Wing, and must connect to the IDE. This is done with wingdbstub according to the detailed instructions in the [Debugging Externally Launched Code](https://wingware.com/doc/debug/debugging-externally-launched-code) section of the manual.
+
+### wingstub.py (for debugging)
+
+This is necessary for attaching Wing as the debugger in scripts that are running
+
+1. Locate the DCCsi gem folder (see above)
+
+2. Locate your Wing IDE install, the default location is somewhere like:6
+   
+   1. `C:\Program Files (x86)\Wing Pro 8`
+   
+   2. Locate: `C:\Program Files (x86)\Wing Pro 8\wingdbstub.py`
+
+3. Copy the file `wingdbstub.py`
+
+4. It needs to be copied somewhere on the `PYTHONPATH`, for instance you could copy it here: `DccScriptingInterface\Tools\IDE\Wing\wingdbstub.py`
+
+5. Open the `wingdbstub.py` file in a text editor and modify line 96 to
+   
+   1. **kEmbedded = 1**
+6. After starting Wing, click on the bug icon in lower left of Wing's window and make sure that Accept Debug Connections is checked.
+7. You can put the following code into a script you'd like to debug during execution
+
+```python
+import wingdbstub
+wingdbstub.Ensure()
+```
+
+#### Notes:
+
+- Similar setup documentation for a DCC can be found here, [Using Wing with Autodesk Maya (link)](https://wingware.com/doc/howtos/maya)
+
+- If you install a new version of Wing, you should check the new version to see if the `wingdbstub.py` file has changed (use a diff tool?); if it has do the steps above again.
+
+- For debugging to work, on windows you likely will need to add the wing executable to **Windows Defender Firewall**. When you start wing for the first time it may prompt you to do this, otherwise may need to do it manually (see **HELP** below)
+
+# Detailed Overview
+
+O3DE has a Gem called the DccScriptingInterface (DCCsi) that helps user manage the usage of many popular Digital Content Creation tools (DCC) such as 3D modeling tools like Blender (and others.)
+
+Most modern DCC tools come with a Python interpreter and APIs to customize and extend the editor experience.  Likewise, O3DE has a Python Interpreter and APIs for automation.  Many professional game studios use this to create custom tools, workflows, pipelines and automation for content creation.  Technical Artists (TAs) often are the discipline doing this type of development work, and utilize Python to do so, but may not be as fluent in developer tools as a C++ engineer; thus there is an importance on having good development environments.  
+
+The DCCsi integrations are workflow integrations with the intent to provide an improved ease-of-use experience when these tools are used to author source content for O3DE.  The same can be said for IDEs and custom tooling. These novice to intermediate TAs that want to just jump in a start creating, but don't know how to get started, are the target audience for this integration... the goal is to get you up and running with minimal set up.
+
+The DCCsi helps with aspects such as, configuration and settings, launching DCC tools, and IDEs, and bootstrapping them with O3DE extensions (generally python scripts using the DCC tools APIs to automate tasks)
+
+#### Launch Configurations
 
 - Supports O3DE Python as Launch Configuration:
   
@@ -22,40 +114,13 @@
   
   - `${DCCSI_PY_SUBSTANCE}`
 
-- The latest version of Wing Pro 8 (8.3.3.1) is recommended, as there was a bug in the initial release that prevented Launch Configurations bound to a ENVAR (like above) to function properly.  Wing Pro 9 likely works as well, you may just have to make slight adjustments to the configuration (covered in this document below)
+#### Latest Features:
 
-- Some additional testing and improvement have been mad in the current release (2210), including changes to better support Installer build folder patterns.  See the [readme.md at the root of the DCCsi ]([o3de/readme.md at development · o3de/o3de · GitHub](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md))for more information about advanced configuration.
+- The latest version of Wing Pro 8 (8.3.3.1) is recommended, as there was a bug in the initial release that prevented Launch Configurations bound to a ENVAR (like above) to function properly. Wing Pro 9 likely works as well, you may just have to make slight adjustments to the configuration (covered in this document below)
 
-## TL/DR
+- The DccScriptingInterface Gem (DCCsi) can be added to your Game Project. See[Registering Gems to a Project - Open 3D Engine](https://www.o3de.org/docs/user-guide/project-config/register-gems/)), and [adding and removing gems]([Adding and Removing Gems in a Project - Open 3D Engine](https://www.o3de.org/docs/user-guide/project-config/add-remove-gems/)) which you can do through the Project Manager (o3de.exe) With the DCCsi enabled, you can launch Wing Pro 8 via menus in the main Editor.
 
-To get started, you can launch Wing from a Win CMD prompt, first make sure your engine is initialized (if you are using an installer build, it already should be.)  If you are building from source, make sure Python is initialized before using Wing.
-
-```shell
-# First, ensure that your engine build has O3DE Python setup!
-> cd C:\path\to\o3de\
-> .\get_python.bat
-
-# change to the dccsi root
-cd C:\path\to\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
-# python.cmd in this folder, wraps o3de python
-> .\python.cmd Tools\IDE\Wing\start,py
-```
-
-### Latest Features
-
-- The DccScriptingInterface Gem (DCCsi) can be added to your Game Project.  See[Registering Gems to a Project - Open 3D Engine](https://www.o3de.org/docs/user-guide/project-config/register-gems/)), and  [adding and removing gems]([Adding and Removing Gems in a Project - Open 3D Engine](https://www.o3de.org/docs/user-guide/project-config/add-remove-gems/)) which you can do through the Project Manager  (o3de.exe)  With the DCCsi enabled, you can launch Wing Pro 8 via menus in the main Editor.
-
-## Overview
-
-This document contains instructions and other information related to using Wing IDE with Open 3D Engine (O3DE). [ [WingIDE Link](https://wingware.com/?gclid=Cj0KCQjwxIOXBhCrARIsAL1QFCb2FuL_fHPRqkrN-4voBg0q7VMuNaFPWxAbnTxjv4diNm5kMBPwVhQaAv4yEALw_wcB) ] [ [Wing Docs Link](https://wingware.com/doc/TOC) ]
-
-O3DE has a Gem called the DccScriptingInterface (DCCsi) that helps user manage the usage of many popular Digital Content Creation tools (DCC) such as 3D modeling tools like Blender (and others.)
-
-Most modern DCC tools come with a Python interpreter and APIs to customize and extend the editor experience.  Likewise, O3DE has a Python Interpreter and APIs for automation.  Many professional game studios use this to create custom tools, workflows, pipelines and automation for content creation.  Technical Artists (TAs) often are the discipline doing this type of development work, and utilize Python to do so, but may not be as fluent in developer tools as a C++ engineer; thus there is an importance on having good development environments.  
-
-The DCCsi integrations are workflow integrations with the intent to provide an improved ease-of-use experience when these tools are used to author source content for O3DE.  The same can be said for IDEs and custom tooling. These novice to intermediate TAs that want to just jump in a start creating, but don't know how to get started, are the target audience for this integration... the goal is to get you up and running with minimal set up.
-
-The DCCsi helps with aspects such as, configuration and settings, launching DCC tools, and IDEs, and bootstrapping them with O3DE extensions (generally python scripts using the DCC tools APIs to automate tasks)
+- Some additional testing and improvement have been mad in the current release (2210), including changes to better support Installer build folder patterns. See the [readme.md at the root of the DCCsi ]([o3de/readme.md at development · o3de/o3de · GitHub](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md))for more information about advanced configuration.
 
 # Getting Started
 
@@ -139,9 +204,9 @@ This is an alternative to launching from the editor menu, or using the scripted 
 
 Development is a catch-22, sometimes the script framework is buggy and broken (or simply a change is wip), and you need a reliable fallback for your dev environment.
 
-# Setup
+# Advanced Setup
 
-Here are some set up instructions that hopefully get you up and running.
+Here are some more detailed set up instructions that hopefully help you better understand how Wing and the DCCsi are setup, and how you could modify or extend the configuration.
 
 ## Configure O3DE .bat Env:
 
@@ -151,11 +216,11 @@ This section is for developers who desire to configure and start via the .bat fi
 
 To make sure we can alter the Wing environment, to work with your set up, you will want to locate this file:
 
-    `DccScriptingInterface\Tools\IDE\WingIDE\Env_Dev.bat.example`
+    `DccScriptingInterface\Tools\IDE\Wing\Env_Dev.bat.example`
 
 Then you will want to copy it, and rename the copy:
 
-    `DccScriptingInterface\Tools\IDE\WingIDE\Env_Dev.bat`
+    `DccScriptingInterface\Tools\IDE\Wing\Env_Dev.bat`
 
 What this file provides, is the ability and opportunity to make ENVAR settings and overrides prior to starting WingIDE from the .bat file launcher.  If you have already found that the launcher didn't work for you, this is a section you will want to pay attention to.
 
@@ -248,34 +313,6 @@ cd C:\path\to\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
 ```batch
 python Tools\IDE\Wing\start.py
 ```
-
-The
-
-### wingstub.py (for debugging)
-
-This is necessary for attaching Wing as the debugger in scripts that are running
-
-1. Locate the DCCsi gem folder (see above)
-
-2. Locate your Wing IDE install, the default location is somewhere like:
-   
-   1. `C:\Program Files (x86)\Wing Pro 8`
-   
-   2. Locate: `C:\Program Files (x86)\Wing Pro 8\wingdbstub.py`
-
-3. Copy the file `wingdbstub.py`
-
-4. It needs to be copied somewhere on the `PYTHONPATH`, for instance you could copy it here:  `DccScriptingInterface\Tools\IDE\WingIDE\wingdbstub.py`
-
-5. Open the `wingdbstub.py` file and modify line 96 to
-   
-   1. **kEmbedded = 1**
-
-Notes: 
-
-- If you install a new version of Wing, you should check the new version to see if the `wingdbstub.py` file has changed (use a diff tool?); if it has do the steps above again.
-
-- For debugging to work, on windows you likely will need to add the wing executable to **Windows Defender Firewall**. When you start wing for the first time it may prompt you to do this, otherwise may need to do it manually (see **HELP** below)
 
 ## HELP
 
