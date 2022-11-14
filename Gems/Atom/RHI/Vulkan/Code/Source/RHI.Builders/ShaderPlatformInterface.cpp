@@ -92,7 +92,7 @@ namespace AZ
             return pipelineLayoutDescriptor->Finalize() == RHI::ResultCode::Success;
         }
 
-        const char* ShaderPlatformInterface::GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const
+        const char* ShaderPlatformInterface::GetAzslHeader([[maybe_unused]] const AssetBuilderSDK::PlatformInfo& platform) const
         {
             return AZ_TRAIT_ATOM_AZSL_SHADER_HEADER;
         }
