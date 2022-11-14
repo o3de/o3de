@@ -118,9 +118,9 @@ The DCCsi helps with aspects such as, configuration and settings, launching DCC 
 
 - The latest version of Wing Pro 8 (8.3.3.1) is recommended, as there was a bug in the initial release that prevented Launch Configurations bound to a ENVAR (like above) to function properly. Wing Pro 9 likely works as well, you may just have to make slight adjustments to the configuration (covered in this document below)
 
-- The DccScriptingInterface Gem (DCCsi) can be added to your Game Project. See[Registering Gems to a Project - Open 3D Engine](https://www.o3de.org/docs/user-guide/project-config/register-gems/)), and [adding and removing gems]([Adding and Removing Gems in a Project - Open 3D Engine](https://www.o3de.org/docs/user-guide/project-config/add-remove-gems/)) which you can do through the Project Manager (o3de.exe) With the DCCsi enabled, you can launch Wing Pro 8 via menus in the main Editor.
+- The DccScriptingInterface Gem (DCCsi) can be added to your Game Project. See [Registering Gems to a Project](https://www.o3de.org/docs/user-guide/project-config/register-gems/), and [Adding and Removing Gems in a Project](https://www.o3de.org/docs/user-guide/project-config/add-remove-gems/) which you can do through the Project Manager (o3de.exe) With the DCCsi enabled, you can launch Wing Pro 8 via menus in the main Editor.
 
-- Some additional testing and improvement have been mad in the current release (2210), including changes to better support Installer build folder patterns. See the [readme.md at the root of the DCCsi ]([o3de/readme.md at development · o3de/o3de · GitHub](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md))for more information about advanced configuration.
+- Some additional testing and improvement have been mad in the current release (2210), including changes to better support Installer build folder patterns. See the [readme.md at the root of the DCCsi](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md) for more information about advanced configuration.
 
 # Getting Started
 
