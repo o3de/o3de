@@ -254,8 +254,8 @@ namespace AzToolsFramework
         void OnEditorModeDeactivated(
             const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
 
-        // Save the position of the scroll bar which is returned to OnEditorModeDeactivated
-        int m_verticalScrollPos = 0; 
+        /// Save the offset of the scroll bar before entering Component Mode to return to after leaving Component Mode
+        AZStd::optional<int> m_componentModeVerticalScrollOffset = AZStd::nullopt; 
 
         // EntityPropertEditorRequestBus
         void GetSelectedAndPinnedEntities(EntityIdList& selectedEntityIds) override;

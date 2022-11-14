@@ -19,6 +19,9 @@
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
+#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
+
+#include <Tests/ComponentModeTestDoubles.h>
 
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/std/sort.h>
@@ -32,6 +35,10 @@ namespace UnitTest
     using namespace AZ;
     using namespace AzToolsFramework;
 
+    using AzToolsFramework::ComponentModeFramework::AnotherPlaceholderEditorComponent;
+    using AzToolsFramework::ComponentModeFramework::PlaceholderEditorComponent;
+    using AzToolsFramework::ComponentModeFramework::DependentPlaceholderEditorComponent;
+
     class EntityPropertyEditorTests
         : public ComponentApplication
     {
@@ -40,7 +47,7 @@ namespace UnitTest
         {
             ComponentApplication::SetSettingsRegistrySpecializations(specializations);
             specializations.Append("test");
-            specializations.Append("entitypropertyeditor");
+            specializations.Append("entitypropertyeditor"); 
         }
     };
 
@@ -217,6 +224,17 @@ namespace UnitTest
     {
         void SetUpEditorFixtureImpl() override
         {
+            namespace AztfCmf = AzToolsFramework::ComponentModeFramework;
+
+            auto* app = GetApplication();
+
+            app->RegisterComponentDescriptor(AztfCmf::PlaceholderEditorComponent::CreateDescriptor());
+            app->RegisterComponentDescriptor(AztfCmf::AnotherPlaceholderEditorComponent::CreateDescriptor());
+            app->RegisterComponentDescriptor(AztfCmf::DependentPlaceholderEditorComponent::CreateDescriptor());
+            app->RegisterComponentDescriptor(
+                AztfCmf::TestComponentModeComponent<AztfCmf::OverrideMouseInteractionComponentMode>::CreateDescriptor());
+            app->RegisterComponentDescriptor(AztfCmf::IncompatiblePlaceholderEditorComponent::CreateDescriptor());
+
             // Create an EntityPropertyEditor initialized to be a Level Inspector
             m_levelEditor = new EntityPropertyEditor(nullptr, {}, true);
             m_levelEntity = CreateDefaultEditorEntity("LevelEntity");
@@ -277,6 +295,46 @@ namespace UnitTest
         // Make sure the correct number of entities are returned
         EXPECT_EQ(selectedEntityIds.size(), 1);
         EXPECT_EQ(selectedEntityIds[0], m_levelEntity);
+    }
+
+    TEST_F(LevelEntityPropertyEditorRequestTest, GetSelectedEntitiesForLevelInspectorWhenLevelI2sLoaded)
+    {
+        m_levelOpen = true;
+        AZ::Entity* entity = nullptr;
+        AZ::EntityId entityId = CreateDefaultEditorEntity("ComponentModeEntity", &entity);
+
+        // connect to EditorDisabledCompositionRequestBus with entityI
+
+       
+        AzToolsFramework::EntityCompositionRequestBus::Broadcast(
+            &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities,
+            AzToolsFramework::EntityIdList{entityId},
+            AZ::ComponentTypeList{ PlaceholderEditorComponent::RTTI_Type() });
+
+        AzToolsFramework::EntityCompositionRequestBus::Broadcast(
+            &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities,
+            AzToolsFramework::EntityIdList{ entityId },
+            AZ::ComponentTypeList{ AnotherPlaceholderEditorComponent::RTTI_Type() });
+
+        AzToolsFramework::EntityCompositionRequestBus::Broadcast(
+            &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities,
+            AzToolsFramework::EntityIdList{ entityId },
+            AZ::ComponentTypeList{ DependentPlaceholderEditorComponent::RTTI_Type() });
+
+        // When the component is disabled it doesn't show up in the switcher
+        const AzToolsFramework::EntityIdList entityIds = { entityId };
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, entityIds);
+
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::AddSelectedComponentModesOfType,
+            DependentPlaceholderEditorComponent::RTTI_Type());
+
+        auto a = m_levelEditor->GetVerticalScroll();
+
+        // Make sure the correct number of entities are returned
+        EXPECT_EQ(a, 0);
+        //EXPECT_EQ(selectedEntityIds[0], m_levelEntity);
     }
 
 }

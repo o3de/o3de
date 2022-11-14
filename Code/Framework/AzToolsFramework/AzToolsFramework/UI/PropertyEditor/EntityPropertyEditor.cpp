@@ -5891,7 +5891,7 @@ namespace AzToolsFramework
             SetPropertyEditorState(m_gui, false);
             const auto componentModeTypes = m_componentModeCollection->GetComponentTypes();
             m_disabled = true;
-            m_verticalScrollPos = m_gui->m_componentList->verticalScrollBar()->value();
+            m_componentModeVerticalScrollOffset = m_gui->m_componentList->verticalScrollBar()->value();
             
             if (!componentModeTypes.empty())
             {
@@ -5900,15 +5900,15 @@ namespace AzToolsFramework
 
             for (auto componentEditor : m_componentEditors)
             {
-                auto enteredComponentMode = componentEditor->EnteredComponentMode(componentModeTypes);
-                if (enteredComponentMode)
+                // if this component editor entered component mode
+                if (componentEditor->EnteredComponentMode(componentModeTypes) == ComponentEditor::ComponentEditorState::DidEnterComponentMode)
                 {
                     // scroll to the relevant component card
                     m_gui->m_componentList->verticalScrollBar()->setValue(componentEditor->pos().y());
                 }
             }
 
-            // record the selected state after entering component mode
+            // record the selected state after entering component modse
             SaveComponentEditorState();
         }
     }
@@ -5928,8 +5928,12 @@ namespace AzToolsFramework
                 componentEditor->LeftComponentMode(componentModeTypes);
             }
 
-            // return to scroll position before EditorMode was activated
-            m_gui->m_componentList->verticalScrollBar()->setValue(m_verticalScrollPos);
+            // return to the scroll offset before Component Mode was activated
+            if (m_componentModeVerticalScrollOffset.has_value())
+            {
+                m_gui->m_componentList->verticalScrollBar()->setValue(m_componentModeVerticalScrollOffset.value());
+                m_componentModeVerticalScrollOffset = AZStd::nullopt;
+            }
 
             // record the selected state after leaving component mode
             SaveComponentEditorState();
