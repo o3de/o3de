@@ -30,7 +30,6 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
-#include <AzCore/Math/ShapeIntersection.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -99,7 +98,7 @@ namespace Multiplayer
     AZ_CVAR(bool, bg_multiplayerDebugDraw, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables debug draw for the multiplayer gem");
     AZ_CVAR(bool, cl_connect_onstartup, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to call connect as soon as the Multiplayer SystemComponent is activated.");
     AZ_CVAR(bool, sv_versionMismatch_autoDisconnect, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Should the server automatically disconnect a client that is attempting connect who is running a build containing different/modified multiplayer components.");
-    AZ_CVAR(bool, sv_versionMismatch_sendAllComponentHashesToClient, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Should the server send all its individual multiplayer component version hashes to the client when there's a mismatch? Upon receiving the information, the client will print the mismatch information to the game log. This is good for debugging during development, but you may want to mark false for release builds.");
+    AZ_CVAR(bool, sv_versionMismatch_sendAllComponentHashesToClient, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Should the server send all its individual multiplayer component version hashes to the client when there's a mismatch? Upon receiving the information, the client will print the mismatch information to the game log. Provided for debugging during development, but you may want to mark false for release builds.");
 
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -686,7 +685,7 @@ namespace Multiplayer
         }
 
         // Make sure the client that's trying to connect has the same multiplayer components
-        if (GetMultiplayerComponentRegistry()->GetSystemVersionHash() != packet.GetMultiplayerComponentVersionHash())
+        if (GetMultiplayerComponentRegistry()->GetSystemVersionHash() != packet.GetSystemVersionHash())
         {
             // There's a multiplayer component mismatch. Send the server's component information back to the client so they can compare.
             if (sv_versionMismatch_sendAllComponentHashesToClient)
@@ -889,7 +888,6 @@ namespace Multiplayer
         [[maybe_unused]] const IPacketHeader& packetHeader,
         MultiplayerPackets::SyncComponentMismatch& packet)
     {
-        // We've received all the component data from this connection
         // Iterate over each component and see what's been added, missing, or modified
         for (const auto& [theirComponentName, theirComponentHash] : packet.GetComponentVersions())
         {
@@ -908,10 +906,10 @@ namespace Multiplayer
             }
             else
             {
-                // Connected machine is using a multiplayer component we don't have
+                // Connected application is using a multiplayer component that doesn't exist in this application
                 AZLOG_ERROR(
-                    "Multiplayer component mismatch! We're missing a component with version hash 0x%llx. "
-                    "Because we are missing this component, we don't know its name, only its hash. "
+                    "Multiplayer component mismatch! This application is missing a component with version hash 0x%llx. "
+                    "Because this component is missing, the name isn't available, only its hash. "
                     "To find the missing component go to the other machine and search for 's_versionHash = AZ::HashValue64{ 0x%llx }' "
                     "inside the generated multiplayer auto-component build folder.",
                     theirComponentHash,
@@ -939,34 +937,33 @@ namespace Multiplayer
                 if (!theyHaveComponent)
                 {
                     AZLOG_ERROR(
-                        "Multiplayer component mismatch! We have a component named %s which the connected application is missing!",
+                        "Multiplayer component mismatch! This application has a component named %s which the connected application is missing!",
                         ourComponentName.GetCStr());
                 }
             }
         }
-
-        // We've received all the multiplayer components for debugging.
-        // If we're the connector, send all our component information back to the acceptor.
+        // The client receives this packet first from the server, and then the client sends a packet back
         if (connection->GetConnectionRole() == ConnectionRole::Connector)
         {
+            // If this is the connector (client), send all our component information back to the acceptor (server).
             MultiplayerPackets::SyncComponentMismatch componentMismatchPacket(GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes());
             connection->SendReliablePacket(componentMismatchPacket);
         }
-
-        // If this is the server, we've recieved all the information we need. Now either disconnect, or accept the connection even though there's a mismatch.
-        if (connection->GetConnectionRole() == ConnectionRole::Acceptor)
+        else if (connection->GetConnectionRole() == ConnectionRole::Acceptor)
         {
+            // If this is the server, that means the client has also received all the component version information by this time.
+            // Now either disconnect, or accept the connection even though there's a mismatch.
             if (sv_versionMismatch_autoDisconnect)
             {
-                // Disconnect from the connector; we have all the mismatch information we need now for debugging.
+                // Disconnect from the connector
                 connection->Disconnect(DisconnectReason::VersionMismatch, TerminationEndpoint::Local);
             }
             else
             {
                 if (m_originalConnectPackets.contains(connection->GetConnectionId()))
                 {
-                    // DANGER: We're accepting the player connection even though there's a component mismatch
-                    AZLOG_WARN("Multiplayer component mismatch was found but we're allowing the player to connect anyways. Please set "
+                    // DANGER: Accepting the player connection even though there's a component mismatch
+                    AZLOG_WARN("Multiplayer component mismatch was found. Server configured to allow the player to connect anyways. Please set "
                                "sv_versionMismatch_autoDisconnect=true if this is undesired behavior!");
                     AttemptPlayerConnect(connection, m_originalConnectPackets[connection->GetConnectionId()]);
                     m_originalConnectPackets.erase(connection->GetConnectionId());
