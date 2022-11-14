@@ -22,7 +22,7 @@
 namespace EMotionFX
 {
     HitDetectionOutlinerNotificationHandler::HitDetectionOutlinerNotificationHandler(HitDetectionJointWidget* jointWidget)
-   //     :m_nodeWidget(jointWidget)
+        :m_nodeWidget(jointWidget)
     {
 
         if (!ColliderHelpers::AreCollidersReflected())
