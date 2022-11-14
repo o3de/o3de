@@ -23,41 +23,6 @@
                         "MipSliceMin": 0,
                         "MipSliceMax": 12
                     }
-                },
-                {
-                    "Name": "Mip6InputOutput",
-                    "SlotType": "InputOutput",
-                    "ShaderInputName": "m_imageDestination6",
-                    "ScopeAttachmentUsage": "Shader"
-                },
-                {
-                    "Name": "GlobalAtomic",
-                    "SlotType": "InputOutput",
-                    "ShaderInputName": "m_globalAtomic",
-                    "ScopeAttachmentUsage": "Shader",
-                    "BufferViewDesc": {
-                        "m_elementSize": 4,
-                        "m_elementCount": 1
-                    }
-                }
-            ],
-            "BufferAttachments": [
-                {
-                    "Name": "GlobalAtomic",
-                    "BufferDescriptor": {
-                        "m_byteCount": 4,
-                        "m_alignment": 4,
-                        "m_bindFlags": 24
-                    }
-                }
-            ],
-            "Connections": [
-                {
-                    "LocalSlot": "GlobalAtomic",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "GlobalAtomic"
-                    }
                 }
             ]
         }

@@ -8,6 +8,7 @@
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Public/Pass/Specific/DownsampleSinglePassMipChainPass.h>
+#include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 
 // For "A_CPU" macro, refer ffx_a.h and below:
 // https://github.com/GPUOpen-Effects/FidelityFX-SPD/blob/c52944f547884774a1b33066f740e6bf89f927f5/sample/src/DX12/SPDIntegration.hlsl
@@ -31,12 +32,14 @@ namespace AZ
         DownsampleSinglePassMipChainPass::DownsampleSinglePassMipChainPass(const PassDescriptor& descriptor)
             : ComputePass(descriptor)
         {
-            // do nothing.
+            BuildGlobalAtomicBuffer();
         }
 
         void DownsampleSinglePassMipChainPass::BuildInternal()
         {
             GetInputInfo();
+            CalculateBaseSpdImageSize();
+            BuildPassAttachment();
             ComputePass::BuildInternal();
         }
 
@@ -46,12 +49,31 @@ namespace AZ
             m_mipsIndex.Reset();
             m_numWorkGroupsIndex.Reset();
             m_workGroupOffsetIndex.Reset();
+            m_imageSizeIndex.Reset();
+            m_inputOutputImageIndex.Reset();
+            m_mip6ImageIndex.Reset();
+            m_globalAtomicIndex.Reset();
             ComputePass::ResetInternal();
         }
 
         void DownsampleSinglePassMipChainPass::FrameBeginInternal(FramePrepareParams params)
         {
             SetConstants();
+
+            if (m_globalAtomicBuffer)
+            {
+                // Clear Global Atomic.
+                auto* buffer = static_cast<SpdGlobalAtomicBuffer*>(m_globalAtomicBuffer->Map(sizeof(SpdGlobalAtomicBuffer), 0));
+                {
+                    buffer->m_counter = 0;
+                }
+                m_globalAtomicBuffer->Unmap();
+            }
+            else
+            {
+                AZ_Assert(false, "DownsampleSingelPassMipChainPass Global Atomic Buffer has not been created.");
+            }
+
             ComputePass::FrameBeginInternal(params);
         }
 
@@ -69,6 +91,7 @@ namespace AZ
                 m_targetThreadCountHeight,
                 ArraySliceCount);
 
+            // Input/Output Mip Slices
             PassAttachmentBinding& inOutBinding = GetInputOutputBinding(0);
             PassAttachment* attachment = inOutBinding.GetAttachment().get();
             if (!attachment)
@@ -82,36 +105,45 @@ namespace AZ
                 return;
             }
 
-            RHI::ShaderInputNameIndex imageNameIndex("m_imageDestination");
-            RHI::ShaderInputNameIndex image6NameIndex("m_imageDestination6");
-            static constexpr uint32_t GloballyCoherentMipIndex = 6;
+            RHI::ResultCode result = RHI::ResultCode::Success;
+            RHI::ImageViewDescriptor imageViewDescriptor;
             for (uint32_t mipIndex = 0; mipIndex < GetMin(m_mipLevelCount, SpdMipLevelCountMax); ++mipIndex)
             {
-                RHI::ImageViewDescriptor viewDesc;
-                viewDesc.m_mipSliceMin = static_cast<uint16_t>(mipIndex);
-                viewDesc.m_mipSliceMax = static_cast<uint16_t>(mipIndex);
+                imageViewDescriptor.m_mipSliceMin = static_cast<uint16_t>(mipIndex);
+                imageViewDescriptor.m_mipSliceMax = static_cast<uint16_t>(mipIndex);
                 Ptr<RHI::ImageView> imageView = RHI::Factory::Get().CreateImageView();
-                const RHI::ResultCode result = imageView->Init(*rhiImage, viewDesc);
+                result = imageView->Init(*rhiImage, imageViewDescriptor);
                 if (result != RHI::ResultCode::Success)
                 {
                     AZ_Assert(false, "DownsampleSingelPassMipChainPass failed to create RHI::ImageView.");
                     return;
                 }
-                if (mipIndex == GloballyCoherentMipIndex)
-                {
-                    srg.SetImageView(image6NameIndex, imageView.get());
-                }
-                else
-                {
-                    srg.SetImageView(imageNameIndex, imageView.get(), mipIndex);
-                }
+                srg.SetImageView(m_inputOutputImageIndex, imageView.get(), mipIndex);
                 m_imageViews[mipIndex] = imageView;
             }
+
+            // Set Globally coherent image view.
+            const RHI::ImageView* mip6ImageView = context.GetImageView(m_mip6PassAttachment->GetAttachmentId());
+            srg.SetImageView(m_mip6ImageIndex, mip6ImageView);
+
+            // Set Global Atomic buffer.
+            srg.SetBuffer(m_globalAtomicIndex, m_globalAtomicBuffer);
 
             ComputePass::CompileResources(context);
         }
 
-        void DownsampleSinglePassMipChainPass::InitializeConstantIndices()
+        void DownsampleSinglePassMipChainPass::BuildGlobalAtomicBuffer()
+        {
+            RPI::CommonBufferDescriptor descriptor;
+            descriptor.m_poolType = RPI::CommonBufferPoolType::ReadWrite;
+            descriptor.m_bufferName = "DownsampleSinglePassMipChainPass GlobalAtomic";
+            descriptor.m_elementSize = sizeof(SpdGlobalAtomicBuffer);
+            descriptor.m_byteCount = sizeof(SpdGlobalAtomicBuffer);
+            m_globalAtomicBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(descriptor);
+            AZ_Assert(m_globalAtomicBuffer, "DownsampleSinglePassMipChainPass Building Global Atomic Buffer failed.")
+        }
+
+        void DownsampleSinglePassMipChainPass::InitializeIndices()
         {
             if (!m_shaderResourceGroup)
             {
@@ -122,6 +154,10 @@ namespace AZ
             m_mipsIndex = srg.FindShaderInputConstantIndex(Name("m_mips"));
             m_numWorkGroupsIndex = srg.FindShaderInputConstantIndex(Name("m_numWorkGroups"));
             m_workGroupOffsetIndex = srg.FindShaderInputConstantIndex(Name("m_workGroupOffset"));
+            m_imageSizeIndex = srg.FindShaderInputConstantIndex(Name("m_imageSize"));
+            m_inputOutputImageIndex = srg.FindShaderInputImageIndex(Name("m_imageDestination"));
+            m_mip6ImageIndex = srg.FindShaderInputImageIndex(Mip6Name);
+            m_globalAtomicIndex = srg.FindShaderInputBufferIndex(GlobalAtomicName);
             m_indicesAreInitialized = true;
         }
 
@@ -135,16 +171,98 @@ namespace AZ
             if (attachment)
             {
                 m_mipLevelCount = attachment->m_descriptor.m_image.m_mipLevels;
-                m_inputWidth = attachment->m_descriptor.m_image.m_size.m_width;
-                m_inputHeight = attachment->m_descriptor.m_image.m_size.m_height;
+                m_inputImageSize[0] = attachment->m_descriptor.m_image.m_size.m_width;
+                m_inputImageSize[1] = attachment->m_descriptor.m_image.m_size.m_height;
             }
+        }
+
+        void DownsampleSinglePassMipChainPass::CalculateBaseSpdImageSize()
+        {
+            const auto adjust = [&] (uint32_t value) -> uint32_t
+            {
+                const auto logValue = static_cast<uint32_t>(floorf(log2f(value * 1.f)));
+                if (static_cast<uint32_t>(1 << logValue) == value)
+                {
+                    return value;
+                }
+                else
+                {
+                    return static_cast<uint32_t>(1 << (logValue + 1));
+                }
+            };
+            m_baseSpdImageSize[0] = adjust(m_inputImageSize[0]);
+            m_baseSpdImageSize[1] = adjust(m_inputImageSize[1]);
+        }
+
+        void DownsampleSinglePassMipChainPass::BuildPassAttachment()
+        {
+            // Build "Mip6" image attachment.
+            {
+                const auto width = GetMax<uint32_t>(1, m_baseSpdImageSize[0] >> GloballyCoherentMipIndex);
+                const auto height = GetMax<uint32_t>(1, m_baseSpdImageSize[1] >> GloballyCoherentMipIndex);
+                m_mip6ImageDescriptor =
+                    RHI::ImageDescriptor::Create2D(
+                        RHI::ImageBindFlags::ShaderReadWrite,
+                        width, 
+                        height,
+                        RHI::Format::R32G32B32A32_FLOAT);
+
+                m_mip6PassAttachment = aznew PassAttachment();
+                m_mip6PassAttachment->m_name = "Mip6";
+                const Name attachmentPath(AZStd::string::format(
+                    "%s.%s",
+                    GetPathName().GetCStr(),
+                    m_mip6PassAttachment->m_name.GetCStr()));
+                m_mip6PassAttachment->m_path = attachmentPath;
+                m_mip6PassAttachment->m_lifetime = RHI::AttachmentLifetimeType::Transient;
+                m_mip6PassAttachment->m_descriptor = m_mip6ImageDescriptor;
+                m_ownedAttachments.push_back(m_mip6PassAttachment);
+
+                RHI::AttachmentLoadStoreAction action;
+                // Components: (min, average, max, weight)
+                action.m_clearValue = RHI::ClearValue::CreateVector4Float(FLT_MAX, 0.f, 0.f, 0.f);
+                action.m_loadAction = RHI::AttachmentLoadAction::Clear;
+
+                PassAttachmentBinding binding;
+                binding.m_name = m_mip6PassAttachment->m_name;
+                binding.m_slotType = PassSlotType::InputOutput;
+                binding.m_shaderInputName = Mip6Name;
+                binding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
+                binding.m_unifiedScopeDesc.m_loadStoreAction = action;
+                binding.SetAttachment(m_mip6PassAttachment);
+                AddAttachmentBinding(binding);
+            }
+
+            // Build "GlobalAtomic" buffer attachment.
+            auto bufferDescriptor = RHI::BufferDescriptor(RHI::BufferBindFlags::ShaderReadWrite, 4);
+            bufferDescriptor.m_alignment = 4;
+
+            m_counterPassAttachment = aznew PassAttachment();
+            m_counterPassAttachment->m_name = "GlobalAtomic";
+            const Name attachmentPath(AZStd::string::format(
+                "%s.%s",
+                GetPathName().GetCStr(),
+                m_counterPassAttachment->m_name.GetCStr()));
+            m_counterPassAttachment->m_path = attachmentPath;
+            m_counterPassAttachment->m_lifetime = RHI::AttachmentLifetimeType::Imported;
+            m_counterPassAttachment->m_descriptor = bufferDescriptor;
+            m_counterPassAttachment->m_importedResource = m_globalAtomicBuffer;
+            m_ownedAttachments.push_back(m_counterPassAttachment);
+
+            PassAttachmentBinding binding;
+            binding.m_name = m_counterPassAttachment->m_name;
+            binding.m_slotType = PassSlotType::InputOutput;
+            binding.m_shaderInputName = GlobalAtomicName;
+            binding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
+            binding.SetAttachment(m_counterPassAttachment);
+            AddAttachmentBinding(binding);
         }
 
         void DownsampleSinglePassMipChainPass::SetConstants()
         {
             if (!m_indicesAreInitialized)
             {
-                InitializeConstantIndices();
+                InitializeIndices();
             }
 
             if (!m_shaderResourceGroup)
@@ -156,7 +274,11 @@ namespace AZ
             varAU2(dispatchThreadGroupCountXY);
             varAU2(workGroupOffset); // needed if Left and Top are not 0,0
             varAU2(numWorkGroupsAndMips);
-            varAU4(rectInfo) = initAU4(0, 0, m_inputWidth, m_inputHeight); // left, top, width, height
+            varAU4(rectInfo) = initAU4(
+                0, // left
+                0, // top
+                m_baseSpdImageSize[0], // width
+                m_baseSpdImageSize[1]); // height
             SpdSetup(dispatchThreadGroupCountXY, workGroupOffset, numWorkGroupsAndMips, rectInfo);
 
             const AZStd::array<AU1, 2> workGroupOffsetArray =
@@ -165,6 +287,7 @@ namespace AZ
             succeeded &= srg.SetConstant(m_numWorkGroupsIndex, numWorkGroupsAndMips[0]);
             succeeded &= srg.SetConstant(m_mipsIndex, m_mipLevelCount);
             succeeded &= srg.SetConstantArray(m_workGroupOffsetIndex, workGroupOffsetArray);
+            succeeded &= srg.SetConstantArray(m_imageSizeIndex, m_inputImageSize);
             AZ_Assert(succeeded, "DownsampleSinglePassMipChainPass failed to set constants.");
 
             m_targetThreadCountWidth = dispatchThreadGroupCountXY[0];

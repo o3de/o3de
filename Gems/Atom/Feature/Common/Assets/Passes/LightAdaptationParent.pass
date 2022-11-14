@@ -68,13 +68,6 @@
                                 "Pass": "DownsampleLuminanceMinAvgMax",
                                 "Attachment": "Output"
                             }
-                        },
-                        {
-                            "LocalSlot": "Mip6InputOutput",
-                            "AttachmentRef": {
-                                "Pass": "DownsampleLuminanceMinAvgMax",
-                                "Attachment": "Output"
-                            }
                         }
                     ]
                 },
