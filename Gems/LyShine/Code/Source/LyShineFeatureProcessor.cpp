@@ -69,14 +69,11 @@ namespace LyShine
             });
 
             //If DepthPrePass is missing then find the depth attachment via ForwardPass
-            if (findIter != passRequestCopy.m_connections.end())
+            if (findIter != passRequestCopy.m_connections.end() &&
+                renderPipeline->FindFirstPass(AZ::Name("ForwardPass")))
             {
-                if (renderPipeline->FindFirstPass(AZ::Name("ForwardPass")))
-                {
-                    (*findIter).m_attachmentRef.m_pass = "ForwardPass";
-                    (*findIter).m_attachmentRef.m_attachment = "DepthStencilOutput";
-                }
-                
+                (*findIter).m_attachmentRef.m_pass = "ForwardPass";
+                (*findIter).m_attachmentRef.m_attachment = "DepthStencilOutput";
             }
             passRequest = &passRequestCopy;
         }
