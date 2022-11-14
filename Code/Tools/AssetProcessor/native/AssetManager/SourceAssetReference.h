@@ -49,6 +49,8 @@ namespace AssetProcessor
 
         SourceAssetReference(AZ::IO::PathView scanFolderPath, AZ::IO::PathView pathRelativeToScanFolder);
 
+        SourceAssetReference(AZ::s64 scanFolderId, AZ::IO::PathView scanFolderPath, AZ::IO::PathView pathRelativeToScanFolder);
+
         AZ_DEFAULT_COPY_MOVE(SourceAssetReference);
 
         bool operator==(const SourceAssetReference& other) const;

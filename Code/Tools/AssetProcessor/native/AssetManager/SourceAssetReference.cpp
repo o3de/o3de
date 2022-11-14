@@ -104,6 +104,22 @@ namespace AssetProcessor
         Normalize();
     }
 
+    SourceAssetReference::SourceAssetReference(
+        AZ::s64 scanFolderId, AZ::IO::PathView scanFolderPath, AZ::IO::PathView pathRelativeToScanFolder)
+    {
+        if (scanFolderPath.empty() || pathRelativeToScanFolder.empty())
+        {
+            return;
+        }
+
+        m_scanFolderPath = scanFolderPath;
+        m_relativePath = pathRelativeToScanFolder;
+        m_absolutePath = m_scanFolderPath / m_relativePath;
+        m_scanFolderId = scanFolderId;
+
+        Normalize();
+    }
+
     bool SourceAssetReference::operator==(const SourceAssetReference& other) const
     {
         return m_absolutePath == other.m_absolutePath;

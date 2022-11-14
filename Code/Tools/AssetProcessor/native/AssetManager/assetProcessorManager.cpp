@@ -147,9 +147,12 @@ namespace AssetProcessor
 
             auto sourcesFunction = [this](AzToolsFramework::AssetDatabase::SourceAndScanFolderDatabaseEntry& entry)
             {
-                SourceAssetReference sourceAsset(entry.m_scanFolder.c_str(), entry.m_sourceName.c_str());
+                SourceAssetReference sourceAsset(entry.m_scanFolderID, entry.m_scanFolder.c_str(), entry.m_sourceName.c_str());
 
-                m_sourceFilesInDatabase[sourceAsset.AbsolutePath().c_str()] = { sourceAsset, entry.m_analysisFingerprint.c_str() };
+                if (sourceAsset)
+                {
+                    m_sourceFilesInDatabase[sourceAsset.AbsolutePath().c_str()] = { sourceAsset, entry.m_analysisFingerprint.c_str() };
+                }
 
                 return true;
             };
@@ -1915,9 +1918,7 @@ namespace AssetProcessor
         bool deleteFailure = false;
         AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
 
-        auto scanFolder = m_platformConfig->GetScanFolderByPath(sourceAsset.ScanFolderPath().c_str());
-
-        if (m_stateData->GetSourcesBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), scanFolder->ScanFolderID(), sources))
+        if (m_stateData->GetSourcesBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), sources))
         {
             for (const auto& source : sources)
             {
