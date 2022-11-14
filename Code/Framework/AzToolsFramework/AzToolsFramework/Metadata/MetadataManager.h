@@ -25,20 +25,32 @@ namespace AzToolsFramework
 
         virtual ~IMetadataRequests() = default;
 
+        //! Gets a value from the metadata file associated with the file.
+        //! @param file Absolute path to the file (or metadata file).
+        //! @param key JSONPath formatted key for the metadata value to read.  Ex: /Settings/Platform/pc.
+        //! @param typeId Type of the stored value and outValue.
+        //! @return True if metadata file and key exists and was successfully read, false otherwise.
         virtual bool Get(AZ::IO::PathView file, AZStd::string_view key, void* outValue, AZ::Uuid typeId) = 0;
+        //! Sets a value in the metadata file associated with the file.
+        //! @param file Absolute path to the file (or metadata file).
+        //! @param key JSONPath formatted key for the metadata value to write.  Ex: /Settings/Platform/pc.
+        //! @param typeId Type of the stored value and inValue.
+        //! @return True if the value is successfully saved to disk, false otherwise.
         virtual bool Set(AZ::IO::PathView file, AZStd::string_view key, const void* inValue, AZ::Uuid typeId) = 0;
     };
 
+    //! Component that handles reading/writing to metadata files.
+    //! Metadata files are stored alongside source assets and can contain any generic data that needs to be associated with a file.
     class MetadataManager :
-        public AZ ::Component,
+        public AZ::Component,
         public AZ::Interface<IMetadataRequests>::Registrar
     {
     public:
         AZ_COMPONENT(MetadataManager, "{CB738803-3B6C-4B62-9DC2-1980D340F288}", IMetadataRequests);
 
-        static inline constexpr const char* MetadataFileExtension = ".metadata";
-        static inline constexpr const char* MetadataVersionKey = "/FileVersion";
-        static inline constexpr int MetadataVersion = 1;
+        static constexpr const char* MetadataFileExtension = ".meta";
+        static constexpr const char* MetadataVersionKey = "/FileVersion";
+        static constexpr int MetadataVersion = 1;
 
         static void Reflect(AZ::ReflectContext* context);
 

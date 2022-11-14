@@ -22,15 +22,23 @@ namespace AzToolsFramework
     {
         auto path = ToMetadataPath(file);
 
+        // Load the JSON document into memory
         auto result = AZ::JsonSerializationUtils::ReadJsonFile(path.Native());
 
         if (!result)
         {
+            AZ_Error(
+                "MetadataManager",
+                false,
+                "Metadata file `" AZ_STRING_FORMAT "`: Failed to load metadata JSON - %s\n",
+                AZ_STRING_ARG(file.Native()),
+                result.GetError().c_str());
             return false;
         }
 
         auto& document = result.GetValue();
 
+        // Make a JSONPath pointer and validate it
         rapidjson_ly::Pointer pointer(key.data(), key.length());
 
         if (!pointer.IsValid())
@@ -38,6 +46,7 @@ namespace AzToolsFramework
             return false;
         }
 
+        // Use the pointer to find the value we're trying to read
         const rapidjson_ly::Value* value = pointer.Get(document);
 
         if (!value)
@@ -45,6 +54,7 @@ namespace AzToolsFramework
             return false;
         }
 
+        // Deserialize the JSON into the outValue parameter
         auto resultCode = AZ::JsonSerialization::Load(outValue, typeId, *value);
 
         return resultCode.GetProcessing() != AZ::JsonSerializationResult::Processing::Halted;
@@ -54,6 +64,7 @@ namespace AzToolsFramework
     {
         auto path = ToMetadataPath(file);
 
+        // Make a JSONPath pointer and validate it
         rapidjson_ly::Pointer pointer(key.data(), key.length());
         rapidjson_ly::Pointer versionPointer(MetadataVersionKey);
 
@@ -62,6 +73,8 @@ namespace AzToolsFramework
             return false;
         }
 
+        // If there is an existing metadata file already, read the JSON document into memory.
+        // Otherwise, just start a new, blank document
         auto result = AZ::JsonSerializationUtils::ReadJsonFile(path.Native());
 
         rapidjson_ly::Document document;
@@ -70,32 +83,59 @@ namespace AzToolsFramework
         {
             document = result.TakeValue();
         }
+        else
+        {
+            // Ensure the failure was due to the file not existing rather than failing to read the metadata file.
+            // It would be bad to continue and overwrite an existing metadata file.
+            if (AZ::IO::FileIOBase::GetInstance()->Exists(path.FixedMaxPathStringAsPosix().c_str()))
+            {
+                AZ_Error(
+                    "MetadataManager",
+                    false,
+                    "Metadata file `" AZ_STRING_FORMAT "` exists on disk but failed to read.  Metadata file may be corrupt.  Aborting Set for " AZ_STRING_FORMAT ".  Error - %s",
+                    AZ_STRING_ARG(file.Native()),
+                    AZ_STRING_ARG(key),
+                    result.GetError().c_str());
+                return false;
+            }
+        }
 
         AZ::JsonSerializerSettings settings;
-        settings.m_reporting = [](AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view path)
+        settings.m_reporting = [&file](AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view path)
         {
             if (result.GetOutcome() > AZ::JsonSerializationResult::Outcomes::PartialDefaults)
             {
                 AZ_Warning(
-                    "MetadataManager", false, AZ_STRING_FORMAT ": " AZ_STRING_FORMAT "\n", AZ_STRING_ARG(path), AZ_STRING_ARG(message));
+                    "MetadataManager",
+                    false,
+                    "Metadata file `" AZ_STRING_FORMAT "`: Path " AZ_STRING_FORMAT " - " AZ_STRING_FORMAT "\n",
+                    AZ_STRING_ARG(file.Native()),
+                    AZ_STRING_ARG(path),
+                    AZ_STRING_ARG(message));
             }
             return result;
         };
 
+        // Encode the version into JSON
         rapidjson_ly::Value serializedVersion;
         AZ::JsonSerialization::Store(serializedVersion, document.GetAllocator(), &MetadataVersion, nullptr, azrtti_typeid<int>(), settings);
 
+        // Encode the value into JSON
         rapidjson_ly::Value serializedValue;
         auto resultCode = AZ::JsonSerialization::Store(serializedValue, document.GetAllocator(), inValue, nullptr, typeId, settings);
 
         if (resultCode.GetProcessing() != AZ::JsonSerializationResult::Processing::Halted)
         {
+            // Create the version JSON entry in the document and store the encoded value
+            // This will update the saved version to the current version
             rapidjson_ly::Value& versionStore = versionPointer.Create(document, document.GetAllocator());
             versionStore = AZStd::move(serializedVersion);
 
+            // Create the user JSON entry in the document and store the encoded value
             rapidjson_ly::Value& store = pointer.Create(document, document.GetAllocator());
             store = AZStd::move(serializedValue);
 
+            // Save JSON to disk
             auto saveResult = AZ::JsonSerializationUtils::WriteJsonFile(document, path.Native());
 
             return saveResult.IsSuccess();
