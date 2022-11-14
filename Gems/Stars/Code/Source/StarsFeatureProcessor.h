@@ -48,8 +48,7 @@ namespace AZ::Render
 
     protected:
         //! RPI::SceneNotificationBus
-        void OnRenderPipelineAdded(RPI::RenderPipelinePtr renderPipeline) override;
-        void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
+        void OnRenderPipelineChanged(RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
 
         //! RPI::ViewportContextIdNotificationBus
         void OnViewportSizeChanged(AzFramework::WindowSize size) override;

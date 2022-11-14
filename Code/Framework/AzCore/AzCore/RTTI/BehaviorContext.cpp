@@ -87,7 +87,7 @@ namespace AZ
                     azEventDescValid = false;
                 }
 
-                size_t parameterIndex = 0;
+                [[maybe_unused]] size_t parameterIndex = 0;
                 for (AZStd::string_view parameterName : behaviorAzEventDesc.m_parameterNames)
                 {
                     if (parameterName.empty())

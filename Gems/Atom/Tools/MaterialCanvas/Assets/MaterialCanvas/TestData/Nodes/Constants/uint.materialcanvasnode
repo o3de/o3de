@@ -6,7 +6,7 @@
         "id": "{03C534CA-436F-40CB-80A2-56229D1E4DBC}",
         "category": "Constants",
         "title": "UInt Constant",
-        "propertySlots": [
+        "inputSlots": [
             {
                 "name": "inValue",
                 "displayName": "Value",

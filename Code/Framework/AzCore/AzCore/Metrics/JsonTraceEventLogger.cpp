@@ -510,8 +510,8 @@ namespace AZ::Metrics
         // End the event object
         jsonWriter.EndObject();
 
-        AZ::IO::SizeType totalBytesWritten{};
-        size_t currentEventIndex{};
+        [[maybe_unused]] AZ::IO::SizeType totalBytesWritten{};
+        [[maybe_unused]] size_t currentEventIndex{};
 
         bool result{};
         {

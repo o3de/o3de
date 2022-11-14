@@ -38,7 +38,7 @@ namespace AtomToolsFramework
         m_entityContext->InitContext();
 
         // Create and register a scene with all required feature processors
-        AZStd::unordered_set<AZStd::string> featureProcessors;
+        AZStd::vector<AZStd::string> featureProcessors;
         PreviewerFeatureProcessorProviderBus::Broadcast(
             &PreviewerFeatureProcessorProviderBus::Handler::GetRequiredFeatureProcessors, featureProcessors);
 
@@ -247,9 +247,9 @@ namespace AtomToolsFramework
         m_renderPipeline->RemoveFromRenderTick();
     }
 
-    void PreviewRenderer::GetRequiredFeatureProcessors(AZStd::unordered_set<AZStd::string>& featureProcessors) const
+    void PreviewRenderer::GetRequiredFeatureProcessors(AZStd::vector<AZStd::string>& featureProcessors) const
     {
-        featureProcessors.insert({
+        featureProcessors.insert(featureProcessors.end(),  {
             "AZ::Render::TransformServiceFeatureProcessor",
             "AZ::Render::MeshFeatureProcessor",
             "AZ::Render::SimplePointLightFeatureProcessor",

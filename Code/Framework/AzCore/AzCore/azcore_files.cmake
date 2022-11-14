@@ -281,6 +281,8 @@ set(FILES
     Math/Geometry3DUtils.cpp
     Math/Geometry3DUtils.h
     Math/Guid.h
+    Math/Hemisphere.h
+    Math/Hemisphere.inl
     Math/Internal/MathTypes.h
     Math/Internal/SimdMathVec1_neon.inl
     Math/Internal/SimdMathVec1_scalar.inl
@@ -460,7 +462,6 @@ set(FILES
     NativeUI/NativeUISystemComponent.h
     NativeUI/NativeUIRequests.h
     Outcome/Outcome.h
-    Outcome/Internal/OutcomeStorage.h
     Outcome/Internal/OutcomeImpl.h
     Platform.cpp
     Platform.h

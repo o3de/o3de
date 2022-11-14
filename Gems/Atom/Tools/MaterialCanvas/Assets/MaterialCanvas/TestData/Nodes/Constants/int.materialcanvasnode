@@ -6,7 +6,7 @@
         "id": "{77F59CFF-3EFC-492D-BDF2-FD587FC56704}",
         "category": "Constants",
         "title": "Int Constant",
-        "propertySlots": [
+        "inputSlots": [
             {
                 "name": "inValue",
                 "displayName": "Value",
