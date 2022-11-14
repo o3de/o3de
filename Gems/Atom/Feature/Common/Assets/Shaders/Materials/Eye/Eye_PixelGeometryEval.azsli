@@ -81,6 +81,8 @@ PixelGeometryData EvaluatePixelGeometry_Eye(VsOutput IN, bool isFrontFace)
 
     float3 vertexNormal, vertexTangent, vertexBitangent;
     ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+    // Bitangent is temporarily added back to fix the eye material screenshot test.
+    vertexBitangent = normalize(mul(objectToWorld, float4(IN.bitangent, 0.0)).xyz);
 
     return EvaluatePixelGeometry_Eye(
         IN.worldPosition,

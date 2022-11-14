@@ -40,7 +40,7 @@
                 "name": "inPositionOffset",
                 "displayName": "Position Offset",
                 "description": "Position Offset",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
                 "defaultDataType": "float3",
                 "defaultValue": {
                     "$type": "Vector3",
@@ -61,7 +61,7 @@
                 "name": "inBaseColor",
                 "displayName": "Base Color",
                 "description": "Base Color",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
                 "defaultDataType": "float3",
                 "defaultValue": {
                     "$type": "Vector3",
@@ -133,7 +133,7 @@
                 "name": "inEmissive",
                 "displayName": "Emissive",
                 "description": "Emissive",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
                 "defaultDataType": "float3",
                 "defaultValue": {
                     "$type": "Vector3",

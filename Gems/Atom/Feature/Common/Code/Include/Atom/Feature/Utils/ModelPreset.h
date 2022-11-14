@@ -28,7 +28,7 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(ModelPreset, AZ::SystemAllocator, 0);
             static void Reflect(AZ::ReflectContext* context);
 
-            static constexpr const char* Extension = "modelpreset.azasset";
+            static constexpr AZStd::string_view Extension = "modelpreset.azasset";
             AZ::Data::Asset<AZ::RPI::ModelAsset> m_modelAsset;
         };
 

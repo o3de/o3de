@@ -330,7 +330,7 @@ namespace AzToolsFramework
                  ++entityCacheIndex)
             {
                 if (const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
-                    m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex) && IsSelectableInViewport(entityId))
+                    m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex) && IsSelectableInViewport(entityCacheIndex))
                 {
                     if (m_entityDataCache->IsVisibleEntityIconHidden(entityCacheIndex) ||
                         (m_entityDataCache->IsVisibleEntitySelected(entityCacheIndex) && !showIconCheck(entityId)))
@@ -382,11 +382,26 @@ namespace AzToolsFramework
 
     bool EditorHelpers::IsSelectableInViewport(const AZ::EntityId entityId) const
     {
-        return IsSelectableAccordingToFocusMode(entityId) && IsSelectableAccordingToContainerEntities(entityId);
+        if (auto entityCacheIndex = m_entityDataCache->GetVisibleEntityIndexFromId(entityId); entityCacheIndex.has_value())
+        {
+            return m_entityDataCache->IsVisibleEntityIndividuallySelectableInViewport(entityCacheIndex.value());
+        }
+
+        return false;
+    }
+
+    bool EditorHelpers::IsSelectableInViewport(size_t entityCacheIndex) const
+    {
+        return m_entityDataCache->IsVisibleEntityIndividuallySelectableInViewport(entityCacheIndex);
     }
 
     bool EditorHelpers::IsSelectableAccordingToFocusMode(const AZ::EntityId entityId) const
     {
+        if (auto entityCacheIndex = m_entityDataCache->GetVisibleEntityIndexFromId(entityId); entityCacheIndex.has_value())
+        {
+            return m_entityDataCache->IsVisibleEntityInFocusSubTree(entityCacheIndex.value());
+        }
+
         return m_focusModeInterface->IsInFocusSubTree(entityId);
     }
 
