@@ -90,20 +90,27 @@ def set_pane_visibility(pane_name: str, value: bool) -> None:
     azlmbr.atomtools.AtomToolsMainWindowRequestBus(bus.Broadcast, "SetDockWidgetVisible", pane_name, value)
 
 
-def select_lighting_config(asset_path: str) -> azlmbr.math.Uuid:
-    asset_id = asset_utils.Asset.find_asset_by_path(asset_path)
-    azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
+def load_lighting_preset_by_asset_id(asset_id: azlmbr.math.Uuid) -> bool:
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
         azlmbr.bus.Broadcast, "LoadLightingPresetByAssetId", asset_id)
-    return asset_id
+
+
+def load_lighting_preset(asset_path: str) -> bool:
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
+        azlmbr.bus.Broadcast, "LoadLightingPreset", asset_path)
 
 
 def get_current_lighting_preset() -> azlmbr.math.Uuid:
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetLightingPreset")
 
 
-def get_last_lighting_preset_asset_id(asset_id: azlmbr.math.Uuid) -> azlmbr.math.Uuid:
+def get_last_lighting_preset_asset_id() -> azlmbr.math.Uuid:
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
-        azlmbr.bus.Broadcast, "GetLastLightingPresetAssetId", asset_id)
+        azlmbr.bus.Broadcast, "GetLastLightingPresetAssetId")
+
+
+def get_last_lighting_preset_path() -> str:
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetLastLightingPresetPath")
 
 
 def set_grid_enabled(value: bool) -> None:
