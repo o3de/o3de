@@ -40,11 +40,14 @@ def SubID_NoChange_MeshChanged():
     import time
     from pathlib import Path
 
+    import azlmbr.bus
+    import azlmbr.editor as editor
     from Atom.atom_utils.atom_constants import AtomComponentProperties
     from EditorPythonTestTools.editor_python_test_tools.editor_entity_utils import EditorEntity
     from EditorPythonTestTools.editor_python_test_tools.utils import Report, TestHelper, Tracer
     from EditorPythonTestTools.editor_python_test_tools.asset_utils import Asset
     from assetpipeline.ap_fixtures.check_model_ready_fixture import OnModelReloaded
+
 
     with Tracer() as error_tracer:
         # -- Test Setup Begins --
@@ -53,8 +56,7 @@ def SubID_NoChange_MeshChanged():
         TestHelper.open_level("AssetPipeline", "SceneTests")
 
         # Test Setup: Set source and destination paths for assetinfo file.
-        parent_directory = 4  # This is how many folders up we need to move in the directory tree from the location of this test to locate AutomatedTesting.
-        dirpath = Path(__file__).parents[parent_directory]
+        dirpath = editor.EditorToolsApplicationRequestBus(azlmbr.bus.Broadcast, 'GetGameFolder')
         src = os.path.join(dirpath, 'Objects', 'ShaderBall_simple', 'shaderball_simple_MeshChange_SameID.fbx.assetinfo')
         dst = os.path.join(dirpath, 'Objects', 'shaderball_simple.fbx.assetinfo')
 

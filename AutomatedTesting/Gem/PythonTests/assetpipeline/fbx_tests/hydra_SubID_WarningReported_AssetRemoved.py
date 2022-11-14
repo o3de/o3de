@@ -45,6 +45,8 @@ def SubID_WarningReported_AssetRemoved():
     import time
     from pathlib import Path
 
+    import azlmbr.bus
+    import azlmbr.editor as editor
     from assetpipeline.ap_fixtures.check_model_ready_fixture import OnModelReloaded
     from EditorPythonTestTools.editor_python_test_tools.utils import Report, TestHelper, Tracer
     from EditorPythonTestTools.editor_python_test_tools.asset_utils import Asset
@@ -55,8 +57,7 @@ def SubID_WarningReported_AssetRemoved():
     TestHelper.open_level("AssetPipeline", "SceneTests")
 
     # Test Setup: Set up source and destination for assetinfo file, then verify there is no file there already
-    parent_directory = 4 # This is how many folders up we need to move in the directory tree from the location of this test to locate AutomatedTesting.
-    dirpath = Path(__file__).parents[parent_directory]
+    dirpath = editor.EditorToolsApplicationRequestBus(azlmbr.bus.Broadcast, 'GetGameFolder')
     src = os.path.join(dirpath, 'Objects', 'ShaderBall_simple', 'shaderball_simple_NoMesh_NoID.fbx.assetinfo')
     dst = os.path.join(dirpath, 'Objects', 'shaderball_simple.fbx.assetinfo')
 
