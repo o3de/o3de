@@ -26,6 +26,9 @@
 #include <Integration/Rendering/RenderActorSettings.h>
 #include <QScrollArea>
 #include <MCore/Source/AzCoreConversions.h>
+#include <AzQtComponents/Components/ToastNotification.h>
+#include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
+#include <UI/Notifications/ToastBus.h>
 
 
 namespace EMotionFX
@@ -33,14 +36,18 @@ namespace EMotionFX
     RagdollOutlinerNotificationHandler::RagdollOutlinerNotificationHandler(RagdollNodeWidget *nodeWidget)
         :m_nodeWidget(nodeWidget)
     {
-        if (!IsPhysXGemAvailable() && !ColliderHelpers::AreCollidersReflected())
+        if (IsPhysXGemAvailable() || !ColliderHelpers::AreCollidersReflected())
         {
-            /*
-            AzQtComponents::ToastNotification(
-                        m_mainWidget,
+            auto* skeleletonOutliner =  static_cast<EMotionFX::SkeletonOutlinerPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMotionFX::SkeletonOutlinerPlugin::CLASS_ID));
+            auto toast = AzQtComponents::ToastNotification(
+                        skeleletonOutliner->GetDockWidget(),
                         AzQtComponents::ToastConfiguration{AzQtComponents::ToastType::Error,
                                                            "PhysX disabled", "Ragdoll editor depends on the PhysX gem. Please enable it in the Project Manager."});
-            */
+            AZ::EBus<AzToolsFramework::ToastRequests>::Broadcast(
+                        &AzToolsFramework::ToastRequests::ShowToastNotification,
+                        AzQtComponents::ToastConfiguration{AzQtComponents::ToastType::Error,
+                                                           "PhysX disabled", "Ragdoll editor depends on the PhysX gem. Please enable it in the Project Manager."});
+            //toast.ShowToastAtPoint({0, 0}, {150, 150})
             return;
         }
          EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusConnect();
