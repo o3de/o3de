@@ -21,6 +21,10 @@ namespace AZ::DocumentPropertyEditor
         void SetSortActive(bool active);
         void InvalidateSort();
 
+        // MetaAdapter overrides
+        Dom::Path MapFromSourcePath(const Dom::Path& sourcePath) override;
+        Dom::Path MapToSourcePath(const Dom::Path& filterPath) override;
+
     protected:
         Dom::Value GenerateContents() override;
 

@@ -38,6 +38,20 @@ namespace AZ::DocumentPropertyEditor
         }
     }
 
+    Dom::Path RowSortAdapter::MapFromSourcePath(const Dom::Path& sourcePath)
+    {
+        // TODO
+        (void)sourcePath;
+        return Dom::Path();
+    }
+
+    Dom::Path RowSortAdapter::MapToSourcePath(const Dom::Path& filterPath)
+    {
+        // TODO
+        (void)filterPath;
+        return Dom::Path();
+    }
+
     Dom::Value RowSortAdapter::GenerateContents()
     {
         if (!m_sourceAdapter)
