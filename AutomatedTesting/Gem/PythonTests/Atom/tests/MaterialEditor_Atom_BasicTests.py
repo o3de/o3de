@@ -34,9 +34,12 @@ class Tests:
     verify_all_documents_are_opened = (
         "Expected material documents are opened.",
         "P0: Failed to verify the expected material documents are opened.")
-    lighting_background_changed = (
-        "Lighting background changed successfully.",
+    viewport_background_changed = (
+        "Viewport background changed successfully.",
         "P0: Lighting background change failed.")
+    viewport_model_changed = (
+        "Viewport model changed successfully",
+        "P0: Viewport model change failed.")
 
 
 def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
@@ -58,7 +61,8 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
     8) Revert the baseColor.color property of the test_material_1 material document using undo.
     9) Use redo to change the baseColor.color property again.
     10) Change the lighting background displayed behind the material model in the viewport.
-    11) Look for errors and asserts.
+    11) Change the material model displayed in the viewport.
+    12) Look for errors and asserts.
 
     :return: None
     """
@@ -167,9 +171,16 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
             "neutral_urban.lightingpreset.azasset")
         lighting_background_asset = atom_tools_utils.load_lighting_preset(lighting_background_asset_path)
         Report.result(
-            Tests.lighting_background_changed, lighting_background_asset is True)
+            Tests.viewport_background_changed, lighting_background_asset is True)
 
-        # 11. Look for errors and asserts.
+        # 11. Change the material model displayed in the viewport.
+        model_asset_path = os.path.join(
+            "@gemroot:MaterialEditor@", "Assets", "MaterialEditor", "ViewPortModels", "BeveledCone.modelpreset.azasset")
+        model_asset = atom_tools_utils.load_model_preset(model_asset_path)
+        Report.result(
+            Tests.viewport_model_changed, model_asset is True)
+
+        # 12. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

@@ -129,9 +129,13 @@ def is_shadowcatcher_enabled() -> bool:
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetShadowCatcherEnabled")
 
 
-def select_model_config(asset_path: str) -> None:
-    asset_id = asset_utils.Asset.find_asset_by_path(asset_path)
-    azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "LoadModelPresetByAssetId", asset_id)
+def load_model_preset_by_asset_id(asset_id: azlmbr.math.Uuid) -> bool:
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
+        azlmbr.bus.Broadcast, "LoadModelPresetByAssetId", asset_id)
+
+
+def load_model_preset(asset_path: str) -> bool:
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "LoadModelPreset", asset_path)
 
 
 def undo(document_id: azlmbr.math.Uuid) -> bool:
