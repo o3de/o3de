@@ -5901,14 +5901,15 @@ namespace AzToolsFramework
             for (auto componentEditor : m_componentEditors)
             {
                 // if this component editor entered component mode
-                if (componentEditor->EnteredComponentMode(componentModeTypes) == ComponentEditor::ComponentEditorState::DidEnterComponentMode)
+                if (componentEditor->EnteredComponentMode(componentModeTypes) ==
+                    ComponentEditor::ComponentEditorState::ComponentCardSelected)
                 {
                     // scroll to the relevant component card
                     m_gui->m_componentList->verticalScrollBar()->setValue(componentEditor->pos().y());
                 }
             }
 
-            // record the selected state after entering component modse
+            // record the selected state after entering component mode
             SaveComponentEditorState();
         }
     }

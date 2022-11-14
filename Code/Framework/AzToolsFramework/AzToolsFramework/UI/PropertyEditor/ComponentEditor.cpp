@@ -930,7 +930,7 @@ namespace AzToolsFramework
             componentModeTypes.end(), m_componentType) == componentModeTypes.end())
         {
             SetWidgetInteractEnabled(this, false);
-            return ComponentEditor::ComponentEditorState::DidNotEnterComponentMode;
+            return ComponentEditor::ComponentEditorState::ComponentCardDisabled;
         }
         else
         {
@@ -938,10 +938,10 @@ namespace AzToolsFramework
             {
                 // only set the first item to be selected/highlighted
                 SetSelected(componentModeTypes.front() == m_componentType);
-                return ComponentEditor::ComponentEditorState::DidEnterComponentMode;
+                return ComponentEditor::ComponentEditorState::ComponentCardSelected;
             }
         }
-        return ComponentEditor::ComponentEditorState::DidNotEnterComponentMode;
+        return ComponentEditor::ComponentEditorState::ComponentCardDisabled;
     }
 
     void ComponentEditor::LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)

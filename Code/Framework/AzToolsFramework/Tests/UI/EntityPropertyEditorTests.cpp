@@ -296,45 +296,4 @@ namespace UnitTest
         EXPECT_EQ(selectedEntityIds.size(), 1);
         EXPECT_EQ(selectedEntityIds[0], m_levelEntity);
     }
-
-    TEST_F(LevelEntityPropertyEditorRequestTest, GetSelectedEntitiesForLevelInspectorWhenLevelI2sLoaded)
-    {
-        m_levelOpen = true;
-        AZ::Entity* entity = nullptr;
-        AZ::EntityId entityId = CreateDefaultEditorEntity("ComponentModeEntity", &entity);
-
-        // connect to EditorDisabledCompositionRequestBus with entityI
-
-       
-        AzToolsFramework::EntityCompositionRequestBus::Broadcast(
-            &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities,
-            AzToolsFramework::EntityIdList{entityId},
-            AZ::ComponentTypeList{ PlaceholderEditorComponent::RTTI_Type() });
-
-        AzToolsFramework::EntityCompositionRequestBus::Broadcast(
-            &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities,
-            AzToolsFramework::EntityIdList{ entityId },
-            AZ::ComponentTypeList{ AnotherPlaceholderEditorComponent::RTTI_Type() });
-
-        AzToolsFramework::EntityCompositionRequestBus::Broadcast(
-            &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities,
-            AzToolsFramework::EntityIdList{ entityId },
-            AZ::ComponentTypeList{ DependentPlaceholderEditorComponent::RTTI_Type() });
-
-        // When the component is disabled it doesn't show up in the switcher
-        const AzToolsFramework::EntityIdList entityIds = { entityId };
-        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-            &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, entityIds);
-
-        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
-            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::AddSelectedComponentModesOfType,
-            DependentPlaceholderEditorComponent::RTTI_Type());
-
-        auto a = m_levelEditor->GetVerticalScroll();
-
-        // Make sure the correct number of entities are returned
-        EXPECT_EQ(a, 0);
-        //EXPECT_EQ(selectedEntityIds[0], m_levelEntity);
-    }
-
 }
