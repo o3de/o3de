@@ -15,7 +15,7 @@
 
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
-#include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
+#include <AzToolsFramework/PaintBrush/PaintBrushNotificationBus.h>
 
 #include <Editor/EditorImageGradientRequestBus.h>
 
