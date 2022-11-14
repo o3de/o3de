@@ -92,15 +92,20 @@ namespace AtomToolsFramework
         m_sceneContextMenu = aznew GraphCanvas::SceneContextMenu(m_toolId, this);
         m_sceneContextMenu->AddNodePaletteMenuAction(nodePaletteConfig);
 
-        // Set up style sheet to fix highlighting in the node palette
-        AzQtComponents::StyleManager::setStyleSheet(
-            const_cast<GraphCanvas::NodePaletteWidget*>(m_sceneContextMenu->GetNodePalette()), QStringLiteral(":/GraphView/GraphView.qss"));
-
         // Setup the context menu with node palette for proposing a new node
         // when dropping a connection in an empty space in the graph
         nodePaletteConfig.m_rootTreeItem = m_graphViewConfig.m_createNodeTreeItemsFn(m_toolId);
         m_createNodeProposalContextMenu = aznew GraphCanvas::EditorContextMenu(m_toolId, this);
         m_createNodeProposalContextMenu->AddNodePaletteMenuAction(nodePaletteConfig);
+
+        // Set up style sheet to fix highlighting in node palettes
+        AzQtComponents::StyleManager::setStyleSheet(
+            const_cast<GraphCanvas::NodePaletteWidget*>(m_sceneContextMenu->GetNodePalette()),
+            QStringLiteral(":/GraphView/GraphView.qss"));
+
+        AzQtComponents::StyleManager::setStyleSheet(
+            const_cast<GraphCanvas::NodePaletteWidget*>(m_createNodeProposalContextMenu->GetNodePalette()),
+            QStringLiteral(":/GraphView/GraphView.qss"));
 
         CreateActions();
 

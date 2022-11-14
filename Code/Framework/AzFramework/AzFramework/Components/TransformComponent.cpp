@@ -585,7 +585,7 @@ namespace AzFramework
         EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnParentChanged, oldParent, parentId);
         m_parentChangedEvent.Signal(oldParent, parentId);
 
-        if (oldParent != parentId) // Don't send removal notification while activating.
+        if (oldParent.IsValid() && oldParent != parentId) // Don't send removal notification while activating.
         {
             EBUS_EVENT_ID(oldParent, AZ::TransformNotificationBus, OnChildRemoved, GetEntityId());
             auto oldParentTransform = AZ::TransformBus::FindFirstHandler(oldParent);

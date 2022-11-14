@@ -1068,13 +1068,6 @@ AZ_POP_DISABLE_WARNING
     // Execute any deferred commands that uses the CVar commands that were just registered
     AZ::Interface<AZ::IConsole>::Get()->ExecuteDeferredConsoleCommands();
 
-    // Verify that the Maestro Gem initialized the movie system correctly. This can be removed if and when Maestro is not a required Gem
-    if (gEnv->IsEditor() && !gEnv->pMovieSystem)
-    {
-        AZ_Assert(false, "Error initializing the Cinematic System. Please check that the Maestro Gem is enabled for this project.");
-        return false;
-    }
-
     if (ISystemEventDispatcher* systemEventDispatcher = GetISystemEventDispatcher())
     {
         systemEventDispatcher->OnSystemEvent(ESYSTEM_EVENT_GAME_POST_INIT, 0, 0);

@@ -19,6 +19,7 @@ namespace UnitTests
     struct MockBatchApplicationManager : BatchApplicationManager
     {
         using ApplicationManagerBase::InitFileMonitor;
+        using ApplicationManagerBase::InitFileStateCache;
         using ApplicationManagerBase::m_assetProcessorManager;
         using ApplicationManagerBase::m_fileProcessor;
         using ApplicationManagerBase::m_fileStateCache;

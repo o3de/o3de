@@ -9,8 +9,6 @@
            Category="Containers"
            Version="1"
            Deprecated="True"
-           DeprecationUUID="{C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8}"
-           ReplacementMethodName="Get Size"
            VersionConverter="OperatorSizeVersionConverter"
            Description="Get the number of elements in the specified container">
         <In Name="In" Description=""/>

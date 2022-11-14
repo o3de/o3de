@@ -85,8 +85,12 @@ namespace AtomToolsFramework
         AZStd::string m_defaultDataType;
         //! Container of generic or application specific settings for a slot
         DynamicNodeSettingsMap m_settings;
-        //! Specifies whether or not UI will be displayed for editing the slot value on the node
-        bool m_supportsEditingOnNode = true;
+        //! Specifies whether or not the slot will appear on the node UI
+        bool m_visibleOnNode = true;
+        //! Specifies whether or not the slot value will be editable on the node UI
+        bool m_editableOnNode = true;
+        //! Hint on whether or not the slot name can be substituted or mangled in applicable systems
+        bool m_allowNameSubstitution = true;
 
     private:
         static const AZ::Edit::ElementData* GetDynamicEditData(const void* handlerPtr, const void* elementPtr, const AZ::Uuid& elementType);

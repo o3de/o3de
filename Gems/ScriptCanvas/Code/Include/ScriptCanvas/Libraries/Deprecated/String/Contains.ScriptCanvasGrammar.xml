@@ -9,9 +9,6 @@
            Category="String"
            
            Deprecated="True"
-           DeprecationUUID="{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}"
-           ReplacementClassName="String"
-           ReplacementMethodName="Contains String"
            
            Version="0"
            Description="Checks if a string contains an instance of a specified string, if true, it returns the index to the first instance matched.">

@@ -141,6 +141,12 @@ namespace AzFramework
             AZ::Interface<AZ::NativeUI::NativeUIRequests>::Register(m_nativeUI.get());
         }
 
+        if (auto poolManager = AZ::Interface<AZ::InstancePoolManagerInterface>::Get(); poolManager == nullptr)
+        {
+            m_poolManager = AZStd::make_unique<AZ::InstancePoolManager>();
+            AZ::Interface<AZ::InstancePoolManagerInterface>::Register(m_poolManager.get());
+        }
+
         ApplicationRequests::Bus::Handler::BusConnect();
         AZ::UserSettingsFileLocatorBus::Handler::BusConnect();
     }

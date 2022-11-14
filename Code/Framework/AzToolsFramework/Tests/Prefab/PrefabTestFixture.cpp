@@ -223,7 +223,7 @@ namespace UnitTest
     void PrefabTestFixture::ValidateInstanceEntitiesActive(Instance& instance)
     {
         AZStd::vector<AZ::EntityId> entityIdVector;
-        instance.GetNestedEntityIds([&entityIdVector](AZ::EntityId entityId) {
+        instance.GetAllEntityIdsInHierarchy([&entityIdVector](AZ::EntityId entityId) {
             entityIdVector.push_back(entityId);
             return true;
         });
