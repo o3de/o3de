@@ -20,6 +20,8 @@
 
 The [DccScriptingInterface Gem](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md) DCCsi includes some support for various DCC tools like Blender or Maya, as well as popular IDEs that Technical Artists use in development.  Using Wing Pro via the DCCsi is recommended as it streamlines some configuration, but it is not a hard requirement.
 
+![image](https://user-images.githubusercontent.com/23222931/201754413-fb78891c-9f42-4972-bf2c-e7db34120777.png)
+
 1. Enable the [DccScriptingInterface Gem](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md) in your game project, using either the [O3DE Project Manager](https://www.o3de.org/docs/user-guide/project-config/project-manager/) or the o3de.py [commandline tools](https://www.o3de.org/docs/user-guide/project-config/add-remove-gems/)
 
 2. After adding a Gem, you should [configure and rebuild your project](https://www.o3de.org/docs/user-guide/build/configure-and-build/))
@@ -68,9 +70,11 @@ This is necessary for attaching Wing as the debugger in scripts that are running
 4. It needs to be copied somewhere on the `PYTHONPATH`, for instance you could copy it here: `DccScriptingInterface\Tools\IDE\Wing\wingdbstub.py`
 
 5. Open the `wingdbstub.py` file in a text editor and modify line 96 to
-   
    1. **kEmbedded = 1**
+
 6. After starting Wing, click on the bug icon in lower left of Wing's window and make sure that Accept Debug Connections is checked.
+![image](https://user-images.githubusercontent.com/23222931/201769216-91b95f69-868f-477b-b75d-f71b3dd7d98e.png)
+
 7. You can put the following code into a script you'd like to debug during execution
 
 ```python
@@ -97,10 +101,25 @@ The DCCsi integrations are workflow integrations with the intent to provide an i
 The DCCsi helps with aspects such as, configuration and settings, launching DCC tools, and IDEs, and bootstrapping them with O3DE extensions (generally python scripts using the DCC tools APIs to automate tasks)
 
 #### Launch Configurations
+Many IDEs such as Wing allow you to configure one or more launch configurations, each configuration can be used to define an interpretter as well as other aspects such as a environment or additional commands.  With the DCCsi, we can use these to define each DCC applications python, so we can test code by running it in that iterpretter.  These are defined in a data-driven way by an EVAR in the launch environment. The ENVAR is set to a path string of the interpretter location:
+
+The project default is currently configured like this inside of wing:
+  - `${O3DE_DEV}` = '${O3DE_DEV}\python\runtime\python-3.10.5-rev1-windows\python\python.exe'
+
+You can inspect the project default settings:
+`Wing > menubar > Project > Project properties ...`
+
+![image](https://user-images.githubusercontent.com/23222931/201771477-ba8c5ca1-b1b4-4cf3-885e-b142d60513b0.png)
+
+
+After starting Wing using the DCCsi project, you can inspect which Launch Configurations have been defined with the following menu:
+`Wing > menubar > Project > Launch Configurations`
+
+![image](https://user-images.githubusercontent.com/23222931/201770286-ad988b4b-ecde-451c-8379-93938c4b055c.png)
 
 - Supports O3DE Python as Launch Configuration:
   
-  - `${O3DE_DEV}` or `${DCCSI_PY_BASE}`
+  - `${DCCSI_PY_BASE}`
 
 - Supports Blender Python as a Launch Configuration:
   
@@ -114,6 +133,19 @@ The DCCsi helps with aspects such as, configuration and settings, launching DCC 
   
   - `${DCCSI_PY_SUBSTANCE}`
 
+You can change the current Launch environment a couple of differenty ways:
+1. Globally, access the 'Launch Configuations' via the following menu:
+    - `Wing > Python Shell (tab) > options > Use Environment > (select a launch environment)`
+
+2. On Script Executtion:
+    - press the green Start button in the upper-right of the main toolbar ![image](https://user-images.githubusercontent.com/23222931/201775116-1030cf5b-9749-464e-9595-fbe7c09839cd.png)
+    - or the F5 button
+    - In the dialog box:
+        - set the primary pull down to `Use Selected Launch Configuration`
+        - set the second pulldown to the interpretter you'd like to run
+
+![image](https://user-images.githubusercontent.com/23222931/201775372-861a36e7-66c5-4b22-80e1-7b764c68d6c8.png)
+    
 #### Latest Features:
 
 - The latest version of Wing Pro 8 (8.3.3.1) is recommended, as there was a bug in the initial release that prevented Launch Configurations bound to a ENVAR (like above) to function properly. Wing Pro 9 likely works as well, you may just have to make slight adjustments to the configuration (covered in this document below)
@@ -122,7 +154,7 @@ The DCCsi helps with aspects such as, configuration and settings, launching DCC 
 
 - Some additional testing and improvement have been mad in the current release (2210), including changes to better support Installer build folder patterns. See the [readme.md at the root of the DCCsi](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md) for more information about advanced configuration.
 
-# Getting Started
+# Additional Information
 
 Each IDE is different.  Some TAs (like me) like Wing IDE because it's relatively easy to set up and works great with DCC apps like Maya with less configuration.  It's also pretty powerful and you can do a lot of data-driven configuration with it (which we will be covering some of.)  We aren't picking an IDE for you, that's a personal choice, we are just showing you how one like Wing can be set up to provide a better out-of-box experience (so that you don't have to do the setup and configuration yourself.)  In fact, we intend to do the same for other IDS like PyCharm and VScode (maybe others in the future.)
 
@@ -136,7 +168,7 @@ The default location for the DCCsi Gem folder is something like:
 
 But you are reading this, so you have already found it :)
 
-### General
+### General ...
 
 There are many ways to work with O3DE, especially as a developer. Here are some things to be aware of...
 
@@ -174,7 +206,7 @@ There are many ways to work with O3DE, especially as a developer. Here are some 
 
 - This is not an O3DE build guide, it assumes you either have built from source (and know where that is!), or that you have a pre-built install (and likewise know where that is located.)
 
-### Specifics
+### Specifics ...
 
 Location of the DCCsi gem folder:
 
@@ -204,7 +236,7 @@ This is an alternative to launching from the editor menu, or using the scripted 
 
 Development is a catch-22, sometimes the script framework is buggy and broken (or simply a change is wip), and you need a reliable fallback for your dev environment.
 
-# Advanced Setup
+# Advanced Setup ...
 
 Here are some more detailed set up instructions that hopefully help you better understand how Wing and the DCCsi are setup, and how you could modify or extend the configuration.
 
