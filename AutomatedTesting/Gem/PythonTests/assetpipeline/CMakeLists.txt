@@ -13,7 +13,6 @@ add_subdirectory(scene_settings_tests)
     ly_add_pytest(
         NAME AssetPipelineTests.Periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Periodic.py
-        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
         TEST_SUITE periodic
         RUNTIME_DEPENDENCIES
             AssetProcessor
