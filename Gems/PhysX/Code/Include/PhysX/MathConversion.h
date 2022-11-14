@@ -41,6 +41,7 @@ inline AZ::Quaternion PxMathConvert(const physx::PxQuat& pxQuat)
 
 inline AZ::Aabb PxMathConvert(const physx::PxBounds3& bounds)
 {
+    // check that the PhysX bounds are valid, otherwise CreateFromMinMax will assert.
     if (bounds.minimum.x <= bounds.maximum.x && bounds.minimum.y <= bounds.maximum.y && bounds.minimum.z <= bounds.maximum.z)
     {
         return AZ::Aabb::CreateFromMinMax(PxMathConvert(bounds.minimum), PxMathConvert(bounds.maximum));
