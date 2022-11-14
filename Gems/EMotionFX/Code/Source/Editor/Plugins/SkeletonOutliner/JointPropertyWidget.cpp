@@ -10,6 +10,7 @@
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
+#include <MCore/Source/ReflectionSerializer.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/NodeInfo.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/ActorInfo.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/NodeGroupInfo.h>
@@ -344,18 +345,28 @@ namespace EMotionFX
             }
         }
         // todo paste (if there is a copied collider)
+        /*
         const QMimeData* mimeData = QGuiApplication::clipboard()->mimeData();
         const QByteArray clipboardContents = mimeData->data(ColliderHelpers::GetMimeTypeForColliderShape());
 
-
+        auto* type = new AzPhysics::ShapeColliderPair;
+        MCore::ReflectionSerializer::Deserialize(type, mimeData->data(ColliderHelpers::GetMimeTypeForColliderShape()).data());
+        auto copyFromColliderConfiguration = type->first.get();
         //pasteNewColliderAction->setEnabled(!clipboardContents.isEmpty());
         //connect(pasteNewColliderAction, &QAction::triggered, this, [this, index]() { PasteCollider(index, false); } );
-        if (!clipboardContents.isEmpty())
+        /f (!clipboardContents.isEmpty())
         {
-            auto pasteNewColliderItem = new QStandardItem("Paste collider");
-            pasteNewColliderItem->setData(true, ItemRoles::PasteCopiedCollider);
-            model->appendRow(pasteNewColliderItem);
-        }
+            for (const auto& section : sections)
+            {
+                if (section.type == copyFromColliderConfiguration->type)
+                {
+                    break;
+                )
+                auto pasteNewColliderItem = new QStandardItem(QString{"Paste as %1 collider"}.arg(section.name.c_str()));
+                pasteNewColliderItem->setData(true, ItemRoles::PasteCopiedCollider);
+                model->appendRow(pasteNewColliderItem);
+            }
+        }*/
 
         newFrame->setFixedWidth(width());
         newFrame->show();

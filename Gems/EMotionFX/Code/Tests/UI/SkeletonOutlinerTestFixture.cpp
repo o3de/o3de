@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Editor/ColliderContainerWidget.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
@@ -24,6 +25,18 @@
 
 namespace EMotionFX
 {
+    void SkeletonOutlinerTestFixture::SetUpPhysics()
+    {
+        EMStudio::GetMainWindow()->ApplicationModeChanged("Physics");
+        const int numJoints = 6;
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        AZ::Data::Asset<Integration::ActorAsset> actorAsset =
+            TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, numJoints, "ClothColliderTestsActor");
+
+        CreateSkeletonAndModelIndices();
+
+        EXPECT_EQ(m_indexList.size(), numJoints);
+    }
     void SkeletonOutlinerTestFixture::AddColliderViaAddComponentButton(QString label, QString subLevelLabel)
     {
         EXPECT_GT(m_indexList.size(), 3) << "Make sure to have a skeleton";
@@ -78,16 +91,12 @@ namespace EMotionFX
         QApplication::processEvents();
     }
 
+    /*
+        Test Cases
+     */
     TEST_F(SkeletonOutlinerTestFixture, AddClothCollider)
     {
-        const int numJoints = 6;
-        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
-        AZ::Data::Asset<Integration::ActorAsset> actorAsset =
-            TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, numJoints, "ClothColliderTestsActor");
-
-        CreateSkeletonAndModelIndices();
-
-        EXPECT_EQ(m_indexList.size(), numJoints);
+        SetUpPhysics();
 
         // Find the 3rd joint after the RootJoint in the TreeView and select it
         SelectIndexes(m_indexList, m_treeView, 3, 3);
@@ -101,15 +110,7 @@ namespace EMotionFX
 
     TEST_F(SkeletonOutlinerTestFixture, ChangeClothColliderValue)
     {
-        EMStudio::GetMainWindow()->ApplicationModeChanged("Physics");
-        const int numJoints = 6;
-        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
-        AZ::Data::Asset<Integration::ActorAsset> actorAsset =
-            TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, numJoints, "ClothColliderTestsActor");
-
-        CreateSkeletonAndModelIndices();
-
-        EXPECT_EQ(m_indexList.size(), numJoints);
+        SetUpPhysics();
 
         AddColliderViaAddComponentButton("Add Cloth Collider", "Capsule");
 
@@ -149,6 +150,24 @@ namespace EMotionFX
     }
    TEST_F(SkeletonOutlinerTestFixture, CopyAndPaste)
    {
-        EXPECT_EQ(0, 1) << "This test is not implemented";
+       SetUpPhysics();
+
+        // create a cloth collider to copy it
+        AddColliderViaAddComponentButton("Add Cloth Collider", "Capsule");
+
+        // copy it
+        //   ColliderWidget::OnCopyCollider();
+        //  find "Copy collider" action in cloth collider
+        auto* jointWidget = GetJointPropertyWidget()->findChild<ClothJointWidget*>();
+        auto* colliderContainerWidget = jointWidget->findChild<ColliderContainerWidget*>();
+        emit colliderContainerWidget->CopyCollider(0);
+
+        //auto* action = GetNamedAction(jointWidget, "Copy collider");
+        //action->trigger();
+        //   trigger action
+
+        // AddColliderViaAddComponentButton("Paste as Hit Detection Collider")
+        ShowJointPropertyWidget();
+       EXPECT_EQ(0, 1) << "This test is not implemented";
    }
 } // namespace EMotionFX

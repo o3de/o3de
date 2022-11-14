@@ -68,6 +68,7 @@ namespace EMotionFX
         void ShowJointPropertyWidget();
         void AddColliderViaAddComponentButton(QString label, QString subLevelLabel = {""});
 
+        void SetUpPhysics();
     protected:
         QModelIndexList m_indexList;
         ReselectingTreeView* m_treeView;
