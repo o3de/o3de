@@ -14,7 +14,7 @@
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <Editor/SkeletonModelJointWidget.h>
 #include <QWidget>
-#include <Editor/Plugins/Ragdoll/RagdollOutlinerNotificationHandler.h>
+#include <Editor/Plugins/ColliderWidgets/RagdollOutlinerNotificationHandler.h>
 #include <Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.h>
 #endif
 
@@ -69,7 +69,9 @@ namespace EMotionFX
         void OnRemoveCollider(size_t colliderIndex);
 
     protected:
+        friend RagdollOutlinerNotificationHandler;
         RagdollOutlinerNotificationHandler m_handler;
+
     private:
         // SkeletonModelJointWidget
         QWidget* CreateContentWidget(QWidget* parent) override;

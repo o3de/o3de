@@ -7,7 +7,7 @@
  */
 #pragma once
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
-#include <Editor/Plugins/SkeletonOutliner/JointPropertyWidget.h>
+#include <Editor/Plugins/ColliderWidgets/JointPropertyWidget.h>
 #include <Tests/UI/UIFixture.h>
 //#include <QTreeView>
 #include <Editor/ReselectingTreeView.h>

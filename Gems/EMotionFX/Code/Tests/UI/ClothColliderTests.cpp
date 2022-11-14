@@ -12,7 +12,7 @@
 #include <QtTest>
 #include <QTreeView>
 
-#include <Editor/Plugins/Cloth/ClothOutlinerNotificationHandler.h>
+#include <Editor/Plugins/ColliderWidgets/ClothOutlinerNotificationHandler.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 #include <Editor/ReselectingTreeView.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>

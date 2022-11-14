@@ -6,7 +6,7 @@
  *
  */
 
-#include <Editor/Plugins/SkeletonOutliner/JointPropertyWidget.h>
+#include <Editor/Plugins/ColliderWidgets/JointPropertyWidget.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
@@ -38,7 +38,7 @@ namespace EMotionFX
     {
         auto* mainLayout = new QVBoxLayout;
         mainLayout->setMargin(0);
-        mainLayout->setContentsMargins(0, 5, 0, 0);
+        mainLayout->setContentsMargins(0, 5, 0, 5);
         auto* propertyCard = new AzQtComponents::Card;
         AzQtComponents::Card::applySectionStyle(propertyCard);
         propertyCard->setTitle("Node Attributes");
@@ -63,6 +63,16 @@ namespace EMotionFX
             connect(&skeletonModel->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, &JointPropertyWidget::Reset);
         }
 
+        // create Add Component button
+        m_addCollidersButton = new AddCollidersButton(propertyCard);
+        m_addCollidersButton->setObjectName("EMotionFX.SkeletonOutlinerPlugin.JointPropertyWidget.addCollidersButton");
+        connect(m_addCollidersButton, &AddCollidersButton::AddCollider, this, &JointPropertyWidget::OnAddCollider);
+        connect(m_addCollidersButton, &AddCollidersButton::AddToRagdoll, this, &JointPropertyWidget::OnAddToRagdoll);
+        auto* marginLayout = new QVBoxLayout;
+        marginLayout->setContentsMargins(10, 0, 10, 10);
+        marginLayout->addWidget(m_addCollidersButton);
+        mainLayout->addLayout(marginLayout);
+
         m_filterEntityBox = new QLineEdit{ this };
         mainLayout->addWidget(m_filterEntityBox);
         connect(m_filterEntityBox, &QLineEdit::textChanged, this, &JointPropertyWidget::OnSearchTextChanged);
@@ -74,15 +84,6 @@ namespace EMotionFX
         m_hitDetectionJointWidget->CreateGUI();
         m_ragdollJointWidget->CreateGUI();
 
-        // create Add Component button
-        m_addCollidersButton = new AddCollidersButton(propertyCard);
-        m_addCollidersButton->setObjectName("EMotionFX.SkeletonOutlinerPlugin.JointPropertyWidget.addCollidersButton");
-        connect(m_addCollidersButton, &AddCollidersButton::AddCollider, this, &JointPropertyWidget::OnAddCollider);
-        connect(m_addCollidersButton, &AddCollidersButton::AddToRagdoll, this, &JointPropertyWidget::OnAddToRagdoll);
-        auto* marginLayout = new QVBoxLayout;
-        marginLayout->setContentsMargins(10, 0, 10, 10);
-        marginLayout->addWidget(m_addCollidersButton);
-        mainLayout->addLayout(marginLayout);
 
         mainLayout->addWidget(m_clothJointWidget);
         mainLayout->addWidget(m_hitDetectionJointWidget);

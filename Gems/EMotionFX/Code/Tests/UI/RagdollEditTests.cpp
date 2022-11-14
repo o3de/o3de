@@ -13,8 +13,8 @@
 #include <QTreeView>
 #include <QPushButton>
 
-#include <Editor/Plugins/Ragdoll/RagdollOutlinerNotificationHandler.h>
-#include <Editor/Plugins/Ragdoll/RagdollNodeWidget.h>
+#include <Editor/Plugins/ColliderWidgets/RagdollOutlinerNotificationHandler.h>
+#include <Editor/Plugins/ColliderWidgets/RagdollNodeWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 #include <Editor/ColliderHelpers.h>
 #include <EMotionFX/Source/Actor.h>

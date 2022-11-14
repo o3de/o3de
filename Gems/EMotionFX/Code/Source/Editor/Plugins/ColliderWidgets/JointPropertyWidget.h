@@ -9,13 +9,13 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <Editor/Plugins/Cloth/ClothJointWidget.h>
-#include <Editor/Plugins/HitDetection/HitDetectionJointWidget.h>
+#include <Editor/Plugins/ColliderWidgets/ClothJointWidget.h>
+#include <Editor/Plugins/ColliderWidgets/HitDetectionJointWidget.h>
 #include <UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
-#include <Editor/Plugins/Ragdoll/RagdollNodeWidget.h>
+#include <Editor/Plugins/ColliderWidgets/RagdollNodeWidget.h>
 #include <QPushButton>
 #endif
 #include <QTreeWidget>

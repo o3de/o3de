@@ -6,17 +6,20 @@
  *
  */
 
-#include <Editor/Plugins/HitDetection/HitDetectionJointWidget.h>
+#include <QTimer>
+#include <Editor/Plugins/ColliderWidgets/HitDetectionJointWidget.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
 #include <Editor/SkeletonModel.h>
-#include <Editor/Plugins/HitDetection/HitDetectionOutlinerNotificationHandler.h>
-#include <Editor/Plugins/HitDetection/HitDetectionJointWidget.h>
+#include <Editor/Plugins/ColliderWidgets/HitDetectionOutlinerNotificationHandler.h>
+#include <Editor/Plugins/ColliderWidgets/HitDetectionJointWidget.h>
 #include <Integration/Rendering/RenderActorSettings.h>
 #include <QScrollArea>
 #include <MCore/Source/AzCoreConversions.h>
+#include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
+#include <UI/Notifications/ToastBus.h>
 
 
 namespace EMotionFX
@@ -25,10 +28,11 @@ namespace EMotionFX
         :m_nodeWidget(jointWidget)
     {
 
-        if (!ColliderHelpers::AreCollidersReflected())
+        if (ColliderHelpers::AreCollidersReflected())
         {
-            // todo
-            //    "Hit detection collider editor depends on the PhysX gem. Please enable it in the Project Manager."));
+            m_nodeWidget->errorNotification("PhysX disabled",
+                                            "Hit detection collider editor depends on the PhysX gem. Please enable it in the Project Manager.");
+
             return;
         }
          EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusConnect();
@@ -78,7 +82,6 @@ namespace EMotionFX
             QAction* addBoxAction = addColliderMenu->addAction("Add box");
             addBoxAction->setProperty("typeId", azrtti_typeid<Physics::BoxShapeConfiguration>().ToString<AZStd::string>().c_str());
             connect(addBoxAction, &QAction::triggered, this, &HitDetectionOutlinerNotificationHandler::OnAddCollider);
-
             QAction* addCapsuleAction = addColliderMenu->addAction("Add capsule");
             addCapsuleAction->setProperty("typeId", azrtti_typeid<Physics::CapsuleShapeConfiguration>().ToString<AZStd::string>().c_str());
             connect(addCapsuleAction, &QAction::triggered, this, &HitDetectionOutlinerNotificationHandler::OnAddCollider);

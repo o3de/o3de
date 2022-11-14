@@ -38,10 +38,10 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/NodeGroups/NodeGroupsPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
-#include <Editor/Plugins/HitDetection/HitDetectionOutlinerNotificationHandler.h>
+#include <Editor/Plugins/ColliderWidgets/HitDetectionOutlinerNotificationHandler.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
-#include <Editor/Plugins/Ragdoll/RagdollOutlinerNotificationHandler.h>
-#include <Editor/Plugins/Cloth/ClothOutlinerNotificationHandler.h>
+#include <Editor/Plugins/ColliderWidgets/RagdollOutlinerNotificationHandler.h>
+#include <Editor/Plugins/ColliderWidgets/ClothOutlinerNotificationHandler.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
 
 namespace EMStudio

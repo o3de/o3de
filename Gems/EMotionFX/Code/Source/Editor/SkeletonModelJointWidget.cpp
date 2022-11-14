@@ -11,8 +11,12 @@
 #include <Editor/SkeletonModelJointWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
-#include "AzQtComponents/Components/Widgets/CardHeader.h"
-#include "EMotionFX/Source/ActorInstance.h"
+#include <AzCore/EBus/Event.h>
+#include <UI/Notifications/ToastBus.h>
+#include <AzQtComponents/Components/ToastNotification.h>
+#include <AzQtComponents/Components/ToastNotificationConfiguration.h>
+#include <AzQtComponents/Components/Widgets/CardHeader.h>
+#include <EMotionFX/Source/ActorInstance.h>
 #include <QLabel>
 #include <QItemSelectionModel>
 #include <QModelIndex>
@@ -191,4 +195,20 @@ namespace EMotionFX
 
         return selectedModelIndices;
     }
+    void SkeletonModelJointWidget::errorNotification(QString title, QString description)
+    {
+        QTimer::singleShot(
+            0,
+            this,
+            [title, description]
+            {
+                AzToolsFramework::ToastRequestBus::Event(
+                    AZ_CRC("SkeletonOutliner"),
+                    &AzToolsFramework::ToastRequestBus::Events::ShowToastNotification,
+                    AzQtComponents::ToastConfiguration{
+                        AzQtComponents::ToastType::Error,
+                        title, description});
+            });
+    }
+
 } // namespace EMotionFX

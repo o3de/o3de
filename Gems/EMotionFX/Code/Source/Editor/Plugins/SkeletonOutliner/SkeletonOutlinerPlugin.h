@@ -13,7 +13,7 @@
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
-#include <Editor/Plugins/SkeletonOutliner/JointPropertyWidget.h>
+#include <Editor/Plugins/ColliderWidgets/JointPropertyWidget.h>
 #include <Editor/SkeletonModel.h>
 #include <Editor/SelectionProxyModel.h>
 #include <Editor/InspectorBus.h>

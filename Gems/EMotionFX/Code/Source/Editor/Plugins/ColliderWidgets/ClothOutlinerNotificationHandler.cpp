@@ -14,8 +14,8 @@
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
 #include <Editor/SkeletonModel.h>
-#include <Editor/Plugins/Cloth/ClothOutlinerNotificationHandler.h>
-#include <Editor/Plugins/Cloth/ClothJointWidget.h>
+#include <Editor/Plugins/ColliderWidgets/ClothOutlinerNotificationHandler.h>
+#include <Editor/Plugins/ColliderWidgets/ClothJointWidget.h>
 #include <Integration/Rendering/RenderActorSettings.h>
 #include <QScrollArea>
 
@@ -25,9 +25,10 @@ namespace EMotionFX
     ClothOutlinerNotificationHandler::ClothOutlinerNotificationHandler(ClothJointWidget* colliderWidget)
         :m_colliderWidget(colliderWidget)
     {
-        if (!IsNvClothGemAvailable() || !ColliderHelpers::AreCollidersReflected())
+        if (IsNvClothGemAvailable() || !ColliderHelpers::AreCollidersReflected())
         {
-            // m_dock->setWidget(CreateErrorContentWidget("Cloth collider editor depends on the NVIDIA Cloth gem. Please enable it in the Project Manager."));
+            m_colliderWidget->errorNotification("Nvidia Cloth Gem not Available",
+                                                "Cloth collider editor depends on the NVIDIA Cloth gem. Please enable it in the Project Manager.");
             return;
         }
          EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusConnect();

@@ -15,8 +15,8 @@
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
 #include <Editor/SkeletonModel.h>
-#include <Editor/Plugins/Cloth/ClothOutlinerNotificationHandler.h>
-#include <Editor/Plugins/Cloth/ClothJointWidget.h>
+#include <Editor/Plugins/ColliderWidgets/ClothOutlinerNotificationHandler.h>
+#include <Editor/Plugins/ColliderWidgets/ClothJointWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
 #include <QLabel>
 #include <QMessageBox>

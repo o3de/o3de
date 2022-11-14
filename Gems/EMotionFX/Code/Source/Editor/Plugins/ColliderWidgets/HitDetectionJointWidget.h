@@ -9,7 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <Editor/Plugins/HitDetection/HitDetectionOutlinerNotificationHandler.h>
+#include <Editor/Plugins/ColliderWidgets/HitDetectionOutlinerNotificationHandler.h>
 #include <Editor/SkeletonModelJointWidget.h>
 #endif
 
@@ -43,6 +43,7 @@ namespace EMotionFX
 
     protected:
         HitDetectionOutlinerNotificationHandler m_handler;
+        friend HitDetectionOutlinerNotificationHandler;
 
     private:
         // SkeletonModelJointWidget

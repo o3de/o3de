@@ -71,10 +71,8 @@ namespace EMotionFX
     bool SkeletonOutlinerPlugin::Init()
     {
         m_mainWidget = new QWidget(m_dock);
-        auto notificationsView = AZStd::make_unique<AzToolsFramework::ToastNotificationsView>(m_mainWidget, AZ_CRC("SkeletonOutliner"));
-        auto* m_notificationView = new AzToolsFramework::ToastNotificationsView(m_mainWidget, AZ_CRC("SkeletonOutliner"));
-        m_notificationView->ShowToastNotification(                        AzQtComponents::ToastConfiguration{AzQtComponents::ToastType::Error,
-                                                                                                             "PhysX disabled", "Ragdoll editor depends on the PhysX gem. Please enable it in the Project Manager."});
+        [[maybe_unused]] auto* toastNotificationsView =
+            new AzToolsFramework::ToastNotificationsView(m_mainWidget, AZ_CRC("SkeletonOutliner"));
 
         QVBoxLayout* mainLayout = new QVBoxLayout();
         m_mainWidget->setLayout(mainLayout);

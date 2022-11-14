@@ -73,19 +73,23 @@ set(FILES
     Source/Editor/TagSelector.cpp
     Source/Editor/TypeChoiceButton.h
     Source/Editor/TypeChoiceButton.cpp
-    Source/Editor/Plugins/Cloth/ClothJointWidget.h
-    Source/Editor/Plugins/Cloth/ClothJointWidget.cpp
-    Source/Editor/Plugins/Cloth/ClothOutlinerNotificationHandler.h
-    Source/Editor/Plugins/Cloth/ClothOutlinerNotificationHandler.cpp
-    Source/Editor/Plugins/SkeletonOutliner/JointPropertyWidget.h
-    Source/Editor/Plugins/SkeletonOutliner/JointPropertyWidget.cpp
+    Source/Editor/Plugins/ColliderWidgets/ClothJointWidget.h
+    Source/Editor/Plugins/ColliderWidgets/ClothJointWidget.cpp
+    Source/Editor/Plugins/ColliderWidgets/ClothOutlinerNotificationHandler.h
+    Source/Editor/Plugins/ColliderWidgets/ClothOutlinerNotificationHandler.cpp
+    Source/Editor/Plugins/ColliderWidgets/RagdollNodeWidget.h
+    Source/Editor/Plugins/ColliderWidgets/RagdollNodeWidget.cpp
+    Source/Editor/Plugins/ColliderWidgets/RagdollOutlinerNotificationHandler.h
+    Source/Editor/Plugins/ColliderWidgets/RagdollOutlinerNotificationHandler.cpp
+    Source/Editor/Plugins/ColliderWidgets/JointPropertyWidget.h
+    Source/Editor/Plugins/ColliderWidgets/JointPropertyWidget.cpp
+    Source/Editor/Plugins/ColliderWidgets/HitDetectionJointWidget.h
+    Source/Editor/Plugins/ColliderWidgets/HitDetectionJointWidget.cpp
+    Source/Editor/Plugins/ColliderWidgets/HitDetectionOutlinerNotificationHandler.h
+    Source/Editor/Plugins/ColliderWidgets/HitDetectionOutlinerNotificationHandler.cpp
     Source/Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h
     Source/Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h
     Source/Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.cpp
-    Source/Editor/Plugins/HitDetection/HitDetectionJointWidget.h
-    Source/Editor/Plugins/HitDetection/HitDetectionJointWidget.cpp
-    Source/Editor/Plugins/HitDetection/HitDetectionOutlinerNotificationHandler.h
-    Source/Editor/Plugins/HitDetection/HitDetectionOutlinerNotificationHandler.cpp
     Source/Editor/Plugins/Ragdoll/ColliderCapsuleManipulators.h
     Source/Editor/Plugins/Ragdoll/ColliderCapsuleManipulators.cpp
     Source/Editor/Plugins/Ragdoll/ColliderRotationManipulators.h
@@ -102,10 +106,6 @@ set(FILES
     Source/Editor/Plugins/Ragdoll/JointTwistLimitManipulators.cpp
     Source/Editor/Plugins/Ragdoll/RagdollJointLimitWidget.h
     Source/Editor/Plugins/Ragdoll/RagdollJointLimitWidget.cpp
-    Source/Editor/Plugins/Ragdoll/RagdollOutlinerNotificationHandler.h
-    Source/Editor/Plugins/Ragdoll/RagdollOutlinerNotificationHandler.cpp
-    Source/Editor/Plugins/Ragdoll/RagdollNodeWidget.h
-    Source/Editor/Plugins/Ragdoll/RagdollNodeWidget.cpp
     Source/Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.h
     Source/Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.cpp
     Source/Editor/Plugins/Ragdoll/PhysicsSetupManipulatorBus.h

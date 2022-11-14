@@ -10,7 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <Editor/SkeletonModelJointWidget.h>
-#include <Editor/Plugins/Cloth/ClothOutlinerNotificationHandler.h>
+#include <Editor/Plugins/ColliderWidgets/ClothOutlinerNotificationHandler.h>
 #endif
 
 
@@ -42,6 +42,7 @@ namespace EMotionFX
         void OnPasteCollider(size_t colliderIndex, bool replace);
         void OnRemoveCollider(size_t colliderIndex);
     protected:
+        friend ClothOutlinerNotificationHandler;
         ClothOutlinerNotificationHandler m_handler;
 
     private:

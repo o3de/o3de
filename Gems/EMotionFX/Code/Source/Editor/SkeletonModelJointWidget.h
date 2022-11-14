@@ -54,6 +54,7 @@ namespace EMotionFX
         virtual QWidget* CreateContentWidget(QWidget* parent) = 0;
         virtual void InternalReinit() = 0;
 
+        void errorNotification(QString title, QString description);
     public slots:
         void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
         void OnDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles);
