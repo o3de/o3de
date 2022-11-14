@@ -59,7 +59,7 @@ void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout
 
 void ApplySimpleSpotLights(Surface surface, inout LightingData lightingData)
 {
-#if ENABLE_LIGHTCULLING
+#if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.LoadAdvance();
                 
     while( !lightingData.tileIterator.IsDone() ) 

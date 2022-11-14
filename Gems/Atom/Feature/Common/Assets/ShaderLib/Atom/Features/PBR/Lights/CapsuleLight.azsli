@@ -240,17 +240,17 @@ void ApplyCapsuleLightInternal(uint lightIndex, Surface surface, inout LightingD
             ValidateCapsuleLight(light, surface, lightingData);
         }
         else
-#endif
+#endif // ENABLE_AREA_LIGHT_VALIDATION
         {
             ApplyCapsuleLight(light, surface, lightingData);
         }
     }
-#endif
+#endif // ENABLE_CAPSULE_LIGHTS
 }
 
 void ApplyCapsuleLights(Surface surface, inout LightingData lightingData)
 {    
-#if ENABLE_LIGHTCULLING
+#if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.LoadAdvance();
                 
     while(!lightingData.tileIterator.IsDone())

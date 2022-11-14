@@ -112,9 +112,9 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
             {
                 transmissionDistance = ProjectedShadow::GetThickness(shadowIndex, surface.position - surface.transmission.GetShrinkFactor() * surface.vertexNormal);
             }
-#endif
+#endif // ENABLE_TRANSMISSION
         }
-#endif
+#endif // ENABLE_SHADOWS
 
         // Diffuse contribution
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, normalize(posToLight)) * litRatio;
@@ -195,17 +195,17 @@ void ApplyPointLightInternal(uint lightIndex, Surface surface, inout LightingDat
             ValidatePointLight(light, surface, lightingData);
         }
         else
-#endif
+#endif // ENABLE_AREA_LIGHT_VALIDATION
         {
             ApplyPointLight(light, surface, lightingData);
         }
     }
-#endif
+#endif // ENABLE_SPHERE_LIGHTS
 }
 
 void ApplyPointLights(Surface surface, inout LightingData lightingData)
 {
-#if ENABLE_LIGHTCULLING
+#if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.LoadAdvance();
     
     while( !lightingData.tileIterator.IsDone() ) 

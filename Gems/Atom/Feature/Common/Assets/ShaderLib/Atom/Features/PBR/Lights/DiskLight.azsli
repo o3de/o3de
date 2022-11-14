@@ -224,17 +224,17 @@ void ApplyDiskLightInternal(uint lightIndex, Surface surface, inout LightingData
             ValidateDiskLight(light, surface, lightingData);
         }
         else
-#endif
+#endif // ENABLE_AREA_LIGHT_VALIDATION
         {
             ApplyDiskLight(light, surface, lightingData);
         }
     }
-#endif
+#endif // ENABLE_DISK_LIGHTS
 }
 
 void ApplyDiskLights(Surface surface, inout LightingData lightingData)
 {    
-#if ENABLE_LIGHTCULLING
+#if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.LoadAdvance();
 
     while( !lightingData.tileIterator.IsDone() )

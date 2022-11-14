@@ -22,7 +22,7 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface);
 
 void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surface)
 {
-#if ENABLE_LIGHTCULLING
+#if ENABLE_LIGHT_CULLING
     tileIterator.LoadAdvance();
     
     while( !tileIterator.IsDone() )

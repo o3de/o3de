@@ -91,10 +91,10 @@
                     "Connections": [
                         {
                             "LocalSlot": "DepthStencil",
-                          "AttachmentRef": {
-                            "Pass": "ForwardPass",
-                            "Attachment": "DepthStencilOutput"
-                          }
+                            "AttachmentRef": {
+                                "Pass": "ForwardPass",
+                                "Attachment": "DepthStencilOutput"
+                            }
                         },
                         {
                             "LocalSlot": "InputOutput",
@@ -119,10 +119,10 @@
                         },
                         {
                             "LocalSlot": "DepthInputOutput",
-                          "AttachmentRef": {
-                            "Pass": "ForwardPass",
-                            "Attachment": "DepthStencilOutput"
-                          }
+                            "AttachmentRef": {
+                                "Pass": "ForwardPass",
+                                "Attachment": "DepthStencilOutput"
+                            }
                         }
                     ],
                     "PassData": {
@@ -134,14 +134,13 @@
                 {
                     "Name": "UIPass",
                     "TemplateName": "UIParentTemplate",
-                    "Connections": [
-                        
+                    "Connections": [  
                         {
                             "LocalSlot": "DepthInputOutput",
-                          "AttachmentRef": {
-                            "Pass": "ForwardPass",
-                            "Attachment": "DepthStencilOutput"
-                          }
+                            "AttachmentRef": {
+                                "Pass": "ForwardPass",
+                                "Attachment": "DepthStencilOutput"
+                            }
                         },
                         {
                             "LocalSlot": "InputOutput",

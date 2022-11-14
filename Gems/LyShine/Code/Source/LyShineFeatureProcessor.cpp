@@ -62,7 +62,7 @@ namespace LyShine
         //Check if DepthPrePass is part of the pipeline. This is possible for any pipelines built for tbdr gpus.
         if (!renderPipeline->FindFirstPass(AZ::Name("DepthPrePass")))
         {
-            AZ::Name depthAttachment = AZ::Name("DepthInputOutput");
+            const AZ::Name depthAttachment = AZ::Name("DepthInputOutput");
             auto findIter = AZStd::find_if(passRequestCopy.m_connections.begin(), passRequestCopy.m_connections.end(), [depthAttachment](const AZ::RPI::PassConnection& entry)
             {
                 return entry.m_localSlot == depthAttachment;

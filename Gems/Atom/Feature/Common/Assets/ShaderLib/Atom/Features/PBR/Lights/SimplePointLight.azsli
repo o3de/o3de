@@ -38,7 +38,7 @@ void ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, ino
 
 void ApplySimplePointLights(Surface surface, inout LightingData lightingData)
 {
-#if ENABLE_LIGHTCULLING
+#if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.LoadAdvance();    
     while( !lightingData.tileIterator.IsDone() ) 
     { 

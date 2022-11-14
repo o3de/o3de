@@ -17,12 +17,12 @@
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 
-#ifndef ENABLE_PHYSICALSKY
-#define ENABLE_PHYSICALSKY              1
+#ifndef ENABLE_PHYSICAL_SKY
+#define ENABLE_PHYSICAL_SKY              1
 #endif
 
-#ifndef ENABLE_MERGEFILMICTONEMAP
-#define ENABLE_MERGEFILMICTONEMAP              0
+#ifndef ENABLE_MERGE_FILMIC_TONEMAP
+#define ENABLE_MERGE_FILMIC_TONEMAP              0
 #endif
 
 ShaderResourceGroup PassSrg : SRG_PerPass
@@ -123,7 +123,7 @@ PSOutput MainPS(VSOutput input)
     }
 
     float3 color = float3(0.5,0.5,0.5);
-#if ENABLE_PHYSICALSKY
+#if ENABLE_PHYSICAL_SKY
     if(SceneSrg::m_physicalSky)
     {
         if(input.m_cubemapCoord.z >= 0.0)
@@ -185,7 +185,7 @@ PSOutput MainPS(VSOutput input)
     // Clamp lower bounds of sky to prevent zero or negative values, which can leads to NaNs in other shaders like SMAA
     color = max(0.000001f, color);
 
-#if ENABLE_MERGEFILMICTONEMAP
+#if ENABLE_MERGE_FILMIC_TONEMAP
     // Apply manual exposure compensation
     color *= pow(2.0, ViewSrg::GetExposureValueCompensation());
     // Apply filmic tonemap

@@ -36,8 +36,8 @@
     #endif
 
     //Disable Light culling related processing
-    #ifndef ENABLE_LIGHTCULLING
-    #define ENABLE_LIGHTCULLING          0
+    #ifndef ENABLE_LIGHT_CULLING
+    #define ENABLE_LIGHT_CULLING          0
     #endif
 
     //Disable all differnt types of area lights
@@ -46,13 +46,13 @@
     #endif
 
     //Disable physical sky
-    #ifndef ENABLE_PHYSICALSKY
-    #define ENABLE_PHYSICALSKY           0
+    #ifndef ENABLE_PHYSICAL_SKY
+    #define ENABLE_PHYSICAL_SKY           0
     #endif
 
     //Enable merging of tonemap to the forward pass and use filmic curve tonemap implementation
-    #ifndef ENABLE_MERGEFILMICTONEMAP
-    #define ENABLE_MERGEFILMICTONEMAP           1
+    #ifndef ENABLE_MERGE_FILMIC_TONEMAP
+    #define ENABLE_MERGE_FILMIC_TONEMAP           1
     #endif
 
 #endif

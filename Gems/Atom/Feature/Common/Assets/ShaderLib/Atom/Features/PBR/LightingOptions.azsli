@@ -22,8 +22,8 @@
 #define ENABLE_SHADOWS              1
 #endif
 
-#ifndef ENABLE_LIGHTCULLING
-#define ENABLE_LIGHTCULLING              1
+#ifndef ENABLE_LIGHT_CULLING
+#define ENABLE_LIGHT_CULLING              1
 #endif
 
 #ifndef ENABLE_AREA_LIGHT_VALIDATION
