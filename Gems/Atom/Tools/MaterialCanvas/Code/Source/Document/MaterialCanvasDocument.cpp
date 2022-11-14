@@ -643,10 +643,30 @@ namespace MaterialCanvas
         }
     }
 
-    AZStd::string MaterialCanvasDocument::GetAzslTypeFromSlot(GraphModel::ConstSlotPtr slot) const
+    AZStd::any MaterialCanvasDocument::GetValueFromSlot(GraphModel::ConstSlotPtr slot) const
     {
         const auto& slotItr = m_slotValueTable.find(slot);
-        const auto& slotValue = slotItr != m_slotValueTable.end() ? slotItr->second : slot->GetValue();
+        return slotItr != m_slotValueTable.end() ? slotItr->second : slot->GetValue();
+    }
+
+    AZStd::any MaterialCanvasDocument::GetValueFromSlotOrConnection(GraphModel::ConstSlotPtr slot) const
+    {
+         for (const auto& connection : slot->GetConnections())
+        {
+             auto sourceSlot = connection->GetSourceSlot();
+             auto targetSlot = connection->GetTargetSlot();
+             if (targetSlot == slot)
+             {
+                return GetValueFromSlotOrConnection(sourceSlot);
+            }
+        }
+
+        return GetValueFromSlot(slot);
+    }
+
+    AZStd::string MaterialCanvasDocument::GetAzslTypeFromSlot(GraphModel::ConstSlotPtr slot) const
+    {
+        const auto& slotValue = GetValueFromSlot(slot);
         const auto& slotDataType = m_graphContext->GetDataTypeForValue(slotValue);
         const auto& slotDataTypeName = slotDataType ? slotDataType->GetDisplayName() : AZStd::string{};
 
@@ -660,8 +680,7 @@ namespace MaterialCanvas
 
     AZStd::string MaterialCanvasDocument::GetAzslValueFromSlot(GraphModel::ConstSlotPtr slot) const
     {
-        const auto& slotItr = m_slotValueTable.find(slot);
-        const auto& slotValue = slotItr != m_slotValueTable.end() ? slotItr->second : slot->GetValue();
+        const auto& slotValue = GetValueFromSlot(slot);
 
         // This code and some of these rules will be refactored and generalized after splitting this class into a document and builder or
         // compiler class. Once that is done, it will be easier to register types, conversions, substitutions with the system.
@@ -669,45 +688,41 @@ namespace MaterialCanvas
         {
             auto sourceSlot = connection->GetSourceSlot();
             auto targetSlot = connection->GetTargetSlot();
-            if (targetSlot && sourceSlot && targetSlot != sourceSlot && targetSlot == slot)
+            if (targetSlot == slot)
             {
                 // If there is an incoming connection to this slot, the name of the source slot from the incoming connection will be used as
                 // part of the value for the slot. It must be cast to the correct vector type for generated code. These conversions will be
-                // extended once the code is extracted and made part of a separate system.
-                const auto& sourceSlotItr = m_slotValueTable.find(sourceSlot);
-                const auto& sourceSlotValue = sourceSlotItr != m_slotValueTable.end() ? sourceSlotItr->second : sourceSlot->GetValue();
+                // extended once the code generator is separated from the document class.
+                const auto& sourceSlotValue = GetValueFromSlot(sourceSlot);
                 const auto& sourceSlotSymbolName = GetSymbolNameFromSlot(sourceSlot);
-                if (sourceSlotValue.is<AZ::Vector4>())
+                if (slotValue.is<AZ::Vector2>())
                 {
-                    if (slotValue.is<AZ::Vector3>())
+                    if (sourceSlotValue.is<AZ::Vector3>() ||
+                        sourceSlotValue.is<AZ::Vector4>())
+                    {
+                        return AZStd::string::format("(float2)%s", sourceSlotSymbolName.c_str());
+                    }
+                }
+                if (slotValue.is<AZ::Vector3>())
+                {
+                    if (sourceSlotValue.is<AZ::Vector2>())
+                    {
+                        return AZStd::string::format("float3(%s, 0)", sourceSlotSymbolName.c_str());
+                    }
+                    if (sourceSlotValue.is<AZ::Vector4>())
                     {
                         return AZStd::string::format("(float3)%s", sourceSlotSymbolName.c_str());
                     }
-                    if (slotValue.is<AZ::Vector2>())
-                    {
-                        return AZStd::string::format("(float2)%s", sourceSlotSymbolName.c_str());
-                    }
                 }
-                if (sourceSlotValue.is<AZ::Vector3>())
+                if (slotValue.is<AZ::Vector4>())
                 {
-                    if (slotValue.is<AZ::Vector4>())
-                    {
-                        return AZStd::string::format("float4(%s, 1)", sourceSlotSymbolName.c_str());
-                    }
-                    if (slotValue.is<AZ::Vector2>())
-                    {
-                        return AZStd::string::format("(float2)%s", sourceSlotSymbolName.c_str());
-                    }
-                }
-                if (sourceSlotValue.is<AZ::Vector2>())
-                {
-                    if (slotValue.is<AZ::Vector4>())
+                    if (sourceSlotValue.is<AZ::Vector2>())
                     {
                         return AZStd::string::format("float4(%s, 0, 1)", sourceSlotSymbolName.c_str());
                     }
-                    if (slotValue.is<AZ::Vector3>())
+                    if (sourceSlotValue.is<AZ::Vector3>())
                     {
-                        return AZStd::string::format("float3(%s, 0)", sourceSlotSymbolName.c_str());
+                        return AZStd::string::format("float4(%s, 1)", sourceSlotSymbolName.c_str());
                     }
                 }
                 return sourceSlotSymbolName;
@@ -793,7 +808,7 @@ namespace MaterialCanvas
     {
         if (const auto& slot = node->GetSlot(slotConfig.m_name))
         {
-            const auto& slotValue = slot->GetValue();
+            const auto& slotValue = GetValueFromSlot(slot);
             if (auto v = AZStd::any_cast<const AZ::RHI::SamplerState>(&slotValue))
             {
                 // The fields commented out below either cause errors or are not recognized by the shader compiler.
@@ -1150,6 +1165,8 @@ namespace MaterialCanvas
                     {
                         if (slotConfig.m_settings.contains("materialInputs"))
                         {
+                            // Gathering all material input values that need to be added to the material type. Sampler states are never
+                            // added to the material type, just the material SRG.
                             const auto& materialInputValueSlot = inputNode->GetSlot(slotConfig.m_name);
                             if (materialInputValueSlot &&
                                 !materialInputValueSlot->GetValue().empty() &&
@@ -1216,7 +1233,7 @@ namespace MaterialCanvas
                 auto property = propertyGroup->AddProperty(propertyName);
                 property->m_displayName = displayName;
                 property->m_description = materialInputDescriptionSlot->GetValue<AZStd::string>();
-                property->m_value = AZ::RPI::MaterialPropertyValue::FromAny(materialInputValueSlot->GetValue());
+                property->m_value = AZ::RPI::MaterialPropertyValue::FromAny(GetValueFromSlot(materialInputValueSlot));
 
                 // The property definition requires an explicit type enum that's converted from the actual data type.
                 property->m_dataType =
@@ -1527,8 +1544,7 @@ namespace MaterialCanvas
             for (const auto& currentSlotPair : currentNode->GetSlots())
             {
                 const auto& currentSlot = currentSlotPair.second;
-                const auto& currentSlotValue = currentSlot->GetValue();
-                m_slotValueTable[currentSlot] = currentSlotValue;
+                m_slotValueTable[currentSlot] = currentSlot->GetValue();
             }
 
             // If this is a dynamic node with slot data type groups, we will search for the largest vector or other data type and convert
@@ -1546,10 +1562,10 @@ namespace MaterialCanvas
                     for (const auto& currentSlotPair : currentNode->GetSlots())
                     {
                         const auto& currentSlot = currentSlotPair.second;
-                        const auto& currentSlotValue = currentSlot->GetValue();
                         if (currentSlot->GetSlotDirection() == GraphModel::SlotDirection::Input &&
                             AZStd::regex_match(currentSlot->GetName(), slotDataTypeGroupRegex))
                         {
+                            const auto& currentSlotValue = GetValueFromSlotOrConnection(currentSlot);
                             vectorSize = AZStd::max(vectorSize, GetVectorSize(currentSlotValue));
                         }
                     }
@@ -1559,9 +1575,9 @@ namespace MaterialCanvas
                     for (const auto& currentSlotPair : currentNode->GetSlots())
                     {
                         const auto& currentSlot = currentSlotPair.second;
-                        const auto& currentSlotValue = currentSlot->GetValue();
                         if (AZStd::regex_match(currentSlot->GetName(), slotDataTypeGroupRegex))
                         {
+                            const auto& currentSlotValue = GetValueFromSlot(currentSlot);
                             m_slotValueTable[currentSlot] = ConvertToVector(currentSlotValue, vectorSize);
                         }
                     }

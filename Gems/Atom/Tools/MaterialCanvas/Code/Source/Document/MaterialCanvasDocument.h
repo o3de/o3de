@@ -108,6 +108,12 @@ namespace MaterialCanvas
         AZStd::any ConvertToVector(const AZStd::any& slotValue) const;
         AZStd::any ConvertToVector(const AZStd::any& slotValue, unsigned int score) const;
 
+        // Returns the value of the slot or the slots incoming connection if present.
+        AZStd::any GetValueFromSlot(GraphModel::ConstSlotPtr slot) const;
+
+        // Returns the value for the corresponding slot or the slot providing its input, if connected. 
+        AZStd::any GetValueFromSlotOrConnection(GraphModel::ConstSlotPtr slot) const;
+
         // Convert special slot type names, like color, into one compatible with AZSL shader code.
         AZStd::string GetAzslTypeFromSlot(GraphModel::ConstSlotPtr slot) const;
 
