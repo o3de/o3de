@@ -16,9 +16,12 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Debug/PerformanceCollector.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/PlatformId/PlatformId.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 AZ_CVAR(bool, physx_batchTransformSync, false, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Batch entity transform syncs for the entire simulation pass. "
@@ -29,6 +32,7 @@ AZ_CVAR(bool, physx_batchTransformSync, false, nullptr, AZ::ConsoleFunctorFlags:
 #if !defined(DEBUG) && !defined(RELEASE)
 #define ENABLE_PHYSX_TIMESTEP_WARNING
 #endif
+
 
 namespace PhysX
 {
@@ -46,6 +50,53 @@ namespace PhysX
     AZ_CVAR(bool, physx_reportTimestepWarnings, false, nullptr, AZ::ConsoleFunctorFlags::Null, "A flag providing ability to turn on/off reporting of PhysX timestep warnings");
 #endif
 
+    // A helper function.
+    AZ::Debug::PerformanceCollector::DataLogType GetDataLogTypeFromCVar(const AZ::CVarFixedString& newCaptureType)
+    {
+        if (newCaptureType.starts_with('a') || newCaptureType.starts_with('A'))
+        {
+            return AZ::Debug::PerformanceCollector::DataLogType::LogAllSamples;
+        }
+        else
+        {
+            return AZ::Debug::PerformanceCollector::DataLogType::LogStatistics;
+        }
+    }
+
+    AZ_CVAR(AZ::u32, physx_metricsFrameCountPerCaptureBatch, 60,
+        [](const AZ::u32& newValue)
+        {
+            PhysX::GetPhysXSystem()->GetPerformanceCollector()->UpdateFrameCountPerCaptureBatch(newValue);
+        },
+        AZ::ConsoleFunctorFlags::DontReplicate, "Number of frames in which performance will be measured per batch.");
+
+    AZ_CVAR(AZ::u32, physx_metricsNumberOfCaptureBatches, 0,
+        [](const AZ::u32& newValue)
+        {
+            PhysX::GetPhysXSystem()->GetPerformanceCollector()->UpdateNumberOfCaptureBatches(newValue);
+        },
+        AZ::ConsoleFunctorFlags::DontReplicate,
+            "Collects and reports PhysX performance in this number of batches. "
+            "Starts at 0, which means do not capture performance data. "
+            "When this variable changes to > 0 we'll start performance capture.");
+
+    AZ_CVAR(AZ::CVarFixedString, physx_metricsDataLogType, "statistical",
+        [](const AZ::CVarFixedString& newValue)
+        {
+            PhysX::GetPhysXSystem()->GetPerformanceCollector()->UpdateDataLogType(GetDataLogTypeFromCVar(newValue));
+        },
+        AZ::ConsoleFunctorFlags::DontReplicate, "Defines the kind of data collection and logging. "
+            "If starts with 's' it will log statistical summaries (average, min, max, stdev), "
+            "if starts with 'a' or 'A' will log all samples of data (high verbosity). Default=s");
+
+    AZ_CVAR(AZ::u32, physx_metricsWaitTimePerCaptureBatch, 0,
+        [](const AZ::u32& newValue)
+        {
+            PhysX::GetPhysXSystem()->GetPerformanceCollector()->UpdateWaitTimeBeforeEachBatch(AZStd::chrono::seconds(newValue));
+        },
+        AZ::ConsoleFunctorFlags::DontReplicate, "How many seconds to wait before each batch of performance capture.");
+
+
     PhysXSystem::PhysXSystem(AZStd::unique_ptr<PhysXSettingsRegistryManager> registryManager, const physx::PxCookingParams& cookingParams)
         : m_registryManager(AZStd::move(registryManager))
         , m_sceneInterface(this)
@@ -56,6 +107,30 @@ namespace PhysX
         AZ::AllocatorInstance<PhysXAllocator>::Create(allocatorDescriptor);
 
         InitializePhysXSdk(cookingParams);
+
+        InitializePerformanceCollector();
+    }
+
+    void PhysXSystem::InitializePerformanceCollector()
+    {
+        auto performanceMetrics = AZStd::to_array<AZStd::string_view>({
+            PerformanceSpecPhysXSimulationTime,
+        });
+
+        AZStd::string platformName = AZ::GetPlatformName(AZ::g_currentPlatform);
+        auto logCategory =
+            AZStd::string::format("%.*s-%s", AZ_STRING_ARG(PerformanceLogCategory), platformName.c_str());
+        m_performanceCollector = AZStd::make_unique<AZ::Debug::PerformanceCollector>(
+            logCategory,
+            performanceMetrics,
+            [](AZ::u32)
+            {
+            });
+
+        m_performanceCollector->UpdateDataLogType(GetDataLogTypeFromCVar(physx_metricsDataLogType));
+        m_performanceCollector->UpdateFrameCountPerCaptureBatch(physx_metricsFrameCountPerCaptureBatch);
+        m_performanceCollector->UpdateWaitTimeBeforeEachBatch(AZStd::chrono::seconds(physx_metricsWaitTimePerCaptureBatch));
+        m_performanceCollector->UpdateNumberOfCaptureBatches(physx_metricsNumberOfCaptureBatches);
     }
 
     PhysXSystem::~PhysXSystem()
@@ -117,6 +192,7 @@ namespace PhysX
             {
                 if (scenePtr != nullptr && scenePtr->IsEnabled())
                 {
+                    AZ::Debug::ScopeDuration performanceScopeDuration(m_performanceCollector.get(), PerformanceSpecPhysXSimulationTime);
                     scenePtr->StartSimulation(timeStep);
                     scenePtr->FinishSimulation();
                 }
@@ -166,7 +242,10 @@ namespace PhysX
 
             simulateScenes(tickTime);
         }
-
+        
+        // Flush performance data for this tick
+        m_performanceCollector->FrameTick();
+        
         if (physx_batchTransformSync)
         {
             for (auto& scenePtr : m_sceneList)
@@ -442,6 +521,11 @@ namespace PhysX
     void PhysXSystem::CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group)
     {
         m_systemConfig.m_collisionConfig.m_collisionGroups.CreateGroup(groupName, group);
+    }
+
+    AZ::Debug::PerformanceCollector* PhysXSystem::GetPerformanceCollector()
+    {
+        return m_performanceCollector.get();
     }
 
     PhysXSystem* GetPhysXSystem()
