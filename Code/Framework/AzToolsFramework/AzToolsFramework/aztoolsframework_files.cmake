@@ -253,8 +253,6 @@ set(FILES
     Manipulators/SurfaceManipulator.h
     Manipulators/TranslationManipulators.cpp
     Manipulators/TranslationManipulators.h
-    Metadata/Metadata.h
-    Metadata/Metadata.cpp
     Metadata/MetadataManager.h
     Metadata/MetadataManager.cpp
     Maths/TransformUtils.h
