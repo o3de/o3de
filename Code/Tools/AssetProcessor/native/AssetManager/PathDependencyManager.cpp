@@ -589,11 +589,7 @@ namespace AssetProcessor
 
                     if (ProcessInputPathToDatabasePathAndScanFolder(dependencyPathSearch.c_str(), databaseName, scanFolder))
                     {
-                        AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
-                        if(m_stateData->GetSourceBySourceNameScanFolderId(databaseName, m_platformConfig->GetScanFolderByPath(scanFolder)->ScanFolderID(), source))
-                        {
-                            sourceInfoContainer.push_back(AZStd::move(source));
-                        }
+                        m_stateData->GetSourcesBySourceNameScanFolderId(databaseName, m_platformConfig->GetScanFolderByPath(scanFolder)->ScanFolderID(), sourceInfoContainer);
                     }
                 }
                 else

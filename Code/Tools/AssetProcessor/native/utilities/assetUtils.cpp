@@ -1436,13 +1436,15 @@ namespace AssetUtilities
 
         if (!topLevelSource)
         {
-            AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
-            if(!db->GetSourceBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), source))
+            AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer source;
+            db->GetSourcesBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), source);
+
+            if(source.empty())
             {
                 return {};
             }
 
-            topLevelSource = source;
+            topLevelSource = source[0];
         }
 
         AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanFolder;
