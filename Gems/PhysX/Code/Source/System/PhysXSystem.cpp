@@ -23,11 +23,6 @@
 #include <AzCore/PlatformId/PlatformId.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
-AZ_CVAR(bool, physx_batchTransformSync, false, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "Batch entity transform syncs for the entire simulation pass. "
-    "True: Sync entity transform once per Simulate call. "
-    "False: Sync entity transform for every simulation sub-step.");
-
 // only enable physx timestep warning when not running debug or in Release
 #if !defined(DEBUG) && !defined(RELEASE)
 #define ENABLE_PHYSX_TIMESTEP_WARNING
@@ -36,6 +31,11 @@ AZ_CVAR(bool, physx_batchTransformSync, false, nullptr, AZ::ConsoleFunctorFlags:
 
 namespace PhysX
 {
+    AZ_CVAR(bool, physx_batchTransformSync, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Batch entity transform syncs for the entire simulation pass. "
+        "True: Sync entity transform once per Simulate call. "
+        "False: Sync entity transform for every simulation sub-step.");
+
     AZ_CLASS_ALLOCATOR_IMPL(PhysXSystem, AZ::SystemAllocator, 0);
 
 #ifdef ENABLE_PHYSX_TIMESTEP_WARNING
