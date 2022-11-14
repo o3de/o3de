@@ -2,11 +2,19 @@
 
 [Wing Pro](https://wingware.com/) is a Python IDE that can be used to develop, test, and debug Python code written for [Open 3D Engine (O3DE)](https://www.o3de.org/), an open source realtime3D engine, for video games and other uses cases.
 
-###### Status: Prototype
+### Status: Prototype
 
-###### Version: 0.0.1
+### Version: 0.0.1
 
-###### Support: <u>Wing Pro 8+</u>, currently Windows only (others not tested but may work)
+### Support: <u>Wing Pro 8+</u>, currently Windows only (others not tested but may work)
+
+#### Latest Features:
+
+- The latest version of Wing Pro 8 (8.3.3.1) is recommended, as there was a bug in the initial release that prevented Launch Configurations bound to a ENVAR (like above) to function properly. Wing Pro 9 likely works as well, you may just have to make slight adjustments to the configuration (covered in this document below)
+
+- The DccScriptingInterface Gem (DCCsi) can be added to your Game Project. See [Registering Gems to a Project](https://www.o3de.org/docs/user-guide/project-config/register-gems/), and [Adding and Removing Gems in a Project](https://www.o3de.org/docs/user-guide/project-config/add-remove-gems/) which you can do through the Project Manager (o3de.exe) With the DCCsi enabled, you can launch Wing Pro 8 via menus in the main Editor.
+
+- Some additional testing and improvement have been mad in the current release (2210), including changes to better support Installer build folder patterns. See the [readme.md at the root of the DCCsi](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md) for more information about advanced configuration.
 
 ## TL/DR: Getting Started
 
@@ -47,7 +55,7 @@ cd C:\path\to\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
 > .\python.cmd Tools\IDE\Wing\start.py
 ```
 
-Note: You will also want to set up fot using Wing as a external debugger (see the next Debugging section below)
+Note: You will also want to set up Wing for use as a external debugger (see the next Debugging section below)
 
 # Debugging
 
@@ -145,14 +153,6 @@ You can change the current Launch environment a couple of differenty ways:
         - set the second pulldown to the interpretter you'd like to run
 
 ![image](https://user-images.githubusercontent.com/23222931/201775372-861a36e7-66c5-4b22-80e1-7b764c68d6c8.png)
-    
-#### Latest Features:
-
-- The latest version of Wing Pro 8 (8.3.3.1) is recommended, as there was a bug in the initial release that prevented Launch Configurations bound to a ENVAR (like above) to function properly. Wing Pro 9 likely works as well, you may just have to make slight adjustments to the configuration (covered in this document below)
-
-- The DccScriptingInterface Gem (DCCsi) can be added to your Game Project. See [Registering Gems to a Project](https://www.o3de.org/docs/user-guide/project-config/register-gems/), and [Adding and Removing Gems in a Project](https://www.o3de.org/docs/user-guide/project-config/add-remove-gems/) which you can do through the Project Manager (o3de.exe) With the DCCsi enabled, you can launch Wing Pro 8 via menus in the main Editor.
-
-- Some additional testing and improvement have been mad in the current release (2210), including changes to better support Installer build folder patterns. See the [readme.md at the root of the DCCsi](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md) for more information about advanced configuration.
 
 # Additional Information
 
