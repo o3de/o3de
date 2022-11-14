@@ -1240,8 +1240,10 @@ namespace AzToolsFramework
             });
         m_adapter->ConnectMessageHandler(m_domMessageHandler);
 
-        // Free the settings ptr which in turn saves any in-memory settings to disk
+        // Free the settings ptr which saves any in-memory settings to disk and replace it
+        // with a default in-memory only settings object until a saved state key is specified
         m_dpeSettings.reset();
+        m_dpeSettings = AZStd::make_unique<DocumentPropertyEditorSettings>();
 
         // populate the view from the full adapter contents, just like a reset
         HandleReset();
