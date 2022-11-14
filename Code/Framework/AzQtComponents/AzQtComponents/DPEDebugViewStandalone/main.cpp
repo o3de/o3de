@@ -98,6 +98,12 @@ namespace DPEDebugView
         EnumType m_enumValue = EnumType::Value1;
         AZ::EntityId m_entityId;
 
+        // For testing invocable ReadOnly attributes
+        bool IsDataReadOnly()
+        {
+            return true;
+        }
+
         static void Reflect(AZ::ReflectContext* context)
         {
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -167,7 +173,7 @@ namespace DPEDebugView
                         ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "ReadOnly")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_readOnlyInt, "readonly int", "")
-                        ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TestContainer::IsDataReadOnly)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_readOnlyMap, "readonly map<string, float>", "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, true);

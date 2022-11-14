@@ -1383,6 +1383,14 @@ namespace AzToolsFramework
             return;
         }
 
+        // Only accept entities as dirty between a begin/end undo batch. This filters out entities
+        // that have been marked dirty by a non-user operation such as entity activation. This can
+        // occur if SetDirty is called from a common function used in both user and non-user actions
+        if (!m_currentBatchUndo)
+        {
+            return;
+        }
+
         m_dirtyEntities.insert(entityId);
 
         // Check if this dirty entity is in a layer by walking up its parenting hierarchy.
