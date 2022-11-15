@@ -63,6 +63,12 @@ namespace AzToolsFramework
             // For each parent entity, it includes one or more than one patches to update EditorEntitySortComponent.
             for (const AZ::Entity* parentEntity : parentEntityList)
             {
+                if (!parentEntity)
+                {
+                    AZ_Error("Prefab", false, "PrefabUndoDelete::Capture - Parent entity cannot be nullptr.");
+                    continue;
+                }
+
                 // This is actually a from-focused path because focused instance is the owning instance in the current workflow.
                 const AZStd::string parentEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(parentEntity->GetId());
 
@@ -94,20 +100,24 @@ namespace AzToolsFramework
                 {
                     PrefabDomPath parentEntityAliasDomPathFromFocused(parentEntityAliasPath.c_str());
 
-                    // DOM value pointers can't be relied upon if the original DOM gets modified after pointer creation.
-                    const PrefabDomValue* parentEntityDomInFocusedTemplate = parentEntityAliasDomPathFromFocused.Get(focusedTempalteDom);
-
-                    if (!parentEntityDomInFocusedTemplate)
+                    // This scope is added to limit usage and ensure DOM is not modified when it is being used.
                     {
-                        AZ_Error("Prefab", false, "PrefabUndoDeleteEntity::Capture - "
-                            "Cannot retrieve parent entity DOM from focused template.");
-                        continue;
-                    }
+                        // DOM value pointers can't be relied upon if the original DOM gets modified after pointer creation.
+                        const PrefabDomValue* parentEntityDomInFocusedTemplate =
+                            parentEntityAliasDomPathFromFocused.Get(focusedTempalteDom);
 
-                    PrefabUndoUtils::AppendUpdateEntityPatch(
-                        m_redoPatch, *parentEntityDomInFocusedTemplate, parentEntityDomAfterRemovingChildren, parentEntityAliasPath);
-                    PrefabUndoUtils::AppendUpdateEntityPatch(
-                        m_undoPatch, parentEntityDomAfterRemovingChildren, *parentEntityDomInFocusedTemplate, parentEntityAliasPath);
+                        if (!parentEntityDomInFocusedTemplate)
+                        {
+                            AZ_Error("Prefab", false, "PrefabUndoDeleteEntity::Capture - "
+                                "Cannot retrieve parent entity DOM from focused template.");
+                            continue;
+                        }
+
+                        PrefabUndoUtils::AppendUpdateEntityPatch(
+                            m_redoPatch, *parentEntityDomInFocusedTemplate, parentEntityDomAfterRemovingChildren, parentEntityAliasPath);
+                        PrefabUndoUtils::AppendUpdateEntityPatch(
+                            m_undoPatch, parentEntityDomAfterRemovingChildren, *parentEntityDomInFocusedTemplate, parentEntityAliasPath);
+                    }
                 }
 
                 // Preemptively updates the cached DOM to prevent reloading instance.

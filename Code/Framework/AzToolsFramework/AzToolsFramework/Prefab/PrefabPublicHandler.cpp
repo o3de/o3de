@@ -182,7 +182,7 @@ namespace AzToolsFramework
                         commonRootEntityOwningInstance->get().DetachEntity(entityId).release();
                     }
                     
-                    PrefabUndoHelpers::RemoveEntities(detachedEntityDomAndPathList, commonRootInstanceTemplateId, undoBatch.GetUndoBatch());
+                    PrefabUndoHelpers::RemoveEntityDoms(detachedEntityDomAndPathList, commonRootInstanceTemplateId, undoBatch.GetUndoBatch());
                 }
 
                 // Detach the retrieved nested instances.
@@ -1362,8 +1362,8 @@ namespace AzToolsFramework
                     }
                 });
 
-            // Set of parent entities that need to be updated. It should not include entities that will be moved.
-            AZStd::unordered_set<const AZ::Entity*> parentEntitysThatNeedUpdate;
+            // Set of parent entities that need to be updated. It should not include entities that will be removed.
+            AZStd::unordered_set<const AZ::Entity*> parentEntitiesToUpdate;
 
             // List of detached entity alias paths to owning instance.
             AZStd::vector<AZStd::string> detachedEntityAliasPaths;
@@ -1385,7 +1385,7 @@ namespace AzToolsFramework
 
                 if (parentEntityId.IsValid() && (entitiesThatWillBeRemoved.find(parentEntityId) == entitiesThatWillBeRemoved.end()))
                 {
-                    parentEntitysThatNeedUpdate.insert(GetEntityById(parentEntityId));
+                    parentEntitiesToUpdate.insert(GetEntityById(parentEntityId));
                 }
 
                 AZStd::unique_ptr<Instance> detachedInstance = commonOwningInstance->get().DetachNestedInstance(instanceAlias);
@@ -1415,7 +1415,7 @@ namespace AzToolsFramework
 
                 if (parentEntityId.IsValid() && (entitiesThatWillBeRemoved.find(parentEntityId) == entitiesThatWillBeRemoved.end()))
                 {
-                    parentEntitysThatNeedUpdate.insert(GetEntityById(parentEntityId));
+                    parentEntitiesToUpdate.insert(GetEntityById(parentEntityId));
                 }
 
                 commonOwningInstance->get().DetachEntity(entityId).release();
@@ -1430,7 +1430,7 @@ namespace AzToolsFramework
                 PrefabUndoHelpers::DeleteEntitiesAndPrefabsAsOverride(
                     detachedEntityAliasPaths,
                     detachedInstanceAliasPaths,
-                    { parentEntitysThatNeedUpdate.begin(), parentEntitysThatNeedUpdate.end() }, // convert set to vector
+                    { parentEntitiesToUpdate.begin(), parentEntitiesToUpdate.end() }, // convert set to vector
                     commonOwningInstance->get(),
                     focusedInstance->get(),
                     undoBatch.GetUndoBatch());
@@ -1440,7 +1440,7 @@ namespace AzToolsFramework
                 // Note: Detached instances have been updated in RemoveLink.
                 PrefabUndoHelpers::DeleteEntities(
                     detachedEntityAliasPaths,
-                    { parentEntitysThatNeedUpdate.begin(), parentEntitysThatNeedUpdate.end() }, // convert set to vector
+                    { parentEntitiesToUpdate.begin(), parentEntitiesToUpdate.end() }, // convert set to vector
                     focusedInstance->get(),
                     undoBatch.GetUndoBatch());
             }

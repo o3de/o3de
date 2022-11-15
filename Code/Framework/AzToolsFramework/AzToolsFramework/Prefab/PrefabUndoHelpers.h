@@ -39,12 +39,12 @@ namespace AzToolsFramework
                 Instance& focusedInstance,
                 UndoSystem::URSequencePoint* undoBatch);
 
-            //! Helper function for removing entities to a prefab template with undo-redo support.
+            //! Helper function for removing entity DOMs to prefab template with undo-redo support.
             //! Note: It does not include updating relevant parent entities.
             //! @param entityDomAndPathList The list of pairs of entity DOM before removal and its alias path in template.
             //! @param templateId The id of the prefab template under which the removed entity DOMs will live.
             //! @param undoBatch The undo batch node to register the remove-entities undo node to.
-            void RemoveEntities(                
+            void RemoveEntityDoms(
                 const AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>>& entityDomAndPathList,
                 TemplateId templateId,
                 UndoSystem::URSequencePoint* undoBatch);
@@ -60,7 +60,8 @@ namespace AzToolsFramework
                 AZ::EntityId entityId,
                 UndoSystem::URSequencePoint* undoBatch);
 
-            //! Helper function for deleting entities to source template with undo-redo support.
+            //! Helper function for deleting entities and update parents to prefab template with undo-redo support.
+            //! Note: It includes updating relevant parent entities.
             //! @param entityAliasPathList The alias path list for entities that will be removed.
             //! @param parentEntityList The parent entity list that will be updated.
             //! @param focusedInstance The current focused prefab instance.

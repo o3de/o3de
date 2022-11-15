@@ -90,6 +90,12 @@ namespace AzToolsFramework
 
             for (const AZ::Entity* parentEntity : parentEntityList)
             {
+                if (!parentEntity)
+                {
+                    AZ_Error("Prefab", false, "PrefabUndoDeleteAsOverride::Capture - Parent entity cannot be nullptr.");
+                    continue;
+                }
+
                 const AZStd::string parentEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(
                     parentEntity->GetId());
                 PrefabDomPath parentEntityAliasDomPathFromFocused((owningInstanceAliasPathFromFocused + parentEntityAliasPath).c_str());

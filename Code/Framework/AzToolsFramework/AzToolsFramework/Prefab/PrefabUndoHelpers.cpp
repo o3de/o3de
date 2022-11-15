@@ -81,7 +81,7 @@ namespace AzToolsFramework
                 
             }
 
-            void RemoveEntities(
+            void RemoveEntityDoms(
                 const AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>>& entityDomAndPathList,
                 TemplateId templateId,
                 UndoSystem::URSequencePoint* undoBatch)

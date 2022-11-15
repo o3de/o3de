@@ -57,7 +57,7 @@ namespace AzToolsFramework
                 AZ_Assert(patches.IsArray(), "AppendUpdateEntityPatch - Provided patches should be an array object DOM value.");
 
                 auto instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
-                AZ_Assert(instanceToTemplateInterface, "Could not get InstanceToTemplateInterface.");
+                AZ_Assert(instanceToTemplateInterface, "AppendUpdateEntityPatch - Could not get InstanceToTemplateInterface.");
 
                 PrefabDom newPatches(&(patches.GetAllocator()));
                 instanceToTemplateInterface->GeneratePatch(newPatches, entityDomBeforeUpdate, entityDomAfterUpdate);
