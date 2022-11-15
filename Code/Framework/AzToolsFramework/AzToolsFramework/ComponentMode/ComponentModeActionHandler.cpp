@@ -51,7 +51,7 @@ namespace AzToolsFramework
             "ComponentModeActionHandler - could not get ActionManagerInterface on ComponentModeActionHandler "
             "OnActionUpdaterRegistrationHook.");
 
-        // TODO - Retrieve all component mode types from the serialization context?
+        m_actionManagerInterface->RegisterActionContextMode(EditorMainWindowActionContextIdentifier, "AnyComponentMode");
     }
 
     void ComponentModeActionHandler::OnActionUpdaterRegistrationHook()
@@ -61,23 +61,13 @@ namespace AzToolsFramework
 
     void ComponentModeActionHandler::OnActionRegistrationHook()
     {
-        // TEMP
-        m_actionManagerInterface->RegisterActionContextMode(EditorMainWindowActionContextIdentifier, "SomeMode");
-
         m_hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
         AZ_Assert(
             m_hotKeyManagerInterface,
             "ComponentModeActionHandler - could not get HotKeyManagerInterface on ComponentModeActionHandler OnActionRegistrationHook.");
 
         // Add default actions for every Component Mode
-
-        // TODO - Only add these if at least one component mode was added.
-
-        // TODO - Edit Previous
-        // TODO - Edit Next
-
-        // Add Back Action to return to default Component Mode
-
+        
         // Exit Component Mode
         {
             constexpr AZStd::string_view actionIdentifier = "o3de.action.componentMode.end";
@@ -98,7 +88,6 @@ namespace AzToolsFramework
             );
 
             // Only add this to the component modes, not default.
-            // TODO - this would be a great helper
             m_actionManagerInterface->AssignModeToAction("SomeMode", actionIdentifier);
 
             m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Esc");
@@ -118,8 +107,7 @@ namespace AzToolsFramework
 
     void ComponentModeActionHandler::ComponentModeStarted([[maybe_unused]] const AZ::Uuid& componentType)
     {
-        // TODO - retrieve mode from componentType
-        m_actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, "SomeMode");
+        m_actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, "AnyComponentMode");
 
         // Update Component Mode Changed updater
         m_actionManagerInterface->RegisterActionUpdater(ComponentModeChangedUpdaterIdentifier);
@@ -127,8 +115,7 @@ namespace AzToolsFramework
 
     void ComponentModeActionHandler::ActiveComponentModeChanged([[maybe_unused]] const AZ::Uuid& componentType)
     {
-        // TODO - retrieve mode from componentType
-        m_actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, "SomeMode");
+        m_actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, "AnyComponentMode");
 
         // Update Component Mode Changed updater
         m_actionManagerInterface->RegisterActionUpdater(ComponentModeChangedUpdaterIdentifier);
