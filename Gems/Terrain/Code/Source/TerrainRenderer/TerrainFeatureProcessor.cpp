@@ -73,7 +73,6 @@ namespace Terrain
                 if (success)
                 {
                     m_materialInstance = AZ::RPI::Material::FindOrCreate(assetData);
-                    AZ::RPI::MaterialReloadNotificationBus::Handler::BusConnect(materialAsset->GetId());
                     if (!materialAsset->GetObjectSrgLayout())
                     {
                         AZ_Error("TerrainFeatureProcessor", false, "No per-object ShaderResourceGroup found on terrain material.");
@@ -92,7 +91,6 @@ namespace Terrain
     void TerrainFeatureProcessor::Deactivate()
     {
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
-        AZ::RPI::MaterialReloadNotificationBus::Handler::BusDisconnect();
         
         DisableSceneNotification();
         OnTerrainDataDestroyBegin();
@@ -357,12 +355,6 @@ namespace Terrain
                 pass->BindSrg(m_terrainSrg->GetRHIShaderResourceGroup());
             }
         }
-    }
-
-    void TerrainFeatureProcessor::OnMaterialReinitialized([[maybe_unused]] const MaterialInstance& material)
-    {
-        PrepareMaterialData();
-        m_terrainBoundsNeedUpdate = true;
     }
 
     void TerrainFeatureProcessor::SetDetailMaterialConfiguration(const DetailMaterialConfiguration& config)

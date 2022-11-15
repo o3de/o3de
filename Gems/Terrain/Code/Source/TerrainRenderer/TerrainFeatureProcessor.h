@@ -19,7 +19,6 @@
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
-#include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
 
 namespace AZ::RPI
 {
@@ -35,7 +34,6 @@ namespace Terrain
 {
     class TerrainFeatureProcessor final
         : public AZ::RPI::FeatureProcessor
-        , private AZ::RPI::MaterialReloadNotificationBus::Handler
         , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
@@ -72,9 +70,6 @@ namespace Terrain
             float m_zExtents;
             float m_padding;
         };
-
-        // AZ::RPI::MaterialReloadNotificationBus::Handler overrides...
-        void OnMaterialReinitialized(const MaterialInstance& material) override;
 
         // AzFramework::Terrain::TerrainDataNotificationBus overrides...
         void OnTerrainDataDestroyBegin() override;

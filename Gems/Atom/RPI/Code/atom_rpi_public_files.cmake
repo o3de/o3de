@@ -51,7 +51,6 @@ set(FILES
     Include/Atom/RPI.Public/Image/StreamingImageController.h
     Include/Atom/RPI.Public/Image/StreamingImagePool.h
     Include/Atom/RPI.Public/Material/Material.h
-    Include/Atom/RPI.Public/Material/MaterialReloadNotificationBus.h
     Include/Atom/RPI.Public/Material/MaterialSystem.h
     Include/Atom/RPI.Public/Model/Model.h
     Include/Atom/RPI.Public/Model/ModelLod.h
