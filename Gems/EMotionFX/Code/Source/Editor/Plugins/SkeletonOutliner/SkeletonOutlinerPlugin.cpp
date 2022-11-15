@@ -166,15 +166,7 @@ namespace EMotionFX
         m_commandCallbacks.emplace_back(new DataChangedCallback(/*executePreUndo*/ false));
         CommandSystem::GetCommandManager()->RegisterCommandCallback(CommandRemoveRagdollJoint::s_commandName, m_commandCallbacks.back());
 
-        InitRagdoll();
-
         return true;
-    }
-
-    void SkeletonOutlinerPlugin::InitRagdoll()
-    {
-
-
     }
 
     void SkeletonOutlinerPlugin::Reinit()

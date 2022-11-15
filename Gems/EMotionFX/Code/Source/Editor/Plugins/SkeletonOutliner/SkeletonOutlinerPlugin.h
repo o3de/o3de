@@ -69,9 +69,7 @@ namespace EMotionFX
             return new SkeletonOutlinerPlugin();
         }
         bool Init() override;
-        void InitRagdoll();
 
-        // SkeletalOutlinerRequestBus overrides
         Node* GetSingleSelectedNode() override;
         QModelIndex GetSingleSelectedModelIndex() override;
         AZ::Outcome<QModelIndexList> GetSelectedRowIndices() override;
