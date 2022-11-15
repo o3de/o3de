@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/PaintBrush/PaintBrushSubModeCluster.h>
 #include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsRequestBus.h>
 #include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsWindow.h>
