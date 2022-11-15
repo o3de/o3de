@@ -16,6 +16,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Date/DateFormat.h>
 
 #include <AzCore/Memory/AllocationRecords.h>
 
@@ -82,6 +83,25 @@ namespace AZ::Metrics
     constexpr const char* CoreMetricsFilenameStem = "Metrics/core_metrics";
     // Settings key used which indicates the rate in microseconds seconds to record core metrics in the Tick() function
     constexpr AZStd::string_view CoreMetricsRecordRateMicrosecondsKey = "/O3DE/Metrics/Core/RecordRateMicroseconds";
+    // Settings key which determines if the core_metrics.*.json file is created
+    // By default it is not created in release configuration and is for non-release configurations
+    constexpr auto CoreMetricsCreateLoggerKey = AZ::Metrics::SettingsKey("Core/CreateLogger");
+}
+
+namespace AZ::Internal
+{
+    static bool ShouldCreateCoreMetricsLogger(SettingsRegistryInterface& settingsRegistry)
+    {
+#if !defined(AZ_RELEASE_BUILD)
+        bool createCoreMetricsFile{ true };
+#else
+        bool createCoreMetricsFile{ false };
+#endif
+
+        settingsRegistry.Get(createCoreMetricsFile, AZ::Metrics::CoreMetricsCreateLoggerKey);
+
+        return createCoreMetricsFile;
+    }
 }
 
 namespace AZ
@@ -586,80 +606,99 @@ namespace AZ
 
     void ComponentApplication::RegisterCoreEventLogger()
     {
-        // Register Core Event logger with Component Application
-
-        // Use the name of the running build target as part of the event logger name
-        // If it is not available, then an event logger will not be created
-        AZ::IO::FixedMaxPath uniqueFilenameSuffix = AZ::Metrics::CoreMetricsFilenameStem;
-        if (AZ::IO::FixedMaxPathString buildTargetName;
-            m_settingsRegistry->Get(buildTargetName, AZ::SettingsRegistryMergeUtils::BuildTargetNameKey))
-        {
-            // append the build target name as injected from CMake if known
-            uniqueFilenameSuffix.Native() += AZ::IO::FixedMaxPathString::format(".%s", buildTargetName.c_str());
-        }
-        else
+        // Check the Core metrics "CreateLogger" setting to determine if it should be created at all
+        if (!Internal::ShouldCreateCoreMetricsLogger(*m_settingsRegistry))
         {
             return;
         }
 
-        // Append the build configuration(debug, release, profile) to the metrics filename
-        if (AZStd::string_view buildConfig{ AZ_BUILD_CONFIGURATION_TYPE }; !buildConfig.empty())
+        // Register Core Event logger with Component Application
+        // The registration occurs on the first tick
+        auto RegisterOnFirstTick = [this]()
         {
-            uniqueFilenameSuffix.Native() += AZ::IO::FixedMaxPathString::format(".%.*s", AZ_STRING_ARG(buildConfig));
-        }
+            // Use the name of the running build target as part of the event logger name
+            // If it is not available, then an event logger will not be created
+            AZ::IO::FixedMaxPath uniqueFilenameSuffix = AZ::Metrics::CoreMetricsFilenameStem;
+            if (AZ::IO::FixedMaxPathString buildTargetName;
+                m_settingsRegistry->Get(buildTargetName, AZ::SettingsRegistryMergeUtils::BuildTargetNameKey))
+            {
+                // append the build target name as injected from CMake if known
+                uniqueFilenameSuffix.Native() += AZ::IO::FixedMaxPathString::format(".%s", buildTargetName.c_str());
+            }
+            else
+            {
+                return;
+            }
 
-        // Use the process ID to provide uniqueness to the metrics json files
-        AZStd::fixed_string<32> processIdString;
-        AZStd::to_string(processIdString, AZ::Platform::GetCurrentProcessId());
-        uniqueFilenameSuffix.Native() += AZ::IO::FixedMaxPathString::format(".%s", processIdString.c_str());
-        // Append .json extension
-        uniqueFilenameSuffix.Native() += ".json";
+            // Append the build configuration(debug, release, profile) to the metrics filename
+            if (AZStd::string_view buildConfig{ AZ_BUILD_CONFIGURATION_TYPE }; !buildConfig.empty())
+            {
+                uniqueFilenameSuffix.Native() += AZ::IO::FixedMaxPathString::format(".%.*s", AZ_STRING_ARG(buildConfig));
+            }
 
-        // Append the relative file name portion to the <project-root>/user directory
-        auto metricsFilePath = (AZ::IO::FixedMaxPath{ AZ::Utils::GetProjectUserPath(m_settingsRegistry.get()) }
+            // Use a ISO8601 timestamp + the process ID to provide uniqueness to the metrics json files
+            AZ::Date::Iso8601TimestampString utcTimestampString;
+            if (AZ::Date::GetFilenameCompatibleFormatNow(utcTimestampString))
+            {
+                uniqueFilenameSuffix.Native() += AZ::IO::FixedMaxPathString::format(".%s", utcTimestampString.c_str());
+            }
+            {
+                // append process id
+                AZStd::fixed_string<32> processIdString;
+                AZStd::to_string(processIdString, AZ::Platform::GetCurrentProcessId());
+                uniqueFilenameSuffix.Native() += AZ::IO::FixedMaxPathString::format(".%s", processIdString.c_str());
+            }
+            // Append .json extension
+            uniqueFilenameSuffix.Native() += ".json";
+
+            // Append the relative file name portion to the <project-root>/user directory
+            auto metricsFilePath = (AZ::IO::FixedMaxPath{ AZ::Utils::GetProjectUserPath(m_settingsRegistry.get()) }
             / uniqueFilenameSuffix).LexicallyNormal();
 
-        // Open up the metrics file in write mode and truncate the contents if it exist(it shouldn't since a millisecond
-        // is being used
-        constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath;
-        if (auto fileStream = AZStd::make_unique<AZ::IO::SystemFileStream>(metricsFilePath.c_str(), openMode);
-            fileStream != nullptr && fileStream->IsOpen())
-        {
-            // Configure core event logger with the name of "Core"
-            AZ::Metrics::JsonTraceLoggerEventConfig config{ "Core" };
-            auto coreEventLogger = AZStd::make_unique<AZ::Metrics::JsonTraceEventLogger>(AZStd::move(fileStream), config);
-            m_eventLoggerFactory->RegisterEventLogger(AZ::Metrics::CoreEventLoggerId, AZStd::move(coreEventLogger));
-        }
-        else
-        {
-            AZ_Error("ComponentApplication", false, R"(unable to open core metrics with with path "%s")",
-                metricsFilePath.c_str());
-        }
-
-        // Record metrics every X microseconds based on the /O3DE/Metrics/Core/RecordRateMicroseconds setting
-        // or every 10 secondsif not supplied
-        m_recordMetricsOnTickCallback = [&registry = *m_settingsRegistry.get(),
-            lastRecordTime = AZStd::chrono::steady_clock::now()]
-            (AZStd::chrono::steady_clock::time_point monotonicTime) mutable -> bool
-        {
-            // Retrieve the record rate setting from the Setting Registry
-            using namespace AZStd::chrono_literals;
-            AZStd::chrono::microseconds recordTickMicroseconds = 10s;
-            if (AZ::s64 recordRateMicrosecondValue;
-                registry.Get(recordRateMicrosecondValue, AZ::Metrics::CoreMetricsRecordRateMicrosecondsKey))
+            // Open up the metrics file in write mode and truncate the contents if it exist(it shouldn't since a millisecond
+            // is being used
+            constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath;
+            if (auto fileStream = AZStd::make_unique<AZ::IO::SystemFileStream>(metricsFilePath.c_str(), openMode);
+                fileStream != nullptr && fileStream->IsOpen())
             {
-                recordTickMicroseconds = AZStd::chrono::microseconds(recordRateMicrosecondValue);
+                // Configure core event logger with the name of "Core"
+                AZ::Metrics::JsonTraceLoggerEventConfig config{ "Core" };
+                auto coreEventLogger = AZStd::make_unique<AZ::Metrics::JsonTraceEventLogger>(AZStd::move(fileStream), config);
+                m_eventLoggerFactory->RegisterEventLogger(AZ::Metrics::CoreEventLoggerId, AZStd::move(coreEventLogger));
+            }
+            else
+            {
+                AZ_Error("ComponentApplication", false, R"(unable to open core metrics with with path "%s")",
+                    metricsFilePath.c_str());
             }
 
-            if ((monotonicTime - lastRecordTime) >= recordTickMicroseconds)
+            // Record metrics every X microseconds based on the /O3DE/Metrics/Core/RecordRateMicroseconds setting
+            // or every 10 secondsif not supplied
+            m_recordMetricsOnTickCallback = [&registry = *m_settingsRegistry.get(),
+                lastRecordTime = AZStd::chrono::steady_clock::now()]
+                (AZStd::chrono::steady_clock::time_point monotonicTime) mutable -> bool
             {
-                // Reset the recordTime to the current steady clock time and return true to record the metrics
-                lastRecordTime = monotonicTime;
-                return true;
-            }
+                // Retrieve the record rate setting from the Setting Registry
+                using namespace AZStd::chrono_literals;
+                AZStd::chrono::microseconds recordTickMicroseconds = 10s;
+                if (AZ::s64 recordRateMicrosecondValue;
+                    registry.Get(recordRateMicrosecondValue, AZ::Metrics::CoreMetricsRecordRateMicrosecondsKey))
+                {
+                    recordTickMicroseconds = AZStd::chrono::microseconds(recordRateMicrosecondValue);
+                }
 
-            return false;
+                if ((monotonicTime - lastRecordTime) >= recordTickMicroseconds)
+                {
+                    // Reset the recordTime to the current steady clock time and return true to record the metrics
+                    lastRecordTime = monotonicTime;
+                    return true;
+                }
+
+                return false;
+            };
         };
+
+        AZ::TickBus::QueueFunction(AZStd::move(RegisterOnFirstTick));
     }
 
     void ReportBadEngineRoot()
