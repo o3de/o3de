@@ -15,6 +15,7 @@
 #include <LmbrCentral/Shape/CapsuleShapeComponentBus.h>
 #include <LmbrCentral/Shape/CylinderShapeComponentBus.h>
 #include <LmbrCentral/Shape/SphereShapeComponentBus.h>
+#include <PhysX/MathConversion.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysXCharacters/Components/EditorCharacterControllerComponent.h>
 #include <RigidBodyStatic.h>
@@ -101,6 +102,20 @@ namespace PhysXEditorTests
             editorEntityId, &LmbrCentral::ShapeComponentRequests::SetTranslationOffset, translationOffset);
 
         return editorEntity;
+    }
+
+    AZ::Aabb GetSimulatedBodyAabb(AZ::EntityId entityId)
+    {
+        AzPhysics::SimulatedBody* simulatedBody = nullptr;
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, entityId, &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        if (simulatedBody)
+        {
+            const auto* pxActor = static_cast<const physx::PxActor*>(simulatedBody->GetNativePointer());
+            PHYSX_SCENE_READ_LOCK(pxActor->getScene());
+            return PxMathConvert(pxActor->getWorldBounds(1.0f));
+        }
+        return AZ::Aabb::CreateNull();
     }
 
     void PhysXEditorFixture::SetUp()
