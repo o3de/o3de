@@ -1611,6 +1611,9 @@ namespace AssetProcessor
         
         QString absolutePath; // avoid allocating memory repeatedly here by reusing absolutePath each scan folder.
         absolutePath.reserve(AZ_MAX_PATH_LEN);
+
+        QFileInfo details(relativeName); // note that this does not actually hit the actual storage medium until you query something
+        bool isAbsolute = details.isAbsolute(); // note that this looks at the file name string only, it does not hit storage.
         
         for (int pathIdx = 0; pathIdx < m_scanFolders.size(); ++pathIdx)
         {
@@ -1628,13 +1631,24 @@ namespace AssetProcessor
                 // the name is a deeper relative path, but we don't recurse this scan folder, so it can't win
                 continue;
             }
-            // scanfolders are always absolute paths and already normalized.  We can just concatenate.
-            // Do so with minimal allocation by using resize/append, instead of operator+
-            absolutePath.resize(0);
-            absolutePath.append(scanFolderInfo.ScanPath());
-            absolutePath.append('/');
-            absolutePath.append(relativeName);
-            
+
+            if (isAbsolute)
+            {
+                if (!relativeName.startsWith(scanFolderInfo.ScanPath()))
+                {
+                    continue; // its not this scanfolder.
+                }
+                absolutePath = relativeName;
+            }
+            else
+            {
+                // scanfolders are always absolute paths and already normalized.  We can just concatenate.
+                // Do so with minimal allocation by using resize/append, instead of operator+
+                absolutePath.resize(0);
+                absolutePath.append(scanFolderInfo.ScanPath());
+                absolutePath.append('/');
+                absolutePath.append(relativeName);
+            }
             AssetProcessor::FileStateInfo fileStateInfo;
 
             if (fileStateInterface)
