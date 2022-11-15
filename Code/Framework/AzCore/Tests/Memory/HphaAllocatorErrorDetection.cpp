@@ -10,7 +10,7 @@
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include <AzCore/Memory/HphaSchema.h>
+#include <AzCore/Memory/HphaAllocator.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/Debug/Trace.h>
@@ -30,11 +30,6 @@ namespace UnitTest
         AZ_TYPE_INFO(HphaSchemaErrorDetection_TestAllocator, "{ACE2D6E5-4EB8-4DD2-AE95-6BDFD0476801}");
 
         using Base = AZ::SimpleSchemaAllocator<AZ::HphaSchemaBase<HphaDebugAllocator>>;
-        using Descriptor = Base::Descriptor;
-
-        HphaSchemaErrorDetection_TestAllocator()
-            : Base("HphaSchemaErrorDetection_TestAllocator", "Allocator for Test")
-        {}
     };
 
     // Another allocator to test allocating/deallocating with different allocators
@@ -45,12 +40,58 @@ namespace UnitTest
         AZ_TYPE_INFO(AnotherTestAllocator, "{83038931-010E-407F-8183-2ACBB50706C2}");
 
         using Base = AZ::SimpleSchemaAllocator<AZ::HphaSchemaBase<HphaDebugAllocator>>;
-        using Descriptor = Base::Descriptor;
-
-        AnotherTestAllocator()
-            : Base("AnotherTestAllocator", "Another allocator for Test")
-        {}
     };
+}
+
+namespace AZ
+{
+    template<>
+    class AllocatorInstance<UnitTest::HphaSchemaErrorDetection_TestAllocator>
+        : public UnitTest::HphaSchemaErrorDetection_TestAllocator
+    {
+        using Allocator = UnitTest::HphaSchemaErrorDetection_TestAllocator;
+    public:
+        AllocatorInstance()
+        {
+            Create();
+            s_allocator = this;
+        }
+
+        static Allocator& Get()
+        {
+            return *s_allocator;
+        }
+
+    private:
+        inline static Allocator* s_allocator{};
+
+    };
+
+    template<>
+    class AllocatorInstance<UnitTest::AnotherTestAllocator>
+        : public UnitTest::AnotherTestAllocator
+    {
+        using Allocator = UnitTest::AnotherTestAllocator;
+    public:
+        AllocatorInstance()
+        {
+            Create();
+            s_allocator = this;
+        }
+
+        static Allocator& Get()
+        {
+            return *s_allocator;
+        }
+
+    private:
+        inline static Allocator* s_allocator{};
+
+    };
+} // namespace AZ
+
+namespace UnitTest
+{
 
     // Dummy test class with configurable size
     template <size_t Size>
@@ -78,18 +119,20 @@ namespace UnitTest
     protected:
         void SetUp() override 
         {
-            AZ::AllocatorInstance<HphaSchemaErrorDetection_TestAllocator>::Create();
+            m_allocator = new AZ::AllocatorInstance<HphaSchemaErrorDetection_TestAllocator>;
             AZ::Debug::TraceMessageBus::Handler::BusConnect();
+
+            using testing::_;
+            EXPECT_CALL(*this, OnPrintf(_, _))
+                .WillRepeatedly(testing::Return(false));
+            EXPECT_CALL(*this, OnPreAssert(_, _, _, _))
+                .WillRepeatedly(testing::Return(false));
         }
 
         void TearDown() override
         {
-            AZ::AllocatorInstance<HphaSchemaErrorDetection_TestAllocator>::Destroy();
-
-            EXPECT_EQ(m_nonEmptyBuckets.m_expected, m_nonEmptyBuckets.m_actual);
-            EXPECT_EQ(m_doubleDelete.m_expected, m_doubleDelete.m_actual);
-            EXPECT_EQ(m_deletePtrNotInBucket.m_expected, m_deletePtrNotInBucket.m_actual);
-            EXPECT_EQ(m_overflow.m_expected, m_overflow.m_actual);
+            delete m_allocator;
+            m_allocator = nullptr;
 
             AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
 
@@ -99,67 +142,43 @@ namespace UnitTest
             }
         }
 
-        bool OnPreAssert(const char* file, int line, const char* func, const char* message) override
-        {
-            AZ_UNUSED(file);
-            AZ_UNUSED(line);
-            AZ_UNUSED(func);
+        MOCK_METHOD4(OnPreAssert, bool(const char* file, int line, const char* func, const char* message));
+        MOCK_METHOD2(OnPrintf, bool(const char* window, const char* message));
 
-            const AZStd::string_view messageView(message);
-            if (messageView.starts_with("HPHA Assert"))
-            {
-                // Extract possible reason
-                static const AZStd::string_view reasonToken("possible reason: \"");
-                const AZStd::string_view::size_type reasonPos = messageView.find(reasonToken);
-                if (reasonPos != AZStd::string_view::npos)
-                {
-                    
-                    const AZStd::string_view reason = messageView.substr(reasonPos + reasonToken.size(), messageView.size() - reasonPos - reasonToken.size() - 1);
-                    if (reason == "small object leak")
-                    {
-                        ++m_nonEmptyBuckets.m_actual;
-                        return true;
-                    }
-                    else if (reason == "double delete or pointer not in this allocator")
-                    {
-                        ++m_doubleDelete.m_actual;
-                        return true;
-                    }
-                    else if (reason == "small object ptr not in a bucket")
-                    {
-                        ++m_deletePtrNotInBucket.m_actual;
-                        return true;
-                    }
-                    else if (reason == "overflow")
-                    {
-                        ++m_overflow.m_actual;
-                        return true;
-                    }
-                }
-            }
-            return false;
+        void ExpectNonEmptyBuckets(int count)
+        {
+            using testing::_;
+            EXPECT_CALL(*this, OnPreAssert(_, _, _, testing::MatchesRegex(R"(HPHA Assert.*possible reason: "small object leak".*)")))
+                .Times(count)
+                .WillRepeatedly(testing::Return(true));
         }
 
-        bool OnPrintf(const char* window, const char* message) override
+        void ExpectDoubleDelete(int count)
         {
-            // We print here messages that are not printed by the UnitTest's TraceBusRedirector
-            if (AZStd::string_view(window) == "HPHA")
-            {
-                ColoredPrintf(COLOR_RED, "[  MEMORY  ] %s", message);
-            }
-            return true;
+            using testing::_;
+            EXPECT_CALL(*this, OnPreAssert(_, _, _, testing::MatchesRegex(R"(.*possible reason: "double delete or pointer not in this allocator".*)")))
+                .Times(count)
+                .WillRepeatedly(testing::Return(true));
         }
 
-        struct TestCounter
+        void ExpectDeletePointerNotInBucket(int count)
         {
-            int m_expected = 0;
-            int m_actual = 0;
-        };
-        TestCounter m_nonEmptyBuckets;
-        TestCounter m_doubleDelete;
-        TestCounter m_deletePtrNotInBucket;
-        TestCounter m_overflow;
+            using testing::_;
+            EXPECT_CALL(*this, OnPreAssert(_, _, _, testing::MatchesRegex(R"(.*possible reason: "small object ptr not in a bucket".*)")))
+                .Times(count)
+                .WillRepeatedly(testing::Return(true));
+        }
+
+        void ExpectOverflow(int count)
+        {
+            using testing::_;
+            EXPECT_CALL(*this, OnPreAssert(_, _, _, testing::MatchesRegex(R"(.*possible reason: "overflow".*)")))
+                .Times(count)
+                .WillRepeatedly(testing::Return(true));
+        }
+
         int m_expectedAsserts = 0;
+        AZ::AllocatorInstance<HphaSchemaErrorDetection_TestAllocator>* m_allocator;
     };
 
     TEST_F(HphaSchemaErrorDetectionTest, NoBucketLeak)
@@ -171,7 +190,7 @@ namespace UnitTest
     TEST_F(HphaSchemaErrorDetectionTest, BucketLeak)
     {
         AZ_TEST_START_TRACE_SUPPRESSION;
-        m_nonEmptyBuckets.m_expected = 1;
+        ExpectNonEmptyBuckets(1);
         m_expectedAsserts = 1;
 
         TestClass<1>* leakyObject = aznew TestClass<1>();
@@ -181,8 +200,10 @@ namespace UnitTest
     // Leak on two different buckets
     TEST_F(HphaSchemaErrorDetectionTest, TwoBucketLeak)
     {
+        using testing::_;
+
         AZ_TEST_START_TRACE_SUPPRESSION;
-        m_nonEmptyBuckets.m_expected = 2;
+        ExpectNonEmptyBuckets(2);
         m_expectedAsserts = 2;
 
         TestClass<1>* leakyObject1 = aznew TestClass<1>();
@@ -194,9 +215,14 @@ namespace UnitTest
 
     TEST_F(HphaSchemaErrorDetectionTest, DoubleDelete)
     {
+        using testing::_;
+
         AZ_TEST_START_TRACE_SUPPRESSION;
-        m_doubleDelete.m_expected = 1;
-        m_nonEmptyBuckets.m_expected = 1; // double deletes produce memory tracking to fail since the counters change
+        ExpectDoubleDelete(1);
+
+        // double deletes produce memory tracking to fail since the counters change
+        ExpectNonEmptyBuckets(1);
+
         m_expectedAsserts = 3;
 
         TestClass<1>* leakyObject = aznew TestClass<1>();
@@ -207,20 +233,23 @@ namespace UnitTest
 AZ_PUSH_DISABLE_WARNING(4700, "-Wuninitialized")
     TEST_F(HphaSchemaErrorDetectionTest, InvalidDelete)
     {
+        using testing::_;
+
         AZ_TEST_START_TRACE_SUPPRESSION;
-        m_deletePtrNotInBucket.m_expected = 1;
-        m_doubleDelete.m_expected = 1; // invalid deletes will also produce this
+        ExpectDeletePointerNotInBucket(1);
+
+        // invalid deletes will also produce this
+        ExpectDoubleDelete(1);
+
         m_expectedAsserts = 3;
 
-        AZ::AllocatorInstance<AnotherTestAllocator>::Create();
+        AZ::AllocatorInstance<AnotherTestAllocator> allocator;
 
         // We force a different allocator so we dont break memory in a bad way, we just want to test that it detects a pointer
         // that is not in that allocator
         TestClass<1>* leakyObject = (TestClass<1>*)AZ::AllocatorInstance<AnotherTestAllocator>::Get().Allocate(sizeof(TestClass<1>), AZStd::alignment_of<TestClass<1>>::value);
 
         delete leakyObject; // this will free with HphaSchemaErrorDetection_TestAllocator (not AnotherTestAllocator)
-
-        AZ::AllocatorInstance<AnotherTestAllocator>::Destroy();
     }
 AZ_POP_DISABLE_WARNING
 
@@ -287,21 +316,21 @@ AZ_POP_DISABLE_WARNING
 
         // delete the object, we should get the overflow detected
         AZ_TEST_START_TRACE_SUPPRESSION;
-        m_overflow.m_expected = 1;
+        ExpectOverflow(1);
         m_expectedAsserts = 1;
         delete someObject;
     }
 
-    TEST_F(HphaSchemaErrorDetectionTest, Resize)
+    TEST_F(HphaSchemaErrorDetectionTest, Reallocate)
     {
         // Make an allocation
         TestClass<1>* someObject = (TestClass<1>*)AZ::AllocatorInstance<HphaSchemaErrorDetection_TestAllocator>::Get().Allocate(sizeof(TestClass<1>), AZStd::alignment_of<TestClass<1>>::value);
 
         // Make a reallocation, this usually is don internally in a container. Allocators do not support new[]
-        const size_t newSize = AZ::AllocatorInstance<HphaSchemaErrorDetection_TestAllocator>::Get().Resize(someObject, 2 * sizeof(TestClass<1>));
-        EXPECT_EQ(8, newSize); // it will extend to 8
+        const auto newPointer = AZ::AllocatorInstance<HphaSchemaErrorDetection_TestAllocator>::Get().reallocate(someObject, 2 * sizeof(TestClass<1>));
+        EXPECT_EQ(AZ::AllocatorInstance<HphaSchemaErrorDetection_TestAllocator>::Get().get_allocated_size(newPointer), 8); // it will extend to 8
 
-        AZ::AllocatorInstance<HphaSchemaErrorDetection_TestAllocator>::Get().DeAllocate(someObject, newSize);
+        AZ::AllocatorInstance<HphaSchemaErrorDetection_TestAllocator>::Get().DeAllocate(newPointer, 8);
     }
 
     TEST_F(HphaSchemaErrorDetectionTest, Reallocation)

@@ -39,7 +39,11 @@ namespace AzToolsFramework
 
     void PaintBrush::BeginPaintMode()
     {
-        AZ_Assert(!m_isInPaintMode, "BeginPaintMode() called on a brush that's already in paint mode.");
+        if (m_isInPaintMode)
+        {
+            AZ_Assert(!m_isInPaintMode, "BeginPaintMode() called on a brush that's already in paint mode.");
+            return;
+        }
 
         m_isInPaintMode = true;
 
@@ -49,8 +53,12 @@ namespace AzToolsFramework
 
     void PaintBrush::EndPaintMode()
     {
-        AZ_Assert(!m_isInBrushStroke, "EndPaintMode() called while a brush stroke is still active.");
-        AZ_Assert(m_isInPaintMode, "EndPaintMode() called on a brush that isn't in paint mode.");
+        if ((!m_isInPaintMode) || (m_isInBrushStroke))
+        {
+            AZ_Assert(!m_isInBrushStroke, "EndPaintMode() called while a brush stroke is still active.");
+            AZ_Assert(m_isInPaintMode, "EndPaintMode() called on a brush that isn't in paint mode.");
+            return;
+        }
 
         m_isInPaintMode = false;
         // Notify listeners that we've exited the paint mode.
@@ -64,8 +72,12 @@ namespace AzToolsFramework
 
     void PaintBrush::BeginBrushStroke(const PaintBrushSettings& brushSettings)
     {
-        AZ_Assert(m_isInPaintMode, "BeginBrushStroke() called on a brush that isn't in paint mode.");
-        AZ_Assert(!m_isInBrushStroke, "BeginBrushStroke() called on a brush that's already in a brush stroke.");
+        if ((!m_isInPaintMode) || (m_isInBrushStroke))
+        {
+            AZ_Assert(m_isInPaintMode, "BeginBrushStroke() called on a brush that isn't in paint mode.");
+            AZ_Assert(!m_isInBrushStroke, "BeginBrushStroke() called on a brush that's already in a brush stroke.");
+            return;
+        }
 
         m_isInBrushStroke = true;
         m_isFirstPointInBrushStrokeMovement = true;
@@ -78,8 +90,12 @@ namespace AzToolsFramework
 
     void PaintBrush::EndBrushStroke()
     {
-        AZ_Assert(m_isInPaintMode, "EndBrushStroke() called on a brush that isn't in paint mode.");
-        AZ_Assert(m_isInBrushStroke, "EndBrushStroke() called on a brush that isn't in a brush stroke.");
+        if ((!m_isInPaintMode) || (!m_isInBrushStroke))
+        {
+            AZ_Assert(m_isInPaintMode, "EndBrushStroke() called on a brush that isn't in paint mode.");
+            AZ_Assert(m_isInBrushStroke, "EndBrushStroke() called on a brush that isn't in a brush stroke.");
+            return;
+        }
 
         m_isInBrushStroke = false;
         m_isFirstPointInBrushStrokeMovement = false;
@@ -228,13 +244,18 @@ namespace AzToolsFramework
         return gaussianWeights;
     }
 
+    AZ::Vector3 PaintBrush::OptionallyAdjustTo2D(const AZ::Vector3& location)
+    {
+        return PaintIn2D ? AZ::Vector3(AZ::Vector2(location), 0.0f) : location;
+    }
+
     void PaintBrush::CalculateBrushStampCentersAndStrokeRegion(
         const AZ::Vector3& brushCenter,
         const PaintBrushSettings& brushSettings,
-        AZStd::vector<AZ::Vector2>& brushStampCenters,
+        AZStd::vector<AZ::Vector3>& brushStampCenters,
         AZ::Aabb& strokeRegion)
     {
-        AZ::Vector2 currentCenter2D(brushCenter);
+        AZ::Vector3 currentAdjustedCenter = OptionallyAdjustTo2D(brushCenter);
 
         brushStampCenters.clear();
         strokeRegion = AZ::Aabb::CreateNull();
@@ -253,18 +274,18 @@ namespace AzToolsFramework
         // as the starting point.
         if (m_isFirstPointInBrushStrokeMovement)
         {
-            brushStampCenters.emplace_back(currentCenter2D);
-            m_lastBrushCenter = currentCenter2D;
+            brushStampCenters.emplace_back(currentAdjustedCenter);
+            m_lastBrushCenter = currentAdjustedCenter;
             m_distanceSinceLastDraw = 0.0f;
             m_isFirstPointInBrushStrokeMovement = false;
         }
 
         // Get the direction that we've moved the mouse since the last mouse movement we handled.
-        AZ::Vector2 direction = (currentCenter2D - m_lastBrushCenter).GetNormalizedSafe();
+        AZ::Vector3 direction = (currentAdjustedCenter - m_lastBrushCenter).GetNormalizedSafe();
 
         // Get the total distance that we've moved since the last time we drew a brush stamp (which might
         // have been many small mouse movements ago).
-        float totalDistance = m_lastBrushCenter.GetDistance(currentCenter2D) + m_distanceSinceLastDraw;
+        float totalDistance = m_lastBrushCenter.GetDistance(currentAdjustedCenter) + m_distanceSinceLastDraw;
 
         // Keep adding brush stamps to the list for as long as the total remaining mouse distance is
         // greater than the stamp distance. If the mouse moved a large enough distance in one frame,
@@ -273,7 +294,7 @@ namespace AzToolsFramework
         for (; totalDistance >= distanceBetweenBrushStamps; totalDistance -= distanceBetweenBrushStamps)
         {
             // Add another stamp to the list to draw this time.
-            AZ::Vector2 stampCenter = m_lastBrushCenter + direction * (distanceBetweenBrushStamps - m_distanceSinceLastDraw);
+            AZ::Vector3 stampCenter = m_lastBrushCenter + direction * (distanceBetweenBrushStamps - m_distanceSinceLastDraw);
             brushStampCenters.emplace_back(stampCenter);
 
             // Reset our tracking so that our next stamp location will be based off of this one.
@@ -287,7 +308,7 @@ namespace AzToolsFramework
         m_distanceSinceLastDraw = totalDistance;
 
         // Save the current location as the last one we processed.
-        m_lastBrushCenter = currentCenter2D;
+        m_lastBrushCenter = currentAdjustedCenter;
 
         // If we don't have any stamps on this mouse movement, then we're done.
         if (brushStampCenters.empty())
@@ -297,16 +318,16 @@ namespace AzToolsFramework
 
         const float radius = brushSettings.GetSize() / 2.0f;
 
-        // Create an AABB that contains every brush stamp.
-        for (auto& brushStamp : brushStampCenters)
-        {
-            strokeRegion.AddAabb(AZ::Aabb::CreateCenterRadius(AZ::Vector3(brushStamp, 0.0f), radius));
-        }
+        // Create an AABB that contains every brush stamp. Since we're drawing in a line, we don't need to add in *all* the
+        // brush stamp centers - all we need to add is our first and last brush stamp, and the rest are guaranteed to
+        // be in-between somewhere.
+        strokeRegion.AddAabb(AZ::Aabb::CreateCenterRadius(brushStampCenters.front(), radius));
+        strokeRegion.AddAabb(AZ::Aabb::CreateCenterRadius(brushStampCenters.back(), radius));
     }
 
     void PaintBrush::CalculatePointsInBrush(
         const PaintBrushSettings& brushSettings,
-        const AZStd::vector<AZ::Vector2>& brushStampCenters,
+        const AZStd::vector<AZ::Vector3>& brushStampCenters,
         AZStd::span<const AZ::Vector3> points,
         AZStd::vector<AZ::Vector3>& validPoints,
         AZStd::vector<float>& opacities)
@@ -331,13 +352,14 @@ namespace AzToolsFramework
         for (size_t index = 0; index < points.size(); index++)
         {
             float opacity = 0.0f;
-            AZ::Vector2 point2D(points[index]);
+            AZ::Vector3 adjustedPoint = OptionallyAdjustTo2D(points[index]);
 
             // Loop through each stamp that we're drawing and accumulate the results for this point.
             for (auto& brushCenter : brushStampCenters)
             {
                 // Since each stamp is a circle, we can just compare distance to the center of the circle vs radius.
-                if (float shortestDistanceSquared = brushCenter.GetDistanceSq(point2D); shortestDistanceSquared <= manipulatorRadiusSq)
+                if (float shortestDistanceSquared = brushCenter.GetDistanceSq(adjustedPoint);
+                    shortestDistanceSquared <= manipulatorRadiusSq)
                 {
                     // It's a valid point, so calculate the opacity. The per-point opacity for a paint stamp is a combination
                     // of the hardness falloff and the flow. The flow value gives the overall opacity for each stamp, and the
@@ -376,8 +398,15 @@ namespace AzToolsFramework
     void PaintBrush::PaintToLocation(
         const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings)
     {
+        if ((!m_isInPaintMode) || (!m_isInBrushStroke))
+        {
+            AZ_Assert(m_isInPaintMode, "PaintToLocation() called on a brush that isn't in paint mode.");
+            AZ_Assert(m_isInBrushStroke, "PaintToLocation() called on a brush that isn't in a brush stroke.");
+            return;
+        }
+
         // Track the list of center points for each brush stamp to draw for this mouse movement and the AABB around the stamps.
-        AZStd::vector<AZ::Vector2> brushStampCenters;
+        AZStd::vector<AZ::Vector3> brushStampCenters;
         AZ::Aabb strokeRegion = AZ::Aabb::CreateNull(); 
 
         CalculateBrushStampCentersAndStrokeRegion(brushCenter, brushSettings, brushStampCenters, strokeRegion);
@@ -411,8 +440,15 @@ namespace AzToolsFramework
     void PaintBrush::SmoothToLocation(
         const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings)
     {
+        if ((!m_isInPaintMode) || (!m_isInBrushStroke))
+        {
+            AZ_Assert(m_isInPaintMode, "SmoothToLocation() called on a brush that isn't in paint mode.");
+            AZ_Assert(m_isInBrushStroke, "SmoothToLocation() called on a brush that isn't in a brush stroke.");
+            return;
+        }
+
         // Track the list of center points for each brush stamp to draw for this mouse movement and the AABB around the stamps.
-        AZStd::vector<AZ::Vector2> brushStampCenters;
+        AZStd::vector<AZ::Vector3> brushStampCenters;
         AZ::Aabb strokeRegion = AZ::Aabb::CreateNull();
 
         CalculateBrushStampCentersAndStrokeRegion(brushCenter, brushSettings, brushStampCenters, strokeRegion);
@@ -531,13 +567,13 @@ namespace AzToolsFramework
             smoothFn);
     }
 
-    AZ::Color PaintBrush::UseEyedropper(const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings)
+    AZ::Color PaintBrush::UseEyedropper(const AZ::Vector3& brushCenter)
     {
-        AZ::Color brushColor = brushSettings.GetColor();
+        AZ::Color brushColor(0.0f);
 
         // Trigger the OnGetColor notification to get the current color at the given point.
         PaintBrushNotificationBus::EventResult(
-            brushColor, m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnGetColor, brushCenter);
+            brushColor, m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnGetColor, OptionallyAdjustTo2D(brushCenter));
 
         return brushColor;
     }

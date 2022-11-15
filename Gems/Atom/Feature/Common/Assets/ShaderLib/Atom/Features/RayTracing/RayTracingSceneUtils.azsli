@@ -7,11 +7,12 @@
  */
 
 // returns the normalized camera view ray into the scene for this raytracing dispatch thread
-float3 GetViewRayDirection(float4x4 viewProjectionInverseMatrix)
+float3 GetViewRayDirection(float4x4 projectionInverseMatrix, float4x4 viewInverseMatrix)
 {
     float2 pixel = ((float2)DispatchRaysIndex().xy + float2(0.5f, 0.5f)) / (float2)DispatchRaysDimensions();
     float2 ndc = pixel * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f);
-    return normalize(mul(viewProjectionInverseMatrix, float4(ndc, 0.0f, 1.0f)).xyz);
+    float4 viewDir = normalize(mul(projectionInverseMatrix, float4(ndc, 0.0f, 1.0f)));
+    return normalize(mul(viewInverseMatrix, float4(viewDir.xyz, 0.0f)).xyz);
 }
 
 // returns the vertex indices for the primitive hit by the ray

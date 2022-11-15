@@ -14,7 +14,6 @@
 #include <StlUtils.h>
 #include <VectorMap.h>
 #include <AzCore/std/containers/map.h>
-#include <CryCommon/LegacyAllocator.h>
 
 #include "Huffman.h"
 
@@ -142,9 +141,9 @@ private:
         CryHalf     fVolume;
         CryHalf     fRadioRatio;
         // SoundMoods
-        AZStd::vector<SLocalizedAdvancesSoundEntry, AZ::StdLegacyAllocator> SoundMoods;
+        AZStd::vector<SLocalizedAdvancesSoundEntry> SoundMoods;
         // EventParameters
-        AZStd::vector<SLocalizedAdvancesSoundEntry, AZ::StdLegacyAllocator> EventParameters;
+        AZStd::vector<SLocalizedAdvancesSoundEntry> EventParameters;
         // ~audio specific part
 
         // subtitle & radio flags

@@ -7,7 +7,7 @@
  */
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/PlatformIncl.h>
-#include <AzCore/Memory/HphaSchema.h>
+#include <AzCore/Memory/HphaAllocator.h>
 #include <AzCore/std/containers/vector.h>
 
 class HphaSchema_TestAllocator
@@ -17,11 +17,17 @@ public:
     AZ_TYPE_INFO(HphaSchema_TestAllocator, "{ACE2D6E5-4EB8-4DD2-AE95-6BDFD0476801}");
 
     using Base = AZ::SimpleSchemaAllocator<AZ::HphaSchema>;
-    using Descriptor = Base::Descriptor;
 
     HphaSchema_TestAllocator()
-        : Base("HphaSchema_TestAllocator", "Allocator for Test")
-    {}
+    {
+        Create();
+        PostCreate();
+    }
+
+    ~HphaSchema_TestAllocator() override
+    {
+        PreDestroy();
+    }
 };
 
 static const size_t s_kiloByte = 1024;

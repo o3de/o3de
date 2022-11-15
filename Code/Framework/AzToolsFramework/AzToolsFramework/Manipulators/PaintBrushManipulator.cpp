@@ -269,7 +269,7 @@ namespace AzToolsFramework
                 break;
             case PaintBrushMode::Eyedropper:
                 {
-                    AZ::Color eyedropperColor = m_paintBrush.UseEyedropper(brushCenter, brushSettings);
+                    AZ::Color eyedropperColor = m_paintBrush.UseEyedropper(brushCenter);
 
                     // Set the color in our paintbrush settings to the color selected by the eyedropper.
                     PaintBrushSettingsRequestBus::Broadcast(&PaintBrushSettingsRequestBus::Events::SetColor, eyedropperColor);

@@ -59,7 +59,7 @@ namespace PhysXEditorTests
     //! The application is created for the whole test case, rather than individually for each test, due to a known
     //! problem with buses when repeatedly loading and unloading gems. A new default world is created for each test.
     class PhysXEditorFixture
-        : public UnitTest::AllocatorsTestFixture
+        : public testing::Test
         , public Physics::DefaultWorldBus::Handler
         , public UnitTest::RegistryTestHelper
     {

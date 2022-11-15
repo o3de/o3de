@@ -18,7 +18,7 @@
 namespace UnitTest
 {
     class AzToolsFrameworkPythonBindingsFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
     };
 

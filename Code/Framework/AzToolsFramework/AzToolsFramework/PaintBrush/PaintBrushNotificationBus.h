@@ -10,8 +10,10 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/Math/Color.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/std/containers/span.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/Component/ComponentBus.h>
 
