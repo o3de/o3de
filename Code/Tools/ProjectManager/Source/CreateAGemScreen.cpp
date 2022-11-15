@@ -17,7 +17,6 @@
 #include <FormLineEditTagsWidget.h>
 #include <FormOptionsWidget.h>
 #include <FormComboBoxWidget.h>
-#include <ScreenHeaderWidget.h>
 
 #include <QApplication>
 #include <QButtonGroup>

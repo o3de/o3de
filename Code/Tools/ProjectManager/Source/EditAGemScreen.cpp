@@ -7,6 +7,14 @@
  */
 
 #include <EditAGemScreen.h>
+#include <PythonBindingsInterface.h>
+
+#include <FormFolderBrowseEditWidget.h>
+#include <FormLineEditWidget.h>
+#include <FormLineEditTagsWidget.h>
+#include <FormOptionsWidget.h>
+#include <FormComboBoxWidget.h>
+#include <ScreenHeaderWidget.h>
 
 #include <QDir>
 #include <QLineEdit>
