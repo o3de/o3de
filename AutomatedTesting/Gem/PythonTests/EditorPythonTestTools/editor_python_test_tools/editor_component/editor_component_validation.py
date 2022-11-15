@@ -50,7 +50,7 @@ def _validate_property_visibility(component: EditorComponent, component_property
 
     Valid values for Property Visibility found in EditorPythonTestTools.consts.general ComponentPropertyVisibilityStates
     """
-    Report.info(f"Validating visibility for {component.get_component_name()}'s  "
+    Report.info(f"Validating visibility for {component.get_component_name()} "
                 f"component at property path {component_property_path} is \"{expected}\"")
     assert expected in vars(PropertyVisibility).values(), \
         f"Expected value of {expected} was not an expected visibility state of: {vars(PropertyVisibility).values()}"
