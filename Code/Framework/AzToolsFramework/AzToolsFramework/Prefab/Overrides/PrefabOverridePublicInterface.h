@@ -25,6 +25,8 @@ namespace AzToolsFramework
             //! @param entityId The id of the entity to check for overrides.
             //! @return true if overrides are present on the given entity id.
             virtual bool AreOverridesPresent(AZ::EntityId entityId) = 0;
+
+            virtual bool RevertOverrides(AZ::EntityId entityId) = 0;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

@@ -38,6 +38,9 @@ namespace AzToolsFramework
             // The structure to store metadata information about individual patches on a link.
             struct PrefabOverrideMetadata
             {
+                AZ_RTTI(PrefabOverrideMetadata, "{03A2996F-8E93-4D78-B13B-A30AE5E778A4}");
+                virtual ~PrefabOverrideMetadata() = default;
+
                 PrefabOverrideMetadata(PrefabDom&& patch, AZ::u32 patchIndex) noexcept
                     : m_patch(AZStd::move(patch))
                     , m_patchIndex(patchIndex)
@@ -114,6 +117,9 @@ namespace AzToolsFramework
             bool AreOverridesPresent(
                 AZ::Dom::Path path,
                 AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags = AZ::Dom::PrefixTreeTraversalFlags::ExcludeParentPaths);
+
+            AZ::Dom::DomPrefixTree<PrefabOverrideMetadata> RemoveOverrides(AZ::Dom::Path path);
+            bool AddOverrides(const AZ::Dom::Path& path, AZ::Dom::DomPrefixTree<PrefabOverrideMetadata>&& subTree);
 
             PrefabDomPath GetInstancePath() const;
             const AZStd::string& GetInstanceName() const;

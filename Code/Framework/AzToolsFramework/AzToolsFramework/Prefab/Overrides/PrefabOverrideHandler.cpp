@@ -5,15 +5,16 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverrideHandler.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoRevertOverrides.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
  namespace AzToolsFramework
 {
     namespace Prefab
     {
-        bool PrefabOverrideHandler::AreOverridesPresent(AZ::Dom::Path path, LinkId linkId)
+        bool PrefabOverrideHandler::AreOverridesPresent(AZ::Dom::Path path, LinkId linkId) const
         {
             PrefabSystemComponentInterface* prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             if (prefabSystemComponentInterface != nullptr)
@@ -26,5 +27,35 @@
             }
             return false;
         }
+
+        bool PrefabOverrideHandler::RevertOverrides(AZ::Dom::Path path, LinkId linkId) const
+        {
+            PrefabSystemComponentInterface* prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
+            if (prefabSystemComponentInterface != nullptr)
+            {
+                LinkReference link = prefabSystemComponentInterface->FindLink(linkId);
+                if (link.has_value())
+                {
+                    auto subTree = link->get().RemoveOverrides(path);
+                    if (subTree.IsEmpty())
+                    {
+                        AZ_Warning("Prefab", false, "PrefabOverrideHandler::RevertOverrides is called on a path that has no overrides.");
+                        return false;
+                    }
+
+                    ScopedUndoBatch undoBatch("Revert Prefab Overrides");
+                    PrefabUndoRevertOverrides* state = new Prefab::PrefabUndoRevertOverrides("Capture Override SubTree");
+                    state->Capture(path, AZStd::move(subTree), linkId);
+                    state->SetParent(undoBatch.GetUndoBatch());
+                    
+                    link->get().UpdateTarget();
+                    prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId());
+                    AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                        &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
+                    return true;
+                }
+            }
+            return false;
+        }
     }
-}
+} // namespace AzToolsFramework

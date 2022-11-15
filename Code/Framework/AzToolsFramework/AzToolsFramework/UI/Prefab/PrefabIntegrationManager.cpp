@@ -30,6 +30,7 @@
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
+#include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
@@ -59,6 +60,7 @@ namespace AzToolsFramework
         PrefabFocusInterface* PrefabIntegrationManager::s_prefabFocusInterface = nullptr;
         PrefabFocusPublicInterface* PrefabIntegrationManager::s_prefabFocusPublicInterface = nullptr;
         PrefabLoaderInterface* PrefabIntegrationManager::s_prefabLoaderInterface = nullptr;
+        PrefabOverridePublicInterface* PrefabIntegrationManager::s_prefabOverridePublicInterface = nullptr;
         PrefabPublicInterface* PrefabIntegrationManager::s_prefabPublicInterface = nullptr;
 
         PrefabIntegrationManager::PrefabIntegrationManager()
@@ -102,6 +104,13 @@ namespace AzToolsFramework
             if (s_prefabFocusPublicInterface == nullptr)
             {
                 AZ_Assert(false, "Prefab - could not get PrefabFocusPublicInterface on PrefabIntegrationManager construction.");
+                return;
+            }
+
+            s_prefabOverridePublicInterface = AZ::Interface<PrefabOverridePublicInterface>::Get();
+            if (s_prefabOverridePublicInterface == nullptr)
+            {
+                AZ_Assert(false, "Prefab - could not get PrefabOverridePublicInterface on PrefabIntegrationManager construction.");
                 return;
             }
 
@@ -624,6 +633,28 @@ namespace AzToolsFramework
                 );
             }
 
+            // Revert Overrides
+            {
+                if (selectedEntities.size() == 1)
+                {
+                    AZ::EntityId selectedEntity = selectedEntities[0];
+                    if (s_prefabOverridePublicInterface->AreOverridesPresent(selectedEntity))
+                    {
+                        QAction* revertAction = menu->addAction(QObject::tr("Revert Overrides"));
+                        QObject::connect(
+                            revertAction,
+                            &QAction::triggered,
+                            revertAction,
+                            [this, selectedEntity]
+                            {
+                                ContextMenu_RevertOverrides(selectedEntity);
+                            });
+
+                        menu->addSeparator();
+                    }
+                }
+            }
+
             menu->addSeparator();
         }
 
@@ -864,6 +895,11 @@ namespace AzToolsFramework
             {
                 WarningDialog("Detach Prefab error", detachPrefabResult.GetError());
             }
+        }
+
+        void PrefabIntegrationManager::ContextMenu_RevertOverrides(AZ::EntityId entityId)
+        {
+            s_prefabOverridePublicInterface->RevertOverrides(entityId);
         }
 
         void PrefabIntegrationManager::GatherAllReferencedEntitiesAndCompare(

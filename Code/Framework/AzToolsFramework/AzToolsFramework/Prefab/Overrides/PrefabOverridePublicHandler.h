@@ -32,6 +32,10 @@ namespace AzToolsFramework
             //! @return true if overrides are present on the given entity id from the focused prefab.
             bool AreOverridesPresent(AZ::EntityId entityId) override;
 
+            bool RevertOverrides(AZ::EntityId entityId) override;
+
+            AZStd::pair<AZ::Dom::Path, LinkId> GetPathToEntityFromFocusedPrefab(AZ::EntityId entityid);
+
             PrefabOverrideHandler m_prefabOverrideHandler;
 
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
