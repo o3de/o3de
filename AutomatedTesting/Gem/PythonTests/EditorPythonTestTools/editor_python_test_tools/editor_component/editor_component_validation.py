@@ -61,8 +61,8 @@ def _validate_property_visibility(component: EditorComponent, component_property
         f"was set to \"{visibility}\" when \"{expected}\" was expected."
 
 
-def validate_integer_property(get_int_value: typing.Callable, set_int_value: typing.Callable,
-                              component_name: str, property_name: str, tests: typing.Dict[int, bool]) -> None:
+def validate_integer_property(property_name: str, get_int_value: typing.Callable, set_int_value: typing.Callable,
+                              component_name: str, tests: typing.Dict[int, bool]) -> None:
     """
     Function to validate the behavior of a property that gets and sets an Integer value.
 
@@ -95,8 +95,8 @@ def validate_integer_property(get_int_value: typing.Callable, set_int_value: typ
 
 
 
-def validate_float_property(get_float_value: typing.Callable, set_float_value: typing.Callable,
-                            component_name: str, property_name: str, tests: typing.Dict[float, bool]) -> None:
+def validate_float_property(property_name: str, get_float_value: typing.Callable, set_float_value: typing.Callable,
+                            component_name: str, tests: typing.Dict[float, bool]) -> None:
     """
     Function to validate the behavior of a property that gets and sets a Float value.
 
@@ -128,8 +128,8 @@ def validate_float_property(get_float_value: typing.Callable, set_float_value: t
             f"{expected_value} was expected but {set_value} was retrieved. Negative Scenario Test: {not test[expect_pass]}."
 
 
-def validate_vector3_property(get_vector3_value: typing.Callable, set_vector3_value: typing.Callable,
-                              component_name: str, property_name: str,
+def validate_vector3_property(property_name: str, get_vector3_value: typing.Callable,
+                              set_vector3_value: typing.Callable, component_name: str,
                               tests: typing.Dict[str, typing.Tuple[float, float, float, bool]]) -> None:
     """
     Function to validate the behavior of a property that gets and sets a vector3.
@@ -163,8 +163,9 @@ def validate_vector3_property(get_vector3_value: typing.Callable, set_vector3_va
             f"{expected_value} was expected but {set_value} was retrieved. Negative Scenario Test: {not test[expect_pass]}."
 
 
-def validate_property_switch_toggle(get_toggle_value: typing.Callable, set_toggle_value: typing.Callable,
-                                    component_name: str, property_name:str, restore_default: bool=True) -> None:
+def validate_property_switch_toggle(property_name:str, get_toggle_value: typing.Callable,
+                                    set_toggle_value: typing.Callable, component_name: str,
+                                    restore_default: bool=True) -> None:
     """
     Used to toggle a property switch and validate that it toggled.
     param component_property_path: String of component property. (e.g. 'Settings|Visible')

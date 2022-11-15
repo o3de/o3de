@@ -63,33 +63,33 @@ def PhysX_Collider_Component_CRUD():
     # 3) Set Box Shape and Child Properties
         physx_collider.set_box_shape()
 
-        validate_vector3_property(physx_collider.get_box_dimensions, physx_collider.set_box_dimensions, physx_collider.component.get_component_name(), "Box Dimensions", VECTOR3_TESTS_NEGATIVE_EXPECT_PASS)
+        validate_vector3_property("Box Dimensions", physx_collider.get_box_dimensions, physx_collider.set_box_dimensions, physx_collider.component.get_component_name(), VECTOR3_TESTS_NEGATIVE_EXPECT_PASS)
 
     # 4) Set Capsule Shape and Child Properties
         physx_collider.set_capsule_shape()
 
-        validate_float_property(physx_collider.get_capsule_height, physx_collider.set_capsule_height, physx_collider.component.get_component_name(), "Capsule Height", FLOAT_HEIGHT_TESTS)
-        validate_float_property(physx_collider.get_capsule_radius, physx_collider.set_capsule_radius, physx_collider.component.get_component_name(), "Capsule Radius", COLLIDER_RADIUS_TESTS)
+        validate_float_property("Capsule Height", physx_collider.get_capsule_height, physx_collider.set_capsule_height, physx_collider.component.get_component_name(), FLOAT_HEIGHT_TESTS)
+        validate_float_property("Capsule Radius", physx_collider.get_capsule_radius, physx_collider.set_capsule_radius, physx_collider.component.get_component_name(), COLLIDER_RADIUS_TESTS)
 
     # 5) Set Cylinder Shape and Child Properties
         physx_collider.set_cylinder_shape()
 
-        validate_float_property(physx_collider.get_cylinder_height, physx_collider.set_cylinder_height, physx_collider.component.get_component_name(), "Cylinder Height", CYLINDER_HEIGHT_TESTS)
-        validate_float_property(physx_collider.get_cylinder_radius, physx_collider.set_cylinder_radius, physx_collider.component.get_component_name(), "Cylinder Radius", COLLIDER_RADIUS_TESTS)
+        validate_float_property("Cylinder Height", physx_collider.get_cylinder_height, physx_collider.set_cylinder_height, physx_collider.component.get_component_name(),  CYLINDER_HEIGHT_TESTS)
+        validate_float_property("Cylinder Radius", physx_collider.get_cylinder_radius, physx_collider.set_cylinder_radius, physx_collider.component.get_component_name(), COLLIDER_RADIUS_TESTS)
 
-        validate_integer_property(physx_collider.get_cylinder_subdivision, physx_collider.set_cylinder_subdivision, physx_collider.component.get_component_name(), "Cylinder Subdivision", CYLINDER_SUBDIVISION_TESTS)
+        validate_integer_property("Cylinder Subdivision", physx_collider.get_cylinder_subdivision, physx_collider.set_cylinder_subdivision, physx_collider.component.get_component_name(), CYLINDER_SUBDIVISION_TESTS)
 
     # 6) Set Sphere Shape and Child Properties
         physx_collider.set_sphere_shape()
 
-        validate_float_property(physx_collider.get_sphere_radius, physx_collider.set_sphere_radius, physx_collider.component.get_component_name(), "Sphere Radius", COLLIDER_RADIUS_TESTS)
+        validate_float_property("Sphere Radius", physx_collider.get_sphere_radius, physx_collider.set_sphere_radius, physx_collider.component.get_component_name(), COLLIDER_RADIUS_TESTS)
 
     # 7) Set General Properties
-        validate_property_switch_toggle(physx_collider.get_is_trigger, physx_collider.set_is_trigger, component_name, "Is Trigger")
-        validate_property_switch_toggle(physx_collider.get_is_simulated, physx_collider.set_is_simulated, component_name, "Is Simulated")
-        validate_property_switch_toggle(physx_collider.get_in_scene_queries, physx_collider.set_in_scene_queries, component_name, "In Scene Queries")
+        validate_property_switch_toggle("Is Trigger", physx_collider.get_is_trigger, physx_collider.set_is_trigger, component_name)
+        validate_property_switch_toggle("Is Simulated", physx_collider.get_is_simulated, physx_collider.set_is_simulated, component_name)
+        validate_property_switch_toggle("In Scene Queries", physx_collider.get_in_scene_queries, physx_collider.set_in_scene_queries, component_name)
 
-        validate_vector3_property(physx_collider.get_offset, physx_collider.set_offset, physx_collider.component.get_component_name(), "Offset", VECTOR3_TESTS_NEGATIVE_EXPECT_PASS)
+        validate_vector3_property("Offset", physx_collider.get_offset, physx_collider.set_offset, physx_collider.component.get_component_name(), VECTOR3_TESTS_NEGATIVE_EXPECT_PASS)
         # TODO: Create Validate Quaternian Backlog: validate_vector3_property(physx_collider.get_rotation, physx_collider.set_rotation, physx_collider.component.get_component_name(), "Rotation", VECTOR3_TESTS_NEGATIVE_EXPECT_FAIL)
 
         # o3de/o3de#12634 - For some reason I can't get this to work. Says it takes an AZStd::string,
@@ -100,10 +100,10 @@ def PhysX_Collider_Component_CRUD():
         # physx_collider.set_tag(Strings.EMPTY_STRING)
         # physx_collider.set_tag(Strings.ONLY_SPACE)physx_collider.set_tag(Strings.NUMBER)
 
-        validate_float_property(physx_collider.get_contact_offset, physx_collider.set_contact_offset, physx_collider.component.get_component_name(), "Contact Offset", CONTACT_OFFSET_TESTS)
-        validate_float_property(physx_collider.get_rest_offset, physx_collider.set_rest_offset, physx_collider.component.get_component_name(), "Rest Offset", REST_OFFSET_TESTS)
+        validate_float_property("Contact Offset", physx_collider.get_contact_offset, physx_collider.set_contact_offset, physx_collider.component.get_component_name(), CONTACT_OFFSET_TESTS)
+        validate_float_property("Rest Offset", physx_collider.get_rest_offset, physx_collider.set_rest_offset, physx_collider.component.get_component_name(), REST_OFFSET_TESTS)
 
-        validate_property_switch_toggle(physx_collider.get_draw_collider, physx_collider.set_draw_collider, component_name, "Draw Collider")
+        validate_property_switch_toggle("Draw Collider", physx_collider.get_draw_collider, physx_collider.set_draw_collider, component_name)
 
         # o3de/o3de#12503 PhysX Collider Component's Physic Material field(s) return unintuitive property tree paths.
         # physx_collider.set_physx_material_from_path(physx_material)
@@ -112,8 +112,8 @@ def PhysX_Collider_Component_CRUD():
         physx_collider.set_physicsasset_shape()
 
         physx_collider.set_physx_mesh_from_path(physx_mesh)
-        validate_vector3_property(physx_collider.get_physx_mesh_asset_scale, physx_collider.set_physx_mesh_asset_scale, physx_collider.component.get_component_name(), "PhysX Mesh Asset Scale", VECTOR3_TESTS_NEGATIVE_EXPECT_PASS)
-        validate_property_switch_toggle(physx_collider.get_use_physics_materials_from_asset, physx_collider.set_use_physics_materials_from_asset, component_name, "Use Physics Materials From Asset")
+        validate_vector3_property("PhysX Mesh Asset Scale", physx_collider.get_physx_mesh_asset_scale, physx_collider.set_physx_mesh_asset_scale, physx_collider.component.get_component_name(), VECTOR3_TESTS_NEGATIVE_EXPECT_PASS)
+        validate_property_switch_toggle("Use Physics Materials From Asset", physx_collider.get_use_physics_materials_from_asset, physx_collider.set_use_physics_materials_from_asset, component_name)
 
     # 9) Delete Component
         physx_collider.component.remove()
