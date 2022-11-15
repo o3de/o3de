@@ -177,13 +177,13 @@ def loop_through_selected_materials(texture_file_path):
     selected_materials = get_selected_materials(bpy.context.selected_objects)
     # Loop through Materials
     for mat in selected_materials:
-        if not mat == '':
+        if mat:
             # Get the material
             material = bpy.data.materials[mat]
             # Loop through material node tree and get all the texture iamges
             for img in material.node_tree.nodes:
                 if img.type == 'TEX_IMAGE':
-                    # Frist make sure the image is not packed inside blender
+                    # First make sure the image is not packed inside blender
                     if img.image.packed_file:
                         if Path(img.image.name).suffix in constants.IMAGE_EXT:
                             bpy.data.images[img.image.name].filepath = str(Path(texture_file_path).joinpath(img.image.name))
