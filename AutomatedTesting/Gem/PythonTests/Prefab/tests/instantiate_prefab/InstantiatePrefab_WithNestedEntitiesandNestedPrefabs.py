@@ -6,34 +6,34 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 
-def DuplicatePrefab_ContainingNestedEntitiesAndNestedPrefabs():
+def InstantiatePrefab_WithNestedEntitiesAndNestedPrefabs():
     """
     Test description:
     - Creates linear nested entities.
     - Creates linear nested prefabs based of an entity with a physx collider.
     - Creates a prefab from the nested entities and the nested prefabs.
-    - Duplicates the prefab.
-    - Checks that the prefab is correctly duplicated.
+    - Instantiates another copy of the prefab.
+    - Checks that the prefab is correctly instantiated.
     - Checks Undo/Redo operations.
     """
 
     from pathlib import Path
 
     import azlmbr.legacy.general as general
+    import azlmbr.math as math
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.prefab_utils import Prefab
     from editor_python_test_tools.wait_utils import PrefabWaiter
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
-    NESTED_ENTITIES_PREFAB_FILE_NAME = Path(__file__).stem + '_' + 'nested_entities_prefab'
     NESTED_ENTITIES_NAME_PREFIX = 'Entity_'
-    NESTED_PREFABS_FILE_NAME_PREFIX = Path(__file__).stem + '_' + 'nested_prefabs_'
+    NESTED_PREFABS_FILE_NAME_PREFIX = Path(__file__).stem + '_nested_prefab_'
     NESTED_PREFABS_NAME_PREFIX = 'NestedPrefabs_Prefab_'
-    FILE_NAME_OF_PREFAB_WITH_NESTED_ENTITIES_AND_NESTED_PREFABS = Path(__file__).stem + '_' + 'new_prefab'
+    FILE_NAME_OF_PREFAB_WITH_NESTED_ENTITIES_AND_NESTED_PREFABS = Path(__file__).stem + '_new_prefab'
     NESTED_PREFABS_TEST_ENTITY_NAME = 'TestEntity'
     PHYSX_COLLIDER_NAME = 'PhysX Collider'
-    CREATION_POSITION = azlmbr.math.Vector3(100.0, 100.0, 100.0)
+    CREATION_POSITION = math.Vector3(100.0, 100.0, 100.0)
     NUM_NESTED_ENTITIES_LEVELS = 3
     NUM_NESTED_PREFABS_LEVELS = 3
 
@@ -50,7 +50,7 @@ def DuplicatePrefab_ContainingNestedEntitiesAndNestedPrefabs():
     # Creates new nested prefabs at the root level
     # Asserts if creation didn't succeed
     entity_to_nest = EditorEntity.create_editor_entity_at(CREATION_POSITION, name=NESTED_PREFABS_TEST_ENTITY_NAME)
-    assert entity_to_nest.id.IsValid(), "Couldn't create TestEntity"
+    assert entity_to_nest.id.IsValid(), f"Couldn't create {NESTED_PREFABS_TEST_ENTITY_NAME}"
     entity_to_nest.add_component(PHYSX_COLLIDER_NAME)
     assert entity_to_nest.has_component(PHYSX_COLLIDER_NAME), f"Failed to add a {PHYSX_COLLIDER_NAME}"
     _, nested_prefab_instances = prefab_test_utils.create_linear_nested_prefabs(
@@ -59,12 +59,12 @@ def DuplicatePrefab_ContainingNestedEntitiesAndNestedPrefabs():
 
     # Creates a new prefab containing the nested entities and the nested prefab instances
     # Asserts if prefab creation doesn't succeed
-    _, new_prefab = Prefab.create_prefab(
+    new_prefab, new_prefab_instance = Prefab.create_prefab(
         [nested_entities_root, nested_prefab_instances[0].container_entity],
         FILE_NAME_OF_PREFAB_WITH_NESTED_ENTITIES_AND_NESTED_PREFABS)
-    new_prefab_container_entity = new_prefab.container_entity
+    new_prefab_container_entity = new_prefab_instance.container_entity
 
-    nested_entities_root_on_instance = new_prefab.get_direct_child_entity_by_name(nested_entities_root_name)
+    nested_entities_root_on_instance = new_prefab_instance.get_direct_child_entity_by_name(nested_entities_root_name)
 
     assert nested_entities_root_on_instance.get_name() == nested_entities_root_name \
            and nested_entities_root_on_instance.get_parent_id() == new_prefab_container_entity.id, \
@@ -75,34 +75,36 @@ def DuplicatePrefab_ContainingNestedEntitiesAndNestedPrefabs():
                                                       CREATION_POSITION)
 
     # Gather information on prefab structure to validate against Undo/Redo
-    common_parent = EditorEntity(new_prefab.container_entity.get_parent_id())
-    common_parent_children_ids_before_duplicate = set([child_id.ToString() for child_id in
-                                                       common_parent.get_children_ids()])
+    common_parent = EditorEntity(new_prefab_instance.container_entity.get_parent_id())
+    common_parent_children_ids_before_new_instance = set([child_id.ToString() for child_id in
+                                                          common_parent.get_children_ids()])
 
-    # Duplicates the prefab instance and asserts if duplication doesn't succeed
-    duplicated_instance = Prefab.duplicate_prefabs([new_prefab])
+    # Instantiates another copy of the prefab
+    new_prefab_instance_2 = Prefab.instantiate(new_prefab)
+    assert len(new_prefab.instances) == 2, "Failed to instantiate another copy of the prefab"
 
-    # Gather more information on prefab structure after duplication to validate against Undo/Redo
-    common_parent_children_ids_after_duplicate = set([child_id.ToString() for child_id in
-                                                      common_parent.get_children_ids()])
-    duplicate_container_entity_ids = [duplicated_instance[0].container_entity.id]
+    # Gather more information on new entity structure to validate against Undo/Redo
+    common_parent_children_ids_after_new_instance = set([child_id.ToString() for child_id in
+                                                         common_parent.get_children_ids()])
 
-    # Test undo/redo on prefab duplication
+    # Test undo/redo on new instantiation
     general.undo()
     PrefabWaiter.wait_for_propagation()
-    common_parent_children_ids_after_duplicate_undo = set([child_id.ToString() for child_id in
-                                                           common_parent.get_children_ids()])
-    assert common_parent_children_ids_before_duplicate == common_parent_children_ids_after_duplicate_undo, \
+    common_parent_children_ids_after_instantiate_undo = set([child_id.ToString() for child_id in
+                                                             common_parent.get_children_ids()])
+    assert common_parent_children_ids_before_new_instance == common_parent_children_ids_after_instantiate_undo, \
         "Undo Failed: Found unexpected children of common parent after Undo"
 
     general.redo()
     PrefabWaiter.wait_for_propagation()
-    Prefab.validate_duplicated_prefab([new_prefab], common_parent_children_ids_before_duplicate,
-                                      common_parent_children_ids_after_duplicate, duplicate_container_entity_ids,
+    # Use duplicate prefab validation to validate the structure of new instance
+    Prefab.validate_duplicated_prefab([new_prefab_instance], common_parent_children_ids_before_new_instance,
+                                      common_parent_children_ids_after_new_instance,
+                                      [new_prefab_instance_2.container_entity.id],
                                       common_parent)
 
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
 
-    Report.start_test(DuplicatePrefab_ContainingNestedEntitiesAndNestedPrefabs)
+    Report.start_test(InstantiatePrefab_WithNestedEntitiesAndNestedPrefabs)

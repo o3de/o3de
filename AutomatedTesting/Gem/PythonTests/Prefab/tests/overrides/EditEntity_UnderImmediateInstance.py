@@ -32,8 +32,8 @@ def EditEntity_UnderImmediateInstance():
     import editor_python_test_tools.hydra_editor_utils as hydra
 
     CAR_PREFAB_FILE_NAME = Path(__file__).stem + 'car_prefab'
-    CREATION_POSITION = azlmbr.Math.Vector3(0.0, 0.0, 0.0)
-    UPDATED_POSITION = azlmbr.Math.Vector3(10.0, 0.0, 0.0)
+    CREATION_POSITION = azlmbr.math.Vector3(0.0, 0.0, 0.0)
+    UPDATED_POSITION = azlmbr.math.Vector3(10.0, 0.0, 0.0)
 
     prefab_test_utils.open_base_tests_level()
 

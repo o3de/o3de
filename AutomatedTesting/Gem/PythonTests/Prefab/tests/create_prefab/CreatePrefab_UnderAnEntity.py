@@ -46,10 +46,10 @@ def CreatePrefab_UnderAnEntity():
     # Move the parent position, it should update the child position
     parent_entity.set_world_translation((200.0, 200.0, 200.0))
     child_instance_translation = child_instance.container_entity.get_world_translation()
-    assert child_instance_translation.IsClose(azlmbr.Math.Vector3(200.0, 200.0, 200.0)), f"Instance position position{child_instance_translation.ToString()} didn't get updated" \
+    assert child_instance_translation.IsClose(azlmbr.math.Vector3(200.0, 200.0, 200.0)), f"Instance position position{child_instance_translation.ToString()} didn't get updated" \
                                                                                          f" to the same position as the parent{parent_entity.get_world_translation().ToString()}"
     child_translation = child_entity_on_child_instance.get_world_translation()
-    assert child_translation.IsClose(azlmbr.Math.Vector3(200.0, 200.0, 200.0)), f"Entity position{child_translation.ToString()} of the instance didn't get updated" \
+    assert child_translation.IsClose(azlmbr.math.Vector3(200.0, 200.0, 200.0)), f"Entity position{child_translation.ToString()} of the instance didn't get updated" \
                                                                                 f" to the same position as the parent{parent_entity.get_world_translation().ToString()}"
 
 

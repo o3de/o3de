@@ -59,8 +59,8 @@ def EditorWorkflow_ParentEntityTransform_Affects_ChildEntityTransform():
     from editor_python_test_tools.editor_entity_utils import EditorEntity, EditorComponent
     from editor_python_test_tools.wait_utils import PrefabWaiter
 
-    expected_translate_position = azlmbr.Math.Vector3(10.0, 0.0, 0.0)
-    default_translate_position = azlmbr.Math.Vector3(0.0, 0.0, 0.0)
+    expected_translate_position = azlmbr.math.Vector3(10.0, 0.0, 0.0)
+    default_translate_position = azlmbr.math.Vector3(0.0, 0.0, 0.0)
 
     # 01. load an existing level
     hydra.open_base_level()

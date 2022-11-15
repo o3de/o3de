@@ -21,8 +21,8 @@ def CreatePrefab_WithNestedEntities():
 
     NESTED_ENTITIES_PREFAB_FILE_NAME = Path(__file__).stem + 'nested_entities_prefab'
     NESTED_ENTITIES_NAME_PREFIX = 'Entity_'
-    OLD_POSITION = azlmbr.Math.Vector3(100.0, 100.0, 100.0)
-    NEW_POSITION = azlmbr.Math.Vector3(200.0, 200.0, 200.0)
+    OLD_POSITION = azlmbr.math.Vector3(100.0, 100.0, 100.0)
+    NEW_POSITION = azlmbr.math.Vector3(200.0, 200.0, 200.0)
     NUM_NESTED_ENTITIES_LEVELS = 3
 
     prefab_test_utils.open_base_tests_level()
