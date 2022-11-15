@@ -10,6 +10,7 @@
 
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
+#include <EditorColliderComponent.h>
 #include <EditorRigidBodyComponent.h>
 #include <EditorShapeColliderComponent.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
@@ -115,6 +116,42 @@ namespace PhysXEditorTests
         LmbrCentral::SphereShapeComponentRequestsBus::Event(editorEntityId, &LmbrCentral::SphereShapeComponentRequests::SetRadius, radius);
         LmbrCentral::ShapeComponentRequestsBus::Event(
             editorEntityId, &LmbrCentral::ShapeComponentRequests::SetTranslationOffset, translationOffset);
+
+        return editorEntity;
+    }
+
+    EntityPtr CreateCylinderColliderEditorEntity(
+        const AZ::Transform& transform,
+        const AZ::Vector3& nonUniformScale,
+        const AZ::Vector3& positionOffset,
+        const AZ::Quaternion& rotationOffset,
+        float radius,
+        float height,
+        bool dynamic)
+    {
+        EntityPtr editorEntity = CreateInactiveEditorEntity("CylinderEntity");
+        editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
+        const auto* colliderComponent = editorEntity->CreateComponent<PhysX::EditorColliderComponent>();
+        if (dynamic)
+        {
+            editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
+        }
+        editorEntity->Activate();
+
+        AZ::EntityComponentIdPair idPair(editorEntity->GetId(), colliderComponent->GetId());
+
+        AZ::TransformBus::Event(editorEntity->GetId(), &AZ::TransformBus::Events::SetWorldTM, transform);
+        AZ::NonUniformScaleRequestBus::Event(editorEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, nonUniformScale);
+        PhysX::EditorColliderComponentRequestBus::Event(
+            idPair, &PhysX::EditorColliderComponentRequests::SetShapeType, Physics::ShapeType::Cylinder);
+        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderRadius, radius);
+        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderHeight, height);
+        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetColliderOffset, positionOffset);
+        PhysX::EditorColliderComponentRequestBus::Event(
+            idPair, &PhysX::EditorColliderComponentRequests::SetColliderRotation, rotationOffset);
+
+        editorEntity->Deactivate();
+        editorEntity->Activate();
 
         return editorEntity;
     }

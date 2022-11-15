@@ -378,4 +378,52 @@ namespace PhysXEditorTests
 
         EXPECT_NEAR(maxDistSq, 9.0f, 0.01f);
     }
+
+    TEST_F(PhysXEditorFixture, Collider_CylinderWithOffsetAndNonUniformScale_CorrectDebugDraw)
+    {
+        const AZ::Transform transform(AZ::Vector3(2.0f, 4.0f, -7.0f), AZ::Quaternion(0.4f, 0.8f, 0.2f, 0.4f), 0.6f);
+        const AZ::Vector3 nonUniformScale(2.0f, 0.5f, 0.8f);
+        const AZ::Vector3 positionOffset(3.0f, -2.0f, -6.0f);
+        const AZ::Quaternion rotationOffset(0.3f, 0.3f, -0.1f, 0.9f);
+        const float radius = 1.5f;
+        const float height = 6.0f;
+        EntityPtr editorEntity =
+            CreateCylinderColliderEditorEntity(transform, nonUniformScale, positionOffset, rotationOffset, radius, height);
+
+        UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
+        AzFramework::EntityDebugDisplayEventBus::Event(
+            editorEntity->GetId(),
+            &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
+            AzFramework::ViewportInfo{ 0 },
+            testDebugDisplayRequests);
+        const AZ::Aabb debugDrawAabb = testDebugDisplayRequests.GetAabb();
+
+        // use a relatively large tolerance, because the cylinder will be a convex approximation rather than an exact primitive
+        EXPECT_THAT(debugDrawAabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(-2.9f, 4.1f, -9.6f), 0.1f));
+        EXPECT_THAT(debugDrawAabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(-0.9f, 8.9f, -5.1f), 0.1f));
+    }
+
+    TEST_F(PhysXEditorFixture, Collider_CylinderWithOffsetNonUniformScaleAndRigidBody_CorrectDebugDraw)
+    {
+        const AZ::Transform transform(AZ::Vector3(-3.0f, -2.0f, -4.0f), AZ::Quaternion(0.5f, 0.1f, -0.7f, 0.5f), 1.8f);
+        const AZ::Vector3 nonUniformScale(0.6f, 0.8f, 1.4f);
+        const AZ::Vector3 positionOffset(2.0f, 7.0f, -1.0f);
+        const AZ::Quaternion rotationOffset(0.5f, -0.5f, -0.5f, 0.5f);
+        const float radius = 2.5f;
+        const float height = 9.0f;
+        EntityPtr editorEntity =
+            CreateCylinderColliderEditorEntity(transform, nonUniformScale, positionOffset, rotationOffset, radius, height, true);
+
+        UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
+        AzFramework::EntityDebugDisplayEventBus::Event(
+            editorEntity->GetId(),
+            &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
+            AzFramework::ViewportInfo{ 0 },
+            testDebugDisplayRequests);
+        const AZ::Aabb debugDrawAabb = testDebugDisplayRequests.GetAabb();
+
+        // use a relatively large tolerance, because the cylinder will be a convex approximation rather than an exact primitive
+        EXPECT_THAT(debugDrawAabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(1.9f, -13.8f, -10.5f), 0.1f));
+        EXPECT_THAT(debugDrawAabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(11.3f, 0.8f, 3.9f), 0.1f));
+    }
 } // namespace PhysXEditorTests

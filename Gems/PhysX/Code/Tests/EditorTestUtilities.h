@@ -50,6 +50,17 @@ namespace PhysXEditorTests
     EntityPtr CreateSphereShapeColliderEditorEntity(
         const AZ::Transform& transform, float radius, const AZ::Vector3& translationOffset, bool dynamic = false);
 
+    //! Creates an active editor entity with collider component with cylinder geometry.
+    //! Adds a rigid body component if the dynamic parameter is true.
+    EntityPtr CreateCylinderColliderEditorEntity(
+        const AZ::Transform& transform,
+        const AZ::Vector3& nonUniformScale,
+        const AZ::Vector3& positionOffset,
+        const AZ::Quaternion& rotationOffset,
+        float radius,
+        float height,
+        bool dynamic = false);
+
     //! Gets the AABB for the simulated body on the entity with the given ID, or returns a null AABB if no body is found.
     AZ::Aabb GetSimulatedBodyAabb(AZ::EntityId entityId);
 
