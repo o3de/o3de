@@ -10,6 +10,7 @@
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
+#include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <MCore/Source/ReflectionSerializer.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/NodeInfo.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/ActorInfo.h>
@@ -73,8 +74,16 @@ namespace EMotionFX
         marginLayout->addWidget(m_addCollidersButton);
         mainLayout->addLayout(marginLayout);
 
+
         m_filterEntityBox = new QLineEdit{ this };
-        mainLayout->addWidget(m_filterEntityBox);
+        m_filterEntityBox->setPlaceholderText(tr("Search..."));
+        AzQtComponents::LineEdit::applySearchStyle(m_filterEntityBox);
+
+        auto* marginFilterEntityBoxLayout = new QHBoxLayout;
+        marginFilterEntityBoxLayout->setContentsMargins(10, 0, 10, 10);
+        marginFilterEntityBoxLayout->addWidget(m_filterEntityBox);
+        mainLayout->addLayout(marginFilterEntityBoxLayout);
+
         connect(m_filterEntityBox, &QLineEdit::textChanged, this, &JointPropertyWidget::OnSearchTextChanged);
 
         m_clothJointWidget = new ClothJointWidget;
