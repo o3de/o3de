@@ -573,12 +573,12 @@
                             },
                             "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
                                 "$type": "GeneralNodeTitleComponentSaveData",
-                                "PaletteOverride": "DefaultNodeTitlePalette"
+                                "PaletteOverride": "ObjectNodeTitlePalette"
                             },
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    240.0,
+                                    800.0,
                                     -120.0
                                 ]
                             },
@@ -601,12 +601,12 @@
                             },
                             "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
                                 "$type": "GeneralNodeTitleComponentSaveData",
-                                "PaletteOverride": "DefaultNodeTitlePalette"
+                                "PaletteOverride": "MaterialTemplateNodeTitlePalette"
                             },
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    420.0,
+                                    980.0,
                                     -380.0
                                 ]
                             },
@@ -629,12 +629,12 @@
                             },
                             "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
                                 "$type": "GeneralNodeTitleComponentSaveData",
-                                "PaletteOverride": "DefaultNodeTitlePalette"
+                                "PaletteOverride": "TexturingNodeTitlePalette"
                             },
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    100.0,
+                                    660.0,
                                     -380.0
                                 ]
                             },
@@ -657,12 +657,12 @@
                             },
                             "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
                                 "$type": "GeneralNodeTitleComponentSaveData",
-                                "PaletteOverride": "DefaultNodeTitlePalette"
+                                "PaletteOverride": "ObjectNodeTitlePalette"
                             },
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    -60.0,
+                                    360.0,
                                     -380.0
                                 ]
                             },

@@ -428,7 +428,6 @@ namespace PhysX
         configuration.m_position = colliderTransform.GetTranslation();
         configuration.m_entityId = GetEntityId();
         configuration.m_debugName = GetEntity()->GetName();
-        configuration.m_startSimulationEnabled = false;
         configuration.m_colliderAndShapeData = Internal::GetCollisionShapes(GetEntity());
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
@@ -442,6 +441,12 @@ namespace PhysX
                 m_config.m_mass = body->GetMass();
                 m_config.m_centerOfMassOffset = body->GetCenterOfMassLocal();
                 m_config.m_inertiaTensor = body->GetInertiaLocal();
+
+                // Set simulation disabled for this actor so it doesn't actually interact when the editor world is updated.
+                if (physx::PxActor* pxActor = static_cast<physx::PxActor*>(body->GetNativePointer()))
+                {
+                    pxActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, true);
+                }
             }
         }
         AZ_Error("EditorRigidBodyComponent",

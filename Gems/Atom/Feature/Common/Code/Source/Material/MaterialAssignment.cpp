@@ -104,23 +104,29 @@ namespace AZ
                 return;
             }
 
-            if (m_materialAsset.IsReady())
+            if (m_materialAsset.GetId().IsValid() || m_materialAsset.IsReady())
             {
                 m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_materialAsset) : RPI::Material::Create(m_materialAsset);
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
 
-                MaterialAssignmentNotificationBus::Event(m_materialInstance->GetAssetId(), &MaterialAssignmentNotifications::OnRebuildMaterialInstance);
-
+                if (m_materialInstance)
+                {
+                    MaterialAssignmentNotificationBus::Event(
+                        m_materialAsset.GetId(), &MaterialAssignmentNotifications::OnRebuildMaterialInstance);
+                }
                 return;
             }
 
-            if (m_defaultMaterialAsset.IsReady())
+            if (m_defaultMaterialAsset.GetId().IsValid() || m_defaultMaterialAsset.IsReady())
             {
                 m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_defaultMaterialAsset) : RPI::Material::Create(m_defaultMaterialAsset);
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
 
-                MaterialAssignmentNotificationBus::Event(m_materialInstance->GetAssetId(), &MaterialAssignmentNotifications::OnRebuildMaterialInstance);
-
+                if (m_materialInstance)
+                {
+                    MaterialAssignmentNotificationBus::Event(
+                        m_defaultMaterialAsset.GetId(), &MaterialAssignmentNotifications::OnRebuildMaterialInstance);
+                }
                 return;
             }
 
