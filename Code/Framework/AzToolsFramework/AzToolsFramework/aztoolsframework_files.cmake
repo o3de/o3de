@@ -256,6 +256,9 @@ set(FILES
     PaintBrush/PaintBrush.cpp
     PaintBrush/PaintBrush.h
     PaintBrush/PaintBrushNotificationBus.h
+    PaintBrush/PaintBrushSubModeCluster.cpp
+    PaintBrush/PaintBrushSubModeCluster.h
+    PaintBrush/PaintBrush.h
     PaintBrushSettings/PaintBrushSettings.cpp
     PaintBrushSettings/PaintBrushSettings.h
     PaintBrushSettings/PaintBrushSettingsNotificationBus.h
