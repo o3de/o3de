@@ -160,7 +160,7 @@ def Collider_CollisionGroupsWorkflow():
 
     # Attempts to retrieve an entity's initial position and logs result
     def validate_initial_position(entity_id, msg_tuple):
-        # type: (EntityId, (str, str)) -> azlmbr.Math.Vector3
+        # type: (EntityId, (str, str)) -> azlmbr.math.Vector3
         # Attempts to validate and return the entity's initial position.
         # logs the result to Report.result() using the tuple parameter
 
