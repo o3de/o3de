@@ -11,6 +11,7 @@ from editor_python_test_tools.utils import Report
 from editor_python_test_tools.editor_entity_utils import EditorComponent
 from consts.general import ComponentPropertyVisibilityStates as PropertyVisibility
 
+
 def compare_vec3(expected: math.Vector3, actual: math.Vector3) -> bool:
     """
     Helper function to compare two Vector3s. This is useful due to floating point math.
@@ -27,7 +28,7 @@ def compare_vec3(expected: math.Vector3, actual: math.Vector3) -> bool:
 
 
 def _validate_xyz_is_float(x: float, y: float, z: float, error_message: str) -> None:
-    '''
+    """
     Helper Function for Editor Components to test if passed in X, Y, Z used in editor component tests are
        all actually floats.
 
@@ -39,8 +40,9 @@ def _validate_xyz_is_float(x: float, y: float, z: float, error_message: str) -> 
     error_message: The error message to assert if values are not float.
 
     return: boolean result of testing whether each input is a float.
-    '''
+    """
     assert isinstance(x, float) and isinstance(y, float) and isinstance(z, float), error_message
+
 
 def _validate_property_visibility(component: EditorComponent, component_property_path: str, expected: str) -> None:
     """
@@ -59,9 +61,42 @@ def _validate_property_visibility(component: EditorComponent, component_property
         f"was set to \"{visibility}\" when \"{expected}\" was expected."
 
 
+def validate_float_property(get_float_value: typing.Callable, set_float_value: typing.Callable,
+                            component_name: str, property_name: str, tests: typing.Dict[float, bool]) -> None:
+    """
+    Function to validate the behavior of a property that gets and sets a Float value.
+
+    :get_float_value: The Editor Entity Component Property's get method.
+    :set_float_value: The Editor Entity Component Property's set method.
+    :component_name: The name of the Editor Entity Component under test.
+    :property_name: The name of the Editor Entity Component Property under test.
+    :tests: A dictionary that stores a vector3 value and the intent of the values being passed. The following
+    format is expected
+     {
+        "test_description": (float_value, expect_pass),
+        "Zero value Test": (0.0, True)
+     }
+    """
+    float_value, expect_pass = 0, 1
+
+    Report.info(f"Validating {component_name}'s {property_name} Float property can be set or fails gracefully.")
+
+    for test_name in tests:
+        test = tests[test_name]
+
+        set_float_value(test[float_value])
+
+        set_value = get_float_value()
+        expected_value = test[float_value]
+
+        assert math.Math_IsClose(expected_value, set_value, 0.001) is test[expect_pass], \
+            f"Error: The {component_name}'s  {property_name} property failed to the \"{test_name}\" test. " \
+            f"{expected_value} was expected but {set_value} was retrieved. Negative Scenario Test: {not test[expect_pass]}."
+
+
 def validate_vector3_property(get_vector3_value: typing.Callable, set_vector3_value: typing.Callable,
                               component_name: str, property_name: str,
-                              tests: typing.Dict[str, typing.Tuple[float, float, float]]) -> None:
+                              tests: typing.Dict[str, typing.Tuple[float, float, float, bool]]) -> None:
     """
     Function to validate the behavior of a property that gets and sets a vector3.
 
@@ -72,26 +107,26 @@ def validate_vector3_property(get_vector3_value: typing.Callable, set_vector3_va
     :tests: A dictionary that stores a vector3 value and the intent of the values being passed. The following
     format is expected
      {
-        "test_description": (x_value, y_value, z_value),
-        "test_description2": (x_value, y_value, z_value)
+        "test_description": (x_float_value, y_float_value, z_float_value, expect_pass),
+        "Zero Value Test": (0.0, 0.0, 0.0, True)
      }
     """
     # Dictionary Keys
-    x, y, z = 0, 1, 2
+    x, y, z, expect_pass = 0, 1, 2, 3
 
-    Report.info(f"Validating {component_name}'s {property_name} Vector3 property can be set.")
+    Report.info(f"Validating {component_name}'s {property_name} Vector3 property can be set or fails gracefully.")
 
     for test_name in tests:
-        values = tests[test_name]
+        test = tests[test_name]
 
-        set_vector3_value(values[x], values[y], values[z])
+        set_vector3_value(test[x], test[y], test[z])
 
         set_value = get_vector3_value()
-        expected_value = math.Vector3(values[x], values[y], values[z])
+        expected_value = math.Vector3(test[x], test[y], test[z])
 
-        assert compare_vec3(expected_value, set_value), \
+        assert compare_vec3(expected_value, set_value) is test[expect_pass], \
             f"Error: The {component_name}'s  {property_name} property failed to the \"{test_name}\" test. " \
-            f"{expected_value} was expected but {set_value} was retrieved."
+            f"{expected_value} was expected but {set_value} was retrieved. Negative Scenario Test: {not test[expect_pass]}."
 
 
 def validate_property_switch_toggle(get_toggle_value: typing.Callable, set_toggle_value: typing.Callable,

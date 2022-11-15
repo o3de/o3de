@@ -181,12 +181,14 @@ class EditorPhysxCollider:
         Property Type, Default Visibility - ('float', 'Visible')
 
         Used to set the PhysX Collider's Reset Offset Property.
+
+        NOTE: Rest Offset Must be LESS-THAN Contact Offset.
         """
         assert isinstance(rest_offset, float), f"The value passed to Rest Offset \"{rest_offset}\" is not a float."
 
         self.component.set_component_property_value(self.Path.RESET_OFFSET, rest_offset)
 
-    def get_reset_offset(self) -> float:
+    def get_rest_offset(self) -> float:
         """
         Property Type, Default Visibility - ('float', 'Visible')
 
@@ -199,6 +201,8 @@ class EditorPhysxCollider:
         Property Type, Default Visibility - ('float', 'Visible')
 
         Used to set the PhysX Collider's Contact Offset Property.
+
+        NOTE: Contact Offset Must be GREATER-THAN Rest Offset.
         """
         assert isinstance(contact_offset, float), f"The value passed to Contact Offset \"{contact_offset}\" is not a float."
 
@@ -490,4 +494,4 @@ class EditorPhysxCollider:
 
         Used to get the PhysX Collider's Sphere radius property.
         """
-        return self.component.set_component_property_value(self.Path.Sphere.RADIUS)
+        return self.component.get_component_property_value(self.Path.Sphere.RADIUS)
