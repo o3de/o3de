@@ -73,7 +73,6 @@ namespace AZ
             else if (RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure))
             {
                 m_nativeAccelerationStructure = buffer.GetNativeAccelerationStructure();
-                m_tlasIndex = device.GetBindlessDescriptorPool().AttachTLAS(this);
             }
 
             SetName(GetName());
@@ -97,11 +96,6 @@ namespace AZ
                 if (m_readWriteIndex != ~0u)
                 {
                     device.GetBindlessDescriptorPool().DetachReadWriteBuffer(m_readWriteIndex);
-                }
-
-                if (m_tlasIndex != ~0u)
-                {
-                    device.GetBindlessDescriptorPool().DetachTLAS(m_tlasIndex);
                 }
             }
             return RHI::ResultCode::Success;
@@ -153,11 +147,6 @@ namespace AZ
         uint32_t BufferView::GetBindlessReadWriteIndex() const
         {
             return m_readWriteIndex;
-        }
-
-        uint32_t BufferView::GetBindlessTLASIndex() const
-        {
-            return m_tlasIndex;
         }
 
     } // namespace Vulkan

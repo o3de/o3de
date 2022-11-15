@@ -42,8 +42,6 @@ namespace AZ
 
             uint32_t GetBindlessReadWriteIndex() const override;
 
-            uint32_t GetBindlessTLASIndex() const override;
-
         private:
             friend class BindlessDescriptorPool;
 
@@ -68,7 +66,6 @@ namespace AZ
 
             uint32_t m_readIndex = ~0u;
             uint32_t m_readWriteIndex = ~0u;
-            uint32_t m_tlasIndex = ~0u;
         };
 
     }

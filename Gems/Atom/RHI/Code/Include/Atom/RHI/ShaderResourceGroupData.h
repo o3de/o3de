@@ -212,7 +212,6 @@ namespace AZ
                 ReadWriteTexture,
                 ReadBuffer,
                 ReadWriteBuffer,
-                RTAccelerationStructure,
                 Count
             };
 

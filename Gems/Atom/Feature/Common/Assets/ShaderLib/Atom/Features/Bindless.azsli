@@ -28,10 +28,6 @@ partial ShaderResourceGroup Bindless : SRG_Bindless
     ByteAddressBuffer m_ByteAddressBuffer[UNBOUNDED_SIZE];
     RWByteAddressBuffer m_RWByteAddressBuffer[UNBOUNDED_SIZE];
     
-    //Todo:: Enable this if we want to create a tlas specific unbounded array for RayTracing. 
-    //Uncommenting this will require runtime changes within vk and dx11 as well
-    //RaytracingAccelerationStructure m_TLAS[UNBOUNDED_SIZE]; 
-
     Texture2D<float4> GetTexture2D(uint index)
     {
         return m_Texture2D[index];
@@ -51,11 +47,5 @@ partial ShaderResourceGroup Bindless : SRG_Bindless
     {
         return m_RWByteAddressBuffer[index];
     }
-
-    //Uncomment once the declaration above is also uncommented
-    //RaytracingAccelerationStructure GetTLAS(uint index)
-    //{
-    //    return m_TLAS[index];
-    //}
 
 };
