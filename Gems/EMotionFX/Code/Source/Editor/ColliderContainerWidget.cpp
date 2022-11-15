@@ -445,7 +445,7 @@ namespace EMotionFX
         const size_t numColliders = colliders.size();
         size_t numAvailableColliderWidgets = m_colliderWidgets.size();
 
-        if (numColliders)
+        if (numColliders > 0)
         {
             this->show();
         }
