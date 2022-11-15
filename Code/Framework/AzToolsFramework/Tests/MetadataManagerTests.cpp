@@ -25,15 +25,29 @@ namespace UnitTest
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<MyTestType>()
-                    ->Version(1)
-                    ->Field("int", &MyTestType::m_int)
-                    ->Field("string", &MyTestType::m_string);
+                if (s_version == 1)
+                {
+                    serializeContext->Class<MyTestType>()
+                        ->Version(s_version)
+                        ->Field("int", &MyTestType::m_int)
+                        ->Field("string", &MyTestType::m_string);
+                }
+                else
+                {
+                    serializeContext->Class<MyTestType>()
+                        ->Version(s_version)
+                        ->Field("float", &MyTestType::m_float)
+                        ->Field("string", &MyTestType::m_string);
+                }
             }
         }
 
+        // Used to switch reflected version
+        static inline int s_version = 1;
+
         int m_int;
         AZStd::string m_string;
+        float m_float;
     };
 
     struct MetadataManagerTests
@@ -228,5 +242,39 @@ namespace UnitTest
         AZ_TEST_START_ASSERTTEST;
         EXPECT_FALSE(m_metadata->SetValue("mockfile", "/Test", &test, azrtti_typeid<MyTestType>()));
         AZ_TEST_STOP_ASSERTTEST(1);
+    }
+
+    TEST_F(MetadataManagerTests, Get_OldVersion)
+    {
+        MyTestType test;
+        test.m_int = 23;
+        test.m_string = "Hello World";
+        EXPECT_TRUE(m_metadata->SetValue("mockfile", "/Test", test));
+
+        // Unregister the existing type
+        m_serializeContext->EnableRemoveReflection();
+        MyTestType::Reflect(m_serializeContext.get());
+        m_serializeContext->DisableRemoveReflection();
+
+        // "Upgrade" the type
+        MyTestType::s_version = 2;
+        MyTestType::Reflect(m_serializeContext.get());
+
+        // Now try to read the old value
+        int version;
+        EXPECT_TRUE(m_metadata->GetValueVersion("mockfile", "/Test", version));
+        EXPECT_EQ(version, 1);
+
+        rapidjson_ly::Value inValue;
+        EXPECT_TRUE(m_metadata->GetJsonValue("mockfile", "/Test", inValue));
+
+        auto intItr = inValue.FindMember("int");
+        auto stringItr = inValue.FindMember("string");
+
+        EXPECT_NE(intItr, inValue.MemberEnd());
+        EXPECT_NE(stringItr, inValue.MemberEnd());
+
+        EXPECT_EQ(intItr->value.GetInt(), test.m_int);
+        EXPECT_EQ(stringItr->value.GetString(), test.m_string);
     }
 }

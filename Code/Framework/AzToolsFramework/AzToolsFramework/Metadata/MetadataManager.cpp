@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/StackedString.h>
 #include <AzCore/JSON/pointer.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 
 namespace AzToolsFramework
 {
@@ -25,6 +26,21 @@ namespace AzToolsFramework
     }
 
     bool MetadataManager::GetValue(AZ::IO::PathView file, AZStd::string_view key, void* outValue, AZ::Uuid typeId)
+    {
+        rapidjson_ly::Value value;
+
+        if (!GetJsonValue(file, key, value))
+        {
+            return false;
+        }
+
+        // Deserialize the JSON into the outValue parameter
+        auto resultCode = AZ::JsonSerialization::Load(outValue, typeId, value);
+
+        return resultCode.GetProcessing() != AZ::JsonSerializationResult::Processing::Halted;
+    }
+
+    bool MetadataManager::GetJsonValue(AZ::IO::PathView file, AZStd::string_view key, rapidjson_ly::Value& outValue)
     {
         auto path = ToMetadataPath(file);
 
@@ -53,17 +69,51 @@ namespace AzToolsFramework
         }
 
         // Use the pointer to find the value we're trying to read
-        const rapidjson_ly::Value* value = pointer.Get(document);
+        rapidjson_ly::Value* value = pointer.Get(document);
 
         if (!value)
         {
             return false;
         }
 
-        // Deserialize the JSON into the outValue parameter
-        auto resultCode = AZ::JsonSerialization::Load(outValue, typeId, *value);
+        outValue = *value;
+        return true;
+    }
 
-        return resultCode.GetProcessing() != AZ::JsonSerializationResult::Processing::Halted;
+    bool MetadataManager::GetValueVersion(AZ::IO::PathView file, AZStd::string_view key, int& version)
+    {
+        rapidjson_ly::Value value;
+        if (!GetJsonValue(file, key, value))
+        {
+            return false;
+        }
+
+        if(!value.IsObject())
+        {
+            AZ_Error(
+                "MetadataManager",
+                false,
+                "Cannot get version for key " AZ_STRING_FORMAT " in file " AZ_STRING_FORMAT ".  Stored value is not an object",
+                AZ_STRING_ARG(key),
+                AZ_STRING_ARG(file.Native()));
+            return false;
+        }
+
+        if(!value.GetObject().HasMember(MetadataObjectVersionField))
+        {
+            AZ_Error(
+                "MetadataManager",
+                false,
+                "Cannot get version for key " AZ_STRING_FORMAT " in file " AZ_STRING_FORMAT ".  Stored value does not have a version",
+                AZ_STRING_ARG(key),
+                AZ_STRING_ARG(file.Native()));
+            return false;
+        }
+
+        auto itr = value.GetObject().FindMember(MetadataObjectVersionField);
+        version = itr->value.GetUint();
+
+        return true;
     }
 
     bool MetadataManager::SetValue(AZ::IO::PathView file, AZStd::string_view key, const void* inValue, AZ::Uuid typeId)
@@ -106,6 +156,15 @@ namespace AzToolsFramework
             }
         }
 
+        auto* classData = GetClassData(typeId);
+
+        if (!classData)
+        {
+            return false;
+        }
+
+        int currentVersion = classData->m_version;
+
         AZ::JsonSerializerSettings settings;
         settings.m_reporting = [&file](AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view path)
         {
@@ -129,6 +188,28 @@ namespace AzToolsFramework
         // Encode the value into JSON
         rapidjson_ly::Value serializedValue;
         auto resultCode = AZ::JsonSerialization::Store(serializedValue, document.GetAllocator(), inValue, nullptr, typeId, settings);
+
+        // Try to insert the version number into the serialized data
+        if (serializedValue.IsObject())
+        {
+            if(serializedValue.GetObject().HasMember(MetadataObjectVersionField))
+            {
+                AZ_Warning(
+                    "MetadataManager",
+                    false,
+                    "Type %s (%s) already has reserved field %s which is intended for version tracking",
+                    classData->m_name,
+                    classData->m_typeId.ToFixedString().c_str(),
+                    MetadataObjectVersionField);
+            }
+            else
+            {
+                rapidjson_ly::Value versionValue;
+                versionValue.SetInt(currentVersion);
+                serializedValue.GetObject().AddMember(
+                    rapidjson_ly::Value(MetadataObjectVersionField, document.GetAllocator()).Move(), versionValue, document.GetAllocator());
+            }
+        }
 
         if (resultCode.GetProcessing() != AZ::JsonSerializationResult::Processing::Halted)
         {
@@ -160,5 +241,27 @@ namespace AzToolsFramework
         }
 
         return path;
+    }
+
+    const AZ::SerializeContext::ClassData* MetadataManager::GetClassData(AZ::Uuid typeId)
+    {
+        AZ::SerializeContext* serializeContext{};
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+        if (!serializeContext)
+        {
+            AZ_Error("MetadataManager", false, "Could not retrieve SerializeContext");
+            return {};
+        }
+
+        auto* classData = serializeContext->FindClassData(typeId);
+
+        if (!classData)
+        {
+            AZ_Error("MetadataManager", false, "Type %s must be registered with serialize context.", typeId.ToFixedString().c_str());
+            return {};
+        }
+
+        return classData;
     }
 }

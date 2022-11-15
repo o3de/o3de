@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AzToolsFramework
 {
@@ -26,15 +27,28 @@ namespace AzToolsFramework
         //! @return True if metadata file and key exists and was successfully read, false otherwise.
         virtual bool GetValue(AZ::IO::PathView file, AZStd::string_view key, void* outValue, AZ::Uuid typeId) = 0;
 
-        //! Gets a value from the metadata file associated with the file
+        //! Gets a value from the metadata file associated with the file.
         //! @param file Absolute path to the file (or metadata file).
         //! @param key JSONPath formatted key for the metadata value to read.  Ex: /Settings/Platform/pc.
         //! @return True if metadata file and key exists and was successfully read, false otherwise.
         template<typename T>
         bool GetValue(AZ::IO::PathView file, AZStd::string_view key, T& outValue)
         {
-            GetValue(file, key, &outValue, azrtti_typeid<T>());
+            return GetValue(file, key, &outValue, azrtti_typeid<T>());
         }
+
+        //! Gets a JSON Value from the metadata file associated with the file.
+        //! Prefer to use GetValue instead where possible.  This is best used for reading old versions.
+        //! @param file Absolute path to the file (or metadata file).
+        //! @param key JSONPath formatted key for the metadata value to read.  Ex: /Settings/Platform/pc.
+        //! @return True if metadata file and key exists and was successfully read, false otherwise.
+        virtual bool GetJsonValue(AZ::IO::PathView file, AZStd::string_view key, rapidjson_ly::Value& outValue) = 0;
+
+        //! Gets the version for a stored key/value from the metadata file associated with the file.
+        //! @param file Absolute path to the file (or metadata file).
+        //! @param key JSONPath formatted key for the metadata value to read.  Ex: /Settings/Platform/pc.
+        //! @return True if metadata file and key exists and was successfully read, false otherwise.
+        virtual bool GetValueVersion(AZ::IO::PathView file, AZStd::string_view key, int& version) = 0;
 
         //! Sets a value in the metadata file associated with the file.
         //! @param file Absolute path to the file (or metadata file).
@@ -50,7 +64,7 @@ namespace AzToolsFramework
         template<typename T>
         bool SetValue(AZ::IO::PathView file, AZStd::string_view key, const T& inValue)
         {
-            SetValue(file, key, &inValue, azrtti_typeid<T>());
+            return SetValue(file, key, &inValue, azrtti_typeid<T>());
         }
     };
 
@@ -65,6 +79,7 @@ namespace AzToolsFramework
 
         static constexpr const char* MetadataFileExtension = ".meta";
         static constexpr const char* MetadataVersionKey = "/FileVersion";
+        static constexpr const char* MetadataObjectVersionField = "__version";
         static constexpr int MetadataVersion = 1;
 
         static void Reflect(AZ::ReflectContext* context);
@@ -75,9 +90,12 @@ namespace AzToolsFramework
 
     public:
         bool GetValue(AZ::IO::PathView file, AZStd::string_view key, void* outValue, AZ::Uuid typeId) override;
+        bool GetJsonValue(AZ::IO::PathView file, AZStd::string_view key, rapidjson_ly::Value& outValue) override;
+        bool GetValueVersion(AZ::IO::PathView file, AZStd::string_view key, int& version) override;
         bool SetValue(AZ::IO::PathView file, AZStd::string_view key, const void* inValue, AZ::Uuid typeId) override;
 
     private:
         AZ::IO::Path ToMetadataPath(AZ::IO::PathView file);
+        const AZ::SerializeContext::ClassData* GetClassData(AZ::Uuid typeId);
     };
 } // namespace AzToolsFramework
