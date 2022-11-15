@@ -12,7 +12,7 @@ CYLINDER_SUBDIVISION_TESTS = {
     # "Zero Value Test": (0, False), # o3de/o3de#12608 - Crash if subdivision set below 3
     # "Out Of Lower Bounds Test": (2, False), # o3de/o3de#12608 - Crash if subdivision set below 3
     "Minimum Value Test": (3, True),
-    "Middle(ish) Value Test": (60, True),
+    "Middle Value Test": (60, True),
     "Max Value Test": (125, True),
     # "Out of Maximum Bounds Test": (256, False) # o3de/o3de#12608 - Crash if subdivision set above 125
 }

@@ -94,13 +94,7 @@ def PhysX_Collider_Component_CRUD():
         validate_vector3_property("Offset", physx_collider.get_offset, physx_collider.set_offset, component_name, VECTOR3_TESTS_NEGATIVE_EXPECT_PASS)
         # TODO: Create Validate Quaternian Backlog: validate_vector3_property(physx_collider.get_rotation, physx_collider.set_rotation, physx_collider.component.get_component_name(), "Rotation", VECTOR3_TESTS_NEGATIVE_EXPECT_FAIL)
 
-        # o3de/o3de#12634 - For some reason I can't get this to work. Says it takes an AZStd::string,
-        #  but it won't take a python string or a character.
-        # physx_collider.set_tag(Strings.NUMBER)
-        # physx_collider.set_tag(Strings.CHARACTER)
-        # physx_collider.set_tag(Strings.ESCAPED_SPACE)
-        # physx_collider.set_tag(Strings.EMPTY_STRING)
-        # physx_collider.set_tag(Strings.ONLY_SPACE)physx_collider.set_tag(Strings.NUMBER)
+        # o3de/o3de#12634 - Get PhysX Collider Tag to set properly.
 
         validate_float_property("Contact Offset", physx_collider.get_contact_offset, physx_collider.set_contact_offset, component_name, CONTACT_OFFSET_TESTS)
         validate_float_property("Rest Offset", physx_collider.get_rest_offset, physx_collider.set_rest_offset, component_name, REST_OFFSET_TESTS)
@@ -108,7 +102,6 @@ def PhysX_Collider_Component_CRUD():
         validate_property_switch_toggle("Draw Collider", physx_collider.get_draw_collider, physx_collider.set_draw_collider, component_name)
 
         # o3de/o3de#12503 PhysX Collider Component's Physic Material field(s) return unintuitive property tree paths.
-        # physx_collider.set_physx_material_from_path(physx_material)
 
     # 8) Set PhyicsAsset Shape and Child Properties
         physx_collider.set_physicsasset_shape()

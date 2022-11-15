@@ -76,7 +76,9 @@ def validate_integer_property(property_name: str, get_int_value: typing.Callable
         "Zero value Test": (0, True)
      }
     """
-    int_value, expect_pass = 0, 1
+    # Dictionary Keys
+    int_value = 0
+    expect_pass = 1
 
     Report.info(f"Validating {component_name}'s {property_name} Integer property can be set or fails gracefully.")
 
@@ -108,7 +110,9 @@ def validate_float_property(property_name: str, get_float_value: typing.Callable
         "Zero value Test": (0.0, True)
      }
     """
-    float_value, expect_pass = 0, 1
+    # Dictionary Keys
+    float_value = 0
+    expect_pass = 1
 
     Report.info(f"Validating {component_name}'s {property_name} Float property can be set or fails gracefully.")
 
@@ -142,7 +146,10 @@ def validate_vector3_property(property_name: str, get_vector3_value: typing.Call
      }
     """
     # Dictionary Keys
-    x, y, z, expect_pass = 0, 1, 2, 3
+    x = 0
+    y = 1
+    z = 2
+    expect_pass = 3
 
     Report.info(f"Validating {component_name}'s {property_name} Vector3 property can be set or fails gracefully.")
 
