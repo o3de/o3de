@@ -357,7 +357,7 @@ class EditorPhysxCollider:
 
         Used to get the PhysX Collider's Cylinder Shape's subdivision. Subdivision supports int values [3-125].
         """
-        return self.component.set_component_property_value(self.Path.Cylinder.SUBDIVISION)
+        return self.component.get_component_property_value(self.Path.Cylinder.SUBDIVISION)
 
     def set_cylinder_height(self, height: float) -> None:
         """
