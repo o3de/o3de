@@ -284,6 +284,7 @@ class EditorPhysxCollider:
 
         Used to get the PhysX Collider's Box Shape's dimensions.
         """
+        _validate_property_visibility(self.component, self.Path.Box.DIMENSIONS, PropertyVisibility.VISIBLE)
         return self.component.get_component_property_value(self.Path.Box.DIMENSIONS)
 
     # Shape: Capsule
@@ -312,6 +313,7 @@ class EditorPhysxCollider:
 
         Used to get the PhysX Collider's Capsule Shape's height.
         """
+        _validate_property_visibility(self.component, self.Path.Capsule.HEIGHT, PropertyVisibility.VISIBLE)
         return self.component.get_component_property_value(self.Path.Capsule.HEIGHT)
 
     def set_capsule_radius(self, radius: float) -> None:
@@ -331,6 +333,7 @@ class EditorPhysxCollider:
 
         Used to get the PhysX Collider's Capsule Shape's radius.
         """
+        _validate_property_visibility(self.component, self.Path.Capsule.RADIUS, PropertyVisibility.VISIBLE)
         return self.component.get_component_property_value(self.Path.Capsule.RADIUS)
 
     # Shape: Cylinder
@@ -358,6 +361,7 @@ class EditorPhysxCollider:
 
         Used to get the PhysX Collider's Cylinder Shape's subdivision. Subdivision supports int values [3-125].
         """
+        _validate_property_visibility(self.component, self.Path.Cylinder.SUBDIVISION, PropertyVisibility.VISIBLE)
         return self.component.get_component_property_value(self.Path.Cylinder.SUBDIVISION)
 
     def set_cylinder_height(self, height: float) -> None:
@@ -377,6 +381,7 @@ class EditorPhysxCollider:
 
         Used to get the PhysX Collider's Cylinder Shape's height.
         """
+        _validate_property_visibility(self.component, self.Path.Cylinder.HEIGHT, PropertyVisibility.VISIBLE)
         return self.component.get_component_property_value(self.Path.Cylinder.HEIGHT)
 
     def set_cylinder_radius(self, radius: float) -> None:
@@ -396,6 +401,7 @@ class EditorPhysxCollider:
 
         Used to get the PhysX Collider's Cylinder Shape's radius.
         """
+        _validate_property_visibility(self.component, self.Path.Cylinder.RADIUS, PropertyVisibility.VISIBLE)
         return self.component.get_component_property_value(self.Path.Cylinder.RADIUS)
 
     # Shape: PhysicsAsset
@@ -426,6 +432,7 @@ class EditorPhysxCollider:
 
         return: This will return the Asset ID and will need to use Asset(id) to be manipulate the asset.
         """
+        _validate_property_visibility(self.component, self.Path.PhysicsAsset.PHYSX_MESH, PropertyVisibility.VISIBLE)
         return self.component.get_component_property_value(self.Path.PhysicsAsset.PHYSX_MESH)
 
     def set_physx_mesh_asset_scale(self, x: float, y: float, z: float) -> None:
@@ -447,6 +454,7 @@ class EditorPhysxCollider:
 
         Used to get the PhysX Collider's PhysX Mesh Asset Scale.
         """
+        _validate_property_visibility(self.component, self.Path.PhysicsAsset.ASSET_SCALE, PropertyVisibility.VISIBLE)
         return self.component.get_component_property_value(self.Path.PhysicsAsset.ASSET_SCALE)
 
     def set_use_physics_materials_from_asset(self, value: bool) -> None:
@@ -468,6 +476,9 @@ class EditorPhysxCollider:
 
         Used to get the PhysX Collider's Draw Collider Property value.
         """
+        _validate_property_visibility(self.component, self.Path.PhysicsAsset.PHYSICS_MATERIALS_FROM_ASSET,
+                                      PropertyVisibility.VISIBLE)
+
         return self.component.get_component_property_value(self.Path.PhysicsAsset.PHYSICS_MATERIALS_FROM_ASSET)
 
     # Shape: Sphere
@@ -496,4 +507,5 @@ class EditorPhysxCollider:
 
         Used to get the PhysX Collider's Sphere radius property.
         """
+        _validate_property_visibility(self.component, self.Path.Sphere.RADIUS, PropertyVisibility.VISIBLE)
         return self.component.get_component_property_value(self.Path.Sphere.RADIUS)
