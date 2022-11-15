@@ -29,7 +29,6 @@
 #include <AzGameFramework/Application/GameApplication.h>
 
 #include <ISystem.h>
-#include <LegacyAllocator.h>
 
 #include <Launcher_Traits_Platform.h>
 
@@ -433,8 +432,6 @@ namespace O3DELauncher
             AZ_TracePrintf("Launcher", "The asset cache folder of %s has been successfully read from the Settings Registry\n",
                 pathToAssets.c_str());
         }
-
-        CryAllocatorsRAII cryAllocatorsRAII;
 
         // System Init Params ("Legacy" Open 3D Engine)
         SSystemInitParams systemInitParams;

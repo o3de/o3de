@@ -34,6 +34,8 @@
 #include <SceneAPI/SceneData/GraphData/RootBoneData.h>
 #include <SceneAPI/SceneData/GraphData/TransformData.h>
 
+extern "C" AZ_DLL_EXPORT void CleanUpSceneDataGenericClassInfo();
+
 namespace AZ
 {
     namespace SceneAPI
@@ -276,6 +278,8 @@ namespace AZ
                     m_scriptContext.reset();
                     m_serializeContext.reset();
                     m_behaviorContext.reset();
+
+                    CleanUpSceneDataGenericClassInfo();
 
                     AZ::NameDictionary::Destroy();
                     UnitTest::AllocatorsFixture::TearDown();

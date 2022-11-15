@@ -9,7 +9,9 @@
 #pragma once
 
 #include <utilities/BatchApplicationManager.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include "assetmanager/MockAssetProcessorManager.h"
 #include "assetmanager/MockFileProcessor.h"

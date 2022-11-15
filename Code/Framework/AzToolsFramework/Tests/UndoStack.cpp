@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzTest/AzTest.h>
 
 #include <AzToolsFramework/Undo/UndoSystem.h>
@@ -55,16 +56,16 @@ namespace UnitTest
 
     TEST(URSequencePoint, Find_IdAndTypeNotPresent_ExpectNullptr)
     {
-        SequencePointTest* parent = aznew SequencePointTest("Parent", 0);
-        SequencePointTest* child_1 = aznew SequencePointTest("Child", 1);
-        SequencePointTest* child_2 = aznew SequencePointTest("Child", 2);
-        SequencePointTest* child_3 = aznew SequencePointTest("Child", 3);
-        SequencePointTest* child_1_1 = aznew SequencePointTest("Child", 4);
-        SequencePointTest* child_1_2 = aznew SequencePointTest("Child", 5);
+        auto parent = AZStd::make_unique<SequencePointTest>("Parent", 0);
+        auto child_1 = aznew SequencePointTest("Child", 1);
+        auto child_2 = aznew SequencePointTest("Child", 2);
+        auto child_3 = aznew SequencePointTest("Child", 3);
+        auto child_1_1 = aznew SequencePointTest("Child", 4);
+        auto child_1_2 = aznew SequencePointTest("Child", 5);
 
-        child_1->SetParent(parent);
-        child_2->SetParent(parent);
-        child_3->SetParent(parent);
+        child_1->SetParent(parent.get());
+        child_2->SetParent(parent.get());
+        child_3->SetParent(parent.get());
         child_1_1->SetParent(child_1);
         child_1_2->SetParent(child_1);
 
@@ -74,16 +75,16 @@ namespace UnitTest
 
     TEST(URSequencePoint, Find_TypeNotPresent_ExpectNullptr)
     {
-        SequencePointTest* parent = aznew SequencePointTest("Parent", 0);
-        SequencePointTest* child_1 = aznew SequencePointTest("Child", 1);
-        SequencePointTest* child_2 = aznew SequencePointTest("Child", 2);
-        SequencePointTest* child_3 = aznew SequencePointTest("Child", 3);
-        SequencePointTest* child_1_1 = aznew SequencePointTest("Child", 4);
-        SequencePointTest* child_1_2 = aznew SequencePointTest("Child", 5);
+        auto parent = AZStd::make_unique<SequencePointTest>("Parent", 0);
+        auto child_1 = aznew SequencePointTest("Child", 1);
+        auto child_2 = aznew SequencePointTest("Child", 2);
+        auto child_3 = aznew SequencePointTest("Child", 3);
+        auto child_1_1 = aznew SequencePointTest("Child", 4);
+        auto child_1_2 = aznew SequencePointTest("Child", 5);
 
-        child_1->SetParent(parent);
-        child_2->SetParent(parent);
-        child_3->SetParent(parent);
+        child_1->SetParent(parent.get());
+        child_2->SetParent(parent.get());
+        child_3->SetParent(parent.get());
         child_1_1->SetParent(child_1);
         child_1_2->SetParent(child_1);
 
@@ -93,16 +94,16 @@ namespace UnitTest
 
     TEST(URSequencePoint, Find_IdNotPresent_ExpectNullptr)
     {
-        SequencePointTest* parent = aznew SequencePointTest("Parent", 0);
-        SequencePointTest* child_1 = aznew SequencePointTest("Child", 1);
-        DifferentTypeSequencePointTest* child_2 = aznew DifferentTypeSequencePointTest("Child", 2);
-        SequencePointTest* child_3 = aznew SequencePointTest("Child", 3);
-        SequencePointTest* child_1_1 = aznew SequencePointTest("Child", 4);
-        SequencePointTest* child_1_2 = aznew SequencePointTest("Child", 5);
+        auto parent = AZStd::make_unique<SequencePointTest>("Parent", 0);
+        auto child_1 = aznew SequencePointTest("Child", 1);
+        auto child_2 = aznew DifferentTypeSequencePointTest("Child", 2);
+        auto child_3 = aznew SequencePointTest("Child", 3);
+        auto child_1_1 = aznew SequencePointTest("Child", 4);
+        auto child_1_2 = aznew SequencePointTest("Child", 5);
 
-        child_1->SetParent(parent);
-        child_2->SetParent(parent);
-        child_3->SetParent(parent);
+        child_1->SetParent(parent.get());
+        child_2->SetParent(parent.get());
+        child_3->SetParent(parent.get());
         child_1_1->SetParent(child_1);
         child_1_2->SetParent(child_1);
 
@@ -112,16 +113,16 @@ namespace UnitTest
 
     TEST(URSequencePoint, Find_MatchIsDirectChild_IdFound)
     {
-        SequencePointTest* parent = aznew SequencePointTest("Parent", 0);
-        SequencePointTest* child_1 = aznew SequencePointTest("Child", 1);
-        DifferentTypeSequencePointTest* child_2 = aznew DifferentTypeSequencePointTest("Child", static_cast<AZ::u64>(2));
-        SequencePointTest* child_3 = aznew SequencePointTest("Child", 3);
-        SequencePointTest* child_1_1 = aznew SequencePointTest("Child", 4);
-        SequencePointTest* child_1_2 = aznew SequencePointTest("Child", 5);
+        auto parent = AZStd::make_unique<SequencePointTest>("Parent", 0);
+        auto child_1 = aznew SequencePointTest("Child", 1);
+        auto child_2 = aznew DifferentTypeSequencePointTest("Child", static_cast<AZ::u64>(2));
+        auto child_3 = aznew SequencePointTest("Child", 3);
+        auto child_1_1 = aznew SequencePointTest("Child", 4);
+        auto child_1_2 = aznew SequencePointTest("Child", 5);
 
-        child_1->SetParent(parent);
-        child_2->SetParent(parent);
-        child_3->SetParent(parent);
+        child_1->SetParent(parent.get());
+        child_2->SetParent(parent.get());
+        child_3->SetParent(parent.get());
         child_1_1->SetParent(child_1);
         child_1_2->SetParent(child_1);
 
@@ -131,16 +132,16 @@ namespace UnitTest
 
     TEST(URSequencePoint, Find_IdIsIndirectChild_IdFound)
     {
-        SequencePointTest* parent = aznew SequencePointTest("Parent", 0);
-        SequencePointTest* child_1 = aznew SequencePointTest("Child", 1);
-        DifferentTypeSequencePointTest* child_2 = aznew DifferentTypeSequencePointTest("Child", static_cast<AZ::u64>(2));
-        SequencePointTest* child_3 = aznew SequencePointTest("Child", 3);
-        SequencePointTest* child_1_1 = aznew SequencePointTest("Child", 4);
-        DifferentTypeSequencePointTest* child_1_2 = aznew DifferentTypeSequencePointTest("Child", 5);
+        auto parent = AZStd::make_unique<SequencePointTest>("Parent", 0);
+        auto child_1 = aznew SequencePointTest("Child", 1);
+        auto child_2 = aznew DifferentTypeSequencePointTest("Child", static_cast<AZ::u64>(2));
+        auto child_3 = aznew SequencePointTest("Child", 3);
+        auto child_1_1 = aznew SequencePointTest("Child", 4);
+        auto child_1_2 = aznew DifferentTypeSequencePointTest("Child", 5);
 
-        child_1->SetParent(parent);
-        child_2->SetParent(parent);
-        child_3->SetParent(parent);
+        child_1->SetParent(parent.get());
+        child_2->SetParent(parent.get());
+        child_3->SetParent(parent.get());
         child_1_1->SetParent(child_1);
         child_1_2->SetParent(child_1);
 
@@ -150,99 +151,80 @@ namespace UnitTest
 
     TEST(URSequencePoint, RemoveChild) 
     {
-        SequencePointTest* parent = aznew SequencePointTest("Parent", 0);
-        SequencePointTest* child_1 = aznew SequencePointTest("Child", 1);
-        SequencePointTest* child_2 = aznew SequencePointTest("Child", 2);
-        SequencePointTest* child_3 = aznew SequencePointTest("Child", 3);
-        SequencePointTest* child_4 = aznew SequencePointTest("Child", 4);
-        SequencePointTest* child_5 = aznew SequencePointTest("Child", 5);
+        auto parent = AZStd::make_unique<SequencePointTest>("Parent", 0);
+        auto child_1 = aznew SequencePointTest("Child", 1);
+        auto child_2 = aznew SequencePointTest("Child", 2);
+        auto child_3 = aznew SequencePointTest("Child", 3);
+        auto child_4 = aznew SequencePointTest("Child", 4);
+        auto child_5 = aznew SequencePointTest("Child", 5);
 
-        child_1->SetParent(parent);
-        child_2->SetParent(parent);
-        child_3->SetParent(parent);
-        child_4->SetParent(parent);
-        child_5->SetParent(parent);
+        child_1->SetParent(parent.get());
+        child_2->SetParent(parent.get());
+        child_3->SetParent(parent.get());
+        child_4->SetParent(parent.get());
+        child_5->SetParent(parent.get());
 
-        auto children = parent->GetChildren();
-        EXPECT_EQ(children.size(), 5) << "children were not added properly";
+        EXPECT_THAT(parent->GetChildren(), ::testing::Pointwise(::testing::Eq(), {child_1, child_2, child_3, child_4, child_5}));
 
         parent->RemoveChild(child_5);
 
-        children = parent->GetChildren();
-        EXPECT_EQ(children.size(), 4) << "child was not removed properly";
+        EXPECT_THAT(parent->GetChildren(), ::testing::Pointwise(::testing::Eq(), {child_1, child_2, child_3, child_4}));
+
+        delete child_5;
+        // The other children are owned by parent
     }
 
     TEST(URSequencePoint, SetParent_NotChildOfParent) 
     {
-        SequencePointTest* parent = aznew SequencePointTest("Parent", 0);
-        SequencePointTest* child = aznew SequencePointTest("Child", 1);
+        auto parent = AZStd::make_unique<SequencePointTest>("Parent", 0);
+        auto child = aznew SequencePointTest("Child", 1);
 
-        child->SetParent(parent);
+        child->SetParent(parent.get());
 
-        auto children = parent->GetChildren();
-        EXPECT_EQ(children.size(), 1) << "child was not added properly";
-        EXPECT_EQ(children[0]->GetName(), child->GetName()) << "child was not added properly";
+        EXPECT_THAT(parent->GetChildren(), ::testing::Pointwise(::testing::Eq(), {child}));
     }
 
     TEST(URSequencePoint, SetParent_AlreadyChildOfParent) 
     {
-        SequencePointTest* parent = aznew SequencePointTest("Parent", 0);
-        SequencePointTest* child_1 = aznew SequencePointTest("Child", 1);
-        SequencePointTest* child_2 = aznew SequencePointTest("Child", 2);
-        SequencePointTest* child_3 = aznew SequencePointTest("Child", 3);
-        SequencePointTest* child_4 = aznew SequencePointTest("Child", 4);
-        SequencePointTest* child_5 = aznew SequencePointTest("Child", 5);
+        auto parent = AZStd::make_unique<SequencePointTest>("Parent", 0);
+        auto child_1 = aznew SequencePointTest("Child", 1);
+        auto child_2 = aznew SequencePointTest("Child", 2);
+        auto child_3 = aznew SequencePointTest("Child", 3);
+        auto child_4 = aznew SequencePointTest("Child", 4);
+        auto child_5 = aznew SequencePointTest("Child", 5);
 
-        child_1->SetParent(parent);
-        child_2->SetParent(parent);
-        child_3->SetParent(parent);
-        child_4->SetParent(parent);
-        child_5->SetParent(parent);
+        child_1->SetParent(parent.get());
+        child_2->SetParent(parent.get());
+        child_3->SetParent(parent.get());
+        child_4->SetParent(parent.get());
+        child_5->SetParent(parent.get());
 
-        auto children = parent->GetChildren();
-        EXPECT_EQ(children.size(), 5) << "children were not added properly";
+        EXPECT_THAT(parent->GetChildren(), ::testing::Pointwise(::testing::Eq(), {child_1, child_2, child_3, child_4, child_5}));
 
-        child_5->SetParent(parent);
+        child_5->SetParent(parent.get());
 
-        children = parent->GetChildren();
-        EXPECT_EQ(children.size(), 5) << "the parent did not de-dupe its children";
-
-        bool childFound = false;
-        for (auto tempChild : children)
-        {
-            if (tempChild->GetName() == child_5->GetName())
-            {
-                childFound = true;
-                break;
-            }
-        }
-
-        EXPECT_TRUE(childFound);
+        EXPECT_THAT(parent->GetChildren(), ::testing::Pointwise(::testing::Eq(), {child_1, child_2, child_3, child_4, child_5})) << "the parent did not de-dupe its children";
     }
 
     TEST(URSequencePoint, SetParent_AlreadyChildOfDifferentParent)
     {
-        SequencePointTest* parent_1 = aznew SequencePointTest("Parent", 0);
-        SequencePointTest* parent_2 = aznew SequencePointTest("Parent", 1);
-        SequencePointTest* child = aznew SequencePointTest("Child", 5);
+        auto parent_1 = AZStd::make_unique<SequencePointTest>("Parent", 0);
+        auto parent_2 = AZStd::make_unique<SequencePointTest>("Parent", 1);
+        auto child = aznew SequencePointTest("Child", 5);
 
-        child->SetParent(parent_1);
+        child->SetParent(parent_1.get());
 
-        auto children = parent_1->GetChildren();
-        EXPECT_EQ(children.size(), 1) << "child was not added properly";
+        EXPECT_THAT(parent_1->GetChildren(), ::testing::Pointwise(::testing::Eq(), {child}));
 
-        child->SetParent(parent_2);
+        child->SetParent(parent_2.get());
 
-        children = parent_1->GetChildren();
-        EXPECT_EQ(children.size(), 0) << "the original parent did not remove the child";
-
-        children = parent_2->GetChildren();
-        EXPECT_EQ(children[0]->GetName(), child->GetName()) << "child was not added to new parent properly";
+        EXPECT_THAT(parent_1->GetChildren(), ::testing::IsEmpty()) << "the original parent did not remove the child";
+        EXPECT_THAT(parent_2->GetChildren(), ::testing::Pointwise(::testing::Eq(), {child})) << "child was not added to new parent properly";
     }
 
     TEST(URSequencePoint, RunUndo_NoChildren_UndoIsCalled) 
     {
-        SequencePointTest* object = aznew SequencePointTest("Object", 0);
+        auto object = AZStd::make_unique<SequencePointTest>("Object", 0);
         object->m_undoCalled = false;
 
         object->RunUndo();
@@ -252,18 +234,18 @@ namespace UnitTest
 
     TEST(URSequencePoint, RunUndo_HasChildren_UndoIsCalled) 
     {
-        SequencePointTest* parent = aznew SequencePointTest("Parent", 0);
-        SequencePointTest* child_1 = aznew SequencePointTest("Child", 1);
-        SequencePointTest* child_2 = aznew SequencePointTest("Child", 2);
-        SequencePointTest* child_1_1 = aznew SequencePointTest("Child", 3);
-        SequencePointTest* child_1_2 = aznew SequencePointTest("Child", 4);
+        auto parent = AZStd::make_unique<SequencePointTest>("Parent", 0);
+        auto child_1 = aznew SequencePointTest("Child", 1);
+        auto child_2 = aznew SequencePointTest("Child", 2);
+        auto child_1_1 = aznew SequencePointTest("Child", 3);
+        auto child_1_2 = aznew SequencePointTest("Child", 4);
 
         parent->m_undoCalled = false;
 
-        child_1->SetParent(parent);
+        child_1->SetParent(parent.get());
         child_1->m_undoCalled = false;
 
-        child_2->SetParent(parent);
+        child_2->SetParent(parent.get());
         child_2->m_undoCalled = false;
 
         child_1_1->SetParent(child_1);
@@ -283,7 +265,7 @@ namespace UnitTest
 
     TEST(URSequencePoint, RunRedo_NoChildren_RedoIsCalled)
     {
-        SequencePointTest* object = aznew SequencePointTest("Object", 0);
+        auto object = AZStd::make_unique<SequencePointTest>("Object", 0);
         object->m_redoCalled = false;
 
         object->RunRedo();
@@ -293,18 +275,18 @@ namespace UnitTest
 
     TEST(URSequencePoint, RunRedo_HasChildren_RedoIsCalled) 
     {
-        SequencePointTest* parent = aznew SequencePointTest("Parent", 0);
-        SequencePointTest* child_1 = aznew SequencePointTest("Child", 1);
-        SequencePointTest* child_2 = aznew SequencePointTest("Child", 2);
-        SequencePointTest* child_1_1 = aznew SequencePointTest("Child", 3);
-        SequencePointTest* child_1_2 = aznew SequencePointTest("Child", 4);
+        auto parent = AZStd::make_unique<SequencePointTest>("Parent", 0);
+        auto child_1 = aznew SequencePointTest("Child", 1);
+        auto child_2 = aznew SequencePointTest("Child", 2);
+        auto child_1_1 = aznew SequencePointTest("Child", 3);
+        auto child_1_2 = aznew SequencePointTest("Child", 4);
 
         parent->m_redoCalled = false;
 
-        child_1->SetParent(parent);
+        child_1->SetParent(parent.get());
         child_1->m_redoCalled = false;
 
-        child_2->SetParent(parent);
+        child_2->SetParent(parent.get());
         child_2->m_redoCalled = false;
 
         child_1_1->SetParent(child_1);
@@ -326,7 +308,7 @@ namespace UnitTest
     {
         AZStd::string test_1("Test Point");
         AZStd::string test_2("A different Test Point");
-        SequencePointTest* testPoint = aznew SequencePointTest("Test Point", 0);
+        auto testPoint = AZStd::make_unique<SequencePointTest>("Test Point", 0);
 
         EXPECT_EQ(testPoint->GetName(), test_1);
 
@@ -337,23 +319,23 @@ namespace UnitTest
 
     TEST(URSequencePoint, HasRealChildren_NoChildren_ExpectFalse) 
     {
-        SequencePointTest* testPoint = aznew SequencePointTest("Test Point", 0);
+        auto testPoint = AZStd::make_unique<SequencePointTest>("Test Point", 0);
         bool result = testPoint->HasRealChildren();
         EXPECT_FALSE(result);
     }
 
     TEST(URSequencePoint, HasRealChildren_AllChildrenAreFake_ExpectFalse)
     {
-        SequencePointTest* parent = aznew SequencePointTest("Parent", 0);
-        SequencePointTest* child_1 = aznew SequencePointTest("Child", 1);
-        SequencePointTest* child_2 = aznew SequencePointTest("Child", 2);
-        SequencePointTest* child_3 = aznew SequencePointTest("Child", 3);
-        SequencePointTest* child_1_1 = aznew SequencePointTest("Child", 4);
-        SequencePointTest* child_1_2 = aznew SequencePointTest("Child", 5);
+        auto parent = AZStd::make_unique<SequencePointTest>("Parent", 0);
+        auto child_1 = aznew SequencePointTest("Child", 1);
+        auto child_2 = aznew SequencePointTest("Child", 2);
+        auto child_3 = aznew SequencePointTest("Child", 3);
+        auto child_1_1 = aznew SequencePointTest("Child", 4);
+        auto child_1_2 = aznew SequencePointTest("Child", 5);
 
-        child_1->SetParent(parent);
-        child_2->SetParent(parent);
-        child_3->SetParent(parent);
+        child_1->SetParent(parent.get());
+        child_2->SetParent(parent.get());
+        child_3->SetParent(parent.get());
         child_1_1->SetParent(child_1);
         child_1_2->SetParent(child_1);
 
@@ -363,16 +345,16 @@ namespace UnitTest
 
     TEST(URSequencePoint, HasRealChildren_OneChildIsReal_ExpectTrue)
     {
-        SequencePointTest* parent = aznew SequencePointTest("Parent", 0);
-        SequencePointTest* child_1 = aznew SequencePointTest("Child", 1);
-        SequencePointTest* child_2 = aznew SequencePointTest("Child", 2);
-        DifferentTypeSequencePointTest* child_3 = aznew DifferentTypeSequencePointTest("Child", 3);
-        SequencePointTest* child_1_1 = aznew SequencePointTest("Child", 4);
-        SequencePointTest* child_1_2 = aznew SequencePointTest("Child", 5);
+        auto parent = AZStd::make_unique<SequencePointTest>("Parent", 0);
+        auto child_1 = aznew SequencePointTest("Child", 1);
+        auto child_2 = aznew SequencePointTest("Child", 2);
+        auto child_3 = aznew DifferentTypeSequencePointTest("Child", 3);
+        auto child_1_1 = aznew SequencePointTest("Child", 4);
+        auto child_1_2 = aznew SequencePointTest("Child", 5);
 
-        child_1->SetParent(parent);
-        child_2->SetParent(parent);
-        child_3->SetParent(parent);
+        child_1->SetParent(parent.get());
+        child_2->SetParent(parent.get());
+        child_3->SetParent(parent.get());
         child_1_1->SetParent(child_1);
         child_1_2->SetParent(child_1);
 
@@ -382,16 +364,16 @@ namespace UnitTest
 
     TEST(URSequencePoint, HasRealChildren_OneGrandChildIsReal_ExpectTrue)
     {
-        SequencePointTest* parent = aznew SequencePointTest("Parent", 0);
-        SequencePointTest* child_1 = aznew SequencePointTest("Child", 1);
-        SequencePointTest* child_2 = aznew SequencePointTest("Child", 2);
-        SequencePointTest* child_3 = aznew SequencePointTest("Child", 3);
-        SequencePointTest* child_1_1 = aznew SequencePointTest("Child", 4);
-        DifferentTypeSequencePointTest* child_1_2 = aznew DifferentTypeSequencePointTest("Child", 5);
+        auto parent = AZStd::make_unique<SequencePointTest>("Parent", 0);
+        auto child_1 = aznew SequencePointTest("Child", 1);
+        auto child_2 = aznew SequencePointTest("Child", 2);
+        auto child_3 = aznew SequencePointTest("Child", 3);
+        auto child_1_1 = aznew SequencePointTest("Child", 4);
+        auto child_1_2 = aznew DifferentTypeSequencePointTest("Child", 5);
 
-        child_1->SetParent(parent);
-        child_2->SetParent(parent);
-        child_3->SetParent(parent);
+        child_1->SetParent(parent.get());
+        child_2->SetParent(parent.get());
+        child_3->SetParent(parent.get());
         child_1_1->SetParent(child_1);
         child_1_2->SetParent(child_1);
 

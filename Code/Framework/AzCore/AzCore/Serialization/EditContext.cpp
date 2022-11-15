@@ -387,7 +387,7 @@ namespace AZ
         //=========================================================================
         void ClassData::ClearElements()
         {
-            for (auto element : m_elements)
+            for (ElementData& element : m_elements)
             {
                 if (element.m_serializeClassElement)
                 {
