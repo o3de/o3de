@@ -72,9 +72,9 @@ namespace AzToolsFramework
             PrefabDomReference cachedOwningInstanceDom = focusedInstance.GetCachedInstanceDom();
             if (cachedOwningInstanceDom.has_value())
             {
-                PrefabUndoUtils::UpdateCachedOwningInstanceDom(cachedOwningInstanceDom,
+                PrefabUndoUtils::UpdateEntityInInstanceDom(cachedOwningInstanceDom,
                     parentEntityDomAfterAddingEntity, parentEntityAliasPath);
-                PrefabUndoUtils::UpdateCachedOwningInstanceDom(cachedOwningInstanceDom,
+                PrefabUndoUtils::UpdateEntityInInstanceDom(cachedOwningInstanceDom,
                     newEntityDom, newEntityAliasPath);
             }
         }

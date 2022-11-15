@@ -27,7 +27,7 @@ namespace AzToolsFramework
             const AZStd::vector<AZStd::string>& entityAliasPathList,
             const AZStd::vector<AZStd::string>& instanceAliasPathList,
             const AZStd::vector<const AZ::Entity*> parentEntityList,
-            Instance& owningInstance,
+            const Instance& owningInstance,
             Instance& focusedInstance)
         {
             m_templateId = focusedInstance.GetTemplateId();
@@ -67,8 +67,7 @@ namespace AzToolsFramework
                 // Preemptively updates the cached DOM to prevent reloading instance.
                 if (cachedOwningInstanceDom.has_value())
                 {
-                    PrefabUndoUtils::UpdateCachedOwningInstanceDomWithRemoval(
-                        cachedOwningInstanceDom->get(), entityAliasPath);
+                    PrefabUndoUtils::RemoveValueInInstanceDom(cachedOwningInstanceDom->get(), entityAliasPath);
                 }
             }
 
@@ -80,7 +79,7 @@ namespace AzToolsFramework
                 // Preemptively updates the cached DOM to prevent reloading instance.
                 if (cachedOwningInstanceDom.has_value())
                 {
-                    PrefabUndoUtils::UpdateCachedOwningInstanceDomWithRemoval(cachedOwningInstanceDom->get(), instanceAliasPath);
+                    PrefabUndoUtils::RemoveValueInInstanceDom(cachedOwningInstanceDom->get(), instanceAliasPath);
                 }
             }
 
@@ -118,7 +117,7 @@ namespace AzToolsFramework
                     // Preemptively updates the cached DOM to prevent reloading instance.
                     if (cachedOwningInstanceDom.has_value())
                     {
-                        PrefabUndoUtils::UpdateCachedOwningInstanceDom(
+                        PrefabUndoUtils::UpdateEntityInInstanceDom(
                             cachedOwningInstanceDom->get(), parentEntityDomAfterRemovingChildren, parentEntityAliasPath);
                     }
                 }

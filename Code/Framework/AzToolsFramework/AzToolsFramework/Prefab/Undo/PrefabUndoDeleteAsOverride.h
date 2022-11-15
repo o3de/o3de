@@ -29,7 +29,7 @@ namespace AzToolsFramework
                 const AZStd::vector<AZStd::string>& entityAliasPathList,
                 const AZStd::vector<AZStd::string>& instanceAliasPathList,
                 const AZStd::vector<const AZ::Entity*> parentEntityList,
-                Instance& owningInstance,
+                const Instance& owningInstance,
                 Instance& focusedInstance);
         };
     } // namespace Prefab
