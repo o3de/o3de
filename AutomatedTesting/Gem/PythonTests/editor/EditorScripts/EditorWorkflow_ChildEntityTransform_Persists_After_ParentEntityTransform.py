@@ -61,10 +61,10 @@ def EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform():
     from editor_python_test_tools.editor_entity_utils import EditorEntity, EditorComponent
     from editor_python_test_tools.wait_utils import PrefabWaiter
 
-    parent_translate_position = azlmbr.math.Vector3(10.0, 0.0, 0.0)
-    child_translate_position_before_parent_moves = azlmbr.math.Vector3(10.0, 0.0, 0.0)
-    child_translate_position_after_parent_moves = azlmbr.math.Vector3(20.0, 0.0, 0.0)
-    default_translate_position = azlmbr.math.Vector3(0.0, 0.0, 0.0)
+    parent_translate_position = azlmbr.Math.Vector3(10.0, 0.0, 0.0)
+    child_translate_position_before_parent_moves = azlmbr.Math.Vector3(10.0, 0.0, 0.0)
+    child_translate_position_after_parent_moves = azlmbr.Math.Vector3(20.0, 0.0, 0.0)
+    default_translate_position = azlmbr.Math.Vector3(0.0, 0.0, 0.0)
 
     # 01. load an existing level
     hydra.open_base_level()

@@ -79,7 +79,7 @@ def SurfaceDataRefreshes_RemainsStable():
                 azlmbr.surface_data.SurfaceDataSystemRequestBus(azlmbr.bus.Broadcast,
                                                                 'RefreshSurfaceData',
                                                                 provider_handle,
-                                                                azlmbr.math.Aabb())
+                                                                azlmbr.Math.Aabb())
 
             # Move the camera back and forth along the X axis at just the right speed to invalidate sectors that are
             # queued for updating but haven't updated yet, so that when they try to update they crash.

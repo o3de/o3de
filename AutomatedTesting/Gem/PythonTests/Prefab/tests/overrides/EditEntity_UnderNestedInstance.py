@@ -41,8 +41,8 @@ def EditEntity_UnderNestedInstance():
 
     WHEEL_PREFAB_FILE_NAME = Path(__file__).stem + 'wheel_prefab'
     MOTORCYCLE_PREFAB_FILE_NAME = Path(__file__).stem + 'motorcycle_prefab'
-    CREATION_POSITION = azlmbr.math.Vector3(0.0, 0.0, 0.0)
-    UPDATED_POSITION = azlmbr.math.Vector3(10.0, 0.0, 0.0)
+    CREATION_POSITION = azlmbr.Math.Vector3(0.0, 0.0, 0.0)
+    UPDATED_POSITION = azlmbr.Math.Vector3(10.0, 0.0, 0.0)
 
     # Create a wheel prefab from a wheel entity. Also creates first wheel instance
     wheel_entity = EditorEntity.create_editor_entity_at(CREATION_POSITION, "Wheel_Entity")

@@ -330,7 +330,7 @@ class EditorComponent:
         return visibility
 
 
-def convert_to_azvector3(xyz) -> azlmbr.math.Vector3:
+def convert_to_azvector3(xyz) -> azlmbr.Math.Vector3:
     """
     Converts a vector3-like element into a azlmbr.math.Vector3
     """
@@ -647,7 +647,7 @@ class EditorEntity:
         return editor.EditorEntityInfoRequestBus(bus.Event, "IsVisible", self.id)
 
     # World Transform Functions
-    def get_world_translation(self) -> azlmbr.math.Vector3:
+    def get_world_translation(self) -> azlmbr.Math.Vector3:
         """
         Gets the world translation of the entity
         """
@@ -660,7 +660,7 @@ class EditorEntity:
         new_translation = convert_to_azvector3(new_translation)
         azlmbr.components.TransformBus(azlmbr.bus.Event, "SetWorldTranslation", self.id, new_translation)
 
-    def get_world_rotation(self) -> azlmbr.math.Quaternion:
+    def get_world_rotation(self) -> azlmbr.Math.Quaternion:
         """
         Gets the world rotation of the entity
         """
@@ -694,7 +694,7 @@ class EditorEntity:
         """
         azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalUniformScale", self.id, scale_float)
 
-    def get_local_rotation(self) -> azlmbr.math.Quaternion:
+    def get_local_rotation(self) -> azlmbr.Math.Quaternion:
         """
         Gets the local rotation of the entity
         """
@@ -709,7 +709,7 @@ class EditorEntity:
         new_rotation = convert_to_azvector3(new_rotation)
         azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalRotation", self.id, new_rotation)
 
-    def get_local_translation(self) -> azlmbr.math.Vector3:
+    def get_local_translation(self) -> azlmbr.Math.Vector3:
         """
         Gets the local translation of the current entity.
         :return: The math.Vector3 value of the local translation.

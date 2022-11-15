@@ -435,7 +435,7 @@ class Report:
     # DEPRECATED: Use vector3_str()
     @staticmethod
     def info_vector3(vector3 : azlmbr.math.Vector3, label : str ="", magnitude : float =None):
-        # type: (azlmbr.math.Vector3, str, float) -> None
+        # type: (azlmbr.Math.Vector3, str, float) -> None
         """
         prints the vector to the Report.info log. If applied, label will print first,
         followed by the vector's values (x, y, z,) to 2 decimal places. Lastly if the

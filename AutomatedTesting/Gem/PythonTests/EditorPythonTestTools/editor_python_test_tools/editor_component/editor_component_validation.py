@@ -5,14 +5,16 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT+
 import typing
 
-import azlmbr.math as math
+import azlmbr.asset as AzAsset
+import azlmbr.math as Math
 
 from editor_python_test_tools.utils import Report
 from editor_python_test_tools.editor_entity_utils import EditorComponent
 from consts.general import ComponentPropertyVisibilityStates as PropertyVisibility
+from editor_python_test_tools.asset_utils import Asset
 
 
-def compare_vec3(expected: math.Vector3, actual: math.Vector3) -> bool:
+def compare_vec3(expected: Math.Vector3, actual: Math.Vector3) -> bool:
     """
     Helper function to compare two Vector3s. This is useful due to floating point math.
     expected: The expected Vector3 values
@@ -20,12 +22,11 @@ def compare_vec3(expected: math.Vector3, actual: math.Vector3) -> bool:
 
     return: boolean result of whether or not the two vector3s are the same.
     """
-    x_is_close = math.Math_IsClose(expected.get_property('x'), actual.get_property('x'), 0.001)
-    y_is_close = math.Math_IsClose(expected.get_property('y'), actual.get_property('y'), 0.001)
-    z_is_close = math.Math_IsClose(expected.get_property('z'), actual.get_property('z'), 0.001)
+    x_is_close = Math.Math_IsClose(expected.get_property('x'), actual.get_property('x'), 0.001)
+    y_is_close = Math.Math_IsClose(expected.get_property('y'), actual.get_property('y'), 0.001)
+    z_is_close = Math.Math_IsClose(expected.get_property('z'), actual.get_property('z'), 0.001)
 
     return x_is_close and y_is_close and z_is_close
-
 
 def _validate_xyz_is_float(x: float, y: float, z: float, error_message: str) -> None:
     """
@@ -43,7 +44,6 @@ def _validate_xyz_is_float(x: float, y: float, z: float, error_message: str) -> 
     """
     assert isinstance(x, float) and isinstance(y, float) and isinstance(z, float), error_message
 
-
 def _validate_property_visibility(component: EditorComponent, component_property_path: str, expected: str) -> None:
     """
     Helper function for Editor Components to validate the current visibility of the property is expected value.
@@ -60,9 +60,8 @@ def _validate_property_visibility(component: EditorComponent, component_property
         f"Error: {component.get_component_name()}'s component property visibility found at {component_property_path} " \
         f"was set to \"{visibility}\" when \"{expected}\" was expected."
 
-
 def validate_integer_property(property_name: str, get_int_value: typing.Callable, set_int_value: typing.Callable,
-                              component_name: str, tests: typing.Dict[int, bool]) -> None:
+                              component_name: str, tests: typing.Dict[str, typing.Tuple[int, bool]]) -> None:
     """
     Function to validate the behavior of a property that gets and sets an Integer value.
 
@@ -93,10 +92,8 @@ def validate_integer_property(property_name: str, get_int_value: typing.Callable
             f"Error: The {component_name}'s  {property_name} property failed to the \"{test_name}\" test. " \
             f"{expected_value} was expected but {set_value} was retrieved. Negative Scenario Test: {not test[expect_pass]}."
 
-
-
 def validate_float_property(property_name: str, get_float_value: typing.Callable, set_float_value: typing.Callable,
-                            component_name: str, tests: typing.Dict[float, bool]) -> None:
+                            component_name: str, tests: typing.Dict[str, typing.Tuple[float, bool]]) -> None:
     """
     Function to validate the behavior of a property that gets and sets a Float value.
 
@@ -123,10 +120,9 @@ def validate_float_property(property_name: str, get_float_value: typing.Callable
         set_value = get_float_value()
         expected_value = test[float_value]
 
-        assert math.Math_IsClose(expected_value, set_value, 0.001) is test[expect_pass], \
+        assert Math.Math_IsClose(expected_value, set_value, 0.001) is test[expect_pass], \
             f"Error: The {component_name}'s  {property_name} property failed to the \"{test_name}\" test. " \
             f"{expected_value} was expected but {set_value} was retrieved. Negative Scenario Test: {not test[expect_pass]}."
-
 
 def validate_vector3_property(property_name: str, get_vector3_value: typing.Callable,
                               set_vector3_value: typing.Callable, component_name: str,
@@ -156,14 +152,14 @@ def validate_vector3_property(property_name: str, get_vector3_value: typing.Call
         set_vector3_value(test[x], test[y], test[z])
 
         set_value = get_vector3_value()
-        expected_value = math.Vector3(test[x], test[y], test[z])
+        expected_value = Math.Vector3(test[x], test[y], test[z])
 
         assert compare_vec3(expected_value, set_value) is test[expect_pass], \
             f"Error: The {component_name}'s  {property_name} property failed to the \"{test_name}\" test. " \
-            f"{expected_value} was expected but {set_value} was retrieved. Negative Scenario Test: {not test[expect_pass]}."
+            f"{expected_value} was expected but {set_value} was retrieved. " \
+            f"Negative Scenario Test: {not test[expect_pass]}."
 
-
-def validate_property_switch_toggle(property_name:str, get_toggle_value: typing.Callable,
+def validate_property_switch_toggle(property_name: str, get_toggle_value: typing.Callable,
                                     set_toggle_value: typing.Callable, component_name: str,
                                     restore_default: bool=True) -> None:
     """
@@ -179,9 +175,36 @@ def validate_property_switch_toggle(property_name:str, get_toggle_value: typing.
 
     end_value = get_toggle_value
 
-    assert (start_value != end_value), f"Error: {component_name}'s {property_name} property toggle switch did not " \
-                                       f"toggle to {end_value} when it started at {start_value}"
+    assert (start_value != end_value), \
+        f"Error: {component_name}'s {property_name} property toggle switch did not toggle to " \
+        f"{end_value} when it started at {start_value}"
 
     if restore_default:
         set_toggle_value(start_value)
 
+def validate_asset_property(property_name: str, get_asset_value: typing.Callable, set_asset_value: typing.Callable,
+                            component_name: str, asset_path: str) -> None:
+    """
+    Function to validate the behavior of a property that gets and sets an Integer value.
+
+    :get_float_value: The Editor Entity Component Property's get method.
+    :set_float_value: The Editor Entity Component Property's set method.
+    :component_name: The name of the Editor Entity Component under test.
+    :property_name: The name of the Editor Entity Component Property under test.
+    :tests: A dictionary that stores an Int value and the intent of the values being passed. The following
+    format is expected
+     {
+        "test_description": (int_value, expect_pass),
+        "Zero value Test": (0, True)
+     }
+    """
+    Report.info(f"Validating {component_name}'s {property_name} Asset property can be set.")
+
+    set_asset_value(asset_path)
+
+    set_value = get_asset_value()
+    expected_asset = Asset.find_asset_by_path(asset_path)
+
+    assert expected_asset.id.is_equal(expected_asset.id, set_value), \
+        f"Error: The {component_name}'s {property_name} property failed to properly set the mesh. Asset Id: " \
+        f"{expected_asset.id} was expected but Asset Id: {set_value} was retrieved from \"{expected_asset.get_path()}\""

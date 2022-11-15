@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import azlmbr.physics as physics
 import azlmbr.math as math
+import azlmbr.asset as azasset
 
 from editor_python_test_tools.editor_entity_utils import EditorEntity
 from editor_python_test_tools.editor_component.editor_component_validation import \
@@ -406,23 +407,24 @@ class EditorPhysxCollider:
         """
         self.component.set_component_property_value(self.Path.SHAPE, physics.ShapeType_PhysicsAsset)
 
-    def set_physx_mesh_from_path(self, asset_product_path: str) -> None:
+    def set_physx_mesh(self, asset_product_path: str) -> None:
         """
         Property Type, Default Visibility - ('Asset<MeshAsset>', 'Visible')
 
         Used to set the PhysX Collider's PhysicsAsset Shape's PhysX Mesh from a user provided asset product path.
-            This will return an error if a source path is provided.
         """
         _validate_property_visibility(self.component, self.Path.PhysicsAsset.PHYSX_MESH, PropertyVisibility.VISIBLE)
 
         px_asset = Asset.find_asset_by_path(asset_product_path)
         self.component.set_component_property_value(self.Path.PhysicsAsset.PHYSX_MESH, px_asset.id)
 
-    def get_physx_mesh(self) -> Asset:
+    def get_physx_mesh(self) -> azasset.AssetId:
         """
         Property Type, Default Visibility - ('Asset<MeshAsset>', 'Visible')
 
         Used to get the currently set PhysX Collider's PhysicsAsset Shape's PhysX Mesh.
+
+        return: This will return the Asset ID and will need to use Asset(id) to be manipulate the asset.
         """
         return self.component.get_component_property_value(self.Path.PhysicsAsset.PHYSX_MESH)
 
