@@ -87,6 +87,9 @@ namespace UnitTest
         AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
         AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 
+        m_taskExecutor = AZStd::make_unique<AZ::TaskExecutor>();
+        AZ::TaskExecutor::SetInstance(m_taskExecutor.get());
+
         m_streamer = AZStd::make_unique<AZ::IO::Streamer>(AZStd::thread_desc{}, AZ::StreamerComponent::CreateStreamerStack());
         Interface<AZ::IO::IStreamer>::Register(m_streamer.get());
 
@@ -103,6 +106,9 @@ namespace UnitTest
 
         Interface<AZ::IO::IStreamer>::Unregister(m_streamer.get());
         m_streamer.reset();
+
+        AZ::TaskExecutor::SetInstance(nullptr);
+        m_taskExecutor.reset();
 
         AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
         AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();

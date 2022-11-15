@@ -6,7 +6,6 @@
  *
  */
 
-#include <limits>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/IO/Streamer/RequestPath.h>
 #include <AzCore/IO/Streamer/FileRequest.h>
@@ -406,7 +405,7 @@ namespace AZ::IO
     void FileRequest::Reset()
     {
         m_command = AZStd::monostate{};
-        m_onCompletion = &OnCompletionPlaceholder;
+        m_onCompletion = nullptr;
         m_estimatedCompletion = AZStd::chrono::steady_clock::time_point();
         m_parent = nullptr;
         m_status = IStreamerTypes::RequestStatus::Pending;
@@ -418,9 +417,10 @@ namespace AZ::IO
         if (parent)
         {
             m_parent = parent;
-            AZ_Assert(parent->m_dependencies < std::numeric_limits<decltype(parent->m_dependencies)>::max(),
+            AZ_Assert(
+                parent->m_dependencies < GetMaxNumDependencies(),
                 "A file request dependency was added, but the parent can't have any more dependencies.");
-            ++parent->m_dependencies;
+            parent->m_dependencies++;
         }
     }
 

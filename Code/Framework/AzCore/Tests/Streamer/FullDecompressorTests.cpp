@@ -16,6 +16,7 @@
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/Task/TaskExecutor.h>
 #include <Tests/Streamer/StreamStackEntryConformityTests.h>
 #include <Tests/Streamer/StreamStackEntryMock.h>
 
@@ -72,6 +73,9 @@ namespace AZ::IO
 
             AllocatorInstance<PoolAllocator>::Create();
             AllocatorInstance<ThreadPoolAllocator>::Create();
+
+            m_taskExecutor = AZStd::make_unique<TaskExecutor>();
+            TaskExecutor::SetInstance(m_taskExecutor.get());
         }
 
         void TearDown() override
@@ -87,6 +91,9 @@ namespace AZ::IO
 
             delete m_context;
             m_context = nullptr;
+
+            TaskExecutor::SetInstance(nullptr);
+            m_taskExecutor.reset();
 
             AllocatorInstance<ThreadPoolAllocator>::Destroy();
             AllocatorInstance<PoolAllocator>::Destroy();
@@ -315,6 +322,7 @@ namespace AZ::IO
         StreamerContext* m_context;
         AZStd::shared_ptr<FullFileDecompressor> m_decompressor;
         AZStd::shared_ptr<StreamStackEntryMock> m_mock;
+        AZStd::unique_ptr<TaskExecutor> m_taskExecutor;
         u64 m_fakeFileLength{ 1 * 1024 * 1024 };
     };
 

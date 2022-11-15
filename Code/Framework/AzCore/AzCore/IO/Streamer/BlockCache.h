@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/IO/Streamer/RecentlyUsedIndex.h>
 #include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
 #include <AzCore/IO/Streamer/StreamStackEntry.h>
@@ -61,6 +62,8 @@ namespace AZ::IO
         : public StreamStackEntry
     {
     public:
+        using RecentlyUsedBlockIndex = RecentlyUsedIndex<u32>;
+
         BlockCache(u64 cacheSize, u32 blockSize, u32 alignment, bool onlyEpilogWrites);
         BlockCache(BlockCache&& rhs) = delete;
         BlockCache(const BlockCache& rhs) = delete;
@@ -126,7 +129,6 @@ namespace AZ::IO
             u64 offset, u64 size, u8* buffer) const;
 
         u8* GetCacheBlockData(u32 index);
-        void TouchBlock(u32 index);
         AZ::u32 RecycleOldestBlock(const RequestPath& filePath, u64 offset);
         u32 FindInCache(const RequestPath& filePath, u64 offset) const;
         bool IsCacheBlockInFlight(u32 index) const;
@@ -143,6 +145,8 @@ namespace AZ::IO
         AZ::Statistics::RunningStatistic m_hitRateStat;
         AZ::Statistics::RunningStatistic m_cacheableStat;
 
+        RecentlyUsedBlockIndex m_recentlyUsed;
+
         u8* m_cache;
         u64 m_cacheSize;
         u32 m_blockSize;
@@ -153,8 +157,6 @@ namespace AZ::IO
         AZStd::unique_ptr<RequestPath[]> m_cachedPaths; // Array of m_numBlocks size.
         //! The offset into the file the cache blocks starts at.
         AZStd::unique_ptr<u64[]> m_cachedOffsets; // Array of m_numBlocks size.
-        //! The last time the cache block was read from.
-        AZStd::unique_ptr<TimePoint[]> m_blockLastTouched; // Array of m_numBlocks size.
         //! The file request that's currently read data into the cache block. If null, the block has been read.
         AZStd::unique_ptr<FileRequest*[]> m_inFlightRequests; // Array of m_numbBlocks size.
 

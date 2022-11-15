@@ -15,6 +15,7 @@
 #include <AzCore/IO/Streamer/StreamStackEntry.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>
 #include <Tests/Streamer/StreamStackEntryMock.h>
@@ -52,6 +53,8 @@ namespace AZ::IO
         void SetUp() override
         {
             UnitTest::AllocatorsFixture::SetUp();
+            m_taskExecutor = AZStd::make_unique<TaskExecutor>();
+            TaskExecutor::SetInstance(m_taskExecutor.get());
             m_description.SetUp();
 
             m_context = AZStd::make_unique<StreamerContext>();
@@ -62,6 +65,8 @@ namespace AZ::IO
             m_context.reset();
 
             m_description.TearDown();
+            TaskExecutor::SetInstance(nullptr);
+            m_taskExecutor.reset();
             UnitTest::AllocatorsFixture::TearDown();
         }
 
@@ -74,6 +79,7 @@ namespace AZ::IO
         }
 
         T m_description{};
+        AZStd::unique_ptr<TaskExecutor> m_taskExecutor;
         AZStd::unique_ptr<StreamerContext> m_context;
     };
 

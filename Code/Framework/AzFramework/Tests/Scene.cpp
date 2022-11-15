@@ -15,6 +15,7 @@ AZ_PUSH_DISABLE_WARNING(, "-Wdelete-non-virtual-dtor")
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Scene/SceneSystemComponent.h>
 #include <AzFramework/Scene/Scene.h>
+#include <AzCore/Task/TaskGraphSystemComponent.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
@@ -110,6 +111,7 @@ namespace SceneUnitTest
             m_app.RegisterComponentDescriptor(AZ::SliceSystemComponent::CreateDescriptor());
             m_app.RegisterComponentDescriptor(AZ::AssetManagerComponent::CreateDescriptor());
             m_app.RegisterComponentDescriptor(AZ::JobManagerComponent::CreateDescriptor());
+            m_app.RegisterComponentDescriptor(AZ::TaskGraphSystemComponent::CreateDescriptor());
             m_app.RegisterComponentDescriptor(AZ::StreamerComponent::CreateDescriptor());
 
             AZ::ComponentApplication::Descriptor desc;
@@ -122,6 +124,7 @@ namespace SceneUnitTest
             m_systemEntity->CreateComponent<AZ::SliceSystemComponent>();
             m_systemEntity->CreateComponent<AZ::AssetManagerComponent>();
             m_systemEntity->CreateComponent<AZ::JobManagerComponent>();
+            m_systemEntity->CreateComponent<AZ::TaskGraphSystemComponent>();
             m_systemEntity->CreateComponent<AZ::StreamerComponent>();
             m_systemEntity->Activate();
 
