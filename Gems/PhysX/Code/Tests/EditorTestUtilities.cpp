@@ -8,17 +8,21 @@
 
 #include <Tests/EditorTestUtilities.h>
 
+#include <AzFramework/Physics/Collision/CollisionEvents.h>
+#include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 #include <EditorShapeColliderComponent.h>
+#include <LmbrCentral/Shape/BoxShapeComponentBus.h>
+#include <LmbrCentral/Shape/CapsuleShapeComponentBus.h>
 #include <LmbrCentral/Shape/CylinderShapeComponentBus.h>
+#include <LmbrCentral/Shape/SphereShapeComponentBus.h>
+#include <PhysX/MathConversion.h>
 #include <PhysX/PhysXLocks.h>
+#include <PhysXCharacters/Components/EditorCharacterControllerComponent.h>
 #include <RigidBodyStatic.h>
 #include <StaticRigidBodyComponent.h>
-#include <Tests/PhysXTestUtil.h>
-#include <AzFramework/Physics/Collision/CollisionEvents.h>
-
 #include <System/PhysXCookingParams.h>
 #include <Tests/PhysXTestCommon.h>
-#include <PhysXCharacters/Components/EditorCharacterControllerComponent.h>
+#include <Tests/PhysXTestUtil.h>
 
 namespace PhysXEditorTests
 {
@@ -41,8 +45,83 @@ namespace PhysXEditorTests
         return gameEntity;
     }
 
+    EntityPtr CreateBoxShapeColliderEditorEntity(
+        const AZ::Transform& transform,
+        const AZ::Vector3& nonUniformScale,
+        const AZ::Vector3& boxDimensions,
+        const AZ::Vector3& translationOffset)
+    {
+        EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
+        editorEntity->CreateComponent(LmbrCentral::EditorBoxShapeComponentTypeId);
+        editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
+        editorEntity->Activate();
+        AZ::EntityId editorEntityId = editorEntity->GetId();
+
+        AZ::TransformBus::Event(editorEntityId, &AZ::TransformBus::Events::SetWorldTM, transform);
+        AZ::NonUniformScaleRequestBus::Event(editorEntityId, &AZ::NonUniformScaleRequests::SetScale, nonUniformScale);
+        LmbrCentral::BoxShapeComponentRequestsBus::Event(
+            editorEntityId, &LmbrCentral::BoxShapeComponentRequests::SetBoxDimensions, boxDimensions);
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            editorEntityId, &LmbrCentral::ShapeComponentRequests::SetTranslationOffset, translationOffset);
+
+        return editorEntity;
+    }
+
+    EntityPtr CreateCapsuleShapeColliderEditorEntity(
+        const AZ::Transform& transform, float radius, float height, const AZ::Vector3& translationOffset)
+    {
+        EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
+        editorEntity->CreateComponent(LmbrCentral::EditorCapsuleShapeComponentTypeId);
+        editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->Activate();
+        AZ::EntityId editorEntityId = editorEntity->GetId();
+
+        AZ::TransformBus::Event(editorEntityId, &AZ::TransformBus::Events::SetWorldTM, transform);
+        LmbrCentral::CapsuleShapeComponentRequestsBus::Event(
+            editorEntityId, &LmbrCentral::CapsuleShapeComponentRequests::SetRadius, radius);
+        LmbrCentral::CapsuleShapeComponentRequestsBus::Event(
+            editorEntityId, &LmbrCentral::CapsuleShapeComponentRequests::SetHeight, height);
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            editorEntityId, &LmbrCentral::ShapeComponentRequests::SetTranslationOffset, translationOffset);
+
+        return editorEntity;
+    }
+
+    EntityPtr CreateSphereShapeColliderEditorEntity(const AZ::Transform& transform, float radius, const AZ::Vector3& translationOffset)
+    {
+        EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
+        editorEntity->CreateComponent(LmbrCentral::EditorSphereShapeComponentTypeId);
+        editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->Activate();
+        AZ::EntityId editorEntityId = editorEntity->GetId();
+
+        AZ::TransformBus::Event(editorEntityId, &AZ::TransformBus::Events::SetWorldTM, transform);
+        LmbrCentral::SphereShapeComponentRequestsBus::Event(editorEntityId, &LmbrCentral::SphereShapeComponentRequests::SetRadius, radius);
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            editorEntityId, &LmbrCentral::ShapeComponentRequests::SetTranslationOffset, translationOffset);
+
+        return editorEntity;
+    }
+
+    AZ::Aabb GetSimulatedBodyAabb(AZ::EntityId entityId)
+    {
+        AzPhysics::SimulatedBody* simulatedBody = nullptr;
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, entityId, &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        if (simulatedBody)
+        {
+            const auto* pxActor = static_cast<const physx::PxActor*>(simulatedBody->GetNativePointer());
+            PHYSX_SCENE_READ_LOCK(pxActor->getScene());
+            return PxMathConvert(pxActor->getWorldBounds(1.0f));
+        }
+        return AZ::Aabb::CreateNull();
+    }
+
     void PhysXEditorFixture::SetUp()
     {
+        UnitTest::RegistryTestHelper::SetUp(LmbrCentral::ShapeComponentTranslationOffsetEnabled, true);
+
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
             //in case a test modifies the default world config setup a config without getting the default(eg. SetWorldConfiguration_ForwardsConfigChangesToWorldRequestBus)
@@ -68,6 +147,8 @@ namespace PhysXEditorTests
         {
             physicsSystem->RemoveScene(m_defaultSceneHandle);
         }
+
+        UnitTest::RegistryTestHelper::TearDown();
     }
 
     void PhysXEditorFixture::ConnectToPVD()

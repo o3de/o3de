@@ -236,7 +236,6 @@ set(FILES
     Manipulators/ManipulatorSpace.h
     Manipulators/PaintBrushManipulator.cpp
     Manipulators/PaintBrushManipulator.h
-    Manipulators/PaintBrushNotificationBus.h
     Manipulators/PlanarManipulator.cpp
     Manipulators/PlanarManipulator.h
     Manipulators/RotationManipulators.cpp
@@ -254,6 +253,9 @@ set(FILES
     Manipulators/TranslationManipulators.cpp
     Manipulators/TranslationManipulators.h
     Maths/TransformUtils.h
+    PaintBrush/PaintBrush.cpp
+    PaintBrush/PaintBrush.h
+    PaintBrush/PaintBrushNotificationBus.h
     PaintBrushSettings/PaintBrushSettings.cpp
     PaintBrushSettings/PaintBrushSettings.h
     PaintBrushSettings/PaintBrushSettingsNotificationBus.h
@@ -380,8 +382,8 @@ set(FILES
     UI/DocumentPropertyEditor/ContainerActionButtonHandler.h
     UI/DocumentPropertyEditor/DPEComponentAdapter.h
     UI/DocumentPropertyEditor/DPEComponentAdapter.cpp
-    UI/DocumentPropertyEditor/FilterAdapter.cpp
-    UI/DocumentPropertyEditor/FilterAdapter.h
+    UI/DocumentPropertyEditor/ValueStringFilter.cpp
+    UI/DocumentPropertyEditor/ValueStringFilter.h
     UI/DocumentPropertyEditor/FilteredDPE.cpp
     UI/DocumentPropertyEditor/FilteredDPE.h
     UI/DocumentPropertyEditor/FilteredDPE.ui
@@ -615,6 +617,7 @@ set(FILES
     ComponentMode/ComponentModeCollection.cpp
     ComponentMode/ComponentModeDelegate.h
     ComponentMode/ComponentModeDelegate.cpp
+    ComponentMode/ComponentModeDelegateBus.h
     ComponentMode/ComponentModeSwitcher.h
     ComponentMode/ComponentModeSwitcher.cpp
     ComponentMode/ComponentModeViewportUi.h
@@ -791,6 +794,11 @@ set(FILES
     Prefab/Instance/TemplateInstanceMapperInterface.h
     Prefab/Link/Link.h
     Prefab/Link/Link.cpp
+    Prefab/Overrides/PrefabOverrideHandler.h
+    Prefab/Overrides/PrefabOverrideHandler.cpp
+    Prefab/Overrides/PrefabOverridePublicInterface.h
+    Prefab/Overrides/PrefabOverridePublicHandler.h
+    Prefab/Overrides/PrefabOverridePublicHandler.cpp
     Prefab/Procedural/ProceduralPrefabAsset.h
     Prefab/Procedural/ProceduralPrefabAsset.cpp
     Prefab/PrefabPublicHandler.h

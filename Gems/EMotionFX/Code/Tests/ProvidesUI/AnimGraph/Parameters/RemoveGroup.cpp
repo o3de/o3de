@@ -17,7 +17,6 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterWindow.h>
 #include <QApplication>
 #include <QComboBox>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodeGroupWindow.h>
 #include <Editor/ReselectingTreeView.h>
 #include <QtTest>
 #include <QApplication>

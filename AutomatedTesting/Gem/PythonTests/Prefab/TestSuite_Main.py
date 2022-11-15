@@ -113,7 +113,7 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
 
     class test_EditEntity_UnderNestedInstance(EditorSharedTest):
         from .tests.overrides import EditEntity_UnderNestedInstance as test_module
-
+        
     # Prefab Notifications Tests
 
     class test_PrefabNotifications_PropagationNotificationsReceived(EditorSharedTest):
@@ -126,6 +126,3 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
 
     class test_ReparentEntity_UnderEntityHierarchies(EditorSharedTest):
         from .tests.reparent_prefab import ReparentEntity_UnderEntityHierarchies as test_module
-
-    class test_ReparentPrefab_UnderPrefabAndEntityHierarchies(EditorSharedTest):
-        from .tests.reparent_prefab import ReparentPrefab_UnderPrefabAndEntityHierarchies as test_module

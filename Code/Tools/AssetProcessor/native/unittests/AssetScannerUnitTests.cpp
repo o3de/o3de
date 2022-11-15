@@ -11,7 +11,7 @@
 #include <AzTest/Utils.h>
 #include <native/AssetManager/assetScanner.h>
 #include <native/utilities/PlatformConfiguration.h>
-#include <native/unittests/UnitTestRunner.h> // for CreateDummyFile
+#include <native/unittests/UnitTestUtils.h> // for CreateDummyFile
 #include <QApplication>
 #include <QElapsedTimer>
 #include <QTemporaryDir>

@@ -28,6 +28,7 @@
 #include <AzFramework/API/ApplicationAPI.h>
 
 // AzToolsFramework
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/UI/Layer/NameConflictWarning.hxx>
@@ -607,6 +608,12 @@ int CCryEditDoc::GetModifiedModule()
 
 bool CCryEditDoc::CanCloseFrame()
 {
+    if (AzToolsFramework::ComponentModeFramework::InComponentMode())
+    {
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::EndComponentMode);
+    }
+
     // Ask the base class to ask for saving, which also includes the save
     // status of the plugins. Additionaly we query if all the plugins can exit
     // now. A reason for a failure might be that one of the plugins isn't

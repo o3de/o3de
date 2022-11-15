@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Include/Multiplayer/MultiplayerMetrics.h
     Include/Multiplayer/MultiplayerPerformanceStats.h
     Include/Multiplayer/MultiplayerStatSystemInterface.h
 )

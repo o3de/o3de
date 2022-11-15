@@ -23,6 +23,7 @@
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConverterStackProfileNames.h>
@@ -49,6 +50,10 @@ namespace AzToolsFramework
         m_prefabFocusInterface = AZ::Interface<Prefab::PrefabFocusInterface>::Get();
         AZ_Assert(m_prefabFocusInterface != nullptr,
             "Couldn't get prefab focus interface, it's a requirement for PrefabEntityOwnership system to work");
+
+        m_instanceEntityMapperInterface = AZ::Interface<Prefab::InstanceEntityMapperInterface>::Get();
+        AZ_Assert(m_instanceEntityMapperInterface,
+            "Couldn't get instance entity mapper interface. It's a requirement for PrefabEntityOwnership to work");
 
         m_prefabSystemComponent = AZ::Interface<Prefab::PrefabSystemComponentInterface>::Get();
         AZ_Assert(m_prefabSystemComponent != nullptr,
@@ -167,15 +172,32 @@ namespace AzToolsFramework
 
     bool PrefabEditorEntityOwnershipService::DestroyEntity(AZ::Entity* entity)
     {
+        AZ_Assert(entity, "Tried to destroy a null entity");
+        if (!entity)
+        {
+            return false;
+        }
+
         return DestroyEntityById(entity->GetId());
     }
 
     bool PrefabEditorEntityOwnershipService::DestroyEntityById(AZ::EntityId entityId)
     {
         AZ_Assert(IsInitialized(), "Tried to destroy an entity without initializing the Entity Ownership Service");
-        AZ_Assert(m_entitiesRemovedCallback, "Callback function for DestroyEntityById has not been set.");
         OnEntityRemoved(entityId);
-        return true;
+        bool destroyResult = false;
+        if (auto owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId); owningInstance.has_value())
+        {
+            if (owningInstance->get().GetContainerEntityId() == entityId)
+            {
+                destroyResult = owningInstance->get().DestroyContainerEntity();
+            }
+            else
+            {
+                destroyResult = owningInstance->get().DestroyEntity(entityId);
+            }
+        }
+        return destroyResult;
     }
 
     void PrefabEditorEntityOwnershipService::GetNonPrefabEntities(EntityList& entities)
@@ -443,6 +465,7 @@ namespace AzToolsFramework
 
     void PrefabEditorEntityOwnershipService::OnEntityRemoved(AZ::EntityId entityId)
     {
+        AZ_Assert(m_entitiesRemovedCallback, "Callback function for entity removal has not been set.");
         AzFramework::SliceEntityRequestBus::MultiHandler::BusDisconnect(entityId);
         m_entitiesRemovedCallback({ entityId });
     }
@@ -460,6 +483,25 @@ namespace AzToolsFramework
     void PrefabEditorEntityOwnershipService::SetValidateEntitiesCallback(ValidateEntitiesCallback validateEntitiesCallback)
     {
         m_validateEntitiesCallback = AZStd::move(validateEntitiesCallback);
+    }
+
+    void PrefabEditorEntityOwnershipService::HandleEntityBeingDestroyed(const AZ::EntityId& entityId)
+    {
+        AZ_Assert(IsInitialized(), "Tried to destroy an entity without initializing the Entity Ownership Service");
+        OnEntityRemoved(entityId);
+        if (auto owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId); owningInstance.has_value())
+        {
+            // Entities removed through the application (as in via manual 'delete'),
+            // should be detached from the owning instance, but not again deleted.
+            if (owningInstance->get().GetContainerEntityId() == entityId)
+            {
+                owningInstance->get().DetachContainerEntity().release();
+            }
+            else
+            {
+                owningInstance->get().DetachEntity(entityId).release();
+            }
+        }
     }
 
     void PrefabEditorEntityOwnershipService::StartPlayInEditor()

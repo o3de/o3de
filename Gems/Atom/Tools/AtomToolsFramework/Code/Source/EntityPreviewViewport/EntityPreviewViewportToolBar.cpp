@@ -84,29 +84,26 @@ namespace AtomToolsFramework
         displayMapperAction->setCheckable(false);
 
         // Add lighting preset combo box
-        m_lightingPresetComboBox = new AssetSelectionComboBox([](const AZ::Data::AssetInfo& assetInfo) {
-            return assetInfo.m_assetType == AZ::RPI::AnyAsset::RTTI_Type() &&
-                AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), AZ::Render::LightingPreset::Extension);
+        m_lightingPresetComboBox = new AssetSelectionComboBox([](const AZStd::string& path) {
+            return path.ends_with(AZ::Render::LightingPreset::Extension);
         }, this);
-        connect(m_lightingPresetComboBox, &AssetSelectionComboBox::AssetSelected, this, [this](const AZ::Data::AssetId& assetId) {
+        connect(m_lightingPresetComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
             EntityPreviewViewportSettingsRequestBus::Event(
-                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPresetByAssetId, assetId);
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPreset, path);
         });
         addWidget(m_lightingPresetComboBox);
 
         // Add model preset combo box
-        m_modelPresetComboBox = new AssetSelectionComboBox([](const AZ::Data::AssetInfo& assetInfo) {
-            return assetInfo.m_assetType == AZ::RPI::AnyAsset::RTTI_Type() &&
-                AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), AZ::Render::ModelPreset::Extension);
+        m_modelPresetComboBox = new AssetSelectionComboBox([](const AZStd::string& path) {
+            return path.ends_with(AZ::Render::ModelPreset::Extension);
         }, this);
-        connect(m_modelPresetComboBox, &AssetSelectionComboBox::AssetSelected, this, [this](const AZ::Data::AssetId& assetId) {
+        connect(m_modelPresetComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
             EntityPreviewViewportSettingsRequestBus::Event(
-                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPresetByAssetId, assetId);
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset, path);
         });
         addWidget(m_modelPresetComboBox);
 
         OnViewportSettingsChanged();
-
         EntityPreviewViewportSettingsNotificationBus::Handler::BusConnect(m_toolId);
     }
 
@@ -124,9 +121,19 @@ namespace AtomToolsFramework
                 m_toggleGrid->setChecked(viewportRequests->GetGridEnabled());
                 m_toggleShadowCatcher->setChecked(viewportRequests->GetShadowCatcherEnabled());
                 m_toggleAlternateSkybox->setChecked(viewportRequests->GetAlternateSkyboxEnabled());
-                m_lightingPresetComboBox->SelectAsset(viewportRequests->GetLastLightingPresetAssetId());
-                m_modelPresetComboBox->SelectAsset(viewportRequests->GetLastModelPresetAssetId());
+                m_lightingPresetComboBox->SelectPath(viewportRequests->GetLastLightingPresetPath());
+                m_modelPresetComboBox->SelectPath(viewportRequests->GetLastModelPresetPath());
             });
+    }
+
+    void EntityPreviewViewportToolBar::OnModelPresetAdded(const AZStd::string& path)
+    {
+        m_modelPresetComboBox->AddPath(path);
+    }
+
+    void EntityPreviewViewportToolBar::OnLightingPresetAdded(const AZStd::string& path)
+    {
+        m_lightingPresetComboBox->AddPath(path);
     }
 } // namespace AtomToolsFramework
 

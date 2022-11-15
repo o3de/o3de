@@ -70,6 +70,9 @@ namespace AZ
             //! Remove property overrides
             void ClearProperties();
 
+            //! Launch the material canvas
+            void OpenMaterialCanvas() const;
+
             //! Launch the material editor application and open the active material for this slot
             void OpenMaterialEditor() const;
 

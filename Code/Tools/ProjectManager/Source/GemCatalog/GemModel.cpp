@@ -125,6 +125,34 @@ namespace O3DE::ProjectManager
         }
     }
 
+    const GemInfo GemModel::GetGemInfo(const QModelIndex& modelIndex)
+    {
+        GemInfo gemInfo;
+        gemInfo.m_name = modelIndex.data(RoleName).toString();
+        gemInfo.m_displayName = modelIndex.data(RoleDisplayName).toString();
+        gemInfo.m_origin = modelIndex.data(RoleCreator).toString();
+        gemInfo.m_gemOrigin = static_cast<GemInfo::GemOrigin>(modelIndex.data(RoleGemOrigin).toInt());
+        gemInfo.m_platforms = static_cast<GemInfo::Platforms>(modelIndex.data(RolePlatforms).toInt());
+        gemInfo.m_types = static_cast<GemInfo::Type>(modelIndex.data(RoleTypes).toInt());
+        gemInfo.m_summary = modelIndex.data(RoleSummary).toString();
+        gemInfo.m_isAdded = modelIndex.data(RoleIsAdded).toBool();
+        gemInfo.m_directoryLink = modelIndex.data(RoleDirectoryLink).toString();
+        gemInfo.m_documentationLink = modelIndex.data(RoleDocLink).toString();
+        gemInfo.m_dependencies = modelIndex.data(RoleDependingGems).toStringList();
+        gemInfo.m_version = modelIndex.data(RoleVersion).toString();
+        gemInfo.m_lastUpdatedDate = modelIndex.data(RoleLastUpdated).toString();
+        gemInfo.m_binarySizeInKB = modelIndex.data(RoleBinarySize).toInt();
+        gemInfo.m_features = modelIndex.data(RoleFeatures).toStringList();
+        gemInfo.m_path = modelIndex.data(RolePath).toString();
+        gemInfo.m_requirement = modelIndex.data(RoleRequirement).toString();
+        gemInfo.m_downloadStatus = static_cast<GemInfo::DownloadStatus>(modelIndex.data(RoleDownloadStatus).toInt());
+        gemInfo.m_licenseText = modelIndex.data(RoleLicenseText).toString();
+        gemInfo.m_licenseLink = modelIndex.data(RoleLicenseLink).toString();
+        gemInfo.m_repoUri = modelIndex.data(RoleRepoUri).toString();
+
+        return gemInfo;
+    }
+
     QString GemModel::GetName(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleName).toString();
