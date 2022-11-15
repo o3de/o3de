@@ -212,7 +212,7 @@ namespace UnitTest
                 // The dirtyArea AABB should change size based on the current brush radius size that we're using.
                 EXPECT_THAT(dirtyArea, IsClose(AZ::Aabb::CreateCenterRadius(TestBrushCenter2d, brushRadiusSize)));
 
-                // Create a 3x3 square grid of points. Because our brush is a circle, we expect only the points in along a + to be
+                // Create a 3x3 square grid of points. Because our brush is a circle, we expect only the points along a + to be
                 // returned as valid points. The corners of the square should fall outside the circle and not get returned.
                 // Since we're scaling this based on the AABB, this should be checking the same relative points for each
                 // brush radius.
