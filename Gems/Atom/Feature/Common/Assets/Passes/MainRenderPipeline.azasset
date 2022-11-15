@@ -9,7 +9,35 @@
         "AllowModification": true,
         "RenderSettings": {
             "MultisampleState": {
-                "samples": 4
+                "samples": 2,
+                "customPositionsCount": 16,
+                "customPositions": [
+                    // First sample is dead center of the pixel for accurate resolve -> non-MSAA depth
+                    // When we resolve MSAA depth to non-MSAA depth, we just pick this first sample
+                    // Being at the center of the pixel makes SSAO and world space reprojection more accurate
+                    { "x":  8,   "y":  8 },
+
+                    // Second sample is top-left corner so that samples from neighboring pixels can be used for
+                    // Quincux anti-aliasing techniques
+                    { "x":  0,   "y":  0 },
+                    
+                    { "x":  7,   "y": 15 },
+                    { "x": 15,   "y":  7 },
+                    
+                    { "x":  8,   "y":  0 },
+                    { "x":  0,   "y":  8 },
+                    { "x":  4,   "y": 11 },
+                    { "x": 11,   "y":  4 },
+                    
+                    { "x":  0,   "y": 15 },
+                    { "x": 15,   "y":  0 },
+                    { "x": 15,   "y": 15 },
+                    { "x":  3,   "y":  3 },
+                    { "x":  4,   "y":  7 },
+                    { "x":  7,   "y":  4 },
+                    { "x": 10,   "y": 13 },
+                    { "x": 13,   "y": 10 }
+                ]
             }
         }
     }

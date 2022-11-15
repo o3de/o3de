@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/base.h>
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/TextField.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiDisplay.h>
@@ -30,8 +31,10 @@ namespace AzToolsFramework::ViewportUi
         const ClusterId CreateCluster(Alignment align) override;
         const SwitcherId CreateSwitcher(Alignment align) override;
         void SetClusterActiveButton(ClusterId clusterId, ButtonId buttonId) override;
+        void SetClusterDisableButton(ClusterId clusterId, ButtonId buttonId, bool disabled) override;
         void ClearClusterActiveButton(ClusterId clusterId) override;
         void SetSwitcherActiveButton(SwitcherId switcherId, ButtonId buttonId) override;
+        void SetSwitcherDisableButton(SwitcherId switcherId, ButtonId buttonId, bool disabled) override;
         void SetClusterButtonLocked(ClusterId clusterId, ButtonId buttonId, bool isLocked) override;
         void SetClusterButtonTooltip(ClusterId clusterId, ButtonId buttonId, const AZStd::string& tooltip) override;
         void SetSwitcherButtonTooltip(SwitcherId switcherId, ButtonId buttonId, const AZStd::string& tooltip) override;
@@ -91,5 +94,7 @@ namespace AzToolsFramework::ViewportUi
         void UpdateSwitcherButtonGroupUi(Internal::ButtonGroup* buttonGroup);
         //! Update the corresponding ui element for the given text field.
         void UpdateTextFieldUi(Internal::TextField* textField);
+
+        AZ::u64 m_nextViewportUiElementId = 0;
     };
 } // namespace AzToolsFramework::ViewportUi

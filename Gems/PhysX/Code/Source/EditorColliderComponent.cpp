@@ -62,6 +62,8 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_subdivisionCount,
                         "Subdivision", "Cylinder subdivision count.")
+                        ->Attribute(AZ::Edit::Attributes::Min, Utils::MinFrustumSubdivisions)
+                        ->Attribute(AZ::Edit::Attributes::Max, Utils::MaxFrustumSubdivisions)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_height, "Height", "Cylinder height.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_radius, "Radius", "Cylinder radius.")
                     ;
@@ -423,6 +425,7 @@ namespace PhysX
         AZ::Render::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
         EditorColliderComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
         EditorColliderValidationRequestBus::Handler::BusConnect(GetEntityId());
+        AzFramework::BoundsRequestBus::Handler::BusConnect(GetEntityId());
         m_nonUniformScaleChangedHandler = AZ::NonUniformScaleChangedEvent::Handler(
             [this](const AZ::Vector3& scale) {OnNonUniformScaleChanged(scale); });
         AZ::NonUniformScaleRequestBus::Event(GetEntityId(), &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
@@ -469,6 +472,7 @@ namespace PhysX
         m_colliderDebugDraw.Disconnect();
         AZ::Data::AssetBus::Handler::BusDisconnect();
         m_nonUniformScaleChangedHandler.Disconnect();
+        AzFramework::BoundsRequestBus::Handler::BusDisconnect();
         EditorColliderValidationRequestBus::Handler::BusDisconnect();
         EditorColliderComponentRequestBus::Handler::BusDisconnect();
         AZ::Render::MeshComponentNotificationBus::Handler::BusDisconnect();
@@ -481,6 +485,9 @@ namespace PhysX
 
         m_componentModeDelegate.Disconnect();
 
+        // When Deactivate is triggered from an application shutdown, it's possible that the
+        // scene interface has already been deleted, so check for its existence here again
+        m_sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         if (m_sceneInterface)
         {
             m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
@@ -1500,7 +1507,16 @@ namespace PhysX
 
     void EditorColliderComponent::SetCylinderSubdivisionCount(AZ::u8 subdivisionCount)
     {
-        m_shapeConfiguration.m_cylinder.m_subdivisionCount = subdivisionCount;
+        const AZ::u8 clampedSubdivisionCount = AZ::GetClamp(subdivisionCount, Utils::MinFrustumSubdivisions, Utils::MaxFrustumSubdivisions);
+        AZ_Warning(
+            "PhysX",
+            clampedSubdivisionCount == subdivisionCount,
+            "Requested cylinder subdivision count %d clamped into allowed range (%d - %d). Entity: %s",
+            subdivisionCount,
+            Utils::MinFrustumSubdivisions,
+            Utils::MaxFrustumSubdivisions,
+            GetEntity()->GetName().c_str());
+        m_shapeConfiguration.m_cylinder.m_subdivisionCount = clampedSubdivisionCount;
         UpdateCylinderCookedMesh();
         CreateStaticEditorCollider();
     }
@@ -1554,6 +1570,22 @@ namespace PhysX
 
         const AZ::Vector3 scale = m_shapeConfiguration.m_cylinder.m_configuration.m_scale;
         m_shapeConfiguration.m_cylinder.m_configuration = Utils::CreatePxCookedMeshConfiguration(samplePoints, scale).value();
+    }
+
+    AZ::Aabb EditorColliderComponent::GetWorldBounds()
+    {
+        return GetAabb();
+    }
+
+    AZ::Aabb EditorColliderComponent::GetLocalBounds()
+    {
+        AZ::Aabb worldBounds = GetWorldBounds();
+        if (worldBounds.IsValid())
+        {
+            return worldBounds.GetTransformedAabb(m_cachedWorldTransform.GetInverse());
+        }
+
+        return AZ::Aabb::CreateNull();
     }
 
     void EditorColliderComponentDescriptor::Reflect(AZ::ReflectContext* reflection) const

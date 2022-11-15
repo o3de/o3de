@@ -10,7 +10,7 @@
 
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
-#include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
+#include <AzToolsFramework/PaintBrush/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 
@@ -35,9 +35,19 @@ namespace GradientSignal
 
     protected:
         // PaintBrushNotificationBus overrides
-        void OnPaintStrokeBegin(float intensity, float opacity) override;
-        void OnPaintStrokeEnd() override;
+        void OnBrushStrokeBegin(const AZ::Color& color) override;
+        void OnBrushStrokeEnd() override;
         void OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn) override;
+        void OnSmooth(
+            const AZ::Aabb& dirtyArea,
+            ValueLookupFn& valueLookupFn,
+            AZStd::span<const AZ::Vector3> valuePointOffsets,
+            SmoothFn& smoothFn) override;
+        AZ::Color OnGetColor(const AZ::Vector3& brushCenter) override;
+
+        void OnPaintSmoothInternal(
+            const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn,
+            AZStd::function<float(const AZ::Vector3& worldPosition, float gradientValue, float opacity)> combineFn);
 
         void BeginUndoBatch();
         void EndUndoBatch();
@@ -81,7 +91,9 @@ namespace GradientSignal
         PaintBrushUndoBuffer* m_paintBrushUndoBuffer = nullptr;
 
         AzToolsFramework::ViewportUi::ClusterId m_paintBrushControlClusterId;
-        AzToolsFramework::ViewportUi::ButtonId m_paintBrushSettingsButtonId;
+        AzToolsFramework::ViewportUi::ButtonId m_paintModeButtonId;
+        AzToolsFramework::ViewportUi::ButtonId m_eyedropperModeButtonId;
+        AzToolsFramework::ViewportUi::ButtonId m_smoothModeButtonId;
 
         AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler m_buttonSelectionHandler;
     };

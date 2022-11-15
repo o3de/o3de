@@ -159,14 +159,17 @@ namespace AZ::Reflection
                 bool m_skipLabel = false;
                 AZStd::string m_labelOverride;
                 bool m_disableEditor = false;
+                bool m_isAncestorDisabled = false;
 
                 // extra data necessary to support Containers composed of pair<> children (like maps!)
                 bool m_extractKeyedPair = false;
                 AZ::SerializeContext::IDataContainer* m_parentContainerInfo = nullptr;
                 void* m_parentContainerOverride = nullptr;
                 void* m_containerElementOverride = nullptr;
+                int m_insertIndex = 0;
             };
             AZStd::deque<StackEntry> m_stack;
+            AZStd::deque<StackEntry> m_UIElements;
 
             using HandlerCallback = AZStd::function<bool()>;
             AZStd::unordered_map<AZ::TypeId, HandlerCallback> m_handlers;
@@ -209,7 +212,7 @@ namespace AZ::Reflection
                 {
                     return;
                 }
-                EditContext::EnumerateInstanceCallContext context(
+                SerializeContext::EnumerateInstanceCallContext context(
                     [this](
                         void* instance,
                         const AZ::SerializeContext::ClassData* classData,
@@ -221,12 +224,12 @@ namespace AZ::Reflection
                     {
                         return EndNode();
                     },
-                    m_serializeContext->GetEditContext(),
+                    m_serializeContext,
                     SerializeContext::EnumerationAccessFlags::ENUM_ACCESS_FOR_WRITE,
                     nullptr);
 
                 const StackEntry& nodeData = m_stack.back();
-                m_serializeContext->GetEditContext()->EnumerateInstance(&context, nodeData.m_instance, nodeData.m_typeId, nullptr, nullptr);
+                m_serializeContext->EnumerateInstance(&context, nodeData.m_instance, nodeData.m_typeId, nullptr, nullptr);
             }
 
             bool BeginNode(
@@ -258,10 +261,93 @@ namespace AZ::Reflection
                         path.append(elementName);
                     }
                 }
+
+                //! Iterate over all found UIElements, insert a UIElement before this element if this element's parent is also the UIElement's parent,
+                //! and this child element's index is the same as the UIElement's insertion index, and this element is going to be visible in the component
+                for (auto iter = m_UIElements.begin(); iter != m_UIElements.end(); ++iter)
+                {
+                    if (iter->m_classData->m_name == parentData.m_classData->m_name && iter->m_insertIndex == parentData.m_childElementIndex && classElement && classElement->m_editData)
+                    {
+                        m_stack.push_back(m_UIElements.back());
+                        CacheAttributes();
+                        m_stack.back().m_entryClosed = true;
+                        m_visitor->VisitObjectBegin(*this, *this);
+                        m_visitor->VisitObjectEnd(*this, *this);
+                        m_stack.pop_back();
+                    }
+                }
+
+                // Search through classData for UIElements, indexing elements so we know where in the hierarchy to insert each UIElement
+                if (classData->m_editData)
+                {
+                    int insertIndex = 0;
+                    bool addedElement = false;
+
+                    for (auto eltIt = classData->m_editData->m_elements.begin(); eltIt != classData->m_editData->m_elements.end(); ++eltIt)
+                    {
+                        if (eltIt->m_serializeClassElement)
+                        {
+                            insertIndex++;
+                        }
+                        if (eltIt->m_elementId == AZ::Edit::ClassElements::UIElement)
+                        {
+                            AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
+                            UIElement->m_editData = &*eltIt;
+                            UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
+                            StackEntry entry = { parentData.m_instance, parentData.m_instance, classData->m_typeId, classData, UIElement };
+                            entry.m_insertIndex = insertIndex;
+                            m_UIElements.push_back(entry);
+                            addedElement = true;
+                        }
+                    }
+                    // Special case for classes that only have UI elements inside of them (like Component Mode)
+                    if (insertIndex == 0 && addedElement)
+                    {
+                        for (auto& UIElement : m_UIElements)
+                        {
+                            m_stack.push_back(UIElement);
+                            CacheAttributes();
+                            m_stack.back().m_entryClosed = true;
+                            m_visitor->VisitObjectBegin(*this, *this);
+                            m_visitor->VisitObjectEnd(*this, *this);
+                            m_stack.pop_back();
+                        }
+                    }
+                }
                 m_stack.push_back(
                     { instance, parentData.m_instance, classData ? classData->m_typeId : Uuid::CreateNull(), classData, classElement });
                 StackEntry* nodeData = &m_stack.back();
                 nodeData->m_path = AZStd::move(path);
+
+                // If our parent node is disabled then we should inherit its disabled state
+                if (parentData.m_disableEditor || parentData.m_isAncestorDisabled)
+                {
+                    nodeData->m_isAncestorDisabled = true;
+                }
+                else if (classElement && classElement->m_editData)
+                {
+                    if (auto readOnlyAttribute = classElement->m_editData->FindAttribute(AZ::Crc32("ReadOnly")); readOnlyAttribute)
+                    {
+                        Dom::Value readOnlyValue;
+                        if (readOnlyAttribute->CanDomInvoke(Dom::Value(Dom::Type::Array)))
+                        {
+                            readOnlyValue = readOnlyAttribute->DomInvoke(instance, Dom::Value(Dom::Type::Array));
+                        }
+                        else
+                        {
+                            readOnlyValue = readOnlyAttribute->GetAsDomValue(instance);
+                        }
+
+                        if (readOnlyValue.IsBool())
+                        {
+                            nodeData->m_disableEditor |= readOnlyValue.GetBool();
+                        }
+                        else
+                        {
+                            AZ_Warning("LegacyReflectionBridge", false, "ReadOnly attribute yielded non-bool Value");
+                        }
+                    }
+                }
 
                 if (parentAssociativeInterface)
                 {
@@ -355,6 +441,7 @@ namespace AZ::Reflection
                         }
                     }
                 }
+
                 CacheAttributes();
 
                 // Inherit the change notify attribute from our parent
@@ -415,7 +502,7 @@ namespace AZ::Reflection
                     m_visitor->VisitObjectEnd(*this, *this);
                 }
                 m_stack.pop_back();
-                if (!m_stack.empty())
+                if (!m_stack.empty() && nodeData.m_computedVisibility == DocumentPropertyEditor::Nodes::PropertyVisibility::Show)
                 {
                     ++m_stack.back().m_childElementIndex;
                 }
@@ -525,7 +612,7 @@ namespace AZ::Reflection
                     }
                     else
                     {
-                        AZ_Warning("DPE", false, "Unable to lookup name for attribute CRC: %" PRId32, it->first);
+                        AZ_Warning("LegacyReflectionBridge", false, "Unable to lookup name for attribute CRC: %" PRId32, it->first);
                     }
                 };
 
@@ -684,6 +771,12 @@ namespace AZ::Reflection
                         { group, AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Disabled.GetName(), Dom::Value(true) });
                 }
 
+                if (nodeData.m_isAncestorDisabled)
+                {
+                    nodeData.m_cachedAttributes.push_back(
+                        { group, AZ::DocumentPropertyEditor::Nodes::PropertyEditor::AncestorDisabled.GetName(), Dom::Value(true) });
+                }
+
                 if (nodeData.m_classData->m_container)
                 {
                     nodeData.m_cachedAttributes.push_back(
@@ -700,6 +793,10 @@ namespace AZ::Reflection
                         visibility = PropertyVisibility::Hide;
                         break;
                     }
+                }
+                if (nodeData.m_classElement && !nodeData.m_classElement->m_editData)
+                {
+                    visibility = PropertyVisibility::ShowChildrenOnly;
                 }
                 nodeData.m_computedVisibility = visibility;
                 nodeData.m_cachedAttributes.push_back(

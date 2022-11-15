@@ -33,6 +33,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/std/string/regex.h>
 #include <Document/MaterialCanvasDocument.h>
 #include <Document/MaterialCanvasDocumentNotificationBus.h>
 #include <GraphCanvas/Components/SceneBus.h>
@@ -41,6 +42,7 @@
 
 namespace MaterialCanvas
 {
+#if defined(AZ_ENABLE_TRACING)
     namespace
     {
         bool IsCompileLoggingEnabled()
@@ -48,7 +50,7 @@ namespace MaterialCanvas
             return AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvasDocument/CompileLoggingEnabled", false);
         }
     } // namespace
-
+#endif // AZ_ENABLE_TRACING
     void MaterialCanvasDocument::Reflect(AZ::ReflectContext* context)
     {
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -110,16 +112,11 @@ namespace MaterialCanvas
     MaterialCanvasDocument::~MaterialCanvasDocument()
     {
         MaterialCanvasDocumentRequestBus::Handler::BusDisconnect();
-
         GraphCanvas::SceneNotificationBus::Handler::BusDisconnect();
-
-        // Stop listening for GraphController notifications for this graph.
         GraphModelIntegration::GraphControllerNotificationBus::Handler::BusDisconnect();
 
-        GraphModelIntegration::GraphManagerRequestBus::Broadcast(
-            &GraphModelIntegration::GraphManagerRequests::DeleteGraphController, m_graphId);
+        DestroyGraph();
 
-        m_graph.reset();
         m_graphId = GraphCanvas::GraphId();
         delete m_sceneEntity;
         m_sceneEntity = {};
@@ -129,7 +126,7 @@ namespace MaterialCanvas
     {
         // Setting up placeholder document type info and extensions.
         AtomToolsFramework::DocumentTypeInfo documentType;
-        documentType.m_documentTypeName = "Material Canvas";
+        documentType.m_documentTypeName = "Material Graph";
         documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo) {
             // A list of all registered data types is needed to create a graph context
             GraphModel::DataTypeList registeredDataTypes;
@@ -137,7 +134,7 @@ namespace MaterialCanvas
                 registeredDataTypes, toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::GetRegisteredDataTypes);
 
             // Creating a graph context per document by default. It can be overridden in the application to provide a shared context.
-            auto graphContext = AZStd::make_shared<GraphModel::GraphContext>("Material Canvas", ".materialcanvas.azasset", registeredDataTypes);
+            auto graphContext = AZStd::make_shared<GraphModel::GraphContext>("Material Graph", ".materialgraph", registeredDataTypes);
             graphContext->CreateModuleGraphManager();
             return aznew MaterialCanvasDocument(toolId, documentTypeInfo, graphContext);
         };
@@ -147,21 +144,18 @@ namespace MaterialCanvas
         // filters is used to determine how the create document dialog is populated. The base document class rejects file types that are not
         // listed in the extension supported for opening. Will change to make the base class support opening anything listed in open
         // or create and the create dialog look at the create list exclusively.
-        documentType.m_supportedExtensionsToCreate.push_back({ "Material Canvas Template", "materialcanvastemplate.azasset" });
-        documentType.m_supportedExtensionsToCreate.push_back({ "Material Canvas", "materialcanvas.azasset" });
-        documentType.m_supportedExtensionsToOpen.push_back({ "Material Canvas Template", "materialcanvastemplate.azasset" });
-        documentType.m_supportedExtensionsToOpen.push_back({ "Material Canvas", "materialcanvas.azasset" });
-        documentType.m_supportedExtensionsToSave.push_back({ "Material Canvas", "materialcanvas.azasset" });
-
-        // Currently using AnyAsset As a placeholder until proper asset types are created.
-        documentType.m_supportedAssetTypesToCreate.insert(azrtti_typeid<AZ::RPI::AnyAsset>());
+        documentType.m_supportedExtensionsToCreate.push_back({ "Material Graph Template", "materialgraphtemplate" });
+        documentType.m_supportedExtensionsToCreate.push_back({ "Material Graph", "materialgraph" });
+        documentType.m_supportedExtensionsToOpen.push_back({ "Material Graph", "materialgraph" });
+        documentType.m_supportedExtensionsToSave.push_back({ "Material Graph", "materialgraph" });
 
         // Using a blank template file to create a new document until UX and workflow can be revisited for creating new or empty documents.
         // However, there may be no need as this is an established pattern in other applications that provide multiple options and templates
         // to use as a starting point for a new document.
-        documentType.m_defaultAssetIdToCreate = AtomToolsFramework::GetSettingsObject<AZ::Data::AssetId>(
-            "/O3DE/Atom/MaterialCanvas/DefaultMaterialCanvasTemplateAsset",
-            AZ::RPI::AssetUtils::GetAssetIdForProductPath("materialCanvas/blank.materialcanvastemplate.azasset"));
+        documentType.m_defaultDocumentTemplate =
+            AtomToolsFramework::GetPathWithoutAlias(AtomToolsFramework::GetSettingsValue<AZStd::string>(
+                "/O3DE/Atom/MaterialCanvas/DefaultMaterialGraphTemplate",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/blank.materialgraphtemplate"));
         return documentType;
     }
 
@@ -186,7 +180,7 @@ namespace MaterialCanvas
                     // There are currently no indicators for material canvas nodes.
                     return nullptr;
                 };
-                objects.push_back(AZStd::move(objectInfo));
+                objects.emplace_back(AZStd::move(objectInfo));
             }
         }
 
@@ -330,7 +324,7 @@ namespace MaterialCanvas
         // Sanitize the document name to remove any illegal characters that could not be used as symbols in generated code
         AZStd::string documentName;
         AZ::StringFunc::Path::GetFullFileName(m_absolutePath.c_str(), documentName);
-        AZ::StringFunc::Replace(documentName, ".materialcanvas.azasset", "");
+        AZ::StringFunc::Replace(documentName, ".materialgraph", "");
         return AtomToolsFramework::GetSymbolNameFromText(documentName);
     }
 
@@ -414,7 +408,8 @@ namespace MaterialCanvas
         GraphModel::GraphPtr graph = AZStd::make_shared<GraphModel::Graph>(m_graphContext);
         AZ::Utils::LoadObjectFromStreamInPlace(undoGraphStateStream, *graph.get());
 
-        m_modified = true;        CreateGraph(graph);
+        m_modified = true;
+        CreateGraph(graph);
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
         QueueCompileGraph();
@@ -453,14 +448,15 @@ namespace MaterialCanvas
 
     void MaterialCanvasDocument::BuildEditablePropertyGroups()
     {
-        m_groups.clear();
-
         // Sort nodes according to their connection so they appear in a consistent order in the inspector
         GraphModel::NodePtrList selectedNodes;
         GraphModelIntegration::GraphControllerRequestBus::EventResult(
             selectedNodes, m_graphId, &GraphModelIntegration::GraphControllerRequests::GetSelectedNodes);
 
         SortNodesInExecutionOrder(selectedNodes);
+
+        m_groups.clear();
+        m_groups.reserve(selectedNodes.size());
 
         for (const auto& currentNode : selectedNodes)
         {
@@ -470,6 +466,8 @@ namespace MaterialCanvas
                 continue;
             }
 
+            const auto& nodeConfig = dynamicNode->GetConfig();
+
             // Create a new property group and set up the header to match the node
             AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup> group;
             group.reset(aznew AtomToolsFramework::DynamicPropertyGroup);
@@ -478,8 +476,12 @@ namespace MaterialCanvas
                 AZStd::string::format("Node%u %s", currentNode->GetId(), currentNode->GetTitle()));
             group->m_description = currentNode->GetSubTitle();
 
-            // Visit all of the slots in the order that they will be displayed on the node
-            const auto& nodeConfig = dynamicNode->GetConfig();
+            group->m_properties.reserve(
+                dynamicNode->GetConfig().m_propertySlots.size() +
+                dynamicNode->GetConfig().m_inputSlots.size() +
+                dynamicNode->GetConfig().m_outputSlots.size());
+
+            // Visit all of the slots in the order to find in the configuration to add properties to the container for the inspector.
             AtomToolsFramework::VisitDynamicNodeSlotConfigs(
                 nodeConfig,
                 [&](const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig)
@@ -504,14 +506,14 @@ namespace MaterialCanvas
 
                             // Set up the change call back to apply the value of the property from the inspector to the slot. This could
                             // also send a document modified notifications and queue regeneration of shader and material assets but the
-                            // compilation process and going through the AP is not responsive enough what is the matter.
+                            // compilation process and going through the ap is not responsive enough for this to matter.
                             propertyConfig.m_dataChangeCallback = [currentSlot](const AZStd::any& value)
                             {
                                 currentSlot->SetValue(value);
                                 return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
                             };
 
-                            group->m_properties.push_back(AtomToolsFramework::DynamicProperty(propertyConfig));
+                            group->m_properties.emplace_back(AZStd::move(propertyConfig));
                         }
                     }
                 });
@@ -537,42 +539,250 @@ namespace MaterialCanvas
         return templateOutputPath;
     }
 
-    void MaterialCanvasDocument::ReplaceStringsInContainer(
+    void MaterialCanvasDocument::ReplaceSymbolsInContainer(
         const AZStd::string& findText, const AZStd::string& replaceText, AZStd::vector<AZStd::string>& container) const
     {
+        const AZStd::regex findRegex(findText);
         for (auto& sourceText : container)
         {
-            AZ::StringFunc::Replace(sourceText, findText.c_str(), replaceText.c_str());
+            sourceText = AZStd::regex_replace(sourceText, findRegex, replaceText);
         }
     }
 
-    AZStd::string MaterialCanvasDocument::ConvertSlotTypeToAZSL(const AZStd::string& slotTypeName) const
+    void MaterialCanvasDocument::ReplaceSymbolsInContainer(
+        const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& substitutionSymbols, AZStd::vector<AZStd::string>& container) const
     {
-        if (AZ::StringFunc::Equal(slotTypeName, "color"))
+        for (const auto& substitutionSymbolPair : substitutionSymbols)
+        {
+            ReplaceSymbolsInContainer(substitutionSymbolPair.first, substitutionSymbolPair.second, container);
+        }
+    }
+
+    unsigned int MaterialCanvasDocument::GetVectorSize(const AZStd::any& slotValue) const
+    {
+        if (slotValue.is<AZ::Color>())
+        {
+            return 4;
+        }
+        if (slotValue.is<AZ::Vector4>())
+        {
+            return 4;
+        }
+        if (slotValue.is<AZ::Vector3>())
+        {
+            return 3;
+        }
+        if (slotValue.is<AZ::Vector2>())
+        {
+            return 2;
+        }
+        if (slotValue.is<bool>() || slotValue.is<int>() || slotValue.is<unsigned int>() || slotValue.is<float>())
+        {
+            return 1;
+        }
+        return 0;
+    }
+
+    AZStd::any MaterialCanvasDocument::ConvertToScalar(const AZStd::any& slotValue) const
+    {
+        if (auto v = AZStd::any_cast<const AZ::Color>(&slotValue))
+        {
+            return AZStd::any(v->GetR());
+        }
+        if (auto v = AZStd::any_cast<const AZ::Vector4>(&slotValue))
+        {
+            return AZStd::any(v->GetX());
+        }
+        if (auto v = AZStd::any_cast<const AZ::Vector3>(&slotValue))
+        {
+            return AZStd::any(v->GetX());
+        }
+        if (auto v = AZStd::any_cast<const AZ::Vector2>(&slotValue))
+        {
+            return AZStd::any(v->GetX());
+        }
+        return slotValue;
+    }
+
+    template<typename T>
+    AZStd::any MaterialCanvasDocument::ConvertToVector(const AZStd::any& slotValue) const
+    {
+        if (auto v = AZStd::any_cast<const AZ::Color>(&slotValue))
+        {
+            return AZStd::any(T(v->GetAsVector4()));
+        }
+        if (auto v = AZStd::any_cast<const AZ::Vector4>(&slotValue))
+        {
+            return AZStd::any(T(*v));
+        }
+        if (auto v = AZStd::any_cast<const AZ::Vector3>(&slotValue))
+        {
+            return AZStd::any(T(*v));
+        }
+        if (auto v = AZStd::any_cast<const AZ::Vector2>(&slotValue))
+        {
+            return AZStd::any(T(*v));
+        }
+        return slotValue;
+    }
+
+    AZStd::any MaterialCanvasDocument::ConvertToVector(const AZStd::any& slotValue, unsigned int score) const
+    {
+        switch (score)
+        {
+        case 4:
+            return ConvertToVector<AZ::Vector4>(slotValue);
+        case 3:
+            return ConvertToVector<AZ::Vector3>(slotValue);
+        case 2:
+            return ConvertToVector<AZ::Vector2>(slotValue);
+        case 1:
+            return ConvertToScalar(slotValue);
+        default:
+            return slotValue;
+        }
+    }
+
+    AZStd::any MaterialCanvasDocument::GetValueFromSlot(GraphModel::ConstSlotPtr slot) const
+    {
+        const auto& slotItr = m_slotValueTable.find(slot);
+        return slotItr != m_slotValueTable.end() ? slotItr->second : slot->GetValue();
+    }
+
+    AZStd::any MaterialCanvasDocument::GetValueFromSlotOrConnection(GraphModel::ConstSlotPtr slot) const
+    {
+         for (const auto& connection : slot->GetConnections())
+        {
+             auto sourceSlot = connection->GetSourceSlot();
+             auto targetSlot = connection->GetTargetSlot();
+             if (targetSlot == slot)
+             {
+                return GetValueFromSlotOrConnection(sourceSlot);
+            }
+        }
+
+        return GetValueFromSlot(slot);
+    }
+
+    AZStd::string MaterialCanvasDocument::GetAzslTypeFromSlot(GraphModel::ConstSlotPtr slot) const
+    {
+        const auto& slotValue = GetValueFromSlot(slot);
+        const auto& slotDataType = m_graphContext->GetDataTypeForValue(slotValue);
+        const auto& slotDataTypeName = slotDataType ? slotDataType->GetDisplayName() : AZStd::string{};
+
+        if (AZ::StringFunc::Equal(slotDataTypeName, "color"))
         {
             return "float4";
         }
 
-        return slotTypeName;
+        return slotDataTypeName;
     }
 
-    AZStd::string MaterialCanvasDocument::ConvertSlotValueToAZSL(const AZStd::any& slotValue) const
+    AZStd::string MaterialCanvasDocument::GetAzslValueFromSlot(GraphModel::ConstSlotPtr slot) const
     {
+        const auto& slotValue = GetValueFromSlot(slot);
+
+        // This code and some of these rules will be refactored and generalized after splitting this class into a document and builder or
+        // compiler class. Once that is done, it will be easier to register types, conversions, substitutions with the system.
+        for (const auto& connection : slot->GetConnections())
+        {
+            auto sourceSlot = connection->GetSourceSlot();
+            auto targetSlot = connection->GetTargetSlot();
+            if (targetSlot == slot)
+            {
+                // If there is an incoming connection to this slot, the name of the source slot from the incoming connection will be used as
+                // part of the value for the slot. It must be cast to the correct vector type for generated code. These conversions will be
+                // extended once the code generator is separated from the document class.
+                const auto& sourceSlotValue = GetValueFromSlot(sourceSlot);
+                const auto& sourceSlotSymbolName = GetSymbolNameFromSlot(sourceSlot);
+                if (slotValue.is<AZ::Vector2>())
+                {
+                    if (sourceSlotValue.is<AZ::Vector3>() ||
+                        sourceSlotValue.is<AZ::Vector4>())
+                    {
+                        return AZStd::string::format("(float2)%s", sourceSlotSymbolName.c_str());
+                    }
+                }
+                if (slotValue.is<AZ::Vector3>())
+                {
+                    if (sourceSlotValue.is<AZ::Vector2>())
+                    {
+                        return AZStd::string::format("float3(%s, 0)", sourceSlotSymbolName.c_str());
+                    }
+                    if (sourceSlotValue.is<AZ::Vector4>())
+                    {
+                        return AZStd::string::format("(float3)%s", sourceSlotSymbolName.c_str());
+                    }
+                }
+                if (slotValue.is<AZ::Vector4>())
+                {
+                    if (sourceSlotValue.is<AZ::Vector2>())
+                    {
+                        return AZStd::string::format("float4(%s, 0, 1)", sourceSlotSymbolName.c_str());
+                    }
+                    if (sourceSlotValue.is<AZ::Vector3>())
+                    {
+                        return AZStd::string::format("float4(%s, 1)", sourceSlotSymbolName.c_str());
+                    }
+                }
+                return sourceSlotSymbolName;
+            }
+        }
+
+        // If the slot's embedded value is being used then generate shader code to represent it. More generic options will be explored to
+        // clean this code up, possibly storing numeric values in a two-dimensional floating point array with the layout corresponding to
+        // most vector and matrix types.
         if (auto v = AZStd::any_cast<const AZ::Color>(&slotValue))
         {
-            return AZStd::string::format("float4(%g, %g, %g, %g)", v->GetR(), v->GetG(), v->GetB(), v->GetA());
+            return AZStd::string::format("{%g, %g, %g, %g}", v->GetR(), v->GetG(), v->GetB(), v->GetA());
         }
         if (auto v = AZStd::any_cast<const AZ::Vector4>(&slotValue))
         {
-            return AZStd::string::format("float4(%g, %g, %g, %g)", v->GetX(), v->GetY(), v->GetZ(), v->GetW());
+            return AZStd::string::format("{%g, %g, %g, %g}", v->GetX(), v->GetY(), v->GetZ(), v->GetW());
         }
         if (auto v = AZStd::any_cast<const AZ::Vector3>(&slotValue))
         {
-            return AZStd::string::format("float3(%g, %g, %g)", v->GetX(), v->GetY(), v->GetZ());
+            return AZStd::string::format("{%g, %g, %g}", v->GetX(), v->GetY(), v->GetZ());
         }
         if (auto v = AZStd::any_cast<const AZ::Vector2>(&slotValue))
         {
-            return AZStd::string::format("float2(%g, %g)", v->GetX(), v->GetY());
+            return AZStd::string::format("{%g, %g}", v->GetX(), v->GetY());
+        }
+        if (auto v = AZStd::any_cast<const AZStd::array<AZ::Vector2, 2>>(&slotValue))
+        {
+            const auto& value = *v;
+            return AZStd::string::format(
+                "{%g, %g, %g, %g}",
+                value[0].GetX(), value[0].GetY(),
+                value[1].GetX(), value[1].GetY());
+        }
+        if (auto v = AZStd::any_cast<const AZStd::array<AZ::Vector3, 3>>(&slotValue))
+        {
+            const auto& value = *v;
+            return AZStd::string::format(
+                "{%g, %g, %g, %g, %g, %g, %g, %g, %g}",
+                value[0].GetX(), value[0].GetY(), value[0].GetZ(),
+                value[1].GetX(), value[1].GetY(), value[1].GetZ(),
+                value[2].GetX(), value[2].GetY(), value[2].GetZ());
+        }
+        if (auto v = AZStd::any_cast<const AZStd::array<AZ::Vector4, 3>>(&slotValue))
+        {
+            const auto& value = *v;
+            return AZStd::string::format(
+                "{%g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g}",
+                value[0].GetX(), value[0].GetY(), value[0].GetZ(), value[0].GetW(),
+                value[1].GetX(), value[1].GetY(), value[1].GetZ(), value[1].GetW(),
+                value[2].GetX(), value[2].GetY(), value[2].GetZ(), value[2].GetW());
+        }
+        if (auto v = AZStd::any_cast<const AZStd::array<AZ::Vector4, 4>>(&slotValue))
+        {
+            const auto& value = *v;
+            return AZStd::string::format(
+                "{%g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g}",
+                value[0].GetX(), value[0].GetY(), value[0].GetZ(), value[0].GetW(),
+                value[1].GetX(), value[1].GetY(), value[1].GetZ(), value[1].GetW(),
+                value[2].GetX(), value[2].GetY(), value[2].GetZ(), value[2].GetW(),
+                value[3].GetX(), value[3].GetY(), value[3].GetZ(), value[3].GetW());
         }
         if (auto v = AZStd::any_cast<const float>(&slotValue))
         {
@@ -586,19 +796,24 @@ namespace MaterialCanvas
         {
             return AZStd::string::format("%u", *v);
         }
+        if (auto v = AZStd::any_cast<const bool>(&slotValue))
+        {
+            return AZStd::string::format("%u", *v ? 1 : 0);
+        }
         return AZStd::string();
     }
 
-    AZStd::string MaterialCanvasDocument::ConvertSlotValueToSrgMember(
+    AZStd::string MaterialCanvasDocument::GetAzslSrgMemberFromSlot(
         GraphModel::ConstNodePtr node, const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig) const
     {
         if (const auto& slot = node->GetSlot(slotConfig.m_name))
         {
-            const auto& slotValue = slot->GetValue();
+            const auto& slotValue = GetValueFromSlot(slot);
             if (auto v = AZStd::any_cast<const AZ::RHI::SamplerState>(&slotValue))
             {
+                // The fields commented out below either cause errors or are not recognized by the shader compiler.
                 AZStd::string srgMember;
-                srgMember += AZStd::string::format("Sampler NODEID_SLOTNAME\n");
+                srgMember += AZStd::string::format("Sampler SLOTNAME\n");
                 srgMember += AZStd::string::format("{\n");
                 srgMember += AZStd::string::format("MaxAnisotropy = %u;\n", v->m_anisotropyMax);
                 //srgMember += AZStd::string::format("AnisotropyEnable = %u;\n", v->m_anisotropyEnable);
@@ -620,16 +835,44 @@ namespace MaterialCanvas
 
             if (auto v = AZStd::any_cast<const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(&slotValue))
             {
-                return AZStd::string::format("Texture2D NODEID_SLOTNAME;\n");
+                return AZStd::string::format("Texture2D SLOTNAME;\n");
             }
 
-            return AZStd::string::format("SLOTTYPE NODEID_SLOTNAME;\n");
+            return AZStd::string::format("SLOTTYPE SLOTNAME;\n");
         }
         return AZStd::string();
     }
 
+    AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>> MaterialCanvasDocument::GetSubstitutionSymbolsFromNode(
+        GraphModel::ConstNodePtr node) const
+    {
+        AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>> substitutionSymbols;
+
+        // Reserving space for the number of elements added in this function. 
+        substitutionSymbols.reserve(node->GetSlots().size() * 4 + 1);
+        substitutionSymbols.emplace_back("NODEID", GetSymbolNameFromNode(node));
+
+        for (const auto& slotPair : node->GetSlots())
+        {
+            const auto& slot = slotPair.second;
+
+            // These substitutions will allow accessing the slot ID, type, value from anywhere in the node's shader code.
+            substitutionSymbols.emplace_back(AZStd::string::format("SLOTTYPE\\(%s\\)", slot->GetName().c_str()), GetAzslTypeFromSlot(slot));
+            substitutionSymbols.emplace_back(AZStd::string::format("SLOTVALUE\\(%s\\)", slot->GetName().c_str()), GetAzslValueFromSlot(slot));
+            substitutionSymbols.emplace_back(AZStd::string::format("SLOTNAME\\(%s\\)", slot->GetName().c_str()), GetSymbolNameFromSlot(slot));
+
+            // This expression will allow direct substitution of node variable names in node configurations with the decorated symbol name.
+            // It will match whole words only. No additional decoration should be required on the node configuration side. However, support
+            // for the older slot type, name, value substitutions are still supported as a convenience.
+            substitutionSymbols.emplace_back(AZStd::string::format("\\b%s\\b", slot->GetName().c_str()), GetSymbolNameFromSlot(slot));
+        }
+        return substitutionSymbols;
+    }
+
     AZStd::vector<AZStd::string> MaterialCanvasDocument::GetInstructionsFromSlot(
-        GraphModel::ConstNodePtr node, const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig) const
+        GraphModel::ConstNodePtr node,
+        const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig,
+        const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& substitutionSymbols) const
     {
         AZStd::vector<AZStd::string> instructionsForSlot;
 
@@ -638,25 +881,10 @@ namespace MaterialCanvas
         {
             AtomToolsFramework::CollectDynamicNodeSettings(slotConfig.m_settings, "instructions", instructionsForSlot);
 
-            // Input slots will replace the value with the name of the variable from the connected slot if one is set.
-            for (const auto& connection : slot->GetConnections())
-            {
-                auto sourceSlot = connection->GetSourceSlot();
-                auto targetSlot = connection->GetTargetSlot();
-                if (sourceSlot && targetSlot && sourceSlot != targetSlot && sourceSlot != slot)
-                {
-                    ReplaceStringsInContainer(
-                        "SLOTVALUE",
-                        AZStd::string::format(
-                            "%s_%s", GetSymbolNameFromNode(sourceSlot->GetParentNode()).c_str(), sourceSlot->GetName().c_str()),
-                        instructionsForSlot);
-                    break;
-                }
-            }
-
-            ReplaceStringsInContainer("SLOTNAME", slot->GetName().c_str(), instructionsForSlot);
-            ReplaceStringsInContainer("SLOTTYPE", ConvertSlotTypeToAZSL(slot->GetDataType()->GetDisplayName()), instructionsForSlot);
-            ReplaceStringsInContainer("SLOTVALUE", ConvertSlotValueToAZSL(slot->GetValue()), instructionsForSlot);
+            ReplaceSymbolsInContainer(substitutionSymbols, instructionsForSlot);
+            ReplaceSymbolsInContainer("SLOTNAME", GetSymbolNameFromSlot(slot), instructionsForSlot);
+            ReplaceSymbolsInContainer("SLOTTYPE", GetAzslTypeFromSlot(slot), instructionsForSlot);
+            ReplaceSymbolsInContainer("SLOTVALUE", GetAzslValueFromSlot(slot), instructionsForSlot);
         }
 
         return instructionsForSlot;
@@ -694,40 +922,46 @@ namespace MaterialCanvas
     template<typename NodeContainer>
     void MaterialCanvasDocument::SortNodesInExecutionOrder(NodeContainer& nodes) const
     {
-        using NodeTypeRef = typename NodeContainer::const_reference;
-        AZStd::stable_sort(nodes.begin(), nodes.end(), [](NodeTypeRef nodeA, NodeTypeRef nodeB) {
-            const auto dynamicNodeA = azrtti_cast<const AtomToolsFramework::DynamicNode*>(nodeA.get());
-            const auto dynamicNodeB = azrtti_cast<const AtomToolsFramework::DynamicNode*>(nodeB.get());
-            const auto scoreA = AZStd::make_tuple(
-                !dynamicNodeA->GetConfig().m_inputSlots.empty(),
-                dynamicNodeA->GetConfig().m_outputSlots.empty(),
-                nodeA->GetMaxInputDepth());
-            const auto scoreB = AZStd::make_tuple(
-                !dynamicNodeB->GetConfig().m_inputSlots.empty(),
-                dynamicNodeB->GetConfig().m_outputSlots.empty(),
-                nodeB->GetMaxInputDepth());
-            return scoreA < scoreB;
+        using NodeValueType = typename NodeContainer::value_type;
+        using NodeValueTypeRef = typename NodeContainer::const_reference;
+
+        // Pre-calculate and cache sorting scores for all nodes to avoid reprocessing during the sort
+        AZStd::map<NodeValueType, AZStd::tuple<bool, bool, uint32_t>> nodeScoreTable;
+        for (NodeValueTypeRef node : nodes)
+        {
+            nodeScoreTable[node] = AZStd::make_tuple(node->HasInputSlots(), !node->HasOutputSlots(), node->GetMaxInputDepth());
+        }
+
+        AZStd::stable_sort(nodes.begin(), nodes.end(), [&](NodeValueTypeRef nodeA, NodeValueTypeRef nodeB) {
+            return nodeScoreTable[nodeA] < nodeScoreTable[nodeB];
         });
+    }
+
+    AZStd::vector<GraphModel::ConstNodePtr> MaterialCanvasDocument::GetAllNodesInExecutionOrder() const
+    {
+        AZStd::vector<GraphModel::ConstNodePtr> nodes;
+
+        if (m_graph)
+        {
+            nodes.reserve(m_graph->GetNodes().size());
+            for (const auto& nodePair : m_graph->GetNodes())
+            {
+                nodes.push_back(nodePair.second);
+            }
+
+            SortNodesInExecutionOrder(nodes);
+        }
+
+        return nodes;
     }
 
     AZStd::vector<GraphModel::ConstNodePtr> MaterialCanvasDocument::GetInstructionNodesInExecutionOrder(
         GraphModel::ConstNodePtr outputNode, const AZStd::vector<AZStd::string>& inputSlotNames) const
     {
-        AZ_Assert(m_graph, "Attempting to generate data from invalid graph object.");
-
-        AZStd::vector<GraphModel::ConstNodePtr> nodes;
-        nodes.reserve(m_graph->GetNodes().size());
-
-        for (const auto& nodePair : m_graph->GetNodes())
-        {
-            const auto& inputNode = nodePair.second;
-            if (ShouldUseInstructionsFromInputNode(outputNode, inputNode, inputSlotNames))
-            {
-                nodes.push_back(inputNode);
-            }
-        }
-
-        SortNodesInExecutionOrder(nodes);
+        AZStd::vector<GraphModel::ConstNodePtr> nodes = GetAllNodesInExecutionOrder();
+        AZStd::erase_if(nodes, [this, &outputNode, &inputSlotNames](const auto& node) {
+            return !ShouldUseInstructionsFromInputNode(outputNode, node, inputSlotNames);
+        });
         return nodes;
     }
 
@@ -750,56 +984,96 @@ namespace MaterialCanvas
             if (dynamicNode)
             {
                 const auto& nodeConfig = dynamicNode->GetConfig();
+                const auto& substitutionSymbols = GetSubstitutionSymbolsFromNode(inputNode);
 
-                // Gather and insert instructions provided by the node.
+                // Instructions are gathered separately for all of the slot categories because they need to be added in a specific order.
+
+                // Gather and perform substitutions on instructions embedded directly in the node.
                 AZStd::vector<AZStd::string> instructionsForNode;
+                AtomToolsFramework::CollectDynamicNodeSettings(nodeConfig.m_settings, "instructions", instructionsForNode);
+                ReplaceSymbolsInContainer(substitutionSymbols, instructionsForNode);
 
-                // Property and input slot instructions need to be gathered first so that they are available for node and output slots.
+                // Gather and perform substitutions on instructions contained in property slots.
+                AZStd::vector<AZStd::string> instructionsForPropertySlots;
                 for (const auto& slotConfig : nodeConfig.m_propertySlots)
                 {
-                    const auto& instructionsForSlot = GetInstructionsFromSlot(inputNode, slotConfig);
-                    instructionsForNode.insert(instructionsForNode.end(), instructionsForSlot.begin(), instructionsForSlot.end());
+                    const auto& instructionsForSlot = GetInstructionsFromSlot(inputNode, slotConfig, substitutionSymbols);
+                    instructionsForPropertySlots.insert(instructionsForPropertySlots.end(), instructionsForSlot.begin(), instructionsForSlot.end());
                 }
 
+                // Gather and perform substitutions on instructions contained in input slots.
+                AZStd::vector<AZStd::string> instructionsForInputSlots;
                 for (const auto& slotConfig : nodeConfig.m_inputSlots)
                 {
-                    // Instructions are still gathered for the output node but we skip over instructions for any input slots that are not requested.
+                    // If this is the output node, only gather instructions for requested input slots.
                     if (inputNode == outputNode &&
                         AZStd::find(inputSlotNames.begin(), inputSlotNames.end(), slotConfig.m_name) == inputSlotNames.end())
                     {
                         continue;
                     }
 
-                    const auto& instructionsForSlot = GetInstructionsFromSlot(inputNode, slotConfig);
-                    instructionsForNode.insert(instructionsForNode.end(), instructionsForSlot.begin(), instructionsForSlot.end());
+                    const auto& instructionsForSlot = GetInstructionsFromSlot(inputNode, slotConfig, substitutionSymbols);
+                    instructionsForInputSlots.insert(instructionsForInputSlots.end(), instructionsForSlot.begin(), instructionsForSlot.end());
                 }
 
-                // Instructions embedded directly in the node are interleaved between the input and output slots so that it can consume data
-                // from input and property slots and make results available to output slots.
-                AtomToolsFramework::CollectDynamicNodeSettings(nodeConfig.m_settings, "instructions", instructionsForNode);
-
-                // Output instructions are processed last because they cannot be used by input node instructions.
+                // Gather and perform substitutions on instructions contained in output slots.
+                AZStd::vector<AZStd::string> instructionsForOutputSlots;
                 for (const auto& slotConfig : nodeConfig.m_outputSlots)
                 {
-                    const auto& instructionsForSlot = GetInstructionsFromSlot(inputNode, slotConfig);
-                    instructionsForNode.insert(instructionsForNode.end(), instructionsForSlot.begin(), instructionsForSlot.end());
+                    const auto& instructionsForSlot = GetInstructionsFromSlot(inputNode, slotConfig, substitutionSymbols);
+                    instructionsForOutputSlots.insert(instructionsForOutputSlots.end(), instructionsForSlot.begin(), instructionsForSlot.end());
                 }
 
-                ReplaceStringsInContainer("NODEID", GetSymbolNameFromNode(inputNode), instructionsForNode);
+                instructions.insert(instructions.end(), instructionsForPropertySlots.begin(), instructionsForPropertySlots.end());
+                instructions.insert(instructions.end(), instructionsForInputSlots.begin(), instructionsForInputSlots.end());
                 instructions.insert(instructions.end(), instructionsForNode.begin(), instructionsForNode.end());
+                instructions.insert(instructions.end(), instructionsForOutputSlots.begin(), instructionsForOutputSlots.end());
             }
         }
 
         return instructions;
     }
 
-    AZStd::string MaterialCanvasDocument::GetSymbolNameFromNode(GraphModel::ConstNodePtr inputNode) const
+    AZStd::string MaterialCanvasDocument::GetSymbolNameFromNode(GraphModel::ConstNodePtr node) const
     {
-        return AtomToolsFramework::GetSymbolNameFromText(AZStd::string::format("node%u_%s", inputNode->GetId(), inputNode->GetTitle()));
+        return AtomToolsFramework::GetSymbolNameFromText(AZStd::string::format("node%u_%s", node->GetId(), node->GetTitle()));
+    }
+
+    AZStd::string MaterialCanvasDocument::GetSymbolNameFromSlot(GraphModel::ConstSlotPtr slot) const
+    {
+        bool allowNameSubstitution = true;
+        if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(slot->GetParentNode().get()))
+        {
+            const auto& nodeConfig = dynamicNode->GetConfig();
+            AtomToolsFramework::VisitDynamicNodeSlotConfigs(
+                nodeConfig,
+                [&](const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig)
+                {
+                    if (slot->GetName() == slotConfig.m_name)
+                    {
+                        allowNameSubstitution = slotConfig.m_allowNameSubstitution;
+                    }
+                });
+        }
+
+        if (!allowNameSubstitution)
+        {
+            return slot->GetName();
+        }
+
+        if (slot->SupportsExtendability())
+        {
+            return AZStd::string::format(
+                "%s_%s_%d", GetSymbolNameFromNode(slot->GetParentNode()).c_str(), slot->GetName().c_str(), slot->GetSlotSubId());
+        }
+
+        return AZStd::string::format("%s_%s", GetSymbolNameFromNode(slot->GetParentNode()).c_str(), slot->GetName().c_str());
     }
 
     AZStd::vector<AZStd::string> MaterialCanvasDocument::GetMaterialInputsFromSlot(
-        GraphModel::ConstNodePtr node, const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig) const
+        GraphModel::ConstNodePtr node,
+        const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig,
+        const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& substitutionSymbols) const
     {
         AZStd::vector<AZStd::string> materialInputsForSlot;
 
@@ -807,10 +1081,11 @@ namespace MaterialCanvas
         {
             AtomToolsFramework::CollectDynamicNodeSettings(slotConfig.m_settings, "materialInputs", materialInputsForSlot);
 
-            ReplaceStringsInContainer("SLOTSTANDARDSRGMEMBER", ConvertSlotValueToSrgMember(node, slotConfig), materialInputsForSlot);
-            ReplaceStringsInContainer("SLOTNAME", slot->GetName().c_str(), materialInputsForSlot);
-            ReplaceStringsInContainer("SLOTTYPE", ConvertSlotTypeToAZSL(slot->GetDataType()->GetDisplayName()), materialInputsForSlot);
-            ReplaceStringsInContainer("SLOTVALUE", ConvertSlotValueToAZSL(slot->GetValue()), materialInputsForSlot);
+            ReplaceSymbolsInContainer(substitutionSymbols, materialInputsForSlot);
+            ReplaceSymbolsInContainer("SLOTSTANDARDSRGMEMBER", GetAzslSrgMemberFromSlot(node, slotConfig), materialInputsForSlot);
+            ReplaceSymbolsInContainer("SLOTNAME", GetSymbolNameFromSlot(slot), materialInputsForSlot);
+            ReplaceSymbolsInContainer("SLOTTYPE", GetAzslTypeFromSlot(slot), materialInputsForSlot);
+            ReplaceSymbolsInContainer("SLOTVALUE", GetAzslValueFromSlot(slot), materialInputsForSlot);
         }
 
         return materialInputsForSlot;
@@ -829,19 +1104,20 @@ namespace MaterialCanvas
             if (dynamicNode)
             {
                 const auto& nodeConfig = dynamicNode->GetConfig();
+                const auto& substitutionSymbols = GetSubstitutionSymbolsFromNode(inputNode);
 
                 AZStd::vector<AZStd::string> materialInputsForNode;
                 AtomToolsFramework::CollectDynamicNodeSettings(nodeConfig.m_settings, "materialInputs", materialInputsForNode);
+                ReplaceSymbolsInContainer(substitutionSymbols, materialInputsForNode);
 
                 AtomToolsFramework::VisitDynamicNodeSlotConfigs(
                     nodeConfig,
                     [&](const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig)
                     {
-                        const auto& materialInputsForSlot = GetMaterialInputsFromSlot(inputNode, slotConfig);
+                        const auto& materialInputsForSlot = GetMaterialInputsFromSlot(inputNode, slotConfig, substitutionSymbols);
                         materialInputsForNode.insert(materialInputsForNode.end(), materialInputsForSlot.begin(), materialInputsForSlot.end());
                     });
 
-                ReplaceStringsInContainer("NODEID", GetSymbolNameFromNode(inputNode), materialInputsForNode);
                 materialInputs.insert(materialInputs.end(), materialInputsForNode.begin(), materialInputsForNode.end());
             }
         }
@@ -889,6 +1165,8 @@ namespace MaterialCanvas
                     {
                         if (slotConfig.m_settings.contains("materialInputs"))
                         {
+                            // Gathering all material input values that need to be added to the material type. Sampler states are never
+                            // added to the material type, just the material SRG.
                             const auto& materialInputValueSlot = inputNode->GetSlot(slotConfig.m_name);
                             if (materialInputValueSlot &&
                                 !materialInputValueSlot->GetValue().empty() &&
@@ -939,7 +1217,7 @@ namespace MaterialCanvas
             for (const auto& materialInputValueSlot : materialInputValueSlots)
             {
                 // The variable name is generated from the node ID and the slot name.
-                const auto& variableName = GetSymbolNameFromNode(inputNode) + "_" + materialInputValueSlot->GetName();
+                const auto& variableName = GetSymbolNameFromSlot(materialInputValueSlot);
 
                 // The display name is optional but an attempt will be made to read it from the display name slot.
                 const auto& displayName = AtomToolsFramework::GetDisplayNameFromText(materialInputNameSlot->GetValue<AZStd::string>());
@@ -955,7 +1233,7 @@ namespace MaterialCanvas
                 auto property = propertyGroup->AddProperty(propertyName);
                 property->m_displayName = displayName;
                 property->m_description = materialInputDescriptionSlot->GetValue<AZStd::string>();
-                property->m_value = AZ::RPI::MaterialPropertyValue::FromAny(materialInputValueSlot->GetValue());
+                property->m_value = AZ::RPI::MaterialPropertyValue::FromAny(GetValueFromSlot(materialInputValueSlot));
 
                 // The property definition requires an explicit type enum that's converted from the actual data type.
                 property->m_dataType =
@@ -996,15 +1274,14 @@ namespace MaterialCanvas
 
     bool MaterialCanvasDocument::CompileGraph() const
     {
-        m_compileGraphQueued = false;
-        m_generatedFiles.clear();
+        CompileGraphStarted();
 
-        if (!m_graph)
+        // Skip compilation if there is no graph or this is a template.
+        if (!m_graph || m_absolutePath.ends_with("materialgraphtemplate"))
         {
+            CompileGraphFailed();
             return false;
         }
-
-        AZ_TracePrintf_IfTrue("MaterialCanvasDocument", IsCompileLoggingEnabled(), "Compiling graph data.\n");
 
         // All slots and nodes will be visited to collect all of the unique include paths.
         AZStd::set<AZStd::string> includePaths;
@@ -1013,31 +1290,35 @@ namespace MaterialCanvas
         // This could really be any globally defined function, class, struct, define.
         AZStd::vector<AZStd::string> classDefinitions;
         AZStd::vector<AZStd::string> functionDefinitions;
-        AZStd::vector<AZStd::string> inputDefinitions;
 
-        // Traverse all graph nodes and slots to collect global settings like include files and class definitions
+        // Visit all unique node configurations in the graph to collect their include paths, class definitions, and function definitions.
+        AZStd::unordered_set<AZ::Uuid> configIdsVisited;
         for (const auto& nodePair : m_graph->GetNodes())
         {
             const auto& currentNode = nodePair.second;
 
             if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(currentNode.get()))
             {
-                AtomToolsFramework::VisitDynamicNodeSettings(
-                    dynamicNode->GetConfig(),
-                    [&](const AtomToolsFramework::DynamicNodeSettingsMap& settings)
-                    {
-                        AtomToolsFramework::CollectDynamicNodeSettings(settings, "includePaths", includePaths);
-                        AtomToolsFramework::CollectDynamicNodeSettings(settings, "classDefinitions", classDefinitions);
-                        AtomToolsFramework::CollectDynamicNodeSettings(settings, "functionDefinitions", functionDefinitions);
-                    });
+                if (!configIdsVisited.contains(dynamicNode->GetConfig().m_id))
+                {
+                    configIdsVisited.insert(dynamicNode->GetConfig().m_id);
+                    AtomToolsFramework::VisitDynamicNodeSettings(
+                        dynamicNode->GetConfig(),
+                        [&](const AtomToolsFramework::DynamicNodeSettingsMap& settings)
+                        {
+                            AtomToolsFramework::CollectDynamicNodeSettings(settings, "includePaths", includePaths);
+                            AtomToolsFramework::CollectDynamicNodeSettings(settings, "classDefinitions", classDefinitions);
+                            AtomToolsFramework::CollectDynamicNodeSettings(settings, "functionDefinitions", functionDefinitions);
+                        });
+                }
             }
         }
 
-        // Traverse all graph nodes and slots searching for settings to generate files from templates
-        for (const auto& nodePair : m_graph->GetNodes())
-        {
-            const auto& currentNode = nodePair.second;
+        BuildSlotValueTable();
 
+        // Traverse all graph nodes and slots searching for settings to generate files from templates
+        for (const auto& currentNode : GetAllNodesInExecutionOrder())
+        {
             // Search this node for any template path settings that describe files that need to be generated from the graph.
             AZStd::set<AZStd::string> templatePaths;
             if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(currentNode.get()))
@@ -1067,12 +1348,12 @@ namespace MaterialCanvas
                 TemplateFileData templateFileData;
                 templateFileData.m_inputPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
                 templateFileData.m_outputPath = GetOutputPathFromTemplatePath(templateFileData.m_inputPath);
-                if (!AZ::StringFunc::EndsWith(templateFileData.m_outputPath, ".materialtype"))
+                if (!templateFileData.m_outputPath.ends_with(".materialtype"))
                 {
                     // Attempt to load the template file to do symbol substitution and inject code or data
                     if (!templateFileData.Load())
                     {
-                        m_generatedFiles.clear();
+                        CompileGraphFailed();
                         return false;
                     }
                     templateFileDataVec.emplace_back(AZStd::move(templateFileData));
@@ -1084,16 +1365,26 @@ namespace MaterialCanvas
             for (auto& templateFileData : templateFileDataVec)
             {
                 // Substitute all references to the placeholder graph name with one generated from the document name
-                ReplaceStringsInContainer("MaterialGraphName", GetGraphName(), templateFileData.m_lines);
+                ReplaceSymbolsInContainer("MaterialGraphName", GetGraphName(), templateFileData.m_lines);
 
                 // Inject include files found while traversing the graph into any include file blocks in the template.
                 templateFileData.ReplaceLinesInBlock(
                     "O3DE_GENERATED_INCLUDES_BEGIN",
                     "O3DE_GENERATED_INCLUDES_END",
-                    [&includePaths]([[maybe_unused]] const AZStd::string& blockHeader)
+                    [&includePaths, &templateFileData]([[maybe_unused]] const AZStd::string& blockHeader)
                     {
-                        // Include file paths will need to be specified as or converted to include statements.
-                        return AZStd::vector<AZStd::string>(includePaths.begin(), includePaths.end());
+                        // Include file paths will need to be converted to include statements.
+                        AZStd::vector<AZStd::string> includeStatements;
+                        includeStatements.reserve(includePaths.size());
+                        for (const auto& path : includePaths)
+                        {
+                            // TODO Replace relative path reference function
+                            // The relative path reference function will only work for include files in the same gem.
+                            includeStatements.push_back(AZStd::string::format(
+                                "#include <%s>;",
+                                AtomToolsFramework::GetPathToExteralReference(templateFileData.m_outputPath, path).c_str()));
+                        }
+                        return includeStatements;
                     });
 
                 // Inject class definitions found while traversing the graph.
@@ -1153,58 +1444,146 @@ namespace MaterialCanvas
                     });
             }
 
+            auto exportTemplatesMatchingRegex = [&](const AZStd::string& pattern)
+            {
+                const AZStd::regex patternRegex(pattern, AZStd::regex::flag_type::icase);
+                for (const auto& templateFileData : templateFileDataVec)
+                {
+                    if (AZStd::regex_match(templateFileData.m_outputPath, patternRegex))
+                    {
+                        if (!templateFileData.Save())
+                        {
+                            return false;
+                        }
+
+                        AzFramework::AssetSystemRequestBus::Broadcast(
+                            &AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, templateFileData.m_outputPath);
+                        m_generatedFiles.push_back(templateFileData.m_outputPath);
+                    }
+                }
+                return true;
+            };
+
             // Save all of the generated files except for materials and material types. Generated material type files must be saved after
             // generated shader files to prevent AP errors because of missing dependencies.
-            for (const auto& templateFileData : templateFileDataVec)
+            if (!exportTemplatesMatchingRegex(".*\\.azsli\\b") ||
+                !exportTemplatesMatchingRegex(".*\\.azsl\\b") ||
+                !exportTemplatesMatchingRegex(".*\\.shader\\b"))
             {
-                if (!AZ::StringFunc::EndsWith(templateFileData.m_outputPath, ".material"))
-                {
-                    if (!templateFileData.Save())
-                    {
-                        m_generatedFiles.clear();
-                        return false;
-                    }
-                    m_generatedFiles.push_back(templateFileData.m_outputPath);
-                }
+                CompileGraphFailed();
+                return false;
             }
 
-            // Process material type template files, injecting properties found in material input nodes.
+            // Process material type template files, injecting properties from material input nodes.
             for (const auto& templatePath : templatePaths)
             {
                 // Remove any aliases to resolve the absolute path to the template file
                 const AZStd::string templateInputPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
                 const AZStd::string templateOutputPath = GetOutputPathFromTemplatePath(templateInputPath);
-                if (!AZ::StringFunc::EndsWith(templateOutputPath, ".materialtype"))
+                if (!templateOutputPath.ends_with(".materialtype"))
                 {
                     continue;
                 }
 
                 if (!BuildMaterialTypeFromTemplate(currentNode, instructionNodesForAllBlocks, templateInputPath, templateOutputPath))
                 {
-                    m_generatedFiles.clear();
+                    CompileGraphFailed();
                     return false;
                 }
+
+                AzFramework::AssetSystemRequestBus::Broadcast(
+                    &AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, templateOutputPath);
                 m_generatedFiles.push_back(templateOutputPath);
             }
 
-            // After the material types have been processed and saved, we can save the materials that reference them.
-            for (const auto& templateFileData : templateFileDataVec)
+            // After the material types have been processed and saved, save the materials that reference them.
+            if (!exportTemplatesMatchingRegex(".*\\.material\\b"))
             {
-                if (AZ::StringFunc::EndsWith(templateFileData.m_outputPath, ".material"))
-                {
-                    if (!templateFileData.Save())
-                    {
-                        m_generatedFiles.clear();
-                        return false;
-                    }
-                    m_generatedFiles.push_back(templateFileData.m_outputPath);
-                }
+                CompileGraphFailed();
+                return false;
             }
         }
 
+        CompileGraphCompleted();
+        return true;
+    }
+
+    void MaterialCanvasDocument::CompileGraphStarted() const
+    {
+        m_compileGraphQueued = false;
+        m_slotValueTable.clear();
+        m_generatedFiles.clear();
+        AZ_TracePrintf_IfTrue("MaterialCanvasDocument", IsCompileLoggingEnabled(), "Compile graph started.\n");
+        MaterialCanvasDocumentNotificationBus::Event(m_toolId, &MaterialCanvasDocumentNotificationBus::Events::OnCompileGraphStarted, m_id);
+    }
+
+    void MaterialCanvasDocument::CompileGraphFailed() const
+    {
+        m_compileGraphQueued = false;
+        m_slotValueTable.clear();
+        m_generatedFiles.clear();
+        AZ_TracePrintf_IfTrue("MaterialCanvasDocument", IsCompileLoggingEnabled(), "Compile graph failed.\n");
+        MaterialCanvasDocumentNotificationBus::Event(m_toolId, &MaterialCanvasDocumentNotificationBus::Events::OnCompileGraphFailed, m_id);
+    }
+
+    void MaterialCanvasDocument::CompileGraphCompleted() const
+    {
+        m_compileGraphQueued = false;
+        m_slotValueTable.clear();
+        AZ_TracePrintf_IfTrue("MaterialCanvasDocument", IsCompileLoggingEnabled(), "Compile graph completed.\n");
         MaterialCanvasDocumentNotificationBus::Event(
             m_toolId, &MaterialCanvasDocumentNotificationBus::Events::OnCompileGraphCompleted, m_id);
-        return true;
+    }
+
+    void MaterialCanvasDocument::BuildSlotValueTable() const
+    {
+        // Build a table of all values for every slot in the graph.
+        m_slotValueTable.clear();
+        for (const auto& currentNode : GetAllNodesInExecutionOrder())
+        {
+            for (const auto& currentSlotPair : currentNode->GetSlots())
+            {
+                const auto& currentSlot = currentSlotPair.second;
+                m_slotValueTable[currentSlot] = currentSlot->GetValue();
+            }
+
+            // If this is a dynamic node with slot data type groups, we will search for the largest vector or other data type and convert
+            // all of the values in the group to the same type. 
+            if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(currentNode.get()))
+            {
+                const auto& nodeConfig = dynamicNode->GetConfig();
+                for (const auto& slotDataTypeGroup : nodeConfig.m_slotDataTypeGroups)
+                {
+                    unsigned int vectorSize = 0;
+
+                    // The slot data group string is separated by vertical bars and can be treated like a regular expression to compare
+                    // against slot names. The largest vector size is recorded for each slot group. 
+                    const AZStd::regex slotDataTypeGroupRegex(slotDataTypeGroup, AZStd::regex::flag_type::icase);
+                    for (const auto& currentSlotPair : currentNode->GetSlots())
+                    {
+                        const auto& currentSlot = currentSlotPair.second;
+                        if (currentSlot->GetSlotDirection() == GraphModel::SlotDirection::Input &&
+                            AZStd::regex_match(currentSlot->GetName(), slotDataTypeGroupRegex))
+                        {
+                            const auto& currentSlotValue = GetValueFromSlotOrConnection(currentSlot);
+                            vectorSize = AZStd::max(vectorSize, GetVectorSize(currentSlotValue));
+                        }
+                    }
+
+                    // Once all of the container sizes have been recorded for each slot data group, iterate over all of these slot values
+                    // and upgrade entries in the map to the bigger type.
+                    for (const auto& currentSlotPair : currentNode->GetSlots())
+                    {
+                        const auto& currentSlot = currentSlotPair.second;
+                        if (AZStd::regex_match(currentSlot->GetName(), slotDataTypeGroupRegex))
+                        {
+                            const auto& currentSlotValue = GetValueFromSlot(currentSlot);
+                            m_slotValueTable[currentSlot] = ConvertToVector(currentSlotValue, vectorSize);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     void MaterialCanvasDocument::QueueCompileGraph() const

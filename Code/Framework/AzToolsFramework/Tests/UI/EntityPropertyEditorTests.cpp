@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeCollection.h>
@@ -33,18 +34,11 @@ namespace UnitTest
     using namespace AzToolsFramework;
 
     class EntityPropertyEditorTests
-        : public ComponentApplication
+        : public UnitTest::AllocatorsTestFixture
     {
-    public:
-        void SetSettingsRegistrySpecializations(SettingsRegistryInterface::Specializations& specializations) override
-        {
-            ComponentApplication::SetSettingsRegistrySpecializations(specializations);
-            specializations.Append("test");
-            specializations.Append("entitypropertyeditor");
-        }
     };
 
-    TEST(EntityPropertyEditorTests, PrioritySort_NonTransformAsFirstItem_TransformMovesToTopRemainderUnchanged)
+    TEST_F(EntityPropertyEditorTests, PrioritySort_NonTransformAsFirstItem_TransformMovesToTopRemainderUnchanged)
     {
         ToolsApplication app;
 
@@ -117,7 +111,7 @@ namespace UnitTest
     }
 
     class EntityPropertyEditorRequestTest
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
         void SetUpEditorFixtureImpl() override
         {
@@ -212,7 +206,7 @@ namespace UnitTest
     }
 
     class LevelEntityPropertyEditorRequestTest
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
         , public AzToolsFramework::EditorRequestBus::Handler
     {
         void SetUpEditorFixtureImpl() override

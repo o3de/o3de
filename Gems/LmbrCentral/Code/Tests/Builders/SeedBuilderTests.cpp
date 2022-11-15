@@ -15,7 +15,7 @@
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
 class SeedBuilderTests
-    : public ::testing::Test
+    : public UnitTest::AllocatorsTestFixture
 {
     void SetUp() override
     {

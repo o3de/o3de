@@ -49,13 +49,13 @@ namespace AzNetworking
         };
 
         template <typename TYPE>
-        static typename AZStd::Utils::enable_if_c<HasReserveMethod<TYPE>::value>::type ReserveContainer(TYPE& value, typename TYPE::size_type size)
+        static AZStd::enable_if_t<HasReserveMethod<TYPE>::value> ReserveContainer(TYPE& value, typename TYPE::size_type size)
         {
             value.reserve(size);
         }
 
         template<typename TYPE>
-        static typename AZStd::Utils::enable_if_c<!HasReserveMethod<TYPE>::value>::type ReserveContainer(TYPE&, typename TYPE::size_type)
+        static AZStd::enable_if_t<!HasReserveMethod<TYPE>::value> ReserveContainer(TYPE&, typename TYPE::size_type)
         {
             ;
         }
@@ -99,6 +99,18 @@ namespace AzNetworking
     {
         m_serializerValid = false;
     }
+
+    #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
+    inline bool ISerializer::Serialize(AZ::s64& value, const char* name, AZ::s64 minValue, AZ::s64 maxValue)
+    {
+        return Serialize(reinterpret_cast<int64_t&>(value), name, static_cast<int64_t>(minValue), static_cast<int64_t>(maxValue));
+    }
+
+    inline bool ISerializer::Serialize(AZ::u64& value, const char* name, AZ::u64 minValue, AZ::u64 maxValue)
+    {
+        return Serialize(reinterpret_cast<uint64_t&>(value), name, static_cast<uint64_t>(minValue), static_cast<uint64_t>(maxValue));
+    }
+    #endif
 
     template <typename TYPE>
     inline bool ISerializer::Serialize(TYPE& value, const char* name)

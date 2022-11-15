@@ -17,7 +17,6 @@ set(FILES
     testdata/EmptyDummyProject/AssetProcessorGamePlatformConfig.setreg
     testdata/DummyProject/AssetProcessorGamePlatformConfig.setreg
     native/tests/AssetProcessorTest.h
-    native/tests/AssetProcessorTest.cpp
     native/tests/BaseAssetProcessorTest.h
     native/tests/assetdatabase/AssetDatabaseTest.cpp
     native/tests/resourcecompiler/RCControllerTest.cpp
@@ -69,6 +68,7 @@ set(FILES
     native/tests/BuilderManagerTests.cpp
     native/tests/BuilderManagerTests.h
     native/tests/MockAssetDatabaseRequestsHandler.h
+    native/tests/SourceAssetReferenceTests.cpp
     native/unittests/AssetCacheServerUnitTests.cpp
     native/unittests/AssetProcessingStateDataUnitTests.cpp
     native/unittests/AssetProcessorUnitTests.h
@@ -80,19 +80,15 @@ set(FILES
     native/unittests/AssetScannerUnitTests.cpp
     native/unittests/AssetScannerUnitTests.h
     native/unittests/ConnectionUnitTests.cpp
-    native/unittests/ConnectionUnitTests.h
     native/unittests/ConnectionManagerUnitTests.cpp
-    native/unittests/ConnectionManagerUnitTests.h
     native/unittests/FileWatcherUnitTests.cpp
     native/unittests/FileWatcherUnitTests.h
     native/unittests/PlatformConfigurationUnitTests.cpp
-    native/unittests/PlatformConfigurationUnitTests.h
     native/unittests/RCcontrollerUnitTests.cpp
     native/unittests/RCcontrollerUnitTests.h
-    native/unittests/UnitTestRunner.cpp
-    native/unittests/UnitTestRunner.h
+    native/unittests/UnitTestUtils.cpp
+    native/unittests/UnitTestUtils.h
     native/unittests/UtilitiesUnitTests.cpp
-    native/unittests/UtilitiesUnitTests.h
     native/unittests/AssetRequestHandlerUnitTests.cpp
     native/unittests/AssetRequestHandlerUnitTests.h
     native/unittests/MockConnectionHandler.h

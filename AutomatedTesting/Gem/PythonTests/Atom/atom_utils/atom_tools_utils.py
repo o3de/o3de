@@ -117,6 +117,26 @@ def select_model_config(asset_path: str) -> None:
     azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "LoadModelPresetByAssetId", asset_id)
 
 
+def undo(document_id: azlmbr.math.Uuid) -> bool:
+    return azlmbr.atomtools.AtomToolsDocumentRequestBus(bus.Event, "Undo", document_id)
+
+
+def redo(document_id: azlmbr.math.Uuid) -> bool:
+    return azlmbr.atomtools.AtomToolsDocumentRequestBus(bus.Event, "Redo", document_id)
+
+
+def begin_edit(document_id: azlmbr.math.Uuid) -> bool:
+    return azlmbr.atomtools.AtomToolsDocumentRequestBus(azlmbr.bus.Event, "BeginEdit", document_id)
+
+
+def end_edit(document_id: azlmbr.math.Uuid) -> bool:
+    return azlmbr.atomtools.AtomToolsDocumentRequestBus(azlmbr.bus.Event, "EndEdit", document_id)
+
+
+def crash() -> None:
+    azlmbr.atomtools.general.crash()
+
+
 def exit() -> None:
     """
     Closes the current Atom tools executable.

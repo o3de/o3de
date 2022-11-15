@@ -682,7 +682,12 @@ namespace AzFramework
                 AZStd::this_thread::yield();
             }
 
-            return ConnectedWithAssetProcessor();
+            bool connected = ConnectedWithAssetProcessor();
+            if ((!connected) && (m_socketConn->GetLastResult() != 0))
+            {
+                AZ_Warning("AssetProcessorConnection", false, "%s", m_socketConn->GetLastErrorMessage().c_str());
+            }
+            return connected;            
         }
 
         bool AssetSystemComponent::WaitUntilAssetProcessorReady(AZStd::chrono::duration<float> timeout)
