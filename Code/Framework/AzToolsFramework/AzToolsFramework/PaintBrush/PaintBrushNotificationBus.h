@@ -55,14 +55,6 @@ namespace AzToolsFramework
         //! @return The smoothed value from 0-1.
         using SmoothFn = AZStd::function<float(float baseValue, AZStd::span<float> kernelValues, float opacity)>;
 
-        //! Notifies listeners that the paintbrush transform has changed,
-        //! typically due to the brush moving around in world space.
-        //! This will get called in each frame that the brush transform changes.
-        //! @param brushTransform The new transform for the brush position/rotation/scale.
-        virtual void OnWorldSpaceChanged([[maybe_unused]] const AZ::Transform& brushTransform)
-        {
-        }
-
         //! Notifies listeners that the paint mode has been entered.
         virtual void OnPaintModeBegin()
         {
@@ -73,14 +65,14 @@ namespace AzToolsFramework
         {
         }
 
-        //! Notifies listeners that a paint stroke has begun.
+        //! Notifies listeners that a brush stroke has begun.
         //! @param color The color of the paint stroke, including opacity
-        virtual void OnPaintStrokeBegin([[maybe_unused]] const AZ::Color& color)
+        virtual void OnBrushStrokeBegin([[maybe_unused]] const AZ::Color& color)
         {
         }
 
-        //! Notifies listeners that a paint stroke has ended.
-        virtual void OnPaintStrokeEnd()
+        //! Notifies listeners that a brush stroke has ended.
+        virtual void OnBrushStrokeEnd()
         {
         }
 
@@ -116,9 +108,11 @@ namespace AzToolsFramework
         //! @param dirtyArea The AABB of the area that has been painted in.
         //! @param valueLookupFn The paintbrush value callback to use to get the intensities / opacities / valid flags for
         //! specific positions.
-        //! @param kernelSize The size of the NxN kernel to smooth together
+        //! @param valuePointOffsets A vector of relative positional offsets to use for looking up all the values to pass into smoothFn
         //! @param smoothFn The paintbrush callback to use to smooth values together.
-        virtual void OnSmooth(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, size_t kernelSize, SmoothFn& smoothFn) = 0;
+        virtual void OnSmooth(
+            const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn,
+            AZStd::span<const AZ::Vector3> valuePointOffsets, SmoothFn& smoothFn) = 0;
     };
 
     using PaintBrushNotificationBus = AZ::EBus<PaintBrushNotifications>;

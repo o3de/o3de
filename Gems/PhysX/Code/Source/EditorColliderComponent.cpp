@@ -425,6 +425,7 @@ namespace PhysX
         AZ::Render::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
         EditorColliderComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
         EditorColliderValidationRequestBus::Handler::BusConnect(GetEntityId());
+        AzFramework::BoundsRequestBus::Handler::BusConnect(GetEntityId());
         m_nonUniformScaleChangedHandler = AZ::NonUniformScaleChangedEvent::Handler(
             [this](const AZ::Vector3& scale) {OnNonUniformScaleChanged(scale); });
         AZ::NonUniformScaleRequestBus::Event(GetEntityId(), &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
@@ -471,6 +472,7 @@ namespace PhysX
         m_colliderDebugDraw.Disconnect();
         AZ::Data::AssetBus::Handler::BusDisconnect();
         m_nonUniformScaleChangedHandler.Disconnect();
+        AzFramework::BoundsRequestBus::Handler::BusDisconnect();
         EditorColliderValidationRequestBus::Handler::BusDisconnect();
         EditorColliderComponentRequestBus::Handler::BusDisconnect();
         AZ::Render::MeshComponentNotificationBus::Handler::BusDisconnect();
@@ -483,6 +485,9 @@ namespace PhysX
 
         m_componentModeDelegate.Disconnect();
 
+        // When Deactivate is triggered from an application shutdown, it's possible that the
+        // scene interface has already been deleted, so check for its existence here again
+        m_sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         if (m_sceneInterface)
         {
             m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
@@ -1565,6 +1570,22 @@ namespace PhysX
 
         const AZ::Vector3 scale = m_shapeConfiguration.m_cylinder.m_configuration.m_scale;
         m_shapeConfiguration.m_cylinder.m_configuration = Utils::CreatePxCookedMeshConfiguration(samplePoints, scale).value();
+    }
+
+    AZ::Aabb EditorColliderComponent::GetWorldBounds()
+    {
+        return GetAabb();
+    }
+
+    AZ::Aabb EditorColliderComponent::GetLocalBounds()
+    {
+        AZ::Aabb worldBounds = GetWorldBounds();
+        if (worldBounds.IsValid())
+        {
+            return worldBounds.GetTransformedAabb(m_cachedWorldTransform.GetInverse());
+        }
+
+        return AZ::Aabb::CreateNull();
     }
 
     void EditorColliderComponentDescriptor::Reflect(AZ::ReflectContext* reflection) const

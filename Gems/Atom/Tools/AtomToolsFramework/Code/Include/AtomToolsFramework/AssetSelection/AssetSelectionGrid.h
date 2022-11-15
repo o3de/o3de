@@ -33,24 +33,26 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
+        using FilterFn = AZStd::function<bool(const AZStd::string&)>;
+
         AssetSelectionGrid(
             const QString& title,
-            const AZStd::function<bool(const AZ::Data::AssetInfo&)>& filterCallback,
+            const FilterFn& filterFn,
             const QSize& tileSize,
             QWidget* parent = nullptr);
 
         ~AssetSelectionGrid();
 
         void Reset();
-        void SetFilterCallback(const AZStd::function<bool(const AZ::Data::AssetInfo&)>& filterCallback);
-        void SelectAsset(const AZ::Data::AssetId& assetId);
-        AZ::Data::AssetId GetSelectedAsset() const;
-        AZStd::string GetSelectedAssetSourcePath() const;
-        AZStd::string GetSelectedAssetProductPath() const;
+        void SetFilter(const FilterFn& filterFn);
+        void AddPath(const AZStd::string& path);
+        void RemovePath(const AZStd::string& path);
+        void SelectPath(const AZStd::string& path);
+        AZStd::string GetSelectedPath() const;
 
     Q_SIGNALS:
-        void AssetSelected(const AZ::Data::AssetId& assetId);
-        void AssetRejected();
+        void PathSelected(const AZStd::string& path);
+        void PathRejected();
 
     private:
         AZ_DISABLE_COPY_MOVE(AssetSelectionGrid);
@@ -59,7 +61,6 @@ namespace AtomToolsFramework
         void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
         void OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo) override;
 
-        QListWidgetItem* CreateListItem(const AZ::Data::AssetId& assetId, const QString& title);
         void SetupAssetList();
         void SetupSearchWidget();
         void SetupDialogButtons();
@@ -68,6 +69,6 @@ namespace AtomToolsFramework
 
         QSize m_tileSize;
         QScopedPointer<Ui::AssetSelectionGrid> m_ui;
-        AZStd::function<bool(const AZ::Data::AssetInfo&)> m_filterCallback;
+        FilterFn m_filterFn;
     };
 } // namespace AtomToolsFramework

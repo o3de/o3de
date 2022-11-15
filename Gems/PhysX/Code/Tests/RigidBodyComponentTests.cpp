@@ -222,10 +222,10 @@ namespace PhysXEditorTests
         // Set collider subdivision values outside the allowed range
         const AZ::u8 subdivisionsTooSmall = PhysX::Utils::MinFrustumSubdivisions - 1;
         PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderSubdivisionCount, subdivisionsTooSmall);
-        EXPECT_EQ(expectedError.GetWarningCount(), 1);
+        EXPECT_EQ(expectedError.GetExpectedWarningCount(), 1);
 
         const AZ::u8 subdivisionsTooLarge = PhysX::Utils::MaxFrustumSubdivisions + 1;
         PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderSubdivisionCount, subdivisionsTooLarge);
-        EXPECT_EQ(expectedError.GetWarningCount(), 2);
+        EXPECT_EQ(expectedError.GetExpectedWarningCount(), 2);
     }
 } // namespace PhysXEditorTests

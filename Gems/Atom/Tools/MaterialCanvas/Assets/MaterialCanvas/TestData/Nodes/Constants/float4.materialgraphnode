@@ -3,28 +3,28 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "id": "{6B6603B9-A89E-403B-9AE9-C7E424093EC5}",
+        "id": "{643F25FA-FB10-4AF6-9657-2E1BDC2AC219}",
         "category": "Constants",
-        "title": "Color Constant",
+        "title": "Float4 Constant",
         "titlePaletteName": "ConstantNodeTitlePalette",
         "slotDataTypeGroups": [
             "inValue|outValue",
-            "outR|outG|outB|outA"
+            "outX|outY|outZ|outW"
         ],
         "inputSlots": [
             {
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[14]?",
-                "defaultDataType": "color",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float4",
                 "defaultValue": {
-                    "$type": "Color",
+                    "$type": "Vector4",
                     "Value": [
-                        1.0,
-                        1.0,
-                        1.0,
-                        1.0
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
                     ]
                 },
                 "settings": {
@@ -39,8 +39,8 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypeRegex": "color",
-                "defaultDataType": "color",
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4",
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = inValue;"
@@ -48,50 +48,50 @@
                 }
             },
             {
-                "name": "outR",
-                "displayName": "R",
-                "description": "R",
+                "name": "outX",
+                "displayName": "X",
+                "description": "X",
                 "supportedDataTypeRegex": "float",
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = inValue.r;"
+                        "SLOTTYPE SLOTNAME = inValue.x;"
                     ]
                 }
             },
             {
-                "name": "outG",
-                "displayName": "G",
-                "description": "G",
+                "name": "outY",
+                "displayName": "Y",
+                "description": "Y",
                 "supportedDataTypeRegex": "float",
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = inValue.g;"
+                        "SLOTTYPE SLOTNAME = inValue.y;"
                     ]
                 }
             },
             {
-                "name": "outB",
-                "displayName": "B",
-                "description": "B",
+                "name": "outZ",
+                "displayName": "Z",
+                "description": "Z",
                 "supportedDataTypeRegex": "float",
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = inValue.b;"
+                        "SLOTTYPE SLOTNAME = inValue.z;"
                     ]
                 }
             },
             {
-                "name": "outA",
-                "displayName": "A",
-                "description": "A",
+                "name": "outW",
+                "displayName": "W",
+                "description": "W",
                 "supportedDataTypeRegex": "float",
                 "defaultDataType": "float",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = inValue.a;"
+                        "SLOTTYPE SLOTNAME = inValue.w;"
                     ]
                 }
             }

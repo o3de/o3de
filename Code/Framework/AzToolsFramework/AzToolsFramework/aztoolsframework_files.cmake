@@ -236,7 +236,6 @@ set(FILES
     Manipulators/ManipulatorSpace.h
     Manipulators/PaintBrushManipulator.cpp
     Manipulators/PaintBrushManipulator.h
-    Manipulators/PaintBrushNotificationBus.h
     Manipulators/PlanarManipulator.cpp
     Manipulators/PlanarManipulator.h
     Manipulators/RotationManipulators.cpp
@@ -256,6 +255,9 @@ set(FILES
     Metadata/MetadataManager.h
     Metadata/MetadataManager.cpp
     Maths/TransformUtils.h
+    PaintBrush/PaintBrush.cpp
+    PaintBrush/PaintBrush.h
+    PaintBrush/PaintBrushNotificationBus.h
     PaintBrushSettings/PaintBrushSettings.cpp
     PaintBrushSettings/PaintBrushSettings.h
     PaintBrushSettings/PaintBrushSettingsNotificationBus.h

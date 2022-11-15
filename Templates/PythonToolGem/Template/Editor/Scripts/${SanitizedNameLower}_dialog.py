@@ -5,7 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 # -------------------------------------------------------------------------
-"""${SanitizedCppName}\\editor\\scripts\\${SanitizedCppName}_dialog.py
+"""${SanitizedCppName}\\editor\\scripts\\${SanitizedNameLower}_dialog.py
 Generated from O3DE PythonToolGem Template"""
 
 from PySide2.QtCore import Qt

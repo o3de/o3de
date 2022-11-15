@@ -3,25 +3,24 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "id": "{643F25FA-FB10-4AF6-9657-2E1BDC2AC219}",
-        "category": "Constants",
-        "title": "Float4 Constant",
-        "titlePaletteName": "ConstantNodeTitlePalette",
+        "id": "{1F53AECF-F416-4AD1-9777-A7E6049383A8}",
+        "category": "Math Functions",
+        "title": "Split3",
+        "titlePaletteName": "MathNodeTitlePalette",
         "slotDataTypeGroups": [
-            "inValue|outValue",
-            "outX|outY|outZ|outW"
+            "inValue",
+            "outX|outY|outZ"
         ],
         "inputSlots": [
             {
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[14]?",
-                "defaultDataType": "float4",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float3",
                 "defaultValue": {
-                    "$type": "Vector4",
+                    "$type": "Vector3",
                     "Value": [
-                        0.0,
                         0.0,
                         0.0,
                         0.0
@@ -29,24 +28,12 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                        "float3 SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
         ],
         "outputSlots": [
-            {
-                "name": "outValue",
-                "displayName": "Value",
-                "description": "Value",
-                "supportedDataTypeRegex": "float4",
-                "defaultDataType": "float4",
-                "settings": {
-                    "instructions": [
-                        "SLOTTYPE SLOTNAME = inValue;"
-                    ]
-                }
-            },
             {
                 "name": "outX",
                 "displayName": "X",
@@ -80,18 +67,6 @@
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = inValue.z;"
-                    ]
-                }
-            },
-            {
-                "name": "outW",
-                "displayName": "W",
-                "description": "W",
-                "supportedDataTypeRegex": "float",
-                "defaultDataType": "float",
-                "settings": {
-                    "instructions": [
-                        "SLOTTYPE SLOTNAME = inValue.w;"
                     ]
                 }
             }

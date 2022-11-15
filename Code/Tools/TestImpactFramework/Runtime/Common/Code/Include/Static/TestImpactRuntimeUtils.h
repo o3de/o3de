@@ -72,6 +72,8 @@ namespace TestImpact
                     testJob.GetTestTarget()->GetNamespace(),
                     testJob.GetTestTarget()->GetName(),
                     testJob.GetCommandString(),
+                    testJob.GetStdOutput(),
+                    testJob.GetStdError(),
                     testJob.GetStartTime(),
                     testJob.GetDuration(),
                     testJob.GetTestResult());
@@ -337,6 +339,8 @@ namespace TestImpact
                 testJob.GetTestTarget()->GetNamespace(),
                 testJob.GetTestTarget()->GetName(),
                 testJob.GetCommandString(),
+                testJob.GetStdOutput(),
+                testJob.GetStdError(),
                 relativeStartTime,
                 testJob.GetDuration(),
                 testJob.GetTestResult());
