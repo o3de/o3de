@@ -11,6 +11,7 @@
 
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
+#include <Atom/Features/PostProcessing/Tonemap.azsli>
 #include <Atom/Features/MatrixUtility.azsli>
 #include <Atom/Features/ShaderQualityOptions.azsli>
 
@@ -187,9 +188,10 @@ PSOutput MainPS(VSOutput input)
 
 #if ENABLE_MERGE_FILMIC_TONEMAP
     // Apply manual exposure compensation
-    color *= pow(2.0, ViewSrg::GetExposureValueCompensation());
-    // Apply filmic tonemap
-    color = (color * (6.2f * color + 0.5f)) / (color * (6.2f * color + 1.7f)+ 0.06f);
+    color = ApplyManualExposure(color, ViewSrg::GetExposureValueCompensation());
+    
+    // We could add Aces support here as well if perf allows.
+    color = ApplyFilmicTonemap(color);
 #endif
 
     PSOutput OUT;

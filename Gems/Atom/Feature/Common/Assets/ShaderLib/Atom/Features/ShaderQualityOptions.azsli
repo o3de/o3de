@@ -45,11 +45,6 @@
     #define ENABLE_AREA_LIGHTS           0
     #endif
 
-    //Disable physical sky
-    #ifndef ENABLE_PHYSICAL_SKY
-    #define ENABLE_PHYSICAL_SKY           0
-    #endif
-
     //Enable merging of tonemap to the forward pass and use filmic curve tonemap implementation
     #ifndef ENABLE_MERGE_FILMIC_TONEMAP
     #define ENABLE_MERGE_FILMIC_TONEMAP           1

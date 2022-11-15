@@ -10,6 +10,7 @@
 
 
 #include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
+#include <Atom/Features/PostProcessing/Tonemap.azsli>
 
 // --- Vertex Shader ---
 
@@ -41,12 +42,11 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     float3 color = lightingData.diffuseLighting.rgb + lightingData.specularLighting.rgb + lightingData.emissiveLighting.rgb;
 
 #if ENABLE_MERGE_FILMIC_TONEMAP
-
     // Apply manual exposure compensation
-    color *= pow(2.0, ViewSrg::GetExposureValueCompensation());
+    color = ApplyManualExposure(color, ViewSrg::GetExposureValueCompensation());
     
-    // Apply filmic curve. We could add Aces support here as well if perf allows.
-    color = (color * (6.2 * color + 0.5)) / (color * (6.2 * color + 1.7)+ 0.06);
+    // We could add Aces support here as well if perf allows.
+    color = ApplyFilmicTonemap(color);
 #endif
 
     OUT.m_color.rgb = color;
