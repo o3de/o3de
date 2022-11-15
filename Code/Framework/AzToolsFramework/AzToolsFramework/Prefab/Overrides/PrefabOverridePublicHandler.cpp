@@ -38,7 +38,7 @@ namespace AzToolsFramework
 
         bool PrefabOverridePublicHandler::AreOverridesPresent(AZ::EntityId entityId)
         {
-            AZStd::pair<AZ::Dom::Path, LinkId> pathAndLinkIdPair = GetPathToEntityFromFocusedPrefab(entityId);
+            AZStd::pair<AZ::Dom::Path, LinkId> pathAndLinkIdPair = GetPathAndLinkIdFromFocusedPrefab(entityId);
             if (!pathAndLinkIdPair.first.IsEmpty() && pathAndLinkIdPair.second != InvalidLinkId)
             {
                 return m_prefabOverrideHandler.AreOverridesPresent(pathAndLinkIdPair.first, pathAndLinkIdPair.second);
@@ -48,7 +48,7 @@ namespace AzToolsFramework
 
         bool PrefabOverridePublicHandler::RevertOverrides(AZ::EntityId entityId)
         {
-            AZStd::pair<AZ::Dom::Path, LinkId> pathAndLinkIdPair = GetPathToEntityFromFocusedPrefab(entityId);
+            AZStd::pair<AZ::Dom::Path, LinkId> pathAndLinkIdPair = GetPathAndLinkIdFromFocusedPrefab(entityId);
             if (!pathAndLinkIdPair.first.IsEmpty() && pathAndLinkIdPair.second != InvalidLinkId)
             {
                 return m_prefabOverrideHandler.RevertOverrides(pathAndLinkIdPair.first, pathAndLinkIdPair.second);
@@ -56,7 +56,7 @@ namespace AzToolsFramework
             return false;
         }
 
-        AZStd::pair<AZ::Dom::Path, LinkId> PrefabOverridePublicHandler::GetPathToEntityFromFocusedPrefab(AZ::EntityId entityId)
+        AZStd::pair<AZ::Dom::Path, LinkId> PrefabOverridePublicHandler::GetPathAndLinkIdFromFocusedPrefab(AZ::EntityId entityId)
         {
             AzFramework::EntityContextId editorEntityContextId;
             AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(

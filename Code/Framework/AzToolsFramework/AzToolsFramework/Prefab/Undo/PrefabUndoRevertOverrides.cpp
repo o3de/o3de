@@ -40,6 +40,7 @@ namespace AzToolsFramework
             LinkReference link = m_prefabSystemComponentInterface->FindLink(m_linkId);
             if (link.has_value())
             {
+                // This will move the sub-tree stored in the undo node and make it empty. It will be populated again on redo.
                 link->get().AddOverrides(m_pathToSubTree, AZStd::move(m_overrideSubTree));
                 link->get().UpdateTarget();
                 m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId());
