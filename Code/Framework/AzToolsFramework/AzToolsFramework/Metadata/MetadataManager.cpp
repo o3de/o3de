@@ -7,6 +7,12 @@
  */
 
 #include <AzToolsFramework/Metadata/MetadataManager.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/IO/FileReader.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Serialization/Json/StackedString.h>
+#include <AzCore/JSON/pointer.h>
 
 namespace AzToolsFramework
 {
@@ -18,7 +24,7 @@ namespace AzToolsFramework
         }
     }
 
-    bool MetadataManager::Get(AZ::IO::PathView file, AZStd::string_view key, void* outValue, AZ::Uuid typeId)
+    bool MetadataManager::GetValue(AZ::IO::PathView file, AZStd::string_view key, void* outValue, AZ::Uuid typeId)
     {
         auto path = ToMetadataPath(file);
 
@@ -60,7 +66,7 @@ namespace AzToolsFramework
         return resultCode.GetProcessing() != AZ::JsonSerializationResult::Processing::Halted;
     }
 
-    bool MetadataManager::Set(AZ::IO::PathView file, AZStd::string_view key, const void* inValue, AZ::Uuid typeId)
+    bool MetadataManager::SetValue(AZ::IO::PathView file, AZStd::string_view key, const void* inValue, AZ::Uuid typeId)
     {
         auto path = ToMetadataPath(file);
 

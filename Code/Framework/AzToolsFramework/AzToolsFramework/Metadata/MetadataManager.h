@@ -10,12 +10,6 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/IO/Path/Path.h>
-#include <AzCore/Serialization/Json/JsonUtils.h>
-#include <AzCore/IO/FileReader.h>
-#include <AzCore/Serialization/Json/JsonSerialization.h>
-#include <AzCore/Serialization/Json/StackedString.h>
-#include <AzCore/JSON/pointer.h>
 
 namespace AzToolsFramework
 {
@@ -30,13 +24,13 @@ namespace AzToolsFramework
         //! @param key JSONPath formatted key for the metadata value to read.  Ex: /Settings/Platform/pc.
         //! @param typeId Type of the stored value and outValue.
         //! @return True if metadata file and key exists and was successfully read, false otherwise.
-        virtual bool Get(AZ::IO::PathView file, AZStd::string_view key, void* outValue, AZ::Uuid typeId) = 0;
+        virtual bool GetValue(AZ::IO::PathView file, AZStd::string_view key, void* outValue, AZ::Uuid typeId) = 0;
         //! Sets a value in the metadata file associated with the file.
         //! @param file Absolute path to the file (or metadata file).
         //! @param key JSONPath formatted key for the metadata value to write.  Ex: /Settings/Platform/pc.
         //! @param typeId Type of the stored value and inValue.
         //! @return True if the value is successfully saved to disk, false otherwise.
-        virtual bool Set(AZ::IO::PathView file, AZStd::string_view key, const void* inValue, AZ::Uuid typeId) = 0;
+        virtual bool SetValue(AZ::IO::PathView file, AZStd::string_view key, const void* inValue, AZ::Uuid typeId) = 0;
     };
 
     //! Component that handles reading/writing to metadata files.
@@ -59,8 +53,8 @@ namespace AzToolsFramework
         void Deactivate() override{}
 
     public:
-        bool Get(AZ::IO::PathView file, AZStd::string_view key, void* outValue, AZ::Uuid typeId) override;
-        bool Set(AZ::IO::PathView file, AZStd::string_view key, const void* inValue, AZ::Uuid typeId) override;
+        bool GetValue(AZ::IO::PathView file, AZStd::string_view key, void* outValue, AZ::Uuid typeId) override;
+        bool SetValue(AZ::IO::PathView file, AZStd::string_view key, const void* inValue, AZ::Uuid typeId) override;
 
     private:
         AZ::IO::Path ToMetadataPath(AZ::IO::PathView file);

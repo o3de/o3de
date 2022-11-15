@@ -179,14 +179,14 @@ namespace UnitTest
     {
         MyTestType test;
         AZ_TEST_START_ASSERTTEST;
-        EXPECT_FALSE(m_metadata->Get("mockfile", "/Test", &test, azrtti_typeid<MyTestType>()));
+        EXPECT_FALSE(m_metadata->GetValue("mockfile", "/Test", &test, azrtti_typeid<MyTestType>()));
         AZ_TEST_STOP_ASSERTTEST(1);
     }
 
     TEST_F(MetadataManagerTests, Set_ReturnsTrue)
     {
         MyTestType test;
-        EXPECT_TRUE(m_metadata->Set("mockfile", "/Test", &test, azrtti_typeid<MyTestType>()));
+        EXPECT_TRUE(m_metadata->SetValue("mockfile", "/Test", &test, azrtti_typeid<MyTestType>()));
     }
 
     TEST_F(MetadataManagerTests, SetGet_ReadsValueCorrectly)
@@ -196,8 +196,8 @@ namespace UnitTest
         outValue.m_int = 23;
         outValue.m_string = "Hello World";
 
-        EXPECT_TRUE(m_metadata->Set("mockfile", "/Test", &outValue, azrtti_typeid<MyTestType>()));
-        EXPECT_TRUE(m_metadata->Get("mockfile", "/Test", &inValue, azrtti_typeid<MyTestType>()));
+        EXPECT_TRUE(m_metadata->SetValue("mockfile", "/Test", &outValue, azrtti_typeid<MyTestType>()));
+        EXPECT_TRUE(m_metadata->GetValue("mockfile", "/Test", &inValue, azrtti_typeid<MyTestType>()));
 
         EXPECT_EQ(outValue.m_int, inValue.m_int);
         EXPECT_EQ(outValue.m_string, inValue.m_string);
@@ -206,17 +206,17 @@ namespace UnitTest
     TEST_F(MetadataManagerTests, Get_FileExists_KeyDoesNotExist_ReturnsFalse)
     {
         MyTestType test;
-        EXPECT_TRUE(m_metadata->Set("mockfile", "/Test", &test, azrtti_typeid<MyTestType>()));
-        EXPECT_FALSE(m_metadata->Get("mockfile", "/DoesNotExist", &test, azrtti_typeid<MyTestType>()));
+        EXPECT_TRUE(m_metadata->SetValue("mockfile", "/Test", &test, azrtti_typeid<MyTestType>()));
+        EXPECT_FALSE(m_metadata->GetValue("mockfile", "/DoesNotExist", &test, azrtti_typeid<MyTestType>()));
     }
 
     TEST_F(MetadataManagerTests, Get_FileVersion_ReturnsTrue)
     {
         MyTestType test;
-        EXPECT_TRUE(m_metadata->Set("mockfile", "/Test", &test, azrtti_typeid<MyTestType>()));
+        EXPECT_TRUE(m_metadata->SetValue("mockfile", "/Test", &test, azrtti_typeid<MyTestType>()));
 
         int version = 0;
-        EXPECT_TRUE(m_metadata->Get("mockfile", AzToolsFramework::MetadataManager::MetadataVersionKey, &version, azrtti_typeid<int>()));
+        EXPECT_TRUE(m_metadata->GetValue("mockfile", AzToolsFramework::MetadataManager::MetadataVersionKey, &version, azrtti_typeid<int>()));
         EXPECT_EQ(version, AzToolsFramework::MetadataManager::MetadataVersion);
     }
 
@@ -226,7 +226,7 @@ namespace UnitTest
 
         MyTestType test;
         AZ_TEST_START_ASSERTTEST;
-        EXPECT_FALSE(m_metadata->Set("mockfile", "/Test", &test, azrtti_typeid<MyTestType>()));
+        EXPECT_FALSE(m_metadata->SetValue("mockfile", "/Test", &test, azrtti_typeid<MyTestType>()));
         AZ_TEST_STOP_ASSERTTEST(1);
     }
 }
