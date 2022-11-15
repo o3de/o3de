@@ -15,6 +15,7 @@
 #include <QFrame>
 #include <QHash>
 #include <QHBoxLayout>
+#include <QLabel>
 #include <QWidget>
 #include <QVBoxLayout>
 
