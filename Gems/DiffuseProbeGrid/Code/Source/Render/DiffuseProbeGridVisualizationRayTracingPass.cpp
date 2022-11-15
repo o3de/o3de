@@ -17,6 +17,7 @@
 #include <DiffuseProbeGrid_Traits_Platform.h>
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
 #include <Render/DiffuseProbeGridVisualizationRayTracingPass.h>
+#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {
