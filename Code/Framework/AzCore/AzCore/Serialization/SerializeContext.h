@@ -1730,7 +1730,7 @@ namespace AZ
         struct InstanceFactory<T, false, false>
             : public SerializeContext::IObjectFactory
         {
-            void* Create(const char* name) override
+            void* Create([[maybe_unused]] const char* name) override
             {
                 return new(azmalloc(sizeof(T), AZStd::alignment_of<T>::value, AZ::SystemAllocator, name))T;
             }
@@ -2548,9 +2548,10 @@ namespace AZ
         template <typename T>
         AZ::GenericClassInfo* FindGenericClassInfo() const;
         AZ::GenericClassInfo* FindGenericClassInfo(const AZ::TypeId& genericTypeId) const;
-    private:
+
         void Cleanup();
 
+    private:
         AZ::OSAllocator m_moduleOSAllocator;
 
         GenericInfoModuleMap m_moduleLocalGenericClassInfos;
@@ -2572,8 +2573,7 @@ namespace AZ
         }
 
         void* rawMemory = m_moduleOSAllocator.Allocate(sizeof(GenericClassInfoType), alignof(GenericClassInfoType));
-        new (rawMemory) GenericClassInfoType();
-        auto genericClassInfo = static_cast<GenericClassInfoType*>(rawMemory);
+        auto genericClassInfo = new (rawMemory) GenericClassInfoType();
         if (genericClassInfo)
         {
             AddGenericClassInfo(genericClassInfo);

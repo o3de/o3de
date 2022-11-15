@@ -214,10 +214,6 @@ class TestScriptCanvasTests(object):
 
     def test_VariableManager_UnpinVariableType_Works(self, request, editor, launcher_platform):
         expected_lines = [
-            "Success: VariableManager is opened successfully",
-            "Success: Variable is pinned",
-            "Success: Variable is unpinned",
-            "Success: Variable is unpinned after reopening create variable menu",
         ]
         hydra.launch_and_validate_results(
             request,

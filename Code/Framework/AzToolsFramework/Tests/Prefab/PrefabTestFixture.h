@@ -43,7 +43,7 @@ namespace UnitTest
 
     //! Defines prefab testing environment.
     class PrefabTestFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
         , public AzToolsFramework::EditorRequestBus::Handler
     {
     protected:

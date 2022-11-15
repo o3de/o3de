@@ -45,6 +45,9 @@ namespace PhysXEditorTests
     //! Creates an active editor entity with shape collider and sphere shape components.
     EntityPtr CreateSphereShapeColliderEditorEntity(const AZ::Transform& transform, float radius, const AZ::Vector3& translationOffset);
 
+    //! Gets the AABB for the simulated body on the entity with the given ID, or returns a null AABB if no body is found.
+    AZ::Aabb GetSimulatedBodyAabb(AZ::EntityId entityId);
+
     //! Class used for loading system components from this gem.
     class PhysXEditorSystemComponentEntity
         : public AZ::Entity
@@ -56,7 +59,7 @@ namespace PhysXEditorTests
     //! The application is created for the whole test case, rather than individually for each test, due to a known
     //! problem with buses when repeatedly loading and unloading gems. A new default world is created for each test.
     class PhysXEditorFixture
-        : public UnitTest::AllocatorsTestFixture
+        : public testing::Test
         , public Physics::DefaultWorldBus::Handler
         , public UnitTest::RegistryTestHelper
     {

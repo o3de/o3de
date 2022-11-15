@@ -34,12 +34,6 @@ namespace UnitTest
     class TransformComponentApplication
         : public AllocatorsFixture
     {
-    public:
-        TransformComponentApplication()
-            : AllocatorsFixture()
-        {
-        }
-
     protected:
         void SetUp() override
         {
@@ -978,7 +972,7 @@ namespace UnitTest
 
     // Fixture base class for AzToolsFramework::Components::TransformComponent tests
     class OldEditorTransformComponentTest
-        : public ::testing::Test
+        : public UnitTest::AllocatorsTestFixture
     {
     protected:
         void SetUp() override

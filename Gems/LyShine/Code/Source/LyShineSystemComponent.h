@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Memory/AllocatorScope.h>
 #include <AzFramework/InGameUI/UiFrameworkBus.h>
 
 #include <LmbrCentral/Rendering/MaterialAsset.h>
@@ -27,15 +26,10 @@
 
 namespace LyShine
 {
-    // LyShine depends on the LegacyAllocator. This will be managed
-    // by the LyShineSystemComponent
-    using LyShineAllocatorScope = AZ::AllocatorScope<AZ::LegacyAllocator>;
-
     class LyShineSystemComponent
         : public AZ::Component
         , protected UiSystemBus::Handler
         , protected UiSystemToolsBus::Handler
-        , protected LyShineAllocatorScope
         , protected UiFrameworkBus::Handler
         , protected CrySystemEventBus::Handler
         , public ILevelSystemListener
