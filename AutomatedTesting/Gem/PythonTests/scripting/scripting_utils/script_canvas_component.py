@@ -36,11 +36,7 @@ class VariableState(Enum):
 
 class ScriptCanvasComponent:
 
-    def __init__(self):
-        self.editor_entity = None
-        self.script_canvas_component = None
-
-    def __init__(self, editor_entity: EditorEntity, sc_file_path: str):
+    def __init__(self, editor_entity: EditorEntity = None, sc_file_path: str = None):
         self.editor_entity = None
         self.script_canvas_component = None
         self.add_component_to_entity(editor_entity, sc_file_path)
@@ -65,6 +61,22 @@ class ScriptCanvasComponent:
         self.script_canvas_component = self.editor_entity.get_components_of_type([SCRIPT_CANVAS_UI])[0]
         self.script_canvas_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
 
+    def change_component_graph_file(self, sc_file_path: str):
+        """
+        Function for updating the script canvas file being used by the component
+
+        param sc_file_path : the string path the new graph file on disk
+
+        returns none
+        """
+        sourcehandle = scriptcanvas.SourceHandleFromPath(sc_file_path)
+        old_value = self.script_canvas_component.get_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
+        self.script_canvas_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
+
+        set_value = self.script_canvas_component.get_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
+        assert set_value != old_value and set_value is not None, f"Graph file could not be set! {sc_file_path} not found."
+
+
     def add_component_to_entity(self, editor_entity: EditorEntity, sc_file_path: str,
                                 sc_component_index=0) -> None:
         """
@@ -76,12 +88,13 @@ class ScriptCanvasComponent:
 
         returns None
         """
-        sourcehandle = scriptcanvas.SourceHandleFromPath(sc_file_path)
+        if editor_entity is not None and sc_file_path is not None:
+            sourcehandle = scriptcanvas.SourceHandleFromPath(sc_file_path)
 
-        self.editor_entity = editor_entity
-        self.script_canvas_component = self.editor_entity.get_components_of_type([SCRIPT_CANVAS_UI])[sc_component_index]
+            self.editor_entity = editor_entity
+            self.script_canvas_component = self.editor_entity.get_components_of_type([SCRIPT_CANVAS_UI])[sc_component_index]
 
-        self.script_canvas_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
+            self.script_canvas_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
 
     def set_variable_value(self, variable_name: str, variable_state: VariableState, variable_value) -> None:
         """
