@@ -13,6 +13,7 @@
 #include <EditorRigidBodyComponent.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <PhysX/EditorColliderComponentRequestBus.h>
+#include <PhysX/PhysXLocks.h>
 #include <Tests/EditorTestUtilities.h>
 #include <Tests/PhysXTestCommon.h>
 
@@ -136,8 +137,10 @@ namespace PhysXEditorTests
         EXPECT_TRUE(AZ::IsClose(bodyAabb.GetZExtent(), cylinderHeight));
 
         AZStd::shared_ptr<const Physics::Shape> shape = rigidBody->GetShape(0);
+        const physx::PxRigidBody* pxRigidBody = static_cast<const physx::PxRigidBody*>(rigidBody->GetNativePointer());
         const physx::PxShape* pxShape = static_cast<const physx::PxShape*>(shape->GetNativePointer());
         // Check the geometry is a type of Convex
+        PHYSX_SCENE_READ_LOCK(pxRigidBody->getScene());
         EXPECT_EQ(pxShape->getGeometryType(), physx::PxGeometryType::eCONVEXMESH);
     }
 
