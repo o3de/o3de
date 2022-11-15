@@ -120,7 +120,7 @@ class TestAutomation(EditorTestSuite):
         from .tests.reparent_prefab import ReparentEntity_UnderEntityHierarchies as test_module
 
 
-@pytest.mark.SUITE_periodic
+@pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomationOverrides(EditorTestSuite):
