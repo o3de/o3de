@@ -61,6 +61,7 @@ namespace Terrain
     private:
         static const AZ::Edit::ElementData* GetDynamicData(const void* handlerPtr, const void* elementPtr, const AZ::Uuid& elementType);
         AZ::Edit::ElementData m_hideSurfaceTagData;
+        static inline AZ::Edit::AttributeData<AZ::Crc32> m_hideAttribute{AZ::Edit::PropertyVisibility::Hide};
     };
 
     class TerrainSurfaceMaterialsListComponent

@@ -66,6 +66,10 @@ QStackedWidget#createAGemRHS{
     margin-left: 0px;
 }
 
+#createAGemRHS #formOptionsFrame{
+    margin-left:2px;
+}
+
 #createAGemRHS #formTagField{
     margin-left: 0px;
 }
@@ -129,6 +133,11 @@ QTabBar::tab:focus {
     height: 40px;
 }
 
+#formOptionsWidget QCheckBox{
+    font-size: 16px;
+    height: 40px;
+}
+
 #ToastNotification {
     background-color: black;
     border-radius: 20px;
@@ -151,6 +160,7 @@ QTabBar::tab:focus {
 
 #formLineEditWidget,
 #formBrowseEditWidget, 
+#formOptionsWidget,
 #formComboBoxWidget {
     max-width: 890px;
 }
@@ -160,6 +170,13 @@ QTabBar::tab:focus {
     background-color: #444444;
     border:1px solid #dddddd;
     border-radius: 4px;
+    padding: 0px 10px 2px 6px;
+    margin-top:10px;
+    margin-left:50px;
+}
+
+#formOptionsFrame {
+    max-width: 840px;
     padding: 0px 10px 2px 6px;
     margin-top:10px;
     margin-left:50px;
@@ -205,6 +222,7 @@ QTabBar::tab:focus {
     border:1px solid #959595;
 }
 
+#formOptionsFrame QLabel,
 #formFrame QLabel {
     font-size: 13px;
     color: #cccccc;

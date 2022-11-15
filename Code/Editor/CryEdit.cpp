@@ -3886,26 +3886,8 @@ extern "C"
 #pragma comment(lib, "Shell32.lib")
 #endif
 
-struct CryAllocatorsRAII
-{
-    CryAllocatorsRAII()
-    {
-        AZ_Assert(!AZ::AllocatorInstance<AZ::LegacyAllocator>::IsReady(), "Expected allocator to not be initialized, hunt down the static that is initializing it");
-
-        AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
-    }
-
-    ~CryAllocatorsRAII()
-    {
-        AZ::AllocatorInstance<AZ::LegacyAllocator>::Destroy();
-    }
-};
-
-
 extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
 {
-    CryAllocatorsRAII cryAllocatorsRAII;
-
     // Debugging utilities
     for (int i = 1; i < argc; ++i)
     {

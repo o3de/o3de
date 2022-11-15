@@ -265,7 +265,6 @@ namespace UnitTest
 
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
             ComponentApplicationBus::Handler::BusDisconnect();
-            AllocatorsBase::TeardownAllocator();
         }
 
         //enum names for Images with specific identification

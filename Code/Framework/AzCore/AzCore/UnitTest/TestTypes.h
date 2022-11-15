@@ -8,12 +8,15 @@
 #ifndef AZCORE_UNITTEST_USERTYPES_H
 #define AZCORE_UNITTEST_USERTYPES_H
 
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/base.h>
 #include <AzCore/UnitTest/UnitTest.h>
 
 #include <AzCore/Debug/BudgetTracker.h>
+#include <AzCore/Memory/IAllocator.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Memory/AllocationRecords.h>
+#include <AzCore/std/allocator_stateless.h>
 
 #if defined(HAVE_BENCHMARK)
 
@@ -25,41 +28,89 @@ AZ_POP_DISABLE_WARNING
 
 namespace UnitTest
 {
+    class LeakDetectionBase
+    {
+    public:
+        using AllocatedSizesMap = AZStd::unordered_map<const AZ::IAllocator*, size_t, AZStd::hash<const AZ::IAllocator*>, AZStd::equal_to<const AZ::IAllocator*>, AZStd::stateless_allocator>;
+
+        LeakDetectionBase() = default;
+        LeakDetectionBase(const LeakDetectionBase&) = default;
+        LeakDetectionBase(LeakDetectionBase&&) = default;
+        LeakDetectionBase& operator=(const LeakDetectionBase&) = default;
+        LeakDetectionBase& operator=(LeakDetectionBase&&) = default;
+        virtual ~LeakDetectionBase() = default;
+
+        AllocatedSizesMap GetAllocatedSizes()
+        {
+            auto& allMan = AZ::AllocatorManager::Instance();
+            AllocatedSizesMap allocatedSizes;
+            const int allocatorCount = allMan.GetNumAllocators();
+            for (int i = 0; i < allocatorCount; ++i)
+            {
+                const AZ::IAllocator* allocator = allMan.GetAllocator(i);
+                allocatedSizes[allocator] = allocator->NumAllocatedBytes();
+            }
+            return allocatedSizes;
+        }
+
+        void CheckAllocatorsForLeaks()
+        {
+            if (m_cleanUpGenericClassInfo)
+            {
+                AZ::GetCurrentSerializeContextModule().Cleanup();
+            }
+            AZ::AllocatorManager::Instance().GarbageCollect();
+
+            for (const auto& [allocator, sizeAfterTestRan] : GetAllocatedSizes())
+            {
+                const size_t sizeBeforeTestRan = m_allocatedSizes.contains(allocator) ? m_allocatedSizes[allocator] : 0;
+                auto* records = const_cast<AZ::IAllocator*>(allocator)->GetRecords();
+                EXPECT_EQ(sizeBeforeTestRan, sizeAfterTestRan) << "for allocator " << allocator->GetName() << " with " << (records ? records->GetMap().size() : 0) << " allocation records";
+                if (sizeBeforeTestRan != sizeAfterTestRan)
+                {
+                    if (records)
+                    {
+                        records->EnumerateAllocations(AZ::Debug::PrintAllocationsCB{true, true});
+                    }
+                }
+            }
+        }
+
+        void SetShouldCleanUpGenericClassInfo(bool newState)
+        {
+            m_cleanUpGenericClassInfo = newState;
+        }
+
+    protected:
+        AllocatedSizesMap m_allocatedSizes;
+
+    private:
+        bool m_cleanUpGenericClassInfo{true};
+    };
+
     /**
     * Base class to share common allocator code between fixture types.
     */
     class AllocatorsBase
+        : public LeakDetectionBase
     {
-        bool m_ownsAllocator{};
+
     public:
 
-        virtual ~AllocatorsBase() = default;
-
-        void SetupAllocator(const AZ::SystemAllocator::Descriptor& allocatorDesc = {})
+        AllocatorsBase()
         {
-            AZ::AllocatorManager::Instance().EnterProfilingMode();
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
-
-            // Only create the SystemAllocator if it s not ready
-            if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Create(allocatorDesc);
-                m_ownsAllocator = true;
-            }
+            m_allocatedSizes = GetAllocatedSizes();
         }
 
-        void TeardownAllocator()
+        ~AllocatorsBase() override
         {
-            // Don't destroy the SystemAllocator if it is not ready and was not created by
-            // the AllocatorsBase
-            if (m_ownsAllocator && AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-            }
-            m_ownsAllocator = false;
-
+            CheckAllocatorsForLeaks();
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
-            AZ::AllocatorManager::Instance().ExitProfilingMode();
+        }
+
+        void SetupAllocator()
+        {
         }
     };
 
@@ -75,14 +126,6 @@ namespace UnitTest
         {
             SetupAllocator();
         }
-        explicit ScopedAllocatorFixture(const AZ::SystemAllocator::Descriptor& allocatorDesc)
-        {
-            SetupAllocator(allocatorDesc);
-        }
-        ~ScopedAllocatorFixture() override
-        {
-            TeardownAllocator();
-        }
     };
 
     // Like ScopedAllocatorFixture, but includes the Test base class
@@ -92,7 +135,6 @@ namespace UnitTest
     {
     public:
         ScopedAllocatorSetupFixture() = default;
-        explicit ScopedAllocatorSetupFixture(const AZ::SystemAllocator::Descriptor& allocatorDesc) : ScopedAllocatorFixture(allocatorDesc){}
     };
 
     /**
@@ -112,11 +154,6 @@ namespace UnitTest
         {
             SetupAllocator();
         }
-
-        void TearDown() override
-        {
-            TeardownAllocator();
-        }
     };
 
     //Legacy alias to avoid needing to modify tons of files
@@ -133,30 +170,31 @@ namespace UnitTest
     */
     class AllocatorsBenchmarkFixture
         : public ::benchmark::Fixture
-        , public AllocatorsBase
+        , public LeakDetectionBase
     {
     public:
         //Benchmark interface
-        void SetUp(const ::benchmark::State& st) override
+        void SetUp(const ::benchmark::State&) override
         {
-            AZ_UNUSED(st);
-            SetupAllocator();
+            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
+            m_allocatedSizes = GetAllocatedSizes();
         }
-        void SetUp(::benchmark::State& st) override
+        void SetUp(::benchmark::State&) override
         {
-            AZ_UNUSED(st);
-            SetupAllocator();
+            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
+            m_allocatedSizes = GetAllocatedSizes();
         }
 
-        void TearDown(const ::benchmark::State& st) override
+        void TearDown(const ::benchmark::State&) override
         {
-            AZ_UNUSED(st);
-            TeardownAllocator();
+            CheckAllocatorsForLeaks();
+            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
         }
-        void TearDown(::benchmark::State& st) override
+
+        void TearDown(::benchmark::State&) override
         {
-            AZ_UNUSED(st);
-            TeardownAllocator();
+            CheckAllocatorsForLeaks();
+            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
         }
     };
 
