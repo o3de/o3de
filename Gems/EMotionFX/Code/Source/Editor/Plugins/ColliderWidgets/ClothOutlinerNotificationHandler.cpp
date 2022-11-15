@@ -25,7 +25,7 @@ namespace EMotionFX
     ClothOutlinerNotificationHandler::ClothOutlinerNotificationHandler(ClothJointWidget* colliderWidget)
         :m_colliderWidget(colliderWidget)
     {
-        if (IsNvClothGemAvailable() || !ColliderHelpers::AreCollidersReflected())
+        if (!IsNvClothGemAvailable() || !ColliderHelpers::AreCollidersReflected())
         {
             m_colliderWidget->errorNotification("Nvidia Cloth Gem not Available",
                                                 "Cloth collider editor depends on the NVIDIA Cloth gem. Please enable it in the Project Manager.");

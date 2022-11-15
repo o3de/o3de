@@ -28,7 +28,7 @@ namespace EMotionFX
         :m_nodeWidget(jointWidget)
     {
 
-        if (ColliderHelpers::AreCollidersReflected())
+        if (!ColliderHelpers::AreCollidersReflected())
         {
             m_nodeWidget->errorNotification("PhysX disabled",
                                             "Hit detection collider editor depends on the PhysX gem. Please enable it in the Project Manager.");

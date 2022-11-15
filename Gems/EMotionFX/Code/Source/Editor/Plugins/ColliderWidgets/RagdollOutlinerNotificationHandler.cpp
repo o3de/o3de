@@ -36,7 +36,7 @@ namespace EMotionFX
     RagdollOutlinerNotificationHandler::RagdollOutlinerNotificationHandler(RagdollNodeWidget *nodeWidget)
         :m_nodeWidget(nodeWidget)
     {
-        if (IsPhysXGemAvailable() || !ColliderHelpers::AreCollidersReflected())
+        if (!IsPhysXGemAvailable() || !ColliderHelpers::AreCollidersReflected())
         {
             m_nodeWidget->errorNotification("PhysX disabled", "Ragdoll editor depends on the PhysX gem. Please enable it in the Project Manager.");
 
