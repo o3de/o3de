@@ -35,11 +35,16 @@ class Tests:
         "Expected material documents are opened.",
         "P0: Failed to verify the expected material documents are opened.")
     viewport_background_changed = (
-        "Viewport background changed successfully.",
-        "P0: Lighting background change failed.")
+        "Viewport lighting background changed successfully.",
+        "P0: Viewport lighting background change failed.")
+    viewport_background_has_expected_asset = (
+        "Viewport lighting background has the expected asset set.",
+        "P0: Viewport lighting background did not have the expected asset selected.")
     viewport_model_changed = (
         "Viewport model changed successfully",
         "P0: Viewport model change failed.")
+    viewport_model_has_expected_asset = (
+        "Viewport model did not have the expected asset selected.")
 
 
 def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
@@ -60,9 +65,15 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
     7) Change the baseColor.color property of the test_material_1 material document.
     8) Revert the baseColor.color property of the test_material_1 material document using undo.
     9) Use redo to change the baseColor.color property again.
-    10) Change the lighting background displayed behind the material model in the viewport.
-    11) Change the material model displayed in the viewport.
-    12) Look for errors and asserts.
+    10) Select the lighting background and verify the selection succeeded.
+    11) Verify the lighting background asset is the expected value.
+    12) Change the lighting background and verify the change succeeded.
+    13) Verify the lighting background asset is changed to a new expected value.
+    14) Select the model and verify the selection  succeeded.
+    15) Verify the model asset is the expected value.
+    16) Change the model asset and verify the change succeeded.
+    17) Verify the model asset is changed to a new expected value.
+    18) Look for errors and asserts.
 
     :return: None
     """
@@ -165,22 +176,65 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
             Tests.redo_material_asset_color_change,
             material_editor_utils.get_property(document_id, base_color_property_name) == expected_color)
 
-        # 10. Change the lighting background displayed behind the material model in the viewport.
-        lighting_background_asset_path = os.path.join(
+        # 10. Select the lighting background and verify the selection succeeded.
+        neutral_urban_asset_path = os.path.join(
             "@gemroot:MaterialEditor@", "Assets", "MaterialEditor", "LightingPresets",
             "neutral_urban.lightingpreset.azasset")
-        lighting_background_asset = atom_tools_utils.load_lighting_preset(lighting_background_asset_path)
-        Report.result(
-            Tests.viewport_background_changed, lighting_background_asset is True)
+        neutral_urban_background_loaded = atom_tools_utils.load_lighting_preset_by_path(neutral_urban_asset_path)
+        Report.result(Tests.viewport_background_changed, neutral_urban_background_loaded is True)
 
-        # 11. Change the material model displayed in the viewport.
-        model_asset_path = os.path.join(
+        # 11. Verify the lighting background asset is the expected value.
+        neutral_urban_background_path = os.path.join(
+            azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
+            "LightingPresets", "neutral_urban.lightingpreset.azasset")
+        Report.result(
+            Tests.viewport_background_has_expected_asset,
+            atom_tools_utils.get_last_lighting_preset_path() == neutral_urban_background_path)
+
+        # 12. Change the lighting background again and verify the change succeeded.
+        lythwood_room_asset_path = os.path.join(
+            "@gemroot:MaterialEditor@", "Assets", "MaterialEditor", "LightingPresets",
+            "lythwood_room.lightingpreset.azasset")
+        lythwood_room_asset_loaded = atom_tools_utils.load_lighting_preset_by_path(lythwood_room_asset_path)
+        Report.result(Tests.viewport_background_changed, lythwood_room_asset_loaded is True)
+
+        # 13. Verify the lighting background asset is changed to a new expected value.
+        lythwood_room_background_path = os.path.join(
+            azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
+            "LightingPresets", "lythwood_room.lightingpreset.azasset")
+        Report.result(
+            Tests.viewport_background_has_expected_asset,
+            atom_tools_utils.get_last_lighting_preset_path() == lythwood_room_background_path)
+
+        # 14. Select the model and verify the selection  succeeded.
+        beveled_cone_model_path = os.path.join(
             "@gemroot:MaterialEditor@", "Assets", "MaterialEditor", "ViewPortModels", "BeveledCone.modelpreset.azasset")
-        model_asset = atom_tools_utils.load_model_preset(model_asset_path)
-        Report.result(
-            Tests.viewport_model_changed, model_asset is True)
+        beveled_cone_model_asset = atom_tools_utils.load_model_preset_by_path(beveled_cone_model_path)
+        Report.result(Tests.viewport_model_changed, beveled_cone_model_asset is True)
 
-        # 12. Look for errors and asserts.
+        # 15. Verify the model asset is the expected value.
+        beveled_cone_model_asset_path = os.path.join(
+            azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
+            "ViewPortModels", "BeveledCone.modelpreset.azasset")
+        Report.result(
+            Tests.viewport_model_has_expected_asset,
+            atom_tools_utils.get_last_model_preset_path() == beveled_cone_model_asset_path)
+
+        # 16. Change the model asset and verify the change succeeded.
+        cone_model_path = os.path.join(
+            "@gemroot:MaterialEditor@", "Assets", "MaterialEditor", "ViewPortModels", "Cone.modelpreset.azasset")
+        cone_model_asset = atom_tools_utils.load_model_preset_by_path(cone_model_path)
+        Report.result(Tests.viewport_model_changed, cone_model_asset is True)
+
+        # 17. Verify the model asset is changed to a new expected value.
+        cone_model_asset_path = os.path.join(
+            azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
+            "ViewPortModels", "Cone.modelpreset.azasset")
+        Report.result(
+            Tests.viewport_model_has_expected_asset,
+            atom_tools_utils.get_last_model_preset_path() == cone_model_asset_path)
+
+        # 18. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

@@ -91,26 +91,55 @@ def set_pane_visibility(pane_name: str, value: bool) -> None:
 
 
 def load_lighting_preset_by_asset_id(asset_id: azlmbr.math.Uuid) -> bool:
+    """
+    Takes in an asset ID and attempts to select the lighting background in the viewporet dropdown using that ID.
+    Returns True if it successfully changes it, False otherwise.
+    """
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
         azlmbr.bus.Broadcast, "LoadLightingPresetByAssetId", asset_id)
 
 
-def load_lighting_preset(asset_path: str) -> bool:
+def load_lighting_preset_by_path(asset_path: str) -> bool:
+    """
+    Takes in an asset path and attempts to select the lighting background in the viewport dropdown using that path.
+    Returns True if it successfully changes it, False otherwise.
+    """
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
         azlmbr.bus.Broadcast, "LoadLightingPreset", asset_path)
 
 
-def get_current_lighting_preset() -> azlmbr.math.Uuid:
-    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetLightingPreset")
-
-
 def get_last_lighting_preset_asset_id() -> azlmbr.math.Uuid:
+    """
+    Returns the asset ID of the currently selected viewport lighting background.
+    Example return values observed when selecting different lighting backgrounds from the viewport dropdown:
+    {B9AA460C-622D-5F38-A02C-C0BCB0B65D96}:0
+    {C4978B46-D509-5B71-86A1-09D8CC051DC4}:0
+    {AB7FA1BA-7207-5333-BDD6-69C3F5B7A410}:0
+    """
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
         azlmbr.bus.Broadcast, "GetLastLightingPresetAssetId")
 
 
 def get_last_lighting_preset_path() -> str:
+    """
+    Returns the full path to the currently selected viewport lighting background.
+    Example return values observed when selecting different lighting backgrounds from the viewport dropdown:
+    "C:/git/o3de/Gems/Atom/Tools/MaterialEditor/Assets/MaterialEditor/LightingPresets/neutral_urban.lightingpreset.azasset"
+    "C:/git/o3de/Gems/Atom/Feature/Common/Assets/LightingPresets/LowContrast/artist_workshop.lightingpreset.azasset"
+    "C:/git/o3de/Gems/Atom/TestData/TestData/LightingPresets/beach_parking.lightingpreset.azasset"
+    """
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetLastLightingPresetPath")
+
+
+def get_last_model_preset_path() -> str:
+    """
+    Returns the full path to the currently selected viewport model.
+    Example return values observed when selecting different models from the vioewport dropdown:
+    "C:/git/o3de/Gems/Atom/Tools/MaterialEditor/Assets/MaterialEditor/ViewportModels/Shaderball.modelpreset.azasset"
+    "C:/git/o3de/Gems/Atom/Tools/MaterialEditor/Assets/MaterialEditor/ViewportModels/Cone.modelpreset.azasset"
+    "C:/git/o3de/Gems/Atom/Tools/MaterialEditor/Assets/MaterialEditor/ViewportModels/BeveledCone.modelpreset.azasset"
+    """
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetLastModelPresetPath")
 
 
 def set_grid_enabled(value: bool) -> None:
@@ -134,7 +163,11 @@ def load_model_preset_by_asset_id(asset_id: azlmbr.math.Uuid) -> bool:
         azlmbr.bus.Broadcast, "LoadModelPresetByAssetId", asset_id)
 
 
-def load_model_preset(asset_path: str) -> bool:
+def load_model_preset_by_path(asset_path: str) -> bool:
+    """
+    Takes in an asset path and attempts to select the model in the viewport dropdown using that path.
+    Returns True if it successfully changes it, False otherwise.
+    """
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "LoadModelPreset", asset_path)
 
 
