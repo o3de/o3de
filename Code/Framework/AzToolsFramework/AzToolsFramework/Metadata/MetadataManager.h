@@ -25,12 +25,33 @@ namespace AzToolsFramework
         //! @param typeId Type of the stored value and outValue.
         //! @return True if metadata file and key exists and was successfully read, false otherwise.
         virtual bool GetValue(AZ::IO::PathView file, AZStd::string_view key, void* outValue, AZ::Uuid typeId) = 0;
+
+        //! Gets a value from the metadata file associated with the file
+        //! @param file Absolute path to the file (or metadata file).
+        //! @param key JSONPath formatted key for the metadata value to read.  Ex: /Settings/Platform/pc.
+        //! @return True if metadata file and key exists and was successfully read, false otherwise.
+        template<typename T>
+        bool GetValue(AZ::IO::PathView file, AZStd::string_view key, T& outValue)
+        {
+            GetValue(file, key, &outValue, azrtti_typeid<T>());
+        }
+
         //! Sets a value in the metadata file associated with the file.
         //! @param file Absolute path to the file (or metadata file).
         //! @param key JSONPath formatted key for the metadata value to write.  Ex: /Settings/Platform/pc.
         //! @param typeId Type of the stored value and inValue.
         //! @return True if the value is successfully saved to disk, false otherwise.
         virtual bool SetValue(AZ::IO::PathView file, AZStd::string_view key, const void* inValue, AZ::Uuid typeId) = 0;
+
+        //! Sets a value in the metadata file associated with the file.
+        //! @param file Absolute path to the file (or metadata file).
+        //! @param key JSONPath formatted key for the metadata value to write.  Ex: /Settings/Platform/pc.
+        //! @return True if the value is successfully saved to disk, false otherwise.
+        template<typename T>
+        bool SetValue(AZ::IO::PathView file, AZStd::string_view key, const T& inValue)
+        {
+            SetValue(file, key, &inValue, azrtti_typeid<T>());
+        }
     };
 
     //! Component that handles reading/writing to metadata files.

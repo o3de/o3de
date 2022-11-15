@@ -206,8 +206,8 @@ namespace UnitTest
     TEST_F(MetadataManagerTests, Get_FileExists_KeyDoesNotExist_ReturnsFalse)
     {
         MyTestType test;
-        EXPECT_TRUE(m_metadata->SetValue("mockfile", "/Test", &test, azrtti_typeid<MyTestType>()));
-        EXPECT_FALSE(m_metadata->GetValue("mockfile", "/DoesNotExist", &test, azrtti_typeid<MyTestType>()));
+        EXPECT_TRUE(m_metadata->SetValue("mockfile", "/Test", test));
+        EXPECT_FALSE(m_metadata->GetValue("mockfile", "/DoesNotExist", test));
     }
 
     TEST_F(MetadataManagerTests, Get_FileVersion_ReturnsTrue)
