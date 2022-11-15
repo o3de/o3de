@@ -61,6 +61,40 @@ def _validate_property_visibility(component: EditorComponent, component_property
         f"was set to \"{visibility}\" when \"{expected}\" was expected."
 
 
+def validate_integer_property(get_int_value: typing.Callable, set_int_value: typing.Callable,
+                              component_name: str, property_name: str, tests: typing.Dict[int, bool]) -> None:
+    """
+    Function to validate the behavior of a property that gets and sets an Integer value.
+
+    :get_float_value: The Editor Entity Component Property's get method.
+    :set_float_value: The Editor Entity Component Property's set method.
+    :component_name: The name of the Editor Entity Component under test.
+    :property_name: The name of the Editor Entity Component Property under test.
+    :tests: A dictionary that stores an Int value and the intent of the values being passed. The following
+    format is expected
+     {
+        "test_description": (int_value, expect_pass),
+        "Zero value Test": (0, True)
+     }
+    """
+    int_value, expect_pass = 0, 1
+
+    Report.info(f"Validating {component_name}'s {property_name} Integer property can be set or fails gracefully.")
+
+    for test_name in tests:
+        test = tests[test_name]
+
+        set_int_value(test[int_value])
+
+        set_value = get_int_value()
+        expected_value = test[int_value]
+
+        assert (expected_value is set_value) is test[expect_pass], \
+            f"Error: The {component_name}'s  {property_name} property failed to the \"{test_name}\" test. " \
+            f"{expected_value} was expected but {set_value} was retrieved. Negative Scenario Test: {not test[expect_pass]}."
+
+
+
 def validate_float_property(get_float_value: typing.Callable, set_float_value: typing.Callable,
                             component_name: str, property_name: str, tests: typing.Dict[float, bool]) -> None:
     """
@@ -130,7 +164,7 @@ def validate_vector3_property(get_vector3_value: typing.Callable, set_vector3_va
 
 
 def validate_property_switch_toggle(get_toggle_value: typing.Callable, set_toggle_value: typing.Callable,
-                                    component_name: str, property_name:str) -> None:
+                                    component_name: str, property_name:str, restore_default: bool=True) -> None:
     """
     Used to toggle a property switch and validate that it toggled.
     param component_property_path: String of component property. (e.g. 'Settings|Visible')
@@ -146,3 +180,7 @@ def validate_property_switch_toggle(get_toggle_value: typing.Callable, set_toggl
 
     assert (start_value != end_value), f"Error: {component_name}'s {property_name} property toggle switch did not " \
                                        f"toggle to {end_value} when it started at {start_value}"
+
+    if restore_default:
+        set_toggle_value(start_value)
+

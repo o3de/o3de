@@ -7,6 +7,25 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 This util is intended to store common test values for editor component tests.
 """
 
+# Integer Tests
+INT_TESTS_NEGATIVE_EXPECT_PASS = {
+    "Negative Value Test": (-1.0, True),
+    "Zero Value Test": (0.0, True),
+    "Small Value Test": (0.1, True),
+    "Normal Value Test": (2.5, True),
+    "Large Value Test": (255.0, True),
+    "Large Value Boundary Test": (5000.0, True)
+}
+
+INT_TESTS_NEGATIVE_EXPECT_FAIL = {
+    "Negative Value Test": (-1.0, False),
+    "Zero Value Test": (0.0, True),
+    "Small Value Test": (0.1, True),
+    "Normal Value Test": (2.5, True),
+    "Large Value Test": (255.0, True),
+    "Large Value Boundary Test": (5000.0, True)
+}
+
 # Float Tests
 FLOAT_TESTS_NEGATIVE_EXPECT_PASS = {
     "Negative Value Test": (-1.0, True),

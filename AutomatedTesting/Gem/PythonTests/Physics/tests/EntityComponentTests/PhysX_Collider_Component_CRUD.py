@@ -37,12 +37,11 @@ def PhysX_Collider_Component_CRUD():
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Tracer, TestHelper
     from editor_python_test_tools.editor_component.editor_component_validation import \
-        (validate_property_switch_toggle, validate_vector3_property, validate_float_property)
+        (validate_property_switch_toggle, validate_vector3_property, validate_float_property, validate_integer_property)
     from editor_python_test_tools.editor_component.test_values.common_test_values import \
-        (VECTOR3_TESTS_NEGATIVE_EXPECT_FAIL, VECTOR3_TESTS_NEGATIVE_EXPECT_PASS, FLOAT_HEIGHT_TESTS,
-         FLOAT_TESTS_NEGATIVE_EXPECT_PASS, FLOAT_TESTS_NEGATIVE_EXPECT_FAIL)
+        (VECTOR3_TESTS_NEGATIVE_EXPECT_FAIL, VECTOR3_TESTS_NEGATIVE_EXPECT_PASS, FLOAT_HEIGHT_TESTS)
     from editor_python_test_tools.editor_component.test_values.phsyx_collider_test_values import \
-        (COLLIDER_RADIUS_TESTS, CYLINDER_HEIGHT_TESTS, CONTACT_OFFSET_TESTS, REST_OFFSET_TESTS)
+        (COLLIDER_RADIUS_TESTS, CYLINDER_HEIGHT_TESTS, CONTACT_OFFSET_TESTS, REST_OFFSET_TESTS, CYLINDER_SUBDIVISION_TESTS)
 
     from consts.general import Strings
 
@@ -78,25 +77,16 @@ def PhysX_Collider_Component_CRUD():
         validate_float_property(physx_collider.get_cylinder_height, physx_collider.set_cylinder_height, physx_collider.component.get_component_name(), "Cylinder Height", CYLINDER_HEIGHT_TESTS)
         validate_float_property(physx_collider.get_cylinder_radius, physx_collider.set_cylinder_radius, physx_collider.component.get_component_name(), "Cylinder Radius", COLLIDER_RADIUS_TESTS)
 
-        #physx_collider.set_cylinder_subdivision(0)  # o3de/o3de#12608 - Crash if subdivision set below 3
-        # physx_collider.set_cylinder_subdivision(-1)  # o3de/o3de#12608 - Crash if subdivision set below 3
-        physx_collider.set_cylinder_subdivision(3)
-        physx_collider.set_cylinder_subdivision(125)
-        # physx_collider.set_cylinder_subdivision(256)  # GHI #12608 - Crash if subdivision set above 125
+        validate_integer_property(physx_collider.get_cylinder_subdivision, physx_collider.set_cylinder_subdivision, physx_collider.component.get_component_name(), "Cylinder Subdivision", CYLINDER_SUBDIVISION_TESTS)
 
     # 6) Set Sphere Shape and Child Properties
         physx_collider.set_sphere_shape()
 
         validate_float_property(physx_collider.get_sphere_radius, physx_collider.set_sphere_radius, physx_collider.component.get_component_name(), "Sphere Radius", COLLIDER_RADIUS_TESTS)
 
-        # 7) Set General Properties
+    # 7) Set General Properties
         validate_property_switch_toggle(physx_collider.get_is_trigger, physx_collider.set_is_trigger, component_name, "Is Trigger")
-        validate_property_switch_toggle(physx_collider.get_is_trigger, physx_collider.set_is_trigger, component_name, "Is Trigger")
-
         validate_property_switch_toggle(physx_collider.get_is_simulated, physx_collider.set_is_simulated, component_name, "Is Simulated")
-        validate_property_switch_toggle(physx_collider.get_is_simulated, physx_collider.set_is_simulated, component_name, "Is Simulated")
-
-        validate_property_switch_toggle(physx_collider.get_in_scene_queries, physx_collider.set_in_scene_queries, component_name, "In Scene Queries")
         validate_property_switch_toggle(physx_collider.get_in_scene_queries, physx_collider.set_in_scene_queries, component_name, "In Scene Queries")
 
         validate_vector3_property(physx_collider.get_offset, physx_collider.set_offset, physx_collider.component.get_component_name(), "Offset", VECTOR3_TESTS_NEGATIVE_EXPECT_PASS)
@@ -113,20 +103,16 @@ def PhysX_Collider_Component_CRUD():
         validate_float_property(physx_collider.get_contact_offset, physx_collider.set_contact_offset, physx_collider.component.get_component_name(), "Contact Offset", CONTACT_OFFSET_TESTS)
         validate_float_property(physx_collider.get_rest_offset, physx_collider.set_rest_offset, physx_collider.component.get_component_name(), "Rest Offset", REST_OFFSET_TESTS)
 
-
         validate_property_switch_toggle(physx_collider.get_draw_collider, physx_collider.set_draw_collider, component_name, "Draw Collider")
-        validate_property_switch_toggle(physx_collider.get_is_trigger, physx_collider.set_is_trigger, component_name, "Draw Collider")
 
         # o3de/o3de#12503 PhysX Collider Component's Physic Material field(s) return unintuitive property tree paths.
         # physx_collider.set_physx_material_from_path(physx_material)
 
     # 8) Set PhyicsAsset Shape and Child Properties
         physx_collider.set_physicsasset_shape()
+
         physx_collider.set_physx_mesh_from_path(physx_mesh)
-
         validate_vector3_property(physx_collider.get_physx_mesh_asset_scale, physx_collider.set_physx_mesh_asset_scale, physx_collider.component.get_component_name(), "PhysX Mesh Asset Scale", VECTOR3_TESTS_NEGATIVE_EXPECT_PASS)
-
-        validate_property_switch_toggle(physx_collider.get_use_physics_materials_from_asset, physx_collider.set_use_physics_materials_from_asset, component_name, "Use Physics Materials From Asset")
         validate_property_switch_toggle(physx_collider.get_use_physics_materials_from_asset, physx_collider.set_use_physics_materials_from_asset, component_name, "Use Physics Materials From Asset")
 
     # 9) Delete Component

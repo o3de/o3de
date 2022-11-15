@@ -7,6 +7,16 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 These test values are intended to be utilized alongside the PhysX Collider
 """
 
+CYLINDER_SUBDIVISION_TESTS = {
+    # "Negative Value Test": (-1, False), # o3de/o3de#12608 - Crash if subdivision set below 3
+    # "Zero Value Test": (0, False), # o3de/o3de#12608 - Crash if subdivision set below 3
+    # "Out Of Lower Bounds Test": (2, False), # o3de/o3de#12608 - Crash if subdivision set below 3
+    "Minimum Value Test": (3, True),
+    "Middle(ish) Value Test": (60, True),
+    "Max Value Test": (125, True),
+    # "Out of Maximum Bounds Test": (256, False) # o3de/o3de#12608 - Crash if subdivision set above 125
+}
+
 CONTACT_OFFSET_TESTS = {
     "Negative Value Test": (-1.0, False),
     "Zero Value Test": (0.0, False),
