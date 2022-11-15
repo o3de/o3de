@@ -27,9 +27,6 @@ namespace AzToolsFramework
         ComponentModeActionHandler();
         ~ComponentModeActionHandler();
 
-        //void InitializeComponentMode(const AZStd::string& modeIdentifier);
-        //void AddActionToComponentMode();
-
     private:
         // ActionManagerRegistrationNotificationBus overrides ...
         void OnActionContextModeRegistrationHook() override;
