@@ -32,6 +32,9 @@ If applicable, add screenshots and/or a video to help explain your problem.
 **Found in Branch**
 Name of or link to the branch where the issue occurs.
 
+**Commit ID from Branch**
+ID (SHA-1 hash) of the latest commit from the branch where the issue occurs.
+
 **Desktop/Device (please complete the following information):**
  - Device: [e.g. PC, Mac, iPhone, Samsung] 
  - OS: [e.g. Windows, macOS, iOS, Android]
