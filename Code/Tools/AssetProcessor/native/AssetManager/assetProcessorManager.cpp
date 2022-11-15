@@ -4155,19 +4155,21 @@ namespace AssetProcessor
             }
             else if (QFileInfo(encodedFileData).isAbsolute())
             {
-                // attempt to split:
                 QString scanFolderName;
-                if (!m_platformConfig->ConvertToRelativePath(encodedFileData, resultDatabaseSourceName, scanFolderName))
+                // Verify the path is in a scanfolder
+                if (!m_platformConfig->GetScanFolderForFile(encodedFileData))
                 {
                     AZ_Warning(AssetProcessor::ConsoleChannel, false, "'%s' does not appear to be in any input folder.  Use relative paths instead.", sourceDependency.m_sourceFileDependencyPath.c_str());
                 }
                 else
                 {
+                    // Return the absolute path
                     resultDatabaseSourceName = encodedFileData;
                 }
             }
             else
             {
+                // Return the relative path
                 resultDatabaseSourceName = encodedFileData;
             }
         }
@@ -5193,11 +5195,18 @@ namespace AssetProcessor
             }
             else
             {
-                absolutePath = m_platformConfig->FindFirstMatchingFile(dep.GetPath().c_str());
-
-                if (absolutePath.isEmpty())
+                if (AZ::IO::PathView(dep.GetPath()).IsAbsolute())
                 {
-                    continue;
+                    absolutePath = dep.GetPath().c_str();
+                }
+                else
+                {
+                    absolutePath = m_platformConfig->FindFirstMatchingFile(dep.GetPath().c_str());
+
+                    if (absolutePath.isEmpty())
+                    {
+                        continue;
+                    }
                 }
             }
 
