@@ -32,18 +32,23 @@ namespace PhysXEditorTests
     EntityPtr CreateActiveGameEntityFromEditorEntity(AZ::Entity* editorEntity);
 
     //! Creates an active editor entity with shape collider and box shape components.
+    //! Adds a rigid body component if the dynamic parameter is true.
     EntityPtr CreateBoxShapeColliderEditorEntity(
         const AZ::Transform& transform,
         const AZ::Vector3& nonUniformScale,
         const AZ::Vector3& boxDimensions,
-        const AZ::Vector3& translationOffset);
+        const AZ::Vector3& translationOffset,
+        bool dynamic = false);
 
     //! Creates an active editor entity with shape collider and capsule shape components.
+    //! Adds a rigid body component if the dynamic parameter is true.
     EntityPtr CreateCapsuleShapeColliderEditorEntity(
-        const AZ::Transform& transform, float radius, float height, const AZ::Vector3& translationOffset);
+        const AZ::Transform& transform, float radius, float height, const AZ::Vector3& translationOffset, bool dynamic = false);
 
     //! Creates an active editor entity with shape collider and sphere shape components.
-    EntityPtr CreateSphereShapeColliderEditorEntity(const AZ::Transform& transform, float radius, const AZ::Vector3& translationOffset);
+    //! Adds a rigid body component if the dynamic parameter is true.
+    EntityPtr CreateSphereShapeColliderEditorEntity(
+        const AZ::Transform& transform, float radius, const AZ::Vector3& translationOffset, bool dynamic = false);
 
     //! Gets the AABB for the simulated body on the entity with the given ID, or returns a null AABB if no body is found.
     AZ::Aabb GetSimulatedBodyAabb(AZ::EntityId entityId);
