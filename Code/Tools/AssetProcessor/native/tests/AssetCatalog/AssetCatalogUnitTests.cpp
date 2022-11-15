@@ -13,11 +13,12 @@
 
 #include <QCoreApplication>
 
-#include <native/unittests/UnitTestRunner.h> // for UnitTestUtils like CreateDummyFile / AssertAbsorber.
+#include <native/unittests/UnitTestUtils.h> // for UnitTestUtils like CreateDummyFile / AssertAbsorber.
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <native/resourcecompiler/RCBuilder.h>
 
 #include "AssetManager/FileStateCache.h"
+#include <tests/UnitTestUtilities.h>
 
 namespace AssetProcessor
 {
@@ -186,15 +187,17 @@ namespace AssetProcessor
         // -- utility functions to create default state data --
 
         // Adds a scan folder to the config and to the database
-        void AddScanFolder(const ScanFolderInfo& scanFolderInfo, PlatformConfiguration& config, AssetDatabaseConnection* dbConn)
+        void AddScanFolder(ScanFolderInfo scanFolderInfo, PlatformConfiguration& config, AssetDatabaseConnection* dbConn)
         {
-            config.AddScanFolder(scanFolderInfo);
             ScanFolderDatabaseEntry newScanFolder(
                 scanFolderInfo.ScanPath().toStdString().c_str(),
                 scanFolderInfo.GetDisplayName().toStdString().c_str(),
                 scanFolderInfo.GetPortableKey().toStdString().c_str(),
                 scanFolderInfo.IsRoot());
             dbConn->SetScanFolder(newScanFolder);
+
+            scanFolderInfo.SetScanFolderID(newScanFolder.m_scanFolderID);
+            config.AddScanFolder(scanFolderInfo);
         }
 
         virtual void AddScanFolders(
@@ -919,6 +922,12 @@ namespace AssetProcessor
 
             if (expectedResult)
             {
+                EXPECT_EQ(assetInfo.m_assetId, m_customDataMembers->m_assetA);
+                EXPECT_EQ(assetInfo.m_assetType, m_customDataMembers->m_assetAType);
+                EXPECT_EQ(assetInfo.m_relativePath, expectedRelPath);
+                EXPECT_EQ(assetInfo.m_sizeBytes, m_customDataMembers->m_assetTestString.size());
+                EXPECT_EQ(rootPath, expectedRootPath);
+
                 return (assetInfo.m_assetId == m_customDataMembers->m_assetA)
                     && (assetInfo.m_assetType == m_customDataMembers->m_assetAType)
                     && (assetInfo.m_relativePath == expectedRelPath)
@@ -988,6 +997,17 @@ namespace AssetProcessor
         EXPECT_TRUE(GetSourceInfoBySourcePath(false, "", AZ::Uuid::CreateNull(), "", ""));
     }
 
+    TEST_F(AssetCatalogTest_AssetInfo, Sanity_InvalidPath)
+    {
+        auto* ebus = AzToolsFramework::AssetSystemRequestBus::FindFirstHandler();
+
+        AZ::Data::AssetInfo assetInfo;
+        AZStd::string watchFolder;
+
+        EXPECT_FALSE(ebus->GetSourceInfoBySourcePath("G:/random/folder/does/not/exist.png", assetInfo, watchFolder)); // Absolute path
+        EXPECT_FALSE(ebus->GetSourceInfoBySourcePath("random/folder/does/not/exist.png", assetInfo, watchFolder)); // Relative path
+    }
+
     TEST_F(AssetCatalogTest_AssetInfo, FindAssetNotRegisteredAsSource_FindsProduct)
     {
         // Setup: Add asset to database
@@ -1017,7 +1037,11 @@ namespace AssetProcessor
     TEST_F(AssetCatalogTest_AssetInfo, FindAssetInBuildQueue_FindsSource)
     {
         // Setup:  Add a source to queue.
-        m_data->m_assetCatalog->OnSourceQueued(m_customDataMembers->m_assetA.m_guid, m_customDataMembers->m_assetALegacyUuid, m_customDataMembers->m_subfolder1AbsolutePath.c_str(), m_customDataMembers->m_assetASourceRelPath.c_str());
+        m_data->m_assetCatalog->OnSourceQueued(
+            m_customDataMembers->m_assetA.m_guid,
+            m_customDataMembers->m_assetALegacyUuid,
+            AssetProcessor::SourceAssetReference(
+                m_customDataMembers->m_subfolder1AbsolutePath.c_str(), m_customDataMembers->m_assetASourceRelPath.c_str()));
 
         // TEST: Asset in queue, not registered as source asset
         EXPECT_TRUE(GetAssetInfoByIdPair(false, "", ""));
@@ -1030,7 +1054,11 @@ namespace AssetProcessor
     TEST_F(AssetCatalogTest_AssetInfo, FindAssetInBuildQueue_RegisteredAsSourceType_StillFindsSource)
     {
         // Setup:  Add a source to queue.
-        m_data->m_assetCatalog->OnSourceQueued(m_customDataMembers->m_assetA.m_guid, m_customDataMembers->m_assetALegacyUuid, m_customDataMembers->m_subfolder1AbsolutePath.c_str(), m_customDataMembers->m_assetASourceRelPath.c_str());
+        m_data->m_assetCatalog->OnSourceQueued(
+            m_customDataMembers->m_assetA.m_guid,
+            m_customDataMembers->m_assetALegacyUuid,
+            AssetProcessor::SourceAssetReference(
+                m_customDataMembers->m_subfolder1AbsolutePath.c_str(), m_customDataMembers->m_assetASourceRelPath.c_str()));
 
         // Register as source type
         AzToolsFramework::ToolsAssetSystemBus::Broadcast(&AzToolsFramework::ToolsAssetSystemRequests::RegisterSourceAssetType, m_customDataMembers->m_assetAType, m_customDataMembers->m_assetAFileFilter.c_str());
@@ -1051,7 +1079,11 @@ namespace AssetProcessor
         // Setup:  Add a source to queue, then notify its finished and add it to the database (simulates a full pipeline)
         AZ::s64 jobId;
         EXPECT_TRUE(AddSourceAndJob("subfolder1", m_customDataMembers->m_assetASourceRelPath.c_str(), &(m_data->m_dbConn), jobId, m_customDataMembers->m_assetA.m_guid));
-        m_data->m_assetCatalog->OnSourceQueued(m_customDataMembers->m_assetA.m_guid, m_customDataMembers->m_assetALegacyUuid, m_customDataMembers->m_subfolder1AbsolutePath.c_str(), m_customDataMembers->m_assetASourceRelPath.c_str());
+        m_data->m_assetCatalog->OnSourceQueued(
+            m_customDataMembers->m_assetA.m_guid,
+            m_customDataMembers->m_assetALegacyUuid,
+            AssetProcessor::SourceAssetReference(
+                m_customDataMembers->m_subfolder1AbsolutePath.c_str(), m_customDataMembers->m_assetASourceRelPath.c_str()));
         m_data->m_assetCatalog->OnSourceFinished(m_customDataMembers->m_assetA.m_guid, m_customDataMembers->m_assetALegacyUuid);
         ProductDatabaseEntry assetAEntry(jobId, 0, m_customDataMembers->m_assetAProductRelPath.c_str(), m_customDataMembers->m_assetAType);
         m_data->m_dbConn.SetProduct(assetAEntry);

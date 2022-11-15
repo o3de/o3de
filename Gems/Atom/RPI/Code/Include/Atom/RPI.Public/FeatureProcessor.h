@@ -88,9 +88,16 @@ namespace AZ
 
             //! Perform any necessary deactivation.
             virtual void Deactivate() {}
-
+            
+            //! O3DE_DEPRECATION_NOTICE(GHI-12687)
+            //! @deprecated use AddRenderPasses(RenderPipeline*)
             //! Apply changes and add additional render passes to the render pipeline from the feature processors
-            virtual void ApplyRenderPipelineChange(RenderPipeline* ) {}
+            virtual void ApplyRenderPipelineChange([[maybe_unused]] RenderPipeline* pipeline) {}
+
+            //! Add additional render passes to the render pipeline before it's finalized
+            //! The render pipeline must have m_allowModification set to true (see Scene::TryApplyRenderPipelineChanges() function)
+            //! This function is called when the render pipeline is added or rebuilt
+            virtual void AddRenderPasses([[maybe_unused]] RenderPipeline* pipeline) {}
 
             //! Allows the feature processor to expose supporting views based on
             //! the main views passed in. Main views (persistent views) are views that must be 

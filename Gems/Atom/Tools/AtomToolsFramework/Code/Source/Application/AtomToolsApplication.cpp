@@ -48,8 +48,8 @@ namespace AtomToolsFramework
     AtomToolsApplication* AtomToolsApplication::m_instance = {};
 
     AtomToolsApplication::AtomToolsApplication(const char* targetName, int* argc, char*** argv)
-        : Application(argc, argv)
-        , AzQtApplication(*argc, *argv)
+        : AzQtApplication(*argc, *argv)
+        , Application(argc, argv)
         , m_targetName(targetName)
         , m_toolId(targetName)
     {
@@ -370,6 +370,8 @@ namespace AtomToolsFramework
             AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
         }
 
+        AZ_TracePrintf("AtomToolsApplication", "CriticalAssetsCompiled\n");
+
         AZ::ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "CriticalAssetsCompiled", R"({})");
 
         // Reload the assetcatalog.xml at this point again
@@ -438,14 +440,14 @@ namespace AtomToolsFramework
             AtomToolsMainWindowRequestBus::Event(m_toolId, &AtomToolsMainWindowRequestBus::Handler::ActivateWindow);
         }
 
-        const AZStd::string timeoputSwitchName = "timeout";
-        if (commandLine.HasSwitch(timeoputSwitchName))
+        const AZStd::string timeoutSwitchName  = "timeout";
+        if (commandLine.HasSwitch(timeoutSwitchName ))
         {
-            const AZStd::string& timeoutValue = commandLine.GetSwitchValue(timeoputSwitchName, 0);
+            const AZStd::string& timeoutValue = commandLine.GetSwitchValue(timeoutSwitchName , 0);
             const uint32_t timeoutInMs = atoi(timeoutValue.c_str());
             AZ_Printf(m_targetName.c_str(), "Timeout scheduled, shutting down in %u ms", timeoutInMs);
-            QTimer::singleShot(timeoutInMs, this, [this]{
-                AZ_Printf(m_targetName.c_str(), "Timeout reached, shutting down");
+            QTimer::singleShot(timeoutInMs, this, [targetName = m_targetName]{
+                AZ_Printf(targetName.c_str(), "Timeout reached, shutting down");
                 AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
             });
         }

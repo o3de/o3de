@@ -162,7 +162,7 @@ protected:
     virtual void InitConnectionManager();
     void DestroyConnectionManager();
     void InitAssetRequestHandler(AssetProcessor::AssetRequestHandler* assetRequestHandler);
-    void InitFileStateCache();
+    virtual void InitFileStateCache();
     void CreateQtApplication() override;
 
     bool InitializeInternalBuilders();
@@ -208,6 +208,7 @@ protected:
     int m_processedAssetCount = 0;
     int m_warningCount = 0;
     int m_errorCount = 0;
+    int m_remainingAssetsToFinalize = 0;
     AZStd::set<AZStd::string> m_failedAssets;
     bool m_AssetProcessorManagerIdleState = false;
     bool m_sourceControlReady = false;

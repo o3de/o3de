@@ -45,7 +45,7 @@ namespace Multiplayer
         , public AzNetworking::IConnectionListener
         , public IMultiplayer
         , AzFramework::RootSpawnableNotificationBus::Handler
-        , AzFramework::LevelSystemLifecycleRequestBus::Handler
+        , AzFramework::LevelLoadBlockerBus::Handler
     {
     public:
         AZ_COMPONENT(MultiplayerSystemComponent, "{7C99C4C1-1103-43F9-AD62-8B91CF7C1981}");
@@ -148,7 +148,7 @@ namespace Multiplayer
         void OnRootSpawnableReady(AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, uint32_t generation) override;
         //! @}
 
-        //! AzFramework::LevelSystemLifecycleRequestBus::Handler overrides.
+        //! AzFramework::LevelLoadBlockerBus::Handler overrides.
         //! @{
         bool ShouldBlockLevelLoading(const char* levelName) override;
         //! @}

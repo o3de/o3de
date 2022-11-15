@@ -17,6 +17,7 @@
 
 #include "../BasePBR/BasePBR_SurfaceEval.azsli"
 #include "../MaterialFunctions/StandardGetAlphaAndClip.azsli"
+#include <Atom/Features/PBR/LightingOptions.azsli>
 
 Surface EvaluateSurface_StandardPBR(
     float3 positionWS,
@@ -67,11 +68,7 @@ Surface EvaluateSurface_StandardPBR(
                                surface.clearCoat.factor, surface.clearCoat.roughness, surface.clearCoat.normal);
         }
 
-        // Manipulate base layer f0 if clear coat is enabled and modify base layer's normal incidence reflectance
-        // For the derivation of the following equation please refer to:
-        // https://google.github.io/filament/Filament.md.html#materialsystem/clearcoatmodel/baselayermodification
-        float3 f0 = (1.0 - 5.0 * sqrt(surface.specularF0)) / (5.0 - sqrt(surface.specularF0));
-        surface.specularF0 = lerp(surface.specularF0, f0 * f0, surface.clearCoat.factor);
+        ApplyClearCoatToSpecularF0(surface.specularF0, surface.clearCoat.factor);
     }
     
     // ------- Opacity -------

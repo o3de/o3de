@@ -13,6 +13,7 @@
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
@@ -88,9 +89,15 @@ namespace AtomToolsFramework
     AZStd::string GetSymbolNameFromText(const AZStd::string& text)
     {
         QString symbolName(text.c_str());
+        // Replace non alphanumeric characters with space
         symbolName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
+        // Insert a space between a lowercase or numeric character followed by an uppercase character
         symbolName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1 \\2");
+        // Remove all trailing whitespace
+        symbolName.replace(QRegExp("\\s+\\Z"), "");
+        // Insert an underscore at the beginning of the string if it starts with a digit
         symbolName.replace(QRegExp("\\A(\\d)"), "_\\1");
+        // Replace every sequence of whitespace characters with underscores
         symbolName.replace(QRegExp("\\s+"), "_");
         return symbolName.toLower().toUtf8().constData();
     }
@@ -98,13 +105,20 @@ namespace AtomToolsFramework
     AZStd::string GetDisplayNameFromText(const AZStd::string& text)
     {
         QString displayName(text.c_str());
+        // Replace non alphanumeric characters with space
         displayName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
+        // Insert a space between a lowercase or numeric character followed by an uppercase character
         displayName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1 \\2");
+        // Remove all trailing whitespace
+        displayName.replace(QRegExp("\\s+\\Z"), "");
+        // Tokenize the string where separated by whitespace
         QStringList displayNameParts = displayName.split(QRegExp("\\s"), Qt::SkipEmptyParts);
         for (QString& part : displayNameParts)
         {
+            // Capitalize the first character of every token
             part.replace(0, 1, part[0].toUpper());
         }
+        // Recombine all of the strings separated by a single space
         return displayNameParts.join(" ").toUtf8().constData();
     }
 
@@ -225,7 +239,7 @@ namespace AtomToolsFramework
     {
         for (const auto& extensionPair : supportedExtensions)
         {
-            if (!extensionPair.second.empty() && AZ::StringFunc::EndsWith(path, extensionPair.second))
+            if (!extensionPair.second.empty() && path.ends_with(extensionPair.second))
             {
                 return extensionPair.second;
             }
@@ -533,7 +547,7 @@ namespace AtomToolsFramework
             AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
         if (AZ::IO::SystemFile outputFile; outputFile.Open(savePath.c_str(), configurationMode))
         {
-            saved = outputFile.Write(stringBuffer.data(), stringBuffer.size()) == stringBuffer.size();
+            saved = outputFile.Write(stringBuffer.c_str(), stringBuffer.size()) == stringBuffer.size();
         }
 
         AZ_Warning("AtomToolsFramework", saved, R"(Unable to save registry file to path "%s"\n)", savePath.c_str());
@@ -606,33 +620,101 @@ namespace AtomToolsFramework
         return paths;
     }
 
-    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard)
+    void VisitFilesInFolder(
+        const AZStd::string& folder, const AZStd::function<bool(const AZStd::string&)> visitorFn, bool recurse)
     {
-        AZStd::vector<AZStd::string> results;
+        AZStd::string fullFilter = folder + AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING + "*";
+        AZ::StringFunc::Replace(fullFilter, "\\", "/");
+
+        AZStd::string fullPath;
+        AZ::IO::SystemFile::FindFiles(
+            fullFilter.c_str(),
+            [&](const char* item, bool is_file)
+            {
+                // Skip the '.' and '..' folders
+                if ((azstricmp(".", item) == 0) || (azstricmp("..", item) == 0))
+                {
+                    return true;
+                }
+
+                // Continue if we can
+                fullPath.clear();
+                if (!AzFramework::StringFunc::Path::Join(folder.c_str(), item, fullPath))
+                {
+                    return false;
+                }
+                AZ::StringFunc::Replace(fullPath, "\\", "/");
+
+                if (is_file)
+                {
+                    return visitorFn(fullPath);
+                }
+
+                if (recurse && !AZ::StringFunc::Contains(fullPath, "cache"))
+                {
+                    VisitFilesInFolder(fullPath, visitorFn, recurse);
+                }
+                return true;
+            });
+    }
+
+    void VisitFilesInScanFolders(const AZStd::function<bool(const AZStd::string&)> visitorFn)
+    {
         AZStd::vector<AZStd::string> scanFolders;
+        scanFolders.reserve(100);
         AzToolsFramework::AssetSystemRequestBus::Broadcast(
             &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
 
         for (const AZStd::string& scanFolder : scanFolders)
         {
-            if (const auto& findFilesResult = AzFramework::FileFunc::FindFileList(scanFolder, wildcard.c_str(), true))
-            {
-                for (AZStd::string path : findFilesResult.GetValue())
-                {
-                    if (ValidateDocumentPath(path))
-                    {
-                        results.push_back(path);
-                    }
-                }
-            }
+            VisitFilesInFolder(scanFolder, visitorFn, true);
         }
+    }
+
+    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingFilter(const AZStd::function<bool(const AZStd::string&)> filterFn)
+    {
+        AZStd::vector<AZStd::string> scanFolders;
+        scanFolders.reserve(100);
+        AzToolsFramework::AssetSystemRequestBus::Broadcast(
+            &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
+
+        AZStd::recursive_mutex resultsMutex;
+        AZStd::vector<AZStd::string> results;
+        results.reserve(scanFolders.size());
+
+        AZ::parallel_for_each(
+            scanFolders.begin(),
+            scanFolders.end(),
+            [&](const AZStd::string& scanFolder)
+            {
+                VisitFilesInFolder(
+                    scanFolder,
+                    [&](const AZStd::string& path)
+                    {
+                        if (filterFn(path))
+                        {
+                            AZStd::scoped_lock lock(resultsMutex);
+                            results.emplace_back(path);
+                        }
+                        return true;
+                    },
+                    true);
+            });
 
         // Sorting the container and removing duplicate paths to ensure uniqueness in case of nested or overlapping scan folders.
-        // This was previously done automatically with a set but using a vector for compatibility with behavior context and Python. 
+        // This was previously done automatically with a set but using a vector for compatibility with behavior context and Python.
         AZStd::sort(results.begin(), results.end());
         results.erase(AZStd::unique(results.begin(), results.end()), results.end());
-
         return results;
+    }
+
+    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard)
+    {
+        return GetPathsInSourceFoldersMatchingFilter(
+            [&](const AZStd::string& path)
+            {
+                return AZ::IO::NameMatchesFilter(path, wildcard) && IsDocumentPathEditable(path);
+            });
     }
 
     void AddRegisteredScriptToMenu(QMenu* menu, const AZStd::string& registryKey, const AZStd::vector<AZStd::string>& arguments)
@@ -667,12 +749,12 @@ namespace AtomToolsFramework
 
                     scriptCategoryMenu->addAction(filename.c_str(), [scriptPath, arguments]() {
                         // Delay execution of the script until the next frame.
-                        QTimer::singleShot(0, [scriptPath, arguments]() {
+                        AZ::SystemTickBus::QueueFunction([scriptPath, arguments]() {
                             AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
                                 &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
                                 scriptPath,
                                 AZStd::vector<AZStd::string_view>(arguments.begin(), arguments.end()));
-                            });
+                        });
                     });
                 }
             }
@@ -685,7 +767,7 @@ namespace AtomToolsFramework
             if (!scriptPath.isEmpty())
             {
                 // Delay execution of the script until the next frame.
-                QTimer::singleShot(0, [scriptPath, arguments]() {
+                AZ::SystemTickBus::QueueFunction([scriptPath, arguments]() {
                     AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
                         &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
                         scriptPath.toUtf8().constData(),

@@ -38,11 +38,14 @@ namespace AZ
     }
 
     AZStd::shared_ptr<SceneAPI::Containers::Scene> SceneSerializationHandler::LoadScene(
-        const AZStd::string& sceneFilePath, Uuid sceneSourceGuid)
+        const AZStd::string& sceneFilePath,
+        Uuid sceneSourceGuid,
+        const AZStd::string& watchFolder)
     {
         AZ_PROFILE_FUNCTION(Editor);
         namespace Utilities = AZ::SceneAPI::Utilities;
         using AZ::SceneAPI::Events::AssetImportRequest;
+        using namespace SceneAPI::SceneCore;
 
         CleanSceneMap();
 
@@ -76,8 +79,8 @@ namespace AZ
         {
             bool result = false;
             AZ::Data::AssetInfo info;
-            AZStd::string watchFolder;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, cleanPath.c_str(), info, watchFolder);
+            AZStd::string watchFolderFromDatabase;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, cleanPath.c_str(), info, watchFolderFromDatabase);
             if (!result)
             {
                 AZ_TracePrintf(Utilities::ErrorWindow, "Failed to retrieve file info needed to determine the uuid of the source file.");
@@ -87,7 +90,7 @@ namespace AZ
         }
 
         AZStd::shared_ptr<SceneAPI::Containers::Scene> scene = 
-            AssetImportRequest::LoadSceneFromVerifiedPath(cleanPath.Native(), sceneSourceGuid, AssetImportRequest::RequestingApplication::Editor, SceneAPI::SceneCore::LoadingComponent::TYPEINFO_Uuid());
+            AssetImportRequest::LoadSceneFromVerifiedPath(cleanPath.Native(), sceneSourceGuid, AssetImportRequest::RequestingApplication::Editor, LoadingComponent::TYPEINFO_Uuid(), watchFolder);
         if (!scene)
         {
             AZ_TracePrintf(Utilities::ErrorWindow, "Failed to load the requested scene.");

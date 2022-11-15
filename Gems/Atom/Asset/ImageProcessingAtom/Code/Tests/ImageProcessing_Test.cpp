@@ -1028,11 +1028,9 @@ namespace UnitTest
         if (process != nullptr)
         {
             //the process can be stopped if the job is canceled or the worker is shutting down
-            int step = 0;
             while (!process->IsFinished())
             {
                 process->UpdateProcess();
-                step++;
             }
 
             //get process result

@@ -135,12 +135,15 @@ namespace AtomToolsFramework
 
     bool EntityPreviewViewportSettingsSystem::SaveLightingPreset(const AZStd::string& path) const
     {
-        if (!path.empty() && AZ::JsonSerializationUtils::SaveObjectToFile(&m_lightingPreset, path).IsSuccess())
+        const auto& pathWithAlias = GetPathWithAlias(path);
+        const auto& pathWithoutAlias = GetPathWithoutAlias(path);
+        if (!pathWithoutAlias.empty() && AZ::JsonSerializationUtils::SaveObjectToFile(&m_lightingPreset, pathWithoutAlias).IsSuccess())
         {
-            SetSettingsObject(
-                "/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/LightingPresetAssetId",
-                AZ::RPI::AssetUtils::MakeAssetId(path, 0).TakeValue());
-            m_lightingPresetCache[path] = m_lightingPreset;
+            SetSettingsValue("/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/LightingPresetPath", pathWithAlias);
+            m_lightingPresetCache[pathWithAlias] = m_lightingPreset;
+            m_settingsNotificationPending = true;
+            EntityPreviewViewportSettingsNotificationBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsNotificationBus::Events::OnLightingPresetAdded, pathWithoutAlias);
             return true;
         }
         return false;
@@ -148,27 +151,28 @@ namespace AtomToolsFramework
 
     bool EntityPreviewViewportSettingsSystem::LoadLightingPreset(const AZStd::string& path)
     {
-        auto cacheItr = m_lightingPresetCache.find(path);
+        const auto& pathWithAlias = GetPathWithAlias(path);
+        const auto& pathWithoutAlias = GetPathWithoutAlias(path);
+        auto cacheItr = m_lightingPresetCache.find(pathWithAlias);
         if (cacheItr != m_lightingPresetCache.end())
         {
-            SetSettingsObject(
-                "/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/LightingPresetAssetId",
-                AZ::RPI::AssetUtils::MakeAssetId(path, 0).TakeValue());
+            SetSettingsValue("/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/LightingPresetPath", pathWithAlias);
             m_lightingPreset = cacheItr->second;
             m_settingsNotificationPending = true;
             return true;
         }
 
-        if (!path.empty())
+        if (!pathWithoutAlias.empty())
         {
-            auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(path);
+            auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(pathWithoutAlias);
             if (loadResult && loadResult.GetValue().is<AZ::Render::LightingPreset>())
             {
-                SetSettingsObject(
-                    "/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/LightingPresetAssetId",
-                    AZ::RPI::AssetUtils::MakeAssetId(path, 0).TakeValue());
-                m_lightingPresetCache[path] = m_lightingPreset = AZStd::any_cast<AZ::Render::LightingPreset>(loadResult.GetValue());
+                SetSettingsValue("/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/LightingPresetPath", pathWithAlias);
+                m_lightingPreset = AZStd::any_cast<AZ::Render::LightingPreset>(loadResult.GetValue());
+                m_lightingPresetCache[pathWithAlias] = m_lightingPreset;
                 m_settingsNotificationPending = true;
+                EntityPreviewViewportSettingsNotificationBus::Event(
+                    m_toolId, &EntityPreviewViewportSettingsNotificationBus::Events::OnLightingPresetAdded, pathWithoutAlias);
                 return true;
             }
         }
@@ -182,14 +186,15 @@ namespace AtomToolsFramework
 
     AZStd::string EntityPreviewViewportSettingsSystem::GetLastLightingPresetPath() const
     {
-        return AZ::RPI::AssetUtils::GetSourcePathByAssetId(GetLastLightingPresetAssetId());
+        return GetPathWithoutAlias(GetSettingsValue<AZStd::string>(
+            "/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/LightingPresetPath",
+            "@gemroot:MaterialEditor@/Assets/MaterialEditor/LightingPresets/neutral_urban.lightingpreset.azasset"));
     }
 
     AZ::Data::AssetId EntityPreviewViewportSettingsSystem::GetLastLightingPresetAssetId() const
     {
-        return GetSettingsObject(
-            "/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/LightingPresetAssetId",
-            AZ::RPI::AssetUtils::GetAssetIdForProductPath("materialeditor/lightingpresets/neutral_urban.lightingpreset.azasset"));
+        const auto& result = AZ::RPI::AssetUtils::MakeAssetId(GetLastLightingPresetPath(), 0);
+        return result.IsSuccess() ? result.GetValue() : AZ::Data::AssetId();
     }
 
     void EntityPreviewViewportSettingsSystem::SetModelPreset(const AZ::Render::ModelPreset& preset)
@@ -205,12 +210,15 @@ namespace AtomToolsFramework
 
     bool EntityPreviewViewportSettingsSystem::SaveModelPreset(const AZStd::string& path) const
     {
-        if (!path.empty() && AZ::JsonSerializationUtils::SaveObjectToFile(&m_modelPreset, path).IsSuccess())
+        const auto& pathWithAlias = GetPathWithAlias(path);
+        const auto& pathWithoutAlias = GetPathWithoutAlias(path);
+        if (!pathWithoutAlias.empty() && AZ::JsonSerializationUtils::SaveObjectToFile(&m_modelPreset, pathWithoutAlias).IsSuccess())
         {
-            SetSettingsObject(
-                "/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/ModelPresetAssetId",
-                AZ::RPI::AssetUtils::MakeAssetId(path, 0).TakeValue());
-            m_modelPresetCache[path] = m_modelPreset;
+            SetSettingsValue("/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/ModelPresetPath", pathWithAlias);
+            m_modelPresetCache[pathWithAlias] = m_modelPreset;
+            m_settingsNotificationPending = true;
+            EntityPreviewViewportSettingsNotificationBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsNotificationBus::Events::OnModelPresetAdded, pathWithoutAlias);
             return true;
         }
         return false;
@@ -218,27 +226,28 @@ namespace AtomToolsFramework
 
     bool EntityPreviewViewportSettingsSystem::LoadModelPreset(const AZStd::string& path)
     {
-        auto cacheItr = m_modelPresetCache.find(path);
+        const auto& pathWithAlias = GetPathWithAlias(path);
+        const auto& pathWithoutAlias = GetPathWithoutAlias(path);
+        auto cacheItr = m_modelPresetCache.find(pathWithAlias);
         if (cacheItr != m_modelPresetCache.end())
         {
-            SetSettingsObject(
-                "/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/ModelPresetAssetId",
-                AZ::RPI::AssetUtils::MakeAssetId(path, 0).TakeValue());
+            SetSettingsValue("/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/ModelPresetPath", pathWithAlias);
             m_modelPreset = cacheItr->second;
             m_settingsNotificationPending = true;
             return true;
         }
 
-        if (!path.empty())
+        if (!pathWithoutAlias.empty())
         {
-            auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(path);
+            auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(pathWithoutAlias);
             if (loadResult && loadResult.GetValue().is<AZ::Render::ModelPreset>())
             {
-                SetSettingsObject(
-                    "/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/ModelPresetAssetId",
-                    AZ::RPI::AssetUtils::MakeAssetId(path, 0).TakeValue());
-                m_modelPresetCache[path] = m_modelPreset = AZStd::any_cast<AZ::Render::ModelPreset>(loadResult.GetValue());
+                SetSettingsValue("/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/ModelPresetPath", pathWithAlias);
+                m_modelPreset = AZStd::any_cast<AZ::Render::ModelPreset>(loadResult.GetValue());
+                m_modelPresetCache[pathWithAlias] = m_modelPreset;
                 m_settingsNotificationPending = true;
+                EntityPreviewViewportSettingsNotificationBus::Event(
+                    m_toolId, &EntityPreviewViewportSettingsNotificationBus::Events::OnModelPresetAdded, pathWithoutAlias);
                 return true;
             }
         }
@@ -252,14 +261,15 @@ namespace AtomToolsFramework
 
     AZStd::string EntityPreviewViewportSettingsSystem::GetLastModelPresetPath() const
     {
-        return AZ::RPI::AssetUtils::GetSourcePathByAssetId(GetLastModelPresetAssetId());
+        return GetPathWithoutAlias(GetSettingsValue<AZStd::string>(
+            "/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/ModelPresetPath",
+            "@gemroot:MaterialEditor@/Assets/MaterialEditor/ViewportModels/Shaderball.modelpreset.azasset"));
     }
 
     AZ::Data::AssetId EntityPreviewViewportSettingsSystem::GetLastModelPresetAssetId() const
     {
-        return GetSettingsObject(
-            "/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/ModelPresetAssetId",
-            AZ::RPI::AssetUtils::GetAssetIdForProductPath("materialeditor/viewportmodels/shaderball.modelpreset.azasset"));
+        const auto& result = AZ::RPI::AssetUtils::MakeAssetId(GetLastModelPresetPath(), 0);
+        return result.IsSuccess() ? result.GetValue() : AZ::Data::AssetId();
     }
 
     void EntityPreviewViewportSettingsSystem::SetShadowCatcherEnabled(bool enable)
@@ -348,7 +358,7 @@ namespace AtomToolsFramework
             return;
         }
 
-        if (AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), AZ::Render::LightingPreset::Extension))
+        if (assetInfo.m_relativePath.ends_with(AZ::Render::LightingPreset::Extension))
         {
             AZ::TickBus::QueueFunction([=]() {
                 const auto& path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
@@ -357,15 +367,19 @@ namespace AtomToolsFramework
                     auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(path);
                     if (loadResult && loadResult.GetValue().is<AZ::Render::LightingPreset>())
                     {
-                        m_lightingPresetCache[path] = AZStd::any_cast<AZ::Render::LightingPreset>(loadResult.GetValue());
+                        const auto& pathWithAlias = GetPathWithAlias(path);
+                        const auto& pathWithoutAlias = GetPathWithoutAlias(path);
+                        m_lightingPresetCache[pathWithAlias] = AZStd::any_cast<AZ::Render::LightingPreset>(loadResult.GetValue());
                         m_settingsNotificationPending = true;
+                        EntityPreviewViewportSettingsNotificationBus::Event(
+                            m_toolId, &EntityPreviewViewportSettingsNotificationBus::Events::OnLightingPresetAdded, pathWithoutAlias);
                     }
                 }
             });
             return;
         }
 
-        if (AzFramework::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), AZ::Render::ModelPreset::Extension))
+        if (assetInfo.m_relativePath.ends_with(AZ::Render::ModelPreset::Extension))
         {
             AZ::TickBus::QueueFunction([=]() {
                 const auto& path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
@@ -374,8 +388,12 @@ namespace AtomToolsFramework
                     auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(path);
                     if (loadResult && loadResult.GetValue().is<AZ::Render::ModelPreset>())
                     {
-                        m_modelPresetCache[path] = AZStd::any_cast<AZ::Render::ModelPreset>(loadResult.GetValue());
+                        const auto& pathWithAlias = GetPathWithAlias(path);
+                        const auto& pathWithoutAlias = GetPathWithoutAlias(path);
+                        m_modelPresetCache[pathWithAlias] = AZStd::any_cast<AZ::Render::ModelPreset>(loadResult.GetValue());
                         m_settingsNotificationPending = true;
+                        EntityPreviewViewportSettingsNotificationBus::Event(
+                            m_toolId, &EntityPreviewViewportSettingsNotificationBus::Events::OnModelPresetAdded, pathWithoutAlias);
                     }
                 }
             });

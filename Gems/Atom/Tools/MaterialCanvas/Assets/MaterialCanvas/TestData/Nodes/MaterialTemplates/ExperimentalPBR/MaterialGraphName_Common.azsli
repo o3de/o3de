@@ -45,12 +45,12 @@ struct CommonVSOutput
     float4 m_tangent;
     float2 m_uv0;
     float2 m_uv1;
-    float4 m_worldPosition;
+    float3 m_worldPosition;
 };
 
 void Evaluate_CommonVSInput(in CommonVSInput IN, out CommonVSOutput OUT)
 {
-    float4 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0));
+    float3 worldPosition = (float3)mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0));
 
     #define O3DE_MC_POSITION IN.m_position
     #define O3DE_MC_UV(index) (index == 0 ? IN.m_uv0 : IN.m_uv1);
@@ -60,7 +60,7 @@ void Evaluate_CommonVSInput(in CommonVSInput IN, out CommonVSOutput OUT)
     #define O3DE_MC_WORLD_POSITION worldPosition
 
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inPositionOffset
-    float4 inPositionOffset = float4(0.0, 0.0, 0.0, 0.0);
+    float3 inPositionOffset = {0.0, 0.0, 0.0};
     // O3DE_GENERATED_INSTRUCTIONS_END
 
     #undef O3DE_MC_POSITION
@@ -70,8 +70,8 @@ void Evaluate_CommonVSInput(in CommonVSInput IN, out CommonVSOutput OUT)
     #undef O3DE_MC_BITANGENT
     #undef O3DE_MC_WORLD_POSITION
 
-    OUT.m_worldPosition = worldPosition + float4(inPositionOffset.xyz, 0.0);
-    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, OUT.m_worldPosition);
+    OUT.m_worldPosition = worldPosition + (float3)inPositionOffset;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
     OUT.m_normal = IN.m_normal;
     OUT.m_tangent = IN.m_tangent;
     OUT.m_uv1 = IN.m_uv0;

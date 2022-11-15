@@ -161,6 +161,22 @@ namespace AzFramework
         }
     }
 
+    void OctreeNode::Enumerate(const AZ::Hemisphere& hemisphere, const IVisibilityScene::EnumerateCallback& callback) const
+    {
+        if (AZ::ShapeIntersection::Overlaps(hemisphere, m_bounds))
+        {
+            EnumerateHelper(hemisphere, callback);
+        }
+    }
+
+    void OctreeNode::Enumerate(const AZ::Capsule& capsule, const IVisibilityScene::EnumerateCallback& callback) const
+    {
+        if (AZ::ShapeIntersection::Overlaps(capsule, m_bounds))
+        {
+            EnumerateHelper(capsule, callback);
+        }
+    }
+
     void OctreeNode::Enumerate(const AZ::Frustum& frustum, const IVisibilityScene::EnumerateCallback& callback) const
     {
         if (AZ::ShapeIntersection::Overlaps(frustum, m_bounds))
@@ -382,6 +398,18 @@ namespace AzFramework
     {
         AZStd::shared_lock<AZStd::shared_mutex> lock(m_sharedMutex);
         m_root.Enumerate(sphere, callback);
+    }
+
+    void OctreeScene::Enumerate(const AZ::Hemisphere& hemisphere, const IVisibilityScene::EnumerateCallback& callback) const
+    {
+        AZStd::shared_lock<AZStd::shared_mutex> lock(m_sharedMutex);
+        m_root.Enumerate(hemisphere, callback);
+    }
+
+    void OctreeScene::Enumerate(const AZ::Capsule & capsule, const IVisibilityScene::EnumerateCallback& callback) const
+    {
+        AZStd::shared_lock<AZStd::shared_mutex> lock(m_sharedMutex);
+        m_root.Enumerate(capsule, callback);
     }
 
     void OctreeScene::Enumerate(const AZ::Frustum& frustum, const IVisibilityScene::EnumerateCallback& callback) const

@@ -2448,11 +2448,23 @@ namespace AzToolsFramework
                     [&](JobDatabaseEntry& entry)
                     {
                         AzToolsFramework::AssetSystem::JobInfo jobinfo;
+                        AZ::s64 scanFolderId{};
+
                         succeeded = QuerySourceBySourceID(entry.m_sourcePK,
                                 [&](SourceDatabaseEntry& sourceEntry)
                                 {
                                     found = true;
                                     jobinfo.m_sourceFile = AZStd::move(sourceEntry.m_sourceName);
+                                    scanFolderId = sourceEntry.m_scanFolderPK;
+                                    return true;
+                                });
+
+                        succeeded = succeeded && found &&
+                            QueryScanFolderByScanFolderID(
+                                scanFolderId,
+                                [&jobinfo](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanfolder)
+                                {
+                                    jobinfo.m_watchFolder = scanfolder.m_scanFolder;
                                     return true;
                                 });
 
@@ -2501,12 +2513,13 @@ namespace AzToolsFramework
             return found && succeeded;
         }
 
-        bool AssetDatabaseConnection::QueryJobInfoBySourceName(const char* sourceName, jobInfoHandler handler, AZ::Uuid builderGuid, const char* jobKey, const char* platform, AssetSystem::JobStatus status)
+        bool AssetDatabaseConnection::QueryJobInfoBySourceNameScanFolderId(const char* sourceName, AZ::s64 scanfolderId, jobInfoHandler handler, AZ::Uuid builderGuid, const char* jobKey, const char* platform, AssetSystem::JobStatus status)
         {
             SourceDatabaseEntry source;
 
             bool found = false;
-            bool succeeded = QuerySourceBySourceName(sourceName,
+            bool succeeded = QuerySourceBySourceNameScanFolderID(
+                sourceName, scanfolderId,
                     [&](SourceDatabaseEntry& entry)
                     {
                         found = true;

@@ -19,6 +19,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/std/string/regex.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/IconDecoratedNodePaletteTreeItem.h>
@@ -26,6 +27,31 @@
 
 namespace AtomToolsFramework
 {
+    void DynamicNodeManager::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<DynamicNodeManager>()
+                ->Version(0)
+                ;
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<DynamicNodeManagerRequestBus>("DynamicNodeManagerRequestBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Editor")
+                ->Attribute(AZ::Script::Attributes::Module, "atomtools")
+                ->Event("LoadConfigFiles", &DynamicNodeManagerRequestBus::Events::LoadConfigFiles)
+                ->Event("RegisterConfig", &DynamicNodeManagerRequestBus::Events::RegisterConfig)
+                ->Event("GetConfigById", &DynamicNodeManagerRequestBus::Events::GetConfigById)
+                ->Event("Clear", &DynamicNodeManagerRequestBus::Events::Clear)
+                ->Event("CreateNodeById", &DynamicNodeManagerRequestBus::Events::CreateNodeById)
+                ->Event("CreateNodeByName", &DynamicNodeManagerRequestBus::Events::CreateNodeByName)
+                ;
+        }
+    }
+
     DynamicNodeManager::DynamicNodeManager(const AZ::Crc32& toolId)
         : m_toolId(toolId)
     {
@@ -119,8 +145,11 @@ namespace AtomToolsFramework
             auto categoryItr = categoryMap.find(config.m_category);
             if (categoryItr == categoryMap.end())
             {
-                categoryItr = categoryMap.emplace(config.m_category,
-                    rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>(config.m_category, m_toolId)).first;
+                // Creating a new node palette tree item category and setting the title palette based on the 1st dynamic node config added
+                auto categoryTreeItem =
+                    rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>(config.m_category, m_toolId);
+                categoryTreeItem->SetTitlePalette(config.m_titlePaletteName);
+                categoryItr = categoryMap.emplace(config.m_category, categoryTreeItem).first;
             }
 
             categoryItr->second->CreateChildNode<DynamicNodePaletteItem>(m_toolId, config);
@@ -128,6 +157,33 @@ namespace AtomToolsFramework
 
         GraphModelIntegration::AddCommonNodePaletteUtilities(rootItem, m_toolId);
         return rootItem;
+    }
+
+    GraphModel::NodePtr DynamicNodeManager::CreateNodeById(GraphModel::GraphPtr graph, const AZ::Uuid& configId)
+    {
+        const auto configItr = m_nodeConfigMap.find(configId);
+        if (configItr != m_nodeConfigMap.end())
+        {
+            return AZStd::make_shared<DynamicNode>(graph, m_toolId, configItr->first);
+        }
+        return GraphModel::NodePtr();
+    }
+
+    GraphModel::NodePtr DynamicNodeManager::CreateNodeByName(GraphModel::GraphPtr graph, const AZStd::string& name)
+    {
+        const auto configItr = AZStd::find_if(
+            m_nodeConfigMap.begin(),
+            m_nodeConfigMap.end(),
+            [&name](const auto& configPair)
+            {
+                return AZ::StringFunc::Equal(name, configPair.second.m_title);
+            });
+
+        if (configItr != m_nodeConfigMap.end())
+        {
+            return AZStd::make_shared<DynamicNode>(graph, m_toolId, configItr->first);
+        }
+        return GraphModel::NodePtr();
     }
 
     void DynamicNodeManager::RegisterEditDataForSetting(const AZStd::string& settingName, const AZ::Edit::ElementData& editData)
@@ -150,7 +206,7 @@ namespace AtomToolsFramework
     bool DynamicNodeManager::ValidateSlotConfig(
         [[maybe_unused]] const AZ::Uuid& configId, const DynamicNodeSlotConfig& slotConfig) const
     {
-        if (slotConfig.m_supportedDataTypes.empty())
+        if (slotConfig.m_supportedDataTypeRegex.empty())
         {
             AZ_Error(
                 "DynamicNodeManager",
@@ -161,25 +217,24 @@ namespace AtomToolsFramework
             return false;
         }
 
-        for (const AZStd::string& dataTypeName : slotConfig.m_supportedDataTypes)
+        AZStd::regex supportedDataTypeRegex(slotConfig.m_supportedDataTypeRegex, AZStd::regex::flag_type::icase);
+        if (!AZStd::any_of(
+                m_registeredDataTypes.begin(),
+                m_registeredDataTypes.end(),
+                [&](const auto& dataType)
+                {
+                    return AZStd::regex_match(dataType->GetCppName(), supportedDataTypeRegex) ||
+                        AZStd::regex_match(dataType->GetDisplayName(), supportedDataTypeRegex);
+                }))
         {
-            if (!AZStd::any_of(
-                    m_registeredDataTypes.begin(),
-                    m_registeredDataTypes.end(),
-                    [&dataTypeName](const auto& dataType)
-                    {
-                        return dataTypeName == dataType->GetCppName() || dataTypeName == dataType->GetDisplayName();
-                    }))
-            {
-                AZ_Error(
-                    "DynamicNodeManager",
-                    false,
-                    "DynamicNodeConfig \"%s\" could not be validated because DynamicNodeSlotConfig \"%s\" references unregistered data type \"%s\".",
-                    configId.ToFixedString().c_str(),
-                    slotConfig.m_displayName.c_str(),
-                    dataTypeName.c_str());
-                return false;
-            }
+            AZ_Error(
+                "DynamicNodeManager",
+                false,
+                "DynamicNodeConfig \"%s\" could not be validated because DynamicNodeSlotConfig \"%s\" does not match any registered data type."
+                "types.",
+                configId.ToFixedString().c_str(),
+                slotConfig.m_displayName.c_str());
+            return false;
         }
 
         return true;

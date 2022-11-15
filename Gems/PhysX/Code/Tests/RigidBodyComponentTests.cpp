@@ -201,4 +201,31 @@ namespace PhysXEditorTests
         EXPECT_EQ(expectedError.GetErrorCount(), 1);
     }
 
+    TEST_F(PhysXEditorFixture, EditorRigidBodyComponent_CylinderColliderSetInvalidSubdivisions_WarningIssued)
+    {
+        // Create editor entities
+        EntityPtr editorEntity = CreateInactiveEditorEntity("InvalidSubdivisions");
+
+        UnitTest::ErrorHandler expectedError("clamped into allowed range");
+
+        editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
+        const auto* colliderComponent = editorEntity->CreateComponent<PhysX::EditorColliderComponent>();
+
+        editorEntity->Activate();
+
+        AZ::EntityComponentIdPair idPair(editorEntity->GetId(), colliderComponent->GetId());
+
+        // Set collider to be a cylinder
+        const Physics::ShapeType shapeType = Physics::ShapeType::Cylinder;
+        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetShapeType, shapeType);
+
+        // Set collider subdivision values outside the allowed range
+        const AZ::u8 subdivisionsTooSmall = PhysX::Utils::MinFrustumSubdivisions - 1;
+        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderSubdivisionCount, subdivisionsTooSmall);
+        EXPECT_EQ(expectedError.GetExpectedWarningCount(), 1);
+
+        const AZ::u8 subdivisionsTooLarge = PhysX::Utils::MaxFrustumSubdivisions + 1;
+        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderSubdivisionCount, subdivisionsTooLarge);
+        EXPECT_EQ(expectedError.GetExpectedWarningCount(), 2);
+    }
 } // namespace PhysXEditorTests

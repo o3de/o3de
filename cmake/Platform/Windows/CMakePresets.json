@@ -112,12 +112,31 @@
         {
             "name": "windows-ninja",
             "displayName": "Windows Ninja",
-            "description": "Configure Windows using the Ninja Multi-Config genrator",
+            "description": "Configure Windows using the Ninja Multi-Config generator",
             "binaryDir": "${sourceDir}/build/windows_ninja",
             "inherits": [
                 "ninja-multi-config",
                 "host-windows"
             ]
+        },
+        {
+            "name": "windows-ninja-clang",
+            "displayName": "Windows Ninja + Clang",
+            "description": "Configure Windows using the Ninja Multi-Config generator and the clang compiler. ninja and clang must be in the path",
+            "binaryDir": "${sourceDir}/build/windows_clang",
+            "inherits": [
+                "windows-ninja"
+            ],
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": {
+                    "type": "STRING",
+                    "value": "clang"
+                },
+                "CMAKE_CXX_COMPILER": {
+                    "type": "STRING",
+                    "value": "clang++"
+                }
+            }
         }
     ],
     "buildPresets": [
