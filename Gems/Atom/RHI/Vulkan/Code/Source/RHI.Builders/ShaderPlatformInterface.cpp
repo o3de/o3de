@@ -150,7 +150,7 @@ namespace AZ
             const RHI::ShaderHardwareStage shaderStageType,
             const RHI::ShaderBuildArguments& shaderBuildArguments,
             AZStd::vector<uint8_t>& compiledShader,
-            const AssetBuilderSDK::PlatformInfo& platform,
+            [[maybe_unused]] const AssetBuilderSDK::PlatformInfo& platform,
             ByProducts& byProducts) const
         {
             // Shader compiler executable
