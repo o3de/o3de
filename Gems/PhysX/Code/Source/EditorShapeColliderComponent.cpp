@@ -371,7 +371,7 @@ namespace PhysX
         LmbrCentral::BoxShapeComponentRequestsBus::EventResult(boxDimensions, GetEntityId(),
             &LmbrCentral::BoxShapeComponentRequests::GetBoxDimensions);
 
-        SetShapeConfig(ShapeType::Box, Physics::BoxShapeConfiguration(boxDimensions), scale);
+        SetShapeConfig(ShapeType::Box, Physics::BoxShapeConfiguration(boxDimensions, scale));
         m_geometryCache.m_boxDimensions = scale * boxDimensions;
     }
 
@@ -414,7 +414,7 @@ namespace PhysX
                 Physics::CookedMeshShapeConfiguration::MeshType::TriangleMesh);
             shapeConfig.m_scale = scale;
 
-            SetShapeConfig(ShapeType::QuadSingleSided, shapeConfig, scale);
+            SetShapeConfig(ShapeType::QuadSingleSided, shapeConfig);
         }
         else
         {
@@ -422,7 +422,7 @@ namespace PhysX
             const float zDim = AZ::GetMax(minDimension, 1e-3f * AZ::GetMin(xDim, yDim));
             const AZ::Vector3 boxDimensions(xDim, yDim, zDim);
 
-            SetShapeConfig(ShapeType::QuadDoubleSided, Physics::BoxShapeConfiguration(boxDimensions), scale);
+            SetShapeConfig(ShapeType::QuadDoubleSided, Physics::BoxShapeConfiguration(boxDimensions, scale));
         }
     }
 
@@ -432,9 +432,9 @@ namespace PhysX
         LmbrCentral::CapsuleShapeComponentRequestsBus::EventResult(lmbrCentralCapsuleShapeConfig, GetEntityId(),
             &LmbrCentral::CapsuleShapeComponentRequests::GetCapsuleConfiguration);
         const Physics::CapsuleShapeConfiguration& capsuleShapeConfig =
-            Utils::ConvertFromLmbrCentralCapsuleConfig(lmbrCentralCapsuleShapeConfig);
+            Utils::ConvertFromLmbrCentralCapsuleConfig(lmbrCentralCapsuleShapeConfig, AZ::Vector3(scale));
 
-        SetShapeConfig(ShapeType::Capsule, capsuleShapeConfig, AZ::Vector3(scale));
+        SetShapeConfig(ShapeType::Capsule, capsuleShapeConfig);
         m_geometryCache.m_radius = scale * capsuleShapeConfig.m_radius;
         m_geometryCache.m_height = scale * capsuleShapeConfig.m_height;
     }
@@ -445,7 +445,7 @@ namespace PhysX
         LmbrCentral::SphereShapeComponentRequestsBus::EventResult(radius, GetEntityId(),
             &LmbrCentral::SphereShapeComponentRequests::GetRadius);
 
-        SetShapeConfig(ShapeType::Sphere, Physics::SphereShapeConfiguration(radius), AZ::Vector3(scale));
+        SetShapeConfig(ShapeType::Sphere, Physics::SphereShapeConfiguration(radius, AZ::Vector3(scale)));
         m_geometryCache.m_radius = scale * radius;
     }
 
@@ -486,7 +486,7 @@ namespace PhysX
 
         if (shapeConfig.has_value())
         {
-            SetShapeConfig(ShapeType::Cylinder, shapeConfig.value(), AZ::Vector3(scale));
+            SetShapeConfig(ShapeType::Cylinder, shapeConfig.value());
 
             CreateStaticEditorCollider();
         }

@@ -104,7 +104,7 @@ namespace PhysX
 
         // Helper function to set a specific shape configuration
         template<typename ConfigType>
-        void SetShapeConfig(ShapeType shapeType, const ConfigType& shapeConfig, const AZ::Vector3& scale);
+        void SetShapeConfig(ShapeType shapeType, const ConfigType& shapeConfig);
         void RefreshUiProperties();
 
         AZ::u32 OnSubdivisionCountChange();
@@ -175,7 +175,7 @@ namespace PhysX
     };
 
     template<typename ConfigType>
-    void EditorShapeColliderComponent::SetShapeConfig(ShapeType shapeType, const ConfigType& shapeConfig, const AZ::Vector3& scale)
+    void EditorShapeColliderComponent::SetShapeConfig(ShapeType shapeType, const ConfigType& shapeConfig)
     {
         if (m_shapeType != shapeType)
         {
@@ -196,7 +196,5 @@ namespace PhysX
                 static_cast<ConfigType&>(*m_shapeConfigs.back());
             configuration = shapeConfig;
         }
-
-        m_shapeConfigs.back()->m_scale = scale;
     }
 } // namespace PhysX
