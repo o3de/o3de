@@ -368,13 +368,7 @@ namespace AZ
         template<typename Type>
         Data::Instance<Type> InstanceDatabase<Type>::Create(const Asset<AssetData>& asset, const AZStd::any* param)
         {
-            // Handle the rare case where a random ID might already be in use
-            auto id = Data::InstanceId::CreateRandom();
-            while (Find(id))
-            {
-                id = Data::InstanceId::CreateRandom();
-            }
-            return FindOrCreate(id, asset, param);
+            return FindOrCreate(Data::InstanceId::CreateRandom(), asset, param);
         }
 
         template<typename Type>

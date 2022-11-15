@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
 #include <TerrainRenderer/BindlessImageArrayHandler.h>
@@ -34,6 +35,7 @@ namespace Terrain
 {
     class TerrainFeatureProcessor final
         : public AZ::RPI::FeatureProcessor
+        , public AZ::Data::AssetBus::Handler
         , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
@@ -71,6 +73,10 @@ namespace Terrain
             float m_padding;
         };
 
+        //! AZ::Data::AssetBus overrides...
+        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+
         // AzFramework::Terrain::TerrainDataNotificationBus overrides...
         void OnTerrainDataDestroyBegin() override;
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
@@ -96,7 +102,7 @@ namespace Terrain
 
         AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler> m_imageArrayHandler;
 
-        AZStd::unique_ptr<AZ::RPI::AssetUtils::AsyncAssetLoader> m_materialAssetLoader;
+        AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset;
         MaterialInstance m_materialInstance;
 
         AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_terrainSrg;
