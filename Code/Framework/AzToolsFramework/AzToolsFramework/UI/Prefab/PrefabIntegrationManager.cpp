@@ -635,7 +635,7 @@ namespace AzToolsFramework
 
             // Revert Overrides
             {
-                if (selectedEntities.size() == 1)
+                if (IsPrefabOverridesUxEnabled() && selectedEntities.size() == 1)
                 {
                     AZ::EntityId selectedEntity = selectedEntities[0];
                     if (s_prefabOverridePublicInterface->AreOverridesPresent(selectedEntity))
