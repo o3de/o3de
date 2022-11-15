@@ -126,6 +126,3 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
 
     class test_ReparentEntity_UnderEntityHierarchies(EditorSharedTest):
         from .tests.reparent_prefab import ReparentEntity_UnderEntityHierarchies as test_module
-
-    class test_ReparentPrefab_UnderPrefabAndEntityHierarchies(EditorSharedTest):
-        from .tests.reparent_prefab import ReparentPrefab_UnderPrefabAndEntityHierarchies as test_module

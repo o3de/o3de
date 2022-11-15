@@ -22,8 +22,9 @@ namespace AzToolsFramework
         using ExpanderStateMap = AZStd::unordered_map<AZStd::string, bool>;
         using CleanExpanderStateCallback = AZStd::function<bool(ExpanderStateMap&)>;
 
-        // Default ctor is required by SerializeContext but is not intended for use otherwise
+        //! Use this constructor when temporary in-memory only storage is desired
         DocumentPropertyEditorSettings() = default;
+        //! Use this constructor when storing settings in a persistent registry file on-disk
         DocumentPropertyEditorSettings(const AZStd::string& settingsRegistryKey, const AZStd::string& propertyEditorName);
 
         virtual ~DocumentPropertyEditorSettings();
@@ -66,6 +67,7 @@ namespace AzToolsFramework
         CleanExpanderStateCallback m_cleanExpanderStateCallback;
 
         bool m_wereSettingsLoaded = false;
+        bool m_shouldSettingsPersist = false;
 
         SettingsRegistrar m_settingsRegistrar;
 
