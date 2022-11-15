@@ -10,29 +10,40 @@
 
 #include <AzCore/std/string/string.h>
 
-#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
-#include <AzToolsFramework/ActionManager/HotKey/HotKeyManager.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 
 namespace AzToolsFramework
 {
+    class ActionManagerInterface;
+    class MenuManagerInterface;
+    class HotKeyManagerInterface;
+
     class ComponentModeActionHandler
         : private ActionManagerRegistrationNotificationBus::Handler
+        , private ComponentModeFramework::EditorComponentModeNotificationBus::Handler
     {
     public:
+        ComponentModeActionHandler();
         ~ComponentModeActionHandler();
-
-        void Initialize();
 
         //void InitializeComponentMode(const AZStd::string& modeIdentifier);
         //void AddActionToComponentMode();
 
     private:
         // ActionManagerRegistrationNotificationBus overrides ...
+        void OnActionContextModeRegistrationHook() override;
         void OnActionUpdaterRegistrationHook() override;
         void OnActionRegistrationHook() override;
+        void OnMenuBindingHook() override;
+
+        // EditorComponentModeNotificationBus overrides ...
+        void ComponentModeStarted(const AZ::Uuid& componentType);
+        void ActiveComponentModeChanged(const AZ::Uuid& componentType);
+        void ComponentModeEnded();
 
         ActionManagerInterface* m_actionManagerInterface = nullptr;
+        MenuManagerInterface* m_menuManagerInterface = nullptr;
         HotKeyManagerInterface* m_hotKeyManagerInterface = nullptr;
     };
 
