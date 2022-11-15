@@ -62,18 +62,21 @@ namespace LyShine
         //Check if DepthPrePass is part of the pipeline. This is possible for any pipelines built for tbdr gpus.
         if (!renderPipeline->FindFirstPass(AZ::Name("DepthPrePass")))
         {
-            const AZ::Name depthAttachment = AZ::Name("DepthInputOutput");
-            auto findIter = AZStd::find_if(passRequestCopy.m_connections.begin(), passRequestCopy.m_connections.end(), [depthAttachment](const AZ::RPI::PassConnection& entry)
+            //Check if ForwardPass is available
+            if (renderPipeline->FindFirstPass(AZ::Name("ForwardPass")))
             {
-                return entry.m_localSlot == depthAttachment;
-            });
+                // Find the depth attachment and hook that up via ForwardPass
+                const AZ::Name depthAttachment = AZ::Name("DepthInputOutput");
+                auto findIter = AZStd::find_if(passRequestCopy.m_connections.begin(), passRequestCopy.m_connections.end(), [depthAttachment](const AZ::RPI::PassConnection& entry)
+                {
+                    return entry.m_localSlot == depthAttachment;
+                });
 
-            //If DepthPrePass is missing then find the depth attachment via ForwardPass
-            if (findIter != passRequestCopy.m_connections.end() &&
-                renderPipeline->FindFirstPass(AZ::Name("ForwardPass")))
-            {
-                (*findIter).m_attachmentRef.m_pass = "ForwardPass";
-                (*findIter).m_attachmentRef.m_attachment = "DepthStencilOutput";
+                if (findIter != passRequestCopy.m_connections.end())
+                {
+                    (*findIter).m_attachmentRef.m_pass = "ForwardPass";
+                    (*findIter).m_attachmentRef.m_attachment = "DepthStencilOutput";
+                }
             }
             passRequest = &passRequestCopy;
         }
