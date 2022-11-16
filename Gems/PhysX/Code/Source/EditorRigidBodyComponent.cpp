@@ -58,7 +58,7 @@ namespace PhysX
                 else
                 {
                     const Physics::ShapeConfiguration& shapeConfiguration = shapeConfigurationProxy.GetCurrent();
-                    if (!hasNonUniformScaleComponent)
+                    if (!hasNonUniformScaleComponent && !shapeConfigurationProxy.IsCylinderConfig())
                     {
                         AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(
                             colliderConfigurationScaled, shapeConfiguration);

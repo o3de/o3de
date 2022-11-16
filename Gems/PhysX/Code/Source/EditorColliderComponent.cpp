@@ -296,6 +296,14 @@ namespace PhysX
         return colliderConfiguration;
     }
 
+    Physics::ColliderConfiguration EditorColliderComponent::GetColliderConfigurationNoOffset() const
+    {
+        Physics::ColliderConfiguration colliderConfiguration = m_configuration;
+        colliderConfiguration.m_position = AZ::Vector3::CreateZero();
+        colliderConfiguration.m_rotation = AZ::Quaternion::CreateIdentity();
+        return colliderConfiguration;
+    }
+
     EditorProxyShapeConfig::EditorProxyShapeConfig(const Physics::ShapeConfiguration& shapeConfiguration)
     {
         m_shapeType = shapeConfiguration.GetShapeType();
@@ -609,9 +617,8 @@ namespace PhysX
                 GetEntity()->GetName().c_str());
             break;
         case Physics::ShapeType::Cylinder:
-            colliderComponent = gameEntity->CreateComponent<BaseColliderComponent>();
-            colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(
-                sharedColliderConfig, AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(m_shapeConfiguration.m_cylinder.m_configuration)) });
+            buildGameEntityScaledPrimitive(
+                sharedColliderConfig, m_shapeConfiguration.m_cylinder.m_configuration, m_shapeConfiguration.m_subdivisionLevel);
             break;
         case Physics::ShapeType::CookedMesh:
             colliderComponent = gameEntity->CreateComponent<BaseColliderComponent>();
@@ -648,7 +655,7 @@ namespace PhysX
 
     bool IsNonUniformlyScaledPrimitive(const EditorProxyShapeConfig& shapeConfig)
     {
-        return shapeConfig.m_hasNonUniformScale && Utils::IsPrimitiveShape(shapeConfig.GetCurrent());
+        return shapeConfig.m_hasNonUniformScale && (Utils::IsPrimitiveShape(shapeConfig.GetCurrent()) || shapeConfig.IsCylinderConfig());
     }
 
     void EditorColliderComponent::CreateStaticEditorCollider()
@@ -694,7 +701,7 @@ namespace PhysX
                 GetColliderConfigurationScaled());
             AZStd::shared_ptr<Physics::ShapeConfiguration> shapeConfig = m_shapeConfiguration.CloneCurrent();
 
-            if (IsNonUniformlyScaledPrimitive(m_shapeConfiguration))
+            if (IsNonUniformlyScaledPrimitive(m_shapeConfiguration) || m_shapeConfiguration.IsCylinderConfig())
             {
                 auto convexConfig = Utils::CreateConvexFromPrimitive(GetColliderConfiguration(), *(shapeConfig.get()),
                     m_shapeConfiguration.m_subdivisionLevel, shapeConfig->m_scale);
@@ -972,7 +979,7 @@ namespace PhysX
         const AZ::u32 shapeIndex = 0;
         m_colliderDebugDraw.DrawMesh(
             debugDisplay,
-            m_configuration,
+            GetColliderConfigurationNoOffset(),
             m_shapeConfiguration.m_cylinder.m_configuration,
             m_shapeConfiguration.m_cylinder.m_configuration.m_scale,
             shapeIndex);
@@ -1567,6 +1574,17 @@ namespace PhysX
         }
 
         Utils::Geometry::PointList samplePoints = Utils::CreatePointsAtFrustumExtents(height, radius, radius, subdivisionCount).value();
+
+        const AZ::Transform colliderLocalTransform = GetColliderLocalTransform();
+
+        AZStd::transform(
+            samplePoints.begin(),
+            samplePoints.end(),
+            samplePoints.begin(),
+            [&colliderLocalTransform](const AZ::Vector3& point)
+            {
+                return colliderLocalTransform.TransformPoint(point);
+            });
 
         const AZ::Vector3 scale = m_shapeConfiguration.m_cylinder.m_configuration.m_scale;
         m_shapeConfiguration.m_cylinder.m_configuration = Utils::CreatePxCookedMeshConfiguration(samplePoints, scale).value();
