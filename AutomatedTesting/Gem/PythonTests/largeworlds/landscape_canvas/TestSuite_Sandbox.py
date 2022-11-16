@@ -6,12 +6,15 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import pytest
 
-from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorParallelTest, EditorTestSuite
+from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorBatchedTest, EditorParallelTest, EditorTestSuite
 
 
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(EditorTestSuite):
 
-    class test_LandscapeCanvas_LayerBlender_NodeConstruction(EditorSharedTest):
+    class test_LandscapeCanvas_LayerBlender_NodeConstruction(EditorBatchedTest):
         from .EditorScripts import LayerBlender_NodeConstruction as test_module
+
+    class test_LandscapeCanvas_Edit_DisabledNodeDuplication(EditorSingleTest):
+        from .EditorScripts import Edit_DisabledNodeDuplication as test_module
