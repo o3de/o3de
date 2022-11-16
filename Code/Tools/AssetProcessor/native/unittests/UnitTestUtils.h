@@ -12,9 +12,9 @@
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <QDir>
 #include <AzFramework/IO/LocalFileIO.h>
-#endif
 
 #include <AzCore/UnitTest/UnitTest.h>
+#endif
 
 // ----------------- UTILITY FUNCTIONS --------------------
 namespace UnitTestUtils

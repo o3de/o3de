@@ -19,6 +19,7 @@
 #include <Editor/EditorClassConverters.h>
 #include <Source/NameConstants.h>
 #include <Source/Utils.h>
+#include <PhysX/PhysXLocks.h>
 
 namespace PhysX
 {
@@ -445,6 +446,7 @@ namespace PhysX
                 // Set simulation disabled for this actor so it doesn't actually interact when the editor world is updated.
                 if (physx::PxActor* pxActor = static_cast<physx::PxActor*>(body->GetNativePointer()))
                 {
+                    PHYSX_SCENE_WRITE_LOCK(pxActor->getScene());
                     pxActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, true);
                 }
             }

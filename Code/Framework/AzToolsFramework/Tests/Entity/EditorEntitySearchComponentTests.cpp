@@ -7,9 +7,10 @@
  */
 
 #include <AzTest/AzTest.h>
-#include <AzCore/Math/Aabb.h>
-#include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Math/Aabb.h>
+#include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
 #include <AzToolsFramework/Entity/EditorEntitySearchComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
@@ -142,7 +143,7 @@ namespace AzToolsFramework
     const float EntitySearch_TestComponent2::DefaultFloatValue = 5.0f;
 
     class EditorEntitySearchComponentTests
-        : public ::testing::Test
+        : public UnitTest::AllocatorsTestFixture
     {
     protected:
         void SetUp() override
