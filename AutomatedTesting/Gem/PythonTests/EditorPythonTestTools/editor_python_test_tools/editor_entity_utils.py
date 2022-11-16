@@ -321,16 +321,12 @@ class EditorComponent:
         :return: The string result
         """
         component_properties_type_visible = self.get_property_type_visibility()
-<<<<<<< HEAD
 
         try:
             property_type, visibility = component_properties_type_visible[component_property_path]
         except KeyError:
             raise KeyError(f"Error: The {self.get_component_name()} does not have a component property "
                            f"of \"{component_property_path}\".")
-=======
-        property_type, visibility = component_properties_type_visible[component_property_path]
->>>>>>> orgdev
 
         assert visibility != "" or visibility is not None, \
             f"No property visibility found for component property path {component_property_path}"

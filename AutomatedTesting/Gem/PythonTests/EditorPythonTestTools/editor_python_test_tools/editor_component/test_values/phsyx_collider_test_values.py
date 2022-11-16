@@ -22,31 +22,18 @@ CONTACT_OFFSET_TESTS = {
     "Zero Value Test": (0.0, False),
     "Small Value Test": (0.2, True),
     "Max Boundary Value Test": (50.0, True),
-<<<<<<< HEAD
     #"Max Out of Range Test": (100.0, False), # o3de/o3de#13220: Value can be set above max value using API.
-=======
-    #"Max Out of Range Test": (100.0, False), # TODO Create Bug: Value can be set above max value using API.
->>>>>>> orgdev
     "Greater Than Rest Offset Test": (1.0, True)
 }
 
 REST_OFFSET_TESTS = {
-<<<<<<< HEAD
     # "Negative Value Test": (-1.0, False), # o3de/o3de#13220: Value can be set below max value using API.
-=======
-    # "Negative Value Test": (-1.0, False), # TODO Create Bug: Value can be set below max value using API.
->>>>>>> orgdev
     "Zero Value Test": (0.0, True),
     "Small Value Test": (0.03, True),
     "Greater Than Contact Offset Test": (1.5, False)
 }
 
 CYLINDER_HEIGHT_TESTS = {
-<<<<<<< HEAD
-=======
-    # Common Tests Height Values cannont be used due to api allowing negative, zero, and small values
-    # TODO: Create a bug to track this issue
->>>>>>> orgdev
     "Negative Value Test": (-1.0, True),
     "Zero Value Test": (0.0, True),
     "Small Value Test": (0.1, True),
@@ -57,11 +44,6 @@ CYLINDER_HEIGHT_TESTS = {
 }
 
 COLLIDER_RADIUS_TESTS = {
-<<<<<<< HEAD
-=======
-    # Common Tests Radial Values can't be used due API allowing a negative value to be set.
-    # TODO: Create a Bug to track this issue.
->>>>>>> orgdev
     "Negative Value Test": (-1.0, True),
     "Zero Value Test": (0.0, True),
     "Small Value Test": (0.1, True),
