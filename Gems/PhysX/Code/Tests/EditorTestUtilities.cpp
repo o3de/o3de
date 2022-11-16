@@ -147,6 +147,7 @@ namespace PhysXEditorTests
         PhysX::EditorColliderComponentRequestBus::Event(
             idPair, &PhysX::EditorColliderComponentRequests::SetColliderRotation, rotationOffset);
 
+        // reactivate the entity to recreate the editor world body, which happens automatically in the editor but not in test environment
         editorEntity->Deactivate();
         editorEntity->Activate();
 
@@ -168,6 +169,8 @@ namespace PhysXEditorTests
         editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
         editorEntity->Activate();
         AZ::NonUniformScaleRequestBus::Event(editorEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, nonUniformScale);
+
+        // reactivate the entity to recreate the editor world body, which happens automatically in the editor but not in test environment
         editorEntity->Deactivate();
         editorEntity->Activate();
         return editorEntity;
