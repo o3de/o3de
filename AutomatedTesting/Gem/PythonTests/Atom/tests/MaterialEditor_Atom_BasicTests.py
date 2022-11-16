@@ -58,6 +58,15 @@ class Tests:
     viewport_model_has_changed_asset = (
         "Viewport model successfully changed.",
         "P0: Viewport model did not change assets.")
+    grid_disabled = (
+        "",
+        "")
+    grid_enabled = (
+        "Grid enabled successfully.",
+        "P0: Grid failed to enable.")
+    shadow_catcher_enabled = (
+        "Shadow Catcher enabled successfully",
+        "P0: Shadow Catcher failed to enable.")
 
 
 def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
@@ -86,7 +95,11 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
     15) Verify the model asset is the expected value.
     16) Change the model asset and verify the change succeeded.
     17) Verify the model asset is changed to a new expected value.
-    18) Look for errors and asserts.
+    18) Disable the Grid.
+    19) Enable the Grid.
+    20) Disable the Shadow Catcher.
+    21) Enable the Shadow Catcher.
+    22) Look for errors and asserts.
 
     :return: None
     """
@@ -251,7 +264,23 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
             Tests.viewport_model_has_changed_asset,
             atom_tools_utils.get_last_model_preset_path() == cone_model_asset_path)
 
-        # 18. Look for errors and asserts.
+        # 18. Disable the Grid.
+        atom_tools_utils.set_grid_enabled(False)
+        Report.result(Tests.grid_disabled, atom_tools_utils.get_grid_enabled() is False)
+
+        # 19. Enable the Grid.
+        atom_tools_utils.set_grid_enabled(True)
+        Report.result(Tests.grid_enabled, atom_tools_utils.get_grid_enabled() is True)
+
+        # 20. Disable the Shadow Catcher.
+        atom_tools_utils.set_shadow_catcher_enabled(False)
+        Report.result(Tests.shadow_catcher_enabled, atom_tools_utils.get_shadow_catcher_enabled() is False)
+
+        # 21. Enable the Shadow Catcher.
+        atom_tools_utils.set_shadow_catcher_enabled(True)
+        Report.result(Tests.shadow_catcher_enabled, atom_tools_utils.get_shadow_catcher_enabled() is True)
+
+        # 22. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

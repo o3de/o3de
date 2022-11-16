@@ -156,15 +156,15 @@ def set_grid_enabled(value: bool) -> None:
     azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "SetGridEnabled", value)
 
 
-def get_grid_enable_disable() -> bool:
+def get_grid_enabled() -> bool:
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetGridEnabled")
 
 
-def set_shadowcatcher_enable_disable(value: bool) -> None:
+def set_shadow_catcher_enabled(value: bool) -> None:
     azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "SetShadowCatcherEnabled", value)
 
 
-def is_shadowcatcher_enabled() -> bool:
+def get_shadow_catcher_enabled() -> bool:
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetShadowCatcherEnabled")
 
 
