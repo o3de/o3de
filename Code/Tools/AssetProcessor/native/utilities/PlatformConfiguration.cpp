@@ -1474,11 +1474,6 @@ namespace AssetProcessor
             return;
         }
 
-        AZ_Assert(
-            source.ScanPath() == AssetUtilities::NormalizeDirectoryPath(source.ScanPath()),
-            "AddScanFolder expects normalized name input but %s was given instead.",
-            source.ScanPath().toUtf8().constData());
-
         // Find and remove any previous matching entry, last entry wins
         auto it = std::find_if(m_scanFolders.begin(), m_scanFolders.end(), [&source](const ScanFolderInfo& info)
         {
