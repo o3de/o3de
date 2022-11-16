@@ -28,5 +28,25 @@ namespace AZ
         {
             return m_name;
         }
+
+        void Object::add_ref() const
+        {
+            AZ_Assert(m_useCount >= 0, "m_useCount is negative");
+            ++m_useCount;
+        }
+
+        void Object::release() const
+        {
+            int useCount = --m_useCount;
+            AZ_Assert(useCount >= 0, "Releasing an already released object");
+
+            if (useCount == 0)
+            {
+                // Get a mutable pointer to shutdown the object before deleting
+                Object* object = const_cast<Object*>(this);
+                object->Shutdown();
+                delete object;
+            }
+        }
     }
 }

@@ -28,6 +28,10 @@ namespace AZ
             , public ResourceInvalidateBus::Handler
         {
         public:
+            // The resource owns a cache of resource views, and it needs access to the refcount
+            // of the resource views to prevent threading issues.
+            friend class Resource;
+
             virtual ~ResourceView() = default;
 
             /// Returns the resource associated with this view.
@@ -48,10 +52,12 @@ namespace AZ
             ResultCode Init(const Resource& resource);
 
         private:
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::Object
-            ResultCode Shutdown() override final;
-            //////////////////////////////////////////////////////////////////////////
+            ///////////////////////////////////////////////////////////////////
+            // IntrusivePtrCountPolicy template overrides
+            void release() const final;
+            template<typename Type>
+            friend struct AZStd::IntrusivePtrCountPolicy;
+            ///////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
             // ResourceInvalidateBus::Handler
@@ -75,10 +81,13 @@ namespace AZ
 
             //This is a smart pointer to make sure a Resource is not destroyed before all
             //the views (for example Srg resource views) are destroyed first.
-            ConstPtr<Resource> m_resource;
+            ConstPtr<Resource> m_resource = nullptr;
 
             /// The version number from the resource at view creation time. If the keys differ, the view is stale.
             uint32_t m_version = 0;
+
+            /// Track whether or not this resource view was created in the cache via GetBufferView or GetImageView
+            bool m_isCachedView = false;
         };
     }
 }

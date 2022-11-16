@@ -30,28 +30,42 @@ namespace AZ
             return ResultCode::Success;
         }
 
-        ResultCode ResourceView::Shutdown()
+        void ResourceView::release() const
         {
-            if (IsInitialized())
-            {
-                if (m_resource->EraseResourceView(this) == ResultCode::Success)
-                {
-                    ResourceInvalidateBus::Handler::BusDisconnect(m_resource.get());
-                    ShutdownInternal();
+            // It is possible that some other thread, not us, will delete this ResourceView after we
+            // decrement m_useCount. For example, another thread could create and release an instance
+            // immediately after we decrement. So we copy the necessary data to the callstack before
+            // decrementing. This ensures the call to ReleaseInstance() below won't crash even if this
+            // ResourceView gets deleted by another thread first.
+            ConstPtr<Resource> resource = m_resource;
+            const int useCount = --m_useCount;
 
-                    m_resource = nullptr;
-                    DeviceObject::Shutdown();
+            AZ_Assert(useCount >= 0, "m_useCount is negative");
+
+            if (useCount == 0)
+            {
+                if (IsInitialized())
+                {
+                    ResourceView* resourceView = const_cast<ResourceView*>(this);
+                    // If the resource view was created independently of the cache, or if it was found in the cache,
+                    // it needs to be shutdown and deleted.
+                    // If EraseResourceView fails, another thread got there first, so we skip the shutdown and delete
+                    if (!m_isCachedView || resource->EraseResourceView(resourceView) == ResultCode::Success)
+                    {
+                        resourceView->ResourceInvalidateBus::Handler::BusDisconnect(resource.get());
+                        resourceView->ShutdownInternal();
+
+                        resourceView->m_resource = nullptr;
+                        resourceView->DeviceObject::Shutdown();
+                        delete this;
+                    }
                 }
                 else
                 {
-                    // In the time between the refcount reaching 0 on the current thread and EraseResourceView acquiring a lock on the cache,
-                    // another thread may have incremented the refcount. If so, EraseResourceView will return false,
-                    // and we should skip destroying the BufferView since it's still in use. We also return false
-                    // to tell the ObjectDeleter that it should not delete this object
-                    return ResultCode::Fail;
+                    // If it's not initialized, it doesn't need to be shutdown, but it should still be deleted
+                    delete this;
                 }
             }
-            return ResultCode::Success;
         }
 
         const Resource& ResourceView::GetResource() const

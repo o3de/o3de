@@ -43,7 +43,7 @@ namespace AZ
             ResultCode Shutdown() override;
 
         private:
-            Ptr<Device> m_device;
+            Ptr<Device> m_device = nullptr;
         };
     }
 }

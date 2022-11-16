@@ -15,27 +15,12 @@ namespace AZ
 {
     namespace RHI
     {
-        /**
-         * All objects have an explicit Init / Shutdown path in addition to
-         * creation / deletion. The user is expected to Init the derived variant
-         * in order to use it. This extension allows the user to forgo shutdown
-         * explicitly and depend on the Ptr ref-counting if necessary.
-         *
-         * This requires that Shutdown properly account for being called multiple times.
-         */
-        struct ObjectDeleter
-            : public AZStd::intrusive_default_delete
-        {
-            template <typename U>
-            void operator () (U* p) const;
-        };
 
         /**
          * Base class for any persistent resource in the RHI library. Provides a name, reference
          * counting, and a common RTTI base class for all objects in the RHI.
          */
         class Object
-            : public AZStd::intrusive_refcount<AZStd::atomic_uint, ObjectDeleter>
         {
         public:
             AZ_RTTI(Object, "{E43378F1-2331-4173-94B8-990ED20E6003}");
@@ -51,12 +36,33 @@ namespace AZ
              */
             const Name& GetName() const;
 
+            /**
+             * Returns the current use count of the object
+             */
+            uint32_t use_count()
+            {
+                return static_cast<uint32_t>(m_useCount);
+            }
+
         protected:
             Object() = default;
 
+            // IntrusivePtrCountPolicy overrides
+            template<typename Type>
+            friend struct AZStd::IntrusivePtrCountPolicy;
+            virtual void add_ref() const;
+            /**
+             * All objects have an explicit Init / Shutdown path in addition to
+             * creation / deletion. The user is expected to Init the derived variant
+             * in order to use it. This extension allows the user to forgo shutdown
+             * explicitly and depend on the Ptr ref-counting if necessary.
+             *
+             * This requires that Shutdown properly account for being called multiple times.
+             */
+            virtual void release() const;
+            mutable AZStd::atomic_int m_useCount;
+
         private:
-            /// Friended to allow private call to Shutdown.
-            friend struct ObjectDeleter;
 
             /**
              * Shuts down the object. Derived classes can make this public if it fits
@@ -70,21 +76,5 @@ namespace AZ
             Name m_name;
         };
 
-        template <typename U>
-        void ObjectDeleter::operator () (U* p) const
-        {
-            /// Recover the mutable parent object pointer from the refcount base class.
-            Object* object = const_cast<Object*>(static_cast<const Object*>(p));
-
-            /// Shuts down the object before deletion.
-            if(object->Shutdown() == ResultCode::Success)
-            {
-
-                /// Then invoke the base delete policy, but only if the Shutdown succeeded
-                /// If Shutdown returns a failure, some system indicating that it is not
-                /// safe to delete the object
-                AZStd::intrusive_default_delete::operator () (object);
-            }
-        }
     }
 }

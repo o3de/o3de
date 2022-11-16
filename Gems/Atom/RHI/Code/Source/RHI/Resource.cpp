@@ -174,6 +174,7 @@ namespace AZ
             RHI::ResultCode resultCode = bufferViewPtr->Init(static_cast<const Buffer&>(*this), bufferViewDescriptor);
             if (resultCode == RHI::ResultCode::Success)
             {
+                bufferViewPtr->m_isCachedView = true;
                 m_resourceViewCache[static_cast<uint64_t>(hash)] = static_cast<ResourceView*>(bufferViewPtr.get());
                 return bufferViewPtr;
             }
