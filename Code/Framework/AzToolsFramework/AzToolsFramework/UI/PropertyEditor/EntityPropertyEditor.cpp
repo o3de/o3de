@@ -627,8 +627,6 @@ namespace AzToolsFramework
         //this is the way to do it without overriding or registering with all child widgets
         qApp->installEventFilter(this);
 
-        AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
-            AzToolsFramework::GetEntityContextId());
         ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
     }
 
@@ -642,7 +640,6 @@ namespace AzToolsFramework
         ToolsApplicationEvents::Bus::Handler::BusDisconnect();
         AZ::EntitySystemBus::Handler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
-        AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
         ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
         
         for (auto& entityId : m_overrideSelectedEntityIds)
@@ -5891,7 +5888,7 @@ namespace AzToolsFramework
             SetPropertyEditorState(m_gui, false);
             const auto componentModeTypes = m_componentModeCollection->GetComponentTypes();
             m_disabled = true;
-            m_componentModeVerticalScrollOffset = m_gui->m_componentList->verticalScrollBar()->value();
+            m_verticalScrollOffset = m_gui->m_componentList->verticalScrollBar()->value();
             
             if (!componentModeTypes.empty())
             {
@@ -5900,12 +5897,13 @@ namespace AzToolsFramework
 
             for (auto componentEditor : m_componentEditors)
             {
-                // if this component editor entered component mode
+                // if this component editor is active and editable during component mode
                 if (componentEditor->EnteredComponentMode(componentModeTypes) ==
-                    ComponentEditor::ComponentEditorState::ComponentCardSelected)
+                    ComponentEditor::ComponentModeActiveState::ComponentCardSelected)
                 {
                     // scroll to the relevant component card
-                    m_gui->m_componentList->verticalScrollBar()->setValue(componentEditor->pos().y());
+                    m_componentModeVerticalScrollOffset = componentEditor->pos().y();
+                    m_gui->m_componentList->verticalScrollBar()->setValue(m_componentModeVerticalScrollOffset.value());
                 }
             }
 
@@ -5930,22 +5928,18 @@ namespace AzToolsFramework
             }
 
             // return to the scroll offset before Component Mode was activated
-            if (m_componentModeVerticalScrollOffset.has_value())
+            if (m_verticalScrollOffset.has_value() &&
+                m_gui->m_componentList->verticalScrollBar()->value() == m_componentModeVerticalScrollOffset.value())
             {
-                m_gui->m_componentList->verticalScrollBar()->setValue(m_componentModeVerticalScrollOffset.value());
+                m_gui->m_componentList->verticalScrollBar()->setValue(m_verticalScrollOffset.value());
+                
+                // reset the scroll offsets
+                m_verticalScrollOffset = AZStd::nullopt;
                 m_componentModeVerticalScrollOffset = AZStd::nullopt;
             }
 
             // record the selected state after leaving component mode
             SaveComponentEditorState();
-        }
-    }
-
-    void EntityPropertyEditor::ActiveComponentModeChanged(const AZ::Uuid& componentType)
-    {
-        for (auto componentEditor : m_componentEditors)
-        {
-            componentEditor->ActiveComponentModeChanged(componentType);
         }
     }
 

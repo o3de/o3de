@@ -19,9 +19,6 @@
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
-#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
-
-#include <Tests/ComponentModeTestDoubles.h>
 
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/std/sort.h>
@@ -35,10 +32,6 @@ namespace UnitTest
     using namespace AZ;
     using namespace AzToolsFramework;
 
-    using AzToolsFramework::ComponentModeFramework::AnotherPlaceholderEditorComponent;
-    using AzToolsFramework::ComponentModeFramework::PlaceholderEditorComponent;
-    using AzToolsFramework::ComponentModeFramework::DependentPlaceholderEditorComponent;
-
     class EntityPropertyEditorTests
         : public ComponentApplication
     {
@@ -47,7 +40,7 @@ namespace UnitTest
         {
             ComponentApplication::SetSettingsRegistrySpecializations(specializations);
             specializations.Append("test");
-            specializations.Append("entitypropertyeditor"); 
+            specializations.Append("entitypropertyeditor");
         }
     };
 
@@ -224,17 +217,6 @@ namespace UnitTest
     {
         void SetUpEditorFixtureImpl() override
         {
-            namespace AztfCmf = AzToolsFramework::ComponentModeFramework;
-
-            auto* app = GetApplication();
-
-            app->RegisterComponentDescriptor(AztfCmf::PlaceholderEditorComponent::CreateDescriptor());
-            app->RegisterComponentDescriptor(AztfCmf::AnotherPlaceholderEditorComponent::CreateDescriptor());
-            app->RegisterComponentDescriptor(AztfCmf::DependentPlaceholderEditorComponent::CreateDescriptor());
-            app->RegisterComponentDescriptor(
-                AztfCmf::TestComponentModeComponent<AztfCmf::OverrideMouseInteractionComponentMode>::CreateDescriptor());
-            app->RegisterComponentDescriptor(AztfCmf::IncompatiblePlaceholderEditorComponent::CreateDescriptor());
-
             // Create an EntityPropertyEditor initialized to be a Level Inspector
             m_levelEditor = new EntityPropertyEditor(nullptr, {}, true);
             m_levelEntity = CreateDefaultEditorEntity("LevelEntity");
@@ -296,4 +278,5 @@ namespace UnitTest
         EXPECT_EQ(selectedEntityIds.size(), 1);
         EXPECT_EQ(selectedEntityIds[0], m_levelEntity);
     }
+
 }

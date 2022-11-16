@@ -16,6 +16,7 @@
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeSwitcher.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
@@ -461,5 +462,48 @@ namespace UnitTest
         EXPECT_EQ(2, componentModeSwitcher->GetComponentCount());
 
         Disconnect();
+    }
+
+    TEST_F(ComponentModeSwitcherTestFixture, AddComponentThenUndoWillRemoveComponent)
+    {
+        // Given an entity with two components
+        AZStd::shared_ptr<ComponentModeSwitcher> componentModeSwitcher = AZStd::make_shared<ComponentModeSwitcher>();
+
+        AzToolsFramework::EditorTransformComponentSelectionRequestBus::Event(
+            AzToolsFramework::GetEntityContextId(),
+            &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::OverrideComponentModeSwitcher,
+            componentModeSwitcher);
+
+        AZ::Entity* entity = nullptr;
+        AZ::EntityId entityId = CreateDefaultEditorEntity("ComponentModeEntity", &entity);
+
+        AzToolsFramework::SelectEntity(entityId);
+
+        {
+            AzToolsFramework::ScopedUndoBatch test("addComponent");
+            AzToolsFramework::EntityCompositionRequestBus::Broadcast(
+                &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities,
+                AzToolsFramework::EntityIdList{ entityId },
+                AZ::ComponentTypeList{ azrtti_typeid<PlaceholderEditorComponent>() });
+        }
+
+        {
+            AzToolsFramework::ScopedUndoBatch test("addComponent");
+            AzToolsFramework::EntityCompositionRequestBus::Broadcast(
+                &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities,
+                AzToolsFramework::EntityIdList{ entityId },
+                AZ::ComponentTypeList{ azrtti_typeid<AnotherPlaceholderEditorComponent>() });
+        }
+
+        EXPECT_EQ(2, componentModeSwitcher->GetComponentCount());
+
+        // undo action
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequestBus::Events::UndoPressed);
+        AZ::TickBus::ExecuteQueuedEvents();
+
+        AzToolsFramework::SelectEntity(entityId);
+
+
+        EXPECT_EQ(1, componentModeSwitcher->GetComponentCount());
     }
 } // namespace UnitTest
