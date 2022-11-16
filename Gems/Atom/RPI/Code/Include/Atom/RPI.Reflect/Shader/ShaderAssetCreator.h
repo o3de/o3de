@@ -14,6 +14,11 @@
 
 namespace AZ
 {
+    namespace RHI
+    {
+        class ShaderPlatformInterface;
+    }
+
     namespace RPI
     {
         class ShaderAssetCreator
