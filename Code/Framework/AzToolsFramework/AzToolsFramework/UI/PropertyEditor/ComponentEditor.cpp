@@ -922,21 +922,32 @@ namespace AzToolsFramework
         return false;
     }
 
-    ComponentEditor::ComponentModeActiveState ComponentEditor::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)
+    ComponentEditor::ComponentCardState ComponentEditor::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)
     {
-        // disable all component cards not matching the ComponentMode type
-        if (AZStd::find(
-            componentModeTypes.begin(),
-            componentModeTypes.end(), m_componentType) == componentModeTypes.end())
+        if (componentModeTypes.empty())
         {
             SetWidgetInteractEnabled(this, false);
-            return ComponentEditor::ComponentModeActiveState::ComponentCardDisabled;
+            return ComponentCardState::Disabled;
+        }
+
+        // disable all component cards not matching the ComponentMode type
+        if (AZStd::find(componentModeTypes.begin(), componentModeTypes.end(), m_componentType) == componentModeTypes.end())
+        {
+            SetWidgetInteractEnabled(this, false);
+            return ComponentCardState::Disabled;
         }
         else
         {
-            // only set the first item to be selected/highlighted
-            SetSelected(componentModeTypes.front() == m_componentType);
-            return ComponentEditor::ComponentModeActiveState::ComponentCardSelected;
+            if (componentModeTypes.front() == m_componentType)
+            {
+                // only set the first item to be selected/highlighted
+                SetSelected(true);
+                return ComponentCardState::Selected;
+            }
+            else
+            {
+                return ComponentCardState::Enabled;
+            }
         }
     }
 

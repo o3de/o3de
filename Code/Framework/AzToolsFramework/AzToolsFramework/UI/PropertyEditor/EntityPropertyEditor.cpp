@@ -5898,8 +5898,7 @@ namespace AzToolsFramework
             for (auto componentEditor : m_componentEditors)
             {
                 // if this component editor is active and editable during component mode
-                if (componentEditor->EnteredComponentMode(componentModeTypes) ==
-                    ComponentEditor::ComponentModeActiveState::ComponentCardSelected)
+                if (componentEditor->EnteredComponentMode(componentModeTypes) == ComponentEditor::ComponentCardState::Selected)
                 {
                     // scroll to the relevant component card
                     m_componentModeVerticalScrollOffset = componentEditor->pos().y();
@@ -6062,7 +6061,5 @@ void StatusComboBox::wheelEvent(QWheelEvent* e)
         QComboBox::wheelEvent(e);
     }
 }
-
-
 
 #include "UI/PropertyEditor/moc_EntityPropertyEditor.cpp"
