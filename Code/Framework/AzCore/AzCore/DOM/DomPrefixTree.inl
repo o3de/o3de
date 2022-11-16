@@ -48,9 +48,66 @@ namespace AZ::Dom
     }
 
     template<class T>
+    DomPrefixTree<T>::DomPrefixTree(Node&& node)
+    {
+        m_rootNode = AZStd::move(node);
+    }
+
+    template<class T>
+    bool DomPrefixTree<T>::DomPrefixTree::Node::IsEmpty() const
+    {
+        return (m_values.empty() && !(m_data.has_value()));
+    }
+
+    template<class T>
     auto DomPrefixTree<T>::GetNodeForPath(const Path& path) -> Node*
     {
         return const_cast<Node*>(AZStd::as_const(*this).GetNodeForPath(path));
+    }
+
+    template<class T>
+    auto DomPrefixTree<T>::DetachNodeAtPath(const Path& path) -> Node
+    {
+        Node* node = &m_rootNode;
+        const size_t entriesToIterate = path.Size() - 1;
+        for (size_t i = 0; i < entriesToIterate; ++i)
+        {
+            const PathEntry& entry = path[i];
+            auto nodeIt = node->m_values.find(entry);
+            if (nodeIt == node->m_values.end())
+            {
+                return Node();
+            }
+            node = &nodeIt->second;
+        }
+        auto nodeIt = node->m_values.find(path[path.Size() - 1]);
+        if (nodeIt != node->m_values.end())
+        {
+            Node detachedNode = AZStd::move(nodeIt->second);
+            node->m_values.erase(nodeIt);
+            return detachedNode;
+        }
+        return Node();
+    }
+
+    template<class T>
+    bool DomPrefixTree<T>::AttachNodeAtPath(const Path& path, Node&& nodeToAttach)
+    {
+        Node* node = &m_rootNode;
+        const size_t entriesToIterate = path.Size() - 1;
+        for (size_t i = 0; i < entriesToIterate; ++i)
+        {
+            const PathEntry& entry = path[i];
+            auto nodeIt = node->m_values.find(entry);
+            if (nodeIt == node->m_values.end())
+            {
+                return false;
+            }
+            node = &nodeIt->second;
+        }
+
+        node->m_values[path[path.Size() - 1]] = AZStd::move(nodeToAttach);
+        return true;
     }
 
     template<class T>
@@ -329,8 +386,32 @@ namespace AZ::Dom
     }
 
     template<class T>
+    DomPrefixTree<T> DomPrefixTree<T>::DetachSubTree(const Path& path)
+    {
+        Node node = DetachNodeAtPath(path);
+        if (!node.IsEmpty())
+        {
+            return DomPrefixTree<T>(AZStd::move(node));
+        }
+        return DomPrefixTree<T>();
+    }
+
+    template<class T>
+    bool DomPrefixTree<T>::AttachSubTree(const Path& path, DomPrefixTree&& subTree)
+    {
+        Node* node = subTree.GetNodeForPath(AZ::Dom::Path());
+        return AttachNodeAtPath(path, AZStd::move(*node));
+    }
+
+    template<class T>
     void DomPrefixTree<T>::Clear()
     {
         m_rootNode = Node();
+    }
+
+    template<class T>
+    bool DomPrefixTree<T>::IsEmpty() const
+    {
+        return m_rootNode.IsEmpty();
     }
 } // namespace AZ::Dom

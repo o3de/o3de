@@ -7,6 +7,14 @@
  */
 
 #include <EditAGemScreen.h>
+#include <PythonBindingsInterface.h>
+
+#include <FormFolderBrowseEditWidget.h>
+#include <FormLineEditWidget.h>
+#include <FormLineEditTagsWidget.h>
+#include <FormOptionsWidget.h>
+#include <FormComboBoxWidget.h>
+#include <ScreenHeaderWidget.h>
 
 #include <QDir>
 #include <QLineEdit>
@@ -107,7 +115,19 @@ namespace O3DE::ProjectManager
         m_originURL->lineEdit()->setText(oldGemInfo.m_originURL);
         m_repositoryURL->lineEdit()->setText(oldGemInfo.m_repoUri);
 
+        HandleGemDetailsTab();
+
         m_oldGemName = oldGemInfo.m_name;
+
+        //load the supported platforms
+        for(int i = GemInfo::NumPlatforms; i > 0; i--)
+        {
+            const GemInfo::Platform platform = static_cast<GemInfo::Platform>(1 << (i - 1));
+            if(platform & oldGemInfo.m_platforms)
+            {
+                m_platformOptions->Enable(GemInfo::GetPlatformString(platform));
+            }
+        }
     }
 
 
