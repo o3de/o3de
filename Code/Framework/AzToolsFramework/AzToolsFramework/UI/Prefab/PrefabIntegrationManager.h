@@ -147,10 +147,11 @@ namespace AzToolsFramework
             static PrefabFocusInterface* s_prefabFocusInterface;
             static PrefabFocusPublicInterface* s_prefabFocusPublicInterface;
             static PrefabLoaderInterface* s_prefabLoaderInterface;
-            static PrefabOverridePublicInterface* s_prefabOverridePublicInterface;
             static PrefabPublicInterface* s_prefabPublicInterface;
 
+            
             ActionManagerInterface* m_actionManagerInterface = nullptr;
+            PrefabOverridePublicInterface* m_prefabOverridePublicInterface = nullptr;
             ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
             ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
         };

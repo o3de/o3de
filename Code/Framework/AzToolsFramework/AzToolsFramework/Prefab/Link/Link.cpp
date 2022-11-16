@@ -137,7 +137,7 @@ namespace AzToolsFramework
 
         AZ::Dom::DomPrefixTree<Link::PrefabOverrideMetadata> Link::RemoveOverrides(AZ::Dom::Path path)
         {
-            return AZStd::move(m_linkPatchesTree.DetachSubTree(path));
+            return m_linkPatchesTree.DetachSubTree(path);
         }
 
         bool Link::AddOverrides(const AZ::Dom::Path& path, AZ::Dom::DomPrefixTree<PrefabOverrideMetadata>&& subTree)
