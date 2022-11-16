@@ -11,6 +11,7 @@
 #include <AzCore/std/string/string.h>
 
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 
 namespace AzToolsFramework
@@ -22,6 +23,7 @@ namespace AzToolsFramework
     class ComponentModeActionHandler
         : private ActionManagerRegistrationNotificationBus::Handler
         , private ComponentModeFramework::EditorComponentModeNotificationBus::Handler
+        , private ViewportEditorModeNotificationsBus::Handler
     {
     public:
         ComponentModeActionHandler();
@@ -35,9 +37,11 @@ namespace AzToolsFramework
         void OnMenuBindingHook() override;
 
         // EditorComponentModeNotificationBus overrides ...
-        void ComponentModeStarted(const AZ::Uuid& componentType);
-        void ActiveComponentModeChanged(const AZ::Uuid& componentType);
-        void ComponentModeEnded();
+        void ActiveComponentModeChanged(const AZ::Uuid& componentType) override;
+
+        // ViewportEditorModeNotificationsBus overrides ...
+        void OnEditorModeActivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
+        void OnEditorModeDeactivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
 
         ActionManagerInterface* m_actionManagerInterface = nullptr;
         MenuManagerInterface* m_menuManagerInterface = nullptr;

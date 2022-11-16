@@ -216,12 +216,6 @@ namespace AzToolsFramework
             m_componentModeState = ComponentModeState::Active;
             m_adding = false;
 
-            // notify other systems ComponentMode has started
-            EditorComponentModeNotificationBus::Event(
-                GetEntityContextId(),
-                &EditorComponentModeNotifications::ComponentModeStarted,
-                m_activeComponentTypes[m_selectedComponentModeIndex]);
-
             // notify listeners the editor has entered ComponentMode - listeners may
             // wish to modify state to indicate this (e.g. appearance, functionality etc.)
             m_viewportEditorModeTracker->ActivateMode({ GetEntityContextId() }, ViewportEditorMode::Component);
@@ -300,12 +294,6 @@ namespace AzToolsFramework
             // notify listeners the editor has left ComponentMode - listeners may
             // wish to modify state to indicate this (e.g. appearance, functionality etc.)
             m_viewportEditorModeTracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Component);
-
-            // notify other systems ComponentMode has ended
-            EditorComponentModeNotificationBus::Event(
-                GetEntityContextId(),
-                &EditorComponentModeNotifications::ComponentModeEnded
-            );
 
             // clear stored modes and builders for this ComponentMode
             // TLDR: avoid 'use after free' error

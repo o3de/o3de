@@ -241,15 +241,9 @@ namespace AzToolsFramework
             using BusIdType = AzFramework::EntityContextId;
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
 
-            /// Called when a Component Mode is started.
-            virtual void ComponentModeStarted(const AZ::Uuid& /*componentType*/) {}
-
             /// Called when Tab is pressed to cycle the 'selected' ComponentMode (which shortcuts/actions are active).
             /// Also called when directly selecting a Component in the EntityOutliner.
             virtual void ActiveComponentModeChanged(const AZ::Uuid& /*componentType*/) {}
-
-            /// Called when Component Mode is ended.
-            virtual void ComponentModeEnded() {}
 
         protected:
             ~EditorComponentModeNotifications() = default;
