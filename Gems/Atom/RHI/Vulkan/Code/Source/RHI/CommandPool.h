@@ -47,7 +47,7 @@ namespace AZ
             void Reset();
             //////////////////////////////////////////////////////////////////////////
             // RHI::DeviceObject
-            RHI::ResultCode Shutdown() override;
+            void Shutdown() override;
             //////////////////////////////////////////////////////////////////////////
 
         private:

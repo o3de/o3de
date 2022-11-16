@@ -179,7 +179,7 @@ namespace AZ
 
             ResultCode Init(Device& device);
 
-            ResultCode Shutdown() override final;
+            void Shutdown() override final;
 
             /**
              * Compiles the frame graph. Platform-independent compilation is done first

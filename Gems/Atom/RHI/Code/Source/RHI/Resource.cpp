@@ -111,7 +111,7 @@ namespace AZ
             return m_frameAttachment;
         }
         
-        ResultCode Resource::Shutdown()
+        void Resource::Shutdown()
         {
             // Shutdown is delegated to the parent pool if this resource is registered on one.
             if (m_pool)
@@ -125,7 +125,7 @@ namespace AZ
 
                 m_pool->ShutdownResource(this);
             }
-            return DeviceObject::Shutdown();
+            DeviceObject::Shutdown();
         }
     
         Ptr<ImageView> Resource::GetResourceView(const ImageViewDescriptor& imageViewDescriptor) const

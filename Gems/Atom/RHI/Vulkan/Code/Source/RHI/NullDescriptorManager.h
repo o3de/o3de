@@ -56,7 +56,7 @@ namespace AZ
             RHI::ResultCode Init(Device& device);
 
             //! Release all the image, buffer, and texel view null descriptors
-            RHI::ResultCode Shutdown() override;
+            void Shutdown() override;
 
             //! Returns the texel buffer view null descriptor
             VkBufferView GetTexelBufferView();

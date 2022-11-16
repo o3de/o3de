@@ -58,14 +58,13 @@ namespace AZ
             return MergeIntoInternal(librariesToMerge);
         }
 
-        ResultCode PipelineLibrary::Shutdown()
+        void PipelineLibrary::Shutdown()
         {
             if (IsInitialized())
             {
                 ShutdownInternal();
                 DeviceObject::Shutdown();
             }
-            return ResultCode::Success;
         }
 
         ConstPtr<PipelineLibraryData> PipelineLibrary::GetSerializedData() const

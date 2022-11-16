@@ -68,7 +68,7 @@ namespace AZ
 
         private:
             // Pipeline states cannot be re-initialized, as they can be cached.
-            ResultCode Shutdown() override final;
+            void Shutdown() override final;
 
             bool ValidateNotInitialized() const;
 

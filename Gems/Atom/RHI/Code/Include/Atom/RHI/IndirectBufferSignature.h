@@ -58,7 +58,7 @@ namespace AZ
 
             const IndirectBufferLayout& GetLayout() const;
 
-            ResultCode Shutdown() final;
+            void Shutdown() final;
 
         protected:
             IndirectBufferSignature() = default;

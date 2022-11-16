@@ -45,7 +45,7 @@ namespace AZ
             CommandQueue() = default;
             virtual ~CommandQueue() = default;
             ResultCode Init(Device& device, const CommandQueueDescriptor& descriptor);
-            ResultCode Shutdown();
+            void Shutdown();
             
             using Command = AZStd::function<void(void* commandQueue)>;
             void QueueCommand(Command command);

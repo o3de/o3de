@@ -144,7 +144,7 @@ namespace AZ
             return resultCode;
         }
 
-        ResultCode ResourcePool::Shutdown()
+        void ResourcePool::Shutdown()
         {
             AZ_Assert(ValidateNotProcessingFrame(), "Shutting down a pool while the frame is processing is undefined behavior.");
 
@@ -166,7 +166,6 @@ namespace AZ
                 m_resolver.reset();
                 DeviceObject::Shutdown();
             }
-            return ResultCode::Success;
         }
 
         ResultCode ResourcePool::InitResource(Resource* resource, const PlatformMethod& platformInitResourceMethod)

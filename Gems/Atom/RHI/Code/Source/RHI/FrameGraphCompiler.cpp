@@ -54,7 +54,7 @@ namespace AZ
             return resultCode;
         }
 
-        ResultCode FrameGraphCompiler::Shutdown()
+        void FrameGraphCompiler::Shutdown()
         {
             if (IsInitialized())
             {
@@ -66,7 +66,6 @@ namespace AZ
                 ShutdownInternal();
                 DeviceObject::Shutdown();
             }
-            return ResultCode::Success;
         }
 
         MessageOutcome FrameGraphCompiler::ValidateCompileRequest(const FrameGraphCompileRequest& request) const

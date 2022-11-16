@@ -61,10 +61,10 @@ namespace AZ
             return m_descriptor.m_layout;
         }
 
-        ResultCode IndirectBufferSignature::Shutdown()
+        void IndirectBufferSignature::Shutdown()
         {
             ShutdownInternal();
-            return DeviceObject::Shutdown();
+            DeviceObject::Shutdown();
         }
     }
 }

@@ -72,7 +72,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode BufferMemory::Shutdown()
+        void BufferMemory::Shutdown()
         {
             if (m_vkBuffer != VK_NULL_HANDLE)
             {
@@ -82,7 +82,6 @@ namespace AZ
             }
 
             m_memoryView = MemoryView();
-            return RHI::ResultCode::Success;
         }
     }
 }

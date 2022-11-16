@@ -84,7 +84,7 @@ namespace AZ
             bool ValidateIsInitialized() const;
 
             // Explicit shutdown is not allowed for this type.
-            ResultCode Shutdown() override final;
+            void Shutdown() override final;
 
             //////////////////////////////////////////////////////////////////////////
             // Platform API

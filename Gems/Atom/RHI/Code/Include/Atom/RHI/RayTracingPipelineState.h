@@ -138,7 +138,7 @@ namespace AZ
         private:
 
             // explicit shutdown is not allowed for this type
-            ResultCode Shutdown() override final;
+            void Shutdown() override final;
 
             //////////////////////////////////////////////////////////////////////////
             // Platform API

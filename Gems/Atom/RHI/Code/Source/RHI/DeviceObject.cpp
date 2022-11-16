@@ -28,10 +28,9 @@ namespace AZ
             m_device = &device;
         }
 
-        ResultCode DeviceObject::Shutdown()
+        void DeviceObject::Shutdown()
         {
             m_device = nullptr;
-            return ResultCode::Success;
         }
     }
 }

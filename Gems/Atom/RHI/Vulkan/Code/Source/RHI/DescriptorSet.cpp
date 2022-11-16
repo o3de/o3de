@@ -288,7 +288,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode DescriptorSet::Shutdown()
+        void DescriptorSet::Shutdown()
         {
             if (m_nativeDescriptorSet != VK_NULL_HANDLE)
             {
@@ -300,7 +300,7 @@ namespace AZ
             }
             m_constantDataBufferView = nullptr;
             m_constantDataBuffer = nullptr;
-            return Base::Shutdown();
+            Base::Shutdown();
         }
 
         void DescriptorSet::UpdateNativeDescriptorSet()

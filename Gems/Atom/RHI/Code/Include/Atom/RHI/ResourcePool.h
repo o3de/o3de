@@ -51,7 +51,7 @@ namespace AZ
             virtual ~ResourcePool();
 
             /// Shuts down the pool. This method will shutdown all resources associated with the pool.
-            ResultCode Shutdown() override final;
+            void Shutdown() override final;
 
             /**
              * Loops through every resource matching the provided resource type (RTTI casting is used) and

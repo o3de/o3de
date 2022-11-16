@@ -16,9 +16,9 @@ namespace AZ
             return aznew CommandList();
         }
 
-        RHI::ResultCode CommandList::Shutdown()
+        void CommandList::Shutdown()
         {
-            return DeviceObject::Shutdown();
+            DeviceObject::Shutdown();
         }
     }
 }

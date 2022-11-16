@@ -37,11 +37,11 @@ namespace AZ
             return BuildNativePipeline(descriptor, pipelineLayout);
         }
 
-        RHI::ResultCode GraphicsPipeline::Shutdown()
+        void GraphicsPipeline::Shutdown()
         {
             m_renderPass = nullptr;
 
-            return Base::Shutdown();
+            Base::Shutdown();
         }
 
         RHI::ResultCode GraphicsPipeline::BuildNativePipeline(const Descriptor& descriptor, const PipelineLayout& pipelineLayout)

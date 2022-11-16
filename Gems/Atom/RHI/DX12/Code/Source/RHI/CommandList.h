@@ -58,7 +58,7 @@ namespace AZ
                 const AZStd::shared_ptr<DescriptorContext>& descriptorContext,
                 ID3D12CommandAllocator* commandAllocator);
 
-            RHI::ResultCode Shutdown() override;
+            void Shutdown() override;
 
             void Open(const Name& name);
             void Close() override;

@@ -31,13 +31,13 @@ namespace AZ
             return m_descriptor;
         }
 
-        RHI::ResultCode Sampler::Shutdown()
+        void Sampler::Shutdown()
         {
             auto& device = static_cast<Device&>(GetDevice());
             DescriptorContext& context = device.GetDescriptorContext();
             context.ReleaseDescriptor(m_descriptor);
             m_descriptor = DescriptorHandle();
-            return Base::Shutdown();
+            Base::Shutdown();
         }
     }
 }

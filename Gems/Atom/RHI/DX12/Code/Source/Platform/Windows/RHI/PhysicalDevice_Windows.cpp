@@ -153,11 +153,10 @@ namespace AZ
             return driverVersion;
         }
 
-        RHI::ResultCode PhysicalDevice::Shutdown()
+        void PhysicalDevice::Shutdown()
         {
             m_dxgiAdapter = nullptr;
             m_dxgiFactory = nullptr;
-            return RHI::ResultCode::Success;
         }
 
         IDXGIFactoryX* PhysicalDevice::GetFactory() const

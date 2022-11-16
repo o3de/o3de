@@ -42,7 +42,7 @@ namespace AZ
             bool IsAttachment() const;
 
             /// Shuts down the buffer by detaching it from its parent pool.
-            ResultCode Shutdown() override final;
+            void Shutdown() override final;
 
             //! Returns the parent pool this resource is registered on. Since resource creation is
             //! separate from initialization, this will be null until the resource is registered on a pool.
@@ -74,7 +74,7 @@ namespace AZ
             bool IsInResourceCache(const BufferViewDescriptor& bufferViewDescriptor);
             
             //! Removes the provided ResourceView from the cache
-            ResultCode EraseResourceView(ResourceView* resourceView) const;
+            void EraseResourceView(ResourceView* resourceView) const;
                                     
         protected:
             Resource() = default;
@@ -92,9 +92,6 @@ namespace AZ
 
             /// Called by the frame attachment at frame building time.
             void SetFrameAttachment(FrameAttachment* frameAttachment);
-
-            /// Inserts a new view in the resource view cache
-            Ptr<BufferView> InsertNewResourceViewInCache(HashValue64 hash, const BufferViewDescriptor& bufferViewDescriptor) const;
                                     
             /// The parent pool this resource is registered with.
             ResourcePool* m_pool = nullptr;

@@ -36,7 +36,7 @@ namespace AZ
 
             void Init(const Descriptor& descriptor);
 
-            RHI::ResultCode Shutdown() override;
+            void Shutdown() override;
 
             void GarbageCollect();
 
@@ -88,11 +88,10 @@ namespace AZ
         }
 
         template<typename SubAllocator, typename View>
-        RHI::ResultCode MemoryTypeAllocator<SubAllocator, View>::Shutdown()
+        void MemoryTypeAllocator<SubAllocator, View>::Shutdown()
         {
             m_subAllocator.Shutdown();
             m_pageAllocator.Shutdown();
-            return RHI::ResultCode::Success;
         }
 
         template<typename SubAllocator, typename View>

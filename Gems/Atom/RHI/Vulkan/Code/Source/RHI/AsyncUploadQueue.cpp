@@ -51,11 +51,10 @@ namespace AZ
             return result;
         }
 
-        RHI::ResultCode AsyncUploadQueue::Shutdown()
+        void AsyncUploadQueue::Shutdown()
         {
             m_asyncWaitQueue.ShutDown();
             m_callbackList.clear();
-            return Base::Shutdown();
         }
 
         RHI::AsyncWorkHandle AsyncUploadQueue::QueueUpload(const RHI::BufferStreamRequest& request)

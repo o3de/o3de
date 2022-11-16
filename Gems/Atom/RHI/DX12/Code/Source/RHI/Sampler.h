@@ -41,7 +41,7 @@ namespace AZ
 
         private:
             Sampler() = default;
-            RHI::ResultCode Shutdown() override;
+            void Shutdown() override;
 
             DescriptorHandle m_descriptor;
         };

@@ -133,7 +133,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode Memory::Shutdown()
+        void Memory::Shutdown()
         {
             Device& device = static_cast<Device&>(GetDevice());
             if (m_mappedMemory)
@@ -149,7 +149,7 @@ namespace AZ
                 m_nativeDeviceMemory = VK_NULL_HANDLE;
             }
 
-            return Base::Shutdown();
+            Base::Shutdown();
         }
     }
 }

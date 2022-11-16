@@ -47,7 +47,7 @@ namespace AZ
             return result;
         }
 
-        RHI::ResultCode NullDescriptorManager::Shutdown()
+        void NullDescriptorManager::Shutdown()
         {
             const Device& device = static_cast<Device&>(GetDevice());
             for (auto& image : m_imageNullDescriptor.m_images)
@@ -65,7 +65,7 @@ namespace AZ
             device.GetContext().DestroyBufferView(device.GetNativeDevice(), m_texelViewNullDescriptor.m_view, nullptr);
             m_texelViewNullDescriptor.m_memory.reset();
 
-            return RHI::DeviceObject::Shutdown();
+            RHI::DeviceObject::Shutdown();
         }
 
         RHI::ResultCode NullDescriptorManager::CreateImage()

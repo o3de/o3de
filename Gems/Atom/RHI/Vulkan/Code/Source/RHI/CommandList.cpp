@@ -527,10 +527,10 @@ namespace AZ
             static_cast<Device&>(GetDevice()).GetContext().CmdEndConditionalRenderingEXT(m_nativeCommandBuffer);
         }
 
-        RHI::ResultCode CommandList::Shutdown()
+        void CommandList::Shutdown()
         {
             m_nativeCommandBuffer = VK_NULL_HANDLE; // do not call vkFreeCommanBuffers().
-            return DeviceObject::Shutdown();
+            DeviceObject::Shutdown();
         }
 
         void CommandList::BeginCommandBuffer(InheritanceInfo* inheritance)

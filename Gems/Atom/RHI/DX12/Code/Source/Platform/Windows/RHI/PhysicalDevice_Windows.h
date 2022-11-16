@@ -33,7 +33,7 @@ namespace AZ
             uint32_t GetGpuDriverVersion(const DXGI_ADAPTER_DESC& adapterDesc);
 
             void Init(IDXGIFactoryX* factory, IDXGIAdapterX* adapter);
-            RHI::ResultCode Shutdown() override;
+            void Shutdown() override;
 
             RHI::Ptr<IDXGIFactoryX> m_dxgiFactory;
             RHI::Ptr<IDXGIAdapterX> m_dxgiAdapter;

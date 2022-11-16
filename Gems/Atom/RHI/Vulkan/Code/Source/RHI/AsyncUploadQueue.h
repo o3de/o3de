@@ -61,7 +61,7 @@ namespace AZ
             ~AsyncUploadQueue() = default;
 
             RHI::ResultCode Init(const Descriptor& descriptor);
-            RHI::ResultCode Shutdown();
+            void Shutdown();
 
             RHI::AsyncWorkHandle QueueUpload(const RHI::BufferStreamRequest& request);
             RHI::AsyncWorkHandle QueueUpload(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip);

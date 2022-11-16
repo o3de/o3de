@@ -101,15 +101,13 @@ namespace AZ
             return resultCode;
         }
 
-        ResultCode Device::Shutdown()
+        void Device::Shutdown()
         {
             if (IsInitialized())
             {
                 ShutdownInternal();
                 m_physicalDevice = nullptr;
             }
-
-            return ResultCode::Success;
         }
 
         bool Device::WasDeviceRemoved()

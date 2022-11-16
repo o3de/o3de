@@ -86,7 +86,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::DeviceObject
-            RHI::ResultCode Shutdown() override;
+            void Shutdown() override;
             //////////////////////////////////////////////////////////////////////////
 
             void UpdateNativeDescriptorSet();

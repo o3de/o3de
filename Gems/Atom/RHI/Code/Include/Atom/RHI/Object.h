@@ -69,7 +69,7 @@ namespace AZ
              * with their lifecycle model (i.e. if they use an explicit Init / Shutdown).
              * By default, it is private in order to maintain consistency with a simpler RAII lifecycle.
              */
-            virtual ResultCode Shutdown() { return ResultCode::Success; }
+            virtual void Shutdown() {};
 
             virtual void SetNameInternal(const AZStd::string_view& name);
 

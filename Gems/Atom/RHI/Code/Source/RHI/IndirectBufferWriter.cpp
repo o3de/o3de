@@ -84,7 +84,7 @@ namespace AZ
             return Seek(m_currentSequenceIndex + 1);
         }
 
-        ResultCode IndirectBufferWriter::Shutdown()
+        void IndirectBufferWriter::Shutdown()
         {
             if (m_buffer && m_targetMemory)
             {
@@ -97,7 +97,6 @@ namespace AZ
             m_sequenceStride = 0;
             m_maxSequences = 0;
             m_currentSequenceIndex = static_cast<uint32_t>(-1);
-            return ResultCode::Success;
         }
 
         bool IndirectBufferWriter::ValidateArguments(uint32_t byteStride, uint32_t maxCommandSequences, const IndirectBufferSignature& signature) const
