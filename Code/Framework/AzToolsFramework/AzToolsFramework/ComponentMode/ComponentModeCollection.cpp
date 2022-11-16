@@ -461,7 +461,7 @@ namespace AzToolsFramework
 
                 if (m_selectedComponentModeIndex < m_activeComponentTypes.size())
                 {
-                    // notify other systems ComponentMode has changed
+                    // notify other systems the active ComponentMode has changed
                     EditorComponentModeNotificationBus::Event(
                         GetEntityContextId(), &EditorComponentModeNotifications::ActiveComponentModeChanged,
                         m_activeComponentTypes[m_selectedComponentModeIndex]);

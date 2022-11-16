@@ -20,6 +20,9 @@ namespace AzToolsFramework
     class MenuManagerInterface;
     class HotKeyManagerInterface;
 
+    //! Handler class to sync up Component Mode customized actions to the Action Manager.
+    //! Ensures each Component Mode is mapped to an ActionContextMode and that the two systems
+    //! are correctly synchronized when the state changes.
     class ComponentModeActionHandler
         : private ActionManagerRegistrationNotificationBus::Handler
         , private ComponentModeFramework::EditorComponentModeNotificationBus::Handler

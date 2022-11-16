@@ -118,6 +118,7 @@ namespace AzToolsFramework
             ComponentModeState m_componentModeState = ComponentModeState::Stopped; 
             ViewportEditorModeTrackerInterface* m_viewportEditorModeTracker = nullptr; //!< Tracker for activating/deactivating viewport editor modes.
 
+            // Handler object to sync Component Mode action to the Action Manager.
             ComponentModeActionHandler m_componentModeActionHandler;
         };
     } // namespace ComponentModeFramework
