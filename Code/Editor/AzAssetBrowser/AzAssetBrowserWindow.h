@@ -81,7 +81,7 @@ private:
     QAction* m_treeViewMode = nullptr;
     QAction* m_listViewMode = nullptr;
     AzToolsFramework::AssetBrowser::AssetBrowserDisplayState m_assetBrowserDisplayState =
-        AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::ListViewMode;
+        AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::TreeViewMode;
 
     void UpdatePreview() const;
 
