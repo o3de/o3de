@@ -8,7 +8,7 @@
 ----------------------------------------------------------------------------------------------------
 
 ExecuteConsoleCommand("LoadLevel levels/defaultlevel/defaultlevel.spawnable")
-IdleSeconds(5)
+IdleSeconds(5) -- wait for the level to load
 
 g_screenshotOutputFolder = '@user@/Scripts/Screenshots/'
 testEnv = GetRenderApiName()
@@ -16,8 +16,13 @@ testEnv = GetRenderApiName()
 SetScreenshotFolder(g_screenshotOutputFolder)
 SetTestEnvPath(testEnv)
 
+Print("Saving screenshots to " .. ResolvePath(g_screenshotOutputFolder .. testEnv))
+
 SetOfficialBaselineImageFolder(g_screenshotOutputFolder)
 SetLocalBaselineImageFolder(g_screenshotOutputFolder)
+
+ExecuteConsoleCommand("r_displayInfo=0")
+IdleFrames(1) -- wait 1 frame for the info text to hide
 
 CaptureScreenshot("screenshot_test.png")
 
