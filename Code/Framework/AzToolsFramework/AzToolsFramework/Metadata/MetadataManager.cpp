@@ -168,6 +168,8 @@ namespace AzToolsFramework
         AZ::JsonSerializerSettings settings;
         settings.m_reporting = [&file](AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view path)
         {
+            AZ_UNUSED(file); // AZ_Warning doesn't exist on release builds so file may not be used in that case
+
             if (result.GetOutcome() > AZ::JsonSerializationResult::Outcomes::PartialDefaults)
             {
                 AZ_Warning(
