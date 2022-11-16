@@ -63,22 +63,20 @@ namespace Terrain
         m_imageArrayHandler = AZStd::make_shared<AZ::Render::BindlessImageArrayHandler>();
 
         auto sceneSrgLayout = AZ::RPI::RPISystemInterface::Get()->GetSceneSrgLayout();
-        
+
         // Load the terrain material asynchronously
         static constexpr const char* materialFilePath = "Materials/Terrain/DefaultPbrTerrain.azmaterial";
         const AZ::Data::AssetId materialAssetId =
             AZ::RPI::AssetUtils::GetAssetIdForProductPath(materialFilePath, AZ::RPI::AssetUtils::TraceLevel::Error);
-
         if (materialAssetId.IsValid())
         {
-            m_materialAsset =
-                AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::MaterialAsset>(materialAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+            m_materialAsset.Create(materialAssetId);
             m_materialAsset.QueueLoad();
-
             AZ::Data::AssetBus::Handler::BusConnect(materialAssetId);
         }
 
-        OnTerrainDataChanged(AZ::Aabb::CreateNull(), TerrainDataChangedMask(TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings));
+        OnTerrainDataChanged(
+            AZ::Aabb::CreateNull(), TerrainDataChangedMask(TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings));
         m_meshManager.Initialize(*GetParentScene());
     }
 
