@@ -1230,3 +1230,17 @@ class TestMultiTestCollector(unittest.TestCase):
 
         assert mock_runner.run_pytestfunc == mock_run
         assert mock_run_2 in mock_runner_2.result_pytestfuncs
+
+    @mock.patch('ly_test_tools.o3de.multi_test_framework.isinstance', mock.MagicMock())
+    @mock.patch('ly_test_tools.o3de.multi_test_framework.issubclass', mock.MagicMock())
+    @mock.patch('ly_test_tools.o3de.multi_test_framework.MultiTestSuite._run_single_test')
+    def test_MakeSingleRun_SingleRun_SetupTeardown(self, mock_run_single_test, mock_collect):
+        mock_inner_test_spec = mock.MagicMock()
+
+        mock_single_run_func = multi_test_framework.MultiTestSuite.MultiTestCollector._make_single_run(mock_inner_test_spec)
+        mock_single_run_func(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+
+        mock_run_single_test.assert_called_once()
+
+    def test_MakeSingleRun_NoSingleRun_NoSetupTeardown(self):
+        pass
