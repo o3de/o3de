@@ -8,9 +8,7 @@
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Memory/PoolAllocator.h>
-#include <AzCore/Memory/BestFitExternalMapAllocator.h>
-#include <AzCore/Memory/HeapSchema.h>
-#include <AzCore/Memory/HphaSchema.h>
+#include <AzCore/Memory/HphaAllocator.h>
 
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Debug/StackTracer.h>
@@ -46,6 +44,7 @@ namespace UnitTest
         }
         void TearDown() override
         {
+            AZ::AllocatorManager::Instance().GarbageCollect();
             AZ::AllocatorManager::Instance().ExitProfilingMode();
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
         }
@@ -96,7 +95,7 @@ namespace UnitTest
             {
                 AZStd::size_t size = AZStd::GetMax(rand() % 256, 1);
                 // supply all debug info, so we don't need to record the stack.
-                addresses[i] = sysAllocator.Allocate(size, 8, 0, "Test Alloc", __FILE__, __LINE__);
+                addresses[i] = sysAllocator.Allocate(size, 8);
                 memset(addresses[i], 1, size);
                 totalAllocSize += size;
             }
@@ -126,7 +125,7 @@ namespace UnitTest
 
                 for (int i = 0; i < 100; ++i)
                 {
-                    address[i] = sysAllocator.Allocate(1000, 32, 0);
+                    address[i] = sysAllocator.Allocate(1000, 32);
                     EXPECT_NE(nullptr, address[i]);
                     EXPECT_EQ(0, ((size_t)address[i] & 31)); // check alignment
                     EXPECT_GE(sysAllocator.AllocationSize(address[i]), 1000); // check allocation size
@@ -162,14 +161,12 @@ namespace UnitTest
 #endif
             memset(address, 0, AZ_ARRAY_SIZE(address) * sizeof(void*));
 
-            SystemAllocator::Descriptor descriptor;
-            descriptor.m_stackRecordLevels = 20;
-            AllocatorInstance<SystemAllocator>::Create(descriptor);
+            AllocatorInstance<SystemAllocator>::Create();
             IAllocator& sysAllocator = AllocatorInstance<SystemAllocator>::Get();
 
             for (int i = 0; i < 100; ++i)
             {
-                address[i] = sysAllocator.Allocate(1000, 32, 0);
+                address[i] = sysAllocator.Allocate(1000, 32);
                 EXPECT_NE(nullptr, address[i]);
                 EXPECT_EQ(0, ((size_t)address[i] & 31)); // check alignment
                 EXPECT_GE(sysAllocator.AllocationSize(address[i]), 1000); // check allocation size
@@ -304,27 +301,13 @@ namespace UnitTest
         : public MemoryTrackingFixture
     {
     protected:
-        SystemAllocator::Descriptor m_sysAllocDesc;
-        bool m_isDynamic;
-        int m_numStaticPages;
     public:
-        PoolAllocatorTest(bool isDynamic = true, int numStaticPages = 0)
-            : m_isDynamic(isDynamic)
-            , m_numStaticPages(numStaticPages)
-        {
-        }
-
         void SetUp() override
         {
             MemoryTrackingFixture::SetUp();
 
-            m_sysAllocDesc.m_allocationRecords = true;
-            AllocatorInstance<SystemAllocator>::Create(m_sysAllocDesc);
-            PoolAllocator::Descriptor poolDesc;
-            poolDesc.m_allocationRecords = true;
-            poolDesc.m_isDynamic = m_isDynamic;
-            poolDesc.m_numStaticPages = m_numStaticPages;
-            AllocatorInstance<PoolAllocator>::Create(poolDesc);
+            AllocatorInstance<SystemAllocator>::Create();
+            AllocatorInstance<PoolAllocator>::Create();
         }
 
         void TearDown() override
@@ -388,7 +371,7 @@ namespace UnitTest
             memset(address, 0, AZ_ARRAY_SIZE(address)*sizeof(void*));
             for (unsigned int j = 0; j < AZ_ARRAY_SIZE(address); ++j)
             {
-                address[j] = poolAllocator.Allocate(256, 8, 0, "Pool Alloc", "This File", 123);
+                address[j] = poolAllocator.Allocate(256, 8);
                 EXPECT_GE(poolAllocator.AllocationSize(address[j]), 256);
                 memset(address[j], 1, 256);
             }
@@ -428,32 +411,6 @@ namespace UnitTest
         run();
     }
 
-    class PoolAllocatorDynamicWithStaticPagesTest
-        : public PoolAllocatorTest
-    {
-    public:
-        PoolAllocatorDynamicWithStaticPagesTest()
-            : PoolAllocatorTest(true, 10) {}                                      // just create 10 pages we will allocate more than
-    };
-
-    TEST_F(PoolAllocatorDynamicWithStaticPagesTest, Test)
-    {
-        run();
-    }
-
-    class PoolAllocatorStaticPagesTest
-        : public PoolAllocatorTest
-    {
-    public:
-        PoolAllocatorStaticPagesTest()
-            : PoolAllocatorTest(false, 50) {}
-    };
-
-    TEST_F(PoolAllocatorStaticPagesTest, Test)
-    {
-        run();
-    }
-
     /**
      * Tests ThreadPoolAllocator
      */
@@ -485,17 +442,7 @@ namespace UnitTest
         volatile bool           m_doneSharedAlloc;
 #endif
 
-        SystemAllocator::Descriptor m_sysAllocDesc;
-        bool m_isDynamic;
-        int m_numStaticPages;
-
     public:
-        ThreadPoolAllocatorTest(bool isDynamic = true, int numStaticPages = 0)
-            : m_isDynamic(isDynamic)
-            , m_numStaticPages(numStaticPages)
-        {
-        }
-
         void SetUp() override
         {
             MemoryTrackingFixture::SetUp();
@@ -510,13 +457,8 @@ namespace UnitTest
                 m_desc[i].m_stackSize = m_threadStackSize;
             }
 
-            m_sysAllocDesc.m_allocationRecords = true;
-            AllocatorInstance<SystemAllocator>::Create(m_sysAllocDesc);
-            ThreadPoolAllocator::Descriptor poolDesc;
-            poolDesc.m_allocationRecords = true;
-            poolDesc.m_isDynamic = m_isDynamic;
-            poolDesc.m_numStaticPages = m_numStaticPages;
-            AllocatorInstance<ThreadPoolAllocator>::Create(poolDesc);
+            AllocatorInstance<SystemAllocator>::Create();
+            AllocatorInstance<ThreadPoolAllocator>::Create();
         }
 
         void TearDown() override
@@ -543,7 +485,7 @@ namespace UnitTest
             for (int i = 0; i < numAllocations; ++i)
             {
                 AZStd::size_t size = AZStd::GetMax(1, ((i + 1) * 2) % 256);
-                addresses[i] = poolAllocator.Allocate(size, 8, 0, "Test Alloc", __FILE__, __LINE__);
+                addresses[i] = poolAllocator.Allocate(size, 8);
                 EXPECT_NE(addresses[i], nullptr);
                 memset(addresses[i], 1, size);
             }
@@ -568,7 +510,7 @@ namespace UnitTest
             {
                 AZStd::size_t minSize = sizeof(AllocClass);
                 AZStd::size_t size = AZStd::GetMax((AZStd::size_t)(rand() % 256), minSize);
-                AllocClass* ac = reinterpret_cast<AllocClass*>(poolAllocator.Allocate(size, AZStd::alignment_of<AllocClass>::value, 0, "Shared Alloc", __FILE__, __LINE__));
+                AllocClass* ac = reinterpret_cast<AllocClass*>(poolAllocator.Allocate(size, AZStd::alignment_of<AllocClass>::value));
                 AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
                 m_sharedAlloc.push_back(*ac);
             }
@@ -606,24 +548,7 @@ namespace UnitTest
             AZ_CLASS_ALLOCATOR(MyThreadPoolAllocator, SystemAllocator, 0);
             AZ_TYPE_INFO(MyThreadPoolAllocator, "{28D80F96-19B1-4465-8278-B53989C44CF1}");
 
-            struct Descriptor
-                : public ThreadPoolBase<MyThreadPoolAllocator>::Descriptor
-            {
-                Descriptor()
-                    : ThreadPoolBase<MyThreadPoolAllocator>::Descriptor()
-                {
-                    m_pageSize = 64 * 1024;
-                    m_minAllocationSize = 1024;
-                    m_maxAllocationSize = 1024;
-                }
-            };
-
             using Base = ThreadPoolBase<MyThreadPoolAllocator>;
-
-            MyThreadPoolAllocator()
-                : Base("MyThreadPoolAllocator", "Fast thread 1024 byte allocator")
-            {
-            }
         };
 
         void run()
@@ -754,14 +679,15 @@ namespace UnitTest
             }
             //////////////////////////////////////////////////////////////////////////
 
-            // Our pools will support only 1024 byte allocations
+            // Our pools will support only 512 byte allocations
             AZ::AllocatorInstance<MyThreadPoolAllocator>::Create();
 
-            void* pooled1024 = AZ::AllocatorInstance<MyThreadPoolAllocator>::Get().Allocate(1024, 1024, 0);
-            AZ::AllocatorInstance<MyThreadPoolAllocator>::Get().DeAllocate(pooled1024);
+            void* pooled512 = AZ::AllocatorInstance<MyThreadPoolAllocator>::Get().Allocate(512, 512);
+            ASSERT_TRUE(pooled512);
+            AZ::AllocatorInstance<MyThreadPoolAllocator>::Get().DeAllocate(pooled512);
 
             AZ_TEST_START_TRACE_SUPPRESSION;
-            void* pooled2048 = AZ::AllocatorInstance<MyThreadPoolAllocator>::Get().Allocate(2048, 2048, 0);
+            void* pooled2048 = AZ::AllocatorInstance<MyThreadPoolAllocator>::Get().Allocate(2048, 2048);
             (void)pooled2048;
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
@@ -774,97 +700,19 @@ namespace UnitTest
         run();
     }
 
-    class ThreadPoolAllocatorDynamicWithStaticPagesTest
-        : public ThreadPoolAllocatorTest
-    {
-    public:
-        ThreadPoolAllocatorDynamicWithStaticPagesTest()
-            : ThreadPoolAllocatorTest(true, 10) {}                                            // just create 10 pages we will allocate more than
-    };
-
-    TEST_F(ThreadPoolAllocatorDynamicWithStaticPagesTest, Test)
-    {
-        run();
-    }
-
-    class ThreadPoolAllocatorStaticPagesTest
-        : public ThreadPoolAllocatorTest
-    {
-    public:
-        ThreadPoolAllocatorStaticPagesTest()
-            : ThreadPoolAllocatorTest(false, 10000) {}
-    };
-
-    TEST_F(ThreadPoolAllocatorStaticPagesTest, Test)
-    {
-        run();
-    }
-
-    TEST(BestFitExternalMap, Test)
-    {
-        SystemAllocator::Descriptor sysDesc;
-        sysDesc.m_heap.m_numFixedMemoryBlocks = 1;
-        sysDesc.m_heap.m_fixedMemoryBlocksByteSize[0] = 5 * 1024 * 1024;
-        sysDesc.m_heap.m_fixedMemoryBlocks[0] = AZ_OS_MALLOC(sysDesc.m_heap.m_fixedMemoryBlocksByteSize[0], sysDesc.m_heap.m_memoryBlockAlignment);
-        AllocatorInstance<SystemAllocator>::Create(sysDesc);
-
-        BestFitExternalMapAllocator::Descriptor desc;
-        desc.m_mapAllocator = nullptr; // use the system allocator
-        desc.m_memoryBlockByteSize = 4 * 1024 * 1024;
-        desc.m_memoryBlock = azmalloc(desc.m_memoryBlockByteSize, desc.m_memoryBlockAlignment);
-
-        AllocatorInstance<BestFitExternalMapAllocator>::Create(desc);
-        IAllocator& bfAlloc = AllocatorInstance<BestFitExternalMapAllocator>::Get();
-
-        EXPECT_EQ( desc.m_memoryBlockByteSize, bfAlloc.Capacity() );
-        EXPECT_EQ( 0, bfAlloc.NumAllocatedBytes() );
-        EXPECT_EQ( desc.m_memoryBlockByteSize, bfAlloc.GetMaxAllocationSize() );
-
-        void* addr = bfAlloc.Allocate(desc.m_memoryBlockByteSize, 16, 0);
-
-        EXPECT_NE(nullptr, addr);
-        EXPECT_EQ( desc.m_memoryBlockByteSize, bfAlloc.Capacity() );
-        EXPECT_EQ( desc.m_memoryBlockByteSize, bfAlloc.NumAllocatedBytes() );
-        EXPECT_EQ( 0, bfAlloc.GetMaxAllocationSize() );
-
-        // enable assert mode
-        //void* addr2 = bfAlloc.Allocate(1,1,0);
-        //EXPECT_EQ(NULL, addr2);
-
-        bfAlloc.DeAllocate(addr);
-        EXPECT_EQ( desc.m_memoryBlockByteSize, bfAlloc.Capacity() );
-        EXPECT_EQ( 0, bfAlloc.NumAllocatedBytes() );
-        EXPECT_EQ( desc.m_memoryBlockByteSize, bfAlloc.GetMaxAllocationSize() );
-
-        //bfAlloc.DeAllocate(addr2);
-
-        // add more tests !!!
-
-        AllocatorInstance<BestFitExternalMapAllocator>::Destroy();
-
-        azfree(desc.m_memoryBlock);
-
-        AllocatorInstance<SystemAllocator>::Destroy();
-    }
-
     /**
      * Tests azmalloc,azmallocex/azfree.
      */
     class AZMallocTest
         : public MemoryTrackingFixture
     {
-        SystemAllocator::Descriptor m_sysAllocDesc;
     public:
         void SetUp() override
         {
             MemoryTrackingFixture::SetUp();
 
-            m_sysAllocDesc.m_allocationRecords = true;
-
-            AllocatorInstance<SystemAllocator>::Create(m_sysAllocDesc);
-            PoolAllocator::Descriptor poolDesc;
-            poolDesc.m_allocationRecords = true;
-            AllocatorInstance<PoolAllocator>::Create(poolDesc);
+            AllocatorInstance<SystemAllocator>::Create();
+            AllocatorInstance<PoolAllocator>::Create();
         }
 
         void TearDown() override
@@ -895,7 +743,6 @@ namespace UnitTest
                 const Debug::AllocationRecordsType& records = sysAllocator.GetRecords()->GetMap();
                 EXPECT_TRUE(records.find(ptr)==records.end());  // our allocation is NOT in the list
             }
-            const char allocName[] = "BlaBla";
             ptr = azmalloc(16*1024, 32, SystemAllocator, allocName);
             EXPECT_EQ(0, ((size_t)ptr & 31));  // check alignment
             if (sysAllocator.GetRecords())
@@ -904,8 +751,6 @@ namespace UnitTest
                 const Debug::AllocationRecordsType& records = sysAllocator.GetRecords()->GetMap();
                 Debug::AllocationRecordsType::const_iterator iter = records.find(ptr);
                 EXPECT_TRUE(iter!=records.end());  // our allocation is in the list
-                //printf("%s",iter->second.m_name);
-                EXPECT_STREQ(iter->second.m_name, allocName);
             }
             azfree(ptr, SystemAllocator);
             if (sysAllocator.GetRecords())
@@ -923,23 +768,6 @@ namespace UnitTest
                 const Debug::AllocationRecordsType& records = poolAllocator.GetRecords()->GetMap();
                 Debug::AllocationRecordsType::const_iterator iter = records.find(ptr);
                 EXPECT_TRUE(iter!=records.end());  // our allocation is in the list
-            }
-            azfree(ptr, PoolAllocator);
-            if (poolAllocator.GetRecords())
-            {
-                AZStd::lock_guard<AZ::Debug::AllocationRecords> lock(*poolAllocator.GetRecords());
-                const Debug::AllocationRecordsType& records = poolAllocator.GetRecords()->GetMap();
-                EXPECT_TRUE(records.find(ptr)==records.end());  // our allocation is NOT in the list
-            }
-            ptr = azmalloc(16, 32, PoolAllocator, "BlaBlaPool");
-            EXPECT_EQ(0, ((size_t)ptr & 31));  // check alignment
-            if (poolAllocator.GetRecords())
-            {
-                AZStd::lock_guard<AZ::Debug::AllocationRecords> lock(*poolAllocator.GetRecords());
-                const Debug::AllocationRecordsType& records = poolAllocator.GetRecords()->GetMap();
-                Debug::AllocationRecordsType::const_iterator iter = records.find(ptr);
-                EXPECT_TRUE(iter!=records.end());  // our allocation is in the list
-                EXPECT_STREQ(iter->second.m_name, "BlaBlaPool");
             }
             azfree(ptr, PoolAllocator);
             if (poolAllocator.GetRecords())
@@ -980,18 +808,13 @@ namespace UnitTest
         public:
             MyDerivedClass() = default;
         };
-        SystemAllocator::Descriptor m_sysAllocDesc;
     public:
         void SetUp() override
         {
             MemoryTrackingFixture::SetUp();
 
-            m_sysAllocDesc.m_allocationRecords = true;
-
-            AllocatorInstance<SystemAllocator>::Create(m_sysAllocDesc);
-            PoolAllocator::Descriptor poolDesc;
-            poolDesc.m_allocationRecords = true;
-            AllocatorInstance<PoolAllocator>::Create(poolDesc);
+            AllocatorInstance<SystemAllocator>::Create();
+            AllocatorInstance<PoolAllocator>::Create();
         }
 
         void TearDown() override
@@ -1017,7 +840,6 @@ namespace UnitTest
                 const Debug::AllocationRecordsType& records = poolAllocator.GetRecords()->GetMap();
                 Debug::AllocationRecordsType::const_iterator iter = records.find(ptr);
                 EXPECT_TRUE(iter!=records.end());  // our allocation is in the list
-                EXPECT_STREQ(iter->second.m_name, "MyClass");
             }
             delete ptr;
 
@@ -1038,30 +860,8 @@ namespace UnitTest
                 const Debug::AllocationRecordsType& records = sysAllocator.GetRecords()->GetMap();
                 Debug::AllocationRecordsType::const_iterator iter = records.find(ptr);
                 EXPECT_TRUE(iter!=records.end());  // our allocation is in the list
-                EXPECT_STREQ(iter->second.m_name, "MyClass");
             }
             azdestroy(ptr, SystemAllocator);
-            if (sysAllocator.GetRecords())
-            {
-                AZStd::lock_guard<AZ::Debug::AllocationRecords> lock(*sysAllocator.GetRecords());
-                const Debug::AllocationRecordsType& records = sysAllocator.GetRecords()->GetMap();
-                EXPECT_TRUE(records.find(ptr)==records.end());  // our allocation is NOT in the list
-            }
-
-            // azcreate
-            // now use the azcreate to allocate the object wherever we want
-            ptr = azcreate(MyClass, (505), SystemAllocator, "MyClassNamed");
-            EXPECT_EQ(0, ((size_t)ptr & 31));  // check alignment
-            EXPECT_EQ(505, ptr->m_data);               // check value
-            if (sysAllocator.GetRecords())
-            {
-                AZStd::lock_guard<AZ::Debug::AllocationRecords> lock(*sysAllocator.GetRecords());
-                const Debug::AllocationRecordsType& records = sysAllocator.GetRecords()->GetMap();
-                Debug::AllocationRecordsType::const_iterator iter = records.find(ptr);
-                EXPECT_TRUE(iter!=records.end());  // our allocation is in the list
-                EXPECT_STREQ(iter->second.m_name, "MyClassNamed");
-            }
-            azdestroy(ptr);  // imply SystemAllocator
             if (sysAllocator.GetRecords())
             {
                 AZStd::lock_guard<AZ::Debug::AllocationRecords> lock(*sysAllocator.GetRecords());
@@ -1080,7 +880,6 @@ namespace UnitTest
                 const Debug::AllocationRecordsType& records = poolAllocator.GetRecords()->GetMap();
                 Debug::AllocationRecordsType::const_iterator iter = records.find(ptr);
                 EXPECT_TRUE(iter != records.end());  // our allocation is in the list
-                EXPECT_STREQ(iter->second.m_name, "MyClass");
             }
             delete ptr;
 
@@ -1134,48 +933,10 @@ namespace UnitTest
             return (size_t)1 << (size_t)(MAX_ALIGNMENT_LOG2 * r);
         }
 
-        class DebugSysAllocSchema
-            : public AZ::IAllocatorSchema
-        {
-            pointer_type    Allocate(size_type byteSize, size_type alignment, int flags, const char* name = 0, const char* fileName = 0, int lineNum = 0, unsigned int suppressStackRecord = 0) override
-            {
-                (void)flags;
-                (void)name;
-                (void)fileName;
-                (void)lineNum;
-                (void)suppressStackRecord;
-                return AZ_OS_MALLOC(byteSize, alignment);
-            }
-            void                    DeAllocate(pointer_type ptr, size_type, size_type) override
-            {
-                AZ_OS_FREE(ptr);
-            }
-            pointer_type    ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment) override
-            {
-                (void)ptr;
-                (void)newSize;
-                (void)newAlignment;
-                AZ_Assert(false, "Not supported!");
-                return NULL;
-            }
-            /// Resize an allocated memory block. Returns the new expanded size (up to newSize) or AllocationSize(ptr) or 0 (if you don't support resize at all)
-            size_type               Resize(pointer_type ptr, size_type newSize) override  { (void)ptr; (void)newSize; return 0; }
-            /// Returns allocation size for given address. 0 if the address doesn't belong to the allocator.
-            size_type               AllocationSize(pointer_type ptr) override             { (void)ptr; return 0; }
-
-            size_type               NumAllocatedBytes() const override                    { return 0; }
-            /// Returns the capacity of the Allocator in bytes. If the return value is 0 the Capacity is undefined (usually depends on another allocator)
-            size_type               Capacity() const override                             { return 1 * 1024 * 1024 * 1024; }
-            /// Returns max allocation size if possible. If not returned value is 0
-            size_type               GetMaxAllocationSize() const override                 { return 1 * 1024 * 1024 * 1024; }
-            /// Returns max allocation size of a single contiguous allocation
-            size_type               GetMaxContiguousAllocationSize() const override       { return 1 * 1024 * 1024 * 1024; }
-        };
     public:
         void SetUp() override
         {
-            SystemAllocator::Descriptor desc;
-            AllocatorInstance<SystemAllocator>::Create(desc);
+            AllocatorInstance<SystemAllocator>::Create();
             tr = (test_record*)AZ_OS_MALLOC(sizeof(test_record)*N, 8);
             MAX_SIZE = 4096;
         }
@@ -1351,88 +1112,6 @@ namespace UnitTest
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
-        // DLMalloc
-        void dlAllocate(HeapSchema& dl, unsigned iStart, unsigned iEnd)
-        {
-            for (unsigned i = iStart; i < iEnd; i++)
-            {
-                size_t size = rand_size();
-                tr[i].ptr = dl.Allocate(size, DefaultAlignment, 0);
-            }
-        }
-        void dlFree(HeapSchema& dl, unsigned iStart, unsigned iEnd)
-        {
-            for (unsigned i = iStart; i < iEnd; i++)
-            {
-                unsigned j = i + rand() % (iEnd - i);
-                dl.DeAllocate(tr[j].ptr);
-                tr[j].ptr = tr[i].ptr;
-            }
-        }
-        void dlAllocateSize(HeapSchema& dl, unsigned iStart, unsigned iEnd)
-        {
-            for (unsigned i = iStart; i < iEnd; i++)
-            {
-                size_t size = rand_size();
-                tr[i].ptr = dl.Allocate(size, DefaultAlignment, 0);
-                tr[i].size = size;
-            }
-        }
-        void dlFreeSize(HeapSchema& dl, unsigned iStart, unsigned iEnd)
-        {
-            for (unsigned i = iStart; i < iEnd; i++)
-            {
-                unsigned j = i + rand() % (iEnd - i);
-                dl.DeAllocate(tr[j].ptr /*, tr[j].size*/);
-                tr[j].ptr = tr[i].ptr;
-                tr[j].size = tr[i].size;
-            }
-        }
-
-        void dlAllocateAlignment(HeapSchema& dl, unsigned iStart, unsigned iEnd)
-        {
-            for (unsigned i = iStart; i < iEnd; i++)
-            {
-                size_t size = rand_size();
-                size_t alignment = rand_alignment();
-                tr[i].ptr = dl.Allocate(size, alignment, 0);
-            }
-        }
-        void dlFreeAlignment(HeapSchema& dl, unsigned iStart, unsigned iEnd)
-        {
-            for (unsigned i = iStart; i < iEnd; i++)
-            {
-                unsigned j = i + rand() % (iEnd - i);
-                dl.DeAllocate(tr[j].ptr);
-                tr[j].ptr = tr[i].ptr;
-            }
-        }
-
-        void dlAllocateAlignmentSize(HeapSchema& dl, unsigned iStart, unsigned iEnd)
-        {
-            for (unsigned i = iStart; i < iEnd; i++)
-            {
-                size_t size = rand_size();
-                size_t alignment = rand_alignment();
-                tr[i].ptr = dl.Allocate(size, alignment, 0);
-                tr[i].size = size;
-                tr[i].alignment = alignment;
-            }
-        }
-        void dlFreeAlignmentSize(HeapSchema& dl, unsigned iStart, unsigned iEnd)
-        {
-            for (unsigned i = iStart; i < iEnd; i++)
-            {
-                unsigned j = i + rand() % (iEnd - i);
-                dl.DeAllocate(tr[j].ptr /*, tr[j].size, tr[j].alignment*/);
-                tr[j].ptr = tr[i].ptr;
-                tr[j].size = tr[i].size;
-                tr[j].alignment = tr[i].alignment;
-            }
-        }
-        //////////////////////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////////////////////
         // POOL
         void poolAllocate(PoolSchema& pool, unsigned iStart, unsigned iEnd)
         {
@@ -1596,7 +1275,7 @@ namespace UnitTest
         }
         //////////////////////////////////////////////////////////////////////////
 
-        void allocdealloc(HphaSchema& hpha, HeapSchema& dl, PoolSchema& pool, bool isHpha, bool isDL, bool isDefault, bool isPool)
+        void allocdealloc(HphaSchema& hpha, PoolSchema& pool, bool isHpha, bool isDefault, bool isPool)
         {
             AZStd::chrono::steady_clock::time_point start;
             AZStd::chrono::duration<float> elapsed;
@@ -1620,24 +1299,6 @@ namespace UnitTest
             {
                 printf("\t\t\t(skip/skip)");
             }
-
-            if (isDL)
-            {
-                srand(1234);
-                start = AZStd::chrono::steady_clock::now();
-                dlAllocate(dl, 0, N);
-                elapsed = AZStd::chrono::steady_clock::now() - start;
-                printf("\t(%.3f/", elapsed.count());
-                start = AZStd::chrono::steady_clock::now();
-                dlFree(dl, 0, N);
-                elapsed = AZStd::chrono::steady_clock::now() - start;
-                printf("%.3f)", elapsed.count());
-            }
-            else
-            {
-                printf("\t(skip/skip)");
-            }
-
 
             if (isDefault)
             {
@@ -1696,23 +1357,6 @@ namespace UnitTest
             else
             {
                 printf("\t\t(skip/skip)");
-            }
-
-            if (isDL)
-            {
-                srand(1234);
-                start = AZStd::chrono::steady_clock::now();
-                dlAllocateSize(dl, 0, N);
-                elapsed = AZStd::chrono::steady_clock::now() - start;
-                printf("\t(%.3f/", elapsed.count());
-                start = AZStd::chrono::steady_clock::now();
-                dlFreeSize(dl, 0, N);
-                elapsed = AZStd::chrono::steady_clock::now() - start;
-                printf("%.3f)", elapsed.count());
-            }
-            else
-            {
-                printf("\t(skip/skip)");
             }
 
             if (isDefault)
@@ -1774,23 +1418,6 @@ namespace UnitTest
                 printf("\t\t(skip/skip)");
             }
 
-            if (isDL)
-            {
-                srand(1234);
-                start = AZStd::chrono::steady_clock::now();
-                dlAllocateAlignment(dl, 0, N);
-                elapsed = AZStd::chrono::steady_clock::now() - start;
-                printf("\t(%.3f/", elapsed.count());
-                start = AZStd::chrono::steady_clock::now();
-                dlFreeAlignment(dl, 0, N);
-                elapsed = AZStd::chrono::steady_clock::now() - start;
-                printf("%.3f)", elapsed.count());
-            }
-            else
-            {
-                printf("\t(skip/skip)");
-            }
-
             if (isDefault)
             {
                 srand(1234);
@@ -1842,23 +1469,6 @@ namespace UnitTest
                 printf("\t(%.3f/", elapsed.count());
                 start = AZStd::chrono::steady_clock::now();
                 hphaFreeAlignmentSize(hpha, 0, N);
-                elapsed = AZStd::chrono::steady_clock::now() - start;
-                printf("%.3f)", elapsed.count());
-            }
-            else
-            {
-                printf("\t(skip/skip)");
-            }
-
-            if (isDL)
-            {
-                srand(1234);
-                start = AZStd::chrono::steady_clock::now();
-                dlAllocateAlignmentSize(dl, 0, N);
-                elapsed = AZStd::chrono::steady_clock::now() - start;
-                printf("\t(%.3f/", elapsed.count());
-                start = AZStd::chrono::steady_clock::now();
-                dlFreeAlignmentSize(dl, 0, N);
                 elapsed = AZStd::chrono::steady_clock::now() - start;
                 printf("%.3f)", elapsed.count());
             }
@@ -1989,7 +1599,7 @@ namespace UnitTest
             printf("\t(%.3f)\n", elapsed.count());
         }
 
-        void allocdeallocThread(HphaSchema& hpha, HeapSchema& dl, ThreadPoolSchema& thPool, bool isHpha, bool isDL, bool isDefault, bool isPool)
+        void allocdeallocThread(HphaSchema& hpha, ThreadPoolSchema& thPool, bool isHpha, bool isDefault, bool isPool)
         {
             AZStd::chrono::steady_clock::time_point start;
             AZStd::chrono::duration<float> elapsed;
@@ -2029,39 +1639,6 @@ namespace UnitTest
                 else
                 {
                     printf("\t\t\t(skip/skip)");
-                }
-            }
-
-            {
-                if (isDL)
-                {
-                    srand(1234);
-                    AZStd::thread tr1(AZStd::bind(&PERF_MemoryBenchmark::dlAllocate, this, AZStd::ref(dl), 0 * TN, 1 * TN));
-                    AZStd::thread tr2(AZStd::bind(&PERF_MemoryBenchmark::dlAllocate, this, AZStd::ref(dl), 1 * TN, 2 * TN));
-                    AZStd::thread tr3(AZStd::bind(&PERF_MemoryBenchmark::dlAllocate, this, AZStd::ref(dl), 2 * TN, 3 * TN));
-                    AZStd::thread tr4(AZStd::bind(&PERF_MemoryBenchmark::dlAllocate, this, AZStd::ref(dl), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::steady_clock::now();
-                    tr1.join();
-                    tr2.join();
-                    tr3.join();
-                    tr4.join();
-                    elapsed = AZStd::chrono::steady_clock::now() - start;
-                    printf("\t(%.3f/", elapsed.count());
-                    AZStd::thread tr5(AZStd::bind(&PERF_MemoryBenchmark::dlFree, this, AZStd::ref(dl), 0 * TN, 1 * TN));
-                    AZStd::thread tr6(AZStd::bind(&PERF_MemoryBenchmark::dlFree, this, AZStd::ref(dl), 1 * TN, 2 * TN));
-                    AZStd::thread tr7(AZStd::bind(&PERF_MemoryBenchmark::dlFree, this, AZStd::ref(dl), 2 * TN, 3 * TN));
-                    AZStd::thread tr8(AZStd::bind(&PERF_MemoryBenchmark::dlFree, this, AZStd::ref(dl), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::steady_clock::now();
-                    tr5.join();
-                    tr6.join();
-                    tr7.join();
-                    tr8.join();
-                    elapsed = AZStd::chrono::steady_clock::now() - start;
-                    printf("%.3f)", elapsed.count());
-                }
-                else
-                {
-                    printf("\t(skip/skip)");
                 }
             }
 
@@ -2171,40 +1748,6 @@ namespace UnitTest
             }
 
             {
-                if (isDL)
-                {
-                    srand(1234);
-                    AZStd::thread tr1(AZStd::bind(&PERF_MemoryBenchmark::dlAllocateSize, this, AZStd::ref(dl), 0 * TN, 1 * TN));
-                    AZStd::thread tr2(AZStd::bind(&PERF_MemoryBenchmark::dlAllocateSize, this, AZStd::ref(dl), 1 * TN, 2 * TN));
-                    AZStd::thread tr3(AZStd::bind(&PERF_MemoryBenchmark::dlAllocateSize, this, AZStd::ref(dl), 2 * TN, 3 * TN));
-                    AZStd::thread tr4(AZStd::bind(&PERF_MemoryBenchmark::dlAllocateSize, this, AZStd::ref(dl), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::steady_clock::now();
-                    tr1.join();
-                    tr2.join();
-                    tr3.join();
-                    tr4.join();
-                    elapsed = AZStd::chrono::steady_clock::now() - start;
-                    printf("\t(%.3f/", elapsed.count());
-                    AZStd::thread tr5(AZStd::bind(&PERF_MemoryBenchmark::dlFreeSize, this, AZStd::ref(dl), 0 * TN, 1 * TN));
-                    AZStd::thread tr6(AZStd::bind(&PERF_MemoryBenchmark::dlFreeSize, this, AZStd::ref(dl), 1 * TN, 2 * TN));
-                    AZStd::thread tr7(AZStd::bind(&PERF_MemoryBenchmark::dlFreeSize, this, AZStd::ref(dl), 2 * TN, 3 * TN));
-                    AZStd::thread tr8(AZStd::bind(&PERF_MemoryBenchmark::dlFreeSize, this, AZStd::ref(dl), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::steady_clock::now();
-                    tr5.join();
-                    tr6.join();
-                    tr7.join();
-                    tr8.join();
-                    elapsed = AZStd::chrono::steady_clock::now() - start;
-                    printf("%.3f)", elapsed.count());
-                }
-                else
-                {
-                    printf("\t(skip/skip)");
-                }
-            }
-
-
-            {
                 if (isDefault)
                 {
                     srand(1234);
@@ -2306,39 +1849,6 @@ namespace UnitTest
                 else
                 {
                     printf("\t\t(skip/skip)");
-                }
-            }
-
-            {
-                if (isDL)
-                {
-                    srand(1234);
-                    AZStd::thread tr1(AZStd::bind(&PERF_MemoryBenchmark::dlAllocateAlignment, this, AZStd::ref(dl), 0 * TN, 1 * TN));
-                    AZStd::thread tr2(AZStd::bind(&PERF_MemoryBenchmark::dlAllocateAlignment, this, AZStd::ref(dl), 1 * TN, 2 * TN));
-                    AZStd::thread tr3(AZStd::bind(&PERF_MemoryBenchmark::dlAllocateAlignment, this, AZStd::ref(dl), 2 * TN, 3 * TN));
-                    AZStd::thread tr4(AZStd::bind(&PERF_MemoryBenchmark::dlAllocateAlignment, this, AZStd::ref(dl), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::steady_clock::now();
-                    tr1.join();
-                    tr2.join();
-                    tr3.join();
-                    tr4.join();
-                    elapsed = AZStd::chrono::steady_clock::now() - start;
-                    printf("\t(%.3f/", elapsed.count());
-                    AZStd::thread tr5(AZStd::bind(&PERF_MemoryBenchmark::dlFreeAlignment, this, AZStd::ref(dl), 0 * TN, 1 * TN));
-                    AZStd::thread tr6(AZStd::bind(&PERF_MemoryBenchmark::dlFreeAlignment, this, AZStd::ref(dl), 1 * TN, 2 * TN));
-                    AZStd::thread tr7(AZStd::bind(&PERF_MemoryBenchmark::dlFreeAlignment, this, AZStd::ref(dl), 2 * TN, 3 * TN));
-                    AZStd::thread tr8(AZStd::bind(&PERF_MemoryBenchmark::dlFreeAlignment, this, AZStd::ref(dl), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::steady_clock::now();
-                    tr5.join();
-                    tr6.join();
-                    tr7.join();
-                    tr8.join();
-                    elapsed = AZStd::chrono::steady_clock::now() - start;
-                    printf("%.3f)", elapsed.count());
-                }
-                else
-                {
-                    printf("\t(skip/skip)");
                 }
             }
 
@@ -2448,39 +1958,6 @@ namespace UnitTest
             }
 
             {
-                if (isDL)
-                {
-                    srand(1234);
-                    AZStd::thread tr1(AZStd::bind(&PERF_MemoryBenchmark::dlAllocateAlignmentSize, this, AZStd::ref(dl), 0 * TN, 1 * TN));
-                    AZStd::thread tr2(AZStd::bind(&PERF_MemoryBenchmark::dlAllocateAlignmentSize, this, AZStd::ref(dl), 1 * TN, 2 * TN));
-                    AZStd::thread tr3(AZStd::bind(&PERF_MemoryBenchmark::dlAllocateAlignmentSize, this, AZStd::ref(dl), 2 * TN, 3 * TN));
-                    AZStd::thread tr4(AZStd::bind(&PERF_MemoryBenchmark::dlAllocateAlignmentSize, this, AZStd::ref(dl), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::steady_clock::now();
-                    tr1.join();
-                    tr2.join();
-                    tr3.join();
-                    tr4.join();
-                    elapsed = AZStd::chrono::steady_clock::now() - start;
-                    printf("\t(%.3f/", elapsed.count());
-                    AZStd::thread tr5(AZStd::bind(&PERF_MemoryBenchmark::dlFreeAlignmentSize, this, AZStd::ref(dl), 0 * TN, 1 * TN));
-                    AZStd::thread tr6(AZStd::bind(&PERF_MemoryBenchmark::dlFreeAlignmentSize, this, AZStd::ref(dl), 1 * TN, 2 * TN));
-                    AZStd::thread tr7(AZStd::bind(&PERF_MemoryBenchmark::dlFreeAlignmentSize, this, AZStd::ref(dl), 2 * TN, 3 * TN));
-                    AZStd::thread tr8(AZStd::bind(&PERF_MemoryBenchmark::dlFreeAlignmentSize, this, AZStd::ref(dl), 3 * TN, 4 * TN));
-                    start = AZStd::chrono::steady_clock::now();
-                    tr5.join();
-                    tr6.join();
-                    tr7.join();
-                    tr8.join();
-                    elapsed = AZStd::chrono::steady_clock::now() - start;
-                    printf("%.3f)", elapsed.count());
-                }
-                else
-                {
-                    printf("\t(skip/skip)");
-                }
-            }
-
-            {
                 if (isDefault)
                 {
                     srand(1234);
@@ -2557,88 +2034,63 @@ namespace UnitTest
             printf("\n\t\t\t=======================\n");
             printf("\t\t\tSchemas Benchmark Test!\n");
             printf("\t\t\t=======================\n");
-            DebugSysAllocSchema da;
             {
-                HphaSchema::Descriptor hphaDesc;
-                hphaDesc.m_fixedMemoryBlockByteSize = AZ_TRAIT_OS_HPHA_MEMORYBLOCKBYTESIZE;
-                hphaDesc.m_fixedMemoryBlock = AZ_OS_MALLOC(hphaDesc.m_fixedMemoryBlockByteSize, hphaDesc.m_fixedMemoryBlockAlignment);
-                HeapSchema::Descriptor dlMallocDesc;
-                dlMallocDesc.m_numMemoryBlocks = 1;
-                dlMallocDesc.m_memoryBlocksByteSize[0] = hphaDesc.m_fixedMemoryBlockByteSize;
-                dlMallocDesc.m_memoryBlocks[0] = AZ_OS_MALLOC(dlMallocDesc.m_memoryBlocksByteSize[0], hphaDesc.m_fixedMemoryBlockAlignment);
-                PoolSchema::Descriptor poolDesc;
-                poolDesc.m_pageAllocator = &da;
-                poolDesc.m_numStaticPages = 100;
-                printf("\t\t\tPrealocated memory %.2f MB!\n", (float)hphaDesc.m_fixedMemoryBlockByteSize / (1024.f*1024.f));
+                // TODO Switch to using instance of HphaAllocator with a sub allocator of a fixed size
                 {
-                    HphaSchema hpha(hphaDesc);
-                    HeapSchema dl(dlMallocDesc);
+                    HphaSchema hpha;
                     PoolSchema pool;
-                    pool.Create(poolDesc);
+                    pool.Create();
                     ThreadPoolSchemaHelper<nullptr_t> threadPool;
-                    threadPool.Create(poolDesc);
+                    threadPool.Create();
 
                     printf("---- Single Thread ----\n");
                     // any allocations
                     MAX_SIZE = 4096;
-                    allocdealloc(hpha, dl, pool, false, false, false, true);
+                    allocdealloc(hpha, pool, false, false, true);
                     printf("\n");
                     // pool allocations
                     MAX_SIZE = 256;
-                    allocdealloc(hpha, dl, pool, true, false, false, true);
+                    allocdealloc(hpha, pool, false, false, true);
 
                     // threads
                     printf("\n---- 4 Threads ----\n");
                     // any allocations
                     MAX_SIZE = 4096;
-                    //allocdeallocThread(hpha,dl,threadPool,true,true,true,true);
+                    //allocdeallocThread(hpha,threadPool,true,true,true);
                     printf("\n");
                     // pool allocations
                     MAX_SIZE = 256;
-                    //allocdeallocThread(hpha,dl,threadPool,true,true,true,true);
-
-                    pool.Destroy();
-                    threadPool.Destroy();
+                    //allocdeallocThread(hpha,threadPool,true,true,true);
                 }
-                AZ_OS_FREE(hphaDesc.m_fixedMemoryBlock);
-                AZ_OS_FREE(dlMallocDesc.m_memoryBlocks[0]);
             }
 
             #if AZ_TRAIT_UNITTEST_NON_PREALLOCATED_HPHA_TEST
                       printf("\n\t\t\tNO prealocated memory!\n");
                       {
-                          HphaSchema::Descriptor hphaDesc;
-                          HeapSchema::Descriptor dlMallocDesc;
-                          PoolSchema::Descriptor poolDesc;
-                          poolDesc.m_pageAllocator = &da;
-            
-                          HphaSchema hpha(hphaDesc);
-                          HeapSchema dl(dlMallocDesc);
+                          HphaSchema hpha;
                           PoolSchema pool;
-                          pool.Create(poolDesc);
+                          pool.Create();
                           ThreadPoolSchemaHelper<nullptr_t> threadPool;
-                          threadPool.Create(poolDesc);
+                          threadPool.Create();
             
                           printf("---- Single Thread ----\n");
                           // any allocations
                           MAX_SIZE = 4096;
-                          allocdealloc(hpha,dl,pool,true,true,true,true);
+                          allocdealloc(hpha,pool,true,true,true);
                           printf("\n");
                           // pool allocations
                           MAX_SIZE = 256;
-                          allocdealloc(hpha,dl,pool,true,true,true,true);
+                          allocdealloc(hpha,pool,true,true,true);
             
                           // threads
                           printf("\n---- 4 Threads ----\n");
                           // any allocations
                           MAX_SIZE = 4096;
-                          allocdeallocThread(hpha,dl,threadPool,true,true,true,true);
+                          allocdeallocThread(hpha,threadPool,true,true,true);
                           printf("\n");
                           // pool allocations
                           MAX_SIZE = 256;
-                          allocdeallocThread(hpha,dl,threadPool,true,true,true,true);
-                          pool.Destroy();
-                          threadPool.Destroy();
+                          allocdeallocThread(hpha,threadPool,true,true,true);
                       }
             #endif
         }

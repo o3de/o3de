@@ -69,7 +69,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         using RemoveEditorOnlyEntitiesResult = AZ::Outcome<void, AZStd::string>;
         RemoveEditorOnlyEntitiesResult RemoveEditorOnlyEntities(EntityList& entities);
 
-        using ExportEntityResult = AZ::Outcome<AZ::Entity*, AZStd::string>;
+        using ExportEntityResult = AZ::Outcome<AZStd::unique_ptr<AZ::Entity>, AZStd::string>;
         ExportEntityResult ExportEntity(AZ::Entity* sourceEntity, PrefabProcessorContext& context);
 
         using ResolveExportedComponentResult = AZ::Outcome<AZ::ExportedComponent, AZStd::string>;

@@ -290,14 +290,14 @@
            </size>
           </property>
           <widget class="QWidget" name="m_thumbnailView">
-           <layout class="QVBoxLayout" name="m_iconViewLayout">
+           <layout class="QVBoxLayout" name="m_thumbnailViewLayout">
             <property name="spacing">
              <number>0</number>
             </property>
             <item>
              <widget class="QLabel" name="m_thumbnailViewPlaceholder">
               <property name="text">
-               <string>Icon view placeholder</string>
+               <string>Thumbnail view placeholder</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
@@ -314,7 +314,7 @@
             <item>
              <widget class="QLabel" name="m_tableViewPlaceholder">
               <property name="text">
-               <string>List view placeholder</string>
+               <string>Table view placeholder</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>

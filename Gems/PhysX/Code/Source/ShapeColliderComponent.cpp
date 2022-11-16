@@ -18,9 +18,9 @@ namespace PhysX
     namespace Utils
     {
         Physics::CapsuleShapeConfiguration ConvertFromLmbrCentralCapsuleConfig(
-            const LmbrCentral::CapsuleShapeConfig& inputCapsuleConfig)
+            const LmbrCentral::CapsuleShapeConfig& inputCapsuleConfig, const AZ::Vector3& scale)
         {
-            return Physics::CapsuleShapeConfiguration(inputCapsuleConfig.m_height, inputCapsuleConfig.m_radius);
+            return Physics::CapsuleShapeConfiguration(inputCapsuleConfig.m_height, inputCapsuleConfig.m_radius, scale);
         }
     } // namespace Utils
 

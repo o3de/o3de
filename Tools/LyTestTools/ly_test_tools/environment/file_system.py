@@ -182,7 +182,26 @@ def untgz(dest, src, exact_tgz_size=False, force=False, allow_exists=False):
 
         # Extract it and return final path.
         start_time = time.time()
-        tar_file.extractall(dst_path)
+        def is_within_directory(directory, target):
+            
+            abs_directory = os.path.abspath(directory)
+            abs_target = os.path.abspath(target)
+        
+            prefix = os.path.commonprefix([abs_directory, abs_target])
+            
+            return prefix == abs_directory
+        
+        def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+        
+            for member in tar.getmembers():
+                member_path = os.path.join(path, member.name)
+                if not is_within_directory(path, member_path):
+                    raise Exception("Attempted Path Traversal in Tar File")
+        
+            tar.extractall(path, members, numeric_owner=numeric_owner)
+            
+        
+        safe_extract(tar_file, dst_path)
         secs = time.time() - start_time
         if secs == 0:
             secs = 0.01
