@@ -59,11 +59,14 @@ class Tests:
         "Viewport model successfully changed.",
         "P0: Viewport model did not change assets.")
     grid_disabled = (
-        "",
-        "")
+        "Grid disabled successfully.",
+        "P0: Grid failed to disable.")
     grid_enabled = (
         "Grid enabled successfully.",
         "P0: Grid failed to enable.")
+    shadow_catcher_disabled = (
+        "Shadow Catcher disabled successfully.",
+        "P0: Shadow Catcher failed to disable.")
     shadow_catcher_enabled = (
         "Shadow Catcher enabled successfully",
         "P0: Shadow Catcher failed to enable.")
@@ -274,7 +277,7 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
 
         # 20. Disable the Shadow Catcher.
         atom_tools_utils.set_shadow_catcher_enabled(False)
-        Report.result(Tests.shadow_catcher_enabled, atom_tools_utils.get_shadow_catcher_enabled() is False)
+        Report.result(Tests.shadow_catcher_disabled, atom_tools_utils.get_shadow_catcher_enabled() is False)
 
         # 21. Enable the Shadow Catcher.
         atom_tools_utils.set_shadow_catcher_enabled(True)
