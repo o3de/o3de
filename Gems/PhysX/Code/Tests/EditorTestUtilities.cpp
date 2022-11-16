@@ -122,7 +122,6 @@ namespace PhysXEditorTests
 
     EntityPtr CreateCylinderColliderEditorEntity(
         const AZ::Transform& transform,
-        const AZ::Vector3& nonUniformScale,
         const AZ::Vector3& positionOffset,
         const AZ::Quaternion& rotationOffset,
         float radius,
@@ -130,7 +129,6 @@ namespace PhysXEditorTests
         bool dynamic)
     {
         EntityPtr editorEntity = CreateInactiveEditorEntity("CylinderEntity");
-        editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
         const auto* colliderComponent = editorEntity->CreateComponent<PhysX::EditorColliderComponent>();
         if (dynamic)
         {
@@ -141,7 +139,6 @@ namespace PhysXEditorTests
         AZ::EntityComponentIdPair idPair(editorEntity->GetId(), colliderComponent->GetId());
 
         AZ::TransformBus::Event(editorEntity->GetId(), &AZ::TransformBus::Events::SetWorldTM, transform);
-        AZ::NonUniformScaleRequestBus::Event(editorEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, nonUniformScale);
         PhysX::EditorColliderComponentRequestBus::Event(
             idPair, &PhysX::EditorColliderComponentRequests::SetShapeType, Physics::ShapeType::Cylinder);
         PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderRadius, radius);
@@ -153,6 +150,25 @@ namespace PhysXEditorTests
         editorEntity->Deactivate();
         editorEntity->Activate();
 
+        return editorEntity;
+    }
+
+    EntityPtr CreateCylinderColliderNonUniformScaleEditorEntity(
+        const AZ::Transform& transform,
+        const AZ::Vector3& nonUniformScale,
+        const AZ::Vector3& positionOffset,
+        const AZ::Quaternion& rotationOffset,
+        float radius,
+        float height,
+        bool dynamic)
+    {
+        EntityPtr editorEntity = CreateCylinderColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height, dynamic);
+        editorEntity->Deactivate();
+        editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
+        editorEntity->Activate();
+        AZ::NonUniformScaleRequestBus::Event(editorEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, nonUniformScale);
+        editorEntity->Deactivate();
+        editorEntity->Activate();
         return editorEntity;
     }
 
@@ -168,6 +184,17 @@ namespace PhysXEditorTests
             return PxMathConvert(pxActor->getWorldBounds(1.0f));
         }
         return AZ::Aabb::CreateNull();
+    }
+
+    AZ::Aabb GetDebugDrawAabb(AZ::EntityId entityId)
+    {
+        UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
+        AzFramework::EntityDebugDisplayEventBus::Event(
+            entityId,
+            &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
+            AzFramework::ViewportInfo{ 0 },
+            testDebugDisplayRequests);
+        return testDebugDisplayRequests.GetAabb();
     }
 
     void PhysXEditorFixture::SetUp()

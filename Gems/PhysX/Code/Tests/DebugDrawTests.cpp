@@ -379,6 +379,38 @@ namespace PhysXEditorTests
         EXPECT_NEAR(maxDistSq, 9.0f, 0.01f);
     }
 
+    TEST_F(PhysXEditorFixture, Collider_CylinderWithOffset_CorrectDebugDraw)
+    {
+        const AZ::Transform transform(AZ::Vector3(-1.0f, -3.0f, -4.0f), AZ::Quaternion(0.3f, 0.1f, 0.9f, 0.3f), 1.0f);
+        const AZ::Vector3 positionOffset(2.0f, 6.0f, -3.0f);
+        const AZ::Quaternion rotationOffset(-0.5f, -0.1f, 0.7f, 0.5f);
+        const float radius = 2.0f;
+        const float height = 7.5f;
+        EntityPtr editorEntity = CreateCylinderColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height);
+
+        const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(editorEntity->GetId());
+
+        // use a relatively large tolerance, because the cylinder will be a convex approximation rather than an exact primitive
+        EXPECT_THAT(debugDrawAabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(-10.9f, -10.8f, -5.7f), 0.1f));
+        EXPECT_THAT(debugDrawAabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(-3.1f, -2.4f, -0.8f), 0.1f));
+    }
+
+    TEST_F(PhysXEditorFixture, Collider_CylinderWithOffsetAndRigidBody_CorrectDebugDraw)
+    {
+        const AZ::Transform transform(AZ::Vector3(4.0f, -2.0f, 4.0f), AZ::Quaternion(0.2f, 0.8f, -0.4f, 0.4f), 1.5f);
+        const AZ::Vector3 positionOffset(2.0f, 3.0f, -7.0f);
+        const AZ::Quaternion rotationOffset(-0.1f, -0.7f, 0.1f, 0.7f);
+        const float radius = 2.5f;
+        const float height = 9.0f;
+        EntityPtr editorEntity = CreateCylinderColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height, true);
+
+        const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(editorEntity->GetId());
+
+        // use a relatively large tolerance, because the cylinder will be a convex approximation rather than an exact primitive
+        EXPECT_THAT(debugDrawAabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(-7.0f, 5.4f, -4.4f), 0.1f));
+        EXPECT_THAT(debugDrawAabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(7.1f, 12.8f, 10.8f), 0.1f));
+    }
+
     TEST_F(PhysXEditorFixture, Collider_CylinderWithOffsetAndNonUniformScale_CorrectDebugDraw)
     {
         const AZ::Transform transform(AZ::Vector3(2.0f, 4.0f, -7.0f), AZ::Quaternion(0.4f, 0.8f, 0.2f, 0.4f), 0.6f);
@@ -388,7 +420,7 @@ namespace PhysXEditorTests
         const float radius = 1.5f;
         const float height = 6.0f;
         EntityPtr editorEntity =
-            CreateCylinderColliderEditorEntity(transform, nonUniformScale, positionOffset, rotationOffset, radius, height);
+            CreateCylinderColliderNonUniformScaleEditorEntity(transform, nonUniformScale, positionOffset, rotationOffset, radius, height);
 
         UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
         AzFramework::EntityDebugDisplayEventBus::Event(
@@ -412,7 +444,7 @@ namespace PhysXEditorTests
         const float radius = 2.5f;
         const float height = 9.0f;
         EntityPtr editorEntity =
-            CreateCylinderColliderEditorEntity(transform, nonUniformScale, positionOffset, rotationOffset, radius, height, true);
+            CreateCylinderColliderNonUniformScaleEditorEntity(transform, nonUniformScale, positionOffset, rotationOffset, radius, height, true);
 
         UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
         AzFramework::EntityDebugDisplayEventBus::Event(

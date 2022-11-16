@@ -54,6 +54,16 @@ namespace PhysXEditorTests
     //! Adds a rigid body component if the dynamic parameter is true.
     EntityPtr CreateCylinderColliderEditorEntity(
         const AZ::Transform& transform,
+        const AZ::Vector3& positionOffset,
+        const AZ::Quaternion& rotationOffset,
+        float radius,
+        float height,
+        bool dynamic = false);
+
+    //! Creates an active editor entity with collider component with cylinder geometry and non-uniform scale component.
+    //! Adds a rigid body component if the dynamic parameter is true.
+    EntityPtr CreateCylinderColliderNonUniformScaleEditorEntity(
+        const AZ::Transform& transform,
         const AZ::Vector3& nonUniformScale,
         const AZ::Vector3& positionOffset,
         const AZ::Quaternion& rotationOffset,
@@ -63,6 +73,9 @@ namespace PhysXEditorTests
 
     //! Gets the AABB for the simulated body on the entity with the given ID, or returns a null AABB if no body is found.
     AZ::Aabb GetSimulatedBodyAabb(AZ::EntityId entityId);
+
+    //! Returns the AABB of the points drawn as a result of a call to DisplayEntityViewport for the given entityId.
+    AZ::Aabb GetDebugDrawAabb(AZ::EntityId entityId);
 
     //! Class used for loading system components from this gem.
     class PhysXEditorSystemComponentEntity
