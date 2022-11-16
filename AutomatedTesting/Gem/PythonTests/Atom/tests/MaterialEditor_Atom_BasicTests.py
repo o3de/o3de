@@ -187,6 +187,7 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
         neutral_urban_background_path = os.path.join(
             azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
             "LightingPresets", "neutral_urban.lightingpreset.azasset")
+        neutral_urban_background_path = neutral_urban_background_path.replace(os.sep, '/')
         Report.result(
             Tests.viewport_background_has_expected_asset,
             atom_tools_utils.get_last_lighting_preset_path() == neutral_urban_background_path)
@@ -202,6 +203,7 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
         lythwood_room_background_path = os.path.join(
             azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
             "LightingPresets", "lythwood_room.lightingpreset.azasset")
+        lythwood_room_background_path = lythwood_room_background_path.replace(os.sep, '/')
         Report.result(
             Tests.viewport_background_has_expected_asset,
             atom_tools_utils.get_last_lighting_preset_path() == lythwood_room_background_path)
@@ -216,6 +218,7 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
         beveled_cone_model_asset_path = os.path.join(
             azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
             "ViewPortModels", "BeveledCone.modelpreset.azasset")
+        beveled_cone_model_asset_path = beveled_cone_model_asset_path.replace(os.sep, '/')
         Report.result(
             Tests.viewport_model_has_expected_asset,
             atom_tools_utils.get_last_model_preset_path() == beveled_cone_model_asset_path)
@@ -230,6 +233,7 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
         cone_model_asset_path = os.path.join(
             azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
             "ViewPortModels", "Cone.modelpreset.azasset")
+        cone_model_asset_path = cone_model_asset_path.replace(os.sep, '/')
         Report.result(
             Tests.viewport_model_has_expected_asset,
             atom_tools_utils.get_last_model_preset_path() == cone_model_asset_path)

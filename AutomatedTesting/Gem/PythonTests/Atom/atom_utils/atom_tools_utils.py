@@ -11,7 +11,6 @@ import time
 import azlmbr.atom
 import azlmbr.atomtools
 import azlmbr.bus as bus
-import EditorPythonTestTools.editor_python_test_tools.asset_utils as asset_utils
 
 SCREENSHOTS_FOLDER = os.path.join(azlmbr.paths.products, "Screenshots")
 
@@ -142,6 +141,17 @@ def get_last_model_preset_path() -> str:
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetLastModelPresetPath")
 
 
+def get_last_model_preset_asset_id() -> azlmbr.math.Uuid:
+    """
+    Returns the asset ID of the currently selected viewport model.
+    Example return values observed when selecting different models from the viewport dropdown:
+    {9B61FAD7-2717-528C-9EBF-C1324D46ED56}:0
+    {56C02199-7B4F-5896-A713-F70E6EBA0726}:0
+    {46D4B53F-A900-591B-B4CD-75A79E47749B}:0
+    """
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetLastModelPresetAssetId")
+
+
 def set_grid_enabled(value: bool) -> None:
     azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "SetGridEnabled", value)
 
@@ -159,6 +169,10 @@ def is_shadowcatcher_enabled() -> bool:
 
 
 def load_model_preset_by_asset_id(asset_id: azlmbr.math.Uuid) -> bool:
+    """
+    Takes in an asset ID and attempts to select the model in the viewport dropdown using that ID.
+    Returns True if it successfully changes, False otherwise.
+    """
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
         azlmbr.bus.Broadcast, "LoadModelPresetByAssetId", asset_id)
 
