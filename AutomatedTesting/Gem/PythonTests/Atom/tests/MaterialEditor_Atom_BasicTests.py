@@ -34,17 +34,29 @@ class Tests:
     verify_all_documents_are_opened = (
         "Expected material documents are opened.",
         "P0: Failed to verify the expected material documents are opened.")
-    viewport_background_changed = (
-        "Viewport lighting background changed successfully.",
-        "P0: Viewport lighting background change failed.")
+    viewport_background_selected = (
+        "Viewport lighting background successfully selected.",
+        "P0: Viewport lighting background was not selected.")
     viewport_background_has_expected_asset = (
         "Viewport lighting background has the expected asset set.",
         "P0: Viewport lighting background did not have the expected asset selected.")
+    viewport_background_changed = (
+        "Viewport lighting background changed successfully.",
+        "P0: Viewport lighting background change failed.")
+    viewport_background_has_changed_asset = (
+        "Viewport lighting background successfully changed assets.",
+        "P0: Viewport lighting background did not change assets.")
+    viewport_model_selected = (
+        "Viewport model successfully selected.",
+        "P0: Viewport model was not selected.")
+    viewport_model_has_expected_asset = (
+        "Viewport model did not have the expected asset selected.")
     viewport_model_changed = (
         "Viewport model changed successfully",
         "P0: Viewport model change failed.")
-    viewport_model_has_expected_asset = (
-        "Viewport model did not have the expected asset selected.")
+    viewport_model_has_changed_asset = (
+        "Viewport model successfully changed.",
+        "P0: Viewport model did not change assets.")
 
 
 def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
@@ -181,7 +193,7 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
             "@gemroot:MaterialEditor@", "Assets", "MaterialEditor", "LightingPresets",
             "neutral_urban.lightingpreset.azasset")
         neutral_urban_background_loaded = atom_tools_utils.load_lighting_preset_by_path(neutral_urban_asset_path)
-        Report.result(Tests.viewport_background_changed, neutral_urban_background_loaded is True)
+        Report.result(Tests.viewport_background_selected, neutral_urban_background_loaded is True)
 
         # 11. Verify the lighting background asset is the expected value.
         neutral_urban_background_path = os.path.join(
@@ -205,14 +217,14 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
             "LightingPresets", "lythwood_room.lightingpreset.azasset")
         lythwood_room_background_path = lythwood_room_background_path.replace(os.sep, '/')
         Report.result(
-            Tests.viewport_background_has_expected_asset,
+            Tests.viewport_background_has_changed_asset,
             atom_tools_utils.get_last_lighting_preset_path() == lythwood_room_background_path)
 
         # 14. Select the model and verify the selection  succeeded.
         beveled_cone_model_path = os.path.join(
             "@gemroot:MaterialEditor@", "Assets", "MaterialEditor", "ViewPortModels", "BeveledCone.modelpreset.azasset")
         beveled_cone_model_asset = atom_tools_utils.load_model_preset_by_path(beveled_cone_model_path)
-        Report.result(Tests.viewport_model_changed, beveled_cone_model_asset is True)
+        Report.result(Tests.viewport_model_selected, beveled_cone_model_asset is True)
 
         # 15. Verify the model asset is the expected value.
         beveled_cone_model_asset_path = os.path.join(
@@ -235,7 +247,7 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
             "ViewPortModels", "Cone.modelpreset.azasset")
         cone_model_asset_path = cone_model_asset_path.replace(os.sep, '/')
         Report.result(
-            Tests.viewport_model_has_expected_asset,
+            Tests.viewport_model_has_changed_asset,
             atom_tools_utils.get_last_model_preset_path() == cone_model_asset_path)
 
         # 18. Look for errors and asserts.
