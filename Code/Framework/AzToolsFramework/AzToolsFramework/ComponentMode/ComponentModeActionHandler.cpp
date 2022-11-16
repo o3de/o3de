@@ -108,16 +108,19 @@ namespace AzToolsFramework
 
     void ComponentModeActionHandler::ActiveComponentModeChanged([[maybe_unused]] const AZ::Uuid& componentType)
     {
-        m_actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, "AnyComponentMode");
+        if (m_actionManagerInterface)
+        {
+            m_actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, "AnyComponentMode");
 
-        // Update Component Mode Changed updater
-        m_actionManagerInterface->RegisterActionUpdater(ComponentModeChangedUpdaterIdentifier);
+            // Update Component Mode Changed updater
+            m_actionManagerInterface->RegisterActionUpdater(ComponentModeChangedUpdaterIdentifier);
+        }
     }
 
     void ComponentModeActionHandler::OnEditorModeActivated(
         [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
     {
-        if (mode == ViewportEditorMode::Component)
+        if (m_actionManagerInterface && mode == ViewportEditorMode::Component)
         {
             m_actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, "AnyComponentMode");
 
@@ -129,7 +132,7 @@ namespace AzToolsFramework
     void ComponentModeActionHandler::OnEditorModeDeactivated(
         [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
     {
-        if (mode == ViewportEditorMode::Component)
+        if (m_actionManagerInterface && mode == ViewportEditorMode::Component)
         {
             m_actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, DefaultActionContextModeIdentifier);
 
