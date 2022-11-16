@@ -462,16 +462,16 @@ namespace Multiplayer
         return arg.GetPacketType() == packetType;
     }
 
-    MATCHER_P(IsMismatchPacketWithComponentCount, totalComponentCount, "Checks how many multiplayer component versions are inside the SyncComponentMismatch packet.")
+    MATCHER_P(IsMismatchPacketWithComponentCount, totalComponentCount, "Checks how many multiplayer component versions are inside the VersionMismatch packet.")
     {
-        if (arg.GetPacketType() != MultiplayerPackets::SyncComponentMismatch::Type)
+        if (arg.GetPacketType() != MultiplayerPackets::VersionMismatch::Type)
         {
-            *result_listener << "where the packet is NOT a SyncComponentMismatch packet";
+            *result_listener << "where the packet is NOT a VersionMismatch packet";
             return false;
         }
 
-        const uint32_t packetComponentCount = aznumeric_cast<uint32_t>(static_cast<const MultiplayerPackets::SyncComponentMismatch&>(arg).GetComponentVersions().size());
-        *result_listener << "where the packet is a SyncComponentMismatch packet with component count " << packetComponentCount;
+        const uint32_t packetComponentCount = aznumeric_cast<uint32_t>(static_cast<const MultiplayerPackets::VersionMismatch&>(arg).GetComponentVersions().size());
+        *result_listener << "where the packet is a VersionMismatch packet with component count " << packetComponentCount;
         return packetComponentCount == totalComponentCount;
     }
 
@@ -543,7 +543,7 @@ namespace Multiplayer
         // Test the client sending components back to the server
         // Receive a multiplayer version mismatch packet and disconnect
         sv_versionMismatch_autoDisconnect = true;
-        MultiplayerPackets::SyncComponentMismatch mismatchPacket;
+        MultiplayerPackets::VersionMismatch mismatchPacket;
         EXPECT_CALL(connection, Disconnect(DisconnectReason::VersionMismatch, TerminationEndpoint::Local)).Times(1);
         m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), mismatchPacket);
 

@@ -694,14 +694,14 @@ namespace Multiplayer
             // There's a multiplayer component mismatch. Send the server's component information back to the client so they can compare.
             if (sv_versionMismatch_sendManifestToClient)
             {
-                MultiplayerPackets::SyncComponentMismatch componentMismatchPacket(GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes());
-                connection->SendReliablePacket(componentMismatchPacket);                
+                MultiplayerPackets::VersionMismatch versionMismatchPacket(GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes());
+                connection->SendReliablePacket(versionMismatchPacket);                
             }
             else
             {
                 // sv_versionMismatch_sendManifestToClient is false; don't send any individual components, just let the client know there was a mismatch.
-                MultiplayerPackets::SyncComponentMismatch componentMismatchPacket;
-                connection->SendReliablePacket(componentMismatchPacket);
+                MultiplayerPackets::VersionMismatch versionMismatchPacket;
+                connection->SendReliablePacket(versionMismatchPacket);
             }
 
             m_originalConnectPackets[connection->GetConnectionId()] = packet;
@@ -890,7 +890,7 @@ namespace Multiplayer
     bool MultiplayerSystemComponent::HandleRequest(
         IConnection* connection,
         [[maybe_unused]] const IPacketHeader& packetHeader,
-        MultiplayerPackets::SyncComponentMismatch& packet)
+        MultiplayerPackets::VersionMismatch& packet)
     {
         // Iterate over each component and see what's been added, missing, or modified
         for (const auto& [theirComponentName, theirComponentHash] : packet.GetComponentVersions())
@@ -950,8 +950,8 @@ namespace Multiplayer
         if (connection->GetConnectionRole() == ConnectionRole::Connector)
         {
             // If this is the connector (client), send all our component information back to the acceptor (server).
-            MultiplayerPackets::SyncComponentMismatch componentMismatchPacket(GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes());
-            connection->SendReliablePacket(componentMismatchPacket);
+            MultiplayerPackets::VersionMismatch versionMismatchPacket(GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes());
+            connection->SendReliablePacket(versionMismatchPacket);
         }
         else if (connection->GetConnectionRole() == ConnectionRole::Acceptor)
         {
