@@ -255,12 +255,12 @@ namespace AzToolsFramework
         // Save the offset of scroll bar when Component Mode has been entered
         AZStd::optional<int> m_componentModeVerticalScrollOffset;
 
-        // EntityPropertEditorRequestBus
+        // EntityPropertEditorRequestBus overrides ...
         void GetSelectedAndPinnedEntities(EntityIdList& selectedEntityIds) override;
         void GetSelectedEntities(EntityIdList& selectedEntityIds) override;
         void SetNewComponentId(AZ::ComponentId componentId) override;
 
-        // TickBus
+        // TickBus overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         // EditorWindowRequestBus overrides ...
