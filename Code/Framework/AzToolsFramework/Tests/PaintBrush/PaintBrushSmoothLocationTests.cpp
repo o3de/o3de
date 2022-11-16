@@ -87,7 +87,6 @@ namespace UnitTest
                     valueLookupFn(points, validPoints, opacities);
 
                     // We should only have the 5 points along the + in validPoints.
-                    EXPECT_EQ(validPoints.size(), 5);
                     const AZStd::vector<AZ::Vector3> expectedValidPoints = {
                         AZ::Vector3(dirtyArea.GetCenter().GetX(), dirtyArea.GetMin().GetY(), 0.0f),
                         AZ::Vector3(dirtyArea.GetMin().GetX(), dirtyArea.GetCenter().GetY(), 0.0f),
@@ -106,7 +105,6 @@ namespace UnitTest
 
                     // By default, the smoothing brush uses a 3x3 kernel, so we expect our relative offsets to be -1 to 1
                     // in each direction.
-                    EXPECT_EQ(valuePointOffsets.size(), 9);
                     const AZStd::vector<AZ::Vector3> expectedPointOffsets = {
                         AZ::Vector3(-1.0f, -1.0f, 0.0f), AZ::Vector3(0.0f, -1.0f, 0.0f), AZ::Vector3(1.0f, -1.0f, 0.0f),
                         AZ::Vector3(-1.0f, 0.0f, 0.0f),  AZ::Vector3(0.0f, 0.0f, 0.0f),  AZ::Vector3(1.0f, 0.0f, 0.0f),
