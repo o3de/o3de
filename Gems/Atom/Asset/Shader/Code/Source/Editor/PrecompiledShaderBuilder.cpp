@@ -21,6 +21,7 @@
 #include <Atom/RPI.Reflect/Shader/ShaderAssetCreator.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <ShaderPlatformInterfaceRequest.h>
+#include "ShaderBuilderUtility.h"
 
 namespace AZ
 {
@@ -66,6 +67,13 @@ namespace AZ
 
             if (itPlatformIdentifier != precompiledShaderAsset.m_platformIdentifiers.end())
             {
+                // retrieve the shader APIs for this platform
+                AZStd::vector<RHI::ShaderPlatformInterface*> platformInterfaces = ShaderBuilder::ShaderBuilderUtility::DiscoverValidShaderPlatformInterfaces(platformInfo);
+                if (platformInterfaces.empty())
+                {
+                    continue;
+                }
+
                 AZStd::vector<AssetBuilderSDK::JobDependency> jobDependencyList;
 
                 // setup dependencies on the root azshadervariant asset file names, for each supervariant
@@ -73,17 +81,26 @@ namespace AZ
                 {
                     for (const auto& rootShaderVariantAsset : supervariant->m_rootShaderVariantAssets)
                     {
-                        AZStd::string rootShaderVariantAssetPath = RPI::AssetUtils::ResolvePathReference(request.m_sourceFile.c_str(), rootShaderVariantAsset->m_rootShaderVariantAssetFileName);
-                        AssetBuilderSDK::SourceFileDependency sourceDependency;
-                        sourceDependency.m_sourceFileDependencyPath = rootShaderVariantAssetPath;
-                        response.m_sourceFileDependencyList.push_back(sourceDependency);
+                        // add the root variant asset dependency if the API is supported on this platform, otherwise skip it
+                        for (const auto& platformInterface : platformInterfaces)
+                        {
+                            if (platformInterface->GetAPIName() == rootShaderVariantAsset->m_apiName)
+                            {
+                                AZStd::string rootShaderVariantAssetPath = RPI::AssetUtils::ResolvePathReference(request.m_sourceFile.c_str(), rootShaderVariantAsset->m_rootShaderVariantAssetFileName);
+                                AssetBuilderSDK::SourceFileDependency sourceDependency;
+                                sourceDependency.m_sourceFileDependencyPath = rootShaderVariantAssetPath;
+                                response.m_sourceFileDependencyList.push_back(sourceDependency);
 
-                        AssetBuilderSDK::JobDependency jobDependency;
-                        jobDependency.m_jobKey = "azshadervariant";
-                        jobDependency.m_platformIdentifier = platformInfo.m_identifier;
-                        jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
-                        jobDependency.m_sourceFile = sourceDependency;
-                        jobDependencyList.push_back(jobDependency);
+                                AssetBuilderSDK::JobDependency jobDependency;
+                                jobDependency.m_jobKey = "azshadervariant";
+                                jobDependency.m_platformIdentifier = platformInfo.m_identifier;
+                                jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+                                jobDependency.m_sourceFile = sourceDependency;
+                                jobDependencyList.push_back(jobDependency);
+
+                                break;
+                            }
+                        }
                     }
                 }
 
@@ -167,10 +184,18 @@ namespace AZ
             supervariants.push_back({ supervariant->m_name, rootVariantProductAssets });
         }
 
+        // retrieve the shader APIs for this platform
+        AZStd::vector<RHI::ShaderPlatformInterface*> platformInterfaces = ShaderBuilder::ShaderBuilderUtility::DiscoverValidShaderPlatformInterfaces(request.m_platformInfo);
+        if (platformInterfaces.empty())
+        {
+            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
+            return;
+        }
+
         // use the ShaderAssetCreator to clone the shader asset, which  will update the embedded Srg and Variant asset UUIDs
         // Note that the Srg and Variant assets do not have embedded asset references and are processed with the RC Copy functionality
         RPI::ShaderAssetCreator shaderAssetCreator;
-        shaderAssetCreator.Clone(Uuid::CreateRandom(), *shaderAsset, supervariants);
+        shaderAssetCreator.Clone(Uuid::CreateRandom(), *shaderAsset, supervariants, platformInterfaces);
 
         Data::Asset<RPI::ShaderAsset> outputShaderAsset;
         if (!shaderAssetCreator.End(outputShaderAsset))
