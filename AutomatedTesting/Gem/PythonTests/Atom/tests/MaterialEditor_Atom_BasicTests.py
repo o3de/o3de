@@ -50,7 +50,8 @@ class Tests:
         "Viewport model successfully selected.",
         "P0: Viewport model was not selected.")
     viewport_model_has_expected_asset = (
-        "Viewport model did not have the expected asset selected.")
+        "Viewport model has the expected asset set.",
+        "P0: Viewport model did not have the expected asset selected")
     viewport_model_changed = (
         "Viewport model changed successfully",
         "P0: Viewport model change failed.")
