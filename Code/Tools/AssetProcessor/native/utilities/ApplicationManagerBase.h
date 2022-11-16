@@ -18,6 +18,7 @@
 #include <native/utilities/ApplicationManager.h>
 #include <native/utilities/AssetBuilderInfo.h>
 #include <native/utilities/BuilderManager.h>
+#include <native/utilities/UuidManager.h>
 #endif
 
 namespace AzToolsFramework
@@ -70,6 +71,7 @@ public:
     void HandleFileRelocation() const;
     bool Activate() override;
     bool PostActivate() override;
+    void Reflect() override;
 
     AssetProcessor::PlatformConfiguration* GetPlatformConfiguration() const;
 
@@ -163,6 +165,7 @@ protected:
     void DestroyConnectionManager();
     void InitAssetRequestHandler(AssetProcessor::AssetRequestHandler* assetRequestHandler);
     virtual void InitFileStateCache();
+    virtual void InitUuidManager();
     void CreateQtApplication() override;
 
     bool InitializeInternalBuilders();
@@ -226,10 +229,9 @@ protected:
     ControlRequestHandler* m_controlRequestHandler = nullptr;
 
     AZStd::unique_ptr<AssetProcessor::FileStateBase> m_fileStateCache;
-
     AZStd::unique_ptr<AssetProcessor::FileProcessor> m_fileProcessor;
-
     AZStd::unique_ptr<AssetProcessor::BuilderConfigurationManager> m_builderConfig;
+    AZStd::unique_ptr<AssetProcessor::UuidManager> m_uuidManager;
 
     // The internal builders
     AZStd::shared_ptr<AssetProcessor::InternalRecognizerBasedBuilder> m_internalBuilder;
