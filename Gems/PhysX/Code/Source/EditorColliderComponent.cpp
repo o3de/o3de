@@ -617,16 +617,8 @@ namespace PhysX
                 GetEntity()->GetName().c_str());
             break;
         case Physics::ShapeType::Cylinder:
-            if (!m_hasNonUniformScale)
-            {
-                colliderComponent = gameEntity->CreateComponent<BaseColliderComponent>();
-                colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(
-                    sharedColliderConfig, AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(m_shapeConfiguration.m_cylinder.m_configuration)) });
-            }
-            else
-            {
-                buildGameEntityScaledPrimitive(sharedColliderConfig, m_shapeConfiguration.m_cylinder.m_configuration, m_shapeConfiguration.m_subdivisionLevel);
-            }
+            buildGameEntityScaledPrimitive(
+                sharedColliderConfig, m_shapeConfiguration.m_cylinder.m_configuration, m_shapeConfiguration.m_subdivisionLevel);
             break;
         case Physics::ShapeType::CookedMesh:
             colliderComponent = gameEntity->CreateComponent<BaseColliderComponent>();
@@ -709,7 +701,7 @@ namespace PhysX
                 GetColliderConfigurationScaled());
             AZStd::shared_ptr<Physics::ShapeConfiguration> shapeConfig = m_shapeConfiguration.CloneCurrent();
 
-            if (IsNonUniformlyScaledPrimitive(m_shapeConfiguration))
+            if (IsNonUniformlyScaledPrimitive(m_shapeConfiguration) || m_shapeConfiguration.IsCylinderConfig())
             {
                 auto convexConfig = Utils::CreateConvexFromPrimitive(GetColliderConfiguration(), *(shapeConfig.get()),
                     m_shapeConfiguration.m_subdivisionLevel, shapeConfig->m_scale);
@@ -987,7 +979,7 @@ namespace PhysX
         const AZ::u32 shapeIndex = 0;
         m_colliderDebugDraw.DrawMesh(
             debugDisplay,
-            m_hasNonUniformScale ? GetColliderConfigurationNoOffset() : m_configuration,
+            GetColliderConfigurationNoOffset(),
             m_shapeConfiguration.m_cylinder.m_configuration,
             m_shapeConfiguration.m_cylinder.m_configuration.m_scale,
             shapeIndex);
