@@ -27,11 +27,12 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzNetworking/Framework/INetworking.h>
-#include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
-#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorHelpers.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
@@ -587,7 +588,9 @@ namespace Multiplayer
         }
 
         auto readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
-        if (readOnlyEntityPublicInterface && !readOnlyEntityPublicInterface->IsReadOnly(parentEntityId))
+        auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
+        if ((readOnlyEntityPublicInterface && !readOnlyEntityPublicInterface->IsReadOnly(parentEntityId)) &&
+            (containerEntityInterface && containerEntityInterface->IsContainerOpen(parentEntityId)))
         {
             menu->setToolTipsVisible(true);
 

@@ -151,10 +151,10 @@ namespace MaterialEditor
         documentType.m_supportedExtensionsToOpen.push_back({ "Material Type", AZ::RPI::MaterialTypeSourceData::Extension });
         documentType.m_supportedExtensionsToOpen.push_back({ "Material", AZ::RPI::MaterialSourceData::Extension });
         documentType.m_supportedExtensionsToSave.push_back({ "Material", AZ::RPI::MaterialSourceData::Extension });
-        documentType.m_supportedAssetTypesToCreate.insert(azrtti_typeid<AZ::RPI::MaterialTypeAsset>());
-        documentType.m_defaultAssetIdToCreate = AtomToolsFramework::GetSettingsObject<AZ::Data::AssetId>(
-            "/O3DE/Atom/MaterialEditor/DefaultMaterialTypeAsset",
-            AZ::RPI::AssetUtils::GetAssetIdForProductPath("materials/types/standardpbr.azmaterialtype"));
+        documentType.m_defaultDocumentTemplate =
+            AtomToolsFramework::GetPathWithoutAlias(AtomToolsFramework::GetSettingsValue<AZStd::string>(
+                "/O3DE/Atom/MaterialEditor/DefaultMaterialType",
+                "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype"));
         return documentType;
     }
 

@@ -109,7 +109,7 @@ namespace Terrain
        m_hideSurfaceTagData.m_attributes.push_back(
            {
                AZ::Edit::Attributes::Visibility,
-               aznew AZ::Edit::AttributeData<AZ::Crc32>(AZ::Edit::PropertyVisibility::Hide)
+               &m_hideAttribute
            }
        );
        m_hideSurfaceTagData.m_name = "hideSurfaceTagData";

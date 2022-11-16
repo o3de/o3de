@@ -163,9 +163,7 @@ namespace UnitTest
         void SetupComponentApplication()
         {
             AZ::ComponentApplication::Descriptor desc;
-            desc.m_allocationRecords = true;
             desc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
-            desc.m_stackRecordLevels = 10;
             desc.m_useExistingAllocator = true;
             m_componentApplication = aznew TestbedApplication(*this);
 

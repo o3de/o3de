@@ -19,7 +19,7 @@
 namespace UnitTest
 {
     class SliceStabilityTest
-        : public ToolsApplicationFixture,
+        : public ToolsApplicationFixture<>,
           public AzToolsFramework::AssetSystemRequestBus::Handler,
           public AzToolsFramework::EditorRequestBus::Handler,
           public AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler

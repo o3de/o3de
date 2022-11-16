@@ -178,6 +178,10 @@ namespace AssetProcessor
                 checkFile.GetSourceAssetReference().AbsolutePath().c_str(),
                 checkFile.GetPlatform().toUtf8().data(),
                 checkFile.GetJobDescriptor().toUtf8().data());
+
+            // Don't just discard the job, we need to let APM know so it can keep track of the number of jobs that are pending/finished
+            AssetBuilderSDK::JobCommandBus::Event(details.m_jobEntry.m_jobRunKey, &AssetBuilderSDK::JobCommandBus::Events::Cancel);
+            Q_EMIT FileCancelled(details.m_jobEntry);
             return;
         }
 
@@ -220,6 +224,11 @@ namespace AssetProcessor
                         checkFile.GetSourceAssetReference().AbsolutePath().c_str(),
                         checkFile.GetPlatform().toUtf8().data(),
                         checkFile.GetJobDescriptor().toUtf8().data());
+
+                    // Don't just discard the job, we need to let APM know so it can keep track of the number of jobs that are
+                    // pending/finished
+                    AssetBuilderSDK::JobCommandBus::Event(details.m_jobEntry.m_jobRunKey, &AssetBuilderSDK::JobCommandBus::Events::Cancel);
+                    Q_EMIT FileCancelled(details.m_jobEntry);
                     return;
                 }
 

@@ -34,6 +34,7 @@
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/SystemComponentBus.h>
 #include <PhysX/Material/PhysXMaterialConfiguration.h>
+#include <Scene/PhysXScene.h>
 #include <Tests/PhysXTestCommon.h>
 
 namespace PhysX
@@ -611,6 +612,8 @@ namespace PhysX
                 testBox.reset();
             }
         }
+        static_cast<PhysX::PhysXScene*>(m_defaultScene)->FlushTransformSync();
+
 
         ASSERT_EQ(testBox, nullptr);
         ASSERT_EQ(enteredEvents.size(), 1);
@@ -651,6 +654,7 @@ namespace PhysX
                 staticBox.reset();
             }
         }
+        static_cast<PhysX::PhysXScene*>(m_defaultScene)->FlushTransformSync();
 
         ASSERT_EQ(staticBox, nullptr);
         ASSERT_EQ(enteredEvents.size(), 1);

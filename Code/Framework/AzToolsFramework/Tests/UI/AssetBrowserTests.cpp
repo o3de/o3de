@@ -34,7 +34,7 @@ namespace UnitTest
     // Test fixture for the AssetBrowser model that uses a QAbstractItemModelTester to validate the state of the model
     // when QAbstractItemModel signals fire. Tests will exit with a fatal error if an invalid state is detected.
     class AssetBrowserTest
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
         , public testing::WithParamInterface<const char*>
     {
     protected:

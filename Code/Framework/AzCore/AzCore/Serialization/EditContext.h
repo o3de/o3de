@@ -530,21 +530,22 @@ namespace AZ
         if (m_serializeContext.IsRemovingReflection())
         {
             // If the serialize context is unreflecting, then the enum needs to be removed
-            m_enumData.erase(enumId);
-            return EditContext::EnumBuilder();
+            auto enumDataIt = m_enumData.find(enumId);
+            AZ_Assert(enumDataIt != m_enumData.end(), "Enum %s is being unreflected but was never reflected", displayName);
+            enumDataIt->second.ClearAttributes();
+            m_enumData.erase(enumDataIt);
+            return {};
         }
-        else
-        {
-            AZ_Assert(m_enumData.find(enumId) == m_enumData.end(), "Enum %s has already been reflected to EditContext", displayName);
-            Edit::ElementData& enumData = m_enumData[enumId];
 
-            // Set the elementId to the Crc of the typeId, this indicates that it's globally reflected
-            const Crc32 typeCrc = AZ::Internal::UuidToCrc32(enumId);
-            enumData.m_elementId = typeCrc;
-            enumData.m_name = displayName;
-            enumData.m_description = description;
-            return EditContext::EnumBuilder(this, &enumData);
-        }
+        AZ_Assert(m_enumData.find(enumId) == m_enumData.end(), "Enum %s has already been reflected to EditContext", displayName);
+        Edit::ElementData& enumData = m_enumData[enumId];
+
+        // Set the elementId to the Crc of the typeId, this indicates that it's globally reflected
+        const Crc32 typeCrc = AZ::Internal::UuidToCrc32(enumId);
+        enumData.m_elementId = typeCrc;
+        enumData.m_name = displayName;
+        enumData.m_description = description;
+        return {this, &enumData};
     }
 
     //=========================================================================

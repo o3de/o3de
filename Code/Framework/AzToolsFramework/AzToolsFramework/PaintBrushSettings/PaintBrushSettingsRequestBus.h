@@ -73,6 +73,12 @@ namespace AzToolsFramework
         //! @return The size of the paintbrush in meters
         virtual float GetSize() const = 0;
 
+        //! Returns the brush stamp min/max size range.
+        //! The range is used to ensure that our brush size is appropriately sized relative to the world size of the data we're painting.
+        //! If we let it get too big, we can run into serious performance issues.
+        //! @return A pair containing the min size and max size that constrain the range of sizes in meters for the paintbrush.
+        virtual AZStd::pair<float, float> GetSizeRange() const = 0;
+
         //! Returns the brush stamp hardness (0=soft falloff, 100=hard edge).
         virtual float GetHardnessPercent() const = 0;
 
@@ -86,6 +92,13 @@ namespace AzToolsFramework
         //! @param size The new size, in meters.
         virtual void SetSize(float size) = 0;
 
+        //! Sets the brush stamp min/max size range.
+        //! The range is used to ensure that our brush size is appropriately sized relative to the world size of the data we're painting.
+        //! If we let it get too big, we can run into serious performance issues.
+        //! @param minSize The minimum size of the paint brush in meters.
+        //! @param maxSize The maximum size of the paint brush in meters.
+        virtual void SetSizeRange(float minSize, float maxSize) = 0;
+
         //! Sets the brush stamp hardness.
         //! @param hardness The new hardness, in 0-100 range.
         virtual void SetHardnessPercent(float hardnessPercent) = 0;
@@ -97,6 +110,24 @@ namespace AzToolsFramework
         //! Set the brush distance % to move between each stamp placement.
         //! @param distancePercent The new distance %, typically in the 0-100 range.
         virtual void SetDistancePercent(float distancePercent) = 0;
+
+        // Paint Brush Smoothing settings
+
+        //! Returns the number of pixels in each direction to use for smoothing calculations.
+        //! @return The number of pixels in each direction to use
+        virtual size_t GetSmoothingRadius() const = 0;
+
+        //! Returns the number of pixels to skip between pixel fetches for smoothing calculations.
+        //! @return The number of pixels to skip
+        virtual size_t GetSmoothingSpacing() const = 0;
+
+        //! Set the number of pixels in each direction to use for smoothing calculations.
+        //! @param The number of pixels in each direction to use
+        virtual void SetSmoothingRadius(size_t radius) = 0;
+
+        //! Set the number of pixels to skip between pixel fetches for smoothing calculations
+        //! @param The number of pixels to skip
+        virtual void SetSmoothingSpacing(size_t spacing) = 0;
 
     protected:
         ~PaintBrushSettingsRequests() = default;

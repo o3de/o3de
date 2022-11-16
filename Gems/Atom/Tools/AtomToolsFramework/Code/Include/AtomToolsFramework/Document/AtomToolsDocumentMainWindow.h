@@ -78,7 +78,7 @@ namespace AtomToolsFramework
         virtual void PopulateTabContextMenu(const AZ::Uuid& documentId, QMenu& menu);
 
         //! Select the target path where a document will be saved.
-        virtual AZStd::string GetSaveDocumentParams(const AZStd::string& initialPath) const;
+        virtual AZStd::string GetSaveDocumentParams(const AZStd::string& initialPath, const AZ::Uuid& documentId) const;
 
         // AtomToolsMainWindowRequestBus::Handler overrides...
         void CreateMenus(QMenuBar* menuBar) override;
@@ -93,6 +93,16 @@ namespace AtomToolsFramework
 
         void AddDocumentTabBar();
         void UpdateRecentFileMenu();
+
+        // Return true when save success
+        bool SaveDocument(const AZ::Uuid& documentId);
+
+        // Return true when save success or no save
+        // Return false when save failed or save cancel or close cancel
+        bool CloseDocumentCheck(const AZ::Uuid& documentId);
+        // Return false when CloseDocumentCheck failed or close failed
+        bool CloseDocuments(const AZStd::vector<AZ::Uuid>& documentIds);
+        const AZStd::vector<AZ::Uuid> GetOpenDocumentIds() const;
 
         // AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
