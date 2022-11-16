@@ -102,9 +102,7 @@ namespace PhysX
         , m_sceneInterface(this)
     {
         // Start PhysX allocator
-        PhysXAllocator::Descriptor allocatorDescriptor;
-        allocatorDescriptor.m_custom = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
-        AZ::AllocatorInstance<PhysXAllocator>::Create(allocatorDescriptor);
+        AZ::AllocatorInstance<PhysXAllocator>::Create();
 
         InitializePhysXSdk(cookingParams);
 

@@ -150,6 +150,7 @@ namespace PhysX
         virtual const EditorProxyShapeConfig& GetShapeConfiguration() const;
         virtual const Physics::ColliderConfiguration& GetColliderConfiguration() const;
         virtual Physics::ColliderConfiguration GetColliderConfigurationScaled() const;
+        Physics::ColliderConfiguration GetColliderConfigurationNoOffset() const;
 
         // BoundsRequestBus overrides ...
         AZ::Aabb GetWorldBounds() override;

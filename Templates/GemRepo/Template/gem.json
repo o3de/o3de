@@ -15,6 +15,9 @@
     "user_tags": [
         "${UserTags}"
     ],
+    "platforms": [
+        "${Platforms}"
+    ],
     "icon_path": "${IconPath}",
     "requirements": "${Requirements}",
     "documentation_url": "${DocumentationURL}",

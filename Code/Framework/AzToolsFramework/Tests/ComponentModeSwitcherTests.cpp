@@ -401,7 +401,7 @@ namespace UnitTest
         AZ::EntityId entityId = CreateDefaultEditorEntity("ComponentModeEntity", &entity);
 
         entity->Deactivate();
-        AZ::Component* placeholder1 = entity->CreateComponent<PlaceholderEditorComponent>();
+        AZStd::unique_ptr<AZ::Component> placeholder1{entity->CreateComponent<PlaceholderEditorComponent>()};
         entity->CreateComponent<AnotherPlaceholderEditorComponent>();
         entity->Activate();
 
@@ -412,10 +412,14 @@ namespace UnitTest
         EXPECT_EQ(2, componentModeSwitcher->GetComponentCount());
 
         // Then if one component is disabled, there should only be one component on the switcher
+        // Disabling the component removes it from the entity, which is why its ownership is maintained here in a
+        // unique_ptr
         AzToolsFramework::EntityCompositionRequestBus::Broadcast(
-            &AzToolsFramework::EntityCompositionRequests::DisableComponents, AZStd::vector<AZ::Component*>{ placeholder1 });
+            &AzToolsFramework::EntityCompositionRequests::DisableComponents, AZStd::vector<AZ::Component*>{ placeholder1.get() });
 
         EXPECT_EQ(1, componentModeSwitcher->GetComponentCount());
+
+        entity->Deactivate();
     }
 
     TEST_F(ComponentModeSwitcherTestFixture, EnablingComponentAddsComponentToSwitcher)

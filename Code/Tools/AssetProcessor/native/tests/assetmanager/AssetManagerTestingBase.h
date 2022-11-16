@@ -10,7 +10,9 @@
 
 #include <API/AssetDatabaseBus.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <Tests/Utils/Utils.h>
 #include <native/AssetManager/assetProcessorManager.h>

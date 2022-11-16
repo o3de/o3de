@@ -1,0 +1,14 @@
+{
+    "BUILD_ENTRY_POINT": "scripts/build/ci_build.py",
+    "PIPELINE_CONFIGS": [
+        "scripts/build/Platform/*/pipeline.json",
+        "restricted/*/scripts/build/pipeline.json"
+    ],
+    "BUILD_CONFIGS": [
+        "scripts/build/Platform/*/build_config.json",
+        "restricted/*/scripts/build/build_config.json"
+    ],
+    "PYTHON_DIR": "python",
+    "EXTERNAL_REPOS": [
+    ]
+}
