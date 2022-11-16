@@ -360,7 +360,8 @@ namespace PhysXEditorTests
         const AZ::Quaternion rotationOffset(-0.1f, -0.7f, 0.1f, 0.7f);
         const float radius = 2.5f;
         const float height = 9.0f;
-        EntityPtr editorEntity = CreateCylinderColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height, true);
+        EntityPtr editorEntity =
+            CreateCylinderColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height, RigidBodyType::Dynamic);
 
         const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(editorEntity->GetId());
 
@@ -395,8 +396,8 @@ namespace PhysXEditorTests
         const AZ::Quaternion rotationOffset(0.5f, -0.5f, -0.5f, 0.5f);
         const float radius = 2.5f;
         const float height = 9.0f;
-        EntityPtr editorEntity =
-            CreateCylinderColliderNonUniformScaleEditorEntity(transform, nonUniformScale, positionOffset, rotationOffset, radius, height, true);
+        EntityPtr editorEntity = CreateCylinderColliderNonUniformScaleEditorEntity(
+            transform, nonUniformScale, positionOffset, rotationOffset, radius, height, RigidBodyType::Dynamic);
 
         const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(editorEntity->GetId());
 

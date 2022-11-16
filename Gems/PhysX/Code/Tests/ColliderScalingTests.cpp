@@ -289,7 +289,8 @@ namespace PhysXEditorTests
         const AZ::Quaternion rotationOffset(0.4f, 0.8f, 0.2f, 0.4f);
         const float radius = 3.0f;
         const float height = 11.0f;
-        EntityPtr editorEntity = CreateCylinderColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height, true);
+        EntityPtr editorEntity =
+            CreateCylinderColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height, RigidBodyType::Dynamic);
 
         const AZ::Aabb aabb = GetSimulatedBodyAabb(editorEntity->GetId());
         // use a relatively large tolerance, because the cylinder will be a convex approximation rather than an exact primitive
@@ -321,7 +322,8 @@ namespace PhysXEditorTests
         const AZ::Quaternion rotationOffset(-0.5f, -0.5f, -0.5f, 0.5f);
         const float radius = 1.0f;
         const float height = 5.5f;
-        EntityPtr editorEntity = CreateCylinderColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height, true);
+        EntityPtr editorEntity =
+            CreateCylinderColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height, RigidBodyType::Dynamic);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
@@ -357,7 +359,7 @@ namespace PhysXEditorTests
         const float radius = 1.5f;
         const float height = 9.0f;
         EntityPtr editorEntity = CreateCylinderColliderNonUniformScaleEditorEntity(
-            transform, nonUniformScale, positionOffset, rotationOffset, radius, height, true);
+            transform, nonUniformScale, positionOffset, rotationOffset, radius, height, RigidBodyType::Dynamic);
 
         const AZ::Aabb aabb = GetSimulatedBodyAabb(editorEntity->GetId());
         // use a relatively large tolerance, because the cylinder will be a convex approximation rather than an exact primitive
@@ -393,7 +395,7 @@ namespace PhysXEditorTests
         const float radius = 2.0f;
         const float height = 7.0f;
         EntityPtr editorEntity = CreateCylinderColliderNonUniformScaleEditorEntity(
-            transform, nonUniformScale, positionOffset, rotationOffset, radius, height, true);
+            transform, nonUniformScale, positionOffset, rotationOffset, radius, height, RigidBodyType::Dynamic);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 

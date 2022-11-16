@@ -52,13 +52,13 @@ namespace PhysXEditorTests
         const AZ::Vector3& nonUniformScale,
         const AZ::Vector3& boxDimensions,
         const AZ::Vector3& translationOffset,
-        bool dynamic)
+        RigidBodyType rigidBodyType)
     {
         EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
         editorEntity->CreateComponent(LmbrCentral::EditorBoxShapeComponentTypeId);
         editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
         editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
-        if (dynamic)
+        if (rigidBodyType == RigidBodyType::Dynamic)
         {
             editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
         }
@@ -76,12 +76,12 @@ namespace PhysXEditorTests
     }
 
     EntityPtr CreateCapsuleShapeColliderEditorEntity(
-        const AZ::Transform& transform, float radius, float height, const AZ::Vector3& translationOffset, bool dynamic)
+        const AZ::Transform& transform, float radius, float height, const AZ::Vector3& translationOffset, RigidBodyType rigidBodyType)
     {
         EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
         editorEntity->CreateComponent(LmbrCentral::EditorCapsuleShapeComponentTypeId);
         editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
-        if (dynamic)
+        if (rigidBodyType == RigidBodyType::Dynamic)
         {
             editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
         }
@@ -100,12 +100,12 @@ namespace PhysXEditorTests
     }
 
     EntityPtr CreateSphereShapeColliderEditorEntity(
-        const AZ::Transform& transform, float radius, const AZ::Vector3& translationOffset, bool dynamic)
+        const AZ::Transform& transform, float radius, const AZ::Vector3& translationOffset, RigidBodyType rigidBodyType)
     {
         EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
         editorEntity->CreateComponent(LmbrCentral::EditorSphereShapeComponentTypeId);
         editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
-        if (dynamic)
+        if (rigidBodyType == RigidBodyType::Dynamic)
         {
             editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
         }
@@ -126,11 +126,11 @@ namespace PhysXEditorTests
         const AZ::Quaternion& rotationOffset,
         float radius,
         float height,
-        bool dynamic)
+        RigidBodyType rigidBodyType)
     {
         EntityPtr editorEntity = CreateInactiveEditorEntity("CylinderEntity");
         const auto* colliderComponent = editorEntity->CreateComponent<PhysX::EditorColliderComponent>();
-        if (dynamic)
+        if (rigidBodyType == RigidBodyType::Dynamic)
         {
             editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
         }
@@ -160,9 +160,10 @@ namespace PhysXEditorTests
         const AZ::Quaternion& rotationOffset,
         float radius,
         float height,
-        bool dynamic)
+        RigidBodyType rigidBodyType)
     {
-        EntityPtr editorEntity = CreateCylinderColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height, dynamic);
+        EntityPtr editorEntity =
+            CreateCylinderColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height, rigidBodyType);
         editorEntity->Deactivate();
         editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
         editorEntity->Activate();

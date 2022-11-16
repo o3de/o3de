@@ -1575,7 +1575,7 @@ namespace PhysX
 
         Utils::Geometry::PointList samplePoints = Utils::CreatePointsAtFrustumExtents(height, radius, radius, subdivisionCount).value();
 
-        AZ::Transform colliderLocalTransform = GetColliderLocalTransform();
+        const AZ::Transform colliderLocalTransform = GetColliderLocalTransform();
 
         AZStd::transform(
             samplePoints.begin(),

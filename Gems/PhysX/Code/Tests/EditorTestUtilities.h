@@ -31,6 +31,12 @@ namespace PhysXEditorTests
     //! Creates and activates a game entity from an editor entity.
     EntityPtr CreateActiveGameEntityFromEditorEntity(AZ::Entity* editorEntity);
 
+    enum class RigidBodyType : AZ::u8
+    {
+        Static,
+        Dynamic
+    };
+
     //! Creates an active editor entity with shape collider and box shape components.
     //! Adds a rigid body component if the dynamic parameter is true.
     EntityPtr CreateBoxShapeColliderEditorEntity(
@@ -38,17 +44,24 @@ namespace PhysXEditorTests
         const AZ::Vector3& nonUniformScale,
         const AZ::Vector3& boxDimensions,
         const AZ::Vector3& translationOffset,
-        bool dynamic = false);
+        RigidBodyType rigidBodyType = RigidBodyType::Static);
 
     //! Creates an active editor entity with shape collider and capsule shape components.
     //! Adds a rigid body component if the dynamic parameter is true.
     EntityPtr CreateCapsuleShapeColliderEditorEntity(
-        const AZ::Transform& transform, float radius, float height, const AZ::Vector3& translationOffset, bool dynamic = false);
+        const AZ::Transform& transform,
+        float radius,
+        float height,
+        const AZ::Vector3& translationOffset,
+        RigidBodyType rigidBodyType = RigidBodyType::Static);
 
     //! Creates an active editor entity with shape collider and sphere shape components.
     //! Adds a rigid body component if the dynamic parameter is true.
     EntityPtr CreateSphereShapeColliderEditorEntity(
-        const AZ::Transform& transform, float radius, const AZ::Vector3& translationOffset, bool dynamic = false);
+        const AZ::Transform& transform,
+        float radius,
+        const AZ::Vector3& translationOffset,
+        RigidBodyType rigidBodyType = RigidBodyType::Static);
 
     //! Creates an active editor entity with collider component with cylinder geometry.
     //! Adds a rigid body component if the dynamic parameter is true.
@@ -58,7 +71,7 @@ namespace PhysXEditorTests
         const AZ::Quaternion& rotationOffset,
         float radius,
         float height,
-        bool dynamic = false);
+        RigidBodyType rigidBodyType = RigidBodyType::Static);
 
     //! Creates an active editor entity with collider component with cylinder geometry and non-uniform scale component.
     //! Adds a rigid body component if the dynamic parameter is true.
@@ -69,7 +82,7 @@ namespace PhysXEditorTests
         const AZ::Quaternion& rotationOffset,
         float radius,
         float height,
-        bool dynamic = false);
+        RigidBodyType rigidBodyType = RigidBodyType::Static);
 
     //! Gets the AABB for the simulated body on the entity with the given ID, or returns a null AABB if no body is found.
     AZ::Aabb GetSimulatedBodyAabb(AZ::EntityId entityId);
