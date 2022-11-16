@@ -70,6 +70,7 @@ set(FILES
     PaintBrush/MockPaintBrushNotificationHandler.h
     PaintBrush/PaintBrushBaseTests.cpp
     PaintBrush/PaintBrushPaintLocationTests.cpp
+    PaintBrush/PaintBrushPaintSettingsTests.cpp
     PaintBrush/PaintBrushSmoothLocationTests.cpp
     Prefab/Benchmark/Link/SingleInstanceMultiplePatchesBenchmarks.cpp
     Prefab/Benchmark/Link/SingleInstanceMultiplePatchesBenchmarks.h
