@@ -81,26 +81,32 @@ namespace AZ
                 {
                     for (const auto& rootShaderVariantAsset : supervariant->m_rootShaderVariantAssets)
                     {
-                        // add the root variant asset dependency if the API is supported on this platform, otherwise skip it
-                        for (const auto& platformInterface : platformInterfaces)
-                        {
-                            if (platformInterface->GetAPIName() == rootShaderVariantAsset->m_apiName)
+                        // find the API in the list of supported APIs on this platform
+                        AZStd::vector<RHI::ShaderPlatformInterface*>::const_iterator itFoundAPI = AZStd::find_if(
+                            platformInterfaces.begin(),
+                            platformInterfaces.end(),
+                            [&rootShaderVariantAsset](const RHI::ShaderPlatformInterface* shaderPlatformInterface)
                             {
-                                AZStd::string rootShaderVariantAssetPath = RPI::AssetUtils::ResolvePathReference(request.m_sourceFile.c_str(), rootShaderVariantAsset->m_rootShaderVariantAssetFileName);
-                                AssetBuilderSDK::SourceFileDependency sourceDependency;
-                                sourceDependency.m_sourceFileDependencyPath = rootShaderVariantAssetPath;
-                                response.m_sourceFileDependencyList.push_back(sourceDependency);
+                                return rootShaderVariantAsset->m_apiName == shaderPlatformInterface->GetAPIName();
+                            });
 
-                                AssetBuilderSDK::JobDependency jobDependency;
-                                jobDependency.m_jobKey = "azshadervariant";
-                                jobDependency.m_platformIdentifier = platformInfo.m_identifier;
-                                jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
-                                jobDependency.m_sourceFile = sourceDependency;
-                                jobDependencyList.push_back(jobDependency);
-
-                                break;
-                            }
+                        if (itFoundAPI == platformInterfaces.end())
+                        {
+                            // the API is not supported on this platform, skip this entry
+                            continue;
                         }
+
+                        AZStd::string rootShaderVariantAssetPath = RPI::AssetUtils::ResolvePathReference(request.m_sourceFile.c_str(), rootShaderVariantAsset->m_rootShaderVariantAssetFileName);
+                        AssetBuilderSDK::SourceFileDependency sourceDependency;
+                        sourceDependency.m_sourceFileDependencyPath = rootShaderVariantAssetPath;
+                        response.m_sourceFileDependencyList.push_back(sourceDependency);
+
+                        AssetBuilderSDK::JobDependency jobDependency;
+                        jobDependency.m_jobKey = "azshadervariant";
+                        jobDependency.m_platformIdentifier = platformInfo.m_identifier;
+                        jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+                        jobDependency.m_sourceFile = sourceDependency;
+                        jobDependencyList.push_back(jobDependency);
                     }
                 }
 
