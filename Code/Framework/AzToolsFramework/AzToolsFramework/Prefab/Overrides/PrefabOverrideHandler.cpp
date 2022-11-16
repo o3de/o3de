@@ -15,46 +15,49 @@
 {
     namespace Prefab
     {
+        PrefabOverrideHandler::PrefabOverrideHandler()
+        {
+            m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
+            AZ_Assert(m_prefabSystemComponentInterface, "PrefabOverrideHandler - PrefabSystemComponentInterface could not be found.");
+        }
+
+        PrefabOverrideHandler::~PrefabOverrideHandler()
+        {
+            m_prefabSystemComponentInterface = nullptr;
+        }
+
         bool PrefabOverrideHandler::AreOverridesPresent(AZ::Dom::Path path, LinkId linkId) const
         {
-            PrefabSystemComponentInterface* prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
-            if (prefabSystemComponentInterface != nullptr)
+            LinkReference link = m_prefabSystemComponentInterface->FindLink(linkId);
+            if (link.has_value())
             {
-                LinkReference link = prefabSystemComponentInterface->FindLink(linkId);
-                if (link.has_value())
-                {
-                    return link->get().AreOverridesPresent(path);
-                }
+                return link->get().AreOverridesPresent(path);
             }
             return false;
         }
 
         bool PrefabOverrideHandler::RevertOverrides(AZ::Dom::Path path, LinkId linkId) const
         {
-            PrefabSystemComponentInterface* prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
-            if (prefabSystemComponentInterface != nullptr)
+            LinkReference link = m_prefabSystemComponentInterface->FindLink(linkId);
+            if (link.has_value())
             {
-                LinkReference link = prefabSystemComponentInterface->FindLink(linkId);
-                if (link.has_value())
+                auto subTree = link->get().RemoveOverrides(path);
+                if (subTree.IsEmpty())
                 {
-                    auto subTree = link->get().RemoveOverrides(path);
-                    if (subTree.IsEmpty())
-                    {
-                        AZ_Warning("Prefab", false, "PrefabOverrideHandler::RevertOverrides is called on a path that has no overrides.");
-                        return false;
-                    }
-
-                    ScopedUndoBatch undoBatch("Revert Prefab Overrides");
-                    PrefabUndoRevertOverrides* state = new Prefab::PrefabUndoRevertOverrides("Capture Override SubTree");
-                    state->Capture(path, AZStd::move(subTree), linkId);
-                    state->SetParent(undoBatch.GetUndoBatch());
-                    
-                    link->get().UpdateTarget();
-                    prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId());
-                    AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-                        &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
-                    return true;
+                    AZ_Warning("Prefab", false, "PrefabOverrideHandler::RevertOverrides is called on a path that has no overrides.");
+                    return false;
                 }
+
+                ScopedUndoBatch undoBatch("Revert Prefab Overrides");
+                PrefabUndoRevertOverrides* state = new Prefab::PrefabUndoRevertOverrides("Capture Override SubTree");
+                state->Capture(path, AZStd::move(subTree), linkId);
+                state->SetParent(undoBatch.GetUndoBatch());
+
+                link->get().UpdateTarget();
+                m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId());
+                AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
+                return true;
             }
             return false;
         }

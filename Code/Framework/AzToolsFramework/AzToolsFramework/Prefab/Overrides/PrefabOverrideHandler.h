@@ -18,6 +18,9 @@ namespace AzToolsFramework
         class PrefabOverrideHandler
         {
         public:
+            PrefabOverrideHandler();
+            ~PrefabOverrideHandler();
+
             //! Checks whether overrides are present on the link object matching the linkId at the provided path.
             //! @param path The path to check for overrides on the link object.
             //! @param linkId The id of the link object to check for overrides
@@ -29,6 +32,9 @@ namespace AzToolsFramework
             //! @param linkId The id of the link from which overrides should be reverted.
             //! @return Whether overrides are reverted successfully.
             bool RevertOverrides(AZ::Dom::Path path, LinkId linkId) const;
+
+        private:
+            PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework
