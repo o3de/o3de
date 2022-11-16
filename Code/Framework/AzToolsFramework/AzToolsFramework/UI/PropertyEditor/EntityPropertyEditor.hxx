@@ -119,6 +119,7 @@ namespace AzToolsFramework
         , public AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler
         , private AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
         , public EditorInspectorComponentNotificationBus::MultiHandler
+        , private ComponentModeFramework::EditorComponentModeNotificationBus::Handler
         , public AZ::EntitySystemBus::Handler
         , public AZ::TickBus::Handler
         , private EditorWindowUIRequestBus::Handler
@@ -230,8 +231,10 @@ namespace AzToolsFramework
         void OnContextReset() override;
         //////////////////////////////////////////////////////////////////////////
 
+        // PropertyEditorEntityChangeNotificationBus overrides ...
         void OnEntityComponentPropertyChanged(AZ::ComponentId /*componentId*/) override;
 
+        // EditorInspectorComponentNotificationBus overides ...
         void OnComponentOrderChanged() override;
 
         //////////////////////////////////////////////////////////////////////////
@@ -249,6 +252,9 @@ namespace AzToolsFramework
             const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
         void OnEditorModeDeactivated(
             const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
+
+        // EditorComponentModeNotificationBus overrides ...
+        void ActiveComponentModeChanged(const AZ::Uuid& componentType) override;
 
         // Save the offset of the scroll bar before entering Component Mode to return to after leaving Component Mode
         AZStd::optional<int> m_verticalScrollOffset;
