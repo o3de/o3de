@@ -32,8 +32,7 @@ namespace AZ
 
         Data::Instance<Material> Material::FindOrCreate(const Data::Asset<MaterialAsset>& materialAsset)
         {
-            return Data::InstanceDatabase<Material>::Instance().FindOrCreate(
-                Data::InstanceId::CreateFromAsset(materialAsset), materialAsset);
+            return Data::InstanceDatabase<Material>::Instance().FindOrCreate(materialAsset);
         }
 
         Data::Instance<Material> Material::Create(const Data::Asset<MaterialAsset>& materialAsset)
@@ -150,8 +149,6 @@ namespace AZ
             ++m_currentChangeId;
             // Set all dirty for the first use.
             m_propertyDirtyFlags.set();
-
-
 
             Compile();
 
