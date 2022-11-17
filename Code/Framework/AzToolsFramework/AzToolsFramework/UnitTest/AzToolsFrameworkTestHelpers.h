@@ -17,6 +17,7 @@
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/typetraits/conditional.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzTest/AzTest.h>
@@ -217,16 +218,18 @@ namespace UnitTest
     };
 
     /// Base fixture for ToolsApplication editor tests.
+    template<bool CheckForLeaksOnDestruction = true>
     class ToolsApplicationFixture
-        : public AllocatorsTestFixture
+        : public AZStd::conditional_t<CheckForLeaksOnDestruction, AllocatorsTestFixture, testing::Test>
     {
+        using Base = AZStd::conditional_t<CheckForLeaksOnDestruction, AllocatorsTestFixture, testing::Test>;
     public:
         void SetUp() override final
         {
             using AzToolsFramework::GetEntityContextId;
             using AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
 
-            AllocatorsTestFixture::SetUp();
+            Base::SetUp();
 
             if (!GetApplication())
             {
@@ -286,7 +289,7 @@ namespace UnitTest
                 m_app.reset();
             }
 
-            AllocatorsTestFixture::TearDown();
+            Base::TearDown();
         }
 
         virtual void SetUpEditorFixtureImpl() {}

@@ -464,7 +464,7 @@ namespace UnitTest
     }
 
     // Simple fixture to encapsulate a TestEntityPropertyEditor
-    class ComponentModePinnedSelectionFixture : public ToolsApplicationFixture
+    class ComponentModePinnedSelectionFixture : public ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override

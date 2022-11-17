@@ -10,6 +10,5 @@ set(FILES
     ../Common/WinAPI/Tests/UtilsTests_WinAPI.cpp
     Tests/IO/Streamer/StorageDriveTests_Windows.cpp
     Tests/Memory/AllocatorBenchmarks_Windows.cpp
-    Tests/Memory/OverrunDetectionAllocator_Windows.cpp
     Tests/Serialization_Windows.cpp
 )
