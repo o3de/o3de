@@ -69,8 +69,8 @@ def DeletePrefab_UnderImmediateInstance():
     PrefabWaiter.wait_for_propagation()
 
     # Validate after instance deletion.
-    prefab_test_utils.validate_count_for_editor_entity(TIRE_PREFAB_NAME, 1)
-    prefab_test_utils.validate_count_for_editor_entity(TIRE_ENTITY_NAME, 1)
+    prefab_test_utils.validate_count_for_named_editor_entity(TIRE_PREFAB_NAME, 1)
+    prefab_test_utils.validate_count_for_named_editor_entity(TIRE_ENTITY_NAME, 1)
     prefab_test_utils.check_entity_children_count(car_instance_1.container_entity.id, 0)
     prefab_test_utils.check_entity_children_count(car_instance_2.container_entity.id, 1)
 
@@ -78,8 +78,8 @@ def DeletePrefab_UnderImmediateInstance():
     general.undo()
     PrefabWaiter.wait_for_propagation()
 
-    prefab_test_utils.validate_count_for_editor_entity(TIRE_PREFAB_NAME, 2)
-    prefab_test_utils.validate_count_for_editor_entity(TIRE_ENTITY_NAME, 2)
+    prefab_test_utils.validate_count_for_named_editor_entity(TIRE_PREFAB_NAME, 2)
+    prefab_test_utils.validate_count_for_named_editor_entity(TIRE_ENTITY_NAME, 2)
     prefab_test_utils.check_entity_children_count(car_instance_1.container_entity.id, 1)
     prefab_test_utils.check_entity_children_count(car_instance_2.container_entity.id, 1)
 
@@ -87,8 +87,8 @@ def DeletePrefab_UnderImmediateInstance():
     general.redo()
     PrefabWaiter.wait_for_propagation()
 
-    prefab_test_utils.validate_count_for_editor_entity(TIRE_PREFAB_NAME, 1)
-    prefab_test_utils.validate_count_for_editor_entity(TIRE_ENTITY_NAME, 1)
+    prefab_test_utils.validate_count_for_named_editor_entity(TIRE_PREFAB_NAME, 1)
+    prefab_test_utils.validate_count_for_named_editor_entity(TIRE_ENTITY_NAME, 1)
     prefab_test_utils.check_entity_children_count(car_instance_1.container_entity.id, 0)
     prefab_test_utils.check_entity_children_count(car_instance_2.container_entity.id, 1)
 
@@ -99,8 +99,8 @@ def DeletePrefab_UnderImmediateInstance():
     prefab_test_utils.check_entity_children_count(car_instance_1.container_entity.id, 1)
 
     # Note: This should be 2 because the tire entity (and instance) inside the second car is not deleted.
-    prefab_test_utils.validate_count_for_editor_entity(TIRE_PREFAB_NAME, 2)
-    prefab_test_utils.validate_count_for_editor_entity(TIRE_ENTITY_NAME, 2)
+    prefab_test_utils.validate_count_for_named_editor_entity(TIRE_PREFAB_NAME, 2)
+    prefab_test_utils.validate_count_for_named_editor_entity(TIRE_ENTITY_NAME, 2)
 
 
 if __name__ == "__main__":

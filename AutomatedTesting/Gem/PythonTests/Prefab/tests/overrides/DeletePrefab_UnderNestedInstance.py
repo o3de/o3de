@@ -100,31 +100,31 @@ def DeletePrefab_UnderNestedInstance():
     PrefabWaiter.wait_for_propagation()
 
     # Validate after instance deletion.
-    prefab_test_utils.validate_count_for_editor_entity(TIRE_PREFAB_NAME, 2)
-    prefab_test_utils.validate_count_for_editor_entity(TIRE_ENTITY_NAME, 2)
+    prefab_test_utils.validate_count_for_named_editor_entity(TIRE_PREFAB_NAME, 2)
+    prefab_test_utils.validate_count_for_named_editor_entity(TIRE_ENTITY_NAME, 2)
 
-    prefab_test_utils.validate_children_count_for_editor_entity(FRONT_WHEEL_NAME, 0)
-    prefab_test_utils.validate_children_count_for_editor_entity(BACK_WHEEL_NAME, 1)
+    prefab_test_utils.validate_child_count_for_named_editor_entity(FRONT_WHEEL_NAME, 0)
+    prefab_test_utils.validate_child_count_for_named_editor_entity(BACK_WHEEL_NAME, 1)
 
     # Validate undo on instance deletion.
     general.undo()
     PrefabWaiter.wait_for_propagation()
     
-    prefab_test_utils.validate_count_for_editor_entity(TIRE_PREFAB_NAME, 4)
-    prefab_test_utils.validate_count_for_editor_entity(TIRE_ENTITY_NAME, 4)
+    prefab_test_utils.validate_count_for_named_editor_entity(TIRE_PREFAB_NAME, 4)
+    prefab_test_utils.validate_count_for_named_editor_entity(TIRE_ENTITY_NAME, 4)
 
-    prefab_test_utils.validate_children_count_for_editor_entity(FRONT_WHEEL_NAME, 1)
-    prefab_test_utils.validate_children_count_for_editor_entity(BACK_WHEEL_NAME, 1)
+    prefab_test_utils.validate_child_count_for_named_editor_entity(FRONT_WHEEL_NAME, 1)
+    prefab_test_utils.validate_child_count_for_named_editor_entity(BACK_WHEEL_NAME, 1)
 
     # Validate redo on instance deletion.
     general.redo()
     PrefabWaiter.wait_for_propagation()
 
-    prefab_test_utils.validate_count_for_editor_entity(TIRE_PREFAB_NAME, 2)
-    prefab_test_utils.validate_count_for_editor_entity(TIRE_ENTITY_NAME, 2)
+    prefab_test_utils.validate_count_for_named_editor_entity(TIRE_PREFAB_NAME, 2)
+    prefab_test_utils.validate_count_for_named_editor_entity(TIRE_ENTITY_NAME, 2)
     
-    prefab_test_utils.validate_children_count_for_editor_entity(FRONT_WHEEL_NAME, 0)
-    prefab_test_utils.validate_children_count_for_editor_entity(BACK_WHEEL_NAME, 1)
+    prefab_test_utils.validate_child_count_for_named_editor_entity(FRONT_WHEEL_NAME, 0)
+    prefab_test_utils.validate_child_count_for_named_editor_entity(BACK_WHEEL_NAME, 1)
 
     # Focus on first wheel instance in first car instance. Deleted tire instance should appear in Prefab Edit Mode.
     front_wheel_container_entities = EditorEntity.find_editor_entities([FRONT_WHEEL_NAME])
@@ -141,8 +141,8 @@ def DeletePrefab_UnderNestedInstance():
     prefab_test_utils.check_entity_children_count(front_wheel_in_car_instance_1.id, 1)
 
     # Note: This should be 3 because the tire instance inside the front wheel under the second car is still deleted.
-    prefab_test_utils.validate_count_for_editor_entity(TIRE_PREFAB_NAME, 3)
-    prefab_test_utils.validate_count_for_editor_entity(TIRE_ENTITY_NAME, 3)
+    prefab_test_utils.validate_count_for_named_editor_entity(TIRE_PREFAB_NAME, 3)
+    prefab_test_utils.validate_count_for_named_editor_entity(TIRE_ENTITY_NAME, 3)
 
 
 if __name__ == "__main__":
