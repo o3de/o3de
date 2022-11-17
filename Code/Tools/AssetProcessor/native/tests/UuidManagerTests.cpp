@@ -167,10 +167,48 @@ namespace UnitTests
         AssetProcessor::IUuidRequests* m_uuidInterface{};
     };
 
-    TEST_F(UuidManagerTests, Sanity)
+    TEST_F(UuidManagerTests, GetUuid_FirstTime_ReturnsRandomUuid)
     {
         auto uuid = m_uuidInterface->GetUuid("mockfile");
 
         EXPECT_FALSE(uuid.IsNull());
+    }
+
+    TEST_F(UuidManagerTests, GetUuidTwice_ReturnsSameUuid)
+    {
+        auto uuid = m_uuidInterface->GetUuid("mockfile");
+
+        EXPECT_FALSE(uuid.IsNull());
+
+        auto uuid2 = m_uuidInterface->GetUuid("mockfile");
+
+        EXPECT_EQ(uuid, uuid2);
+    }
+
+    TEST_F(UuidManagerTests, GetLegacyUuids_UppercaseFileName_ReturnsTwoDifferentUuids)
+    {
+        auto uuids = m_uuidInterface->GetLegacyUuids("Mockfile");
+
+        ASSERT_EQ(uuids.size(), 2);
+        EXPECT_NE(*uuids.begin(), *++uuids.begin());
+    }
+
+    TEST_F(UuidManagerTests, GetLegacyUuids_LowercaseFileName_ReturnsOneUuid)
+    {
+        auto uuids = m_uuidInterface->GetLegacyUuids("mockfile");
+
+        EXPECT_EQ(uuids.size(), 1);
+    }
+
+    TEST_F(UuidManagerTests, GetLegacyUuids_DifferentFromCanonicalUuid)
+    {
+        auto uuids = m_uuidInterface->GetLegacyUuids("Mockfile");
+
+        ASSERT_EQ(uuids.size(), 2);
+
+        auto canonicalUuid = m_uuidInterface->GetUuid("Mockfile");
+
+        EXPECT_NE(canonicalUuid, *uuids.begin());
+        EXPECT_NE(canonicalUuid, *++uuids.begin());
     }
 }

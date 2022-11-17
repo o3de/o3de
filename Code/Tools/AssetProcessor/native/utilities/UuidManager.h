@@ -24,7 +24,7 @@ namespace AssetProcessor
         virtual ~IUuidRequests() = default;
 
         virtual AZ::Uuid GetUuid(AZ::IO::PathView file) = 0;
-        virtual AZStd::vector<AZ::Uuid> GetLegacyUuids(AZ::IO::PathView file) = 0;
+        virtual AZStd::unordered_set<AZ::Uuid> GetLegacyUuids(AZ::IO::PathView file) = 0;
     };
 
     class UuidManager : public AZ::Interface<IUuidRequests>::Registrar
@@ -46,7 +46,7 @@ namespace AssetProcessor
             return entry.m_uuid;
         }
 
-        AZStd::vector<AZ::Uuid> GetLegacyUuids(AZ::IO::PathView file) override
+        AZStd::unordered_set<AZ::Uuid> GetLegacyUuids(AZ::IO::PathView file) override
         {
             auto entry = GetOrCreateUuidEntry(file);
 
@@ -74,7 +74,7 @@ namespace AssetProcessor
             // The canonical UUID
             AZ::Uuid m_uuid;
             // A list of UUIDs that used to refer to this file
-            AZStd::vector<AZ::Uuid> m_legacyUuids;
+            AZStd::unordered_set<AZ::Uuid> m_legacyUuids;
             // The relative path of the file when it was originally created
             AZStd::string m_originalPath;
             // Creation time of the UUID entry
@@ -149,7 +149,7 @@ namespace AssetProcessor
             return AZ::Uuid::CreateRandom();
         }
 
-        AZStd::vector<AZ::Uuid> CreateLegacyUuids(const AZStd::string& file)
+        AZStd::unordered_set<AZ::Uuid> CreateLegacyUuids(const AZStd::string& file)
         {
             return { AssetUtilities::CreateSafeSourceUUIDFromName(file.c_str()),
                      AssetUtilities::CreateSafeSourceUUIDFromName(file.c_str(), false) };
