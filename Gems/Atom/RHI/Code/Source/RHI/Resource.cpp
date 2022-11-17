@@ -139,6 +139,7 @@ namespace AZ
                 RHI::ResultCode resultCode = imageViewPtr->Init(static_cast<const Image&>(*this), imageViewDescriptor);
                 if (resultCode == RHI::ResultCode::Success)
                 {
+                    imageViewPtr->m_isCachedView = true;
                     m_resourceViewCache[static_cast<uint64_t>(hash)] = static_cast<ResourceView*>(imageViewPtr.get());
                     return imageViewPtr;
                 }
@@ -158,32 +159,27 @@ namespace AZ
             const HashValue64 hash = bufferViewDescriptor.GetHash();
             AZStd::lock_guard<AZStd::mutex> registryLock(m_cacheMutex);
             auto it = m_resourceViewCache.find(static_cast<uint64_t>(hash));
-            if (it != m_resourceViewCache.end())
+            if (it == m_resourceViewCache.end())
+            {
+                Ptr<BufferView> bufferViewPtr = RHI::Factory::Get().CreateBufferView();
+                RHI::ResultCode resultCode = bufferViewPtr->Init(static_cast<const Buffer&>(*this), bufferViewDescriptor);
+                if (resultCode == RHI::ResultCode::Success)
+                {
+                    bufferViewPtr->m_isCachedView = true;
+                    m_resourceViewCache[static_cast<uint64_t>(hash)] = static_cast<ResourceView*>(bufferViewPtr.get());
+                    return bufferViewPtr;
+                }
+                else
+                {
+                    return nullptr;
+                }
+            }
+            else
             {
                 return static_cast<BufferView*>(it->second);
             }
-            else
-            {
-                return InsertNewResourceViewInCache(hash, bufferViewDescriptor);
-            }
         }
 
-        Ptr<BufferView> Resource::InsertNewResourceViewInCache(HashValue64 hash, const BufferViewDescriptor& bufferViewDescriptor) const
-        {
-            Ptr<BufferView> bufferViewPtr = RHI::Factory::Get().CreateBufferView();
-            RHI::ResultCode resultCode = bufferViewPtr->Init(static_cast<const Buffer&>(*this), bufferViewDescriptor);
-            if (resultCode == RHI::ResultCode::Success)
-            {
-                bufferViewPtr->m_isCachedView = true;
-                m_resourceViewCache[static_cast<uint64_t>(hash)] = static_cast<ResourceView*>(bufferViewPtr.get());
-                return bufferViewPtr;
-            }
-            else
-            {
-                return nullptr;
-            }
-        }
-    
         ResultCode Resource::EraseResourceView(ResourceView* resourceView) const
         {
             AZStd::lock_guard<AZStd::mutex> registryLock(m_cacheMutex);

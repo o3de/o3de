@@ -74,7 +74,7 @@ namespace AZ
             bool IsInResourceCache(const BufferViewDescriptor& bufferViewDescriptor);
             
             //! Removes the provided ResourceView from the cache
-            void EraseResourceView(ResourceView* resourceView) const;
+            ResultCode EraseResourceView(ResourceView* resourceView) const;
                                     
         protected:
             Resource() = default;
