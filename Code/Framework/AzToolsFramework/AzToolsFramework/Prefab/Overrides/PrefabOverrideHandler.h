@@ -15,6 +15,7 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
+        class PrefabSystemComponentInterface;
         class PrefabOverrideHandler
         {
         public:

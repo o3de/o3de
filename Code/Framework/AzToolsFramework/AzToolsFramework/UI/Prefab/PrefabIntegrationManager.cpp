@@ -628,7 +628,8 @@ namespace AzToolsFramework
                 if (IsPrefabOverridesUxEnabled() && selectedEntities.size() == 1)
                 {
                     AZ::EntityId selectedEntity = selectedEntities[0];
-                    if (m_prefabOverridePublicInterface->AreOverridesPresent(selectedEntity))
+                    if (!s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity) &&
+                        m_prefabOverridePublicInterface->AreOverridesPresent(selectedEntity))
                     {
                         QAction* revertAction = menu->addAction(QObject::tr("Revert Overrides"));
                         QObject::connect(

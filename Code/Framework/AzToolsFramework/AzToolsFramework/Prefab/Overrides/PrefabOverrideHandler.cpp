@@ -54,6 +54,7 @@
                 state->SetParent(undoBatch.GetUndoBatch());
 
                 link->get().UpdateTarget();
+                m_prefabSystemComponentInterface->SetTemplateDirtyFlag(link->get().GetTargetTemplateId(), true);
                 m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId());
                 return true;
             }

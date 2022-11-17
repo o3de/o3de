@@ -43,6 +43,7 @@ namespace AzToolsFramework
                 // This will move the sub-tree stored in the undo node and make it empty. It will be populated again on redo.
                 link->get().AddOverrides(m_pathToSubTree, AZStd::move(m_overrideSubTree));
                 link->get().UpdateTarget();
+                m_prefabSystemComponentInterface->SetTemplateDirtyFlag(link->get().GetTargetTemplateId(), true);
                 m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId());
             }
         }
@@ -54,6 +55,7 @@ namespace AzToolsFramework
             {
                 link->get().RemoveOverrides(m_pathToSubTree);
                 link->get().UpdateTarget();
+                m_prefabSystemComponentInterface->SetTemplateDirtyFlag(link->get().GetTargetTemplateId(), true);
                 m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId());
             }
         }
