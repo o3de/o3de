@@ -1279,9 +1279,9 @@ namespace Multiplayer
         handler.Connect(m_noServerLevelLoadedEvent);
     }
 
-    void MultiplayerSystemComponent::AddComponentVersionMismatchEvent(NoServerLevelLoadedEvent::Handler& handler)
+    void MultiplayerSystemComponent::AddVersionMismatchEvent(NoServerLevelLoadedEvent::Handler& handler)
     {
-        handler.Connect(m_componentVersionMismatchEvent);
+        handler.Connect(m_versionMismatchEvent);
     }
 
     void MultiplayerSystemComponent::SendNotifyClientMigrationEvent(AzNetworking::ConnectionId connectionId, const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId, NetEntityId controlledEntityId)
