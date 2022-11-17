@@ -15,6 +15,3 @@ class TestAutomation(EditorTestSuite):
 
     class test_LandscapeCanvas_LayerBlender_NodeConstruction(EditorBatchedTest):
         from .EditorScripts import LayerBlender_NodeConstruction as test_module
-
-    class test_LandscapeCanvas_Edit_DisabledNodeDuplication(EditorSingleTest):
-        from .EditorScripts import Edit_DisabledNodeDuplication as test_module
