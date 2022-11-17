@@ -51,10 +51,10 @@ namespace AZ::Dom
         return m_value == other.m_value;
     }
 
-    bool PathEntry::operator==(size_t value) const
+    bool PathEntry::operator==(size_t index) const
     {
         const size_t* internalValue = AZStd::get_if<size_t>(&m_value);
-        return internalValue != nullptr && *internalValue == value;
+        return internalValue != nullptr && *internalValue == index;
     }
 
     bool PathEntry::operator==(const AZ::Name& key) const
@@ -134,6 +134,48 @@ namespace AZ::Dom
                 }
             },
             m_value);
+    }
+
+    bool operator<(const AZ::Dom::PathEntry& lhs, const AZ::Dom::PathEntry& rhs)
+    {
+        if (lhs.IsIndex())
+        {
+            return lhs.GetIndex() < rhs;
+        }
+        else
+        {
+            return lhs.GetKey() < rhs;
+        }
+    }
+
+    bool operator<(const AZ::Dom::PathEntry& entry, size_t index)
+    {
+        return entry.IsIndex() && entry.GetIndex() < index;
+    }
+
+    bool operator<(size_t index, const AZ::Dom::PathEntry& entry)
+    {
+        return !entry.IsIndex() || index < entry.GetIndex();
+    }
+
+    bool operator<(const AZ::Dom::PathEntry& entry, const AZ::Name& key)
+    {
+        return entry < key.GetStringView();
+    }
+
+    bool operator<(const AZ::Name& key, const AZ::Dom::PathEntry& entry)
+    {
+        return key.GetStringView() < entry;
+    }
+
+    bool operator<(const AZ::Dom::PathEntry& entry, AZStd::string_view key)
+    {
+        return entry.IsIndex() || entry.GetKey().GetStringView() < key;
+    }
+
+    bool operator<(AZStd::string_view key, const AZ::Dom::PathEntry& entry)
+    {
+        return entry.IsKey() && key < entry.GetKey().GetStringView();
     }
 } // namespace AZ::Dom
 
@@ -225,6 +267,46 @@ namespace AZ::Dom
     bool Path::operator==(const Path& other) const
     {
         return m_entries == other.m_entries;
+    }
+
+    bool Path::operator<(const Path& other) const
+    {
+        auto ComparePathEntry = [](const PathEntry& lhs, const PathEntry& rhs)
+        {
+            return lhs == rhs;
+        };
+        // Find the PathEntry where the two Path objects differ, if any
+        auto [thisPathIter, otherPathIter] = AZStd::mismatch(
+            GetEntries().begin(), GetEntries().end(),
+            other.GetEntries().begin(), other.GetEntries().end(),
+            ComparePathEntry);
+
+        // If the paths differ then compare the differing PathEntries
+        if (thisPathIter != GetEntries().end() && otherPathIter != other.GetEntries().end())
+        {
+            return *thisPathIter < *otherPathIter;
+        }
+        // If one Path is a prefix of the other, or the paths are identical, then the shorter
+        // Path is the smaller Path
+        else
+        {
+            return other.GetEntries().size() > GetEntries().size();
+        }
+    }
+
+    bool Path::operator>(const Path& other) const
+    {
+        return other.operator<(*this);
+    }
+
+    bool Path::operator<=(const Path& other) const
+    {
+        return !other.operator<(*this);
+    }
+
+    bool Path::operator>=(const Path& other) const
+    {
+        return !operator<(other);
     }
 
     const Path::ContainerType& Path::GetEntries() const

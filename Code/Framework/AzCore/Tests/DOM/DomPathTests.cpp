@@ -151,6 +151,41 @@ namespace AZ::Dom::Tests
         EXPECT_EQ(p, Path("/foo/bar/baz/0/1"));
     }
 
+    TEST_F(DomPathTests, OperatorOverloads_LessThanGreaterThan)
+    {
+        EXPECT_TRUE(Path("/0/99") < Path("/0/a"));
+        EXPECT_FALSE(Path("/0/a") < Path("/0/99"));
+
+        EXPECT_FALSE(Path("/0/b") < Path("/0/aa"));
+        EXPECT_TRUE(Path("/0/a") < Path("/0/aa"));
+
+        EXPECT_TRUE(Path("/0/1") < Path("/0/2"));
+        EXPECT_FALSE(Path("/0/3/1") < Path("/0/3"));
+
+        size_t index = 2;
+        EXPECT_FALSE(Path("/3").GetEntries()[0] < index);
+        EXPECT_TRUE(Path("/1").GetEntries()[0] < index);
+
+        AZ::Name name = Name("ab");
+        EXPECT_TRUE(Path("/1").GetEntries()[0] < name);
+        EXPECT_TRUE(Path("/a").GetEntries()[0] < name);
+
+        AZStd::string_view nameStrView = "ab";
+        EXPECT_TRUE(Path("/1").GetEntries()[0] < nameStrView);
+        EXPECT_TRUE(Path("/a").GetEntries()[0] < nameStrView);
+
+        EXPECT_TRUE(Path("/0/a") > Path("/0/1"));
+        EXPECT_FALSE(Path("/0/1") > Path("/0/a"));
+
+        EXPECT_TRUE(Path("/0/3/1") >= Path("/0/3"));
+        EXPECT_TRUE(Path("/0/3") >= Path("/0/3"));
+        EXPECT_FALSE(Path("/0/1") >= Path("/0/a"));
+
+        EXPECT_TRUE(Path("/0/3") <= Path("/0/3/1"));
+        EXPECT_TRUE(Path("/0/3") <= Path("/0/3"));
+        EXPECT_FALSE(Path("/0/a") <= Path("/0/1"));
+    }
+
     TEST_F(DomPathTests, EndOfArray_FromString)
     {
         EXPECT_FALSE(Path("/foo/-")[0].IsEndOfArray());
