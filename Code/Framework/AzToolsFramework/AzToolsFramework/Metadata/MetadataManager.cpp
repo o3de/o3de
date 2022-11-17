@@ -187,7 +187,7 @@ namespace AzToolsFramework
         int currentVersion = classData->m_version;
 
         AZ::JsonSerializerSettings settings;
-        settings.m_reporting = [&file](AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view path)
+        settings.m_reporting = [&file]([[maybe_unused]] AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result, [[maybe_unused]] AZStd::string_view path)
         {
             AZ_UNUSED(file); // AZ_Warning doesn't exist on release builds so file may not be used in that case
 
