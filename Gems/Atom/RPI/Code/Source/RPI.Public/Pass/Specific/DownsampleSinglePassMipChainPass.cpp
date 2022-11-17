@@ -285,7 +285,7 @@ namespace AZ
                 { workGroupOffset[0], workGroupOffset[1] };
             bool succeeded = true;
             succeeded &= srg.SetConstant(m_numWorkGroupsIndex, numWorkGroupsAndMips[0]);
-            succeeded &= srg.SetConstant(m_mipsIndex, m_mipLevelCount);
+            succeeded &= srg.SetConstant(m_mipsIndex, numWorkGroupsAndMips[1]);
             succeeded &= srg.SetConstantArray(m_workGroupOffsetIndex, workGroupOffsetArray);
             succeeded &= srg.SetConstantArray(m_imageSizeIndex, m_inputImageSize);
             AZ_Assert(succeeded, "DownsampleSinglePassMipChainPass failed to set constants.");
