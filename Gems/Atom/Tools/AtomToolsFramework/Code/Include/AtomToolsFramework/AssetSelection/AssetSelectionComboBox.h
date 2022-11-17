@@ -31,6 +31,7 @@ namespace AtomToolsFramework
         void AddPath(const AZStd::string& path);
         void RemovePath(const AZStd::string& path);
         void SetFilter(const FilterFn& filterFn);
+        const FilterFn& GetFilter() const;
         void SelectPath(const AZStd::string& path);
         AZStd::string GetSelectedPath() const;
 
