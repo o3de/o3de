@@ -103,9 +103,9 @@ namespace AzToolsFramework
 
         enum class ComponentCardState
         {
-            Enabled,
-            Disabled,
-            Selected
+            Enabled, //!< Component card is enabled and can be interacted with.
+            Disabled, //!< Component card is disabled and cannot be interacted with.
+            Selected //!< Component card is enabled, selected (outline visible) and can be interacted with.
         };
 
         /// Returns the state of this ComponentEditor's card when Component Mode is entered.
