@@ -427,7 +427,7 @@ namespace AzToolsFramework::ComponentModeFramework
         }
     }
 
-    void ComponentModeSwitcher::ActiveComponentModeChanged([[maybe_unused]] const AZ::Uuid& componentType)
+    void ComponentModeSwitcher::ActiveComponentModeChanged(const AZ::Uuid& componentType)
     {
         // ActiveComponentModeChanged refers to switching within component mode
         // i.e. cycling through the Spline component and Tube Shape component
