@@ -7,8 +7,8 @@
  */
 
 #pragma once
-#include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/parallel/scoped_lock.h>
 #include <Metadata/MetadataManager.h>
@@ -27,13 +27,12 @@ namespace AssetProcessor
         virtual AZStd::vector<AZ::Uuid> GetLegacyUuids(AZ::IO::PathView file) = 0;
     };
 
-    class UuidManager :
-        public AZ::Interface<IUuidRequests>::Registrar
+    class UuidManager : public AZ::Interface<IUuidRequests>::Registrar
     {
     public:
         AZ_RTTI(UuidManager, "{49FA0129-7272-4256-A5C6-D789C156E6BA}", IUuidRequests);
 
-        static constexpr const char* UuidKey = "UUID";
+        static constexpr const char* UuidKey = "/UUID";
 
         static void Reflect(AZ::ReflectContext* context)
         {
@@ -61,7 +60,7 @@ namespace AssetProcessor
 
             static void Reflect(AZ::ReflectContext* context)
             {
-                if(auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+                if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
                 {
                     serializeContext->Class<UuidEntry>()
                         ->Version(0)
@@ -125,7 +124,7 @@ namespace AssetProcessor
 
         AzToolsFramework::IMetadataRequests* GetMetadataManager()
         {
-            if(!m_metadataManager)
+            if (!m_metadataManager)
             {
                 m_metadataManager = AZ::Interface<AzToolsFramework::IMetadataRequests>::Get();
             }
@@ -161,4 +160,4 @@ namespace AssetProcessor
 
         AzToolsFramework::IMetadataRequests* m_metadataManager{};
     };
-}
+} // namespace AssetProcessor
