@@ -21,7 +21,7 @@ using namespace AzToolsFramework;
 namespace UnitTest
 {
     class ComponentEntityObjectVisibilityFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
         , private EditorEntityVisibilityNotificationBus::Router
         , private EditorEntityInfoNotificationBus::Handler
     {

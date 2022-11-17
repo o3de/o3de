@@ -111,6 +111,24 @@ namespace AzToolsFramework
         //! @param distancePercent The new distance %, typically in the 0-100 range.
         virtual void SetDistancePercent(float distancePercent) = 0;
 
+        // Paint Brush Smoothing settings
+
+        //! Returns the number of pixels in each direction to use for smoothing calculations.
+        //! @return The number of pixels in each direction to use
+        virtual size_t GetSmoothingRadius() const = 0;
+
+        //! Returns the number of pixels to skip between pixel fetches for smoothing calculations.
+        //! @return The number of pixels to skip
+        virtual size_t GetSmoothingSpacing() const = 0;
+
+        //! Set the number of pixels in each direction to use for smoothing calculations.
+        //! @param The number of pixels in each direction to use
+        virtual void SetSmoothingRadius(size_t radius) = 0;
+
+        //! Set the number of pixels to skip between pixel fetches for smoothing calculations
+        //! @param The number of pixels to skip
+        virtual void SetSmoothingSpacing(size_t spacing) = 0;
+
     protected:
         ~PaintBrushSettingsRequests() = default;
     };

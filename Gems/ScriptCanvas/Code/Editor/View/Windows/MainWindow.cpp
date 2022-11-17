@@ -706,9 +706,9 @@ namespace ScriptCanvasEditor
 
         connect(ui->actionAdd_Script_Event_Helpers, &QAction::triggered, this, &MainWindow::OnScriptEventAddHelpers);
         connect(ui->actionClear_Script_Event_Status, &QAction::triggered, this, &MainWindow::OnScriptEventClearStatus);
-        connect(ui->actionOpen_Script_Event, &QAction::triggered, this, &MainWindow::OnScriptEventOpen);
-        connect(ui->actionParse_As_Script_Event, &QAction::triggered, this, &MainWindow::OnScriptEventParseAs);
-        connect(ui->actionSave_As_ScriptEvent, &QAction::triggered, this, &MainWindow::OnScriptEventSaveAs);
+        connect(ui->actionOpen_Script_Event, &QAction::triggered, this, [this](){ OnScriptEventOpen(AZ::IO::Path()); });
+        connect(ui->actionSave_ScriptEvent, &QAction::triggered, this, [this](){ OnScriptEventSave(Save::InPlace); });
+        connect(ui->actionSave_As_ScriptEvent, &QAction::triggered, this, [this](){ OnScriptEventSave(Save::As); });
         connect(ui->menuScript_Events_PREVIEW, &QMenu::aboutToShow, this, &MainWindow::OnScriptEventMenuPreShow);
 
         // List of recent files.
@@ -1307,6 +1307,14 @@ namespace ScriptCanvasEditor
             return;
         }
 
+        // Redirect script event file open process
+        AZ::IO::Path filePath = fullPath;
+        if (filePath.Extension() == ".scriptevents")
+        {
+            OnScriptEventOpen(fullPath);
+            return;
+        }
+
         AZStd::string watchFolder;
         AZ::Data::AssetInfo assetInfo;
         bool sourceInfoFound{};
@@ -1618,32 +1626,10 @@ namespace ScriptCanvasEditor
             return false;
         }
 
-        if (sourceHandle.Get()->IsScriptEventExtension())
+        // Redirect script event file save process
+        if (sourceHandle.Get()->IsScriptEventExtension() || sourceHandle.AbsolutePath().Extension() == ".scriptevents")
         {
-            QMessageBox mb
-                ( QMessageBox::Warning
-                , QObject::tr("Select ScriptCanvas or ScriptEvent source type:")
-                , QObject::tr("Graph defines a ScriptEvent. Press 'Discard' and use Script Event menu to save it as .scriptevent, or 'Ok' to continue to save as .scriptcanvas")
-                , QMessageBox::Ok | QMessageBox::Discard
-                , nullptr);
-
-            if (mb.exec() == QMessageBox::Discard)
-            {
-                return false;
-            }
-        }
-
-        if (sourceHandle.AbsolutePath().Extension() == ".scriptevents")
-        {
-            auto newPath = sourceHandle.AbsolutePath();
-            newPath.ReplaceExtension(".scriptcanvas");
-
-            if (auto relativeOption = ScriptCanvasEditor::CreateFromAnyPath(sourceHandle, newPath))
-            {
-                sourceHandle = *relativeOption;
-            }
-
-            sourceHandle = SourceHandle::MarkAbsolutePath(sourceHandle, newPath);
+            return OnScriptEventSave(save);
         }
 
         if (!m_activeGraph.AnyEquals(sourceHandle))
@@ -1755,20 +1741,35 @@ namespace ScriptCanvasEditor
 
     void MainWindow::OnSaveCallBack(const VersionExplorer::FileSaveResult& result)
     {
-        const bool saveSuccess = result.IsSuccess();
+        auto memoryAsset = OnSaveComplete(m_fileSaver->GetSource(), result);
 
+        const bool displayAsNotification = true;
+        RunGraphValidation(displayAsNotification);
+
+        m_closeCurrentGraphAfterSave = false;
+
+        EnableAssetView(memoryAsset);
+
+        UpdateSaveState(true);
+        UnblockCloseRequests();
+        m_fileSaver.reset();
+    }
+
+    SourceHandle MainWindow::OnSaveComplete(const SourceHandle& sourceHandle, const VersionExplorer::FileSaveResult& result)
+    {
+        const bool saveSuccess = result.IsSuccess();
         int saveTabIndex = -1;
         SourceHandle memoryAsset;
         {
-            int saverIndex = m_tabBar->FindTab(m_fileSaver->GetSource());
+            int saverIndex = m_tabBar->FindTab(sourceHandle);
             if (saverIndex >= 0)
             {
                 saveTabIndex = saverIndex;
-                memoryAsset = m_fileSaver->GetSource();
+                memoryAsset = sourceHandle;
             }
             else
             {
-                auto completeDescription = CompleteDescription(m_fileSaver->GetSource());
+                auto completeDescription = CompleteDescription(sourceHandle);
                 if (completeDescription)
                 {
                     memoryAsset = *completeDescription;
@@ -1830,17 +1831,7 @@ namespace ScriptCanvasEditor
         UpdateAssignToSelectionState();
 
         OnSaveToast toast(tabName, GetActiveGraphCanvasGraphId(), saveSuccess);
-
-        const bool displayAsNotification = true;
-        RunGraphValidation(displayAsNotification);
-
-        m_closeCurrentGraphAfterSave = false;
-
-        EnableAssetView(memoryAsset);
-
-        UpdateSaveState(true);
-        UnblockCloseRequests();
-        m_fileSaver.reset();
+        return memoryAsset;
     }
 
     bool MainWindow::ActivateAndSaveAsset(const SourceHandle& unsavedAssetId)
@@ -4466,11 +4457,10 @@ namespace ScriptCanvasEditor
 
     void MainWindow::OnScriptEventAddHelpers()
     {
-        if (ScriptEvents::Editor::MakeHelpersAction(m_activeGraph).first)
+        if (ScriptEvents::Editor::MakeHelpersAction(m_activeGraph))
         {
-            GraphCanvas::GraphModelRequestBus::Event
-                ( m_activeGraph.Mod()->GetEntityId()
-                , &GraphCanvas::GraphModelRequests::RequestUndoPoint);
+            GraphCanvas::GraphModelRequestBus::Event(m_activeGraph.Mod()->GetEntityId(),
+                &GraphCanvas::GraphModelRequests::RequestUndoPoint);
         }
     }
 
@@ -4484,104 +4474,38 @@ namespace ScriptCanvasEditor
         auto result = ScriptEvents::Editor::UpdateMenuItemsEnabled(m_activeGraph);
         ui->actionAdd_Script_Event_Helpers->setEnabled(result.m_addHelpers);
         ui->actionClear_Script_Event_Status->setEnabled(result.m_clear);
-        ui->actionParse_As_Script_Event->setEnabled(result.m_parse);
-        ui->actionSave_As_ScriptEvent->setEnabled(result.m_save);
+        ui->actionSave_ScriptEvent->setEnabled(result.m_save);
+        ui->actionSave_As_ScriptEvent->setEnabled(result.m_saveAs);
     }
 
-    void MainWindow::OnScriptEventOpen()
+    void MainWindow::OnScriptEventOpen(const AZ::IO::Path& filePath)
     {
-        AZStd::pair<ScriptCanvas::SourceHandle, AZStd::string> result = ScriptEvents::Editor::OpenAction();
+        ScriptCanvas::SourceHandle sourceAsset(ScriptEvents::Editor::OpenAction(filePath));
 
-        if (result.first.Get())
+        if (sourceAsset.IsGraphValid())
         {
-            OpenScriptCanvasAssetImplementation(result.first, Tracker::ScriptCanvasFileState::UNMODIFIED);
-        }
-        else
-        {
-            if (!result.second.empty())
-            {
-                QMessageBox mb
-                    ( QMessageBox::Warning
-                    , tr("Failed to open ScriptEvent file into ScriptCanvas Editor.")
-                    , result.second.c_str()
-                    , QMessageBox::Close
-                    , nullptr);
-
-                mb.exec();
-            }
+            AddRecentFile(sourceAsset.AbsolutePath().c_str());
+            OpenScriptCanvasAssetImplementation(sourceAsset, Tracker::ScriptCanvasFileState::UNMODIFIED);
         }
     }
 
-    void MainWindow::OnScriptEventParseAs()
+    bool MainWindow::OnScriptEventSave(Save save)
     {
-        if (!m_activeGraph.IsGraphValid())
+        bool saveInPlace = (save == Save::InPlace);
+        auto savedSource = ScriptEvents::Editor::SaveAction(m_activeGraph, saveInPlace);
+
+        if (savedSource.IsGraphValid())
         {
-            return;
+            VersionExplorer::FileSaveResult result;
+            result.absolutePath = savedSource.AbsolutePath();
+            auto memoryAsset = OnSaveComplete(savedSource, result);
+
+            m_newlySavedFile = savedSource.AbsolutePath().Native();
+            // Forcing the file add here, since we are creating a new file
+            AddRecentFile(m_newlySavedFile.c_str());
+            return true;
         }
-
-        AZStd::pair<bool, AZStd::vector<AZStd::string>> result = ScriptEvents::Editor::ParseAsAction(m_activeGraph);
-
-        if (result.first)
-        {
-            QMessageBox mb
-                ( QMessageBox::Information
-                , QObject::tr("Success!")
-                , QObject::tr("Graph parsed as ScriptEvent, and may be saved as one.")
-                , QMessageBox::Close
-                , nullptr);
-
-            mb.exec();
-        }
-        else
-        {
-            AZStd::string parseErrorString;
-
-            if (!result.second.empty())
-            {
-                parseErrorString = "Parse Errors:\n";
-
-                for (auto& entry : result.second)
-                {
-                    parseErrorString += "* ";
-                    parseErrorString += entry;
-                    parseErrorString += "\n";
-                }
-            }
-
-            QMessageBox mb
-                ( QMessageBox::Warning
-                , QObject::tr("Graph did not parse as ScriptEvent, please fix issues below to save as a ScriptEvent")
-                , parseErrorString.c_str()
-                , QMessageBox::Close
-                , nullptr);
-
-            mb.exec();
-        }
-    }
-
-    void MainWindow::OnScriptEventSaveAs()
-    {
-        auto result = ScriptEvents::Editor::SaveAsAction(m_activeGraph);
-        if (result.first)
-        {
-            OnSaveToast toast
-                ( result.second
-                , GetActiveGraphCanvasGraphId()
-                , true
-                , AZStd::string("Graph Saved .scriptevent, and this editor can open that file.\n"
-                    "No .scriptcanvas file was saved from this graph."));
-        }
-        else
-        {
-            QMessageBox mb
-                ( QMessageBox::Warning
-                , QObject::tr("Failed to Save As Script Event")
-                , result.second.c_str()
-                , QMessageBox::Close
-                , nullptr);
-
-            mb.exec();
-        }
+        return false;
     }
 
 #include <Editor/View/Windows/moc_MainWindow.cpp>

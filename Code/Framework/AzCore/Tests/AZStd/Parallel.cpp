@@ -1562,7 +1562,7 @@ namespace UnitTest
             EXPECT_TRUE(doneIt.load()) << "A test has deadlocked, aborting module";
             if (!doneIt.load())
             {
-                abort();
+                exit(1);
             }
             BusDisconnect();
             deadlocker_thread.join();
@@ -1593,7 +1593,7 @@ namespace UnitTest
                 DeadlockCauser cause;
                 cause.PerformTest();
                 // you MUST exit for EXPECT_EXIT to function.
-                _exit(0); // this will cause spew, but it wont be considered to have failed.
+                exit(0); // this will cause spew, but it wont be considered to have failed.
             }
         , ::testing::ExitedWithCode(0),".*");
         

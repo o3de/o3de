@@ -285,34 +285,6 @@ namespace AtomToolsFramework
         AZStd::string documentPath;
         AtomToolsDocumentRequestBus::EventResult(documentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
 
-        bool isModified = false;
-        AtomToolsDocumentRequestBus::EventResult(isModified, documentId, &AtomToolsDocumentRequestBus::Events::IsModified);
-
-        if (isModified)
-        {
-            auto selection = QMessageBox::question(
-                GetToolMainWindow(),
-                QObject::tr("Document has unsaved changes"),
-                QObject::tr("Do you want to save changes to\n%1?").arg(documentPath.c_str()),
-                QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-            if (selection == QMessageBox::Cancel)
-            {
-                AZ_TracePrintf("AtomToolsDocument", "Close document canceled: %s\n", documentPath.c_str());
-                return false;
-            }
-            if (selection == QMessageBox::Yes)
-            {
-                if (!SaveDocument(documentId))
-                {
-                    DisplayErrorMessage(
-                        GetToolMainWindow(),
-                        QObject::tr("Document could not be closed"),
-                        QObject::tr("Close document failed because document was not saved: \n%1").arg(documentPath.c_str()));
-                    return false;
-                }
-            }
-        }
-
         TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
 
         bool closeResult = true;

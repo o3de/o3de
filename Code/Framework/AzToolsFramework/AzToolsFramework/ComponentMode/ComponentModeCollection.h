@@ -10,6 +10,7 @@
 
 #include <AzCore/std/containers/vector.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeActionHandler.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeViewportUi.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 
@@ -116,6 +117,9 @@ namespace AzToolsFramework
             /// Editor (global) ComponentMode state - is ComponentMode active or not.
             ComponentModeState m_componentModeState = ComponentModeState::Stopped; 
             ViewportEditorModeTrackerInterface* m_viewportEditorModeTracker = nullptr; //!< Tracker for activating/deactivating viewport editor modes.
+
+            // Handler object to sync Component Mode action to the Action Manager.
+            ComponentModeActionHandler m_componentModeActionHandler;
         };
     } // namespace ComponentModeFramework
 } // namespace AzToolsFramework

@@ -12,80 +12,47 @@
 
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Memory/AllocationRecords.h>
-#include <AzCore/Memory/MallocSchema.h>
 
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/containers/array.h>
 
-namespace AZ::Internal
-{
-    struct AMStringHasher
-    {
-        using is_transparent = void;
-        template<typename ConvertibleToStringView>
-        size_t operator()(const ConvertibleToStringView& key)
-        {
-            return AZStd::hash<AZStd::string_view>{}(key);
-        }
-    };
-    using AMString = AZStd::basic_string<char, AZStd::char_traits<char>, AZStdIAllocator>;
-    using AllocatorNameMap = AZStd::unordered_map<AMString, IAllocator*, AMStringHasher, AZStd::equal_to<>, AZStdIAllocator>;
-    using AllocatorRemappings = AZStd::unordered_map<AMString, AMString, AMStringHasher, AZStd::equal_to<>, AZStdIAllocator>;
-}
-
 namespace AZ
 {
 
-static EnvironmentVariable<AllocatorManager> s_allocManager = nullptr;
-static AllocatorManager* s_allocManagerDebug = nullptr;  // For easier viewing in crash dumps
-
-IAllocator* AllocatorManager::CreateLazyAllocator(size_t size, size_t alignment, IAllocator*(*creationFn)(void*))
+static EnvironmentVariable<AllocatorManager>& GetAllocatorManagerEnvVar()
 {
-    static MallocSchema mallocSchema;
-    void* mem = mallocSchema.Allocate(size, alignment, 0);
-    IAllocator* result = creationFn(mem);
-
-    return result;
+    static EnvironmentVariable<AllocatorManager> s_allocManager;
+    return s_allocManager;
 }
+
+static AllocatorManager* s_allocManagerDebug;  // For easier viewing in crash dumps
 
 //////////////////////////////////////////////////////////////////////////
 bool AllocatorManager::IsReady()
 {
-    return s_allocManager.IsConstructed();
+    return GetAllocatorManagerEnvVar().IsConstructed();
 }
 //////////////////////////////////////////////////////////////////////////
 void AllocatorManager::Destroy()
 {
-    if (s_allocManager)
-    {
-        s_allocManager->InternalDestroy();
-        s_allocManager.Reset();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 // The only allocator manager instance.
 AllocatorManager& AllocatorManager::Instance()
 {
-    if (!s_allocManager)
+    auto& allocatorManager = GetAllocatorManagerEnvVar();
+    if (!allocatorManager)
     {
-        s_allocManager = Environment::CreateVariable<AllocatorManager>(AZ_CRC_CE("AZ::AllocatorManager::s_allocManager"));
+        allocatorManager = Environment::CreateVariable<AllocatorManager>(AZ_CRC_CE("AZ::AllocatorManager::s_allocManager"));
 
-        s_allocManagerDebug = &(*s_allocManager);
+        s_allocManagerDebug = &(*allocatorManager);
     }
 
-    return *s_allocManager;
+    return *allocatorManager;
 }
 //////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// Create malloc schema using custom AZ_OS_MALLOC allocator.
-MallocSchema* AllocatorManager::CreateMallocSchema()
-{
-    return static_cast<MallocSchema*>(new(AZ_OS_MALLOC(sizeof(MallocSchema), alignof(MallocSchema))) MallocSchema());
-}
-
 
 //=========================================================================
 // AllocatorManager
@@ -93,15 +60,6 @@ MallocSchema* AllocatorManager::CreateMallocSchema()
 //=========================================================================
 AllocatorManager::AllocatorManager()
     : m_profilingRefcount(0)
-    , m_mallocSchema(CreateMallocSchema(), [](MallocSchema* schema)
-    {
-        if (schema)
-        {
-            schema->~MallocSchema();
-            AZ_OS_FREE(schema);
-        }
-    }
-)
 {
     m_numAllocators = 0;
     m_isAllocatorLeaking = false;
@@ -129,10 +87,8 @@ AllocatorManager::RegisterAllocator(class IAllocator* alloc)
 
     for (size_t i = 0; i < m_numAllocators; i++)
     {
-        AZ_Assert(m_allocators[i] != alloc, "Allocator %s (%s) registered twice!", alloc->GetName(), alloc->GetDescription());
+        AZ_Assert(m_allocators[i] != alloc, "Allocator %s (%s) registered twice!", alloc->GetName());
     }
-
-    alloc->SetProfilingActive(m_profilingRefcount.load() > 0);
 
     m_allocators[m_numAllocators++] = alloc;
 }
@@ -148,7 +104,6 @@ AllocatorManager::InternalDestroy()
     {
         IAllocator* allocator = m_allocators[m_numAllocators - 1];
         (void)allocator;
-        AZ_Assert(allocator->IsLazilyCreated(), "Manually created allocator '%s (%s)' must be manually destroyed before shutdown", allocator->GetName(), allocator->GetDescription());
         m_allocators[--m_numAllocators] = nullptr;
         // Do not actually destroy the lazy allocator as it may have work to do during non-deterministic shutdown
     }
@@ -215,9 +170,14 @@ AllocatorManager::GarbageCollect()
 {
     AZStd::lock_guard<AZStd::mutex> lock(m_allocatorListMutex);
 
-    for (int i = 0; i < m_numAllocators; ++i)
+    // Allocators can use other allocators. When this happens, the dependent
+    // allocators are registered first. By running garbage collect on the
+    // allocators in reverse order, the ones with no dependencies are garbage
+    // collected first, which frees up more allocations for the dependent
+    // allocators to release.
+    for (int i = m_numAllocators - 1; i >= 0; --i)
     {
-        m_allocators[i]->GetSchema()->GarbageCollect();
+        m_allocators[i]->GarbageCollect();
     }
 }
 
@@ -269,33 +229,11 @@ AllocatorManager::SetTrackingMode(Debug::AllocationRecords::Mode mode)
 void
 AllocatorManager::EnterProfilingMode()
 {
-    if (!m_profilingRefcount++)
-    {
-        // We were at 0, so enable profiling
-        AZStd::lock_guard<AZStd::mutex> lock(m_allocatorListMutex);
-
-        for (int i = 0; i < m_numAllocators; ++i)
-        {
-            m_allocators[i]->SetProfilingActive(true);
-        }
-    }
 }
 
 void
 AllocatorManager::ExitProfilingMode()
 {
-    if (!--m_profilingRefcount)
-    {
-        // We've gone down to 0, so disable profiling
-        AZStd::lock_guard<AZStd::mutex> lock(m_allocatorListMutex);
-
-        for (int i = 0; i < m_numAllocators; ++i)
-        {
-            m_allocators[i]->SetProfilingActive(false);
-        }
-    }
-
-    AZ_Assert(m_profilingRefcount.load() >= 0, "ExitProfilingMode called without matching EnterProfilingMode");
 }
 
 void
@@ -350,10 +288,9 @@ void AllocatorManager::GetAllocatorStats(size_t& allocatedBytes, size_t& capacit
            
         if (outStats)
         {
-            outStats->emplace(outStats->end(), 
-                allocator->GetName(), 
-                allocator->GetDescription(), 
-                allocator->NumAllocatedBytes(), 
+            outStats->emplace(outStats->end(),
+                allocator->GetName(),
+                allocator->NumAllocatedBytes(),
                 allocator->Capacity());
         }
     }
