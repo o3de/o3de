@@ -32,7 +32,7 @@ namespace Multiplayer
 {
     AZ_CVAR_EXTERNED(AZ::CVarFixedString, sv_map);
     AZ_CVAR_EXTERNED(bool, sv_versionMismatch_autoDisconnect);
-    AZ_CVAR_EXTERNED(bool, sv_versionMismatch_sendAllComponentHashesToClient);
+    AZ_CVAR_EXTERNED(bool, sv_versionMismatch_sendManifestToClient);
 
 
     class MultiplayerSystemTests : public AllocatorsFixture
@@ -272,7 +272,7 @@ namespace Multiplayer
 
         // Send a connection request. This should cause another player to be spawned.
         MultiplayerPackets::Connect connectPacket(
-            0, 1, "connect_ticket", GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHolisticHash());
+            0, 1, "connect_ticket", GetMultiplayerComponentRegistry()->GetSystemVersionHash());
         IMultiplayerConnectionMock connection(
             ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
         ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
@@ -460,16 +460,16 @@ namespace Multiplayer
         return arg.GetPacketType() == packetType;
     }
 
-    MATCHER_P(IsMismatchPacketWithComponentCount, totalComponentCount, "Checks how many multiplayer component versions are inside the SyncComponentMismatch packet.")
+    MATCHER_P(IsMismatchPacketWithComponentCount, totalComponentCount, "Checks how many multiplayer component versions are inside the VersionMismatch packet.")
     {
-        if (arg.GetPacketType() != MultiplayerPackets::SyncComponentMismatch::Type)
+        if (arg.GetPacketType() != MultiplayerPackets::VersionMismatch::Type)
         {
-            *result_listener << "where the packet is NOT a SyncComponentMismatch packet";
+            *result_listener << "where the packet is NOT a VersionMismatch packet";
             return false;
         }
 
-        const uint32_t packetComponentCount = static_cast<const MultiplayerPackets::SyncComponentMismatch&>(arg).GetTotalComponentCount();
-        *result_listener << "where the packet is a SyncComponentMismatch packet with component count " << packetComponentCount;
+        const uint32_t packetComponentCount = aznumeric_cast<uint32_t>(static_cast<const MultiplayerPackets::VersionMismatch&>(arg).GetComponentVersions().size());
+        *result_listener << "where the packet is a VersionMismatch packet with component count " << packetComponentCount;
         return packetComponentCount == totalComponentCount;
     }
 
@@ -478,7 +478,7 @@ namespace Multiplayer
         m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
 
         MultiplayerPackets::Connect connectPacket(
-            0, 1, "connect_ticket", GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHolisticHash());
+            0, 1, "connect_ticket", GetMultiplayerComponentRegistry()->GetSystemVersionHash());
         IMultiplayerConnectionMock connection(
             ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Acceptor);
         ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
@@ -497,7 +497,7 @@ namespace Multiplayer
         m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
 
         MultiplayerPackets::Connect connectPacket(
-            0, 1, "connect_ticket", GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHolisticHash());
+            0, 1, "connect_ticket", GetMultiplayerComponentRegistry()->GetSystemVersionHash());
         IMultiplayerConnectionMock connection(
             ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Acceptor);
         ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
@@ -515,7 +515,7 @@ namespace Multiplayer
     {
         // cvars affecting mismatch behavior:
         //   1. sv_versionMismatch_autoDisconnect
-        //   2. sv_versionMismatch_sendAllComponentHashesToClient
+        //   2. sv_versionMismatch_sendManifestToClient
 
         m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
 
@@ -528,21 +528,20 @@ namespace Multiplayer
         connection.SetUserData(&connectionUserData);
 
         // Mismatch, send client a mismatch packet will all our components
-        sv_versionMismatch_sendAllComponentHashesToClient = true;
+        sv_versionMismatch_sendManifestToClient = true;
         const auto ourMultiplayerComponentCount = aznumeric_cast<uint32_t>(GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes().size());
         EXPECT_CALL(connection, SendReliablePacket(IsMismatchPacketWithComponentCount(ourMultiplayerComponentCount))).Times(1);
         m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), connectPacket);
 
         // Mismatch, send client a mismatch packet but don't send all our components to the client
-        sv_versionMismatch_sendAllComponentHashesToClient = false;
+        sv_versionMismatch_sendManifestToClient = false;
         EXPECT_CALL(connection, SendReliablePacket(IsMismatchPacketWithComponentCount(uint32_t{ 0 }))).Times(1);
         m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), connectPacket);
 
         // Test the client sending components back to the server
         // Receive a multiplayer version mismatch packet and disconnect
         sv_versionMismatch_autoDisconnect = true;
-        MultiplayerPackets::SyncComponentMismatch mismatchPacket;
-        mismatchPacket.SetTotalComponentCount(0);
+        MultiplayerPackets::VersionMismatch mismatchPacket;
         EXPECT_CALL(connection, Disconnect(DisconnectReason::VersionMismatch, TerminationEndpoint::Local)).Times(1);
         m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), mismatchPacket);
 

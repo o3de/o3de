@@ -321,6 +321,9 @@ class EditorComponent:
         :return: The string result
         """
         component_properties_type_visible = self.get_property_type_visibility()
+
+        assert component_property_path in component_properties_type_visible, f"Error: The {self.get_component_name()} does not have a component property of \"{component_property_path}\"."
+
         property_type, visibility = component_properties_type_visible[component_property_path]
 
         assert visibility != "" or visibility is not None, \

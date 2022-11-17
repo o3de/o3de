@@ -36,14 +36,14 @@ def PhysX_Collider_Component_CRUD():
     from editor_python_test_tools.editor_component.editor_physx_collider import EditorPhysxCollider as PhysxCollider
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Tracer, TestHelper
-    from editor_python_test_tools.editor_component.editor_component_validation import \
-        (validate_property_switch_toggle, validate_vector3_property, validate_float_property,
-         validate_integer_property, validate_asset_property)
-    from editor_python_test_tools.editor_component.test_values.common_test_values import \
-        (VECTOR3_TESTS_NEGATIVE_EXPECT_FAIL, VECTOR3_TESTS_NEGATIVE_EXPECT_PASS, FLOAT_HEIGHT_TESTS)
-    from editor_python_test_tools.editor_component.test_values.phsyx_collider_test_values import \
-        (COLLIDER_RADIUS_TESTS, CYLINDER_HEIGHT_TESTS, CONTACT_OFFSET_TESTS,
-         REST_OFFSET_TESTS, CYLINDER_SUBDIVISION_TESTS)
+    from editor_python_test_tools.editor_component.editor_component_validation import (
+        validate_property_switch_toggle, validate_vector3_property, validate_float_property,
+        validate_integer_property, validate_asset_property)
+    from editor_python_test_tools.editor_component.test_values.common_test_values import (
+        VECTOR3_TESTS_NEGATIVE_EXPECT_FAIL, VECTOR3_TESTS_NEGATIVE_EXPECT_PASS, FLOAT_HEIGHT_TESTS)
+    from editor_python_test_tools.editor_component.test_values.phsyx_collider_test_values import (
+        COLLIDER_RADIUS_TESTS, CYLINDER_HEIGHT_TESTS, CONTACT_OFFSET_TESTS,
+        REST_OFFSET_TESTS, CYLINDER_SUBDIVISION_TESTS)
 
     from consts.general import Strings
 
@@ -92,8 +92,8 @@ def PhysX_Collider_Component_CRUD():
         validate_property_switch_toggle("In Scene Queries", physx_collider.get_in_scene_queries, physx_collider.set_in_scene_queries, component_name)
 
         validate_vector3_property("Offset", physx_collider.get_offset, physx_collider.set_offset, component_name, VECTOR3_TESTS_NEGATIVE_EXPECT_PASS)
-        # TODO: Create Validate Quaternian Backlog: validate_vector3_property(physx_collider.get_rotation, physx_collider.set_rotation, physx_collider.component.get_component_name(), "Rotation", VECTOR3_TESTS_NEGATIVE_EXPECT_FAIL)
 
+        # o3de/o3de#13223 - Add Quaternion Property Validator to validate Rotation property
         # o3de/o3de#12634 - Get PhysX Collider Tag to set properly.
 
         validate_float_property("Contact Offset", physx_collider.get_contact_offset, physx_collider.set_contact_offset, component_name, CONTACT_OFFSET_TESTS)

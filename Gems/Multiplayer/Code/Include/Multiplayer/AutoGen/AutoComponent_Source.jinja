@@ -1454,6 +1454,11 @@ namespace {{ Component.attrib['Namespace'] }}
 {%      endif %}
 {% endfor %}
 
+    AZ::HashValue64 {{ ComponentBaseName }}::GetVersionHash() 
+    { 
+        return s_versionHash; 
+    }
+
     void {{ ComponentBaseName }}::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);

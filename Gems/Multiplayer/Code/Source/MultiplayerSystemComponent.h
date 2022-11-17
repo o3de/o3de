@@ -91,7 +91,7 @@ namespace Multiplayer
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::EntityRpcs& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::RequestReplicatorReset& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::ClientMigration& packet);
-        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::SyncComponentMismatch& packet);
+        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::VersionMismatch& packet);
 
         //! IConnectionListener interface
         //! @{
@@ -164,7 +164,6 @@ namespace Multiplayer
         void ExecuteConsoleCommandList(AzNetworking::IConnection* connection, const AZStd::fixed_vector<Multiplayer::LongNetworkString, 32>& commands);
         static void EnableAutonomousControl(NetworkEntityHandle entityHandle, AzNetworking::ConnectionId ownerConnectionId);
         static void StartServerToClientReplication(uint64_t userId, NetworkEntityHandle controlledEntity, AzNetworking::IConnection* connection);
-        static void SendAllMultiplayerComponentVersionData(AzNetworking::IConnection* connection);
 
         AZ_CONSOLEFUNC(MultiplayerSystemComponent, DumpStats, AZ::ConsoleFunctorFlags::Null, "Dumps stats for the current multiplayer session");
 
@@ -222,7 +221,6 @@ namespace Multiplayer
         AZStd::vector<PlayerWaitingToBeSpawned> m_playersWaitingToBeSpawned;
         bool m_blockClientLoadLevel = true;
 
-        AZStd::unordered_map<AzNetworking::ConnectionId, AZStd::vector<ComponentVersionMessageData>> m_connectedAppsComponentVersions;
         AZStd::unordered_map<AzNetworking::ConnectionId, MultiplayerPackets::Connect> m_originalConnectPackets;
 
 #if !defined(AZ_RELEASE_BUILD)
