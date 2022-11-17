@@ -12,6 +12,12 @@
 #include <PythonBindingsInterface.h>
 #include <ScreenHeaderWidget.h>
 
+#include <FormFolderBrowseEditWidget.h>
+#include <FormLineEditWidget.h>
+#include <FormLineEditTagsWidget.h>
+#include <FormOptionsWidget.h>
+#include <FormComboBoxWidget.h>
+
 #include <QApplication>
 #include <QButtonGroup>
 #include <QComboBox>
@@ -269,6 +275,21 @@ namespace O3DE::ProjectManager
         m_requirements = new FormLineEditWidget(tr("Requirements"), "", tr("Notice of any requirements your Gem. i.e. This requires X other gem"), "");
         gemDetailsLayout->addWidget(m_requirements);
 
+        QStringList platformOptions;
+        
+        //input the platform list in reverse alphabetical order
+        for(int i = GemInfo::NumPlatforms-1; i >= 0; i--)
+        {
+            const GemInfo::Platform platform = static_cast<GemInfo::Platform>(1 << i);
+            if(platform & m_platformSupportMask)
+            {
+                platformOptions << GemInfo::GetPlatformString(platform);
+            }
+        }
+
+        m_platformOptions = new FormOptionsWidget(tr("Target Platform(s)"), platformOptions, tr("All Platforms"), s_platformOptionItemSpacing);
+        gemDetailsLayout->addWidget(m_platformOptions);
+
         m_license = new FormLineEditWidget(
             tr("License*"), "", tr("License uses goes here: i.e. Apache-2.0 or MIT"), tr("License details are required."));
         gemDetailsLayout->addWidget(m_license);
@@ -449,6 +470,7 @@ namespace O3DE::ProjectManager
             m_gemInfo.m_name = m_gemName->lineEdit()->text();
             m_gemInfo.m_summary = m_gemSummary->lineEdit()->text();
             m_gemInfo.m_requirement = m_requirements->lineEdit()->text();
+            m_gemInfo.m_platforms = GemInfo::GetPlatformsFromStringList(m_platformOptions->GetOptions());
             m_gemInfo.m_licenseText = m_license->lineEdit()->text();
             m_gemInfo.m_licenseLink = m_licenseURL->lineEdit()->text();
             m_gemInfo.m_documentationLink = m_documentationURL->lineEdit()->text();
@@ -541,6 +563,9 @@ namespace O3DE::ProjectManager
         m_gemSummary->lineEdit()->clear();
         m_requirements->lineEdit()->clear();
         
+        m_platformOptions->Clear();
+        m_gemInfo.m_platforms = GemInfo::Platforms();
+
         m_license->lineEdit()->clear();
         m_license->setErrorLabelVisible(false);
         

@@ -66,7 +66,6 @@ namespace AZ
         {
             AZ::Interface<AZ::IConsole>::Unregister(m_console.get());
             m_console = nullptr;
-            TeardownAllocator();
         }
 
         void TestClassFunc(const AZ::ConsoleCommandContainer& someStrings)

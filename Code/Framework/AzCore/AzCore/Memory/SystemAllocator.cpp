@@ -19,41 +19,24 @@
 #define AZCORE_SYSTEM_ALLOCATOR_HPHA 1
 #define AZCORE_SYSTEM_ALLOCATOR_MALLOC 2
 
-#if !defined(AZCORE_SYSTEM_ALLOCATOR)
-// define the default
-#define AZCORE_SYSTEM_ALLOCATOR AZCORE_SYSTEM_ALLOCATOR_HPHA
-#endif
-
-#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
-    #include <AzCore/Memory/HphaSchema.h>
-#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
-    #include <AzCore/Memory/MallocSchema.h>
-#else
-    #error "Invalid allocator selected for SystemAllocator"
-#endif
+#include <AzCore/Memory/HphaAllocator.h>
 
 namespace AZ
 {
     //////////////////////////////////////////////////////////////////////////
     // Globals - we use global storage for the first memory schema, since we can't use dynamic memory!
-    static bool g_isSystemSchemaUsed = false;
-#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
     static AZStd::aligned_storage<sizeof(HphaSchema), AZStd::alignment_of<HphaSchema>::value>::type g_systemSchema;
-#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
-    static AZStd::aligned_storage<sizeof(MallocSchema), AZStd::alignment_of<MallocSchema>::value>::type g_systemSchema;
-#endif
 
     //////////////////////////////////////////////////////////////////////////
 
-    //=========================================================================
-    // SystemAllocator
-    // [9/2/2009]
-    //=========================================================================
     SystemAllocator::SystemAllocator()
-        : AllocatorBase(nullptr, "SystemAllocator", "Fundamental generic memory allocator")
-        , m_isCustom(false)
-        , m_ownsOSAllocator(false)
     {
+        AllocatorInstance<OSAllocator>::Get();
+#if defined(AZ_ENABLE_TRACING)
+        SetProfilingActive(true);
+#endif
+        Create();
+        PostCreate();
     }
 
     //=========================================================================
@@ -61,17 +44,15 @@ namespace AZ
     //=========================================================================
     SystemAllocator::~SystemAllocator()
     {
-        if (IsReady())
-        {
-            Destroy();
-        }
+        PreDestroy();
+        Destroy();
     }
 
     //=========================================================================
     // ~Create
     // [9/2/2009]
     //=========================================================================
-    bool SystemAllocator::Create(const Descriptor& desc)
+    bool SystemAllocator::Create()
     {
         AZ_Assert(IsReady() == false, "System allocator was already created!");
         if (IsReady())
@@ -79,76 +60,8 @@ namespace AZ
             return false;
         }
 
-        m_desc = desc;
-
-        if (!AllocatorInstance<OSAllocator>::IsReady())
-        {
-            m_ownsOSAllocator = true;
-            AllocatorInstance<OSAllocator>::Create();
-        }
-        bool isReady = false;
-        if (desc.m_custom)
-        {
-            m_isCustom = true;
-            m_schema = desc.m_custom;
-            isReady = true;
-        }
-        else
-        {
-            m_isCustom = false;
-#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
-            HphaSchema::Descriptor heapDesc;
-            heapDesc.m_pageSize = desc.m_heap.m_pageSize;
-            heapDesc.m_poolPageSize = desc.m_heap.m_poolPageSize;
-            AZ_Assert(desc.m_heap.m_numFixedMemoryBlocks <= 1, "We support max1 memory block at the moment!");
-            if (desc.m_heap.m_numFixedMemoryBlocks > 0)
-            {
-                heapDesc.m_fixedMemoryBlock = desc.m_heap.m_fixedMemoryBlocks[0];
-                heapDesc.m_fixedMemoryBlockByteSize = desc.m_heap.m_fixedMemoryBlocksByteSize[0];
-            }
-            heapDesc.m_subAllocator = desc.m_heap.m_subAllocator;
-            heapDesc.m_isPoolAllocations = desc.m_heap.m_isPoolAllocations;
-            // Fix SystemAllocator from growing in small chunks
-            heapDesc.m_systemChunkSize = desc.m_heap.m_systemChunkSize;
-#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
-            MallocSchema::Descriptor heapDesc;
-#endif
-            if (&AllocatorInstance<SystemAllocator>::Get() == this) // if we are the system allocator
-            {
-                AZ_Assert(!g_isSystemSchemaUsed, "AZ::SystemAllocator MUST be created first! It's the source of all allocations!");
-
-#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
-                m_schema = new (&g_systemSchema) HphaSchema(heapDesc);
-#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
-                m_schema = new (&g_systemSchema) MallocSchema(heapDesc);
-#endif
-                g_isSystemSchemaUsed = true;
-                isReady = true;
-            }
-            else
-            {
-                // this class should be inheriting from SystemAllocator
-                AZ_Assert(
-                    AllocatorInstance<SystemAllocator>::IsReady(),
-                    "System allocator must be created before any other allocator! They allocate from it.");
-
-#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
-                m_schema = azcreate(HphaSchema, (heapDesc), SystemAllocator);
-#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
-                m_schema = azcreate(MallocSchema, (heapDesc), SystemAllocator);
-#endif
-                if (m_schema == nullptr)
-                {
-                    isReady = false;
-                }
-                else
-                {
-                    isReady = true;
-                }
-            }
-        }
-
-        return isReady;
+        m_subAllocator = new (&g_systemSchema) HphaSchema();
+        return true;
     }
 
     //=========================================================================
@@ -157,57 +70,25 @@ namespace AZ
     //=========================================================================
     void SystemAllocator::Destroy()
     {
-        if (g_isSystemSchemaUsed)
-        {
-            int dummy;
-            (void)dummy;
-        }
-
-        if (!m_isCustom)
-        {
-            if ((void*)m_schema == (void*)&g_systemSchema)
-            {
-#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
-                static_cast<HphaSchema*>(m_schema)->~HphaSchema();
-#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
-                static_cast<MallocSchema*>(m_schema)->~MallocSchema();
-#endif
-                g_isSystemSchemaUsed = false;
-            }
-            else
-            {
-                azdestroy(m_schema);
-            }
-        }
-
-        if (m_ownsOSAllocator)
-        {
-            AllocatorInstance<OSAllocator>::Destroy();
-            m_ownsOSAllocator = false;
-        }
+        static_cast<HphaSchema*>(m_subAllocator)->~HphaSchema();
     }
 
     AllocatorDebugConfig SystemAllocator::GetDebugConfig()
     {
         return AllocatorDebugConfig()
-            .StackRecordLevels(m_desc.m_stackRecordLevels)
-            .UsesMemoryGuards(!m_isCustom)
-            .MarksUnallocatedMemory(!m_isCustom)
-            .ExcludeFromDebugging(!m_desc.m_allocationRecords);
+            .StackRecordLevels(O3DE_STACK_CAPTURE_DEPTH)
+            .UsesMemoryGuards()
+            .MarksUnallocatedMemory()
+            .ExcludeFromDebugging(false);
     }
 
     //=========================================================================
     // Allocate
     // [9/2/2009]
     //=========================================================================
-    SystemAllocator::pointer_type SystemAllocator::Allocate(
+    SystemAllocator::pointer SystemAllocator::allocate(
         size_type byteSize,
-        size_type alignment,
-        int flags,
-        const char* name,
-        const char* fileName,
-        int lineNum,
-        unsigned int suppressStackRecord)
+        size_type alignment)
     {
         if (byteSize == 0)
         {
@@ -217,15 +98,15 @@ namespace AZ
         AZ_Assert((alignment & (alignment - 1)) == 0, "Alignment must be power of 2!");
 
         byteSize = MemorySizeAdjustedUp(byteSize);
-        SystemAllocator::pointer_type address =
-            m_schema->Allocate(byteSize, alignment, flags, name, fileName, lineNum, suppressStackRecord + 1);
+        SystemAllocator::pointer address =
+            m_subAllocator->allocate(byteSize, alignment);
 
         if (address == nullptr)
         {
             // Free all memory we can and try again!
             AllocatorManager::Instance().GarbageCollect();
 
-            address = m_schema->Allocate(byteSize, alignment, flags, name, fileName, lineNum, suppressStackRecord + 1);
+            address = m_subAllocator->allocate(byteSize, alignment);
         }
 
         if (address == nullptr)
@@ -234,11 +115,11 @@ namespace AZ
         }
 
         AZ_Assert(
-            address != nullptr, "SystemAllocator: Failed to allocate %d bytes aligned on %d (flags: 0x%08x) %s : %s (%d)!", byteSize,
-            alignment, flags, name ? name : "(no name)", fileName ? fileName : "(no file name)", lineNum);
+            address != nullptr, "SystemAllocator: Failed to allocate %d bytes aligned on %d!", byteSize,
+            alignment);
 
         AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, address, byteSize, name);
-        AZ_MEMORY_PROFILE(ProfileAllocation(address, byteSize, alignment, name, fileName, lineNum, suppressStackRecord + 1));
+        AZ_MEMORY_PROFILE(ProfileAllocation(address, byteSize, alignment, 1));
 
         return address;
     }
@@ -247,52 +128,42 @@ namespace AZ
     // DeAllocate
     // [9/2/2009]
     //=========================================================================
-    void SystemAllocator::DeAllocate(pointer_type ptr, size_type byteSize, size_type alignment)
+    void SystemAllocator::deallocate(pointer ptr, size_type byteSize, size_type alignment)
     {
         byteSize = MemorySizeAdjustedUp(byteSize);
         AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
         AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, byteSize, alignment, nullptr));
-        m_schema->DeAllocate(ptr, byteSize, alignment);
+        m_subAllocator->deallocate(ptr, byteSize, alignment);
     }
 
     //=========================================================================
     // ReAllocate
     // [9/13/2011]
     //=========================================================================
-    SystemAllocator::pointer_type SystemAllocator::ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment)
+    SystemAllocator::pointer SystemAllocator::reallocate(pointer ptr, size_type newSize, size_type newAlignment)
     {
         newSize = MemorySizeAdjustedUp(newSize);
 
-        AZ_MEMORY_PROFILE(ProfileReallocationBegin(ptr, newSize));
         AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
-        pointer_type newAddress = m_schema->ReAllocate(ptr, newSize, newAlignment);
+
+        pointer newAddress = m_subAllocator->reallocate(ptr, newSize, newAlignment);
+
+#if defined(AZ_ENABLE_TRACING)
+        const size_type allocatedSize = get_allocated_size(newAddress, 1);
         AZ_PROFILE_MEMORY_ALLOC(MemoryReserved, newAddress, newSize, "SystemAllocator realloc");
-        AZ_MEMORY_PROFILE(ProfileReallocationEnd(ptr, newAddress, newSize, newAlignment));
+        AZ_MEMORY_PROFILE(ProfileReallocation(ptr, newAddress, allocatedSize, newAlignment));
+#endif
 
         return newAddress;
-    }
-
-    //=========================================================================
-    // Resize
-    // [8/12/2011]
-    //=========================================================================
-    SystemAllocator::size_type SystemAllocator::Resize(pointer_type ptr, size_type newSize)
-    {
-        newSize = MemorySizeAdjustedUp(newSize);
-        size_type resizedSize = m_schema->Resize(ptr, newSize);
-
-        AZ_MEMORY_PROFILE(ProfileResize(ptr, resizedSize));
-
-        return MemorySizeAdjustedDown(resizedSize);
     }
 
     //=========================================================================
     //
     // [8/12/2011]
     //=========================================================================
-    SystemAllocator::size_type SystemAllocator::AllocationSize(pointer_type ptr)
+    SystemAllocator::size_type SystemAllocator::get_allocated_size(pointer ptr, align_type alignment) const
     {
-        size_type allocSize = MemorySizeAdjustedDown(m_schema->AllocationSize(ptr));
+        size_type allocSize = MemorySizeAdjustedDown(m_subAllocator->get_allocated_size(ptr, alignment));
 
         return allocSize;
     }

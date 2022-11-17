@@ -19,7 +19,5 @@ namespace MCore
         friend class AZ::AllocatorInstance<AZ::PoolAllocator>;
     public:
         AZ_TYPE_INFO(AttributeAllocator, "{005003CF-87D1-4DAD-A159-59217F67886B}");
-        const char* GetName() const override { return TYPEINFO_Name(); }
-        const char* GetDescription() const override;
     };
 }

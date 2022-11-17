@@ -55,6 +55,10 @@ function Process(context)
     -- Use TryGetShaderByTag because these shaders only exist in StandardPBR but this script is also used for EnhancedPBR
     local lowEndForwardEDS = TryGetShaderByTag(context, "LowEndForward_EDS")
     local lowEndForward = TryGetShaderByTag(context, "LowEndForward")
+
+    local multiViewForward = TryGetShaderByTag(context, "MultiViewForward")
+    local multiViewForwardEDS = TryGetShaderByTag(context, "MultiViewForward_EDS")
+    local multiViewTransparentForward = TryGetShaderByTag(context, "MultiViewTransparentForward")
     
     if parallaxEnabled and parallaxPdoEnabled then
         depthPass:SetEnabled(false)
@@ -67,6 +71,8 @@ function Process(context)
 
         TrySetShaderEnabled(lowEndForwardEDS, false)
         TrySetShaderEnabled(lowEndForward, true)
+        TrySetShaderEnabled(multiViewForwardEDS, false)
+        TrySetShaderEnabled(multiViewForward, true)
     else
         depthPass:SetEnabled(opacityMode == OpacityMode_Opaque)
         shadowMap:SetEnabled(opacityMode == OpacityMode_Opaque)
@@ -75,6 +81,10 @@ function Process(context)
         depthPassWithPS:SetEnabled(opacityMode == OpacityMode_Cutout)
         shadowMapWithPS:SetEnabled(opacityMode == OpacityMode_Cutout)
         forwardPass:SetEnabled(opacityMode == OpacityMode_Cutout)
+
+        TrySetShaderEnabled(multiViewForward, opacityMode == OpacityMode_Cutout)
+        TrySetShaderEnabled(multiViewForwardEDS, opacityMode == OpacityMode_Opaque)
+        TrySetShaderEnabled(multiViewTransparentForward, (opacityMode == OpacityMode_Blended) or (opacityMode == OpacityMode_TintedTransparent))
 
         -- Only enable lowEndForwardEDS in Opaque mode, Transparent mode will be handled by forwardPassEDS. The transparent pass uses the "transparent" draw tag
         -- for both standard and low end pipelines, so this keeps both shaders from rendering to the transparent draw list.

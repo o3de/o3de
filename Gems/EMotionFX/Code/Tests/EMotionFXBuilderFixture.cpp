@@ -29,8 +29,7 @@ namespace EMotionFX
 {
     void BuilderMockComponent::Activate()
     {
-        EMotionFX::Integration::EMotionFXAllocator::Descriptor allocatorDescriptor;
-        AZ::AllocatorInstance<EMotionFX::Integration::EMotionFXAllocator>::Create(allocatorDescriptor);
+        AZ::AllocatorInstance<EMotionFX::Integration::EMotionFXAllocator>::Create();
 
         ASSERT_TRUE(MCore::Initializer::Init());
         ASSERT_TRUE(EMotionFX::Initializer::Init());

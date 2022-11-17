@@ -7,7 +7,9 @@
  */
 #include <AzCore/base.h>
 #include <AzCore/Component/ComponentApplication.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 
