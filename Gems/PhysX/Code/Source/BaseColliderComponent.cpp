@@ -268,7 +268,7 @@ namespace PhysX
         }
         else
         {
-            const AZ::Vector3 nonUniformScale = Utils::GetTransformScale(GetEntityId());
+            const float transformScale = Utils::GetTransformScale(GetEntityId());
 
             m_shapes.reserve(m_shapeConfigList.size());
 
@@ -283,7 +283,7 @@ namespace PhysX
                 }
 
                 Physics::ColliderConfiguration colliderConfiguration = *shapeConfigPair.first;
-                colliderConfiguration.m_position *= nonUniformScale;
+                colliderConfiguration.m_position *= transformScale;
 
                 AZStd::shared_ptr<Physics::Shape> shape;
                 Physics::SystemRequestBus::BroadcastResult(shape, &Physics::SystemRequests::CreateShape, colliderConfiguration, *shapeConfiguration);

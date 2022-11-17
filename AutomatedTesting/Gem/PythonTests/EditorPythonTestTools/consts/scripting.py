@@ -44,10 +44,13 @@ Different from window/tab names because they do not have spaces
 """
 NODE_PALETTE_QT = "NodePalette"
 NODE_INSPECTOR_QT = "NodeInspector"
+PROPERTY_EDITOR_QT = "PropertyEditor"
+INITIAL_VALUE_SOURCE_QT = "Initial Value Source"
 TREE_VIEW_QT = "treeView"
 VARIABLE_PALETTE_QT = "variablePalette"
 VARIABLE_MANAGER_QT = "VariableManager"
 GRAPH_VARIABLES_QT = "graphVariables"
+GRAPH_VARIABLES_PAGE_QT = "graphVariablesPage"
 ADD_BUTTON_QT = "addButton"
 SEARCH_FRAME_QT ="searchFrame"
 SEARCH_FILTER_QT = "searchFilter"
@@ -58,4 +61,5 @@ NODE_PALETTE_CLEAR_BUTTON_QT = "ClearToolButton"
 File Paths
 """
 SCRIPT_EVENT_FILE_PATH = os.path.join(paths.projectroot, "ScriptCanvas", "test_file.scriptevent")
+SCRIPT_CANVAS_TEST_FILE_PATH = os.path.join(paths.projectroot, "ScriptCanvas", "test_file.scriptcanvas")
 SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH = "Configuration|Source"

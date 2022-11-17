@@ -268,6 +268,15 @@ namespace AtomToolsFramework
     //! Collect a set of file paths contained within asset browser entry or URL mime data
     AZStd::set<AZStd::string> GetPathsFromMimeData(const QMimeData* mimeData);
 
+    //! Invokes a visitor function on every file contained in the initial folder, optionally recursing through subfolders and visiting those files as well.
+    void VisitFilesInFolder(const AZStd::string& folder, const AZStd::function<bool(const AZStd::string&)> visitorFn, bool recurse);
+
+    //! Invokes a visitor function on all files contained in asset scan folders.
+    void VisitFilesInScanFolders(const AZStd::function<bool(const AZStd::string&)> visitorFn);
+
+    // Visits all scan folders asynchronously, gathering all of the paths matching the filter. 
+    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingFilter(const AZStd::function<bool(const AZStd::string&)> filterFn);
+
     //! Collect a set of file paths from all project safe folders matching a wild card
     AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard);
 
@@ -281,3 +290,4 @@ namespace AtomToolsFramework
     void ReflectUtilFunctions(AZ::ReflectContext* context);
 
 } // namespace AtomToolsFramework
+

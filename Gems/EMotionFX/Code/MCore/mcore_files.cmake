@@ -15,7 +15,6 @@ set(FILES
     Source/Array2D.inl
     Source/Attribute.cpp
     Source/Attribute.h
-    Source/AttributeAllocator.cpp
     Source/AttributeAllocator.h
     Source/AttributeBool.cpp
     Source/AttributeBool.h

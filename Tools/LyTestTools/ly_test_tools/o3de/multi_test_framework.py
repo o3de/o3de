@@ -686,6 +686,77 @@ class MultiTestSuite(object):
                 and
                 getattr(test, "is_parallelizable", None) is is_parallelizable)]
 
+    def _setup_test(self, workspace, collected_test_data):
+        """
+        Sets up for a multi test run. This is responsible for finding executables and
+        handles asset processor.
+        :param workspace: The LyTestTools Workspace object
+        :param collected_test_data: The TestData from calling collected_test_data()
+        :return: None
+        """
+        # Set the self.executable program for Launcher and re-bind our param workspace to it.
+        if self.atom_tools_executable_name:  # Atom Tools test.
+            self.executable = launcher_helper.create_atom_tools_launcher(workspace, self.atom_tools_executable_name)
+        else:  # Editor test.
+            self.executable = launcher_helper.create_editor(workspace)
+        self.executable.workspace = workspace
+
+        # Setup AP, kill processes, and configure the executable.
+        editor_utils.prepare_asset_processor(workspace, collected_test_data)
+        editor_utils.kill_all_ly_processes(include_asset_processor=False)
+        self.executable.configure_settings()
+
+    def _test_reporting(self, collected_test_data, results, workspace, test_spec):
+        """
+        Handles reportings and unknown test results after test runs.
+        :param collected_test_data: The TestData from calling collected_test_data()
+        :param results: A list of dicts of Result objects
+        :param workspace: The LyTestTools Workspace object
+        :param test_spec: The test class that should be a subclass of SingleTest
+        """
+        save_asset_logs = False
+
+        for result in results:
+            if result is None:
+                logger.error("Unexpectedly found no test run in the executable log")
+                logger.debug(f"Debug Results:\n{results}")
+                result = {"Unknown":
+                            Result.Unknown(
+                                test_spec=test_spec,
+                                extra_info="Unexpectedly found no test run information on stdout in the executable log")}
+            collected_test_data.results.update(result)
+            if not isinstance(result, Result.Pass):
+                if isinstance(test_spec, BatchedTest):
+                    editor_utils.save_failed_asset_joblogs(workspace)
+                    return  # exit early on first batch failure
+                save_asset_logs = True
+        # If at least one test did not pass, save assets with errors and warnings
+        if save_asset_logs:
+            editor_utils.save_failed_asset_joblogs(workspace)
+
+    def _setup_cmdline_args(self, cmdline_args, executable, test_spec_list, workspace):
+        """
+        Prepares a list of command line arguments to pass when calling the executable during a test.
+        :param cmdline_args: Any additional command line args
+        :param executable: The program executable under test
+        :param test_spec_list: A list of test classes to run in the same executable
+        :return: A list of additional command line arguments
+        """
+        if cmdline_args is None:
+            cmdline_args = []
+        test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
+        if type(executable) in [WinEditor, LinuxEditor]:  # Handle Editor CLI args since we need workspace context to populate them.
+            test_cmdline_args += [
+                "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
+                f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
+        if self.use_null_renderer:
+            test_cmdline_args += ["-rhi=null"]
+        if any([t.attach_debugger for t in test_spec_list]):
+            test_cmdline_args += ["--attach-debugger"]
+        if any([t.wait_for_debugger for t in test_spec_list]):
+            test_cmdline_args += ["--wait-for-debugger"]
+        return test_cmdline_args
+
     ###################
     # SingleTest Code #
     ###################
@@ -704,18 +775,8 @@ class MultiTestSuite(object):
         :param test_spec: The test class that should be a subclass of SingleTest
         :return: None
         """
-        # Set the self.executable program for Launcher and re-bind our param workspace to it.
-        if self.atom_tools_executable_name:  # Atom Tools test.
-            self.executable = launcher_helper.create_atom_tools_launcher(workspace, self.atom_tools_executable_name)
-        else:  # Editor test.
-            self.executable = launcher_helper.create_editor(workspace)
-        self.executable.workspace = workspace
-
-        # Setup AP, kill processes, and configure the executable.
-        editor_utils.prepare_asset_processor(workspace, collected_test_data)
-        editor_utils.kill_all_ly_processes(include_asset_processor=False)
-        self.executable.configure_settings()
-
+        self._setup_test(workspace, collected_test_data)
+        
         # Handle command line args and launch test.
         extra_cmdline_args = []
         if hasattr(test_spec, "extra_cmdline_args"):
@@ -755,21 +816,7 @@ class MultiTestSuite(object):
         :param cmdline_args: Any additional command line args
         :return: a dictionary of Result objects (should be only one) with a given Result.ResultType (i.e. Result.Pass).
         """
-        if cmdline_args is None:
-            cmdline_args = []
-        test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
-        if type(executable) in [WinEditor, LinuxEditor]:  # Handle Editor CLI args since we need workspace context to populate them.
-            test_cmdline_args += [
-                "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
-                f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
-
-        test_spec_uses_null_renderer = getattr(test_spec, "use_null_renderer", None)
-        if test_spec_uses_null_renderer or (test_spec_uses_null_renderer is None and self.use_null_renderer):
-            test_cmdline_args += ["-rhi=null"]
-        if test_spec.attach_debugger:
-            test_cmdline_args += ["--attach-debugger"]
-        if test_spec.wait_for_debugger:
-            test_cmdline_args += ["--wait-for-debugger"]
+        test_cmdline_args = self._setup_cmdline_args(cmdline_args, executable, [test_spec], workspace)
 
         # Cycle any old crash report in case it wasn't cycled properly.
         editor_utils.cycle_crash_report(run_id, workspace)
@@ -858,35 +905,16 @@ class MultiTestSuite(object):
         :param extra_cmdline_args: Any extra command line args in a list
         :return: None
         """
-        # Set the self.executable program for Launcher and re-bind our param workspace to it.
-        if self.atom_tools_executable_name:  # Atom Tools test.
-            self.executable = launcher_helper.create_atom_tools_launcher(workspace, self.atom_tools_executable_name)
-        else:  # Editor test.
-            self.executable = launcher_helper.create_editor(workspace)
-        self.executable.workspace = workspace
-
-        # Setup AP, kill processes, and configure the executable.
-        editor_utils.prepare_asset_processor(workspace, collected_test_data)
-        editor_utils.kill_all_ly_processes(include_asset_processor=False)
-        self.executable.configure_settings()
+        if not test_spec_list:
+            return        
+        self._setup_test(workspace, collected_test_data)
 
         if extra_cmdline_args is None:
             extra_cmdline_args = []
 
-        if not test_spec_list:
-            return
-
         results = self._exec_multitest(
             request, workspace, self.executable, 1, self.log_name, test_spec_list, extra_cmdline_args)
-        collected_test_data.results.update(results)
-        # If at least one test did not pass, save assets with errors and warnings
-        for result in results:
-            if result is None:
-                logger.error("Unexpectedly found no test run in the executable log during BatchedTest")
-                logger.debug(f"Results from BatchedTest:\n{results}")
-            if not isinstance(result, Result.Pass):
-                editor_utils.save_failed_asset_joblogs(workspace)
-                return  # exit early on first batch failure
+        self._test_reporting(collected_test_data, [results], workspace, BatchedTest)
 
     #####################
     # ParallelTest Code #
@@ -908,23 +936,12 @@ class MultiTestSuite(object):
         :param extra_cmdline_args: Any extra command line args in a list
         :return: None
         """
-        # Set the self.executable program for Launcher and re-bind our param workspace to it.
-        if self.atom_tools_executable_name:  # Atom Tools test.
-            self.executable = launcher_helper.create_atom_tools_launcher(workspace, self.atom_tools_executable_name)
-        else:  # Editor test.
-            self.executable = launcher_helper.create_editor(workspace)
-        self.executable.workspace = workspace
-
-        # Setup AP, kill processes, and configure the executable.
-        editor_utils.prepare_asset_processor(workspace, collected_test_data)
-        editor_utils.kill_all_ly_processes(include_asset_processor=False)
-        self.executable.configure_settings()
+        if not test_spec_list:
+            return   
+        self._setup_test(workspace, collected_test_data)
 
         if extra_cmdline_args is None:
             extra_cmdline_args = []
-
-        if not test_spec_list:
-            return
 
         parallel_executables = self._get_number_parallel_executables(request)
         if not parallel_executables > 0:
@@ -960,22 +977,7 @@ class MultiTestSuite(object):
             for parallel_test_thread in threads:
                 parallel_test_thread.join()
 
-            save_asset_logs = False
-
-            for result in results_per_thread:
-                if result is None:
-                    logger.error("Unexpectedly found no test run in the executable log during ParallelTest")
-                    logger.debug(f"Results from ParallelTest thread:\n{results_per_thread}")
-                    result = {"Unknown":
-                              Result.Unknown(
-                                  test_spec=ParallelTest,
-                                  extra_info="Unexpectedly found no test run information on stdout in the executable log")}
-                collected_test_data.results.update(result)
-                if not isinstance(result, Result.Pass):
-                    save_asset_logs = True
-            # If at least one test did not pass, save assets with errors and warnings
-            if save_asset_logs:
-                editor_utils.save_failed_asset_joblogs(workspace)
+            self._test_reporting(collected_test_data, results_per_thread, workspace, ParallelTest)
 
     ###################
     # SharedTest Code #
@@ -997,23 +999,12 @@ class MultiTestSuite(object):
         :extra_cmdline_args: Any extra command line args in a list
         :return: None
         """
-        # Set the self.executable program for Launcher and re-bind our param workspace to it.
-        if self.atom_tools_executable_name:  # Atom Tools test.
-            self.executable = launcher_helper.create_atom_tools_launcher(workspace, self.atom_tools_executable_name)
-        else:  # Editor test.
-            self.executable = launcher_helper.create_editor(workspace)
-        self.executable.workspace = workspace
-
-        # Setup AP, kill processes, and configure the executable.
-        editor_utils.prepare_asset_processor(workspace, collected_test_data)
-        editor_utils.kill_all_ly_processes(include_asset_processor=False)
-        self.executable.configure_settings()
+        if not test_spec_list:
+            return        
+        self._setup_test(workspace, collected_test_data)
 
         if extra_cmdline_args is None:
             extra_cmdline_args = []
-
-        if not test_spec_list:
-            return
 
         total_threads = self._get_number_parallel_executables(request)
         if not total_threads > 0:
@@ -1053,21 +1044,7 @@ class MultiTestSuite(object):
         for shared_test_thread in threads:
             shared_test_thread.join()
 
-        save_asset_logs = False
-        for result in results_per_thread:
-            if result is None:
-                logger.error("Unexpectedly found no test run in the executable log during SharedTest")
-                logger.debug(f"Results from SharedTest thread:\n{results_per_thread}")
-                result = {"Unknown":
-                          Result.Unknown(
-                              test_spec=SharedTest,
-                              extra_info="Unexpectedly found no test run information on stdout in the executable log")}
-            collected_test_data.results.update(result)
-            if not isinstance(result, Result.Pass):
-                save_asset_logs = True
-        # If at least one test did not pass, save assets with errors and warnings
-        if save_asset_logs:
-            editor_utils.save_failed_asset_joblogs(workspace)
+        self._test_reporting(collected_test_data, results_per_thread, workspace, SharedTest)
 
     def _exec_multitest(self,
                         request: _pytest.fixtures.FixtureRequest,
@@ -1089,19 +1066,7 @@ class MultiTestSuite(object):
         :param cmdline_args: Any additional command line args
         :return: A dict of Result objects
         """
-        if cmdline_args is None:
-            cmdline_args = []
-        test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
-        test_cmdline_args += [
-            "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
-            f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
-
-        if self.use_null_renderer:
-            test_cmdline_args += ["-rhi=null"]
-        if any([t.attach_debugger for t in test_spec_list]):
-            test_cmdline_args += ["--attach-debugger"]
-        if any([t.wait_for_debugger for t in test_spec_list]):
-            test_cmdline_args += ["--wait-for-debugger"]
+        test_cmdline_args = self._setup_cmdline_args(cmdline_args, executable, test_spec_list, workspace)
 
         # Cycle any old crash report in case it wasn't cycled properly
         editor_utils.cycle_crash_report(run_id, workspace)

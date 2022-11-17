@@ -1,11 +1,4 @@
-----
-
-Copyright (c) Contributors to the Open 3D Engine Project.  For complete copyright and license terms please see the LICENSE at the root of this distribution.
-SPDX-License-Identifier: Apache-2.0 OR MIT
-
-----
-
-# O3DE DCCsi and Wing Pro IDE
+# O3DE DCCsi, Wing Pro IDE
 
 ###### Status: Prototype
 
@@ -13,32 +6,44 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 ###### Support: <u>Wing Pro 8+</u>, currently Windows only (other not tested but may work)
 
-- Not yet tested in Installer builds (I am a developer building from source), more robust support for end users is being worked on for next release (2210)
+- Supports O3DE Python as Launch Configuration:
+  
+  - `${O3DE_DEV}` or `${DCCSI_PY_BASE}`
 
-- Supports O3DE Python as Launch Configuration
+- Supports Blender Python as a Launch Configuration:
+  
+  - `${DCCSI_PY_BLENDER}`
 
-- Supports Blender Python as a Launch Configuration
+- Supports MayaPy as a Launch Configuration:
+  
+  - `${DCCSI_PY_MAYA}`
 
-- Others (like Maya) WIP
+- Supports Substance3D Designer Python as a Launch Configuration:
+  
+  - `${DCCSI_PY_SUBSTANCE}`
+
+- The latest version of Wing Pro 8 (8.3.3.1) is recommended, as there was a bug in the initial release that prevented Launch Configurations bound to a ENVAR (like above) to function properly.  Wing Pro 9 likely works as well, you may just have to make slight adjustments to the configuration (covered in this document below)
+
+- Some additional testing and improvement have been mad in the current release (2210), including changes to better support Installer build folder patterns.  See the [readme.md at the root of the DCCsi ]([o3de/readme.md at development · o3de/o3de · GitHub](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md))for more information about advanced configuration.
 
 ## TL/DR
 
-To get started, you can launch Wing from a Win CMD prompt, first make sure you are
+To get started, you can launch Wing from a Win CMD prompt, first make sure your engine is initialized (if you are using an installer build, it already should be.)  If you are building from source, make sure Python is initialized before using Wing.
 
 ```shell
 # First, ensure that your engine build has O3DE Python setup!
 > cd C:\path\to\o3de\
-> get_python.bat
+> .\get_python.bat
 
 # change to the dccsi root
 cd C:\path\to\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
 # python.cmd in this folder, wraps o3de python
-> python.cmd Tools\IDE\Wing\start,py
+> .\python.cmd Tools\IDE\Wing\start,py
 ```
 
-### Coming Soon
+### Latest Features
 
-- Start from O3DE Editor menu
+- The DccScriptingInterface Gem (DCCsi) can be added to your Game Project.  See[Registering Gems to a Project - Open 3D Engine](https://www.o3de.org/docs/user-guide/project-config/register-gems/)), and  [adding and removing gems]([Adding and Removing Gems in a Project - Open 3D Engine](https://www.o3de.org/docs/user-guide/project-config/add-remove-gems/)) which you can do through the Project Manager  (o3de.exe)  With the DCCsi enabled, you can launch Wing Pro 8 via menus in the main Editor.
 
 ## Overview
 
@@ -54,7 +59,7 @@ The DCCsi helps with aspects such as, configuration and settings, launching DCC 
 
 # Getting Started
 
-Each IDE is different.  Some TAs (like me) like Wing IDE because it's relatively easy to set up and works great with DCC apps like Maya.  It's also pretty powerful and you can do a lot of data-driven configuration with it (which we will be covering some of.)  We aren't picking an IDE for you, that's a personal choice, we are just showing you how one like Wing can be set up to provide a better out-of-box experience (so that you don't have to do the setup and configuration yourself.)  In fact, we intend to do the same for other IDS like PyCharm and VScode (maybe others in the future.)
+Each IDE is different.  Some TAs (like me) like Wing IDE because it's relatively easy to set up and works great with DCC apps like Maya with less configuration.  It's also pretty powerful and you can do a lot of data-driven configuration with it (which we will be covering some of.)  We aren't picking an IDE for you, that's a personal choice, we are just showing you how one like Wing can be set up to provide a better out-of-box experience (so that you don't have to do the setup and configuration yourself.)  In fact, we intend to do the same for other IDS like PyCharm and VScode (maybe others in the future.)
 
 To use Wing, there are a few things that you need to do locally to get set up (and we may automate some of these steps in the future.)  
 
@@ -130,7 +135,7 @@ There is also a windows .bat launcher for Wing in this location:
 
 This is an alternative to launching from the editor menu, or using the scripted approach of starting wing from the dccsi cmd:
 
-    `dccsi > python.cmd Tools\IDE\Wing\start.py`
+    `.\python.cmd Tools\IDE\Wing\start.py`
 
 Development is a catch-22, sometimes the script framework is buggy and broken (or simply a change is wip), and you need a reliable fallback for your dev environment.
 
@@ -152,25 +157,25 @@ Then you will want to copy it, and rename the copy:
 
     `DccScriptingInterface\Tools\IDE\WingIDE\Env_Dev.bat`
 
-What this file provides, is the ability and opportunity to make envar settings and overrides prior to starting WingIDE from the .bat file launcher.  If you have already found that the launcher didn't work for you, this is a section you will want to pay attention to.
+What this file provides, is the ability and opportunity to make ENVAR settings and overrides prior to starting WingIDE from the .bat file launcher.  If you have already found that the launcher didn't work for you, this is a section you will want to pay attention to.
 
-These  envars set/override  the default  located in the windows dev env:
+These  ENVARs set/override  the default  located in the windows dev env:
 
 `DccScriptingInterface\Tools\Dev\Windows\Env_IDE_Wing.bat`
 
 You may find the following ENVARs useful to set:
 
-The default supported version is Wing 8 Pro, if your ide  is installed in the default location  you should not have to  set anything.  But  if you need  to configure the version and location you can set/override these envars
+The default supported version is Wing 8 Pro, if your IDE is installed in the default location  you should not have to  set anything.  But  if you need  to configure the version and location you can set/override these ENVARs
 
 `set DCCSI_WING_VERSION_MAJOR=8`
 
 `set "WINGHOME=%PROGRAMFILES(X86)%\Wing Pro %DCCSI_WING_VERSION_MAJOR%"`
 
-and this envar will allow you to launch  with a different  wing  project file then the default
+and this ENVARwill allow you to launch  with a different  wing  project file then the default
 
 `set "WING_PROJ=%PATH_DCCSIG%\Tools\IDE\Wing\.solutions\DCCsi_%DCCSI_WING_VERSION_MAJOR%x.wpr"`
 
-If you are using a version of Wing 7, these envars can be set
+If you are using a version of Wing 7, these ENVARscan be set
 
 `set DCCSI_WING_VERSION_MAJOR=7`
 `set DCCSI_WING_VERSION_MINOR=2`
@@ -185,15 +190,66 @@ The primary settings file, which is distributed.  This has default settings defi
 
     `DccScriptingInterface\Tools\IDE\Wing\settings.json`
 
-This is a secondary settings file that can be manually made, or generated, for developers.  This file allows a developer to make local overrides to envars and settings.  These overrides take precedence.
+This is a secondary settings file that can be manually made, or generated, for developers.  This file allows a developer to make local overrides to ENVARs and settings, overrides in this file will take precedence over the defaults.
 
    ` DccScriptingInterface\Tools\IDE\Wing\settings.local.json`
 
-to do: ... describe how to generate the settings.local.json
+### Config.py and settings.local.json
 
-to do: ... describe 
+If you are starting Wing (or other tools) from the Editor menu's, then you may not need to do much configuration.  Because the Editor has a python framework, we can access data via `azlmbr` , and retrieve data such as the engine location (see the [dccsi editor  bootstrap.py]([o3de/bootstrap.py at development · o3de/o3de · GitHub](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Editor/Scripts/bootstrap.py)) .)  You'll see paths and associated ENVARs are set such as:
 
-to do: ... use the start.py script to launch Wing
+```python
+# base paths
+O3DE_DEV = Path(azlmbr.paths.engroot).resolve()
+PATH_O3DE_BIN = Path(azlmbr.paths.executableFolder).resolve()
+PATH_O3DE_PROJECT = Path(azlmbr.paths.projectroot).resolve()
+```
+
+These are propagated (as ENVARs) into the `Wing\config.py `
+
+There is additional support to start via scripting. This is the same setup that the Editor uses to start the external IDE application. It makes use of a `settings.json` (default settings), and `settings.local.json` (user settings and overrides) within the o3de DCCsi folder for Wing IDE. These are utilized along with the addition of a `config.py` and `start.py` in the folder. This follows the patterns similar to how Blender, or Maya, can be launched from the O3DE menus, or in a scripted manner rather then legacy windows .bat files.
+
+Additionally, if you are developer you may want or need to alter the default configuration, for instance if you are downloading and building from source, then you may not have a standard install path, or you may have a custom cmake build path for binaries - and since the DCCsi, DCC apps, and IDEs such as Wing want to work with engine data, we may need to define where these things are.  You can use the Wing `config.py` to generate a `settings.local.json` file from CLI.
+
+To generate a `settings.local.json` (which you can then modify with overrides to paths and other settings)::
+
+    1. Open a Windows Command Prompt (CMD)
+
+    2. Change directory to:
+
+```batch
+cd C:\path\to\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
+```
+
+    3. Run the Wing `config.py` script:
+
+```batch
+.\python Tools\IDE\Wing\config.py
+```
+
+You can now open `settings.local.json` in a text editor and make modifications and resave before starting Maya.
+
+There two ways, a windows environment via .bat file, or a start.py script
+
+From .bat file, double-click the following file type to start Maya:`C:\path\to\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\IDE\Wing\win_launch_wingide.bat`
+
+To start from script:
+
+    1. Open a Windows Command Prompt (CMD)
+
+    2. Change directory to:
+
+```batch
+cd C:\path\to\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
+```
+
+    3. Run the Wing `start.py` script:
+
+```batch
+python Tools\IDE\Wing\start.py
+```
+
+The
 
 ### wingstub.py (for debugging)
 
@@ -203,21 +259,21 @@ This is necessary for attaching Wing as the debugger in scripts that are running
 
 2. Locate your Wing IDE install, the default location is somewhere like:
    
-   1. C:\Program Files (x86)\Wing Pro 8
+   1. `C:\Program Files (x86)\Wing Pro 8`
    
-   2. Locate: "C:\Program Files (x86)\Wing Pro 8\wingdbstub.py"
+   2. Locate: `C:\Program Files (x86)\Wing Pro 8\wingdbstub.py`
 
-3. Copy the file wingdbstub.py
+3. Copy the file `wingdbstub.py`
 
-4. It needs to be copied somewhere on the PYTHONPATH, for instance you could copy it here:  "DccScriptingInterface\Tools\IDE\WingIDE\wingdbstub.py"
+4. It needs to be copied somewhere on the `PYTHONPATH`, for instance you could copy it here:  `DccScriptingInterface\Tools\IDE\WingIDE\wingdbstub.py`
 
-5. Open the wingdbstub.py file and modify line 96 to
+5. Open the `wingdbstub.py` file and modify line 96 to
    
    1. **kEmbedded = 1**
 
 Notes: 
 
-- If you install a new version of Wing, you should check the new version to see if the wingdbstub.py file has changed (use a diff tool?); if it has do the steps above again.
+- If you install a new version of Wing, you should check the new version to see if the `wingdbstub.py` file has changed (use a diff tool?); if it has do the steps above again.
 
 - For debugging to work, on windows you likely will need to add the wing executable to **Windows Defender Firewall**. When you start wing for the first time it may prompt you to do this, otherwise may need to do it manually (see **HELP** below)
 
@@ -234,7 +290,7 @@ Trouble attaching debugger?  Open your firewall and add an exception for wing.
   - Then click on **Allow another app...**
 - In the Add an app window:
   - click on **Browse...** and point it to your wing executable
-    - C:\Program Files (x86)\Wing Pro 8\bin\wing.exe
+    - `C:\Program Files (x86)\Wing Pro 8\bin\wing.exe`
   - click on **Add**
 
 # Revision Info:
@@ -245,8 +301,18 @@ Trouble attaching debugger?  Open your firewall and add an exception for wing.
 
 - This version is only the integration patterns for configuration, settings, launch and bootstrapping. No additional tooling within Wing IDE is implemented yet, however Wing has it's own API and extensibility, so this could be an area for future work.
 
-- Currently only the latest version of Wing Pro 8 has been tested: 8.3.2.0 (rev 9d633cb1c4a7), Release (June 17, 2022).  We expect any version of Wing Pro8 to work fine, inform us and help get it fixed if it doesn't.
+- Currently only the latest version of Wing Pro 8 has been tested: 8.3.2.0 (rev 9d633cb1c4a7), Release (June 17, 2022).  We expect this and later versions of Wing Pro8 to work fine, inform us and help get it fixed if it doesn't.
 
 - Wing 7.x was previously supported, but it was python2.7 based and we are deprecating support for py2.7, and this includes deprecation of support for apps that are pre-py3 bound.
 
 - Previous versions of Wing may still work, however you will need to configure and/or modify the env yourself. This would also include version such as Wing Community Edition.
+
+- This readme.md is continually updated as changes are made.  Remember, this is experimental and still early, and refactoring to improve the core framework and scaffolding patterns undergo frequent revisions (but will be locked down over time.)
+
+---
+
+###### LICENSE INFO
+
+Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+
+SPDX-License-Identifier: Apache-2.0 OR MIT

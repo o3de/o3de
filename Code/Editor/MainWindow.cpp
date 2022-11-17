@@ -2021,9 +2021,14 @@ void MainWindow::ShowCustomizeToolbarDialog()
 QMenu* MainWindow::createPopupMenu()
 {
     QMenu* menu = QMainWindow::createPopupMenu();
-    menu->addSeparator();
-    QAction* action = menu->addAction(QStringLiteral("Customize..."));
-    connect(action, &QAction::triggered, this, &MainWindow::ShowCustomizeToolbarDialog);
+
+    if (!IsNewActionManagerEnabled())
+    {
+        menu->addSeparator();
+        QAction* action = menu->addAction(QStringLiteral("Customize..."));
+        connect(action, &QAction::triggered, this, &MainWindow::ShowCustomizeToolbarDialog);
+    }
+
     return menu;
 }
 

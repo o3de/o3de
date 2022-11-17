@@ -20,7 +20,10 @@
 #include <Source/AutoGen/AutoComponentTypes.h>
 #include <Multiplayer/Session/ISessionRequests.h>
 #include <Multiplayer/Session/SessionConfig.h>
+#include <Multiplayer/MultiplayerPerformanceStats.h>
+#include <Multiplayer/MultiplayerMetrics.h>
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Interface/Interface.h>
@@ -38,8 +41,6 @@
 #include <AzFramework/Process/ProcessWatcher.h>
 
 #include <cmath>
-#include <AzCore/Debug/Profiler.h>
-#include <Multiplayer/MultiplayerPerformanceStats.h>
 
 AZ_DEFINE_BUDGET(MULTIPLAYER);
 
@@ -190,7 +191,16 @@ namespace Multiplayer
                 })
                 ->Attribute(
                     AZ::Script::Attributes::AzEventDescription,
-                    AZ::BehaviorAzEventDescription{"On Client Disconnected Event"});
+                    AZ::BehaviorAzEventDescription{"On Client Disconnected Event"})
+                ->Method("GetCurrentBlendFactor", []()
+                    {
+                        if (GetMultiplayer())
+                        {
+                            return GetMultiplayer()->GetCurrentBlendFactor();
+                        }
+                        return 0.f;
+                    })
+            ;
         }
 
         MultiplayerComponent::Reflect(context);
@@ -234,7 +244,9 @@ namespace Multiplayer
     {
         DECLARE_PERFORMANCE_STAT_GROUP(MultiplayerGroup_Networking, "Networking");
         DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_EntityCount, "NumEntities");
-        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_FrameTime, "FrameTimeUs");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_FrameTimeUs, "FrameTimeUs");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_ClientConnectionCount, "ClientConnections");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_ApplicationFrameTimeUs, "Application FrameTimeUs");
 
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
@@ -429,6 +441,7 @@ namespace Multiplayer
     void MultiplayerSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: OnTick");
+        SET_PERFORMANCE_STAT(MultiplayerStat_ApplicationFrameTimeUs, AZ::SecondsToTimeUs(deltaTime));
 
         const AZStd::chrono::steady_clock::time_point startMultiplayerTickTime = AZStd::chrono::steady_clock::now();
 

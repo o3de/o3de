@@ -1,0 +1,13 @@
+{
+    "shaderTemplates": [
+        {
+            "shader": "./ForwardPass_BaseLighting.shader.template",
+            "azsli": "./ForwardPass_BaseLighting.azsli"
+        },
+        {
+            "shader": "./ForwardPass_StandardLighting.shader.template",
+            "azsli": "./ForwardPass_StandardLighting.azsli"
+        }
+    ],
+    "pipelineScript": "./MultiViewPipelineScript.lua"
+}
