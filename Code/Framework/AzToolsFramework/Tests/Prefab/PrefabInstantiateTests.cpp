@@ -22,7 +22,7 @@ namespace UnitTest
     TEST_F(PrefabInstantiateTest, PrefabInstantiate_NoNestingTemplate_InstantiateSucceeds)
     {
         AZ::Entity* newEntity = CreateEntity("New Entity");
-        AddRequiredEditorComponents(newEntity);
+        AddRequiredEditorComponents({ newEntity->GetId() });
 
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> firstInstance = m_prefabSystemComponent->CreatePrefab({ newEntity }, {}, "test/path");
         ASSERT_TRUE(firstInstance);
@@ -37,7 +37,7 @@ namespace UnitTest
     TEST_F(PrefabInstantiateTest, DISABLED_PrefabInstantiate_TripleNestingTemplate_InstantiateSucceeds)
     {
         AZ::Entity* newEntity = CreateEntity("New Entity");
-        AddRequiredEditorComponents(newEntity);
+        AddRequiredEditorComponents({ newEntity->GetId() });
 
         // Build a 3 level deep nested Template
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> firstInstance = m_prefabSystemComponent->CreatePrefab({ newEntity }, {}, "test/path1");
@@ -63,7 +63,7 @@ namespace UnitTest
     TEST_F(PrefabInstantiateTest, PrefabInstantiate_Instantiate10Times_InstantiatesSucceed)
     {
         AZ::Entity* newEntity = CreateEntity("New Entity");
-        AddRequiredEditorComponents(newEntity);
+        AddRequiredEditorComponents({ newEntity->GetId() });
 
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> firstInstance = m_prefabSystemComponent->CreatePrefab({ newEntity }, {}, "test/path");
 

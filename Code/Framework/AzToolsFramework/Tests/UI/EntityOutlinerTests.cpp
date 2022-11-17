@@ -66,8 +66,7 @@ namespace UnitTest
 
             AZ::Entity* entity = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
-
-            AddRequiredEditorComponents(entity);
+            
             entity->SetName(name);
 
             // Update our undo cache entry to include the rename / reparent as one atomic operation.

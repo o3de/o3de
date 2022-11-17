@@ -282,13 +282,19 @@ namespace UnitTest
         ProcessDeferredUpdates();
     }
 
-    void PrefabTestFixture::AddRequiredEditorComponents(AZ::Entity* entity)
+    void PrefabTestFixture::AddRequiredEditorComponents(const AzToolsFramework::EntityIdList& entityIds)
     {
-        ASSERT_TRUE(entity != nullptr);
-        entity->Deactivate();
-        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-            &AzToolsFramework::EditorEntityContextRequests::AddRequiredComponents, *entity);
-        entity->Activate();
+        for (AZ::EntityId entityId : entityIds)
+        {
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
+            EXPECT_TRUE(entity != nullptr) << "The entity to be added required editor components is nullptr.";
+
+            entity->Deactivate();
+            AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                &AzToolsFramework::EditorEntityContextRequests::AddRequiredComponents, *entity);
+            entity->Activate();
+        }
     }
 
     // EditorRequestBus
@@ -296,7 +302,7 @@ namespace UnitTest
     {
         if (!entity)
         {
-            EXPECT_TRUE(entity);
+            EXPECT_TRUE(false) << "Cannot call CreateEditorRepresentation for a null entity.";
             return;
         }
 

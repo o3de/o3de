@@ -108,7 +108,7 @@ namespace UnitTest
         //! Note: This will add a transform component, so you should not add the transform by yourself before
         //! and after calling this for the same entity.
         //! @param entity The entity that components will be added to.
-        void AddRequiredEditorComponents(AZ::Entity* entity);
+        void AddRequiredEditorComponents(const AzToolsFramework::EntityIdList& entityIds);
 
         //! EditorRequestBus.
         //! CreateEditorRepresentation is implemented in this test fixture. Then the required editor components

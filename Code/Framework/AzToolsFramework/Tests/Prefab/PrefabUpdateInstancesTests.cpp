@@ -21,7 +21,7 @@ namespace UnitTest
         // Create a Template from an Instance owning a single entity.
         const char* newEntityName = "New Entity";
         AZ::Entity* newEntity = CreateEntity(newEntityName);
-        AddRequiredEditorComponents(newEntity);
+        AddRequiredEditorComponents({ newEntity->GetId() });
         AZStd::unique_ptr<Instance> firstInstance = m_prefabSystemComponent->CreatePrefab({ newEntity }, {}, PrefabMockFilePath);
         ASSERT_TRUE(firstInstance);
         TemplateId newTemplateId = firstInstance->GetTemplateId();
@@ -62,7 +62,7 @@ namespace UnitTest
     {
         // Create a Template from an Instance owning a single entity.
         AZ::Entity* entity1 = CreateEntity("Entity 1");
-        AddRequiredEditorComponents(entity1);
+        AddRequiredEditorComponents({ entity1->GetId() });
         AZStd::unique_ptr<Instance> newInstance = m_prefabSystemComponent->CreatePrefab({ entity1 }, {}, PrefabMockFilePath);
         TemplateId newTemplateId = newInstance->GetTemplateId();
         EXPECT_TRUE(newTemplateId != InvalidTemplateId);
@@ -85,7 +85,7 @@ namespace UnitTest
         // Add another entity to the Instance and use it to update the PrefabDom of Template.
         AZ::Entity* entity2 = CreateEntity("Entity 2");
         newInstance->AddEntity(*entity2);
-        AddRequiredEditorComponents(entity2);
+        AddRequiredEditorComponents({ entity2->GetId() });
         newTemplateEntityAliases = newInstance->GetEntityAliases();
         EXPECT_EQ(newTemplateEntityAliases.size(), 2);
 
@@ -105,7 +105,7 @@ namespace UnitTest
     {
         // Create a Template with single entity.
         AZ::Entity* entity = CreateEntity("Entity");
-        AddRequiredEditorComponents(entity);
+        AddRequiredEditorComponents({ entity->GetId() });
         AZStd::unique_ptr<Instance> newNestedInstance = m_prefabSystemComponent->CreatePrefab({ entity }, {}, NestedPrefabMockFilePath);
         TemplateId newNestedTemplateId = newNestedInstance->GetTemplateId();
         EXPECT_TRUE(newNestedTemplateId != InvalidTemplateId);
@@ -158,7 +158,7 @@ namespace UnitTest
     {
         // Create a Template from an Instance owning a single entity.
         AZ::Entity* entity = CreateEntity("Entity");
-        AddRequiredEditorComponents(entity);
+        AddRequiredEditorComponents({ entity->GetId() });
         const int expectedComponentCount = 9;
         AZStd::unique_ptr<Instance> newInstance = m_prefabSystemComponent->CreatePrefab({ entity }, {}, PrefabMockFilePath);
         TemplateId newTemplateId = newInstance->GetTemplateId();
@@ -215,8 +215,7 @@ namespace UnitTest
         using namespace AzToolsFramework::Prefab;
         AZ::Entity* entity1 = CreateEntity("Entity 1");
         AZ::Entity* entity2 = CreateEntity("Entity 2");
-        AddRequiredEditorComponents(entity1);
-        AddRequiredEditorComponents(entity2);
+        AddRequiredEditorComponents({ entity1->GetId(), entity2->GetId() });
         AZStd::unique_ptr<Instance> newInstance = m_prefabSystemComponent->CreatePrefab(
             { entity1, entity2 },
             {},
@@ -262,7 +261,7 @@ namespace UnitTest
     {
         // Create a Template with single entity.
         AZ::Entity* entity = CreateEntity("Entity");
-        AddRequiredEditorComponents(entity);
+        AddRequiredEditorComponents({ entity->GetId() });
         AZStd::unique_ptr<Instance> newNestedInstance = m_prefabSystemComponent->CreatePrefab({ entity }, {}, NestedPrefabMockFilePath);
         TemplateId newNestedTemplateId = newNestedInstance->GetTemplateId();
         EXPECT_TRUE(newNestedTemplateId != InvalidTemplateId);
@@ -321,7 +320,7 @@ namespace UnitTest
     {
         // Create a Template from an Instance owning a single entity with a prefabTestComponent.
         AZ::Entity* entity = CreateEntity("Entity");
-        AddRequiredEditorComponents(entity);
+        AddRequiredEditorComponents({ entity->GetId() });
         entity->Deactivate();
         PrefabTestComponent* prefabTestComponent = aznew PrefabTestComponent(true);
         entity->AddComponent(prefabTestComponent);
@@ -381,7 +380,7 @@ namespace UnitTest
     {
         // Create a Template from an Instance owning a single entity with a PrefabTestComponent.
         AZ::Entity* entity = CreateEntity("Entity");
-        AddRequiredEditorComponents(entity);
+        AddRequiredEditorComponents({ entity->GetId() });
         entity->Deactivate();
         PrefabTestComponent* prefabTestComponent = aznew PrefabTestComponent(true);
         entity->AddComponent(prefabTestComponent);

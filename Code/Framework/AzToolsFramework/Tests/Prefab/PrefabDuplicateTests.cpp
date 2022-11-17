@@ -24,7 +24,7 @@ namespace UnitTest
         entity1->CreateComponent<PrefabTestComponent>();
         entity1->Activate();
 
-        AddRequiredEditorComponents(entity1);
+        AddRequiredEditorComponents({ entity1->GetId() });
 
         AZStd::unique_ptr<Instance> newInstance = m_prefabSystemComponent->CreatePrefab(
             { entity1 },
@@ -67,8 +67,7 @@ namespace UnitTest
         // verify that arbitrary EntityId's are fixed up properly
         newComponent->m_entityIdProperty = parentEntity->GetId();
 
-        AddRequiredEditorComponents(parentEntity);
-        AddRequiredEditorComponents(childEntity);
+        AddRequiredEditorComponents({ parentEntity->GetId(), childEntity->GetId() });
 
         AZStd::unique_ptr<Instance> newInstance = m_prefabSystemComponent->CreatePrefab(
             { parentEntity, childEntity },

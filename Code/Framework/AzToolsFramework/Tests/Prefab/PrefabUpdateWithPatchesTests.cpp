@@ -29,7 +29,7 @@ namespace UnitTest
     {
         // Create a single entity wheel instance with a PrefabTestComponent and create a template out of it.
         AZ::Entity* wheelEntity = CreateEntity("WheelEntity1");
-        AddRequiredEditorComponents(wheelEntity);
+        AddRequiredEditorComponents({ wheelEntity->GetId() });
         wheelEntity->Deactivate();
         PrefabTestComponent* prefabTestComponent = aznew PrefabTestComponent(true);
         wheelEntity->AddComponent(prefabTestComponent);

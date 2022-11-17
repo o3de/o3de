@@ -58,7 +58,7 @@ namespace UnitTest
         AZ::Entity* newEntity = aznew AZ::Entity(newEntityId, entityName.c_str());
         newEntity->Init();
         newEntity->Activate();
-        AddRequiredEditorComponents(newEntity);
+        AddRequiredEditorComponents({ newEntity->GetId() });
 
         owningInstance.AddEntity(*newEntity, newEntityAlias);
 
