@@ -106,7 +106,7 @@ def DeletePrefab_UnderNestedInstance():
     prefab_test_utils.validate_children_count_for_editor_entity(FRONT_WHEEL_NAME, 0)
     prefab_test_utils.validate_children_count_for_editor_entity(BACK_WHEEL_NAME, 1)
 
-    # Validate undo on entity deletion.
+    # Validate undo on instance deletion.
     general.undo()
     PrefabWaiter.wait_for_propagation()
     
@@ -116,7 +116,7 @@ def DeletePrefab_UnderNestedInstance():
     prefab_test_utils.validate_children_count_for_editor_entity(FRONT_WHEEL_NAME, 1)
     prefab_test_utils.validate_children_count_for_editor_entity(BACK_WHEEL_NAME, 1)
 
-    # Validate redo on entity deletion.
+    # Validate redo on instance deletion.
     general.redo()
     PrefabWaiter.wait_for_propagation()
 
