@@ -27,11 +27,10 @@ namespace AzToolsFramework::Prefab
         void Undo() override;
         void Redo() override;
 
-        void Capture(
-            const AZ::Dom::Path& pathToSubTree, AZ::Dom::DomPrefixTree<Link::PrefabOverrideMetadata>&& m_overrideSubTree, LinkId linkId);
+        void Capture(const AZ::Dom::Path& pathToSubTree, PrefabOverridePrefixTree&& m_overrideSubTree, LinkId linkId);
 
     private:
-        AZ::Dom::DomPrefixTree<Link::PrefabOverrideMetadata> m_overrideSubTree;
+        PrefabOverridePrefixTree m_overrideSubTree;
         AZ::Dom::Path m_pathToSubTree;
         PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         LinkId m_linkId;

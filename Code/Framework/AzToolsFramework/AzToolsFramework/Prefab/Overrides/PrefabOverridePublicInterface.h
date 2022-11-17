@@ -26,7 +26,7 @@ namespace AzToolsFramework
             //! @return true if overrides are present on the given entity id.
             virtual bool AreOverridesPresent(AZ::EntityId entityId) = 0;
 
-            //! Revert overrides on a entity id. Returns false if no overrides are present on the entity.
+            //! Revert overrides on the entity matching the entity id. Returns false if no overrides are present on the entity.
             //! @param entityId The id of the entity on which overrides should be reverted.
             //! @return Whether overrides are successfully reverted on the entity.
             virtual bool RevertOverrides(AZ::EntityId entityId) = 0;

@@ -28,7 +28,7 @@ namespace AzToolsFramework
         }
 
         void PrefabUndoRevertOverrides::Capture(
-            const AZ::Dom::Path& pathToSubTree, AZ::Dom::DomPrefixTree<Link::PrefabOverrideMetadata>&& overrideSubTree, LinkId linkId)
+            const AZ::Dom::Path& pathToSubTree, PrefabOverridePrefixTree&& overrideSubTree, LinkId linkId)
         {
             m_pathToSubTree = pathToSubTree;
             m_overrideSubTree = AZStd::move(overrideSubTree);

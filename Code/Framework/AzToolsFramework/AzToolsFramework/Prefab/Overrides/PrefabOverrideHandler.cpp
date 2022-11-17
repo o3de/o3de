@@ -55,8 +55,6 @@
 
                 link->get().UpdateTarget();
                 m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId());
-                AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-                    &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
                 return true;
             }
             return false;

@@ -184,5 +184,7 @@ namespace AzToolsFramework
 
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         };
+
+        using PrefabOverridePrefixTree = AZ::Dom::DomPrefixTree<Link::PrefabOverrideMetadata>;
     } // namespace Prefab
 } // namespace AzToolsFramework
