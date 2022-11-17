@@ -160,9 +160,11 @@ namespace TestImpact
     {
         DeleteArtifactXmls();
 
-        return GenerateJobInfosAndRunTests(
+        const auto jobInfos = m_regularTestJobInfoGenerator->GenerateJobInfos(testTargets);
+
+        return RunTests(
             m_testRunner.get(),
-            m_regularTestJobInfoGenerator.get(),
+            jobInfos,
             testTargets,
             NativeRegularTestRunnerErrorCodeChecker,
             executionFailurePolicy,
@@ -187,10 +189,12 @@ namespace TestImpact
     {
         DeleteArtifactXmls();
 
+        const auto jobInfos = m_instrumentedTestJobInfoGenerator->GenerateJobInfos(testTargets);
+
         return GenerateInstrumentedRunResult(
-            GenerateJobInfosAndRunTests(
+            RunTests(
                 m_instrumentedTestRunner.get(),
-                m_instrumentedTestJobInfoGenerator.get(),
+                jobInfos,
                 testTargets,
                 NativeInstrumentedTestRunnerErrorCodeChecker,
                 executionFailurePolicy,

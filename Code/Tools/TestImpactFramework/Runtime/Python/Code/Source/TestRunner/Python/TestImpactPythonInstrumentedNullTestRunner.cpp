@@ -8,19 +8,19 @@
 
 #pragma once
 
-#include <TestRunner/Python/TestImpactPythonNullTestRunner.h>
+#include <TestRunner/Python/TestImpactPythonInstrumentedNullTestRunner.h>
 #include <TestRunner/Python/TestImpactPythonErrorCodeChecker.h>
 
 namespace TestImpact
 {
-    AZStd::pair<ProcessSchedulerResult, AZStd::vector<PythonNullTestRunner::TestJobRunner::Job>> PythonNullTestRunner::RunTests(
-        [[maybe_unused]] const AZStd::vector<TestJobRunner::JobInfo>& jobInfos,
+    AZStd::pair<ProcessSchedulerResult, AZStd::vector<PythonInstrumentedNullTestRunner::TestJobRunner::Job>> PythonInstrumentedNullTestRunner::RunTests(
+        const AZStd::vector<TestJobRunner::JobInfo>& jobInfos,
         [[maybe_unused]] StdOutputRouting stdOutRouting,
         [[maybe_unused]] StdErrorRouting stdErrRouting,
         [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
         [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
-        [[maybe_unused]] AZStd::optional<TestJobRunner::JobCallback> clientCallback,
-        [[maybe_unused]] AZStd::optional<TestJobRunner::StdContentCallback> stdContentCallback)
+        AZStd::optional<TestJobRunner::JobCallback> clientCallback,
+        AZStd::optional<TestJobRunner::StdContentCallback> stdContentCallback)
     {
         AZStd::vector<Job> jobs;
         jobs.reserve(jobInfos.size());

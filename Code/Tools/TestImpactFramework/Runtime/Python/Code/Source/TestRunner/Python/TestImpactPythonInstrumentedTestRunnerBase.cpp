@@ -10,19 +10,18 @@
 
 #include <TestImpactFramework/TestImpactUtils.h>
 
-#include <TestRunner/Python/TestImpactPythonTestRunnerBase.h>
+#include <TestRunner/Python/TestImpactPythonInstrumentedTestRunnerBase.h>
 
 #include <AzCore/std/containers/unordered_set.h>
 
 namespace TestImpact
 {
-    PythonTestRunnerBase::PythonTestRunnerBase(const ArtifactDir& artifactDir)
+    PythonInstrumentedTestRunnerBase::PythonInstrumentedTestRunnerBase()
         : TestRunnerWithCoverage(1)
-        , m_artifactDir(artifactDir)
     {
     }
 
-    PythonTestRunnerBase::JobPayloadOutcome PythonTestRunnerBase::PayloadExtractor(
+    PythonInstrumentedTestRunnerBase::JobPayloadOutcome PythonInstrumentedTestRunnerBase::PayloadExtractor(
         [[maybe_unused]] const JobInfo& jobData, [[maybe_unused]] const JobMeta& jobMeta)
     {
         AZStd::optional<TestRun> run;

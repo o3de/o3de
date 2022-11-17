@@ -10,15 +10,14 @@
 
 #include <TestImpactFramework/TestImpactUtils.h>
 
-#include <TestRunner/Python/TestImpactPythonTestRunnerBase.h>
+#include <TestRunner/Python/TestImpactPythonRegularTestRunnerBase.h>
 
 namespace TestImpact
 {
-    class PythonNullTestRunner
-        : public PythonTestRunnerBase
+    class PythonRegularNullTestRunner : public PythonRegularTestRunnerBase
     {
     public:
-        using PythonTestRunnerBase::PythonTestRunnerBase;
+        using PythonRegularTestRunnerBase::PythonRegularTestRunnerBase;
 
         AZStd::pair<ProcessSchedulerResult, AZStd::vector<TestJobRunner::Job>> RunTests(
             const AZStd::vector<TestJobRunner::JobInfo>& jobInfos,
