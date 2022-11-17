@@ -24,7 +24,7 @@
 namespace UnitTest
 {
     class PhysXColliderComponentModeTest
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<false>
     {
     protected:
         using EntityPtr = AZ::Entity*;
@@ -440,7 +440,7 @@ namespace UnitTest
         EXPECT_NEAR(assetScale.GetZ(), 1.0f, tolerance);
     }
 
-    class PhysXEditorColliderComponentFixture : public UnitTest::ToolsApplicationFixture
+    class PhysXEditorColliderComponentFixture : public UnitTest::ToolsApplicationFixture<false>
     {
     public:
         void SetUpEditorFixtureImpl() override;

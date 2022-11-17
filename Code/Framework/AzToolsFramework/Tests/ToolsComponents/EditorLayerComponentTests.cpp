@@ -9,6 +9,7 @@
 #include <AzTest/AzTest.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
@@ -217,7 +218,7 @@ namespace AzToolsFramework
 
 
     class EditorLayerComponentTest
-        : public ::testing::Test
+        : public UnitTest::AllocatorsTestFixture
         , public UnitTest::TraceBusRedirector
     {
     protected:

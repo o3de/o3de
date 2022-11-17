@@ -20,7 +20,7 @@ namespace PhysX
     namespace Utils
     {
         Physics::CapsuleShapeConfiguration ConvertFromLmbrCentralCapsuleConfig(
-            const LmbrCentral::CapsuleShapeConfig& inputCapsuleConfig);
+            const LmbrCentral::CapsuleShapeConfig& inputCapsuleConfig, const AZ::Vector3& scale = Physics::ShapeConstants::DefaultScale);
     } // namespace Utils
 
     namespace ShapeConstants

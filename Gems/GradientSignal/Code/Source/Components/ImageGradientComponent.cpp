@@ -724,7 +724,10 @@ namespace GradientSignal
         if (shouldRefreshModificationBuffer)
         {
             m_modifiedImageData.resize(0);
-            CreateImageModificationBuffer();
+            if (!m_imageData.empty())
+            {
+                CreateImageModificationBuffer();
+            }
         }
     }
 

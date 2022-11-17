@@ -96,16 +96,15 @@ namespace PhysX
         void UpdateShapeConfigs();
         void UpdateBoxConfig(const AZ::Vector3& scale);
         void UpdateQuadConfig(const AZ::Vector3& scale);
-        void UpdateCapsuleConfig(const AZ::Vector3& scale);
-        void UpdateSphereConfig(const AZ::Vector3& scale);
-        void UpdateCylinderConfig(const AZ::Vector3& scale);
+        void UpdateCapsuleConfig(const float scale);
+        void UpdateSphereConfig(const float scale);
+        void UpdateCylinderConfig(const float scale);
         void UpdatePolygonPrismDecomposition();
         void UpdatePolygonPrismDecomposition(const AZ::PolygonPrismPtr polygonPrismPtr);
 
         // Helper function to set a specific shape configuration
         template<typename ConfigType>
         void SetShapeConfig(ShapeType shapeType, const ConfigType& shapeConfig);
-
         void RefreshUiProperties();
 
         AZ::u32 OnSubdivisionCountChange();

@@ -43,6 +43,10 @@ class TestAutomation(TestAutomationBase):
         from .tests.script_canvas import ScriptCanvas_SetKinematicTargetTransform as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    def test_PhysX_Collider_Component_CRUD(self, request, workspace, editor, launcher_platform):
+        from .tests.EntityComponentTests import PhysX_Collider_Component_CRUD as test_module
+        self._run_test(request, workspace, editor, test_module)
+
     # Failing, PhysXTerrain
     @fm.file_revert("c4925579_material_addmodifydeleteonterrain.physmaterial",
                     r"AutomatedTesting\Levels\Physics\Material_LibraryCrudOperationsReflectOnTerrain")

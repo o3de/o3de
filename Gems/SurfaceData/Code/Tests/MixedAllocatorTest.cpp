@@ -16,6 +16,11 @@ namespace UnitTest
     struct MixedAllocatorTestFixture
         : public AllocatorsTestFixture
     {
+    public:
+        MixedAllocatorTestFixture()
+        {
+            SetShouldCleanUpGenericClassInfo(false);
+        }
     };
 
     TEST_F(MixedAllocatorTestFixture, MixedStackHeapAllocator_GetNameSetNameWorks)
@@ -101,12 +106,12 @@ namespace UnitTest
         ASSERT_NE(data, nullptr);
 
         // Resize to something smaller than the allocated stack buffer. This should succeed.
-        auto resizeBytes = allocator.resize(data, allocResizeSmallerSize);
-        EXPECT_EQ(resizeBytes, allocResizeSmallerSize);
+        auto reallocatedData = allocator.reallocate(data, allocResizeSmallerSize);
+        EXPECT_NE(reallocatedData, nullptr);
 
         // Resize to something larger than the allocated stack buffer. This should return 0, as it isn't suported.
-        resizeBytes = allocator.resize(data, allocResizeLargerSize);
-        EXPECT_EQ(resizeBytes, 0);
+        reallocatedData = allocator.reallocate(data, allocResizeLargerSize);
+        EXPECT_EQ(reallocatedData, nullptr);
 
         auto numAllocatedBytesAfter = AZ::AllocatorInstance<AZ::SystemAllocator>::Get().NumAllocatedBytes();
 
@@ -114,7 +119,7 @@ namespace UnitTest
         EXPECT_GE(numAllocatedBytesAfter - numAllocatedBytesBefore, 0);
 
         // Verify that a deallocation is successful.
-        allocator.deallocate(data, allocSize, allocAlignment);
+        allocator.deallocate(reallocatedData, allocSize, allocAlignment);
     }
 
 } // namespace UnitTest

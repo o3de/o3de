@@ -16,6 +16,8 @@ class QWidget;
 
 namespace AzToolsFramework
 {
+    constexpr const char* DefaultActionContextModeIdentifier = "default";
+
     using ActionManagerOperationResult = AZ::Outcome<void, AZStd::string>;
     using ActionManagerBooleanResult = AZ::Outcome<bool, AZStd::string>;
     using ActionManagerGetterResult = AZ::Outcome<AZStd::string, AZStd::string>;
