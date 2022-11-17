@@ -142,7 +142,8 @@ namespace LmbrCentral
     void BoxShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds)
     {
         const AZ::Vector3 extent(m_boxShapeConfig.m_dimensions * m_currentNonUniformScale * 0.5f);
-        bounds = AZ::Aabb::CreateFromMinMax(-extent, extent);
+        const AZ::Vector3 scaledOffset(m_boxShapeConfig.m_translationOffset * m_currentNonUniformScale);
+        bounds = AZ::Aabb::CreateFromMinMax(scaledOffset - extent, scaledOffset + extent);
         transform = m_currentTransform;
     }
 
@@ -212,9 +213,8 @@ namespace LmbrCentral
         AZ::Vector3 boxMin = m_intersectionDataCache.m_scaledDimensions * -0.5f * insideMargin;
         AZ::Vector3 boxMax = m_intersectionDataCache.m_scaledDimensions * 0.5f * insideMargin;
 
-        // As std:normal_distribution requires a std:random_engine to be passed in,
-        // As std:normal_distribution requires a std:random_engine to be passed in, create one using a random seed that is guaranteed to be properly
-        // random each time it is called
+        // As std:normal_distribution requires a std:random_engine to be passed in, create one using a random seed
+        // that is guaranteed to be properly random each time it is called
         time_t seedVal;
         seedVal = AZ::Sfmt::GetInstance().Rand64();
         std::default_random_engine generator;
@@ -267,7 +267,42 @@ namespace LmbrCentral
         }
 
         // transform to world space
-        return m_currentTransform.TransformPoint(AZ::Vector3(x, y, z));
+        AZ::Transform worldTransformWithoutScale = m_currentTransform;
+        const float entityScale = worldTransformWithoutScale.ExtractUniformScale();
+        const AZ::Vector3 scaledTranslationOffset = entityScale * m_currentNonUniformScale * m_boxShapeConfig.m_translationOffset;
+
+        return worldTransformWithoutScale.TransformPoint(AZ::Vector3(x, y, z) + scaledTranslationOffset);
+    }
+
+    AZ::Vector3 BoxShape::GetTranslationOffset() const
+    {
+        return m_boxShapeConfig.m_translationOffset;
+    }
+
+    void BoxShape::SetTranslationOffset(const AZ::Vector3& translationOffset)
+    {
+        if (!IsShapeComponentTranslationEnabled())
+        {
+            return;
+        }
+
+        bool shapeChanged = false;
+        {
+            AZStd::unique_lock lock(m_mutex);
+            if (!m_boxShapeConfig.m_translationOffset.IsClose(translationOffset))
+            {
+                m_boxShapeConfig.m_translationOffset = translationOffset;
+                m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+                shapeChanged = true;
+            }
+        }
+
+        if (shapeChanged)
+        {
+            ShapeComponentNotificationsBus::Event(
+                m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
+                ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+        }
     }
 
     void BoxShape::BoxIntersectionDataCache::UpdateIntersectionParamsImpl(
@@ -275,17 +310,18 @@ namespace LmbrCentral
     {
         AZ::Transform worldFromLocalNormalized = currentTransform;
         const float entityScale = worldFromLocalNormalized.ExtractUniformScale();
+        const AZ::Vector3 scaledTranslationOffset = entityScale * currentNonUniformScale * configuration.m_translationOffset;
 
-        m_currentPosition = worldFromLocalNormalized.GetTranslation();
+        m_currentPosition = worldFromLocalNormalized.TransformPoint(scaledTranslationOffset);
         m_scaledDimensions = configuration.m_dimensions * currentNonUniformScale * entityScale;
 
         AZ::Quaternion worldFromLocalQuaternion = worldFromLocalNormalized.GetRotation();
         if (worldFromLocalQuaternion.IsClose(AZ::Quaternion::CreateIdentity()))
         {
-            AZ::Vector3 boxMin = m_scaledDimensions * -0.5f;
+            AZ::Vector3 boxMin = m_scaledDimensions * -0.5f + scaledTranslationOffset;
             boxMin = worldFromLocalNormalized.TransformPoint(boxMin);
 
-            AZ::Vector3 boxMax = m_scaledDimensions * 0.5f;
+            AZ::Vector3 boxMax = m_scaledDimensions * 0.5f + scaledTranslationOffset;
             boxMax = worldFromLocalNormalized.TransformPoint(boxMax);
 
             m_aabb = AZ::Aabb::CreateFromMinMax(boxMin, boxMax);
@@ -310,8 +346,8 @@ namespace LmbrCentral
         const ShapeDrawParams& shapeDrawParams, const BoxShapeConfig& boxShapeConfig,
         AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Vector3& nonUniformScale)
     {
-        const AZ::Vector3 boxMin = boxShapeConfig.m_dimensions * nonUniformScale * -0.5f;
-        const AZ::Vector3 boxMax = boxShapeConfig.m_dimensions * nonUniformScale * 0.5f;
+        const AZ::Vector3 boxMin = nonUniformScale * (boxShapeConfig.m_dimensions * -0.5f + boxShapeConfig.m_translationOffset);
+        const AZ::Vector3 boxMax = nonUniformScale * (boxShapeConfig.m_dimensions * 0.5f + boxShapeConfig.m_translationOffset);
 
         if (shapeDrawParams.m_filled)
         {

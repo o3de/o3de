@@ -222,6 +222,70 @@ namespace AZ::Dom::Tests
         EXPECT_EQ(20, *tree.ValueAtPath(Path("/foo/0"), PrefixTreeMatch::PathAndParents));
     }
 
+    TEST_F(DomPrefixTreeTests, DetachSubTreeAtExistingPath)
+    {
+        DomPrefixTree<int> tree;
+        tree.SetValue(Path("/foo"), 40);
+        tree.SetValue(Path("/foo/0"), 80);
+
+        DomPrefixTree<int> detachedTree = tree.DetachSubTree(AZ::Dom::Path("/foo"));
+
+        // Validate that the values aren't present in the old tree after detaching.
+        EXPECT_EQ(nullptr, tree.ValueAtPath(Path("/foo"), PrefixTreeMatch::ExactPath));
+        EXPECT_EQ(nullptr, tree.ValueAtPath(Path("/foo/0"), PrefixTreeMatch::ExactPath));
+
+        // Validate that the values are present in the detached tree.
+        EXPECT_EQ(40, *detachedTree.ValueAtPath(Path(), PrefixTreeMatch::ExactPath));
+        EXPECT_EQ(80, *detachedTree.ValueAtPath(Path("/0"), PrefixTreeMatch::ExactPath));
+    }
+
+    TEST_F(DomPrefixTreeTests, DetachSubTreeAtNonExistingPath)
+    {
+        DomPrefixTree<int> tree;
+        tree.SetValue(Path("/foo"), 40);
+        tree.SetValue(Path("/foo/0"), 80);
+
+        DomPrefixTree<int> detachedTree = tree.DetachSubTree(AZ::Dom::Path("/bar"));
+
+        // Validate that the returned tree is empty since a non-existing path is provided.
+        EXPECT_TRUE(detachedTree.IsEmpty());
+
+        // Validate that the values in the original tree are still present.
+        EXPECT_EQ(40, *tree.ValueAtPath(Path("/foo"), PrefixTreeMatch::ExactPath));
+        EXPECT_EQ(80, *tree.ValueAtPath(Path("/foo/0"), PrefixTreeMatch::ExactPath));
+    }
+
+    TEST_F(DomPrefixTreeTests, AttachSubTreeAddsNewNode)
+    {
+        DomPrefixTree<int> tree;
+        tree.SetValue(Path("/foo"), 40);
+
+        DomPrefixTree<int> treeToAttach;
+        treeToAttach.SetValue(Path(), 80);
+        treeToAttach.SetValue(Path("/1"), 120);
+        tree.AttachSubTree(Path("/foo/0"), AZStd::move(treeToAttach));
+
+        // Validate that the new values is present at the paths in the original tree.
+        EXPECT_EQ(80, *tree.ValueAtPath(Path("/foo/0"), PrefixTreeMatch::ExactPath));
+        EXPECT_EQ(120, *tree.ValueAtPath(Path("/foo/0/1"), PrefixTreeMatch::ExactPath));
+    }
+
+    TEST_F(DomPrefixTreeTests, AttachSubTreeReplacesExistingNode)
+    {
+        DomPrefixTree<int> tree;
+
+        tree.SetValue(Path("/foo"), 40);
+
+        DomPrefixTree<int> treeToAttach;
+        treeToAttach.SetValue(Path(), 80);
+        treeToAttach.SetValue(Path("/1"), 120);
+        tree.AttachSubTree(Path("/foo"), AZStd::move(treeToAttach));
+
+        // Validate that existing values are replaced in the original tree.
+        EXPECT_EQ(80, *tree.ValueAtPath(Path("/foo"), PrefixTreeMatch::ExactPath));
+        EXPECT_EQ(120, *tree.ValueAtPath(Path("/foo/1"), PrefixTreeMatch::ExactPath));
+    }
+
     TEST_F(DomPrefixTreeTests, ClearTree)
     {
         DomPrefixTree<int> tree;
@@ -232,6 +296,7 @@ namespace AZ::Dom::Tests
         tree.Clear();
 
         EXPECT_EQ(-10, tree.ValueAtPathOrDefault(Path("/foo"), -10, PrefixTreeMatch::PathAndParents));
+        EXPECT_TRUE(tree.IsEmpty());
     }
 
     TEST_F(DomPrefixTreeTests, VisitMissingExactPath)

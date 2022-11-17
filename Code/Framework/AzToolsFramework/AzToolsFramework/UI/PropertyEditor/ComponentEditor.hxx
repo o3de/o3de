@@ -16,7 +16,7 @@
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DPEComponentAdapter.h>
-#include <AzToolsFramework/UI/DocumentPropertyEditor/FilterAdapter.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/ValueStringFilter.h>
 
 #include <QFrame>
 #include <QIcon>

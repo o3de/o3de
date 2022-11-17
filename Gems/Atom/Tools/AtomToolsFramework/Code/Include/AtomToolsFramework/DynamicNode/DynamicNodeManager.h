@@ -22,9 +22,10 @@ namespace AtomToolsFramework
     {
     public:
         AZ_CLASS_ALLOCATOR(DynamicNodeManager, AZ::SystemAllocator, 0);
-        AZ_RTTI(Graph, "{0DE0A2FA-3296-4E11-AA7F-831FAFA4126F}");
-        AZ_DISABLE_COPY_MOVE(DynamicNodeManager);
+        AZ_RTTI(DynamicNodeManager, "{D5330BF2-945F-4C8B-A5CF-68145EE6CBED}");
+        static void Reflect(AZ::ReflectContext* context);
 
+        DynamicNodeManager() = default;
         DynamicNodeManager(const AZ::Crc32& toolId);
         virtual ~DynamicNodeManager();
 
@@ -36,10 +37,14 @@ namespace AtomToolsFramework
         DynamicNodeConfig GetConfigById(const AZ::Uuid& configId) const override;
         void Clear() override;
         GraphCanvas::GraphCanvasTreeItem* CreateNodePaletteTree() const override;
+        GraphModel::NodePtr CreateNodeById(GraphModel::GraphPtr graph, const AZ::Uuid& configId) override;
+        GraphModel::NodePtr CreateNodeByName(GraphModel::GraphPtr graph, const AZStd::string& name) override;
         void RegisterEditDataForSetting(const AZStd::string& settingName, const AZ::Edit::ElementData& editData) override;
         const AZ::Edit::ElementData* GetEditDataForSetting(const AZStd::string& settingName) const override;
 
     private:
+        AZ_DISABLE_COPY_MOVE(DynamicNodeManager);
+
         bool ValidateSlotConfig(const AZ::Uuid& configId, const DynamicNodeSlotConfig& slotConfig) const;
         bool ValidateSlotConfigVec(const AZ::Uuid& configId, const AZStd::vector<DynamicNodeSlotConfig>& slotConfigVec) const;
         bool IsNodeConfigLoggingEnabled() const;

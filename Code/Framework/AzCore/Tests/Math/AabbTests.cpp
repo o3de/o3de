@@ -410,6 +410,20 @@ namespace UnitTest
         EXPECT_TRUE(aabb.GetMax().IsClose(transAabb.GetMax()));
     }
 
+    TEST(MATH_AabbTransform, GetTransformedAabbCorrectResult)
+    {
+        // create aabb
+        const Vector3 min(20.0f, 30.0f, 40.0f);
+        const Vector3 max(50.0f, 80.0f, 60.0f);
+        const Aabb aabb = Aabb::CreateFromMinMax(min, max);
+
+        const Transform transform(Vector3(10.0f, 15.0f, 25.0f), Quaternion(0.08f, 0.44f, 0.16f, 0.88f), 0.5f);
+        const Aabb transformedAabb = aabb.GetTransformedAabb(transform);
+
+        EXPECT_THAT(transformedAabb.GetMin(), IsClose(Vector3(23.168f, 32.56f, 22.504f)));
+        EXPECT_THAT(transformedAabb.GetMax(), IsClose(Vector3(44.872f, 61.24f, 46.776f)));
+    }
+
     TEST(MATH_AabbTransform, GetTransformedObbMatrix3x4)
     {
         Vector3 min(-1.0f, -2.0f, -3.0f);

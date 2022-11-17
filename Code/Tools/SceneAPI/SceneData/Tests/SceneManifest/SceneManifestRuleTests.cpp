@@ -31,6 +31,9 @@
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
 
+extern "C" AZ_DLL_EXPORT void CleanUpSceneCoreGenericClassInfo();
+extern "C" AZ_DLL_EXPORT void CleanUpSceneDataGenericClassInfo();
+
 namespace AZ
 {
     class MockEditorPythonEventsInterface
@@ -170,6 +173,9 @@ namespace AZ
 
                 AZ::SettingsRegistry::Unregister(&m_data->m_settings);
                 m_data.reset();
+
+                CleanUpSceneCoreGenericClassInfo();
+                CleanUpSceneDataGenericClassInfo();
 
                 AZ::NameDictionary::Destroy();
                 UnitTest::AllocatorsFixture::TearDown();

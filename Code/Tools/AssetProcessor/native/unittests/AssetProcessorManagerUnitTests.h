@@ -7,53 +7,46 @@
  */
 #pragma once
 #if !defined(Q_MOC_RUN)
-#include "UnitTestRunner.h"
+#include <native/unittests/UnitTestUtils.h>
 #include <native/utilities/AssetUtilEBusHelper.h>
+#include <native/unittests/AssetProcessorUnitTests.h>
 #endif
 
 namespace AssetProcessor
 {
+    class AssetProcessorManager_Test;
+
     class AssetProcessorManagerUnitTests
-        : public UnitTestRun
+        : public QObject
+        , public UnitTest::AssetProcessorUnitTestBase
     {
         Q_OBJECT
-    public:
-        virtual void StartTest() override;
 
-Q_SIGNALS:
-        void Test_Emit_AssessableFile(QString filePath);
-        void Test_Emit_AssessableDeletedFile(QString filePath);
-    };
+    protected:
+        AssetProcessorManagerUnitTests() = default;
+        ~AssetProcessorManagerUnitTests();
 
-    class AssetProcessorManagerUnitTests_ScanFolders
-        : public UnitTestRun
-    {
-        Q_OBJECT
-    public:
-        virtual void StartTest() override;
-    };
+        void SetUp() override;
+        void TearDown() override;
 
-    class AssetProcessorManagerUnitTests_JobKeys
-        : public UnitTestRun
-    {
-        Q_OBJECT
-    public:
-        virtual void StartTest() override;
-    };
+        AZStd::string AbsProductPathToRelative(const QString& absolutePath);
+        void VerifyProductPaths(const JobDetails& jobDetails);
 
-    class AssetProcessorManagerUnitTests_JobDependencies_Fingerprint
-        : public UnitTestRun
-        , public AssetProcessor::AssetBuilderInfoBus::Handler
-    {
-        Q_OBJECT
-    public:
-        virtual void StartTest() override;
+        QDir m_sourceRoot;
+        QDir m_cacheRoot;
 
-        // AssetProcessor::AssetBuilderInfoBus::Handler
-        void GetMatchingBuildersInfo(const AZStd::string& assetPath, AssetProcessor::BuilderInfoList& builderInfoList) override;
-        void GetAllBuildersInfo(AssetProcessor::BuilderInfoList& builderInfoList) override;
+        AZStd::unique_ptr<AssetProcessor::FileStatePassthrough> m_fileStateCache;    
+        AZStd::unique_ptr<UnitTestUtils::ScopedDir> m_changeDir;
+        FileWatcher m_fileWatcher;
 
-        AssetBuilderSDK::AssetBuilderDesc m_assetBuilderDesc;
+        QList<QMetaObject::Connection> m_assetProcessorConnections;
+        bool m_idling = false;
+        QList<JobDetails> m_processResults;
+        QList<QPair<QString, QString>> m_changedInputResults;
+        QList<AzFramework::AssetSystem::AssetNotificationMessage> m_assetMessages;
+
+        AZStd::unique_ptr<AssetProcessorManager_Test> m_assetProcessorManager;
+        PlatformConfiguration m_config;
     };
 } // namespace assetprocessor
 

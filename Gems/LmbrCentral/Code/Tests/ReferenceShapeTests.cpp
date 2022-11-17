@@ -32,7 +32,6 @@ namespace UnitTest
             AZ::ComponentApplication::Descriptor appDesc;
             appDesc.m_memoryBlocksByteSize = 20 * 1024 * 1024;
             appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_NO_RECORDS;
-            appDesc.m_stackRecordLevels = 20;
 
             m_app.Create(appDesc);
         }
