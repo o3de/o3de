@@ -83,6 +83,7 @@ namespace AzToolsFramework
         static constexpr int MetadataVersion = 1;
 
         static void Reflect(AZ::ReflectContext* context);
+        static AZ::IO::Path ToMetadataPath(AZ::IO::Path path);
 
     protected:
         void Activate() override{}
@@ -95,7 +96,6 @@ namespace AzToolsFramework
         bool SetValue(AZ::IO::PathView file, AZStd::string_view key, const void* inValue, AZ::Uuid typeId) override;
 
     private:
-        AZ::IO::Path ToMetadataPath(AZ::IO::PathView file);
         const AZ::SerializeContext::ClassData* GetClassData(AZ::Uuid typeId);
     };
 } // namespace AzToolsFramework

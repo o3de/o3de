@@ -111,6 +111,36 @@ namespace UnitTests
                         return itr != m_mockFiles.end() && itr->second.size() > 0;
                     }));
 
+            ON_CALL(*m_fileIOMock, Rename(_, _))
+                .WillByDefault(Invoke(
+                    [this](const char* originalPath, const char* newPath)
+                    {
+                        auto originalHandle = AZ::u32(AZStd::hash<AZStd::string>{}(originalPath));
+                        auto newHandle = AZ::u32(AZStd::hash<AZStd::string>{}(newPath));
+                        auto itr = m_mockFiles.find(originalHandle);
+
+                        if (itr != m_mockFiles.end())
+                        {
+                            m_mockFiles[newHandle] = itr->second;
+                            m_mockFiles.erase(itr);
+
+                            return AZ::IO::ResultCode::Success;
+                        }
+
+                        return AZ::IO::ResultCode::Error;
+                    }));
+
+            ON_CALL(*m_fileIOMock, Remove(_))
+                .WillByDefault(Invoke(
+                    [this](const char* path)
+                    {
+                        auto handle = AZ::u32(AZStd::hash<AZStd::string>{}(path));
+
+                        m_mockFiles.erase(handle);
+
+                        return AZ::IO::ResultCode::Success;
+                    }));
+
             ON_CALL(*m_fileIOMock, Read(_, _, _, _, _))
                 .WillByDefault(Invoke(
                     [this](auto handle, void* buffer, auto, auto, AZ::u64* bytesRead)
@@ -210,5 +240,71 @@ namespace UnitTests
 
         EXPECT_NE(canonicalUuid, *uuids.begin());
         EXPECT_NE(canonicalUuid, *++uuids.begin());
+    }
+
+    TEST_F(UuidManagerTests, MoveFile_UuidRemainsTheSame)
+    {
+        auto uuid = m_uuidInterface->GetUuid("mockfile");
+
+        AZ::IO::FileIOBase::GetInstance()->Rename(
+            (AZStd::string("mockfile") + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str(),
+            (AZStd::string("newfile") + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
+
+        m_uuidInterface->FileRemoved((AZStd::string("mockfile") + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
+
+        auto movedUuid = m_uuidInterface->GetUuid("newfile");
+
+        EXPECT_EQ(uuid, movedUuid);
+    }
+
+    TEST_F(UuidManagerTests, MoveFileWithComplexName_UuidRemainsTheSame)
+    {
+        static constexpr const char* FileName = "mockfile.ext1.ext2.ext3";
+        auto uuid = m_uuidInterface->GetUuid(FileName);
+
+        AZ::IO::FileIOBase::GetInstance()->Rename(
+            (AZStd::string(FileName) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str(),
+            (AZStd::string("newfile") + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
+
+        m_uuidInterface->FileRemoved((AZStd::string(FileName) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
+
+        auto movedUuid = m_uuidInterface->GetUuid("newfile");
+
+        EXPECT_EQ(uuid, movedUuid);
+    }
+
+    TEST_F(UuidManagerTests, MetadataRemoved_NewUuidAssigned)
+    {
+        static constexpr const char* FileName = "mockfile";
+        auto uuid = m_uuidInterface->GetUuid(FileName);
+
+        AZ::IO::FileIOBase::GetInstance()->Remove(
+            (AZStd::string(FileName) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
+
+        m_uuidInterface->FileRemoved((AZStd::string(FileName) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
+
+        auto movedUuid = m_uuidInterface->GetUuid(FileName);
+
+        EXPECT_NE(uuid, movedUuid);
+    }
+
+    TEST_F(UuidManagerTests, MetadataUpdated_NewUuidAssigned)
+    {
+        static constexpr const char* FileName = "mockfile";
+        auto uuid = m_uuidInterface->GetUuid(FileName);
+
+        // Generate another metadata file, its the easiest way to "change" a UUID in the metadata file for this test
+        m_uuidInterface->GetUuid("someotherfile");
+
+        // Copy the other file's metadata onto the mockfile metadata
+        AZ::IO::FileIOBase::GetInstance()->Rename(
+            (AZStd::string("someotherfile") + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str(),
+            (AZStd::string(FileName) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
+
+        m_uuidInterface->FileChanged((AZStd::string(FileName) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
+
+        auto newUuid = m_uuidInterface->GetUuid(FileName);
+
+        EXPECT_NE(uuid, newUuid);
     }
 }

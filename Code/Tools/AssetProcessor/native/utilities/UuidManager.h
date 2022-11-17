@@ -25,6 +25,8 @@ namespace AssetProcessor
 
         virtual AZ::Uuid GetUuid(AZ::IO::PathView file) = 0;
         virtual AZStd::unordered_set<AZ::Uuid> GetLegacyUuids(AZ::IO::PathView file) = 0;
+        virtual void FileChanged(AZ::IO::Path file) = 0;
+        virtual void FileRemoved(AZ::IO::Path file) = 0;
     };
 
     class UuidManager : public AZ::Interface<IUuidRequests>::Registrar
@@ -51,6 +53,52 @@ namespace AssetProcessor
             auto entry = GetOrCreateUuidEntry(file);
 
             return entry.m_legacyUuids;
+        }
+
+        void FileChanged(AZ::IO::Path file) override
+        {
+            AZStd::string extension = file.Extension().Native();
+
+            if (extension != AzToolsFramework::MetadataManager::MetadataFileExtension)
+            {
+                return;
+            }
+
+            auto lastDot = extension.find_last_of('.');
+            extension = extension.substr(0, lastDot);
+            file.ReplaceExtension(extension.c_str());
+
+            AZStd::scoped_lock scopeLock(m_uuidMutex);
+
+            auto normalizedPath = GetCanonicalPath(file);
+            auto itr = m_uuids.find(normalizedPath);
+
+            if (itr != m_uuids.end())
+            {
+                m_uuids.erase(itr);
+            }
+        }
+
+        void FileRemoved(AZ::IO::Path file)
+        {
+            AZStd::string extension = file.Extension().Native();
+
+            if (extension != AzToolsFramework::MetadataManager::MetadataFileExtension)
+            {
+                return;
+            }
+
+            file.ReplaceExtension("");
+
+            AZStd::scoped_lock scopeLock(m_uuidMutex);
+
+            auto normalizedPath = GetCanonicalPath(file);
+            auto itr = m_uuids.find(normalizedPath);
+
+            if (itr != m_uuids.end())
+            {
+                m_uuids.erase(itr);
+            }
         }
 
     private:
