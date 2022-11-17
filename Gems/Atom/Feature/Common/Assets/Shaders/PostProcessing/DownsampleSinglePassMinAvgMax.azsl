@@ -123,10 +123,13 @@ float MaxWithFlag(AF4 v0, AF4 v1)
 
 AF4 SpdReduce4(AF4 v0, AF4 v1, AF4 v2, AF4 v3)
 {
+    const float weightSum = v0.w + v1.w + v2.w + v3.w;
     const float minValue = min(MinWithFlag(v0, v1), MinWithFlag(v2, v3));
-    const float avgValue = (v0.y * v0.w + v1.y * v1.w + v2.y * v2.w + v3.y * v3.w) * 0.25;
+    const float avgValue = weightSum > 0 ? 
+        (v0.y * v0.w + v1.y * v1.w + v2.y * v2.w + v3.y * v3.w) / weightSum :
+        0.f;
     const float maxValue = max(MaxWithFlag(v0, v1), MaxWithFlag(v2, v3));
-    const float weightValue = (v0.w + v1.w + v2.w + v3.w) * 0.25;
+    const float weightValue =  weightSum * 0.25;
     return AF4(minValue, avgValue, maxValue, weightValue);
 }
 
