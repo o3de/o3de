@@ -17,7 +17,8 @@ def main():
             filename = os.path.join(subdir, file)
             if re.search('^.*\.shader$', filename):
                 shaderVariantList, defaultShaderVariantListFilePath = GenerateShaderVariantListUtil.create_shadervariantlist_for_shader(filename)
-                azlmbr.shader.SaveShaderVariantListSourceData(defaultShaderVariantListFilePath, shaderVariantList)
+                if shaderVariantList.shaderVariants:
+                    azlmbr.shader.SaveShaderVariantListSourceData(defaultShaderVariantListFilePath, shaderVariantList)
 
     print("==== Finish processing shader ==========================================================")
 if __name__ == "__main__":
