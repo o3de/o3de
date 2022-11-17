@@ -14,6 +14,7 @@
 
 namespace TestImpact
 {
+    //! Test runner for instrumented Python tests.
     class PythonInstrumentedTestRunner
         : public PythonInstrumentedTestRunnerBase
     {

@@ -14,6 +14,7 @@
 
 namespace TestImpact
 {
+    //! Null test runner for regular Python tests.
     class PythonRegularNullTestRunner : public PythonRegularTestRunnerBase
     {
     public:

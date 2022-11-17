@@ -28,7 +28,6 @@ namespace TestImpact
 
         for (auto& jobInfo : jobInfos)
         {
-            
             if (auto outcome = PayloadExtractor(jobInfo, {}); outcome.IsSuccess())
             {
                 JobMeta meta;

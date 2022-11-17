@@ -12,8 +12,6 @@
 
 #include <TestRunner/Python/TestImpactPythonRegularTestRunnerBase.h>
 
-#include <AzCore/std/containers/unordered_set.h>
-
 namespace TestImpact
 {
     PythonRegularTestRunnerBase::PythonRegularTestRunnerBase()
@@ -22,7 +20,7 @@ namespace TestImpact
     }
 
     PythonRegularTestRunnerBase::JobPayloadOutcome PythonRegularTestRunnerBase::PayloadExtractor(
-        [[maybe_unused]] const JobInfo& jobData, [[maybe_unused]] const JobMeta& jobMeta)
+        const JobInfo& jobData, const JobMeta& jobMeta)
     {
         AZStd::optional<TestRun> run;
         try

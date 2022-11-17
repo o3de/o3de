@@ -50,24 +50,28 @@ namespace TestImpact
         return AZStd::nullopt;
     }
 
+    // Type trait for the test instrumented test runner
     template<>
     struct TestJobRunnerTrait<PythonInstrumentedTestRunner>
     {
         using TestEngineJobType = TestEngineInstrumentedRun<PythonTestTarget, TestCoverage>;
     };
 
+    // Type trait for the test instrumented null test runner
     template<>
     struct TestJobRunnerTrait<PythonInstrumentedNullTestRunner>
     {
         using TestEngineJobType = TestEngineInstrumentedRun<PythonTestTarget, TestCoverage>;
     };
 
+    // Type trait for the test regular test runner
     template<>
     struct TestJobRunnerTrait<PythonRegularTestRunner>
     {
         using TestEngineJobType = TestEngineRegularRun<PythonTestTarget>;
     };
 
+    // Type trait for the test regular null test runner
     template<>
     struct TestJobRunnerTrait<PythonRegularNullTestRunner>
     {

@@ -14,6 +14,7 @@
 
 namespace TestImpact
 {
+    //! Test runner for regular Python tests.
     class PythonRegularTestRunner : public PythonRegularTestRunnerBase
     {
     public:

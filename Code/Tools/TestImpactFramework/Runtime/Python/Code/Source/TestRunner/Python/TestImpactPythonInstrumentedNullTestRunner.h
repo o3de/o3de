@@ -14,6 +14,7 @@
 
 namespace TestImpact
 {
+    //! Null test runner for instrumented Python tests.
     class PythonInstrumentedNullTestRunner
         : public PythonInstrumentedTestRunnerBase
     {
