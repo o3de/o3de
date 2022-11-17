@@ -980,7 +980,7 @@ namespace Multiplayer
             }
         }
 
-        m_componentVersionMismatchEvent.Signal();
+        m_versionMismatchEvent.Signal();
         return true;
     }
 
