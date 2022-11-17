@@ -1217,7 +1217,7 @@ namespace PhysX
 
     void PhysXScene::UpdateAzProfilerDataPoints()
     {
-#if !defined(_RELEASE)
+#if !defined(AZ_RELEASE_BUILD)
         if (!physx_profileSimulationDatapoints)
         {
             return;
@@ -1292,7 +1292,7 @@ namespace PhysX
         AZ_PROFILE_DATAPOINT(Physics, ccdPairs, L"PhysX/Collisions/CCDPairs");
         AZ_PROFILE_DATAPOINT(Physics, modifiedPairs, L"PhysX/Collisions/ModifiedPairs");
         AZ_PROFILE_DATAPOINT(Physics, triggerPairs, L"PhysX/Collisions/TriggerPairs");
-#endif
+#endif // !defined(AZ_RELEASE_BUILD)
     }
 
     void PhysXScene::SyncActiveBodyTransform(const AzPhysics::SimulatedBodyHandleList& activeBodyHandles)

@@ -265,13 +265,13 @@ namespace AZ::IO
                 if constexpr (AZStd::is_same_v<Type, bool>)
                 {
                     AZ_PROFILE_DATAPOINT(
-                        AzCore, (value ? 1 : 0), AZStd::string::format(L"Streamer/%.*s/%.*s", aznumeric_cast<int>(stat.GetOwner().length()), stat.GetOwner().data(),
+                        AzCore, (value ? 1 : 0), AZStd::wstring::format(L"Streamer/%.*s/%.*s", aznumeric_cast<int>(stat.GetOwner().length()), stat.GetOwner().data(),
                         aznumeric_cast<int>(stat.GetName().length()), stat.GetName().data()).data());
                 }
                 else if constexpr (AZStd::is_same_v<Type, double> || AZStd::is_same_v<Type, s64>)
                 {
                     AZ_PROFILE_DATAPOINT(
-                        AzCore, value, AZStd::string::format(L"Streamer/%.*s/%.*s", aznumeric_cast<int>(stat.GetOwner().length()),
+                        AzCore, value, AZStd::wstring::format(L"Streamer/%.*s/%.*s", aznumeric_cast<int>(stat.GetOwner().length()),
                         stat.GetOwner().data(), aznumeric_cast<int>(stat.GetName().length()), stat.GetName().data()).data());
                 }
                 else if constexpr (
@@ -279,7 +279,7 @@ namespace AZ::IO
                     AZStd::is_same_v<Type, Statistic::ByteSize> || AZStd::is_same_v<Type, Statistic::ByteSizeRange>)
                 {
                     AZ_PROFILE_DATAPOINT(
-                        AzCore, value.m_value, AZStd::string::format(L"Streamer/%.*s/%.*s", aznumeric_cast<int>(stat.GetOwner().length()), stat.GetOwner().data(),
+                        AzCore, value.m_value, AZStd::wstring::format(L"Streamer/%.*s/%.*s", aznumeric_cast<int>(stat.GetOwner().length()), stat.GetOwner().data(),
                         aznumeric_cast<int>(stat.GetName().length()), stat.GetName().data()).data());
                 }
                 else if constexpr (AZStd::is_same_v<Type, Statistic::Time> || AZStd::is_same_v<Type, Statistic::TimeRange>)

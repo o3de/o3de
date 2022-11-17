@@ -140,7 +140,7 @@ namespace AZ::IO
         [[maybe_unused]] double value)
     {
         AZ_PROFILE_DATAPOINT(AzCore, value,
-            AZStd::string::format(L"Streamer/%.*s/%.*s (Raw)",
+            AZStd::wstring::format(L"Streamer/%.*s/%.*s (Raw)",
             aznumeric_cast<int>(owner.size()), owner.data(),
             aznumeric_cast<int>(name.size()), name.data()).data());
     }
