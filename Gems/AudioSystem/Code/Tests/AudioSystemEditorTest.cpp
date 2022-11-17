@@ -8,9 +8,9 @@
 
 #include <AzTest/AzTest.h>
 #include <AzCore/base.h>
-#include <AzCore/Memory/AllocatorScope.h>
 
 #include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
+#include <AzCore/UnitTest/TestTypes.h>
 
 #include <AudioControlsLoader.h>
 #include <ATLControlsModel.h>
@@ -65,26 +65,25 @@ public:
 protected:
     void SetupEnvironment() override
     {
-        m_allocatorScope.ActivateAllocators();
     }
 
     void TeardownEnvironment() override
     {
-        m_allocatorScope.DeactivateAllocators();
     }
 
 private:
-    AZ::AllocatorScope<AZ::OSAllocator, AZ::SystemAllocator> m_allocatorScope;
 };
 
 AZ_UNIT_TEST_HOOK(new AudioControlsEditorTestEnvironment);
 
 class AudioControlsEditorTest
-    : public ::testing::Test
+    : public UnitTest::ScopedAllocatorSetupFixture
 {
 public:
     void SetUp() override
     {
+        UnitTest::ScopedAllocatorSetupFixture::SetUp();
+
         // Store and remove the existing fileIO...
         m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
         if (m_prevFileIO)
@@ -109,6 +108,7 @@ public:
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
             m_prevFileIO = nullptr;
         }
+        UnitTest::ScopedAllocatorSetupFixture::TearDown();
     }
 
 protected:

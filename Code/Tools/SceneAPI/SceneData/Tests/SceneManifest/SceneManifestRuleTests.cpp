@@ -28,6 +28,9 @@
 #include <AzCore/UnitTest/Mocks/MockSettingsRegistry.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
+extern "C" AZ_DLL_EXPORT void CleanUpSceneCoreGenericClassInfo();
+extern "C" AZ_DLL_EXPORT void CleanUpSceneDataGenericClassInfo();
+
 namespace AZ
 {
     namespace SceneAPI
@@ -122,6 +125,9 @@ namespace AZ
 
                 AZ::SettingsRegistry::Unregister(&m_data->m_settings);
                 m_data.reset();
+
+                CleanUpSceneCoreGenericClassInfo();
+                CleanUpSceneDataGenericClassInfo();
 
                 AZ::NameDictionary::Destroy();
                 UnitTest::AllocatorsFixture::TearDown();

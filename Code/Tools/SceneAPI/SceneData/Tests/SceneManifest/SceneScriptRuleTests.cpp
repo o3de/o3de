@@ -33,6 +33,9 @@
 #include <AzCore/UnitTest/Mocks/MockSettingsRegistry.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
+extern "C" AZ_DLL_EXPORT void CleanUpSceneCoreGenericClassInfo();
+extern "C" AZ_DLL_EXPORT void CleanUpSceneDataGenericClassInfo();
+
 namespace Testing
 {
     struct SceneScriptTest
@@ -110,6 +113,9 @@ namespace Testing
 
             AZ::SettingsRegistry::Unregister(&m_data->m_settings);
             m_data.reset();
+
+            CleanUpSceneDataGenericClassInfo();
+            CleanUpSceneCoreGenericClassInfo();
 
             AZ::NameDictionary::Destroy();
             UnitTest::AllocatorsFixture::TearDown();

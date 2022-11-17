@@ -19,8 +19,10 @@ logger = logging.getLogger('o3de.gem_properties')
 logging.basicConfig(format=utils.LOG_FORMAT)
 
 
-def update_values_in_key_list(existing_values: list, new_values: list or str, remove_values: list or str,
-                      replace_values: list or str):
+def update_values_in_key_list(existing_values: list,
+                              new_values: list or str = None,
+                              remove_values: list or str = None,
+                              replace_values: list or str = None):
     """
     Updates values within a list by first appending values in the new_values list, removing values in the remove_values
     list and then replacing values in the replace_values list
@@ -37,7 +39,7 @@ def update_values_in_key_list(existing_values: list, new_values: list or str, re
     if remove_values:
         remove_values = remove_values.split() if isinstance(remove_values, str) else remove_values
         existing_values = list(filter(lambda value: value not in remove_values, existing_values))
-    if replace_values:
+    if replace_values is not None:
         replace_values = replace_values.split() if isinstance(replace_values, str) else replace_values
         existing_values = replace_values
 
@@ -56,6 +58,7 @@ def edit_gem_props(gem_path: pathlib.Path = None,
                    new_documentation_url: str = None,
                    new_license: str = None,
                    new_license_url: str = None,
+                   new_repo_uri: str = None,
                    new_tags: list or str = None,
                    remove_tags: list or str = None,
                    replace_tags: list or str = None,
@@ -85,24 +88,27 @@ def edit_gem_props(gem_path: pathlib.Path = None,
                          f' characters, and start with a letter.  {new_name}')
             return 1
         update_key_dict['gem_name'] = new_name
-    if new_display:
+    
+    if isinstance(new_display, str):
         update_key_dict['display_name'] = new_display
-    if new_origin:
+    if isinstance(new_origin, str):
         update_key_dict['origin'] = new_origin
-    if new_type:
+    if isinstance(new_type, str):
         update_key_dict['type'] = new_type
-    if new_summary:
+    if isinstance(new_summary, str):
         update_key_dict['summary'] = new_summary
-    if new_icon:
+    if isinstance(new_icon, str):
         update_key_dict['icon_path'] = new_icon
-    if new_requirements:
+    if isinstance(new_requirements, str):
         update_key_dict['requirements'] = new_requirements
-    if new_documentation_url:
+    if isinstance(new_documentation_url,str):
         update_key_dict['documentation_url'] = new_documentation_url
-    if new_license:
-        update_key_dict['license'] = new_license
-    if new_license_url:
+    if isinstance(new_license, str):
+        update_key_dict['license'] = new_license 
+    if isinstance(new_license_url, str):
         update_key_dict['license_url'] = new_license_url
+    if isinstance(new_repo_uri, str):
+        update_key_dict['repo_uri'] = new_repo_uri
 
     update_key_dict['user_tags'] = update_values_in_key_list(gem_json_data.get('user_tags', []), new_tags,
                                                      remove_tags, replace_tags)

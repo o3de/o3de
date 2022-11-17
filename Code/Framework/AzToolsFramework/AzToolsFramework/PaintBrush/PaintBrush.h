@@ -80,10 +80,17 @@ namespace AzToolsFramework
 
         //! Get the color from the underlying data that's located at the brush center
         //! @param brushCenter The current center of the paintbrush.
-        //! @param brushSettings The current paintbrush settings.
-        AZ::Color UseEyedropper(const AZ::Vector3& brushCenter, const PaintBrushSettings& brushSettings);
+        AZ::Color UseEyedropper(const AZ::Vector3& brushCenter);
 
     private:
+        //! For now, the paintbrush will perform all of its calculations in 2D space.
+        //! This could eventually get exposed as a paintbrush setting if we add a paintbrush consumer that needs to paint in 3D space.
+        static constexpr bool PaintIn2D = true;
+
+        //! Adjust the given location to either remain in 3D or get "flattened" to 2D with a Z value of 0
+        //! depending on the value of PaintIn2D.
+        static AZ::Vector3 OptionallyAdjustTo2D(const AZ::Vector3& location);
+
         //! Get an appropriate blend function for the requested blend mode.
         //! @param blendMode The blend mode to use.
         static PaintBrushNotifications::BlendFn GetBlendFunction(const PaintBrushBlendMode& blendMode);
@@ -99,7 +106,7 @@ namespace AzToolsFramework
         void CalculateBrushStampCentersAndStrokeRegion(
             const AZ::Vector3& brushCenter,
             const PaintBrushSettings& brushSettings,
-            AZStd::vector<AZ::Vector2>& brushStampCenters,
+            AZStd::vector<AZ::Vector3>& brushStampCenters,
             AZ::Aabb& strokeRegion);
 
         //! Determine which of the passed-in points are within our current brush stroke, and calculate the opacity at each point.
@@ -110,7 +117,7 @@ namespace AzToolsFramework
         //! @param opacities [out] For each point in validPoints, the opacity of the brush at that point
         static void CalculatePointsInBrush(
             const PaintBrushSettings& brushSettings,
-            const AZStd::vector<AZ::Vector2>& brushStampCenters,
+            const AZStd::vector<AZ::Vector3>& brushStampCenters,
             AZStd::span<const AZ::Vector3> points,
             AZStd::vector<AZ::Vector3>& validPoints,
             AZStd::vector<float>& opacities);
@@ -119,7 +126,7 @@ namespace AzToolsFramework
         AZ::EntityComponentIdPair m_ownerEntityComponentId;
 
         //! Location of the last mouse point that we processed while painting.
-        AZ::Vector2 m_lastBrushCenter;
+        AZ::Vector3 m_lastBrushCenter;
 
         //! Distance that the mouse has traveled since the last time we drew a paint stamp.
         float m_distanceSinceLastDraw = 0.0f;

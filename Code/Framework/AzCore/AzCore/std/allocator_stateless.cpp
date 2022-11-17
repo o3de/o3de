@@ -7,61 +7,26 @@
  */
 
 #include <AzCore/std/allocator_stateless.h>
-#include <AzCore/Memory/OSAllocator.h>
+#include <AzCore/Memory/OSAllocator_Platform.h>
 
 namespace AZStd
 {
-    stateless_allocator::stateless_allocator() = default;
-    stateless_allocator::stateless_allocator(const char*)
-    {}
-
-    const char* stateless_allocator::get_name() const
+    stateless_allocator::pointer stateless_allocator::allocate(size_type byteSize, align_type alignment)
     {
-        return "AZStd::stateless_allocator";
+        return AZ_OS_MALLOC(byteSize, alignment);
     }
 
-    void stateless_allocator::set_name(const char*)
-    {
-    }
-
-    auto stateless_allocator::allocate(size_type byteSize) -> pointer_type
-    {
-        return allocate(byteSize, AZ_DEFAULT_ALIGNMENT, 0);
-    }
-
-    auto stateless_allocator::allocate(size_type byteSize, size_type alignment, int) -> pointer_type
-    {
-        pointer_type address = AZ_OS_MALLOC(byteSize, alignment);
-
-        if (address == nullptr)
-        {
-            AZ_Error("Memory", false, "stateless_allocator ran out of system memory!\n");
-        }
-
-        return address;
-    }
-
-    void stateless_allocator::deallocate(pointer_type ptr, size_type)
+    void stateless_allocator::deallocate(pointer ptr, [[maybe_unused]] size_type byteSize, [[maybe_unused]] align_type alignment)
     {
         AZ_OS_FREE(ptr);
     }
 
-    void stateless_allocator::deallocate(pointer_type ptr, size_type, size_type)
+    stateless_allocator::pointer stateless_allocator::reallocate(pointer ptr, size_type newSize, align_type alignment)
     {
-        AZ_OS_FREE(ptr);
+        return AZ_OS_REALLOC(ptr, newSize, alignment);
     }
 
-    auto stateless_allocator::max_size() const -> size_type
-    {
-        return AZ_CORE_MAX_ALLOCATOR_SIZE;
-    }
-
-    stateless_allocator stateless_allocator::select_on_container_copy_construction() const
-    {
-        return *this;
-    }
-
-    auto stateless_allocator::resize(pointer_type, size_type) -> size_type
+    auto stateless_allocator::resize(pointer, size_type) -> size_type
     {
         return 0;
     }
