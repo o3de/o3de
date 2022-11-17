@@ -138,6 +138,15 @@ AF4 SpdReduce4(AF4 v0, AF4 v1, AF4 v2, AF4 v3)
 [numthreads(256, 1, 1)]
 void MainCS(uint3 workGroupId : SV_GroupID, uint localThreadIndex : SV_GroupIndex)
 {
+    if (workGroupId.x * 64 >= PassSrg::m_imageSize.x ||
+        workGroupId.y * 64 >= PassSrg::m_imageSize.y)
+    {
+        if (localThreadIndex == 0)
+        {
+            SpdIncreaseAtomicCounter(0);
+        }    
+        return;
+    } 
     SpdDownsample(
         AU2(workGroupId.xy), 
         AU1(localThreadIndex),  
