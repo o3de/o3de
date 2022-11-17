@@ -72,7 +72,7 @@ namespace EMotionFX
 
         QString GetAssetSaveFolder() const
         {
-            auto testAssetsPath = AZ::IO::Path(GetEMotionFX().GetAssetCacheFolder()) / "TmpTestAssets";
+            auto testAssetsPath = AZ::IO::Path(GetEMotionFX().GetAssetCacheFolder()) / "tmptestassets";
             QString dataDir = QString::fromUtf8(testAssetsPath.c_str(), aznumeric_cast<int>(testAssetsPath.Native().size()));
 
             if (!QDir(dataDir).exists())
