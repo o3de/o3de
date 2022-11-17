@@ -111,7 +111,7 @@ namespace AzToolsFramework
             void OnComponentModeDelegateConnect(const AZ::EntityComponentIdPair& pairId) override;
             void OnComponentModeDelegateDisconnect(const AZ::EntityComponentIdPair& pairId) override;
 
-            // EditorComponentModeBus overrides ...
+            // EditorComponentModeNotificationBus overrides ...
             void ActiveComponentModeChanged(const AZ::Uuid& componentType) override;
 
             // Member variables

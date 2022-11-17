@@ -444,6 +444,8 @@ namespace AzToolsFramework::ComponentModeFramework
                 &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
                 m_switcherId,
                 componentDataIt->m_buttonId);
+
+            m_activeSwitcherComponent = componentDataIt->m_component;
         }
     }
 } // namespace AzToolsFramework::ComponentModeFramework
