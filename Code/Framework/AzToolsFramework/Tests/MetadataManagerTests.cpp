@@ -125,6 +125,15 @@ namespace UnitTest
                         return AZ::IO::ResultCode::Success;
                     }));
 
+            ON_CALL(*m_fileIOMock, Size(An<const char*>(), _))
+                .WillByDefault(Invoke(
+                    [this](const char* filePath, AZ::u64& size)
+                    {
+                        auto handle = AZ::u32(AZStd::hash<AZStd::string>{}(filePath));
+                        size = m_mockFiles[handle].size();
+                        return AZ::IO::ResultCode::Success;
+                    }));
+
             ON_CALL(*m_fileIOMock, Exists(_))
                 .WillByDefault(Invoke(
                     [this](const char* filePath)
@@ -192,8 +201,33 @@ namespace UnitTest
     TEST_F(MetadataManagerTests, Get_FileDoesNotExist_ReturnsFalse)
     {
         MyTestType test;
+        EXPECT_FALSE(m_metadata->GetValue("mockfile", "/Test", &test, azrtti_typeid<MyTestType>()));
+    }
+
+    TEST_F(MetadataManagerTests, Get_EmptyFile_ReturnsFalse)
+    {
+        AZ::Utils::WriteFile(
+            "", AZStd::string("mockfile") + AzToolsFramework::MetadataManager::MetadataFileExtension);
+
+        MyTestType test;
+        EXPECT_FALSE(m_metadata->GetValue("mockfile", "/Test", &test, azrtti_typeid<MyTestType>()));
+    }
+
+    TEST_F(MetadataManagerTests, Get_InvalidFile_ReturnsFalse)
+    {
+        AZ::Utils::WriteFile("This is not a metadata file", AZStd::string("mockfile") + AzToolsFramework::MetadataManager::MetadataFileExtension);
+
+        MyTestType test;
         AZ_TEST_START_ASSERTTEST;
         EXPECT_FALSE(m_metadata->GetValue("mockfile", "/Test", &test, azrtti_typeid<MyTestType>()));
+        AZ_TEST_STOP_ASSERTTEST(1);
+    }
+
+    TEST_F(MetadataManagerTests, Get_InvalidKey_ReturnsFalse)
+    {
+        MyTestType test;
+        AZ_TEST_START_ASSERTTEST;
+        EXPECT_FALSE(m_metadata->GetValue("mockfile", "Test", &test, azrtti_typeid<MyTestType>()));
         AZ_TEST_STOP_ASSERTTEST(1);
     }
 
@@ -201,6 +235,14 @@ namespace UnitTest
     {
         MyTestType test;
         EXPECT_TRUE(m_metadata->SetValue("mockfile", "/Test", &test, azrtti_typeid<MyTestType>()));
+    }
+
+    TEST_F(MetadataManagerTests, Set_InvalidKey_ReturnsFalse)
+    {
+        MyTestType test;
+        AZ_TEST_START_ASSERTTEST;
+        EXPECT_FALSE(m_metadata->SetValue("mockfile", "Test", &test, azrtti_typeid<MyTestType>()));
+        AZ_TEST_STOP_ASSERTTEST(1);
     }
 
     TEST_F(MetadataManagerTests, SetGet_ReadsValueCorrectly)

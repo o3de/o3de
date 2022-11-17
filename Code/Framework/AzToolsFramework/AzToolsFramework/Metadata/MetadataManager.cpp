@@ -44,29 +44,43 @@ namespace AzToolsFramework
     {
         auto path = ToMetadataPath(file);
 
-        // Load the JSON document into memory
-        auto result = AZ::JsonSerializationUtils::ReadJsonFile(path.Native());
-
-        if (!result)
-        {
-            AZ_Error(
-                "MetadataManager",
-                false,
-                "Metadata file `" AZ_STRING_FORMAT "`: Failed to load metadata JSON - %s\n",
-                AZ_STRING_ARG(file.Native()),
-                result.GetError().c_str());
-            return false;
-        }
-
-        auto& document = result.GetValue();
-
         // Make a JSONPath pointer and validate it
         rapidjson_ly::Pointer pointer(key.data(), key.length());
 
         if (!pointer.IsValid())
         {
+            AZ_Error(
+                "MetadataManager",
+                false,
+                "Invalid JSONPath key `" AZ_STRING_FORMAT "` provided for file " AZ_STRING_FORMAT,
+                AZ_STRING_ARG(key),
+                AZ_STRING_ARG(file.Native()));
             return false;
         }
+
+        // Load the JSON document into memory
+        auto result = AZ::JsonSerializationUtils::ReadJsonFile(path.Native());
+
+        if (!result)
+        {
+            AZ::u64 size = 0;
+            AZ::IO::FileIOBase::GetInstance()->Size(path.Native().c_str(), size);
+
+            if (size > 0)
+            {
+                // Its only an error if the file actually exists, is non-empty and there was a failure reading it
+                AZ_Error(
+                    "MetadataManager",
+                    false,
+                    "Metadata file `" AZ_STRING_FORMAT "`: Failed to load metadata JSON - %s\n",
+                    AZ_STRING_ARG(file.Native()),
+                    result.GetError().c_str());
+            }
+
+            return false;
+        }
+
+        auto& document = result.GetValue();
 
         // Use the pointer to find the value we're trying to read
         rapidjson_ly::Value* value = pointer.Get(document);
@@ -126,6 +140,12 @@ namespace AzToolsFramework
 
         if (!pointer.IsValid())
         {
+            AZ_Error(
+                "MetadataManager",
+                false,
+                "Invalid JSONPath key `" AZ_STRING_FORMAT "` provided for file " AZ_STRING_FORMAT,
+                AZ_STRING_ARG(key),
+                AZ_STRING_ARG(file.Native()));
             return false;
         }
 
@@ -160,6 +180,7 @@ namespace AzToolsFramework
 
         if (!classData)
         {
+            // Error handling is done in GetClassData
             return false;
         }
 
