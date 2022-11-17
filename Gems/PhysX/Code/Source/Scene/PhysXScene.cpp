@@ -30,17 +30,22 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Debug/Profiler.h>
+#include <AzCore/Task/TaskGraph.h>
 #include <AzFramework/Physics/Character.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
 
-
-AZ_CVAR_EXTERNED(bool, physx_batchTransformSync);
-
 namespace PhysX
 {
+    AZ_CVAR_EXTERNED(bool, physx_batchTransformSync);
+
+    AZ_CVAR(bool, physx_parallelTransformSync, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Multithreaded transform update for rigid bodies. "
+        "Only relevant if batched transform update is enabled.");
+    AZ_CVAR(size_t, physx_parallelTransformSyncBatchSize, 250, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "How many rigid bodies should be processed per task");
+
     AZ_CLASS_ALLOCATOR_IMPL(PhysXScene, AZ::SystemAllocator, 0);
 
     /*static*/ thread_local AZStd::vector<physx::PxRaycastHit> PhysXScene::s_rayCastBuffer;
@@ -1311,14 +1316,22 @@ namespace PhysX
     {
         AZ_PROFILE_SCOPE(Physics, "PhysX::FlushTransformSync");
 
-        m_queuedActiveBodyIndices.Apply(
-            [this](AzPhysics::SimulatedBodyIndex bodyIndex)
+        auto transformSync = [this](AzPhysics::SimulatedBodyIndex bodyIndex)
+        {
+            if (bodyIndex < m_simulatedBodies.size() && m_simulatedBodies[bodyIndex].second)
             {
-                if (bodyIndex < m_simulatedBodies.size() && m_simulatedBodies[bodyIndex].second)
-                {
-                    m_simulatedBodies[bodyIndex].second->SyncTransform(m_accumulatedDeltaTime);
-                }
-            });
+                m_simulatedBodies[bodyIndex].second->SyncTransform(m_accumulatedDeltaTime);
+            }
+        };
+
+        if (physx_parallelTransformSync)
+        {
+            m_queuedActiveBodyIndices.ApplyParallel(transformSync, m_pxScene);
+        }
+        else
+        {
+            m_queuedActiveBodyIndices.Apply(transformSync);
+        }
 
         m_queuedActiveBodyIndices.Clear();
         m_accumulatedDeltaTime = 0.0f;
@@ -1346,6 +1359,43 @@ namespace PhysX
     void PhysXScene::QueuedActiveBodyIndices::Apply(const AZStd::function<void(AzPhysics::SimulatedBodyIndex)>& applyFunction)
     {
         AZStd::for_each(m_packedIndices.begin(), m_packedIndices.end(), applyFunction);
+    }
+
+    void PhysXScene::QueuedActiveBodyIndices::ApplyParallel(const AZStd::function<void(AzPhysics::SimulatedBodyIndex)>& applyFunction, physx::PxScene* pxScene)
+    {
+        AZ::TaskGraph taskGraph("Parallel Sync");
+        AZ::TaskGraphEvent finishEvent("Parallel sync event");
+
+        {
+            AZ_PROFILE_SCOPE(Physics, "Sync Setup");
+
+            size_t batchSize = physx_parallelTransformSyncBatchSize;
+            size_t fullSize = m_packedIndices.size();
+            for (size_t i = 0; i < fullSize; i += batchSize)
+            {
+                AZ::TaskDescriptor taskDescriptor{"SyncTask", "Physics"};
+                taskGraph.AddTask(
+                    taskDescriptor,
+                    [start = i, end = AZStd::min(i + batchSize, fullSize), &applyFunction, pxScene, this]()
+                    {
+                        AZ_PROFILE_SCOPE(Physics, "Sync Task");
+
+                        // Note: It is important to keep the scene locked for read for the entire task execution.
+                        // Otherwise the functions reading data from the rigid body will have to lock it locally.
+                        // This causes a huge amount of context switches making the execution of each task ~20x slower. 
+                        PHYSX_SCENE_READ_LOCK(pxScene);
+
+                        for (size_t batchIndex = start; batchIndex < end; ++batchIndex)
+                        {
+                            applyFunction(m_packedIndices[batchIndex]);
+                        }
+                    });
+            }
+
+            taskGraph.Submit(&finishEvent);
+        }
+
+        finishEvent.Wait();
     }
 
 } // namespace PhysX
