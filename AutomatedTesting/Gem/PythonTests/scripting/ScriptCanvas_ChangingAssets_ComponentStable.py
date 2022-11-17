@@ -64,7 +64,7 @@ def ScriptCanvas_ChangingAssets_ComponentStable():
         TestHelper.exit_game_mode(Tests.game_mode_exited)
 
         # 4) Update Script Canvas file on entity's SC component
-        script_canvas_component.change_component_graph_file(ASSET_2)
+        script_canvas_component.set_component_graph_file(ASSET_2)
 
         # 5) Enter and Exit Game Mode
         TestHelper.enter_game_mode(Tests.game_mode_entered)

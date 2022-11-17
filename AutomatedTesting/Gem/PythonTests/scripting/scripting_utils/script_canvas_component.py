@@ -38,7 +38,7 @@ class ScriptCanvasComponent:
 
     def __init__(self, editor_entity: EditorEntity = None, sc_file_path: str = None):
         self.editor_entity = None
-        self.script_canvas_component = None
+        self.script_canvas_components = None
         self.add_component_to_entity(editor_entity, sc_file_path)
 
     def create_new_entity_with_component(self, entity_name: str, sc_file_path: str,
@@ -58,22 +58,23 @@ class ScriptCanvasComponent:
         self.editor_entity = EditorEntity.create_editor_entity_at(position, entity_name)
         self.editor_entity.add_components([SCRIPT_CANVAS_UI])
 
-        self.script_canvas_component = self.editor_entity.get_components_of_type([SCRIPT_CANVAS_UI])[0]
-        self.script_canvas_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
+        self.script_canvas_components = self.editor_entity.get_components_of_type([SCRIPT_CANVAS_UI])
+        self.script_canvas_components[0].set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
 
-    def change_component_graph_file(self, sc_file_path: str):
+    def set_component_graph_file(self, sc_file_path: str, component_index=0) -> None:
         """
         Function for updating the script canvas file being used by the component
 
         param sc_file_path : the string path the new graph file on disk
+        param component_index: the index of the script canvas component (entities can have multiple script canvas components)
 
         returns none
         """
         sourcehandle = scriptcanvas.SourceHandleFromPath(sc_file_path)
-        old_value = self.script_canvas_component.get_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
-        self.script_canvas_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
+        old_value = self.script_canvas_components[component_index].get_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
+        self.script_canvas_components[component_index].set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
 
-        set_value = self.script_canvas_component.get_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
+        set_value = self.script_canvas_components[component_index].get_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
         assert set_value != old_value and set_value is not None, f"Graph file could not be set! {sc_file_path} not found."
 
 
@@ -92,11 +93,11 @@ class ScriptCanvasComponent:
             sourcehandle = scriptcanvas.SourceHandleFromPath(sc_file_path)
 
             self.editor_entity = editor_entity
-            self.script_canvas_component = self.editor_entity.get_components_of_type([SCRIPT_CANVAS_UI])[sc_component_index]
+            self.script_canvas_components = self.editor_entity.get_components_of_type([SCRIPT_CANVAS_UI])[sc_component_index]
 
-            self.script_canvas_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
+            self.script_canvas_components.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
 
-    def set_variable_value(self, variable_name: str, variable_state: VariableState, variable_value) -> None:
+    def set_variable_value(self, variable_name: str, variable_state: VariableState, variable_value, component_index=0) -> None:
         """
         Function for setting a value to a variable on the script canvas component.
 
@@ -106,18 +107,19 @@ class ScriptCanvasComponent:
         param variable_name: the name of the variable
         param variable_state: used/unused variable
         param variable_value: the value to assign to the variable
+        param component_index: the index of the script canvas component (entities can have multiple script canvas components)
 
         returns None
         """
         component_property_path = self.__construct_variable_component_property_path(variable_name, variable_state)
         print(variable_value)
-        self.script_canvas_component.set_component_property_value(component_property_path, variable_value)
+        self.script_canvas_components[component_index].set_component_property_value(component_property_path, variable_value)
 
         #validate the change
-        set_value = self.script_canvas_component.get_component_property_value(component_property_path)
+        set_value = self.script_canvas_components[component_index].get_component_property_value(component_property_path)
         assert set_value == variable_value, f"Component variable {variable_name} was not set properly"
 
-    def __construct_variable_component_property_path(self, variable_name: str, variable_state: VariableState) -> str:
+    def __construct_variable_component_property_path(self, variable_name: str, variable_state: VariableState, component_index=0) -> str:
         """
         helper function for constructing a component property path for the value setting function
 
@@ -140,7 +142,7 @@ class ScriptCanvasComponent:
         component_property_path += variable_name
 
         # test to see if this is a valid path
-        valid_path = self.script_canvas_component.get_component_property_value(component_property_path) is not None
+        valid_path = self.script_canvas_components[component_index].get_component_property_value(component_property_path) is not None
         assert valid_path, "Path to variable was invalid! Check use/unused state or variable name"
 
         return component_property_path
