@@ -11,6 +11,7 @@ import logging
 import os
 import pytest
 from typing import List
+import warnings
 
 # Import LyTestTools
 import ly_test_tools.builtin.helpers as helpers
@@ -77,6 +78,10 @@ blackbox_fbx_tests = [
                                     sub_id=1918494907,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
+                                    product_name='onemeshonematerial/onemeshonematerial.dbgsg.json',
+                                    sub_id=1785487734,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
                                     product_name='onemeshonematerial/onemeshonematerial.dbgsg.xml',
                                     sub_id=556355570, asset_type=b'51f376140d774f369ac67ed70a0ac868'),
                                 asset_db_utils.DBProduct(
@@ -121,6 +126,10 @@ blackbox_fbx_tests = [
                                     product_name='softnaminglod/lodtest.dbgsg',
                                     sub_id=-632012261,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='softnaminglod/lodtest.dbgsg.json',
+                                    sub_id=1220784361,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
                                 asset_db_utils.DBProduct(
                                     product_name='softnaminglod/lodtest.dbgsg.xml',
                                     sub_id=-2036095434,
@@ -221,6 +230,10 @@ blackbox_fbx_tests = [
                                     sub_id=2077268018,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
+                                    product_name='twomeshonematerial/multiple_mesh_one_material.dbgsg.json',
+                                    sub_id=2005967149,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
                                     product_name='twomeshonematerial/multiple_mesh_one_material.dbgsg.xml',
                                     sub_id=1321067730,
                                     asset_type=b'51f376140d774f369ac67ed70a0ac868'
@@ -259,6 +272,10 @@ blackbox_fbx_tests = [
                                     product_name='twomeshlinkedmaterials/multiple_mesh_linked_materials.dbgsg',
                                     sub_id=-1898461950,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='twomeshlinkedmaterials/multiple_mesh_linked_materials.dbgsg.json',
+                                    sub_id=-920599604,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
                                 asset_db_utils.DBProduct(
                                     product_name='twomeshlinkedmaterials/multiple_mesh_linked_materials.dbgsg.xml',
                                     sub_id=-772341513,
@@ -307,6 +324,10 @@ blackbox_fbx_tests = [
                                     sub_id=-262822238,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
+                                    product_name='onemeshmultiplematerials/single_mesh_multiple_materials.dbgsg.json',
+                                    sub_id=1655098364,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
                                     product_name='onemeshmultiplematerials/single_mesh_multiple_materials.dbgsg.xml',
                                     sub_id=1462358160,
                                     asset_type=b'51f376140d774f369ac67ed70a0ac868'),
@@ -353,6 +374,10 @@ blackbox_fbx_tests = [
                                     sub_id=-1543877170,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
+                                    product_name='vertexcolor/vertexcolor.dbgsg.json',
+                                    sub_id=-879818679,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
                                     product_name='vertexcolor/vertexcolor.dbgsg.xml',
                                     sub_id=1743516586,
                                     asset_type=b'51f376140d774f369ac67ed70a0ac868'),
@@ -398,6 +423,10 @@ blackbox_fbx_tests = [
                                     product_name='motion/jack_idle_aim_zup.dbgsg',
                                     sub_id=-517610290,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='motion/jack_idle_aim_zup.dbgsg.json',
+                                    sub_id=-728903306,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
                                 asset_db_utils.DBProduct(
                                     product_name='motion/jack_idle_aim_zup.dbgsg.xml',
                                     sub_id=-817863914,
@@ -449,6 +478,10 @@ blackbox_fbx_tests = [
                                     sub_id=-1607815784,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
+                                    product_name='shaderball/shaderball.dbgsg.json',
+                                    sub_id=-67222749,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
                                     product_name='shaderball/shaderball.dbgsg.xml',
                                     sub_id=-1153118555,
                                     asset_type=b'51f376140d774f369ac67ed70a0ac868'),
@@ -492,6 +525,10 @@ blackbox_fbx_tests = [
                                     product_name='cubewithline/cubewithline.dbgsg',
                                     sub_id=1173066699,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='cubewithline/cubewithline.dbgsg.json',
+                                    sub_id=-1293505439,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
                                 asset_db_utils.DBProduct(
                                     product_name='cubewithline/cubewithline.dbgsg.xml',
                                     sub_id=1357518515,
@@ -540,6 +577,10 @@ blackbox_fbx_tests = [
                                     product_name='morphtargetonematerial/morphtargetonematerial.dbgsg',
                                     sub_id=1414413688,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='morphtargetonematerial/morphtargetonematerial.dbgsg.json',
+                                    sub_id=1407432457,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
                                 asset_db_utils.DBProduct(
                                     product_name='morphtargetonematerial/morphtargetonematerial.dbgsg.xml',
                                     sub_id=1435013070,
@@ -592,6 +633,10 @@ blackbox_fbx_tests = [
                                     product_name='morphtargettwomaterials/morphtargettwomaterials.dbgsg',
                                     sub_id=594741318,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='morphtargettwomaterials/morphtargettwomaterials.dbgsg.json',
+                                    sub_id=862170373,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
                                 asset_db_utils.DBProduct(
                                     product_name='morphtargettwomaterials/morphtargettwomaterials.dbgsg.xml',
                                     sub_id=-990870494,
@@ -646,6 +691,10 @@ blackbox_fbx_special_tests = [
                                     sub_id=896980093,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
+                                    product_name='twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg.json',
+                                    sub_id=-1300898491,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
                                     product_name='twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg.xml',
                                     sub_id=-1556988544,
                                     asset_type=b'51f376140d774f369ac67ed70a0ac868'
@@ -674,6 +723,10 @@ blackbox_fbx_special_tests = [
                                     product_name='twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg',
                                     sub_id=896980093,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg.json',
+                                    sub_id=-1300898491,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
                                 asset_db_utils.DBProduct(
                                     product_name='twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg.xml',
                                     sub_id=-1556988544,
@@ -834,7 +887,7 @@ class TestsFBX_AllPlatforms(object):
 
             # If, after removing all of the hash values, the lists are now identical, emit a warning.
             if hashes_removed_diffs_identical == True:
-                logger.warning(f"Hash values no longer match for debug scene graph between files {expected_file_path} and {actual_file_path}")
+                warnings.warn(f"Hash values no longer match for debug scene graph between files {expected_file_path} and {actual_file_path}")
 
             return expected_hashes, actual_hashes
 
@@ -933,6 +986,7 @@ class TestsFBX_AllPlatforms(object):
             5. Run asset processor
             6. Validate that Asset Processor generates the expected output
         """
+        import shutil
 
         # Copying test assets to project folder
         asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "ModifiedFBXFile_ConsistentProductOutput")
