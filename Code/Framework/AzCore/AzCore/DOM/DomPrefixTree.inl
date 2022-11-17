@@ -388,12 +388,7 @@ namespace AZ::Dom
     template<class T>
     DomPrefixTree<T> DomPrefixTree<T>::DetachSubTree(const Path& path)
     {
-        Node node = DetachNodeAtPath(path);
-        if (!node.IsEmpty())
-        {
-            return DomPrefixTree<T>(AZStd::move(node));
-        }
-        return DomPrefixTree<T>();
+        return DomPrefixTree<T>(DetachNodeAtPath(path));
     }
 
     template<class T>

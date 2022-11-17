@@ -54,46 +54,18 @@ namespace UnitTest
 
         void SetupEnvironment() override
         {
-            // Create AZ::SystemAllocator
-            if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-            }
-
             // Setup Mocks on a stub environment
             m_mocks = new MockHolder();
 
             m_stubEnv.pConsole = &m_mocks->m_console;
             m_stubEnv.pSystem = &m_mocks->m_system;
             gEnv = &m_stubEnv;
-
-            // Create AudioImplAllocator (used by Wwise)
-            if (!AZ::AllocatorInstance<AudioImplAllocator>::IsReady())
-            {
-                AudioImplAllocator::Descriptor allocDesc;
-                allocDesc.m_allocationRecords = false;
-                allocDesc.m_heap.m_numFixedMemoryBlocks = 1;
-                allocDesc.m_heap.m_fixedMemoryBlocksByteSize[0] = 8 << 20;
-                allocDesc.m_heap.m_fixedMemoryBlocks[0] = AZ::AllocatorInstance<AZ::OSAllocator>::Get().Allocate(allocDesc.m_heap.m_fixedMemoryBlocksByteSize[0], allocDesc.m_heap.m_memoryBlockAlignment);
-
-                AZ::AllocatorInstance<AudioImplAllocator>::Create(allocDesc);
-            }
         }
 
         void TeardownEnvironment() override
         {
-            if (AZ::AllocatorInstance<AudioImplAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AudioImplAllocator>::Destroy();
-            }
-
             delete m_mocks;
             m_mocks = nullptr;
-
-            if (AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-            }
         }
 
     private:

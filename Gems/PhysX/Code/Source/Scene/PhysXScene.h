@@ -94,6 +94,7 @@ namespace PhysX
             void IncreaseCapacity(size_t extraSize);
             void Clear();
             void Apply(const AZStd::function<void(AzPhysics::SimulatedBodyIndex)>& applyFunction);
+            void ApplyParallel(const AZStd::function<void(AzPhysics::SimulatedBodyIndex)>& applyFunction, physx::PxScene* pxScene);
 
         private:
             AZStd::unordered_set<AzPhysics::SimulatedBodyIndex> m_uniqueIndices;

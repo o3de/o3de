@@ -225,6 +225,7 @@ namespace O3DE::ProjectManager
         gemSetupLayout->addWidget(rightPaneSubheader);
 
         LoadButtonsFromGemTemplatePaths(gemSetupLayout);
+
         m_formFolderRadioButton = new QRadioButton("Choose existing template");
         m_formFolderRadioButton->setObjectName("createAGem");
         m_radioButtonGroup->addButton(m_formFolderRadioButton);
@@ -233,6 +234,11 @@ namespace O3DE::ProjectManager
         m_gemTemplateLocation->setObjectName("createAGemRadioButtonSubFormField");
         gemSetupLayout->addWidget(m_formFolderRadioButton);
         gemSetupLayout->addWidget(m_gemTemplateLocation);
+        m_gemTemplateLocation->setEnabled(false);
+
+        connect(m_formFolderRadioButton, &QRadioButton::toggled, this, [=](bool checked){
+            m_gemTemplateLocation->setEnabled(checked);
+        });
 
         return gemSetupScrollArea;
     }
