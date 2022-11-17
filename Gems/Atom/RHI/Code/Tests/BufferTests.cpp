@@ -587,7 +587,7 @@ namespace UnitTest
         ParallelGetBufferViewHelper(8, 100, 5, testCase);
 
         // This value is checked in as 1 so this test doesn't take too much time, but can be increased locally to soak the test.
-        const size_t attempts = 10;
+        const size_t attempts = 1;
 
         for (size_t i = 0; i < attempts; ++i)
         {
