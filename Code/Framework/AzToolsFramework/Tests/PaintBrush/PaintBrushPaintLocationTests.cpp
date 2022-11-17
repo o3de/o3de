@@ -82,7 +82,6 @@ namespace UnitTest
                     valueLookupFn(points, validPoints, opacities);
 
                     // We should only have the 5 points along the + in validPoints.
-                    EXPECT_EQ(validPoints.size(), 5);
                     const AZStd::vector<AZ::Vector3> expectedValidPoints = {
                         AZ::Vector3(dirtyArea.GetCenter().GetX(), dirtyArea.GetMin().GetY(), 0.0f),
                         AZ::Vector3(dirtyArea.GetMin().GetX(), dirtyArea.GetCenter().GetY(), 0.0f),

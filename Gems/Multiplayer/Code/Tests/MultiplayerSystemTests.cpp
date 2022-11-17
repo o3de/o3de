@@ -102,8 +102,6 @@ namespace Multiplayer
             m_netBindDescriptor.reset();
             m_serializeContext.reset();
             m_behaviorContext.reset();
-
-            TeardownAllocator();
         }
 
         void TestInitEvent([[maybe_unused]] AzNetworking::INetworkInterface* network)

@@ -70,6 +70,13 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(EditorLayer, AZ::SystemAllocator, 0);
             AZ_TYPE_INFO(EditorLayer, "{82C661FE-617C-471D-98D5-289570137714}");
 
+            EditorLayer() = default;
+            EditorLayer(const EditorLayer&) = delete;
+            EditorLayer(EditorLayer&&) = delete;
+            EditorLayer& operator=(const EditorLayer&) = delete;
+            EditorLayer& operator=(EditorLayer&&) = delete;
+            ~EditorLayer();
+
             static void Reflect(AZ::ReflectContext* context);
 
             EntityList m_layerEntities;

@@ -58,7 +58,7 @@ namespace UnitTest
         typename TestFixture::allocator_type myalloc;
 
         EXPECT_EQ(0, myalloc.get_allocated_size());
-        typename TestFixture::allocator_type::pointer_type data = myalloc.allocate();
+        typename TestFixture::allocator_type::pointer data = myalloc.allocate();
         EXPECT_NE(nullptr, data);
         EXPECT_EQ(sizeof(typename TestFixture::allocator_type::value_type), myalloc.get_allocated_size());
         EXPECT_EQ(sizeof(typename TestFixture::allocator_type::value_type) * (s_allocatorCapacity - 1), myalloc.max_size() - myalloc.get_allocated_size());
@@ -73,8 +73,8 @@ namespace UnitTest
 
         // Allocate N (6) and free half (evens)
         constexpr size_t dataSize = 6; // keep this number even
-        typename TestFixture::allocator_type::pointer_type data[dataSize];
-        AZStd::set<typename TestFixture::allocator_type::pointer_type> dataSet; // to test for uniqueness
+        typename TestFixture::allocator_type::pointer data[dataSize];
+        AZStd::set<typename TestFixture::allocator_type::pointer> dataSet; // to test for uniqueness
         for (size_t i = 0; i < dataSize; ++i)
         {
             data[i] = myalloc.allocate();
@@ -114,7 +114,7 @@ namespace UnitTest
                 // iteration
                 constexpr size_t numIterations = 100;
                 constexpr size_t numValues = s_allocatorCapacity / s_numberThreads;
-                AZStd::array<typename TestFixture::allocator_type::pointer_type, numValues> allocations;
+                AZStd::array<typename TestFixture::allocator_type::pointer, numValues> allocations;
                 for (int iter = 0; iter < numIterations; ++iter)
                 {
                     // allocate
