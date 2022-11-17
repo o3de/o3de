@@ -38,6 +38,7 @@ namespace AzToolsFramework::ComponentModeFramework
     ComponentModeSwitcher::ComponentModeSwitcher()
     {
         ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
+        EditorComponentModeNotificationBus::Handler::BusConnect(GetEntityContextId());
         EntityCompositionNotificationBus::Handler::BusConnect();
         ToolsApplicationNotificationBus::Handler::BusConnect();
         AzFramework::ViewportImGuiNotificationBus::Handler::BusConnect();
@@ -76,9 +77,6 @@ namespace AzToolsFramework::ComponentModeFramework
         // create handler for switcher buttons to activate component mode on click
         auto handlerFunc = [this](ViewportUi::ButtonId buttonId)
         {
-            ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton, m_switcherId, buttonId);
-
             ActivateComponentMode(buttonId);
         };
 
@@ -97,6 +95,7 @@ namespace AzToolsFramework::ComponentModeFramework
         AzFramework::ViewportImGuiNotificationBus::Handler::BusDisconnect();
         ToolsApplicationNotificationBus::Handler::BusDisconnect();
         EntityCompositionNotificationBus::Handler::BusDisconnect();
+        EditorComponentModeNotificationBus::Handler::BusDisconnect();
         ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
 
         ViewportUi::ViewportUiRequestBus::Event(
@@ -269,9 +268,6 @@ namespace AzToolsFramework::ComponentModeFramework
         {
             AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
                 &ComponentModeSystemRequests::ChangeComponentMode, componentData->m_component->GetUnderlyingComponentType());
-
-            ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton, m_switcherId, buttonId);
         }
         else
         {
@@ -285,21 +281,25 @@ namespace AzToolsFramework::ComponentModeFramework
     {
         if (mode == ViewportEditorMode::Component)
         {
-            // when component mode ends, change the active button to transform
-            m_activeSwitcherComponent = nullptr;
+            // wait one frame to check if component mode has been re-entered before changing back to transform
+            AZ::TickBus::QueueFunction(
+                [this]()
+                {
+                    bool inComponentMode = false;
+                    AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
+                        inComponentMode, &ComponentModeSystemRequests::InComponentMode);
 
-            bool inComponentMode = false;
-            AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
-                inComponentMode, &ComponentModeSystemRequests::InComponentMode);
+                    if (!inComponentMode)
+                    {
+                        ViewportUi::ViewportUiRequestBus::Event(
+                            ViewportUi::DefaultViewportId,
+                            &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
+                            m_switcherId,
+                            m_transformButtonId);
 
-            if (!inComponentMode)
-            {
-                ViewportUi::ViewportUiRequestBus::Event(
-                    ViewportUi::DefaultViewportId,
-                    &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
-                    m_switcherId,
-                    m_transformButtonId);
-            }
+                        m_activeSwitcherComponent = nullptr;
+                    }
+                });
         }
     }
 
@@ -424,6 +424,26 @@ namespace AzToolsFramework::ComponentModeFramework
         if (AZStd::ranges::find(selectedEntityIds, entityId) != selectedEntityIds.end())
         {
             RemoveComponentButton(pairId);
+        }
+    }
+
+    void ComponentModeSwitcher::ActiveComponentModeChanged([[maybe_unused]] const AZ::Uuid& componentType)
+    {
+        // ActiveComponentModeChanged refers to switching within component mode
+        // i.e. cycling through the Spline component and Tube Shape component
+        if (auto componentDataIt = AZStd::ranges::find_if(
+                m_addedComponents,
+                [componentType](const ComponentData& componentInfo)
+                {
+                    return componentInfo.m_component->RTTI_GetType() == componentType;
+                });
+            componentDataIt != m_addedComponents.end())
+        {
+            ViewportUi::ViewportUiRequestBus::Event(
+                ViewportUi::DefaultViewportId,
+                &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
+                m_switcherId,
+                componentDataIt->m_buttonId);
         }
     }
 } // namespace AzToolsFramework::ComponentModeFramework
