@@ -177,28 +177,9 @@ namespace AZ
 
             void PrepareMockPythonInterface()
             {
-                ON_CALL(m_data->m_editorPythonEventsInterface, StartPython(::testing::_))
-                    .WillByDefault([](bool) -> bool
-                    {
-                        return true;
-                    });
-
-                ON_CALL(m_data->m_editorPythonEventsInterface, StopPython(::testing::_))
-                    .WillByDefault([](bool) -> bool
-                    {
-                        return true;
-                    });
-
-                ON_CALL(m_data->m_editorPythonEventsInterface, IsPythonActive())
-                    .WillByDefault([]() -> bool
-                    {
-                        return true;
-                    });
-
-                ON_CALL(m_data->m_editorPythonEventsInterface, WaitForInitialization())
-                    .WillByDefault([]()
-                    {
-                    });
+                ON_CALL(m_data->m_editorPythonEventsInterface, StartPython(::testing::_)).WillByDefault(::testing::Return(true));
+                ON_CALL(m_data->m_editorPythonEventsInterface, StopPython(::testing::_)).WillByDefault(::testing::Return(true));
+                ON_CALL(m_data->m_editorPythonEventsInterface, IsPythonActive()).WillByDefault(::testing::Return(true));
 
                 ON_CALL(m_data->m_editorPythonEventsInterface, ExecuteWithLock(::testing::_))
                     .WillByDefault([](auto callback)

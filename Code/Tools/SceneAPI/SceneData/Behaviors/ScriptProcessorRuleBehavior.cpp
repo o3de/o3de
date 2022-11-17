@@ -440,8 +440,9 @@ namespace AZ::SceneAPI::Behaviors
         }
         else
         {
-            AZ_Warning("scene", false,
-                "The scene (%s) attempted to prepare Python but Python can not start",
+            AZ_Error("scene", false,
+                "The scene (%s) attempted to prepare Python but Python can not start. "
+                "Enable the EditorPythonBindings gem to fix this situation.",
                 context.GetScene().GetSourceFilename().c_str());
         }
 
