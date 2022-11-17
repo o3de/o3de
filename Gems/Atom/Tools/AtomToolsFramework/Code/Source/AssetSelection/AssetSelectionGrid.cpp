@@ -54,9 +54,14 @@ namespace AtomToolsFramework
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
     }
 
-    void AssetSelectionGrid::Reset()
+    void AssetSelectionGrid::Clear()
     {
         m_ui->m_assetList->clear();
+    }
+
+    void AssetSelectionGrid::Populate()
+    {
+        Clear();
 
         for (const auto& path : GetPathsInSourceFoldersMatchingFilter(m_filterFn))
         {

@@ -51,7 +51,22 @@ namespace AtomToolsFramework
             return path.ends_with(AZ::Render::LightingPreset::Extension);
         }, QSize(lightingPresetDialogItemSize, lightingPresetDialogItemSize), GetToolMainWindow()));
 
+        // Add the last known paths for lighting and model presets to the browsers so they are not empty while the rest of the data is
+        // being processed in the background.
+        EntityPreviewViewportSettingsRequestBus::Event(
+            m_toolId,
+            [this](EntityPreviewViewportSettingsRequests* viewportRequests)
+            {
+                m_lightingPresetDialog->AddPath(viewportRequests->GetLastLightingPresetPath());
+                m_modelPresetDialog->AddPath(viewportRequests->GetLastModelPresetPath());
+            });
+
+        // Using a future watcher to monitor a background process that enumerates all of the lighting and model presets in the project.
+        // After the background process is complete, the watcher will receive the finished signal and add all of the enumerated files to
+        // the browsers.
         connect(&m_watcher, &QFutureWatcher<AZStd::vector<AZStd::string>>::finished, this, [this](){
+            m_lightingPresetDialog->Clear();
+            m_modelPresetDialog->Clear();
             for (const auto& path : m_watcher.result())
             {
                 m_lightingPresetDialog->AddPath(path);

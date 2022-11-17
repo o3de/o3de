@@ -43,7 +43,8 @@ namespace AtomToolsFramework
 
         ~AssetSelectionGrid();
 
-        void Reset();
+        void Clear();
+        void Populate();
         void SetFilter(const FilterFn& filterFn);
         const FilterFn& GetFilter() const;
         void AddPath(const AZStd::string& path);

@@ -54,8 +54,8 @@ namespace AtomToolsFramework
             verticalLayout->addWidget(sourceSelectionComboBoxLabel);
 
             m_sourceSelectionComboBox = new AssetSelectionComboBox(filterFn, this);
-            m_sourceSelectionComboBox->Reset();
             m_sourceSelectionComboBox->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
+            m_sourceSelectionComboBox->Populate();
             m_sourceSelectionComboBox->SelectPath(defaultSourcePath.toUtf8().constData());
             m_sourcePath = m_sourceSelectionComboBox->GetSelectedPath().c_str();
             QObject::connect(m_sourceSelectionComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {

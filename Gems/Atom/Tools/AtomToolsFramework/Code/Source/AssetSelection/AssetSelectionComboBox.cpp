@@ -41,10 +41,15 @@ namespace AtomToolsFramework
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
     }
 
-    void AssetSelectionComboBox::Reset()
+    void AssetSelectionComboBox::Clear()
     {
         clear();
         m_thumbnailKeys.clear();
+    }
+
+    void AssetSelectionComboBox::Populate()
+    {
+        Clear();
 
         for (const auto& path : GetPathsInSourceFoldersMatchingFilter(m_filterFn))
         {

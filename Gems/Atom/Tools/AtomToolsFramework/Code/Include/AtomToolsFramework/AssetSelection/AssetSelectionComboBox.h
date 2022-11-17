@@ -27,7 +27,8 @@ namespace AtomToolsFramework
         AssetSelectionComboBox(const FilterFn& filterFn, QWidget* parent = 0);
         ~AssetSelectionComboBox();
 
-        void Reset();
+        void Clear();
+        void Populate();
         void AddPath(const AZStd::string& path);
         void RemovePath(const AZStd::string& path);
         void SetFilter(const FilterFn& filterFn);
