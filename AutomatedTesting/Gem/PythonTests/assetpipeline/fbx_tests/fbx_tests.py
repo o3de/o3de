@@ -750,7 +750,7 @@ class TestsFBX_AllPlatforms(object):
                                            + product.product_name
 
     @staticmethod
-    def compare_scene_debug_file(asset_processor, expected_file_path, actual_file_path):
+    def compare_scene_debug_file(asset_processor, expected_file_path, actual_file_path, expected_hashes_to_skip = None, actual_hashes_to_skip = None):
         import re
 
         debug_graph_path = os.path.join(asset_processor.project_test_cache_folder(), actual_file_path)
@@ -771,43 +771,72 @@ class TestsFBX_AllPlatforms(object):
 
         # If both scene graphs are identical, then bail, everything is working as expected.
         if len(diff_actual) == 0 and len(diff_expected) == 0:
-            return
+            return None, None
 
         # If one scene has more lines than the other, it's always an error
         assert len(diff_actual) == len(diff_expected), "Scene mismatch - different line counts"
 
-        # The last check is to see if the difference is just hash mismatch.
-        # If so, make it a warning instead of an error for now, until hash mismatches can be better handled.
-        diff_actual_hashes_removed = []
-        diff_expected_hashes_removed = []
+        # If this is the XML debug file, then it will be difficult to verify if a line is a hash line or another integer.
+        # However, because XML files are always compared after standard dbgsg files, the hashes from that initial comparison can be used here to check.
+        is_xml_dbgsg = os.path.splitext(expected_file_path)[-1].lower() == ".xml"
 
-        # If any remaining entries aren't hash differences, then this test should fail.
-        any_non_hash_entries = False
+        if is_xml_dbgsg:
+            # If the difference count doesn't match the non-xml file, then it's not just a hash mis-match, fail.
+            assert len(expected_hashes_to_skip) == len(diff_expected), "Scene mismatch"
+            assert len(actual_hashes_to_skip) == len(diff_actual), "Scene mismatch"                
 
-        hash_regex = re.compile("(.*Hash: )([0-9]*)")
+            # This test did a simple line by line comparison, and didn't actually load the XML data into a graph to compare.
+            # Which means that the relevant info for this field to make it clear that it is a hash and not another number is not immediately available.
+            # So instead, extract the number and compare it to the known list of hashes.
+            # If this regex fails or the number isn't in the hash list, then it means this is a non-hash difference and should cause a test failure.
+            # Otherwise, if it's just a hash difference, it can be a warning for now, while the information being hashed is not stable across platforms.
+            xml_number_regex = re.compile('.*<Class name="AZ::u64" field="m_data" value="([0-9]*)" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"\\/>')
 
-        for list_entry in diff_actual:
-            match_result = hash_regex.match(list_entry)
-            if match_result:
-                diff_actual_hashes_removed.append(match_result.group(1))
-            else:
-                any_non_hash_entries = True
+            for list_entry in diff_actual:
+                match_result = xml_number_regex.match(list_entry)
+                assert match_result, "Scene mismatch"
+                data_value = match_result.group(1)
+                # This value doesn't match the list of known hash differences, so mark this test as failed.
+                assert (data_value in actual_hashes_to_skip), "Scene mismatch"
                 
-        for list_entry in diff_expected:
-            match_result = hash_regex.match(list_entry)
-            if match_result:
+            for list_entry in diff_expected:
+                match_result = xml_number_regex.match(list_entry)
+                assert match_result, "Scene mismatch"
+                data_value = match_result.group(1)
+                # This value doesn't match the list of known hash differences, so mark this test as failed.
+                assert (data_value in expected_hashes_to_skip), "Scene mismatch"
+
+            return expected_hashes_to_skip, actual_hashes_to_skip
+        else:
+            # The last check is to see if the difference is just hash mismatch.
+            # If so, make it a warning instead of an error for now, until hash mismatches can be better handled.
+            diff_actual_hashes_removed = []
+            diff_expected_hashes_removed = []
+
+            hash_regex = re.compile("(.*Hash: )([0-9]*)")
+
+            actual_hashes = []
+            expected_hashes = []
+
+            for list_entry in diff_actual:
+                match_result = hash_regex.match(list_entry)
+                assert match_result, "Scene mismatch"
+                diff_actual_hashes_removed.append(match_result.group(1))
+                actual_hashes.append(match_result.group(2))
+                
+            for list_entry in diff_expected:
+                match_result = hash_regex.match(list_entry)
+                assert match_result, "Scene mismatch"
                 diff_expected_hashes_removed.append(match_result.group(1))
-            else:
-                any_non_hash_entries = True
+                expected_hashes.append(match_result.group(2))
 
-        logger.info(f"any_non_hash_entries: {any_non_hash_entries}")
-        assert any_non_hash_entries == False, "Scene mismatch"
+            hashes_removed_diffs_identical = utils.compare_lists(diff_actual_hashes_removed, diff_expected_hashes_removed)
 
-        hashes_removed_diffs_identical = utils.compare_lists(diff_actual_hashes_removed, diff_expected_hashes_removed)
+            # If, after removing all of the hash values, the lists are now identical, emit a warning.
+            if hashes_removed_diffs_identical == True:
+                logger.warning(f"Hash values no longer match for debug scene graph between files {expected_file_path} and {actual_file_path}")
 
-        # If, after removing all of the hash values, the lists are now identical, emit a warning.
-        if hashes_removed_diffs_identical == True:
-            logger.warning(f"Hash values no longer match for debug scene graph between files {expected_file_path} and {actual_file_path}")
+            return expected_hashes, actual_hashes
 
 
     # Helper to run Asset Processor with debug output enabled and Atom output disabled
@@ -870,12 +899,14 @@ class TestsFBX_AllPlatforms(object):
         if blackbox_params.scene_debug_file:
             scene_debug_file = blackbox_params.override_scene_debug_file if overrideAsset \
                 else blackbox_params.scene_debug_file
-            self.compare_scene_debug_file(asset_processor, scene_debug_file, blackbox_params.scene_debug_file)
+            expected_hashes_to_skip, actual_hashes_to_skip = self.compare_scene_debug_file(asset_processor, scene_debug_file, blackbox_params.scene_debug_file)
 
             # Run again for the .dbgsg.xml file
             self.compare_scene_debug_file(asset_processor,
                                           scene_debug_file + ".xml",
-                                          blackbox_params.scene_debug_file + ".xml")
+                                          blackbox_params.scene_debug_file + ".xml",
+                                          expected_hashes_to_skip = expected_hashes_to_skip,
+                                          actual_hashes_to_skip = actual_hashes_to_skip)
 
         # Check that each given source asset resulted in the expected jobs and products.
         self.populate_asset_info(workspace, project, assetsToValidate)
@@ -917,10 +948,11 @@ class TestsFBX_AllPlatforms(object):
         assert os.path.exists(scene_debug_actual)
 
         # Compare the dbgsg files to ensure expected outputs
-        self.compare_scene_debug_file(asset_processor, scene_debug_expected, scene_debug_actual)
+        expected_hashes_to_skip, actual_hashes_to_skip = self.compare_scene_debug_file(asset_processor, scene_debug_expected, scene_debug_actual)
 
         # Run again for the .dbgsg.xml files
-        self.compare_scene_debug_file(asset_processor, scene_debug_expected + ".xml", scene_debug_actual + ".xml")
+        self.compare_scene_debug_file(asset_processor, scene_debug_expected + ".xml", scene_debug_actual + ".xml",
+            expected_hashes_to_skip=expected_hashes_to_skip, actual_hashes_to_skip=actual_hashes_to_skip)
 
         # Remove the files to be replaced from the source test asset folder
         filestoremove = [
@@ -944,10 +976,11 @@ class TestsFBX_AllPlatforms(object):
         self.run_ap_debug_skip_atom_output(asset_processor)
 
         # Compare the new .dbgsg files with their expected outputs
-        self.compare_scene_debug_file(asset_processor, scene_debug_expected, scene_debug_actual)
+        expected_hashes_to_skip, actual_hashes_to_skip = self.compare_scene_debug_file(asset_processor, scene_debug_expected, scene_debug_actual)
 
         # Run again for the .dbgsg.xml file
-        self.compare_scene_debug_file(asset_processor, scene_debug_expected + ".xml", scene_debug_actual + ".xml")
+        self.compare_scene_debug_file(asset_processor, scene_debug_expected + ".xml", scene_debug_actual + ".xml",
+            expected_hashes_to_skip=expected_hashes_to_skip, actual_hashes_to_skip=actual_hashes_to_skip)
 
     def test_FBX_MixedCaseFileExtension_OutputSucceeds(self, workspace, ap_setup_fixture, asset_processor):
         """
@@ -1007,9 +1040,11 @@ class TestsFBX_AllPlatforms(object):
                                               "onemeshonematerial", "onemeshonematerial.dbgsg")
             assert os.path.exists(scene_debug_actual), f"Scene debug output missing after running AP on {extension}."
 
-            self.compare_scene_debug_file(asset_processor, scene_debug_expected, scene_debug_actual)
+            expected_hashes_to_skip, actual_hashes_to_skip = self.compare_scene_debug_file(asset_processor, scene_debug_expected, scene_debug_actual)
 
             # Run again for the .dbgsg.xml file
             self.compare_scene_debug_file(asset_processor,
                                           scene_debug_expected + ".xml",
-                                          scene_debug_actual + ".xml")
+                                          scene_debug_actual + ".xml",
+                                          expected_hashes_to_skip = expected_hashes_to_skip,
+                                          actual_hashes_to_skip = actual_hashes_to_skip)
