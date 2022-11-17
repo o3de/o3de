@@ -20,8 +20,6 @@
 
 namespace UnitTest
 {
-    // PrefabTestToolsApplication
-
     PrefabTestToolsApplication::PrefabTestToolsApplication(AZStd::string appName)
         : ToolsTestApplication(AZStd::move(appName))
     {
@@ -32,8 +30,6 @@ namespace UnitTest
         // Make sure our prefab tests always run with prefabs enabled
         return true;
     }
-
-    // PrefabTestFixture
 
     void PrefabTestFixture::SetUpEditorFixtureImpl()
     {
@@ -73,7 +69,7 @@ namespace UnitTest
             m_undoStack, &AzToolsFramework::ToolsApplicationRequestBus::Events::GetUndoStack);
         AZ_Assert(m_undoStack, "Failed to look up undo stack from tools application");
 
-        // This ensures the flag about (whether root prefab is assigned) in editor entity ownership is set to true.
+        // This ensures that the flag (if root prefab is assigned) in prefab editor entity ownership service is set to true.
         // Public prefab operations like "create prefab" will fail if the flag is off.
         CreateRootPrefab();
     }
@@ -188,10 +184,9 @@ namespace UnitTest
 
     AZ::Entity* PrefabTestFixture::CreateEntity(const AZStd::string& entityName, bool shouldActivate)
     {
-        // Circumvent the EntityContext system and generate a new entity with a transform component
         AZ::Entity* newEntity = aznew AZ::Entity(entityName);
         
-        if(shouldActivate)
+        if (shouldActivate)
         {
             newEntity->Init();
             newEntity->Activate();

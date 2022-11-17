@@ -75,7 +75,12 @@ namespace UnitTest
         AZ::EntityId InstantiateEditorPrefab(AZ::IO::PathView filePath, AZ::EntityId parentId);
         //! @}
 
-        //! Creates loose entity with no components. Components can be added by AddRequiredEditorComponents.
+        //! Creates a loose entity object with no components.
+        //! This creates an entity object through aznew rather than calling public prefab APIs.
+        //! Note: Editor components can be added manually or by calling AddRequiredEditorComponents.
+        //! @param entityName Name of the new entity.
+        //! @param shouldActivate Flag that decides if the new entity should be activated after creation.
+        //! @return The new entity.
         AZ::Entity* CreateEntity(const AZStd::string& entityName, bool shouldActivate = true);
 
         //! Helper function to get container entity id of root prefab.
@@ -115,13 +120,11 @@ namespace UnitTest
         //! will be added during entity and prefab creation, eg transform component, child entity sort component.
         //! @{
         void CreateEditorRepresentation(AZ::Entity* entity) override;
-        void BrowseForAssets(AzToolsFramework::AssetBrowser::AssetSelectionModel& selection) override
+        void BrowseForAssets([[maybe_unused]] AzToolsFramework::AssetBrowser::AssetSelectionModel& selection) override
         {
-            AZ_UNUSED(selection);
         }
-        int GetIconTextureIdFromEntityIconPath(const AZStd::string& entityIconPath) override
+        int GetIconTextureIdFromEntityIconPath([[maybe_unused]] const AZStd::string& entityIconPath) override
         {
-            AZ_UNUSED(entityIconPath);
             return 0;
         }
         //! @}
