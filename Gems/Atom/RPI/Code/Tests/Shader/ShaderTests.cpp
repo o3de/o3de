@@ -300,7 +300,7 @@ namespace UnitTest
             srgLayout->SetName(srgId);
             srgLayout->SetBindingSlot(aznumeric_caster(index));
             srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{
-                srgId, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, static_cast<uint32_t>(index) });
+                srgId, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, static_cast<uint32_t>(index), static_cast<uint32_t>(index)});
 
             EXPECT_TRUE(srgLayout->Finalize());
 
@@ -311,7 +311,7 @@ namespace UnitTest
         {
             Name srgId = CreateShaderResourceGroupId(index);
             AZ::RHI::ShaderResourceGroupBindingInfo bindingInfo;
-            bindingInfo.m_resourcesRegisterMap.insert({ srgId, RHI::ResourceBindingInfo{RHI::ShaderStageMask::Vertex, static_cast<uint32_t>(index)} });
+            bindingInfo.m_resourcesRegisterMap.insert({ srgId, RHI::ResourceBindingInfo{RHI::ShaderStageMask::Vertex, static_cast<uint32_t>(index), static_cast<uint32_t>(index)} });
             return bindingInfo;
         }
 
