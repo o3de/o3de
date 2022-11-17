@@ -53,10 +53,10 @@ namespace AzToolsFramework
             // contain the transform data, which may generate unexpected patches to update transform.
             if (parentEntityId == focusedInstance.GetContainerEntityId())
             {
-                PrefabDom parentContainerEntityDom;
-                m_instanceDomGeneratorInterface->GenerateEntityDom(parentContainerEntityDom, parentEntity);
+                PrefabDom parentEntityDomBeforeAddingEntity;
+                m_instanceDomGeneratorInterface->GenerateEntityDom(parentEntityDomBeforeAddingEntity, parentEntity);
 
-                if (parentContainerEntityDom.IsNull())
+                if (parentEntityDomBeforeAddingEntity.IsNull())
                 {
                     AZ_Error("Prefab", false, "PrefabUndoAddEntity::Capture - "
                         "Cannot retrieve parent container entity DOM from root template via instance DOM generator.");
@@ -64,9 +64,9 @@ namespace AzToolsFramework
                 else
                 {
                     PrefabUndoUtils::GenerateUpdateEntityPatch(
-                        m_redoPatch, parentContainerEntityDom, parentEntityDomAfterAddingEntity, parentEntityAliasPath);
+                        m_redoPatch, parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity, parentEntityAliasPath);
                     PrefabUndoUtils::GenerateUpdateEntityPatch(
-                        m_undoPatch, parentEntityDomAfterAddingEntity, parentContainerEntityDom, parentEntityAliasPath);
+                        m_undoPatch, parentEntityDomAfterAddingEntity, parentEntityDomBeforeAddingEntity, parentEntityAliasPath);
                 }
             }
             else
