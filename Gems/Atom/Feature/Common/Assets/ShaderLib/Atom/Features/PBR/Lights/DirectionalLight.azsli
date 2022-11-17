@@ -23,6 +23,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
     // - If transmission mode is thin object -> ignore back lighting
     float transmissionDistance = -1.0f;
 
+#if ENABLE_SHADOWS
     if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
     {           
 #if ENABLE_TRANSMISSION
@@ -44,11 +45,12 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
         {
             litRatio = DirectionalLightShadow::GetVisibility(shadowIndex, surface.position, surface.vertexNormal, screenUv);
         }
-#else
+#else 
         litRatio = DirectionalLightShadow::GetVisibility(shadowIndex, surface.position, surface.vertexNormal, screenUv);
-#endif
+#endif // ENABLE_TRANSMISSION
 
     }
+#endif // ENABLE_SHADOWS
 
     // Add the lighting contribution for each directional light
     for (int index = 0; index < SceneSrg::m_directionalLightCount; index++)
@@ -69,12 +71,14 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
         float currentLitRatio = 1.0f;
         float currentTransmissionDistance = -1.0f;
 
+#if ENABLE_SHADOWS
         if (o_enableShadows && index == shadowIndex)
         {
             // Add contribution only if current directional light is the active one for shadows
             currentLitRatio = litRatio;
             currentTransmissionDistance = transmissionDistance;
         }
+#endif
 
         // Transmission contribution
 #if ENABLE_TRANSMISSION
@@ -89,11 +93,12 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
             customDebugFloats.rgb = currentLitRatio.xxx;
         }
     }
-    
+
+#if ENABLE_SHADOWS    
     // Add debug coloring for directional light shadow
     if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
     {
         lightingData.specularLighting = DirectionalLightShadow::AddDebugColoring(lightingData.specularLighting, shadowIndex, surface.position, surface.vertexNormal, screenUv);
     }
-
+#endif
 }
