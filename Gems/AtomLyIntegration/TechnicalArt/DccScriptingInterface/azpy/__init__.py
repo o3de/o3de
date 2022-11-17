@@ -31,7 +31,7 @@ import logging as _logging
 _PACKAGENAME = 'azpy'
 
 __all__ = ['constants',
-            'config_utils',
+           'config_utils',
            'env_bool',
            'return_stub',
            'logger',

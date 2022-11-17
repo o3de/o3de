@@ -41,6 +41,8 @@ from dynaconf import settings
 from azpy import config_utils
 from azpy import constants as constants
 import platform
+import importlib
+import importlib.util
 import json
 import sys
 import os
@@ -57,9 +59,24 @@ try:
 except ImportError:
     base_path = Path(__file__).parent.absolute()
     o3de_scripts_path = base_path.parents[3]
-    print(o3de_scripts_path)
-    config_utils.load_module_by_path('o3de', o3de_scripts_path / 'scripts/o3de/o3de/__init__.py')
+    print(f'O3DE Scripts Path: {o3de_scripts_path}')
+
+    # Manifest
+    module_path = o3de_scripts_path / 'scripts/o3de/o3de/manifest.py'
+    module_name = 'o3de.manifest'
+    spec = importlib.util.spec_from_file_location(module_name, module_path.as_posix())
+    manifest = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = manifest
+
+    # Global Project
+    module_path = o3de_scripts_path / 'scripts/o3de/o3de/global_project.py'
+    module_name = 'o3de.global_project'
+    spec = importlib.util.spec_from_file_location(module_name, module_path.as_posix())
+    global_project = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = global_project
+
     from o3de import manifest, global_project
+    print(f'Hmmm: {manifest.get_o3de_folder()}')
 
 
 # ++++++++++++++++++++++++++++++++---->>
