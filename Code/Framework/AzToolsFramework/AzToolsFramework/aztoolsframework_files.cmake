@@ -868,6 +868,8 @@ set(FILES
     Prefab/Undo/PrefabUndoDeleteAsOverride.cpp
     Prefab/Undo/PrefabUndoBase.h
     Prefab/Undo/PrefabUndoBase.cpp
+    Prefab/Undo/PrefabUndoRevertOverrides.h
+    Prefab/Undo/PrefabUndoRevertOverrides.cpp
     Prefab/Undo/PrefabUndoUpdateLink.h
     Prefab/Undo/PrefabUndoUpdateLink.cpp
     Prefab/Undo/PrefabUndoUtils.h
