@@ -57,9 +57,6 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
 
         from .EditorScripts import BasicEditorWorkflows_LevelEntityComponentCRUD as test_module
 
-    class test_InputBindings_Add_Remove_Input_Events(EditorBatchedTest):
-        from .EditorScripts import InputBindings_Add_Remove_Input_Events as test_module
-
 
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
