@@ -126,7 +126,7 @@ namespace TestImpact
                 testTargetTimeout,
                 globalTimeout,
                 callback,
-                AZStd::nullopt); // For real-time stdout/err output of test targets
+                AZStd::nullopt);
         }
         else
         {
@@ -141,7 +141,7 @@ namespace TestImpact
                 testTargetTimeout,
                 globalTimeout,
                 callback,
-                AZStd::nullopt); // For real-time stdout/err output of test targets
+                AZStd::nullopt);
         }
     }
 
@@ -174,11 +174,11 @@ namespace TestImpact
                 testTargetTimeout,
                 globalTimeout,
                 callback,
-                std::nullopt), // For real-time stdout/err output of test targets
+                std::nullopt),
             integrityFailurePolicy);
         }
         else
-        {;
+        {
             DeleteArtifactXmls();
             return GenerateInstrumentedRunResult(
                 RunTests(
@@ -192,7 +192,7 @@ namespace TestImpact
                     testTargetTimeout,
                     globalTimeout,
                     callback,
-                    std::nullopt), // For real-time stdout/err output of test targets
+                    std::nullopt),
                 integrityFailurePolicy);
         }
     }
