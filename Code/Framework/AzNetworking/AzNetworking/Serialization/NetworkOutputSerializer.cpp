@@ -61,13 +61,6 @@ namespace AzNetworking
         return SerializeBoundedValue<int64_t>(minValue, maxValue, value);
     }
 
-    #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
-    bool NetworkOutputSerializer::Serialize(AZ::s64& value, [[maybe_unused]] const char* name, AZ::s64 minValue, AZ::s64 maxValue)
-    {
-        return SerializeBoundedValue<AZ::s64>(minValue, maxValue, value);
-    }
-    #endif
-
     bool NetworkOutputSerializer::Serialize(uint8_t& value, [[maybe_unused]] const char* name, uint8_t minValue, uint8_t maxValue)
     {
         return SerializeBoundedValue<uint8_t>(minValue, maxValue, value);
@@ -87,13 +80,6 @@ namespace AzNetworking
     {
         return SerializeBoundedValue<uint64_t>(minValue, maxValue, value);
     }
-
-    #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
-    bool NetworkOutputSerializer::Serialize(AZ::u64& value, [[maybe_unused]] const char* name, AZ::u64 minValue, AZ::u64 maxValue)
-    {
-        return SerializeBoundedValue<AZ::u64>(minValue, maxValue, value);
-    }
-    #endif
 
     bool NetworkOutputSerializer::Serialize(float& value, [[maybe_unused]] const char* name, [[maybe_unused]] float minValue, [[maybe_unused]] float maxValue)
     {

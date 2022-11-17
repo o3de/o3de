@@ -119,14 +119,6 @@ namespace AzNetworking
         return SerializeHelper(value, 0, false, unused, name);
     }
 
-    #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
-    bool DeltaSerializerCreate::Serialize(AZ::s64& value, const char* name, [[maybe_unused]] AZ::s64 minValue, [[maybe_unused]] AZ::s64 maxValue)
-    {
-        uint32_t unused = 0;
-        return SerializeHelper(value, 0, false, unused, name);
-    }
-    #endif
-
     bool DeltaSerializerCreate::Serialize(uint8_t& value, const char* name, [[maybe_unused]] uint8_t minValue, [[maybe_unused]] uint8_t maxValue)
     {
         uint32_t unused = 0;
@@ -150,14 +142,6 @@ namespace AzNetworking
         uint32_t unused = 0;
         return SerializeHelper(value, 0, false, unused, name);
     }
-
-    #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
-    bool DeltaSerializerCreate::Serialize(AZ::u64& value, const char* name, [[maybe_unused]] AZ::u64 minValue, [[maybe_unused]] AZ::u64 maxValue)
-    {
-        uint32_t unused = 0;
-        return SerializeHelper(value, 0, false, unused, name);
-    }
-    #endif
 
     bool DeltaSerializerCreate::Serialize(float& value, const char* name, [[maybe_unused]] float minValue, [[maybe_unused]] float maxValue)
     {
@@ -319,14 +303,6 @@ namespace AzNetworking
         return SerializeHelper(value, 0, false, unused, name);
     }
 
-    #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
-    bool DeltaSerializerApply::Serialize(AZ::s64& value, const char* name, [[maybe_unused]] AZ::s64 minValue, [[maybe_unused]] AZ::s64 maxValue)
-    {
-        uint32_t unused = 0;
-        return SerializeHelper(value, 0, false, unused, name);
-    }
-    #endif
-
     bool DeltaSerializerApply::Serialize(uint8_t& value, const char* name, [[maybe_unused]] uint8_t minValue, [[maybe_unused]] uint8_t maxValue)
     {
         uint32_t unused = 0;
@@ -350,14 +326,6 @@ namespace AzNetworking
         uint32_t unused = 0;
         return SerializeHelper(value, 0, false, unused, name);
     }
-
-    #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
-    bool DeltaSerializerApply::Serialize(AZ::u64& value, const char* name, [[maybe_unused]] AZ::u64 minValue, [[maybe_unused]] AZ::u64 maxValue)
-    {
-        uint32_t unused = 0;
-        return SerializeHelper(value, 0, false, unused, name);
-    }
-    #endif
 
     bool DeltaSerializerApply::Serialize(float& value, const char* name, [[maybe_unused]] float minValue, [[maybe_unused]] float maxValue)
     {

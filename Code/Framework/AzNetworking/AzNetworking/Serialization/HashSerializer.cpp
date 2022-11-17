@@ -75,14 +75,6 @@ namespace AzNetworking
         return true;
     }
 
-    #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
-    bool HashSerializer::Serialize(AZ::s64& value, [[maybe_unused]] const char* name, [[maybe_unused]] AZ::s64 minValue, [[maybe_unused]] AZ::s64 maxValue)
-    {
-        m_hash = AZ::TypeHash64(value, m_hash);
-        return true;
-    }
-    #endif
-
     bool HashSerializer::Serialize(uint8_t& value, [[maybe_unused]] const char* name, [[maybe_unused]] uint8_t minValue, [[maybe_unused]] uint8_t maxValue)
     {
         m_hash = AZ::TypeHash64(value, m_hash);
@@ -106,14 +98,6 @@ namespace AzNetworking
         m_hash = AZ::TypeHash64(value, m_hash);
         return true;
     }
-    
-    #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
-    bool HashSerializer::Serialize(AZ::u64& value, [[maybe_unused]] const char* name, [[maybe_unused]] AZ::u64 minValue, [[maybe_unused]] AZ::u64 maxValue)
-    {
-        m_hash = AZ::TypeHash64(value, m_hash);
-        return true;
-    }
-    #endif
 
     bool HashSerializer::Serialize(float& value, [[maybe_unused]] const char* name, [[maybe_unused]] float minValue, [[maybe_unused]] float maxValue)
     {

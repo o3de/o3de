@@ -11,6 +11,7 @@
 #include <AzNetworking/UdpTransport/UdpNetworkInterface.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>
+#include <AzNetworking/Serialization/TrackChangedSerializer.h>
 #include <AzNetworking/AutoGen/CorePackets.AutoPackets.h>
 #include <AzNetworking/Utilities/NetworkCommon.h>
 #include <AzCore/Console/IConsole.h>

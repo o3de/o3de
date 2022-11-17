@@ -112,15 +112,6 @@ namespace AzNetworking
         return BASE_TYPE::Serialize(value, name, minValue, maxValue) && result;
     }
 
-    #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
-    template<typename BASE_TYPE>
-    bool TypeValidatingSerializer<BASE_TYPE>::Serialize(AZ::s64& value, const char* name, AZ::s64 minValue, AZ::s64 maxValue)
-    {
-        bool result = Validate(name, ValidateSerializeType::Int64);
-        return BASE_TYPE::Serialize(value, name, minValue, maxValue) && result;
-    }
-    #endif
-
     template <typename BASE_TYPE>
     bool TypeValidatingSerializer<BASE_TYPE>::Serialize(uint8_t& value, const char* name, uint8_t minValue, uint8_t maxValue)
     {
@@ -148,15 +139,6 @@ namespace AzNetworking
         bool result = Validate(name, ValidateSerializeType::Uint64);
         return BASE_TYPE::Serialize(value, name, minValue, maxValue) && result;
     }
-
-    #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
-    template<typename BASE_TYPE>
-    bool TypeValidatingSerializer<BASE_TYPE>::Serialize(AZ::u64& value, const char* name, AZ::u64 minValue, AZ::u64 maxValue)
-    {
-        bool result = Validate(name, ValidateSerializeType::Uint64);
-        return BASE_TYPE::Serialize(value, name, minValue, maxValue) && result;
-    }
-    #endif
 
     template <typename BASE_TYPE>
     bool TypeValidatingSerializer<BASE_TYPE>::Serialize(float& value, const char* name, float minValue, float maxValue)
