@@ -22,7 +22,7 @@
 namespace TestImpact
 {
     AZStd::optional<Client::TestRunResult> PythonRegularTestRunnerErrorCodeChecker(
-        [[maybe_unused]] const typename PythonRegularTestRunner::JobInfo& jobInfo, const JobMeta& meta)
+        const typename PythonRegularTestRunner::JobInfo& jobInfo, const JobMeta& meta)
     {
         if (auto result = CheckPythonErrorCode(meta.m_returnCode.value()); result.has_value())
         {
@@ -33,7 +33,7 @@ namespace TestImpact
     }
 
     AZStd::optional<Client::TestRunResult> PythonInstrumentedTestRunnerErrorCodeChecker(
-        [[maybe_unused]] const typename PythonInstrumentedTestRunner::JobInfo& jobInfo, const JobMeta& meta)
+        const typename PythonInstrumentedTestRunner::JobInfo& jobInfo, const JobMeta& meta)
     {
         // The PyTest error code for test failures overlaps with the Python error code for script error so we have no way of
         // discerning at the job meta level whether a test failure or script execution error we will assume the tests failed for now
@@ -101,13 +101,13 @@ namespace TestImpact
     }
 
     TestEngineRegularRunResult<PythonTestTarget> PythonTestEngine::RegularRun(
-        [[maybe_unused]] const AZStd::vector<const PythonTestTarget*>& testTargets,
-        [[maybe_unused]] Policy::ExecutionFailure executionFailurePolicy,
-        [[maybe_unused]] Policy::TestFailure testFailurePolicy,
-        [[maybe_unused]] Policy::TargetOutputCapture targetOutputCapture,
-        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        [[maybe_unused]] AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const
+        const AZStd::vector<const PythonTestTarget*>& testTargets,
+        Policy::ExecutionFailure executionFailurePolicy,
+        Policy::TestFailure testFailurePolicy,
+        Policy::TargetOutputCapture targetOutputCapture,
+        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+        AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const
     {
         DeleteArtifactXmls();
 
@@ -126,7 +126,7 @@ namespace TestImpact
                 testTargetTimeout,
                 globalTimeout,
                 callback,
-                AZStd::nullopt);
+                AZStd::nullopt); // For real-time stdout/err output of test targets
         }
         else
         {
@@ -141,10 +141,8 @@ namespace TestImpact
                 testTargetTimeout,
                 globalTimeout,
                 callback,
-                AZStd::nullopt);
+                AZStd::nullopt); // For real-time stdout/err output of test targets
         }
-        //
-        //return TestEngineRegularRunResult<PythonTestTarget>{};
     }
 
     TestEngineInstrumentedRunResult<PythonTestTarget, TestCoverage>
