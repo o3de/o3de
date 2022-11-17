@@ -281,7 +281,9 @@ namespace AzToolsFramework::ComponentModeFramework
     {
         if (mode == ViewportEditorMode::Component)
         {
-            // wait one frame to check if component mode has been re-entered before changing back to transform
+            m_activeSwitcherComponent = nullptr;
+
+            // wait one frame to check if component mode has been re-entered before changing switcher button to transform
             AZ::TickBus::QueueFunction(
                 [this]()
                 {
@@ -296,8 +298,6 @@ namespace AzToolsFramework::ComponentModeFramework
                             &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
                             m_switcherId,
                             m_transformButtonId);
-
-                        m_activeSwitcherComponent = nullptr;
                     }
                 });
         }
