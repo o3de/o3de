@@ -87,7 +87,7 @@ namespace AzToolsFramework
                     if (parentContainerEntityDom.IsNull())
                     {
                         AZ_Error("Prefab", false, "PrefabUndoDeleteEntity::Capture - "
-                            "Cannot retrieve parent container entity DOM from root template from instance DOM generator.");
+                            "Cannot retrieve parent container entity DOM from root template via instance DOM generator.");
                         continue;
                     }
 
