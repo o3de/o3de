@@ -17,7 +17,7 @@ namespace AZ::Debug
         void BeginProfileRegion(Budget* budget, const char* eventName);
         void EndProfileRegion(Budget* budget);
         template<typename T>
-        static void ReportCounter(const Budget* budget, const wchar_t* counterName, const T& value);
+        void ReportCounter(const Budget* budget, const wchar_t* counterName, const T& value);
         void ReportProfileEvent(const Budget* budget, const char* eventName);
     } // namespace Platform
 
