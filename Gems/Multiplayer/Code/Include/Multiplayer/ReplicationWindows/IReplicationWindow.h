@@ -27,6 +27,7 @@ namespace Multiplayer
     using ReplicationSet = AZStd::map<ConstNetworkEntityHandle, EntityReplicationData>;
     using RpcMessages = AZStd::list<NetworkEntityRpcMessage>;
     using EntityReplicatorList = AZStd::deque<EntityReplicator*>;
+    using EntityAddedToReplicatorSetEvent = AZ::Event<const ConstNetworkEntityHandle&, NetEntityRole>;
 
     class IReplicationWindow
     {
@@ -52,6 +53,11 @@ namespace Multiplayer
 
         //! This updates the replication set, ensuring all relevant entities are included.
         virtual void UpdateWindow() = 0;
+
+        //! Registers a handler invoked when an entity is added to the window's replication set.
+        //! This is useful for triggering registration logic immediately.
+        //! @param handler The event handler to add
+        virtual void AddEntityAddedToReplciationSetEvent(EntityAddedToReplicatorSetEvent::Handler& handler) = 0;
 
         //! This sends an EntityUpdate message on the associated network interface and connection.
         //! @param entityUpdateVector set of entity updates

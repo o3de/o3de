@@ -43,6 +43,11 @@ namespace Multiplayer
         ;
     }
 
+    void NullReplicationWindow::AddEntityAddedToReplciationSetEvent([[maybe_unused]] EntityAddedToReplicatorSetEvent::Handler& handler)
+    {
+        ;
+    }
+
     AzNetworking::PacketId NullReplicationWindow::SendEntityUpdateMessages(NetworkEntityUpdateVector& entityUpdateVector)
     {
         MultiplayerPackets::EntityUpdates entityUpdatePacket;

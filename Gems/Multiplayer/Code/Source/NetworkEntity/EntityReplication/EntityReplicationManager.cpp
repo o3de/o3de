@@ -46,6 +46,7 @@ namespace Multiplayer
         , m_updateWindow([this]() { UpdateWindow(); }, AZ::Name("EntityReplicationManager::UpdateWindow"))
         , m_entityExitDomainEventHandler([this](const ConstNetworkEntityHandle& entityHandle) { OnEntityExitDomain(entityHandle); })
         , m_notifyEntityMigrationHandler([this](const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId) { OnPostEntityMigration(entityHandle, remoteHostId); })
+        , m_addEntityReplicatorHandler([this](const ConstNetworkEntityHandle& entityHandle, NetEntityRole role) { AddEntityReplicator(entityHandle, role); })
     {
         // Set up our remote host identifier, by default we use the IP address of the remote host
         m_remoteHostId = connection.GetRemoteAddress();
@@ -1049,7 +1050,6 @@ namespace Multiplayer
             {
                 if (newWindowIter->first && (newWindowIter->first.GetNetEntityId() < currWindowIter->first))
                 {
-                    AddEntityReplicator(newWindowIter->first, newWindowIter->second.m_netEntityRole);
                     ++newWindowIter;
                 }
                 else if (newWindowIter->first.GetNetEntityId() > currWindowIter->first)
@@ -1078,7 +1078,6 @@ namespace Multiplayer
             // Do remaining adds
             while (newWindowIter != newWindow.end())
             {
-                AddEntityReplicator(newWindowIter->first, newWindowIter->second.m_netEntityRole);
                 ++newWindowIter;
             }
 
@@ -1164,6 +1163,7 @@ namespace Multiplayer
     void EntityReplicationManager::SetReplicationWindow(AZStd::unique_ptr<IReplicationWindow> replicationWindow)
     {
         m_replicationWindow = AZStd::move(replicationWindow);
+        m_replicationWindow->AddEntityAddedToReplciationSetEvent(m_addEntityReplicatorHandler);
         UpdateWindow();
     }
 

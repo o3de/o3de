@@ -195,6 +195,7 @@ namespace Multiplayer
         EntityExitDomainEvent::Handler m_entityExitDomainEventHandler;
         SendMigrateEntityEvent m_sendMigrateEntityEvent;
         NotifyEntityMigrationEvent::Handler m_notifyEntityMigrationHandler;
+        EntityAddedToReplicatorSetEvent::Handler m_addEntityReplicatorHandler;
 
         AZ::ScheduledEvent m_clearRemovedReplicators;
         AZ::ScheduledEvent m_updateWindow;

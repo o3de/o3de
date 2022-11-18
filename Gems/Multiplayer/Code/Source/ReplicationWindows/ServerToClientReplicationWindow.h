@@ -48,6 +48,7 @@ namespace Multiplayer
         uint32_t GetMaxProxyEntityReplicatorSendCount() const override;
         bool IsInWindow(const ConstNetworkEntityHandle& entityPtr, NetEntityRole& outNetworkRole) const override;
         void UpdateWindow() override;
+        void AddEntityAddedToReplciationSetEvent(EntityAddedToReplicatorSetEvent::Handler& handler) override;
         AzNetworking::PacketId SendEntityUpdateMessages(NetworkEntityUpdateVector& entityUpdateVector) override;
         void SendEntityRpcs(NetworkEntityRpcVector& entityRpcVector, bool reliable) override;
         void SendEntityResets(const NetEntityIdSet& resetIds) override;
@@ -74,6 +75,7 @@ namespace Multiplayer
         NetworkEntityHandle m_controlledEntity;
         AZ::TransformInterface* m_controlledEntityTransform = nullptr;
 
+        EntityAddedToReplicatorSetEvent m_addEntityReplicatorEvent;
         AZ::EntityActivatedEvent::Handler m_entityActivatedEventHandler;
         AZ::EntityDeactivatedEvent::Handler m_entityDeactivatedEventHandler;
 

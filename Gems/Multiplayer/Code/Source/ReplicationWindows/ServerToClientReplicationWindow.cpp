@@ -172,18 +172,25 @@ namespace Multiplayer
             {
                 AZ_Assert(entityHandle.GetNetBindComponent()->IsNetEntityRoleAuthority(), "Encountered forced relevant entity that is not in an authority role");
                 m_replicationSet[entityHandle] = { NetEntityRole::Client, 1.0f }; // Always replicate entities with forced relevancy
+                m_addEntityReplicatorEvent.Signal(entityHandle, NetEntityRole::Client);
             }
         }
 
         // Add in Autonomous Entities
         // Note: Do not add any Client entities after this point, otherwise you stomp over the Autonomous mode
         m_replicationSet[m_controlledEntity] = { NetEntityRole::Autonomous, 1.0f }; // Always replicate autonomous entities
+        m_addEntityReplicatorEvent.Signal(m_controlledEntity, NetEntityRole::Autonomous);
 
         auto* hierarchyComponent = m_controlledEntity.FindComponent<NetworkHierarchyRootComponent>();
         if (hierarchyComponent != nullptr)
         {
             UpdateHierarchyReplicationSet(m_replicationSet, *hierarchyComponent);
         }
+    }
+
+    void ServerToClientReplicationWindow::AddEntityAddedToReplciationSetEvent(EntityAddedToReplicatorSetEvent::Handler& handler)
+    {
+        handler.Connect(m_addEntityReplicatorEvent);
     }
 
     AzNetworking::PacketId ServerToClientReplicationWindow::SendEntityUpdateMessages(NetworkEntityUpdateVector& entityUpdateVector)
@@ -346,6 +353,7 @@ namespace Multiplayer
             }
             m_candidateQueue.push(PrioritizedReplicationCandidate(entityHandle, priority));
             m_replicationSet[entityHandle] = { NetEntityRole::Client, priority };
+            m_addEntityReplicatorEvent.Signal(entityHandle, NetEntityRole::Client);
         }
     }
 
