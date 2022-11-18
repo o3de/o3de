@@ -142,6 +142,8 @@ namespace AZ
 
             using FlagRegistry = RHI::TagBitRegistry<RPI::Cullable::FlagType>;
 
+            static const AZ::Name MeshMovedTagName;
+
             static void Reflect(AZ::ReflectContext* context);
 
             MeshFeatureProcessor() = default;
@@ -229,6 +231,7 @@ namespace AZ
             AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
             RPI::MeshDrawPacketLods m_emptyDrawPacketLods;
             RHI::Ptr<FlagRegistry> m_flagRegistry = nullptr;
+            AZ::RHI::Handle<uint32_t> m_meshMovedFlag;
             bool m_forceRebuildDrawPackets = false;
             bool m_reportShaderOptionFlags = false;
             bool m_enablePerMeshShaderOptionFlags = false;

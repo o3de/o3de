@@ -9,6 +9,7 @@
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 #include <Atom/Feature/RenderCommon.h>
+#include <Atom/Feature/Mesh/MeshCommon.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
 #include <Atom/RPI.Public/Model/ModelLodUtils.h>
@@ -33,11 +34,15 @@
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Name/NameDictionary.h>
+
 
 namespace AZ
 {
     namespace Render
     {
+        const AZ::Name MeshFeatureProcessor::MeshMovedTagName = AZ::Name::FromStringLiteral("MeshMoved", AZ::Interface<AZ::NameDictionary>::Get());
+
         void MeshFeatureProcessor::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -71,6 +76,8 @@ namespace AZ
                 // push the cvars value so anything in this dll can access it directly.
                 console->PerformCommand(AZStd::string::format("r_enablePerMeshShaderOptionFlags %s", enablePerMeshShaderOptionFlagsCvar ? "true" : "false").c_str());
             }
+
+            m_meshMovedFlag = GetParentScene()->GetViewTagBitRegistry().AcquireTag(MeshMovedTagName);
         }
 
         void MeshFeatureProcessor::Deactivate()
@@ -85,6 +92,8 @@ namespace AZ
             );
             m_transformService = nullptr;
             m_forceRebuildDrawPackets = false;
+
+            GetParentScene()->GetViewTagBitRegistry().ReleaseTag(m_meshMovedFlag);
         }
 
         TransformServiceFeatureProcessorInterface::ObjectId MeshFeatureProcessor::GetObjectId(const MeshHandle& meshHandle) const
@@ -244,7 +253,7 @@ namespace AZ
             for (auto& model : m_modelData)
             {
                 model.m_cullable.m_prevShaderOptionFlags = model.m_cullable.m_shaderOptionFlags.exchange(0);
-                model.m_cullable.m_hasMoved = false;
+                model.m_cullable.m_flags = 0;
             }
         }
 
@@ -388,7 +397,7 @@ namespace AZ
                 ModelDataInstance& modelData = *meshHandle;
                 modelData.m_cullBoundsNeedsUpdate = true;
                 modelData.m_objectSrgNeedsUpdate = true;
-                modelData.m_cullable.m_hasMoved = true;
+                modelData.m_cullable.m_flags = modelData.m_cullable.m_flags | m_meshMovedFlag.GetIndex();
 
                 m_transformService->SetTransformForId(meshHandle->m_objectId, transform, nonUniformScale);
 
@@ -591,7 +600,6 @@ namespace AZ
                 }
             }
         }
-
 
         RHI::Ptr<MeshFeatureProcessor::FlagRegistry> MeshFeatureProcessor::GetShaderOptionFlagRegistry()
         {

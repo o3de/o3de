@@ -114,6 +114,7 @@ namespace AZ
             using FlagType = uint32_t;
             FlagType m_prevShaderOptionFlags = 0;
             AZStd::atomic<FlagType> m_shaderOptionFlags = 0;
+            FlagType m_flags;
 
             //! Flag indicating if the object is visible in any view, meaning it passed the culling tests in the previous frame.
             //! This flag must be manually cleared by the Cullable object every frame.
@@ -122,9 +123,6 @@ namespace AZ
             //! Flag indicating if the object is hidden, i.e., was specifically marked as
             //! something that shouldn't be rendered, regardless of its actual position relative to the camera
             bool m_isHidden = false;
-
-            //! Flag indicated if the object has moved since the last frame was rendered.
-            bool m_hasMoved = false;
 
             void SetDebugName([[maybe_unused]] const AZ::Name& debugName)
             {

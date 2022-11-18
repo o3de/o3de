@@ -53,9 +53,6 @@ namespace AZ::Render
 
         m_filterParamBufferHandler = GpuBufferHandler(desc);
         
-        m_shadowmapAtlasSizeIndex = viewSrgLayout->FindShaderInputConstantIndex(AZ_NAME_LITERAL("m_shadowmapAtlasSize"));
-        m_invShadowmapAtlasSizeIndex = viewSrgLayout->FindShaderInputConstantIndex(AZ_NAME_LITERAL("m_invShadowmapAtlasSize"));
-
         CachePasses();
         EnableSceneNotification();
     }
@@ -213,8 +210,7 @@ namespace AZ::Render
         AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetUseCachedShadows().");
         ShadowProperty& shadowProperty = GetShadowPropertyFromShadowId(id);
         shadowProperty.m_useCachedShadows = useCachedShadows;
-
-        // TODO: switch between shadow map types, detect meshes that have moved for shadow re-render, and allow for manually re-rendering.
+        m_shadowmapPassNeedsUpdate = true;
     }
 
     void ProjectedShadowFeatureProcessor::SetShadowProperties(ShadowId id, const ProjectedShadowDescriptor& descriptor)
@@ -288,6 +284,11 @@ namespace AZ::Render
         
         shadowData.m_unprojectConstants[0] = view->GetViewToClipMatrix().GetRow(2).GetElement(2);
         shadowData.m_unprojectConstants[1] = view->GetViewToClipMatrix().GetRow(2).GetElement(3);
+
+        if (shadowProperty.m_useCachedShadows)
+        {
+            m_projectedShadowmapsPasses.front()->ForceRenderNextFrame(shadowProperty.m_shadowId.GetIndex());
+        }
 
         m_deviceBufferNeedsUpdate = true;
     }
@@ -414,8 +415,8 @@ namespace AZ::Render
         if (m_shadowmapPassNeedsUpdate)
         {
             // Rebuild the shadow map sizes 
-            AZStd::vector<ProjectedShadowmapsPass::ShadowmapSizeWithIndices> shadowmapSizes;
-            shadowmapSizes.reserve(m_shadowProperties.GetDataCount());
+            AZStd::vector<ProjectedShadowmapsPass::ShadowPassProperties> shadowPassProperties;
+            shadowPassProperties.reserve(m_shadowProperties.GetDataCount());
             
             auto& shadowProperties = m_shadowProperties.GetDataVector();
             for (uint32_t i = 0; i < shadowProperties.size(); ++i)
@@ -424,14 +425,15 @@ namespace AZ::Render
                 uint16_t shadowIndex = shadowProperty.m_shadowId.GetIndex();
                 FilterParameter& filterData = m_shadowData.GetElement<FilterParamIndex>(shadowIndex);
 
-                ProjectedShadowmapsPass::ShadowmapSizeWithIndices& sizeWithIndices = shadowmapSizes.emplace_back();
-                sizeWithIndices.m_size = static_cast<ShadowmapSize>(filterData.m_shadowmapSize);
-                sizeWithIndices.m_shadowIndexInSrg = shadowIndex;
+                ProjectedShadowmapsPass::ShadowPassProperties& shadowPassPropertiesItem = shadowPassProperties.emplace_back();
+                shadowPassPropertiesItem.m_size = static_cast<ShadowmapSize>(filterData.m_shadowmapSize);
+                shadowPassPropertiesItem.m_shadowIndexInSrg = shadowIndex;
+                shadowPassPropertiesItem.m_isCached = shadowProperty.m_useCachedShadows;
             }
 
             for (ProjectedShadowmapsPass* shadowPass : m_projectedShadowmapsPasses)
             {
-                shadowPass->UpdateShadowmapSizes(shadowmapSizes);
+                shadowPass->UpdateShadowPassProperties(shadowPassProperties);
             }
 
             for (EsmShadowmapsPass* esmPass : m_esmShadowmapsPasses)
@@ -480,6 +482,7 @@ namespace AZ::Render
                 for (uint32_t i = 0; i < shadowProperties.size(); ++i)
                 {
                     ShadowProperty& shadowProperty = shadowProperties.at(i);
+
                     uint16_t shadowIndex = shadowProperty.m_shadowId.GetIndex();
                     const FilterParameter& filterData = m_shadowData.GetElement<FilterParamIndex>(shadowIndex);
                     if (filterData.m_shadowmapSize == aznumeric_cast<uint32_t>(ShadowmapSize::None))
