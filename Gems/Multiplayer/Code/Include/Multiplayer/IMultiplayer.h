@@ -164,8 +164,8 @@ namespace Multiplayer
         //! @param handler The NoServerLevelLoadedEvent handler to add
         virtual void AddNoServerLevelLoadedHandler(NoServerLevelLoadedEvent::Handler& handler) = 0;
 
-        //! Adds a VersionMismatchEvent Handler which is invoked whenever a connection is made between 2 apps that have differing multiplayer components.
-        //! Provided for catching an out-of-date server or client.
+        //! Adds a VersionMismatchEvent Handler which is invoked whenever two multiplayer endpoints have a version mismatch.
+        //! For example, the provided handler will be triggered if a client tries connecting to a server that's using a different multiplayer version.
         //! @param handler The VersionMismatchEvent handler to add
         virtual void AddVersionMismatchHandler(VersionMismatchEvent::Handler& handler) = 0;
 
