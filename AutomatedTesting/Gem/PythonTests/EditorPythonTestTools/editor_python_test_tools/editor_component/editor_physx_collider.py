@@ -76,7 +76,7 @@ class EditorPhysxCollider:
         """
         Property Type, Default Visibility - ('bool', 'Visible')
 
-        Used to set the PhysX Collider's Trigger Property.
+        Used to set the PhysX Collider's Is Trigger Property.
         """
         self.component.set_component_property_value(self.Path.TRIGGER, value)
 
@@ -150,7 +150,7 @@ class EditorPhysxCollider:
         rotation.SetFromEulerDegrees(math.Vector3(x, y, z))
         self.component.set_component_property_value(self.Path.ROTATION, rotation)
 
-    def get_rotation(self) -> math.Vector3:
+    def get_rotation(self) -> math.Quaternion:
         """
         Property Type, Default Visibility - ('Vector3', 'Visible')
 
@@ -257,6 +257,14 @@ class EditorPhysxCollider:
         assert NotImplementedError
 
         return self.component.get_component_property_value(self.Path.PHYSX_MATERIAL_ASSET)
+
+    def get_shape(self) -> str:
+        """
+        Property Type, Default Visibility - ('BoxShapeConfiguration', 'NotVisible')
+
+        Used to set the PhysX Collider's Shape property to Box.
+        """
+        return str(self.component.get_component_property_value(self.Path.SHAPE))
 
     # Shape: Box
     def set_box_shape(self) -> None:

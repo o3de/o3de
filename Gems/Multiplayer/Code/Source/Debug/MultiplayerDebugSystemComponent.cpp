@@ -11,7 +11,6 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/StringFunc/StringFunc.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzNetworking/Framework/INetworkInterface.h>
