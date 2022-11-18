@@ -10,6 +10,8 @@ from dataclasses import dataclass
 import logging
 import os
 import pytest
+import re
+import shutil
 from typing import List
 import warnings
 
@@ -36,7 +38,6 @@ targetProjects = ["AutomatedTesting"]
 
 # Helper: Gets a case correct version of the cache folder
 def get_cache_folder(asset_processor):
-    import re
     # Make sure the folder being checked is fully lowercase.
     # Leave the "c" in Cache uppercase.
     return re.sub("ache[/\\\\](.*)", lambda m: m.group().lower(), asset_processor.project_test_cache_folder())
@@ -810,8 +811,6 @@ class TestsFBX_AllPlatforms(object):
 
     @staticmethod
     def compare_scene_debug_file(asset_processor, expected_file_path, actual_file_path, expected_hashes_to_skip = None, actual_hashes_to_skip = None):
-        import re
-
         debug_graph_path = os.path.join(get_cache_folder(asset_processor), actual_file_path)
         expected_debug_graph_path = os.path.join(asset_processor.project_test_source_folder(), "SceneDebug", expected_file_path)
 
@@ -1045,8 +1044,6 @@ class TestsFBX_AllPlatforms(object):
             5. Run asset processor
             6. Validate that Asset Processor generates the expected output
         """
-        import shutil
-
         # Copying test assets to project folder
         test_folder_name = "ModifiedFBXFile_ConsistentProductOutput"
 
