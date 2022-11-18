@@ -7,13 +7,14 @@
  */
 
 #pragma once
+
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/RTTI/RTTI.h>
-#include <AzCore/std/parallel/scoped_lock.h>
-#include <Metadata/MetadataManager.h>
 
-#include "assetUtils.h"
+namespace AzToolsFramework
+{
+    struct IMetadataRequests;
+}
 
 namespace AssetProcessor
 {
@@ -36,88 +37,19 @@ namespace AssetProcessor
 
         static constexpr const char* UuidKey = "/UUID";
 
-        static void Reflect(AZ::ReflectContext* context)
-        {
-            UuidEntry::Reflect(context);
-        }
+        static void Reflect(AZ::ReflectContext* context);
 
-        AZ::Uuid GetUuid(AZ::IO::PathView file) override
-        {
-            auto entry = GetOrCreateUuidEntry(file);
-
-            return entry.m_uuid;
-        }
-
-        AZStd::unordered_set<AZ::Uuid> GetLegacyUuids(AZ::IO::PathView file) override
-        {
-            auto entry = GetOrCreateUuidEntry(file);
-
-            return entry.m_legacyUuids;
-        }
-
-        void FileChanged(AZ::IO::Path file) override
-        {
-            AZStd::string extension = file.Extension().Native();
-
-            if (extension != AzToolsFramework::MetadataManager::MetadataFileExtension)
-            {
-                return;
-            }
-
-            auto lastDot = extension.find_last_of('.');
-            extension = extension.substr(0, lastDot);
-            file.ReplaceExtension(extension.c_str());
-
-            AZStd::scoped_lock scopeLock(m_uuidMutex);
-
-            auto normalizedPath = GetCanonicalPath(file);
-            auto itr = m_uuids.find(normalizedPath);
-
-            if (itr != m_uuids.end())
-            {
-                m_uuids.erase(itr);
-            }
-        }
-
-        void FileRemoved(AZ::IO::Path file)
-        {
-            AZStd::string extension = file.Extension().Native();
-
-            if (extension != AzToolsFramework::MetadataManager::MetadataFileExtension)
-            {
-                return;
-            }
-
-            file.ReplaceExtension("");
-
-            AZStd::scoped_lock scopeLock(m_uuidMutex);
-
-            auto normalizedPath = GetCanonicalPath(file);
-            auto itr = m_uuids.find(normalizedPath);
-
-            if (itr != m_uuids.end())
-            {
-                m_uuids.erase(itr);
-            }
-        }
+        AZ::Uuid GetUuid(AZ::IO::PathView file) override;
+        AZStd::unordered_set<AZ::Uuid> GetLegacyUuids(AZ::IO::PathView file) override;
+        void FileChanged(AZ::IO::Path file) override;
+        void FileRemoved(AZ::IO::Path file) override;
 
     private:
         struct UuidEntry
         {
             AZ_TYPE_INFO(UuidEntry, "{FAD60D80-9B1D-421D-A4CA-DD2CA2EA80BB}");
 
-            static void Reflect(AZ::ReflectContext* context)
-            {
-                if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-                {
-                    serializeContext->Class<UuidEntry>()
-                        ->Version(0)
-                        ->Field("uuid", &UuidEntry::m_uuid)
-                        ->Field("legacyUuids", &UuidEntry::m_legacyUuids)
-                        ->Field("originalPath", &UuidEntry::m_originalPath)
-                        ->Field("millisecondsSinceUnixEpoch", &UuidEntry::m_millisecondsSinceUnixEpoch);
-                }
-            }
+            static void Reflect(AZ::ReflectContext* context);
 
             // The canonical UUID
             AZ::Uuid m_uuid;
@@ -129,79 +61,12 @@ namespace AssetProcessor
             AZ::u64 m_millisecondsSinceUnixEpoch;
         };
 
-        AZStd::string GetCanonicalPath(AZ::IO::PathView file)
-        {
-            return file.LexicallyNormal().FixedMaxPathStringAsPosix().c_str();
-        }
-
-        UuidEntry GetOrCreateUuidEntry(AZ::IO::PathView file)
-        {
-            AZStd::scoped_lock scopeLock(m_uuidMutex);
-
-            auto normalizedPath = GetCanonicalPath(file);
-            auto itr = m_uuids.find(normalizedPath);
-
-            // Check if we already have the UUID loaded into memory
-            if (itr != m_uuids.end())
-            {
-                return itr->second;
-            }
-
-            UuidEntry uuidInfo;
-
-            // Check if there's a metadata file that already contains a saved UUID
-            if (GetMetadataManager()->GetValue(file, UuidKey, uuidInfo))
-            {
-                m_uuids[normalizedPath] = uuidInfo;
-
-                return uuidInfo;
-            }
-
-            // Last resort - generate a new UUID and save it to the metadata file
-            UuidEntry newUuid = CreateUuidEntry(normalizedPath);
-
-            if (GetMetadataManager()->SetValue(file, UuidKey, newUuid))
-            {
-                m_uuids[normalizedPath] = newUuid;
-
-                return newUuid;
-            }
-
-            return {};
-        }
-
-        AzToolsFramework::IMetadataRequests* GetMetadataManager()
-        {
-            if (!m_metadataManager)
-            {
-                m_metadataManager = AZ::Interface<AzToolsFramework::IMetadataRequests>::Get();
-            }
-
-            return m_metadataManager;
-        }
-
-        UuidEntry CreateUuidEntry(const AZStd::string& file)
-        {
-            UuidEntry newUuid;
-
-            newUuid.m_uuid = CreateUuid();
-            newUuid.m_legacyUuids = CreateLegacyUuids(file);
-            newUuid.m_originalPath = file;
-            newUuid.m_millisecondsSinceUnixEpoch = aznumeric_cast<AZ::u64>(QDateTime::currentMSecsSinceEpoch());
-
-            return newUuid;
-        }
-
-        AZ::Uuid CreateUuid()
-        {
-            return AZ::Uuid::CreateRandom();
-        }
-
-        AZStd::unordered_set<AZ::Uuid> CreateLegacyUuids(const AZStd::string& file)
-        {
-            return { AssetUtilities::CreateSafeSourceUUIDFromName(file.c_str()),
-                     AssetUtilities::CreateSafeSourceUUIDFromName(file.c_str(), false) };
-        }
+        AZStd::string GetCanonicalPath(AZ::IO::PathView file);
+        UuidEntry GetOrCreateUuidEntry(AZ::IO::PathView file);
+        AzToolsFramework::IMetadataRequests* GetMetadataManager();
+        UuidEntry CreateUuidEntry(const AZStd::string& file);
+        AZ::Uuid CreateUuid();
+        AZStd::unordered_set<AZ::Uuid> CreateLegacyUuids(const AZStd::string& file);
 
         AZStd::recursive_mutex m_uuidMutex;
         AZStd::unordered_map<AZStd::string, UuidEntry> m_uuids;
