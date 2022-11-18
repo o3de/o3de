@@ -85,3 +85,15 @@ class TestAutomationOverrides(EditorTestSuite):
 
     class test_AddEntity_UnderUnfocusedInstanceAsOverride(EditorBatchedTest):
         from .tests.overrides import AddEntity_UnderUnfocusedInstanceAsOverride as test_module
+
+    class test_DeleteEntity_UnderImmediateInstance(EditorBatchedTest):
+        from .tests.overrides import DeleteEntity_UnderImmediateInstance as test_module
+
+    class test_DeleteEntity_UnderNestedInstance(EditorBatchedTest):
+        from .tests.overrides import DeleteEntity_UnderNestedInstance as test_module
+    
+    class test_DeletePrefab_UnderImmediateInstance(EditorBatchedTest):
+        from .tests.overrides import DeletePrefab_UnderImmediateInstance as test_module
+
+    class test_DeletePrefab_UnderNestedInstance(EditorBatchedTest):
+        from .tests.overrides import DeletePrefab_UnderNestedInstance as test_module

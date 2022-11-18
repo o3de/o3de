@@ -6,7 +6,7 @@
         "id": "{9B82F836-E7E9-49AA-AC72-30B3E6D751CD}",
         "category": "Math Functions",
         "title": "Acos",
-        "titlePaletteName": "MathNodeTitlePalettef",
+        "titlePaletteName": "MathNodeTitlePalette",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],
