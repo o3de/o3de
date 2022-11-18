@@ -106,9 +106,6 @@ namespace UnitTest
         PrefabFocusOperationResult focusResult = prefabFocusPublicInterface->FocusOnOwningPrefab(
             rootContainerEntity->get().GetId());
         EXPECT_TRUE(focusResult.IsSuccess());
-
-        // This is needed after root prefab creation. Otherwise, reparenting to root container entity won't work.
-        m_prefabSystemComponent->OnSystemTick();
     }
 
     void PrefabTestFixture::PropagateAllTemplateChanges()
