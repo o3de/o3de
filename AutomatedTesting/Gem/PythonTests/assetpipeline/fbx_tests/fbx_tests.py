@@ -1067,7 +1067,7 @@ class TestsFBX_AllPlatforms(object):
             assert not os.path.exists(file), f"File failed to be removed: {file}"
 
         # Add the replacement FBX and expected dbgsg files into the test project
-        source = os.path.join(ap_setup_fixture["tests_dir"], "Assets",
+        source = os.path.join(ap_setup_fixture["tests_dir"], "assets",
                               "Override_ModifiedFBXFile_ConsistentProductOutput")
         destination = asset_processor.project_test_source_folder()
         shutil.copytree(source, destination, dirs_exist_ok=True)
