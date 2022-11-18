@@ -21,6 +21,7 @@ namespace AzToolsFramework
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            // Note the version here is not the same as the MetadataFile version, since this is a separate serialization
             serializeContext->Class<MetadataManager>()->Version(1);
         }
     }
@@ -176,6 +177,7 @@ namespace AzToolsFramework
             }
         }
 
+        // Grab the class data so the type version can be written out
         auto* classData = GetClassData(typeId);
 
         if (!classData)
@@ -212,7 +214,7 @@ namespace AzToolsFramework
         rapidjson_ly::Value serializedValue;
         auto resultCode = AZ::JsonSerialization::Store(serializedValue, document.GetAllocator(), inValue, nullptr, typeId, settings);
 
-        // Try to insert the version number into the serialized data
+        // Try to insert the version of the type being serialized into the serialized data
         if (serializedValue.IsObject())
         {
             if(serializedValue.GetObject().HasMember(MetadataObjectVersionField))
@@ -236,8 +238,9 @@ namespace AzToolsFramework
 
         if (resultCode.GetProcessing() != AZ::JsonSerializationResult::Processing::Halted)
         {
-            // Create the version JSON entry in the document and store the encoded value
+            // Create the file version JSON entry in the document and store the encoded value
             // This will update the saved version to the current version
+            // Note that this is the version of the entire saved document (the metadata version), not the version of the type being saved
             rapidjson_ly::Value& versionStore = versionPointer.Create(document, document.GetAllocator());
             versionStore = AZStd::move(serializedVersion);
 
