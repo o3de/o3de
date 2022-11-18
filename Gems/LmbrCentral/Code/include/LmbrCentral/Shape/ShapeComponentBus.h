@@ -194,14 +194,14 @@ namespace LmbrCentral
         /// Get the translation offset for the shape relative to its entity.
         virtual AZ::Vector3 GetTranslationOffset() const
         {
-            AZ_Warning("ShapeComponentRequests", !IsShapeComponentTranslationEnabled(), "GetTranslationOffset not implemented");
+            AZ_WarningOnce("ShapeComponentRequests", !IsShapeComponentTranslationEnabled(), "GetTranslationOffset not implemented");
             return AZ::Vector3::CreateZero();
         }
 
         /// Set the translation offset for the shape relative to its entity.
         virtual void SetTranslationOffset([[maybe_unused]] const AZ::Vector3& translationOffset)
         {
-            AZ_Warning("ShapeComponentRequests", !IsShapeComponentTranslationEnabled(), "SetTranslationOffset not implemented");
+            AZ_WarningOnce("ShapeComponentRequests", !IsShapeComponentTranslationEnabled(), "SetTranslationOffset not implemented");
         }
 
         virtual ~ShapeComponentRequests() = default;

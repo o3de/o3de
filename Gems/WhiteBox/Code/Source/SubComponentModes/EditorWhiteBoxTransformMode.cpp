@@ -614,9 +614,15 @@ namespace WhiteBox
         UpdateTransformHandles(whiteBox);
         scaleManipulators->SetLocalPosition(m_whiteBoxSelection->m_localPosition);
 
+        enum class ScaleType
+        {
+            Uniform,
+            NonUniform
+        };
+
         auto mouseMoveHandlerFn =
             [entityComponentIdPair = m_entityComponentIdPair,
-             transformSelection = m_whiteBoxSelection](const auto& action)
+             transformSelection = m_whiteBoxSelection](const auto& action, ScaleType scaleType)
         {
             WhiteBoxMesh* whiteBox = nullptr;
             EditorWhiteBoxComponentRequestBus::EventResult(
@@ -626,9 +632,21 @@ namespace WhiteBox
             {
                 const AZ::Vector3 vertexLocalPosition =
                     (transformSelection->m_vertexPositions[vertexIndex++] - transformSelection->m_localPosition);
-                const AZ::Vector3 vertexPosition =
-                    (vertexLocalPosition * (AZ::Vector3::CreateOne() + (action.m_start.m_sign * action.LocalScaleOffset()))) +
-                    transformSelection->m_localPosition;
+                const AZ::Vector3 scale = [&action, &scaleType]
+                {
+                    switch (scaleType)
+                    {
+                    case ScaleType::Uniform:
+                        return AZ::Vector3(action.LocalScaleOffset().GetZ());
+                    case ScaleType::NonUniform:
+                        return action.LocalScaleOffset();
+                    default:
+                        break;
+                    }
+                    return AZ::Vector3();
+                }();
+                const AZ::Vector3 manipulatorScale = AZ::Vector3::CreateOne() + (action.m_start.m_sign * scale);
+                const AZ::Vector3 vertexPosition = (vertexLocalPosition * manipulatorScale) + transformSelection->m_localPosition;
                 Api::SetVertexPosition(*whiteBox, vertexHandle, vertexPosition);
             }
 
@@ -640,23 +658,35 @@ namespace WhiteBox
 
         auto mouseUpHandlerFn =
             [mouseMoveHandlerFn, entityComponentIdPair = m_entityComponentIdPair,
-             transformSelection = m_whiteBoxSelection](const auto& action)
+             transformSelection = m_whiteBoxSelection](const auto& action, ScaleType scaleType)
         {
             WhiteBoxMesh* whiteBox = nullptr;
             EditorWhiteBoxComponentRequestBus::EventResult(
                 whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
 
-            mouseMoveHandlerFn(action);
+            mouseMoveHandlerFn(action, scaleType);
             transformSelection->m_vertexPositions = Api::VertexPositions(*whiteBox, transformSelection->m_vertexHandles);
 
             EditorWhiteBoxComponentRequestBus::Event(entityComponentIdPair, &EditorWhiteBoxComponentRequests::SerializeWhiteBox);
         };
 
-        scaleManipulators->InstallAxisMouseMoveCallback(mouseMoveHandlerFn);
-        scaleManipulators->InstallUniformMouseMoveCallback(mouseMoveHandlerFn);
+        scaleManipulators->InstallAxisMouseMoveCallback([mouseMoveHandlerFn](const auto& action)
+            {
+                return mouseMoveHandlerFn(action, ScaleType::NonUniform);
+            });
+        scaleManipulators->InstallAxisLeftMouseUpCallback([mouseUpHandlerFn](const auto& action)
+            {
+                return mouseUpHandlerFn(action, ScaleType::NonUniform);
+            });
 
-        scaleManipulators->InstallAxisLeftMouseUpCallback(mouseUpHandlerFn);
-        scaleManipulators->InstallUniformLeftMouseUpCallback(mouseUpHandlerFn);
+        scaleManipulators->InstallUniformMouseMoveCallback([mouseMoveHandlerFn](const auto& action)
+            {
+                return mouseMoveHandlerFn(action, ScaleType::Uniform);
+            });
+        scaleManipulators->InstallUniformLeftMouseUpCallback([mouseUpHandlerFn](const auto& action)
+            {
+                return mouseUpHandlerFn(action, ScaleType::Uniform);
+            });
 
         scaleManipulators->Register(AzToolsFramework::g_mainManipulatorManagerId);
         m_manipulator = AZStd::move(scaleManipulators);

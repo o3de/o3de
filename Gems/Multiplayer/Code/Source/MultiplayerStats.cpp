@@ -6,6 +6,7 @@
  *
  */
 
+#include <Multiplayer/MultiplayerMetrics.h>
 #include <Multiplayer/MultiplayerPerformanceStats.h>
 #include <Multiplayer/MultiplayerStats.h>
 
@@ -260,6 +261,6 @@ namespace Multiplayer
 
     void MultiplayerStats::RecordFrameTime(AZ::TimeUs networkFrameTime)
     {
-        SET_PERFORMANCE_STAT(MultiplayerStat_FrameTime, networkFrameTime);
+        SET_PERFORMANCE_STAT(MultiplayerStat_FrameTimeUs, networkFrameTime);
     }
 } // namespace Multiplayer

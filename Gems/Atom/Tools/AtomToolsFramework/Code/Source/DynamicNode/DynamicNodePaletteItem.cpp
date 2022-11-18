@@ -47,8 +47,8 @@ namespace AtomToolsFramework
                 // Handle undo/redo adding a single node. This will need to be done at a higher level for multiple nodes.
                 GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
 
-                GraphModelIntegration::GraphControllerRequestBus::Event(
-                    graphCanvasSceneId, &GraphModelIntegration::GraphControllerRequests::AddNode, node, dropPosition);
+                GraphModelIntegration::GraphControllerRequestBus::EventResult(
+                    m_createdNodeId, graphCanvasSceneId, &GraphModelIntegration::GraphControllerRequests::AddNode, node, dropPosition);
                 return true;
             }
         }
