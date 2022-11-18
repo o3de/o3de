@@ -19,6 +19,7 @@
 #include <QIcon>
 #include <QMenu>
 #include <QToolButton>
+#include <QtConcurrent/QtConcurrent>
 
 namespace AtomToolsFramework
 {
@@ -87,22 +88,56 @@ namespace AtomToolsFramework
         m_lightingPresetComboBox = new AssetSelectionComboBox([](const AZStd::string& path) {
             return path.ends_with(AZ::Render::LightingPreset::Extension);
         }, this);
-        connect(m_lightingPresetComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
-            EntityPreviewViewportSettingsRequestBus::Event(
-                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPreset, path);
-        });
         addWidget(m_lightingPresetComboBox);
 
         // Add model preset combo box
         m_modelPresetComboBox = new AssetSelectionComboBox([](const AZStd::string& path) {
             return path.ends_with(AZ::Render::ModelPreset::Extension);
         }, this);
-        connect(m_modelPresetComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
-            EntityPreviewViewportSettingsRequestBus::Event(
-                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset, path);
-        });
         addWidget(m_modelPresetComboBox);
 
+        // Add the last known paths for lighting and model presets to the browsers so they are not empty while the rest of the data is
+        // being processed in the background.
+        EntityPreviewViewportSettingsRequestBus::Event(
+            m_toolId,
+            [this](EntityPreviewViewportSettingsRequests* viewportRequests)
+            {
+                m_lightingPresetComboBox->AddPath(viewportRequests->GetLastLightingPresetPath());
+                m_modelPresetComboBox->AddPath(viewportRequests->GetLastModelPresetPath());
+            });
+
+        // Using a future watcher to monitor a background process that enumerates all of the lighting and model presets in the project.
+        // After the background process is complete, the watcher will receive the finished signal and add all of the enumerated files to
+        // the browsers.
+        connect(&m_watcher, &QFutureWatcher<AZStd::vector<AZStd::string>>::finished, this, [this]() {
+            m_lightingPresetComboBox->Clear();
+            m_modelPresetComboBox->Clear();
+            for (const auto& path : m_watcher.result())
+            {
+                m_lightingPresetComboBox->AddPath(path);
+                m_modelPresetComboBox->AddPath(path);
+            }
+
+            connect(m_lightingPresetComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
+                EntityPreviewViewportSettingsRequestBus::Event(
+                    m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPreset, path);
+            });
+
+            connect(m_modelPresetComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
+                EntityPreviewViewportSettingsRequestBus::Event(
+                    m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset, path);
+            });
+
+            OnViewportSettingsChanged();
+        });
+
+        // Start the future watcher with the background process to enumerate all of the lighting and model preset files.
+        m_watcher.setFuture(QtConcurrent::run([]() {
+            return GetPathsInSourceFoldersMatchingFilter([](const AZStd::string& path) {
+                return path.ends_with(AZ::Render::LightingPreset::Extension) || path.ends_with(AZ::Render::ModelPreset::Extension);
+            });
+        }));
+        
         OnViewportSettingsChanged();
         EntityPreviewViewportSettingsNotificationBus::Handler::BusConnect(m_toolId);
     }
