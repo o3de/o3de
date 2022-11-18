@@ -13,7 +13,7 @@ namespace AZ::SceneAPI::Utilities
     template<typename T>
     void DebugOutput::Write(const char* name, const AZStd::vector<T>& data)
     {
-        size_t hash = AZStd::hash_range(data.begin(), data.end());
+        AZStd::size_t hash = AZStd::hash_range(data.begin(), data.end());
         AZ::u64 dataSize(static_cast<AZ::u64>(data.size()));
         m_output += AZStd::string::format("\t%s: Count %llu. Hash: %zu\n", name, dataSize, hash);
 
@@ -24,7 +24,7 @@ namespace AZ::SceneAPI::Utilities
     template<typename T>
     void DebugOutput::Write(const char* name, const AZStd::vector<AZStd::vector<T>>& data)
     {
-        size_t hash = 0;
+        AZStd::size_t hash = 0;
         AZ::u64 dataSize(static_cast<AZ::u64>(data.size()));
 
         for (auto&& vector : data)
