@@ -1279,7 +1279,7 @@ namespace Multiplayer
         handler.Connect(m_noServerLevelLoadedEvent);
     }
 
-    void MultiplayerSystemComponent::AddVersionMismatchEvent(NoServerLevelLoadedEvent::Handler& handler)
+    void MultiplayerSystemComponent::AddVersionMismatchHandler(NoServerLevelLoadedEvent::Handler& handler)
     {
         handler.Connect(m_versionMismatchEvent);
     }

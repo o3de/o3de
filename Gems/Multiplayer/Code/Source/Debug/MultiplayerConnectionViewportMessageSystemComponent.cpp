@@ -56,7 +56,7 @@ namespace Multiplayer
 
         if (auto multiplayerSystemComponent = AZ::Interface<IMultiplayer>::Get())
         {
-            multiplayerSystemComponent->AddVersionMismatchEvent(m_versionMismatchEventHandler);
+            multiplayerSystemComponent->AddVersionMismatchHandler(m_versionMismatchEventHandler);
             multiplayerSystemComponent->AddLevelLoadBlockedHandler(m_levelLoadBlockedHandler);
             multiplayerSystemComponent->AddNoServerLevelLoadedHandler(m_noServerLevelLoadedHandler);
         }

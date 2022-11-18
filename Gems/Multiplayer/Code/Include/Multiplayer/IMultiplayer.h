@@ -167,7 +167,7 @@ namespace Multiplayer
         //! Adds a VersionMismatchEvent Handler which is invoked whenever a connection is made between 2 apps that have differing multiplayer components.
         //! Provided for catching an out-of-date server or client.
         //! @param handler The VersionMismatchEvent handler to add
-        virtual void AddVersionMismatchEvent(VersionMismatchEvent::Handler& handler) = 0;
+        virtual void AddVersionMismatchHandler(VersionMismatchEvent::Handler& handler) = 0;
 
         //! Signals a NotifyClientMigrationEvent with the provided parameters.
         //! @param connectionId       the connection id of the client that is migrating
