@@ -184,6 +184,9 @@ namespace UnitTests
 
             m_jsonRegistrationContext.reset();
             m_serializeContext.reset();
+
+            AZ::IO::FileIOBase::SetInstance(nullptr);
+            AZ::IO::FileIOBase::SetInstance(m_priorFileIO);
         }
 
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
