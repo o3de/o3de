@@ -34,6 +34,12 @@ logger = logging.getLogger(__name__)
 # Helper: variables we will use for parameter values in the test:
 targetProjects = ["AutomatedTesting"]
 
+# Helper: Gets a case correct version of the cache folder
+def get_cache_folder(asset_processor):
+    import re
+    # Make sure the folder being checked is fully lowercase.
+    # Leave the "c" in Cache uppercase.
+    return re.sub("ache[/\\\\](.*)", lambda m: m.group().lower(), asset_processor.project_test_cache_folder())
 
 @pytest.fixture
 def local_resources(request, workspace, ap_setup_fixture):
@@ -806,7 +812,7 @@ class TestsFBX_AllPlatforms(object):
     def compare_scene_debug_file(asset_processor, expected_file_path, actual_file_path, expected_hashes_to_skip = None, actual_hashes_to_skip = None):
         import re
 
-        debug_graph_path = os.path.join(asset_processor.project_test_cache_folder(), actual_file_path)
+        debug_graph_path = os.path.join(get_cache_folder(asset_processor), actual_file_path)
         expected_debug_graph_path = os.path.join(asset_processor.project_test_source_folder(), "SceneDebug", expected_file_path)
 
         logger.info(f"Parsing scene graph: {debug_graph_path}")
@@ -979,8 +985,19 @@ class TestsFBX_AllPlatforms(object):
                 for expected_product in expected_job.products:
                     expected_product_list.append(expected_product.product_name)
 
+        cache_folder = get_cache_folder(asset_processor)
         missing_assets, _ = utils.compare_assets_with_cache(expected_product_list,
-                                                            asset_processor.project_test_cache_folder())
+                                                            cache_folder)
+
+        # If the test is going to fail, print information to help track down the cause of failure.
+        if missing_assets:
+            logger.info(f"The following assets were missing from cache:")
+            for asset in missing_assets:
+                logger.info(f"\t{asset}")
+            logger.info(f"The cache {cache_folder} contains this content:")
+            in_cache = os.listdir(cache_folder)
+            for path in in_cache:
+                logger.info(f"\t{path}")
 
         assert not missing_assets, \
             f'The following assets were expected to be in, but not found in cache: {str(missing_assets)}'
@@ -1125,7 +1142,7 @@ class TestsFBX_AllPlatforms(object):
                 ]
 
             missing_assets, _ = utils.compare_assets_with_cache(expectedassets,
-                                                                asset_processor.project_test_cache_folder())
+                                                                get_cache_folder(asset_processor))
 
             assert not missing_assets, \
                 f'The following assets were expected to be in when processing {extension}, but not found in cache: ' \
