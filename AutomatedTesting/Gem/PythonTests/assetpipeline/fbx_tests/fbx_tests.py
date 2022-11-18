@@ -403,7 +403,7 @@ blackbox_fbx_tests = [
         BlackboxAssetTest(
             test_name="MotionTest_RunAP_SuccessWithMatchingProducts",
             asset_folder="Motion",
-            scene_debug_file="Jack_Idle_Aim_ZUp.dbgsg",
+            scene_debug_file="jack_idle_aim_zup.dbgsg",
             assets=[
                 asset_db_utils.DBSourceAsset(
                     source_file_name="Jack_Idle_Aim_ZUp.fbx",
@@ -817,21 +817,60 @@ class TestsFBX_AllPlatforms(object):
         with open(expected_debug_graph_path, "r") as scene_file:
             expected_lines = scene_file.readlines()
         diff_actual, diff_expected = utils.get_differences_between_lists(actual_lines, expected_lines)
+        if diff_actual == None and diff_expected == None:
+            return None, None
 
         # There are some differences that are currently considered warnings.
         # Long term these should become errors, but right now product assets on Linux and non-Linux
         # are showing differences in hashes.
 
         # If both scene graphs are identical, then bail, everything is working as expected.
-        if len(diff_actual) == 0 and len(diff_expected) == 0:
+        diff_actual_len = len(diff_actual)
+        diff_expected_len = len(diff_expected)
+        if diff_actual_len == 0 and diff_expected_len == 0:
             return None, None
 
         # If one scene has more lines than the other, it's always an error
-        assert len(diff_actual) == len(diff_expected), "Scene mismatch - different line counts"
+        assert diff_actual_len == diff_expected_len, "Scene mismatch - different line counts"
+
+        # Floating point values between Linux and Windows aren't consistent yet. For now, trim these values for comparison.
+        # Store the trimmed values and compare the un-trimmed values separately, emitting warnings.
+
+        # Trim decimals from the lists to be compared, if any where found, re-compare and generate new lists.
+        decimal_digits_to_preserve = 3
+        floating_point_regex = re.compile(f"(.*?-?[0-9]+\\.[0-9]{{{decimal_digits_to_preserve},{decimal_digits_to_preserve}}})[0-9]+(.*)")
+        for index, actual_line in enumerate(diff_actual):
+            # Loop, because there may be multiple floats on the same line.
+            while True:
+                match_result = floating_point_regex.match(diff_actual[index])
+                if not match_result:
+                    break
+                diff_actual[index] = f"{match_result.group(1)}{match_result.group(2)}"
+            # actual and expected have the same line count, so they can both be checked here
+            while True:
+                match_result = floating_point_regex.match(diff_expected[index])
+                if not match_result:
+                    break
+                diff_expected[index] = f"{match_result.group(1)}{match_result.group(2)}"
+                
+        # Re-run the diff now that floating point values have been truncated.
+        # Use that for the rest of this test
+        diff_actual, diff_expected = utils.get_differences_between_lists(diff_actual, diff_expected)
+        
+        if (diff_actual == None and diff_expected == None) or (len(diff_actual) == 0 and len(diff_actual) == 0):
+            warnings.warn(f"Floating point drift detected between {expected_file_path} and {actual_file_path}.")
+            return None, None
+            
+        assert len(diff_actual) == len(diff_expected), "Scene mismatch - different line counts after truncation"
+
+        if len(diff_actual) != diff_actual_len or len(diff_expected) != diff_expected_len:
+            # Emit a warning, so this can be tracked. It's something that will be addressed in the future.
+            warnings.warn(f"Floating point drift detected between {expected_file_path} and {actual_file_path}.")
+            
 
         # If this is the XML debug file, then it will be difficult to verify if a line is a hash line or another integer.
         # However, because XML files are always compared after standard dbgsg files, the hashes from that initial comparison can be used here to check.
-        is_xml_dbgsg = os.path.splitext(expected_file_path)[-1].lower() == ".xml"
+        is_xml_dbgsg = os.path.splitext(expected_file_path)[-1].lower() == ".xml"        
 
         if is_xml_dbgsg:
             # If the difference count doesn't match the non-xml file, then it's not just a hash mis-match, fail.
@@ -895,8 +934,11 @@ class TestsFBX_AllPlatforms(object):
     # Helper to run Asset Processor with debug output enabled and Atom output disabled
     @staticmethod
     def run_ap_debug_skip_atom_output(asset_processor):
-        result = asset_processor.batch_process(extra_params=["--debugOutput",
+        result, output = asset_processor.batch_process(capture_output=True, extra_params=["--debugOutput",
                                                              "--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\""])
+        # If the test fails, it's helpful to have the output from asset processor in the logs, to track the failure down.
+        for line in output:
+            logger.info(f"{line}")
         assert result, "Asset Processor Failed"
 
     def run_fbx_test(self, workspace, ap_setup_fixture, asset_processor,
