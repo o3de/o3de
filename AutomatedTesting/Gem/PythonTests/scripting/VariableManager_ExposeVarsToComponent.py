@@ -36,7 +36,7 @@ def VariableManager_ExposeVarsToComponent():
 
     # Preconditions
     from editor_python_test_tools.QtPyO3DEEditor import QtPyO3DEEditor
-    from scripting_utils.script_canvas_component import ScriptCanvasComponent, VariableState
+    from editor_python_test_tools.editor_component.editor_script_canvas import ScriptCanvasComponent, VariableState
     from editor_python_test_tools.QtPyCommon import CheckBoxStates
     import azlmbr.legacy.general as general
     from consts.scripting import (SCRIPT_CANVAS_TEST_FILE_PATH)
@@ -78,7 +78,8 @@ def VariableManager_ExposeVarsToComponent():
     position = math.Vector3(512.0, 512.0, 32.0)
     editor_entity = EditorEntity.create_editor_entity_at(position, ENTITY_NAME)
     editor_entity.add_components(COMPONENT_LIST)
-    script_canvas_component = ScriptCanvasComponent(editor_entity, SCRIPT_CANVAS_TEST_FILE_PATH)
+    script_canvas_component = ScriptCanvasComponent()
+    script_canvas_component.add_components_to_existing_entity(editor_entity, SCRIPT_CANVAS_TEST_FILE_PATH)
 
     # 9) Verify the new variables are exposed properly by modifying one of them
     script_canvas_component.set_variable_value(VARIABLE_NAME, VariableState.UNUSEDVARIABLE, True)

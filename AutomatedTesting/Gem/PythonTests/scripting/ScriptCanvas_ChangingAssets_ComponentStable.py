@@ -45,7 +45,7 @@ def ScriptCanvas_ChangingAssets_ComponentStable():
     from editor_python_test_tools.utils import Report, Tracer
     import scripting_utils.scripting_tools as scripting_tools
     import azlmbr.legacy.general as general
-    from scripting_utils.script_canvas_component import ScriptCanvasComponent
+    from editor_python_test_tools.editor_component.editor_script_canvas import ScriptCanvasComponent
 
     # Preconditions
     general.idle_enable(True)

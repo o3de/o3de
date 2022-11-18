@@ -12,7 +12,6 @@ import azlmbr.scriptcanvas as scriptcanvas
 from enum import Enum
 import azlmbr.math as math
 from consts.scripting import (SCRIPT_CANVAS_UI)
-
 import azlmbr.bus as bus
 import azlmbr.editor as editor
 import azlmbr.entity as entity
@@ -38,8 +37,10 @@ class ScriptCanvasComponent:
 
     def __init__(self, editor_entity: EditorEntity = None, sc_file_path: str = None):
         self.editor_entity = None
-        self.script_canvas_components = None
-        self.add_component_to_entity(editor_entity, sc_file_path)
+        self.script_canvas_components = []
+
+    def get_script_canvas_components(self) -> list:
+        return self.script_canvas_components
 
     def create_new_entity_with_component(self, entity_name: str, sc_file_path: str,
                                          position=math.Vector3(512.0, 512.0, 32.0)) -> None:
@@ -70,32 +71,28 @@ class ScriptCanvasComponent:
 
         returns none
         """
+        from editor_python_test_tools.editor_component.editor_component_validation import (
+            validate_script_canvas_graph_file)
+
         sourcehandle = scriptcanvas.SourceHandleFromPath(sc_file_path)
-        old_value = self.script_canvas_components[component_index].get_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
-        self.script_canvas_components[component_index].set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
+        validate_script_canvas_graph_file(self.get_script_canvas_components, sourcehandle, component_index)
 
-        set_value = self.script_canvas_components[component_index].get_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
-        assert set_value != old_value and set_value is not None, f"Graph file could not be set! {sc_file_path} not found."
-
-
-    def add_component_to_entity(self, editor_entity: EditorEntity, sc_file_path: str,
-                                sc_component_index=0) -> None:
+    def add_components_to_existing_entity(self, editor_entity: EditorEntity, sc_file_path: str, sc_component_index=0) -> None:
         """
-        Function for constructing the SCComponent object. This uses an existing entity and loads a new script canvas
-        file into the source handle value
+        Function for initializing a script canvas component object if you already have an editor entity you want to use.
 
         param editor_entity: The entity we want to configure
         param sc_file_path: location on disk to the script canvas file
 
         returns None
         """
-        if editor_entity is not None and sc_file_path is not None:
-            sourcehandle = scriptcanvas.SourceHandleFromPath(sc_file_path)
+        sourcehandle = scriptcanvas.SourceHandleFromPath(sc_file_path)
 
-            self.editor_entity = editor_entity
-            self.script_canvas_components = self.editor_entity.get_components_of_type([SCRIPT_CANVAS_UI])[sc_component_index]
+        self.editor_entity = editor_entity
+        self.script_canvas_components = self.editor_entity.get_components_of_type([SCRIPT_CANVAS_UI])
 
-            self.script_canvas_components.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
+        sc_component = self.script_canvas_components[sc_component_index]
+        sc_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
 
     def set_variable_value(self, variable_name: str, variable_state: VariableState, variable_value, component_index=0) -> None:
         """
@@ -112,12 +109,12 @@ class ScriptCanvasComponent:
         returns None
         """
         component_property_path = self.__construct_variable_component_property_path(variable_name, variable_state)
-        print(variable_value)
-        self.script_canvas_components[component_index].set_component_property_value(component_property_path, variable_value)
 
-        #validate the change
-        set_value = self.script_canvas_components[component_index].get_component_property_value(component_property_path)
-        assert set_value == variable_value, f"Component variable {variable_name} was not set properly"
+        from editor_python_test_tools.editor_component.editor_component_validation import (
+            validate_script_canvas_variable_changed)
+
+        validate_script_canvas_variable_changed(self.get_script_canvas_components, component_property_path,
+                                                variable_name, variable_value, component_index)
 
     def __construct_variable_component_property_path(self, variable_name: str, variable_state: VariableState, component_index=0) -> str:
         """
@@ -140,9 +137,5 @@ class ScriptCanvasComponent:
         component_property_path += variable_name + "|"
         component_property_path += DATUM_PATH
         component_property_path += variable_name
-
-        # test to see if this is a valid path
-        valid_path = self.script_canvas_components[component_index].get_component_property_value(component_property_path) is not None
-        assert valid_path, "Path to variable was invalid! Check use/unused state or variable name"
 
         return component_property_path

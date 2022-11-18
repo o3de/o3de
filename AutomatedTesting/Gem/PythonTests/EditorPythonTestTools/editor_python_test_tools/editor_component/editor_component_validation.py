@@ -12,7 +12,9 @@ from editor_python_test_tools.utils import Report
 from editor_python_test_tools.editor_entity_utils import EditorComponent
 from consts.general import ComponentPropertyVisibilityStates as PropertyVisibility
 from editor_python_test_tools.asset_utils import Asset
-
+from editor_python_test_tools.editor_component.editor_script_canvas import (ScriptCanvasComponent,
+                                                                            VariableState,
+                                                                            SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
 
 def compare_vec3(expected: Math.Vector3, actual: Math.Vector3) -> bool:
     """
@@ -215,3 +217,45 @@ def validate_asset_property(property_name: str, get_asset_value: typing.Callable
     assert expected_asset.id.is_equal(expected_asset.id, set_value), \
         f"Error: The {component_name}'s {property_name} property failed to properly set the mesh. Asset Id: " \
         f"{expected_asset.id} was expected but Asset Id: {set_value} was retrieved from \"{expected_asset.get_path()}\""
+
+
+def validate_script_canvas_graph_file(get_script_canvas_components: typing.Callable, sourcehandle: str,
+                                      component_index: int) -> None:
+    """
+    Function to validate the setting of a script canvas graph file to the file source field in the script canvas component
+
+    sc_component: The script canvas component object where we want to store the entity and graph file changes
+    sourcehandle: The on-disk path to azlmbr file location translation
+    component_index: which of the entity's script canvas components will have its graph file changed
+
+    """
+    Report.info(f"Validating Script Canvas component's file source field can be set.")
+
+    assert sourcehandle is not None, "File not found!"
+
+    sc_components = get_script_canvas_components()
+    old_value = sc_components[component_index].get_component_property_value(
+        SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
+    sc_components[component_index].set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH,
+                                                                                sourcehandle)
+
+    set_value = sc_components[component_index].get_component_property_value(
+        SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
+    assert set_value != old_value and set_value is not None, f"Graph file could not be set!"
+
+
+def validate_script_canvas_variable_changed(get_script_canvas_components: typing.Callable, component_property_path: str,
+                                            variable_name: str, variable_value, component_index: int) -> None:
+    """
+    Function for validating that a script canvas component variable can be changed.
+
+    """
+    sc_components = get_script_canvas_components()
+    valid_path = sc_components[component_index].get_component_property_value(component_property_path) is not None
+
+    assert valid_path, "Path to variable was invalid! Check use/unused state or variable name"
+
+    sc_components[component_index].set_component_property_value(component_property_path, variable_value)
+
+    set_value = sc_components[component_index].get_component_property_value(component_property_path)
+    assert set_value == variable_value, f"Component variable {variable_name} was not set properly"
