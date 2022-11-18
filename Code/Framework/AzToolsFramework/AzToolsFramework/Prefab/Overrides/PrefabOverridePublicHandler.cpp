@@ -38,6 +38,26 @@ namespace AzToolsFramework
 
         bool PrefabOverridePublicHandler::AreOverridesPresent(AZ::EntityId entityId)
         {
+            AZStd::pair<AZ::Dom::Path, LinkId> pathAndLinkIdPair = GetPathAndLinkIdFromFocusedPrefab(entityId);
+            if (!pathAndLinkIdPair.first.IsEmpty() && pathAndLinkIdPair.second != InvalidLinkId)
+            {
+                return m_prefabOverrideHandler.AreOverridesPresent(pathAndLinkIdPair.first, pathAndLinkIdPair.second);
+            }
+            return false;
+        }
+
+        bool PrefabOverridePublicHandler::RevertOverrides(AZ::EntityId entityId)
+        {
+            AZStd::pair<AZ::Dom::Path, LinkId> pathAndLinkIdPair = GetPathAndLinkIdFromFocusedPrefab(entityId);
+            if (!pathAndLinkIdPair.first.IsEmpty() && pathAndLinkIdPair.second != InvalidLinkId)
+            {
+                return m_prefabOverrideHandler.RevertOverrides(pathAndLinkIdPair.first, pathAndLinkIdPair.second);
+            }
+            return false;
+        }
+
+        AZStd::pair<AZ::Dom::Path, LinkId> PrefabOverridePublicHandler::GetPathAndLinkIdFromFocusedPrefab(AZ::EntityId entityId)
+        {
             AzFramework::EntityContextId editorEntityContextId;
             AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
                 editorEntityContextId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
@@ -50,16 +70,15 @@ namespace AzToolsFramework
             // redundant checks Eg: "Instances/InstanceB/....' . So we skip the first 2 tokens here.
             if (focusedInstance.has_value() && absoluteEntityAliasPath.size() > 2)
             {
-                AZStd::string_view overriddenInstanceKey = absoluteEntityAliasPath[1].GetKey().GetStringView();
-                InstanceOptionalReference overriddenInstance = focusedInstance->get().FindNestedInstance(overriddenInstanceKey);
-                if (overriddenInstance.has_value())
+                AZStd::string_view topMostInstanceKey = absoluteEntityAliasPath[1].GetKey().GetStringView();
+                InstanceOptionalReference topMostInstance = focusedInstance->get().FindNestedInstance(topMostInstanceKey);
+                if (topMostInstance.has_value())
                 {
                     auto pathIterator = absoluteEntityAliasPath.begin() + 2;
-                    AZ::Dom::Path modifiedPath(pathIterator, absoluteEntityAliasPath.end());
-                    return m_prefabOverrideHandler.AreOverridesPresent(modifiedPath, overriddenInstance->get().GetLinkId());
+                    return AZStd::pair(AZ::Dom::Path(pathIterator, absoluteEntityAliasPath.end()), topMostInstance->get().GetLinkId());
                 }
             }
-            return false;
+            return AZStd::pair(AZ::Dom::Path(), InvalidLinkId);
         }
     } // namespace Prefab
 } // namespace AzToolsFramework

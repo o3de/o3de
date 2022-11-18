@@ -37,6 +37,8 @@ namespace UnitTest
         // Append '1' to the path so that there is no path collision when creating another prefab.
         grandparentContainerId = CreatePrefab(AzToolsFramework::EntityIdList{ nestedPrefabContainerId }, path.Append("1"));
 
+        PropagateAllTemplateChanges();
+
         InstanceOptionalReference prefabInstance = m_instanceEntityMapperInterface->FindOwningInstance(grandparentContainerId);
         EXPECT_TRUE(prefabInstance.has_value());
 

@@ -9,7 +9,6 @@
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
-#include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 
@@ -213,9 +212,6 @@ namespace AZ
             {
                 TryReplaceAsset(shaderItem.m_shaderAsset, asset);
             }
-
-            // Notify interested parties that this MaterialTypeAsset is changed and may require other data to reinitialize as well
-            MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialTypeAssetReinitialized, Data::Asset<MaterialTypeAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
         }
 
         void MaterialTypeAsset::OnAssetReloaded(Data::Asset<Data::AssetData> asset)

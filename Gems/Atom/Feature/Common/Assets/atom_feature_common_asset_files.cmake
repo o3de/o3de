@@ -119,6 +119,13 @@ set(FILES
     Passes/MSAAResolveColor.pass
     Passes/MSAAResolveCustom.pass
     Passes/MSAAResolveDepth.pass
+    Passes/MultiViewForward.pass
+    Passes/MultiViewPipeline.pass
+    Passes/MultiViewSkyBox.pass
+    Passes/MultiViewTransparent.pass
+    Passes/MultiViewTransparentParent.pass
+    Passes/MultiViewXRLeftPipeline.pass
+    Passes/MultiViewXRRightPipeline.pass
     Passes/NewDepthOfField.pass
     Passes/NewDepthOfFieldComposite.pass
     Passes/NewDepthOfFieldDownsample.pass
@@ -241,6 +248,7 @@ set(FILES
     ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassVertexAndPixel.azsli
     ShaderLib/Atom/Features/Pipeline/Forward/ForwardSubsurfacePassOutput.azsli
     ShaderLib/Atom/Features/Pipeline/Forward/LowEndForwardPassVertexAndPixel.azsli
+    ShaderLib/Atom/Features/Pipeline/Forward/MultiViewForwardPassVertexAndPixel.azsli
     ShaderLib/Atom/Features/PostProcessing/Aces.azsli
     ShaderLib/Atom/Features/PostProcessing/AcesColorSpaceConversion.azsli
     ShaderLib/Atom/Features/PostProcessing/FullscreenPixelInfo.azsli
@@ -578,6 +586,6 @@ set(FILES
     Shaders/SkyAtmosphere/SkyViewLUT.shader
     Shaders/SkyBox/SkyBox.azsl
     Shaders/SkyBox/SkyBox.shader
-    Shaders/SkyBox/SkyBox_TwoOutputs.azsl
     Shaders/SkyBox/SkyBox_TwoOutputs.shader
+    Shaders/SkyBox/MultiViewSkyBox.shader
 ) 
