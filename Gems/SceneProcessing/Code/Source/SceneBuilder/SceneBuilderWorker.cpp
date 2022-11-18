@@ -30,6 +30,7 @@
 #include <SceneAPI/SceneCore/Events/SceneSerializationBus.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneCore/SceneBuilderDependencyBus.h>
+#include <SceneAPI/SceneCore/Events/ScriptConfigEventBus.h>
 
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IAnimationData.h>
@@ -241,6 +242,8 @@ namespace SceneBuilder
         {
             return;
         }
+
+        DefaultSriptDependencyCheck(request, response);
 
         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
     }
@@ -502,4 +505,22 @@ namespace SceneBuilder
 
         return id;
     }
+
+    void SceneBuilderWorker::DefaultSriptDependencyCheck(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
+    {
+        AZStd::optional<AZ::SceneAPI::Events::ScriptConfig> scriptConfig;
+        AZ::SceneAPI::Events::ScriptConfigEventBus::BroadcastResult(
+            scriptConfig,
+            &AZ::SceneAPI::Events::ScriptConfigEventBus::Events::MatchesScriptConfig,
+            request.m_sourceFile);
+
+        if (scriptConfig)
+        {
+            AssetBuilderSDK::SourceFileDependency sourceFileDependencyInfo;
+            sourceFileDependencyInfo.m_sourceFileDependencyPath = scriptConfig.value().m_scriptPath.c_str();
+            sourceFileDependencyInfo.m_sourceDependencyType = AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute;
+            response.m_sourceFileDependencyList.push_back(sourceFileDependencyInfo);
+        }
+    }
+
 } // namespace SceneBuilder
