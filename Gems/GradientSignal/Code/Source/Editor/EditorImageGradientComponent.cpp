@@ -243,7 +243,8 @@ namespace GradientSignal
         // Make sure our image asset settings are synced in the runtime component's configuration.
         RefreshImageAssetStatus();
 
-        EnableComponentMode();
+        // Register the component mode only if we're in an editable state.
+        RefreshComponentModeStatus();
     }
 
     void EditorImageGradientComponent::Deactivate()
@@ -372,7 +373,7 @@ namespace GradientSignal
 
     void EditorImageGradientComponent::EnableComponentMode()
     {
-        if (m_componentModeDelegate.AddedToComponentMode())
+        if (m_componentModeDelegate.IsConnected())
         {
             return;
         }
@@ -384,7 +385,7 @@ namespace GradientSignal
 
     void EditorImageGradientComponent::DisableComponentMode()
     {
-        if (!m_componentModeDelegate.AddedToComponentMode())
+        if (!m_componentModeDelegate.IsConnected())
         {
             return;
         }
@@ -411,6 +412,8 @@ namespace GradientSignal
             AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
         }
+
+        RefreshComponentModeStatus();
     }
 
     AZ::u32 EditorImageGradientComponent::ConfigurationChanged()
@@ -446,6 +449,9 @@ namespace GradientSignal
 
     AZ::u32 EditorImageGradientComponent::RefreshCreationSelectionChoice()
     {
+        // Refresh the component mode status, since changing this dropdown affects the component mode visibility.
+        RefreshComponentModeStatus();
+
         // We need to refresh the entire tree because this selection changes the visibility of other properties.
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }

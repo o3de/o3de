@@ -41,5 +41,5 @@ namespace UnitTest
             AZStd::span<const AZ::Vector3> valuePointOffsets,
             SmoothFn& smoothFn));
     };
-}
+} // namespace UnitTest
 

@@ -7,122 +7,131 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import pytest
 
-from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorParallelTest, EditorTestSuite
+from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorTestSuite
 
 
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomationNoAutoTestMode(EditorTestSuite):
+class TestAutomation(EditorTestSuite):
 
-    # Enable only -BatchMode for these tests. Some tests cannot run in -autotest_mode due to UI interactions
-    global_extra_cmdline_args = ["-BatchMode"]
+    # These tests will execute without enabling prefab overrides
+    EditorTestSuite.global_extra_cmdline_args.append("--regset=O3DE/Preferences/Prefabs/EnableOverridesUx=false")
 
     # Add Entity Tests
 
-    class test_AddEntity_UnderAnotherEntity(EditorSharedTest):
+    class test_AddEntity_UnderAnotherEntity(EditorBatchedTest):
         from .tests.add_entity import AddEntity_UnderAnotherEntity as test_module
 
-    class test_AddEntity_UnderChildEntityOfPrefab(EditorSharedTest):
+    class test_AddEntity_UnderChildEntityOfPrefab(EditorBatchedTest):
         from .tests.add_entity import AddEntity_UnderChildEntityOfPrefab as test_module
 
-    class test_AddEntity_UnderContainerEntityOfPrefab(EditorSharedTest):
+    class test_AddEntity_UnderContainerEntityOfPrefab(EditorBatchedTest):
         from .tests.add_entity import AddEntity_UnderContainerEntityOfPrefab as test_module
 
-    class test_AddEntity_UnderLevelPrefab(EditorSharedTest):
+    class test_AddEntity_UnderLevelPrefab(EditorBatchedTest):
         from .tests.add_entity import AddEntity_UnderLevelPrefab as test_module
 
     # Create Prefab Tests
 
-    class test_CreatePrefab_ComponentConfigurationRetained(EditorSharedTest):
+    class test_CreatePrefab_ComponentConfigurationRetained(EditorBatchedTest):
         from .tests.create_prefab import CreatePrefab_ComponentConfigurationRetained as test_module
 
-    class test_CreatePrefab_UnderAnEntity(EditorSharedTest):
+    class test_CreatePrefab_UnderAnEntity(EditorBatchedTest):
         from .tests.create_prefab import CreatePrefab_UnderAnEntity as test_module
 
-    class test_CreatePrefab_UnderAnotherPrefab(EditorSharedTest):
+    class test_CreatePrefab_UnderAnotherPrefab(EditorBatchedTest):
         from .tests.create_prefab import CreatePrefab_UnderAnotherPrefab as test_module
 
-    class test_CreatePrefab_UnderChildEntityOfAnotherPrefab(EditorSharedTest):
+    class test_CreatePrefab_UnderChildEntityOfAnotherPrefab(EditorBatchedTest):
         from .tests.create_prefab import CreatePrefab_UnderChildEntityOfAnotherPrefab as test_module
 
-    class test_CreatePrefab_WithNestedEntities(EditorSharedTest):
+    class test_CreatePrefab_WithNestedEntities(EditorBatchedTest):
         from .tests.create_prefab import CreatePrefab_WithNestedEntities as test_module
     
-    class test_CreatePrefab_WithNestedEntitiesAndNestedPrefabs(EditorSharedTest):
+    class test_CreatePrefab_WithNestedEntitiesAndNestedPrefabs(EditorBatchedTest):
         from .tests.create_prefab import CreatePrefab_WithNestedEntitiesAndNestedPrefabs as test_module
 
-    class test_CreatePrefab_WithSingleEntity(EditorSharedTest):
+    class test_CreatePrefab_WithSingleEntity(EditorBatchedTest):
         from .tests.create_prefab import CreatePrefab_WithSingleEntity as test_module
 
     # Delete Entity Tests
 
-    class test_DeleteEntity_UnderAnotherPrefab(EditorSharedTest):
+    class test_DeleteEntity_UnderAnotherPrefab(EditorBatchedTest):
         from .tests.delete_entity import DeleteEntity_UnderAnotherPrefab as test_module
 
-    class test_DeleteEntity_UnderLevelPrefab(EditorSharedTest):
+    class test_DeleteEntity_UnderLevelPrefab(EditorBatchedTest):
         from .tests.delete_entity import DeleteEntity_UnderLevelPrefab as test_module
 
     # Delete Prefab Tests
 
-    class test_DeletePrefab_ContainingASingleEntity(EditorSharedTest):
+    class test_DeletePrefab_ContainingASingleEntity(EditorBatchedTest):
         from .tests.delete_prefab import DeletePrefab_ContainingASingleEntity as test_module
 
-    class test_DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs(EditorSharedTest):
+    class test_DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs(EditorBatchedTest):
         from .tests.delete_prefab import DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs as test_module
 
-    class test_DeletePrefab_DuplicatedPrefabInstance(EditorSharedTest):
+    class test_DeletePrefab_DuplicatedPrefabInstance(EditorBatchedTest):
         from .tests.delete_prefab import DeletePrefab_DuplicatedPrefabInstance as test_module
 
     # Detach Prefab Tests
 
-    class test_DetachPrefab_UnderAnotherPrefab(EditorSharedTest):
+    class test_DetachPrefab_UnderAnotherPrefab(EditorBatchedTest):
         from .tests.detach_prefab import DetachPrefab_UnderAnotherPrefab as test_module
 
-    class test_DetachPrefab_WithNestedEntities(EditorSharedTest):
+    class test_DetachPrefab_WithNestedEntities(EditorBatchedTest):
         from .tests.detach_prefab import DetachPrefab_WithNestedEntities as test_module
 
-    class test_DetachPrefab_WithSingleEntity(EditorSharedTest):
+    class test_DetachPrefab_WithSingleEntity(EditorBatchedTest):
         from .tests.detach_prefab import DetachPrefab_WithSingleEntity as test_module
 
     # Duplicate Prefab Tests
 
-    class test_DuplicatePrefab_ContainingASingleEntity(EditorSharedTest):
+    class test_DuplicatePrefab_ContainingASingleEntity(EditorBatchedTest):
         from .tests.duplicate_prefab import DuplicatePrefab_ContainingASingleEntity as test_module
 
-    class test_DuplicatePrefab_ContainingNestedEntitiesAndNestedPrefabs(EditorSharedTest):
+    class test_DuplicatePrefab_ContainingNestedEntitiesAndNestedPrefabs(EditorBatchedTest):
         from .tests.duplicate_prefab import DuplicatePrefab_ContainingNestedEntitiesAndNestedPrefabs as test_module
 
     # Instantiate Prefab Tests
 
-    class test_InstantiatePrefab_ContainingASingleEntity(EditorSharedTest):
+    class test_InstantiatePrefab_ContainingASingleEntity(EditorBatchedTest):
         from .tests.instantiate_prefab import InstantiatePrefab_ContainingASingleEntity as test_module
 
-    class test_InstantiatePrefab_FromCreatedPrefabWithSingleEntity(EditorSharedTest):
+    class test_InstantiatePrefab_FromCreatedPrefabWithSingleEntity(EditorBatchedTest):
         from .tests.instantiate_prefab import InstantiatePrefab_FromCreatedPrefabWithSingleEntity as test_module
 
     # Open Level Tests
 
-    class test_OpenLevel_ContainingTwoEntities(EditorSharedTest):
+    class test_OpenLevel_ContainingTwoEntities(EditorBatchedTest):
         from .tests.open_level import OpenLevel_ContainingTwoEntities as test_module
-
-    # Overrides Tests
-
-    class test_EditEntity_UnderImmediateInstance(EditorSharedTest):
-        from .tests.overrides import EditEntity_UnderImmediateInstance as test_module
-
-    class test_EditEntity_UnderNestedInstance(EditorSharedTest):
-        from .tests.overrides import EditEntity_UnderNestedInstance as test_module
         
     # Prefab Notifications Tests
 
-    class test_PrefabNotifications_PropagationNotificationsReceived(EditorSharedTest):
+    class test_PrefabNotifications_PropagationNotificationsReceived(EditorBatchedTest):
         from .tests.prefab_notifications import PrefabNotifications_PropagationNotificationsReceived as test_module
 
-    class test_PrefabNotifications_RootPrefabLoadedNotificationsReceived(EditorSharedTest):
+    class test_PrefabNotifications_RootPrefabLoadedNotificationsReceived(EditorBatchedTest):
         from .tests.prefab_notifications import PrefabNotifications_RootPrefabLoadedNotificationsReceived as test_module
 
     # Reparent Prefab Tests
 
-    class test_ReparentEntity_UnderEntityHierarchies(EditorSharedTest):
+    class test_ReparentEntity_UnderEntityHierarchies(EditorBatchedTest):
         from .tests.reparent_prefab import ReparentEntity_UnderEntityHierarchies as test_module
+
+
+@pytest.mark.SUITE_main
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+class TestAutomationOverrides(EditorTestSuite):
+
+    # These tests will execute with prefab overrides enabled
+    EditorTestSuite.global_extra_cmdline_args.append("--regset=O3DE/Preferences/Prefabs/EnableOverridesUx=true")
+
+    # Overrides Tests
+
+    class test_EditEntity_UnderImmediateInstance(EditorBatchedTest):
+        from .tests.overrides import EditEntity_UnderImmediateInstance as test_module
+
+    class test_EditEntity_UnderNestedInstance(EditorBatchedTest):
+        from .tests.overrides import EditEntity_UnderNestedInstance as test_module
