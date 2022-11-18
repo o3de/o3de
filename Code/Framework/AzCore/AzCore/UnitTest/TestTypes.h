@@ -18,6 +18,8 @@
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/std/allocator_stateless.h>
 
+#include <gtest/gtest.h>
+
 #if defined(HAVE_BENCHMARK)
 
 AZ_PUSH_DISABLE_WARNING(, "-Wdeprecated-declarations", "-Wdeprecated-declarations")
