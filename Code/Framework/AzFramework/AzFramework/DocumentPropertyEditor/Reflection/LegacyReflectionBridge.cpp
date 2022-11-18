@@ -261,7 +261,7 @@ namespace AZ::Reflection
                     }
                 }
 
-                //! This is the case to create all UIElements, Groups and Editor Data if these are the first elements in a class that has other serializable elements
+                //! This is the case to create UIElements, Groups and Editor Data if any one of these is the first element in a class
                 auto iter = m_nonSerializedElements.begin();
                 while (iter != m_nonSerializedElements.end())
                 {
@@ -269,6 +269,7 @@ namespace AZ::Reflection
                     {
                         if (iter->second.m_classElement->m_editData->m_elementId == AZ::Edit::ClassElements::Group)
                         {
+                            // Add the group to the stack and keep it open
                             AZStd::string_view groupName = iter->second.m_classElement->m_editData->m_description;
                             if (!groupName.empty())
                             {
@@ -277,12 +278,8 @@ namespace AZ::Reflection
                                 CacheAttributes();
                                 m_visitor->VisitObjectBegin(*this, *this);
                             }
-                            else
-                            {
-                                // EndGroup call was given but no previous group to end
-                            }
                         }
-                        else
+                        if (iter->second.m_classElement->m_editData->m_elementId == AZ::Edit::ClassElements::UIElement)
                         {
                             m_stack.push_back(iter->second);
                             CacheAttributes();
@@ -298,53 +295,30 @@ namespace AZ::Reflection
                     }
                 }
 
-                // Search through classData for UIElements, indexing elements so we know where in the hierarchy to insert each UIElement
+                // Search through classData for UIElements, Groups and Editor Data.
                 if (classData->m_editData)
                 {
                     const char* name = "";
-
                     for (auto eltIt = classData->m_editData->m_elements.begin(); eltIt != classData->m_editData->m_elements.end(); ++eltIt)
                     {
-                        if (eltIt->m_elementId == AZ::Edit::ClassElements::EditorData)
+                        if (
+                            eltIt->m_elementId == AZ::Edit::ClassElements::Group ||
+                            eltIt->m_elementId == AZ::Edit::ClassElements::UIElement)
                         {
+                            AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
+                            UIElement->m_editData = &*eltIt;
+                            UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
+                            StackEntry entry = { parentData.m_instance, parentData.m_instance, classData->m_typeId, classData, UIElement };
+                            auto elementPair = AZStd::pair<const char*, StackEntry>(name, entry);
+                            m_nonSerializedElements.push_back(elementPair);
+                        }
 
-                        }
-                        if (eltIt->m_elementId == AZ::Edit::ClassElements::Group)
-                        {
-                            AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
-                            UIElement->m_editData = &*eltIt;
-                            UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
-                            StackEntry entry = { parentData.m_instance, parentData.m_instance, classData->m_typeId, classData, UIElement };
-                            auto elementPair = AZStd::pair<const char*, StackEntry>(name, entry);
-                            m_nonSerializedElements.push_back(elementPair);
-                        }
-                        if (eltIt->m_elementId == AZ::Edit::ClassElements::UIElement)
-                        {
-                            AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
-                            UIElement->m_editData = &*eltIt;
-                            UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
-                            StackEntry entry = { parentData.m_instance, parentData.m_instance, classData->m_typeId, classData, UIElement };
-                            auto elementPair = AZStd::pair<const char*, StackEntry>(name, entry);
-                            m_nonSerializedElements.push_back(elementPair);
-                        }
+                        // Keep track of the last valid element name
                         if (eltIt->m_name && strlen(eltIt->m_name) != 0)
                         {
                             name = eltIt->m_name;
                         }
                     }
-                    // Special case for classes that only have UI elements inside of them (like Component Mode)
-                    /*if (insertIndex == 0 && addedElement)
-                    {
-                        for (auto& UIElement : m_UIElements)
-                        {
-                            m_stack.push_back(UIElement);
-                            CacheAttributes();
-                            m_stack.back().m_entryClosed = true;
-                            m_visitor->VisitObjectBegin(*this, *this);
-                            m_visitor->VisitObjectEnd(*this, *this);
-                            m_stack.pop_back();
-                        }
-                    }*/
                 }
                 m_stack.push_back(
                     { instance, parentData.m_instance, classData ? classData->m_typeId : Uuid::CreateNull(), classData, classElement });
@@ -434,46 +408,6 @@ namespace AZ::Reflection
                     }
                 }
 
-                if (classElement && classElement->m_editData &&
-                    (classElement->m_flags & SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT) != 0)
-                {
-                    // Don't visit EditorData, just poll it for attributes
-                    if (classElement->m_editData->m_elementId == AZ::Edit::ClassElements::EditorData)
-                    {
-                        nodeData->m_entryClosed = true;
-                        return true;
-                    }
-                    else if (classElement->m_editData->m_elementId == AZ::Edit::ClassElements::Group)
-                    {
-                        AZStd::string_view groupName = classElement->m_editData->m_description;
-                        if (!parentData.m_group.empty())
-                        {
-                            // If we're superceding a previous group, call EndNode to ensure VisitObjectEnd gets called correctly, then put
-                            // our group back on top of the stack
-                            StackEntry nodeDataCopy = AZStd::move(m_stack.back());
-                            m_stack.pop_back();
-                            parentData.m_group = {};
-                            parentData.m_entryClosed = false;
-                            EndNode();
-                            m_stack.push_back(AZStd::move(nodeDataCopy));
-                            nodeData = &m_stack.back();
-                        }
-
-                        if (!groupName.empty())
-                        {
-                            // If our group has a name, we should actually call VisitObjectEnd, so continue with the group set
-                            nodeData->m_group = groupName;
-                        }
-                        else
-                        {
-                            // Otherwise, just leave a placeholder entry to be popped off the stack in EndNode and bail, there's no actual
-                            // group to visit
-                            nodeData->m_entryClosed = true;
-                            return true;
-                        }
-                    }
-                }
-
                 CacheAttributes();
 
                 // Inherit the change notify attribute from our parent
@@ -488,10 +422,8 @@ namespace AZ::Reflection
                     }
                 }
 
-                if (nodeData->m_classElement && !nodeData->m_classElement->m_editData && !parentData.m_classData->m_container)
-                {
-                    nodeData->m_computedVisibility = DocumentPropertyEditor::Nodes::PropertyVisibility::ShowChildrenOnly;
-                }
+                // If this node has no edit data and is not the child of a container, only show its children
+
                 const auto& EnumTypeAttribute = DocumentPropertyEditor::Nodes::PropertyEditor::EnumUnderlyingType;
                 Dom::Value enumTypeValue = Find(EnumTypeAttribute.GetName());
                 auto enumTypeId = EnumTypeAttribute.DomToValue(enumTypeValue);
@@ -515,45 +447,38 @@ namespace AZ::Reflection
             bool EndNode()
             {
                 StackEntry& nodeData = m_stack.back();
-                if (!nodeData.m_group.empty())
-                {
-                    // For groups, we'll get an EndNode call but the group should remain open
-                    // until its parent is actually closed (or another group is specified)
-                    // so we just set m_entryClosed the first time, then finish visiting both
-                    // the group and its parent when its parent would be closed.
-                    if (nodeData.m_entryClosed)
-                    {
-                        m_visitor->VisitObjectEnd(*this, *this);
-                        m_stack.pop_back();
-                        EndNode();
-                    }
-                    else
-                    {
-                        nodeData.m_entryClosed = true;
-                    }
-                    return true;
-                }
-                else if (!nodeData.m_entryClosed)
+                if (!nodeData.m_entryClosed)
                 {
                     m_visitor->VisitObjectEnd(*this, *this);
                 }
                 m_stack.pop_back();
-                for (auto iter = m_nonSerializedElements.begin(); iter != m_nonSerializedElements.end(); ++iter)
+                if (!nodeData.m_group.empty())
                 {
+                    EndNode();
+                }
+                // Iterate over non serialized elements to see if any of them should be added
+                const char* elementName = "";
+                if (nodeData.m_classElement&& nodeData.m_classElement->m_editData&& nodeData.m_classElement->m_editData->m_name)
+                {
+                    elementName = nodeData.m_classElement->m_editData->m_name;
+                }
+                auto iter = m_nonSerializedElements.begin();
+                while (iter != m_nonSerializedElements.end())
+                {
+                    // If the parent of the element that was just created has the same name as the parent of any non serialized elements,
+                    // and the element that was just created is the element immediately before any non serialized element, create that serialized element
                     if (m_stack.back().m_classData && m_stack.back().m_classData->m_name == iter->second.m_classData->m_name &&
-                        nodeData.m_classElement && nodeData.m_classElement->m_editData && nodeData.m_classElement->m_editData->m_name == iter->first)
+                        elementName == iter->first)
                     {
                         if (iter->second.m_classElement->m_editData->m_elementId == AZ::Edit::ClassElements::Group)
                         {
                             AZStd::string_view groupName = iter->second.m_classElement->m_editData->m_description;
                             if (!m_stack.back().m_group.empty())
                             {
-                                // If we're superceding a previous group, call EndNode to ensure VisitObjectEnd gets called correctly, then
-                                // put our group back on top of the stack
+                                // If we're superceding a previous group, finish visiting the previous group first
                                 m_visitor->VisitObjectEnd(*this, *this);
                                 m_stack.pop_back();
                             }
-
                             if (!groupName.empty())
                             {
                                 // If our group has a name, we should actually call VisitObjectEnd, so continue with the group set
@@ -562,7 +487,7 @@ namespace AZ::Reflection
                                 CacheAttributes();
                                 m_visitor->VisitObjectBegin(*this, *this);
                             }
-                            //else
+                            //else //there is no group to visit?
                             //{
                             //    m_stack.back().m_entryClosed = true;
                             //    m_visitor->VisitObjectEnd(*this, *this);
@@ -571,7 +496,7 @@ namespace AZ::Reflection
                             //    return true;
                             //}
                         }
-                        else
+                        if (iter->second.m_classElement->m_editData->m_elementId == AZ::Edit::ClassElements::UIElement)
                         {
                             m_stack.push_back(iter->second);
                             CacheAttributes();
@@ -580,6 +505,11 @@ namespace AZ::Reflection
                             m_visitor->VisitObjectEnd(*this, *this);
                             m_stack.pop_back();
                         }
+                        iter = m_nonSerializedElements.erase(iter);
+                    }
+                    else
+                    {
+                        ++iter;
                     }
                 }
                 if (!m_stack.empty() && nodeData.m_computedVisibility == DocumentPropertyEditor::Nodes::PropertyVisibility::Show)
@@ -873,6 +803,11 @@ namespace AZ::Reflection
                         visibility = PropertyVisibility::Hide;
                         break;
                     }
+                }
+                auto parentData = m_stack.end() - 2;
+                if (nodeData.m_classElement && !nodeData.m_classElement->m_editData && !parentData->m_classData->m_container)
+                {
+                    visibility = DocumentPropertyEditor::Nodes::PropertyVisibility::ShowChildrenOnly;
                 }
                 nodeData.m_computedVisibility = visibility;
                 nodeData.m_cachedAttributes.push_back(
