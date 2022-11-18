@@ -1031,7 +1031,9 @@ class TestsFBX_AllPlatforms(object):
         import shutil
 
         # Copying test assets to project folder
-        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "ModifiedFBXFile_ConsistentProductOutput")
+        test_folder_name = "ModifiedFBXFile_ConsistentProductOutput"
+
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], test_folder_name)
         # Run AP against the FBX file and the .assetinfo file
         self.run_ap_debug_skip_atom_output(asset_processor)
 
@@ -1040,7 +1042,11 @@ class TestsFBX_AllPlatforms(object):
         assert os.path.exists(scene_debug_expected), "Expected scene file missing in SceneDebug/modifiedfbxfile.dbgsg - Check test assets"
 
         # Set path to actual dbgsg output, obtained when running AP
-        scene_debug_actual = os.path.join(asset_processor.temp_project_cache(asset_platform=ASSET_PROCESSOR_PLATFORM_MAP[workspace.asset_processor_platform]), "ModifiedFBXFile_ConsistentProductOutput","modifiedfbxfile.dbgsg")
+        scene_debug_actual = os.path.join(
+            asset_processor.temp_project_cache(asset_platform=ASSET_PROCESSOR_PLATFORM_MAP[workspace.asset_processor_platform]),
+            test_folder_name.lower(),
+            "modifiedfbxfile.dbgsg")
+
         assert os.path.exists(scene_debug_actual)
 
         # Compare the dbgsg files to ensure expected outputs
