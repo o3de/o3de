@@ -46,6 +46,8 @@ def ScriptCanvas_ChangingAssets_ComponentStable():
     import scripting_utils.scripting_tools as scripting_tools
     import azlmbr.legacy.general as general
     from editor_python_test_tools.editor_component.editor_script_canvas import ScriptCanvasComponent
+    from editor_python_test_tools.editor_component.editor_component_validation import (
+        validate_script_canvas_graph_file)
 
     # Preconditions
     general.idle_enable(True)
@@ -64,7 +66,9 @@ def ScriptCanvas_ChangingAssets_ComponentStable():
         TestHelper.exit_game_mode(Tests.game_mode_exited)
 
         # 4) Update Script Canvas file on entity's SC component
-        script_canvas_component.set_component_graph_file(ASSET_2)
+        validation_data = script_canvas_component.set_component_graph_file(ASSET_2)
+        validate_script_canvas_graph_file(script_canvas_component.get_script_canvas_components, validation_data[0],
+                                          validation_data[1])
 
         # 5) Enter and Exit Game Mode
         TestHelper.enter_game_mode(Tests.game_mode_entered)
