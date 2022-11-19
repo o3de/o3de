@@ -32,7 +32,7 @@ namespace AZ
                 RHI::HeapMemoryLevel m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
                 RHI::HostMemoryAccess m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
                 GetHeapMemoryUsageFunction m_getHeapMemoryUsageFunction;
-                bool m_recycleOnCollect = true;
+                bool m_recycleOnCollect = false;
             };
 
             void Init(const Descriptor& descriptor);

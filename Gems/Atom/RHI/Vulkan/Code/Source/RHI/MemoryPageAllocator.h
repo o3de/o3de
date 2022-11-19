@@ -36,7 +36,7 @@ namespace AZ
                 VkMemoryPropertyFlags m_additionalMemoryPropertyFlags = 0;
                 uint32_t m_memoryTypeBits = 0;
                 GetHeapMemoryUsageFunction m_getHeapMemoryUsageFunction;
-                bool m_recycleOnCollect = true;
+                bool m_recycleOnCollect = false;
             };
 
             void Init(const Descriptor& descriptor);

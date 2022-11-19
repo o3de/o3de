@@ -16,8 +16,6 @@
 #include <Atom/RHI.Reflect/Vulkan/ImagePoolDescriptor.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/sort.h>
-#include <RHI/Device.h>
-#include <RHI/MemoryAllocator.h>
 #include <RHI/MemoryView.h>
 #include <RHI/Queue.h>
 #include <Atom/RHI/AsyncWorkQueue.h>
@@ -50,34 +48,39 @@ namespace AZ
             VkImage m_image;
 
             // block size in bytes
-            uint32_t m_blockSizeInBytes;
-            // block count for the mip tail
+            size_t m_blockSizeInBytes;
+
+            // Whether the image uses single mip tail for all array layers (VK_SPARSE_IMAGE_FORMAT_SINGLE_MIPTAIL_BIT was set)
+            bool m_useSingleMipTail = false;
+
+            // Block count for one mip tail.
+            // If the image is single mip tail, then it's the block count for the single mip tail
+            // It the image is not single mip tail, then it's the block count for the mip tail of one array layer
             uint32_t m_mipTailBlockCount;
+
             // block count for each non-tail mip level
             AZStd::vector<uint32_t> m_mipBlockCount;
 
             // Memory bind for non-tail mips
-            using MipMemoryViews = AZStd::vector<MemoryView>;
-            AZStd::vector<MipMemoryViews> m_mipMemoryViews;                         // Memory views for each non-tail mip levels. For example: m_mipMemoryViews[0] is the memory views for mip level 0 (with all array layers)
+            using MemoryViews = AZStd::vector<MemoryView>;
+            AZStd::vector<MemoryViews> m_mipMemoryViews;                         // Memory views for each non-tail mip levels. For example: m_mipMemoryViews[0] is the memory views for mip level 0 (with all array layers)
             using MipMemoryBinds = AZStd::vector<VkSparseImageMemoryBind>;
             AZStd::vector<MipMemoryBinds> m_mipMemoryBinds;                         // Memory binds for each non-tail mip levels
             AZStd::vector<VkSparseImageMemoryBindInfo> m_mipMemoryBindInfos;        // Helper structure for sparse binding
+            // Cached structures for unbound memory
+            AZStd::vector<MipMemoryBinds> m_emptyMipMemoryBinds;                    // Empty binds for each non-tail mip levels. Used for unbound certain non-tail mip levels
+            AZStd::vector<VkSparseImageMemoryBindInfo> m_emptyMipMemoryBindInfos;   
 
             // Memory bind for mip tail
             uint16_t m_tailStartMip;                                                // First mip level in mip tail. mip levels from m_mipTailStart to (mipmap count - 1) are all belong to mip tail
-            MemoryView m_mipTailMemoryView;
-            VkSparseMemoryBind m_mipTailMemoryBind;                                // Opaque memory bindings for mip tail
+            MemoryViews m_mipTailMemoryViews;
+            AZStd::vector<VkSparseMemoryBind> m_mipTailMemoryBinds;                 // Opaque memory bindings for mip tail
             VkSparseImageOpaqueMemoryBindInfo m_mipTailMemoryBindInfo;              // Helper structure for sparse binding
 
+            // The start mip of mips which are allocated
+            uint16_t m_allocatedMip;
+
             uint64_t GetRequiredMemorySize(uint16_t residentMipLevel) const;
-
-            // Set the memory view used for mip tail
-            void SetMipTailMemoryBind(const MemoryView& memoryView);
-
-            // Add a memory view for a certain mip level
-            void AddMipMemoryView(uint16_t mipLevel, const MemoryView& memoryView);
-            // Remove all the memory views associated with a certain mip level
-            void ResetMipMemoryView(uint16_t mipLevel);
 
             // Get the VkBindSparseInfo data for bind memory for specified mip range ( startMipLevel >= endMipLevel)
             VkBindSparseInfo GetBindSparseInfo(uint16_t startMipLevel, uint16_t endMipLevel);
@@ -87,6 +90,9 @@ namespace AZ
 
             // Update the VkSparseImageMemoryBindInfo for mip tail
             void UpdateMipTailMemoryBindInfo();
+
+            // Update the sparse image memory bind info for specified mip range ( startMipLevel >= endMipLevel)
+            void UpdateMemoryBindInfo(uint16_t startMipLevel, uint16_t endMipLevel);
         };
 
         class Image final
@@ -150,14 +156,19 @@ namespace AZ
             Image() = default;
 
             RHI::ResultCode Init(Device& device, const RHI::ImageDescriptor& descriptor, bool tryUseSparse);
-            RHI::ResultCode BindMemoryView(const MemoryView& memoryView, const RHI::HeapMemoryLevel heapMemoryLevel);
+            RHI::ResultCode BindMemoryView(const MemoryView& memoryView);
 
-            // Allocate memory and bind memory for this image
-            RHI::ResultCode AllocateAndBindMemory(MemoryAllocateFunction allocFunc, uint16_t residentMipLevel);
+            // Allocate memory and bind memory which can store mips up to residentMipLevel 
+            RHI::ResultCode AllocateAndBindMemory(StreamingImagePool& imagePool, uint16_t residentMipLevel);
 
             RHI::ResultCode BuildNativeImage();
 
             RHI::ResultCode BuildSparseImage();
+
+            void ReleaseAllMemory(StreamingImagePool& imagePool);
+
+            // Trim image to specified mip level. Release unused bound memory if updateMemoryBind is true
+            RHI::ResultCode TrimImage(StreamingImagePool& imagePool, uint16_t targetMipLevel, bool updateMemoryBind);
 
             VkImageCreateFlags GetImageCreateFlags() const;
             VkImageUsageFlags GetImageUsageFlags() const;
@@ -165,6 +176,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // RHI::Image
             void SetDescriptor(const RHI::ImageDescriptor& descriptor) override;
+            bool IsStreamableInternal() const override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
@@ -200,6 +212,10 @@ namespace AZ
 
             // Size in bytes in DeviceMemory.  Used from StreamingImagePool.
             size_t m_residentSizeInBytes = 0;
+
+            // The highest mip level that the image's current bound memory can accommodate
+            // Todo: need a better name
+            uint16_t m_highestMipLevel = RHI::Limits::Image::MipCountMax;
 
             // Tracking the actual mip level data uploaded. It's also used for invalidate image view. 
             uint16_t m_streamedMipLevel = 0;

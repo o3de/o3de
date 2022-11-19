@@ -169,6 +169,11 @@ namespace AZ
         // [GFX TODO][ATOM-4205] Stage/Upload 3D streaming images more efficiently.
         RHI::AsyncWorkHandle AsyncUploadQueue::QueueUpload(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip)
         {
+            if (residentMip < request.m_mipSlices.size() || residentMip < 1)
+            {
+                AZ_Assert(false, "Wrong input parameter");
+            }
+
             auto* image = static_cast<Image*>(request.m_image);
             auto& device = static_cast<Device&>(GetDevice());
 
@@ -434,15 +439,12 @@ namespace AZ
         {
             auto& device = static_cast<Device&>(GetDevice());
 
-            RHI::Ptr<Fence> uploadFence = Fence::Create();
-            uploadFence->Init(device, RHI::FenceState::Reset);
-
             VkBindSparseInfo bindInfoCache = bindInfo;
 
             CommandQueue::Command command = [=, &device](void* queue)
             {            
                 Queue* vulkanQueue = static_cast<Queue*>(queue);
-                device.GetContext().QueueBindSparse(vulkanQueue->GetNativeQueue(), 1, &bindInfoCache, uploadFence->GetNativeFence());
+                device.GetContext().QueueBindSparse(vulkanQueue->GetNativeQueue(), 1, &bindInfoCache, VK_NULL_HANDLE);
             };
             
             m_queue->QueueCommand(AZStd::move(command));

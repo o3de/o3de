@@ -97,6 +97,10 @@ namespace AZ
             m_enabledDeviceFeatures.multiDrawIndirect = deviceFeatures.multiDrawIndirect;
             m_enabledDeviceFeatures.sampleRateShading = deviceFeatures.sampleRateShading;
             m_enabledDeviceFeatures.shaderImageGatherExtended = deviceFeatures.shaderImageGatherExtended;
+            m_enabledDeviceFeatures.sparseBinding = deviceFeatures.sparseBinding;
+            m_enabledDeviceFeatures.sparseResidencyImage2D = deviceFeatures.sparseResidencyImage2D;
+            m_enabledDeviceFeatures.sparseResidencyImage3D = deviceFeatures.sparseResidencyImage3D;
+            m_enabledDeviceFeatures.sparseResidencyAliased = deviceFeatures.sparseResidencyAliased;
 
             if (deviceFeatures.geometryShader)
             {

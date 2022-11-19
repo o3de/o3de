@@ -29,6 +29,56 @@ namespace AZ
         {
             return aznew StreamingImagePool();
         }
+        
+        MemoryView StreamingImagePool::AllocateMemory(size_t size, size_t alignment)
+        {
+            return m_memoryAllocator.Allocate(size, alignment);
+        }
+
+        RHI::ResultCode StreamingImagePool::AllocateMemoryBlocks(AZStd::vector<MemoryView>& outMemoryViews, uint32_t blockCount, size_t blockSize)
+        {
+            AZ_Assert(outMemoryViews.empty(), "outMemoryViews should be empty");
+            const uint32_t blockCountPerPage = aznumeric_cast<uint32_t>(m_memoryAllocator.GetDescriptor().m_pageSizeInBytes / blockSize);
+
+            bool allocationFailed = false;
+            while (blockCount > 0)
+            {
+                uint32_t allocateBlockCount = AZStd::min(blockCount, blockCountPerPage);
+                auto memoryView = m_memoryAllocator.Allocate(allocateBlockCount * blockSize, blockSize);
+                if (!memoryView.IsValid())
+                {
+                    allocationFailed = true;
+                    break;
+                }
+                
+                AZ_Assert(memoryView.GetAllocationType() == MemoryAllocationType::SubAllocated, "Memory block should always be sub-allocated");
+                blockCount -= allocateBlockCount;
+                outMemoryViews.push_back(memoryView);
+            }
+
+            // If failed, release allocated MemoryViews
+            if (allocationFailed)
+            {
+                DeAllocateMemory(outMemoryViews);
+                return RHI::ResultCode::OutOfMemory;
+            }
+
+            return RHI::ResultCode::Success;
+        }
+
+        void StreamingImagePool::DeAllocateMemory(MemoryView& memoryView)
+        {
+            m_memoryAllocator.DeAllocate(memoryView);
+        }
+
+        void StreamingImagePool::DeAllocateMemory(AZStd::vector<MemoryView>& memoryViews)
+        {
+            for (MemoryView& memoryView : memoryViews)
+            {
+                m_memoryAllocator.DeAllocate(memoryView);
+            }
+            memoryViews.clear();
+        }
 
         RHI::ResultCode StreamingImagePool::InitInternal(RHI::Device& deviceBase, [[maybe_unused]] const RHI::StreamingImagePoolDescriptor& descriptor)
         {
@@ -59,7 +109,7 @@ namespace AZ
             memoryAllocDescriptor.m_memoryTypeBits = memoryTypeBits;
             // We don't pass the ResourcePool MemoryUsage because we will manually control residency when expanding/trimming.
             memoryAllocDescriptor.m_getHeapMemoryUsageFunction = [this]() { return &m_memoryAllocatorUsage; };
-            memoryAllocDescriptor.m_recycleOnCollect = true;
+            memoryAllocDescriptor.m_recycleOnCollect = false;
             memoryAllocDescriptor.m_collectLatency = RHI::Limits::Device::FrameCountMax;
             m_memoryAllocator.Init(memoryAllocDescriptor);
 
@@ -74,6 +124,7 @@ namespace AZ
             RHI::ImageDescriptor imageDescriptor = request.m_descriptor;
             imageDescriptor.m_bindFlags |= RHI::ImageBindFlags::CopyWrite;
             imageDescriptor.m_sharedQueueMask |= RHI::HardwareQueueClassMask::Copy;
+            const uint16_t expectedResidentMipLevel = static_cast<uint16_t>(request.m_descriptor.m_mipLevels - request.m_tailMipSlices.size());
 
             // Initialize the image first so we can get accurate memory requirements
             RHI::ResultCode result = image.Init(device, imageDescriptor, m_enableTileResource);
@@ -83,22 +134,23 @@ namespace AZ
                 return result;
             }
 
-            const uint16_t expectedResidentMipLevel = static_cast<uint16_t>(request.m_descriptor.m_mipLevels - request.m_tailMipSlices.size());
-            result = image.AllocateAndBindMemory(m_memoryAllocator, expectedResidentMipLevel);
+            result = image.AllocateAndBindMemory(*this, expectedResidentMipLevel);
+
             if (result != RHI::ResultCode::Success)
             {
                 AZ_Warning("Vulkan:StreamingImagePool", false, "Failed to allocate or bind memory for image");
                 return result;
-                
             }
 
-            // Queue upload tail mip slices.
+            // Queue upload tail mip slices and wait for it finished.
             RHI::StreamingImageExpandRequest uploadMipRequest;
             uploadMipRequest.m_image = &image;
             uploadMipRequest.m_mipSlices = request.m_tailMipSlices;
             uploadMipRequest.m_waitForUpload = true;
+            device.GetAsyncUploadQueue().QueueUpload(uploadMipRequest, request.m_descriptor.m_mipLevels);
 
-            device.GetAsyncUploadQueue().QueueUpload(uploadMipRequest, expectedResidentMipLevel);
+            // update resident mip level
+            image.SetStreamedMipLevel(expectedResidentMipLevel);
 
             return RHI::ResultCode::Success;
         }
@@ -112,27 +164,20 @@ namespace AZ
 
             const uint16_t residentMipLevelBefore = static_cast<uint16_t>(image.GetResidentMipLevel());
             const uint16_t residentMipLevelAfter = residentMipLevelBefore - static_cast<uint16_t>(request.m_mipSlices.size());
-            const VkMemoryRequirements memoryRequirements = GetMemoryRequirements(image.GetDescriptor(), residentMipLevelAfter);
+            
+            RHI::ResultCode result = image.AllocateAndBindMemory(*this, residentMipLevelAfter);
 
-            RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            const size_t imageSizeBefore = image.GetResidentSizeInBytes();
-            const size_t imageSizeAfter = memoryRequirements.size;
-
-            // Try reserve memory for the increased size.
-            if (!memoryUsage.TryReserveMemory(imageSizeAfter - imageSizeBefore))
+            if (result != RHI::ResultCode::Success)
             {
-                return RHI::ResultCode::OutOfMemory;
+                AZ_Warning("Vulkan:StreamingImagePool", false, "Failed to allocate or bind memory for image");
+                return result;
             }
-
-            memoryUsage.m_residentInBytes += imageSizeAfter - imageSizeBefore;
-            memoryUsage.Validate();
 
             // Create new expand request and append callback from the StreamingImagePool.
             RHI::StreamingImageExpandRequest newRequest = request;
             newRequest.m_completeCallback = [=]()
             {
                 Image& imageCompleted = static_cast<Image&>(*request.m_image);
-                imageCompleted.SetResidentSizeInBytes(imageSizeAfter);
                 imageCompleted.FinalizeAsyncUpload(residentMipLevelAfter);
 
                 request.m_completeCallback();
@@ -148,24 +193,8 @@ namespace AZ
 
             WaitFinishUploading(image);
 
-            // Set streamed mip level to target mip level.
-            if (image.GetStreamedMipLevel() < targetMipLevel)
-            {
-                image.SetStreamedMipLevel(static_cast<uint16_t>(targetMipLevel));
-            }
-
-            const VkMemoryRequirements memoryRequirements = GetMemoryRequirements(image.GetDescriptor(), targetMipLevel);
-
-            RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            const size_t imageSizeBefore = image.GetResidentSizeInBytes();
-            const size_t imageSizeAfter = memoryRequirements.size;
-
-            const size_t sizeDiffInBytes = imageSizeBefore - imageSizeAfter;
-            memoryUsage.m_residentInBytes -= sizeDiffInBytes;
-            memoryUsage.m_reservedInBytes -= sizeDiffInBytes;
-            image.SetResidentSizeInBytes(imageSizeAfter);
-
-            return RHI::ResultCode::Success;
+            RHI::ResultCode result = image.TrimImage(*this, aznumeric_caster(targetMipLevel), true);
+            return result;
         }
 
         void StreamingImagePool::ShutdownInternal()
@@ -179,13 +208,7 @@ namespace AZ
 
             WaitFinishUploading(image);
 
-            RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            memoryUsage.m_residentInBytes -= image.GetResidentSizeInBytes();
-            memoryUsage.m_reservedInBytes -= image.GetResidentSizeInBytes();
-            memoryUsage.Validate();
-
-            m_memoryAllocator.DeAllocate(image.m_memoryView);
-            image.m_memoryView = MemoryView();
+            image.ReleaseAllMemory(*this);
             image.Invalidate();
         }
 

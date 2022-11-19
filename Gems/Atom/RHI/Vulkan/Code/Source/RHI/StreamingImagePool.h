@@ -31,6 +31,11 @@ namespace AZ
             static RHI::Ptr<StreamingImagePool> Create();
             ~StreamingImagePool() = default;
 
+            MemoryView AllocateMemory(size_t size, size_t alignment);
+            RHI::ResultCode AllocateMemoryBlocks(AZStd::vector<MemoryView>& outMemoryViews, uint32_t blockCount, size_t blockSize);
+            void DeAllocateMemory(MemoryView& memoryView);
+            void DeAllocateMemory(AZStd::vector<MemoryView>& memoryViews);
+
         private:
             StreamingImagePool() = default;
 
@@ -62,7 +67,6 @@ namespace AZ
             void SetNameInternal(const AZStd::string_view& name) override;
             //////////////////////////////////////////////////////////////////////////
 
-            VkMemoryRequirements GetMemoryRequirements(const RHI::ImageDescriptor& imageDescriptor, uint32_t residentMipLevel);
             void WaitFinishUploading(const Image& image);
 
             MemoryAllocator m_memoryAllocator;

@@ -10,16 +10,16 @@
 #include <AzCore/std/sort.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/AsyncUploadQueue.h>
+#include <RHI/Device.h>
+#include <RHI/Fence.h>
 #include <RHI/Image.h>
 #include <RHI/ImagePool.h>
-#include <RHI/SwapChain.h>
-#include <RHI/Fence.h>
-#include <RHI/PhysicalDevice.h>
-#include <RHI/MemoryAllocator.h>
-#include <RHI/Device.h>
 #include <RHI/ImageView.h>
+#include <RHI/PhysicalDevice.h>
 #include <RHI/Queue.h>
 #include <RHI/ReleaseContainer.h>
+#include <RHI/StreamingImagePool.h>
+#include <RHI/SwapChain.h>
 
 namespace AZ
 {
@@ -63,16 +63,16 @@ namespace AZ
 
             VkExtent3D imageGranularity = m_sparseImageMemoryRequirements.formatProperties.imageGranularity;
 
-            // calculate block size in bytes
-            uint32_t blockAreaSize = imageGranularity.width * imageGranularity.height * imageGranularity.depth;
-            m_blockSizeInBytes = blockAreaSize * RHI::GetFormatSize(imageDescriptor.m_format);
-            AZ_Assert(m_blockSizeInBytes == memoryRequirements.alignment, "unexpected block size");
+            m_blockSizeInBytes = memoryRequirements.alignment;
 
-            // calculate block count for mip tail
+            m_useSingleMipTail = m_sparseImageMemoryRequirements.formatProperties.flags & VK_SPARSE_IMAGE_FORMAT_SINGLE_MIPTAIL_BIT;
+
+            // calculate block count for one mip tail
             m_mipTailBlockCount = aznumeric_cast<uint32_t>(m_sparseImageMemoryRequirements.imageMipTailSize/m_blockSizeInBytes);
             
             // calculate block count for each non-tail mip levels
-            uint32_t nonTailMipLevels = m_sparseImageMemoryRequirements.imageMipTailFirstLod;
+            m_tailStartMip =  aznumeric_cast<uint16_t>(m_sparseImageMemoryRequirements.imageMipTailFirstLod);
+            uint32_t nonTailMipLevels = m_tailStartMip;
             if (nonTailMipLevels)
             {
                 m_mipSizes.resize(nonTailMipLevels);
@@ -80,19 +80,42 @@ namespace AZ
                 m_mipMemoryViews.resize(nonTailMipLevels);
                 m_mipMemoryBinds.resize(nonTailMipLevels);
                 m_mipMemoryBindInfos.resize(nonTailMipLevels);
+                m_emptyMipMemoryBinds.resize(nonTailMipLevels);
+                m_emptyMipMemoryBindInfos.resize(nonTailMipLevels);
 
                 for (uint32_t mip = 0; mip < nonTailMipLevels; mip++)
                 {
-                    m_mipSizes[mip] = RHI::Size(
-                        AZStd::max(imageDescriptor.m_size.m_width >> mip, 1u),
-                        AZStd::max(imageDescriptor.m_size.m_height >> mip, 1u),
-                        AZStd::max(imageDescriptor.m_size.m_depth >> mip, 1u));
-
+                    m_mipSizes[mip] = imageDescriptor.m_size.GetReducedMip(mip);
                     m_mipBlockCount[mip] = AZ::DivideAndRoundUp(m_mipSizes[mip].m_width, imageGranularity.width)
                         * AZ::DivideAndRoundUp(m_mipSizes[mip].m_height, imageGranularity.height)
                         * AZ::DivideAndRoundUp(m_mipSizes[mip].m_depth, imageGranularity.depth);
+
+                    // fill empty bounds data
+                    m_emptyMipMemoryBinds[mip].resize(imageDescriptor.m_arraySize);
+                    for (uint16_t arrayIndex = 0; arrayIndex < imageDescriptor.m_arraySize; arrayIndex++)
+                    {
+                        VkSparseImageMemoryBind& emptyBind = m_emptyMipMemoryBinds[mip][arrayIndex];
+                        emptyBind.subresource.mipLevel = mip;
+                        emptyBind.subresource.aspectMask = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
+                        emptyBind.subresource.arrayLayer = arrayIndex;
+                        emptyBind.memory = VK_NULL_HANDLE;
+                        emptyBind.offset.x = 0;
+                        emptyBind.offset.y = 0;
+                        emptyBind.offset.z = 0;
+                        emptyBind.extent.width = m_mipSizes[mip].m_width;
+                        emptyBind.extent.height = m_mipSizes[mip].m_height;
+                        emptyBind.extent.depth = m_mipSizes[mip].m_depth;
+                        emptyBind.flags = 0;
+                        emptyBind.memoryOffset = 0;
+                    }
+
+                    VkSparseImageMemoryBindInfo& emptyBindInfo = m_emptyMipMemoryBindInfos[mip];
+                    emptyBindInfo.bindCount = aznumeric_caster(m_emptyMipMemoryBinds[mip].size());
+                    emptyBindInfo.pBinds = m_emptyMipMemoryBinds[mip].data();
+                    emptyBindInfo.image = m_image;
                 }
             }
+            m_allocatedMip = imageDescriptor.m_mipLevels;
         }
 
         uint64_t SparseImageInfo::GetRequiredMemorySize(uint16_t residentMipLevel) const
@@ -109,27 +132,11 @@ namespace AZ
             return memorySize; 
         }
 
-        void SparseImageInfo::SetMipTailMemoryBind(const MemoryView& memoryView)
-        {
-            m_mipTailMemoryView = memoryView;
-        }
-
-        void SparseImageInfo::AddMipMemoryView(uint16_t mipLevel, const MemoryView& memoryView)
-        {
-            m_mipMemoryViews[mipLevel].push_back(memoryView);
-        }
-
-        void SparseImageInfo::ResetMipMemoryView(uint16_t mipLevel)
-        {
-            m_mipMemoryViews[mipLevel].clear();
-            m_mipMemoryBinds[mipLevel].clear();
-        }
-
         void SparseImageInfo::UpdateMipMemoryBindInfo(uint16_t mipLevel)
         {
             AZ_Assert(mipLevel < m_tailStartMip, "Invalid mip level. Mip level should be smaller than m_tailStartMip");
 
-            MipMemoryViews& memoryViews = m_mipMemoryViews[mipLevel];
+            MemoryViews& memoryViews = m_mipMemoryViews[mipLevel];
             size_t memoryViewCount = memoryViews.size();
             AZ_Assert(memoryViewCount > 0, "There wasn't memory allocated for mip level %u", mipLevel);
             MipMemoryBinds& memoryBinds = m_mipMemoryBinds[mipLevel];
@@ -149,7 +156,7 @@ namespace AZ
             // convert memory views to memory binds
             memoryBinds.clear();
             uint32_t boundBlockCount = 0;
-            for (size_t index = 0; index < memoryViewCount; memoryViews)
+            for (size_t index = 0; index < memoryViewCount; index++)
             {
                 const MemoryView& memoryView = memoryViews[index];
                 VkSparseImageMemoryBind memoryBind;
@@ -188,22 +195,22 @@ namespace AZ
                     memoryBind.offset = offset;
                     memoryBind.extent = extent;
                     memoryBind.flags = 0;
-                    memoryBinds.emplace_back(memoryBind);
+                    memoryBinds.push_back(memoryBind);
 
                     memoryBlockCount -= bindCount;
                     boundBlockCount += bindCount;
-                }
 
-                // move to next array layer
-                if (boundBlockCount == mipBlockCount)
-                {
-                    subResource.arrayLayer++;
-                    boundBlockCount = 0;
-                }
+                    // move to next array layer
+                    if (boundBlockCount == mipBlockCount)
+                    {
+                        subResource.arrayLayer++;
+                        boundBlockCount = 0;
+                    }
 
-                if (boundBlockCount > mipBlockCount)
-                {
-                    AZ_Assert(false, "Allocation issue: memory should be allocated separately for each image layer");
+                    if (boundBlockCount > mipBlockCount)
+                    {
+                        AZ_Assert(false, "unexpected bound count");
+                    }
                 }
             }
 
@@ -212,20 +219,83 @@ namespace AZ
             info.image = m_image;
             info.bindCount = aznumeric_cast<uint32_t>(memoryBinds.size());
             info.pBinds = memoryBinds.data();
+
+            m_allocatedMip = mipLevel;
         }
 
         void SparseImageInfo::UpdateMipTailMemoryBindInfo()
         {
-            AZ_Assert(m_mipTailMemoryView.IsValid(), "Memory view for mip tail is invalid");
-            m_mipTailMemoryBind.memory = m_mipTailMemoryView.GetMemory()->GetNativeDeviceMemory();
-            m_mipTailMemoryBind.memoryOffset = m_mipTailMemoryView.GetOffset();
-            m_mipTailMemoryBind.size = m_mipTailMemoryView.GetSize();
-            m_mipTailMemoryBind.resourceOffset = m_sparseImageMemoryRequirements.imageMipTailOffset;
-            m_mipTailMemoryBind.flags = 0;
+            AZ_Assert(m_mipTailMemoryViews.size() > 0, "There are no memory view bound for mip tail");
 
-            m_mipTailMemoryBindInfo.bindCount = 1;
+            uint32_t arrayIndex = 0;
+            // bound block count for current array layer
+            uint32_t boundBlockCount = 0;
+
+            m_mipTailMemoryBinds.clear();
+
+            // it's possible there are multiple memory views bound to one array layer mip tail
+            // It's also possible one memory view have blocks bound to multiple array layers of mip tail.
+            // Each array layer need to be bound separately.
+            for (const MemoryView& memoryView : m_mipTailMemoryViews)
+            {
+                // blocks in the MemoryView which are available to bind
+                uint32_t memoryBlockCount = aznumeric_cast<uint32_t>(memoryView.GetSize() / m_blockSizeInBytes);
+
+                while (memoryBlockCount > 0)
+                {
+                    // block count to be bound in this VkSparseMemoryBind
+                    uint32_t bindCount = AZStd::min(memoryBlockCount, m_mipTailBlockCount - boundBlockCount);
+
+                    VkSparseMemoryBind memoryBind;
+                    memoryBind.memory = memoryView.GetMemory()->GetNativeDeviceMemory();
+                    memoryBind.memoryOffset = memoryView.GetOffset() + memoryView.GetSize() - memoryBlockCount*m_blockSizeInBytes;
+                    memoryBind.size = bindCount * m_blockSizeInBytes;
+                    memoryBind.resourceOffset = boundBlockCount * m_blockSizeInBytes + m_sparseImageMemoryRequirements.imageMipTailOffset
+                        + arrayIndex * m_sparseImageMemoryRequirements.imageMipTailStride;
+                    memoryBind.flags = 0;
+
+                    m_mipTailMemoryBinds.push_back(memoryBind);
+
+                    memoryBlockCount -= bindCount;
+                    boundBlockCount += bindCount;
+
+                    // move to next array layer
+                    if (boundBlockCount == m_mipTailBlockCount)
+                    {
+                        arrayIndex++;
+                        boundBlockCount = 0;
+                    }
+
+                    if (boundBlockCount > m_mipTailBlockCount)
+                    {
+                        AZ_Assert(false, "unexpected bound count");
+                    }
+                }
+            }
+
+            m_mipTailMemoryBindInfo.bindCount = aznumeric_cast<uint32_t>(m_mipTailMemoryBinds.size());
             m_mipTailMemoryBindInfo.image = m_image;
-            m_mipTailMemoryBindInfo.pBinds = &m_mipTailMemoryBind;
+            m_mipTailMemoryBindInfo.pBinds = m_mipTailMemoryBinds.data();
+                        
+            m_allocatedMip = m_tailStartMip;
+        }
+
+        void SparseImageInfo::UpdateMemoryBindInfo(uint16_t startMipLevel, uint16_t endMipLevel)
+        {
+            AZ_Assert(startMipLevel >= endMipLevel, "Invalid mip level range; start mip level shouldn't be smaller than endMipLevel");
+            if (startMipLevel >= m_tailStartMip)
+            {
+                UpdateMipTailMemoryBindInfo();
+            }
+
+            if (m_tailStartMip > 0 && endMipLevel < m_tailStartMip)
+            {
+                uint16_t startMip = AZStd::min(startMipLevel, aznumeric_cast<uint16_t>(m_tailStartMip - 1));
+                for (uint16_t mip = endMipLevel; mip <= startMip; mip++)
+                {
+                    UpdateMipMemoryBindInfo(mip);
+                }
+            }
         }
 
         VkBindSparseInfo SparseImageInfo::GetBindSparseInfo(uint16_t startMipLevel, uint16_t endMipLevel)
@@ -236,8 +306,11 @@ namespace AZ
             bindSparseInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_BIND_SPARSE_INFO;
             bindSparseInfo.pNext = nullptr;
             bindSparseInfo.waitSemaphoreCount = 0;
+            bindSparseInfo.pWaitSemaphores = nullptr;
             bindSparseInfo.signalSemaphoreCount = 0;
+            bindSparseInfo.pSignalSemaphores = nullptr;
             bindSparseInfo.bufferBindCount = 0;
+            bindSparseInfo.pBufferBinds = nullptr;
 
             // add mip tail binds if start mip level is part of mip tail
             if (startMipLevel >= m_tailStartMip)
@@ -245,12 +318,33 @@ namespace AZ
                 bindSparseInfo.imageOpaqueBindCount = 1;
                 bindSparseInfo.pImageOpaqueBinds = &m_mipTailMemoryBindInfo;
             }
-
-            uint16_t startMip = AZStd::min(startMipLevel, m_tailStartMip);
-            bindSparseInfo.imageBindCount = startMip - endMipLevel + 1;
-            if (bindSparseInfo.imageBindCount > 0)
+            else
             {
-                bindSparseInfo.pImageBinds = m_mipMemoryBindInfos.data() + endMipLevel;
+                bindSparseInfo.imageOpaqueBindCount = 0;
+                bindSparseInfo.pImageOpaqueBinds = nullptr;
+            }
+
+            // non-tail mips
+            bindSparseInfo.imageBindCount = 0;
+            bindSparseInfo.pImageBinds = nullptr;
+            if (m_tailStartMip > 0 && endMipLevel < m_tailStartMip)
+            {
+                uint16_t startMip = AZStd::min(startMipLevel, aznumeric_cast<uint16_t>(m_tailStartMip - 1));
+                if (startMip >= endMipLevel)
+                {
+                    bindSparseInfo.imageBindCount = startMip - endMipLevel + 1;
+                    if (bindSparseInfo.imageBindCount > 0)
+                    {
+                        if (m_mipMemoryBinds[startMip].empty())
+                        {
+                            bindSparseInfo.pImageBinds = m_emptyMipMemoryBindInfos.data() + endMipLevel;
+                        }
+                        else
+                        {
+                            bindSparseInfo.pImageBinds = m_mipMemoryBindInfos.data() + endMipLevel;
+                        }
+                    }
+                }
             }
 
             return bindSparseInfo;
@@ -284,11 +378,18 @@ namespace AZ
                 auto& device = static_cast<Device&>(GetDevice());
                 device.QueueForRelease(
                     new ReleaseContainer<VkImage>(device.GetNativeDevice(), m_vkImage, device.GetContext().DestroyImage));
+                // ensure memory is released
+                AZ_Assert(!m_memoryView.IsValid(), "Memory should be released before Invalidate() is called");
             }
             m_vkImage = VK_NULL_HANDLE;
-            m_memoryView = MemoryView();
+
+            m_highestMipLevel= RHI::Limits::Image::MipCountMax;
+            m_residentSizeInBytes = 0;
+
             m_layout.Reset();
             m_ownerQueue.Reset();
+            m_isSparse = false;
+            m_sparseImageInfo.reset();
         }
 
         VkImage Image::GetNativeImage() const
@@ -426,22 +527,59 @@ namespace AZ
 
             // Get image memory requirements 
             device.GetContext().GetImageMemoryRequirements(device.GetNativeDevice(), m_vkImage, &m_memoryRequirements);
-            
-            // Get sparse image memory requirements and initialize sparse image info
-            if (m_isSparse)
-            {
-                m_sparseImageInfo = AZStd::make_unique<SparseImageInfo>();
-                m_sparseImageInfo->Init(device, m_vkImage, descriptor);
-            }
 
             SetName(GetName());
+
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode Image::BindMemoryView(const MemoryView& memoryView, [[maybe_unused]] const RHI::HeapMemoryLevel heapMemoryLevel)
+        RHI::ResultCode Image::TrimImage(StreamingImagePool& pool, uint16_t targetMipLevel, bool updateMemoryBind)
+        {
+            // Set streamed mip level to target mip level if there are more mips
+            if (m_streamedMipLevel < targetMipLevel)
+            {
+                m_streamedMipLevel = targetMipLevel;
+                InvalidateViews();
+            }
+
+            AZ_Assert(m_highestMipLevel <= targetMipLevel, "Bound mip level doesn't contain target mip level");
+
+            // update memory binding 
+            if (m_highestMipLevel < targetMipLevel && updateMemoryBind)
+            {
+                if (m_isSparse)
+                {
+                    // we can only unbound memory for non-tail mips
+                    uint16_t adjustedTargetMipLevel = AZStd::min(m_sparseImageInfo->m_tailStartMip, targetMipLevel);
+                    if (m_highestMipLevel < adjustedTargetMipLevel)
+                    {
+                        for (uint16_t mip = m_highestMipLevel; mip < adjustedTargetMipLevel; mip++)
+                        {
+                            // release memories
+                            pool.DeAllocateMemory(m_sparseImageInfo->m_mipMemoryViews[mip]);
+                            m_sparseImageInfo->UpdateMipMemoryBindInfo(mip);
+                        }
+
+                        m_sparseImageInfo->m_allocatedMip = adjustedTargetMipLevel;
+
+                        // unbound sparse memories for these mips
+                        VkBindSparseInfo bindSparseInfo = m_sparseImageInfo->GetBindSparseInfo(adjustedTargetMipLevel-1, m_highestMipLevel);
+                        m_highestMipLevel = adjustedTargetMipLevel;
+                        m_residentSizeInBytes = m_sparseImageInfo->GetRequiredMemorySize(m_highestMipLevel);
+                        auto& device = static_cast<Device&>(GetDevice());
+                        device.GetAsyncUploadQueue().QueueBindSparse(bindSparseInfo);
+                    }
+                }
+            }
+
+            return RHI::ResultCode::Success;
+        }
+
+        RHI::ResultCode Image::BindMemoryView(const MemoryView& memoryView)
         {
             AZ_Assert(m_vkImage != VK_NULL_HANDLE, "Vulkan's native image is not initialized.");
             AZ_Assert(memoryView.IsValid(), "MemoryView is not valid.");
+            AZ_Assert(!m_isSparse, "use bind memory view for sparse image.");
 
             auto& device = static_cast<Device&>(GetDevice());
             VkResult vkResult = device.GetContext().BindImageMemory(
@@ -453,66 +591,113 @@ namespace AZ
             return result;
         }
 
-        RHI::ResultCode Image::AllocateAndBindMemory(MemoryAllocator& memoryAllocator, uint16_t residentMipLevel)
+        RHI::ResultCode Image::AllocateAndBindMemory(StreamingImagePool& imagePool, uint16_t residentMipLevel)
         {
+            auto& device = static_cast<Device&>(GetDevice());
+            RHI::ResultCode result = RHI::ResultCode::Success;
+
+            // the bound memory is large enough for expected resident mip level
+            if (residentMipLevel >= m_highestMipLevel)
+            {
+                return RHI::ResultCode::Success;
+            }
+
             if (m_isSparse)
             {
-                const size_t pageSize = memoryAllocator.GetDescriptor().m_pageSizeInBytes;
-
-                AZ_Assert(m_sparseImageInfo->m_sparseImageMemoryRequirements.imageMipTailSize <= pageSize, "Memory allocator page size is too small");
-                // Allocate memory for mip tail
-                auto tailMipMemoryView = memoryAllocator.Allocate(m_sparseImageInfo->m_sparseImageMemoryRequirements.imageMipTailSize,
-                    m_sparseImageInfo->m_blockSizeInBytes);
-                if (!tailMipMemoryView.IsValid())
+                if (residentMipLevel >= m_sparseImageInfo->m_allocatedMip)
                 {
-                    return RHI::ResultCode::OutOfMemory;
+                    return RHI::ResultCode::Success;
                 }
-                m_sparseImageInfo->SetMipTailMemoryBind(tailMipMemoryView);
-                m_sparseImageInfo->UpdateMipTailMemoryBindInfo();
-                
-                // For any resident mips which are not part of tail
-                const uint32_t blockCountPerPage = aznumeric_cast<uint32_t>(pageSize / m_sparseImageInfo->m_blockSizeInBytes);
-                for (uint16_t mip = residentMipLevel; mip < m_sparseImageInfo->m_tailStartMip; mip++ )
+
+                // The mip we need to start to allocate memory from
+                const uint16_t startMip = m_sparseImageInfo->m_allocatedMip - 1;
+                const uint16_t endMip = AZStd::min(residentMipLevel, m_sparseImageInfo->m_tailStartMip);
+                const size_t blockSize = m_sparseImageInfo->m_blockSizeInBytes;
+
+                // allocated memory views
+                AZStd::vector<SparseImageInfo::MemoryViews*> allocatedMemoryViews;
+
+                // mip tail
+                if (startMip >= m_sparseImageInfo->m_tailStartMip)
                 {
-                    for (uint16_t arrayIndex = 0; arrayIndex < GetDescriptor().m_arraySize; arrayIndex++ )
+                    uint32_t blockCount = m_sparseImageInfo->m_mipTailBlockCount;
+                    if (!m_sparseImageInfo->m_useSingleMipTail)
                     {
-                        uint32_t blockCount = m_sparseImageInfo->m_mipBlockCount[mip];
-                        while (blockCount > 0)
-                        {
-                            uint32_t allocateBlockCount = AZStd::min(blockCount, blockCountPerPage);
-                            auto memoryView = memoryAllocator.Allocate(allocateBlockCount * m_sparseImageInfo->m_blockSizeInBytes,
-                                m_sparseImageInfo->m_blockSizeInBytes);
-                            if (!memoryView.IsValid())
-                            {
-                                m_sparseImageInfo->ResetMipMemoryView(mip);
-                                return RHI::ResultCode::OutOfMemory;
-                            }
-                            blockCount -= allocateBlockCount;
-                            m_sparseImageInfo->AddMipMemoryView(mip, memoryView);
-                        }
+                        blockCount *= GetDescriptor().m_arraySize;
                     }
-                    m_sparseImageInfo->UpdateMipMemoryBindInfo(mip);
+                    
+                    result = imagePool.AllocateMemoryBlocks(m_sparseImageInfo->m_mipTailMemoryViews, blockCount, blockSize);
+                    if (result != RHI::ResultCode::Success)
+                    {
+                        return result;
+                    }
+
+                    allocatedMemoryViews.push_back(&m_sparseImageInfo->m_mipTailMemoryViews);
                 }
 
-                // Queue the image's sparse bindings
-                auto& device = static_cast<Device&>(GetDevice());
-                VkBindSparseInfo bindSparseInfo = m_sparseImageInfo->GetBindSparseInfo(GetDescriptor().m_mipLevels, residentMipLevel);
-                device.GetAsyncUploadQueue().QueueBindSparse(bindSparseInfo);
+                // non-tail mips
+                uint16_t nonTailStart = startMip;
+                bool allocationSuccess = true;
+                if (m_sparseImageInfo->m_tailStartMip > 0 && endMip < m_sparseImageInfo->m_tailStartMip)
+                {
+                    nonTailStart = AZStd::min(startMip, aznumeric_cast<uint16_t>(m_sparseImageInfo->m_tailStartMip-1));
+                    for (uint16_t mipLevel = endMip; mipLevel <= nonTailStart; mipLevel++ )
+                    {
+                        uint32_t blockCount = m_sparseImageInfo->m_mipBlockCount[mipLevel] * GetDescriptor().m_arraySize;
+                        result = imagePool.AllocateMemoryBlocks(m_sparseImageInfo->m_mipMemoryViews[mipLevel], blockCount, blockSize);
+                        if (result != RHI::ResultCode::Success)
+                        {
+                            allocationSuccess = false;
+                            break;
+                        }
+                        allocatedMemoryViews.push_back(&m_sparseImageInfo->m_mipTailMemoryViews);
+                    }
+                }
 
-                return RHI::ResultCode::Success;
+                // release allocated memory views and return if any allocation was failed
+                if (!allocationSuccess)
+                {
+                    for (SparseImageInfo::MemoryViews* memoryViews:allocatedMemoryViews)
+                    {
+                        imagePool.DeAllocateMemory(*memoryViews);
+                    }
+                    return result;
+                }
+
+                // update the memory bind info for the mips which were just allocated
+                m_sparseImageInfo->UpdateMemoryBindInfo(startMip, endMip);
+
+                // Queue the image's sparse binding
+                VkBindSparseInfo bindSparseInfo = m_sparseImageInfo->GetBindSparseInfo(startMip, endMip);
+                m_highestMipLevel = endMip;
+                m_residentSizeInBytes = m_sparseImageInfo->GetRequiredMemorySize(m_highestMipLevel);
+                device.GetAsyncUploadQueue().QueueBindSparse(bindSparseInfo);
             }
             else 
             {
-                auto memoryView = memoryAllocator.Allocate(m_memoryRequirements.size, m_memoryRequirements.alignment);
+                auto memoryView = imagePool.AllocateMemory(m_memoryRequirements.size, m_memoryRequirements.alignment);
                 if (!memoryView.IsValid())
                 {
                     return RHI::ResultCode::OutOfMemory;
                 }
-            
-                // Update memory usage for committed resource
+
+                VkResult vkResult = device.GetContext().BindImageMemory(
+                    device.GetNativeDevice(), m_vkImage, memoryView.GetMemory()->GetNativeDeviceMemory(), memoryView.GetOffset());
+                AssertSuccess(vkResult);
+                result = ConvertResult(vkResult);
+                RETURN_RESULT_IF_UNSUCCESSFUL(result);
+
+                if (m_memoryView.IsValid())
+                {
+                    imagePool.DeAllocateMemory(m_memoryView);
+                }
+
+                m_memoryView = memoryView;
                 m_residentSizeInBytes = m_memoryRequirements.size;
-                return BindMemoryView(memoryView, memoryAllocator.GetDescriptor().m_heapMemoryLevel);
+                m_highestMipLevel = 0;
             }
+
+            return RHI::ResultCode::Success;
         }
 
         RHI::ResultCode Image::BuildSparseImage()
@@ -644,6 +829,37 @@ namespace AZ
             AssertSuccess(result);
 
             return ConvertResult(result);
+        }
+
+        void Image::ReleaseAllMemory(StreamingImagePool& imagePool)
+        {
+            if (m_isSparse)
+            {
+                for (auto& tailMemoryView : m_sparseImageInfo->m_mipTailMemoryViews)
+                {
+                    imagePool.DeAllocateMemory(tailMemoryView);
+                    tailMemoryView = MemoryView{ };
+                }
+                for (auto& mipMemoryViews : m_sparseImageInfo->m_mipMemoryViews)
+                {
+                    for (auto& mipMemoryView : mipMemoryViews)
+                    {
+                        imagePool.DeAllocateMemory(mipMemoryView);
+                        mipMemoryView = MemoryView{ };
+                    }
+                    mipMemoryViews.clear();
+                }
+            }
+            else
+            {
+                if (m_memoryView.IsValid())
+                {
+                    imagePool.DeAllocateMemory(m_memoryView);
+                    m_memoryView = MemoryView{ };
+                }
+            }
+            m_residentSizeInBytes = 0;
+            m_highestMipLevel = RHI::Limits::Image::MipCountMax;
         }
 
         VkImageCreateFlags Image::GetImageCreateFlags() const
@@ -793,6 +1009,11 @@ namespace AZ
             SetLayout(VK_IMAGE_LAYOUT_UNDEFINED);
             SetInitalQueueOwner();
         }
+
+        bool Image::IsStreamableInternal() const
+        {
+            return m_isSparse && m_sparseImageInfo->m_tailStartMip > 0;
+        }        
 
         void Image::SetInitalQueueOwner()
         {
