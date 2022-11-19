@@ -300,7 +300,7 @@ namespace AZ
                                                                         bufferVertexRegisterIdMin, bufferVertexRegisterIdMax,
                                                                         bufferFragmentOrComputeRegisterIdMin, bufferFragmentOrComputeRegisterIdMax);
                     
-                    //Make all the relevant ABs resident. This only to ABs related to unbounded array support
+                    //Make all the relevant ABs resident. This only applies to ABs related to unbounded array support
                     m_device->GetBindlessArgumentBuffer().MakeBindlessArgumentBuffersResident(m_commandEncoderType,
                                                                                               resourcesToMakeResidentGraphics,
                                                                                               resourcesToMakeResidentCompute);                                 
