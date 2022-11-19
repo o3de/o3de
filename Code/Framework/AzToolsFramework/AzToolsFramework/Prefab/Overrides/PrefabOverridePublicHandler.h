@@ -32,6 +32,15 @@ namespace AzToolsFramework
             //! @return true if overrides are present on the given entity id from the focused prefab.
             bool AreOverridesPresent(AZ::EntityId entityId) override;
 
+            //! Gets the override type on the given entity id. Overrides can come from any ancestor prefab but
+            //! this function specifically checks for overrides from the focused prefab.
+            //! @param entityId The id of the entity for which to get the override type.
+            //! @return an override type if an override exists on the given entity id.
+            AZStd::optional<EntityOverrideType> GetOverrideType(AZ::EntityId entityId) override;
+
+            // Retrieves a dom path and link id for the given entity id based on the focused prefab.
+            bool GetAliasPathAndLinkIdFromEntityId(AZ::EntityId entityId, AZ::Dom::Path& entityAliasPath, LinkId& linkId);
+
             PrefabOverrideHandler m_prefabOverrideHandler;
 
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;

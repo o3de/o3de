@@ -135,6 +135,24 @@ namespace AzToolsFramework
             return areOverridesPresent;
         }
 
+        PrefabDomConstReference Link::FindOverridePatch(
+            AZ::Dom::Path path,
+            AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags)
+        {
+            PrefabDomConstReference overridePatch = {};
+            auto visitorFn = [&overridePatch](AZ::Dom::Path, const PrefabOverrideMetadata& overrideData)
+            {
+                overridePatch = overrideData.m_patch;
+
+                // We just need to get one override at the provided path.
+                // Return false here so that we don't keep looking for all patches at the path.
+                return false;
+            };
+
+            m_linkPatchesTree.VisitPath(path, visitorFn, prefixTreeTraversalFlags);
+            return overridePatch;
+        }
+
         PrefabDomPath Link::GetInstancePath() const
         {
             return PrefabDomUtils::GetPrefabDomInstancePath(m_instanceName.c_str());

@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzToolsFramework/Prefab/Overrides/PrefabOverrideTypes.h>
 
 namespace AzToolsFramework
 {
@@ -25,6 +26,12 @@ namespace AzToolsFramework
             //! @param entityId The id of the entity to check for overrides.
             //! @return true if overrides are present on the given entity id.
             virtual bool AreOverridesPresent(AZ::EntityId entityId) = 0;
+
+            //! Gets the override type on the given entity id. The prefab that creates the overrides is identified
+            //! by the class implmenting this interface based on certain selections in the editor. eg: the prefab currently being edited.
+            //! @param entityId The id of the entity for which to get the override type.
+            //! @return an override type if an override exists on the given entity id.
+            virtual AZStd::optional<EntityOverrideType> GetOverrideType(AZ::EntityId entityId) = 0;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

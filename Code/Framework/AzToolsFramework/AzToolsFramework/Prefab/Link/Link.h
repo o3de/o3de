@@ -115,6 +115,15 @@ namespace AzToolsFramework
                 AZ::Dom::Path path,
                 AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags = AZ::Dom::PrefixTreeTraversalFlags::ExcludeParentPaths);
 
+            //! Finds an override patch by querying the patches tree at the provided path
+            //! @param path The path to query the overrides tree with.
+            //! @param prefixTreeTraversalFlags The traversal flags for the prefix tree. The default is to exclude parent paths because
+            //!                                 we usually check for overrides on one or more components/properties within an entity.
+            //! @return an override patch if overrides are present at the provided path.
+            PrefabDomConstReference FindOverridePatch(
+                AZ::Dom::Path path,
+                AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags = AZ::Dom::PrefixTreeTraversalFlags::ExcludeParentPaths);
+
             PrefabDomPath GetInstancePath() const;
             const AZStd::string& GetInstanceName() const;
 
@@ -153,7 +162,7 @@ namespace AzToolsFramework
             //! @param patches The patches to build the tree with.
             void RebuildLinkPatchesTree(const PrefabDomValue& patches);
 
-            // The prefix tree to store patches on a link. The tree is built with nodes. A node may or maynot store a patch.
+            // The prefix tree to store patches on a link. The tree is built with nodes. A node may or may not store a patch.
             // The path from the root to a node represents a path to a DOM value. Eg: 'Instances/Instance1/Entities/Entity1'.
             AZ::Dom::DomPrefixTree<PrefabOverrideMetadata> m_linkPatchesTree;
 

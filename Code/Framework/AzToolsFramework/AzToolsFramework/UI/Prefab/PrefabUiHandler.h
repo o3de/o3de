@@ -63,6 +63,8 @@ namespace AzToolsFramework
         static QModelIndex GetLastVisibleChild(const QModelIndex& parent);
         static QModelIndex Internal_GetLastVisibleChild(const QAbstractItemModel* model, const QModelIndex& index);
 
+        const QIcon& GetOverrideIconForEntity(AZ::EntityId entityId) const;
+
         void PaintDescendantBorder(
             QPainter* painter,
             const QStyleOptionViewItem& option,
@@ -89,8 +91,9 @@ namespace AzToolsFramework
         QString m_prefabEditCloseIconPath = QString(":/Entity/prefab_edit_close.svg");
 
         inline static const QColor s_overrideIconBackgroundColor = QColor("#444444");
-        inline static const QPoint s_overrideIconOffset = QPoint(10, 10);
-        inline static const int s_overrideIconSize = 5;
-        QIcon s_overrideIcon = QIcon(QString(":/Entity/entity_overridden.svg"));
+        inline static const QPoint s_overrideIconOffset = QPoint(12, 12);
+        inline static const int s_overrideIconSize = 8;
+        QIcon m_overrideIconReplace = QIcon(QString(":/Entity/entity_overridden.svg"));
+        QIcon m_overrideIconAdd = QIcon(QString(":/Entity/entity_override_add.svg"));
     };
 } // namespace AzToolsFramework

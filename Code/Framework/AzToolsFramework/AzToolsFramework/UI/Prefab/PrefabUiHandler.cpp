@@ -233,6 +233,18 @@ namespace AzToolsFramework
         PaintDescendantBorder(painter, option, index, descendantIndex, borderColor);
     }
 
+    const QIcon& PrefabUiHandler::GetOverrideIconForEntity(AZ::EntityId entityId) const
+    {
+        if (auto overrideType = m_prefabOverridePublicInterface->GetOverrideType(entityId); overrideType.has_value())
+        {
+            if (overrideType == AzToolsFramework::Prefab::EntityOverrideType::AddEntity)
+            {
+                return m_overrideIconAdd;
+            }
+        }
+        return m_overrideIconReplace;
+    }
+
     void PrefabUiHandler::PaintDescendantForeground(
         QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, const QModelIndex& descendantIndex) const
     {
@@ -257,14 +269,29 @@ namespace AzToolsFramework
                 {
                     // Build the rect that will be used to paint the icon
                     QRect overrideIconBounds =
-                        QRect(option.rect.topLeft() + s_overrideIconOffset, QSize(s_overrideIconSize * 2, s_overrideIconSize * 2));
+                        QRect(option.rect.topLeft() + s_overrideIconOffset, QSize(s_overrideIconSize, s_overrideIconSize));
 
                     painter->save();
                     painter->setRenderHint(QPainter::Antialiasing, true);
                     painter->setPen(Qt::NoPen);
                     painter->setBrush(s_overrideIconBackgroundColor);
-                    painter->drawEllipse(overrideIconBounds.center(), s_overrideIconSize, s_overrideIconSize);
-                    s_overrideIcon.paint(painter, overrideIconBounds);
+
+                    // Fill the right side of the entity icon's cube with the background color
+                    QPainterPath backgroundPath;
+                    constexpr int bkgdPadding = 2;
+                    constexpr int bkgdPeakOffset = 3;
+                    const int bkgdLeft = overrideIconBounds.left() - bkgdPadding;
+                    const int bkgdTop = overrideIconBounds.top() - bkgdPadding;
+                    backgroundPath.moveTo(bkgdLeft, bkgdTop);
+                    backgroundPath.lineTo(overrideIconBounds.right(), bkgdTop - bkgdPeakOffset);
+                    backgroundPath.lineTo(overrideIconBounds.right(), overrideIconBounds.bottom());
+                    backgroundPath.lineTo(bkgdLeft, overrideIconBounds.bottom());
+                    backgroundPath.moveTo(bkgdLeft, bkgdTop);
+                    painter->fillPath(backgroundPath, s_overrideIconBackgroundColor);
+
+                    // Paint the override icon
+                    const QIcon& overrideIcon = GetOverrideIconForEntity(descendantEntityId);
+                    overrideIcon.paint(painter, overrideIconBounds);
                     painter->restore();
                 }
             }
