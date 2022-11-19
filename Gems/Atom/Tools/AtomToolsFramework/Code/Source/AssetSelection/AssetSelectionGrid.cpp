@@ -89,8 +89,10 @@ namespace AtomToolsFramework
             return;
         }
 
-        const QVariant pathItemData(QString::fromUtf8(path.data(), static_cast<int>(path.size())));
-        const QString title(GetDisplayNameFromPath(path).c_str());
+        const auto& pathWithAlias = GetPathWithAlias(path);
+        const auto& pathWithoutAlias = GetPathWithoutAlias(path);
+        const QVariant pathItemData(QString::fromUtf8(pathWithAlias.c_str(), static_cast<int>(pathWithAlias.size())));
+        const QString title(GetDisplayNameFromPath(pathWithAlias).c_str());
 
         // Skip creating this list item if one with the same path is already registered
         for (int i = 0; i < m_ui->m_assetList->count(); ++i)
@@ -138,7 +140,7 @@ namespace AtomToolsFramework
         AZ::Data::AssetInfo assetInfo;
         AZStd::string watchFolder;
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, path.data(), assetInfo, watchFolder);
+            result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, pathWithoutAlias.c_str(), assetInfo, watchFolder);
 
         AzToolsFramework::Thumbnailer::ThumbnailWidget* thumbnail = new AzToolsFramework::Thumbnailer::ThumbnailWidget(itemWidget);
         thumbnail->setFixedSize(m_tileSize);
@@ -152,7 +154,8 @@ namespace AtomToolsFramework
 
     void AssetSelectionGrid::RemovePath(const AZStd::string& path)
     {
-        const QVariant pathItemData(QString::fromUtf8(path.data(), static_cast<int>(path.size())));
+        const auto& pathWithAlias = GetPathWithAlias(path);
+        const QVariant pathItemData(QString::fromUtf8(pathWithAlias.c_str(), static_cast<int>(pathWithAlias.size())));
         for (int i = 0; i < m_ui->m_assetList->count(); ++i)
         {
             QListWidgetItem* item = m_ui->m_assetList->item(i);
@@ -166,7 +169,8 @@ namespace AtomToolsFramework
 
     void AssetSelectionGrid::SelectPath(const AZStd::string& path)
     {
-        const QVariant pathItemData(QString::fromUtf8(path.data(), static_cast<int>(path.size())));
+        const auto& pathWithAlias = GetPathWithAlias(path);
+        const QVariant pathItemData(QString::fromUtf8(pathWithAlias.c_str(), static_cast<int>(pathWithAlias.size())));
         for (int i = 0; i < m_ui->m_assetList->count(); ++i)
         {
             QListWidgetItem* item = m_ui->m_assetList->item(i);
