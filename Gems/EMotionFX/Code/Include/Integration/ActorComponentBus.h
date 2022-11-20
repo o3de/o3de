@@ -55,7 +55,7 @@ namespace EMotionFX
             : public AZ::ComponentBus
         {
         public:
-            using MutexType = AZStd::mutex;
+            using MutexType = AZStd::recursive_mutex;
 
             /// Retrieve component's actor instance.
             /// \return pointer to actor instance.

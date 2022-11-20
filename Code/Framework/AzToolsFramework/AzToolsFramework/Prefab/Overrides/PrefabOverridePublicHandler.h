@@ -38,8 +38,15 @@ namespace AzToolsFramework
             //! @return an override type if an override exists on the given entity id.
             AZStd::optional<EntityOverrideType> GetOverrideType(AZ::EntityId entityId) override;
 
-            // Retrieves a dom path and link id for the given entity id based on the focused prefab.
-            bool GetAliasPathAndLinkIdFromEntityId(AZ::EntityId entityId, AZ::Dom::Path& entityAliasPath, LinkId& linkId);
+            //! Revert overrides on the entity matching the given id from the focused prefab. Returns false if no overrides are present.
+            //! @param entityId The id of the entity on which overrides should be reverted.
+            //! @return Whether overrides are successfully reverted on the entity.
+            bool RevertOverrides(AZ::EntityId entityId) override;
+
+            //! Fetches the path to the entity matching the id and the linkId corresponding to the topmost prefab in the hierarchy.
+            //! @param entityId The id of the entity to use to fetch the path.
+            //! @return The path and link id pair.
+            AZStd::pair<AZ::Dom::Path, LinkId> GetPathAndLinkIdFromFocusedPrefab(AZ::EntityId entityId);
 
             PrefabOverrideHandler m_prefabOverrideHandler;
 

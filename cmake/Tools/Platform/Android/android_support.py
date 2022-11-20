@@ -36,9 +36,13 @@ from cmake.Tools.layout_tool import remove_link
 
 ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP = {
     '4.2.2': {'min_gradle_version': '6.7.1',
-              'sdk_build': '30.0.2',
+              'sdk_build': '30.0.3',
               'default_ndk': '21.4.7075529',
-              'min_cmake_version': '3.20'}
+              'min_cmake_version': '3.20'},
+    '7.3.1': {'min_gradle_version': '7.5.1',
+              'sdk_build': '33.0.0',
+              'default_ndk': '25.1.8937393',
+              'min_cmake_version': '3.24'},
 }
 
 APP_NAME = 'app'
@@ -363,9 +367,10 @@ CUSTOM_GRADLE_COPY_NATIVE_CONFIG_FORMAT_STR = """
         logger.info('Deleting outputs/native-lib/{abi}')
         delete 'outputs/native-lib/{abi}'
 
-        from fileTree(dir: 'build/intermediates/cmake/{config_lower}/obj/arm64-v8a/{config_lower}', include: '**/*.so', exclude: 'lib{project_name}.GameLauncher.so' )
+        from fileTree(dir: 'build/intermediates/cmake/{config_lower}/obj/arm64-v8a/{config_lower}',
+            include: '**/*.so', exclude: 'lib{project_name}.GameLauncher.so')
         into  'outputs/native-lib/{abi}'
-        eachFile {{ 
+        eachFile {{
             logger.info('Copying {{}} to outputs/native-lib/{abi}', it.name)
         }}
     }}
@@ -415,7 +420,7 @@ CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR = """
         workingDir '{working_dir}'
         commandLine '{python_full_path}', 'layout_tool.py', '--project-path', '{project_path}', '-p', 'Android', '-a', '{asset_type}', '-m', '{asset_mode}', '--create-layout-root', '-l', '{asset_layout_folder}'
     }}
-    
+
     compile{config}Sources.dependsOn syncLYLayoutMode{config}
 
     syncLYLayoutMode{config}.mustRunAfter {{
@@ -874,8 +879,9 @@ class AndroidProjectGenerator(object):
             project_name = common.read_project_name_from_project_json(self.project_path)
             # Prepare the config-specific section to place the cmake argument list in the build.gradle for the app
             gradle_build_env[f'NATIVE_CMAKE_SECTION_{native_config_upper}_CONFIG'] = \
-                NATIVE_CMAKE_SECTION_BUILD_TYPE_CONFIG_FORMAT_STR.format(targets_section=f'targets "{project_name}.GameLauncher"'
-                if project_name and not self.is_test_project else "", arguments=','.join(cmake_argument_list))
+                NATIVE_CMAKE_SECTION_BUILD_TYPE_CONFIG_FORMAT_STR.format(arguments=','.join(cmake_argument_list),
+                    targets_section=f'targets "{project_name}.GameLauncher"'
+                        if project_name and not self.is_test_project else 'targets "TEST_SUITE_main"')
 
             if project_name:
                 # Prepare the config-specific section to copy the related .so files that are marked as dependencies for the target
@@ -941,7 +947,7 @@ class AndroidProjectGenerator(object):
         az_android_gradle_file = az_android_dst_path / 'build.gradle'
         self.create_file_from_project_template(src_template_file='build.gradle.in',
                                                template_env=gradle_build_env,
-                                               dst_file=az_android_dst_path / 'build.gradle')
+                                               dst_file=az_android_gradle_file)
 
         # Generate a AndroidManifest.xml and write to ${az_android_dst_path}/src/main/AndroidManifest.xml
         dest_src_main_path = az_android_dst_path / 'src/main'

@@ -505,13 +505,12 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocumentSystem::ReopenModifiedDocuments()
     {
-        m_queueReopenModifiedDocuments = false;
-
         const bool enableHotReload = GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReload", true);
         if (!enableHotReload)
         {
             m_documentIdsWithDependencyChanges.clear();
             m_documentIdsWithExternalChanges.clear();
+            m_queueReopenModifiedDocuments = false;
             return false;
         }
 
@@ -585,6 +584,7 @@ namespace AtomToolsFramework
 
         m_documentIdsWithDependencyChanges.clear();
         m_documentIdsWithExternalChanges.clear();
+        m_queueReopenModifiedDocuments = false;
         return true;
     }
 

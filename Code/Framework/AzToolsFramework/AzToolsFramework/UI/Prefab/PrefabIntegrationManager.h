@@ -37,6 +37,7 @@ namespace AzToolsFramework
         class PrefabFocusInterface;
         class PrefabFocusPublicInterface;
         class PrefabLoaderInterface;
+        class PrefabOverridePublicInterface;
         class PrefabPublicInterface;
 
         class PrefabIntegrationManager final
@@ -119,6 +120,7 @@ namespace AzToolsFramework
             void ContextMenu_Duplicate();
             void ContextMenu_DeleteSelected();
             void ContextMenu_DetachPrefab(AZ::EntityId containerEntity);
+            void ContextMenu_RevertOverrides(AZ::EntityId entityId);
 
             // Shortcut setup handlers (for legacy action manager)
             void InitializeShortcuts();
@@ -147,7 +149,9 @@ namespace AzToolsFramework
             static PrefabLoaderInterface* s_prefabLoaderInterface;
             static PrefabPublicInterface* s_prefabPublicInterface;
 
+            
             ActionManagerInterface* m_actionManagerInterface = nullptr;
+            PrefabOverridePublicInterface* m_prefabOverridePublicInterface = nullptr;
             ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
             ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
         };

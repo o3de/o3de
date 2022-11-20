@@ -29,7 +29,7 @@
 #include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
-#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
+#include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
@@ -58,7 +58,6 @@ namespace AzToolsFramework
         EditorEntityUiInterface* PrefabIntegrationManager::s_editorEntityUiInterface = nullptr;
         PrefabFocusInterface* PrefabIntegrationManager::s_prefabFocusInterface = nullptr;
         PrefabFocusPublicInterface* PrefabIntegrationManager::s_prefabFocusPublicInterface = nullptr;
-        PrefabLoaderInterface* PrefabIntegrationManager::s_prefabLoaderInterface = nullptr;
         PrefabPublicInterface* PrefabIntegrationManager::s_prefabPublicInterface = nullptr;
 
         PrefabIntegrationManager::PrefabIntegrationManager()
@@ -84,13 +83,6 @@ namespace AzToolsFramework
                 return;
             }
 
-            s_prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
-            if (s_prefabLoaderInterface == nullptr)
-            {
-                AZ_Assert(false, "Prefab - could not get PrefabLoaderInterface on PrefabIntegrationManager construction.");
-                return;
-            }
-
             s_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
             if (s_prefabFocusInterface == nullptr)
             {
@@ -102,6 +94,13 @@ namespace AzToolsFramework
             if (s_prefabFocusPublicInterface == nullptr)
             {
                 AZ_Assert(false, "Prefab - could not get PrefabFocusPublicInterface on PrefabIntegrationManager construction.");
+                return;
+            }
+
+            m_prefabOverridePublicInterface = AZ::Interface<PrefabOverridePublicInterface>::Get();
+            if (m_prefabOverridePublicInterface == nullptr)
+            {
+                AZ_Assert(false, "Prefab - could not get PrefabOverridePublicInterface on PrefabIntegrationManager construction.");
                 return;
             }
 
@@ -624,6 +623,29 @@ namespace AzToolsFramework
                 );
             }
 
+            // Revert Overrides
+            {
+                if (IsPrefabOverridesUxEnabled() && selectedEntities.size() == 1)
+                {
+                    AZ::EntityId selectedEntity = selectedEntities[0];
+                    if (!s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity) &&
+                        m_prefabOverridePublicInterface->AreOverridesPresent(selectedEntity))
+                    {
+                        QAction* revertAction = menu->addAction(QObject::tr("Revert Overrides"));
+                        QObject::connect(
+                            revertAction,
+                            &QAction::triggered,
+                            revertAction,
+                            [this, selectedEntity]
+                            {
+                                ContextMenu_RevertOverrides(selectedEntity);
+                            });
+
+                        menu->addSeparator();
+                    }
+                }
+            }
+
             menu->addSeparator();
         }
 
@@ -864,6 +886,11 @@ namespace AzToolsFramework
             {
                 WarningDialog("Detach Prefab error", detachPrefabResult.GetError());
             }
+        }
+
+        void PrefabIntegrationManager::ContextMenu_RevertOverrides(AZ::EntityId entityId)
+        {
+            m_prefabOverridePublicInterface->RevertOverrides(entityId);
         }
 
         void PrefabIntegrationManager::GatherAllReferencedEntitiesAndCompare(
