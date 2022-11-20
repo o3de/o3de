@@ -278,7 +278,7 @@ namespace AzToolsFramework
 
                     // Fill the right side of the entity icon's cube with the background color
                     QPainterPath backgroundPath;
-                    constexpr int bkgdPadding = 2;
+                    constexpr int bkgdPadding = 1;
                     constexpr int bkgdPeakOffset = 3;
                     const int bkgdLeft = overrideIconBounds.left() - bkgdPadding;
                     const int bkgdTop = overrideIconBounds.top() - bkgdPadding;

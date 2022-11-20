@@ -82,7 +82,7 @@
             return false;
         }
 
-        AZStd::optional<EntityOverrideType> PrefabOverrideHandler::GetOverrideType(AZ::Dom::Path path, LinkId linkId)
+        AZStd::optional<EntityOverrideType> PrefabOverrideHandler::GetOverrideType(AZ::Dom::Path path, LinkId linkId) const
         {
             AZStd::optional<EntityOverrideType> overrideType = {};
 
