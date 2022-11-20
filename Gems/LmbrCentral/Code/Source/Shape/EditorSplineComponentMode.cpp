@@ -56,6 +56,11 @@ namespace LmbrCentral
         return "Spline Edit Mode";
     }
 
+    AZ::Uuid EditorSplineComponentMode::GetComponentModeType() const
+    {
+        return azrtti_typeid<EditorSplineComponentMode>();
+    }
+
     void EditorSplineComponentMode::CreateManipulators()
     {
         using namespace AzToolsFramework;

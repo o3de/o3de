@@ -83,9 +83,14 @@ namespace LmbrCentral
         return m_vertexSelection.HandleMouse(mouseInteraction);
     }
 
-     AZStd::string EditorPolygonPrismShapeComponentMode::GetComponentModeName() const
+    AZStd::string EditorPolygonPrismShapeComponentMode::GetComponentModeName() const
     {
         return "Polygon Prism Shape Edit Mode";
+    }
+
+    AZ::Uuid EditorPolygonPrismShapeComponentMode::GetComponentModeType() const
+    {
+        return azrtti_typeid<EditorPolygonPrismShapeComponentMode>();
     }
 
     void EditorPolygonPrismShapeComponentMode::CreateManipulators()

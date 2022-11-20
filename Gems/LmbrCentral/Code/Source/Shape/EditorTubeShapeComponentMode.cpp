@@ -62,6 +62,11 @@ namespace LmbrCentral
         return "Tube Shape Edit Mode";
     }
 
+    AZ::Uuid EditorTubeShapeComponentMode::GetComponentModeType() const
+    {
+        return azrtti_typeid<EditorTubeShapeComponentMode>();
+    }
+
     AZStd::vector<AzToolsFramework::ActionOverride> EditorTubeShapeComponentMode::PopulateActionsImpl()
     {
         return AZStd::vector<AzToolsFramework::ActionOverride>
