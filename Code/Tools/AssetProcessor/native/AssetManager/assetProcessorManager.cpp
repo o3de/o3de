@@ -2053,14 +2053,14 @@ namespace AssetProcessor
         }
     }
 
-    void AssetProcessorManager::CheckMissingJobs(QString databasePathToFile, const ScanFolderInfo* scanFolder, const AZStd::vector<JobDetails>& jobsThisTime)
+    void AssetProcessorManager::CheckMissingJobs(const SourceAssetReference& sourceAsset, const ScanFolderInfo* scanFolder, const AZStd::vector<JobDetails>& jobsThisTime)
     {
         // Check to see if jobs were emitted last time by this builder, but are no longer being emitted this time - in which case we must eliminate old products.
         // whats going to be in the database is fingerprints for each job last time
         // this function is called once per source file, so in the array of jobsThisTime,
         // the relative path will always be the same.
 
-        if ((databasePathToFile.length() == 0) && (jobsThisTime.empty()))
+        if (!sourceAsset && jobsThisTime.empty())
         {
             return;
         }
@@ -2070,9 +2070,8 @@ namespace AssetProcessor
         for (const AssetBuilderSDK::PlatformInfo& platformInfo : scanFolder->GetPlatforms())
         {
             QString platform = QString::fromUtf8(platformInfo.m_identifier.c_str());
-            m_stateData->GetJobInfoBySourceNameScanFolderId(databasePathToFile.toUtf8().constData(), scanFolder->ScanFolderID(), jobsFromLastTime, AZ::Uuid::CreateNull(), QString(), platform);
+            m_stateData->GetJobInfoBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), jobsFromLastTime, AZ::Uuid::CreateNull(), QString(), platform);
         }
-
 
         // so now we have jobsFromLastTime and jobsThisTime.  Whats in last time that is no longer being emitted now?
         if (jobsFromLastTime.empty())
@@ -2111,7 +2110,7 @@ namespace AssetProcessor
         {
             // ToDo:  Add BuilderUuid here once we do the JobKey feature.
             AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer products;
-            if (m_stateData->GetProductsBySourceName(databasePathToFile, products, oldJobInfo.m_builderGuid, oldJobInfo.m_jobKey.c_str(), oldJobInfo.m_platform.c_str()))
+            if (m_stateData->GetProductsBySourceNameScanFolderID(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), products, oldJobInfo.m_builderGuid, oldJobInfo.m_jobKey.c_str(), oldJobInfo.m_platform.c_str()))
             {
                 char tempBuffer[128];
                 oldJobInfo.m_builderGuid.ToString(tempBuffer, AZ_ARRAY_SIZE(tempBuffer));
@@ -2161,7 +2160,7 @@ namespace AssetProcessor
         }
     }
 
-    void AssetProcessorManager::CheckModifiedSourceFile(QString normalizedPath, QString databaseSourceFile, const ScanFolderInfo* scanFolder)
+    void AssetProcessorManager::CheckModifiedSourceFile(const SourceAssetReference& sourceAsset, const ScanFolderInfo* scanFolder)
     {
         // a potential input file was modified or added.  We always pass these through our filters and potentially build it.
         // before we know what to do, we need to figure out if it matches some filter we care about.
@@ -2176,36 +2175,35 @@ namespace AssetProcessor
         //    also queue if products missing.
 
         // Check if this file causes any file types to be re-evaluated
-        CheckMetaDataRealFiles(normalizedPath);
+        CheckMetaDataRealFiles(sourceAsset.AbsolutePath().c_str());
 
         // keep track of its parent folders so that if a folder disappears or is renamed, and we get the notification that this has occurred
         // we will know that it *was* a folder before now (otherwise we'd have no idea)
-        AddKnownFoldersRecursivelyForFile(normalizedPath, scanFolder->ScanPath());
+        AddKnownFoldersRecursivelyForFile(sourceAsset.AbsolutePath().c_str(), sourceAsset.ScanFolderPath().c_str());
 
         ++m_numTotalSourcesFound;
 
         AssetProcessor::BuilderInfoList builderInfoList;
-        EBUS_EVENT(AssetProcessor::AssetBuilderInfoBus, GetMatchingBuildersInfo, normalizedPath.toUtf8().constData(), builderInfoList);
+        EBUS_EVENT(AssetProcessor::AssetBuilderInfoBus, GetMatchingBuildersInfo, sourceAsset.AbsolutePath().c_str(), builderInfoList);
 
         if (builderInfoList.size())
         {
             ++m_numSourcesNeedingFullAnalysis;
-            ProcessBuilders(normalizedPath, databaseSourceFile, scanFolder, builderInfoList);
+            ProcessBuilders(sourceAsset, scanFolder, builderInfoList);
         }
         else
         {
-            CheckMissingJobs(databaseSourceFile.toUtf8().constData(), scanFolder, {});
+            CheckMissingJobs(sourceAsset, scanFolder, {});
 
-            AZ_TracePrintf(AssetProcessor::DebugChannel, "Non-processed file: %s\n", databaseSourceFile.toUtf8().constData());
+            AZ_TracePrintf(AssetProcessor::DebugChannel, "Non-processed file: %s\n", sourceAsset.RelativePath().c_str());
             ++m_numSourcesNotHandledByAnyBuilder;
 
             // Record the modtime for the file so we know we've already processed it
 
-            QString absolutePath = QDir(scanFolder->ScanPath()).absoluteFilePath(normalizedPath);
-            QFileInfo fileInfo(absolutePath);
+            QFileInfo fileInfo(sourceAsset.AbsolutePath().c_str());
             QDateTime lastModifiedTime = fileInfo.lastModified();
 
-            m_stateData->UpdateFileModTimeAndHashByFileNameAndScanFolderId(databaseSourceFile, scanFolder->ScanFolderID(),
+            m_stateData->UpdateFileModTimeAndHashByFileNameAndScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(),
                 AssetUtilities::AdjustTimestamp(lastModifiedTime),
                 AssetUtilities::GetFileHash(fileInfo.absoluteFilePath().toUtf8().constData()));
         }
@@ -2225,8 +2223,9 @@ namespace AssetProcessor
         {
             // If the fingerprint hasn't changed, we won't process it.. unless...is it missing a product.
             AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer products;
-            if (m_stateData->GetProductsBySourceName(
+            if (m_stateData->GetProductsBySourceNameScanFolderID(
                     jobDetails.m_jobEntry.m_sourceAssetReference.RelativePath().c_str(),
+                    jobDetails.m_jobEntry.m_sourceAssetReference.ScanFolderId(),
                     products,
                     jobDetails.m_jobEntry.m_builderGuid,
                     jobDetails.m_jobEntry.m_jobKey,
@@ -2932,7 +2931,7 @@ namespace AssetProcessor
                 {
                     // log-spam-reduction - the lack of the prior tag (input was deleted) which is rare can infer that the above branch was taken
                     //AZ_TracePrintf(AssetProcessor::DebugChannel, "Input is modified or is overriding something.\n");
-                    CheckModifiedSourceFile(normalizedPath, sourceAssetReference.RelativePath().c_str(), scanFolderInfo);
+                    CheckModifiedSourceFile(sourceAssetReference, scanFolderInfo);
                 }
             }
         }
@@ -3004,7 +3003,7 @@ namespace AssetProcessor
                     else
                     {
                         // All the jobs of the sourcefile needs to be bundled together to check for missing jobs.
-                        CheckMissingJobs(entry.m_sourceFileInfo.m_sourceAssetReference.RelativePath().c_str(), entry.m_sourceFileInfo.m_scanFolder, entry.m_jobsToAnalyze);
+                        CheckMissingJobs(entry.m_sourceFileInfo.m_sourceAssetReference, entry.m_sourceFileInfo.m_scanFolder, entry.m_jobsToAnalyze);
                         // Update source and job dependency list before forwarding the job to RCController
                         AnalyzeJobDetail(entry);
                     }
@@ -3785,7 +3784,7 @@ namespace AssetProcessor
         return true;
     }
 
-    void AssetProcessorManager::ProcessBuilders(QString normalizedPath, QString databasePathToFile, const ScanFolderInfo* scanFolder, const AssetProcessor::BuilderInfoList& builderInfoList)
+    void AssetProcessorManager::ProcessBuilders(const SourceAssetReference& sourceAsset, const ScanFolderInfo* scanFolder, const AssetProcessor::BuilderInfoList& builderInfoList)
     {
         // this function gets called once for every source file.
         // it is expected to send the file to each builder registered to process that type of file
@@ -3793,10 +3792,7 @@ namespace AssetProcessor
         // it bundles the results up in a JobToProcessEntry struct, while it is doing this:
         JobToProcessEntry entry;
 
-        AZ::Uuid sourceUUID = AssetUtilities::CreateSafeSourceUUIDFromName(databasePathToFile.toUtf8().constData());
-
-        // first, we put the source UUID in the map so that its present for any other queries:
-        SourceAssetReference sourceAsset(scanFolder->ScanPath().toUtf8().constData(), databasePathToFile.toUtf8().constData());
+        AZ::Uuid sourceUUID = AssetUtilities::CreateSafeSourceUUIDFromName(sourceAsset.RelativePath().c_str());
 
         {
             // this scope exists only to narrow the range of m_sourceUUIDToSourceNameMapMutex
@@ -3805,9 +3801,9 @@ namespace AssetProcessor
         }
 
         // insert the new entry into the analysis tracker:
-        auto resultInsert = m_remainingJobsForEachSourceFile.insert_key(normalizedPath.toUtf8().constData());
+        auto resultInsert = m_remainingJobsForEachSourceFile.insert_key(sourceAsset.AbsolutePath().c_str());
         AnalysisTracker& analysisTracker = resultInsert.first->second;
-        analysisTracker.m_databaseSourceName = databasePathToFile.toUtf8().constData();
+        analysisTracker.m_databaseSourceName = sourceAsset.RelativePath().c_str();
         analysisTracker.m_databaseScanFolderId = scanFolder->ScanFolderID();
         analysisTracker.m_buildersInvolved.clear();
         for (const AssetBuilderSDK::AssetBuilderDesc& builderInfo : builderInfoList)
@@ -3887,9 +3883,9 @@ namespace AssetProcessor
                     AssetUtilities::ReadJobLog(resolvedBuffer, response);
                 }
 
-                AutoFailJob(AZStd::string::format("Createjobs Failed: %s.\n", normalizedPath.toUtf8().constData()),
+                AutoFailJob(AZStd::string::format("Createjobs Failed: %s.\n", sourceAsset.AbsolutePath().c_str()),
                             failureMessage,
-                            normalizedPath.toUtf8().constData(),
+                            sourceAsset.AbsolutePath().c_str(),
                             JobEntry(
                                 sourceAsset,
                                 builderInfo.m_busId,
@@ -3995,7 +3991,7 @@ namespace AssetProcessor
 
                         // because we added / created a job for the queue, we increment the number of outstanding jobs for this item now.
                         // when it either later gets analyzed and done, or dropped (because its already up to date), we will decrement it.
-                        UpdateAnalysisTrackerForFile(normalizedPath.toUtf8().constData(), AnalysisTrackerUpdateType::JobStarted);
+                        UpdateAnalysisTrackerForFile(sourceAsset.AbsolutePath().c_str(), AnalysisTrackerUpdateType::JobStarted);
                         m_numOfJobsToAnalyze++;
                     }
                 }

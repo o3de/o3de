@@ -262,8 +262,8 @@ namespace AssetProcessor
 
         void SourceDeleted(SourceAssetReference sourceAsset);
         void SourceFolderDeleted(QString folderPath);
-        void SourceQueued(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid, SourceAssetReference sourceAssetReference);
-        void SourceFinished(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid);
+        void SourceQueued(AZ::Uuid sourceUuid, AZStd::unordered_set<AZ::Uuid> legacyUuids, SourceAssetReference sourceAssetReference);
+        void SourceFinished(AZ::Uuid sourceUuid, AZStd::unordered_set<AZ::Uuid> legacyUuids);
         void JobRemoved(AzToolsFramework::AssetSystem::JobInfo jobInfo);
 
         void JobComplete(JobEntry jobEntry, AzToolsFramework::AssetSystem::JobStatus status);
@@ -331,12 +331,12 @@ namespace AssetProcessor
         bool Recv(unsigned int connId, QByteArray payload, R& request);
         void AssessFileInternal(QString fullFile, bool isDelete, bool fromScanner = false);
         void CheckSource(const FileEntry& source);
-        void CheckMissingJobs(QString relativeSourceFile, const ScanFolderInfo* scanFolder, const AZStd::vector<JobDetails>& jobsThisTime);
+        void CheckMissingJobs(const SourceAssetReference& sourceAsset, const ScanFolderInfo* scanFolder, const AZStd::vector<JobDetails>& jobsThisTime);
         void CheckDeletedProductFile(QString normalizedPath);
         void CheckDeletedSourceFile(
             const SourceAssetReference& sourceAsset,
             AZStd::chrono::steady_clock::time_point initialProcessTime);
-        void CheckModifiedSourceFile(QString normalizedPath, QString databaseSourceFile, const ScanFolderInfo* scanFolderInfo);
+        void CheckModifiedSourceFile(const SourceAssetReference& sourceAsset, const ScanFolderInfo* scanFolderInfo);
         bool AnalyzeJob(JobDetails& details);
         void CheckDeletedCacheFolder(QString normalizedPath);
         void CheckDeletedSourceFolder(const SourceAssetReference& sourceAsset);
@@ -367,7 +367,7 @@ namespace AssetProcessor
         void AddKnownFoldersRecursivelyForFile(QString file, QString root);
         void CleanEmptyFolder(QString folder, QString root);
 
-        void ProcessBuilders(QString normalizedPath, QString relativePathToFile, const ScanFolderInfo* scanFolder, const AssetProcessor::BuilderInfoList& builderInfoList);
+        void ProcessBuilders(const SourceAssetReference& sourceAsset, const ScanFolderInfo* scanFolder, const AssetProcessor::BuilderInfoList& builderInfoList);
         AZStd::vector<AZStd::string> GetExcludedFolders();
 
         struct SourceInfoWithFingerprints
