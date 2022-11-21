@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import re
+import json
 import GenerateShaderVariantListUtil
 
 def search_and_save_shadervariant(searchPath):
@@ -26,6 +27,17 @@ def main():
     # Search in project folder
     search_and_save_shadervariant(azlmbr.paths.projectroot + '/Shaders')
     search_and_save_shadervariant(azlmbr.paths.projectroot + '/Assets')
+
+    # Search in externel gems
+    # Read from external_subdirectories project.json
+    projectPath = azlmbr.paths.projectroot + '/project.json'
+    jsonFile = open(projectPath)
+    data = json.load(jsonFile)
+
+    for path in data['external_subdirectories']:
+        search_and_save_shadervariant(azlmbr.paths.projectroot + '/' + path)
+
+    jsonFile.close()
 
     print("==== Finish processing shader ==========================================================")
 if __name__ == "__main__":
