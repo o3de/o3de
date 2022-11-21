@@ -478,7 +478,7 @@ namespace AtomToolsFramework
                     {
                         EntityPreviewViewportSettingsRequestBus::Event(
                             toolId,
-                            [toolId, paths](EntityPreviewViewportSettingsRequests* viewportRequests)
+                            [paths](EntityPreviewViewportSettingsRequests* viewportRequests)
                             {
                                 for (const auto& path : paths)
                                 {
