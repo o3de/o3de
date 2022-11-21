@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import pytest
 
-from ly_test_tools.o3de.editor_test import EditorTestSuite, EditorSharedTest
+from ly_test_tools.o3de.editor_test import EditorTestSuite, EditorBatchedTest
 
 
 @pytest.mark.SUITE_periodic
@@ -15,5 +15,5 @@ from ly_test_tools.o3de.editor_test import EditorTestSuite, EditorSharedTest
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(EditorTestSuite):
 
-    class test_TerrainPhysicsCollider_MaterialMapping_Works(EditorSharedTest):
+    class test_TerrainPhysicsCollider_MaterialMapping_Works(EditorBatchedTest):
         from .EditorScripts import TerrainPhysicsCollider_MaterialMapping_Works as test_module

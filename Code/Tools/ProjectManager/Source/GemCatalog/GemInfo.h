@@ -62,6 +62,10 @@ namespace O3DE::ProjectManager
         };
         static QString GetDownloadStatusString(DownloadStatus status);
 
+        static Platforms GetPlatformFromString(const QString& platformText);
+
+        static Platforms GetPlatformsFromStringList(const QStringList& platformStrings);
+
         GemInfo() = default;
         GemInfo(const QString& name, const QString& creator, const QString& summary, Platforms platforms, bool isAdded);
         bool IsPlatformSupported(Platform platform) const;
@@ -69,6 +73,8 @@ namespace O3DE::ProjectManager
         bool IsValid() const;
 
         bool operator<(const GemInfo& gemInfo) const;
+
+        QStringList GetPlatformsAsStringList() const;
 
         QString m_path;
         QString m_name = "Unknown Gem Name";

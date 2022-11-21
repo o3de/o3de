@@ -296,6 +296,7 @@ namespace GradientSignal
         const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType)
         : EditorBaseComponentMode(entityComponentIdPair, componentType)
         , m_ownerEntityComponentId(entityComponentIdPair)
+        , m_anyValuesChanged(false)
     {
         EditorImageGradientRequestBus::Event(GetEntityId(), &EditorImageGradientRequests::StartImageModification);
         ImageGradientModificationBus::Event(GetEntityId(), &ImageGradientModifications::StartImageModification);
@@ -326,17 +327,11 @@ namespace GradientSignal
 
         m_brushManipulator = AzToolsFramework::PaintBrushManipulator::MakeShared(
             worldFromLocal, entityComponentIdPair, AzToolsFramework::PaintBrushColorMode::Greyscale);
-        Refresh();
-
         m_brushManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
-
-        CreateSubModeSelectionCluster();
     }
 
     EditorImageGradientComponentMode::~EditorImageGradientComponentMode()
     {
-        RemoveSubModeSelectionCluster();
-
         AzToolsFramework::PaintBrushNotificationBus::Handler::BusDisconnect();
         m_brushManipulator->Unregister();
         m_brushManipulator.reset();
@@ -345,7 +340,7 @@ namespace GradientSignal
 
         // It's possible that we're leaving component mode as the result of an "undo" action.
         // If that's the case, don't prompt the user to save the changes.
-        if (!AzToolsFramework::UndoRedoOperationInProgress())
+        if (!AzToolsFramework::UndoRedoOperationInProgress() && m_anyValuesChanged)
         {
             EditorImageGradientRequestBus::Event(GetEntityId(), &EditorImageGradientRequests::SaveImage);
         }
@@ -569,6 +564,9 @@ namespace GradientSignal
         // Notify anything listening to the image gradient that the modified region has changed.
         LmbrCentral::DependencyNotificationBus::Event(
             GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, expandedDirtyArea);
+
+        // Track that we've changed image values, so we should prompt to save on exit.
+        m_anyValuesChanged = true;
     }
 
     void EditorImageGradientComponentMode::OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn)
@@ -625,78 +623,6 @@ namespace GradientSignal
 
         // Perform all the common logic between painting and smoothing to modify our image gradient.
         OnPaintSmoothInternal(dirtyArea, valueLookupFn, combineFn);
-    }
-
-    void EditorImageGradientComponentMode::CreateSubModeSelectionCluster()
-    {
-        auto RegisterClusterButton = [](AzToolsFramework::ViewportUi::ClusterId clusterId,
-                                        const char* iconName,
-                                        const char* tooltip) -> AzToolsFramework::ViewportUi::ButtonId
-        {
-            AzToolsFramework::ViewportUi::ButtonId buttonId;
-            AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
-                buttonId,
-                AzToolsFramework::ViewportUi::DefaultViewportId,
-                &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton,
-                clusterId,
-                AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
-
-            AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                AzToolsFramework::ViewportUi::DefaultViewportId,
-                &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
-                clusterId,
-                buttonId,
-                tooltip);
-
-            return buttonId;
-        };
-
-        // create the cluster for showing the Paint Brush Settings window
-        AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
-            m_paintBrushControlClusterId,
-            AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
-            AzToolsFramework::ViewportUi::Alignment::TopLeft);
-
-        // create and register the "Show Paint Brush Settings" button.
-        // This button is needed because the window is only shown while in component mode, and the window can be closed by the user,
-        // so we need to provide an alternate way for the user to re-open the window. 
-        m_paintModeButtonId = RegisterClusterButton(m_paintBrushControlClusterId, "Paint", "Switch to Paint Mode");
-        m_eyedropperModeButtonId = RegisterClusterButton(m_paintBrushControlClusterId, "Eyedropper", "Switch to Eyedropper Mode");
-        m_smoothModeButtonId = RegisterClusterButton(m_paintBrushControlClusterId, "Smooth", "Switch to Smooth Mode");
-
-        m_buttonSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(
-            [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
-            {
-                AzToolsFramework::PaintBrushMode brushMode = AzToolsFramework::PaintBrushMode::Paintbrush;
-
-                if (buttonId == m_eyedropperModeButtonId)
-                {
-                    brushMode = AzToolsFramework::PaintBrushMode::Eyedropper;
-                }
-                else if (buttonId == m_smoothModeButtonId)
-                {
-                    brushMode = AzToolsFramework::PaintBrushMode::Smooth;
-                }
-
-                AzToolsFramework::OpenViewPane(PaintBrush::s_paintBrushSettingsName);
-
-                AzToolsFramework::PaintBrushSettingsRequestBus::Broadcast(
-                    &AzToolsFramework::PaintBrushSettingsRequestBus::Events::SetBrushMode, brushMode);
-            });
-        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
-            m_paintBrushControlClusterId,
-            m_buttonSelectionHandler);
-    }
-
-    void EditorImageGradientComponentMode::RemoveSubModeSelectionCluster()
-    {
-        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
-            m_paintBrushControlClusterId);
     }
 
 } // namespace GradientSignal

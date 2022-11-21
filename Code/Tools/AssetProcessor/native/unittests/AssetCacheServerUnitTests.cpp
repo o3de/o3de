@@ -9,7 +9,9 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/UnitTest/Mocks/MockSettingsRegistry.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include <AzTest/Utils.h>
 #include <AzToolsFramework/Archive/ArchiveAPI.h>
 #include <native/resourcecompiler/rcjob.h>

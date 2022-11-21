@@ -37,11 +37,6 @@ namespace UnitTest
             m_model->Initialize();
             m_modelTester =
                 AZStd::make_unique<QAbstractItemModelTester>(m_model.get(), QAbstractItemModelTester::FailureReportingMode::Fatal);
-            
-            // Create a new root prefab - the synthetic "NewLevel.prefab" that comes in by default isn't suitable for outliner tests
-            // because it's created before the EditorEntityModel that our EntityOutlinerListModel subscribes to, and we want to
-            // recreate it as part of the fixture regardless.
-            CreateRootPrefab();
         }
 
         void TearDownEditorFixtureImpl() override
@@ -71,14 +66,8 @@ namespace UnitTest
 
             AZ::Entity* entity = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
-
-            entity->Deactivate();
+            
             entity->SetName(name);
-            auto transform = aznew AzToolsFramework::Components::TransformComponent;
-            entity->AddComponent(transform);
-            transform->SetParent(parentId);
-
-            entity->Activate();
 
             // Update our undo cache entry to include the rename / reparent as one atomic operation.
             m_prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_undoStack->GetTop());

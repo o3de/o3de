@@ -9,11 +9,18 @@ Base class for QtPy classes. Contains commonly used constants and generic behavi
 
 import pyside_utils
 from PySide2 import QtWidgets, QtTest, QtCore
+from enum import IntEnum
+
+
+class CheckBoxStates(IntEnum):
+    Off = 0
+    On = 1
 
 
 class QtPyCommon:
     """
     """
+
     def __init__(self):
         self.menu_bar = None
 

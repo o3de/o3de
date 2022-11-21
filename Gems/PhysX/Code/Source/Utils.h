@@ -181,7 +181,7 @@ namespace PhysX
             bool hasNonUniformScale, AZ::u8 subdivisionLevel, AzPhysics::ShapeColliderPairList& resultingColliderShapes);
 
         //! Gets the scale from the entity's Transform component.
-        AZ::Vector3 GetTransformScale(AZ::EntityId entityId);
+        float GetTransformScale(AZ::EntityId entityId);
         //! Returns a vector scale with each element equal to the max element from the entity's Transform component.
         AZ::Vector3 GetUniformScale(AZ::EntityId entityId);
         //! Gets the scale from the entity's Non-Uniform Scale component, if it is present.

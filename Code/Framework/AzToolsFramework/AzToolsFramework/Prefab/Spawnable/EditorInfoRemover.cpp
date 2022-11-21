@@ -9,6 +9,9 @@
 #include <AzCore/Component/ComponentExport.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/ranges/ranges_algorithm.h>
+#include <AzCore/std/ranges/transform_view.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
@@ -152,7 +155,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             sourceEntity->Init();
         }
 
-        AZ::Entity* exportEntity = aznew AZ::Entity(sourceEntity->GetId(), sourceEntity->GetName().c_str());
+        auto exportEntity = AZStd::make_unique<AZ::Entity>(sourceEntity->GetId(), sourceEntity->GetName().c_str());
         exportEntity->SetRuntimeActiveByDefault(sourceEntity->IsRuntimeActiveByDefault());
 
         AddEntityIdIfEditorOnly(sourceEntity);
@@ -161,7 +164,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         EntityList exportedEntities;
         for (AZ::Component* component : editorComponents)
         {
-            auto result = ExportComponent(component, context, sourceEntity, exportEntity);
+            auto result = ExportComponent(component, context, sourceEntity, exportEntity.get());
             if (!result)
             {
                 return AZ::Failure(AZStd::string::format(
@@ -187,7 +190,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
                 sortResult.GetError().m_message.c_str()));
         }
 
-        return AZ::Success(exportEntity);
+        return AZ::Success(AZStd::move(exportEntity));
     }
 
     bool EditorInfoRemover::ReadComponentAttribute(
@@ -514,7 +517,9 @@ exportComponent, prefabProcessorContext);
         EntityList sourceEntities;
         GetEntitiesFromInstance(sourceInstance, sourceEntities);
 
-        EntityList exportEntities;
+        // The entities made by ExportEntity must be managed. A unique_ptr is used to ensure they are destroyed if any
+        // of the error conditions are true, which results in an early return.
+        AZStd::vector<AZStd::unique_ptr<AZ::Entity>> exportEntitiesOwner;
 
         // prepare for validation of component requirements.
         m_componentRequirementsValidator.SetEntities(sourceEntities);
@@ -525,7 +530,7 @@ exportComponent, prefabProcessorContext);
         // export entities.
         for (AZ::Entity* entity : sourceEntities)
         {
-            const auto result = ExportEntity(entity, prefabProcessorContext);
+            auto result = ExportEntity(entity, prefabProcessorContext);
             if (!result)
             {
                 return AZ::Failure(AZStd::string::format(
@@ -536,8 +541,12 @@ exportComponent, prefabProcessorContext);
                 );
             }
 
-            exportEntities.emplace_back(result.GetValue());
+            exportEntitiesOwner.emplace_back(result.TakeValue());
         }
+
+        const auto nonOwningEntityView = exportEntitiesOwner | AZStd::views::transform([](const auto& entity) { return entity.get(); });
+        EntityList exportEntities(exportEntitiesOwner.size());
+        AZStd::copy(nonOwningEntityView.begin(), nonOwningEntityView.end(), exportEntities.begin());
 
         // remove editor-only entities with valid editor-only entity handler.
         const auto removeEditorOnlyEntitiesResult = RemoveEditorOnlyEntities(exportEntities);
@@ -594,6 +603,17 @@ exportComponent, prefabProcessorContext);
                 return true;
             }
         );
+
+        // The caller is expected to take ownership of the created entities. The ones that are editor only are kept in
+        // the exportEntitiesOwner vector, and destroyed when that vector is destroyed at the end of this method.
+        for (const AZ::Entity* entity : exportEntities)
+        {
+            auto it = AZStd::ranges::find_if(exportEntitiesOwner, [&entity](const auto& ownedEntity) { return ownedEntity.get() == entity; });
+            if (it != exportEntitiesOwner.end())
+            {
+                (void)it->release();
+            }
+        }
 
         return AZ::Success();
     }

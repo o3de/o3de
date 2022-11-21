@@ -38,10 +38,7 @@ namespace PhysXEditorTests
         AZ::TransformBus::Event(boxId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
         AZ::NonUniformScaleRequestBus::Event(boxId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(0.7f, 0.9f, 1.1f));
 
-        UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
-        AzFramework::EntityDebugDisplayEventBus::Event(boxId, &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
-            AzFramework::ViewportInfo{ 0 }, testDebugDisplayRequests);
-        const AZ::Aabb debugDrawAabb = testDebugDisplayRequests.GetAabb();
+        const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(boxId);
 
         EXPECT_THAT(debugDrawAabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(5.6045f, 4.9960f, 11.7074f), 1e-3f));
         EXPECT_THAT(debugDrawAabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(6.4955f, 6.7305f, 13.5662f), 1e-3f));
@@ -67,10 +64,7 @@ namespace PhysXEditorTests
         AZ::TransformBus::Event(boxId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
         AZ::NonUniformScaleRequestBus::Event(boxId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(1.1f, 0.6f, 1.3f));
 
-        UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
-        AzFramework::EntityDebugDisplayEventBus::Event(boxId, &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
-            AzFramework::ViewportInfo{ 0 }, testDebugDisplayRequests);
-        const AZ::Aabb debugDrawAabb = testDebugDisplayRequests.GetAabb();
+        const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(boxId);
 
         AZ::Aabb colliderAabb = AZ::Aabb::CreateNull();
         PhysX::ColliderShapeRequestBus::EventResult(colliderAabb, boxId, &PhysX::ColliderShapeRequests::GetColliderShapeAabb);
@@ -96,10 +90,7 @@ namespace PhysXEditorTests
         worldTM.SetRotation(AZ::Quaternion::CreateRotationZ(AZ::DegToRad(45.0f)));
         AZ::TransformBus::Event(boxId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
 
-        UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
-        AzFramework::EntityDebugDisplayEventBus::Event(boxId, &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
-            AzFramework::ViewportInfo{ 0 }, testDebugDisplayRequests);
-        const AZ::Aabb debugDrawAabbNoNonUniformScale = testDebugDisplayRequests.GetAabb();
+        const AZ::Aabb debugDrawAabbNoNonUniformScale = GetDebugDrawAabb(boxId);
 
         // now add a non-uniform scale component but with scale (1, 1, 1)
         boxEntity->Deactivate();
@@ -107,10 +98,7 @@ namespace PhysXEditorTests
         boxEntity->Activate();
 
         // the Aabb for the debug draw points should not have changed
-        testDebugDisplayRequests.ClearPoints();
-        AzFramework::EntityDebugDisplayEventBus::Event(boxId, &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
-            AzFramework::ViewportInfo{ 0 }, testDebugDisplayRequests);
-        const AZ::Aabb debugDrawAabbUnitNonUniformScale = testDebugDisplayRequests.GetAabb();
+        const AZ::Aabb debugDrawAabbUnitNonUniformScale = GetDebugDrawAabb(boxId);
 
         EXPECT_TRUE(debugDrawAabbUnitNonUniformScale.IsClose(debugDrawAabbNoNonUniformScale, 1e-3f));
     }
@@ -135,10 +123,7 @@ namespace PhysXEditorTests
         AZ::TransformBus::Event(capsuleId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
         AZ::NonUniformScaleRequestBus::Event(capsuleId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(1.2f, 0.7f, 0.6f));
 
-        UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
-        AzFramework::EntityDebugDisplayEventBus::Event(capsuleId, &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
-            AzFramework::ViewportInfo{ 0 }, testDebugDisplayRequests);
-        const AZ::Aabb debugDrawAabb = testDebugDisplayRequests.GetAabb();
+        const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(capsuleId);
 
         EXPECT_THAT(debugDrawAabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(3.81f, 2.505f, -5.38f), 1e-3f));
         EXPECT_THAT(debugDrawAabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(3.99f, 2.995f, -5.02f), 1e-3f));
@@ -164,10 +149,7 @@ namespace PhysXEditorTests
         AZ::TransformBus::Event(capsuleId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
         AZ::NonUniformScaleRequestBus::Event(capsuleId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(0.8f, 0.9f, 0.4f));
 
-        UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
-        AzFramework::EntityDebugDisplayEventBus::Event(capsuleId, &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
-            AzFramework::ViewportInfo{ 0 }, testDebugDisplayRequests);
-        const AZ::Aabb debugDrawAabb = testDebugDisplayRequests.GetAabb();
+        const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(capsuleId);
 
         AZ::Aabb colliderAabb = AZ::Aabb::CreateNull();
         PhysX::ColliderShapeRequestBus::EventResult(colliderAabb, capsuleId, &PhysX::ColliderShapeRequests::GetColliderShapeAabb);
@@ -195,10 +177,7 @@ namespace PhysXEditorTests
         AZ::TransformBus::Event(sphereId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
         AZ::NonUniformScaleRequestBus::Event(sphereId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(0.8f, 0.9f, 0.6f));
 
-        UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
-        AzFramework::EntityDebugDisplayEventBus::Event(sphereId, &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
-            AzFramework::ViewportInfo{ 0 }, testDebugDisplayRequests);
-        const AZ::Aabb debugDrawAabb = testDebugDisplayRequests.GetAabb();
+        const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(sphereId);
 
         EXPECT_THAT(debugDrawAabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(0.208f, -2.944f, 0.084f), 1e-3f));
         EXPECT_THAT(debugDrawAabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(1.552f, -1.936f, 1.596f), 1e-3f));
@@ -224,10 +203,7 @@ namespace PhysXEditorTests
         AZ::TransformBus::Event(sphereId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
         AZ::NonUniformScaleRequestBus::Event(sphereId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(0.6f, 1.3f, 0.8f));
 
-        UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
-        AzFramework::EntityDebugDisplayEventBus::Event(sphereId, &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
-            AzFramework::ViewportInfo{ 0 }, testDebugDisplayRequests);
-        const AZ::Aabb debugDrawAabb = testDebugDisplayRequests.GetAabb();
+        const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(sphereId);
 
         AZ::Aabb colliderAabb = AZ::Aabb::CreateNull();
         PhysX::ColliderShapeRequestBus::EventResult(colliderAabb, sphereId, &PhysX::ColliderShapeRequests::GetColliderShapeAabb);
@@ -248,13 +224,7 @@ namespace PhysXEditorTests
         LmbrCentral::EditorShapeComponentRequestsBus::Event(
             boxShapeEntity->GetId(), &LmbrCentral::EditorShapeComponentRequests::SetVisibleInEditor, false);
 
-        UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
-        AzFramework::EntityDebugDisplayEventBus::Event(
-            boxShapeEntity->GetId(),
-            &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
-            AzFramework::ViewportInfo{ 0 },
-            testDebugDisplayRequests);
-        const AZ::Aabb debugDrawAabb = testDebugDisplayRequests.GetAabb();
+        const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(boxShapeEntity->GetId());
 
         EXPECT_THAT(debugDrawAabb.GetMin(), UnitTest::IsClose(AZ::Vector3(-7.246f, -6.302f, -2.46f)));
         EXPECT_THAT(debugDrawAabb.GetMax(), UnitTest::IsClose(AZ::Vector3(0.51f, 0.25f, 5.1f)));
@@ -295,13 +265,7 @@ namespace PhysXEditorTests
         LmbrCentral::EditorShapeComponentRequestsBus::Event(
             sphereShapeEntity->GetId(), &LmbrCentral::EditorShapeComponentRequests::SetVisibleInEditor, false);
 
-        UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
-        AzFramework::EntityDebugDisplayEventBus::Event(
-            sphereShapeEntity->GetId(),
-            &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
-            AzFramework::ViewportInfo{ 0 },
-            testDebugDisplayRequests);
-        const AZ::Aabb debugDrawAabb = testDebugDisplayRequests.GetAabb();
+        const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(sphereShapeEntity->GetId());
 
         // use a large tolerance because the debug draw will only approximate a perfect sphere
         EXPECT_THAT(debugDrawAabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(-4.4f, -14.3f, -9.9f), 0.1f));
@@ -342,13 +306,7 @@ namespace PhysXEditorTests
         LmbrCentral::EditorShapeComponentRequestsBus::Event(
             capsuleShapeEntity->GetId(), &LmbrCentral::EditorShapeComponentRequests::SetVisibleInEditor, false);
 
-        UnitTest::TestDebugDisplayRequests testDebugDisplayRequests;
-        AzFramework::EntityDebugDisplayEventBus::Event(
-            capsuleShapeEntity->GetId(),
-            &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
-            AzFramework::ViewportInfo{ 0 },
-            testDebugDisplayRequests);
-        const AZ::Aabb debugDrawAabb = testDebugDisplayRequests.GetAabb();
+        const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(capsuleShapeEntity->GetId());
 
         // use a large tolerance because the debug draw will only approximate a perfect capsule
         EXPECT_THAT(debugDrawAabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(-13.6f, 10.6f, -7.2f), 0.1f));
@@ -377,5 +335,74 @@ namespace PhysXEditorTests
         }
 
         EXPECT_NEAR(maxDistSq, 9.0f, 0.01f);
+    }
+
+    TEST_F(PhysXEditorFixture, Collider_CylinderWithOffset_CorrectDebugDraw)
+    {
+        const AZ::Transform transform(AZ::Vector3(-1.0f, -3.0f, -4.0f), AZ::Quaternion(0.3f, 0.1f, 0.9f, 0.3f), 1.0f);
+        const AZ::Vector3 positionOffset(2.0f, 6.0f, -3.0f);
+        const AZ::Quaternion rotationOffset(-0.5f, -0.1f, 0.7f, 0.5f);
+        const float radius = 2.0f;
+        const float height = 7.5f;
+        EntityPtr editorEntity = CreateCylinderColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height);
+
+        const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(editorEntity->GetId());
+
+        // use a relatively large tolerance, because the cylinder will be a convex approximation rather than an exact primitive
+        EXPECT_THAT(debugDrawAabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(-10.9f, -10.8f, -5.7f), 0.1f));
+        EXPECT_THAT(debugDrawAabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(-3.1f, -2.4f, -0.8f), 0.1f));
+    }
+
+    TEST_F(PhysXEditorFixture, Collider_CylinderWithOffsetAndRigidBody_CorrectDebugDraw)
+    {
+        const AZ::Transform transform(AZ::Vector3(4.0f, -2.0f, 4.0f), AZ::Quaternion(0.2f, 0.8f, -0.4f, 0.4f), 1.5f);
+        const AZ::Vector3 positionOffset(2.0f, 3.0f, -7.0f);
+        const AZ::Quaternion rotationOffset(-0.1f, -0.7f, 0.1f, 0.7f);
+        const float radius = 2.5f;
+        const float height = 9.0f;
+        EntityPtr editorEntity =
+            CreateCylinderColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height, RigidBodyType::Dynamic);
+
+        const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(editorEntity->GetId());
+
+        // use a relatively large tolerance, because the cylinder will be a convex approximation rather than an exact primitive
+        EXPECT_THAT(debugDrawAabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(-7.0f, 5.4f, -4.4f), 0.1f));
+        EXPECT_THAT(debugDrawAabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(7.1f, 12.8f, 10.8f), 0.1f));
+    }
+
+    TEST_F(PhysXEditorFixture, Collider_CylinderWithOffsetAndNonUniformScale_CorrectDebugDraw)
+    {
+        const AZ::Transform transform(AZ::Vector3(2.0f, 4.0f, -7.0f), AZ::Quaternion(0.4f, 0.8f, 0.2f, 0.4f), 0.6f);
+        const AZ::Vector3 nonUniformScale(2.0f, 0.5f, 0.8f);
+        const AZ::Vector3 positionOffset(3.0f, -2.0f, -6.0f);
+        const AZ::Quaternion rotationOffset(0.3f, 0.3f, -0.1f, 0.9f);
+        const float radius = 1.5f;
+        const float height = 6.0f;
+        EntityPtr editorEntity =
+            CreateCylinderColliderNonUniformScaleEditorEntity(transform, nonUniformScale, positionOffset, rotationOffset, radius, height);
+
+        const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(editorEntity->GetId());
+
+        // use a relatively large tolerance, because the cylinder will be a convex approximation rather than an exact primitive
+        EXPECT_THAT(debugDrawAabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(-2.9f, 4.1f, -9.6f), 0.1f));
+        EXPECT_THAT(debugDrawAabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(-0.9f, 8.9f, -5.1f), 0.1f));
+    }
+
+    TEST_F(PhysXEditorFixture, Collider_CylinderWithOffsetNonUniformScaleAndRigidBody_CorrectDebugDraw)
+    {
+        const AZ::Transform transform(AZ::Vector3(-3.0f, -2.0f, -4.0f), AZ::Quaternion(0.5f, 0.1f, -0.7f, 0.5f), 1.8f);
+        const AZ::Vector3 nonUniformScale(0.6f, 0.8f, 1.4f);
+        const AZ::Vector3 positionOffset(2.0f, 7.0f, -1.0f);
+        const AZ::Quaternion rotationOffset(0.5f, -0.5f, -0.5f, 0.5f);
+        const float radius = 2.5f;
+        const float height = 9.0f;
+        EntityPtr editorEntity = CreateCylinderColliderNonUniformScaleEditorEntity(
+            transform, nonUniformScale, positionOffset, rotationOffset, radius, height, RigidBodyType::Dynamic);
+
+        const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(editorEntity->GetId());
+
+        // use a relatively large tolerance, because the cylinder will be a convex approximation rather than an exact primitive
+        EXPECT_THAT(debugDrawAabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(1.9f, -13.8f, -10.5f), 0.1f));
+        EXPECT_THAT(debugDrawAabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(11.3f, 0.8f, 3.9f), 0.1f));
     }
 } // namespace PhysXEditorTests
