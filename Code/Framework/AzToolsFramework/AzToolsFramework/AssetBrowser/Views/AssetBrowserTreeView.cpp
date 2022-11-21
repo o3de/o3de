@@ -734,13 +734,11 @@ namespace AzToolsFramework
             for (auto entry : entries)
             {
                 using namespace AZ::IO;
-                AZStd::string originalFname;
-                AssetBrowserEntry* item = entry;
-                Path oldPath = item->GetFullPath();
-                AZStd::string fname;
+                Path oldPath = entry->GetFullPath();
+                AZStd::string newPath;
                 AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(
-                    oldPath.ParentPath().Native(), oldPath.Filename().Native(), fname, "-copy");
-                QFile::copy(oldPath.c_str(), fname.c_str());
+                    oldPath.ParentPath().Native(), oldPath.Filename().Native(), newPath, "-copy");
+                QFile::copy(oldPath.c_str(), newPath.c_str());
             }
         }
 
