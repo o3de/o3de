@@ -268,6 +268,12 @@ void CLevelFileDialog::OnTreeSelectionChanged()
     if (!indexes.isEmpty())
     {
         ui->nameLineEdit->setText(NameForIndex(indexes.first()));
+
+        if (m_bOpenDialog)
+        {
+            // Do not allow the user to open a level that haas illegal characters in the name.
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(ui->nameLineEdit->hasAcceptableInput());
+        }
     }
 }
 
@@ -429,6 +435,12 @@ bool CLevelFileDialog::ValidateSaveLevelPath(QString& errorMessage) const
     if (CFileUtil::PathExists(levelPath) && !CheckLevelFolder(levelPath))
     {
         errorMessage = tr("Please enter a level name");
+        return false;
+    }
+
+    if (!ui->nameLineEdit->hasAcceptableInput())
+    {
+        errorMessage = tr("The level name contains illegal characters.");
         return false;
     }
 
