@@ -156,7 +156,7 @@ namespace EMStudio
 
         // Load the manifest from disk.
         AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene> scene;
-        AZ::SceneAPI::Events::SceneSerializationBus::BroadcastResult(scene, &AZ::SceneAPI::Events::SceneSerializationBus::Events::LoadScene, sourceAssetFilename, AZ::Uuid::CreateNull());
+        AZ::SceneAPI::Events::SceneSerializationBus::BroadcastResult(scene, &AZ::SceneAPI::Events::SceneSerializationBus::Events::LoadScene, sourceAssetFilename, AZ::Uuid::CreateNull(), "");
         if (!scene)
         {
             AZ_Error("EMotionFX", false, "Unable to save meta data to manifest due to failed scene loading.");
@@ -299,7 +299,7 @@ namespace EMStudio
 
         // Load the manifest from disk.
         AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene> scene;
-        AZ::SceneAPI::Events::SceneSerializationBus::BroadcastResult(scene, &AZ::SceneAPI::Events::SceneSerializationBus::Events::LoadScene, sourceAssetFilename, AZ::Uuid::CreateNull());
+        AZ::SceneAPI::Events::SceneSerializationBus::BroadcastResult(scene, &AZ::SceneAPI::Events::SceneSerializationBus::Events::LoadScene, sourceAssetFilename, AZ::Uuid::CreateNull(), "");
         if (!scene)
         {
             AZ_Error("EMotionFX", false, "Unable to save meta data to manifest due to failed scene loading.");

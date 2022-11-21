@@ -35,11 +35,7 @@ namespace EMotionFX
         virtual bool ShouldReflectPhysicSystem() override { return true; }
     };
 
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(CopyPasteRagdollJointLimitsFixture, DISABLED_TestJointLimits)
-#else
     TEST_F(CopyPasteRagdollJointLimitsFixture, TestJointLimits)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         using testing::_;
 

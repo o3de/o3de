@@ -2051,7 +2051,7 @@ namespace UnitTest
     TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_PropertyImagePath)
     {
         char inputJson[2048];
-        azsprintf(inputJson,
+        azsnprintf(inputJson, AZ_ARRAY_SIZE(inputJson),
             R"(
                 {
                     "description": "",
@@ -2101,7 +2101,7 @@ namespace UnitTest
     TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_ResolveSetValueVersionUpdates)
     {
         char inputJson[2048];
-        azsprintf(inputJson,
+        azsnprintf(inputJson, AZ_ARRAY_SIZE(inputJson),
         R"(
             {
                 "description": "",

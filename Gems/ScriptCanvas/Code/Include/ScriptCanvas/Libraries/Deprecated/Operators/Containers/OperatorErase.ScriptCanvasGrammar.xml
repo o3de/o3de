@@ -9,8 +9,6 @@
            Category="Containers"
            Version="1"
            Deprecated="True"
-           DeprecationUUID="{C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8}"
-           ReplacementMethodName="Erase"
            Description="Erase the element at the specified Index or with the specified Key">
         <Out Name="Element Not Found" Description="Triggered if the specified element was not found"/>
     </Class>

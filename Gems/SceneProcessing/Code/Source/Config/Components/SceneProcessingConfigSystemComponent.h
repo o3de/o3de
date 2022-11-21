@@ -15,6 +15,7 @@
 #include <Config/SceneProcessingConfigBus.h>
 #include <Config/SettingsObjects/SoftNameSetting.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
+#include <SceneAPI/SceneCore/Events/ScriptConfigEventBus.h>
 
 namespace AZ
 {
@@ -22,6 +23,8 @@ namespace AZ
 
     namespace SceneProcessingConfig
     {
+        inline constexpr const char* AssetProcessorDefaultScriptsKey{ "/O3DE/AssetProcessor/SceneBuilder/defaultScripts" };
+
         class SceneProcessingConfigSystemComponentSerializationEvents
             : public SerializeContext::IEventHandler
         {
@@ -35,6 +38,7 @@ namespace AZ
             : public AZ::SceneAPI::SceneCore::SceneSystemComponent
             , protected SceneProcessingConfigRequestBus::Handler
             , public AZ::SceneAPI::Events::AssetImportRequestBus::Handler
+            , public AZ::SceneAPI::Events::ScriptConfigEventBus::Handler
         {
         public:
             AZ_COMPONENT(SceneProcessingConfigSystemComponent, "{80FE1130-91B4-44D4-869F-859BB996161A}", AZ::SceneAPI::SceneCore::SceneSystemComponent);
@@ -56,11 +60,18 @@ namespace AZ
                 const char* virtualType, bool inclusive, const AZStd::string& graphObjectTypeName) override;
             // SceneProcessingConfigRequestBus END
 
+            // AssetImportRequestBus START
             void AreCustomNormalsUsed(bool &value) override;
             void GetPolicyName(AZStd::string& result) const override
             {
                 result = "SceneProcessingConfigSystemComponent";
             }
+            // AssetImportRequestBus END
+
+            // AZ::SceneAPI::Events::ScriptConfigEventBus START
+            void GetScriptConfigList(AZStd::vector<SceneAPI::Events::ScriptConfig>& scriptConfigList) const override;
+            AZStd::optional<SceneAPI::Events::ScriptConfig> MatchesScriptConfig(const AZStd::string& sourceFile) const override;
+            // AZ::SceneAPI::Events::ScriptConfigEventBus END
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -74,10 +85,13 @@ namespace AZ
             /// false.
             bool AddSoftName(SoftNameSetting* newSoftname);
 
+            void LoadScriptSettings();
+
             static void ReflectSceneModule(ReflectContext* context, const AZStd::unique_ptr<DynamicModuleHandle>& module);
             static void ActivateSceneModule(const AZStd::unique_ptr<DynamicModuleHandle>& module);
             static void DeactivateSceneModule(const AZStd::unique_ptr<DynamicModuleHandle>& module);
 
+            AZStd::vector<AZ::SceneAPI::Events::ScriptConfig> m_scriptConfigList;
             AZStd::vector<SoftNameSetting*> m_softNames;
             bool m_UseCustomNormals;
         };

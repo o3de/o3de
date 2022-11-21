@@ -31,7 +31,9 @@ namespace AtomToolsFramework
                 ->Field("supportedDataTypeRegex", &DynamicNodeSlotConfig::m_supportedDataTypeRegex)
                 ->Field("defaultDataType", &DynamicNodeSlotConfig::m_defaultDataType)
                 ->Field("defaultValue", &DynamicNodeSlotConfig::m_defaultValue)
-                ->Field("supportsEditingOnNode", &DynamicNodeSlotConfig::m_supportsEditingOnNode)
+                ->Field("visibleOnNode", &DynamicNodeSlotConfig::m_visibleOnNode)
+                ->Field("editableOnNode", &DynamicNodeSlotConfig::m_editableOnNode)
+                ->Field("allowNameSubstitution", &DynamicNodeSlotConfig::m_allowNameSubstitution)
                 ->Field("settings", &DynamicNodeSlotConfig::m_settings)
                 ;
 
@@ -56,7 +58,9 @@ namespace AtomToolsFramework
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_defaultValue, "Default Value", "The initial value of an input or property slot that has no incoming connection.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->ElementAttribute(AZ::Edit::Attributes::NameLabelOverride, "Default Value")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_supportsEditingOnNode, "Display On Node", "Enable this to allow editing the the slot value directly in the node UI.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_visibleOnNode, "Visible On Node", "Enable this for the slot to appear on the node UI in the graph view.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_editableOnNode, "Editable On Node", "Enable this for the slot value to be editable on the node UI in the graph view.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_allowNameSubstitution, "Allow Name Substitution", "Hint on whether or not the slot name can be substituted or mangled in applicable systems.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_settings, "Settings", "Table of strings that can be used for any context specific or user defined data for each slot.")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                         ->Attribute(AZ::Edit::Attributes::ClearNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
@@ -84,7 +88,9 @@ namespace AtomToolsFramework
                 ->Property("defaultValue", BehaviorValueProperty(&DynamicNodeSlotConfig::m_defaultValue))
                 ->Property("supportedDataTypeRegex", BehaviorValueProperty(&DynamicNodeSlotConfig::m_supportedDataTypeRegex))
                 ->Property("defaultDataType", BehaviorValueProperty(&DynamicNodeSlotConfig::m_defaultDataType))
-                ->Property("supportsEditingOnNode", BehaviorValueProperty(&DynamicNodeSlotConfig::m_supportsEditingOnNode))
+                ->Property("visibleOnNode", BehaviorValueProperty(&DynamicNodeSlotConfig::m_visibleOnNode))
+                ->Property("editableOnNode", BehaviorValueProperty(&DynamicNodeSlotConfig::m_editableOnNode))
+                ->Property("allowNameSubstitution", BehaviorValueProperty(&DynamicNodeSlotConfig::m_allowNameSubstitution))
                 ->Property("settings", BehaviorValueProperty(&DynamicNodeSlotConfig::m_settings))
                 ;
         }

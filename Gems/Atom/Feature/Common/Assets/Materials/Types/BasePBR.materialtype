@@ -48,6 +48,10 @@
             "tag": "LowEndForward_EDS"
         },
         {
+            "file": "Shaders/Materials/BasePBR/BasePBR_MultiViewForward.shader",
+            "tag": "MultiViewForward_EDS"
+        },
+        {
             "file": "Shaders/Shadow/Shadowmap.shader",
             "tag": "Shadowmap"
         },

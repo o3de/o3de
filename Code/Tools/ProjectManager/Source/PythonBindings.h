@@ -45,6 +45,7 @@ namespace O3DE::ProjectManager
 
         // Gem
         AZ::Outcome<GemInfo> CreateGem(const QString& templatePath, const GemInfo& gemInfo, bool registerGem = true) override;
+        AZ::Outcome<GemInfo> EditGem(const QString& oldGemName, const GemInfo& newGemInfo) override;
         AZ::Outcome<GemInfo> GetGemInfo(const QString& path, const QString& projectPath = {}) override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetEngineGemInfos() override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemInfos(const QString& projectPath) override;
@@ -114,6 +115,7 @@ namespace O3DE::ProjectManager
         AZ::IO::FixedMaxPath m_enginePath;
         mutable AZStd::recursive_mutex m_lock;
 
+        pybind11::handle m_gemProperties;
         pybind11::handle m_engineTemplate;
         pybind11::handle m_engineProperties;
         pybind11::handle m_cmake;

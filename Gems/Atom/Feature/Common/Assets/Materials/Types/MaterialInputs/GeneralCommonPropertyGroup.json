@@ -14,7 +14,7 @@
             "displayName": "Apply Specular AA",
             "description": "Whether to apply specular anti-aliasing in the shader.",
             "type": "Bool",
-            "defaultValue": false,
+            "defaultValue": true,
             "connection": {
                 "type": "ShaderOption",
                 "name": "o_applySpecularAA"

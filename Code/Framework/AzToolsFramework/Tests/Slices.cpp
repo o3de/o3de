@@ -1043,7 +1043,7 @@ namespace UnitTest
 
 
     class SliceCompilerTest
-        : public ::testing::Test
+        : public UnitTest::AllocatorsTestFixture
     {
     protected:
         AzToolsFramework::ToolsApplication m_app;

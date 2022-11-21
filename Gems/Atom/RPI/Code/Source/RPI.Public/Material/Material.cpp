@@ -32,13 +32,12 @@ namespace AZ
 
         Data::Instance<Material> Material::FindOrCreate(const Data::Asset<MaterialAsset>& materialAsset)
         {
-            return Data::InstanceDatabase<Material>::Instance().FindOrCreate(
-                Data::InstanceId::CreateFromAsset(materialAsset), materialAsset);
+            return Data::InstanceDatabase<Material>::Instance().FindOrCreate(materialAsset);
         }
 
         Data::Instance<Material> Material::Create(const Data::Asset<MaterialAsset>& materialAsset)
         {
-            return Data::InstanceDatabase<Material>::Instance().FindOrCreate(Data::InstanceId::CreateRandom(), materialAsset);
+            return Data::InstanceDatabase<Material>::Instance().Create(materialAsset);
         }
 
         AZ::Data::Instance<Material> Material::CreateInternal(MaterialAsset& materialAsset)
@@ -151,12 +150,7 @@ namespace AZ
             // Set all dirty for the first use.
             m_propertyDirtyFlags.set();
 
-
-
             Compile();
-
-            Data::AssetBus::Handler::BusConnect(m_materialAsset.GetId());
-            MaterialReloadNotificationBus::Handler::BusConnect(m_materialAsset.GetId());
 
             return RHI::ResultCode::Success;
         }
@@ -164,8 +158,6 @@ namespace AZ
         Material::~Material()
         {
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
-            MaterialReloadNotificationBus::Handler::BusDisconnect();
-            Data::AssetBus::Handler::BusDisconnect();
         }
 
         const ShaderCollection& Material::GetShaderCollection() const
@@ -242,36 +234,6 @@ namespace AZ
             return !m_shaderResourceGroup || !m_shaderResourceGroup->IsQueuedForCompile();
         }
 
-
-        ///////////////////////////////////////////////////////////////////
-        // AssetBus overrides...
-        void Material::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
-        {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnAssetReloaded %s", this, asset.GetHint().c_str());
-
-            if (Data::Asset<MaterialAsset> newMaterialAsset = asset)
-            {
-                Init(*newMaterialAsset);
-                MaterialReloadNotificationBus::Event(newMaterialAsset.GetId(), &MaterialReloadNotifications::OnMaterialReinitialized, this);
-            }
-        }
-
-        ///////////////////////////////////////////////////////////////////
-        // MaterialReloadNotificationBus overrides...
-        void Material::OnMaterialAssetReinitialized(const Data::Asset<MaterialAsset>& materialAsset)
-        {
-            // It's important that we don't just pass materialAsset to Init() because when reloads occur,
-            // it's possible for old Asset objects to hang around and report reinitialization, so materialAsset
-            // might be stale data.
-
-            if (materialAsset.Get() == m_materialAsset.Get())
-            {
-                ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnMaterialAssetReinitialized %s", this, materialAsset.GetHint().c_str());
-
-                OnAssetReloaded(m_materialAsset);
-            }
-        }
-
         ///////////////////////////////////////////////////////////////////
         // ShaderReloadNotificationBus overrides...
         void Material::OnShaderReinitialized([[maybe_unused]] const Shader& shader)
@@ -280,7 +242,7 @@ namespace AZ
             // Note that it might not be strictly necessary to reinitialize the entire material, we might be able to get away with
             // just bumping the m_currentChangeId or some other minor updates. But it's pretty hard to know what exactly needs to be
             // updated to correctly handle the reload, so it's safer to just reinitialize the whole material.
-            OnAssetReloaded(m_materialAsset);
+            Init(*m_materialAsset);
         }
 
         void Material::OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset)
@@ -289,7 +251,7 @@ namespace AZ
             // Note that it might not be strictly necessary to reinitialize the entire material, we might be able to get away with
             // just bumping the m_currentChangeId or some other minor updates. But it's pretty hard to know what exactly needs to be
             // updated to correctly handle the reload, so it's safer to just reinitialize the whole material.
-            OnAssetReloaded(m_materialAsset);
+            Init(*m_materialAsset);
         }
 
         void Material::OnShaderVariantReinitialized(const ShaderVariant& shaderVariant)
@@ -305,8 +267,7 @@ namespace AZ
             // and mask out the parts of the ShaderVariantId that aren't owned by the material, but that would be premature optimization at this point, adding
             // potentially unnecessary complexity. There may also be more edge cases I haven't thought of. In short, it's much safer to just reinitialize every time
             // this callback happens.
-
-            OnAssetReloaded(m_materialAsset);
+            Init(*m_materialAsset);
         }
         ///////////////////////////////////////////////////////////////////
 

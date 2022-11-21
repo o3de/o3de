@@ -36,6 +36,11 @@ namespace AZ::DocumentPropertyEditor::Nodes
     {
         static constexpr AZStd::string_view Name = "NodeWithVisiblityControl";
         static constexpr auto Visibility = AttributeDefinition<PropertyVisibility>("Visibility");
+
+        static constexpr auto Disabled = AttributeDefinition<bool>("Disabled");
+        //! In some cases, a node may need to know that it is descended from a disabled ancestor. For example, disabled
+        //! elements of a disabled container might require different treatment than disabled elements of an enabled container.
+        static constexpr auto AncestorDisabled = AttributeDefinition<bool>("AncestorDisabled");
     };
 
     //! Adapter: The top-level tag for a DocumentAdapter that may contain any number of Rows.
@@ -45,6 +50,10 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto QueryKey = CallbackAttributeDefinition<void(DocumentAdapterPtr*, AZ::Dom::Path)>("QueryKey");
         static constexpr auto AddContainerKey = CallbackAttributeDefinition<void(DocumentAdapterPtr*, AZ::Dom::Path)>("AddContainerKey");
         static constexpr auto RejectContainerKey = CallbackAttributeDefinition<void(DocumentAdapterPtr*, AZ::Dom::Path)>("RejectContainerKey");
+
+        //! Use this callback attribute if there is need to enable/disable an adapter's nodes at runtime.
+        static constexpr auto SetNodeDisabled =
+            CallbackAttributeDefinition<void(bool shouldDisable, Dom::Path targetNode)>("SetDisabled");
 
         static bool CanAddToParentNode(const Dom::Value& parentNode);
         static bool CanBeParentToValue(const Dom::Value& value);
@@ -103,7 +112,6 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto OnChanged = CallbackAttributeDefinition<void(const Dom::Value&, ValueChangeType)>("OnChanged");
         static constexpr auto Value = AttributeDefinition<AZ::Dom::Value>("Value");
         static constexpr auto ValueType = TypeIdAttributeDefinition("ValueType");
-        static constexpr auto Disabled = AttributeDefinition<bool>("Disabled");
         static constexpr auto ValueHashed = AttributeDefinition<AZ::Uuid>("ValueHashed");
 
         //! If set to true, specifies that this PropertyEditor shouldn't be allocated its own column, but instead appended
@@ -182,7 +190,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
     {
         AddElement,
         RemoveElement,
-        Clear,
+        Clear
     };
 
     struct ContainerActionButton : PropertyEditorDefinition

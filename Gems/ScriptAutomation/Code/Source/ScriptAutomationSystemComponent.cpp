@@ -13,6 +13,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Script/ScriptAsset.h>
@@ -66,6 +67,38 @@ namespace ScriptAutomation
             }
         }
     } // namespace
+
+    void ExecuteLuaScript(const AZ::ConsoleCommandContainer& arguments)
+    {
+        auto scriptAuto = ScriptAutomationInterface::Get();
+
+        if (!scriptAuto)
+        {
+            AZ_Error("ScriptAutomation", false, "There is no ScriptAutomation instance registered to the interface.");
+            return;
+        }
+
+        const char* scriptPath = arguments[0].data();
+
+        scriptAuto->ActivateScript(scriptPath);
+    }
+
+    AZ_CONSOLEFREEFUNC(ExecuteLuaScript, AZ::ConsoleFunctorFlags::Null, "Execute a Lua script");
+
+    void ScriptAutomationSystemComponent::ActivateScript(const char* scriptPath)
+    {
+        m_isStarted = false;
+        m_automationScript = scriptPath;
+
+        AZ::TickBus::Handler::BusConnect();
+    }
+
+    void ScriptAutomationSystemComponent::DeactivateScripts()
+    {
+        m_isStarted = false;
+        m_automationScript = "";
+        AZ::TickBus::Handler::BusDisconnect();
+    }
 
     void ScriptAutomationSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -162,11 +195,8 @@ namespace ScriptAutomation
             auto commandLine = application->GetAzCommandLine();
             if (commandLine->HasSwitch(automationSuiteSwitch))
             {
-                m_isStarted = false;
-                m_automationScript = commandLine->GetSwitchValue(automationSuiteSwitch, 0);
                 m_exitOnFinish = commandLine->HasSwitch(automationExitSwitch);
-
-                AZ::TickBus::Handler::BusConnect();
+                ActivateScript(commandLine->GetSwitchValue(automationSuiteSwitch, 0).c_str());
             }
         }
     }
@@ -176,10 +206,7 @@ namespace ScriptAutomation
         m_scriptContext = nullptr;
         m_scriptBehaviorContext = nullptr;
 
-        if (AZ::TickBus::Handler::BusIsConnected())
-        {
-            AZ::TickBus::Handler::BusDisconnect();
-        }
+        DeactivateScripts();
 
         ScriptAutomationRequestBus::Handler::BusDisconnect();
     }
@@ -234,6 +261,8 @@ namespace ScriptAutomation
             {
                 if(!m_scriptPaused) // final operation may have paused, wait for it to complete or time out
                 {
+                    DeactivateScripts();
+
                     ScriptAutomationNotificationBus::Broadcast(&ScriptAutomationNotificationBus::Events::OnAutomationFinished);
 
                     if (m_exitOnFinish)

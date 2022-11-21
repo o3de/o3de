@@ -93,11 +93,7 @@ namespace EMotionFX
 
     };
 
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(ClothColliderTestsFixture, DISABLED_RemoveClothColliders)
-#else
     TEST_F(ClothColliderTestsFixture, RemoveClothColliders)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         const int numJoints = 8;
         const int firstIndex = 3;
