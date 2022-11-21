@@ -488,7 +488,7 @@ namespace AZ::Reflection
                                 m_visitor->VisitObjectBegin(*this, *this);
                             }
                         }
-                        if (iter->second.m_classElement->m_editData->m_elementId == AZ::Edit::ClassElements::UIElement)
+                        else if (iter->second.m_classElement->m_editData->m_elementId == AZ::Edit::ClassElements::UIElement)
                         {
                             m_stack.push_back(iter->second);
                             CacheAttributes();
