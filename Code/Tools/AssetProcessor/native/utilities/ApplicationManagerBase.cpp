@@ -828,6 +828,16 @@ void ApplicationManagerBase::InitFileStateCache()
 void ApplicationManagerBase::InitUuidManager()
 {
     m_uuidManager = AZStd::make_unique<AssetProcessor::UuidManager>();
+
+    AssetProcessor::UuidSettings uuidSettings;
+    AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
+    if (settingsRegistry)
+    {
+        if (settingsRegistry->GetObject(uuidSettings, "/O3DE/AssetProcessor/Settings/Metadata"))
+        {
+            AZ::Interface<AssetProcessor::IUuidRequests>::Get()->EnableGenerationForTypes(uuidSettings.m_enabledTypes);
+        }
+    }
 }
 
 ApplicationManager::BeforeRunStatus ApplicationManagerBase::BeforeRun()

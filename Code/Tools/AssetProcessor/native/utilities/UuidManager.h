@@ -10,6 +10,8 @@
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/string/string.h>
 
 namespace AzToolsFramework
 {
@@ -28,6 +30,24 @@ namespace AssetProcessor
         virtual AZStd::unordered_set<AZ::Uuid> GetLegacyUuids(AZ::IO::PathView file) = 0;
         virtual void FileChanged(AZ::IO::Path file) = 0;
         virtual void FileRemoved(AZ::IO::Path file) = 0;
+        virtual void EnableGenerationForTypes(AZStd::unordered_set<AZStd::string> types) = 0;
+    };
+
+    struct UuidSettings
+    {
+        AZ_TYPE_INFO(UuidSettings, "{0E4FD61F-1BB3-4FFF-90DA-E583D75BF948}");
+
+        static void Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<UuidSettings>()
+                    ->Version(1)
+                    ->Field("EnabledTypes", &UuidSettings::m_enabledTypes);
+            }
+        }
+
+        AZStd::unordered_set<AZStd::string> m_enabledTypes;
     };
 
     class UuidManager : public AZ::Interface<IUuidRequests>::Registrar
@@ -43,6 +63,7 @@ namespace AssetProcessor
         AZStd::unordered_set<AZ::Uuid> GetLegacyUuids(AZ::IO::PathView file) override;
         void FileChanged(AZ::IO::Path file) override;
         void FileRemoved(AZ::IO::Path file) override;
+        void EnableGenerationForTypes(AZStd::unordered_set<AZStd::string> types) override;
 
     private:
         struct UuidEntry
@@ -64,13 +85,14 @@ namespace AssetProcessor
         AZStd::string GetCanonicalPath(AZ::IO::PathView file);
         UuidEntry GetOrCreateUuidEntry(AZ::IO::PathView file);
         AzToolsFramework::IMetadataRequests* GetMetadataManager();
-        UuidEntry CreateUuidEntry(const AZStd::string& file);
+        UuidEntry CreateUuidEntry(const AZStd::string& file, bool enabledType);
         AZ::Uuid CreateUuid();
         AZStd::unordered_set<AZ::Uuid> CreateLegacyUuids(const AZStd::string& file);
 
         AZStd::recursive_mutex m_uuidMutex;
         AZStd::unordered_map<AZStd::string, UuidEntry> m_uuids;
 
+        AZStd::unordered_set<AZStd::string> m_enabledTypes;
         AzToolsFramework::IMetadataRequests* m_metadataManager{};
     };
 } // namespace AssetProcessor

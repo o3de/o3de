@@ -17,6 +17,7 @@ namespace AssetProcessor
     void UuidManager::Reflect(AZ::ReflectContext* context)
     {
         UuidEntry::Reflect(context);
+        UuidSettings::Reflect(context);
     }
 
     void UuidManager::UuidEntry::Reflect(AZ::ReflectContext* context)
@@ -92,6 +93,11 @@ namespace AssetProcessor
         }
     }
 
+    void UuidManager::EnableGenerationForTypes(AZStd::unordered_set<AZStd::string> types)
+    {
+        m_enabledTypes = AZStd::move(types);
+    }
+
     AZStd::string UuidManager::GetCanonicalPath(AZ::IO::PathView file)
     {
         return file.LexicallyNormal().FixedMaxPathStringAsPosix().c_str();
@@ -120,10 +126,11 @@ namespace AssetProcessor
             return uuidInfo;
         }
 
+        const bool isEnabledType = m_enabledTypes.contains(file.Extension().Native());
         // Last resort - generate a new UUID and save it to the metadata file
-        UuidEntry newUuid = CreateUuidEntry(normalizedPath);
+        UuidEntry newUuid = CreateUuidEntry(normalizedPath, isEnabledType);
 
-        if (GetMetadataManager()->SetValue(file, UuidKey, newUuid))
+        if (!isEnabledType || GetMetadataManager()->SetValue(file, UuidKey, newUuid))
         {
             m_uuids[normalizedPath] = newUuid;
 
@@ -143,11 +150,11 @@ namespace AssetProcessor
         return m_metadataManager;
     }
 
-    UuidManager::UuidEntry UuidManager::CreateUuidEntry(const AZStd::string& file)
+    UuidManager::UuidEntry UuidManager::CreateUuidEntry(const AZStd::string& file, bool enabledType)
     {
         UuidEntry newUuid;
 
-        newUuid.m_uuid = CreateUuid();
+        newUuid.m_uuid = enabledType ? CreateUuid() : AssetUtilities::CreateSafeSourceUUIDFromName(file.c_str());
         newUuid.m_legacyUuids = CreateLegacyUuids(file);
         newUuid.m_originalPath = file;
         newUuid.m_millisecondsSinceUnixEpoch = aznumeric_cast<AZ::u64>(QDateTime::currentMSecsSinceEpoch());
