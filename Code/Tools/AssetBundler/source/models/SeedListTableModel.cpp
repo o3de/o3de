@@ -86,7 +86,7 @@ namespace AssetBundler
             return AZ::Failure();
         }
 
-        return AZ::Success(seedOutcome.GetValue().m_platformFlags);
+        return AZ::Success(seedOutcome.GetValue().get().m_platformFlags);
     }
 
     bool SeedListTableModel::Save(const AZStd::string& absolutePath)
@@ -124,7 +124,7 @@ namespace AssetBundler
         }
 
         // Update the cached display info
-        auto additionalSeedInfo = m_additionalSeedInfoMap.find(seedOutcome.GetValue().m_assetId);
+        auto additionalSeedInfo = m_additionalSeedInfoMap.find(seedOutcome.GetValue().get().m_assetId);
         if (additionalSeedInfo == m_additionalSeedInfoMap.end())
         {
             AZ_Error(AssetBundler::AppWindowName, false, "Unable to find additional Seed info");
@@ -178,8 +178,8 @@ namespace AssetBundler
 
         int row = seedIndex.row();
         beginRemoveRows(QModelIndex(), row, row);
-        m_seedListManager->RemoveSeedAsset(seedOutcome.GetValue().m_assetId, seedOutcome.GetValue().m_platformFlags);
-        m_additionalSeedInfoMap.erase(seedOutcome.GetValue().m_assetId);
+        m_seedListManager->RemoveSeedAsset(seedOutcome.GetValue().get().m_assetId, seedOutcome.GetValue().get().m_platformFlags);
+        m_additionalSeedInfoMap.erase(seedOutcome.GetValue().get().m_assetId);
         endRemoveRows();
 
         SetHasUnsavedChanges(true);
@@ -242,7 +242,7 @@ namespace AssetBundler
         return QVariant();
     }
 
-    AZ::Outcome<AzFramework::SeedInfo&, void> SeedListTableModel::GetSeedInfo(const QModelIndex& index) const
+    AZ::Outcome<AZStd::reference_wrapper<const AzFramework::SeedInfo>, void> SeedListTableModel::GetSeedInfo(const QModelIndex& index) const
     {
         int row = index.row();
         int col = index.column();
@@ -252,7 +252,7 @@ namespace AssetBundler
             return AZ::Failure();
         }
 
-        return AZ::Success(m_seedListManager->GetAssetSeedList().at(row));
+        return m_seedListManager->GetAssetSeedList().at(row);
     }
 
     AZ::Outcome<AdditionalSeedInfoPtr, void> SeedListTableModel::GetAdditionalSeedInfo(const QModelIndex& index) const
@@ -264,7 +264,7 @@ namespace AssetBundler
             return AZ::Failure();
         }
 
-        auto additionalSeedInfoIt = m_additionalSeedInfoMap.find(seedInfoOutcome.GetValue().m_assetId);
+        auto additionalSeedInfoIt = m_additionalSeedInfoMap.find(seedInfoOutcome.GetValue().get().m_assetId);
         if (additionalSeedInfoIt == m_additionalSeedInfoMap.end())
         {
             return AZ::Failure();

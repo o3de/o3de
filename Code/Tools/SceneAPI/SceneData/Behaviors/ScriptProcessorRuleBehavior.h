@@ -14,6 +14,7 @@
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
 #include <SceneAPI/SceneCore/Components/ExportingComponent.h>
 #include <SceneAPI/SceneCore/Events/ExportEventContext.h>
+#include <SceneAPI/SceneCore/Events/ScriptConfigEventBus.h>
 
 namespace AzToolsFramework
 {
@@ -59,9 +60,16 @@ namespace AZ::SceneAPI::Behaviors
             result = "ScriptProcessorRuleBehavior";
         }
     protected:
-        bool LoadPython(const AZ::SceneAPI::Containers::Scene& scene, AZStd::string& scriptPath, Events::ProcessingResult& fallbackResult);
+        bool LoadPython();
         void UnloadPython();
         bool DoPrepareForExport(Events::PreExportEventContext& context);
+        AZStd::optional<AZStd::string> FindMatchingDefaultScript(const AZ::SceneAPI::Containers::Scene& scene);
+        AZStd::optional<AZStd::string> FindManifestScript(const AZ::SceneAPI::Containers::Scene& scene, Events::ProcessingResult& fallbackResult);
+        bool SignalScriptForUpdateManifest(Containers::Scene& scene, AZStd::string& manifestUpdate, AZStd::string& scriptPath);
+        void SignalScriptForExportEvent(Events::PreExportEventContext& context, AZStd::string& scriptPath);
+
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
     private:
         AzToolsFramework::EditorPythonEventsInterface* m_editorPythonEventsInterface = nullptr;

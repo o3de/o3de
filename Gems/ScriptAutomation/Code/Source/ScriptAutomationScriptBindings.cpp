@@ -65,23 +65,6 @@ namespace ScriptAutomation
             AzFramework::NativeWindow::ToggleFullScreenStateOfDefaultWindow();
         }
 
-        AZ::IO::FixedMaxPath GetScreenshotsPath(bool resolvePath)
-        {
-            AZ::IO::FixedMaxPath path("@user@");
-            if (resolvePath)
-            {
-                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-                {
-                    path.clear();
-                    settingsRegistry->Get(path.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath);
-                }
-            }
-            
-            path /= "scriptautomation/screenshots";
-            
-            return path.LexicallyNormal();
-        }
-
         AZ::IO::FixedMaxPath GetProfilingPath(bool resolvePath)
         {
             AZ::IO::FixedMaxPath path("@user@");
@@ -286,31 +269,32 @@ namespace ScriptAutomation
             return rpiSystem->GetRenderApiName().GetCStr();
         }
 
-        AZStd::string GetScreenshotOutputPath(bool normalized)
-        {
-            return Utils::GetScreenshotsPath(normalized).String();
-        }
-
         AZStd::string GetProfilingOutputPath(bool normalized)
         {
             return Utils::GetProfilingPath(normalized).String();
         }
 
-        bool PrepareForScreenCapture(const AZ::IO::FixedMaxPath& path)
+        bool PrepareForScreenCapture(const AZStd::string& imageName)
         {
-            if (!AZ::IO::PathView(Utils::ResolvePath(path)).IsRelativeTo(Utils::GetScreenshotsPath(true)))
+            AZStd::string fullFilePath;
+            AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
+                fullFilePath, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
+
+            if (!AZ::IO::PathView(fullFilePath).IsRelativeTo(Utils::ResolvePath("@user@")))
             {
                 // The main reason we require screenshots to be in a specific folder is to ensure we don't delete or replace some other important file.
                 AZ_Error("ScriptAutomation", false, "Screenshots must be captured under the '%s' folder. Attempted to save screenshot to '%s'.",
-                    Utils::GetScreenshotsPath(false).c_str(), path.c_str());
+                    Utils::ResolvePath("@user@").c_str(),
+                    fullFilePath.c_str());
 
                 return false;
             }
 
             // Delete the file if it already exists
-            if (AZ::IO::LocalFileIO::GetInstance()->Exists(path.c_str()) && !AZ::IO::LocalFileIO::GetInstance()->Remove(path.c_str()))
+            if (AZ::IO::LocalFileIO::GetInstance()->Exists(fullFilePath.c_str()) &&
+                !AZ::IO::LocalFileIO::GetInstance()->Remove(fullFilePath.c_str()))
             {
-                AZ_Error("ScriptAutomation", false, "Failed to delete existing screenshot file '%s'.", path.c_str());
+                AZ_Error("ScriptAutomation", false, "Failed to delete existing screenshot file '%s'.", fullFilePath.c_str());
                 return false;
             }
 
@@ -321,16 +305,63 @@ namespace ScriptAutomation
             return true;
         }
 
-        void CaptureScreenshot(const AZStd::string& filePath)
+        void SetScreenshotFolder(const AZStd::string& screenshotFolder)
         {
-            auto operation = [filePath]()
+            auto operation = [screenshotFolder]()
+            {
+                AZ::Render::FrameCaptureTestRequestBus::Broadcast(
+                    &AZ::Render::FrameCaptureTestRequestBus::Events::SetScreenshotFolder, screenshotFolder);
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void SetTestEnvPath(const AZStd::string& envPath)
+        {
+            auto operation = [envPath]()
+            {
+                AZ::Render::FrameCaptureTestRequestBus::Broadcast(&AZ::Render::FrameCaptureTestRequestBus::Events::SetTestEnvPath, envPath);
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void SetOfficialBaselineImageFolder(const AZStd::string& baselineFolder)
+        {
+            auto operation = [baselineFolder]()
+            {
+                AZ::Render::FrameCaptureTestRequestBus::Broadcast(
+                    &AZ::Render::FrameCaptureTestRequestBus::Events::SetOfficialBaselineImageFolder, baselineFolder);
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void SetLocalBaselineImageFolder(const AZStd::string& baselineFolder)
+        {
+            auto operation = [baselineFolder]()
+            {
+                AZ::Render::FrameCaptureTestRequestBus::Broadcast(
+                    &AZ::Render::FrameCaptureTestRequestBus::Events::SetLocalBaselineImageFolder, baselineFolder);
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void CaptureScreenshot(const AZStd::string& imageName)
+        {
+            auto operation = [imageName]()
             {
                 // Note this will pause the script until the capture is complete
-                if (PrepareForScreenCapture(AZ::IO::FixedMaxPath(filePath)))
+                if (PrepareForScreenCapture(imageName))
                 {
+                    AZStd::string screenshotFilePath;
+                    AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
+                        screenshotFilePath, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
+
                     auto scriptAutomationInterface = ScriptAutomationInterface::Get();
                     AZ::Render::FrameCaptureId frameCaptureId = AZ::Render::InvalidFrameCaptureId;
-                    AZ::Render::FrameCaptureRequestBus::BroadcastResult(frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshot, filePath);
+                    AZ::Render::FrameCaptureRequestBus::BroadcastResult(frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshot, screenshotFilePath);
                     if (frameCaptureId != AZ::Render::InvalidFrameCaptureId)
                     {
                         scriptAutomationInterface->SetFrameCaptureId(frameCaptureId);
@@ -338,7 +369,7 @@ namespace ScriptAutomation
                     else
                     {
                         AZ_Error("ScriptAutomation", false, "Script: failed to trigger screenshot capture");
-                       scriptAutomationInterface->ResumeAutomation();
+                        scriptAutomationInterface->ResumeAutomation();
                     }
                 }
             };
@@ -346,16 +377,20 @@ namespace ScriptAutomation
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
         }
 
-        void CaptureScreenshotWithPreview(const AZStd::string& filePath)
+        void CaptureScreenshotWithPreview(const AZStd::string& imageName)
         {
-            auto operation = [filePath]()
+            auto operation = [imageName]()
             {
                 // Note this will pause the script until the capture is complete
-                if (PrepareForScreenCapture(AZ::IO::FixedMaxPath(filePath)))
+                if (PrepareForScreenCapture(imageName))
                 {
+                    AZStd::string screenshotFilePath;
+                    AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
+                        screenshotFilePath, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
+
                     auto scriptAutomationInterface = ScriptAutomationInterface::Get();
                     AZ::Render::FrameCaptureId frameCaptureId = AZ::Render::InvalidFrameCaptureId;
-                    AZ::Render::FrameCaptureRequestBus::BroadcastResult(frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshotWithPreview, filePath);
+                    AZ::Render::FrameCaptureRequestBus::BroadcastResult(frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshotWithPreview, screenshotFilePath);
                     if (frameCaptureId != AZ::Render::InvalidFrameCaptureId)
                     {
                         scriptAutomationInterface->SetFrameCaptureId(frameCaptureId);
@@ -363,7 +398,7 @@ namespace ScriptAutomation
                     else
                     {
                         AZ_Error("ScriptAutomation", false, "Script: failed to trigger screenshot capture with preview");
-                       scriptAutomationInterface->ResumeAutomation();
+                        scriptAutomationInterface->ResumeAutomation();
                     }
                 }
             };
@@ -402,13 +437,13 @@ namespace ScriptAutomation
 
             AZStd::vector<AZStd::string> passHierarchy;
             AZStd::string slot;
-            AZStd::string outputFilePath;
+            AZStd::string imageName;
 
             // read slot name and output file path
             dc.ReadArg(1, stringValue);
             slot = AZStd::string(stringValue);
             dc.ReadArg(2, stringValue);
-            outputFilePath = AZStd::string(stringValue);
+            imageName = AZStd::string(stringValue);
 
             AZ::RPI::PassAttachmentReadbackOption readbackOption = AZ::RPI::PassAttachmentReadbackOption::Output;
             if (dc.GetNumArguments() == 4)
@@ -447,14 +482,18 @@ namespace ScriptAutomation
                 }
             }
 
-            auto operation = [passHierarchy, slot, outputFilePath, readbackOption]()
+            auto operation = [passHierarchy, slot, imageName, readbackOption]()
             {
                 // Note this will pause the script until the capture is complete
-                if (PrepareForScreenCapture(AZ::IO::FixedMaxPath(outputFilePath)))
+                if (PrepareForScreenCapture(imageName))
                 {
+                    AZStd::string screenshotFilePath;
+                    AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
+                        screenshotFilePath, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
+
                     auto scriptAutomationInterface = ScriptAutomationInterface::Get();
                     AZ::Render::FrameCaptureId frameCaptureId = AZ::Render::InvalidFrameCaptureId;
-                    AZ::Render::FrameCaptureRequestBus::BroadcastResult(frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment, passHierarchy, slot, outputFilePath, readbackOption);
+                    AZ::Render::FrameCaptureRequestBus::BroadcastResult(frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment, passHierarchy, slot, screenshotFilePath, readbackOption);
                     if (frameCaptureId != AZ::Render::InvalidFrameCaptureId)
                     {
                         scriptAutomationInterface->SetFrameCaptureId(frameCaptureId);
@@ -462,8 +501,52 @@ namespace ScriptAutomation
                     else
                     {
                         AZ_Error("ScriptAutomation", false, "Script: failed to trigger screenshot capture of pass");
-                       scriptAutomationInterface->ResumeAutomation();
+                        scriptAutomationInterface->ResumeAutomation();
                     }
+                }
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void CompareScreenshots(const AZStd::string& filePathA, const AZStd::string& filePathB, float minDiffFilter)
+        {
+            auto operation = [filePathA, filePathB, minDiffFilter]()
+            {
+                AZStd::string resolvedPathA = ResolvePath(filePathA);
+                AZStd::string resolvedPathB = ResolvePath(filePathB);
+
+                AZ::Utils::ImageDiffResult result;
+                AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
+                    result,
+                    &AZ::Render::FrameCaptureTestRequestBus::Events::CompareScreenshots,
+                    resolvedPathA,
+                    resolvedPathB,
+                    minDiffFilter);
+
+                if (result.m_resultCode == AZ::Utils::ImageDiffResultCode::Success)
+                {
+                    AZ_Printf(
+                        "ScriptAutomation",
+                        "Diff score is %.5f from %s and %s.",
+                        result.m_diffScore,
+                        resolvedPathA.c_str(),
+                        resolvedPathB.c_str());
+                    AZ_Printf(
+                        "ScriptAutomation",
+                        "Filtered diff score is %.5f from %s and %s.",
+                        result.m_filteredDiffScore,
+                        resolvedPathA.c_str(),
+                        resolvedPathB.c_str());
+                }
+                else
+                {
+                    AZ_Error(
+                        "ScriptAutomation",
+                        false,
+                        "Screenshots compare failed for %s and %s.",
+                        resolvedPathA.c_str(),
+                        resolvedPathB.c_str());
                 }
             };
 
@@ -490,13 +573,17 @@ namespace ScriptAutomation
         behaviorContext->Method("NormalizePath", [](AZStd::string_view path) -> AZStd::string { return AZ::IO::PathView(path).LexicallyNormal().String(); });
         behaviorContext->Method("DegToRad", &AZ::DegToRad);
         behaviorContext->Method("GetRenderApiName", &Bindings::GetRenderApiName);
-        behaviorContext->Method("GetScreenshotOutputPath", &Bindings::GetScreenshotOutputPath);
         behaviorContext->Method("GetProfilingOutputPath", &Bindings::GetProfilingOutputPath);
 
         // Screenshots...
+        behaviorContext->Method("SetScreenshotFolder", &Bindings::SetScreenshotFolder);
+        behaviorContext->Method("SetTestEnvPath", &Bindings::SetTestEnvPath);
+        behaviorContext->Method("SetOfficialBaselineImageFolder", &Bindings::SetOfficialBaselineImageFolder);
+        behaviorContext->Method("SetLocalBaselineImageFolder", &Bindings::SetLocalBaselineImageFolder);
         behaviorContext->Method("CaptureScreenshot", &Bindings::CaptureScreenshot);
         behaviorContext->Method("CaptureScreenshotWithPreview", &Bindings::CaptureScreenshotWithPreview);
         behaviorContext->Method("CapturePassAttachment", &Bindings::CapturePassAttachment);
+        behaviorContext->Method("CompareScreenshots", &Bindings::CompareScreenshots);
 
         // Profiling data...
         behaviorContext->Method("CapturePassTimestamp", &Bindings::CapturePassTimestamp);

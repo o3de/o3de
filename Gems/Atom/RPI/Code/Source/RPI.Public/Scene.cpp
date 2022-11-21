@@ -25,6 +25,7 @@
 #include <AzCore/Task/TaskGraph.h>
 
 #include <AzFramework/Entity/EntityContext.h>
+#include <AzFramework/Visibility/IVisibilitySystem.h>
 
 
 namespace AZ
@@ -34,6 +35,11 @@ namespace AZ
         ScenePtr Scene::CreateScene(const SceneDescriptor& sceneDescriptor)
         {
             Scene* scene = aznew Scene();
+            scene->m_name = sceneDescriptor.m_nameId;
+
+            AZ::Name visSceneName(AZStd::string::format("RenderCullScene[%s]", scene->m_name.GetCStr()));
+            scene->m_visibilityScene = AZ::Interface<AzFramework::IVisibilitySystem>::Get()->CreateVisibilityScene(visSceneName);
+
             for (const auto& fpId : sceneDescriptor.m_featureProcessorNames)
             {
                 scene->EnableFeatureProcessor(FeatureProcessorId{ fpId });
@@ -45,8 +51,6 @@ namespace AZ
                 auto shaderAsset = RPISystemInterface::Get()->GetCommonShaderAssetForSrgs();
                 scene->m_srg = ShaderResourceGroup::Create(shaderAsset, sceneSrgLayout->GetName());
             }
-
-            scene->m_name = sceneDescriptor.m_nameId;
 
             return ScenePtr(scene);
         }
@@ -129,6 +133,7 @@ namespace AZ
 
             Deactivate();
 
+            AZ::Interface<AzFramework::IVisibilitySystem>::Get()->DestroyVisibilityScene(m_visibilityScene);
             delete m_cullingScene;
         }
 
@@ -364,6 +369,7 @@ namespace AZ
             }
 
             pipeline->OnAddedToScene(this);
+            pipeline->ProcessQueuedPassChanges();
 
             TryApplyRenderPipelineChanges(pipeline.get());
 

@@ -61,6 +61,7 @@
 
 /// Deprecated macro
 #define AZ_DEPRECATED(_decl, _message) [[deprecated(_message)]] _decl
+#define AZ_DEPRECATED_MESSAGE(_message) [[deprecated(_message)]]
 
 #define AZ_STRINGIZE_I(text) #text
 

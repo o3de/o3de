@@ -30,6 +30,7 @@
 #include <SceneAPI/SceneCore/Events/SceneSerializationBus.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneCore/SceneBuilderDependencyBus.h>
+#include <SceneAPI/SceneCore/Events/ScriptConfigEventBus.h>
 
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IAnimationData.h>
@@ -242,6 +243,8 @@ namespace SceneBuilder
             return;
         }
 
+        DefaultSriptDependencyCheck(request, response);
+
         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
     }
 
@@ -348,7 +351,7 @@ namespace SceneBuilder
 
         AZ_TracePrintf(Utilities::LogWindow, "Loading scene.\n");
 
-        SceneSerializationBus::BroadcastResult(result, &SceneSerializationBus::Events::LoadScene, request.m_fullPath, request.m_sourceFileUUID);
+        SceneSerializationBus::BroadcastResult(result, &SceneSerializationBus::Events::LoadScene, request.m_fullPath, request.m_sourceFileUUID, request.m_watchFolder);
         if (!result)
         {
             AZ_TracePrintf(Utilities::ErrorWindow, "Failed to load scene file.\n");
@@ -387,7 +390,7 @@ namespace SceneBuilder
         result += Process<GenerateLODEventContext>(*scene, platformIdentifier);
         AZ_TracePrintf(Utilities::LogWindow, "Generating additions...\n");
         result += Process<GenerateAdditionEventContext>(*scene, platformIdentifier);
-        AZ_TracePrintf(Utilities::LogWindow, "Simplifing scene...\n");
+        AZ_TracePrintf(Utilities::LogWindow, "Simplifying scene...\n");
         result += Process<GenerateSimplificationEventContext>(*scene, platformIdentifier);
         AZ_TracePrintf(Utilities::LogWindow, "Finalizing generation process.\n");
         result += Process<PostGenerateEventContext>(*scene, platformIdentifier);
@@ -502,4 +505,22 @@ namespace SceneBuilder
 
         return id;
     }
+
+    void SceneBuilderWorker::DefaultSriptDependencyCheck(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
+    {
+        AZStd::optional<AZ::SceneAPI::Events::ScriptConfig> scriptConfig;
+        AZ::SceneAPI::Events::ScriptConfigEventBus::BroadcastResult(
+            scriptConfig,
+            &AZ::SceneAPI::Events::ScriptConfigEventBus::Events::MatchesScriptConfig,
+            request.m_sourceFile);
+
+        if (scriptConfig)
+        {
+            AssetBuilderSDK::SourceFileDependency sourceFileDependencyInfo;
+            sourceFileDependencyInfo.m_sourceFileDependencyPath = scriptConfig.value().m_scriptPath.c_str();
+            sourceFileDependencyInfo.m_sourceDependencyType = AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute;
+            response.m_sourceFileDependencyList.push_back(sourceFileDependencyInfo);
+        }
+    }
+
 } // namespace SceneBuilder

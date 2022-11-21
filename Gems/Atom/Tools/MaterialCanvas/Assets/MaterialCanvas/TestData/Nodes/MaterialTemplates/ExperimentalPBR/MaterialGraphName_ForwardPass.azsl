@@ -38,7 +38,7 @@ VSOutput MainVS(CommonVSInput IN)
     Evaluate_CommonVSInput(IN, commonVSOut);
 
     VSOutput OUT;
-    OUT.m_worldPosition = commonVSOut.m_worldPosition.xyz;
+    OUT.m_worldPosition = commonVSOut.m_worldPosition;
     OUT.m_position = commonVSOut.m_position;
     OUT.m_normal = commonVSOut.m_normal;
     OUT.m_tangent = commonVSOut.m_tangent;
@@ -62,12 +62,13 @@ ForwardPassOutput MainPS(VSOutput IN)
     #define O3DE_MC_BITANGENT vertexBitangent
     #define O3DE_MC_WORLD_POSITION IN.m_worldPosition
 
-    // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inBaseColor, inEmissive, inMetallic, inRoughness, inSpecularF0Factor
-    float4 inBaseColor = float4(1.0, 1.0, 1.0, 1.0);
-    float4 inEmissive = float4(0.0, 0.0, 0.0, 1.0);
+    // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inBaseColor, inEmissive, inMetallic, inRoughness, inSpecularF0Factor, inAlpha
+    float3 inBaseColor = {1.0, 1.0, 1.0};
+    float3 inEmissive = {0.0, 0.0, 0.0};
     float inMetallic = 0.0;
     float inRoughness = 0.0;
     float inSpecularF0Factor = 0.0;
+    float inAlpha = 1.0;
     // O3DE_GENERATED_INSTRUCTIONS_END
 
     #undef O3DE_MC_POSITION
@@ -80,12 +81,12 @@ ForwardPassOutput MainPS(VSOutput IN)
     // ------- Surface -------
 
     Surface surface;
-    surface.position = IN.m_worldPosition.xyz;
-    surface.normal = vertexNormal;
-    surface.vertexNormal = vertexNormal;
-    surface.roughnessLinear = inRoughness;
+    surface.position = IN.m_worldPosition;
+    surface.normal = (float3)vertexNormal;
+    surface.vertexNormal = (float3)vertexNormal;
+    surface.roughnessLinear = (float)inRoughness;
     surface.CalculateRoughnessA();
-    surface.SetAlbedoAndSpecularF0(inBaseColor.rgb, inSpecularF0Factor, inMetallic);
+    surface.SetAlbedoAndSpecularF0((float3)inBaseColor, (float)inSpecularF0Factor, (float)inMetallic);
     surface.clearCoat.InitializeToZero();
 
     // ------- LightingData -------
@@ -95,7 +96,7 @@ ForwardPassOutput MainPS(VSOutput IN)
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
     lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
     lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
-    lightingData.emissiveLighting = inEmissive.rgb;
+    lightingData.emissiveLighting = (float3)inEmissive;
 
     // ------- Lighting Calculation -------
 
@@ -111,12 +112,11 @@ ForwardPassOutput MainPS(VSOutput IN)
     // Finalize Lighting
     lightingData.FinalizeLighting();
 
-    PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, inBaseColor.a);
+    PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, (float)inAlpha);
 
     // ------- Output -------
 
     ForwardPassOutput OUT;
-
     OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
     OUT.m_diffuseColor.w = -1; // Subsurface scattering is disabled
     OUT.m_specularColor = lightingOutput.m_specularColor;

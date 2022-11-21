@@ -44,24 +44,24 @@ namespace AzToolsFramework
             /**
              * Create a prefab out of the entities provided, at the path provided, and save it in disk immediately.
              * Automatically detects descendants of entities, and discerns between entities and child instances.
+             * Note: It calls CreatePrefabInMemory internally and then saves the new template in disk.
              * @param entityIds The entities that should form the new prefab (along with their descendants).
              * @param filePath The absolute path for the new prefab file.
              * @return An outcome object with an entityId of the new prefab's container entity;
              *  on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual CreatePrefabResult CreatePrefabInDisk(
-                const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
+            virtual CreatePrefabResult CreatePrefabInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
 
             /**
              * Create a prefab out of the entities provided, at the path provided, and keep it in memory.
              * Automatically detects descendants of entities, and discerns between entities and child instances.
+             * Note: The newly created prefab template cannot be undo/redo. Undo will not remove the templace in system.
              * @param entityIds The entities that should form the new prefab (along with their descendants).
              * @param filePath The absolute path for the new prefab file.
              * @return An outcome object with an entityId of the new prefab's container entity;
              *  on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual CreatePrefabResult CreatePrefabInMemory(
-                const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
+            virtual CreatePrefabResult CreatePrefabInMemory(const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
 
             /**
              * Instantiate a prefab from a prefab file.

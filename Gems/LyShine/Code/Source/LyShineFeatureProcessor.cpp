@@ -29,19 +29,56 @@ namespace LyShine
 
     void LyShineFeatureProcessor::AddRenderPasses(AZ::RPI::RenderPipeline* renderPipeline)
     {
-        // Get the pass request to create LyShine parent pass from the asset
-        const char* passRequestAssetFilePath = "Passes/LyShinePassRequest.azasset";
-        auto passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
-            passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
-        const AZ::RPI::PassRequest* passRequest = nullptr;
-        if (passRequestAsset->IsReady())
+        // Only add LyShineParentPass if UIPass exists
+        if (!renderPipeline->FindFirstPass(AZ::Name("UIPass")))
         {
-            passRequest = passRequestAsset->GetDataAs<AZ::RPI::PassRequest>();
+            return;
         }
+
+        // Get the pass request if it's not loaded
+        if (!m_passRequestAsset)
+        {
+            const char* passRequestAssetFilePath = "Passes/LyShinePassRequest.azasset";
+            m_passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
+                passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
+            
+        }
+
+        const AZ::RPI::PassRequest *passRequest = nullptr;
+        if (m_passRequestAsset->IsReady())
+        {
+            passRequest = m_passRequestAsset->GetDataAs<AZ::RPI::PassRequest>();
+        }
+
         if (!passRequest)
         {
-            AZ_Error("LyShine", false, "Failed to add LyShine parent pass. Can't load PassRequest from %s", passRequestAssetFilePath);
+            AZ_Error("LyShine", false, "Failed to add LyShine parent pass. Can't load PassRequest from %s", m_passRequestAsset.GetHint().c_str());
             return;
+        }
+
+        AZ::RPI::PassRequest passRequestCopy = *passRequest;
+
+        //TODO::This is not the best solution and require a better long term solution.
+        //Check if DepthPrePass is part of the pipeline. This is possible for any pipelines built for tbdr gpus.
+        if (!renderPipeline->FindFirstPass(AZ::Name("DepthPrePass")))
+        {
+            //Check if ForwardPass is available
+            if (renderPipeline->FindFirstPass(AZ::Name("ForwardPass")))
+            {
+                // Find the depth attachment and hook that up via ForwardPass
+                const AZ::Name depthAttachment = AZ::Name("DepthInputOutput");
+                auto findIter = AZStd::find_if(passRequestCopy.m_connections.begin(), passRequestCopy.m_connections.end(), [depthAttachment](const AZ::RPI::PassConnection& entry)
+                {
+                    return entry.m_localSlot == depthAttachment;
+                });
+
+                if (findIter != passRequestCopy.m_connections.end())
+                {
+                    (*findIter).m_attachmentRef.m_pass = "ForwardPass";
+                    (*findIter).m_attachmentRef.m_attachment = "DepthStencilOutput";
+                }
+            }
+            passRequest = &passRequestCopy;
         }
 
         // Return if the pass to be created already exists

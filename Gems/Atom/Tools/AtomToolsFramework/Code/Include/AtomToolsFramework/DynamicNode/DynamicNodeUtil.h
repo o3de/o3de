@@ -16,15 +16,21 @@
 
 namespace AtomToolsFramework
 {
-    using SlotConfigVisitorFn = AZStd::function<void(const DynamicNodeSlotConfig&)>;
+    // Visit the dynamic node and all of its slot configurations calling the visitor function.
+    void VisitDynamicNodeSlotConfigs(
+        DynamicNodeConfig& nodeConfig, const AZStd::function<void(DynamicNodeSlotConfig&)>& visitorFn);
 
     // Visit the dynamic node and all of its slot configurations calling the visitor function.
-    void VisitDynamicNodeSlotConfigs(const DynamicNodeConfig& nodeConfig, const SlotConfigVisitorFn& visitorFn);
-
-    using SettingsVisitorFn = AZStd::function<void(const DynamicNodeSettingsMap&)>;
+    void VisitDynamicNodeSlotConfigs(
+        const DynamicNodeConfig& nodeConfig, const AZStd::function<void(const DynamicNodeSlotConfig&)>& visitorFn);
 
     // Visit the dynamic node and all of its slot configurations calling the visitor function for their settings maps.
-    void VisitDynamicNodeSettings(const DynamicNodeConfig& nodeConfig, const SettingsVisitorFn& visitorFn);
+    void VisitDynamicNodeSettings(
+        DynamicNodeConfig& nodeConfig, const AZStd::function<void(DynamicNodeSettingsMap&)>& visitorFn);
+
+    // Visit the dynamic node and all of its slot configurations calling the visitor function for their settings maps.
+    void VisitDynamicNodeSettings(
+        const DynamicNodeConfig& nodeConfig, const AZStd::function<void(const DynamicNodeSettingsMap&)>& visitorFn);
 
     // Build a unique set of settings found on a node or slot configuration.
     void CollectDynamicNodeSettings(

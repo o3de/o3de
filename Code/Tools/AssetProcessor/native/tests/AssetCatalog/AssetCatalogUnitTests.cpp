@@ -7,13 +7,15 @@
  */
 #include <AzCore/base.h>
 #include <AzCore/Component/ComponentApplication.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 
 #include <QCoreApplication>
 
-#include <native/unittests/UnitTestRunner.h> // for UnitTestUtils like CreateDummyFile / AssertAbsorber.
+#include <native/unittests/UnitTestUtils.h> // for UnitTestUtils like CreateDummyFile / AssertAbsorber.
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <native/resourcecompiler/RCBuilder.h>
 

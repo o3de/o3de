@@ -34,6 +34,7 @@
 #include <AzFramework/DocumentPropertyEditor/CvarAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/SettingsRegistryAdapter.h>
+#include <AzFramework/DocumentPropertyEditor/ValueStringSort.h>
 #include <AzQtComponents/DPEDebugViewStandalone/ExampleAdapter.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugWindow.h>
 
@@ -81,9 +82,11 @@ namespace DPEDebugView
         }
 
         int m_simpleInt = 5;
+        int m_readOnlyInt = 33;
         double m_doubleSlider = 3.25;
         AZStd::vector<AZStd::string> m_vector;
         AZStd::map<AZStd::string, float> m_map;
+        AZStd::map<AZStd::string, float> m_readOnlyMap;
         AZStd::unordered_map<AZStd::pair<int, double>, int> m_unorderedMap;
         AZStd::unordered_map<EnumType, int> m_simpleEnum;
         AZStd::unordered_map<EnumType, double> m_immutableEnum;
@@ -95,15 +98,23 @@ namespace DPEDebugView
         EnumType m_enumValue = EnumType::Value1;
         AZ::EntityId m_entityId;
 
+        // For testing invocable ReadOnly attributes
+        bool IsDataReadOnly()
+        {
+            return true;
+        }
+
         static void Reflect(AZ::ReflectContext* context)
         {
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<TestContainer>()
                     ->Field("simpleInt", &TestContainer::m_simpleInt)
+                    ->Field("readonlyInt", &TestContainer::m_readOnlyInt)
                     ->Field("doubleSlider", &TestContainer::m_doubleSlider)
                     ->Field("vector", &TestContainer::m_vector)
                     ->Field("map", &TestContainer::m_map)
+                    ->Field("map", &TestContainer::m_readOnlyMap)
                     ->Field("unorderedMap", &TestContainer::m_unorderedMap)
                     ->Field("simpleEnum", &TestContainer::m_simpleEnum)
                     ->Field("immutableEnum", &TestContainer::m_immutableEnum)
@@ -159,7 +170,13 @@ namespace DPEDebugView
                         ->UIElement(AZ::Edit::UIHandlers::Button, "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button2)
                         ->Attribute(AZ::Edit::Attributes::ButtonText, "Button 2 (should be at bottom)")
-                        ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true);
+                        ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true)
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "ReadOnly")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_readOnlyInt, "readonly int", "")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TestContainer::IsDataReadOnly)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_readOnlyMap, "readonly map<string, float>", "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, true);
                 }
             }
         }
@@ -219,6 +236,10 @@ int main(int argc, char** argv)
     testContainer.m_map["Two"] = 2.f;
     testContainer.m_map["million"] = 1000000.f;
 
+    testContainer.m_readOnlyMap["A"] = 1.f;
+    testContainer.m_readOnlyMap["B"] = 2.f;
+    testContainer.m_readOnlyMap["C"] = 3.f;
+
     testContainer.m_unorderedMap[{1, 2.}] = 3;
     testContainer.m_unorderedMap[{ 4, 5. }] = 6;
 
@@ -248,8 +269,13 @@ int main(int argc, char** argv)
     QObject::connect(
         debugViewer.data(), &AzToolsFramework::DPEDebugWindow::AdapterChanged, filteredDPE, &AzToolsFramework::FilteredDPE::SetAdapter);
 
+    auto cvarAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>();
+    auto sortFilter = AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringSort>();
+
+    sortFilter->SetSourceAdapter(cvarAdapter);
+
+    debugViewer->AddAdapterToList("CVar Adapter", sortFilter);
     debugViewer->AddAdapterToList("Reflection Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>()));
-    debugViewer->AddAdapterToList("CVar Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>());
     debugViewer->AddAdapterToList("Example Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>());
     debugViewer->AddAdapterToList("Settings Registry Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::SettingsRegistryAdapter>());
 

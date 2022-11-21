@@ -15,6 +15,7 @@
 #include <PhysXCharacters/Components/RagdollComponent.h>
 #include <PhysX/NativeTypeIdentifiers.h>
 #include <PhysX/PhysXLocks.h>
+#include <Scene/PhysXScene.h>
 #include <Tests/PhysXTestFixtures.h>
 #include <Tests/PhysXTestCommon.h>
 
@@ -305,6 +306,7 @@ namespace PhysX
             EXPECT_TRUE(ragdoll->GetAabb().GetMax().IsClose(initialAabb.GetMax()));
             EXPECT_TRUE(ragdoll->GetAabb().GetMin().IsClose(initialAabb.GetMin()));
         }
+        static_cast<PhysX::PhysXScene*>(m_defaultScene)->FlushTransformSync();
     }
 
     AZ::u32 GetNumRigidDynamicActors(physx::PxScene* scene)

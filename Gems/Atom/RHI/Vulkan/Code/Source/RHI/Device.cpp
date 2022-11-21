@@ -97,6 +97,7 @@ namespace AZ
             m_enabledDeviceFeatures.multiDrawIndirect = deviceFeatures.multiDrawIndirect;
             m_enabledDeviceFeatures.sampleRateShading = deviceFeatures.sampleRateShading;
             m_enabledDeviceFeatures.shaderImageGatherExtended = deviceFeatures.shaderImageGatherExtended;
+            m_enabledDeviceFeatures.shaderInt64 = deviceFeatures.shaderInt64;
             m_enabledDeviceFeatures.sparseBinding = deviceFeatures.sparseBinding;
             m_enabledDeviceFeatures.sparseResidencyImage2D = deviceFeatures.sparseResidencyImage2D;
             m_enabledDeviceFeatures.sparseResidencyImage3D = deviceFeatures.sparseResidencyImage3D;
@@ -186,9 +187,21 @@ namespace AZ
             robustness2.nullDescriptor = physicalDevice.GetPhysicalDeviceRobutness2Features().nullDescriptor;
             depthClipEnabled.pNext = &robustness2;
 
+            VkPhysicalDeviceRayQueryFeaturesKHR rayQueryFeatures = {};
+            rayQueryFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR;
+            rayQueryFeatures.rayQuery = physicalDevice.GetRayQueryFeatures().rayQuery;
+            robustness2.pNext = &rayQueryFeatures;
+
+            VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT shaderImageAtomicInt64 = {};
+            shaderImageAtomicInt64.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT;
+            shaderImageAtomicInt64.shaderImageInt64Atomics = physicalDevice.GetShaderImageAtomicInt64Features().shaderImageInt64Atomics;
+            shaderImageAtomicInt64.sparseImageInt64Atomics = physicalDevice.GetShaderImageAtomicInt64Features().sparseImageInt64Atomics;
+            rayQueryFeatures.pNext = &shaderImageAtomicInt64;
+
             VkPhysicalDeviceVulkan12Features vulkan12Features = {};
             VkPhysicalDeviceShaderFloat16Int8FeaturesKHR float16Int8 = {};
             VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR separateDepthStencil = {};
+            VkPhysicalDeviceShaderAtomicInt64Features shaderAtomicInt64 = {};
 
             VkDeviceCreateInfo deviceInfo = {};
             deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -208,7 +221,9 @@ namespace AZ
                 vulkan12Features.bufferDeviceAddress = physicalDevice.GetPhysicalDeviceVulkan12Features().bufferDeviceAddress;
                 vulkan12Features.bufferDeviceAddressMultiDevice = physicalDevice.GetPhysicalDeviceVulkan12Features().bufferDeviceAddressMultiDevice;
                 vulkan12Features.runtimeDescriptorArray = physicalDevice.GetPhysicalDeviceVulkan12Features().runtimeDescriptorArray;
-                robustness2.pNext = &vulkan12Features;
+                vulkan12Features.shaderSharedInt64Atomics = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderSharedInt64Atomics;
+                vulkan12Features.shaderBufferInt64Atomics = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderBufferInt64Atomics;
+                shaderImageAtomicInt64.pNext = &vulkan12Features;
                 deviceInfo.pNext = &depthClipEnabled;
             }
             else
@@ -220,7 +235,12 @@ namespace AZ
                 separateDepthStencil.separateDepthStencilLayouts = physicalDevice.GetPhysicalDeviceSeparateDepthStencilFeatures().separateDepthStencilLayouts;
                 float16Int8.pNext = &separateDepthStencil;
 
-                robustness2.pNext = &float16Int8;
+                shaderAtomicInt64.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES;
+                shaderAtomicInt64.shaderBufferInt64Atomics = physicalDevice.GetShaderAtomicInt64Features().shaderBufferInt64Atomics;
+                shaderAtomicInt64.shaderSharedInt64Atomics = physicalDevice.GetShaderAtomicInt64Features().shaderSharedInt64Atomics;
+                separateDepthStencil.pNext = &shaderAtomicInt64;
+
+                shaderImageAtomicInt64.pNext = &float16Int8;
                 deviceInfo.pNext = &descriptorIndexingFeatures;
             }
 
@@ -253,6 +273,7 @@ namespace AZ
 
                 rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
                 rayTracingPipelineFeatures.rayTracingPipeline = physicalDevice.GetPhysicalDeviceRayTracingPipelineFeatures().rayTracingPipeline;
+                rayTracingPipelineFeatures.rayTracingPipelineTraceRaysIndirect = physicalDevice.GetPhysicalDeviceRayTracingPipelineFeatures().rayTracingPipelineTraceRaysIndirect;
                 accelerationStructureFeatures.pNext = &rayTracingPipelineFeatures;
             }
 

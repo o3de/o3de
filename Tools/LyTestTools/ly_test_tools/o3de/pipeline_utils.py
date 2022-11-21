@@ -539,29 +539,37 @@ def get_paths_from_wildcard(root_path: str, wildcard_str: str) -> List[str]:
     return [os.path.join(root_path, item) for item in rel_path_list]
 
 
-def check_for_perforce():
+def check_for_perforce(error_on_no_perforce=True):
     command_list = ['p4', 'info']
     try:
         p4_output = subprocess.check_output(command_list).decode('utf-8')
     except subprocess.CalledProcessError as e:
-        logger.error(f"Failed to call {command_list} in LyTestTools with error {e}")
+        if error_on_no_perforce:
+            logger.error(f"Failed to call {command_list} in LyTestTools with error {e}")
+        return False
+    except FileNotFoundError as e:
+        if error_on_no_perforce:
+            logger.error(f"Failed to call {command_list} in LyTestTools with error {e}")
         return False
 
     if not p4_output.startswith("User name:"):
-        logger.warning(f"Perforce not found, output was {p4_output}")
+        if error_on_no_perforce:
+            logger.warning(f"Perforce not found, output was {p4_output}")
         return False
 
     client_root_match = re.search(r"Client root: (.*)\r", p4_output)
     if client_root_match is None:
-        logger.warning(f"Could not determine client root for p4 workspace. Perforce output was {p4_output}")
+        if error_on_no_perforce:
+            logger.warning(f"Could not determine client root for p4 workspace. Perforce output was {p4_output}")
         return False
     else:
         # This requires the tests to be in the Perforce path that the tests run against.
         working_path = os.path.realpath(__file__).replace("\\", "/").lower()
         client_root = client_root_match.group(1).replace("\\", "/").lower()
         if not working_path.startswith(client_root):
-            logger.error(f"""Perforce client root '{client_root}' does not contain current test directory '{working_path}'.
-                        Please run this test with a Perforce workspace that contains the test asset directory path.""")
+            if error_on_no_perforce:
+                logger.error(f"""Perforce client root '{client_root}' does not contain current test directory '{working_path}'.
+                            Please run this test with a Perforce workspace that contains the test asset directory path.""")
             return False
 
     logger.info(f"Perforce found, output was {p4_output}")

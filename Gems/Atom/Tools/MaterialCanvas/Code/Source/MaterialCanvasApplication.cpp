@@ -70,6 +70,14 @@ namespace MaterialCanvas
     {
         Base::Reflect(context);
         MaterialCanvasDocument::Reflect(context);
+
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serialize->RegisterGenericType<AZStd::array<AZ::Vector2, 2>>();
+            serialize->RegisterGenericType<AZStd::array<AZ::Vector3, 3>>();
+            serialize->RegisterGenericType<AZStd::array<AZ::Vector4, 3>>();
+            serialize->RegisterGenericType<AZStd::array<AZ::Vector4, 4>>();
+        }
     }
 
     const char* MaterialCanvasApplication::GetCurrentConfigurationName() const
@@ -96,9 +104,13 @@ namespace MaterialCanvas
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("int"), int32_t{}, "int"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("uint"), uint32_t{}, "uint"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float"), float{}, "float"),
-            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float2"), AZ::Vector2::CreateZero(), "float2"),
-            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float3"), AZ::Vector3::CreateZero(), "float3"),
-            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float4"), AZ::Vector4::CreateZero(), "float4"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float2"), AZ::Vector2{}, "float2"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float3"), AZ::Vector3{}, "float3"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float4"), AZ::Vector4{}, "float4"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float2x2"), AZStd::array<AZ::Vector2, 2>{ AZ::Vector2(1.0f, 0.0f), AZ::Vector2(0.0f, 1.0f) }, "float2x2"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float3x3"), AZStd::array<AZ::Vector3, 3>{ AZ::Vector3(1.0f, 0.0f, 0.0f), AZ::Vector3(0.0f, 1.0f, 0.0f), AZ::Vector3(0.0f, 0.0f, 1.0f) }, "float3x3"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float4x3"), AZStd::array<AZ::Vector4, 3>{ AZ::Vector4(1.0f, 0.0f, 0.0f, 0.0f), AZ::Vector4(0.0f, 1.0f, 0.0f, 0.0f), AZ::Vector4(0.0f, 0.0f, 1.0f, 0.0f) }, "float4x3"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float4x4"), AZStd::array<AZ::Vector4, 4>{ AZ::Vector4(1.0f, 0.0f, 0.0f, 0.0f), AZ::Vector4(0.0f, 1.0f, 0.0f, 0.0f), AZ::Vector4(0.0f, 0.0f, 1.0f, 0.0f), AZ::Vector4(0.0f, 0.0f, 0.0f, 1.0f) }, "float4x4"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("color"), AZ::Color::CreateOne(), "color"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("string"), AZStd::string{}, "string"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("image"), AZ::Data::Asset<AZ::RPI::StreamingImageAsset>{}, "image"),
@@ -109,29 +121,31 @@ namespace MaterialCanvas
         // Recognized settings will need special controls for selecting files or editing large blocks of text without taking up much real
         // estate in the property editor.
         AZ::Edit::ElementData editData;
-        editData.m_elementId = AZ_CRC_CE("MultiLineString");
+        editData.m_elementId = AZ_CRC_CE("MultilineStringDialog");
         m_dynamicNodeManager->RegisterEditDataForSetting("instructions", editData);
         m_dynamicNodeManager->RegisterEditDataForSetting("materialInputs", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("classDefinitions", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("functionDefinitions", editData);
 
         editData = {};
-        editData.m_elementId = AZ_CRC_CE("FilePathString");
+        editData.m_elementId = AZ_CRC_CE("StringFilePath");
         AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Title"), AZStd::string("Template File"));
         AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Extensions"),
             AZStd::vector<AZStd::string>{ "azsl", "azsli", "material", "materialtype", "shader" });
         m_dynamicNodeManager->RegisterEditDataForSetting("templatePaths", editData);
 
         editData = {};
-        editData.m_elementId = AZ_CRC_CE("FilePathString");
+        editData.m_elementId = AZ_CRC_CE("StringFilePath");
         AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Title"), AZStd::string("Include File"));
         AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Extensions"), AZStd::vector<AZStd::string>{ "azsli" });
         m_dynamicNodeManager->RegisterEditDataForSetting("includePaths", editData);
 
         // Search the project and gems for dynamic node configurations and register them with the manager
-        m_dynamicNodeManager->LoadConfigFiles("materialcanvasnode");
+        m_dynamicNodeManager->LoadConfigFiles("materialgraphnode");
 
         // Each graph document creates its own graph context but we want to use a shared graph context instead to avoid data duplication
         m_graphContext = AZStd::make_shared<GraphModel::GraphContext>(
-            "Material Canvas", ".materialcanvas.azasset", m_dynamicNodeManager->GetRegisteredDataTypes());
+            "Material Graph", ".materialgraph", m_dynamicNodeManager->GetRegisteredDataTypes());
         m_graphContext->CreateModuleGraphManager();
 
         // This configuration data is passed through the main window and graph views to setup translation data, styling, and node palettes
@@ -170,13 +184,13 @@ namespace MaterialCanvas
         // Register document type for editing material canvas node configurations. This document type does not have a central view widget
         // and will show a label directing users to the inspector.
         documentTypeInfo = AtomToolsFramework::AtomToolsAnyDocument::BuildDocumentTypeInfo(
-            "Material Canvas Node Config",
-            { "materialcanvasnode" },
+            "Material Graph Node Config",
+            { "materialgraphnode" },
             AZStd::any(AtomToolsFramework::DynamicNodeConfig()),
             AZ::Uuid::CreateNull()); // Null ID because JSON file contains type info and can be loaded directly into AZStd::any
 
         documentTypeInfo.m_documentViewFactoryCallback = [this]([[maybe_unused]] const AZ::Crc32& toolId, const AZ::Uuid& documentId) {
-            auto viewWidget = new QLabel("Material Canvas Node Config properties can be edited in the inspector.", m_window.get());
+            auto viewWidget = new QLabel("Material Graph Node Config properties can be edited in the inspector.", m_window.get());
             viewWidget->setAlignment(Qt::AlignCenter);
             return m_window->AddDocumentTab(documentId, viewWidget);
         };

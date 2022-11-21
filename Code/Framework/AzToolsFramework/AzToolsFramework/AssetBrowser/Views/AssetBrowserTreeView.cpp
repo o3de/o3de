@@ -58,6 +58,8 @@ namespace AzToolsFramework
         {
             setSortingEnabled(true);
             setItemDelegate(m_delegate);
+            connect(m_delegate, &EntryDelegate::RenameEntry, this, &AssetBrowserTreeView::AfterRename);
+
             header()->hide();
 
             setContextMenuPolicy(Qt::CustomContextMenu);
@@ -505,7 +507,7 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::DeleteEntries()
         {
-            auto entries = GetSelectedAssets(false); // you cannot rename product files.
+            auto entries = GetSelectedAssets(false); // you cannot delete product files.
             if (entries.empty())
             {
                 return;
@@ -732,35 +734,17 @@ namespace AzToolsFramework
             for (auto entry : entries)
             {
                 using namespace AZ::IO;
-                AZStd::string originalFname;
-                AssetBrowserEntry* item = entry;
-                Path oldPath = item->GetFullPath();
-                Path newPath = oldPath;
-                PathView extension = oldPath.Extension();
-                PathView filename = oldPath.Stem();
-                AZStd::string_view fname = filename.Native();
-                size_t position = fname.rfind("-copy");
-                if (position != AZStd::string_view::npos)
-                {
-                    AZStd::string value = fname.substr(position + 5);
-                    originalFname = fname.substr(0, position + 5);
-                    int oldvalue = std::stoi(std::string(value.data()));
-                    originalFname += AZStd::to_string(oldvalue + 1);
-                }
-                else
-                {
-                    originalFname = AZStd::string(fname) + "-copy1";
-                }
-                PathView temp = originalFname.data();
-                newPath.ReplaceFilename(temp);
-                newPath.ReplaceExtension(extension);
+                Path oldPath = entry->GetFullPath();
+                AZStd::string newPath;
+                AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(
+                    oldPath.ParentPath().Native(), oldPath.Filename().Native(), newPath, "-copy");
                 QFile::copy(oldPath.c_str(), newPath.c_str());
             }
         }
 
         void AssetBrowserTreeView::MoveEntries()
         {
-            auto entries = GetSelectedAssets(false); // you cannot rename product files.
+            auto entries = GetSelectedAssets(false); // you cannot move product files.
             if (entries.empty())
             {
                 return;
