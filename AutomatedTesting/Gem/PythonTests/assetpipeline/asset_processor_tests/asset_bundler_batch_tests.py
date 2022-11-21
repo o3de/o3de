@@ -62,7 +62,7 @@ def local_resources(request, workspace, ap_setup_fixture):
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.assetpipeline
 @pytest.mark.SUITE_periodic
-class TestsAssetBundlerBatch_WindowsAndMac(object):
+class TestsAssetBundlerBatch(object):
     """
     Asset Bundler Batch Tests for all platforms
     """
@@ -73,7 +73,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
     @pytest.mark.test_case_id("C16877175")
     @pytest.mark.test_case_id("C16877178")
     @pytest.mark.test_case_id("C16877177")
-    def test_WindowsAndMac_RunHelpCmd_ZeroExitCode(self, workspace, bundler_batch_helper):
+    def test_RunHelpCmd_ZeroExitCode(self, workspace, bundler_batch_helper):
         """
         Simple calls to all AssetBundlerBatch --help to make sure a non-zero exit codes are returned.
 
@@ -92,7 +92,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id("C16877175")
-    def test_WindowsAndMac_GenerateDebugInfo_DoesNotEffectOutputFile(self, workspace, bundler_batch_helper):
+    def test_GenerateDebugInfo_DoesNotEffectOutputFile(self, workspace, bundler_batch_helper):
         """
         Validates destructive overwriting for asset lists and
         that generating debug information does not affect asset list creation
@@ -176,7 +176,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id("C16877175")
     @pytest.mark.test_case_id("C16877177")
-    def test_WindowsAndMac_BundlesAndBundleSettings_EquivalentOutput(self, workspace, bundler_batch_helper):
+    def test_BundlesAndBundleSettings_EquivalentOutput(self, workspace, bundler_batch_helper):
         """
         Validates bundle creation both through the 'bundles' and 'bundlesettings'
         subcommands.
@@ -266,7 +266,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id("C16877175")
     @pytest.mark.test_case_id("C16877177")
-    def test_WindowsAndMac_CreateMultiPlatformBundles_ValidContents(self, workspace, bundler_batch_helper):
+    def test_CreateMultiPlatformBundles_ValidContents(self, workspace, bundler_batch_helper):
         """
         Creates bundles using the same asset list and compares that they are created equally. Also
         validates that platform bundles exclude/include an expected file. (excluded for WIN, included for MAC)
@@ -391,7 +391,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id("C16877174")
-    def test_WindowsAndMac_AddAndRemoveSeedPlatform_Success(self, workspace, bundler_batch_helper):
+    def test_AddAndRemoveSeedPlatform_Success(self, workspace, bundler_batch_helper):
         """
         Validates that the 'seeds' subcommand can add and remove seeds and seed platforms properly.
         Also checks that destructive overwrites require the --allowOverwrites flag
@@ -529,7 +529,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
     @pytest.mark.test_case_id("C16877175")
     @pytest.mark.test_case_id("C16877178")
     # fmt:off
-    def test_WindowsAndMac_ComparisonOperations_Success(self, workspace, bundler_batch_helper, ap_setup_fixture,
+    def test_ComparisonOperations_Success(self, workspace, bundler_batch_helper, ap_setup_fixture,
                                                         asset_processor, timeout):
         # fmt:on
         """
@@ -871,7 +871,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id("C16877174")
     @pytest.mark.test_case_id("C16877175")
-    def test_WindowsAndMac_AssetListCreation_OutputMatchesResult(self, workspace, bundler_batch_helper):
+    def test_AssetListCreation_OutputMatchesResult(self, workspace, bundler_batch_helper):
         """
         Tests that assetlists are created equivalent to the output while being created, and
         makes sure overwriting an existing file without the --allowOverwrites fails
@@ -963,7 +963,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
     @pytest.mark.test_case_id("C16877175")
     @pytest.mark.test_case_id("C16877177")
     # fmt:off
-    def test_WindowsAndMac_AP_BundleProcessing_BundleProcessedAtRuntime(self, workspace, bundler_batch_helper,
+    def test_AP_BundleProcessing_BundleProcessedAtRuntime(self, workspace, bundler_batch_helper,
                                                                         asset_processor, request):
         # fmt:on
         """
@@ -1029,7 +1029,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     # fmt:off
-    def test_WindowsAndMac_FilesMarkedSkip_FilesAreSkipped(self, workspace, bundler_batch_helper):
+    def test_FilesMarkedSkip_FilesAreSkipped(self, workspace, bundler_batch_helper):
         """
         Test Steps:
         1. Create an asset list with a file marked as skip
@@ -1098,7 +1098,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     # fmt:off
-    def test_WindowsAndMac_AssetListSkipOneOfTwoParents_SharedDependencyIsIncluded(self, workspace,
+    def test_AssetListSkipOneOfTwoParents_SharedDependencyIsIncluded(self, workspace,
                                                                                    bundler_batch_helper):
         """
         Test Steps:
@@ -1135,7 +1135,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     # fmt:off
-    def test_WindowsAndMac_AssetLists_SkipRoot_ExcludesAll(self, workspace, bundler_batch_helper):
+    def test_AssetLists_SkipRoot_ExcludesAll(self, workspace, bundler_batch_helper):
         """
         Negative scenario test that skips the same file being used as the parent seed.
 
@@ -1158,7 +1158,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     # fmt:off
-    def test_WindowsAndMac_AssetLists_SkipUniversalWildcard_ExcludesAll(self, workspace, bundler_batch_helper):
+    def test_AssetLists_SkipUniversalWildcard_ExcludesAll(self, workspace, bundler_batch_helper):
         """
         Negative scenario test that uses the all wildcard when generating an asset list.
 
@@ -1176,4 +1176,28 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
             assert not os.path.isfile(bundler_batch_helper["asset_info_file_result"])
             return
         # If an error was not thrown, this test should fail
+        assert False
+
+    @pytest.mark.BAT
+    @pytest.mark.assetpipeline
+    # fmt:off
+    def test_Bundles_InvalidAssetList_ReportsError(self, workspace, bundler_batch_helper):
+        """
+        Verifies that when the bundles command is used, with an invalid asset list, the command fails and prints a useful error message.
+        """
+        try:
+            # Not invoking via bundler_batch_helper because this test specifically wants an error to occur, and bundler_batch_helper handles errors.
+            output = subprocess.check_output([bundler_batch_helper.bundler_batch,
+                "bundles",
+                "--assetListFile=this_file_does_not_exist.assetlist",
+                f"--outputBundlePath={bundler_batch_helper['bundle_file']}"]).decode()
+        except subprocess.CalledProcessError as e:
+            output = e.output.decode('utf-8')
+            expected_error_regex = "Cannot load Asset List file \\( (.*)this_file_does_not_exist\\.assetlist \\): File does not exist."
+
+            if re.search(expected_error_regex, output) is None:
+                logger.error(f"AssetBundlerBatch called with args returned error {e} with output {output}, missing expected error")
+                assert False
+            return
+        logger.error("AssetBundlerBatch was expected to fail when given an invalid asset list to bundle, but did not.")
         assert False

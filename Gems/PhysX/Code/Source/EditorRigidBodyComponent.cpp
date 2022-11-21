@@ -19,6 +19,7 @@
 #include <Editor/EditorClassConverters.h>
 #include <Source/NameConstants.h>
 #include <Source/Utils.h>
+#include <PhysX/PhysXLocks.h>
 
 namespace PhysX
 {
@@ -57,7 +58,7 @@ namespace PhysX
                 else
                 {
                     const Physics::ShapeConfiguration& shapeConfiguration = shapeConfigurationProxy.GetCurrent();
-                    if (!hasNonUniformScaleComponent)
+                    if (!hasNonUniformScaleComponent && !shapeConfigurationProxy.IsCylinderConfig())
                     {
                         AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(
                             colliderConfigurationScaled, shapeConfiguration);
@@ -88,7 +89,7 @@ namespace PhysX
             const AZStd::vector<EditorShapeColliderComponent*> shapeColliders = entity->FindComponents<EditorShapeColliderComponent>();
             for (const EditorShapeColliderComponent* shapeCollider : shapeColliders)
             {
-                const Physics::ColliderConfiguration& colliderConfig = shapeCollider->GetColliderConfiguration();
+                const Physics::ColliderConfiguration colliderConfig = shapeCollider->GetColliderConfigurationScaled();
                 const AZStd::vector<AZStd::shared_ptr<Physics::ShapeConfiguration>>& shapeConfigs =
                     shapeCollider->GetShapeConfigurations();
                 for (const auto& shapeConfig : shapeConfigs)
@@ -267,6 +268,7 @@ namespace PhysX
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         Physics::ColliderComponentEventBus::Handler::BusConnect(GetEntityId());
+        AzFramework::BoundsRequestBus::Handler::BusConnect(GetEntityId());
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             AzPhysics::SceneHandle editorSceneHandle = sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
@@ -303,6 +305,7 @@ namespace PhysX
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         m_nonUniformScaleChangedHandler.Disconnect();
         m_sceneStartSimHandler.Disconnect();
+        AzFramework::BoundsRequestBus::Handler::BusDisconnect();
         Physics::ColliderComponentEventBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
@@ -426,7 +429,6 @@ namespace PhysX
         configuration.m_position = colliderTransform.GetTranslation();
         configuration.m_entityId = GetEntityId();
         configuration.m_debugName = GetEntity()->GetName();
-        configuration.m_startSimulationEnabled = false;
         configuration.m_colliderAndShapeData = Internal::GetCollisionShapes(GetEntity());
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
@@ -440,6 +442,13 @@ namespace PhysX
                 m_config.m_mass = body->GetMass();
                 m_config.m_centerOfMassOffset = body->GetCenterOfMassLocal();
                 m_config.m_inertiaTensor = body->GetInertiaLocal();
+
+                // Set simulation disabled for this actor so it doesn't actually interact when the editor world is updated.
+                if (physx::PxActor* pxActor = static_cast<physx::PxActor*>(body->GetNativePointer()))
+                {
+                    PHYSX_SCENE_WRITE_LOCK(pxActor->getScene());
+                    pxActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, true);
+                }
             }
         }
         AZ_Error("EditorRigidBodyComponent",
@@ -574,5 +583,21 @@ namespace PhysX
         {
             m_shouldBeRecreated = true;
         }
+    }
+
+    AZ::Aabb EditorRigidBodyComponent::GetWorldBounds()
+    {
+        return GetAabb();
+    }
+
+    AZ::Aabb EditorRigidBodyComponent::GetLocalBounds()
+    {
+        AZ::Aabb worldBounds = GetWorldBounds();
+        if (worldBounds.IsValid())
+        {
+            return worldBounds.GetTransformedAabb(GetWorldTM().GetInverse());
+        }
+
+        return AZ::Aabb::CreateNull();
     }
 } // namespace PhysX

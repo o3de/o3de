@@ -118,7 +118,7 @@ namespace AZ
             // Register Precompiled Shader Builder
             AssetBuilderSDK::AssetBuilderDesc precompiledShaderBuilderDescriptor;
             precompiledShaderBuilderDescriptor.m_name = "Precompiled Shader Builder";
-            precompiledShaderBuilderDescriptor.m_version = 11; // ATOM-15740
+            precompiledShaderBuilderDescriptor.m_version = 13; // GHI-7898, added check for API on product dependency
             precompiledShaderBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", AZ::PrecompiledShaderBuilder::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             precompiledShaderBuilderDescriptor.m_busId = azrtti_typeid<PrecompiledShaderBuilder>();
             precompiledShaderBuilderDescriptor.m_createJobFunction = AZStd::bind(&PrecompiledShaderBuilder::CreateJobs, &m_precompiledShaderBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);

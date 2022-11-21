@@ -36,17 +36,12 @@ void CreateAudioAllocators()
 {
     if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
     {
-        AZ::SystemAllocator::Descriptor systemAllocDesc;
-        systemAllocDesc.m_allocationRecords = false;
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create(systemAllocDesc);
+        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
     }
 
     if (!AZ::AllocatorInstance<Audio::AudioSystemAllocator>::IsReady())
     {
-        Audio::AudioSystemAllocator::Descriptor allocDesc;
-        allocDesc.m_allocationRecords = false;
-        allocDesc.m_heap.m_fixedMemoryBlocksByteSize[0] = 0;
-        AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Create(allocDesc);
+        AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Create();
     }
 }
 

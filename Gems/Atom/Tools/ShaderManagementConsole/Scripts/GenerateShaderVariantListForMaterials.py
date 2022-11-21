@@ -108,7 +108,7 @@ def main():
                 continue
 
             valueName = shaderOptionDescriptor.GetValueName(optionValue)
-            options[optionName.ToString()] = valueName.ToString()
+            options[optionName] = valueName
 
         if len(options) != 0:
             variantInfo.options = options

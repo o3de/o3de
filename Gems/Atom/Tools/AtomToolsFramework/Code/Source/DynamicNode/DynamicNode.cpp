@@ -7,6 +7,7 @@
  */
 
 #include <AtomToolsFramework/DynamicNode/DynamicNode.h>
+#include <AtomToolsFramework/DynamicNode/DynamicNodeManager.h>
 #include <AtomToolsFramework/DynamicNode/DynamicNodeManagerRequestBus.h>
 #include <GraphModel/Model/Graph.h>
 #include <GraphModel/Model/GraphContext.h>
@@ -18,6 +19,7 @@ namespace AtomToolsFramework
     {
         DynamicNodeSlotConfig::Reflect(context);
         DynamicNodeConfig::Reflect(context);
+        DynamicNodeManager::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {

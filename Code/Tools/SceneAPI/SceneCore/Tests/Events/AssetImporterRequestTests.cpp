@@ -36,27 +36,28 @@ namespace AZ
             * ProcessingResultCombinerTests
             */
 
-            TEST(ProcessingResultCombinerTests, GetResult_GetStoredValue_ReturnsTheDefaultValue)
+            using ProcessingResultCombinerTests = UnitTest::AllocatorsTestFixture;
+            TEST_F(ProcessingResultCombinerTests, GetResult_GetStoredValue_ReturnsTheDefaultValue)
             {
                 ProcessingResultCombiner combiner;
                 EXPECT_EQ(ProcessingResult::Ignored, combiner.GetResult());
             }
 
-            TEST(ProcessingResultCombinerTests, OperatorEquals_SuccessIsStored_ResultIsSuccess)
+            TEST_F(ProcessingResultCombinerTests, OperatorEquals_SuccessIsStored_ResultIsSuccess)
             {
                 ProcessingResultCombiner combiner;
                 combiner = ProcessingResult::Success;
                 EXPECT_EQ(ProcessingResult::Success, combiner.GetResult());
             }
 
-            TEST(ProcessingResultCombinerTests, OperatorEquals_FailureIsStored_ResultIsFailure)
+            TEST_F(ProcessingResultCombinerTests, OperatorEquals_FailureIsStored_ResultIsFailure)
             {
                 ProcessingResultCombiner combiner;
                 combiner = ProcessingResult::Failure;
                 EXPECT_EQ(ProcessingResult::Failure, combiner.GetResult());
             }
 
-            TEST(ProcessingResultCombinerTests, OperatorEquals_SuccessDoesNotOverwriteFailure_ResultIsFailure)
+            TEST_F(ProcessingResultCombinerTests, OperatorEquals_SuccessDoesNotOverwriteFailure_ResultIsFailure)
             {
                 ProcessingResultCombiner combiner;
                 combiner = ProcessingResult::Failure;
@@ -64,7 +65,7 @@ namespace AZ
                 EXPECT_EQ(ProcessingResult::Failure, combiner.GetResult());
             }
 
-            TEST(ProcessingResultCombinerTests, OperatorEquals_IgnoreDoesNotChangeTheStoredValue_ResultIsSuccess)
+            TEST_F(ProcessingResultCombinerTests, OperatorEquals_IgnoreDoesNotChangeTheStoredValue_ResultIsSuccess)
             {
                 ProcessingResultCombiner combiner;
                 combiner = ProcessingResult::Success;
@@ -77,14 +78,15 @@ namespace AZ
             * LoadingResultCombinerTests
             */
 
-            TEST(LoadingResultCombinerTests, GetResult_GetStoredValues_ReturnsTheDefaultValues)
+            using LoadingResultCombinerTests = UnitTest::AllocatorsTestFixture;
+            TEST_F(LoadingResultCombinerTests, GetResult_GetStoredValues_ReturnsTheDefaultValues)
             {
                 LoadingResultCombiner combiner;
                 EXPECT_EQ(ProcessingResult::Ignored, combiner.GetAssetResult());
                 EXPECT_EQ(ProcessingResult::Ignored, combiner.GetManifestResult());
             }
 
-            TEST(LoadingResultCombinerTests, OperatorEquals_AssetLoadedIsStored_ResultIsSuccess)
+            TEST_F(LoadingResultCombinerTests, OperatorEquals_AssetLoadedIsStored_ResultIsSuccess)
             {
                 LoadingResultCombiner combiner;
                 combiner = LoadingResult::AssetLoaded;
@@ -92,7 +94,7 @@ namespace AZ
                 EXPECT_EQ(ProcessingResult::Ignored, combiner.GetManifestResult());
             }
 
-            TEST(LoadingResultCombinerTests, OperatorEquals_ManifestLoadedIsStored_ResultIsSuccess)
+            TEST_F(LoadingResultCombinerTests, OperatorEquals_ManifestLoadedIsStored_ResultIsSuccess)
             {
                 LoadingResultCombiner combiner;
                 combiner = LoadingResult::ManifestLoaded;
@@ -100,7 +102,7 @@ namespace AZ
                 EXPECT_EQ(ProcessingResult::Success, combiner.GetManifestResult());
             }
 
-            TEST(LoadingResultCombinerTests, OperatorEquals_AssetFailureIsStored_ResultIsFailure)
+            TEST_F(LoadingResultCombinerTests, OperatorEquals_AssetFailureIsStored_ResultIsFailure)
             {
                 LoadingResultCombiner combiner;
                 combiner = LoadingResult::AssetFailure;
@@ -108,7 +110,7 @@ namespace AZ
                 EXPECT_EQ(ProcessingResult::Ignored, combiner.GetManifestResult());
             }
 
-            TEST(LoadingResultCombinerTests, OperatorEquals_ManifestFailureIsStored_ResultIsFailure)
+            TEST_F(LoadingResultCombinerTests, OperatorEquals_ManifestFailureIsStored_ResultIsFailure)
             {
                 LoadingResultCombiner combiner;
                 combiner = LoadingResult::ManifestFailure;
@@ -116,7 +118,7 @@ namespace AZ
                 EXPECT_EQ(ProcessingResult::Failure, combiner.GetManifestResult());
             }
 
-            TEST(LoadingResultCombinerTests, OperatorEquals_LoadedDoesNotOverwriteFailure_ResultIsFailure)
+            TEST_F(LoadingResultCombinerTests, OperatorEquals_LoadedDoesNotOverwriteFailure_ResultIsFailure)
             {
                 LoadingResultCombiner combiner;
                 combiner = LoadingResult::AssetFailure;
@@ -129,7 +131,7 @@ namespace AZ
                 EXPECT_EQ(ProcessingResult::Failure, combiner.GetManifestResult());
             }
 
-            TEST(LoadingResultCombinerTests, OperatorEquals_IgnoreDoesNotChangeTheStoredValue_ResultIsSuccess)
+            TEST_F(LoadingResultCombinerTests, OperatorEquals_IgnoreDoesNotChangeTheStoredValue_ResultIsSuccess)
             {
                 LoadingResultCombiner combiner;
                 combiner = LoadingResult::AssetLoaded;
@@ -147,7 +149,7 @@ namespace AZ
             * AssetImporterRequestTests
             */
             class AssetImporterRequestTests
-                : public ::testing::Test
+                : public UnitTest::AllocatorsTestFixture
                 , public Debug::TraceMessageBus::Handler
             {
             public:
