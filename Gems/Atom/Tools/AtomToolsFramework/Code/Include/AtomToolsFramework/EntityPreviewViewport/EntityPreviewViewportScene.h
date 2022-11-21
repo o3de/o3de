@@ -52,7 +52,8 @@ namespace AtomToolsFramework
         AZStd::shared_ptr<AzFramework::Scene> m_frameworkScene;
 
         RenderPipelineMap m_renderPipelines;
-        RenderPipelineMap::iterator m_activeRenderPipeline;
+        AZ::Data::AssetId m_activeRenderPipelineId;
+        AZ::RPI::RenderPipelinePtr m_activeRenderPipeline;
         AZStd::string m_viewportIdSuffix;
         AZ::RPI::WindowContextSharedPtr m_windowContext;
 

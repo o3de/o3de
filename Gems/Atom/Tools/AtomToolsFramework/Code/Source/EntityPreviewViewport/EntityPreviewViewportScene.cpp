@@ -59,7 +59,6 @@ namespace AtomToolsFramework
         m_frameworkScene->SetSubsystem(m_scene);
         m_frameworkScene->SetSubsystem(m_entityContext.get());
 
-        m_activeRenderPipeline = m_renderPipelines.end();
         ActivateRenderPipeline(defaultRenderPipelineAssetPath);
 
         // Create the BRDF texture generation pipeline
@@ -80,7 +79,7 @@ namespace AtomToolsFramework
     EntityPreviewViewportScene::~EntityPreviewViewportScene()
     {
         m_scene->Deactivate();
-        m_scene->RemoveRenderPipeline(m_activeRenderPipeline->second->GetId());
+        m_scene->RemoveRenderPipeline(m_activeRenderPipeline->GetId());
         AZ::RPI::RPISystemInterface::Get()->UnregisterScene(m_scene);
         m_frameworkScene->UnsetSubsystem(m_scene);
         m_frameworkScene->UnsetSubsystem(m_entityContext.get());
@@ -96,7 +95,11 @@ namespace AtomToolsFramework
         // Load the render pipeline asset
         AZStd::optional<AZ::RPI::RenderPipelineDescriptor> pipelineDesc =
             AZ::RPI::GetRenderPipelineDescriptorFromAsset(pipelineAssetId, m_viewportIdSuffix);
-        AZ_Assert(pipelineDesc.has_value(), "Invalid render pipeline descriptor from asset %s", pipelineAssetId.ToFixedString().c_str());
+        if (!pipelineDesc.has_value())
+        {
+            AZ_Error("EntityPreviewViewportScene", false, "Invalid render pipeline descriptor from asset %s", pipelineAssetId.ToFixedString().c_str());
+            return m_renderPipelines.end();
+        }
 
         // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
         AZ::RPI::RenderPipelinePtr renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineDesc.value(), *m_windowContext.get());
@@ -126,29 +129,23 @@ namespace AtomToolsFramework
             return false;
         }
 
-        if (iter != m_activeRenderPipeline)
+        if (iter->first != m_activeRenderPipelineId)
         {
-            AZ::RPI::RenderPipelinePtr prevPipeline;
-
-            if (m_activeRenderPipeline != m_renderPipelines.end())
-            {
-                prevPipeline = m_activeRenderPipeline->second;
-            }
-
             iter->second->GetRootPass()->SetEnabled(true); // PassSystem::RemoveRenderPipeline was calling SetEnabled(false)
             m_scene->AddRenderPipeline(iter->second);
 
-            if (prevPipeline)
+            if (m_activeRenderPipeline)
             {
-                iter->second->SetDefaultView(prevPipeline->GetDefaultView());
-                m_scene->RemoveRenderPipeline(prevPipeline->GetId());
+                iter->second->SetDefaultView(m_activeRenderPipeline->GetDefaultView());
+                m_scene->RemoveRenderPipeline(m_activeRenderPipeline->GetId());
             }
 
-            m_activeRenderPipeline = iter;
+            m_activeRenderPipelineId = iter->first;
+            m_activeRenderPipeline = iter->second;
 
             // TODO SetApplicationMultisampleState should only be called once per application and will need to consider multiple viewports
             // and pipelines. The default pipeline determines the initial MSAA state for the application.
-            AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(m_activeRenderPipeline->second->GetRenderSettings().m_multisampleState);
+            AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(m_activeRenderPipeline->GetRenderSettings().m_multisampleState);
         }
 
         return true;
@@ -175,12 +172,12 @@ namespace AtomToolsFramework
 
     AZ::RPI::RenderPipelinePtr EntityPreviewViewportScene::GetPipeline() const
     {
-        return m_activeRenderPipeline->second;
+        return m_activeRenderPipeline;
     }
 
     AZ::Data::AssetId EntityPreviewViewportScene::GetPipelineAssetId() const
     {
-        return m_activeRenderPipeline->first;
+        return m_activeRenderPipelineId;
     }
 
 } // namespace AtomToolsFramework
