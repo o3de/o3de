@@ -350,7 +350,6 @@ namespace AssetProcessor
         void AutoFailJob(
             AZStd::string_view consoleMsg,
             AZStd::string_view autoFailReason,
-            const AZ::IO::Path& absoluteFilePath,
             JobEntry jobEntry,
             AZStd::string_view jobLog = "");
         void AutoFailJob(AZStd::string_view consoleMsg, AZStd::string_view autoFailReason, const AZStd::vector<AssetProcessedEntry>::iterator& assetIter);
@@ -542,7 +541,7 @@ namespace AssetProcessor
         };
 
         void ComputeBuilderDirty();
-        AZStd::string ComputeRecursiveDependenciesFingerprint(const AZStd::string& fileAbsolutePath, const AZStd::string& fileDatabaseName);
+        AZStd::string ComputeRecursiveDependenciesFingerprint(const SourceAssetReference& sourceAsset);
         AZStd::unordered_map<AZ::Uuid, BuilderData>  m_builderDataCache;
         bool m_buildersAddedOrRemoved = true; //< true if any new builders exist.  If this happens we actually need to re-analyze everything.
         bool m_anyBuilderChange = true;
@@ -588,7 +587,7 @@ namespace AssetProcessor
         };
 
         // ideally you would already have the absolute path to the file, and call this function with it:
-        void UpdateAnalysisTrackerForFile(const char* fullPathToFile, AnalysisTrackerUpdateType updateType);
+        void UpdateAnalysisTrackerForFile(const SourceAssetReference& sourceAsset, AnalysisTrackerUpdateType updateType);
 
         // convenience overload of the above function when you have a jobEntry but no absolute path to the file.
         void UpdateAnalysisTrackerForFile(const JobEntry &entry, AnalysisTrackerUpdateType updateType);
@@ -616,7 +615,7 @@ namespace AssetProcessor
         AZStd::unique_ptr<ExcludedFolderCache> m_excludedFolderCache{};
 
 protected Q_SLOTS:
-        void FinishAnalysis(AZStd::string fileToCheck);
+        void FinishAnalysis(SourceAssetReference sourceAsset);
         //////////////////////////////////////////////////////////
     };
 } // namespace AssetProcessor

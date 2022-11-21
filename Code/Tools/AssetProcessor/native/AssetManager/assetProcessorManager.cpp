@@ -2565,9 +2565,7 @@ namespace AssetProcessor
                                job.m_jobRunKey,
                                topLevelSourceForIntermediateConflict->m_sourceGuid };
 
-            AutoFailJob(
-                errorMessage, errorMessage,
-                AZ::IO::Path(topLevelSourceScanFolder.m_scanFolder) / topLevelSourceForIntermediateConflict->m_sourceName, jobEntry);
+            AutoFailJob(errorMessage, errorMessage, jobEntry);
         }
 
         AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer products;
@@ -2759,7 +2757,6 @@ namespace AssetProcessor
                             AutoFailJob(
                                 "",
                                 AZStd::string::format("Product file name would be too long: %s\n", normalizedPath.toUtf8().data()),
-                                normalizedPath.toUtf8().constData(),
                                 JobEntry(
                                     sourceAssetReference,
                                     jobInfo.m_builderGuid,
@@ -2811,7 +2808,6 @@ namespace AssetProcessor
                                     "O3DE currently only supports file paths having ASCII characters and therefore asset processor will not be able to process this file.\n"
                                     "Please rename the source file to fix this error.\n",
                                     normalizedPath.toUtf8().constData()),
-                                normalizedPath.toUtf8().constData(),
                                 JobEntry(
                                     sourceAssetReference,
                                     AZ::Uuid::CreateNull(),
@@ -2998,7 +2994,7 @@ namespace AssetProcessor
                     {
                         // no jobs were emitted this time around.
                         // we can assume that all jobs are done for this source file (because none were emitted)
-                        QMetaObject::invokeMethod(this, "FinishAnalysis", Qt::QueuedConnection, Q_ARG(AZStd::string, entry.m_sourceFileInfo.m_sourceAssetReference.AbsolutePath().c_str()));
+                        QMetaObject::invokeMethod(this, "FinishAnalysis", Qt::QueuedConnection, Q_ARG(SourceAssetReference, entry.m_sourceFileInfo.m_sourceAssetReference));
                     }
                     else
                     {
@@ -3350,8 +3346,7 @@ namespace AssetProcessor
             if (!fingerprintFromDatabase.empty() && AreBuildersUnchanged(builderEntries, numBuildersEmittingSourceDependencies))
             {
                 // Builder(s) have not changed since last time
-                AZStd::string currentFingerprint = ComputeRecursiveDependenciesFingerprint(
-                    fileInfo.m_filePath.toUtf8().constData(), sourceFileItr->m_sourceAssetReference.RelativePath().Native());
+                AZStd::string currentFingerprint = ComputeRecursiveDependenciesFingerprint(sourceFileItr->m_sourceAssetReference);
 
                 if(dependencyFingerprint != currentFingerprint)
                 {
@@ -3582,7 +3577,7 @@ namespace AssetProcessor
         else
         {
             // we're about to drop the job because its already up to date, so that's one job that is "Finished"
-            UpdateAnalysisTrackerForFile(job.m_jobEntry.m_sourceAssetReference.AbsolutePath().c_str(), AnalysisTrackerUpdateType::JobFinished);
+            UpdateAnalysisTrackerForFile(job.m_jobEntry, AnalysisTrackerUpdateType::JobFinished);
         }
     }
 
@@ -3885,7 +3880,6 @@ namespace AssetProcessor
 
                 AutoFailJob(AZStd::string::format("Createjobs Failed: %s.\n", sourceAsset.AbsolutePath().c_str()),
                             failureMessage,
-                            sourceAsset.AbsolutePath().c_str(),
                             JobEntry(
                                 sourceAsset,
                                 builderInfo.m_busId,
@@ -3991,7 +3985,7 @@ namespace AssetProcessor
 
                         // because we added / created a job for the queue, we increment the number of outstanding jobs for this item now.
                         // when it either later gets analyzed and done, or dropped (because its already up to date), we will decrement it.
-                        UpdateAnalysisTrackerForFile(sourceAsset.AbsolutePath().c_str(), AnalysisTrackerUpdateType::JobStarted);
+                        UpdateAnalysisTrackerForFile(sourceAsset, AnalysisTrackerUpdateType::JobStarted);
                         m_numOfJobsToAnalyze++;
                     }
                 }
@@ -4880,7 +4874,7 @@ namespace AssetProcessor
         }
     }
 
-    AZStd::string AssetProcessorManager::ComputeRecursiveDependenciesFingerprint(const AZStd::string& fileAbsolutePath, const AZStd::string& fileDatabaseName)
+    AZStd::string AssetProcessorManager::ComputeRecursiveDependenciesFingerprint(const SourceAssetReference& sourceAsset)
     {
         AZStd::string concatenatedFingerprints;
 
@@ -4891,7 +4885,7 @@ namespace AssetProcessor
         // this automatically adds the input file to the list:
         QueryAbsolutePathDependenciesRecursive(sourceUuid, knownDependenciesAbsolutePaths,
             AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any);
-        AddMetadataFilesForFingerprinting(QString::fromUtf8(fileAbsolutePath.c_str()), knownDependenciesAbsolutePaths);
+        AddMetadataFilesForFingerprinting(QString::fromUtf8(sourceAsset.AbsolutePath().c_str()), knownDependenciesAbsolutePaths);
 
         // reserve 17 chars for each since its a 64 bit hex number, and then one more for the dash inbetween each.
         constexpr int bytesPerFingerprint = (sizeof(AZ::u64) * 2) + 1; // 2 HEX characters per byte +1 for the `-` we will add between each fingerprint
@@ -4907,11 +4901,11 @@ namespace AssetProcessor
         return AZ::Uuid::CreateName(concatenatedFingerprints.c_str()).ToString<AZStd::string>();
     }
 
-    void AssetProcessorManager::FinishAnalysis(AZStd::string fileToCheck)
+    void AssetProcessorManager::FinishAnalysis(SourceAssetReference sourceAsset)
     {
         using namespace AzToolsFramework::AssetDatabase;
 
-        auto foundTrackingInfo = m_remainingJobsForEachSourceFile.find(fileToCheck);
+        auto foundTrackingInfo = m_remainingJobsForEachSourceFile.find(sourceAsset.AbsolutePath().c_str());
 
         if (foundTrackingInfo == m_remainingJobsForEachSourceFile.end())
         {
@@ -4978,7 +4972,7 @@ namespace AssetProcessor
         {
             // construct the analysis fingerprint
             // the format for this data is "hashfingerprint:builder0:builder1:builder2:...:buildern"
-            source.m_analysisFingerprint = ComputeRecursiveDependenciesFingerprint(fileToCheck, analysisTracker->m_databaseSourceName);
+            source.m_analysisFingerprint = ComputeRecursiveDependenciesFingerprint(sourceAsset);
 
             for (const AZ::Uuid& builderID : analysisTracker->m_buildersInvolved)
             {
@@ -4999,18 +4993,16 @@ namespace AssetProcessor
         }
         else
         {
-            const ScanFolderInfo* scanFolder = m_platformConfig->GetScanFolderForFile(fileToCheck.c_str());
-
-            scanFolderPk = aznumeric_cast<int>(scanFolder->ScanFolderID());
-            PlatformConfiguration::ConvertToRelativePath(fileToCheck.c_str(), scanFolder, databaseSourceName);
+            databaseSourceName = sourceAsset.RelativePath().c_str();
+            scanFolderPk = sourceAsset.ScanFolderId();
         }
 
         // Record the modtime for the file so we know we processed it
-        QFileInfo fileInfo(fileToCheck.c_str());
+        QFileInfo fileInfo(sourceAsset.AbsolutePath().c_str());
         QDateTime lastModifiedTime = fileInfo.lastModified();
 
-        AZ_Error(AssetProcessor::ConsoleChannel, scanFolderPk > -1 && !databaseSourceName.isEmpty(), "FinishAnalysis: Invalid ScanFolderPk (%d) or databaseSourceName (%s) for file %s.  Cannot update file modtime in database.",
-            scanFolderPk, databaseSourceName.toUtf8().constData(), fileToCheck.c_str());
+        AZ_Error(AssetProcessor::ConsoleChannel, scanFolderPk > -1 && !sourceAsset.RelativePath().empty(), "FinishAnalysis: Invalid ScanFolderPk (%d) or databaseSourceName (%s) for file %s.  Cannot update file modtime in database.",
+            scanFolderPk, sourceAsset.RelativePath().c_str(), sourceAsset.AbsolutePath().c_str());
 
         m_stateData->UpdateFileModTimeAndHashByFileNameAndScanFolderId(databaseSourceName.toUtf8().constData(), scanFolderPk,
             AssetUtilities::AdjustTimestamp(lastModifiedTime),
@@ -5340,9 +5332,9 @@ namespace AssetProcessor
 
     // this function gets called whenever something changes about a file being processed, and checks to see
     // if it needs to write the fingerprint to the database.
-    void AssetProcessorManager::UpdateAnalysisTrackerForFile(const char* fullPathToFile, AnalysisTrackerUpdateType updateType)
+    void AssetProcessorManager::UpdateAnalysisTrackerForFile(const SourceAssetReference& sourceAsset, AnalysisTrackerUpdateType updateType)
     {
-        auto foundTrackingInfo = m_remainingJobsForEachSourceFile.find(fullPathToFile);
+        auto foundTrackingInfo = m_remainingJobsForEachSourceFile.find(sourceAsset.AbsolutePath().c_str());
         if (foundTrackingInfo != m_remainingJobsForEachSourceFile.end())
         {
             // clear our the information about analysis on failed jobs.
@@ -5354,7 +5346,7 @@ namespace AssetProcessor
                 {
                     analysisTracker.failedStatus = true;
                     analysisTracker.m_remainingJobsSpawned = 0;
-                    QMetaObject::invokeMethod(this, "FinishAnalysis", Qt::QueuedConnection, Q_ARG(AZStd::string, fullPathToFile));
+                    QMetaObject::invokeMethod(this, "FinishAnalysis", Qt::QueuedConnection, Q_ARG(SourceAssetReference, sourceAsset));
                 }
                 break;
             case AnalysisTrackerUpdateType::JobStarted:
@@ -5370,7 +5362,7 @@ namespace AssetProcessor
                     --analysisTracker.m_remainingJobsSpawned;
                     if (analysisTracker.m_remainingJobsSpawned == 0)
                     {
-                        QMetaObject::invokeMethod(this, "FinishAnalysis", Qt::QueuedConnection, Q_ARG(AZStd::string, fullPathToFile));
+                        QMetaObject::invokeMethod(this, "FinishAnalysis", Qt::QueuedConnection, Q_ARG(SourceAssetReference, sourceAsset));
                     }
                 }
             }
@@ -5382,10 +5374,10 @@ namespace AssetProcessor
     void AssetProcessorManager::UpdateAnalysisTrackerForFile(const JobEntry &entry, AnalysisTrackerUpdateType updateType)
     {
         // it is assumed that watch folder path / path relative to watch folder are already normalized and such.
-        UpdateAnalysisTrackerForFile(entry.m_sourceAssetReference.AbsolutePath().c_str(), updateType);
+        UpdateAnalysisTrackerForFile(entry.m_sourceAssetReference, updateType);
     }
 
-    void AssetProcessorManager::AutoFailJob([[maybe_unused]] AZStd::string_view consoleMsg, AZStd::string_view autoFailReason, const AZ::IO::Path& absoluteFilePath, JobEntry jobEntry, AZStd::string_view jobLog)
+    void AssetProcessorManager::AutoFailJob([[maybe_unused]] AZStd::string_view consoleMsg, AZStd::string_view autoFailReason, JobEntry jobEntry, AZStd::string_view jobLog)
     {
         if (!consoleMsg.empty())
         {
@@ -5407,7 +5399,7 @@ namespace AssetProcessor
 
         // this is a failure, so make sure that the system that is tracking files
         // knows that this file must not be skipped next time:
-        UpdateAnalysisTrackerForFile(absoluteFilePath.c_str(), AnalysisTrackerUpdateType::JobFailed);
+        UpdateAnalysisTrackerForFile(jobEntry, AnalysisTrackerUpdateType::JobFailed);
 
         Q_EMIT AssetToProcess(jobdetail); // forwarding this job to rccontroller to fail it
     }
@@ -5421,7 +5413,7 @@ namespace AssetProcessor
             assetIter->m_entry.m_jobKey, 0, GenerateNewJobRunKey(),
             assetIter->m_entry.m_sourceFileUUID);
 
-        AutoFailJob(consoleMsg, autoFailReason, assetIter->m_entry.GetAbsoluteSourcePath().toUtf8().constData(), jobEntry);
+        AutoFailJob(consoleMsg, autoFailReason, jobEntry);
     }
 
     AZ::u64 AssetProcessorManager::RequestReprocess(const QString& sourcePathRequest)
