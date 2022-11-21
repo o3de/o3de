@@ -1408,7 +1408,6 @@ namespace AzToolsFramework
             {
                 const AZ::EntityId entityId = entity->GetId();
                 const AZStd::string nestedEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId);
-                detachedEntityAliasPaths.push_back(AZStd::move(nestedEntityAliasPath));
 
                 // Captures the parent entity that needs to be updated.
                 AZ::EntityId parentEntityId;
@@ -1419,7 +1418,9 @@ namespace AzToolsFramework
                     parentEntitiesToUpdate.insert(GetEntityById(parentEntityId));
                 }
 
-                commonOwningInstance->get().DetachEntity(entityId).reset();
+                commonOwningInstance->get().DetachEntity(entityId);
+
+                detachedEntityAliasPaths.push_back(AZStd::move(nestedEntityAliasPath));
             }
 
             // 3. Updates template DOM with undo/redo support.
