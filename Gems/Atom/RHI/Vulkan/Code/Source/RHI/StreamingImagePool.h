@@ -70,7 +70,6 @@ namespace AZ
             void WaitFinishUploading(const Image& image);
 
             MemoryAllocator m_memoryAllocator;
-            RHI::HeapMemoryUsage m_memoryAllocatorUsage;
 
             bool m_enableTileResource = false;
         };
