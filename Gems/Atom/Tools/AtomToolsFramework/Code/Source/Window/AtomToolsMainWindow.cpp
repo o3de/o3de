@@ -11,7 +11,6 @@
 #include <AtomToolsFramework/SettingsDialog/SettingsDialog.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
-#include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/containers/map.h>
@@ -376,7 +375,6 @@ namespace AtomToolsFramework
         {
             const QByteArray windowState = m_advancedDockManager->saveState();
             SetSettingsObject("/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string(windowState.begin(), windowState.end()));
-            AtomToolsMainWindowNotificationBus::Event(m_toolId, &AtomToolsMainWindowNotifications::OnMainWindowClosing);
         }
 
         Base::closeEvent(closeEvent);

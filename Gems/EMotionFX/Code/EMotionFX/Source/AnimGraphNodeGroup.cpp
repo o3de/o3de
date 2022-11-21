@@ -188,6 +188,16 @@ namespace EMotionFX
         return m_nameEditOngoing;
     }
 
+    AnimGraphNodeId AnimGraphNodeGroup::GetParentNodeId() const
+    {
+        return m_parentNodeId;
+    }
+
+    void AnimGraphNodeGroup::SetParentNodeId(AnimGraphNodeId nodeId)
+    {
+        m_parentNodeId = nodeId;
+    }
+
     void AnimGraphNodeGroup::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);

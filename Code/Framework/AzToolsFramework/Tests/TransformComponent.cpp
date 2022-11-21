@@ -1069,13 +1069,11 @@ R"DELIMITER(<ObjectStream version="1">
         void SetUpEditorFixtureImpl() override
         {
             PrefabTestFixture::SetUpEditorFixtureImpl();
-
-            CreateRootPrefab();
         }
 
         void TearDownEditorFixtureImpl() override
         {
-            BusDisconnect();
+            AZ::TransformNotificationBus::Handler::BusDisconnect();
             
             PrefabTestFixture::TearDownEditorFixtureImpl();
         }
@@ -1096,10 +1094,10 @@ R"DELIMITER(<ObjectStream version="1">
     
     TEST_F(TransformComponentActivationTest, TransformChangedEventIsSentWhenEntityIsActivatedViaUndoRedo)
     {
-        AZ::EntityId entityId = CreateEntityUnderRootPrefab("Entity");
+        AZ::EntityId entityId = CreateEditorEntityUnderRoot("Entity");
         MoveEntity(entityId);
         ProcessDeferredUpdates();
-        BusConnect(entityId);
+        AZ::TransformNotificationBus::Handler::BusConnect(entityId);
 
         // verify that undoing/redoing move operations fires TransformChanged event
         Undo();
@@ -1113,8 +1111,8 @@ R"DELIMITER(<ObjectStream version="1">
 
     TEST_F(TransformComponentActivationTest, TransformChangedEventIsNotSentWhenEntityIsDeactivatedAndActivated)
     {
-        AZ::EntityId entityId = CreateEntityUnderRootPrefab("Entity");
-        BusConnect(entityId);
+        AZ::EntityId entityId = CreateEditorEntityUnderRoot("Entity");
+        AZ::TransformNotificationBus::Handler::BusConnect(entityId);
 
         // verify that simply activating/deactivating an entity does not fire TransformChanged event
         Entity* entity = nullptr;

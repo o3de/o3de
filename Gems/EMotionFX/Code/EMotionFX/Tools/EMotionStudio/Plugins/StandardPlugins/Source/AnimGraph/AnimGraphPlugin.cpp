@@ -182,7 +182,7 @@ namespace EMStudio
         {
             m_dockWindowActions[WINDOWS_PARAMETERWINDOW] = parent->addAction("Parameter Window");
             m_dockWindowActions[WINDOWS_PARAMETERWINDOW]->setCheckable(true);
-            m_dockWindowActions[WINDOWS_PALETTEWINDOW] = parent->addAction("Palette Window");
+            m_dockWindowActions[WINDOWS_PALETTEWINDOW] = parent->addAction("Node Palette");
             m_dockWindowActions[WINDOWS_PALETTEWINDOW]->setCheckable(true);
 
             connect(m_dockWindowActions[WINDOWS_PARAMETERWINDOW], &QAction::triggered, this, [this](bool checked) {
@@ -377,7 +377,7 @@ namespace EMStudio
         // By default, it's hidden in AnimGraph.layout. Users should mostly use
         // the context menu to add nodes, but we let them show the palette dock
         // if needed
-        m_nodePaletteDock = new AzQtComponents::StyledDockWidget("Anim Graph Palette", mainWindow);
+        m_nodePaletteDock = new AzQtComponents::StyledDockWidget("Node Palette", mainWindow);
         mainWindow->addDockWidget(Qt::RightDockWidgetArea, m_nodePaletteDock);
         features = QDockWidget::NoDockWidgetFeatures;
         //features |= QDockWidget::DockWidgetClosable;

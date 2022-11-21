@@ -175,7 +175,7 @@ namespace MaterialCanvas
         // Overriding documentview factory function to create graph view
         documentTypeInfo.m_documentViewFactoryCallback = [this, graphViewConfig](const AZ::Crc32& toolId, const AZ::Uuid& documentId)
         {
-            return m_window->AddDocumentTab(documentId, aznew MaterialCanvasGraphView(toolId, documentId, graphViewConfig));
+            return m_window->AddDocumentTab(documentId, aznew MaterialCanvasGraphView(toolId, documentId, graphViewConfig, m_window.get()));
         };
 
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
@@ -186,6 +186,7 @@ namespace MaterialCanvas
         documentTypeInfo = AtomToolsFramework::AtomToolsAnyDocument::BuildDocumentTypeInfo(
             "Material Graph Node Config",
             { "materialgraphnode" },
+            { "materialgraphnodetemplate" },
             AZStd::any(AtomToolsFramework::DynamicNodeConfig()),
             AZ::Uuid::CreateNull()); // Null ID because JSON file contains type info and can be loaded directly into AZStd::any
 
@@ -202,6 +203,7 @@ namespace MaterialCanvas
         documentTypeInfo = AtomToolsFramework::AtomToolsAnyDocument::BuildDocumentTypeInfo(
             "Shader Source Data",
             { "shader" },
+            {},
             AZStd::any(AZ::RPI::ShaderSourceData()),
             AZ::RPI::ShaderSourceData::TYPEINFO_Uuid()); // Supplying ID because it is not included in the JSON file
 
@@ -232,7 +234,7 @@ namespace MaterialCanvas
 
     AZStd::vector<AZStd::string> MaterialCanvasApplication::GetCriticalAssetFilters() const
     {
-        return AZStd::vector<AZStd::string>({ "passes/", "config/"});
+        return AZStd::vector<AZStd::string>({ "passes/", "config/", "MaterialEditor/", "MaterialCanvas/" });
     }
 
     QWidget* MaterialCanvasApplication::GetAppMainWindow()

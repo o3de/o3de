@@ -581,6 +581,43 @@ namespace UnitTest
         }
     }
 
+    TEST_F(MaterialTests, TestSetPropertyValue_ConnectedToShaderEnabled)
+    {
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, Name{"one"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, Name{"two"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, Name{"three"});
+        materialTypeCreator.BeginMaterialProperty(Name{"EnableSecondShader"}, MaterialPropertyDataType::Bool);
+        materialTypeCreator.ConnectMaterialPropertyToShaderEnabled(Name{"two"});
+        materialTypeCreator.EndMaterialProperty();
+        materialTypeCreator.End(m_testMaterialTypeAsset);
+
+        MaterialAssetCreator materialAssetCreator;
+        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
+        materialAssetCreator.End(m_testMaterialAsset);
+
+        Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
+
+        MaterialPropertyIndex enableShader = material->FindPropertyIndex(Name{"EnableSecondShader"});
+
+        EXPECT_TRUE(material->GetShaderCollection()[0].IsEnabled());
+        EXPECT_FALSE(material->GetShaderCollection()[1].IsEnabled());
+        EXPECT_TRUE(material->GetShaderCollection()[2].IsEnabled());
+
+        material->SetPropertyValue(enableShader, true);
+
+        EXPECT_TRUE(material->GetShaderCollection()[0].IsEnabled());
+        EXPECT_TRUE(material->GetShaderCollection()[1].IsEnabled());
+        EXPECT_TRUE(material->GetShaderCollection()[2].IsEnabled());
+
+        material->SetPropertyValue(enableShader, false);
+
+        EXPECT_TRUE(material->GetShaderCollection()[0].IsEnabled());
+        EXPECT_FALSE(material->GetShaderCollection()[1].IsEnabled());
+        EXPECT_TRUE(material->GetShaderCollection()[2].IsEnabled());
+    }
+
 
     TEST_F(MaterialTests, TestSetSystemShaderOption)
     {
@@ -818,47 +855,6 @@ namespace UnitTest
             EXPECT_EQ((float)TransformColor(inputColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg).GetElement(i), (float)colorFromSrg.GetElement(i));
             EXPECT_EQ((float)inputColor.GetElement(i), (float)colorFromMaterial.GetElement(i));
         }
-    }
-
-    TEST_F(MaterialTests, TestReinitializeForHotReload)
-    {
-        Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
-        const RHI::ShaderResourceGroupData* srgData = &material->GetRHIShaderResourceGroup()->GetData();
-        ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
-
-        // Check the default property value
-        EXPECT_EQ(material->GetPropertyValue<float>(material->FindPropertyIndex(Name{ "MyFloat" })), 1.5f);
-        EXPECT_EQ(srgData->GetConstant<float>(srgData->FindShaderInputConstantIndex(Name{ "m_float" })), 1.5f);
-        EXPECT_EQ(material->GetPropertyValue<int32_t>(material->FindPropertyIndex(Name{ "MyInt" })), -2);
-        EXPECT_EQ(srgData->GetConstant<int32_t>(srgData->FindShaderInputConstantIndex(Name{ "m_int" })), -2);
-
-        // Override a property value
-        EXPECT_TRUE(material->SetPropertyValue<float>(material->FindPropertyIndex(Name{ "MyFloat" }), 5.5f));
-
-        // Apply the changes
-        EXPECT_TRUE(material->Compile());
-        ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
-
-        // Check the updated values with one overridden
-        EXPECT_EQ(material->GetPropertyValue<float>(material->FindPropertyIndex(Name{ "MyFloat" })), 5.5f);
-        EXPECT_EQ(srgData->GetConstant<float>(srgData->FindShaderInputConstantIndex(Name{ "m_float" })), 5.5f);
-        EXPECT_EQ(material->GetPropertyValue<int32_t>(material->FindPropertyIndex(Name{ "MyInt" })), -2);
-        EXPECT_EQ(srgData->GetConstant<int32_t>(srgData->FindShaderInputConstantIndex(Name{ "m_int" })), -2);
-
-        // Pretend there was a hot-reload with new default values
-        AccessMaterialAssetPropertyValue(m_testMaterialAsset, Name{"MyFloat"}) = 0.5f;
-        AccessMaterialAssetPropertyValue(m_testMaterialAsset, Name{"MyInt"}) = -7;
-        AZ::Data::AssetBus::Event(m_testMaterialAsset.GetId(), &AZ::Data::AssetBus::Handler::OnAssetReloaded, m_testMaterialAsset);
-        srgData = &material->GetRHIShaderResourceGroup()->GetData();
-        ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
-
-        // Make sure the override values are still there
-        EXPECT_EQ(srgData->GetConstant<float>(srgData->FindShaderInputConstantIndex(Name{ "m_float" })), 5.5f);
-        EXPECT_EQ(material->GetPropertyValue<float>(material->FindPropertyIndex(Name{ "MyFloat" })), 5.5f);
-
-        // Make sure the new default value is applied where it was not overridden
-        EXPECT_EQ(material->GetPropertyValue<int32_t>(material->FindPropertyIndex(Name{ "MyInt" })), -7);
-        EXPECT_EQ(srgData->GetConstant<int32_t>(srgData->FindShaderInputConstantIndex(Name{ "m_int" })), -7);
     }
 
     TEST_F(MaterialTests, TestFindPropertyIndexUsingOldName)

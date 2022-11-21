@@ -9,7 +9,6 @@
 
 #include <AtomToolsFramework/Communication/LocalServer.h>
 #include <AtomToolsFramework/Communication/LocalSocket.h>
-#include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
 #include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowserInteractions.h>
 
 #include <AzCore/IO/FileIO.h>
@@ -37,7 +36,6 @@ namespace AtomToolsFramework
         , protected AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler
         , protected AzToolsFramework::EditorPythonConsoleNotificationBus::Handler
         , protected AZ::UserSettingsOwnerRequestBus::Handler
-        , protected AtomToolsMainWindowNotificationBus::Handler
     {
     public:
         AZ_TYPE_INFO(AtomTools::AtomToolsApplication, "{A0DF25BA-6F74-4F11-9F85-0F99278D5986}");
@@ -63,9 +61,6 @@ namespace AtomToolsFramework
 
     protected:
         void OnIdle();
-
-        // AtomsToolMainWindowNotificationBus::Handler overrides...
-        void OnMainWindowClosing() override;
 
         // AssetDatabaseRequestsBus::Handler overrides...
         bool GetAssetDatabaseLocation(AZStd::string& result) override;
