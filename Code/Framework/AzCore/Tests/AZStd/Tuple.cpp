@@ -34,17 +34,17 @@ namespace UnitTest
 
     // Fixture for non-typed tests
     class TupleTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
         }
 
         void TearDown() override
         {
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         struct MoveOnlyType
@@ -65,17 +65,17 @@ namespace UnitTest
     // Fixture for typed tests
     template<typename Tuple>
     class TupleTypedTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
         }
 
         void TearDown() override
         {
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
     using TupleTestTypes = ::testing::Types<
@@ -1112,17 +1112,17 @@ namespace UnitTest
     namespace ExtendedApplyTest
     {
         class ExtendedTupleTest
-            : public AllocatorsFixture
+            : public LeakDetectionFixture
         {
         protected:
             void SetUp() override
             {
-                AllocatorsFixture::SetUp();
+                LeakDetectionFixture::SetUp();
             }
 
             void TearDown() override
             {
-                AllocatorsFixture::TearDown();
+                LeakDetectionFixture::TearDown();
             }
 
             static void SetUpTestCase()

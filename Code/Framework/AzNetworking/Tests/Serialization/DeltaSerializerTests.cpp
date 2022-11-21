@@ -124,17 +124,17 @@ namespace UnitTest
     };
 
     class DeltaSerializerTests
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            UnitTest::AllocatorsTestFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
         }
 
         void TearDown() override
         {
-            UnitTest::AllocatorsTestFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
     };
 

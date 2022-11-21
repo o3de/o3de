@@ -18,18 +18,18 @@
 #include <AzTest/AzTest.h>
 
 class MultiplayerCompressionTest
-    : public UnitTest::AllocatorsTestFixture
+    : public UnitTest::LeakDetectionFixture
 {
 protected:
 
     void SetUp() override
     {
-        AllocatorsTestFixture::SetUp();
+        LeakDetectionFixture::SetUp();
     }
 
     void TearDown() override
     {
-        AllocatorsTestFixture::TearDown();
+        LeakDetectionFixture::TearDown();
     }
 };
 

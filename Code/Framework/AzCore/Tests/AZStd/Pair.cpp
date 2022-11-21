@@ -17,17 +17,17 @@ namespace UnitTest
     // Fixture for non-typed tests
     template<typename TestConfig>
     class CompressedPairTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
         }
 
         void TearDown() override
         {
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 
@@ -122,7 +122,7 @@ namespace UnitTest
     }
 
     class PairTestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {};
 
     TEST_F(PairTestFixture, StructuredBinding_ToConstAutoVar_CompilesSuccessfully)

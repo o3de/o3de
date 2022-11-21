@@ -16,33 +16,33 @@ namespace UnitTest
 
     // Fixture for non-typed tests
     class VariantTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
         }
 
         void TearDown() override
         {
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 
     template<typename TestConfig>
     class VariantSizeTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
         }
 
         void TearDown() override
         {
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 
@@ -61,17 +61,17 @@ namespace UnitTest
 
     template<typename TestConfig>
     class VariantAlternativeTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
         }
 
         void TearDown() override
         {
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 

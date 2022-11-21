@@ -153,7 +153,7 @@ namespace UnitTest
      * Thread test
      */
     class Parallel_Thread
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
         int m_data;
         int m_dataMax;
@@ -164,12 +164,12 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
         }
 
         void TearDown() override
         {
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void increment_data()
@@ -686,7 +686,7 @@ namespace UnitTest
     }
 
     class Parallel_Combinable
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void run()
@@ -847,7 +847,7 @@ namespace UnitTest
     }
 
     class Parallel_SharedMutex
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         static const int s_numOfReaders = 4;
@@ -980,7 +980,7 @@ namespace UnitTest
     }
 
     class ConditionVariable
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {};
     
     TEST_F(ConditionVariable, NotifyOneSingleWait)
@@ -1396,17 +1396,17 @@ namespace UnitTest
     // Fixture for thread-event-bus related calls
     // exists only to categorize the tests.
     class ThreadEventsBus :
-        public AllocatorsFixture
+        public LeakDetectionFixture
     {
         public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
         }
 
         void TearDown() override
         {
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 
@@ -1468,17 +1468,17 @@ namespace UnitTest
     // OnThreadExit() because it cannot lock the mutex.
 
     class ThreadEventsDeathTest :
-        public AllocatorsFixture
+        public LeakDetectionFixture
     {
         public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
         }
 
         void TearDown() override
         {
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 

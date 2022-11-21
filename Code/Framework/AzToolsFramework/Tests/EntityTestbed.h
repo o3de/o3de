@@ -39,7 +39,7 @@ namespace UnitTest
     using namespace AZ;
 
     class EntityTestbed
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
         , public QObject
     {
     public:
@@ -67,7 +67,7 @@ namespace UnitTest
         AZ::IO::LocalFileIO m_localFileIO;
 
         EntityTestbed()
-            : AllocatorsFixture()
+            : LeakDetectionFixture()
         {
         }
 

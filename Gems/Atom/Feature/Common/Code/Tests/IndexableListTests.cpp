@@ -21,17 +21,17 @@ namespace UnitTest
     using namespace AZ::Render;
 
     class IndexableListTests
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            UnitTest::AllocatorsTestFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
         }
 
         void TearDown() override
         {
-            UnitTest::AllocatorsTestFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
     };
 

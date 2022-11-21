@@ -18,7 +18,7 @@ namespace UnitTest
 {
     void ActionManagerFixture::SetUp()
     {
-        AllocatorsTestFixture::SetUp();
+        LeakDetectionFixture::SetUp();
 
         m_mainWindow = new QMainWindow();
         m_defaultParentWidget = new QWidget();
@@ -49,7 +49,7 @@ namespace UnitTest
 
     void ActionManagerFixture::TearDown()
     {
-        AllocatorsTestFixture::TearDown();
+        LeakDetectionFixture::TearDown();
 
         delete m_defaultParentWidget;
     }

@@ -15,17 +15,17 @@ namespace UnitTest
 {
     // Fixture for AZStd::scoped_lock unit tests
     class ScopedLockTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
         }
 
         void TearDown() override
         {
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 

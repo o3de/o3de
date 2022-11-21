@@ -20,7 +20,7 @@ namespace UnitTest
 {
     void ScriptAutomationApplicationFixture::SetUp()
     {
-        AllocatorsFixture::SetUp();
+        LeakDetectionFixture::SetUp();
     }
 
     void ScriptAutomationApplicationFixture::TearDown()
@@ -30,7 +30,7 @@ namespace UnitTest
             DestroyApplication();
         }
 
-        AllocatorsFixture::TearDown();
+        LeakDetectionFixture::TearDown();
     }
 
     AzFramework::Application* ScriptAutomationApplicationFixture::CreateApplication(const char* scriptPath, bool exitOnFinish)

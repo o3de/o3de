@@ -21,10 +21,10 @@ namespace UnitTest
     using namespace UnitTestInternal;
 
     class LockFreeQueue
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
-        LockFreeQueue() : AllocatorsFixture() {}
+        LockFreeQueue() : LeakDetectionFixture() {}
 
     protected:
 #ifdef _DEBUG

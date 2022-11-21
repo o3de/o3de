@@ -60,7 +60,7 @@ namespace UnitTest
 
     void BuilderTestFixture::SetUp()
     {
-        AllocatorsFixture::SetUp();
+        LeakDetectionFixture::SetUp();
 
         //prepare reflection
         m_context = AZStd::make_unique<SerializeContext>();
@@ -124,7 +124,7 @@ namespace UnitTest
         NameDictionary::Destroy();
 
         m_context.reset();
-        AllocatorsFixture::TearDown();
+        LeakDetectionFixture::TearDown();
     }
 
 } // namespace UnitTest

@@ -220,9 +220,9 @@ namespace UnitTest
     /// Base fixture for ToolsApplication editor tests.
     template<bool CheckForLeaksOnDestruction = true>
     class ToolsApplicationFixture
-        : public AZStd::conditional_t<CheckForLeaksOnDestruction, AllocatorsTestFixture, testing::Test>
+        : public AZStd::conditional_t<CheckForLeaksOnDestruction, LeakDetectionFixture, testing::Test>
     {
-        using Base = AZStd::conditional_t<CheckForLeaksOnDestruction, AllocatorsTestFixture, testing::Test>;
+        using Base = AZStd::conditional_t<CheckForLeaksOnDestruction, LeakDetectionFixture, testing::Test>;
     public:
         void SetUp() override final
         {

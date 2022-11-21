@@ -114,7 +114,7 @@ namespace EMotionFX
     };
 
     class CommandAdjustSimulatedObjectTestsFixture
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<::testing::tuple<bool, bool, CommandAdjustSimulatedObjectTestsParam>>
     {
     public:
@@ -420,13 +420,13 @@ namespace EMotionFX
     };
 
     class CommandAdjustSimulatedJointTestsFixture
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<::testing::tuple<bool, bool, CommandAdjustSimulatedJointTestsParam>>
     {
     public:
         void SetUp() override
         {
-            UnitTest::AllocatorsTestFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
         }
 
         static std::string buildCommandLineFromTestParam(const CommandAdjustSimulatedJointTestsParam& param)

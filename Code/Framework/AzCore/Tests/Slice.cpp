@@ -200,17 +200,17 @@ namespace UnitTest
     };
 
     class SliceTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         SliceTest()
-            : AllocatorsFixture()
+            : LeakDetectionFixture()
         {
         }
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
@@ -253,7 +253,7 @@ namespace UnitTest
             AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AZ::IO::FileIOBase* m_prevFileIO{ nullptr };
@@ -648,7 +648,7 @@ namespace UnitTest
     };
 
     class DataFlags_CleanupTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override

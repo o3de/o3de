@@ -54,11 +54,11 @@ namespace UnitTest
     };
 
     class ChunkedVectorTest
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         ChunkedVectorTest()
-            : AllocatorsFixture()
+            : LeakDetectionFixture()
         {}
 
         void run()
@@ -147,11 +147,11 @@ namespace UnitTest
     }
 
     class HandleMapTest
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         HandleMapTest()
-            : AllocatorsFixture()
+            : LeakDetectionFixture()
         {}
 
         void run()

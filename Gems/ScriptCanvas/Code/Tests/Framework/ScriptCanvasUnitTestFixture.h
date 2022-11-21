@@ -12,17 +12,17 @@
 namespace ScriptCanvasUnitTest
 {
     class ScriptCanvasUnitTestFixture
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            UnitTest::AllocatorsFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
         };
 
         void TearDown() override
         {
-            UnitTest::AllocatorsFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         };
     };
 }
