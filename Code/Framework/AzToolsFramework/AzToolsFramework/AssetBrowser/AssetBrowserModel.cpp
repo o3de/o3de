@@ -224,13 +224,16 @@ namespace AzToolsFramework
             {
                 // We can only drop items onto folders so set flags accordingly
                 AssetBrowserEntry* item = static_cast<AssetBrowserEntry*>(index.internalPointer());
-                if (item && (item->RTTI_IsTypeOf(ProductAssetBrowserEntry::RTTI_Type()) || item->RTTI_IsTypeOf(SourceAssetBrowserEntry::RTTI_Type())))
+                if (item)
                 {
-                    return Qt::ItemIsDragEnabled | defaultFlags;
-                }
-                if (item && (item->RTTI_IsTypeOf(FolderAssetBrowserEntry::RTTI_Type())))
-                {
-                    return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
+                    if (item->RTTI_IsTypeOf(ProductAssetBrowserEntry::RTTI_Type()) || item->RTTI_IsTypeOf(SourceAssetBrowserEntry::RTTI_Type()))
+                    {
+                        return Qt::ItemIsDragEnabled | defaultFlags;
+                    }
+                    if (item->RTTI_IsTypeOf(FolderAssetBrowserEntry::RTTI_Type()))
+                    {
+                        return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
+                    }
                 }
             }
             return defaultFlags;
