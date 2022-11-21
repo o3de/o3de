@@ -272,6 +272,54 @@ namespace AtomToolsFramework
         return result.IsSuccess() ? result.GetValue() : AZ::Data::AssetId();
     }
 
+    bool EntityPreviewViewportSettingsSystem::LoadRenderPipeline(const AZStd::string& path)
+    {
+        const auto& pathWithAlias = GetPathWithAlias(path);
+        const auto& pathWithoutAlias = GetPathWithoutAlias(path);
+        auto cacheItr = m_renderPipelineDescriptorCache.find(pathWithAlias);
+        if (cacheItr != m_renderPipelineDescriptorCache.end())
+        {
+            SetSettingsValue("/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/RenderPipelinePath", pathWithAlias);
+            m_renderPipelineDescriptor = cacheItr->second;
+            m_settingsNotificationPending = true;
+            return true;
+        }
+
+        if (!pathWithoutAlias.empty())
+        {
+            auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(pathWithoutAlias);
+            if (loadResult && loadResult.GetValue().is<AZ::RPI::RenderPipelineDescriptor>())
+            {
+                SetSettingsValue("/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/RenderPipelinePath", pathWithAlias);
+                m_renderPipelineDescriptor = AZStd::any_cast<AZ::RPI::RenderPipelineDescriptor>(loadResult.GetValue());
+                m_renderPipelineDescriptorCache[pathWithAlias] = m_renderPipelineDescriptor;
+                m_settingsNotificationPending = true;
+                EntityPreviewViewportSettingsNotificationBus::Event(
+                    m_toolId, &EntityPreviewViewportSettingsNotificationBus::Events::OnRenderPipelineAdded, pathWithoutAlias);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool EntityPreviewViewportSettingsSystem::LoadRenderPipelineByAssetId(const AZ::Data::AssetId& assetId)
+    {
+        return LoadRenderPipeline(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId));
+    }
+
+    AZStd::string EntityPreviewViewportSettingsSystem::GetLastRenderPipelinePath() const
+    {
+        return GetPathWithoutAlias(GetSettingsValue<AZStd::string>(
+            "/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/RenderPipelinePath",
+            "@gemroot:Atom_Feature_Common@/Assets/Passes/MainRenderPipeline.azasset"));
+    }
+
+    AZ::Data::AssetId EntityPreviewViewportSettingsSystem::GetLastRenderPipelineAssetId() const
+    {
+        const auto& result = AZ::RPI::AssetUtils::MakeAssetId(GetLastRenderPipelinePath(), 0);
+        return result.IsSuccess() ? result.GetValue() : AZ::Data::AssetId();
+    }
+
     void EntityPreviewViewportSettingsSystem::SetShadowCatcherEnabled(bool enable)
     {
         SetSettingsValue<bool>("/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/EnableShadowCatcher", enable);
@@ -397,6 +445,28 @@ namespace AtomToolsFramework
                     }
                 }
             });
+            return;
+        }
+
+        if (assetInfo.m_relativePath.ends_with(AZ::RPI::RenderPipelineDescriptor::Extension))
+        {
+            AZ::TickBus::QueueFunction([=]()
+                {
+                    const auto& path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
+                    if (!path.empty())
+                    {
+                        auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(path);
+                        if (loadResult && loadResult.GetValue().is<AZ::RPI::RenderPipelineDescriptor>())
+                        {
+                            const auto& pathWithAlias = GetPathWithAlias(path);
+                            const auto& pathWithoutAlias = GetPathWithoutAlias(path);
+                            m_renderPipelineDescriptorCache[pathWithAlias] = AZStd::any_cast<AZ::RPI::RenderPipelineDescriptor>(loadResult.GetValue());
+                            m_settingsNotificationPending = true;
+                            EntityPreviewViewportSettingsNotificationBus::Event(
+                                m_toolId, &EntityPreviewViewportSettingsNotificationBus::Events::OnRenderPipelineAdded, pathWithoutAlias);
+                        }
+                    }
+                });
             return;
         }
     }

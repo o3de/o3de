@@ -76,6 +76,20 @@ namespace AtomToolsFramework
         //! Get last model preset asset id
         virtual AZ::Data::AssetId GetLastModelPresetAssetId() const = 0;
 
+        //! Load render pipeline
+        //! @returns true if render pipeline was loaded, otherwise false
+        virtual bool LoadRenderPipeline(const AZStd::string& path) = 0;
+
+        //! Load render pipeline
+        //! @returns true if render pipeline was loaded, otherwise false
+        virtual bool LoadRenderPipelineByAssetId(const AZ::Data::AssetId& assetId) = 0;
+
+        //! Get last render pipeline path
+        virtual AZStd::string GetLastRenderPipelinePath() const = 0;
+
+        //! Get last render pipeline asset id
+        virtual AZ::Data::AssetId GetLastRenderPipelineAssetId() const = 0;
+
         //! Set enabled state for shadow catcher
         virtual void SetShadowCatcherEnabled(bool enable) = 0;
 

@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
+#include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsRequestBus.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h>
 #include <AtomToolsFramework/Util/Util.h>
@@ -96,6 +97,13 @@ namespace AtomToolsFramework
         }, this);
         addWidget(m_modelPresetComboBox);
 
+        // Add render pipeline combo box
+        m_renderPipelineComboBox = new AssetSelectionComboBox([](const AZStd::string& path)
+            {
+                return path.ends_with(AZ::RPI::RenderPipelineDescriptor::Extension);
+            }, this);
+        addWidget(m_renderPipelineComboBox);
+
         // Add the last known paths for lighting and model presets to the browsers so they are not empty while the rest of the data is
         // being processed in the background.
         EntityPreviewViewportSettingsRequestBus::Event(
@@ -104,6 +112,7 @@ namespace AtomToolsFramework
             {
                 m_lightingPresetComboBox->AddPath(viewportRequests->GetLastLightingPresetPath());
                 m_modelPresetComboBox->AddPath(viewportRequests->GetLastModelPresetPath());
+                m_renderPipelineComboBox->AddPath(viewportRequests->GetLastRenderPipelinePath());
             });
 
         // Using a future watcher to monitor a background process that enumerates all of the lighting and model presets in the project.
@@ -116,6 +125,7 @@ namespace AtomToolsFramework
             {
                 m_lightingPresetComboBox->AddPath(path);
                 m_modelPresetComboBox->AddPath(path);
+                m_renderPipelineComboBox->AddPath(path);
             }
 
             connect(m_lightingPresetComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
@@ -128,13 +138,22 @@ namespace AtomToolsFramework
                     m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset, path);
             });
 
+            connect(m_renderPipelineComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path)
+                {
+                    EntityPreviewViewportSettingsRequestBus::Event(
+                        m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadRenderPipeline, path);
+                });
+
             OnViewportSettingsChanged();
         });
 
         // Start the future watcher with the background process to enumerate all of the lighting and model preset files.
         m_watcher.setFuture(QtConcurrent::run([]() {
             return GetPathsInSourceFoldersMatchingFilter([](const AZStd::string& path) {
-                return path.ends_with(AZ::Render::LightingPreset::Extension) || path.ends_with(AZ::Render::ModelPreset::Extension);
+                return
+                    path.ends_with(AZ::Render::LightingPreset::Extension) ||
+                    path.ends_with(AZ::Render::ModelPreset::Extension) ||
+                    path.ends_with(AZ::RPI::RenderPipelineDescriptor::Extension);
             });
         }));
         
@@ -158,6 +177,7 @@ namespace AtomToolsFramework
                 m_toggleAlternateSkybox->setChecked(viewportRequests->GetAlternateSkyboxEnabled());
                 m_lightingPresetComboBox->SelectPath(viewportRequests->GetLastLightingPresetPath());
                 m_modelPresetComboBox->SelectPath(viewportRequests->GetLastModelPresetPath());
+                m_renderPipelineComboBox->SelectPath(viewportRequests->GetLastRenderPipelinePath());
             });
     }
 
@@ -169,6 +189,11 @@ namespace AtomToolsFramework
     void EntityPreviewViewportToolBar::OnLightingPresetAdded(const AZStd::string& path)
     {
         m_lightingPresetComboBox->AddPath(path);
+    }
+
+    void EntityPreviewViewportToolBar::OnRenderPipelineAdded(const AZStd::string& path)
+    {
+        m_renderPipelineComboBox->AddPath(path);
     }
 } // namespace AtomToolsFramework
 
