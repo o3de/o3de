@@ -737,26 +737,10 @@ namespace AzToolsFramework
                 AZStd::string originalFname;
                 AssetBrowserEntry* item = entry;
                 Path oldPath = item->GetFullPath();
-                Path newPath = oldPath;
-                PathView extension = oldPath.Extension();
-                PathView filename = oldPath.Stem();
-                AZStd::string_view fname = filename.Native();
-                size_t position = fname.rfind("-copy");
-                if (position != AZStd::string_view::npos)
-                {
-                    AZStd::string value = fname.substr(position + 5);
-                    originalFname = fname.substr(0, position + 5);
-                    int oldvalue = std::stoi(std::string(value.data()));
-                    originalFname += AZStd::to_string(oldvalue + 1);
-                }
-                else
-                {
-                    originalFname = AZStd::string(fname) + "-copy1";
-                }
-                PathView temp = originalFname.data();
-                newPath.ReplaceFilename(temp);
-                newPath.ReplaceExtension(extension);
-                QFile::copy(oldPath.c_str(), newPath.c_str());
+                AZStd::string fname;
+                AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(
+                    oldPath.ParentPath().Native(), oldPath.Filename().Native(), fname, "-copy");
+                QFile::copy(oldPath.c_str(), fname.c_str());
             }
         }
 
