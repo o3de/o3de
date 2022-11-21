@@ -13,6 +13,17 @@
 # Get the platform specific folder ${pal_dir} for the current folder: ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
+# Now that we have the platform abstraction layer (PAL) folder for this folder, thats where we will find the
+# traits for this platform. Traits for a platform are defines for things like whether or not something in this gem
+# is supported by this platform.
+include(${pal_dir}/PAL.cmake)
+
+# Check to see if the building the Gem Modules are supported for the current platform
+if(NOT PAL_TRAIT_${NameUpper}_SUPPORTED)
+    return()
+endif()
+
+
 # The ${gem_name}.API target declares the common interface that users of this gem should depend on in their targets
 ly_add_target(
     NAME ${gem_name}.API INTERFACE

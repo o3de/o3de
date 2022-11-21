@@ -56,21 +56,29 @@ namespace UnitTest
         EXPECT_TRUE(m_instanceToTemplateInterface);
 
         m_prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-        EXPECT_TRUE(m_instanceToTemplateInterface);
+        EXPECT_TRUE(m_prefabEditorEntityOwnershipInterface);
 
-        InitializeRootPrefab();
+        // This is for calling CreateEditorRepresentation that adds required editor components.
+        AzToolsFramework::EditorRequestBus::Handler::BusConnect();
 
         GetApplication()->RegisterComponentDescriptor(PrefabTestComponent::CreateDescriptor());
         GetApplication()->RegisterComponentDescriptor(PrefabTestComponentWithUnReflectedTypeMember::CreateDescriptor());
 
+        // Gets undo stack.
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
             m_undoStack, &AzToolsFramework::ToolsApplicationRequestBus::Events::GetUndoStack);
         AZ_Assert(m_undoStack, "Failed to look up undo stack from tools application");
+
+        // This ensures that the flag (if root prefab is assigned) in prefab editor entity ownership service is set to true.
+        // Public prefab operations like "create prefab" will fail if the flag is off.
+        CreateRootPrefab();
     }
 
     void PrefabTestFixture::TearDownEditorFixtureImpl()
     {
         m_undoStack = nullptr;
+
+        AzToolsFramework::EditorRequestBus::Handler::BusDisconnect();
     }
 
     AZStd::unique_ptr<ToolsTestApplication> PrefabTestFixture::CreateTestApplication()
@@ -80,35 +88,24 @@ namespace UnitTest
 
     void PrefabTestFixture::CreateRootPrefab()
     {
-        auto entityOwnershipService = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-        ASSERT_TRUE(entityOwnershipService != nullptr);
-        entityOwnershipService->CreateNewLevelPrefab("UnitTestRoot.prefab", "");
+        m_prefabEditorEntityOwnershipInterface->CreateNewLevelPrefab("UnitTestRoot.prefab", "");
 
-        InitializeRootPrefab();
-        
-        auto rootEntityReference = entityOwnershipService->GetRootPrefabInstance()->get().GetContainerEntity();
-        ASSERT_TRUE(rootEntityReference.has_value());
-        auto& rootEntity = rootEntityReference->get();
-        rootEntity.Deactivate();
-        rootEntity.CreateComponent<AzToolsFramework::Components::TransformComponent>();
-        rootEntity.Activate();
-    }
-
-    void PrefabTestFixture::InitializeRootPrefab()
-    {
         InstanceOptionalReference rootInstance = m_prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
-        if (rootInstance.has_value())
+        ASSERT_TRUE(rootInstance.has_value());
+        
+        EntityOptionalReference rootContainerEntity = rootInstance->get().GetContainerEntity();
+        ASSERT_TRUE(rootContainerEntity.has_value());
+        if (rootContainerEntity->get().GetState() == AZ::Entity::State::Constructed)
         {
-            EntityOptionalReference rootContainerEntity = rootInstance->get().GetContainerEntity();
-            if (rootContainerEntity.has_value() && rootContainerEntity->get().GetState() == AZ::Entity::State::Constructed)
-            {
-                rootContainerEntity->get().Init();
-            }
-
-            auto* prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
-            ASSERT_TRUE(prefabFocusPublicInterface != nullptr);
-            prefabFocusPublicInterface->FocusOnOwningPrefab(rootContainerEntity->get().GetId());
+            rootContainerEntity->get().Init();
         }
+
+        // Focus on root prefab instance.
+        auto* prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
+        EXPECT_TRUE(prefabFocusPublicInterface != nullptr);
+        PrefabFocusOperationResult focusResult = prefabFocusPublicInterface->FocusOnOwningPrefab(
+            rootContainerEntity->get().GetId());
+        EXPECT_TRUE(focusResult.IsSuccess());
     }
 
     void PrefabTestFixture::PropagateAllTemplateChanges()
@@ -116,12 +113,77 @@ namespace UnitTest
         m_prefabSystemComponent->OnSystemTick();
     }
 
+    AZ::EntityId PrefabTestFixture::CreateEditorEntityUnderRoot(const AZStd::string& entityName)
+    {
+        return CreateEditorEntity(entityName, GetRootContainerEntityId());
+    }
+
+    AZ::EntityId PrefabTestFixture::CreateEditorEntity(const AZStd::string& entityName, AZ::EntityId parentId)
+    {
+        PrefabEntityResult createResult = m_prefabPublicInterface->CreateEntity(parentId, AZ::Vector3());
+        AZ_Assert(createResult.IsSuccess(), "CreateEditorEntity - Failed to create entity %s. Error: %s",
+            entityName.c_str(), createResult.GetError().c_str());
+
+        // Verify new entity.
+        AZ::EntityId newEntityId = createResult.GetValue();
+        EXPECT_TRUE(newEntityId.IsValid());
+
+        AZ::Entity* newEntity = AzToolsFramework::GetEntityById(newEntityId);
+        EXPECT_TRUE(newEntity != nullptr);
+
+        newEntity->SetName(entityName);
+        m_prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(newEntityId, m_undoStack->GetTop());
+
+        PropagateAllTemplateChanges();
+
+        return newEntityId;
+    }
+
+    AZ::EntityId PrefabTestFixture::CreateEditorPrefab(AZ::IO::PathView filePath, const AzToolsFramework::EntityIdList& entityIds)
+    {
+        // New prefab instance is reparent under the common root entity of the input entities.
+        CreatePrefabResult createResult = m_prefabPublicInterface->CreatePrefabInMemory(entityIds, filePath);
+        AZ_Assert(createResult.IsSuccess(), "CreateEditorPrefab - Failed to create prefab %s. Error: %s",
+            AZStd::string(filePath.Native()).c_str(),
+            createResult.GetError().c_str());
+
+        // Verify new container entity.
+        AZ::EntityId prefabContainerId = createResult.GetValue();
+        EXPECT_TRUE(prefabContainerId.IsValid());
+
+        AZ::Entity* prefabContainerEntity = AzToolsFramework::GetEntityById(prefabContainerId);
+        EXPECT_TRUE(prefabContainerEntity != nullptr);
+
+        PropagateAllTemplateChanges();
+
+        return prefabContainerId;
+    }
+
+    AZ::EntityId PrefabTestFixture::InstantiateEditorPrefab(AZ::IO::PathView filePath, AZ::EntityId parentId)
+    {
+        InstantiatePrefabResult instantiateResult = m_prefabPublicInterface->InstantiatePrefab(
+            filePath.Native(), parentId, AZ::Vector3());
+        AZ_Assert(instantiateResult.IsSuccess(), "InstantiateEditorPrefab - Failed to instantiate prefab %s. Error: %s",
+            AZStd::string(filePath.Native()).c_str(),
+            instantiateResult.GetError().c_str());
+
+        // Verify new container entity.
+        AZ::EntityId prefabContainerId = instantiateResult.GetValue();
+        EXPECT_TRUE(prefabContainerId.IsValid());
+
+        AZ::Entity* prefabContainerEntity = AzToolsFramework::GetEntityById(prefabContainerId);
+        EXPECT_TRUE(prefabContainerEntity != nullptr);
+        
+        PropagateAllTemplateChanges();
+
+        return prefabContainerId;
+    }
+
     AZ::Entity* PrefabTestFixture::CreateEntity(const AZStd::string& entityName, bool shouldActivate)
     {
-        // Circumvent the EntityContext system and generate a new entity with a transform component
         AZ::Entity* newEntity = aznew AZ::Entity(entityName);
         
-        if(shouldActivate)
+        if (shouldActivate)
         {
             newEntity->Init();
             newEntity->Activate();
@@ -130,55 +192,13 @@ namespace UnitTest
         return newEntity;
     }
 
-    AZ::EntityId PrefabTestFixture::CreateEntityUnderRootPrefab(AZStd::string name, AZ::EntityId parentId)
+    AZ::EntityId PrefabTestFixture::GetRootContainerEntityId()
     {
-        auto createResult = m_prefabPublicInterface->CreateEntity(parentId, AZ::Vector3());
-        AZ_Assert(createResult.IsSuccess(), "Failed to create entity: %s", createResult.GetError().c_str());
-        AZ::EntityId entityId = createResult.GetValue();
-
-        AZ::Entity* entity = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
-
-        entity->Deactivate();
-
-        entity->SetName(name);
-
-        // Normally, in invalid parent ID should automatically parent us to the root prefab, but currently in the unit test
-        // environment entities aren't created with a default transform component, so CreateEntity won't correctly parent.
-        // We get the actual target parent ID here, then create our missing transform component.
-        if (!parentId.IsValid())
-        {
-            auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-            parentId = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetContainerEntityId();
-        }
-
-        auto transform = aznew AzToolsFramework::Components::TransformComponent;
-        transform->SetParent(parentId);
-        entity->AddComponent(transform);
-
-        entity->Activate();
-
-        // Update our undo cache entry to include the rename / reparent as one atomic operation.
-        m_prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_undoStack->GetTop());
-        m_prefabSystemComponent->OnSystemTick();
-
-        return entityId;
-    }
-
-    AZ::EntityId PrefabTestFixture::CreatePrefab(const AzToolsFramework::EntityIdList& entityIds, AZ::IO::PathView filePath)
-    {
-        CreatePrefabResult createPrefabResult = m_prefabPublicInterface->CreatePrefabInMemory(entityIds, filePath);
-
-        // Verify that a valid prefab container entity is created.
-        AZ::EntityId prefabContainerId = createPrefabResult.GetValue();
-        AZ_Assert(prefabContainerId.IsValid(), "CreatePrefab operation resulted in an invalid container entity id.");
-        AZ::Entity* prefabContainerEntity = AzToolsFramework::GetEntityById(prefabContainerId);
-        AZ_Assert(prefabContainerEntity != nullptr, "ContainerEntity created with CreatePrefab() is a nullptr.");
-
-        // PrefabTestFixture won't add required editor components by default. Hence we add them here.
-        AddRequiredEditorComponents(prefabContainerEntity);
-
-        return prefabContainerId;
+        auto rootInstance = m_prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
+        EXPECT_TRUE(rootInstance.has_value());
+        AZ::EntityId rootContainerId = rootInstance->get().GetContainerEntityId();
+        EXPECT_TRUE(rootContainerId.IsValid());
+        return rootContainerId;
     }
 
     void PrefabTestFixture::CompareInstances(const AzToolsFramework::Prefab::Instance& instanceA,
@@ -254,12 +274,31 @@ namespace UnitTest
         ProcessDeferredUpdates();
     }
 
-    void PrefabTestFixture::AddRequiredEditorComponents(AZ::Entity* entity)
+    void PrefabTestFixture::AddRequiredEditorComponents(const AzToolsFramework::EntityIdList& entityIds)
     {
-        ASSERT_TRUE(entity != nullptr);
-        entity->Deactivate();
-        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-            &AzToolsFramework::EditorEntityContextRequests::AddRequiredComponents, *entity);
-        entity->Activate();
+        for (AZ::EntityId entityId : entityIds)
+        {
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
+            EXPECT_TRUE(entity != nullptr) << "The entity to be added required editor components is nullptr.";
+
+            entity->Deactivate();
+            AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                &AzToolsFramework::EditorEntityContextRequests::AddRequiredComponents, *entity);
+            entity->Activate();
+        }
     }
-}
+
+    // EditorRequestBus
+    void PrefabTestFixture::CreateEditorRepresentation(AZ::Entity* entity)
+    {
+        if (!entity)
+        {
+            EXPECT_TRUE(false) << "Cannot call CreateEditorRepresentation for a null entity.";
+            return;
+        }
+
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequestBus::Events::AddRequiredComponents, *entity);
+    }
+} // namespace UnitTest
