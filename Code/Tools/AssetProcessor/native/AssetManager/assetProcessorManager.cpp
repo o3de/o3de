@@ -706,7 +706,7 @@ namespace AssetProcessor
             }
             else
             {
-                AddSourceToDatabase(source, scanFolder, jobEntry.m_sourceAssetReference);
+                AddSourceToDatabase(source, jobEntry.m_sourceAssetReference);
             }
         }
 
@@ -1190,7 +1190,7 @@ namespace AssetProcessor
             {
                 //if we didn't find a source, we make a new source
                 //add the new source
-                AddSourceToDatabase(source, scanFolder, processedAsset.m_entry.m_sourceAssetReference);
+                AddSourceToDatabase(source, processedAsset.m_entry.m_sourceAssetReference);
             }
 
             //create/update the job
@@ -4664,12 +4664,10 @@ namespace AssetProcessor
         return absoluteSourceFilePathQueue.values();
     }
 
-    void AssetProcessorManager::AddSourceToDatabase(AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceDatabaseEntry, const ScanFolderInfo* scanFolder, const SourceAssetReference& sourceAsset)
+    void AssetProcessorManager::AddSourceToDatabase(AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceDatabaseEntry, const SourceAssetReference& sourceAsset)
     {
-        sourceDatabaseEntry.m_scanFolderPK = scanFolder->ScanFolderID();
-
+        sourceDatabaseEntry.m_scanFolderPK = sourceAsset.ScanFolderId();
         sourceDatabaseEntry.m_sourceName = sourceAsset.RelativePath().c_str();
-
         sourceDatabaseEntry.m_sourceGuid = AssetUtilities::CreateSafeSourceUUIDFromName(sourceDatabaseEntry.m_sourceName.c_str());
 
         if (!m_stateData->SetSource(sourceDatabaseEntry))

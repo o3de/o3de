@@ -395,7 +395,7 @@ namespace AssetProcessor
         bool SearchSourceInfoBySourceUUID(const AZ::Uuid& sourceUuid, SourceAssetReference& result);
 
         //!  Adds the source to the database and returns the corresponding sourceDatabase Entry
-        void AddSourceToDatabase(AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceDatabaseEntry, const ScanFolderInfo* scanFolder, const SourceAssetReference& sourceAsset);
+        void AddSourceToDatabase(AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceDatabaseEntry, const SourceAssetReference& sourceAsset);
 
         // ! Get the engine, project and active gem root directories which could potentially be separate repositories.
         AZStd::vector<AZStd::string> GetPotentialRepositoryRoots();
