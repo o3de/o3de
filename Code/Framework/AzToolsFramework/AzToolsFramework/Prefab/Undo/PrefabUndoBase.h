@@ -15,6 +15,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class InstanceToTemplateInterface;
+        class InstanceDomGeneratorInterface;
         class PrefabSystemComponentInterface;
 
         class PrefabUndoBase
@@ -41,6 +42,7 @@ namespace AzToolsFramework
             PrefabDom m_undoPatch;
 
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
+            InstanceDomGeneratorInterface* m_instanceDomGeneratorInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
 
             bool m_changed;

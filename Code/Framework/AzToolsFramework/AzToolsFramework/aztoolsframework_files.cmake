@@ -256,6 +256,8 @@ set(FILES
     PaintBrush/PaintBrush.cpp
     PaintBrush/PaintBrush.h
     PaintBrush/PaintBrushNotificationBus.h
+    PaintBrush/PaintBrushSubModeCluster.cpp
+    PaintBrush/PaintBrushSubModeCluster.h
     PaintBrushSettings/PaintBrushSettings.cpp
     PaintBrushSettings/PaintBrushSettings.h
     PaintBrushSettings/PaintBrushSettingsNotificationBus.h
@@ -612,6 +614,8 @@ set(FILES
     ViewportUi/ViewportUiWidgetCallbacks.cpp
     ViewportUi/ViewportUiDisplayLayout.h
     ViewportUi/ViewportUiDisplayLayout.cpp
+    ComponentMode/ComponentModeActionHandler.h
+    ComponentMode/ComponentModeActionHandler.cpp
     ComponentMode/EditorComponentModeBus.h
     ComponentMode/ComponentModeCollection.h
     ComponentMode/ComponentModeCollection.cpp
@@ -856,8 +860,14 @@ set(FILES
     Prefab/Undo/PrefabUndoAddEntity.cpp
     Prefab/Undo/PrefabUndoAddEntityAsOverride.h
     Prefab/Undo/PrefabUndoAddEntityAsOverride.cpp
+    Prefab/Undo/PrefabUndoDelete.h
+    Prefab/Undo/PrefabUndoDelete.cpp
+    Prefab/Undo/PrefabUndoDeleteAsOverride.h
+    Prefab/Undo/PrefabUndoDeleteAsOverride.cpp
     Prefab/Undo/PrefabUndoBase.h
     Prefab/Undo/PrefabUndoBase.cpp
+    Prefab/Undo/PrefabUndoRevertOverrides.h
+    Prefab/Undo/PrefabUndoRevertOverrides.cpp
     Prefab/Undo/PrefabUndoUpdateLink.h
     Prefab/Undo/PrefabUndoUpdateLink.cpp
     Prefab/Undo/PrefabUndoUtils.h

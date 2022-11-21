@@ -6,8 +6,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 import groovy.json.JsonOutput
-PIPELINE_CONFIG_FILE = 'scripts/build/Jenkins/lumberyard.json'
+import java.util.regex.Pattern
+
+PIPELINE_CONFIG_FILE = 'scripts/build/Jenkins/o3de.json'
 INCREMENTAL_BUILD_SCRIPT_PATH = 'scripts/build/bootstrap/incremental_build_util.py'
 EBS_SNAPSHOT_SCRIPT_PATH = 'scripts/build/tools/ebs_snapshot.py'
 PIPELINE_RETRY_ATTEMPTS = 3
@@ -17,15 +20,61 @@ PIPELINE_TIMEOUT = 60
 
 EMPTY_JSON = readJSON text: '{}'
 
+ENGINE_DEFAULT_ORGANIZATION_NAME = 'o3de'
 ENGINE_REPOSITORY_NAME = 'o3de'
+ENGINE_DEVELOPMENT_BRANCH = 'development'
+EXTRAS_DEFAULT_ORGANIZATION_NAME = 'o3de'
+EXTRAS_REPOSITORY_NAME = 'o3de-extras'
+EXTRAS_DEVELOPMENT_BRANCH = 'development'
+
+COMMIT_DOMAIN_NAME = ''
+COMMIT_ORGANIZATION_NAME = ''
+COMMIT_REPOSITORY_NAME = ''
+
+@NonCPS
+def doit()
+{
+    def httpsPattern = ~'https://(.+)/(.+)/(.+).git'
+    def commitUrl = scm.userRemoteConfigs.url[0]
+    def matcher = commitUrl =~ httpsPattern
+    echo "matcher ${commitUrl} =~ ${httpsPattern}"
+    matcher.find()
+    COMMIT_DOMAIN_NAME = matcher.group(1)
+    echo "matcher.group(1) = COMMIT_DOMAIN_NAME = ${COMMIT_DOMAIN_NAME}"
+    COMMIT_ORGANIZATION_NAME = matcher.group(2)
+    echo "matcher.group(2) = COMMIT_ORGANIZATION_NAME = ${COMMIT_ORGANIZATION_NAME}"
+    COMMIT_REPOSITORY_NAME = matcher.group(3)
+    echo "matcher.group(3) = COMMIT_REPOSITORY_NAME = ${COMMIT_REPOSITORY_NAME}"
+}
+doit()
+
+ENGINE_COMMIT = false
+EXTRAS_COMMIT = false
+ENGINE_URL = ''
+EXTRAS_URL = ''
+if(COMMIT_REPOSITORY_NAME == ENGINE_REPOSITORY_NAME) {
+    ENGINE_COMMIT = true
+    ENGINE_URL = scm.userRemoteConfigs.url[0]
+    EXTRAS_URL = "https://${COMMIT_DOMAIN_NAME}/${EXTRAS_DEFAULT_ORGANIZATION_NAME}/${EXTRAS_REPOSITORY_NAME}.git"
+}
+else if(COMMIT_REPOSITORY_NAME == EXTRAS_REPOSITORY_NAME) {
+    EXTRAS_COMMIT = true
+    ENGINE_URL = "https://${COMMIT_DOMAIN_NAME}/${ENGINE_DEFAULT_ORGANIZATION_NAME}/${ENGINE_REPOSITORY_NAME}.git"
+    EXTRAS_URL = scm.userRemoteConfigs.url[0]
+} else {
+    //Error unknown repo
+    assert false : "Unknown repo"
+}
+echo "ENGINE_URL = ${ENGINE_URL}"
+echo "EXTRAS_URL = ${EXTRAS_URL}"
 
 // Branches with build snapshots
 BUILD_SNAPSHOTS = ['development', 'stabilization/2210']
 
-// Build snapshots with empty snapshot (for use with 'SNAPSHOT' pipeline paramater)
+// Build snapshots with empty snapshot (for use with 'SNAPSHOT' pipeline parameter)
 BUILD_SNAPSHOTS_WITH_EMPTY = BUILD_SNAPSHOTS + ''
 
-// The default build snapshot to be selected in the 'SNAPSHOT' pipeline paramater
+// The default build snapshot to be selected in the 'SNAPSHOT' pipeline parameter
 DEFAULT_BUILD_SNAPSHOT = BUILD_SNAPSHOTS_WITH_EMPTY.get(0)
 
 // Branches with build snapshots as comma separated value string
@@ -44,7 +93,7 @@ def pipelineParameters = [
     booleanParam(defaultValue: false, description: 'Deletes the volume used for the workspace after the pipeline steps are completed.', name: 'DISCARD_VOLUME')
 ]
 
-def palSh(cmd, lbl = '', winSlashReplacement = true, winCharReplacement = true) {
+def PlatformSh(cmd, lbl = '', winSlashReplacement = true, winCharReplacement = true) {
     if (env.IS_UNIX) {
         sh label: lbl,
            script: cmd
@@ -60,7 +109,7 @@ def palSh(cmd, lbl = '', winSlashReplacement = true, winCharReplacement = true) 
     }
 }
 
-def palMkdir(path) {
+def PlatformMkdir(path) {
     if (env.IS_UNIX) {
         sh label: "Making directories ${path}",
            script: "mkdir -p ${path}"
@@ -71,7 +120,7 @@ def palMkdir(path) {
     }
 }
 
-def palRm(path) {
+def PlatformRm(path) {
     if (env.IS_UNIX) {
         sh label: "Removing ${path}",
            script: "rm ${path}"
@@ -82,7 +131,7 @@ def palRm(path) {
     }
 }
 
-def palRmDir(path) {
+def PlatformRmDir(path) {
     if (env.IS_UNIX) {
         sh label: "Removing ${path}",
            script: "if [ -d ${path} ]; then rm -rf ${path}; fi"
@@ -134,7 +183,7 @@ def LoadPipelineConfig(String pipelineName, String branchName) {
     echo 'Loading pipeline config'
     def pipelineConfig = {}
     pipelineConfig = readJSON file: PIPELINE_CONFIG_FILE
-    palRm(PIPELINE_CONFIG_FILE)
+    PlatformRm(PIPELINE_CONFIG_FILE)
     pipelineConfig.platforms = EMPTY_JSON
 
     // Load the pipeline configs per platform
@@ -151,7 +200,7 @@ def LoadPipelineConfig(String pipelineName, String branchName) {
                 pipelineConfig.platforms[platform] = EMPTY_JSON
                 pipelineConfig.platforms[platform].PIPELINE_ENV = readJSON file: pipeline_config_path.toString()
             }
-            palRm(pipeline_config_path.toString())
+            PlatformRm(pipeline_config_path.toString())
         }
     }
 
@@ -220,7 +269,35 @@ def GetCrashArtifactDir() {
     }
 }
 
-def CheckoutBootstrapScripts(String branchName) {
+def GetRemoteConfig(repositoryName, repositoryUrl) {
+    def theRemoteConfig = [
+        name: repositoryName,
+        url: repositoryUrl,
+        credentialsId: scm.userRemoteConfigs.credentialsId[0]
+    ]
+    return theRemoteConfig
+}
+
+def GetEngineRemoteConfig() {
+    return GetRemoteConfig(ENGINE_REPOSITORY_NAME, ENGINE_URL)
+}
+
+def GetExtrasRemoteConfig() {
+    return GetRemoteConfig(EXTRAS_REPOSITORY_NAME, EXTRAS_URL)
+}
+
+def UnInstallGitLFS() {
+    PlatformSh('git lfs uninstall', 'Git LFS Uninstall')
+}
+
+def InstallAndPullGitLFS() {
+    if(fileExists('.lfsconfig')) {
+        PlatformSh("git lfs install --force", "LFS config exists. Installing LFS hooks to local repo")
+        PlatformSh("git lfs pull", "Pulling new LFS objects")
+    }
+}
+
+def CheckoutEngineBootstrapScripts(String branchName) {
     checkout([$class: 'GitSCM',
         branches: [[name: "*/${branchName}"]],
         doGenerateSubmoduleConfigurations: false,
@@ -241,21 +318,16 @@ def CheckoutBootstrapScripts(String branchName) {
     ])
 }
 
-def CheckoutRepo(boolean disableSubmodules = false) {
-
-    if (!fileExists(ENGINE_REPOSITORY_NAME)) {
-        palMkdir(ENGINE_REPOSITORY_NAME)
-    }
-
-    if(fileExists('.git')) {
+def CheckoutRepo(String branchName, userRemoteConfigs, boolean disableSubmodules = false, boolean setEnvCommit = false) {
+    if (fileExists('.git')) {
         // If the repository after checkout is locked, likely we took a snapshot while git was running,
-        // to leave the repo in a usable state, garbagecollect. This also helps in situations where
+        // to leave the repo in a usable state, garbage collect.
         def indexLockFile = '.git/index.lock'
-        if(fileExists(indexLockFile)) {
-            palSh('git gc', 'Git GarbageCollect')
+        if (fileExists(indexLockFile)) {
+            PlatformSh('git gc', 'Git GarbageCollect')
         }
-        if(fileExists(indexLockFile)) { // if it is still there, remove it
-            palRm(indexLockFile)
+        if (fileExists(indexLockFile)) { // if it is still there, remove it
+            PlatformRm(indexLockFile)
         }
     }
 
@@ -268,31 +340,33 @@ def CheckoutRepo(boolean disableSubmodules = false) {
         retryAttempt = retryAttempt + 1
         checkout scm: [
             $class: 'GitSCM',
-            branches: scm.branches,
+            branches: [[name: branchName]],
             extensions: [
                 [$class: 'PruneStaleBranch'],
                 [$class: 'AuthorInChangelog'],
                 [$class: 'SubmoduleOption', disableSubmodules: disableSubmodules, recursiveSubmodules: true],
                 [$class: 'CheckoutOption', timeout: 60]
             ],
-            userRemoteConfigs: scm.userRemoteConfigs
-       ]
+            userRemoteConfigs: userRemoteConfigs
+        ]
     }
 
-    // CHANGE_ID is used by some scripts to identify uniquely the current change (usually metric jobs)
-    palSh('git rev-parse HEAD > commitid', 'Getting commit id')
-    env.CHANGE_ID = readFile file: 'commitid'
-    env.CHANGE_ID = env.CHANGE_ID.trim()
-    palRm('commitid')
+    if (setEnvCommit) {
+        // CHANGE_ID is used by some scripts to identify uniquely the current change (usually metric jobs)
+        PlatformSh('git rev-parse HEAD > commitid', 'Getting commit id')
+        env.CHANGE_ID = readFile file: 'commitid'
+        env.CHANGE_ID = env.CHANGE_ID.trim()
+        PlatformRm('commitid')
 
-    // CHANGE_DATE is used by the installer to provide some ability to sort tagged builds in addition to BRANCH_NAME and CHANGE_ID
-    commitDateFmt = '%%cI'
-    if (env.IS_UNIX) commitDateFmt = '%cI'
+        // CHANGE_DATE is used by the installer to provide some ability to sort tagged builds in addition to BRANCH_NAME and CHANGE_ID
+        commitDateFmt = '%%cI'
+        if (env.IS_UNIX) commitDateFmt = '%cI'
 
-    palSh("git show -s --format=${commitDateFmt} ${env.CHANGE_ID} > commitdate", 'Getting commit date', winSlashReplacement=true, winCharReplacement=false)
-    env.CHANGE_DATE = readFile file: 'commitdate'
-    env.CHANGE_DATE = env.CHANGE_DATE.trim()
-    palRm('commitdate')
+        PlatformSh("git show -s --format=${commitDateFmt} ${env.CHANGE_ID} > commitdate", 'Getting commit date', winSlashReplacement=true, winCharReplacement=false)
+        env.CHANGE_DATE = readFile file: 'commitdate'
+        env.CHANGE_DATE = env.CHANGE_DATE.trim()
+        PlatformRm('commitdate')
+    }
 }
 
 def HandleDriveMount(String snapshot, String repositoryName, String projectName, String pipeline, String branchName, String platform, String buildType, String workspace, boolean recreateVolume = false) {
@@ -303,9 +377,9 @@ def HandleDriveMount(String snapshot, String repositoryName, String projectName,
     else pythonCmd = 'python3 -u '
 
     if(recreateVolume) {
-        palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action delete --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Deleting volume', winSlashReplacement=false)
+        PlatformSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action delete --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Deleting volume', winSlashReplacement=false)
     }
-    palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action mount --snapshot ${snapshot} --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Mounting volume', winSlashReplacement=false)
+    PlatformSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action mount --snapshot ${snapshot} --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Mounting volume', winSlashReplacement=false)
 
     if(env.IS_UNIX) {
         sh label: 'Setting volume\'s ownership',
@@ -336,39 +410,91 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
     // we need to cleanup. Once all branches take this relocation, we can remove this
     if(env.CLEAN_WORKSPACE?.toBoolean() || fileExists("${workspace}/.git")) {
         if(fileExists(workspace)) {
-            palRmDir(workspace)
+            PlatformRmDir(workspace)
         }
     }
 
     dir(workspace) {
+
         // Add folder where we will store the 3rdParty downloads and packages
-        if(!fileExists('3rdParty')) {
-            palMkdir('3rdParty')
-        }
-    }
-    dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
-        CheckoutRepo(disableSubmodules)
-
-        // Get python
-        if(env.IS_UNIX) {
-            sh label: 'Getting python',
-               script: 'python/get_python.sh'
-        } else {
-            bat label: 'Getting python',
-                script: 'python/get_python.bat'
+        dir('3rdParty') {
         }
 
-        // Always run the clean step, the scripts detect what variables were set, but it also cleans if
-        // the NODE_LABEL has changed
-        def command = "${pipelineConfig.PYTHON_DIR}/python"
-        if(env.IS_UNIX) command += '.sh'
-        else command += '.cmd'
-        command += " -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
-        palSh(command, "Running ${platform} clean")
+        //get the engine repo first and get python, set the env.CHANGE_ID and env.CHANGE_DATE only if the repo is the engine repo
+        dir(ENGINE_REPOSITORY_NAME) {
+            echo "Checkout Engine: ${ENGINE_URL}"
+            def setEnvCommit = false
+            def the_branch = branchName
+            if(ENGINE_COMMIT) {
+                //the pr is for the engine repo, so we want to use the passed in branch name and record the change id and change date
+                setEnvCommit = true
+            } else {
+                //this pr is for another repo so we want to use the development branch for the engine and do not set the commit id or change date
+                the_branch = ENGINE_DEVELOPMENT_BRANCH
+            }
 
-        if(fileExists('.lfsconfig')) {
-            palSh("git lfs install", "LFS config exists. Installing LFS hooks to local repo")
-            palSh("git lfs pull", "Pulling new LFS objects")
+            UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
+
+            //checkout the engine branch
+            CheckoutRepo(the_branch, scm.userRemoteConfigs, disableSubmodules, setEnvCommit)
+
+            // Get python and clean.
+            // Always run the clean step, the scripts detect what variables were set, but it also cleans if
+            // the NODE_LABEL has changed
+            if(env.IS_UNIX) {
+                sh label: 'Getting python',
+                   script: "${pipelineConfig.PYTHON_DIR}/get_python.sh"
+                sh label: "Running ${platform} clean",
+                   script: "${pipelineConfig.PYTHON_DIR}/python.sh -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
+            } else {
+                bat label: 'Getting python',
+                    script: "${pipelineConfig.PYTHON_DIR}/get_python.bat"
+                bat label: "Running ${platform} clean",
+                    script: "${pipelineConfig.PYTHON_DIR}/python.cmd -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
+            }
+
+            InstallAndPullGitLFS()
+        }
+        dir(EXTRAS_REPOSITORY_NAME) {
+            echo "Checkout Extras: ${EXTRAS_URL}"
+            def setEnvCommit = false
+            def the_branch = branchName
+            if(EXTRAS_COMMIT) {
+                //the pr is for the engine repo, so we want to use the passed in branch name and record the change id and change date
+                setEnvCommit = true
+            } else {
+                //this pr is for another repo so we want to use the development branch for the engine and do not set the commit id or change date
+                the_branch = EXTRAS_DEVELOPMENT_BRANCH
+            }
+
+            UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
+
+            //checkout the engine branch
+            CheckoutRepo(the_branch, [GetExtrasRemoteConfig()], disableSubmodules, setEnvCommit)
+
+            InstallAndPullGitLFS()
+        }
+        //get any other external repos next, set the env.CHANGE_ID and env.CHANGE_DATE only if the repo is the pr repo
+        pipelineConfig.EXTERNAL_REPOS.each { repo ->
+            dir(repo.REPOSITORY_NAME) {
+                echo "Checkout External Repo: ${repo.URL}"
+                def setEnvCommit = false
+                def the_branch = branchName
+                if(!ENGINE_COMMIT && !EXTRAS_COMMIT) {
+                    //the pr is for the this repo, so we want to use the passed in branch name and record the change id and change date
+                    setEnvCommit = true
+                } else {
+                    //this pr is for the another repo so we want to use the development branch for the this repo and do not set the commit id or change date
+                    the_branch = repo.DEVELOPMENT_BRANCH
+                }
+
+                UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
+
+                //checkout the branch
+                CheckoutRepo(the_branch, GetRemoteConfig(repo.REPOSITORY_NAME, repo.URL), disableSubmodules, setEnvCommit)
+
+                InstallAndPullGitLFS()
+            }
         }
     }
 }
@@ -376,11 +502,190 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
 def Build(Map pipelineConfig, String platform, String type, String workspace) {
     timeout(time: env.TIMEOUT, unit: 'MINUTES', activity: true) {
         def command = "${pipelineConfig.PYTHON_DIR}/python"
-        if(env.IS_UNIX) command += '.sh'
+        def ext = ''
+        if(env.IS_UNIX) {
+            command += '.sh'
+            ext = '.sh'
+        }
         else command += '.cmd'
         command += " -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type ${type}"
-        dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
-            palSh(command, "Running ${platform} ${type}")
+
+        dir(workspace) {
+            def extrasAutomatedTestingControlFile = {}
+            dir(EXTRAS_REPOSITORY_NAME) {
+                echo 'Loading Extras .automatedtesting.json'
+                extrasAutomatedTestingControlFile = readJSON file: '.automatedtesting.json'
+            }
+            dir(ENGINE_REPOSITORY_NAME) {
+                //register the engine
+                PlatformSh("scripts/o3de${ext} register --this-engine", "Registering this engine, will generate the o3de_manifest")
+
+                //register all the objects specified in this repos .automatedtesting.json
+                extrasAutomatedTestingControlFile.REGISTER_ENGINES.each { engineName ->
+                    PlatformSh("scripts/o3de${ext} register --engine-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/${engineName} || ver>nul", "Registering engine in ${workspace}/${EXTRAS_REPOSITORY_NAME}/${engineName}")
+                }
+                extrasAutomatedTestingControlFile.REGISTER_PROJECTS.each { projectName ->
+                    PlatformSh("scripts/o3de${ext} register --project-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/${projectName} || ver>nul", "Registering project in ${workspace}/${EXTRAS_REPOSITORY_NAME}/${projectName}")
+                }
+                extrasAutomatedTestingControlFile.REGISTER_GEMS.each { gemName ->
+                    PlatformSh("scripts/o3de${ext} register --gem-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/${gemName} || ver>nul", "Registering gem in ${workspace}/${EXTRAS_REPOSITORY_NAME}/${gemName}")
+                }
+                extrasAutomatedTestingControlFile.REGISTER_TEMPLATES.each { templateName ->
+                    PlatformSh("scripts/o3de${ext} register --template-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/${templateName} || ver>nul", "Registering template in ${workspace}/${EXTRAS_REPOSITORY_NAME}/${templateName}")
+                }
+                extrasAutomatedTestingControlFile.REGISTER_RESTRICTED.each { restrictedName ->
+                    PlatformSh("scripts/o3de${ext} register --restricted-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/${restrictedName} || ver>nul", "Registering restricted in ${workspace}/${EXTRAS_REPOSITORY_NAME}/${restrictedName}")
+                }
+                //enable all gems specified in the control file
+                extrasAutomatedTestingControlFile.ENABLE_GEMS.each { gemName ->
+                    PlatformSh("scripts/o3de${ext} enable-gem --gem-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/${gemName} --project-name AutomatedTesting || ver>nul", "Enabling ${workspace}/${EXTRAS_REPOSITORY_NAME}/${gemName} for AutomatedTesting")
+                }
+            }
+            pipelineConfig.EXTERNAL_REPOS.each { repo ->
+                //now each of these repos could be either a composite repo or a singular repo
+                //if it does not have a .automatedtesting.json control file, which is explicit in what objects to register
+                //and which gems to enable, we assume they want to register all objects and enable all gems
+                def foundControlFile = false
+                def automatedTestingControlFile = {}
+                def enginesExist = false
+                def projectsExist = false
+                def gemsExist = false
+                def templatesExist = false
+                def restrictedExist = false
+                def engineRepo = false
+                def projectRepo = false
+                def gemRepo = false
+                def templateRepo = false
+                def restrictedRepo = false
+
+                //see if this repo has supplied its own .automatedtesting.json to control what gets registered
+                //and enabled/tested
+                dir(repo.REPOSITORY_NAME) {
+                    if(fileExists('.automatedtesting.json')) {
+                        //There is a control file, so we will do only register and enable the gems it says to
+                        foundControlFile = true
+                        automatedTestingControlFile = readJSON file: '.automatedtesting.json'
+                    } else {
+                        //There is no control file so we must determine if this is a composite repo or a singular repo
+                        //A standard composite repo has the form
+                        //root
+                        //  Engines
+                        //  Projects
+                        //  Gems
+                        //  Templates
+                        //  Restricted
+                        allObjects = true
+                        if(fileExists("Engines")) {
+                            enginesExist = true
+                        }
+                        if(fileExists("Projects")) {
+                            projectsExist = true
+                        }
+                        if(fileExists("Gems")) {
+                            gemsExist = true
+                        }
+                        if(fileExists("Templates")) {
+                            templatesExist = true
+                        }
+                        if(fileExists("Restricted")) {
+                            restrictedExist = true
+                        }
+
+                        //If this is not a standard composite repo, then it wont have any composite dirs, then we know
+                        //its a singular object repo, see what kind it is.
+                        if(!enginesExist && !projectsExist && !gemsExist && !templatesExist && !restrictedExist)
+                        {
+                            if(fileExists("engine.json")) {
+                                engineRepo = true
+                            }
+                            if(fileExists("project.json")) {
+                                projectRepo = true
+                            }
+                            if(fileExists("gem.json")) {
+                                gemRepo = true
+                            }
+                            if(fileExists("template.json")) {
+                                templateRepo = true
+                            }
+                            if(fileExists("restricted.json")) {
+                                restrictedRepo = true
+                            }
+                        }
+                    }
+                }
+
+                dir(ENGINE_REPOSITORY_NAME) {
+                    if(foundControlFile) {
+                        //register all the objects specified in this repos .automatedtesting.json
+                        automatedTestingControlFile.REGISTER_ENGINES.each { engineName ->
+                            PlatformSh("scripts/o3de${ext} register --engine-path ${workspace}/${repo.REPOSITORY_NAME}/${engineName} || ver>nul", "Registering engine in ${workspace}/${repo.REPOSITORY_NAME}/${engineName}")
+                        }
+                        automatedTestingControlFile.REGISTER_PROJECTS.each { projectName ->
+                            PlatformSh("scripts/o3de${ext} register --project-path ${workspace}/${repo.REPOSITORY_NAME}/${projectName} || ver>nul", "Registering project in ${workspace}/${repo.REPOSITORY_NAME}/${projectName}")
+                        }
+                        automatedTestingControlFile.REGISTER_GEMS.each { gemName ->
+                            PlatformSh("scripts/o3de${ext} register --gem-path ${workspace}/${repo.REPOSITORY_NAME}/${gemName} || ver>nul", "Registering gem in ${workspace}/${repo.REPOSITORY_NAME}/${gemName}")
+                        }
+                        automatedTestingControlFile.REGISTER_TEMPLATES.each { templateName ->
+                            PlatformSh("scripts/o3de${ext} register --template-path ${workspace}/${repo.REPOSITORY_NAME}/${templateName} || ver>nul", "Registering template in ${workspace}/${repo.REPOSITORY_NAME}/${templateName}")
+                        }
+                        automatedTestingControlFile.REGISTER_RESTRICTED.each { restrictedName ->
+                            PlatformSh("scripts/o3de${ext} register --restricted-path ${workspace}/${repo.REPOSITORY_NAME}/${restrictedName} || ver>nul", "Registering restricted in ${workspace}/${repo.REPOSITORY_NAME}/${restrictedName}")
+                        }
+                        //enable all gems specified in the control file
+                        automatedTestingControlFile.ENABLE_GEMS.each { gemName ->
+                            PlatformSh("scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repo.REPOSITORY_NAME}/${gemName} --project-name AutomatedTesting || ver>nul", "Enabling ${gemName} in AutomatedTesting")
+                        }
+                    } else {
+                        //register all the objects in this repo
+                        //if it is a composite repo then use the --all-<type>-path to register all of them
+                        if(enginesExist) {
+                            PlatformSh("scripts/o3de${ext} register --all-engines-path ${workspace}/${repo.REPOSITORY_NAME}/Engines || ver>nul", "Registering all engines in ${workspace}/${repo.REPOSITORY_NAME}/Engines")
+                        }
+                        if(projectsExist) {
+                            PlatformSh("scripts/o3de${ext} register --all-projects-path ${workspace}/${repo.REPOSITORY_NAME}/Projects || ver>nul", "Registering all projects in ${workspace}/${repo.REPOSITORY_NAME}/Projects")
+                        }
+                        if(gemsExist) {
+                            PlatformSh("scripts/o3de${ext} register --all-gems-path ${workspace}/${repo.REPOSITORY_NAME}/Gems || ver>nul", "Registering all gems in ${workspace}/${repo.REPOSITORY_NAME}/Gems")
+                        }
+                        if(templatesExist) {
+                            PlatformSh("scripts/o3de${ext} register --all-templates-path ${workspace}/${repo.REPOSITORY_NAME}/Templates || ver>nul", "Registering all templates in ${workspace}/${repo.REPOSITORY_NAME}/Templates")
+                        }
+                        if(restrictedExist) {
+                            PlatformSh("scripts/o3de${ext} register --all-restricted-path ${workspace}/${repo.REPOSITORY_NAME}/Restricted || ver>nul", "Registering all restricted in ${workspace}/${repo.REPOSITORY_NAME}/Restricted")
+                        }
+                        //enable all gems in this repo
+                        if(gemsExist) {
+                            PlatformSh("scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repo.REPOSITORY_NAME}/Gems --project-name AutomatedTesting || ver>nul", "Enabling all gems in AutomatedTesting")
+                        }
+
+                        //if its a singular repo register it using the --<type>-path
+                        if(engineRepo) {
+                            PlatformSh("scripts/o3de${ext} register --engine-path ${workspace}/${repo.REPOSITORY_NAME} || ver>nul", "Registering engine in ${workspace}/${repo.REPOSITORY_NAME}")
+                        }
+                        if(projectRepo) {
+                            PlatformSh("scripts/o3de${ext} register --project-path ${workspace}/${repo.REPOSITORY_NAME} || ver>nul", "Registering project in ${workspace}/${repo.REPOSITORY_NAME}")
+                        }
+                        if(gemRepo) {
+                            PlatformSh("scripts/o3de${ext} register --gem-path ${workspace}/${repo.REPOSITORY_NAME} || ver>nul", "Registering gem in ${workspace}/${repo.REPOSITORY_NAME}")
+                        }
+                        if(templateRepo) {
+                            PlatformSh("scripts/o3de${ext} register --template-path ${workspace}/${repo.REPOSITORY_NAME} || ver>nul", "Registering template in ${workspace}/${repo.REPOSITORY_NAME}")
+                        }
+                        if(restrictedRepo) {
+                            PlatformSh("scripts/o3de${ext} register --restricted-path ${workspace}/${repo.REPOSITORY_NAME} || ver>nul", "Registering restricted in ${workspace}/${repo.REPOSITORY_NAME}")
+                        }
+                        //if this singular repo is a gem enable it
+                        if(gemRepo) {
+                            PlatformSh("scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repo.REPOSITORY_NAME} --project-name AutomatedTesting || ver>nul", "Enabling ${gemName} in AutomatedTesting")
+                        }
+                    }
+                }
+            }
+            dir(ENGINE_REPOSITORY_NAME) {
+                //build
+                PlatformSh(command, "Running ${platform} ${type}")
+            }
         }
     }
 }
@@ -391,23 +696,25 @@ def TestMetrics(Map pipelineConfig, String workspace, String branchName, String 
         def command = "${pipelineConfig.PYTHON_DIR}/python"
         if(env.IS_UNIX) command += '.sh'
         else command += '.cmd'
-        dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
-            checkout scm: [
-                $class: 'GitSCM',
-                branches: [[name: '*/main']],
-                extensions: [
-                    [$class: 'AuthorInChangelog'],
-                    [$class: 'RelativeTargetDirectory', relativeTargetDir: 'mars']
-                ],
-                userRemoteConfigs: [[url: "${env.MARS_REPO}", name: 'mars', credentialsId: "${env.GITHUB_USER}"]]
-            ]
-            withCredentials([usernamePassword(credentialsId: "${env.SERVICE_USER}", passwordVariable: 'apitoken', usernameVariable: 'username')]) {
-                command += " -u mars/scripts/python/ctest_test_metric_scraper.py " +
-                              '-e jenkins.creds.user %username% -e jenkins.creds.pass %apitoken% ' +
-                              "-e jenkins.base_url ${env.JENKINS_URL} " +
-                              "${cmakeBuildDir} ${branchName} %BUILD_NUMBER% AR ${configuration} ${repoName} --url ${env.BUILD_URL.replace('%','%%')}"
-                bat label: "Publishing ${buildJobName} Test Metrics",
-                    script: command
+        dir(workspace){
+            dir(ENGINE_REPOSITORY_NAME) {
+                checkout scm: [
+                    $class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    extensions: [
+                        [$class: 'AuthorInChangelog'],
+                        [$class: 'RelativeTargetDirectory', relativeTargetDir: 'mars']
+                    ],
+                    userRemoteConfigs: [[url: "${env.MARS_REPO}", name: 'mars', credentialsId: "${env.GITHUB_USER}"]]
+                ]
+                withCredentials([usernamePassword(credentialsId: "${env.SERVICE_USER}", passwordVariable: 'apitoken', usernameVariable: 'username')]) {
+                    command += " -u mars/scripts/python/ctest_test_metric_scraper.py " +
+                                  '-e jenkins.creds.user %username% -e jenkins.creds.pass %apitoken% ' +
+                                  "-e jenkins.base_url ${env.JENKINS_URL} " +
+                                  "${cmakeBuildDir} ${branchName} %BUILD_NUMBER% AR ${configuration} ${repoName} --url ${env.BUILD_URL.replace('%','%%')}"
+                    bat label: "Publishing ${buildJobName} Test Metrics",
+                        script: command
+                }
             }
         }
     }
@@ -419,42 +726,49 @@ def BenchmarkMetrics(Map pipelineConfig, String workspace, String branchName, St
         def command = "${pipelineConfig.PYTHON_DIR}/python"
         if(env.IS_UNIX) command += '.sh'
         else command += '.cmd'
-        dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
-            checkout scm: [
-                $class: 'GitSCM',
-                branches: [[name: '*/main']],
-                extensions: [
-                    [$class: 'AuthorInChangelog'],
-                    [$class: 'RelativeTargetDirectory', relativeTargetDir: 'mars']
-                ],
-                userRemoteConfigs: [[url: "${env.MARS_REPO}", name: 'mars', credentialsId: "${env.GITHUB_USER}"]]
-            ]
-            command += " -u mars/scripts/python/benchmark_scraper.py ${cmakeBuildDir} ${branchName}"
-            palSh(command, "Publishing Benchmark Metrics")
+        dir(workspace) {
+            dir(ENGINE_REPOSITORY_NAME) {
+                checkout scm: [
+                    $class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    extensions: [
+                        [$class: 'AuthorInChangelog'],
+                        [$class: 'RelativeTargetDirectory', relativeTargetDir: 'mars']
+                    ],
+                    userRemoteConfigs: [[url: "${env.MARS_REPO}", name: 'mars', credentialsId: "${env.GITHUB_USER}"]]
+                ]
+                command += " -u mars/scripts/python/benchmark_scraper.py ${cmakeBuildDir} ${branchName}"
+                PlatformSh(command, "Publishing Benchmark Metrics")
+            }
         }
     }
 }
 
 def ExportTestResults(Map options, String platform, String type, String workspace, Map params) {
     catchError(message: "Error exporting tests results (this won't fail the build)", buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-        def o3deroot = "${workspace}/${ENGINE_REPOSITORY_NAME}"
-        dir("${o3deroot}/${params.OUTPUT_DIRECTORY}") {
-            junit testResults: "Testing/**/*.xml"
+        dir(workspace) {
+            dir(ENGINE_REPOSITORY_NAME) {
+                dir(params.OUTPUT_DIRECTORY) {
+                    junit testResults: "Testing/**/*.xml"
+                }
+            }
         }
     }
 }
 
 def ExportTestScreenshots(Map options, String branchName, String platformName, String jobName, String workspace, Map params) {
     catchError(message: "Error exporting test screenshots (this won't fail the build)", buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-        dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
-            def screenshotsFolder = "AutomatedTesting/user/PythonTests/Automated/Screenshots"
-            def s3Uploader = "scripts/build/tools/upload_to_s3.py"
-            def command = "${options.PYTHON_DIR}/python.cmd -u ${s3Uploader} --base_dir ${screenshotsFolder} " +
-                          '--file_regex \\"(.*zip\$)\\" ' +
-                          "--bucket ${env.TEST_SCREENSHOT_BUCKET} " +
-                          "--search_subdirectories True --key_prefix ${branchName}_${env.BUILD_NUMBER} " +
-                          '--extra_args {\\"ACL\\":\\"bucket-owner-full-control\\"}'
-            palSh(command, "Uploading test screenshots for ${jobName}")
+        dir(workspace){
+            dir(ENGINE_REPOSITORY_NAME) {
+                def screenshotsFolder = "AutomatedTesting/user/PythonTests/Automated/Screenshots"
+                def s3Uploader = "scripts/build/tools/upload_to_s3.py"
+                def command = "${options.PYTHON_DIR}/python.cmd -u ${s3Uploader} --base_dir ${screenshotsFolder} " +
+                              '--file_regex \\"(.*zip\$)\\" ' +
+                              "--bucket ${env.TEST_SCREENSHOT_BUCKET} " +
+                              "--search_subdirectories True --key_prefix ${branchName}_${env.BUILD_NUMBER} " +
+                              '--extra_args {\\"ACL\\":\\"bucket-owner-full-control\\"}'
+                PlatformSh(command, "Uploading test screenshots for ${jobName}")
+            }
         }
     }
 }
@@ -464,9 +778,9 @@ def ExportTestScreenshots(Map options, String branchName, String platformName, S
 //See more details at https://docs.aws.amazon.com/cli/latest/reference/s3/#use-of-exclude-and-include-filters
 def ArchiveArtifactsOnS3(String artifactsSource, String s3Prefix="", boolean recursive=false, List<String> includes=[], List<String> excludes=[]) {
     if (!fileExists(s3Prefix)) {
-        palMkdir(s3Prefix)
+        PlatformMkdir(s3Prefix)
     }
-    palSh("echo ${env.BUILD_URL} > ${s3Prefix}/build_url.txt")
+    PlatformSh("echo ${env.BUILD_URL} > ${s3Prefix}/build_url.txt")
     // archiveArtifacts is very slow, so we only archive one file and upload the rest artifacts to the same bucket using S3 CLI.
     archiveArtifacts artifacts: "${s3Prefix}/build_url.txt"
     def command = "aws s3 cp ${artifactsSource} s3://${env.JENKINS_ARTIFACTS_S3_BUCKET}/${env.JENKINS_JOB_NAME}/${env.BUILD_NUMBER}/artifacts/${s3Prefix} --only-show-errors "
@@ -477,15 +791,17 @@ def ArchiveArtifactsOnS3(String artifactsSource, String s3Prefix="", boolean rec
         command += "--include \"${include}\" "
     }
     if (recursive) command += "--recursive "
-    palSh(command, "Archiving artifacts to ${env.JENKINS_JOB_NAME}/${env.BUILD_NUMBER}/artifacts/${s3Prefix}", false)
+    PlatformSh(command, "Archiving artifacts to ${env.JENKINS_JOB_NAME}/${env.BUILD_NUMBER}/artifacts/${s3Prefix}", false)
 }
 
 def UploadAPLogs(String platformName, String jobName, String workspace, Map params) {
     catchError(message: "Error archiving AssetProcessor logs (this won't fail the build)", buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-        dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
-            projects = params.CMAKE_LY_PROJECTS.split(",")
-            projects.each{ project ->
-                ArchiveArtifactsOnS3("${project}/user/log", "ap_logs/${platformName}/${jobName}/${project}", true)
+        dir(workspace) {
+            dir(ENGINE_REPOSITORY_NAME) {
+                projects = params.CMAKE_LY_PROJECTS.split(",")
+                projects.each{ project ->
+                    ArchiveArtifactsOnS3("${project}/user/log", "ap_logs/${platformName}/${jobName}/${project}", true)
+                }
             }
         }
     }
@@ -509,12 +825,16 @@ def UploadCrashArtifacts(String platform) {
 def PostBuildCommonSteps(String workspace, Map params, String projectName, String pipelineName, String branchName, String platform, String buildType, boolean mount = true) {
     echo 'Starting post-build common steps...'
     if (params && params.containsKey('OUTPUT_DIRECTORY')){
-        dir([workspace, ENGINE_REPOSITORY_NAME, params.OUTPUT_DIRECTORY].join('/')){
-            // Clean up Testing directory
-            palRmDir("Testing")
-            // Recreate test runner xml directories that need to be pre generated to prevent race condition on incremental runs
-            palMkdir("Testing/Pytest")
-            palMkdir("Testing/Gtest")
+        dir(workspace) {
+            dir(ENGINE_REPOSITORY_NAME) {
+                dir(params.OUTPUT_DIRECTORY) {
+                    // Clean up Testing directory
+                    PlatformRmDir("Testing")
+                    // Recreate test runner xml directories that need to be pre generated to prevent race condition on incremental runs
+                    PlatformMkdir("Testing/Pytest")
+                    PlatformMkdir("Testing/Gtest")
+                }
+            }
         }
     }
     
@@ -526,9 +846,9 @@ def PostBuildCommonSteps(String workspace, Map params, String projectName, Strin
         try {
             timeout(5) {
                 if (env.DISCARD_VOLUME?.toBoolean()) {
-                    palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action delete --repository_name ${env.REPOSITORY_NAME} --project ${projectName} --pipeline ${pipelineName} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Deleting volume', winSlashReplacement=false)
+                    PlatformSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action delete --repository_name ${env.REPOSITORY_NAME} --project ${projectName} --pipeline ${pipelineName} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Deleting volume', winSlashReplacement=false)
                 } else {
-                    palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action unmount", 'Unmounting volume')
+                    PlatformSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action unmount", 'Unmounting volume')
                 }
             }
         } catch (Exception e) {
@@ -545,8 +865,8 @@ def HandleDriveSnapshots(String repositoryName, String projectName, String pipel
         
         mountName = "Name:${repositoryName}_${projectName}_${pipeline}_${branchName}_${platform}_${buildType}"
         mountName = mountName.replace('/', '_').replace('\\', '_')
-        palSh("${pythonCmd} ${EBS_SNAPSHOT_SCRIPT_PATH} --action create --tags ${mountName} --execute", "Starting volume snapshots", true)
-        palSh("${pythonCmd} ${EBS_SNAPSHOT_SCRIPT_PATH} --action delete --tags ${mountName} --retention ${env.SNAP_RETENTION} --execute", "Cleaning up old snapshots", true)
+        PlatformSh("${pythonCmd} ${EBS_SNAPSHOT_SCRIPT_PATH} --action create --tags ${mountName} --execute", "Starting volume snapshots", true)
+        PlatformSh("${pythonCmd} ${EBS_SNAPSHOT_SCRIPT_PATH} --action delete --tags ${mountName} --retention ${env.SNAP_RETENTION} --execute", "Cleaning up old snapshots", true)
     }
 }
 
@@ -556,7 +876,7 @@ def CreateSetupStage(Map pipelineConfig, String snapshot, String repositoryName,
             if(onlyMountEBSVolume) {
                 HandleDriveMount(snapshot, repositoryName, projectName, pipelineName, branchName, platformName, jobName, environmentVars['WORKSPACE'], false)
             } else {
-                PreBuildCommonSteps(pipelineConfig, snapshot, repositoryName, projectName, pipelineName, branchName, platformName, jobName,  environmentVars['WORKSPACE'], environmentVars['MOUNT_VOLUME'])
+                PreBuildCommonSteps(pipelineConfig, snapshot, repositoryName, projectName, pipelineName, branchName, platformName, jobName,  environmentVars['WORKSPACE'], environmentVars['MOUNT_VOLUME'], false)
             }
         }
     }
@@ -744,7 +1064,7 @@ def CreateBuildJobs(Map pipelineConfig, def platform, def build_job, Map envVars
     // if this is a pipeline, split jobs based on the NODE_LABEL 
     if(build_job.value.steps) {
         def defaultLabel = envVars['NODE_LABEL']
-        def lastNodeLable = ""
+        def lastNodeLabel = ""
         def jobList = []
         def currentIdx = -1;
 
@@ -763,17 +1083,17 @@ def CreateBuildJobs(Map pipelineConfig, def platform, def build_job, Map envVars
             if(platform.value.build_types[build_step] && platform.value.build_types[build_step].PIPELINE_ENV &&
                platform.value.build_types[build_step].PIPELINE_ENV['NODE_LABEL']) {
                
-               //if the last node label doen't match the new one, append it.
-               if(platform.value.build_types[build_step].PIPELINE_ENV['NODE_LABEL'] != lastNodeLable) {
-                    lastNodeLable = platform.value.build_types[build_step].PIPELINE_ENV['NODE_LABEL']
-                    jobList.add(new PipeStepJobData(lastNodeLable))
+               //if the last node label doesn't match the new one, append it.
+               if(platform.value.build_types[build_step].PIPELINE_ENV['NODE_LABEL'] != lastNodeLabel) {
+                    lastNodeLabel = platform.value.build_types[build_step].PIPELINE_ENV['NODE_LABEL']
+                    jobList.add(new PipeStepJobData(lastNodeLabel))
                     currentIdx++
                 } 
             }
             //no label define, so it needs to run on the default node label
-            else if(lastNodeLable != defaultLabel) { //if the last node is not the default, append default
-                lastNodeLable = defaultLabel
-                jobList.add(new PipeStepJobData(lastNodeLable))
+            else if(lastNodeLabel != defaultLabel) { //if the last node is not the default, append default
+                lastNodeLabel = defaultLabel
+                jobList.add(new PipeStepJobData(lastNodeLabel))
                 currentIdx++
             }
             //add the build_step to the current node
@@ -843,7 +1163,7 @@ try {
 
                         echo "Running repository: \"${repositoryName}\", pipeline: \"${pipelineName}\", branch: \"${branchName}\", CHANGE_ID: \"${env.CHANGE_ID}\", GIT_COMMMIT: \"${scm.GIT_COMMIT}\"..."
 
-                        CheckoutBootstrapScripts(branchName)
+                        CheckoutEngineBootstrapScripts(branchName)
 
                         // Load configs
                         pipelineConfig = LoadPipelineConfig(pipelineName, branchName)
@@ -906,7 +1226,7 @@ try {
         }
 
         if(env.BUILD_NUMBER == '1') {
-            // Exit pipeline early on the intial build. This allows Jenkins to load the pipeline for the branch and enables users
+            // Exit pipeline early on the initial build. This allows Jenkins to load the pipeline for the branch and enables users
             // to select build parameters on their first actual build. See https://issues.jenkins.io/browse/JENKINS-41929
             if (!IsPullRequest(branchName)) {
                 currentBuild.result = 'SUCCESS'

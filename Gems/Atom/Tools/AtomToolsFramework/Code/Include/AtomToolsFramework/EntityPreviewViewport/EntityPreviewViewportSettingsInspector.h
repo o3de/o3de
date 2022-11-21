@@ -19,6 +19,8 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 #endif
 
+#include <QFutureWatcher>
+
 namespace AtomToolsFramework
 {
     //! EntityPreviewViewportSettingsInspector provides controls for viewing and editing presets and other common viewport settings.
@@ -81,5 +83,7 @@ namespace AtomToolsFramework
         AZStd::unique_ptr<AssetSelectionGrid> m_lightingPresetDialog;
 
         EntityPreviewViewportSettings m_viewportSettings;
+
+        QFutureWatcher<AZStd::vector<AZStd::string>> m_watcher;
     };
 } // namespace AtomToolsFramework

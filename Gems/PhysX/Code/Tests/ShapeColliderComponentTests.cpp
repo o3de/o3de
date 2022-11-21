@@ -171,7 +171,8 @@ namespace PhysXEditorTests
         AZ::Vector3 nonUniformScale(1.5f, 1.5f, 4.0f);
         AZ::Vector3 boxDimensions(6.0f, 4.0f, 1.0f);
         AZ::Vector3 translationOffset(6.0f, -5.0f, -4.0f);
-        EntityPtr editorEntity = CreateBoxShapeColliderEditorEntity(transform, nonUniformScale, boxDimensions, translationOffset);
+        EntityPtr editorEntity =
+            CreateBoxShapeColliderEditorEntity(transform, nonUniformScale, boxDimensions, translationOffset, RigidBodyType::Dynamic);
 
         editorEntity->Deactivate();
         editorEntity->Activate();
@@ -201,7 +202,8 @@ namespace PhysXEditorTests
         AZ::Vector3 nonUniformScale(2.5f, 1.0f, 2.0f);
         AZ::Vector3 boxDimensions(4.0f, 2.0f, 7.0f);
         AZ::Vector3 translationOffset(-2.0f, 7.0f, -1.0f);
-        EntityPtr editorEntity = CreateBoxShapeColliderEditorEntity(transform, nonUniformScale, boxDimensions, translationOffset);
+        EntityPtr editorEntity =
+            CreateBoxShapeColliderEditorEntity(transform, nonUniformScale, boxDimensions, translationOffset, RigidBodyType::Dynamic);
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
         AZ::Aabb aabb = GetSimulatedBodyAabb(gameEntity->GetId());
@@ -227,8 +229,8 @@ namespace PhysXEditorTests
         EntityPtr editorEntity = CreateSphereShapeColliderEditorEntity(
             AZ::Transform(AZ::Vector3(2.0f, -5.0f, -6.0f), AZ::Quaternion(0.7f, 0.1f, 0.7f, 0.1f), 0.4f),
             3.5f,
-            AZ::Vector3(1.0f, 3.0f, -1.0f)
-        );
+            AZ::Vector3(1.0f, 3.0f, -1.0f),
+            RigidBodyType::Dynamic);
 
         editorEntity->Deactivate();
         editorEntity->Activate();
@@ -258,8 +260,8 @@ namespace PhysXEditorTests
         EntityPtr editorEntity = CreateSphereShapeColliderEditorEntity(
             AZ::Transform(AZ::Vector3(2.0f, 2.0f, -5.0f), AZ::Quaternion(0.9f, 0.3f, 0.3f, 0.1f), 5.0f),
             0.4f,
-            AZ::Vector3(4.0f, 7.0f, 3.0f)
-        );
+            AZ::Vector3(4.0f, 7.0f, 3.0f),
+            RigidBodyType::Dynamic);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
@@ -288,8 +290,8 @@ namespace PhysXEditorTests
             AZ::Transform(AZ::Vector3(7.0f, -9.0f, 2.0f), AZ::Quaternion(0.7f, 0.1f, 0.7f, 0.1f), 0.2f),
             1.0f,
             5.0f,
-            AZ::Vector3(2.0f, 9.0f, -5.0f)
-        );
+            AZ::Vector3(2.0f, 9.0f, -5.0f),
+            RigidBodyType::Dynamic);
 
         editorEntity->Deactivate();
         editorEntity->Activate();
@@ -321,8 +323,8 @@ namespace PhysXEditorTests
             AZ::Transform(AZ::Vector3(7.0f, 6.0f, -3.0f), AZ::Quaternion(-0.3f, -0.1f, -0.3f, 0.9f), 6.0f),
             0.4f,
             3.0f,
-            AZ::Vector3(2.0f, -7.0f, 7.0f)
-        );
+            AZ::Vector3(2.0f, -7.0f, 7.0f),
+            RigidBodyType::Dynamic);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 

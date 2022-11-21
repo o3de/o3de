@@ -1632,7 +1632,7 @@ namespace AssetProcessor
         {
             found = true;
             entry = AZStd::move(source);
-            return false;  // return false in order to stop iterating any further - we are only populating one entry.
+            return false; // return false in order to stop iterating any further - we are only populating one entry.
         });
         return found;
     }
@@ -1650,33 +1650,7 @@ namespace AssetProcessor
         return  found && succeeded;
     }
 
-    bool AssetDatabaseConnection::GetSourceBySourceName(QString exactSourceName, SourceDatabaseEntry& entry)
-    {
-        bool found = false;
-       QuerySourceBySourceName(AssetUtilities::NormalizeFilePath(exactSourceName).toUtf8().constData(),
-            [&](SourceDatabaseEntry& source)
-        {
-            found = true;
-            entry = AZStd::move(source);
-            return false; // stop after the first result
-        });
-        return found;
-    }
-
-    bool AssetDatabaseConnection::GetSourcesBySourceName(QString exactSourceName, SourceDatabaseEntryContainer& container)
-    {
-        bool found = false;
-        bool succeeded = QuerySourceBySourceName(AssetUtilities::NormalizeFilePath(exactSourceName).toUtf8().constData(),
-            [&](SourceDatabaseEntry& source)
-            {
-                found = true;
-                container.emplace_back() = AZStd::move(source);
-                return true;  // return true to continue iterating over additional results, we are populating a container
-            });
-        return  found && succeeded;
-    }
-
-    bool AssetDatabaseConnection::GetSourcesBySourceNameScanFolderId(QString exactSourceName, AZ::s64 scanFolderID, SourceDatabaseEntryContainer& container)
+    bool AssetDatabaseConnection::GetSourceBySourceNameScanFolderId(QString exactSourceName, AZ::s64 scanFolderID, AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
     {
         bool found = false;
         bool succeeded = QuerySourceBySourceNameScanFolderID(exactSourceName.toUtf8().constData(),
@@ -1684,10 +1658,24 @@ namespace AssetProcessor
             [&](SourceDatabaseEntry& source)
             {
                 found = true;
-                container.emplace_back() = AZStd::move(source);
-                return true;  // return true to continue iterating over additional results, we are populating a container
+                entry = AZStd::move(source);
+                return false; // return false in order to stop iterating any further - we are only populating one entry.
             });
         return  found && succeeded;
+    }
+
+    bool AssetDatabaseConnection::GetSourcesBySourceName(QString exactSourceName, SourceDatabaseEntryContainer& container)
+    {
+        bool found = false;
+        bool succeeded = QuerySourceBySourceName(
+            exactSourceName.toUtf8().constData(),
+            [&](SourceDatabaseEntry& source)
+            {
+                found = true;
+                container.emplace_back() = AZStd::move(source);
+                return true; // return true to continue iterating over additional results, we are populating a container
+            });
+        return found && succeeded;
     }
 
     bool AssetDatabaseConnection::GetSourcesLikeSourceName(QString likeSourceName, LikeType likeType, SourceDatabaseEntryContainer& container)
