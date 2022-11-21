@@ -388,6 +388,7 @@ namespace AzToolsFramework
         Prefab::PrefabIntegrationManager::Reflect(context);
 
         ComponentModeFramework::ComponentModeDelegate::Reflect(context);
+        ComponentModeFramework::EditorBaseComponentMode::Reflect(context);
 
         ViewportInteraction::ViewportInteractionReflect(context);
         ViewportEditorModeNotifications::Reflect(context);

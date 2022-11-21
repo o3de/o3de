@@ -24,6 +24,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_CLASS_ALLOCATOR_DECL
+            AZ_RTTI(EditorBaseComponentMode, "{7E979280-42A5-4D93-BB23-BBA8A5E48146}")
 
             /// @cond
             EditorBaseComponentMode(
@@ -32,6 +33,8 @@ namespace AzToolsFramework
             EditorBaseComponentMode& operator=(EditorBaseComponentMode&&) = default;
             virtual ~EditorBaseComponentMode();
             /// @endcond
+
+            static void Reflect(AZ::ReflectContext* context);
 
             /// ComponentMode interface - populate actions for this ComponentMode.
             /// When PopulateActions is called, if a second action override is found with the

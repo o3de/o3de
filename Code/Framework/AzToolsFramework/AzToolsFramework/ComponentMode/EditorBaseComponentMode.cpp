@@ -41,6 +41,14 @@ namespace AzToolsFramework
             ComponentModeRequestBus::Handler::BusDisconnect();
         }
 
+        void EditorBaseComponentMode::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<EditorBaseComponentMode>();
+            }
+        }
+
         void EditorBaseComponentMode::AfterUndoRedo()
         {
             Refresh();

@@ -31,6 +31,7 @@ namespace LmbrCentral
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
+        AZ_RTTI(EditorTubeShapeComponentMode, "{E186EBDF-29C7-4CE9-90C4-7A7E32349580}", EditorBaseComponentMode)
 
         /// Data required per TubeShape manipulator.
         struct TubeManipulatorState
@@ -42,6 +43,8 @@ namespace LmbrCentral
         EditorTubeShapeComponentMode(
             const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
         ~EditorTubeShapeComponentMode();
+
+        static void Reflect(AZ::ReflectContext* context);
 
     private:
         // EditorBaseComponentMode

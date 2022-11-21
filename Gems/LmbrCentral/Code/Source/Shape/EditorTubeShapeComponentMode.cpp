@@ -52,6 +52,14 @@ namespace LmbrCentral
         AZ::TransformNotificationBus::Handler::BusDisconnect();
     }
 
+    void EditorTubeShapeComponentMode::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<EditorTubeShapeComponentMode, EditorBaseComponentMode>(AZ::Internal::NullFactory::GetInstance());
+        }
+    }
+
     void EditorTubeShapeComponentMode::Refresh()
     {
         ContainerChanged();

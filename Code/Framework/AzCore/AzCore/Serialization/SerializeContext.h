@@ -1514,12 +1514,15 @@ namespace AZ
                 }
                 case AZStd::any::Action::Construct:
                 {
-                    // Default construct the ValueType object
-                    // This occurs in the case where a Copy and Move action is invoked
-                    void* ptr = AZStd::any_cast<void>(dest);
-                    if (ptr)
+                    if constexpr (AZStd::is_default_constructible_v<ValueType>)
                     {
-                        new (ptr) ValueType();
+                        // Default construct the ValueType object
+                        // This occurs in the case where a Copy and Move action is invoked
+                        void* ptr = AZStd::any_cast<void>(dest);
+                        if (ptr)
+                        {
+                            new (ptr) ValueType();
+                        }
                     }
                     break;
                 }
@@ -1568,8 +1571,7 @@ namespace AZ
             }
             else
             {
-                ValueType instance;
-                return serializeContext ? AZStd::any(reinterpret_cast<const void*>(&instance), typeinfo) : AZStd::any();
+                return {};
             }
         }
     };

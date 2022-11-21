@@ -25,10 +25,13 @@ namespace LmbrCentral
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
+        AZ_RTTI(EditorSplineComponentMode, "{B4D50765-501D-45FF-B934-198386A806E6}", EditorBaseComponentMode)
 
         EditorSplineComponentMode(
             const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
         ~EditorSplineComponentMode();
+
+        static void Reflect(AZ::ReflectContext* context);
 
     private:
         // EditorBaseComponentMode
