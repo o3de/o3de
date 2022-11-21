@@ -143,7 +143,7 @@ namespace TestImpact
 
     NativeTestEngine::~NativeTestEngine() = default;
 
-    void NativeTestEngine::DeleteArtifactXmls() const
+    void NativeTestEngine::DeleteXmlArtifacts() const
     {
         DeleteFiles(m_artifactDir.m_testRunArtifactDirectory, "*.xml");
         DeleteFiles(m_artifactDir.m_coverageArtifactDirectory, "*.xml");
@@ -158,7 +158,7 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>> callback) const
     {
-        DeleteArtifactXmls();
+        DeleteXmlArtifacts();
 
         const auto jobInfos = m_regularTestJobInfoGenerator->GenerateJobInfos(testTargets);
 
@@ -187,7 +187,7 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>> callback) const
     {
-        DeleteArtifactXmls();
+        DeleteXmlArtifacts();
 
         const auto jobInfos = m_instrumentedTestJobInfoGenerator->GenerateJobInfos(testTargets);
 

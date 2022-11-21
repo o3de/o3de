@@ -275,14 +275,14 @@ namespace TestImpact
     }
 
     Client::ImpactAnalysisSequenceReport PythonRuntime::ImpactAnalysisTestSequence(
-        [[maybe_unused]] const ChangeList& changeList,
-        [[maybe_unused]] Policy::TestPrioritization testPrioritizationPolicy,
-        [[maybe_unused]] Policy::DynamicDependencyMap dynamicDependencyMapPolicy,
-        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        [[maybe_unused]] AZStd::optional<ImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
-        [[maybe_unused]] AZStd::optional<TestSequenceCompleteCallback<Client::ImpactAnalysisSequenceReport>> testSequenceEndCallback,
-        [[maybe_unused]] AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
+        const ChangeList& changeList,
+        Policy::TestPrioritization testPrioritizationPolicy,
+        Policy::DynamicDependencyMap dynamicDependencyMapPolicy,
+        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+        AZStd::optional<ImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
+        AZStd::optional<TestSequenceCompleteCallback<Client::ImpactAnalysisSequenceReport>> testSequenceEndCallback,
+        AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
     {
         const Timer sequenceTimer;
 
@@ -378,13 +378,13 @@ namespace TestImpact
     }
 
     Client::SafeImpactAnalysisSequenceReport PythonRuntime::SafeImpactAnalysisTestSequence(
-        [[maybe_unused]] const ChangeList& changeList,
-        [[maybe_unused]] Policy::TestPrioritization testPrioritizationPolicy,
-        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        [[maybe_unused]] AZStd::optional<SafeImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
-        [[maybe_unused]] AZStd::optional<TestSequenceCompleteCallback<Client::SafeImpactAnalysisSequenceReport>> testSequenceEndCallback,
-        [[maybe_unused]] AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
+        const ChangeList& changeList,
+        Policy::TestPrioritization testPrioritizationPolicy,
+        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+        AZStd::optional<SafeImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
+        AZStd::optional<TestSequenceCompleteCallback<Client::SafeImpactAnalysisSequenceReport>> testSequenceEndCallback,
+        AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
     {
         const Timer sequenceTimer;
         TestRunData<TestEngineInstrumentedRun<TestTarget, TestCoverage>> selectedTestRunData, draftedTestRunData;
@@ -497,6 +497,24 @@ namespace TestImpact
             gatherTestRunData(draftedTestTargets, instrumentedTestRun, draftedTestRunData);
         }
 
+        auto selectedTestRunReport = GenerateTestRunReport(
+            selectedTestRunData.m_result,
+            selectedTestRunData.m_relativeStartTime,
+            selectedTestRunData.m_duration,
+            selectedTestRunData.m_jobs);
+
+        auto discardedTestRunReport = GenerateTestRunReport(
+            discardedTestRunData.m_result,
+            discardedTestRunData.m_relativeStartTime,
+            discardedTestRunData.m_duration,
+            discardedTestRunData.m_jobs);
+
+        auto draftedTestRunReport = GenerateTestRunReport(
+            draftedTestRunData.m_result,
+            draftedTestRunData.m_relativeStartTime,
+            draftedTestRunData.m_duration,
+            draftedTestRunData.m_jobs);
+
         // Generate the sequence report for the client
         const auto sequenceReport = Client::SafeImpactAnalysisSequenceReport(
             1,
@@ -507,21 +525,9 @@ namespace TestImpact
             selectedTests,
             discardedTests,
             draftedTests,
-            GenerateTestRunReport(
-                selectedTestRunData.m_result,
-                selectedTestRunData.m_relativeStartTime,
-                selectedTestRunData.m_duration,
-                selectedTestRunData.m_jobs),
-            GenerateTestRunReport(
-                discardedTestRunData.m_result,
-                discardedTestRunData.m_relativeStartTime,
-                discardedTestRunData.m_duration,
-                discardedTestRunData.m_jobs),
-            GenerateTestRunReport(
-                draftedTestRunData.m_result,
-                draftedTestRunData.m_relativeStartTime,
-                draftedTestRunData.m_duration,
-                draftedTestRunData.m_jobs));
+            std::move(selectedTestRunReport),
+            std::move(discardedTestRunReport),
+            std::move(draftedTestRunReport));
 
         // Inform the client that the sequence has ended
         if (testSequenceEndCallback.has_value())
@@ -530,13 +536,13 @@ namespace TestImpact
         }
 
         m_hasImpactAnalysisData = UpdateAndSerializeDynamicDependencyMap(
-                                      *m_dynamicDependencyMap.get(),
-                                      ConcatenateVectors(selectedTestRunData.m_jobs, draftedTestRunData.m_jobs),
-                                      m_failedTestCoveragePolicy,
-                                      m_integrationFailurePolicy,
-                                      m_config.m_commonConfig.m_repo.m_root,
-                                      m_sparTiaFile)
-                                      .value_or(m_hasImpactAnalysisData);
+            *m_dynamicDependencyMap.get(),
+            ConcatenateVectors(selectedTestRunData.m_jobs, draftedTestRunData.m_jobs),
+            m_failedTestCoveragePolicy,
+            m_integrationFailurePolicy,
+            m_config.m_commonConfig.m_repo.m_root,
+            m_sparTiaFile)
+            .value_or(m_hasImpactAnalysisData);
 
         return sequenceReport;
     }

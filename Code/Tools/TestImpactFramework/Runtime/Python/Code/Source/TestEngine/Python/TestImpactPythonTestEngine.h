@@ -99,7 +99,7 @@ namespace TestImpact
             AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const;
     private:
         //! Cleans up the artifacts directory of any artifacts from previous runs.
-        void DeleteArtifactXmls() const;
+        void DeleteXmlArtifacts() const;
 
         AZStd::unique_ptr<PythonInstrumentedTestRunJobInfoGenerator> m_instrumentedTestJobInfoGenerator;
         AZStd::unique_ptr<PythonRegularTestRunJobInfoGenerator> m_regularTestJobInfoGenerator;

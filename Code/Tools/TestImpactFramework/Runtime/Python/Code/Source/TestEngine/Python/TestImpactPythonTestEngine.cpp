@@ -22,18 +22,13 @@
 namespace TestImpact
 {
     AZStd::optional<Client::TestRunResult> PythonRegularTestRunnerErrorCodeChecker(
-        const typename PythonRegularTestRunner::JobInfo& jobInfo, const JobMeta& meta)
+        [[maybe_unused]] const typename PythonRegularTestRunner::JobInfo& jobInfo, const JobMeta& meta)
     {
-        if (auto result = CheckPythonErrorCode(meta.m_returnCode.value()); result.has_value())
-        {
-            return result;
-        }
-
-        return AZStd::nullopt;
+        return CheckPythonErrorCode(meta.m_returnCode.value());
     }
 
     AZStd::optional<Client::TestRunResult> PythonInstrumentedTestRunnerErrorCodeChecker(
-        const typename PythonInstrumentedTestRunner::JobInfo& jobInfo, const JobMeta& meta)
+        [[maybe_unused]] const typename PythonInstrumentedTestRunner::JobInfo& jobInfo, const JobMeta& meta)
     {
         // The PyTest error code for test failures overlaps with the Python error code for script error so we have no way of
         // discerning at the job meta level whether a test failure or script execution error we will assume the tests failed for now
@@ -50,28 +45,28 @@ namespace TestImpact
         return AZStd::nullopt;
     }
 
-    // Type trait for the test instrumented test runner
+    // Type trait for the instrumented test runner
     template<>
     struct TestJobRunnerTrait<PythonInstrumentedTestRunner>
     {
         using TestEngineJobType = TestEngineInstrumentedRun<PythonTestTarget, TestCoverage>;
     };
 
-    // Type trait for the test instrumented null test runner
+    // Type trait for the instrumented null test runner
     template<>
     struct TestJobRunnerTrait<PythonInstrumentedNullTestRunner>
     {
         using TestEngineJobType = TestEngineInstrumentedRun<PythonTestTarget, TestCoverage>;
     };
 
-    // Type trait for the test regular test runner
+    // Type trait for the regular test runner
     template<>
     struct TestJobRunnerTrait<PythonRegularTestRunner>
     {
         using TestEngineJobType = TestEngineRegularRun<PythonTestTarget>;
     };
 
-    // Type trait for the test regular null test runner
+    // Type trait for the regular null test runner
     template<>
     struct TestJobRunnerTrait<PythonRegularNullTestRunner>
     {
@@ -98,7 +93,7 @@ namespace TestImpact
 
     PythonTestEngine::~PythonTestEngine() = default;
 
-    void PythonTestEngine::DeleteArtifactXmls() const
+    void PythonTestEngine::DeleteXmlArtifacts() const
     {
         DeleteFiles(m_artifactDir.m_testRunArtifactDirectory, "*.xml");
         DeleteFiles(m_artifactDir.m_coverageArtifactDirectory, "*.pycoverage");
@@ -113,7 +108,7 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const
     {
-        DeleteArtifactXmls();
+        DeleteXmlArtifacts();
 
         const auto jobInfos = m_regularTestJobInfoGenerator->GenerateJobInfos(testTargets);
 
@@ -183,7 +178,7 @@ namespace TestImpact
         }
         else
         {
-            DeleteArtifactXmls();
+            DeleteXmlArtifacts();
             return GenerateInstrumentedRunResult(
                 RunTests(
                     m_instrumentedTestRunner.get(),
