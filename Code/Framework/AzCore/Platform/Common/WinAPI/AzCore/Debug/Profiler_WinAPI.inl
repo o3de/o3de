@@ -34,4 +34,22 @@ namespace AZ::Debug::Platform
         PIXEndEvent();
     #endif
     }
+
+    template<typename T>
+    inline void ReportCounter(
+        [[maybe_unused]] const Budget* budget, [[maybe_unused]] const wchar_t* counterName, [[maybe_unused]] const T& value)
+    {
+#ifdef USE_PIX
+        PIXReportCounter(counterName, aznumeric_cast<float>(value)); // PIX API requires a float value
+#endif
+    }
+
+    inline void ReportProfileEvent([[maybe_unused]] const Budget* budget,
+        [[maybe_unused]] const char* eventName)
+    {
+#ifdef USE_PIX
+        PIXSetMarker(PIX_COLOR_INDEX(budget->Crc() & 0xff), eventName);
+#endif
+    }
+
 } // namespace AZ::Debug::Platform
