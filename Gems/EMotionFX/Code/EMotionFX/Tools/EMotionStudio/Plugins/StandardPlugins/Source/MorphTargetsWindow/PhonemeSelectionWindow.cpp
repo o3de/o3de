@@ -128,7 +128,6 @@ namespace EMStudio
             painter.setPen(QColor(0, 0, 0));
         }
 
-        //painter.setFont( QFont("MS Shell Dlg 2", 8) );
         painter.drawText(70, (height() / 2) + 4, m_fileNameWithoutExt.c_str());
     }
 

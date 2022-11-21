@@ -20,28 +20,26 @@
 #include <Source/AutoGen/AutoComponentTypes.h>
 #include <Multiplayer/Session/ISessionRequests.h>
 #include <Multiplayer/Session/SessionConfig.h>
+#include <Multiplayer/MultiplayerPerformanceStats.h>
+#include <Multiplayer/MultiplayerMetrics.h>
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
-#include <AzCore/Math/ShapeIntersection.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/Components/CameraBus.h>
-#include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Visibility/IVisibilitySystem.h>
-#include <AzFramework/Visibility/EntityBoundsUnionBus.h>
 
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 
 #include <cmath>
-#include <AzCore/Debug/Profiler.h>
 
 AZ_DEFINE_BUDGET(MULTIPLAYER);
 
@@ -88,19 +86,27 @@ namespace Multiplayer
     AZ_CVAR(uint16_t, cl_serverport, DefaultServerPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port of the remote host to connect to for game traffic");
     AZ_CVAR(uint16_t, sv_port, DefaultServerPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port that this multiplayer gem will bind to for game traffic");
     AZ_CVAR(uint16_t, sv_portRange, 999, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The range of ports the host will incrementally attempt to bind to when initializing");
-    AZ_CVAR(AZ::CVarFixedString, sv_map, "nolevel", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The map the server should load");
+    AZ_CVAR(AZ::CVarFixedString, sv_map, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The map the server should load");
     AZ_CVAR(ProtocolType, sv_protocol, ProtocolType::Udp, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "This flag controls whether we use TCP or UDP for game networking");
     AZ_CVAR(bool, sv_isDedicated, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether the host command creates an independent or client hosted server");
-    AZ_CVAR(bool, sv_isTransient, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether a dedicated server shuts down if all existing connections disconnect.");
+    AZ_CVAR(bool, sv_isTransient, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "[DEPRECATED: use sv_terminateOnPlayerExit instead] Whether a dedicated server shuts down if all existing connections disconnect.");
+    AZ_CVAR(bool, sv_terminateOnPlayerExit, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether a dedicated server shuts down if all existing connections disconnect.");
     AZ_CVAR(AZ::TimeMs, sv_serverSendRateMs, AZ::TimeMs{ 50 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Minimum number of milliseconds between each network update");
     AZ_CVAR(float, cl_renderTickBlendBase, 0.15f, nullptr, AZ::ConsoleFunctorFlags::Null,
         "The base used for blending between network updates, 0.1 will be quite linear, 0.2 or 0.3 will "
         "slow down quicker and may be better suited to connections with highly variable latency");
     AZ_CVAR(bool, bg_multiplayerDebugDraw, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables debug draw for the multiplayer gem");
     AZ_CVAR(bool, cl_connect_onstartup, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to call connect as soon as the Multiplayer SystemComponent is activated.");
+    AZ_CVAR(bool, sv_versionMismatch_autoDisconnect, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "Should the server automatically disconnect a client that is attempting connect who is running a build containing different/modified multiplayer components.");
+    AZ_CVAR(bool, sv_versionMismatch_sendManifestToClient, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "Should the server send all its individual multiplayer component version information to the client when there's a mismatch? "
+        "Upon receiving the information, the client will print the mismatch information to the game log. "
+        "Provided for debugging during development, but you may want to mark false for release builds.");
 
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        NetworkSpawnable::Reflect(context);
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<MultiplayerSystemComponent, AZ::Component>()
@@ -135,13 +141,13 @@ namespace Multiplayer
             behaviorContext->Class<MultiplayerSystemComponent>("MultiplayerSystemComponent")
                 ->Attribute(AZ::Script::Attributes::Module, "multiplayer")
                 ->Attribute(AZ::Script::Attributes::Category, "Multiplayer")
-                ->Method("GetOnEndpointDisonnectedEvent", [](AZ::EntityId id) -> EndpointDisonnectedEvent*
+                ->Method("GetOnEndpointDisconnectedEvent", [](AZ::EntityId id) -> EndpointDisconnectedEvent*
                 {
                     AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
                     if (!entity)
                     {
                         AZ_Warning("Multiplayer Property", false,
-                            "MultiplayerSystemComponent GetOnEndpointDisonnectedEvent failed."
+                            "MultiplayerSystemComponent GetOnEndpointDisconnectedEvent failed."
                             "The entity with id %s doesn't exist, please provide a valid entity id.",
                             id.ToString().c_str());
                         return nullptr;
@@ -151,14 +157,16 @@ namespace Multiplayer
                     if (!mpComponent)
                     {
                         AZ_Warning("Multiplayer Property", false,
-                            "MultiplayerSystemComponent GetOnEndpointDisonnectedEvent failed."
+                            "MultiplayerSystemComponent GetOnEndpointDisconnectedEvent failed."
                             "Entity '%s' (id: %s) is missing MultiplayerSystemComponent, be sure to add MultiplayerSystemComponent to this entity.",
                             entity->GetName().c_str(), id.ToString().c_str());
                         return nullptr;
                     }
 
-                    return &mpComponent->m_endpointDisonnectedEvent;
+                    return &mpComponent->m_endpointDisconnectedEvent;
                 })
+                    ->Attribute(AZ::Script::Attributes::AzEventDescription,
+                        AZ::BehaviorAzEventDescription{"On Endpoint Disconnected Event", {"Type of Multiplayer Agent that disconnected"}})
                 ->Method("ClearAllEntities", [](AZ::EntityId id)
                 {
                     AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
@@ -186,7 +194,16 @@ namespace Multiplayer
                 })
                 ->Attribute(
                     AZ::Script::Attributes::AzEventDescription,
-                    AZ::BehaviorAzEventDescription{"On Client Disconnected Event"});
+                    AZ::BehaviorAzEventDescription{"On Client Disconnected Event"})
+                ->Method("GetCurrentBlendFactor", []()
+                    {
+                        if (GetMultiplayer())
+                        {
+                            return GetMultiplayer()->GetCurrentBlendFactor();
+                        }
+                        return 0.f;
+                    })
+            ;
         }
 
         MultiplayerComponent::Reflect(context);
@@ -195,6 +212,7 @@ namespace Multiplayer
     void MultiplayerSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("NetworkingService"));
+        required.push_back(AZ_CRC_CE("MultiplayerStatSystemComponent"));
     }
 
     void MultiplayerSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -227,8 +245,16 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::Activate()
     {
+        DECLARE_PERFORMANCE_STAT_GROUP(MultiplayerGroup_Networking, "Networking");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_EntityCount, "NumEntities");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_FrameTimeUs, "FrameTimeUs");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_ClientConnectionCount, "ClientConnections");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_ApplicationFrameTimeUs, "Application FrameTimeUs");
+
+        AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
         SessionNotificationBus::Handler::BusConnect();
+        AzFramework::LevelLoadBlockerBus::Handler::BusConnect();
         const AZ::Name interfaceName = AZ::Name(MpNetworkInterfaceName);
         m_networkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(interfaceName, sv_protocol, TrustZone::ExternalClientToServer, *this);
 
@@ -254,14 +280,21 @@ namespace Multiplayer
         m_consoleCommandHandler.Disconnect();
         const AZ::Name interfaceName = AZ::Name(MpNetworkInterfaceName);
         AZ::Interface<INetworking>::Get()->DestroyNetworkInterface(interfaceName);
+        AzFramework::LevelLoadBlockerBus::Handler::BusDisconnect();
         SessionNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
+        AzFramework::RootSpawnableNotificationBus::Handler::BusDisconnect();
 
         m_networkEntityManager.Reset();
     }
 
     bool MultiplayerSystemComponent::StartHosting(uint16_t port, bool isDedicated)
     {
+        if (port == UseDefaultHostPort)
+        {
+            port = sv_port;
+        }
+
         if (port != sv_port)
         {
             sv_port = port;
@@ -411,6 +444,9 @@ namespace Multiplayer
     void MultiplayerSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: OnTick");
+        SET_PERFORMANCE_STAT(MultiplayerStat_ApplicationFrameTimeUs, AZ::SecondsToTimeUs(deltaTime));
+
+        const AZStd::chrono::steady_clock::time_point startMultiplayerTickTime = AZStd::chrono::steady_clock::now();
 
         if (bg_multiplayerDebugDraw)
         {
@@ -504,6 +540,10 @@ namespace Multiplayer
             AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: OnTick - SendReliablePackets");
             m_networkInterface->GetConnectionSet().VisitConnections(visitor);
         }
+
+        const auto duration =
+            AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now() - startMultiplayerTickTime);
+        stats.RecordFrameTime(AZ::TimeUs{ duration.count() });
     }
 
     int MultiplayerSystemComponent::GetTickOrder()
@@ -556,11 +596,80 @@ namespace Multiplayer
         return reinterpret_cast<IConnectionData*>(connection->GetUserData())->DidHandshake();
     }
 
+    bool MultiplayerSystemComponent::AttemptPlayerConnect(AzNetworking::IConnection* connection, MultiplayerPackets::Connect& packet)
+    {
+        reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
+
+        // Hosts will handle spawning for a player on connect
+        if (GetAgentType() == MultiplayerAgentType::ClientServer
+            || GetAgentType() == MultiplayerAgentType::DedicatedServer)
+        {
+            // We use a temporary userId over the clients address so we can maintain client lookups even in the event of wifi handoff
+            IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get();
+            NetworkEntityHandle controlledEntity;
+
+            // Check rejoin data first
+            const auto node = m_playerRejoinData.find(packet.GetTemporaryUserId());
+            if (node != m_playerRejoinData.end())
+            {
+                controlledEntity = m_networkEntityManager.GetNetworkEntityTracker()->Get(node->second);
+            }
+            else if (spawner)
+            {
+                // Route to spawner implementation
+                MultiplayerAgentDatum datum;
+                datum.m_agentType = MultiplayerAgentType::Client;
+                datum.m_id = connection->GetConnectionId();
+                const uint64_t userId = packet.GetTemporaryUserId();
+
+                controlledEntity = spawner->OnPlayerJoin(userId, datum);
+                if (controlledEntity.Exists())
+                {
+                    EnableAutonomousControl(controlledEntity, connection->GetConnectionId());
+                    StartServerToClientReplication(userId, controlledEntity, connection);
+                }
+                else
+                {
+                    // If there wasn't a player entity available, wait until a level loads and check again.
+                    // This can happen if IMultiplayerSpawn depends on a level being loaded, but the client connects to the server before the server has started a level.
+                    m_playersWaitingToBeSpawned.emplace_back(userId, datum, connection);
+                }
+            }
+            else
+            {
+                AZLOG_ERROR("No IMultiplayerSpawner was available. Ensure that one is registered for usage on PlayerJoin.");
+            }
+        }
+
+        if (static_cast<AZ::CVarFixedString>(sv_map).empty())
+        {
+            AZLOG_WARN("Server does not have a multiplayer level loaded! Make sure the server has a level loaded before accepting clients.");
+            m_noServerLevelLoadedEvent.Signal();
+
+            connection->Disconnect(DisconnectReason::ServerNoLevelLoaded, TerminationEndpoint::Local);
+            return true;
+        }
+
+        if (connection->SendReliablePacket(MultiplayerPackets::Accept(sv_map)))
+        {
+            reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
+
+            if (packet.GetTemporaryUserId() == 0)
+            {
+                // Sync our console
+                ConsoleReplicator consoleReplicator(connection);
+                AZ::Interface<AZ::IConsole>::Get()->VisitRegisteredFunctors([&consoleReplicator](AZ::ConsoleFunctorBase* functor) { consoleReplicator.Visit(functor); });
+            }
+            return true;
+        }
+        return false;
+    }
+
     bool MultiplayerSystemComponent::HandleRequest
     (
-        [[maybe_unused]] AzNetworking::IConnection* connection,
+        AzNetworking::IConnection* connection,
         [[maybe_unused]] const IPacketHeader& packetHeader,
-        [[maybe_unused]] MultiplayerPackets::Connect& packet
+        MultiplayerPackets::Connect& packet
     )
     {
         PlayerConnectionConfig config;
@@ -578,63 +687,28 @@ namespace Multiplayer
                 return true;
             }
         }
-        reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
 
-        // Hosts will handle spawning for a player on connect
-        if (GetAgentType() == MultiplayerAgentType::ClientServer
-         || GetAgentType() == MultiplayerAgentType::DedicatedServer)
+        // Make sure the client that's trying to connect has the same multiplayer components
+        if (GetMultiplayerComponentRegistry()->GetSystemVersionHash() != packet.GetSystemVersionHash())
         {
-            // We use a temporary userId over the clients address so we can maintain client lookups even in the event of wifi handoff
-            IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get();
-            NetworkEntityHandle controlledEntity;
-
-            // Check rejoin data first
-            const auto node = m_playerRejoinData.find(packet.GetTemporaryUserId());
-            if (node != m_playerRejoinData.end())
+            // There's a multiplayer component mismatch. Send the server's component information back to the client so they can compare.
+            if (sv_versionMismatch_sendManifestToClient)
             {
-                controlledEntity = m_networkEntityManager.GetNetworkEntityTracker()->Get(node->second);
-            }
-            else if (spawner)
-            {
-                // Route to spawner implementation
-                MultiplayerAgentDatum datum;
-                datum.m_agentType = MultiplayerAgentType::Client;
-                controlledEntity = spawner->OnPlayerJoin(packet.GetTemporaryUserId(), datum);
+                MultiplayerPackets::VersionMismatch versionMismatchPacket(GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes());
+                connection->SendReliablePacket(versionMismatchPacket);                
             }
             else
             {
-                AZLOG_ERROR("No IMultiplayerSpawner was available. Ensure that one is registered for usage on PlayerJoin.");
+                // sv_versionMismatch_sendManifestToClient is false; don't send any individual components, just let the client know there was a mismatch.
+                MultiplayerPackets::VersionMismatch versionMismatchPacket;
+                connection->SendReliablePacket(versionMismatchPacket);
             }
 
-            if (controlledEntity.Exists())
-            {
-                EnableAutonomousControl(controlledEntity, connection->GetConnectionId());
-
-                ServerToClientConnectionData* connectionData = reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData());
-                AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<ServerToClientReplicationWindow>(controlledEntity, connection);
-                connectionData->GetReplicationManager().SetReplicationWindow(AZStd::move(window));
-                connectionData->SetControlledEntity(controlledEntity);
-
-                // If this is a migrate or rejoin, immediately ready the connection for updates
-                if (packet.GetTemporaryUserId() != 0)
-                {
-                    connectionData->SetCanSendUpdates(true);
-                }
-            }
-        }
-
-        if (connection->SendReliablePacket(MultiplayerPackets::Accept(sv_map)))
-        {
-            reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
-            if (packet.GetTemporaryUserId() == 0)
-            {
-                // Sync our console
-                ConsoleReplicator consoleReplicator(connection);
-                AZ::Interface<AZ::IConsole>::Get()->VisitRegisteredFunctors([&consoleReplicator](AZ::ConsoleFunctorBase* functor) { consoleReplicator.Visit(functor); });
-            }
+            m_originalConnectPackets[connection->GetConnectionId()] = packet;
             return true;
         }
-        return false;
+
+        return AttemptPlayerConnect(connection, packet);
     }
 
     bool MultiplayerSystemComponent::HandleRequest
@@ -644,13 +718,14 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::Accept& packet
     )
     {
-        reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
+        reinterpret_cast<IConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
         if (m_temporaryUserIdentifier == 0)
         {
-            AZ::CVarFixedString commandString = "sv_map " + packet.GetMap();
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
+            sv_map = packet.GetMap().c_str();
             AZ::CVarFixedString loadLevelString = "LoadLevel " + packet.GetMap();
+            m_blockClientLoadLevel = false;
             AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
+            m_blockClientLoadLevel = true;
         }
         else
         {
@@ -812,6 +887,102 @@ namespace Multiplayer
         return true;
     }
 
+    bool MultiplayerSystemComponent::HandleRequest(
+        IConnection* connection,
+        [[maybe_unused]] const IPacketHeader& packetHeader,
+        MultiplayerPackets::VersionMismatch& packet)
+    {
+        // Iterate over each component and see what's been added, missing, or modified
+        for (const auto& [theirComponentName, theirComponentHash] : packet.GetComponentVersions())
+        {
+            // Check for modified components
+            AZ::HashValue64 localComponentHash;
+            if (GetMultiplayerComponentRegistry()->FindComponentVersionHashByName(theirComponentName, localComponentHash))
+            {
+                
+                if (theirComponentHash != localComponentHash)
+                {
+                    AZLOG_ERROR(
+                        "Multiplayer component mismatch! %s has a different version hash. Please make sure both client and server have "
+                        "matching multiplayer components.",
+                        theirComponentName.GetCStr());
+                }
+            }
+            else
+            {
+                // Connected application is using a multiplayer component that doesn't exist in this application
+                AZLOG_ERROR(
+                    "Multiplayer component mismatch! This application is missing a component with version hash 0x%llx. "
+                    "Because this component is missing, the name isn't available, only its hash. "
+                    "To find the missing component go to the other machine and search for 's_versionHash = AZ::HashValue64{ 0x%llx }' "
+                    "inside the generated multiplayer auto-component build folder.",
+                    theirComponentHash,
+                    theirComponentHash);
+            }
+        }
+
+        // One last iteration over our components this time to check if we have a component the connected app is missing.
+        if (!packet.GetComponentVersions().empty())
+        {
+            for (const auto& ourComponent : GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes())
+            {
+                AZ::Name ourComponentName = ourComponent.first;
+
+                bool theyHaveComponent = false;
+                for (const auto& theirComponent : packet.GetComponentVersions())
+                {
+                    if (ourComponentName == theirComponent.first)
+                    {
+                        theyHaveComponent = true;
+                        break;
+                    }
+                }
+
+                if (!theyHaveComponent)
+                {
+                    AZLOG_ERROR(
+                        "Multiplayer component mismatch! This application has a component named %s which the connected application is missing!",
+                        ourComponentName.GetCStr());
+                }
+            }
+        }
+        // The client receives this packet first from the server, and then the client sends a packet back
+        if (connection->GetConnectionRole() == ConnectionRole::Connector)
+        {
+            // If this is the connector (client), send all our component information back to the acceptor (server).
+            MultiplayerPackets::VersionMismatch versionMismatchPacket(GetMultiplayerComponentRegistry()->GetMultiplayerComponentVersionHashes());
+            connection->SendReliablePacket(versionMismatchPacket);
+        }
+        else if (connection->GetConnectionRole() == ConnectionRole::Acceptor)
+        {
+            // If this is the server, that means the client has also received all the component version information by this time.
+            // Now either disconnect, or accept the connection even though there's a mismatch.
+            if (sv_versionMismatch_autoDisconnect)
+            {
+                // Disconnect from the connector
+                connection->Disconnect(DisconnectReason::VersionMismatch, TerminationEndpoint::Local);
+            }
+            else
+            {
+                if (m_originalConnectPackets.contains(connection->GetConnectionId()))
+                {
+                    // DANGER: Accepting the player connection even though there's a component mismatch
+                    AZLOG_WARN("Multiplayer component mismatch was found. Server configured to allow the player to connect anyways. Please set "
+                               "sv_versionMismatch_autoDisconnect=true if this is undesired behavior!");
+                    AttemptPlayerConnect(connection, m_originalConnectPackets[connection->GetConnectionId()]);
+                    m_originalConnectPackets.erase(connection->GetConnectionId());
+                }
+                else
+                {
+                    AZ_Assert(false, "Multiplayer component mismatch finished comparing components; "
+                                "failed to accept connection because the original connection packet is missing. This should not happen.");
+                }   
+            }
+        }
+
+        return true;
+    }
+
     ConnectResult MultiplayerSystemComponent::ValidateConnect
     (
         [[maybe_unused]] const IpAddress& remoteAddress,
@@ -833,7 +1004,12 @@ namespace Multiplayer
                 providerTicket = m_pendingConnectionTickets.front();
                 m_pendingConnectionTickets.pop();
             }
-            connection->SendReliablePacket(MultiplayerPackets::Connect(0, m_temporaryUserIdentifier, providerTicket.c_str()));
+            
+            connection->SendReliablePacket(MultiplayerPackets::Connect(
+                0,
+                m_temporaryUserIdentifier,
+                providerTicket.c_str(),
+                GetMultiplayerComponentRegistry()->GetSystemVersionHash()));
         }
         else
         {
@@ -879,6 +1055,12 @@ namespace Multiplayer
         if (m_agentType == MultiplayerAgentType::Client)
         {
             AZ_Assert(connection->GetConnectionRole() == ConnectionRole::Connector, "Client connection role should only ever be Connector");
+
+            if (reason == DisconnectReason::ServerNoLevelLoaded)
+            {
+                AZLOG_WARN("Server did not provide a valid level to load! Make sure the server has a level loaded before connecting.");
+                m_noServerLevelLoadedEvent.Signal();
+            }
         }
         else if (m_agentType == MultiplayerAgentType::DedicatedServer || m_agentType == MultiplayerAgentType::ClientServer)
         {
@@ -888,17 +1070,37 @@ namespace Multiplayer
                 IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get();
                 if (spawner)
                 {
-                    ServerToClientConnectionData* connectionData =
-                        reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData());
-                    IReplicationWindow* replicationWindow = connectionData->GetReplicationManager().GetReplicationWindow();
-                    if (replicationWindow)
+                    // Check if this disconnected player was waiting to be spawned, and therefore, doesn't have a controlled player entity yet.
+                    bool playerSpawned = true;
+                    for (auto it = m_playersWaitingToBeSpawned.begin(); it != m_playersWaitingToBeSpawned.end(); ++it)
                     {
-                        const ReplicationSet& replicationSet = replicationWindow->GetReplicationSet();
-                        spawner->OnPlayerLeave(connectionData->GetPrimaryPlayerEntity(), replicationSet, reason);
+                        if (it->connection && it->connection->GetConnectionId() == connection->GetConnectionId())
+                        {
+                            m_playersWaitingToBeSpawned.erase(it);
+                            playerSpawned = false;
+                            break;
+                        }
                     }
-                    else
+
+                    // Alert IMultiplayerSpawner that our spawned player has left.
+                    if (playerSpawned)
                     {
-                        AZLOG_ERROR("No IReplicationWindow found OnPlayerDisconnect.");
+                        if (auto connectionData = reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData()))
+                        {
+                            if (IReplicationWindow* replicationWindow = connectionData->GetReplicationManager().GetReplicationWindow())
+                            {
+                                const ReplicationSet& replicationSet = replicationWindow->GetReplicationSet();
+                                spawner->OnPlayerLeave(connectionData->GetPrimaryPlayerEntity(), replicationSet, reason);
+                            }
+                            else
+                            {
+                                AZLOG_ERROR("No IReplicationWindow found OnPlayerDisconnect.");
+                            } 
+                        }
+                        else
+                        {
+                            AZLOG_ERROR("No ServerToClientConnectionData found OnPlayerDisconnect.");
+                        }
                     }
                 }
                 else
@@ -917,7 +1119,7 @@ namespace Multiplayer
             }
         }
 
-        m_endpointDisonnectedEvent.Signal(m_agentType);
+        m_endpointDisconnectedEvent.Signal(m_agentType);
 
         // Clean up any multiplayer connection data we've bound to this connection instance
         if (connection->GetUserData() != nullptr)
@@ -928,12 +1130,13 @@ namespace Multiplayer
         }
 
         // Signal to session management when there are no remaining players in a dedicated server for potential cleanup
-        // We avoid this for client server as the host itself is a user and non-transient dedicated servers
-        if (sv_isTransient && m_agentType == MultiplayerAgentType::DedicatedServer && connection->GetConnectionRole() == ConnectionRole::Acceptor)
+        // We avoid this for client server as the host itself is a user and dedicated servers that do not terminate when all players have exited
+        if (sv_terminateOnPlayerExit && m_agentType == MultiplayerAgentType::DedicatedServer && connection->GetConnectionRole() == ConnectionRole::Acceptor)
         {   
             if (m_networkInterface->GetConnectionSet().GetActiveConnectionCount() == 0)
             {
                 Terminate(DisconnectReason::TerminatedByServer);
+                AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
             }
         }
     }
@@ -945,10 +1148,14 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::InitializeMultiplayer(MultiplayerAgentType multiplayerType)
     {
+        m_lastReplicatedHostFrameId = HostFrameId{0};
+
         if (m_agentType == multiplayerType)
         {
             return;
         }
+
+        m_playersWaitingToBeSpawned.clear();
 
         if (m_agentType != MultiplayerAgentType::Uninitialized && multiplayerType != MultiplayerAgentType::Uninitialized)
         {
@@ -982,26 +1189,38 @@ namespace Multiplayer
         // Spawn the default player for this host since the host is also a player (not a dedicated server)
         if (m_agentType == MultiplayerAgentType::ClientServer)
         {
-            IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get();
-            NetworkEntityHandle controlledEntity;
-            if (spawner)
+            if (IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get())
             {
                 // Route to spawner implementation
                 MultiplayerAgentDatum datum;
                 datum.m_agentType = MultiplayerAgentType::ClientServer;
-                controlledEntity = spawner->OnPlayerJoin(0, datum);
+                datum.m_id = InvalidConnectionId;
+                const uint64_t userId = 0;
+
+                NetworkEntityHandle controlledEntity = spawner->OnPlayerJoin(userId, datum);
+                if (controlledEntity.Exists())
+                {
+                    // A controlled player entity likely doesn't exist at this time.
+                    // Unless IMultiplayerSpawner has a way to return a player without being inside a level, the client-server's player won't be spawned until the next level is loaded.
+                    EnableAutonomousControl(controlledEntity, InvalidConnectionId);
+                }
+                else
+                {
+                    // If there wasn't any player entity, wait until a level loads and check again
+                    m_playersWaitingToBeSpawned.emplace_back(userId, datum, nullptr );
+                }
             }
             else
             {
                 AZLOG_ERROR("No IMultiplayerSpawner found for host's default player. Ensure one is registered.");
             }
-
-            if (controlledEntity.Exists())
-            {
-                EnableAutonomousControl(controlledEntity, AzNetworking::InvalidConnectionId);
-            }
         }
         AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
+
+        if (auto* statSystem = AZ::Interface<IMultiplayerStatSystem>::Get())
+        {
+            statSystem->Register();
+        }
     }
 
     void MultiplayerSystemComponent::AddClientMigrationStartEventHandler(ClientMigrationStartEvent::Handler& handler)
@@ -1014,9 +1233,9 @@ namespace Multiplayer
         handler.Connect(m_clientMigrationEndEvent);
     }
 
-    void MultiplayerSystemComponent::AddEndpointDisonnectedHandler(EndpointDisonnectedEvent::Handler& handler)
+    void MultiplayerSystemComponent::AddEndpointDisconnectedHandler(EndpointDisconnectedEvent::Handler& handler)
     {
-        handler.Connect(m_endpointDisonnectedEvent);
+        handler.Connect(m_endpointDisconnectedEvent);
     }
 
     void MultiplayerSystemComponent::AddNotifyClientMigrationHandler(NotifyClientMigrationEvent::Handler& handler)
@@ -1047,6 +1266,16 @@ namespace Multiplayer
     void MultiplayerSystemComponent::AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler)
     {
         handler.Connect(m_shutdownEvent);
+    }
+
+    void MultiplayerSystemComponent::AddLevelLoadBlockedHandler(LevelLoadBlockedEvent::Handler& handler)
+    {
+        handler.Connect(m_levelLoadBlockedEvent);
+    }
+
+    void MultiplayerSystemComponent::AddNoServerLevelLoadedHandler(NoServerLevelLoadedEvent::Handler& handler)
+    {
+        handler.Connect(m_noServerLevelLoadedEvent);
     }
 
     void MultiplayerSystemComponent::SendNotifyClientMigrationEvent(AzNetworking::ConnectionId connectionId, const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId, NetEntityId controlledEntityId)
@@ -1260,22 +1489,23 @@ namespace Multiplayer
         }
     }
 
-    void MultiplayerSystemComponent::EnableAutonomousControl(NetworkEntityHandle entityHandle, AzNetworking::ConnectionId connectionId)
+    void MultiplayerSystemComponent::EnableAutonomousControl(NetworkEntityHandle entityHandle, AzNetworking::ConnectionId ownerConnectionId)
     {
         if (!entityHandle.Exists())
         {
-            AZLOG_WARN("Attempting to enable autonomous control for an invalid entity");
+            AZLOG_WARN("Attempting to enable autonomous control for an invalid multiplayer entity");
             return;
         }
 
-        entityHandle.GetNetBindComponent()->SetOwningConnectionId(connectionId);
-        if (connectionId == InvalidConnectionId)
+        entityHandle.GetNetBindComponent()->SetOwningConnectionId(ownerConnectionId);
+
+        // An invalid connection id means this player is controlled by us (the host); not controlled by some connected client.
+        if (ownerConnectionId == InvalidConnectionId)
         {
-            entityHandle.GetNetBindComponent()->SetAllowAutonomy(true);
+            entityHandle.GetNetBindComponent()->EnablePlayerHostAutonomy(true);
         }
 
-        auto* hierarchyComponent = entityHandle.FindComponent<NetworkHierarchyRootComponent>();
-        if (hierarchyComponent != nullptr)
+        if (auto* hierarchyComponent = entityHandle.FindComponent<NetworkHierarchyRootComponent>())
         {
             for (AZ::Entity* subEntity : hierarchyComponent->GetHierarchicalEntities())
             {
@@ -1284,12 +1514,119 @@ namespace Multiplayer
 
                 if (subEntityNetBindComponent != nullptr)
                 {
-                    subEntityNetBindComponent->SetOwningConnectionId(connectionId);
-                    if (connectionId == InvalidConnectionId)
+                    subEntityNetBindComponent->SetOwningConnectionId(ownerConnectionId);
+
+                    // An invalid connection id means this player is controlled by us (the host); not controlled by some connected client.
+                    if (ownerConnectionId == InvalidConnectionId)
                     {
-                        subEntityNetBindComponent->SetAllowAutonomy(true);
+                        subEntityNetBindComponent->EnablePlayerHostAutonomy(true);
                     }
                 }
+            }
+        }
+    }
+
+    void MultiplayerSystemComponent::OnRootSpawnableReady([[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation)
+    {
+        // Spawn players waiting to be spawned. This can happen when a player connects before a level is loaded, so there isn't any player spawner components registered
+        IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get();
+        if (!spawner)
+        {
+            AZLOG_ERROR("Attempting to spawn players on level load failed. No IMultiplayerSpawner found. Ensure one is registered.");
+            return;
+        }
+
+        for (const auto& playerWaitingToBeSpawned : m_playersWaitingToBeSpawned)
+        {
+            NetworkEntityHandle controlledEntity = spawner->OnPlayerJoin(playerWaitingToBeSpawned.userId, playerWaitingToBeSpawned.agent);
+            if (controlledEntity.Exists())
+            {
+                EnableAutonomousControl(controlledEntity, playerWaitingToBeSpawned.agent.m_id);
+            }
+            else
+            {
+                AZLOG_WARN("Attempting to spawn network player on level load failed. IMultiplayerSpawner did not return a controlled entity.");
+                return;
+            }
+
+            if ((GetAgentType() == MultiplayerAgentType::ClientServer || GetAgentType() == MultiplayerAgentType::DedicatedServer)
+                && playerWaitingToBeSpawned.agent.m_agentType == MultiplayerAgentType::Client)
+            {
+                StartServerToClientReplication(playerWaitingToBeSpawned.userId, controlledEntity, playerWaitingToBeSpawned.connection);
+            }
+        }
+
+        m_playersWaitingToBeSpawned.clear();
+    }
+
+    bool MultiplayerSystemComponent::ShouldBlockLevelLoading(const char* levelName)
+    {
+        bool blockLevelLoad = false;
+        switch (m_agentType)
+        {
+        case MultiplayerAgentType::Uninitialized:
+        {
+            // replace .spawnable with .network.spawnable
+            AZStd::string networkSpawnablePath(levelName);
+            networkSpawnablePath.erase(networkSpawnablePath.size() - strlen(AzFramework::Spawnable::DotFileExtension));
+            networkSpawnablePath += NetworkSpawnableFileExtension;
+
+            AZ::Data::AssetId networkSpawnableAssetId;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                networkSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, networkSpawnablePath.c_str(), azrtti_typeid<AzFramework::Spawnable>(), false);
+
+            if (networkSpawnableAssetId.IsValid())
+            {
+                AZLOG_WARN("MultiplayerSystemComponent blocked loading a network level. Your multiplayer agent is uninitialized; did you forget to host before loading a network level?")
+                blockLevelLoad = true;
+            }
+            break;
+        }
+        case MultiplayerAgentType::Client:
+            if (m_blockClientLoadLevel)
+            {
+                AZLOG_WARN("MultiplayerSystemComponent blocked this client from loading a new level. Clients should only attempt to load level when instructed by their server. Disconnect from server before calling LoadLevel.")
+                blockLevelLoad = true;
+            }
+            break;
+        case MultiplayerAgentType::ClientServer:
+            if (m_playersWaitingToBeSpawned.empty())
+            {
+                AZLOG_WARN("MultiplayerSystemComponent blocked this host from loading a new level because you already have a player. Loading a new level could destroy the existing network player entity. Disconnect from the multiplayer simulation before changing levels.")
+                blockLevelLoad = true;
+            }
+            break;
+        case MultiplayerAgentType::DedicatedServer:
+            if (m_networkInterface->GetConnectionSet().GetConnectionCount() > 0)
+            {
+                AZLOG_WARN("MultiplayerSystemComponent blocked this host from loading a new level because clients are connected. Loading a new level would destroy the existing clients' network player entity.")
+                blockLevelLoad = true;
+            }
+            break;
+        default:
+            AZLOG_WARN("MultiplayerSystemComponent::ShouldBlockLevelLoading called with unsupported agent type. Please update code to support agent type: %s.", GetEnumString(m_agentType));
+        }
+
+        if (blockLevelLoad)
+        {
+            m_levelLoadBlockedEvent.Signal();
+        }
+
+        return blockLevelLoad;
+    }
+
+    void MultiplayerSystemComponent::StartServerToClientReplication(uint64_t userId, NetworkEntityHandle controlledEntity, IConnection* connection)
+    {
+        if (auto connectionData = reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData()))
+        {
+            AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<ServerToClientReplicationWindow>(controlledEntity, connection);
+            connectionData->GetReplicationManager().SetReplicationWindow(AZStd::move(window));
+            connectionData->SetControlledEntity(controlledEntity);
+
+            // If this is a migrate or rejoin, immediately ready the connection for updates
+            if (userId != 0)
+            {
+                connectionData->SetCanSendUpdates(true);
             }
         }
     }
@@ -1330,8 +1667,7 @@ namespace Multiplayer
         }
         
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-        processLaunchInfo.m_processExecutableString = gameLauncherPath.String();
-        processLaunchInfo.m_commandlineParameters = "--cl_connect_onstartup=true";
+        processLaunchInfo.m_commandlineParameters = AZStd::string::format("%s --cl_connect_onstartup true", gameLauncherPath.c_str());
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
         
         // Launch GameLauncher and connect to this server

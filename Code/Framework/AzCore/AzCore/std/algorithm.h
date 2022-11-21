@@ -557,7 +557,7 @@ namespace AZStd
 
 
     // Reverse
-    // The std::reverse functionwill be constexpr as of C++20, for now the std:: versions will be aliased
+    // The std::reverse function will be constexpr as of C++20, for now the std:: versions will be aliased
     // into the AZStd namespace
     using std::reverse;
 
@@ -771,6 +771,8 @@ namespace AZStd
 
     //////////////////////////////////////////////////////////////////////////
     // Search
+    using std::equal_range;
+
     // TEMPLATE FUNCTION lower_bound
     template<class ForwardIterator, class T>
     constexpr ForwardIterator lower_bound(ForwardIterator first, ForwardIterator last, const T& value)

@@ -43,6 +43,7 @@
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
+#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsWindow.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
 #include <AzToolsFramework/SourceControl/QtSourceControlNotificationHandler.h>
 #include <AzToolsFramework/Viewport/LocalViewBookmarkLoader.h>
@@ -417,7 +418,7 @@ MainWindow::~MainWindow()
         GetEntityContextId(), &ActionOverrideRequests::TeardownActionOverrideHandler);
 
     m_instance = nullptr;
-    
+
     if (!IsNewActionManagerEnabled())
     {
         delete m_levelEditorMenuHandler;
@@ -507,16 +508,6 @@ void MainWindow::Initialize()
     // setup the ActionOverride (set overrideWidgets parent to be the MainWindow)
     ActionOverrideRequestBus::Event(
         GetEntityContextId(), &ActionOverrideRequests::SetupActionOverrideHandler, this);
-
-    if (auto imGuiManager = AZ::Interface<ImGui::IImGuiManager>::Get())
-    {
-        auto handleImGuiStateChangeFn = [](bool enabled)
-        {
-            EditorWindowUIRequestBus::Broadcast(&EditorWindowUIRequests::SetEditorUiEnabled, enabled);
-        };
-        m_handleImGuiStateChangeHandler = ImGui::IImGuiManager::ImGuiSetEnabledEvent::Handler(handleImGuiStateChangeFn);
-        imGuiManager->ConnectImGuiSetEnabledChangedHandler(m_handleImGuiStateChangeHandler);
-    }
 
     AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEvents::NotifyMainWindowInitialized, this);
 }
@@ -772,7 +763,7 @@ void MainWindow::InitActions()
                 EditorTransformComponentSelectionRequestBus::Event(
                     GetEntityContextId(), &EditorTransformComponentSelectionRequests::SetTransformMode,
                     EditorTransformComponentSelectionRequests::Mode::Translation);
-            });                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+            });
     am->AddAction(AzToolsFramework::EditModeRotate, tr("Rotate"))
         .SetIcon(Style::icon("Translate"))
         .SetShortcut(tr("2"))
@@ -1065,6 +1056,27 @@ void MainWindow::InitActions()
             []()
             {
                 AzToolsFramework::SetIconsVisible(!AzToolsFramework::IconsVisible());
+                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnIconsVisibilityChanged,
+                    AzToolsFramework::IconsVisible());
+            });
+    am->AddAction(AzToolsFramework::OnlyShowHelpersForSelectedEntitiesAction, tr("Show Helpers for Selected Entities Only"))
+        .SetToolTip(tr("Show Helpers for Selected/All Entities"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+            })
+        .Connect(
+            &QAction::triggered,
+            []()
+            {
+                AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(!AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyShowHelpersForSelectedEntitiesChanged,
+                    AzToolsFramework::OnlyShowHelpersForSelectedEntities());
             });
 
     // Audio actions
@@ -1422,7 +1434,7 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
         auto cryEdit = CCryEditApp::instance();
         if (cryEdit)
         {
-            cryEdit->SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectName().c_str(), GetIEditor()->GetGameEngine()->GetLevelName());
+            cryEdit->SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectDisplayName().c_str(), GetIEditor()->GetGameEngine()->GetLevelName());
         }
     }
     break;
@@ -1431,7 +1443,7 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
         auto cryEdit = CCryEditApp::instance();
         if (cryEdit)
         {
-            cryEdit->SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectName().c_str(), nullptr);
+            cryEdit->SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectDisplayName().c_str(), nullptr);
         }
     }
     break;
@@ -1503,6 +1515,7 @@ void MainWindow::RegisterStdViewClasses()
     CSettingsManagerDialog::RegisterViewClass();
     AzAssetBrowserWindow::RegisterViewClass();
     AssetEditorWindow::RegisterViewClass();
+    PaintBrush::RegisterPaintBrushSettingsWindow();
 
     // Notify that views can now be registered
     AzToolsFramework::EditorEvents::Bus::Broadcast(
@@ -1973,6 +1986,7 @@ void MainWindow::ConnectivityStateChanged(const AzToolsFramework::SourceControlS
 
     gSettings.enableSourceControl = connected;
     gSettings.SaveEnableSourceControlFlag(false);
+    gSettings.SaveSettingsRegistryFile();
 }
 
 void MainWindow::OnGotoSelected()
@@ -2007,9 +2021,14 @@ void MainWindow::ShowCustomizeToolbarDialog()
 QMenu* MainWindow::createPopupMenu()
 {
     QMenu* menu = QMainWindow::createPopupMenu();
-    menu->addSeparator();
-    QAction* action = menu->addAction(QStringLiteral("Customize..."));
-    connect(action, &QAction::triggered, this, &MainWindow::ShowCustomizeToolbarDialog);
+
+    if (!IsNewActionManagerEnabled())
+    {
+        menu->addSeparator();
+        QAction* action = menu->addAction(QStringLiteral("Customize..."));
+        connect(action, &QAction::triggered, this, &MainWindow::ShowCustomizeToolbarDialog);
+    }
+
     return menu;
 }
 

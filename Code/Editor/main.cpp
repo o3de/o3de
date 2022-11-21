@@ -11,6 +11,7 @@
 
 int main(int argc, char* argv[])
 {
+    const AZ::Debug::Trace tracer;
     // Verify a project path can be found, launch the project manager and shut down otherwise
     if (AzFramework::ProjectManager::CheckProjectPathProvided(argc, argv) == AzFramework::ProjectManager::ProjectPathCheckResult::ProjectManagerLaunched)
     {

@@ -190,6 +190,8 @@ namespace AzToolsFramework
             if (newTab)
             {
                 int newTabIndex = m_impl->pTabWidget->addTab(newTab, QString::fromUtf8(settings.m_tabName.c_str()));
+                AzQtComponents::TabWidget::applySecondaryStyle(m_impl->pTabWidget);
+
                 m_impl->pTabWidget->setCurrentIndex(newTabIndex);
                 m_impl->settingsForTabs.insert(AZStd::make_pair(qobject_cast<QObject*>(newTab), settings));
                 

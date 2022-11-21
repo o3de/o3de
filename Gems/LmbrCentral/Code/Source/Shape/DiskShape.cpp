@@ -106,7 +106,7 @@ namespace LmbrCentral
     const AZ::Vector3& DiskShape::GetNormal()
     {
         AZStd::shared_lock lock(m_mutex);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig, m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig, &m_mutex);
 
         return m_intersectionDataCache.m_normal;
     }
@@ -114,7 +114,7 @@ namespace LmbrCentral
     AZ::Aabb DiskShape::GetEncompassingAabb()
     {
         AZStd::shared_lock lock(m_mutex);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig, m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig, &m_mutex);
 
         const AZ::Vector3& normal = m_intersectionDataCache.m_normal;
         const float radius = m_intersectionDataCache.m_radius;
@@ -143,7 +143,7 @@ namespace LmbrCentral
     float DiskShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
     {
         AZStd::shared_lock lock(m_mutex);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig, m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig, &m_mutex);
 
         // Find closest point to the plane the disk is on
         AZ::Plane plane = AZ::Plane::CreateFromNormalAndPoint(m_intersectionDataCache.m_normal, m_currentTransform.GetTranslation());
@@ -165,7 +165,7 @@ namespace LmbrCentral
     bool DiskShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
     {
         AZStd::shared_lock lock(m_mutex);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig, m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig, &m_mutex);
 
         return AZ::Intersect::IntersectRayDisk(
             src, dir, m_intersectionDataCache.m_position, m_intersectionDataCache.m_radius, m_intersectionDataCache.m_normal, distance);

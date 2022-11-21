@@ -10,9 +10,6 @@
 #include <vulkan/vulkan.h>
 
 #include <Atom/RHI.Loader/FunctionLoader.h>
-#include <AzCore/Module/DynamicModuleHandle.h>
-#include <AzCore/std/containers/vector.h>
-#include <Vulkan_Traits_Platform.h>
 
 namespace AZ
 {

@@ -167,6 +167,7 @@ public:
 
 int main(int argc, char** argv)
 {
+    const AZ::Debug::Trace tracer;
     AZ::IO::FixedMaxPath engineRootPath;
     {
         AZ::ComponentApplication componentApplication(argc, argv);

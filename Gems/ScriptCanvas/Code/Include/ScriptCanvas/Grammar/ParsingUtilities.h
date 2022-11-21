@@ -118,9 +118,11 @@ namespace ScriptCanvas
         bool IsInLoop(const ExecutionTreeConstPtr& execution);
 
         // #scriptcanvas_component_extension
-        bool IsInputSelf(const ExecutionInput& input);
+        bool IsSelfInput(const ExecutionInput& input);
 
-        bool IsInputSelf(const ExecutionTreeConstPtr& execution, size_t index);
+        bool IsSelfInput(const ExecutionTreeConstPtr& execution, size_t index);
+
+        bool IsSelfReturnValue(ReturnValueConstPtr returnValue);
 
         bool IsIsNull(const ExecutionTreeConstPtr& execution);
 
@@ -169,6 +171,10 @@ namespace ScriptCanvas
         bool IsUserFunctionCall(const ExecutionTreeConstPtr& execution);
 
         bool IsUserFunctionCallPure(const ExecutionTreeConstPtr& execution);
+
+        bool IsUserFunctionCallLocallyDefined(const AbstractCodeModel& model, const Node& node);
+
+        bool IsUserFunctionCallLocallyDefined(const ExecutionTreeConstPtr& execution);
 
         bool IsUserFunctionDefinition(const ExecutionTreeConstPtr& execution);
 

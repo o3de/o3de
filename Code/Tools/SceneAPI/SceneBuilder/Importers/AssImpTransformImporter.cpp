@@ -39,7 +39,7 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<AssImpTransformImporter, SceneCore::LoadingComponent>()->Version(1);
+                    serializeContext->Class<AssImpTransformImporter, SceneCore::LoadingComponent>()->Version(2);
                 }
             }
 
@@ -55,12 +55,6 @@ namespace AZ
                 }
 
                 DataTypes::MatrixType localTransform = GetLocalSpaceBindPoseTransform(scene, currentNode);
-
-                // Don't bother adding a node with the identity matrix
-                if (localTransform == DataTypes::MatrixType::Identity())
-                {
-                    return Events::ProcessingResult::Ignored;
-                }
 
                 context.m_sourceSceneSystem.SwapTransformForUpAxis(localTransform);
                 context.m_sourceSceneSystem.ConvertUnit(localTransform);

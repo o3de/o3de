@@ -35,11 +35,7 @@ namespace EMotionFX
         virtual bool ShouldReflectPhysicSystem() override { return true; }
     };
 
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(CopyPasteRagdollJointLimitsFixture, DISABLED_TestJointLimits)
-#else
     TEST_F(CopyPasteRagdollJointLimitsFixture, TestJointLimits)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         using testing::_;
 
@@ -94,7 +90,7 @@ namespace EMotionFX
         ASSERT_TRUE(skeletonOutlinerPlugin) << "Skeleton outliner plugin not found.";
 
         SkeletonModel* model = skeletonOutlinerPlugin->GetModel();
-        const QModelIndex rootIndex = model->index(0, 0);
+        const QModelIndex rootIndex = model->index(0, 0, model->index(0, 0));
         const QModelIndex joint1Index = model->index(0, 0, rootIndex);
         const QModelIndex joint2Index = model->index(0, 0, joint1Index);
         const QModelIndex joint3Index = model->index(0, 0, joint2Index);

@@ -3610,23 +3610,23 @@ namespace UnitTest
         waitHandler.m_connectMethod = [&connectHandler]()
         {
             constexpr int waitMsMax = 100;
-            auto startTime = AZStd::chrono::system_clock::now();
+            auto startTime = AZStd::chrono::steady_clock::now();
             auto endTime = startTime + AZStd::chrono::milliseconds(waitMsMax);
 
             // The other bus should not be able to complete because we're still holding the connect lock
-            while (AZStd::chrono::system_clock::now() < endTime && !connectHandler.BusIsConnected())
+            while (AZStd::chrono::steady_clock::now() < endTime && !connectHandler.BusIsConnected())
             {
                 AZStd::this_thread::yield();
             }
 
-            EXPECT_GE(AZStd::chrono::system_clock::now(), endTime);
+            EXPECT_GE(AZStd::chrono::steady_clock::now(), endTime);
         };
         AZStd::thread connectThread([&connectHandler, &waitHandler]()
         {
             constexpr int waitMsMax = 100;
-            auto startTime = AZStd::chrono::system_clock::now();
+            auto startTime = AZStd::chrono::steady_clock::now();
             auto endTime = startTime + AZStd::chrono::milliseconds(waitMsMax);
-            while (AZStd::chrono::system_clock::now() < endTime && !waitHandler.m_didConnect)
+            while (AZStd::chrono::steady_clock::now() < endTime && !waitHandler.m_didConnect)
             {
                 AZStd::this_thread::yield();
             }
@@ -3651,16 +3651,16 @@ namespace UnitTest
             waitHandler.m_connectMethod = [&connectHandler]()
             {
                 constexpr int waitMsMax = 100;
-                auto startTime = AZStd::chrono::system_clock::now();
+                auto startTime = AZStd::chrono::steady_clock::now();
                 auto endTime = startTime + AZStd::chrono::milliseconds(waitMsMax);
 
                 // The other bus should be able to connect
-                while (AZStd::chrono::system_clock::now() < endTime && !connectHandler.m_didConnect)
+                while (AZStd::chrono::steady_clock::now() < endTime && !connectHandler.m_didConnect)
                 {
                     AZStd::this_thread::yield();
                 }
                 EXPECT_EQ(connectHandler.BusIsConnected(), true);
-                EXPECT_LE(AZStd::chrono::system_clock::now(), endTime);
+                EXPECT_LE(AZStd::chrono::steady_clock::now(), endTime);
             };
             AZStd::thread connectThread([&connectHandler]()
             {

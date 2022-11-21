@@ -213,7 +213,7 @@ namespace AZStd
 //
 // Note: TCB splines are only for backward compatibility, Bezier is the default
 //
-enum EAnimCurveType
+enum EAnimCurveType : unsigned int
 {
     eAnimCurveType_TCBFloat         = 1,
     eAnimCurveType_TCBVector        = 2,
@@ -459,17 +459,17 @@ struct IAnimTrack
     virtual void GetValue(float time, float& value, bool applyMultiplier=false) = 0;
     /**
      * O3DE_DEPRECATION_NOTICE(GHI-9133)
-     * use equivalent GetValue that accepts AZ::Vector3  
+     * use equivalent GetValue that accepts AZ::Vector3
      **/
     virtual void GetValue(float time, Vec3& value, bool applyMultiplier = false) = 0;
     /**
      * O3DE_DEPRECATION_NOTICE(GHI-9133)
-     * use equivalent GetValue that accepts AZ::Vector4  
+     * use equivalent GetValue that accepts AZ::Vector4
      **/
     virtual void GetValue(float time, Vec4& value, bool applyMultiplier = false) = 0;
         /**
      * O3DE_DEPRECATION_NOTICE(GHI-9133)
-     * use equivalent GetValue that accepts AZ::Quaternion  
+     * use equivalent GetValue that accepts AZ::Quaternion
      **/
     virtual void GetValue(float time, Quat& value) = 0;
     virtual void GetValue(float time, bool& value) = 0;
@@ -502,17 +502,17 @@ struct IAnimTrack
     virtual void SetValue(float time, const float& value, bool bDefault = false, bool applyMultiplier = false) = 0;
     /**
      * O3DE_DEPRECATION_NOTICE(GHI-9133)
-     * use equivalent SetValue that accepts AZ::Vector3  
+     * use equivalent SetValue that accepts AZ::Vector3
      **/
     virtual void SetValue(float time, const Vec3& value, bool bDefault = false, bool applyMultiplier = false) = 0;
     /**
      * O3DE_DEPRECATION_NOTICE(GHI-9133)
-     * use equivalent SetValue that accepts AZ::Vector4  
+     * use equivalent SetValue that accepts AZ::Vector4
      **/
     virtual void SetValue(float time, const Vec4& value, bool bDefault = false, bool applyMultiplier = false) = 0;
     /**
      * O3DE_DEPRECATION_NOTICE(GHI-9133)
-     * use equivalent SetValue that accepts AZ::Quaternion  
+     * use equivalent SetValue that accepts AZ::Quaternion
      **/
     virtual void SetValue(float time, const Quat& value, bool bDefault = false) = 0;
     virtual void SetValue(float time, const bool& value, bool bDefault = false) = 0;
@@ -722,7 +722,7 @@ public:
 
     /**
      * O3DE_DEPRECATION_NOTICE(GHI-9326)
-     * use equivalent SetPos that accepts AZ::Vector3  
+     * use equivalent SetPos that accepts AZ::Vector3
      **/
     void SetPos(float time, const AZ::Vector3& pos)
     {
@@ -731,7 +731,7 @@ public:
     }
     /**
      * O3DE_DEPRECATION_NOTICE(GHI-9326)
-     * use equivalent SetRotate that accepts AZ::Quaternion  
+     * use equivalent SetRotate that accepts AZ::Quaternion
      **/
     void SetRotate(float time, const AZ::Quaternion& rot)
     {
@@ -740,7 +740,7 @@ public:
     }
     /**
      * O3DE_DEPRECATION_NOTICE(GHI-9326)
-     * use equivalent SetScale that accepts AZ::Vector3  
+     * use equivalent SetScale that accepts AZ::Vector3
      **/
     void SetScale(float time, const AZ::Vector3& scale)
     {
@@ -766,12 +766,12 @@ public:
     virtual bool SetParamValue(float time, CAnimParamType param, float value) = 0;
     virtual bool SetParamValue(float time, CAnimParamType param, const Vec3& value) = 0;
     virtual bool SetParamValue(float time, CAnimParamType param, const Vec4& value) = 0;
-    
+
     /**
      * O3DE_DEPRECATION_NOTICE(GHI-9326)
-     * use equivalent SetParamValue that accepts AZ::Vector3  
+     * use equivalent SetParamValue that accepts AZ::Vector3
      **/
-    bool SetParamValue(float time, CAnimParamType param, const AZ::Vector3& value) 
+    bool SetParamValue(float time, CAnimParamType param, const AZ::Vector3& value)
     {
         Vec3 vec3(value.GetX(), value.GetY(), value.GetZ());
         return SetParamValue(time, param, vec3);
@@ -779,15 +779,15 @@ public:
 
     /**
      * O3DE_DEPRECATION_NOTICE(GHI-9326)
-     * use equivalent SetParamValue that accepts AZ::Vector4  
+     * use equivalent SetParamValue that accepts AZ::Vector4
      **/
-    bool SetParamValue(float time, CAnimParamType param, const AZ::Vector4& value) 
+    bool SetParamValue(float time, CAnimParamType param, const AZ::Vector4& value)
     {
         Vec4 vec4(value.GetX(), value.GetY(), value.GetZ(), value.GetW());
         return SetParamValue(time, param, vec4);
     }
 
-    
+
     // Get float/vec3/vec4 parameter at given time.
     // @return true if parameter exist, false if this parameter not exist in node.
     virtual bool GetParamValue(float time, CAnimParamType param, float& value) = 0;
@@ -796,9 +796,9 @@ public:
 
     /**
      * O3DE_DEPRECATION_NOTICE(GHI-9326)
-     * use equivalent GetParamValue that accepts AZ::Vector4  
+     * use equivalent GetParamValue that accepts AZ::Vector4
      **/
-    bool GetParamValue(float time, CAnimParamType param, AZ::Vector3& value) 
+    bool GetParamValue(float time, CAnimParamType param, AZ::Vector3& value)
     {
         Vec3 vec3;
         const bool result = GetParamValue(time, param, vec3);
@@ -808,9 +808,9 @@ public:
 
     /**
      * O3DE_DEPRECATION_NOTICE(GHI-9326)
-     * use equivalent GetParamValue that accepts AZ::Vector4  
+     * use equivalent GetParamValue that accepts AZ::Vector4
      **/
-    bool GetParamValue(float time, CAnimParamType param, AZ::Vector4& value) 
+    bool GetParamValue(float time, CAnimParamType param, AZ::Vector4& value)
     {
         Vec4 vec4;
         const bool result = GetParamValue(time, param, vec4);
@@ -1519,15 +1519,24 @@ struct IMovieSystem
 
 inline void CAnimParamType::SaveToXml(XmlNodeRef& xmlNode) const
 {
-    gEnv->pMovieSystem->SaveParamTypeToXml(*this, xmlNode);
+    if (gEnv->pMovieSystem)
+    {
+        gEnv->pMovieSystem->SaveParamTypeToXml(*this, xmlNode);
+    }
 }
 
 inline void CAnimParamType::LoadFromXml(const XmlNodeRef& xmlNode, const uint version)
 {
-    gEnv->pMovieSystem->LoadParamTypeFromXml(*this, xmlNode, version);
+    if (gEnv->pMovieSystem)
+    {
+        gEnv->pMovieSystem->LoadParamTypeFromXml(*this, xmlNode, version);
+    }
 }
 
 inline void CAnimParamType::Serialize(XmlNodeRef& xmlNode, bool bLoading, const uint version)
 {
-    gEnv->pMovieSystem->SerializeParamType(*this, xmlNode, bLoading, version);
+    if (gEnv->pMovieSystem)
+    {
+        gEnv->pMovieSystem->SerializeParamType(*this, xmlNode, bLoading, version);
+    }
 }

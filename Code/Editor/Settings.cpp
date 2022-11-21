@@ -130,8 +130,7 @@ SEditorSettings::SEditorSettings()
     viewports.bAlwaysShowRadiuses = false;
     viewports.bSync2DViews = false;
     viewports.fDefaultAspectRatio = 800.0f / 600.0f;
-    viewports.fDefaultFov = DEG2RAD(60); // 60 degrees (to fit with current game)
-    viewports.bShowSafeFrame = false;
+
     viewports.bHighlightSelectedGeometry = false;
     viewports.bHighlightSelectedVegetation = true;
     viewports.bHighlightMouseOverGeometry = true;
@@ -217,15 +216,7 @@ SEditorSettings::SEditorSettings()
     //////////////////////////////////////////////////////////////////////////
     // Initialize GUI settings.
     //////////////////////////////////////////////////////////////////////////
-    gui.bWindowsVista = QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::Windows7);
-
     gui.nToolbarIconSize = static_cast<int>(AzQtComponents::ToolBar::ToolBarIconSize::Default);
-
-    int lfHeight = 8;// -MulDiv(8, GetDeviceCaps(GetDC(nullptr), LOGPIXELSY), 72);
-    gui.nDefaultFontHieght = lfHeight;
-    gui.hSystemFont = QFont("Ms Shell Dlg 2", lfHeight, QFont::Normal);
-    gui.hSystemFontBold = QFont("Ms Shell Dlg 2", lfHeight, QFont::Bold);
-    gui.hSystemFontItalic = QFont("Ms Shell Dlg 2", lfHeight, QFont::Normal, true);
 
     backgroundUpdatePeriod = 0;
     g_TemporaryLevelName = nullptr;
@@ -479,9 +470,7 @@ void SEditorSettings::Save(bool isEditorClosing)
     //////////////////////////////////////////////////////////////////////////
     SaveValue("Settings", "AlwaysShowRadiuses", viewports.bAlwaysShowRadiuses);
     SaveValue("Settings", "Sync2DViews", viewports.bSync2DViews);
-    SaveValue("Settings", "DefaultFov", viewports.fDefaultFov);
     SaveValue("Settings", "AspectRatio", viewports.fDefaultAspectRatio);
-    SaveValue("Settings", "ShowSafeFrame", viewports.bShowSafeFrame);
     SaveValue("Settings", "HighlightSelectedGeometry", viewports.bHighlightSelectedGeometry);
     SaveValue("Settings", "HighlightSelectedVegetation", viewports.bHighlightSelectedVegetation);
     SaveValue("Settings", "HighlightMouseOverGeometry", viewports.bHighlightMouseOverGeometry);
@@ -675,9 +664,7 @@ void SEditorSettings::Load()
     //////////////////////////////////////////////////////////////////////////
     LoadValue("Settings", "AlwaysShowRadiuses", viewports.bAlwaysShowRadiuses);
     LoadValue("Settings", "Sync2DViews", viewports.bSync2DViews);
-    LoadValue("Settings", "DefaultFov", viewports.fDefaultFov);
     LoadValue("Settings", "AspectRatio", viewports.fDefaultAspectRatio);
-    LoadValue("Settings", "ShowSafeFrame", viewports.bShowSafeFrame);
     LoadValue("Settings", "HighlightSelectedGeometry", viewports.bHighlightSelectedGeometry);
     LoadValue("Settings", "HighlightSelectedVegetation", viewports.bHighlightSelectedVegetation);
     LoadValue("Settings", "HighlightMouseOverGeometry", viewports.bHighlightMouseOverGeometry);
@@ -833,7 +820,7 @@ void SEditorSettings::Load()
 AZ_CVAR(bool, ed_previewGameInFullscreen_once, false, nullptr, AZ::ConsoleFunctorFlags::IsInvisible, "Preview the game (Ctrl+G, \"Play Game\", etc.) in fullscreen once");
 AZ_CVAR(bool, ed_lowercasepaths, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Convert CCryFile paths to lowercase on Open");
 AZ_CVAR(int64_t, ed_backgroundSystemTickCap, 33, nullptr, AZ::ConsoleFunctorFlags::Null,"Delay between frame updates (ms) when window is out of focus but not minimized AND background update is disabled.");
-    
+
 void SEditorSettings::PostInitApply()
 {
     if (!gEnv || !gEnv->pConsole)
@@ -919,14 +906,19 @@ void EnableSourceControl(bool enable)
 
 void SEditorSettings::SaveEnableSourceControlFlag(bool triggerUpdate /*= false*/)
 {
-    // Track the original source control value
-    bool originalSourceControlFlag;
-    LoadValue("Settings", "EnableSourceControl", originalSourceControlFlag);
+    constexpr AZStd::string_view enableSourceControlKey = "/Amazon/Settings/EnableSourceControl";
 
-    // Update only on change
-    if (originalSourceControlFlag != enableSourceControl)
+    if (auto* registry = AZ::SettingsRegistry::Get())
     {
-        SaveValue("Settings", "EnableSourceControl", enableSourceControl);
+        // Track the original source control value
+        bool originalSourceControlFlag;
+        registry->Get(originalSourceControlFlag, enableSourceControlKey);
+
+        // Update only on change
+        if (originalSourceControlFlag != enableSourceControl)
+        {
+            registry->Set(enableSourceControlKey, enableSourceControl);
+        }
 
         // If we are triggering any update for the source control flag, then set the control state
         if (triggerUpdate)
@@ -939,21 +931,16 @@ void SEditorSettings::SaveEnableSourceControlFlag(bool triggerUpdate /*= false*/
 void SEditorSettings::LoadEnableSourceControlFlag()
 {
     constexpr AZStd::string_view enableSourceControlKey = "/Amazon/Settings/EnableSourceControl";
-    bool sourceControlEnabledInSettingsRegistry{};
-    if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr &&
-        registry->Get(sourceControlEnabledInSettingsRegistry, enableSourceControlKey))
+
+    if (const auto* registry = AZ::SettingsRegistry::Get())
     {
-        // Have the SettingsRegistry able to disable the SourceControl Connection
-        // only if the "EnableSourceControl" key is found
-        if (!sourceControlEnabledInSettingsRegistry)
+        bool potentialValue;
+        if (registry->Get(potentialValue, enableSourceControlKey))
         {
-            EnableSourceControl(false);
-            return;
+            enableSourceControl = AZStd::move(potentialValue);
         }
     }
-    // Use the QSettings "EnableSourceControl" value if the SettingsRegistry
-    // hasn't disabled the SourceControlAPI
-    LoadValue("Settings", "EnableSourceControl", enableSourceControl);
+
     EnableSourceControl(enableSourceControl);
 }
 
@@ -993,7 +980,8 @@ AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome SEditorSettings::Get
 {
     if (path.find("|") == AZStd::string_view::npos)
     {
-        return { AZStd::string("Invalid Path - could not find separator \"|\"") };
+        return AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome{ AZStd::unexpect,
+            AZStd::string("Invalid Path - could not find separator \"|\"") };
     }
 
     AZStd::string category, attribute;
@@ -1011,7 +999,8 @@ AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome SEditorSettings::Set
 {
     if (path.find("|") == AZStd::string_view::npos)
     {
-        return { AZStd::string("Invalid Path - could not find separator \"|\"") };
+        return AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome{ AZStd::unexpect,
+            AZStd::string("Invalid Path - could not find separator \"|\"") };
     }
 
     AZStd::string category, attribute;
@@ -1040,7 +1029,8 @@ AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome SEditorSettings::Set
     }
     else
     {
-        return { AZStd::string("Invalid Value Type - supported types: string, bool, int, float") };
+        return AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome{ AZStd::unexpect,
+            AZStd::string("Invalid Value Type - supported types: string, bool, int, float") };
     }
 
     // Reload the changes in the Settings object used in the Editor
@@ -1066,9 +1056,11 @@ void SEditorSettings::SaveSettingsRegistryFile()
     dumperSettings.m_prettifyOutput = true;
     dumperSettings.m_includeFilter = [](AZStd::string_view path)
     {
+        AZStd::string_view amazonSettingsPrefixPath("/Amazon/Settings");
         AZStd::string_view amazonPrefixPath("/Amazon/Preferences");
         AZStd::string_view o3dePrefixPath("/O3DE/Preferences");
-        return amazonPrefixPath.starts_with(path.substr(0, amazonPrefixPath.size())) ||
+        return amazonSettingsPrefixPath.starts_with(path.substr(0, amazonSettingsPrefixPath.size())) ||
+            amazonPrefixPath.starts_with(path.substr(0, amazonPrefixPath.size())) ||
             o3dePrefixPath.starts_with(path.substr(0, o3dePrefixPath.size()));
     };
 
@@ -1092,26 +1084,6 @@ void SEditorSettings::SaveSettingsRegistryFile()
 
     AZ_Warning("SEditorSettings", saved, R"(Unable to save Editor Preferences registry file to path "%s"\n)",
         editorPreferencesFilePath.c_str());
-}
-
-bool SEditorSettings::SetSettingsRegistry_Bool(const char* key, bool value)
-{
-    if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
-    {
-        return registry->Set(key, value);
-    }
-
-    return false;
-}
-
-bool SEditorSettings::GetSettingsRegistry_Bool(const char* key, bool& value)
-{
-    if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
-    {
-        return registry->Get(value, key);
-    }
-
-    return false;
 }
 
 AzToolsFramework::ConsoleColorTheme SEditorSettings::GetConsoleColorTheme() const

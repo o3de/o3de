@@ -26,9 +26,7 @@ namespace TestImpact
     class TargetList
     {
     public:
-        using TargetType = Target;
-
-        TargetList(AZStd::vector<AZStd::unique_ptr<typename Target::Descriptor>>&& descriptors);
+        TargetList(AZStd::vector<Target>&& targets);
 
         //! Returns the targets in the collection.
         const AZStd::vector<Target>& GetTargets() const;
@@ -50,31 +48,26 @@ namespace TestImpact
     };
 
     template<typename Target>
-    TargetList<Target>::TargetList(AZStd::vector<AZStd::unique_ptr<typename Target::Descriptor>>&& descriptors)
+    TargetList<Target>::TargetList(AZStd::vector<Target>&& targets)
+        : m_targets(AZStd::move(targets))
     {
-        AZ_TestImpact_Eval(!descriptors.empty(), TargetException, "Target list is empty");
+        AZ_TestImpact_Eval(!m_targets.empty(), TargetException, "Target list is empty");
 
         AZStd::sort(
-            descriptors.begin(), descriptors.end(),
-            [](const AZStd::unique_ptr<typename Target::Descriptor>& lhs, const AZStd::unique_ptr<typename Target::Descriptor>& rhs)
+            m_targets.begin(), m_targets.end(),
+            [](const Target& lhs, const Target& rhs)
         {
-                return lhs->m_name < rhs->m_name;
+                return lhs.GetName() < rhs.GetName();
         });
 
         const auto duplicateElement = AZStd::adjacent_find(
-            descriptors.begin(), descriptors.end(),
-            [](const AZStd::unique_ptr<typename Target::Descriptor>& lhs, const AZStd::unique_ptr<typename Target::Descriptor>& rhs)
+            m_targets.begin(), m_targets.end(),
+            [](const Target& lhs, const Target& rhs)
         {
-                return lhs->m_name == rhs->m_name;
+                return lhs.GetName() == rhs.GetName();
         });
 
-        AZ_TestImpact_Eval(duplicateElement == descriptors.end(), TargetException, "Target list contains duplicate targets");
-
-        m_targets.reserve(descriptors.size());
-        for (auto&& descriptor : descriptors)
-        {
-            m_targets.emplace_back(Target(AZStd::move(descriptor)));
-        }
+        AZ_TestImpact_Eval(duplicateElement == m_targets.end(), TargetException, "Target list contains duplicate targets");
     }
 
     template<typename Target>

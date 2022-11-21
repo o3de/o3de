@@ -63,13 +63,6 @@
                         "Pass": "DiffuseSpecularMergePass",
                         "Attachment": "Output"
                     }
-                },
-                {
-                    "LocalSlot": "DiffuseProbeGridVisualization",
-                    "AttachmentRef": {
-                        "Pass": "DiffuseGlobalIlluminationPass",
-                        "Attachment":  "VisualizationOutput"
-                    }
                 }
             ],
             "PassRequests": [
@@ -239,8 +232,8 @@
                     }
                 },
                 {
-                    "Name": "DiffuseGlobalIlluminationPass",
-                    "TemplateName": "DiffuseGlobalIlluminationPassTemplate",
+                    "Name": "DiffuseGlobalFullscreenPass",
+                    "TemplateName": "DiffuseGlobalFullscreenPassTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "DiffuseInputOutput",
@@ -261,6 +254,13 @@
                             "AttachmentRef": {
                                 "Pass": "Forward",
                                 "Attachment": "NormalOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencilTextureInput",
+                            "AttachmentRef": {
+                                "Pass": "Forward",
+                                "Attachment": "DepthStencilInputOutput"
                             }
                         },
                         {
@@ -343,20 +343,62 @@
                     ]
                 },
                 {
-                    "Name": "ReflectionCompositePass",
-                    "TemplateName": "ReflectionCompositePassTemplate",
+                    "Name": "SkyAtmosphereParentPass",
+                    "TemplateName": "SkyAtmosphereParentTemplate",
+                    "Enabled": true,
                     "Connections": [
                         {
-                            "LocalSlot": "ReflectionInput",
+                            "LocalSlot": "SpecularInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "SkyBoxPass",
+                                "Attachment": "SpecularInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ReflectionInputOutput",
                             "AttachmentRef": {
                                 "Pass": "SkyBoxPass",
                                 "Attachment": "ReflectionInputOutput"
                             }
                         },
                         {
-                            "LocalSlot": "SpecularInputOutput",
+                            "LocalSlot": "SkyBoxDepth",
                             "AttachmentRef": {
                                 "Pass": "SkyBoxPass",
+                                "Attachment": "SkyBoxDepth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DirectionalShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalESM",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DirectionalESM"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "ReflectionCompositePass",
+                    "TemplateName": "ReflectionCompositePassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "ReflectionInput",
+                            "AttachmentRef": {
+                                "Pass": "SkyAtmosphereParentPass",
+                                "Attachment": "ReflectionInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SpecularInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "SkyAtmosphereParentPass",
                                 "Attachment": "SpecularInputOutput"
                             }
                         },
@@ -384,7 +426,7 @@
                         {
                             "LocalSlot": "Input",
                             "AttachmentRef": {
-                                "Pass": "DiffuseGlobalIlluminationPass",
+                                "Pass": "DiffuseGlobalFullscreenPass",
                                 "Attachment": "DiffuseInputOutput"
                             }
                         }

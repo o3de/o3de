@@ -57,6 +57,25 @@ namespace TestImpact
         DeleteFiles(file.ParentPath(), file.Filename().Native());
     }
 
+    AZStd::vector<AZStd::string> ListFiles(const RepoPath& path, const AZStd::string& pattern)
+    {
+        AZStd::vector<AZStd::string> files;
+
+        AZ::IO::SystemFile::FindFiles(
+            AZStd::string::format("%s/%s", path.c_str(), pattern.c_str()).c_str(),
+            [&files, &path](const char* file, bool isFile)
+            {
+                if (isFile)
+                {
+                    files.emplace_back((path / file).String());
+                }
+
+                return true;
+            });
+
+        return files;
+    }
+
     AZStd::string SuiteTypeAsString(SuiteType suiteType)
     {
         switch (suiteType)

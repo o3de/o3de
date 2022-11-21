@@ -378,21 +378,20 @@ namespace ScriptCanvasEditor::Nodes
         GraphCanvas::TranslationRequests::Details methodDetails;
         methodDetails.m_name = methodName; // fallback
         key << "methods";
-        AZStd::string updatedMethodName = methodName;
-        if (isAccessor)
+
+        AZStd::string updatedMethodName = "";
+        if (methodNode->GetMethodType() == ScriptCanvas::MethodType::Getter || isAccessor)
         {
-            if (methodNode->GetMethodType() == ScriptCanvas::MethodType::Getter || isFreeMethod)
-            {
-                updatedMethodName = "Get";
-                methodContext = "Getter";
-            }
-            else
-            {
-                updatedMethodName = "Set";
-                methodContext = "Setter";
-            }
-            updatedMethodName.append(methodName);
+            updatedMethodName = "Get";
+            methodContext = "Getter";
         }
+        else if (methodNode->GetMethodType() == ScriptCanvas::MethodType::Setter)
+        {
+            updatedMethodName = "Set";
+            methodContext = "Setter";
+        }
+        updatedMethodName.append(methodName);
+
         key << updatedMethodName << methodContext;
         GraphCanvas::TranslationRequestBus::BroadcastResult(methodDetails, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", methodDetails);
 
@@ -443,16 +442,13 @@ namespace ScriptCanvasEditor::Nodes
                     key.clear();
                     key << context << className << "methods" << updatedMethodName;
 
-                    if (isAccessor)
+                    if (methodNode->GetMethodType() == ScriptCanvas::MethodType::Getter || isAccessor)
                     {
-                        if (methodNode->GetMethodType() == ScriptCanvas::MethodType::Getter || isFreeMethod)
-                        {
-                            key << "Getter";
-                        }
-                        else
-                        {
-                            key << "Setter";
-                        }
+                        key << "Getter";
+                    }
+                    else if (methodNode->GetMethodType() == ScriptCanvas::MethodType::Setter)
+                    {
+                        key << "Setter";
                     }
 
                     if (slot.IsInput())

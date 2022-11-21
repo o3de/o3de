@@ -126,8 +126,6 @@ namespace AZ
         public:
             AZ_RTTI(ModelAssetHandler, "{993B8CE3-1BBF-4712-84A0-285DB9AE808F}", AssetHandler<ModelAsset>);
 
-            // AZ::AssetTypeInfoBus::Handler overrides
-            bool HasConflictingProducts(const AZStd::vector<AZ::Data::AssetType>& productAssetTypes) const override;
         };
     } //namespace RPI
 } // namespace AZ

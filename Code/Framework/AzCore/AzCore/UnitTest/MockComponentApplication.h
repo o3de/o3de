@@ -21,7 +21,6 @@ namespace UnitTest
         MockComponentApplication();
         ~MockComponentApplication();
 
-    protected:
         MOCK_METHOD1(FindEntity, AZ::Entity* (const AZ::EntityId&));
         MOCK_METHOD1(AddEntity, bool (AZ::Entity*));
         MOCK_METHOD0(Destroy, void ());

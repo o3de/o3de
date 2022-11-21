@@ -527,13 +527,13 @@ tags=tools,renderer,metal)"
     TEST_P(SettingsRegistryGemVisitFixture, SettingsRegistryMergeUtils_AllManifestGems_AreInSettingsRegistry)
     {
         AZStd::vector<AZ::IO::Path> manifestGemPaths;
-        auto GetManifestGemPaths = [&manifestGemPaths, this](AZStd::string_view pathKey,
-            AZStd::string_view, AZ::SettingsRegistryInterface::Type)
+        auto GetManifestGemPaths = [&manifestGemPaths, this](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
         {
             using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
             AZ::IO::Path gemPath;
-            EXPECT_TRUE(m_registry->Get(gemPath.Native(), FixedValueString(pathKey) + "/Path"));
+            EXPECT_TRUE(m_registry->Get(gemPath.Native(), FixedValueString(visitArgs.m_jsonKeyPath) + "/Path"));
             manifestGemPaths.push_back(gemPath.LexicallyRelative(m_testFolder.GetDirectory()));
+            return AZ::SettingsRegistryInterface::VisitResponse::Skip;
         };
 
         EXPECT_TRUE(AZ::SettingsRegistryVisitorUtils::VisitObject(*m_registry,

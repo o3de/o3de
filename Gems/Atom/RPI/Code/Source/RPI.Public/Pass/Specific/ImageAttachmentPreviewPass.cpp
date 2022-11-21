@@ -541,8 +541,7 @@ namespace AZ
                 const ImageTypePreviewInfo& previewInfo = m_imageTypePreviewInfo[index];
                 if (previewInfo.m_imageCount > 0)
                 {
-                    previewInfo.m_item.m_submitIndex = index;
-                    commandList->Submit(previewInfo.m_item);
+                    commandList->Submit(previewInfo.m_item, index);
                 }
             }
         }

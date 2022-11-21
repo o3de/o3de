@@ -58,10 +58,10 @@ namespace AssetProcessor
         {
             return;
         }
-        
+
         AssetDatabaseConnection assetDatabaseConnection;
         assetDatabaseConnection.OpenDatabase();
-        
+
         AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceDetails;
         assetDatabaseConnection.QuerySourceBySourceName(
             source.c_str(),

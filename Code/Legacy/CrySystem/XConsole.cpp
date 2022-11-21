@@ -319,7 +319,7 @@ void CXConsole::Init(ISystem* pSystem)
             "1: hide the console");
 
     REGISTER_CVAR(con_display_last_messages, 0, VF_NULL, "");  // keep default at 1, needed for gameplay
-    REGISTER_CVAR(con_line_buffer_size, 1000, VF_NULL, "");
+    REGISTER_CVAR(con_line_buffer_size, 1000, VF_NULL, "The number of lines to buffer in the console output window");
     REGISTER_CVAR(con_showonload, 0, VF_NULL, "Show console on level loading");
     REGISTER_CVAR(con_debug, 0, VF_CHEAT, "Log call stack on every GetCVar call");
     REGISTER_CVAR(con_restricted, con_restricted, VF_RESTRICTEDMODE, "0=normal mode / 1=restricted access to the console");                // later on VF_RESTRICTEDMODE should be removed (to 0)
@@ -2437,101 +2437,44 @@ bool CXConsole::IsOpened()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CXConsole::PrintLine(const char* s)
+void CXConsole::PrintLine(AZStd::string_view s)
 {
     AddLine(s);
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CXConsole::PrintLinePlus(const char* s)
+void CXConsole::PrintLineAppendWithPrevLine(AZStd::string_view s)
 {
-    AddLinePlus(s);
-}
-
-static const char* FindNextEndOfLineCharacter(const char* str, size_t length)
-{
-    size_t index = 0;
-    while (index < length)
-    {
-        if ((str[index] == '\r') || (str[index] == '\n'))
-        {
-            return (str + index);
-        }
-
-        index++;
-    }
-
-    return nullptr;
+    AddLineAppendWithPrevLine(s);
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CXConsole::AddLine(const char* inputStr)
+void CXConsole::AddLine(AZStd::string_view inputStr)
 {
-    if ((inputStr == nullptr) || (inputStr[0] == 0))
+    if (inputStr.empty())
     {
         return;
     }
 
-    size_t totalLen = strlen(inputStr);
-
-    // strip trailing \n or \r.
-    while ((totalLen > 0) && (inputStr[totalLen - 1] == '\n') || (inputStr[totalLen - 1] == '\r'))
+    // split out each line
+    auto ParseLine = [this](AZStd::string line)
     {
-        totalLen--;
-    }
+        m_dqConsoleBuffer.push_back(line);
 
-    // split out each line in a memory efficient way
-    size_t remainingLength = totalLen;
-    const char* lastLine = inputStr;
-    const char* cursor = FindNextEndOfLineCharacter(inputStr, remainingLength);
-    while (cursor != nullptr)
-    {
-        size_t subStrLength = (cursor - lastLine);
-
-        PostLine(lastLine, subStrLength);
-
-        // bump us up to the cursor + 1 to move past the end of line character
-        remainingLength = remainingLength - (subStrLength + 1);
-        lastLine = (cursor + 1);
-
-        // Find the next non-end of line character
-        while ((remainingLength > 0) && ((*lastLine == '\n') || (*lastLine == '\r')))
+        // Remove any lines that are larger than the console line buffer size
+        // set via the console variable "con_line_buffer_size"
+        while (static_cast<int>(m_dqConsoleBuffer.size()) > con_line_buffer_size)
         {
-            remainingLength--;
-            lastLine++;
+            m_dqConsoleBuffer.pop_front();
         }
 
-        cursor = FindNextEndOfLineCharacter(lastLine, remainingLength);
-    }
-
-    // check for leftover
-    if (remainingLength > 0)
-    {
-        PostLine(lastLine, remainingLength);
-    }
-}
-
-void CXConsole::PostLine(const char* lineOfText, size_t len)
-{
-    AZStd::string line = AZStd::string(lineOfText, len);
-    m_dqConsoleBuffer.push_back(line);
-
-    int nBufferSize = con_line_buffer_size;
-
-    while (((int)(m_dqConsoleBuffer.size())) > nBufferSize)
-    {
-        m_dqConsoleBuffer.pop_front();
-    }
-
-    // tell everyone who is interested (e.g. dedicated server printout)
-    {
-        std::vector<IOutputPrintSink*>::iterator it;
-
-        for (it = m_OutputSinks.begin(); it != m_OutputSinks.end(); ++it)
+        // tell everyone who is interested (e.g. dedicated server printout)
+        for (IOutputPrintSink* outputSink : m_OutputSinks)
         {
-            (*it)->Print(line.c_str());
+            outputSink->Print(line.c_str());
         }
-    }
+    };
+    AZ::StringFunc::TokenizeVisitor(inputStr, ParseLine, "\r\n");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2585,57 +2528,34 @@ void CXConsole::RemoveOutputPrintSink(IOutputPrintSink* inpSink)
 
 
 //////////////////////////////////////////////////////////////////////////
-void CXConsole::AddLinePlus(const char* inputStr)
+void CXConsole::AddLineAppendWithPrevLine(AZStd::string_view inputStr)
 {
-    AZStd::string str, tmpStr;
-
+    if (m_dqConsoleBuffer.empty())
     {
-        if (!m_dqConsoleBuffer.size())
-        {
-            return;
-        }
-
-        str = inputStr;
-
-        // strip trailing \n or \r.
-        if (!str.empty() && (str[str.size() - 1] == '\n' || str[str.size() - 1] == '\r'))
-        {
-            str.resize(str.size() - 1);
-        }
-
-        AZStd::string::size_type nPos;
-        while ((nPos = str.find('\n')) != AZStd::string::npos)
-        {
-            str.replace(nPos, 1, 1, ' ');
-        }
-
-        while ((nPos = str.find('\r')) != AZStd::string::npos)
-        {
-            str.replace(nPos, 1, 1, ' ');
-        }
-
-        tmpStr = m_dqConsoleBuffer.back();// += str;
-
-        m_dqConsoleBuffer.pop_back();
-
-        if (tmpStr.size() < 256)
-        {
-            m_dqConsoleBuffer.push_back(tmpStr + str);
-        }
-        else
-        {
-            m_dqConsoleBuffer.push_back(tmpStr);
-        }
+        // Append is only allowed if there was an existing previous line
+        return;
     }
 
-    // tell everyone who is interested (e.g. dedicated server printout)
+    // Replace line separators with spaces
+    auto ParseLine = [this, firstIteration = true](AZStd::string_view line) mutable
     {
-        std::vector<IOutputPrintSink*>::iterator it;
-
-        for (it = m_OutputSinks.begin(); it != m_OutputSinks.end(); ++it)
+        // Add <space> between lines
+        if (!firstIteration)
         {
-            (*it)->Print((tmpStr + str).c_str());
+            m_dqConsoleBuffer.back() += ' ';
         }
+        firstIteration = false;
+
+        // Append the now space separated string into with the last line
+        // in the console buffer double ended queue
+        m_dqConsoleBuffer.back() += line;
+    };
+    AZ::StringFunc::TokenizeVisitor(inputStr, ParseLine, "\r\n");
+
+    // tell everyone who is interested (e.g. dedicated server printout)
+    for (IOutputPrintSink* outputSink : m_OutputSinks)
+    {
+        outputSink->Print(m_dqConsoleBuffer.back().c_str());
     }
 }
 

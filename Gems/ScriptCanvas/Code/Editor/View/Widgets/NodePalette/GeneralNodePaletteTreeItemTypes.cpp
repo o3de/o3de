@@ -126,7 +126,7 @@ namespace ScriptCanvasEditor
 
     AZ::IO::Path ClassMethodEventPaletteTreeItem::GetTranslationDataPath() const
     {
-        AZStd::string fileName = GetClassMethodName();
+        AZStd::string fileName = GraphCanvas::TranslationKey::Sanitize(GetClassMethodName());
         return ScriptCanvasEditor::TranslationHelper::GetTranslationFilePath(fileName);
     }
 

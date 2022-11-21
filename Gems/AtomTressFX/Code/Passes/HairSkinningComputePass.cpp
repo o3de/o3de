@@ -238,8 +238,7 @@ namespace AZ
                 for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index, ++it)
                 {
                     const RHI::DispatchItem* dispatchItem = *it;
-                    dispatchItem->m_submitIndex = index;
-                    commandList->Submit(*dispatchItem);
+                    commandList->Submit(*dispatchItem, index);
                 }
 
                 // Clear the dispatch items. They will need to be re-populated next frame

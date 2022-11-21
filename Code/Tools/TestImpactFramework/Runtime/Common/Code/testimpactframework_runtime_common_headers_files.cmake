@@ -23,4 +23,5 @@ set(FILES
     Include/Headers/TestImpactFramework/TestImpactUtils.h
     Include/Headers/TestImpactFramework/TestImpactClientSequenceReportSerializer.h
     Include/Headers/TestImpactFramework/TestImpactSequenceReportException.h
+    Include/Headers/TestImpactFramework/TestImpactRuntime.h
 )

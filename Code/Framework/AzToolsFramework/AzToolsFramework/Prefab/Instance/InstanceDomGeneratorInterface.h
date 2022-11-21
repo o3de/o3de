@@ -21,9 +21,17 @@ namespace AzToolsFramework
             AZ_RTTI(InstanceDomGeneratorInterface, "{269DE807-64B2-4157-93B0-BEDA4133C9A0}");
             virtual ~InstanceDomGeneratorInterface() = default;
 
-            // Given a pointer to an instance and a reference to a dom, update the dom so that it represents the instance,
-            // and return if the dom creation succeeded or not.
-            virtual bool GenerateInstanceDom(const Instance* instance, PrefabDom& instanceDom) = 0;
+            //! Generates an instance DOM that represents a given instance object.
+            //! Caller should check if the generated DOM is a valid JSON object.
+            //! @param[out] instanceDom The output instance DOM that will be modified.
+            //! @param instance The given instance object.
+            virtual void GenerateInstanceDom(PrefabDom& instanceDom, const Instance& instance) const = 0;
+
+            //! Generates an entity DOM that represents a given entity object.
+            //! Caller should check if the generated DOM is a valid JSON object.
+            //! @param[out] entityDom The output entity DOM that will be modified.
+            //! @param entity The given entity object.
+            virtual void GenerateEntityDom(PrefabDom& entityDom, const AZ::Entity& entity) const = 0;
         };
-    }
-}
+    } // namespace Prefab
+} // namespace AzToolsFramework

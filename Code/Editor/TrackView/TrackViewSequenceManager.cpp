@@ -165,7 +165,7 @@ void CTrackViewSequenceManager::CreateSequence(QString name, [[maybe_unused]] Se
         // add the SequenceComponent. The SequenceComponent's Init() method will call OnCreateSequenceObject() which will actually create
         // the sequence and connect it
         // #TODO LY-21846: Use "SequenceService" to find component, rather than specific component-type.
-        AzToolsFramework::EntityCompositionRequestBus::Broadcast(&AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities, AzToolsFramework::EntityIdList{ newEntityId }, AZ::ComponentTypeList{ "{C02DC0E2-D0F3-488B-B9EE-98E28077EC56}" });
+        AzToolsFramework::EntityCompositionRequestBus::Broadcast(&AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities, AzToolsFramework::EntityIdList{ newEntityId }, AZ::ComponentTypeList{ AZ::TypeId("{C02DC0E2-D0F3-488B-B9EE-98E28077EC56}") });
 
         // restore the Editor selection
         AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, selectedEntities);
@@ -178,17 +178,24 @@ void CTrackViewSequenceManager::CreateSequence(QString name, [[maybe_unused]] Se
 IAnimSequence* CTrackViewSequenceManager::OnCreateSequenceObject(QString name, bool isLegacySequence, AZ::EntityId entityId)
 {
     // Drop legacy sequences on the floor, they are no longer supported.
-    if (isLegacySequence)
+    if (isLegacySequence && GetIEditor()->GetMovieSystem())
     {
         GetIEditor()->GetMovieSystem()->LogUserNotificationMsg(AZStd::string::format("Legacy Sequences are no longer supported. Skipping '%s'.", name.toUtf8().data()));
         return nullptr;
     }
 
-    IAnimSequence* sequence = GetIEditor()->GetMovieSystem()->CreateSequence(name.toUtf8().data(), /*bload =*/ false, /*id =*/ 0U, SequenceType::SequenceComponent, entityId);
-    AZ_Assert(sequence, "Failed to create sequence");
-    AddTrackViewSequence(new CTrackViewSequence(sequence));
+    if (GetIEditor()->GetMovieSystem())
+    {
+        IAnimSequence* sequence = GetIEditor()->GetMovieSystem()->CreateSequence(name.toUtf8().data(), /*bload =*/ false, /*id =*/ 0U, SequenceType::SequenceComponent, entityId);
+        AZ_Assert(sequence, "Failed to create sequence");
+        AddTrackViewSequence(new CTrackViewSequence(sequence));
 
-    return sequence;
+        return sequence;
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -208,7 +215,10 @@ void CTrackViewSequenceManager::OnCreateSequenceComponent(AZStd::intrusive_ptr<I
     sequence->InitPostLoad();
 
     // Add the sequence to the movie system
-    GetIEditor()->GetMovieSystem()->AddSequence(sequence.get());
+    if (GetIEditor()->GetMovieSystem())
+    {
+        GetIEditor()->GetMovieSystem()->AddSequence(sequence.get());
+    }
 
     // Create the TrackView Sequence
     CTrackViewSequence* newTrackViewSequence = new CTrackViewSequence(sequence);
@@ -329,7 +339,10 @@ void CTrackViewSequenceManager::RemoveSequenceInternal(CTrackViewSequence* seque
             // Remove from CryMovie and TrackView
             m_sequences.erase(iter);
             IMovieSystem* pMovieSystem = GetIEditor()->GetMovieSystem();
-            pMovieSystem->RemoveSequence(sequence->m_pAnimSequence.get());
+            if (pMovieSystem)
+            {
+                pMovieSystem->RemoveSequence(sequence->m_pAnimSequence.get());
+            }
 
             break;
         }

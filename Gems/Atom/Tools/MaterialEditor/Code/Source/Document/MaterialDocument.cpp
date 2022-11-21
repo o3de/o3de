@@ -19,6 +19,7 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -79,12 +80,6 @@ namespace MaterialEditor
 
     void MaterialDocument::SetPropertyValue(const AZStd::string& propertyId, const AZStd::any& value)
     {
-        if (!IsOpen())
-        {
-            AZ_Error("MaterialDocument", false, "Document is not open.");
-            return;
-        }
-
         const AZ::Name propertyName(propertyId);
 
         AtomToolsFramework::DynamicProperty* foundProperty = {};
@@ -95,20 +90,23 @@ namespace MaterialEditor
                 {
                     foundProperty = &property;
 
-                    // This first converts to an acceptable runtime type in case the value came from script
-                    const AZ::RPI::MaterialPropertyValue propertyValue = AtomToolsFramework::ConvertToRuntimeType(value);
-
-                    property.SetValue(AtomToolsFramework::ConvertToEditableType(propertyValue));
-
-                    const auto propertyIndex = m_materialInstance->FindPropertyIndex(propertyName);
-                    if (!propertyIndex.IsNull())
+                    if (m_materialInstance)
                     {
-                        if (m_materialInstance->SetPropertyValue(propertyIndex, propertyValue))
-                        {
-                            AZ::RPI::MaterialPropertyFlags dirtyFlags = m_materialInstance->GetPropertyDirtyFlags();
+                        // This first converts to an acceptable runtime type in case the value came from script
+                        const AZ::RPI::MaterialPropertyValue propertyValue = AtomToolsFramework::ConvertToRuntimeType(value);
 
-                            Recompile();
-                            RunEditorMaterialFunctors(dirtyFlags);
+                        property.SetValue(AtomToolsFramework::ConvertToEditableType(propertyValue));
+
+                        const auto propertyIndex = m_materialInstance->FindPropertyIndex(propertyName);
+                        if (!propertyIndex.IsNull())
+                        {
+                            if (m_materialInstance->SetPropertyValue(propertyIndex, propertyValue))
+                            {
+                                AZ::RPI::MaterialPropertyFlags dirtyFlags = m_materialInstance->GetPropertyDirtyFlags();
+
+                                Recompile();
+                                RunEditorMaterialFunctors(dirtyFlags);
+                            }
                         }
                     }
 
@@ -132,12 +130,6 @@ namespace MaterialEditor
 
     const AZStd::any& MaterialDocument::GetPropertyValue(const AZStd::string& propertyId) const
     {
-        if (!IsOpen())
-        {
-            AZ_Error("MaterialDocument", false, "Document is not open.");
-            return m_invalidValue;
-        }
-
         auto property = FindProperty(AZ::Name(propertyId));
         if (!property)
         {
@@ -159,28 +151,21 @@ namespace MaterialEditor
         documentType.m_supportedExtensionsToOpen.push_back({ "Material Type", AZ::RPI::MaterialTypeSourceData::Extension });
         documentType.m_supportedExtensionsToOpen.push_back({ "Material", AZ::RPI::MaterialSourceData::Extension });
         documentType.m_supportedExtensionsToSave.push_back({ "Material", AZ::RPI::MaterialSourceData::Extension });
-        documentType.m_supportedAssetTypesToCreate.insert(azrtti_typeid<AZ::RPI::MaterialTypeAsset>());
-        documentType.m_defaultAssetIdToCreate = AtomToolsFramework::GetSettingsObject<AZ::Data::AssetId>(
-            "/O3DE/Atom/MaterialEditor/DefaultMaterialTypeAsset",
-            AZ::RPI::AssetUtils::GetAssetIdForProductPath("materials/types/standardpbr.azmaterialtype"));
+        documentType.m_defaultDocumentTemplate =
+            AtomToolsFramework::GetPathWithoutAlias(AtomToolsFramework::GetSettingsValue<AZStd::string>(
+                "/O3DE/Atom/MaterialEditor/DefaultMaterialType",
+                "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype"));
         return documentType;
     }
 
     AtomToolsFramework::DocumentObjectInfoVector MaterialDocument::GetObjectInfo() const
     {
-        if (!IsOpen())
-        {
-            AZ_Error("MaterialDocument", false, "Document is not open.");
-            return {};
-        }
+        AtomToolsFramework::DocumentObjectInfoVector objects = AtomToolsDocument::GetObjectInfo();
+        objects.reserve(objects.size() + m_groups.size());
 
-        AtomToolsFramework::DocumentObjectInfoVector objects;
-        objects.reserve(m_groups.size());
-
-        AtomToolsFramework::DocumentObjectInfo objectInfo;
         for (const auto& group : m_groups)
         {
-            objects.push_back(GetObjectInfoFromDynamicPropertyGroup(group.get()));
+            objects.push_back(AZStd::move(GetObjectInfoFromDynamicPropertyGroup(group.get())));
         }
 
         return objects;
@@ -197,7 +182,11 @@ namespace MaterialEditor
 
         // populate sourceData with modified or overridden properties and save object
         AZ::RPI::MaterialSourceData sourceData;
-        sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
+        if (m_materialAsset.IsReady() &&
+            m_materialAsset->GetMaterialTypeAsset().IsReady())
+        {
+            sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
+        }
         sourceData.m_materialType = AtomToolsFramework::GetPathToExteralReference(m_absolutePath, m_materialSourceData.m_materialType);
         sourceData.m_parentMaterial = AtomToolsFramework::GetPathToExteralReference(m_absolutePath, m_materialSourceData.m_parentMaterial);
         auto propertyFilter = [](const AtomToolsFramework::DynamicProperty& property) {
@@ -233,7 +222,11 @@ namespace MaterialEditor
 
         // populate sourceData with modified or overridden properties and save object
         AZ::RPI::MaterialSourceData sourceData;
-        sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
+        if (m_materialAsset.IsReady() &&
+            m_materialAsset->GetMaterialTypeAsset().IsReady())
+        {
+            sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
+        }
         sourceData.m_materialType = AtomToolsFramework::GetPathToExteralReference(m_savePathNormalized, m_materialSourceData.m_materialType);
         sourceData.m_parentMaterial = AtomToolsFramework::GetPathToExteralReference(m_savePathNormalized, m_materialSourceData.m_parentMaterial);
         auto propertyFilter = [](const AtomToolsFramework::DynamicProperty& property) {
@@ -265,7 +258,11 @@ namespace MaterialEditor
 
         // populate sourceData with modified or overridden properties and save object
         AZ::RPI::MaterialSourceData sourceData;
-        sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
+        if (m_materialAsset.IsReady() &&
+            m_materialAsset->GetMaterialTypeAsset().IsReady())
+        {
+            sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
+        }
         sourceData.m_materialType = AtomToolsFramework::GetPathToExteralReference(m_savePathNormalized, m_materialSourceData.m_materialType);
 
         // Only assign a parent path if the source was a .material
@@ -290,11 +287,6 @@ namespace MaterialEditor
         }
 
         return SaveSucceeded();
-    }
-
-    bool MaterialDocument::IsOpen() const
-    {
-        return AtomToolsDocument::IsOpen() && m_materialAsset.IsReady() && m_materialInstance;
     }
 
     bool MaterialDocument::IsModified() const
@@ -361,7 +353,7 @@ namespace MaterialEditor
     {
         if (m_compilePending)
         {
-            if (m_materialInstance->Compile())
+            if (m_materialInstance && m_materialInstance->Compile())
             {
                 m_compilePending = false;
                 AZ::SystemTickBus::Handler::BusDisconnect();
@@ -404,6 +396,13 @@ namespace MaterialEditor
             return false;
         }
 
+        // Copy the description property to the outgoing source data
+        if (const AZStd::any descriptionProperty = GetPropertyValue("overview.materialDescription");
+            descriptionProperty.is<AZStd::string>())
+        {
+            sourceData.m_description = AZStd::any_cast<AZStd::string>(descriptionProperty);
+        }
+
         if (!AZ::RPI::JsonUtils::SaveObjectToFile(m_savePathNormalized, sourceData))
         {
             AZ_Error("MaterialDocument", false, "Document could not be saved: '%s'.", m_savePathNormalized.c_str());
@@ -420,7 +419,10 @@ namespace MaterialEditor
             return false;
         }
 
-        // The material document and inspector are constructed from source data
+        // The material document can load both material source data and material type source data files. Saving material type documents is
+        // not supported but they can be used to save a child or create a new material from the material type. This could also be extended
+        // to load material product assets, like the material instance editor on the material component. Those would also not be savable
+        // but could be used to create material source file, like the material component UI.
         if (AzFramework::StringFunc::Path::IsExtension(m_absolutePath.c_str(), AZ::RPI::MaterialSourceData::Extension))
         {
             if (!LoadMaterialSourceData())
@@ -471,6 +473,7 @@ namespace MaterialEditor
             return OpenFailed();
         }
 
+        // The parent material asset is only needed to retrieve property values for comparison.
         AZStd::span<const AZ::RPI::MaterialPropertyValue> parentPropertyValues = materialTypeAsset->GetDefaultPropertyValues();
         AZ::Data::Asset<AZ::RPI::MaterialAsset> parentMaterialAsset;
         if (!m_materialSourceData.m_parentMaterial.empty())
@@ -491,7 +494,8 @@ namespace MaterialEditor
                 AZ_Error("MaterialDocument", false, "Material parent asset ID could not be created: '%s'.", m_materialSourceData.m_parentMaterial.c_str());
                 return OpenFailed();
             }
-            
+
+            // In order to avoid reliance on the asset processor, the material asset is generated in memory, directly from source files.
             auto parentMaterialAssetResult = parentMaterialSourceData.CreateMaterialAssetFromSourceData(
                 parentMaterialAssetIdResult.GetValue(), m_materialSourceData.m_parentMaterial, true);
             if (!parentMaterialAssetResult)
@@ -504,7 +508,10 @@ namespace MaterialEditor
             parentPropertyValues = parentMaterialAsset->GetPropertyValues();
         }
 
-        // Creating a material from a material asset will fail if a texture is referenced but not loaded 
+        // A material instance needs to be created from the loaded asset to execute functors and be able to modify properties in real time
+        // on the object in the viewport. Now that there is much better support for hot reloading, and material assets cook fairly
+        // quickly, this direct connection to the viewport instance may not be required. It will still be required for functors. The
+        // instance will fail to create a new document will not open if the material asset has bad texture or material type references.
         m_materialInstance = AZ::RPI::Material::Create(m_materialAsset);
         if (!m_materialInstance)
         {
@@ -512,78 +519,72 @@ namespace MaterialEditor
             return OpenFailed();
         }
 
-        // Pipeline State Object changes are always allowed in the material editor because it only runs on developer systems
-        // where such changes are supported at runtime.
+        // Pipeline State Object changes are always allowed in the material editor because it only runs on developer systems where such
+        // changes are supported at runtime.
         m_materialInstance->SetPsoHandlingOverride(AZ::RPI::MaterialPropertyPsoHandling::Allowed);
 
-        // Adding properties for material type and parent as part of making dynamic properties and the inspector more general purpose. This
-        // allows the read only properties to appear in the inspector like any other property. This may change or be removed once support
-        // for changing the material parent is implemented.
+        // Inserting hardcoded properties to display material type, parent material, description, UV set names, and other information at the
+        // top of the inspector. Dynamic properties were originally created to generically adapt and edit JSON and other non-standard
+        // reflected data using the RPE. Most of these hardcoded properties are readonly. As that changes, it may be cleaner to add
+        // explicit functions and reflection for things that are more complicated to edit like parent material and material type.
+        auto createHeadingPropertyConfig = [](const AZStd::string& group, const AZStd::string& name, const AZStd::string& description,
+            const AZStd::any& value, bool readOnly)
+        {
+            AtomToolsFramework::DynamicPropertyConfig propertyConfig;
+            propertyConfig.m_name = name;
+            propertyConfig.m_displayName = AtomToolsFramework::GetDisplayNameFromText(propertyConfig.m_name);
+            propertyConfig.m_groupName = group;
+            propertyConfig.m_groupDisplayName = AtomToolsFramework::GetDisplayNameFromText(propertyConfig.m_groupName);
+            propertyConfig.m_id = propertyConfig.m_groupName + "." + name;
+            propertyConfig.m_description = description;
+            propertyConfig.m_parentValue = propertyConfig.m_originalValue = propertyConfig.m_defaultValue = value;
+            propertyConfig.m_readOnly = readOnly;
+            propertyConfig.m_showThumbnail = true;
+            return propertyConfig;
+        };
+
         m_groups.emplace_back(aznew AtomToolsFramework::DynamicPropertyGroup);
         m_groups.back()->m_name = "overview";
         m_groups.back()->m_displayName = "Overview";
-        m_groups.back()->m_description = m_materialSourceData.m_description;
+        m_groups.back()->m_description = "Overview of the current material and its dependencies";
 
-        AtomToolsFramework::DynamicPropertyConfig propertyConfig;
-        propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Asset;
-        propertyConfig.m_id = "overview.materialType";
-        propertyConfig.m_name = "materialType";
-        propertyConfig.m_displayName = "Material Type";
-        propertyConfig.m_groupName = "overview";
-        propertyConfig.m_groupDisplayName = "Overview";
-        propertyConfig.m_description = "The material type defines the layout, properties, default values, shader connections, and other "
-                                       "data needed to create and edit a derived material.";
-        propertyConfig.m_defaultValue = AZStd::any(materialTypeAsset);
-        propertyConfig.m_originalValue = propertyConfig.m_defaultValue;
-        propertyConfig.m_parentValue = propertyConfig.m_defaultValue;
-        propertyConfig.m_readOnly = true;
-        propertyConfig.m_showThumbnail = true;
+        m_groups.back()->m_properties.emplace_back(createHeadingPropertyConfig(
+            "overview",
+            "materialType",
+            AZStd::string::format(
+                "The material type defines the layout, properties, default values, shader connections, and other data needed to create and "
+                "edit a material.\n\nDescription of %s:\n%s",
+                AtomToolsFramework::GetDisplayNameFromPath(m_materialSourceData.m_materialType).c_str(),
+                m_materialTypeSourceData.m_description.c_str()),
+            AZStd::any(materialTypeAsset),
+            true));
 
-        m_groups.back()->m_properties.push_back(AtomToolsFramework::DynamicProperty(propertyConfig));
+        m_groups.back()->m_properties.emplace_back(createHeadingPropertyConfig(
+            "overview",
+            "parentMaterial",
+            "The parent material provides an initial configuration whose properties are inherited and overriden by a derived material.",
+            AZStd::any(parentMaterialAsset),
+            true));
 
-        propertyConfig = {};
-        propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Asset;
-        propertyConfig.m_id = "overview.parentMaterial";
-        propertyConfig.m_name = "parentMaterial";
-        propertyConfig.m_displayName = "Parent Material";
-        propertyConfig.m_groupName = "overview";
-        propertyConfig.m_groupDisplayName = "Overview";
-        propertyConfig.m_description =
-            "The parent material provides an initial configuration whose properties are inherited and overriden by a derived material.";
-        propertyConfig.m_defaultValue = AZStd::any(parentMaterialAsset);
-        propertyConfig.m_originalValue = propertyConfig.m_defaultValue;
-        propertyConfig.m_parentValue = propertyConfig.m_defaultValue;
-        propertyConfig.m_readOnly = true;
-        propertyConfig.m_showThumbnail = true;
+        m_groups.back()->m_properties.emplace_back(createHeadingPropertyConfig(
+            "overview",
+            "materialDescription",
+            "Description of the selected material.",
+            AZStd::any(m_materialSourceData.m_description),
+            false));
 
-        m_groups.back()->m_properties.push_back(AtomToolsFramework::DynamicProperty(propertyConfig));
-
+        // Inserting a hard coded property group to display UV channels specified in the material type.
         m_groups.emplace_back(aznew AtomToolsFramework::DynamicPropertyGroup);
         m_groups.back()->m_name = UvGroupName;
         m_groups.back()->m_displayName = "UV Sets";
         m_groups.back()->m_description = "UV set names in this material, which can be renamed to match those in the model.";
 
-        // Add UV name customization properties
         const AZ::RPI::MaterialUvNameMap& uvNameMap = materialTypeAsset->GetUvNameMap();
         for (const AZ::RPI::UvNamePair& uvNamePair : uvNameMap)
         {
             const AZStd::string shaderInput = uvNamePair.m_shaderInput.ToString();
             const AZStd::string uvName = uvNamePair.m_uvName.GetStringView();
-
-            propertyConfig = {};
-            propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::String;
-            propertyConfig.m_id = AZ::RPI::MaterialPropertyId(UvGroupName, shaderInput);
-            propertyConfig.m_name = shaderInput;
-            propertyConfig.m_displayName = shaderInput;
-            propertyConfig.m_groupName = UvGroupName;
-            propertyConfig.m_groupDisplayName = "UV Sets";
-            propertyConfig.m_description = shaderInput;
-            propertyConfig.m_defaultValue = uvName;
-            propertyConfig.m_originalValue = uvName;
-            propertyConfig.m_parentValue = uvName;
-            propertyConfig.m_readOnly = true;
-
-            m_groups.back()->m_properties.push_back(AtomToolsFramework::DynamicProperty(propertyConfig));
+            m_groups.back()->m_properties.emplace_back(createHeadingPropertyConfig(UvGroupName, shaderInput, shaderInput, AZStd::any(uvName), true));
         }
 
         // Populate the property map from a combination of source data and assets
@@ -603,53 +604,100 @@ namespace MaterialEditor
                     return false;
                 }
 
+                // Build a container of all of the group and display names accumulated while enumerating the group hierarchy. These will be
+                // joined together for assembling full property IDs and group display names.
                 AZStd::vector<AZStd::string> groupNameVector;
-                AZStd::vector<AZStd::string> groupDisplayNameVector;
-                
                 groupNameVector.reserve(propertyGroupStack.size());
+
+                AZStd::vector<AZStd::string> groupDisplayNameVector;
                 groupDisplayNameVector.reserve(propertyGroupStack.size());
 
-                for (auto& group : propertyGroupStack)
+                for (auto& propertyGroupStackItem : propertyGroupStack)
                 {
-                    groupNameVector.push_back(group->GetName());
-                    groupDisplayNameVector.push_back(group->GetDisplayName());
+                    groupNameVector.push_back(propertyGroupStackItem->GetName());
+                    groupDisplayNameVector.push_back(propertyGroupStackItem->GetDisplayName());
                 }
 
-                m_groups.emplace_back(aznew AtomToolsFramework::DynamicPropertyGroup);
-                m_groups.back()->m_description = propertyGroup->GetDescription();
-                AzFramework::StringFunc::Join(m_groups.back()->m_name, groupNameVector.begin(), groupNameVector.end(), ".");
-                AzFramework::StringFunc::Join(m_groups.back()->m_displayName, groupDisplayNameVector.begin(), groupDisplayNameVector.end(), " | ");
+                // Create a dynamic property group that will be managed by the document and used to display the properties in the inspector.
+                AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup> dynamicPropertyGroup;
+                dynamicPropertyGroup.reset(aznew AtomToolsFramework::DynamicPropertyGroup);
 
+                // Copy details about this property group from the material type property group definition. Recombine the group name and
+                // display name vectors so that the complete hierarchy will be displayed in the UI and available for creating property IDs.
+                AzFramework::StringFunc::Join(dynamicPropertyGroup->m_name, groupNameVector.begin(), groupNameVector.end(), ".");
+                AzFramework::StringFunc::Join(dynamicPropertyGroup->m_displayName, groupDisplayNameVector.begin(), groupDisplayNameVector.end(), " | ");
+
+                if (dynamicPropertyGroup->m_displayName.empty())
+                {
+                    dynamicPropertyGroup->m_displayName =
+                        !propertyGroup->GetDisplayName().empty() ? propertyGroup->GetDisplayName() : propertyGroup->GetName();
+                }
+
+                dynamicPropertyGroup->m_description = propertyGroup->GetDescription();
+                if (dynamicPropertyGroup->m_description.empty())
+                {
+                    dynamicPropertyGroup->m_description = dynamicPropertyGroup->m_displayName;
+                }
+
+                // All of the material type properties must be adapted for display in the ui. This is done by converting them into a dynamic
+                // property class that can be used to display and edit multiple types.
                 for (const auto& propertyDefinition : propertyGroup->GetProperties())
                 {
                     AtomToolsFramework::DynamicPropertyConfig propertyConfig;
 
-                    // Assign id before conversion so it can be used in dynamic description
+                    // The property ID must be set up before calling the function to convert the rest of the material type property
+                    // definition into the dynamic property config. The dynamic property config will set up a description that includes the
+                    // ID.
                     propertyConfig.m_id = propertyDefinition->GetName();
                     groupNameContext.ContextualizeProperty(propertyConfig.m_id);
 
+                    // A valid property index is required to look up property values in the material type and material asset property vectors.
                     const auto& propertyIndex = m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
                     const bool propertyIndexInBounds =
                         propertyIndex.IsValid() && propertyIndex.GetIndex() < m_materialAsset->GetPropertyValues().size();
+
                     AZ_Warning(
-                        "MaterialDocument", propertyIndexInBounds, "Failed to add material property '%s' to document '%s'.",
-                        propertyConfig.m_id.GetCStr(), m_absolutePath.c_str());
+                        "MaterialDocument",
+                        propertyIndexInBounds,
+                        "Failed to add material property '%s' to document '%s'.",
+                        propertyConfig.m_id.GetCStr(),
+                        m_absolutePath.c_str());
 
                     if (propertyIndexInBounds)
                     {
+                        // Utility function converts most attributes from the property definition into a dynamic property config.
                         AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, *propertyDefinition);
+
+                        // The utility function assigns a description from the property definition along with its name and display name.
+                        // This will be displayed as the tooltip when dragging over the property in the inspector UI. The description is
+                        // extended here so that the tooltip will display an image and additional information about the indicator that
+                        // appears when properties are modified. The tooltip will automatically interpret the embedded HTML and display the
+                        // image and formatting.
                         propertyConfig.m_description +=
                             "\n\n<img src=\':/Icons/changed_property.svg\'> An indicator icon will be shown to the left of properties with "
                             "overridden values that are different from the parent material, or material type if there is no parent.";
 
-                        // (Does DynamicPropertyConfig really even need m_groupName? It doesn't seem to be used anywhere)
-                        propertyConfig.m_groupName = m_groups.back()->m_name;
-                        propertyConfig.m_groupDisplayName = m_groups.back()->m_displayName;
+                        // The dynamic property uses the group name and display name to forward as attributes to the RPE and property asset
+                        // control. The control will then use the attributes to display a context sensitive title when opening the asset
+                        // picker for textures and other assets. Rather than using strings, this data could also be specified using
+                        // AZStd::function.
+                        propertyConfig.m_groupName = dynamicPropertyGroup->m_name;
+                        propertyConfig.m_groupDisplayName = dynamicPropertyGroup->m_displayName;
+
+                        // Enabling thumbnails will display a preview image next to an asset property in the RPE, if one is available.
                         propertyConfig.m_showThumbnail = true;
+
+                        // Multiple values are recorded for the property, including the original value, default value, and parent value.
+                        // These values are compared against each other to determine if an indicator needs to be displayed in the property
+                        // inspector as well as which values get saved with the material.
                         propertyConfig.m_originalValue =
                             AtomToolsFramework::ConvertToEditableType(m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
                         propertyConfig.m_parentValue =
                             AtomToolsFramework::ConvertToEditableType(parentPropertyValues[propertyIndex.GetIndex()]);
+
+                        // The data change callback is invoked whenever the properties are modified in the inspector. The changes will be
+                        // stored in the dynamic property automatically but need to be processed and applied to the material instance that's
+                        // displayed in the viewport. This is also necessary to update and rerun functors.
                         propertyConfig.m_dataChangeCallback = [documentId = m_id, propertyId = propertyConfig.m_id](const AZStd::any& value)
                         {
                             MaterialDocumentRequestBus::Event(
@@ -657,10 +705,15 @@ namespace MaterialEditor
                             return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
                         };
 
-                        m_groups.back()->m_properties.push_back(AtomToolsFramework::DynamicProperty(propertyConfig));
+                        dynamicPropertyGroup->m_properties.push_back(AtomToolsFramework::DynamicProperty(propertyConfig));
                     }
                 }
 
+                // The group will not be added if no properties were added to it.
+                if (!dynamicPropertyGroup->m_properties.empty())
+                {
+                    m_groups.push_back(dynamicPropertyGroup);
+                }
                 return true;
             });
 
@@ -744,17 +797,10 @@ namespace MaterialEditor
 
         // We always need the absolute path for the material type and parent material to load source data and resolving
         // relative paths when saving. This will convert and store them as absolute paths for use within the document.
-        if (!m_materialSourceData.m_parentMaterial.empty())
-        {
-            m_materialSourceData.m_parentMaterial =
-                AZ::RPI::AssetUtils::ResolvePathReference(m_absolutePath, m_materialSourceData.m_parentMaterial);
-        }
-
-        if (!m_materialSourceData.m_materialType.empty())
-        {
-            m_materialSourceData.m_materialType =
-                AZ::RPI::AssetUtils::ResolvePathReference(m_absolutePath, m_materialSourceData.m_materialType);
-        }
+        m_materialSourceData.m_parentMaterial =
+            AZ::RPI::AssetUtils::ResolvePathReference(m_absolutePath, m_materialSourceData.m_parentMaterial);
+        m_materialSourceData.m_materialType =
+            AZ::RPI::AssetUtils::ResolvePathReference(m_absolutePath, m_materialSourceData.m_materialType);
 
         // Load the material type source data which provides the layout and default values of all of the properties
         auto materialTypeOutcome = AZ::RPI::MaterialUtils::LoadMaterialTypeSourceData(m_materialSourceData.m_materialType);
@@ -829,6 +875,11 @@ namespace MaterialEditor
 
     void MaterialDocument::RunEditorMaterialFunctors(AZ::RPI::MaterialPropertyFlags dirtyFlags)
     {
+        if (!m_materialInstance)
+        {
+            return;
+        }
+
         AZStd::unordered_map<AZ::Name, AZ::RPI::MaterialPropertyDynamicMetadata> propertyDynamicMetadata;
         AZStd::unordered_map<AZ::Name, AZ::RPI::MaterialPropertyGroupDynamicMetadata> propertyGroupDynamicMetadata;
 
@@ -905,13 +956,27 @@ namespace MaterialEditor
         objectInfo.m_description = group->m_description;
         objectInfo.m_objectType = azrtti_typeid<AtomToolsFramework::DynamicPropertyGroup>();
         objectInfo.m_objectPtr = const_cast<AtomToolsFramework::DynamicPropertyGroup*>(group);
-        objectInfo.m_nodeIndicatorFunction = [](const AzToolsFramework::InstanceDataNode* node)
+
+        if (group->m_name == "overview")
         {
-            const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(node);
-            return property && !AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue)
-                ? ":/Icons/changed_property.svg"
-                : ":/Icons/blank.png";
-        };
+            // Properties in the overview category don't require special comparison or indicator icons. However, the blank icon is still
+            // needed to keep everything aligned.
+            objectInfo.m_nodeIndicatorFunction = []([[maybe_unused]] const AzToolsFramework::InstanceDataNode* node)
+            {
+                return ":/Icons/blank.png";
+            };
+        }
+        else
+        {
+            objectInfo.m_nodeIndicatorFunction = [](const AzToolsFramework::InstanceDataNode* node)
+            {
+                const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(node);
+                return property && !AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue)
+                    ? ":/Icons/changed_property.svg"
+                    : ":/Icons/blank.png";
+            };
+        }
+
         return objectInfo;
     }
 

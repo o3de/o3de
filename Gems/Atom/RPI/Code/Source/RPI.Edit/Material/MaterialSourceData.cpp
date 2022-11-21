@@ -105,7 +105,7 @@ namespace AZ
             return m_propertyValues.find(propertyId) != m_propertyValues.end();
         }
         
-        void MaterialSourceData::ConvertToNewDataFormat()
+        void MaterialSourceData::UpgradeLegacyFormat()
         {
             for (const auto& [groupName, propertyList] : m_propertiesOld)
             {
@@ -119,7 +119,7 @@ namespace AZ
         }
 
         Outcome<Data::Asset<MaterialAsset>> MaterialSourceData::CreateMaterialAsset(
-            Data::AssetId assetId, AZStd::string_view materialSourceFilePath, MaterialAssetProcessingMode processingMode, bool elevateWarnings) const
+            Data::AssetId assetId, const AZStd::string& materialSourceFilePath, MaterialAssetProcessingMode processingMode, bool elevateWarnings) const
         {
             MaterialAssetCreator materialAssetCreator;
             materialAssetCreator.SetElevateWarnings(elevateWarnings);
@@ -165,7 +165,7 @@ namespace AZ
                 {
                     // In this case we need to load the material type data in preparation for the material->Finalize() step below.
                     auto materialTypeAssetOutcome = AssetUtils::LoadAsset<MaterialTypeAsset>(
-                        materialTypeAssetId.GetValue(), AssetUtils::TraceLevel::Error, dontLoadImageAssets);
+                        materialTypeAssetId.GetValue(), materialSourceFilePath.c_str(), AssetUtils::TraceLevel::Error, dontLoadImageAssets);
                     if (!materialTypeAssetOutcome)
                     {
                         return Failure();
@@ -303,7 +303,7 @@ namespace AZ
 
             // Load and build a stack of MaterialSourceData from all of the parent materials in the hierarchy. Properties from the source
             // data will be applied in reverse to the asset creator.
-            AZStd::vector<MaterialSourceData> parentSourceDataStack;
+            AZStd::vector<AZStd::pair<AZStd::string, MaterialSourceData>> parentSourceDataStack;
 
             AZStd::string parentSourceRelPath = m_parentMaterial;
             AZStd::string parentSourceAbsPath = AssetUtils::ResolvePathReference(materialSourceFilePath, parentSourceRelPath);
@@ -338,13 +338,15 @@ namespace AZ
                     return Failure();
                 }
 
+                // Record the material source data and its absolute path so that asset references can be resolved relative to it
+                parentSourceDataStack.emplace_back(parentSourceAbsPath, parentSourceData);
+
                 // Get the location of the next parent material and push the source data onto the stack 
                 parentSourceRelPath = parentSourceData.m_parentMaterial;
                 parentSourceAbsPath = AssetUtils::ResolvePathReference(parentSourceAbsPath, parentSourceRelPath);
-                parentSourceDataStack.emplace_back(AZStd::move(parentSourceData));
             }
             
-            // Unlike CreateMaterialAsset(), we can always finalize the material here because we loaded created the MaterialTypeAsset from
+            // Unlike CreateMaterialAsset(), we can always finalize the material here because we created the MaterialTypeAsset from
             // the source .materialtype file, so the necessary data is always available.
             // (In case you are wondering why we don't use CreateMaterialAssetFromSourceData in MaterialBuilder: that would require a
             // source dependency between the .materialtype and .material file, which would cause all .material files to rebuild when you
@@ -358,12 +360,20 @@ namespace AZ
             
             materialAssetCreator.SetMaterialTypeVersion(m_materialTypeVersion);
 
+            // Traverse the parent source data stack in reverse, applying properties from each material parent source data on to the asset
+            // creator. This will manually accumulate all material property values in the hierarchy.
             while (!parentSourceDataStack.empty())
             {
-                parentSourceDataStack.back().ApplyPropertiesToAssetCreator(materialAssetCreator, materialSourceFilePath);
+                // Images and other assets must be resolved relative to the parent source data absolute path, not the path passed into this
+                // function that is the final material being created.
+                const auto& parentPath = parentSourceDataStack.back().first;
+                const auto& parentData = parentSourceDataStack.back().second;
+                parentData.ApplyPropertiesToAssetCreator(materialAssetCreator, parentPath);
                 parentSourceDataStack.pop_back();
             }
 
+            // Finally, apply properties from the source data that was initially requested. This could also go into the stack but is being
+            // used for other purposes.
             ApplyPropertiesToAssetCreator(materialAssetCreator, materialSourceFilePath);
 
             Data::Asset<MaterialAsset> material;
@@ -378,13 +388,6 @@ namespace AZ
             }
 
             return Failure();
-        }
-        
-        /*static*/ bool MaterialSourceData::LooksLikeImageFileReference(const MaterialPropertyValue& value)
-        {
-            // If the source value type is a string, there are two possible property types: Image and Enum. If there is a "." in
-            // the string (for the extension) we can assume it's an Image file path.
-            return value.Is<AZStd::string>() && AzFramework::StringFunc::Contains(value.GetValue<AZStd::string>(), ".");
         }
 
         void MaterialSourceData::ApplyPropertiesToAssetCreator(
@@ -401,7 +404,7 @@ namespace AZ
                     // If the source value type is a string, there are two possible property types: Image and Enum. If there is a "." in
                     // the string (for the extension) we assume it's an Image and look up the referenced Asset. Otherwise, we can assume
                     // it's an Enum value and just preserve the original string.
-                    if (LooksLikeImageFileReference(propertyValue))
+                    if (MaterialUtils::LooksLikeImageFileReference(propertyValue))
                     {
                         Data::Asset<ImageAsset> imageAsset;
 

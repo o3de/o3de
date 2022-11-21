@@ -1078,6 +1078,7 @@ namespace ScriptCanvasEditor
         m_proxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
 
         setModel(m_proxyModel);
+        setSortingEnabled(true);
 
         ApplyPreferenceSort();
         setItemDelegateForColumn(GraphVariablesModel::Name, aznew GraphCanvas::IconDecoratedNameDelegate(this));

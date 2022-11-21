@@ -143,7 +143,10 @@ void ApplyCapsuleLight(ViewSrg::CapsuleLight light, Surface surface, inout Light
         const float transmissionDistance = -1.0f;
         // If the transmissionDistance is ignored then the attenuation distance (only used on thin objects) does not have any influence
         const float attenuationDistance = 0.0f;
+
+#if ENABLE_TRANSMISSION
         lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), transmissionDistance, attenuationDistance);
+#endif
 
         // Calculate the offset from the nearest point on the reflection vector to the nearest point on the capsule light
         float3 posToClosestPointAlongReflection = dot(posToLight, reflectionDir) * reflectionDir;
@@ -218,12 +221,36 @@ void ValidateCapsuleLight(ViewSrg::CapsuleLight light, Surface surface, inout Li
     float3 intensity = intensityLumens * INV_PI;
     
     lightingData.diffuseLighting += (diffuseAcc / float(sampleCount)) * intensity;
-    lightingData.translucentBackLighting += (translucentAcc / float(sampleCount)) * intensity;
     lightingData.specularLighting += (specularAcc / float(sampleCount)) * intensity;
+#if ENABLE_TRANSMISSION
+    lightingData.translucentBackLighting += (translucentAcc / float(sampleCount)) * intensity;
+#endif
+}
+
+void ApplyCapsuleLightInternal(uint lightIndex, Surface surface, inout LightingData lightingData)
+{
+#if ENABLE_CAPSULE_LIGHTS
+    if (o_enableCapsuleLights)
+    {
+        ViewSrg::CapsuleLight light = ViewSrg::m_capsuleLights[lightIndex];
+
+#if ENABLE_AREA_LIGHT_VALIDATION
+        if (o_area_light_validation)
+        {
+            ValidateCapsuleLight(light, surface, lightingData);
+        }
+        else
+#endif // ENABLE_AREA_LIGHT_VALIDATION
+        {
+            ApplyCapsuleLight(light, surface, lightingData);
+        }
+    }
+#endif // ENABLE_CAPSULE_LIGHTS
 }
 
 void ApplyCapsuleLights(Surface surface, inout LightingData lightingData)
 {    
+#if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.LoadAdvance();
                 
     while(!lightingData.tileIterator.IsDone())
@@ -231,21 +258,12 @@ void ApplyCapsuleLights(Surface surface, inout LightingData lightingData)
         uint currLightIndex = lightingData.tileIterator.GetValue(); 
         lightingData.tileIterator.LoadAdvance();
         
-#if ENABLE_CAPSULE_LIGHTS
-
-        ViewSrg::CapsuleLight light = ViewSrg::m_capsuleLights[currLightIndex];
-
-    #if ENABLE_AREA_LIGHT_VALIDATION
-        if (o_area_light_validation)
-        {
-            ValidateCapsuleLight(light, surface, lightingData);
-        }
-        else
-    #endif
-        {
-            ApplyCapsuleLight(light, surface, lightingData);
-        }
-
-#endif
+        ApplyCapsuleLightInternal(currLightIndex, surface, lightingData);
     }
+#else
+    for(uint lightIndex = 0; lightIndex < ViewSrg::m_capsuleLightCount; lightIndex++)
+    {
+        ApplyCapsuleLightInternal(lightIndex, surface, lightingData);
+    }
+#endif
 }

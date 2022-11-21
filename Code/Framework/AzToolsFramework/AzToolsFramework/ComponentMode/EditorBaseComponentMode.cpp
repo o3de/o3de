@@ -53,13 +53,34 @@ namespace AzToolsFramework
             ComponentModeViewportUiRequestBus::Event(
                 GetComponentType(), &ComponentModeViewportUiRequestBus::Events::RegisterViewportElementGroup,
                 GetEntityComponentIdPair(), elementIdsToDisplay);
-            // create the component mode border with the specific name for this component mode
-            ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder, GetComponentModeName(),
-                []
-                {
-                    ComponentModeSystemRequestBus::Broadcast(&ComponentModeSystemRequests::EndComponentMode);
-                });
+
+            bool borderVisible = false;
+            ViewportUi::ViewportUiRequestBus::EventResult(
+                borderVisible,
+                ViewportUi::DefaultViewportId,
+                &ViewportUi::ViewportUiRequestBus::Events::GetViewportBorderVisible);
+
+            // if the border is visible, change the border title
+            // else create the component mode border with the specific name for this component mode
+            if (borderVisible)
+            {
+                ViewportUi::ViewportUiRequestBus::Event(
+                    ViewportUi::DefaultViewportId,
+                    &ViewportUi::ViewportUiRequestBus::Events::ChangeViewportBorderText,
+                    GetComponentModeName());
+            }
+            else
+            {
+                ViewportUi::ViewportUiRequestBus::Event(
+                    ViewportUi::DefaultViewportId,
+                    &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder,
+                    GetComponentModeName(),
+                    []
+                    {
+                        ComponentModeSystemRequestBus::Broadcast(&ComponentModeSystemRequests::EndComponentMode);
+                    });
+            }
+
             // set the EntityComponentId for this ComponentMode to active in the ComponentModeViewportUi system
             ComponentModeViewportUiRequestBus::Event(
                 GetComponentType(), &ComponentModeViewportUiRequestBus::Events::SetViewportUiActiveEntityComponentId,

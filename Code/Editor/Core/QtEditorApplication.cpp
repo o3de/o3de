@@ -190,7 +190,7 @@ namespace
     static void LogToDebug([[maybe_unused]] QtMsgType Type, [[maybe_unused]] const QMessageLogContext& Context, const QString& message)
     {
         AZ::Debug::Platform::OutputToDebugger("Qt", message.toUtf8().data());
-        AZ::Debug::Platform::OutputToDebugger(nullptr, "\n");
+        AZ::Debug::Platform::OutputToDebugger("", "\n");
     }
 }
 

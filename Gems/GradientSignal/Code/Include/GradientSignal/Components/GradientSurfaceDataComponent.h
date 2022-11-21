@@ -42,7 +42,7 @@ namespace GradientSignal
         void AddTag(AZStd::string tag);
     };
 
-    static const AZ::Uuid GradientSurfaceDataComponentTypeId = "{BE5AF9E8-C509-4A8C-8D9E-D24BCD402812}";
+    inline constexpr AZ::TypeId GradientSurfaceDataComponentTypeId{ "{BE5AF9E8-C509-4A8C-8D9E-D24BCD402812}" };
 
     class GradientSurfaceDataComponent
         : public AZ::Component

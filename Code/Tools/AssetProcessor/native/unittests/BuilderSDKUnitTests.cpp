@@ -7,8 +7,10 @@
  */
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
-#include <native/unittests/UnitTestRunner.h>
+#include <native/unittests/UnitTestUtils.h>
+#endif
 #include <QDir>
 #include <QTemporaryDir>
 
@@ -208,11 +210,10 @@ namespace UnitTest
 
         {
             UnitTestUtils::AssertAbsorber absorber;
-            // objectstream with invalid 'type' inside the class
+            // objectstream with an empty string 'type' inside the class
             EXPECT_TRUE(UnitTestUtils::CreateDummyFile(dummyFileName, "<ObjectStream><Class type=\"\"/></ObjectStream>"));
             EXPECT_EQ(
                 AssetBuilderSDK::JobProduct::InferAssetTypeByProductFileName(dummyFileName.toUtf8().data()), AZ::Uuid::CreateNull());
-            EXPECT_GT(absorber.m_numWarningsAbsorbed, 0);
         }
 
         {

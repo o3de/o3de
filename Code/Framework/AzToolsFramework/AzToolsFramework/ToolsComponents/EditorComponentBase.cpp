@@ -7,11 +7,11 @@
  */
 #include "EditorComponentBase.h"
 #include "TransformComponent.h"
-#include "SelectionComponent.h"
 #include <AzCore/Math/Vector2.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
 namespace AzToolsFramework
 {
@@ -31,7 +31,6 @@ namespace AzToolsFramework
         EditorComponentBase::EditorComponentBase()
         {
             m_transform = nullptr;
-            m_selection = nullptr;
         }
 
         void EditorComponentBase::Init()
@@ -41,13 +40,11 @@ namespace AzToolsFramework
         void EditorComponentBase::Activate()
         {
             m_transform = GetEntity()->FindComponent<TransformComponent>();
-            m_selection = GetEntity()->FindComponent<SelectionComponent>();
         }
 
         void EditorComponentBase::Deactivate()
         {
             m_transform = nullptr;
-            m_selection = nullptr;
         }
 
         void EditorComponentBase::SetDirty()
@@ -66,11 +63,6 @@ namespace AzToolsFramework
         {
             AZ_Assert(m_transform, "Attempt to GetTransformComponent when the entity is inactive or does not have one.");
             return m_transform;
-        }
-        Components::SelectionComponent* EditorComponentBase::GetSelection() const
-        {
-            AZ_Assert(m_selection, "Attempt to GetSelection when the entity is inactive or does not have one.");
-            return m_selection;
         }
 
         AZ::Transform EditorComponentBase::GetWorldTM() const
@@ -99,26 +91,7 @@ namespace AzToolsFramework
 
         bool EditorComponentBase::IsSelected() const
         {
-            if (m_selection)
-            {
-                return m_selection->IsSelected();
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        bool EditorComponentBase::IsPrimarySelection() const
-        {
-            if (m_selection)
-            {
-                return m_selection->IsPrimarySelection();
-            }
-            else
-            {
-                return false;
-            }
+            return AzToolsFramework::IsSelected(GetEntityId());
         }
     }
 } // namespace AzToolsFramework

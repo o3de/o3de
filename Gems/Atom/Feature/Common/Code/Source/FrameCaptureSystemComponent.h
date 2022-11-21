@@ -16,6 +16,7 @@
 #include <AzCore/std/parallel/atomic.h>
 
 #include <Atom/Feature/Utils/FrameCaptureBus.h>
+#include <Atom/Feature/Utils/FrameCaptureTestBus.h>
 
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 
@@ -27,6 +28,7 @@ namespace AZ
         class FrameCaptureSystemComponent final
             : public AZ::Component
             , public FrameCaptureRequestBus::Handler
+            , public FrameCaptureTestRequestBus::Handler
             , public AZ::SystemTickBus::Handler
         {
         public:
@@ -39,13 +41,26 @@ namespace AZ
 
             // FrameCaptureRequestBus overrides ...
             bool CanCapture() const override;
-            uint32_t CaptureScreenshot(const AZStd::string& filePath) override;
-            uint32_t CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle) override;
-            uint32_t CaptureScreenshotWithPreview(const AZStd::string& outputFilePath) override;
-            uint32_t CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName, const AZStd::string& outputFilePath,
+            FrameCaptureId CaptureScreenshot(const AZStd::string& filePath) override;
+            FrameCaptureId CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle) override;
+            FrameCaptureId CaptureScreenshotWithPreview(const AZStd::string& outputFilePath) override;
+            FrameCaptureId CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName, const AZStd::string& outputFilePath,
                 RPI::PassAttachmentReadbackOption option) override;
-            uint32_t CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
+            FrameCaptureId CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
                 , RPI::AttachmentReadback::CallbackFunction callback, RPI::PassAttachmentReadbackOption option) override;
+
+            // FrameCaptureTestRequestBus overrides ...
+            void SetScreenshotFolder(const AZStd::string& screenshotFolder) override;
+            void SetTestEnvPath(const AZStd::string& envPath) override;
+            void SetOfficialBaselineImageFolder(const AZStd::string& baselineFolder) override;
+            void SetLocalBaselineImageFolder(const AZStd::string& baselineFolder) override;
+            AZStd::string BuildScreenshotFilePath(const AZStd::string& imageName, bool useEnvPath) override;
+            AZStd::string BuildOfficialBaselineFilePath(const AZStd::string& imageName, bool useEnvPath) override;
+            AZStd::string BuildLocalBaselineFilePath(const AZStd::string& imageName, bool useEnvPath) override;
+            Utils::ImageDiffResult CompareScreenshots(
+                const AZStd::string& filePathA,
+                const AZStd::string& filePathB,
+                float minDiffFilter) override;
 
         private:
             // Wrap the state necessary for 1 capture
@@ -80,7 +95,7 @@ namespace AZ
                 bool IsValid() {return m_captureStateIndex != InvalidCaptureHandle;};
                 bool IsNull() {return m_captureStateIndex == InvalidCaptureHandle;};
             private:
-                static constexpr uint32_t InvalidCaptureHandle = FrameCaptureRequests::s_InvalidFrameCaptureId;
+                static constexpr uint32_t InvalidCaptureHandle = InvalidFrameCaptureId;
 
                 FrameCaptureSystemComponent* const m_frameCaptureSystemComponent;
                 const uint32_t m_captureStateIndex = InvalidCaptureHandle;
@@ -104,8 +119,13 @@ namespace AZ
 
             AZStd::shared_mutex m_handleLock; // Use a shared_mutex so we can protect against the allCaptures vector being resized and moving the CaptureStates in memory.
             AZStd::deque<CaptureHandle> m_idleCaptures; // fifo for idle captures
-            AZStd::deque<CaptureHandle> m_inProgressCaptures; // uses a deque so we can maintain order, order created == order OnCaptureFinished sent
+            AZStd::deque<CaptureHandle> m_inProgressCaptures; // uses a deque so we can maintain order, order created == order OnFrameCaptureFinished sent
             AZStd::vector<CaptureState> m_allCaptures;
+
+            AZStd::string m_screenshotFolder;
+            AZStd::string m_testEnvPath;
+            AZStd::string m_officialBaselineImageFolder;
+            AZStd::string m_localBaselineImageFolder;
         };
     }
 }

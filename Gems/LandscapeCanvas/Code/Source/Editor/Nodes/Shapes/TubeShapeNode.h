@@ -24,7 +24,7 @@ namespace LandscapeCanvas
         TubeShapeNode() = default;
         explicit TubeShapeNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
-        const char* GetTitle() const override { return TITLE.toUtf8().constData(); }
+        static const char* TITLE;
+        const char* GetTitle() const override { return TITLE; }
     };
 }

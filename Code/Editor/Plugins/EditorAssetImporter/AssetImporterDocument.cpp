@@ -7,7 +7,6 @@
  */
 
 #include <AssetImporterDocument.h>
-#include <SceneAPI/SceneCore/Export/MtlMaterialExporter.h>
 #include <Util/PathUtil.h>
 #include <GFxFramework/MaterialIO/IMaterial.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
@@ -45,7 +44,7 @@ bool AssetImporterDocument::LoadScene(const AZStd::string& sceneFullPath)
 {
     AZ_PROFILE_FUNCTION(Editor);
     namespace SceneEvents = AZ::SceneAPI::Events;
-    SceneEvents::SceneSerializationBus::BroadcastResult(m_scene, &SceneEvents::SceneSerializationBus::Events::LoadScene, sceneFullPath, AZ::Uuid::CreateNull());
+    SceneEvents::SceneSerializationBus::BroadcastResult(m_scene, &SceneEvents::SceneSerializationBus::Events::LoadScene, sceneFullPath, AZ::Uuid::CreateNull(), "");
     return !!m_scene;
 }
 

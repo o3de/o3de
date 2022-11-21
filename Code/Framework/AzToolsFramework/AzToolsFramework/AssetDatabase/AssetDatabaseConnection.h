@@ -15,6 +15,7 @@
 #include <AzCore/std/containers/bitset.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/SQLite/SQLiteQueryLogBus.h>
+#include <AzToolsFramework/AssetDatabase/PathOrUuid.h>
 
 // At the time of writing, AZStd::function does not support RVALUE-Refs.  We use std::function instead.
 #include <functional>
@@ -69,6 +70,9 @@ namespace AzToolsFramework
             AddedSourceDependencySubIdsAndProductHashes,
             AddedFlagsColumnToProductTable,
             AddedStatsTable,
+            ChangedSourceDependencySourceColumn,
+            SplitMaterialBuilderAndMaterialAssetBuilder,
+            NewMaterialTypeBuildPipeline,
             //Add all new versions before this
             DatabaseVersionCount,
             LatestVersion = DatabaseVersionCount - 1
@@ -211,7 +215,7 @@ namespace AzToolsFramework
             };
 
             SourceFileDependencyEntry() = default;
-            SourceFileDependencyEntry(AZ::Uuid builderGuid, const char* source, const char* dependsOnSource, TypeOfDependency dependencyType, AZ::u32 fromAssetId, const char* subIds);
+            SourceFileDependencyEntry(AZ::Uuid builderGuid, AZ::Uuid sourceGuid, PathOrUuid dependsOnSource, TypeOfDependency dependencyType, AZ::u32 fromAssetId, const char* subIds);
 
             AZStd::string ToString() const;
             auto GetColumns();
@@ -219,8 +223,8 @@ namespace AzToolsFramework
             AZ::s64 m_sourceDependencyID = InvalidEntryId;
             AZ::Uuid m_builderGuid = AZ::Uuid::CreateNull();
             TypeOfDependency m_typeOfDependency = DEP_SourceToSource;
-            AZStd::string m_source;
-            AZStd::string m_dependsOnSource;
+            AZ::Uuid m_sourceGuid = AZ::Uuid::CreateNull();
+            PathOrUuid m_dependsOnSource;
             AZ::u32 m_fromAssetId = false; // Indicates if the dependency was converted from an AssetId into a path before being stored in the DB
             AZStd::string m_subIds;
         };
@@ -460,7 +464,7 @@ namespace AzToolsFramework
             virtual ~AssetDatabaseConnection();
 
             //Open / Close the database
-            bool OpenDatabase();
+            bool OpenDatabase(bool ignoreFutureAssetDBVersionError = false);
             void CloseDatabase();
 
             //These only need to be overridden by derived class if write access is needed, such as by the
@@ -469,7 +473,7 @@ namespace AzToolsFramework
             {
                 return true;
             }
-            virtual bool PostOpenDatabase(); // used by Asset Processor to upgrade the database
+            virtual bool PostOpenDatabase(bool ignoreFutureAssetDBVersionError); // used by Asset Processor to upgrade the database
 
             //returns the current version of the code used for reading the database
             //this is how we know we have to upgrade old databases to the new ones
@@ -604,28 +608,29 @@ namespace AzToolsFramework
             bool QueryJobInfoByJobID(AZ::s64 jobID, jobInfoHandler handler);
             bool QueryJobInfoByJobRunKey(AZ::u64 jobRunKey, jobInfoHandler handler);
             bool QueryJobInfoByJobKey(AZStd::string jobKey, jobInfoHandler handler);
-            bool QueryJobInfoBySourceName(const char* sourceName, jobInfoHandler handler, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), const char* jobKey = nullptr, const char* platform = nullptr, AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
+            bool QueryJobInfoBySourceNameScanFolderId(const char* sourceName, AZ::s64 scanfolderId, jobInfoHandler handler, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), const char* jobKey = nullptr, const char* platform = nullptr, AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
+
 
             //SourceDependency
             /// direct query - look up table row by row ID
             bool QuerySourceDependencyBySourceDependencyId(AZ::s64 sourceDependencyID, sourceFileDependencyHandler handler);
 
-            //! Query sources which depend on 'dependsOnSource'.
+            //! Query sources which depend on 'dependsOnSource'
             //! Reverse dependencies are incoming dependencies: what assets depend on me?
-            //! Optional nullable 'dependentFilter' filters it to only resulting sources which are LIKE the filter.
-            bool QuerySourceDependencyByDependsOnSource(const char* dependsOnSource, const char* dependentFilter, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType, sourceFileDependencyHandler handler);
+            bool QuerySourceDependencyByDependsOnSource(
+                AZ::Uuid sourceGuid,
+                const char* sourceName,
+                const char* scanFolderPath,
+                AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType,
+                sourceFileDependencyHandler handler);
 
             //! Attempt to match either DEP_SourcetoSource or DEP_JobToJob
             //! Then allow DEP_SourceLikeMatch with Wildcard characters
-            //! Optional nullable 'dependentFilter' filters it to only resulting sources which are LIKE the filter.
-            bool QuerySourceDependencyByDependsOnSourceWildcard(const char* dependsOnSource, const char* dependentFilter, sourceFileDependencyHandler handler);
+            bool QuerySourceDependencyByDependsOnSourceWildcard(AZ::Uuid sourceGuid, const char* sourceName, const char* absolutePath, sourceFileDependencyHandler handler);
 
             //! Query everything 'sourceDependency' depends on.
             //! Optional nullable 'dependentFilter' filters it to only resulting dependencies which are LIKE the filter.
-            bool QueryDependsOnSourceBySourceDependency(const char* sourceDependency, const char* dependencyFilter, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType, sourceFileDependencyHandler handler);
-
-            // Recursive reverse dependency query (returns all the source dependencies which depend on 'dependsOnSource' and all the entries that depend on them, etc)
-            bool QueryAllSourceDependencyByDependsOnSource(const char* dependsOnSource, SourceFileDependencyEntry::TypeOfDependency dependencyType, sourceFileDependencyHandler handler);
+            bool QueryDependsOnSourceBySourceDependency(AZ::Uuid sourceGuid, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType, sourceFileDependencyHandler handler);
 
             // Returns all sources who's products depend on any of the products of the specified source
             bool QueryProductDependenciesThatDependOnProductBySourceId(AZ::s64 sourceId, productDependencyHandler handler);

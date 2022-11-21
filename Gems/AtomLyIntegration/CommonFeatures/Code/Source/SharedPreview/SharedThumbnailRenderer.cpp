@@ -24,23 +24,48 @@ namespace AZ
 {
     namespace LyIntegration
     {
+        template<typename T>
+        void LoadPreviewAsset(AZ::Data::Asset<T>& asset, const AZ::Data::AssetId& assetId)
+        {
+            if (assetId.IsValid())
+            {
+                asset.Create(assetId, true);
+            }
+        }
+
+        template<typename T>
+        void LoadPreviewAsset(AZ::Data::Asset<T>& asset, const AZ::Data::AssetId& assetId, const AZStd::string& assetIdOverrideSettingKey)
+        {
+            LoadPreviewAsset(asset, AtomToolsFramework::GetSettingsObject<AZ::Data::AssetId>(assetIdOverrideSettingKey, assetId));
+        }
+
         SharedThumbnailRenderer::SharedThumbnailRenderer()
         {
-            m_defaultModelAsset.Create(SharedPreviewUtils::GetAssetIdForProductPath(DefaultModelPath), true);
-            m_defaultMaterialAsset.Create(SharedPreviewUtils::GetAssetIdForProductPath(DefaultMaterialPath), true);
-            m_defaultLightingPresetAsset.Create(SharedPreviewUtils::GetAssetIdForProductPath(DefaultLightingPresetPath), true);
+            //models/sphere.azmodel
+            m_defaultModelAsset.Create(AZ::Data::AssetId("{6DE0E9A8-A1C7-5D0F-9407-4E627C1F223C}", 284780167));
+            //lightingpresets/thumbnail.lightingpreset.azasset
+            m_defaultLightingPresetAsset.Create(AZ::Data::AssetId("{4F3761EF-E279-5FDD-98C3-EF90F924FBAC}", 0));
+            //materials/reflectionprobe/reflectionprobevisualization.azmaterial
+            m_reflectionMaterialAsset.Create(AZ::Data::AssetId("{4322FBCB-8916-5572-9CDA-18582E22D238}", 0));
 
             for (const AZ::Uuid& typeId : SharedPreviewUtils::GetSupportedAssetTypes())
             {
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(typeId);
             }
             SystemTickBus::Handler::BusConnect();
+            AzFramework::AssetCatalogEventBus::Handler::BusConnect();
         }
 
         SharedThumbnailRenderer::~SharedThumbnailRenderer()
         {
             AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusDisconnect();
             SystemTickBus::Handler::BusDisconnect();
+            AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
+        }
+
+        bool SharedThumbnailRenderer::ThumbnailConfig::IsValid() const
+        {
+            return m_modelAsset.GetId().IsValid() || m_materialAsset.GetId().IsValid() || m_lightingAsset.GetId().IsValid();
         }
 
         SharedThumbnailRenderer::ThumbnailConfig SharedThumbnailRenderer::GetThumbnailConfig(
@@ -49,44 +74,37 @@ namespace AZ
             const auto assetInfo = SharedPreviewUtils::GetSupportedAssetInfo(thumbnailKey);
             if (assetInfo.m_assetType == RPI::ModelAsset::RTTI_Type())
             {
-                static constexpr const char* MaterialAssetPathSetting =
-                    "/O3DE/Atom/CommonFeature/SharedPreview/ModelAssetType/MaterialAssetPath";
-                static constexpr const char* LightingAssetPathSetting =
-                    "/O3DE/Atom/CommonFeature/SharedPreview/ModelAssetType/LightingAssetPath";
-
                 ThumbnailConfig thumbnailConfig;
-                thumbnailConfig.m_modelAsset.Create(assetInfo.m_assetId);
-                thumbnailConfig.m_materialAsset.Create(SharedPreviewUtils::GetAssetIdForProductPath(
-                    AtomToolsFramework::GetSettingsValue<AZStd::string>(MaterialAssetPathSetting, DefaultMaterialPath)));
-                thumbnailConfig.m_lightingAsset.Create(SharedPreviewUtils::GetAssetIdForProductPath(
-                    AtomToolsFramework::GetSettingsValue<AZStd::string>(LightingAssetPathSetting, DefaultLightingPresetPath)));
+                LoadPreviewAsset(thumbnailConfig.m_modelAsset, assetInfo.m_assetId);
+                LoadPreviewAsset(
+                    thumbnailConfig.m_materialAsset,
+                    m_defaultMaterialAsset.GetId(),
+                    "/O3DE/Atom/CommonFeature/SharedPreview/ModelAssetType/MaterialAssetId");
+                LoadPreviewAsset(
+                    thumbnailConfig.m_lightingAsset,
+                    m_defaultLightingPresetAsset.GetId(),
+                    "/O3DE/Atom/CommonFeature/SharedPreview/ModelAssetType/LightingAssetId");
                 return thumbnailConfig;
             }
 
             if (assetInfo.m_assetType == RPI::MaterialAsset::RTTI_Type())
             {
-                static constexpr const char* ModelAssetPathSetting =
-                    "/O3DE/Atom/CommonFeature/SharedPreview/MaterialAssetType/ModelAssetPath";
-                static constexpr const char* LightingAssetPathSetting =
-                    "/O3DE/Atom/CommonFeature/SharedPreview/MaterialAssetType/LightingAssetPath";
-
                 ThumbnailConfig thumbnailConfig;
-                thumbnailConfig.m_modelAsset.Create(SharedPreviewUtils::GetAssetIdForProductPath(
-                    AtomToolsFramework::GetSettingsValue<AZStd::string>(ModelAssetPathSetting, DefaultModelPath)));
-                thumbnailConfig.m_materialAsset.Create(assetInfo.m_assetId);
-                thumbnailConfig.m_lightingAsset.Create(SharedPreviewUtils::GetAssetIdForProductPath(
-                    AtomToolsFramework::GetSettingsValue<AZStd::string>(LightingAssetPathSetting, DefaultLightingPresetPath)));
+                LoadPreviewAsset(thumbnailConfig.m_materialAsset, assetInfo.m_assetId);
+                LoadPreviewAsset(
+                    thumbnailConfig.m_modelAsset,
+                    m_defaultModelAsset.GetId(),
+                    "/O3DE/Atom/CommonFeature/SharedPreview/MaterialAssetType/ModelAssetId");
+                LoadPreviewAsset(
+                    thumbnailConfig.m_lightingAsset,
+                    m_defaultLightingPresetAsset.GetId(),
+                    "/O3DE/Atom/CommonFeature/SharedPreview/MaterialAssetType/LightingAssetId");
                 return thumbnailConfig;
             }
 
             if (assetInfo.m_assetType == RPI::MaterialTypeAsset::RTTI_Type())
             {
-                static constexpr const char* ModelAssetPathSetting =
-                    "/O3DE/Atom/CommonFeature/SharedPreview/MaterialTypeAssetType/ModelAssetPath";
-                static constexpr const char* LightingAssetPathSetting =
-                    "/O3DE/Atom/CommonFeature/SharedPreview/MaterialTypeAssetType/LightingAssetPath";
-
-                // Material type assets are not renderable so we generate a material asset from the material type. 
+                // Material type assets are not renderable so we generate a material asset from the material type.
                 ThumbnailConfig thumbnailConfig;
                 AZ::RPI::MaterialSourceData materialSourceData;
                 materialSourceData.m_materialType = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
@@ -95,41 +113,38 @@ namespace AZ
 
                 if (outcome)
                 {
-                    thumbnailConfig.m_modelAsset.Create(SharedPreviewUtils::GetAssetIdForProductPath(
-                        AtomToolsFramework::GetSettingsValue<AZStd::string>(ModelAssetPathSetting, DefaultModelPath)));
                     thumbnailConfig.m_materialAsset = outcome.TakeValue();
-                    thumbnailConfig.m_lightingAsset.Create(SharedPreviewUtils::GetAssetIdForProductPath(
-                        AtomToolsFramework::GetSettingsValue<AZStd::string>(LightingAssetPathSetting, DefaultLightingPresetPath)));
+                    LoadPreviewAsset(
+                        thumbnailConfig.m_modelAsset,
+                        m_defaultModelAsset.GetId(),
+                        "/O3DE/Atom/CommonFeature/SharedPreview/MaterialTypeAssetType/ModelAssetId");
+                    LoadPreviewAsset(
+                        thumbnailConfig.m_lightingAsset,
+                        m_defaultLightingPresetAsset.GetId(),
+                        "/O3DE/Atom/CommonFeature/SharedPreview/MaterialTypeAssetType/LightingAssetId");
                 }
 
                 return thumbnailConfig;
             }
 
             const auto& path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
-            if (assetInfo.m_assetType == RPI::AnyAsset::RTTI_Type() && AZ::StringFunc::EndsWith(path.c_str(), ".lightingpreset.azasset"))
+            if (assetInfo.m_assetType == RPI::AnyAsset::RTTI_Type() && path.ends_with(AZ::Render::LightingPreset::Extension))
             {
-                static constexpr const char* ModelAssetPathSetting =
-                    "/O3DE/Atom/CommonFeature/SharedPreview/LightingPresetAssetType/ModelAssetPath";
-                static constexpr const char* MaterialAssetPathSetting =
-                    "/O3DE/Atom/CommonFeature/SharedPreview/LightingPresetAssetType/MaterialAssetPath";
-
                 ThumbnailConfig thumbnailConfig;
-                thumbnailConfig.m_modelAsset.Create(SharedPreviewUtils::GetAssetIdForProductPath(
-                    AtomToolsFramework::GetSettingsValue<AZStd::string>(ModelAssetPathSetting, DefaultModelPath)));
-                thumbnailConfig.m_materialAsset.Create(
-                    SharedPreviewUtils::GetAssetIdForProductPath(AtomToolsFramework::GetSettingsValue<AZStd::string>(
-                        MaterialAssetPathSetting, "materials/reflectionprobe/reflectionprobevisualization.azmaterial")));
-                thumbnailConfig.m_lightingAsset.Create(assetInfo.m_assetId);
+                LoadPreviewAsset(thumbnailConfig.m_lightingAsset, assetInfo.m_assetId);
+                LoadPreviewAsset(
+                    thumbnailConfig.m_modelAsset,
+                    m_defaultModelAsset.GetId(),
+                    "/O3DE/Atom/CommonFeature/SharedPreview/LightingPresetAssetType/ModelAssetId");
+                LoadPreviewAsset(
+                    thumbnailConfig.m_materialAsset,
+                    m_reflectionMaterialAsset.GetId(),
+                    "/O3DE/Atom/CommonFeature/SharedPreview/LightingPresetAssetType/MaterialAssetId");
                 return thumbnailConfig;
             }
 
-            if (assetInfo.m_assetType == RPI::AnyAsset::RTTI_Type() && AZ::StringFunc::EndsWith(path.c_str(), ".modelpreset.azasset"))
+            if (assetInfo.m_assetType == RPI::AnyAsset::RTTI_Type() && path.ends_with(AZ::Render::ModelPreset::Extension))
             {
-                static constexpr const char* MaterialAssetPathSetting =
-                    "/O3DE/Atom/CommonFeature/SharedPreview/ModelPresetAssetType/MaterialAssetPath";
-                static constexpr const char* LightingAssetPathSetting =
-                    "/O3DE/Atom/CommonFeature/SharedPreview/ModelPresetAssetType/LightingAssetPath";
-
                 // Model preset assets are relatively small JSON files containing a reference to a model asset and possibly other
                 // parameters. The preset must be loaded to get the model asset ID. Then the preview will be rendered like any other model.
                 AZ::Data::Asset<AZ::RPI::AnyAsset> asset = AZ::RPI::AssetUtils::LoadAssetById<AZ::RPI::AnyAsset>(assetInfo.m_assetId);
@@ -137,10 +152,14 @@ namespace AZ
 
                 ThumbnailConfig thumbnailConfig;
                 thumbnailConfig.m_modelAsset = preset.m_modelAsset;
-                thumbnailConfig.m_materialAsset.Create(SharedPreviewUtils::GetAssetIdForProductPath(
-                    AtomToolsFramework::GetSettingsValue<AZStd::string>(MaterialAssetPathSetting, DefaultMaterialPath)));
-                thumbnailConfig.m_lightingAsset.Create(SharedPreviewUtils::GetAssetIdForProductPath(
-                    AtomToolsFramework::GetSettingsValue<AZStd::string>(LightingAssetPathSetting, DefaultLightingPresetPath)));
+                LoadPreviewAsset(
+                    thumbnailConfig.m_materialAsset,
+                    m_defaultMaterialAsset.GetId(),
+                    "/O3DE/Atom/CommonFeature/SharedPreview/ModelPresetAssetType/MaterialAssetId");
+                LoadPreviewAsset(
+                    thumbnailConfig.m_lightingAsset,
+                    m_defaultLightingPresetAsset.GetId(),
+                    "/O3DE/Atom/CommonFeature/SharedPreview/ModelPresetAssetType/LightingAssetId");
                 return thumbnailConfig;
             }
 
@@ -194,9 +213,12 @@ namespace AZ
             AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::ExecuteQueuedEvents();
         }
 
-        bool SharedThumbnailRenderer::ThumbnailConfig::IsValid() const
+        void SharedThumbnailRenderer::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
         {
-            return m_modelAsset.GetId().IsValid() || m_materialAsset.GetId().IsValid() || m_lightingAsset.GetId().IsValid();
+            m_defaultMaterialAsset.QueueLoad();
+            m_defaultModelAsset.QueueLoad();
+            m_defaultLightingPresetAsset.QueueLoad();
+            m_reflectionMaterialAsset.QueueLoad();
         }
     } // namespace LyIntegration
 } // namespace AZ

@@ -124,6 +124,7 @@ namespace Multiplayer
     {
         EMotionFX::Integration::ActorComponentNotificationBus::Handler::BusConnect(GetEntityId());
         GetNetBindComponent()->AddEntitySyncRewindEventHandler(m_syncRewindHandler);
+        GetNetBindComponent()->AddEntityPreRenderEventHandler(m_preRenderHandler);
         m_physicsCharacter = Physics::CharacterRequestBus::FindFirstHandler(GetEntityId());
         GetTransformComponent()->BindTransformChangedEventHandler(m_transformChangedHandler);
         OnTransformUpdate(GetTransformComponent()->GetWorldTM());
@@ -131,13 +132,16 @@ namespace Multiplayer
 
     void NetworkHitVolumesComponent::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
+        m_syncRewindHandler.Disconnect();
+        m_preRenderHandler.Disconnect();
+        m_transformChangedHandler.Disconnect();
         DestroyHitVolumes();
         EMotionFX::Integration::ActorComponentNotificationBus::Handler::BusDisconnect();
     }
 
     void NetworkHitVolumesComponent::OnPreRender([[maybe_unused]] float deltaTime)
     {
-        if (m_animatedHitVolumes.size() <= 0)
+        if (m_animatedHitVolumes.empty())
         {
             CreateHitVolumes();
         }

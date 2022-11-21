@@ -84,7 +84,7 @@ namespace EMotionFX
             m_treeView = m_skeletonOutliner->GetDockWidget()->findChild<ReselectingTreeView*>("EMFX.SkeletonOutlinerPlugin.SkeletonOutlinerTreeView");
 
             m_indexList.clear();
-            m_treeView->RecursiveGetAllChildren(m_treeView->model()->index(0, 0), m_indexList);
+            m_treeView->RecursiveGetAllChildren(m_treeView->model()->index(0, 0, m_treeView->model()->index(0, 0)), m_indexList);
         }
 
     protected:
@@ -97,11 +97,7 @@ namespace EMotionFX
     };
 
 
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(RagdollEditTestsFixture, DISABLED_RagdollAddJoint)
-#else
     TEST_F(RagdollEditTestsFixture, RagdollAddJoint)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         const int numJoints = 6;
         RecordProperty("test_case_id", "C3122249");

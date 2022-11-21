@@ -32,8 +32,8 @@ namespace AtomToolsFramework
 {
     //! Base class for Atom tools to inherit from
     class AtomToolsApplication
-        : public AzFramework::Application
-        , public AzQtComponents::AzQtApplication
+        : public AzQtComponents::AzQtApplication
+        , public AzFramework::Application
         , protected AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler
         , protected AzToolsFramework::EditorPythonConsoleNotificationBus::Handler
         , protected AZ::UserSettingsOwnerRequestBus::Handler
@@ -95,6 +95,7 @@ namespace AtomToolsFramework
 
         static void PyIdleWaitFrames(uint32_t frames);
         static void PyExit();
+        static void PyCrash();
         static void PyTestOutput(const AZStd::string& output);
 
         // Adding static instance access for static Python methods

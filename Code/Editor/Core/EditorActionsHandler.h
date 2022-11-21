@@ -11,11 +11,13 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 class CCryEditApp;
+class MainWindow;
 class QMainWindow;
 class QtViewPaneManager;
 class QWidget;
@@ -30,27 +32,36 @@ namespace AzToolsFramework
     class ToolBarManagerInterface;
 } // namespace AzToolsFramework
 
+class EditorViewportDisplayInfoHandler;
+
 class EditorActionsHandler
-    : private AzToolsFramework::EditorEventsBus::Handler
+    : private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
+    , private AzToolsFramework::EditorEventsBus::Handler
     , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
     , private AzToolsFramework::ToolsApplicationNotificationBus::Handler
     , private AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler
 {
 public:
-    void Initialize(QMainWindow* mainWindow);
+    void Initialize(MainWindow* mainWindow);
     ~EditorActionsHandler();
 
 private:
-    void InitializeActionContext();
-    void InitializeActionUpdaters();
-    void InitializeActions();
-    void InitializeWidgetActions();
-    void InitializeMenus();
-    void InitializeToolBars();
-
     QWidget* CreateDocsSearchWidget();
     QWidget* CreateExpander();
     QWidget* CreatePlayControlsLabel();
+
+    // ActionManagerRegistrationNotificationBus overrides ...
+    void OnActionContextRegistrationHook() override;
+    void OnActionUpdaterRegistrationHook() override;
+    void OnMenuBarRegistrationHook() override;
+    void OnMenuRegistrationHook() override;
+    void OnToolBarAreaRegistrationHook() override;
+    void OnToolBarRegistrationHook() override;
+    void OnActionRegistrationHook() override;
+    void OnWidgetActionRegistrationHook() override;
+    void OnMenuBindingHook() override;
+    void OnToolBarBindingHook() override;
+    void OnPostActionManagerRegistrationHook() override;
     
     // EditorEventsBus overrides ...
     void OnViewPaneOpened(const char* viewPaneName) override;
@@ -64,19 +75,36 @@ private:
     // ToolsApplicationNotificationBus overrides ...
     void AfterEntitySelectionChanged(
         const AzToolsFramework::EntityIdList& newlySelectedEntities, const AzToolsFramework::EntityIdList& newlyDeselectedEntities) override;
-    virtual void AfterUndoRedo() override;
+    void AfterUndoRedo() override;
     void OnEndUndo(const char* label, bool changed) override;
 
     // ViewportSettingsNotificationBus overrides ...
     void OnAngleSnappingChanged(bool enabled) override;
+    void OnDrawHelpersChanged(bool enabled) override;
     void OnGridSnappingChanged(bool enabled) override;
+    void OnIconsVisibilityChanged(bool enabled) override;
+    void OnOnlyShowHelpersForSelectedEntitiesChanged(bool enabled) override;
+
+    // Layouts
+    void RefreshLayoutActions();
 
     // Recent Files
+    const char* m_levelExtension = nullptr;
+    int m_recentFileActionsCount = 0;
     bool IsRecentFileActionActive(int index);
+    bool IsRecentFileEntryValid(const QString& entry, const QString& gameFolderPath);
     void UpdateRecentFileActions();
+    void OpenLevelByRecentFileEntryIndex(int index);
+
+    // Toolbox Macros
+    void RefreshToolboxMacroActions();
 
     // Tools
     void RefreshToolActions();
+
+    // View Bookmarks
+    int m_defaultBookmarkCount = 12;
+    void InitializeViewBookmarkActions();
 
     bool m_initialized = false;
 
@@ -89,10 +117,14 @@ private:
     AzToolsFramework::ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
 
     CCryEditApp* m_cryEditApp;
-    QMainWindow* m_mainWindow;
+    MainWindow* m_mainWindow;
     QtViewPaneManager* m_qtViewPaneManager;
 
+    EditorViewportDisplayInfoHandler* m_editorViewportDisplayInfoHandler = nullptr;
+
+    AZStd::vector<AZStd::string> m_layoutMenuIdentifiers;
     AZStd::vector<AZStd::string> m_toolActionIdentifiers;
+    AZStd::vector<AZStd::string> m_toolboxMacroActionIdentifiers;
 
     bool m_isPrefabSystemEnabled = false;
 };

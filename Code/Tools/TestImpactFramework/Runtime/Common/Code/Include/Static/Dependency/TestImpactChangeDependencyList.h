@@ -13,54 +13,54 @@
 namespace TestImpact
 {
     //! Representation of a change list where all CRUD sources have been resolved to source dependencies from the dynamic dependency map.
-    template<typename TestTarget, typename ProductionTarget>
+    template<typename ProductionTarget, typename TestTarget>
     class ChangeDependencyList
     {
     public:
         ChangeDependencyList(
-            AZStd::vector<SourceDependency<TestTarget, ProductionTarget>>&& createSourceDependencies,
-            AZStd::vector<SourceDependency<TestTarget, ProductionTarget>>&& updateSourceDependencies,
-            AZStd::vector<SourceDependency<TestTarget, ProductionTarget>>&& deleteSourceDependencies);
+            AZStd::vector<SourceDependency<ProductionTarget, TestTarget>>&& createSourceDependencies,
+            AZStd::vector<SourceDependency<ProductionTarget, TestTarget>>&& updateSourceDependencies,
+            AZStd::vector<SourceDependency<ProductionTarget, TestTarget>>&& deleteSourceDependencies);
 
         //! Gets the sources dependencies of the created source files from the change list.
-        const AZStd::vector<SourceDependency<TestTarget, ProductionTarget>>& GetCreateSourceDependencies() const;
+        const AZStd::vector<SourceDependency<ProductionTarget, TestTarget>>& GetCreateSourceDependencies() const;
 
         //! Gets the sources dependencies of the updated source files from the change list.
-        const AZStd::vector<SourceDependency<TestTarget, ProductionTarget>>& GetUpdateSourceDependencies() const;
+        const AZStd::vector<SourceDependency<ProductionTarget, TestTarget>>& GetUpdateSourceDependencies() const;
 
         //! Gets the sources dependencies of the deleted source files from the change list.
-        const AZStd::vector<SourceDependency<TestTarget, ProductionTarget>>& GetDeleteSourceDependencies() const;
+        const AZStd::vector<SourceDependency<ProductionTarget, TestTarget>>& GetDeleteSourceDependencies() const;
     private:
-        AZStd::vector<SourceDependency<TestTarget, ProductionTarget>> m_createSourceDependencies;
-        AZStd::vector<SourceDependency<TestTarget, ProductionTarget>> m_updateSourceDependencies;
-        AZStd::vector<SourceDependency<TestTarget, ProductionTarget>> m_deleteSourceDependencies;
+        AZStd::vector<SourceDependency<ProductionTarget, TestTarget>> m_createSourceDependencies;
+        AZStd::vector<SourceDependency<ProductionTarget, TestTarget>> m_updateSourceDependencies;
+        AZStd::vector<SourceDependency<ProductionTarget, TestTarget>> m_deleteSourceDependencies;
     };
 
-    template<typename TestTarget, typename ProductionTarget>
-    ChangeDependencyList<TestTarget, ProductionTarget>::ChangeDependencyList(
-        AZStd::vector<SourceDependency<TestTarget, ProductionTarget>>&& createSourceDependencies,
-        AZStd::vector<SourceDependency<TestTarget, ProductionTarget>>&& updateSourceDependencies,
-        AZStd::vector<SourceDependency<TestTarget, ProductionTarget>>&& deleteSourceDependencies)
+    template<typename ProductionTarget, typename TestTarget>
+    ChangeDependencyList<ProductionTarget, TestTarget>::ChangeDependencyList(
+        AZStd::vector<SourceDependency<ProductionTarget, TestTarget>>&& createSourceDependencies,
+        AZStd::vector<SourceDependency<ProductionTarget, TestTarget>>&& updateSourceDependencies,
+        AZStd::vector<SourceDependency<ProductionTarget, TestTarget>>&& deleteSourceDependencies)
         : m_createSourceDependencies(AZStd::move(createSourceDependencies))
         , m_updateSourceDependencies(AZStd::move(updateSourceDependencies))
         , m_deleteSourceDependencies(AZStd::move(deleteSourceDependencies))
     {
     }
 
-    template<typename TestTarget, typename ProductionTarget>
-    const AZStd::vector<SourceDependency<TestTarget, ProductionTarget>>& ChangeDependencyList<TestTarget, ProductionTarget>::GetCreateSourceDependencies() const
+    template<typename ProductionTarget, typename TestTarget>
+    const AZStd::vector<SourceDependency<ProductionTarget, TestTarget>>& ChangeDependencyList<ProductionTarget, TestTarget>::GetCreateSourceDependencies() const
     {
         return m_createSourceDependencies;
     }
 
-    template<typename TestTarget, typename ProductionTarget>
-    const AZStd::vector<SourceDependency<TestTarget, ProductionTarget>>& ChangeDependencyList<TestTarget, ProductionTarget>::GetUpdateSourceDependencies() const
+    template<typename ProductionTarget, typename TestTarget>
+    const AZStd::vector<SourceDependency<ProductionTarget, TestTarget>>& ChangeDependencyList<ProductionTarget, TestTarget>::GetUpdateSourceDependencies() const
     {
         return m_updateSourceDependencies;
     }
 
-    template<typename TestTarget, typename ProductionTarget>
-    const AZStd::vector<SourceDependency<TestTarget, ProductionTarget>>& ChangeDependencyList<TestTarget, ProductionTarget>::GetDeleteSourceDependencies() const
+    template<typename ProductionTarget, typename TestTarget>
+    const AZStd::vector<SourceDependency<ProductionTarget, TestTarget>>& ChangeDependencyList<ProductionTarget, TestTarget>::GetDeleteSourceDependencies() const
     {
         return m_deleteSourceDependencies;
     }

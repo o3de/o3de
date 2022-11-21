@@ -15,6 +15,8 @@
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/DPEComponentAdapter.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/ValueStringFilter.h>
 
 #include <QFrame>
 #include <QIcon>
@@ -35,7 +37,7 @@ namespace AZ
 
     namespace DocumentPropertyEditor
     {
-        class ReflectionAdapter;
+        class ComponentAdapter;
     }
 }
 
@@ -45,6 +47,7 @@ namespace AzToolsFramework
     class IPropertyEditorNotify;
     class ReflectedPropertyEditor;
     class DocumentPropertyEditor;
+    class IPropertyEditor;
     enum PropertyModificationRefreshLevel : int;
 
     /**
@@ -65,6 +68,8 @@ namespace AzToolsFramework
         void AddNotifications();
         void ClearNotifications();
 
+        bool HasContents();
+        void SetFilterString(AZStd::string filterString);
         void InvalidateAll(const char* filter = nullptr);
         void QueuePropertyEditorInvalidation(PropertyModificationRefreshLevel refreshLevel);
         void CancelQueuedRefresh();
@@ -88,7 +93,7 @@ namespace AzToolsFramework
         bool HasComponentWithId(AZ::ComponentId componentId);
 
         ComponentEditorHeader* GetHeader() const;
-        ReflectedPropertyEditor* GetPropertyEditor();
+        IPropertyEditor* GetPropertyEditor();
         AZStd::vector<AZ::Component*>& GetComponents();
         const AZStd::vector<AZ::Component*>& GetComponents() const;
 
@@ -141,7 +146,8 @@ namespace AzToolsFramework
 
         ReflectedPropertyEditor* m_propertyEditor = nullptr;
 
-        AZStd::shared_ptr<AZ::DocumentPropertyEditor::ReflectionAdapter> m_adapter;
+        AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter> m_adapter;
+        AZStd::shared_ptr<AZ::DocumentPropertyEditor::ValueStringFilter> m_filterAdapter;
         DocumentPropertyEditor* m_dpe = nullptr;
 
         AZ::SerializeContext* m_serializeContext = nullptr;

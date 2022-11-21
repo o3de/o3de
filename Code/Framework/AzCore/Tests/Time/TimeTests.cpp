@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/Time/TimeSystem.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
@@ -18,12 +19,6 @@ namespace UnitTest
         {
             SetupAllocator();
             m_timeSystem = AZStd::make_unique<AZ::TimeSystem>();
-        }
-
-        void TearDown() override
-        {
-            m_timeSystem.reset();
-            TeardownAllocator();
         }
 
         AZStd::unique_ptr<AZ::TimeSystem> m_timeSystem;

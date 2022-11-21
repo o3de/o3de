@@ -77,11 +77,8 @@ namespace AtomToolsFramework
         //! Insert items into the tab context menu for the document ID
         virtual void PopulateTabContextMenu(const AZ::Uuid& documentId, QMenu& menu);
 
-        //! Requests a source and target path for creating a new document based on another
-        virtual bool GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath);
-
-        //! Prompts the user for a selection of documents to open
-        virtual AZStd::vector<AZStd::string> GetOpenDocumentParams();
+        //! Select the target path where a document will be saved.
+        virtual AZStd::string GetSaveDocumentParams(const AZStd::string& initialPath, const AZ::Uuid& documentId) const;
 
         // AtomToolsMainWindowRequestBus::Handler overrides...
         void CreateMenus(QMenuBar* menuBar) override;
@@ -90,8 +87,22 @@ namespace AtomToolsFramework
         AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> GetSettingsDialogGroups() const override;
 
     protected:
+        // Create menus and actions to open and create files for all registered document types 
+        void BuildCreateMenu(QAction* insertPostion);
+        void BuildOpenMenu(QAction* insertPostion);
+
         void AddDocumentTabBar();
         void UpdateRecentFileMenu();
+
+        // Return true when save success
+        bool SaveDocument(const AZ::Uuid& documentId);
+
+        // Return true when save success or no save
+        // Return false when save failed or save cancel or close cancel
+        bool CloseDocumentCheck(const AZ::Uuid& documentId);
+        // Return false when CloseDocumentCheck failed or close failed
+        bool CloseDocuments(const AZStd::vector<AZ::Uuid>& documentIds);
+        const AZStd::vector<AZ::Uuid> GetOpenDocumentIds() const;
 
         // AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
@@ -110,13 +121,10 @@ namespace AtomToolsFramework
         void dropEvent(QDropEvent* event) override;
 
         template<typename Functor>
-        QAction* CreateActionAtPosition(
-            QMenu* parent, QAction* position, const QString& text, Functor functor, const QKeySequence& shortcut = 0);
+        QAction* CreateActionAtPosition(QMenu* menu, QAction* position, const QString& name, Functor fn, const QKeySequence& shortcut = 0);
 
         QMenu* m_menuOpenRecent = {};
 
-        QAction* m_actionNew = {};
-        QAction* m_actionOpen = {};
         QAction* m_actionClose = {};
         QAction* m_actionCloseAll = {};
         QAction* m_actionCloseOthers = {};

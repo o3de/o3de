@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <GraphCanvas/Utils/GraphUtils.h>
 #include <GraphModel/GraphModelBus.h>
 #include <GraphModel/Model/Common.h>
 
@@ -26,8 +27,7 @@ namespace AtomToolsFramework
         }
     }
 
-    CreateDynamicNodeMimeEvent::CreateDynamicNodeMimeEvent(
-        const AZ::Crc32& toolId, const AZStd::string& configId)
+    CreateDynamicNodeMimeEvent::CreateDynamicNodeMimeEvent(const AZ::Crc32& toolId, const AZ::Uuid& configId)
         : m_toolId(toolId)
         , m_configId(configId)
     {
@@ -39,13 +39,16 @@ namespace AtomToolsFramework
         GraphModel::GraphPtr graph;
         GraphModelIntegration::GraphManagerRequestBus::BroadcastResult(
             graph, &GraphModelIntegration::GraphManagerRequests::GetGraph, graphCanvasSceneId);
+
         if (graph)
         {
-            AZStd::shared_ptr<GraphModel::Node> node = AZStd::make_shared<DynamicNode>(graph, m_toolId, m_configId);
-            if (node)
+            if (auto node = AZStd::make_shared<DynamicNode>(graph, m_toolId, m_configId))
             {
-                GraphModelIntegration::GraphControllerRequestBus::Event(
-                    graphCanvasSceneId, &GraphModelIntegration::GraphControllerRequests::AddNode, node, dropPosition);
+                // Handle undo/redo adding a single node. This will need to be done at a higher level for multiple nodes.
+                GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
+
+                GraphModelIntegration::GraphControllerRequestBus::EventResult(
+                    m_createdNodeId, graphCanvasSceneId, &GraphModelIntegration::GraphControllerRequests::AddNode, node, dropPosition);
                 return true;
             }
         }
@@ -53,12 +56,13 @@ namespace AtomToolsFramework
         return false;
     }
 
-    DynamicNodePaletteItem::DynamicNodePaletteItem(
-        const AZ::Crc32& toolId, const AZStd::string& configId, const DynamicNodeConfig& config)
+    DynamicNodePaletteItem::DynamicNodePaletteItem(const AZ::Crc32& toolId, const DynamicNodeConfig& config)
         : DraggableNodePaletteTreeItem(config.m_title.c_str(), toolId)
         , m_toolId(toolId)
-        , m_configId(configId)
+        , m_configId(config.m_id)
     {
+        // Copy the node title style from the configuration
+        SetTitlePalette(!config.m_titlePaletteName.empty() ? config.m_titlePaletteName : "DefaultNodeTitlePalette");
     }
 
     GraphCanvas::GraphCanvasMimeEvent* DynamicNodePaletteItem::CreateMimeEvent() const

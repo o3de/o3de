@@ -13,12 +13,14 @@
 
 namespace O3DE::ProjectManager
 {
+    QT_FORWARD_DECLARE_CLASS(DownloadController);
+
     //! A wrapper for a GemCatalogScreen that shows what gems are active in a project 
     class ProjectGemCatalogScreen
         : public GemCatalogScreen
     {
     public:
-        explicit ProjectGemCatalogScreen(QWidget* parent = nullptr);
+        explicit ProjectGemCatalogScreen(DownloadController* downloadController, QWidget* parent = nullptr);
         ~ProjectGemCatalogScreen() = default;
 
         ProjectManagerScreen GetScreenEnum() override;

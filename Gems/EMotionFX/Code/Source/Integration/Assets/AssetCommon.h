@@ -47,7 +47,7 @@ namespace EMotionFX
         template<typename DataType>
         class EMotionFXAssetHandler
             : public AZ::Data::AssetHandler
-            , private AZ::AssetTypeInfoBus::Handler
+            , protected AZ::AssetTypeInfoBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(EMotionFXAssetHandler<DataType>, EMotionFXAllocator, 0)

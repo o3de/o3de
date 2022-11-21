@@ -156,19 +156,6 @@ namespace Multiplayer
         }
     }
 
-    bool NetworkCharacterComponent::IsOnGround() const
-    {
-        auto pxController = static_cast<physx::PxController*>(m_physicsCharacter->GetNativePointer());
-        if (!pxController)
-        {
-            return true;
-        }
-
-        physx::PxControllerState state;
-        pxController->getState(state);
-        return state.touchedActor != nullptr || (state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN) != 0;
-    }
-
     void NetworkCharacterComponentController::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -200,7 +187,7 @@ namespace Multiplayer
     AZ::Vector3 NetworkCharacterComponentController::TryMoveWithVelocity(const AZ::Vector3& velocity, [[maybe_unused]] float deltaTime)
     {
         // Ensure any entities that we might interact with are properly synchronized to their rewind state
-        if (IsAuthority())
+        if (IsNetEntityRoleAuthority())
         {
             const AZ::Aabb entityStartBounds = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->GetEntityWorldBoundsUnion(GetEntity()->GetId());
             const AZ::Aabb entityFinalBounds = entityStartBounds.GetTranslated(velocity);

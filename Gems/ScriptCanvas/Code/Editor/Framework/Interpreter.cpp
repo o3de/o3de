@@ -50,14 +50,9 @@ namespace ScriptCanvasEditor
             {
                 MutexLock lock(m_mutex);
 
-                if (m_runtimePropertiesDirty || !m_executor.IsPure())
+                if ((m_runtimePropertiesDirty || !m_executor.IsPure()) && m_executor.GetRuntimeOverrides().m_runtimeAsset.IsReady())
                 {
-                    if (m_executor.IsExecutable())
-                    {
-                        m_executor.StopAndClearExecutable();
-                    }
-                    
-                    m_executor.Initialize();
+                    InitializeExecution(m_executor.GetRuntimeOverrides().m_runtimeAsset);
                     m_runtimePropertiesDirty = false;
                 }
 
@@ -153,8 +148,14 @@ namespace ScriptCanvasEditor
     void Interpreter::OnReady(ScriptCanvas::RuntimeAssetPtr asset)
     {
         MutexLock lock(m_mutex);
-        InitializeExecution(asset);
-        SetSatus(InterpreterStatus::Ready);
+        if (InitializeExecution(asset))
+        {
+            SetSatus(InterpreterStatus::Ready);
+        }
+        else
+        {
+            SetSatus(InterpreterStatus::Misconfigured);
+        }
     }
 
     void Interpreter::OnSourceCompiled()

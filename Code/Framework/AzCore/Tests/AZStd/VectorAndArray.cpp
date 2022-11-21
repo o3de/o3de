@@ -6,16 +6,17 @@
  *
  */
 #include "UserTypes.h"
-#include <AzCore/std/containers/vector.h>
-#include <AzCore/std/containers/fixed_vector.h>
+#include <AzCore/std/allocator_ref.h>
+#include <AzCore/std/allocator_static.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/bitset.h>
-
-#include <AzCore/std/allocator_static.h>
-#include <AzCore/std/allocator_ref.h>
-
+#include <AzCore/std/containers/fixed_vector.h>
+#include <AzCore/std/containers/set.h>
+#include <AzCore/std/containers/span.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/ranges/subrange.h>
+#include <AzCore/std/ranges/transform_view.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-
 #include <AzCore/std/utils.h>
 
 /**
@@ -161,7 +162,7 @@ namespace UnitTest
             double m_value{};
             bool m_selected{};
         };
-        
+
         AZStd::pair<FirstElement, SecondElement> testPair(AZStd::piecewise_construct_t{}, AZStd::forward_as_tuple(42), AZStd::forward_as_tuple(16.0, true));
         EXPECT_EQ(42, testPair.first.m_value);
         EXPECT_DOUBLE_EQ(16.0, testPair.second.m_value);
@@ -404,8 +405,8 @@ namespace UnitTest
         static_buffer_16KB myMemoryManager1;
         static_buffer_16KB myMemoryManager2;
         using static_allocator_ref_type = AZStd::allocator_ref<static_buffer_16KB>;
-        static_allocator_ref_type allocator1(myMemoryManager1, "Mystack allocator 1");
-        static_allocator_ref_type allocator2(myMemoryManager2, "Mystack allocator 2");
+        static_allocator_ref_type allocator1(myMemoryManager1);
+        static_allocator_ref_type allocator2(myMemoryManager2);
 
         using IntVectorMyAllocator = AZStd::vector<int, static_allocator_ref_type >;
         IntVectorMyAllocator int_vector10(100, 13, allocator1); /// Allocate 100 elements using memory manager 1
@@ -423,10 +424,9 @@ namespace UnitTest
 
         int_vector10.set_allocator(allocator2);
         AZ_TEST_VALIDATE_VECTOR(int_vector10, 100);
-        // now we move the allocated size from menager1 to manager2 (without freeing menager1)
-        AZ_TEST_ASSERT(myMemoryManager1.get_allocated_size() == myMemoryManager2.get_allocated_size());
-
-        myMemoryManager1.reset(); // flush manager 1 again (int_vector10 is stored in manager 2)
+        // now we move the allocated size from menager1 to manager2
+        AZ_TEST_ASSERT(myMemoryManager2.get_allocated_size() == 100 * sizeof(int));
+        AZ_TEST_ASSERT(myMemoryManager1.get_allocated_size() == 0); // setting the allocator moved the allocation from manage1 to manager2, freeing manager1
 
         // swap with different allocators
         IntVectorMyAllocator int_vector11(50, 25, allocator1); // create copy in manager1
@@ -752,7 +752,7 @@ namespace UnitTest
     {
         AZStd::fixed_vector<int, 32> sourceVector{ 1,2,3,4,5 };
 
-        AZStd::fixed_vector<int, 8> copyConstructVector{ sourceVector };
+        AZStd::fixed_vector<int, 8> copyConstructVector{ AZStd::from_range, sourceVector };
         EXPECT_EQ(sourceVector, copyConstructVector);
 
         AZStd::fixed_vector<int, 16> copyAssignVector;
@@ -761,9 +761,9 @@ namespace UnitTest
 
         // Test Move constructor/assignment
         AZStd::fixed_vector<int, 32> sourceVector2{ 1,2,3,4,5,6 };
-        AZStd::fixed_vector<int, 8> moveConstructVector = AZStd::move(sourceVector2);
+        AZStd::fixed_vector<int, 8> moveConstructVector(AZStd::from_range, AZStd::move(sourceVector2));
 
-        AZStd::fixed_vector<int, 16> moveAssignVector = AZStd::move(moveConstructVector);
+        AZStd::fixed_vector<int, 16> moveAssignVector(AZStd::from_range, AZStd::move(moveConstructVector));
 
         AZStd::fixed_vector expectedVector{ 1,2,3,4,5,6 };
         EXPECT_EQ(expectedVector, moveAssignVector);
@@ -808,9 +808,9 @@ namespace UnitTest
         EXPECT_EQ(expectedEraseString, testEraseString);
 
         // Use erase_if to erase both 'H' and 'e' from the remaining eraseTest string
-        auto eraseIfTest = [](const AZStd::fixed_vector<char, 16>& testVector)
+        auto eraseIfTest = [](AZStd::string_view testString)
         {
-            AZStd::fixed_vector<char, 16> testResult{ testVector };
+            AZStd::fixed_vector<char, 16> testResult{ AZStd::from_range, testString };
             auto erasePredicate = [](char ch)
             {
                 return ch == 'H' || ch == 'e';
@@ -1011,5 +1011,132 @@ namespace UnitTest
         constexpr AZStd::string_view testView;
         AZStd::vector testVec(testView.begin(), testView.end());
         EXPECT_TRUE(testVec.empty());
+    }
+
+    TEST_F(Arrays, Vector_RangeConstructor_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "abc";
+
+        AZStd::vector testVec(AZStd::from_range, testView);
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+
+        testVec = AZStd::vector(AZStd::from_range, AZStd::vector<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+        testVec = AZStd::vector(AZStd::from_range, AZStd::list<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+        testVec = AZStd::vector(AZStd::from_range, AZStd::deque<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+        testVec = AZStd::vector(AZStd::from_range, AZStd::set<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+        testVec = AZStd::vector(AZStd::from_range, AZStd::unordered_set<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+        testVec = AZStd::vector(AZStd::from_range, AZStd::fixed_vector<char, 8>{testView.begin(), testView.end()});
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+        testVec = AZStd::vector(AZStd::from_range, AZStd::array{ 'a', 'b', 'c' });
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+        testVec = AZStd::vector(AZStd::from_range, AZStd::span(testView));
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+
+        AZStd::fixed_string<8> testValue(testView);
+        testVec = AZStd::vector(AZStd::from_range, testValue);
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+        testVec = AZStd::vector(AZStd::from_range, AZStd::string(testView));
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+
+        // Test Range views
+        testVec = AZStd::vector(AZStd::from_range, AZStd::ranges::subrange(testView));
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+        testVec = AZStd::vector(AZStd::from_range, testValue | AZStd::views::transform([](const char elem) -> char { return elem + 1; }));
+        EXPECT_THAT(testVec, ::testing::ElementsAre('b', 'c', 'd'));
+    }
+
+    TEST_F(Arrays, FixedVector_RangeConstructor_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "abc";
+
+        AZStd::fixed_vector<char, 8> testVec(AZStd::from_range, testView);
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+
+        testVec = AZStd::fixed_vector<char, 8>(AZStd::from_range, AZStd::fixed_vector<char, 8>{testView.begin(), testView.end()});
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+        testVec = AZStd::fixed_vector<char, 8>(AZStd::from_range, AZStd::list<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+        testVec = AZStd::fixed_vector<char, 8>(AZStd::from_range, AZStd::deque<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+        testVec = AZStd::fixed_vector<char, 8>(AZStd::from_range, AZStd::set<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+        testVec = AZStd::fixed_vector<char, 8>(AZStd::from_range, AZStd::unordered_set<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+        testVec = AZStd::fixed_vector<char, 8>(AZStd::from_range, AZStd::fixed_vector<char, 8>{testView.begin(), testView.end()});
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+        testVec = AZStd::fixed_vector<char, 8>(AZStd::from_range, AZStd::array{ 'a', 'b', 'c' });
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+        testVec = AZStd::fixed_vector<char, 8>(AZStd::from_range, AZStd::span(testView));
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+
+        AZStd::fixed_string<8> testValue(testView);
+        testVec = AZStd::fixed_vector<char, 8>(AZStd::from_range, testValue);
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+        testVec = AZStd::fixed_vector<char, 8>(AZStd::from_range, AZStd::string(testView));
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+
+        // Test Range views
+        testVec = AZStd::fixed_vector<char, 8>(AZStd::from_range, AZStd::ranges::subrange(testView));
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c'));
+        testVec = AZStd::fixed_vector<char, 8>(AZStd::from_range, testValue | AZStd::views::transform([](const char elem) -> char { return elem + 1; }));
+        EXPECT_THAT(testVec, ::testing::ElementsAre('b', 'c', 'd'));
+    }
+
+    TEST_F(Arrays, Vector_AssignRange_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "def";
+        AZStd::vector testVec{ 'a', 'b', 'c' };
+        testVec.assign_range(AZStd::vector<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testVec, ::testing::ElementsAre('d', 'e', 'f'));
+    }
+
+    TEST_F(Arrays, FixedVector_AssignRange_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "def";
+        AZStd::fixed_vector<char, 32> testVec{ 'a', 'b', 'c' };
+        testVec.assign_range(AZStd::vector<char>{testView.begin(), testView.end()});
+        testVec.assign_range(AZStd::vector<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testVec, ::testing::ElementsAre('d', 'e', 'f'));
+    }
+
+    TEST_F(Arrays, Vector_InsertRange_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "abc";
+        AZStd::vector testVec{ 'd', 'e', 'f' };
+        testVec.insert_range(testVec.begin(), AZStd::vector<char>{testView.begin(), testView.end()});
+        testVec.insert_range(testVec.end(), testView | AZStd::views::transform([](const char elem) -> char { return elem + 6; }));
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'));
+    }
+
+    TEST_F(Arrays, FixedVector_InsertRange_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "abc";
+        AZStd::fixed_vector<char, 32> testVec{ 'd', 'e', 'f' };
+        testVec.insert_range(testVec.begin(), AZStd::vector<char>{testView.begin(), testView.end()});
+        testVec.insert_range(testVec.end(), testView | AZStd::views::transform([](const char elem) -> char { return elem + 6; }));
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'));
+    }
+
+    TEST_F(Arrays, Vector_AppendRange_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "def";
+        AZStd::vector testVec{ 'a', 'b', 'c' };
+        testVec.append_range(AZStd::vector<char>{testView.begin(), testView.end()});
+        testVec.append_range(testView | AZStd::views::transform([](const char elem) -> char { return elem + 3; }));
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'));
+    }
+
+    TEST_F(Arrays, FixedVector_AppendRange_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "def";
+        AZStd::fixed_vector<char, 32> testVec{ 'a', 'b', 'c' };
+        testVec.append_range(AZStd::vector<char>{testView.begin(), testView.end()});
+        testVec.append_range(testView | AZStd::views::transform([](const char elem) -> char { return elem + 3; }));
+        EXPECT_THAT(testVec, ::testing::ElementsAre('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'));
     }
 }

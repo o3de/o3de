@@ -7,4 +7,7 @@
 #
 
 set(FILES
+Tests/TestEngine/TestImpactPythonTestEngineTest.cpp
+Tests/TestRunner/TestImpactPythonTestRunnerTest.cpp
+Tests/TestImpactPythonRuntimeTestMain.cpp
 )

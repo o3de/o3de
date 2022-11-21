@@ -45,7 +45,7 @@ namespace Vegetation
         GradientSignal::GradientSampler m_gradientSamplerZ;
     };
 
-    static const AZ::Uuid RotationModifierComponentTypeId = "{9C9158D1-6386-4375-8A3C-B9CA325246FB}";
+    inline constexpr AZ::TypeId RotationModifierComponentTypeId{ "{9C9158D1-6386-4375-8A3C-B9CA325246FB}" };
 
     /**
     * Component implementing VegetationModifierRequestBus that offsets rotation

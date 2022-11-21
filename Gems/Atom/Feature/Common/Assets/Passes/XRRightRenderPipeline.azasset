@@ -1,0 +1,16 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "RenderPipelineDescriptor",
+    "ClassData": {
+        "Name": "MultiViewXRRightPipeline",
+        "MainViewTag": "MainCamera",
+        "RootPassTemplate": "MultiViewXRRightPipelineTemplate",
+        "AllowModification": true,
+        "RenderSettings": {
+            "MultisampleState": {
+                "samples": 1
+            }
+        }
+    }
+}

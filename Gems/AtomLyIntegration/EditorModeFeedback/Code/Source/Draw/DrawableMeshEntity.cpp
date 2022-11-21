@@ -128,7 +128,11 @@ namespace AZ::Render
         for (auto& drawPacket : m_meshDrawPackets)
         {
             drawPacket.Update(*drawabaleMetaData.GetScene());
-            dynamicDraw->AddDrawPacket(drawabaleMetaData.GetScene(), drawPacket.GetRHIDrawPacket());
+            if (auto* rhiDrawPacket = drawPacket.GetRHIDrawPacket();
+                rhiDrawPacket != nullptr)
+            {
+                dynamicDraw->AddDrawPacket(drawabaleMetaData.GetScene(), rhiDrawPacket);
+            }
         }
     }
          

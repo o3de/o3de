@@ -275,3 +275,56 @@ class TestRepos:
                     object_set = repo.get_template_json_paths_from_all_cached_repos()
                     assert len(object_set) == 2
         assert True
+
+    def test_validation(self):
+        self.o3de_manifest_data = json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
+        self.o3de_manifest_data["repos"] = []
+        self.created_files.clear()
+
+        def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
+            return copy.deepcopy(self.o3de_manifest_data)
+
+        def save_o3de_manifest(manifest_data: dict, manifest_path: pathlib.Path = None) -> bool:
+            self.o3de_manifest_data = manifest_data
+            return True
+
+        def mocked_requests_get(url):
+            if isinstance(url, urllib.request.Request):
+                url_str = url.get_full_url()
+            else:
+                url_str = url
+
+            if url_str in ['http://o3de.org/repoA/repo.json']:
+                custom_mock = MagicMock()
+                custom_mock.getcode.return_value = 200
+                custom_mock.read.return_value = 0
+                custom_mock.__enter__.return_value = custom_mock
+            else:
+                raise urllib.error.HTTPError(url_str, 404, "Not found", {}, 0)
+
+            return custom_mock
+
+        def mocked_open(path, mode, *args, **kwargs):
+            file_data = bytes(0)
+            if pathlib.Path(path).name == TEST_O3DE_REPOA_FILENAME:
+                file_data = TEST_O3DE_REPOA_JSON_PAYLOAD
+            elif pathlib.Path(path).name == TEST_O3DE_REPOB_FILENAME:
+                file_data = TEST_O3DE_REPOB_JSON_PAYLOAD
+            mockedopen = mock_open(mock=MagicMock(), read_data=file_data)
+            if 'w' in mode:
+                self.created_files.append(path)
+            return mockedopen(self, *args, **kwargs)
+
+        def mocked_isfile(path):
+            if path in self.created_files:
+                return True
+            else:
+                return False
+
+        with patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as _1,\
+                patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as _2, \
+                patch('pathlib.Path.open', mocked_open) as _3, \
+                patch('urllib.request.urlopen', side_effect=mocked_requests_get) as _4, \
+                patch('pathlib.Path.is_file', mocked_isfile) as _5:
+                    valid = repo.validate_remote_repo('http://o3de.org/repoA')
+                    assert valid

@@ -19,6 +19,7 @@
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
 #include <EMStudio/AnimViewportWidget.h>
+#include <Editor/Picking.h>
 #include <QWidget>
 #include <QTimer>
 #endif
@@ -51,7 +52,7 @@ namespace EMStudio
         bool GetIsFloatable() const override;
         bool GetIsVertical() const override;
         bool Init() override;
-        EMStudioPlugin* Clone() const { return new AtomRenderPlugin(); }
+        EMStudioPlugin* Clone() const { return aznew AtomRenderPlugin(); }
         EMStudioPlugin::EPluginType GetPluginType() const override;
         QWidget* GetInnerWidget();
 
@@ -64,6 +65,8 @@ namespace EMStudio
 
         void Render(EMotionFX::ActorRenderFlags renderFlags) override;
         void SetManipulatorMode(RenderOptions::ManipulatorMode mode);
+
+        void UpdatePickingRenderFlags(EMotionFX::ActorRenderFlags renderFlags);
 
     private:
         // AzToolsFramework::ViewportInteraction::ViewportMouseRequestBus overrides...
@@ -85,6 +88,8 @@ namespace EMStudio
         AzToolsFramework::ScaleManipulators m_scaleManipulators;
         AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager;
         AZ::Transform m_mouseDownStartTransform;
+
+        AZStd::unique_ptr<EMotionFX::Picking> m_picking;
 
         // Atom performance metrics
         QTimer m_metricsTimer;

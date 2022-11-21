@@ -42,7 +42,11 @@ namespace EMotionFX
                     RequestingApplication requester) override;
 
                 void GetAvailableModifiers(ModifiersList& modifiers, const AZ::SceneAPI::Containers::Scene& scene, const AZ::SceneAPI::DataTypes::IManifestObject& target) override;
-                
+                void GetPolicyName(AZStd::string& result) const override
+                {
+                    result = "ActorGroupBehavior";
+                }
+
             private:
                 AZ::SceneAPI::Events::ProcessingResult BuildDefault(AZ::SceneAPI::Containers::Scene& scene) const;
                 AZ::SceneAPI::Events::ProcessingResult UpdateActorGroups(AZ::SceneAPI::Containers::Scene& scene) const;

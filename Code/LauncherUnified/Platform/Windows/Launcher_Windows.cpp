@@ -12,6 +12,7 @@
 
 int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINSTANCE hPrevInstance, [[maybe_unused]] LPSTR lpCmdLine, [[maybe_unused]] int nCmdShow)
 {
+    const AZ::Debug::Trace tracer;
     InitRootDir();
 
     using namespace O3DELauncher;
@@ -22,12 +23,7 @@ int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINS
 
     mainInfo.CopyCommandLine(__argc, __argv);
 
-    // Prevent allocator from growing in small chunks
-    // Pre-create our system allocator and configure it to ask for larger chunks from the OS
-    // Creating this here to be consistent with other platforms
-    AZ::SystemAllocator::Descriptor sysHeapDesc;
-    sysHeapDesc.m_heap.m_systemChunkSize = 64 * 1024 * 1024;
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Create(sysHeapDesc);
+    AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
 
     ReturnCode status = Run(mainInfo);
 

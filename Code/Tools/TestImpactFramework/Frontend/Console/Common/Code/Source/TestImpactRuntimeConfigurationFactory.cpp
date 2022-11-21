@@ -11,7 +11,6 @@
 
 #include <TestImpactRuntimeConfigurationFactory.h>
 
-#include <AzCore/JSON/document.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/optional.h>
 
@@ -24,9 +23,12 @@ namespace TestImpact
         {
             "common",
             "root",
+            "build",
             "platform",
+            "build_config",
             "relative_paths",
-            "artifact_dir",
+            "run_artifact_dir",
+            "coverage_artifact_dir",
             "enumeration_cache_dir",
             "test_impact_data_file",
             "temp",
@@ -45,7 +47,6 @@ namespace TestImpact
             "file",
             "file",
             "bin",
-            "exclude",
             "regular",
             "instrumented",
             "shard",
@@ -59,20 +60,24 @@ namespace TestImpact
             "artifacts",
             "meta",
             "repo",
-            "workspace",
             "build_target_descriptor",
             "dependency_graph_data",
             "test_target_meta",
-            "gem_target"
+            "gem_target",
+            "target",
+            "tests",
         };
 
         enum
         {
             Common,
             Root,
+            Build,
             PlatformName,
+            BuildConfig,
             RelativePaths,
-            ArtifactDir,
+            RunArtifactDir,
+            CoverageArtifactDir,
             EnumerationCacheDir,
             TestImpactDataFile,
             TempWorkspace,
@@ -91,7 +96,6 @@ namespace TestImpact
             TestTargetMetaFile,
             GemTargetFile,
             BinaryFile,
-            TargetExclude,
             RegularTargetExcludeFilter,
             InstrumentedTargetExcludeFilter,
             TestSharding,
@@ -105,12 +109,36 @@ namespace TestImpact
             Artifacts,
             Meta,
             Repository,
-            Workspace,
             BuildTargetDescriptor,
             DependencyGraphData,
             TestTargetMeta,
-            GemTarget
+            GemTarget,
+            ExcludedTargetName,
+            ExcludedTargetTests,
         };
+    } // namespace Config
+
+    ExcludedTargets ParseTargetExcludeList(const rapidjson::Value::ConstArray& testExcludes)
+    {
+        ExcludedTargets targetExcludeList;
+        targetExcludeList.reserve(testExcludes.Size());
+        for (const auto& testExclude : testExcludes)
+        {
+            ExcludedTarget excludedTarget;
+            excludedTarget.m_name = testExclude[Config::Keys[Config::ExcludedTargetName]].GetString();
+            if (testExclude.HasMember(Config::Keys[Config::ExcludedTargetTests]))
+            {
+                const auto& excludedTests = testExclude[Config::Keys[Config::ExcludedTargetTests]].GetArray();
+                for (const auto& excludedTest : excludedTests)
+                {
+                    excludedTarget.m_excludedTests.push_back(excludedTest.GetString());
+                }
+            }
+
+            targetExcludeList.push_back(excludedTarget);
+        }
+
+        return targetExcludeList;
     }
 
     //! Returns an absolute path for a path relative to the specified root.
@@ -123,6 +151,7 @@ namespace TestImpact
     {
         ConfigMeta configMeta;
         configMeta.m_platform = meta[Config::Keys[Config::PlatformName]].GetString();
+        configMeta.m_buildConfig = meta[Config::Keys[Config::BuildConfig]].GetString();
         return configMeta;
     }
 
@@ -130,19 +159,16 @@ namespace TestImpact
     {
         RepoConfig repoConfig;
         repoConfig.m_root = repo[Config::Keys[Config::Root]].GetString();
+        repoConfig.m_build = repo[Config::Keys[Config::Build]].GetString();
         return repoConfig;
     }
 
-    WorkspaceConfig::Temp ParseTempWorkspaceConfig(const rapidjson::Value& tempWorkspace)
+    ArtifactDir ParseTempWorkspaceConfig(const rapidjson::Value& tempWorkspace)
     {
-        WorkspaceConfig::Temp tempWorkspaceConfig;
-        tempWorkspaceConfig.m_root = tempWorkspace[Config::Keys[Config::Root]].GetString();
-        tempWorkspaceConfig.m_artifactDirectory =
-            GetAbsPathFromRelPath(
-                tempWorkspaceConfig.m_root, tempWorkspace[Config::Keys[Config::RelativePaths]][Config::Keys[Config::ArtifactDir]].GetString());
-        tempWorkspaceConfig.m_enumerationCacheDirectory = GetAbsPathFromRelPath(
-            tempWorkspaceConfig.m_root,
-            tempWorkspace[Config::Keys[Config::RelativePaths]][Config::Keys[Config::EnumerationCacheDir]].GetString());
+        ArtifactDir tempWorkspaceConfig;
+        tempWorkspaceConfig.m_testRunArtifactDirectory = tempWorkspace[Config::Keys[Config::RunArtifactDir]].GetString();
+        tempWorkspaceConfig.m_coverageArtifactDirectory = tempWorkspace[Config::Keys[Config::CoverageArtifactDir]].GetString();
+        tempWorkspaceConfig.m_enumerationCacheDirectory = tempWorkspace[Config::Keys[Config::EnumerationCacheDir]].GetString();
         return tempWorkspaceConfig;
     }
 
@@ -227,7 +253,6 @@ namespace TestImpact
         const auto& staticArtifacts = configurationFile[Config::Keys[Config::Common]][Config::Keys[Config::Artifacts]][Config::Keys[Config::StaticArtifacts]];
         runtimeConfig.m_meta = ParseConfigMeta(configurationFile[Config::Keys[Config::Common]][Config::Keys[Config::Meta]]);
         runtimeConfig.m_repo = ParseRepoConfig(configurationFile[Config::Keys[Config::Common]][Config::Keys[Config::Repository]]);
-        runtimeConfig.m_workspace = ParseWorkspaceConfig(configurationFile[Config::Keys[Config::Common]][Config::Keys[Config::Workspace]]);
         runtimeConfig.m_buildTargetDescriptor = ParseBuildTargetDescriptorConfig(staticArtifacts[Config::Keys[Config::BuildTargetDescriptor]]);
         runtimeConfig.m_dependencyGraphData = ParseDependencyGraphDataConfig(staticArtifacts[Config::Keys[Config::DependencyGraphData]]);
         runtimeConfig.m_testTargetMeta = ParseTestTargetMetaConfig(staticArtifacts[Config::Keys[Config::TestTargetMeta]]);

@@ -33,7 +33,7 @@ namespace GradientSignal
         GradientSampler m_gradientSampler;
     };
 
-    static const AZ::Uuid InvertGradientComponentTypeId = "{FAE8B7AF-5D02-4DE4-860F-1DA31A7FE144}";
+    inline constexpr AZ::TypeId InvertGradientComponentTypeId{ "{FAE8B7AF-5D02-4DE4-860F-1DA31A7FE144}" };
 
     /**
     * calculates a gradient value by inverting values from another gradient

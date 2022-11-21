@@ -126,4 +126,4 @@ namespace AzToolsFramework
             &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Handler::RegisterPropertyType, aznew ExeSelectPropertyHandler());
     }
 } // namespace AzToolsFramework
-#include <ExeSelectPropertyHandler.moc>
+

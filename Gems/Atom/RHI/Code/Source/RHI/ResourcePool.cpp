@@ -160,10 +160,10 @@ namespace AZ
                     ShutdownResourceInternal(*resource);
                     resource->Shutdown();
                 }
+                ShutdownInternal();
                 m_registry.clear();
                 m_memoryUsage = {};
                 m_resolver.reset();
-                ShutdownInternal();
                 DeviceObject::Shutdown();
             }
         }

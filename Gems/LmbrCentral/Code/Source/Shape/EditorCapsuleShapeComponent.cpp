@@ -23,7 +23,7 @@ namespace LmbrCentral
             // Deprecate: EditorCapsuleColliderComponent -> EditorCapsuleShapeComponent
             serializeContext->ClassDeprecate(
                 "EditorCapsuleColliderComponent",
-                "{63247EE1-B081-40D9-8AE2-98E5C738EBD8}",
+                AZ::Uuid("{63247EE1-B081-40D9-8AE2-98E5C738EBD8}"),
                 &ClassConverters::DeprecateEditorCapsuleColliderComponent)
                 ;
 
@@ -84,10 +84,18 @@ namespace LmbrCentral
         AzFramework::DebugDisplayRequests& debugDisplay)
     {
         DisplayShape(
-            debugDisplay, [this]() { return CanDraw(); },
+            debugDisplay,
+            [this]()
+            {
+                return CanDraw();
+            },
             [this](AzFramework::DebugDisplayRequests& debugDisplay)
             {
-                DrawShape(debugDisplay, { m_shapeColor, m_shapeWireColor, m_displayFilled }, m_capsuleShapeMesh);
+                DrawShape(
+                    debugDisplay,
+                    ShapeDrawParams{ m_shapeColor, m_shapeWireColor, m_displayFilled },
+                    m_capsuleShapeMesh,
+                    m_capsuleShape.GetTranslationOffset());
             },
             m_capsuleShape.GetCurrentTransform());
     }

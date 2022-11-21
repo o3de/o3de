@@ -180,6 +180,7 @@ namespace GraphCanvas
 
         if (m_nodePropertyDisplay == nullptr)
         {
+            ClearLayout();
             return;
         }
 

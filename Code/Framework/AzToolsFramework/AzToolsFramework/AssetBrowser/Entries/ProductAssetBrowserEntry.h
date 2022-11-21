@@ -34,7 +34,6 @@ namespace AzToolsFramework
             ~ProductAssetBrowserEntry() override;
 
             QVariant data(int column) const override;
-            static void Reflect(AZ::ReflectContext* context);
             AssetEntryType GetEntryType() const override;
 
             AZ::s64 GetProductID() const;

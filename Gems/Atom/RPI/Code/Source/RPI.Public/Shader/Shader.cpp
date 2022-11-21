@@ -13,7 +13,9 @@
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
+#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/std/time.h>
 
 #include <AzCore/Component/TickBus.h>
 
@@ -394,6 +396,17 @@ namespace AZ
             return m_rootVariant;
         }
 
+        const ShaderVariant& Shader::GetDefaultVariant()
+        {
+            ShaderOptionGroup defaultOptions = GetDefaultShaderOptions();
+            return GetVariant(defaultOptions.GetShaderVariantId());
+        }
+
+        ShaderOptionGroup Shader::GetDefaultShaderOptions() const
+        {
+            return m_asset->GetDefaultShaderOptions();
+        }
+
         ShaderVariantSearchResult Shader::FindVariantStableId(const ShaderVariantId& shaderVariantId) const
         {
             ShaderVariantSearchResult variantSearchResult = m_asset->FindVariantStableId(shaderVariantId);
@@ -517,6 +530,33 @@ namespace AZ
         AZStd::span<const RHI::Ptr<RHI::ShaderResourceGroupLayout>> Shader::GetShaderResourceGroupLayouts() const
         {
             return m_asset->GetShaderResourceGroupLayouts(m_supervariantIndex);
+        }
+
+        Data::Instance<ShaderResourceGroup> Shader::CreateDrawSrgForShaderVariant(const ShaderOptionGroup& shaderOptions, bool compileTheSrg)
+        {
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> drawSrgLayout = m_asset->GetDrawSrgLayout(GetSupervariantIndex());
+            Data::Instance<ShaderResourceGroup> drawSrg;
+            if (drawSrgLayout)
+            {
+                drawSrg = RPI::ShaderResourceGroup::Create(m_asset, GetSupervariantIndex(), drawSrgLayout->GetName());
+
+                if (drawSrgLayout->HasShaderVariantKeyFallbackEntry())
+                {
+                    drawSrg->SetShaderVariantKeyFallbackValue(shaderOptions.GetShaderVariantKeyFallbackValue());
+                }
+
+                if (compileTheSrg)
+                {
+                    drawSrg->Compile();
+                }
+            }
+
+            return drawSrg;
+        }
+
+        Data::Instance<ShaderResourceGroup> Shader::CreateDefaultDrawSrg(bool compileTheSrg)
+        {
+            return CreateDrawSrgForShaderVariant(m_asset->GetDefaultShaderOptions(), compileTheSrg);
         }
 
         const Data::Asset<ShaderAsset>& Shader::GetAsset() const

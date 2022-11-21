@@ -316,7 +316,6 @@ namespace AZ
                     const AZStd::string uvName = uvNamePair.m_uvName.GetStringView();
 
                     propertyConfig = {};
-                    propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::String;
                     propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, shaderInputStr).GetCStr();
                     propertyConfig.m_name = shaderInputStr;
                     propertyConfig.m_displayName = shaderInputStr;
@@ -576,7 +575,7 @@ namespace AZ
 
                     // It's significant that we check IsGroupHidden rather than IsGroupVisisble, because it follows the same rules as QWidget::isHidden().
                     // We don't care whether the widget and all its parents are visible, we only care about whether the group was hidden within the context
-                    // of the material property inspector.
+                    // of the Material Instance Editor.
                     metadata.m_visibility = IsGroupHidden(groupPair.first) ?
                         AZ::RPI::MaterialPropertyGroupVisibility::Hidden : AZ::RPI::MaterialPropertyGroupVisibility::Enabled;
                 }
@@ -703,7 +702,8 @@ namespace AZ
 
             bool MaterialPropertyInspector::SaveMaterial(const AZStd::string& path) const
             {
-                const auto& saveFilePath = AtomToolsFramework::GetSaveFilePath(path);
+                const AZStd::string saveFilePath = AtomToolsFramework::GetSaveFilePathFromDialog(
+                    path, { { "Material", AZ::RPI::MaterialSourceData::Extension } }, "Material");
                 if (saveFilePath.empty())
                 {
                     return false;

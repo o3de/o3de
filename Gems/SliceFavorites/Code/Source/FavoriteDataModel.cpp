@@ -23,6 +23,7 @@
 
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
@@ -920,9 +921,12 @@ namespace SliceFavorites
 
     QMimeData* FavoriteDataModel::mimeData(const QModelIndexList& indexes) const
     {
+        using namespace AzToolsFramework::AssetBrowser;
+
         QMimeData* mimeData = new QMimeData;
 
         QVector<QString> mimeVector;
+        AZStd::vector<const AssetBrowserEntry*> entriesFound;
 
         for (const auto& index : indexes)
         {
@@ -937,19 +941,22 @@ namespace SliceFavorites
                     // Only add the product as mime data if there is only one
                     if (item->m_type == FavoriteData::DataType_Favorite && indexes.size() == 1)
                     {
-                        using namespace AzToolsFramework::AssetBrowser;
                         ProductAssetBrowserEntry* product = ProductAssetBrowserEntry::GetProductByAssetId(item->m_assetId);
 
                         if (product)
                         {
-                            product->AddToMimeData(mimeData);
+                            entriesFound.push_back(product);
                         }
                     }
                 }
             }
         }
 
-        if (mimeVector.size() > 0)
+        // add any entries found to mimeData.  If no entries are found, this won't do anything.
+        Utils::ToMimeData(mimeData, entriesFound);
+
+        // add the custom mimedata for favorites
+        if (!mimeVector.empty())
         {
             QByteArray buffer;
             QDataStream dataStream(&buffer, QIODevice::WriteOnly);

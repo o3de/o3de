@@ -146,7 +146,6 @@ namespace AZ
 
         void RasterPass::UpdateDrawList()
         {
-            AZ_PROFILE_SCOPE(RPI, "RasterPass::UpdateDrawList");
              // DrawLists from dynamic draw
             AZStd::vector<RHI::DrawListView> drawLists = DynamicDrawInterface::Get()->GetDrawListsForPass(this);
 
@@ -242,8 +241,7 @@ namespace AZ
                     const RHI::DrawItemProperties& drawItemProperties = m_drawListView[index];
                     if (drawItemProperties.m_drawFilterMask & m_pipeline->GetDrawFilterMask())
                     {
-                        drawItemProperties.m_item->m_submitIndex = index;
-                        commandList->Submit(*drawItemProperties.m_item);
+                        commandList->Submit(*drawItemProperties.m_item, index);
                     }
                 }
             }

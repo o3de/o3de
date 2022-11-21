@@ -12,21 +12,6 @@ namespace AZ
 {
     namespace RHI
     {
-        void CommandList::ValidateSubmitItem([[maybe_unused]] const SubmitItem& submitItem)
-        {
-            if (m_submitRange.GetCount())
-            {
-                AZ_Assert((submitItem.m_submitIndex >= m_submitRange.m_startIndex) && (submitItem.m_submitIndex < m_submitRange.m_endIndex),
-                    "SubmitItem index %d is not in the valid submission range for this CommandList (%d, %d). "
-                    "Call FrameGraphExecuteContext::GetSubmitRange() to retrieve the range when submitting items to the CommandList.",
-                    submitItem.m_submitIndex,
-                    m_submitRange.m_startIndex,
-                    m_submitRange.m_endIndex - 1);
-
-                m_totalSubmits++;
-            }
-        }
-
         void CommandList::ValidateTotalSubmits([[maybe_unused]] const ScopeProducer* scopeProducer)
         {
             if (m_submitRange.GetCount())

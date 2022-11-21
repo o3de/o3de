@@ -28,11 +28,16 @@
 
 namespace GraphToLuaCpp
 {
-    AZStd::string ToDependencyTableName(AZStd::string_view fileName)
+    AZStd::string ToDependencyTableName(AZStd::string_view fileName, bool lowerCase = true)
     {
         AZStd::string tableName = AZStd::string::format("%s%s", ScriptCanvas::Grammar::ToSafeName(fileName).c_str()
             , ScriptCanvas::Grammar::k_DependencySuffix);
-        AZStd::to_lower(tableName.begin(), tableName.end());
+
+        if (lowerCase)
+        {
+            AZStd::to_lower(tableName.begin(), tableName.end());
+        }
+
         return  tableName;
     }
 
@@ -1627,9 +1632,17 @@ namespace ScriptCanvas
                 {
                     if (IsUserFunctionCall(execution) && !lexicalScope.m_namespaces.back().empty())
                     {
-                        AZStd::string dependencyTableName = GraphToLuaCpp::ToDependencyTableName(lexicalScope.m_namespaces.back());
-                        m_dotLua.Write("%s%.*s", dependencyTableName.c_str(),
-                            aznumeric_cast<int>(m_configuration.m_lexicalScopeDelimiter.size()), m_configuration.m_lexicalScopeDelimiter.data());
+                        if (IsUserFunctionCallLocallyDefined(execution))
+                        {
+                            m_dotLua.Write("%s%.*s", m_tableName.c_str(),
+                                aznumeric_cast<int>(m_configuration.m_lexicalScopeDelimiter.size()), m_configuration.m_lexicalScopeDelimiter.data());
+                        }
+                        else
+                        {
+                            m_dotLua.Write("%s%.*s", GraphToLuaCpp::ToDependencyTableName(lexicalScope.m_namespaces.back()).c_str(),
+                                aznumeric_cast<int>(m_configuration.m_lexicalScopeDelimiter.size()), m_configuration.m_lexicalScopeDelimiter.data());
+
+                        }
                     }
                     else
                     {

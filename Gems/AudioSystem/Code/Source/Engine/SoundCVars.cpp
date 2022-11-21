@@ -20,6 +20,13 @@
 
 namespace Audio::CVars
 {
+    // Keep the name of this the same as it was in legacy CSystem.
+    AZ_CVAR(AZ::u32, sys_audio_disable, 0,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "Globally enable/disable the audio system, 0 (default) = Audio is Enabled, 1 = Audio is Disabled\n"
+        "It is advised to put this setting under \"/O3DE/Autoexec/ConsoleCommands/\" in Settings Registry.");
+
     // CVar: s_EnableRaycasts
     // Usage: s_EnableRaycasts=true (false)
     AZ_CVAR(bool, s_EnableRaycasts, true,

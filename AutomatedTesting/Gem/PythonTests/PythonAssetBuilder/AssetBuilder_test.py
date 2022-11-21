@@ -20,6 +20,8 @@ import ly_test_tools.environment.file_system as file_system
 import ly_test_tools.log.log_monitor
 import ly_test_tools.environment.waiter as waiter
 
+from ly_test_tools.o3de.editor_test_utils import compile_test_case_name_from_request
+
 def detect_product(sql_connection, platform, target):
     cur = sql_connection.cursor()
     product_target = f'{platform}/{target}'
@@ -29,17 +31,32 @@ def detect_product(sql_connection, platform, target):
         hits = hits + 1
     assert hits == 1
 
+def compile_test_case_name(request):
+    """
+    Compile a test case name for consumption by the TIAF python coverage listener gem.
+    @param request: The fixture request.
+    """
+    try:
+        test_case_prefix = "::".join(str.split(request.node.nodeid, "::")[:2])
+        test_case_name = "::".join([test_case_prefix, request.node.originalname])
+        callspec = request.node.callspec.id
+        compiled_test_case_name = f"{test_case_name}[{callspec}]"
+    except Exception as e:
+        logging.warning(f"Error reading test case name for TIAF. {e}")
+        compiled_test_case_name = "ERROR"
+    return compiled_test_case_name
+
 
 def find_products(cache_folder, platform):
     con = sqlite3.connect(os.path.join(cache_folder, 'assetdb.sqlite'))
     detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/test_asset.mock_asset')
-    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_positive_1.azmodel')
-    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_negative_1.azmodel')
-    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_y_positive_1.azmodel')
-    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_y_negative_1.azmodel')
-    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_x_positive_1.azmodel')
-    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_x_negative_1.azmodel')
-    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_center_1.azmodel')
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_positive.azmodel')
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_negative.azmodel')
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_y_positive.azmodel')
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_y_negative.azmodel')
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_x_positive.azmodel')
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_x_negative.azmodel')
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_center.azmodel')
     con.close()
 
 
@@ -55,8 +72,7 @@ class TestPythonAssetProcessing(object):
         halt_on_unexpected = False
         test_directory = os.path.join(os.path.dirname(__file__))
         testFile = os.path.join(test_directory, 'AssetBuilder_test_case.py')
-        test_case_prefix = "::".join(str.split(request.node.nodeid, "::")[:2])
-        compiled_test_case_name = "::".join([test_case_prefix, request.node.originalname])
+        compiled_test_case_name = compile_test_case_name_from_request(request)
         editor.args.extend(['-NullRenderer', '-rhi=Null', "--skipWelcomeScreenDialog", "--autotest_mode", "--runpythontest", testFile, f"-pythontestcase={compiled_test_case_name}"])
 
         with editor.start():

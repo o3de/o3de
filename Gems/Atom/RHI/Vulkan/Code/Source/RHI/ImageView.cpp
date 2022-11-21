@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ImageView.h>
@@ -150,7 +150,7 @@ namespace AZ
                         AZ_Assert(width == height, "Image of Cube or CubeArray form a square.");
                         AZ_Assert(depth == 1, "Depth of Cube or CubeArray = 1.");
                         AZ_Assert(samples == 1, "Sample of Cube or CubeArray = 1.");
-                        AZ_Assert(arrayLayers % 6 == 0, "ArrayLayers % 6 == 0 for Cube or CubeArray.");
+                        AZ_Assert(arrayLayers % 6 == 0, "ArrayLayers %% 6 == 0 for Cube or CubeArray.");
                         if (arrayLayers == 6)
                         {
                             return VK_IMAGE_VIEW_TYPE_CUBE;

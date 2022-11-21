@@ -30,14 +30,17 @@ namespace AzToolsFramework
 
             bool GenerateDomForEntity(PrefabDom& generatedEntityDom, const AZ::Entity& entity) override;
             bool GenerateDomForInstance(PrefabDom& generatedInstanceDom, const Prefab::Instance& instance) override;
-            bool GeneratePatch(PrefabDom& generatedPatch, const PrefabDom& initialState, const PrefabDom& modifiedState) override;
+            bool GeneratePatch(PrefabDom& generatedPatch, const PrefabDomValue& initialState, const PrefabDomValue& modifiedState) override;
             bool GeneratePatchForLink(PrefabDom& generatedPatch, const PrefabDom& initialState,
                 const PrefabDom& modifiedState, LinkId linkId) override;
             bool PatchEntityInTemplate(PrefabDom& providedPatch, AZ::EntityId entityId) override;
 
             AZStd::string GenerateEntityAliasPath(AZ::EntityId entityId) override;
 
-            void AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, const AZ::EntityId& entityId) override;
+            AZ::Dom::Path GenerateEntityPathFromFocusedPrefab(AZ::EntityId entityId) override;
+
+            void AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, const AZStd::string& prefix = "") override;
+            void AppendEntityAliasPathToPatchPaths(PrefabDom& providedPatch, const AZStd::string& entityAliasPath) override;
 
             InstanceOptionalReference GetTopMostInstanceInHierarchy(AZ::EntityId entityId) override;
 
@@ -45,12 +48,11 @@ namespace AzToolsFramework
 
             void ApplyPatchesToInstance(const AZ::EntityId& entityId, PrefabDom& patches, const Instance& instanceToAddPatches) override;
 
-            void AddPatchesToLink(const PrefabDom& patches, Link& link);
-
         private:
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
             InstanceDomGenerator m_instanceDomGenerator;
+            static AzFramework::EntityContextId s_editorEntityContextId;
         };
     }
 }

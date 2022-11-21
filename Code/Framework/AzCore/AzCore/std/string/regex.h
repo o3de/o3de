@@ -15,9 +15,9 @@
 #include <AzCore/std/utils.h>
 #include <AzCore/std/exceptions.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/limits.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
-#include <limits>
 
 // used for std::pointer_traits \note do an AZStd version
 #include <memory>
@@ -1002,22 +1002,12 @@ namespace AZStd
             }
             else
             {
-                size_t resizedSize = m_allocator.resize(m_chars, requiredSize);
-                // must update capacity immediately in case we need to realloc
-                m_capacity = static_cast<unsigned int>(resizedSize / sizeof(Element));
-                if (resizedSize >= requiredSize)
-                {
-                    m_capacity = static_cast<unsigned int>(resizedSize / sizeof(Element));
-                }
-                else
-                {
-                    // resize didn't work, realloc instead
-                    Element* newBuf = static_cast<Element*>(m_allocator.allocate(requiredSize, 1));
-                    memcpy(newBuf, m_chars, m_capacity * sizeof(Element));
-                    m_allocator.deallocate(m_chars, m_capacity * sizeof(Element), 1);
-                    m_chars = newBuf;
-                    m_capacity = length;
-                }
+                // resize didn't work, realloc instead
+                Element* newBuf = static_cast<Element*>(m_allocator.allocate(requiredSize, 1));
+                memcpy(newBuf, m_chars, m_capacity * sizeof(Element));
+                m_allocator.deallocate(m_chars, m_capacity * sizeof(Element), 1);
+                m_chars = newBuf;
+                m_capacity = length;
             }
             AZ_Assert(m_chars != nullptr, "AZStd::allocator failed to allocate %u bytes!", requiredSize);
         }
@@ -4045,7 +4035,7 @@ namespace AZStd
     template<class ForwardIterator, class Element, class RegExTraits>
     inline bool Parser<ForwardIterator, Element, RegExTraits>::DecimalDigits()
     {   // check for decimal value
-        return (DoDigits(10, INT_MAX) != INT_MAX);
+        return (DoDigits(10, AZStd::numeric_limits<int>::max()) != AZStd::numeric_limits<int>::max());
     }
 
     template<class ForwardIterator, class Element, class RegExTraits>

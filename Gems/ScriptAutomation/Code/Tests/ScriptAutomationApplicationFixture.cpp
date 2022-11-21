@@ -11,6 +11,7 @@
 #include <ScriptAutomation/ScriptAutomationBus.h>
 
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/UserSettings/UserSettingsComponent.h>
 
 #include <AzFramework/IO/LocalFileIO.h>
 
@@ -83,6 +84,8 @@ namespace UnitTest
         }
 
         m_application->Start(appDesc);
+
+        AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
         return m_application;
     }

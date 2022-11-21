@@ -244,8 +244,8 @@ namespace UnitTest
             if (!info.m_streamName.empty())
             {
                 // this ensures tha parallel running unit tests do not overlap their files that they use.
-                AZStd::string fullName = AZStd::string::format("%s%s-%s", GetTestFolderPath().c_str(), randomUuid.ToString<AZStd::string>().c_str(), info.m_streamName.c_str());
-                info.m_streamName = fullName;
+                AZ::IO::Path fullName = GetTestFolderPath() / AZStd::string::format("%s-%s", randomUuid.ToString<AZStd::string>().c_str(), info.m_streamName.c_str());
+                info.m_streamName = AZStd::move(fullName.Native());
                 info.m_dataLen = static_cast<size_t>(IO::SystemFile::Length(info.m_streamName.c_str()));
             }
             else

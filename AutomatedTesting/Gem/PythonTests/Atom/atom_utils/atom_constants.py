@@ -49,6 +49,21 @@ SHADOW_FILTER_METHOD = {
     'None': 0,
 }
 
+# CubeMap capture type options for the Cubemap Capture Component
+CUBEMAP_CAPTURE_TYPE = {
+    'Specular IBL': 0,
+    'Diffuse ILB': 1,
+}
+
+# Specular IBL property options for the Cubemap Capture Component
+SPECULAR_IBL_QUALITY = {
+    'Very Low': 0,
+    'Low': 1,
+    'Medium': 2,
+    'High': 3,
+    'Very High': 4,
+}
+
 # Qualiity Level settings for Diffuse Global Illumination level component
 GLOBAL_ILLUMINATION_QUALITY = {
     'Low': 0,
@@ -108,9 +123,9 @@ NUM_RAYS_PER_PROBE = {
 
 # LUT Resolution options for the HDR Color Grading component.
 LUT_RESOLUTION = {
-    '16x16x16': 0,
-    '32x32x32': 1,
-    '64x64x64': 2,
+    '16x16x16': 16,
+    '32x32x32': 32,
+    '64x64x64': 64,
 }
 
 # Shaper Type options for the HDR Color Grading & Look Modification components.
@@ -148,6 +163,20 @@ POSTFX_LAYER_CATEGORY = {
     'Volume': 5000000,
     'Level': 6000000,
     'Default': 2147483647,
+}
+
+# Directional Light Intensity Mode
+DIRECTIONAL_LIGHT_INTENSITY_MODE = {
+    'Ev100': 5,
+    'Lux': 2,
+}
+
+# Directional Light Shadow Filter Method
+DIRECTIONAL_LIGHT_SHADOW_FILTER_METHOD = {
+    'None': 0,
+    'PCF': 1,
+    'ESM': 2,
+    'PCF+ESM': 3,
 }
 
 # Level list used in Editor Level Load Test
@@ -271,11 +300,17 @@ class AtomComponentProperties:
     def cube_map_capture(property: str = 'name') -> str:
         """
         CubeMap capture component properties.
+          - 'Specular ILB' controls the quality of Specular IBL created
+          - 'Capture Type': controls if CubeMap Capture component uses 'Diffuse ILB' or 'Specular ILB'
+          - 'Exposure': Controls the exposure light in the image taken
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
-            'name': 'CubeMap Capture'
+            'name': 'CubeMap Capture',
+            'Specular IBL CubeMap Quality': 'Controller|Configuration|Specular IBL CubeMap Quality',
+            'Capture Type': 'Controller|Configuration|Capture Type',
+            'Exposure': 'Controller|Configuration|Exposure',
         }
         return properties[property]
 
@@ -285,6 +320,7 @@ class AtomComponentProperties:
         Decal component properties.
           - 'Attenuation Angle' controls how much the angle between geometry and decal impacts opacity. 0-1 Radians
           - 'Opacity' where one is opaque and zero is transparent
+          - 'Normal Map Opacity' normal map set to one is opaque and zero is transparent
           - 'Sort Key' 0-255 stacking z-sort like key to define which decal is on top of another
           - 'Material' the material Asset.id of the decal.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
@@ -294,6 +330,7 @@ class AtomComponentProperties:
             'name': 'Decal',
             'Attenuation Angle': 'Controller|Configuration|Attenuation Angle',
             'Opacity': 'Controller|Configuration|Opacity',
+            'Normal Map Opacity': 'Controller|Configuration|Normal Map Opacity',
             'Sort Key': 'Controller|Configuration|Sort Key',
             'Material': 'Controller|Configuration|Material',
         }
@@ -462,13 +499,85 @@ class AtomComponentProperties:
         """
         Directional Light component properties.
           - 'Camera' an EditorEntity.id reference to the Camera component that controls cascaded shadow view frustum.
-            Must be a different entity than the one which hosts Directional Light component.\n
+               Must be a different entity than the one which hosts Directional Light component.
+          - 'Color' Color of the Light. (Color imported from azlmbr.math (0.0, 0.0, 0.0, 0.0))
+          - 'Intensity mode' Allows specifying light values in Lux or Ev100. (enum, Lux, Ev100)
+               (Uses above dictionary DIRECTIONAL_LIGHT_INTENSITY_MODE)
+          - 'Intensity' Intensity of the light in the set photometric unit. (float, default 4.0, range -4.0 to 16.0)
+          - 'Angular diameter' Angular diameter of the directional light in degrees. The sun is about 0.5.
+               (float, Default 0.5, range 0.0 - 1.0)
+          - 'Camera' Entity of the camera for cascaded shadowmap view frustum.
+          - 'Shadow far clip' Shadow specific far clip distance. (default 100.0, range -INF to INF)
+          - 'Shadowmap size' Width/Height of shadowmap. (4 enum values selectable from dropdown: 256, 512, 1024, 2048))
+          - 'Cascade count' Number of cascades. (integer default 4, range 0 to 4)
+          - 'Automatic splitting' Switch splitting of shadowmap frustum to cascades automatically or not. (bool)
+          - 'Split ratio' Ratio to lerp between the two types of frustrum splitting scheme.
+               (float, default 0.9, range 0.0 - 1.0)
+               0 = Uniform scheme which will split the frustum evenly across all cascades.
+               1 = Logarithmic scheme which is designed to split the frustrum in a logarithmic fashion in order to
+                   enable us
+              to produce a more optimal perspective aliasing across the frustrum.
+          - 'Far depth cascade' Far depth of each cascade. The value of the index greater than or equal to cascade
+               count is ignored.
+               (Vector4 imported from azlmbr.math (0.0, 0.0, 0.0, 0.0) each value should be greater than the previous,
+               range 0 to current value of Shadow far clip.)
+          - 'Ground height' Height of the ground.  Used to correct position of cascades.
+               (float, default 0.0, range -INF - INF)
+          - 'Cascade correction' Enable position correction of cascades to optimize the appearance for certain
+               camera positions. (bool)
+          - 'Debug coloring' Enable coloring to see how cascades places 0:red, 1:green, 2:blue, 3:yellow.
+          - 'Shadow filter method' Filtering method of edge-softening of shadows.
+               (enum, Uses above dictionary DIRECTIONAL_LIGHT_SHADOW_FILTER_METHOD)
+               None: no Filtering
+               PCF: Percentage-closer filtering
+               ESM: Exponential shadow maps
+               ESM+PCF: ESM with a PCF fallback
+               For BehaviorContext (or TrackView), None=0, PCF=1, ESM=2, ESM=PCF=3
+          - 'Filtering sample count' This is used only when the pixel is predicted to be on the boundary.
+               (integer, default 32, range 4 to 64)
+          - 'Shadow Receiver Plan Bias Enable' This reduces shadow acne when using large pcf kernels. (bool)
+          - 'Shadow Bias' Reduces acne by applying a fixed bias along z in shadow-space.
+               If this is 0, no biasing is applied. (float, default 0.002, range 0.002 to 0.2)
+          - 'Normal Shadow Bias' Reducing acne by biasing the shadowmap lookup along the geometric normal.
+               If this is 0, no biasing is applied. (float, default 2.5, range 0.0 to 10.0)
+          - 'Blend between cascades' Enable smooth blending between shadowmap cascades. (bool)
+          - 'Fullscreen Blur' Enables fullscreen blur on fullscreen sunlight shadows. (bool)
+          - 'Fullscreen Blur Strength' Affects how strong the fullscreen is. (float, default is 0.667 range 0 to 0.95)
+          - 'Fullscreen Blur Sharpness' Affect how sharp the fullscreen shadow blur appears around edges.
+               (float, default 50.0 range 0.0 to 400.0)
+          - 'Affects GI' Controls whether this light affects diffuse global illumination. (bool)
+          - 'Factor' Multiplier on the amount of contribution to diffuse global illumination.
+                (float, default 1.0 range 0.0 to 2.0)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Directional Light',
+            'Color': 'Controller|Configuration|Color',
+            'Intensity mode': 'Controller|Configuration|Intensity mode',
+            'Intensity': 'Controller|Configuration|Intensity',
+            'Angular diameter': 'Controller|Configuration|Angular diameter',
             'Camera': 'Controller|Configuration|Shadow|Camera',
+            'Shadow far clip': 'Controller|Configuration|Shadow|Shadow far clip',
+            'Shadowmap size': 'Controller|Configuration|Shadow|Shadowmap size',
+            'Cascade count': 'Controller|Configuration|Shadow|Cascade count',
+            'Automatic splitting': 'Controller|Configuration|Shadow|Automatic splitting',
+            'Split ratio': 'Controller|Configuration|Shadow|Split ratio',
+            'Far depth cascade': 'Controller|Configuration|Shadow|Far depth cascade',
+            'Ground height': 'Controller|Configuration|Shadow|Ground height',
+            'Cascade correction': 'Controller|Configuration|Shadow|Cascade correction',
+            'Debug coloring': 'Controller|Configuration|Shadow|Debug coloring',
+            'Shadow filter method': 'Controller|Configuration|Shadow|Shadow filter method',
+            'Filtering sample count': 'Controller|Configuration|Shadow|Filtering sample count',
+            'Shadow Receiver Plane Bias Enable': 'Controller|Configuration|Shadow|Shadow Receiver Plane Bias Enable',
+            'Shadow Bias': 'Controller|Configuration|Shadow|Shadow Bias',
+            'Normal Shadow Bias': 'Controller|Configuration|Shadow|Normal Shadow Bias',
+            'Blend between cascades': 'Controller|Configuration|Shadow|Blend between cascades',
+            'Fullscreen Blur': 'Controller|Configuration|Shadow|Fullscreen Blur',
+            'Fullscreen Blur Strength': 'Controller|Configuration|Shadow|Fullscreen Blur Strength',
+            'Fullscreen Blur Sharpness': 'Controller|Configuration|Shadow|Fullscreen Blur Sharpness',
+            'Affects GI': 'Controller|Configuration|Global Illumination|Affects GI',
+            'Factor': 'Controller|Configuration|Global Illumination|Factor',
         }
         return properties[property]
 
@@ -588,9 +697,9 @@ class AtomComponentProperties:
         """
         properties = {
             'name': 'Global Skylight (IBL)',
-            'Diffuse Image': 'Controller|Configuration|Diffuse Image',
-            'Specular Image': 'Controller|Configuration|Specular Image',
-            'Exposure': 'Controller|Configuration|Exposure',
+            'Diffuse Image': 'Diffuse Image',
+            'Specular Image': 'Specular Image',
+            'Exposure': 'Exposure',
         }
         return properties[property]
 
@@ -788,6 +897,7 @@ class AtomComponentProperties:
           - 'Hue Shift' Shifts all color by 1% of a rotation in the color wheel per 0.01. (0.0, 1.0)
           - 'LUT Resolution' Resolution of generated LUT from atom_constants.py LUT_RESOLUTION.
           - 'Shaper Type' Shaper type used for the generated LUT from atom_constants.py SHAPER_TYPE.
+          - 'Generated LUT Path' absolute path to the generated look up table file (read-only)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -826,6 +936,7 @@ class AtomComponentProperties:
             'Hue Shift': 'Controller|Configuration|Final Adjustment|Hue Shift',
             'LUT Resolution': 'Controller|Configuration|LUT Generation|LUT Resolution',
             'Shaper Type': 'Controller|Configuration|LUT Generation|Shaper Type',
+            'Generated LUT Path': 'LUT Generation|Generated LUT Path',
         }
         return properties[property]
 
@@ -833,13 +944,15 @@ class AtomComponentProperties:
     def hdri_skybox(property: str = 'name') -> str:
         """
         HDRi Skybox component properties.
-          - 'Cubemap Texture': Asset.id for the cubemap texture to set.
+          - 'Cubemap Texture': Asset.id for the texture used in cubemap rendering (File Type *.exr.streamingimage).
+          - 'Exposure': Light exposure value for HDRi Skybox projection ('float', range -5.0 - 5.0, default 0.0).
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'HDRi Skybox',
             'Cubemap Texture': 'Controller|Configuration|Cubemap Texture',
+            'Exposure': 'Controller|Configuration|Exposure',
         }
         return properties[property]
 
@@ -955,6 +1068,7 @@ class AtomComponentProperties:
           - 'Minimum Screen Coverage' portion of the screen at which the mesh is culled; 0 (never culled) to 1
           - 'Quality Decay Rate' rate at which the mesh degrades; 0 (never) to 1 (lowest quality imediately)
           - 'Lod Override' which specific LOD to always use; default or other named LOD
+          - 'Vertex Count LOD0' the vertices in LOD 0 of the model
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         :rtype: str
@@ -971,6 +1085,7 @@ class AtomComponentProperties:
             'Minimum Screen Coverage': 'Controller|Configuration|Lod Configuration|Minimum Screen Coverage',
             'Quality Decay Rate': 'Controller|Configuration|Lod Configuration|Quality Decay Rate',
             'Lod Override': 'Controller|Configuration|Lod Configuration|Lod Override',
+            'Vertex Count LOD0': 'Model Stats|Mesh Stats|LOD 0|Vert Count'
         }
         return properties[property]
 
@@ -1096,13 +1211,15 @@ class AtomComponentProperties:
         """
         PostFX Radius Weight Modifier component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
-            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.
+          - 'Radius' Radius of the PostFX modification (float deafult 0.0 to infinity)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'PostFX Radius Weight Modifier',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Radius': 'Controller|Configuration|Radius',
         }
         return properties[property]
 

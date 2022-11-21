@@ -14,6 +14,9 @@
 
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/fixed_vector.h>
+#include <AzCore/std/containers/span.h>
+#include <AzCore/std/ranges/transform_view.h>
+#include <AzCore/Memory/AllocatorWrappers.h>
 
 #define AZ_TEST_VALIDATE_EMPTY_TREE(_Tree_) \
     EXPECT_EQ(0, _Tree_.size());     \
@@ -39,7 +42,7 @@ namespace UnitTest
     struct RedBlackTree_SetTestTraits
     {
         typedef T                   key_type;
-        typedef KeyEq               key_eq;
+        typedef KeyEq               key_equal;
         typedef T                   value_type;
         typedef Allocator           allocator_type;
         static AZ_FORCE_INLINE const key_type& key_from_value(const value_type& value)  { return value; }
@@ -397,7 +400,7 @@ namespace UnitTest
     TEST_F(Tree_Set, ExplicitAllocatorSucceeds)
     {
         AZ::OSAllocator customAllocator;
-        AZStd::set<int, AZStd::less<int>, AZ::AZStdIAllocator> setWithCustomAllocator{ AZ::AZStdIAllocator(&customAllocator) };
+        AZStd::set<int, AZStd::less<int>, AZ::AllocatorPointerWrapper> setWithCustomAllocator{ AZ::AllocatorPointerWrapper(&customAllocator) };
         auto insertIter = setWithCustomAllocator.emplace(1);
         EXPECT_TRUE(insertIter.second);
         insertIter = setWithCustomAllocator.emplace(1);
@@ -521,7 +524,7 @@ namespace UnitTest
     TEST_F(Tree_MultiSet, ExplicitAllocatorSucceeds)
     {
         AZ::OSAllocator customAllocator;
-        AZStd::multiset<int, AZStd::less<int>, AZ::AZStdIAllocator> setWithCustomAllocator{ AZ::AZStdIAllocator(&customAllocator) };
+        AZStd::multiset<int, AZStd::less<int>, AZ::AllocatorPointerWrapper> setWithCustomAllocator{ AZ::AllocatorPointerWrapper(&customAllocator) };
         setWithCustomAllocator.emplace(1);
         setWithCustomAllocator.emplace(1);
         EXPECT_EQ(2, setWithCustomAllocator.size());
@@ -668,7 +671,7 @@ namespace UnitTest
     TEST_F(Tree_Map, ExplicitAllocatorSucceeds)
     {
         AZ::OSAllocator customAllocator;
-        AZStd::map<int, int, AZStd::less<int>, AZ::AZStdIAllocator> mapWithCustomAllocator{ AZ::AZStdIAllocator(&customAllocator) };
+        AZStd::map<int, int, AZStd::less<int>, AZ::AllocatorPointerWrapper> mapWithCustomAllocator{ AZ::AllocatorPointerWrapper(&customAllocator) };
         auto insertIter = mapWithCustomAllocator.emplace(1, 1);
         EXPECT_TRUE(insertIter.second);
         insertIter = mapWithCustomAllocator.emplace(1, 2);
@@ -823,7 +826,7 @@ namespace UnitTest
     TEST_F(Tree_MultiMap, ExplicitAllocatorSucceeds)
     {
         AZ::OSAllocator customAllocator;
-        AZStd::multimap<int, int, AZStd::less<int>, AZ::AZStdIAllocator> mapWithCustomAllocator{ AZ::AZStdIAllocator(&customAllocator) };
+        AZStd::multimap<int, int, AZStd::less<int>, AZ::AllocatorPointerWrapper> mapWithCustomAllocator{ AZ::AllocatorPointerWrapper(&customAllocator) };
         mapWithCustomAllocator.emplace(1, 1);
         mapWithCustomAllocator.emplace(1, 2);
         EXPECT_EQ(2, mapWithCustomAllocator.size());
@@ -1071,6 +1074,66 @@ namespace UnitTest
         EXPECT_EQ(1, uniqueSet.count(4));
     }
 
+    template<template<class...> class SetTemplate>
+    static void TreeSetRangeConstructorSucceeds()
+    {
+        constexpr AZStd::string_view testView = "abc";
+
+        SetTemplate testSet(AZStd::from_range, testView);
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+
+        testSet = SetTemplate(AZStd::from_range, AZStd::vector<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::list<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::deque<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::set<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::unordered_set<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::fixed_vector<char, 8>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::array{ 'a', 'b', 'c' });
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::span(testView));
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::span(testView));
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+
+        AZStd::fixed_string<8> testValue(testView);
+        testSet = SetTemplate(AZStd::from_range, testValue);
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::string(testView));
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+
+        // Test Range views
+        testSet = SetTemplate(AZStd::from_range, testValue | AZStd::views::transform([](const char elem) -> char { return elem + 1; }));
+        EXPECT_THAT(testSet, ::testing::ElementsAre('b', 'c', 'd'));
+    }
+
+    TEST_F(Tree_Set, RangeConstructor_Succeeds)
+    {
+        TreeSetRangeConstructorSucceeds<AZStd::set>();
+        TreeSetRangeConstructorSucceeds<AZStd::multiset>();
+    }
+
+    template<template<class...> class SetTemplate>
+    static void TreeSetInsertRangeSucceeds()
+    {
+        constexpr AZStd::string_view testView = "abc";
+        SetTemplate testSet{ 'd', 'e', 'f' };
+        testSet.insert_range(AZStd::vector<char>{testView.begin(), testView.end()});
+        testSet.insert_range(testView | AZStd::views::transform([](const char elem) -> char { return elem + 6; }));
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'));
+    }
+
+    TEST_F(Tree_Set, InsertRange_Succeeds)
+    {
+        TreeSetInsertRangeSucceeds<AZStd::set>();
+        TreeSetInsertRangeSucceeds<AZStd::multiset>();
+    }
+
     template <typename ContainerType>
     class TreeSetDifferentAllocatorFixture
         : public AllocatorsFixture
@@ -1080,11 +1143,11 @@ namespace UnitTest
     template<template <typename, typename, typename> class ContainerTemplate>
     struct TreeSetWithCustomAllocatorConfig
     {
-        using ContainerType = ContainerTemplate<int32_t, AZStd::less<int32_t>, AZ::AZStdIAllocator>;
+        using ContainerType = ContainerTemplate<int32_t, AZStd::less<int32_t>, AZ::AllocatorPointerWrapper>;
 
         static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
-            ContainerType allocatorSet(intList, AZStd::less<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
+            ContainerType allocatorSet(intList, AZStd::less<int32_t>{}, AZ::AllocatorPointerWrapper{ allocatorInstance });
             return allocatorSet;
         }
     };
@@ -1113,7 +1176,7 @@ namespace UnitTest
                 {
                     // AZ_Assert does not cause the application to exit in profile_test configuration
                     // Therefore an exit with a non-zero error code is invoked to trigger the death condition
-                    abort();
+                    exit(1);
                 }
             }, ".*");
     }
@@ -1130,13 +1193,13 @@ namespace UnitTest
 
         EXPECT_EQ(1, systemAllocatorMap.size());
         EXPECT_EQ(1, systemAllocatorMap.count(2));
-        EXPECT_EQ(AZ::AZStdIAllocator(&AZ::AllocatorInstance<AZ::SystemAllocator>::Get()), systemAllocatorMap.get_allocator());
+        EXPECT_EQ(AZ::AllocatorPointerWrapper(&AZ::AllocatorInstance<AZ::SystemAllocator>::Get()), systemAllocatorMap.get_allocator());
 
         EXPECT_EQ(3, osAllocatorMap.size());
         EXPECT_EQ(1, osAllocatorMap.count(1));
         EXPECT_EQ(1, osAllocatorMap.count(2));
         EXPECT_EQ(1, osAllocatorMap.count(3));
-        EXPECT_EQ(AZ::AZStdIAllocator(&AZ::AllocatorInstance<AZ::OSAllocator>::Get()), osAllocatorMap.get_allocator());
+        EXPECT_EQ(AZ::AllocatorPointerWrapper(&AZ::AllocatorInstance<AZ::OSAllocator>::Get()), osAllocatorMap.get_allocator());
     }
 
     template<typename ContainerType>
@@ -1492,6 +1555,56 @@ namespace UnitTest
         EXPECT_EQ(-6354, insertOrAssignPairIter.first->second.m_value);
     }
 
+    template<template<class...> class MapTemplate>
+    static void TreeMapRangeConstructorSucceeds()
+    {
+        using ValueType = AZStd::pair<char, int>;
+        constexpr AZStd::array testArray{ ValueType{'a', 1}, ValueType{'b', 2}, ValueType{'c', 3} };
+
+        MapTemplate testMap(AZStd::from_range, testArray);
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+
+        testMap = MapTemplate(AZStd::from_range, AZStd::vector<ValueType>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::list<ValueType>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::deque<ValueType>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::set<ValueType>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::unordered_set<ValueType>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::fixed_vector<ValueType, 8>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::span(testArray));
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+    }
+
+    TEST_F(Tree_Map, RangeConstructor_Succeeds)
+    {
+        TreeMapRangeConstructorSucceeds<AZStd::map>();
+        TreeMapRangeConstructorSucceeds<AZStd::multimap>();
+    }
+
+    template<template<class...> class MapTemplate>
+    static void TreeMapInsertRangeSucceeds()
+    {
+        using ValueType = AZStd::pair<char, int>;
+        constexpr AZStd::array testArray{ ValueType{'a', 1}, ValueType{'b', 2}, ValueType{'c', 3} };
+
+        MapTemplate testMap(AZStd::from_range, testArray);
+
+        testMap.insert_range(AZStd::vector<ValueType>{ValueType{ 'd', 4 }, ValueType{ 'e', 5 }, ValueType{ 'f', 6 }});
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 },
+            ValueType{ 'd', 4 }, ValueType{ 'e', 5 }, ValueType{ 'f', 6 }));
+    }
+
+    TEST_F(Tree_Map, InsertRange_Succeeds)
+    {
+        TreeMapInsertRangeSucceeds<AZStd::map>();
+        TreeMapInsertRangeSucceeds<AZStd::multimap>();
+    }
+
     template <typename ContainerType>
     class TreeMapDifferentAllocatorFixture
         : public AllocatorsFixture
@@ -1501,11 +1614,11 @@ namespace UnitTest
     template<template <typename, typename, typename, typename> class ContainerTemplate>
     struct TreeMapWithCustomAllocatorConfig
     {
-        using ContainerType = ContainerTemplate<int32_t, int32_t, AZStd::less<int32_t>, AZ::AZStdIAllocator>;
+        using ContainerType = ContainerTemplate<int32_t, int32_t, AZStd::less<int32_t>, AZ::AllocatorPointerWrapper>;
 
         static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
-            ContainerType allocatorMap(intList, AZStd::less<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
+            ContainerType allocatorMap(intList, AZStd::less<int32_t>{}, AZ::AllocatorPointerWrapper{ allocatorInstance });
             return allocatorMap;
         }
     };
@@ -1534,7 +1647,7 @@ namespace UnitTest
                 {
                     // AZ_Assert does not cause the application to exit in profile_test configuration
                     // Therefore an exit with a non-zero error code is invoked to trigger the death condition
-                    abort();
+                    exit(1);
                 }
             }, ".*");
     }
@@ -1551,13 +1664,13 @@ namespace UnitTest
 
         EXPECT_EQ(1, systemAllocatorMap.size());
         EXPECT_EQ(1, systemAllocatorMap.count(2));
-        EXPECT_EQ(AZ::AZStdIAllocator(&AZ::AllocatorInstance<AZ::SystemAllocator>::Get()), systemAllocatorMap.get_allocator());
+        EXPECT_EQ(AZ::AllocatorPointerWrapper(&AZ::AllocatorInstance<AZ::SystemAllocator>::Get()), systemAllocatorMap.get_allocator());
 
         EXPECT_EQ(3, osAllocatorMap.size());
         EXPECT_EQ(1, osAllocatorMap.count(1));
         EXPECT_EQ(1, osAllocatorMap.count(2));
         EXPECT_EQ(1, osAllocatorMap.count(3));
-        EXPECT_EQ(AZ::AZStdIAllocator(&AZ::AllocatorInstance<AZ::OSAllocator>::Get()), osAllocatorMap.get_allocator());
+        EXPECT_EQ(AZ::AllocatorPointerWrapper(&AZ::AllocatorInstance<AZ::OSAllocator>::Get()), osAllocatorMap.get_allocator());
     }
 
     namespace TreeContainerTransparentTestInternal

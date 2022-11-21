@@ -147,7 +147,7 @@ namespace LmbrCentral
     const AZ::Quaternion& QuadShape::GetQuadOrientation()
     {
         AZStd::shared_lock lock(m_mutex);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_quadShapeConfig, m_mutex, m_currentNonUniformScale);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_quadShapeConfig, &m_mutex, m_currentNonUniformScale);
 
         return m_intersectionDataCache.m_quaternion;
     }
@@ -184,7 +184,7 @@ namespace LmbrCentral
     float QuadShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
     {
         AZStd::shared_lock lock(m_mutex);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_quadShapeConfig, m_mutex, m_currentNonUniformScale);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_quadShapeConfig, &m_mutex, m_currentNonUniformScale);
 
         // translate and rotate the point into the space of the quad.
         AZ::Vector3 tPoint = m_currentTransform.GetRotation().GetInverseFull().TransformVector(point - m_currentTransform.GetTranslation());

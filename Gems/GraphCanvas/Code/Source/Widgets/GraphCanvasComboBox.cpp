@@ -8,7 +8,6 @@
 
 #include <AzCore/PlatformDef.h>
 
-AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
 #include <QEvent>
 #include <QFocusEvent>
 #include <QHeaderView>
@@ -16,7 +15,6 @@ AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QWidgetAction>
-AZ_POP_DISABLE_WARNING
 
 #include <Widgets/GraphCanvasComboBox.h>
 
@@ -114,6 +112,9 @@ namespace GraphCanvas
         escapeAction->setShortcut(Qt::Key_Escape);
 
         addAction(escapeAction);
+        connect(this, &QDialog::finished, this, [&]() {
+            Q_EMIT OnFocusOut();
+        });
 
         QObject::connect(escapeAction, &QAction::triggered, this, &GraphCanvasComboBoxMenu::CancelMenu);
     }
@@ -193,13 +194,14 @@ namespace GraphCanvas
     {
         if (object == &m_tableView)
         {
-            if (event->type() == QEvent::FocusOut)
+            switch (event->type())
             {
+            case QEvent::FocusOut:
                 HandleFocusOut();
-            }
-            else if (event->type() == QEvent::FocusIn)
-            {
+                break;
+            case QEvent::FocusIn:
                 HandleFocusIn();
+                break;
             }
         }
 
@@ -335,8 +337,6 @@ namespace GraphCanvas
         m_closeConnection = QObject::connect(&m_closeTimer, &QTimer::timeout, this, &QDialog::reject);
 
         m_closeTimer.start();
-
-        emit OnFocusOut();
     }
 
     ////////////////////////
@@ -354,7 +354,6 @@ namespace GraphCanvas
         , m_modelInterface(modelInterface)
     {
         setObjectName("ComboBoxLineEdit");
-
         setProperty("HasNoWindowDecorations", true);
         setProperty("DisableFocusWindowFix", true);
 
@@ -437,45 +436,6 @@ namespace GraphCanvas
         return m_modelInterface->FindIndexForName(m_selectedName);
     }
 
-    void GraphCanvasComboBox::SetOutlineColor(const QColor& outlineColor, const QColor& backgroundColor)
-    {
-        QString styleString = QString("QLineEdit#ComboBoxLineEdit { border: 1px solid %1; background-color: %2; }").arg(outlineColor.name()).arg(backgroundColor.name());
-        AZ_UNUSED(styleString);
-        //setStyleSheet(styleString);
-    }
-
-    void GraphCanvasComboBox::SetOutlineColor(const QGradient& gradient, const QColor& backgroundColor)
-    {
-        QString stops;
-
-        for (auto currentStop : gradient.stops())
-        {
-            if (!stops.isEmpty())
-            {
-                stops.append(", ");
-            }
-
-            QString currentStopStyle = QString("stop: %1 %2").arg(currentStop.first).arg(currentStop.second.name());
-            stops.append(currentStopStyle);
-        }        
-        
-        QString styleString = QString("QLineEdit#ComboBoxLineEdit { border: 1px solid qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0 %1); background-color: %2; }").arg(stops).arg(backgroundColor.name());
-        AZ_UNUSED(styleString);
-        //setStyleSheet(styleString);
-    }
-
-    void GraphCanvasComboBox::SetOutline(const QBrush& brush, const QColor& backgroundColor)
-    {
-        if (brush.gradient() != nullptr)
-        {
-            SetOutlineColor((*brush.gradient()), backgroundColor);
-        }
-        else
-        {
-            SetOutlineColor(brush.color(), backgroundColor);
-        }
-    }
-
     void GraphCanvasComboBox::ClearOutlineColor()
     {
         setStyleSheet("");
@@ -536,119 +496,125 @@ namespace GraphCanvas
     {
         QLineEdit::keyPressEvent(keyEvent);
 
-        if (keyEvent->key() == Qt::Key_Down)
+        switch(keyEvent->key()) 
         {
-            if (m_comboBoxMenu.isHidden())
+            case Qt::Key_Down:
             {
-                ClearFilter();
-                DisplayMenu();
-            }
-
-            QModelIndex selectedIndex = m_comboBoxMenu.GetSelectedSourceIndex();
-
-            if (!selectedIndex.isValid())
-            {
-                selectedIndex = m_modelInterface->FindIndexForName(m_selectedName);
-            }
-
-            QModelIndex mappedIndex;
-            QModelIndex sourceIndex;
-
-            if (selectedIndex.isValid())
-            {
-                sourceIndex = m_modelInterface->GetNextIndex(selectedIndex);
-            }
-            else
-            {
-                sourceIndex = m_modelInterface->GetDefaultIndex();
-            }
-
-            while (sourceIndex != selectedIndex)
-            {
-                mappedIndex = m_comboBoxMenu.GetProxyModel()->mapFromSource(sourceIndex);
-
-                if (mappedIndex.isValid())
+                if (m_comboBoxMenu.isHidden())
                 {
-                    break;
+                    ClearFilter();
+                    DisplayMenu();
                 }
 
-                sourceIndex = m_modelInterface->GetNextIndex(sourceIndex);
-            }
+                QModelIndex selectedIndex = m_comboBoxMenu.GetSelectedSourceIndex();
 
-            selectedIndex = sourceIndex;
-            m_comboBoxMenu.SetSelectedIndex(mappedIndex);
-
-            QString typeName = m_modelInterface->GetNameForIndex(selectedIndex);
-
-            if (!typeName.isEmpty())
-            {
-                setText(typeName);
-                setSelection(0, static_cast<int>(typeName.size()));
-
-                m_completer.setCompletionPrefix(typeName);
-            }
-
-            keyEvent->accept();
-        }
-        else if (keyEvent->key() == Qt::Key_Up)
-        {
-            if (m_comboBoxMenu.isHidden())
-            {
-                m_comboBoxMenu.GetProxyModel()->SetFilter("");
-                DisplayMenu();
-            }
-
-            QModelIndex selectedIndex = m_comboBoxMenu.GetSelectedSourceIndex();
-
-            if (!selectedIndex.isValid())
-            {
-                selectedIndex = m_modelInterface->FindIndexForName(m_selectedName);
-            }
-
-            QModelIndex mappedIndex;
-            QModelIndex sourceIndex;
-
-            if (selectedIndex.isValid())
-            {
-                sourceIndex = m_modelInterface->GetPreviousIndex(selectedIndex);
-            }
-            else
-            {
-                sourceIndex = m_modelInterface->GetPreviousIndex(m_modelInterface->GetDefaultIndex());
-            }
-
-            while (sourceIndex != selectedIndex)
-            {
-                mappedIndex = m_comboBoxMenu.GetProxyModel()->mapFromSource(sourceIndex);
-
-                if (mappedIndex.isValid())
+                if (!selectedIndex.isValid())
                 {
-                    break;
+                    selectedIndex = m_modelInterface->FindIndexForName(m_selectedName);
                 }
 
-                sourceIndex = m_modelInterface->GetPreviousIndex(sourceIndex);
+                QModelIndex mappedIndex;
+                QModelIndex sourceIndex;
+
+                if (selectedIndex.isValid())
+                {
+                    sourceIndex = m_modelInterface->GetNextIndex(selectedIndex);
+                }
+                else
+                {
+                    sourceIndex = m_modelInterface->GetDefaultIndex();
+                }
+
+                while (sourceIndex != selectedIndex)
+                {
+                    mappedIndex = m_comboBoxMenu.GetProxyModel()->mapFromSource(sourceIndex);
+
+                    if (mappedIndex.isValid())
+                    {
+                        break;
+                    }
+
+                    sourceIndex = m_modelInterface->GetNextIndex(sourceIndex);
+                }
+
+                selectedIndex = sourceIndex;
+                m_comboBoxMenu.SetSelectedIndex(mappedIndex);
+
+                QString typeName = m_modelInterface->GetNameForIndex(selectedIndex);
+
+                if (!typeName.isEmpty())
+                {
+                    setText(typeName);
+                    setSelection(0, static_cast<int>(typeName.size()));
+
+                    m_completer.setCompletionPrefix(typeName);
+                }
+
+                keyEvent->accept();
             }
-
-            selectedIndex = sourceIndex;
-            m_comboBoxMenu.SetSelectedIndex(mappedIndex);
-
-            QString typeName = m_comboBoxMenu.GetInterface()->GetNameForIndex(sourceIndex);
-
-            if (!typeName.isEmpty())
+            break;
+            case Qt::Key_Up:
             {
-                setText(typeName);
-                setSelection(0, static_cast<int>(typeName.size()));
+                if (m_comboBoxMenu.isHidden())
+                {
+                    m_comboBoxMenu.GetProxyModel()->SetFilter("");
+                    DisplayMenu();
+                }
 
-                m_completer.setCompletionPrefix(typeName);
+                QModelIndex selectedIndex = m_comboBoxMenu.GetSelectedSourceIndex();
+
+                if (!selectedIndex.isValid())
+                {
+                    selectedIndex = m_modelInterface->FindIndexForName(m_selectedName);
+                }
+
+                QModelIndex mappedIndex;
+                QModelIndex sourceIndex;
+
+                if (selectedIndex.isValid())
+                {
+                    sourceIndex = m_modelInterface->GetPreviousIndex(selectedIndex);
+                }
+                else
+                {
+                    sourceIndex = m_modelInterface->GetPreviousIndex(m_modelInterface->GetDefaultIndex());
+                }
+
+                while (sourceIndex != selectedIndex)
+                {
+                    mappedIndex = m_comboBoxMenu.GetProxyModel()->mapFromSource(sourceIndex);
+
+                    if (mappedIndex.isValid())
+                    {
+                        break;
+                    }
+
+                    sourceIndex = m_modelInterface->GetPreviousIndex(sourceIndex);
+                }
+
+                selectedIndex = sourceIndex;
+                m_comboBoxMenu.SetSelectedIndex(mappedIndex);
+
+                QString typeName = m_comboBoxMenu.GetInterface()->GetNameForIndex(sourceIndex);
+
+                if (!typeName.isEmpty())
+                {
+                    setText(typeName);
+                    setSelection(0, static_cast<int>(typeName.size()));
+
+                    m_completer.setCompletionPrefix(typeName);
+                }
+
+                keyEvent->accept();
             }
+            break;
+            case Qt::Key_Escape:
+                ResetComboBox();
+                keyEvent->accept();
+            break;
+            default:
+                break;
 
-            keyEvent->accept();
-        }
-        else if (keyEvent->key() == Qt::Key_Escape)
-        {
-            ResetComboBox();
-
-            keyEvent->accept();
         }
     }
 
@@ -746,8 +712,10 @@ namespace GraphCanvas
         {
         case CloseMenuState::Accept:
             m_comboBoxMenu.accept();
+            break;
         default:
             m_comboBoxMenu.reject();
+            break;
         }
 
         m_closeState = CloseMenuState::Reject;

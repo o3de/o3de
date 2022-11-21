@@ -8,20 +8,27 @@
 
 #pragma once
 
-#include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/Console/Console.h>
+
+#include <AzFramework/Asset/AssetCatalogBus.h>
+
+#include <AtomCore/std/parallel/concurrency_checker.h>
+
+#include <Atom/RHI/TagBitRegistry.h>
+
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
+
+#include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <Atom/Feature/Material/MaterialAssignment.h>
+#include <Atom/Feature/Material/MaterialAssignmentBus.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
-#include <AzCore/Asset/AssetCommon.h>
-#include <AtomCore/std/parallel/concurrency_checker.h>
-#include <AzCore/Console/Console.h>
-#include <AzFramework/Asset/AssetCatalogBus.h>
 
-#include <AzCore/Component/TickBus.h>
+#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {
@@ -31,6 +38,7 @@ namespace AZ
         class RayTracingFeatureProcessor;
 
         class ModelDataInstance
+            : public MaterialAssignmentNotificationBus::MultiHandler
         {
             friend class MeshFeatureProcessor;
             friend class MeshLoader;
@@ -88,8 +96,11 @@ namespace AZ
             void UpdateObjectSrg();
             bool MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const;
             void SetVisible(bool isVisible);
-            
-            MeshDrawPacketLods m_drawPacketListsByLod;
+
+            // MaterialAssignmentNotificationBus overrides
+            void OnRebuildMaterialInstance() override;
+
+            RPI::MeshDrawPacketLods m_drawPacketListsByLod;
 
             RPI::Cullable m_cullable;
             MaterialAssignmentMap m_materialAssignments;
@@ -127,6 +138,10 @@ namespace AZ
 
             AZ_RTTI(AZ::Render::MeshFeatureProcessor, "{6E3DFA1D-22C7-4738-A3AE-1E10AB88B29B}", AZ::Render::MeshFeatureProcessorInterface);
 
+            AZ_CONSOLEFUNC(MeshFeatureProcessor, ReportShaderOptionFlags, AZ::ConsoleFunctorFlags::Null, "Report currently used shader option flags.");
+
+            using FlagRegistry = RHI::TagBitRegistry<RPI::Cullable::FlagType>;
+
             static void Reflect(AZ::ReflectContext* context);
 
             MeshFeatureProcessor() = default;
@@ -156,7 +171,7 @@ namespace AZ
 
             Data::Instance<RPI::Model> GetModel(const MeshHandle& meshHandle) const override;
             Data::Asset<RPI::ModelAsset> GetModelAsset(const MeshHandle& meshHandle) const override;
-            const MeshDrawPacketLods& GetDrawPackets(const MeshHandle& meshHandle) const override;
+            const RPI::MeshDrawPacketLods& GetDrawPackets(const MeshHandle& meshHandle) const override;
             const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& GetObjectSrgs(const MeshHandle& meshHandle) const override;
             void QueueObjectSrgForCompile(const MeshHandle& meshHandle) const override;
             void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material) override;
@@ -182,11 +197,19 @@ namespace AZ
             void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) override;
             bool GetRayTracingEnabled(const MeshHandle& meshHandle) const override;
             void SetVisible(const MeshHandle& meshHandle, bool visible) override;
+            bool GetVisible(const MeshHandle& meshHandle) const override;
             void SetUseForwardPassIblSpecular(const MeshHandle& meshHandle, bool useForwardPassIblSpecular) override;
+
+            RHI::Ptr <FlagRegistry> GetFlagRegistry();
 
             // called when reflection probes are modified in the editor so that meshes can re-evaluate their probes
             void UpdateMeshReflectionProbes();
+
+            void ReportShaderOptionFlags(const AZ::ConsoleCommandContainer& arguments);
+
         private:
+            MeshFeatureProcessor(const MeshFeatureProcessor&) = delete;
+
             void ForceRebuildDrawPackets(const AZ::ConsoleCommandContainer& arguments);
             AZ_CONSOLEFUNC(MeshFeatureProcessor,
                 ForceRebuildDrawPackets,
@@ -194,19 +217,21 @@ namespace AZ
                 "(For Testing) Invalidates all mesh draw packets, causing them to rebuild on the next frame."
             );
 
-            MeshFeatureProcessor(const MeshFeatureProcessor&) = delete;
+            void PrintShaderOptionFlags();
 
             // RPI::SceneNotificationBus::Handler overrides...
-            void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
-            void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
+            void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
                         
             AZStd::concurrency_checker m_meshDataChecker;
             StableDynamicArray<ModelDataInstance> m_modelData;
             TransformServiceFeatureProcessor* m_transformService;
             RayTracingFeatureProcessor* m_rayTracingFeatureProcessor = nullptr;
             AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
-            MeshDrawPacketLods m_emptyDrawPacketLods;
+            RPI::MeshDrawPacketLods m_emptyDrawPacketLods;
+            RHI::Ptr<FlagRegistry> m_flagRegistry = nullptr;
             bool m_forceRebuildDrawPackets = false;
+            bool m_reportShaderOptionFlags = false;
+            bool m_enablePerMeshShaderOptionFlags = false;
         };
     } // namespace Render
 } // namespace AZ

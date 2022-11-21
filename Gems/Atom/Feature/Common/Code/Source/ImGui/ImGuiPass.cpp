@@ -408,21 +408,8 @@ namespace AZ
         {
             if (m_requestedAsDefaultImguiPass)
             {
-                // Check to see if another default is already set.
-                ImGuiPass* currentDefaultPass = nullptr;
-                ImGuiSystemRequestBus::BroadcastResult(currentDefaultPass, &ImGuiSystemRequestBus::Events::GetDefaultImGuiPass);
-
-                if (currentDefaultPass != nullptr && currentDefaultPass->GetRenderPipeline() == GetRenderPipeline())
-                {
-                    // Only error when the pipelines match, meaning the default was set multiple times for the same pipeline. When the pipelines differ,
-                    // it's possible that multiple default ImGui passes are intentional, and only the first one to load should actually be set as default.
-                    AZ_Error("ImGuiPass", false, "Default ImGui pass is already set on this pipeline, ignoring request to set this pass as default. Only one ImGui pass should be marked as default in the pipeline.");
-                }
-                else
-                {
-                    m_isDefaultImGuiPass = true;
-                    ImGuiSystemRequestBus::Broadcast(&ImGuiSystemRequestBus::Events::PushDefaultImGuiPass, this);
-                }
+                m_isDefaultImGuiPass = true;
+                ImGuiSystemRequestBus::Broadcast(&ImGuiSystemRequestBus::Events::PushDefaultImGuiPass, this);
             }
 
             // This ImguiContextScope is just to ensure we set the imgui context to what it was previously at the end of this function
@@ -688,7 +675,6 @@ namespace AZ
             for (uint32_t i = context.GetSubmitRange().m_startIndex; i < context.GetSubmitRange().m_endIndex; ++i)
             {
                 RHI::DrawItem drawItem;
-                drawItem.m_submitIndex = i;
                 drawItem.m_arguments = m_draws.at(i).m_drawIndexed;
                 drawItem.m_pipelineState = m_pipelineState->GetRHIPipelineState();
                 drawItem.m_indexBufferView = &m_indexBufferView;
@@ -697,7 +683,7 @@ namespace AZ
                 drawItem.m_scissorsCount = 1;
                 drawItem.m_scissors = &m_draws.at(i).m_scissor;
 
-                context.GetCommandList()->Submit(drawItem);
+                context.GetCommandList()->Submit(drawItem, i);
             }
         }
 

@@ -55,6 +55,11 @@ namespace ScriptCanvas
 
             bool IsFunctionCallNodeOutOfDatePure(const IsFunctionCallOutOfDateConfig& config);
 
+            bool IsLocallyDefinedFunctionCallNodeOutOfDate
+                ( const FunctionCallNode& node
+                , const FunctionCallNodeCompareConfig& compareConfig
+                , const Grammar::SubgraphInterface& latestInterface);
+
             bool IsOutOfDate(const FunctionCallNodeCompareConfig& config, const Grammar::In& inOld, const Grammar::In& inNew);
 
             bool IsOutOfDate(const FunctionCallNodeCompareConfig& config, const Grammar::Input& inputOld, const Grammar::Input& inputNew);

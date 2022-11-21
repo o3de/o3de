@@ -283,14 +283,14 @@ namespace AZ
 #endif
         }
 
-        void SkinnedMeshFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
+        void SkinnedMeshFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline,
+            RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
-            InitSkinningAndMorphPass(pipeline.get());
-        }
-
-        void SkinnedMeshFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
-        {
-            InitSkinningAndMorphPass(renderPipeline);
+            if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Added
+                || changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
+            {
+                InitSkinningAndMorphPass(renderPipeline);
+            }
         }
 
         void SkinnedMeshFeatureProcessor::OnBeginPrepareRender()
@@ -455,8 +455,7 @@ namespace AZ
             for (uint32_t index = startIndex; index < endIndex; ++index, ++it)
             {
                 const RHI::DispatchItem* dispatchItem = *it;
-                dispatchItem->m_submitIndex = index;
-                commandList->Submit(*dispatchItem);
+                commandList->Submit(*dispatchItem, index);
             }
         }
 
@@ -469,8 +468,7 @@ namespace AZ
             for (uint32_t index = startIndex; index < endIndex; ++index, ++it)
             {
                 const RHI::DispatchItem* dispatchItem = *it;
-                dispatchItem->m_submitIndex = index;
-                commandList->Submit(*dispatchItem);
+                commandList->Submit(*dispatchItem, index);
             }
         }
 

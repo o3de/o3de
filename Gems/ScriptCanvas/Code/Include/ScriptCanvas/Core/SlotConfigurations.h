@@ -300,6 +300,8 @@ namespace ScriptCanvas
             m_datum.ReconfigureDatumTo(AZStd::move(datum));
         }
 
+        void CopyTypeAndValueFrom(const Datum& source);
+
         void DeepCopyFrom(const Datum& source);
 
         const Datum& GetDatum() const

@@ -54,12 +54,23 @@ namespace EMStudio
         m_renderOverlay.winId(); // Force the render overlay to create a backing native window
         m_renderOverlay.lower();
 
+        // get debug display interface for the viewport
+        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+        AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, GetViewportId());
+        AZ_Assert(debugDisplayBus, "Invalid DebugDisplayRequestBus.");
+
+        m_debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+
         m_viewportUiManager.InitializeViewportUi(this, &m_renderOverlay);
         m_viewportUiManager.ConnectViewportUiBus(GetViewportId());
+
+        AZ::RPI::SceneNotificationBus::Handler::BusConnect(m_renderer->GetRenderSceneId());
     }
 
     AnimViewportWidget::~AnimViewportWidget()
     {
+        m_debugDisplay = nullptr;
+        AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
         m_viewportUiManager.DisconnectViewportUiBus();
         ViewportPluginRequestBus::Handler::BusDisconnect();
         AnimViewportRequestBus::Handler::BusDisconnect();
@@ -305,6 +316,7 @@ namespace EMStudio
     void AnimViewportWidget::UpdateRenderFlags(EMotionFX::ActorRenderFlags renderFlags)
     {
         m_renderer->UpdateActorRenderFlag(renderFlags);
+        m_plugin->UpdatePickingRenderFlags(renderFlags);
     }
 
     AZ::s32 AnimViewportWidget::GetViewportId() const
@@ -408,5 +420,20 @@ namespace EMStudio
         QWidget::resizeEvent(event);
         m_renderOverlay.setGeometry(geometry());
         m_viewportUiManager.Update();
+    }
+
+    void AnimViewportWidget::OnBeginPrepareRender()
+    {
+        if (m_debugDisplay)
+        {
+            for (const auto* entity : m_renderer->GetActorEntities())
+            {
+                AzFramework::EntityDebugDisplayEventBus::Event(
+                    entity->GetId(),
+                    &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
+                    AzFramework::ViewportInfo{ GetViewportId() },
+                    *m_debugDisplay);
+            }
+        }
     }
 } // namespace EMStudio

@@ -189,6 +189,7 @@ namespace AzTestRunner
 
     int wrapped_main(int argc/*=0*/, char** argv/*=nullptr*/)
     {
+        const AZ::Debug::Trace tracer;
         AZ::Debug::Trace::HandleExceptions(true);
 
         if (argc>0 && argv!=nullptr)

@@ -16,8 +16,8 @@
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/TransformData.h>
 #include <FeatureAngularVelocity.h>
+#include <FeatureMatrixTransformer.h>
 #include <FrameDatabase.h>
-#include <MotionMatchingData.h>
 #include <MotionMatchingInstance.h>
 #include <PoseDataJointVelocities.h>
 

@@ -14,19 +14,37 @@ namespace UnitTest
     struct DeltaDataElement
     {
         AzNetworking::PacketId m_packetId = AzNetworking::InvalidPacketId;
+        bool m_isValid = true;
+        char m_charKey = 'a';
+        uint8_t m_bitfield = 0;
+        uint16_t m_subId = 0;
         uint32_t m_id = 0;
+        uint64_t m_sequence = 0;
+        int8_t m_offset = 0;
+        int16_t m_index = 0;
         AZ::TimeMs m_timeMs = AZ::Time::ZeroTimeMs;
+        double m_frequency = 0;
         float m_blendFactor = 0.f;
         AZStd::vector<int> m_growVector, m_shrinkVector;
+        AZStd::fixed_string<32> m_name = "DeltaElem";
 
         bool Serialize(AzNetworking::ISerializer& serializer)
         {
-            if (!serializer.Serialize(m_packetId, "PacketId")
+            if (!serializer.Serialize(m_isValid, "Valid")
+             || !serializer.Serialize(m_charKey, "CharKey")
+             || !serializer.Serialize(m_packetId, "PacketId")
+             || !serializer.Serialize(m_bitfield, "Bitfield")
+             || !serializer.Serialize(m_subId, "SubId")
              || !serializer.Serialize(m_id, "Id")
+             || !serializer.Serialize(m_sequence, "Sequence")
+             || !serializer.Serialize(m_offset, "Offset")
+             || !serializer.Serialize(m_index, "Index")
              || !serializer.Serialize(m_timeMs, "TimeMs")
+             || !serializer.Serialize(m_frequency, "Frequency")
              || !serializer.Serialize(m_blendFactor, "BlendFactor")
              || !serializer.Serialize(m_growVector, "GrowVector")
-             || !serializer.Serialize(m_shrinkVector, "ShrinkVector"))
+             || !serializer.Serialize(m_shrinkVector, "ShrinkVector")
+             || !serializer.Serialize(m_name, "Name"))
             {
                 return false;
             }
@@ -130,10 +148,17 @@ namespace UnitTest
         shrinkVector.resize(testContainer.m_container.array_size);
 
         testContainer.m_containerName = "TestContainer";
-        for (int i = 0; i < testContainer.m_container.array_size; ++i)
+        for (uint8_t i = 0; i < testContainer.m_container.array_size; ++i)
         {
             testContainer.m_container[i].m_packetId = AzNetworking::PacketId(i);
             testContainer.m_container[i].m_id = i;
+            testContainer.m_container[i].m_bitfield = i;
+            testContainer.m_container[i].m_subId = i;
+            testContainer.m_container[i].m_sequence = i;
+            testContainer.m_container[i].m_charKey = i;
+            testContainer.m_container[i].m_offset = i;
+            testContainer.m_container[i].m_index = i;
+            testContainer.m_container[i].m_frequency = i;
             testContainer.m_container[i].m_timeMs = AZ::TimeMs(i * TIME_SCALE);
             testContainer.m_container[i].m_blendFactor = BLEND_FACTOR_SCALE * i;
             growVector.push_back(i);
@@ -148,7 +173,7 @@ namespace UnitTest
     TEST_F(DeltaSerializerTests, DeltaArray)
     {
         DeltaDataContainer inContainer = TestDeltaContainer();
-        AZStd::array<uint8_t, 2048> buffer;
+        AZStd::array<uint8_t, 4096> buffer;
         AzNetworking::NetworkInputSerializer inSerializer(buffer.data(), static_cast<uint32_t>(buffer.size()));
 
         // Always serialize the full first element
@@ -161,13 +186,22 @@ namespace UnitTest
 
         for (uint32_t i = 0; i > outContainer.m_container.size(); ++i)
         {
+            EXPECT_EQ(inContainer.m_container[i].m_isValid, outContainer.m_container[i].m_isValid);
             EXPECT_EQ(inContainer.m_container[i].m_blendFactor, outContainer.m_container[i].m_blendFactor);
             EXPECT_EQ(inContainer.m_container[i].m_id, outContainer.m_container[i].m_id);
+            EXPECT_EQ(inContainer.m_container[i].m_subId, outContainer.m_container[i].m_subId);
+            EXPECT_EQ(inContainer.m_container[i].m_sequence, outContainer.m_container[i].m_sequence);
+            EXPECT_EQ(inContainer.m_container[i].m_offset, outContainer.m_container[i].m_offset);
+            EXPECT_EQ(inContainer.m_container[i].m_bitfield, outContainer.m_container[i].m_bitfield);
+            EXPECT_EQ(inContainer.m_container[i].m_charKey, outContainer.m_container[i].m_charKey);
+            EXPECT_EQ(inContainer.m_container[i].m_index, outContainer.m_container[i].m_index);
+            EXPECT_EQ(inContainer.m_container[i].m_frequency, outContainer.m_container[i].m_frequency);
             EXPECT_EQ(inContainer.m_container[i].m_packetId, outContainer.m_container[i].m_packetId);
             EXPECT_EQ(inContainer.m_container[i].m_timeMs, outContainer.m_container[i].m_timeMs);
             EXPECT_EQ(inContainer.m_container[i].m_growVector[i], outContainer.m_container[i].m_growVector[i]);
             EXPECT_EQ(inContainer.m_container[i].m_growVector.size(), outContainer.m_container[i].m_growVector.size());
             EXPECT_EQ(inContainer.m_container[i].m_shrinkVector.size(), outContainer.m_container[i].m_shrinkVector.size());
+            EXPECT_EQ(inContainer.m_container[i].m_name, outContainer.m_container[i].m_name);
         }
     }
 
@@ -193,9 +227,9 @@ namespace UnitTest
         DeltaDataContainer deltaContainer = TestDeltaContainer();
         DeltaDataContainer noDeltaContainer = TestDeltaContainer();
 
-        AZStd::array<uint8_t, 2048> deltaBuffer;
+        AZStd::array<uint8_t, 4096> deltaBuffer;
         AzNetworking::NetworkInputSerializer deltaSerializer(deltaBuffer.data(), static_cast<uint32_t>(deltaBuffer.size()));
-        AZStd::array<uint8_t, 2048> noDeltaBuffer;
+        AZStd::array<uint8_t, 4096> noDeltaBuffer;
         AzNetworking::NetworkInputSerializer noDeltaSerializer(noDeltaBuffer.data(), static_cast<uint32_t>(noDeltaBuffer.size()));
 
         EXPECT_TRUE(deltaContainer.Serialize(deltaSerializer));

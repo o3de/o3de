@@ -7,7 +7,7 @@
  */
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/iterator.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Semaphore.h>
 #include <RHI/Fence.h>

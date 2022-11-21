@@ -236,16 +236,25 @@ namespace PhysX
     {
         EntityParams entityParams;
         entityParams.m_id = entityId;
-        AZ::TransformBus::EventResult(entityParams.m_position
-            , entityId
-            , &AZ::TransformBus::Events::GetWorldTranslation);
-        Physics::RigidBodyRequestBus::EventResultReverse(entityParams.m_velocity
-            , entityId
-            , &Physics::RigidBodyRequestBus::Events::GetLinearVelocity);
-        Physics::RigidBodyRequestBus::EventResultReverse(entityParams.m_mass
-            , entityId
-            , &Physics::RigidBodyRequestBus::Events::GetMass);
+
+        AzPhysics::RigidBody* rigidBody = nullptr;
+
+        if (auto* handler = Physics::RigidBodyRequestBus::FindFirstHandler(entityId))
+        {
+            rigidBody = handler->GetRigidBody();
+        }
+
+        if (!rigidBody)
+        {
+            AZ_Error("PhysX", false, "ForceRegionUtil::CreateEntityParams: No rigid body for entity [%llu]", entityId);
+            return entityParams;
+        }
+
+        entityParams.m_position = rigidBody->GetPosition();
+        entityParams.m_velocity = rigidBody->GetLinearVelocity();
+        entityParams.m_mass = rigidBody->GetMass();
         entityParams.m_aabb = GetForceRegionAabb(entityId);
+
         return entityParams;
     }
 

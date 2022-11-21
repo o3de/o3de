@@ -149,7 +149,7 @@ namespace AZ::Dom::Utils
         }
     }
 
-    const AZ::TypeId& GetValueTypeId(const Dom::Value& value);
+    AZ::TypeId GetValueTypeId(const Dom::Value& value);
 
     template<typename T>
     bool CanConvertValueToType(const Dom::Value& value)
@@ -267,22 +267,31 @@ namespace AZ::Dom::Utils
                         return reinterpret_cast<WrapperType>(valuePointer);
                     }
                 }
-                if (!value.IsOpaqueValue())
+                if (value.IsOpaqueValue())
                 {
-                    return {};
-                }
-                const AZStd::any& opaqueValue = value.GetOpaqueValue();
-                if (!opaqueValue.is<WrapperType>())
-                {
-                    // Marshal void* into our type - CanConvertToType will not register this as correct,
-                    // but this is an important safety hatch for marshalling out non-primitive UI elements in the DocumentPropertyEditor
-                    if (opaqueValue.is<void*>())
+                    const AZStd::any& opaqueValue = value.GetOpaqueValue();
+                    if (!opaqueValue.is<WrapperType>())
                     {
-                        return *reinterpret_cast<WrapperType*>(AZStd::any_cast<void*>(opaqueValue));
+                        // Marshal void* into our type - CanConvertToType will not register this as correct,
+                        // but this is an important safety hatch for marshalling out non-primitive UI elements in the DocumentPropertyEditor
+                        if (opaqueValue.is<void*>())
+                        {
+                            return *reinterpret_cast<WrapperType*>(AZStd::any_cast<void*>(opaqueValue));
+                        }
+                        return {};
+                    }
+                    return AZStd::any_cast<WrapperType>(opaqueValue);
+                }
+                else
+                {
+                    void* valuePointer = TryMarshalValueToPointer(value);
+                    if (valuePointer != nullptr)
+                    {
+                        return WrapperType(*reinterpret_cast<WrapperType*>(valuePointer));
                     }
                     return {};
                 }
-                return AZStd::any_cast<WrapperType>(opaqueValue);
+                
             };
 
             return ExtractOpaqueValue();

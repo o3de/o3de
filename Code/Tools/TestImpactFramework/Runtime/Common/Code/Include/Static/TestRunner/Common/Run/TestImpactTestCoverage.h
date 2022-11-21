@@ -35,6 +35,8 @@ namespace TestImpact
         TestCoverage& operator=(const TestCoverage&);
         TestCoverage& operator=(TestCoverage&&) noexcept;
 
+        virtual ~TestCoverage() = default;
+
         //! Returns the number of unique sources covered.
         size_t GetNumSourcesCovered() const;
 

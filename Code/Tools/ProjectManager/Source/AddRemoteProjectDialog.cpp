@@ -11,6 +11,7 @@
 #include <TextOverflowWidget.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <ProjectUtils.h>
+#include <PythonBindingsInterface.h>
 
 #include <QVBoxLayout>
 #include <QGridLayout>
@@ -20,6 +21,7 @@
 #include <QDialogButtonBox>
 #include <QPushButton>
 #include <QDir>
+#include <QTimer>
 
 namespace O3DE::ProjectManager
 {
@@ -46,16 +48,29 @@ namespace O3DE::ProjectManager
 
         m_repoPath = new FormLineEditWidget(tr("Remote URL"), "", this);
         m_repoPath->setMinimumSize(QSize(600, 0));
+        m_repoPath->setErrorLabelText(tr("Not a valid remote source."));
+        m_repoPath->lineEdit()->setPlaceholderText("https://github.com/o3de/example.git");
         vLayout->addWidget(m_repoPath);
 
         vLayout->addSpacing(10);
+
+        QHBoxLayout* warningHLayout = new QHBoxLayout();
+        QLabel* warningIcon = new QLabel();
+        warningIcon->setPixmap(QIcon(":/Warning.svg").pixmap(32, 32));
+        warningIcon->setAlignment(Qt::AlignCenter);
+        warningIcon->setFixedSize(32, 32);
+        warningHLayout->addWidget(warningIcon);
+
+        warningHLayout->addSpacing(10);
 
         QLabel* warningLabel = new QLabel(tr("Online repositories may contain files that could potentially harm your computer,"
             " please ensure you understand the risks before downloading from third-party sources."), this);
         warningLabel->setObjectName("remoteProjectDialogWarningLabel");
         warningLabel->setWordWrap(true);
         warningLabel->setAlignment(Qt::AlignLeft);
-        vLayout->addWidget(warningLabel);
+        warningHLayout->addWidget(warningLabel);
+
+        vLayout->addLayout(warningHLayout);
 
         vLayout->addSpacing(10);
 
@@ -103,7 +118,7 @@ namespace O3DE::ProjectManager
         extraInfoGridLayout->setAlignment(Qt::AlignLeft);
         
 
-        m_requirementsTitleLabel = new QLabel(tr("Requirements"), this);
+        m_requirementsTitleLabel = new QLabel(tr("Project Requirements"), this);
         m_requirementsTitleLabel->setObjectName("remoteProjectDialogRequirementsTitleLabel");
         m_requirementsTitleLabel->setAlignment(Qt::AlignLeft);
 
@@ -143,7 +158,11 @@ namespace O3DE::ProjectManager
         m_applyButton = m_dialogButtons->addButton(tr("Download && Build"), QDialogButtonBox::ApplyRole);
 
         connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
-        connect(m_applyButton, &QPushButton::clicked, this, &QDialog::accept);
+        connect(m_applyButton, &QPushButton::clicked, this, &AddRemoteProjectDialog::DownloadObject);
+
+        m_inputTimer = new QTimer(this);
+        m_inputTimer->setSingleShot(true);
+        connect(m_inputTimer, &QTimer::timeout, this, &AddRemoteProjectDialog::ValidateURI);
 
         connect(
             m_autoBuild, &QCheckBox::clicked, [this](bool checked)
@@ -159,15 +178,66 @@ namespace O3DE::ProjectManager
             }
         );
 
-        // Simulate repo being entered and UI enabling
         connect(
             m_repoPath->lineEdit(), &QLineEdit::textEdited,
-            [this](const QString& text)
+            [this]([[maybe_unused]] const QString& text)
             {
-                SetDialogReady(!text.isEmpty());
+                // wait for a second before attempting to validate so we're less likely to do it per keypress
+                m_inputTimer->start(1000);
+                m_repoPath->SetValidationState(FormLineEditWidget::ValidationState::Validating);
             });
 
         SetDialogReady(false);
+    }
+
+    void AddRemoteProjectDialog::ValidateURI()
+    {
+        // validate URI, if it's a valid repository, get the project info and set the dialog as ready
+        bool validRepository = PythonBindingsInterface::Get()->ValidateRepository(m_repoPath->lineEdit()->text());
+        bool containsProjects = false;
+
+        if (validRepository)
+        {
+            auto repoProjectsResult = PythonBindingsInterface::Get()->GetProjectsForRepo(m_repoPath->lineEdit()->text());
+            if (repoProjectsResult.IsSuccess())
+            {
+                const auto repoProjects = repoProjectsResult.GetValue();
+                if (!repoProjects.isEmpty())
+                {
+                    // only get the first one for now
+                    const ProjectInfo& project = repoProjects.at(0);
+                    SetCurrentProject(project);
+
+                    containsProjects = true;
+                }
+            }
+        }
+
+        const bool isValidProjectRepo = validRepository && containsProjects;
+        m_repoPath->SetValidationState(
+            isValidProjectRepo ? FormLineEditWidget::ValidationState::ValidationSuccess
+                               : FormLineEditWidget::ValidationState::ValidationFailed);
+        m_repoPath->setErrorLabelVisible(!isValidProjectRepo);
+        SetDialogReady(isValidProjectRepo);
+    }
+
+    void AddRemoteProjectDialog::DownloadObject()
+    {
+        // Add Repo:
+        const QString repoUri = m_repoPath->lineEdit()->text();
+        auto addGemRepoResult = PythonBindingsInterface::Get()->AddGemRepo(repoUri);
+        if (addGemRepoResult.IsSuccess())
+        {
+            // Send download to project screen to initiate download
+            emit StartObjectDownload(m_currentProject.m_projectName, GetInstallPath(), ShouldBuild());
+            emit QDialog::accept();
+        }
+        else
+        {
+            QString failureMessage = tr("Failed to add gem repo: %1.").arg(repoUri);
+            ProjectUtils::DisplayDetailedError(failureMessage, addGemRepoResult, this);
+            AZ_Error("Project Manager", false, failureMessage.toUtf8().constData());
+        }
     }
 
     QString AddRemoteProjectDialog::GetRepoPath()
@@ -187,12 +257,21 @@ namespace O3DE::ProjectManager
     {
         m_currentProject = projectInfo;
 
-        m_downloadProjectLabel->setText(projectInfo.m_displayName);
+        m_downloadProjectLabel->setText(tr("Download Project %1").arg(projectInfo.m_displayName));
         m_installPath->lineEdit()->setText(QDir::toNativeSeparators(ProjectUtils::GetDefaultProjectPath() + "/" + projectInfo.m_projectName));
+        m_requirementsContentLabel->setText(projectInfo.m_requirements);
+        m_licensesContentLabel->setText(projectInfo.m_license);
     }
 
     void AddRemoteProjectDialog::SetDialogReady(bool isReady)
     {
+        // Reset
+        if (!isReady)
+        {
+            m_downloadProjectLabel->setText(tr("Download Project..."));
+            m_installPath->setText("");
+        }
+
         m_downloadProjectLabel->setEnabled(isReady);
         m_installPath->setEnabled(isReady);
         m_autoBuild->setEnabled(isReady);
@@ -201,6 +280,6 @@ namespace O3DE::ProjectManager
         m_licensesTitleLabel->setEnabled(isReady);
         m_requirementsContentLabel->setEnabled(isReady);
         m_licensesContentLabel->setEnabled(isReady);
-        m_dialogButtons->setEnabled(isReady);
+        m_applyButton->setEnabled(isReady);
     }
 } // namespace O3DE::ProjectManager

@@ -11,17 +11,20 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Slice/SliceComponent.h>
+#include <AzTest/Utils.h>
 
 namespace UnitTest
 {
-    AZStd::string GetTestFolderPath()
+    AZ::IO::Path GetTestFolderPath()
     {
-        return AZ_TRAIT_TEST_ROOT_FOLDER;
+        // Make sure the test folder path is a directory
+        static AZ::Test::ScopedAutoTempDirectory s_tempDirectory;
+        return s_tempDirectory.GetDirectoryAsPath();
     }
 
     void MakePathFromTestFolder(char* buffer, int bufferLen, const char* fileName)
     {
-        azsnprintf(buffer, bufferLen, "%s%s", GetTestFolderPath().c_str(), fileName);
+        azstrcpy(buffer, bufferLen, (GetTestFolderPath() / fileName).LexicallyNormal().c_str());
     }
 
     ErrorHandler::ErrorHandler(const char* errorPattern)
@@ -87,6 +90,30 @@ namespace UnitTest
     bool ErrorHandler::OnPrintf(const char* window, const char* message)
     {
         return SuppressExpectedErrors(window, message);
+    }
+
+    void RegistryTestHelper::SetUp(AZStd::string_view path, bool value)
+    {
+        m_oldSettingsRegistry = AZ::SettingsRegistry::Get();
+        if (m_oldSettingsRegistry)
+        {
+            AZ::SettingsRegistry::Unregister(m_oldSettingsRegistry);
+        }
+
+        m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
+        m_settingsRegistry->Set(path, value);
+        AZ::SettingsRegistry::Register(m_settingsRegistry.get());
+    }
+
+    void RegistryTestHelper::TearDown()
+    {
+        AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
+        if (m_oldSettingsRegistry)
+        {
+            AZ::SettingsRegistry::Register(m_oldSettingsRegistry);
+            m_oldSettingsRegistry = nullptr;
+        }
+        m_settingsRegistry.reset();
     }
 }
 

@@ -18,4 +18,7 @@ namespace Compression
     constexpr CompressionAlgorithmId Uncompressed{};
     constexpr CompressionAlgorithmId Invalid{ AZStd::numeric_limits<AZ::u32>::max() };
 
+    // Implements the Relational Operators for the CompressionAlgorithmId class
+    // only for use in the CompressionFactoryImpl/DecompressionFactoryImpl class to allow it to be added to a set
+    AZ_DEFINE_ENUM_RELATIONAL_OPERATORS(CompressionAlgorithmId);
 } // namespace Compression

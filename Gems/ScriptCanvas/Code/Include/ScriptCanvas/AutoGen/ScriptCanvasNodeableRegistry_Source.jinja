@@ -77,7 +77,9 @@ namespace ScriptCanvas
 
     AZStd::vector<AZ::ComponentDescriptor*> {{autogenTargetName}}NodeableRegistry::GetComponentDescriptors()
     {
-        return AZStd::vector<AZ::ComponentDescriptor*>({
+        if (m_cachedDescriptors.empty())
+        {
+            m_cachedDescriptors = {
 {% for ScriptCanvas in dataFiles %}
 {%     for Class in ScriptCanvas %}
 {%         set nodeName = Class.attrib['Name'] %}
@@ -90,6 +92,8 @@ namespace ScriptCanvas
 {%         endif %}
 {%     endfor %}
 {% endfor %}
-        });
+            };
+        }
+        return m_cachedDescriptors;
     }
 }

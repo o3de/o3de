@@ -12,7 +12,7 @@ import sys
 import pathlib
 import traceback
 import re
-from test_impact import NativeTestImpact
+from test_impact import NativeTestImpact, PythonTestImpact
 from tiaf_logger import get_logger
 
 logger = get_logger(__file__)
@@ -137,10 +137,42 @@ def parse_args():
         required=False
     )
 
+    # Target exclusion JSON file
     parser.add_argument(
         '--exclude-file',
         type=valid_file_path,
         help="Path to file containing tests to exclude from this run",
+        required=False
+    )
+
+    # Runtime type (native or python)
+    parser.add_argument(
+        "--runtime-type",
+        choices=SUPPORTED_RUNTIMES.keys(),
+        help="The runtime TIAF should run tests for",
+        required=True
+    )
+
+    # Runtime sequence override
+    parser.add_argument(
+        "--sequence-override",
+        help="Override sequence type",
+        required=False
+    )
+
+    # Python test runner policy
+    parser.add_argument(
+        "--testrunner-policy",
+        choices=["live","null"],
+        help="Test runner policy for TIAF",
+        required=False
+    )
+
+    # Test target output routing
+    parser.add_argument(
+        "--target-output",
+        choices=["stdout"],
+        help="Test target std/error output routing",
         required=False
     )
 
@@ -149,9 +181,16 @@ def parse_args():
     return args
 
 
+SUPPORTED_RUNTIMES = {
+    "python": PythonTestImpact,
+    "native": NativeTestImpact
+}
+
+
 def main(args: dict):
     try:
-        tiaf = NativeTestImpact(args)
+        tiaf_class = SUPPORTED_RUNTIMES[args.pop("runtime_type")]
+        tiaf = tiaf_class(args)
         tiaf_result = tiaf.run()
         if args.get('mars_index_prefix'):
             logger.info("Transmitting report to MARS...")
@@ -166,6 +205,9 @@ def main(args: dict):
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
         logger.error(f"Exception caught by TIAF driver: '{e}'.")
         traceback.print_exc()
+    finally:
+        # This will not gate the AR run - replace with result.return_code if you wish to enable gating.
+        sys.exit(0)
 
 
 if __name__ == "__main__":

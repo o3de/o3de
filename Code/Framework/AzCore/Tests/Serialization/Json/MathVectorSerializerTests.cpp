@@ -90,8 +90,8 @@ namespace JsonSerializationTests
         MathVectorSerializerTestDescription<AZ::Vector3, 3, AZ::JsonVector3Serializer>,
         MathVectorSerializerTestDescription<AZ::Vector4, 4, AZ::JsonVector4Serializer>
     >;
-    INSTANTIATE_TYPED_TEST_CASE_P(JsonMathVectorSerializer, JsonSerializerConformityTests, MathVectorSerializerConformityTestTypes);
-
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(JsonMathVectorSerializer, JsonSerializerConformityTests, MathVectorSerializerConformityTestTypes));
+    
     template<typename T>
     class JsonMathVectorSerializerTests
         : public BaseJsonSerializerFixture

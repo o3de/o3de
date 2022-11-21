@@ -14,6 +14,6 @@ namespace AZ
 {
     namespace RHI
     {
-        using DrawListTagRegistry = TagRegistry<DrawListTag, Limits::Pipeline::DrawListTagCountMax>;
+        using DrawListTagRegistry = TagRegistry<DrawListTag::IndexType, Limits::Pipeline::DrawListTagCountMax>;
     }
 }

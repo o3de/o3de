@@ -11,6 +11,7 @@
 
 #include <Atom/RHI.Edit/ShaderPlatformInterface.h>
 #include <Atom/RHI.Edit/ShaderBuildArguments.h>
+#include <Atom/RPI.Edit/Shader/ShaderOptionValuesSourceData.h>
 
 #include <Atom/RPI.Reflect/Shader/ShaderCommonTypes.h>
 
@@ -66,6 +67,9 @@ namespace AZ
             // as most of the time this all they customize in terms of shader compilation arguments.
             AZStd::vector<AZStd::string> m_definitions;
 
+            // This can override the default shader option values specified in the shader code.
+            ShaderOptionValuesSourceData m_shaderOptionValues;
+
             AZStd::string m_drawListName;
 
             ProgramSettings m_programSettings;
@@ -73,7 +77,11 @@ namespace AZ
             // Raster Shader
             RHI::DepthStencilState m_depthStencilState;
             RHI::RasterState m_rasterState;
-            RHI::TargetBlendState m_blendState;
+
+            // Blend States
+            RHI::BlendState m_blendState;
+            RHI::TargetBlendState m_globalTargetBlendState;
+            AZStd::unordered_map<uint32_t, RHI::TargetBlendState> m_targetBlendStates;
 
             //! List of RHI Backends (aka ShaderPlatformInterface) for which this shader should not be compiled.
             AZStd::vector<AZStd::string> m_disabledRhiBackends;

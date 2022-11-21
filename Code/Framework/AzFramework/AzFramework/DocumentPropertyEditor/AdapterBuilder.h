@@ -63,7 +63,7 @@ namespace AZ::DocumentPropertyEditor
         //! the path of the property value and its new value. This path can be used to generate a
         //! correct Replace patch for submitting NotifyContentsChanged.
         void OnEditorChanged(
-            AZStd::function<void(const Dom::Path&, const Dom::Value&, Nodes::PropertyEditor::ValueChangeType)> onChangedCallback);
+            AZStd::function<void(const Dom::Path&, const Dom::Value&, Nodes::ValueChangeType)> onChangedCallback);
         //! Adds a message handler bound to the given adapter for a given message name or callback attribute.
         //! \param adapter The adapter to bind this message to.
         //! \param messageName The name of the message.

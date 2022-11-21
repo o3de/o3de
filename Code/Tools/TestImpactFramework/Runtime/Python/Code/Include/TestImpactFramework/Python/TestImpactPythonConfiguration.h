@@ -12,9 +12,30 @@
 
 namespace TestImpact
 {
+    //! Test engine configuration.
+    struct PythonTestEngineConfig
+    {
+        //! Test runner configuration.
+        struct TestRunner
+        {
+            RepoPath m_pythonCmd; //!< Path to the python command.
+        };
+
+        TestRunner m_testRunner;
+    };
+
+    //! Build target configuration.
+    struct PythonTargetConfig
+    {
+        ExcludedTargets m_excludedTargets; 
+    };
+
     //! Python runtime configuration.
     struct PythonRuntimeConfig
     {
         RuntimeConfig m_commonConfig;
+        WorkspaceConfig m_workspace;
+        PythonTestEngineConfig m_testEngine;
+        PythonTargetConfig m_target;
     };
 } // namespace TestImpact

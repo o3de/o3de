@@ -61,6 +61,7 @@ set(FILES
     Source/ImageLoader/QtImageLoader.cpp
     Source/ImageLoader/TIFFLoader.cpp
     Source/ImageLoader/ExrLoader.cpp
+    Source/ImageLoader/TgaLoader.cpp
     Source/Editor/EditorCommon.h
     Source/Editor/EditorCommon.cpp
     Source/Editor/ImagePopup.cpp

@@ -113,13 +113,3 @@ endif()
 if(NOT CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION MATCHES "10.0")
     message(FATAL_ERROR "Unsupported version of Windows SDK ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}, specify \"-DCMAKE_SYSTEM_VERSION=10.0\" when invoking cmake")
 endif()
-
-if(CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION VERSION_LESS_EQUAL "10.0.19041.0")
-  # Suppresses warning C5105 which triggers with Windows 10 SDK 10.0.19041 and below when using the /Zc:preprocessor option
-  # https://developercommunity.visualstudio.com/t/stdc17-generates-warning-compiling-windowsh/1249671
-  ly_append_configurations_options(
-        COMPILATION
-            -wd5104
-            -wd5105
-    )
-endif()

@@ -15,7 +15,6 @@
 #include <Atom/RPI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
-#include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
 
 #include <AzCore/EBus/Event.h>
 
@@ -37,8 +36,6 @@ namespace AZ
         //! Use a MaterialAssetCreator to create a MaterialAsset.
         class MaterialAsset
             : public AZ::Data::AssetData
-            , public Data::AssetBus::Handler
-            , public MaterialReloadNotificationBus::Handler
             , public AssetInitBus::Handler
         {
             friend class MaterialVersionUpdates;
@@ -142,19 +139,9 @@ namespace AZ
             //! Called by asset creators to assign the asset to a ready state.
             void SetReady();
 
-            // AssetBus overrides...
-            void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
-            void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
-
-            //! Replaces the MaterialTypeAsset when a reload occurs
-            void ReinitializeMaterialTypeAsset(Data::Asset<Data::AssetData> asset);
-
-            // MaterialReloadNotificationBus overrides...
-            void OnMaterialTypeAssetReinitialized(const Data::Asset<MaterialTypeAsset>& materialTypeAsset) override;
-
             static const char* s_debugTraceName;
 
-            Data::Asset<MaterialTypeAsset> m_materialTypeAsset;
+            Data::Asset<MaterialTypeAsset> m_materialTypeAsset = { AZ::Data::AssetLoadBehavior::PreLoad };
 
             //! Holds values for each material property, used to initialize Material instances.
             //! This is indexed by MaterialPropertyIndex and aligns with entries in m_materialPropertiesLayout.

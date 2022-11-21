@@ -46,7 +46,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         uint32_t GetSubId() const;
 
         bool HasAsset() const;
-        const AZ::Data::AssetType& GetAssetType() const;
+        AZ::Data::AssetType GetAssetType() const;
         const AZ::Data::AssetData& GetAsset() const;
         AZ::Data::AssetData& GetAsset();
         AssetSmartPtr ReleaseAsset();

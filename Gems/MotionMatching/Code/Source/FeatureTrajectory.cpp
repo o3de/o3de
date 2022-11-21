@@ -14,9 +14,9 @@
 #include <EMotionFX/Source/Pose.h>
 #include <EMotionFX/Source/Transform.h>
 #include <EMotionFX/Source/TransformData.h>
+#include <FeatureMatrixTransformer.h>
 #include <FeatureTrajectory.h>
 #include <FrameDatabase.h>
-#include <MotionMatchingData.h>
 #include <MotionMatchingInstance.h>
 
 #include <AzCore/Serialization/EditContext.h>

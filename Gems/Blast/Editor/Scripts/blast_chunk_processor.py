@@ -22,7 +22,7 @@ import azlmbr.bus
 #
 # SceneAPI Processor
 #
-blastChunksAssetType = azlmbr.math.Uuid_CreateString('{993F0B0F-37D9-48C6-9CC2-E27D3F3E343E}', 0)
+blastChunksAssetType = azlmbr.math.Uuid_CreateString('{993F0B0F-37D9-48C6-9CC2-E27D3F3E343E}')
 
 def log_exception_traceback():
     """
@@ -140,17 +140,18 @@ def on_update_manifest(args):
         scene = args[0]
         return update_manifest(scene)
     except:
-        global sceneJobHandler
-        sceneJobHandler = None
         log_exception_traceback()
+    finally:
+        global sceneJobHandler
+        sceneJobHandler.disconnect()
 
 # try to create SceneAPI handler for processing
 try:
     import azlmbr.scene as sceneApi
-    if (sceneJobHandler == None):
-        sceneJobHandler = sceneApi.ScriptBuildingNotificationBusHandler()
-        sceneJobHandler.connect()
-        sceneJobHandler.add_callback('OnUpdateManifest', on_update_manifest)
-        sceneJobHandler.add_callback('OnPrepareForExport', on_prepare_for_export)
+    sceneJobHandler = sceneApi.ScriptBuildingNotificationBusHandler()
+    sceneJobHandler.add_callback('OnUpdateManifest', on_update_manifest)
+    sceneJobHandler.add_callback('OnPrepareForExport', on_prepare_for_export)
+    sceneJobHandler.connect()
+        
 except:
     sceneJobHandler = None

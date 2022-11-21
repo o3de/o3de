@@ -10,10 +10,14 @@
 #include <ImGuiContextScope.h>
 #include <AzCore/PlatformIncl.h>
 #include <OtherActiveImGuiBus.h>
+#include <AzCore/Debug/Profiler.h>
 
 #ifdef IMGUI_ENABLED
 
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Jobs/Algorithms.h>
+#include <AzCore/Jobs/JobCompletion.h>
+#include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/std/containers/fixed_unordered_map.h>
 #include <AzCore/Time/ITime.h>
@@ -23,6 +27,7 @@
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
+#include <AzFramework/Viewport/ViewportBus.h>
 #include <IConsole.h>
 #include <imgui/imgui_internal.h>
 #include <sstream>
@@ -38,6 +43,8 @@ static const constexpr uint32_t IMGUI_WHEEL_DELTA = 120; // From WinUser.h, for 
 using LyButtonImGuiNavIndexPair = AZStd::pair<AzFramework::InputChannelId, ImGuiNavInput_>;
 using LyButtonImGuiNavIndexMap = AZStd::fixed_unordered_map<AzFramework::InputChannelId, ImGuiNavInput_, 11, 32>;
 static LyButtonImGuiNavIndexMap s_lyInputToImGuiNavIndexMap;
+
+AZ_DEFINE_BUDGET(ImGui);
 
 /**
     An anonymous namespace containing helper functions for interoperating with AzFrameworkInput.
@@ -242,10 +249,48 @@ float ImGui::ImGuiManager::GetDpiScalingFactor() const
     return io.FontGlobalScale;
 }
 
-void ImGuiManager::Render()
+void ImGui::ImGuiManager::Render()
 {
+    m_renderJobCompletion = aznew AZ::JobCompletion();
+
+    const auto jobLambda = [this]([[maybe_unused]] AZ::Job& owner)
+    {
+        this->RenderJob();
+    };
+
+    AZ::Job* renderJob = AZ::CreateJobFunction(AZStd::move(jobLambda), true, nullptr);  //auto-deletes
+    renderJob->SetDependent(m_renderJobCompletion);
+    renderJob->Start();
+}
+
+void ImGui::ImGuiManager::WaitForRenderToFinish()
+{
+    if (m_renderJobCompletion)
+    {
+        AZ_PROFILE_SCOPE(ImGui, "ImGuiManager::WaitForRenderToFinish");
+        m_renderJobCompletion->StartAndWaitForCompletion();
+        delete m_renderJobCompletion;
+        m_renderJobCompletion = nullptr;
+    }
+}
+
+void ImGui::ImGuiManager::RenderJob()
+{
+    AZ_PROFILE_FUNCTION(ImGui);
+
     if (m_clientMenuBarState == DisplayState::Hidden && m_editorWindowState == DisplayState::Hidden)
     {
+        // the first frame that this is true means that it has been deactivated, the following condtional is to avoid
+        // continuous bus notifications
+        if (m_imGuiBroadcastState.m_deactivationBroadcastStatus == ImGuiStateBroadcast::NotBroadcast)
+        {
+            AzFramework::ViewportImGuiNotificationBus::Broadcast(&AzFramework::ViewportImGuiNotificationBus::Events::OnImGuiDeactivated);
+            m_imGuiBroadcastState.m_deactivationBroadcastStatus = ImGuiStateBroadcast::Broadcast;
+
+            // reset the following state to ActivationNotBroadcasted so when ImGui is first activated,
+            // it sends the activation bus notification
+            m_imGuiBroadcastState.m_activationBroadcastStatus = ImGuiStateBroadcast::NotBroadcast;
+        } 
         return;
     }
 
@@ -383,6 +428,13 @@ void ImGuiManager::Render()
 
     // Render!
     RenderImGuiBuffers(scaleRects);
+
+    if (m_imGuiBroadcastState.m_activationBroadcastStatus == ImGuiStateBroadcast::NotBroadcast)
+    {
+        AzFramework::ViewportImGuiNotificationBus::Broadcast(&AzFramework::ViewportImGuiNotificationBus::Events::OnImGuiActivated);
+        m_imGuiBroadcastState.m_activationBroadcastStatus = ImGuiStateBroadcast::Broadcast;
+        m_imGuiBroadcastState.m_deactivationBroadcastStatus = ImGuiStateBroadcast::NotBroadcast;
+    }
 
     // Clear the simulated backspace key
     if (m_simulateBackspaceKeyPressed)
@@ -625,6 +677,27 @@ bool ImGuiManager::OnInputTextEventFiltered(const AZStd::string& textUTF8)
     return io.WantTextInput && m_clientMenuBarState == DisplayState::Visible;;
 }
 
+void ImGuiManager::ToggleToImGuiVisibleState(DisplayState state)
+{
+    if (state != m_clientMenuBarState)
+    {
+        DisplayState initialState = m_clientMenuBarState;
+
+        while (m_clientMenuBarState != state)
+        {
+            ToggleThroughImGuiVisibleState();
+
+            // Prevent infinite loop if the Toggle function can't get to the desired state naturally
+            if (m_clientMenuBarState == initialState)
+            {
+                AZ_Warning("ImGuiManager", false, "SetClientMenuBarState failed to naturally enter the reguested state");
+                m_clientMenuBarState = state;
+                break;
+            }
+        }
+    }
+}
+
 void ImGuiManager::ToggleThroughImGuiVisibleState()
 {
     ImGui::ImGuiContextScope contextScope(m_imguiContext);
@@ -634,19 +707,24 @@ void ImGuiManager::ToggleThroughImGuiVisibleState()
         case DisplayState::Hidden:
             m_clientMenuBarState = DisplayState::Visible;
             
-            // Draw the ImGui Mouse cursor if either the hardware mouse is connected, or the controller mouse is enabled.
-            ImGui::GetIO().MouseDrawCursor = m_hardwardeMouseConnected || IsControllerSupportModeEnabled(ImGuiControllerModeFlags::Mouse);
-
-            // Disable system cursor if it's in editor and it's not editor game mode
             if (gEnv->IsEditor() && !gEnv->IsEditorGameMode())
             {
-                // Constrain and hide the system cursor
-                AzFramework::InputSystemCursorRequestBus::Event(
-                    AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
-                    AzFramework::SystemCursorState::ConstrainedAndHidden);
+                // The system cursor is visible so we don't need ImGui's cursor
+                ImGui::GetIO().MouseDrawCursor = false; 
 
-                // Disable discrete input mode
+                // Disable discrete input in edit mode because the user has to click in the viewport to navigate,
+                // so there's no concern about ImGui mouse movements also navigating the camera.
                 m_enableDiscreteInputMode = false;
+            }
+            else
+            {
+                // We're either in game launcher or in Editor game mode and the system cursor is hidden so we'll
+                // show ImGui's cursor instead, but only if a mouse is available.
+                ImGui::GetIO().MouseDrawCursor = m_hardwardeMouseConnected || IsControllerSupportModeEnabled(ImGuiControllerModeFlags::Mouse);
+
+                // During gameplay, the mouse usually affects the camera, so we want the discrete mode to be available by default,
+                // so the user can easily turn off gameplay input while interacting with ImGui.
+                m_enableDiscreteInputMode = true;
             }
 
             // get window size if it wasn't initialized
@@ -670,7 +748,7 @@ void ImGuiManager::ToggleThroughImGuiVisibleState()
             // Enable system cursor if it's in editor and it's not editor game mode
             if (gEnv->IsEditor() && !gEnv->IsEditorGameMode())
             {
-                // unconstrain and show the system cursor
+                // unconstrain and show the system cursor, because there's an ImGui menu item that allows the user to change the cursor state
                 AzFramework::InputSystemCursorRequestBus::Event(
                     AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
                     AzFramework::SystemCursorState::UnconstrainedAndVisible);

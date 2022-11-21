@@ -33,7 +33,7 @@ namespace GradientSignal
         GradientSampler m_gradientSampler;
     };
 
-    static const AZ::Uuid ReferenceGradientComponentTypeId = "{C4904252-3386-4820-9BF7-53DE705FA644}";
+    inline constexpr AZ::TypeId ReferenceGradientComponentTypeId{ "{C4904252-3386-4820-9BF7-53DE705FA644}" };
 
     /**
     * calculates a gradient value by referencing values from another gradient

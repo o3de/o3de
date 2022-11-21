@@ -10,6 +10,7 @@
 
 #include <AzCore/AzCore_Traits_Platform.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/std/ranges/ranges_algorithm.h>
 #include <AzCore/std/concepts/concepts.h>
 
 namespace AZ::IO::Internal
@@ -185,16 +186,66 @@ namespace AZ::IO::Internal
     }
 
     // Compares path segments using either Posix or Windows path rules based on the exactCaseCompare option
-    static int ComparePathSegment(AZStd::string_view left, AZStd::string_view right, bool exactCaseCompare)
+    static constexpr int ComparePathSegment(AZStd::string_view left, AZStd::string_view right, bool exactCaseCompare)
     {
         const size_t maxCharsToCompare = (AZStd::min)(left.size(), right.size());
 
-        int charCompareResult = exactCaseCompare
-            ? maxCharsToCompare ? strncmp(left.data(), right.data(), maxCharsToCompare) : 0
-            : maxCharsToCompare ? azstrnicmp(left.data(), right.data(), maxCharsToCompare) : 0;
-        return charCompareResult == 0
-            ? static_cast<int>(aznumeric_cast<ptrdiff_t>(left.size()) - aznumeric_cast<ptrdiff_t>(right.size()))
-            : charCompareResult;
+        if (exactCaseCompare)
+        {
+            const int charCompareResult = maxCharsToCompare
+                ? AZStd::char_traits<char>::compare(left.data(), right.data(), maxCharsToCompare)
+                : 0;
+            return charCompareResult == 0
+                ? static_cast<int>(static_cast<ptrdiff_t>(left.size()) - static_cast<ptrdiff_t>(right.size()))
+                : charCompareResult;
+        }
+        else
+        {
+            if (az_builtin_is_constant_evaluated())
+            {
+                // compile time implementation
+                auto ToLower = [](const char element) constexpr -> char
+                {
+                    return element >= 'A' && element <= 'Z' ? (element - 'A') + 'a' : element;
+                };
+                const auto mismatchResult = AZStd::ranges::mismatch(left, right, AZStd::char_traits<char>::eq, ToLower, ToLower);
+                const size_t leftMismatchCount = AZStd::ranges::distance(mismatchResult.in1, left.end());
+                const size_t rightMismatchCount = AZStd::ranges::distance(mismatchResult.in2, right.end());
+                if (leftMismatchCount == 0 && rightMismatchCount == 0)
+                {
+                    // Both path segments are equal return 0
+                    return 0;
+                }
+                else
+                {
+                    // There is a mismatch, so determine if it was due to characters not comparing equal
+                    if (leftMismatchCount != 0 && rightMismatchCount != 0)
+                    {
+                        return ToLower(*mismatchResult.in1) < ToLower(*mismatchResult.in2) ? -1 : 1;
+                    }
+                    else if (leftMismatchCount != 0)
+                    {
+                        // The left path segment has more characters left so it is greater than the right
+                        return 1;
+                    }
+                    else
+                    {
+                        // The left path segment has less characters left so it is less than the right
+                        return -1;
+                    }
+                }
+
+            }
+            else
+            {
+                const int charCompareResult = maxCharsToCompare
+                    ? azstrnicmp(left.data(), right.data(), maxCharsToCompare)
+                    : 0;
+                return charCompareResult == 0
+                    ? static_cast<int>(aznumeric_cast<ptrdiff_t>(left.size()) - aznumeric_cast<ptrdiff_t>(right.size()))
+                    : charCompareResult;
+            }
+        }
     }
 }
 
@@ -251,11 +302,13 @@ namespace AZ::IO::parser
             return pathParser;
         }
 
+        //! Returns the pointer to the beginning of the next parser token
+        //! If there are no more tokens, nullptr is returned
         constexpr PosPtr Peek() const noexcept
         {
             auto tokenEnd = getNextTokenStartPos();
-            auto End = m_path_view.end();
-            return tokenEnd == End ? nullptr : tokenEnd;
+            auto pathEnd = m_path_view.end();
+            return tokenEnd == pathEnd ? nullptr : tokenEnd;
         }
 
         constexpr void Increment() noexcept
@@ -445,7 +498,7 @@ namespace AZ::IO::parser
             case PS_BeforeBegin:
                 [[fallthrough]];
             case PS_AtEnd:
-                [[fallthrough]];
+                break;
             case PS_InRootDir:
                 return m_preferred_separator == '/' ? "/" : "\\";
             case PS_InRootName:
@@ -653,14 +706,27 @@ namespace AZ::IO::parser
 
     //path.hash
     /// Path is using FNV-1a algorithm 64 bit version.
-    inline size_t HashSegment(AZStd::string_view pathSegment, bool hashExactPath)
+    constexpr size_t HashSegment(AZStd::string_view pathSegment, bool hashExactPath)
     {
         size_t hash = 14695981039346656037ULL;
         constexpr size_t fnvPrime = 1099511628211ULL;
+        auto ToLower = [](const char element) constexpr -> char
+        {
+            if (az_builtin_is_constant_evaluated())
+            {
+                // compile time implementation
+                return element >= 'A' && element <= 'Z' ? (element - 'A') + 'a' : element;
+            }
+            else
+            {
+                // run time implementation
+                return static_cast<char>(tolower(element));
+            }
+        };
 
         for (const char first : pathSegment)
         {
-            hash ^= static_cast<size_t>(hashExactPath ? first : tolower(first));
+            hash ^= static_cast<size_t>(hashExactPath ? first : ToLower(first));
             hash *= fnvPrime;
         }
         return hash;

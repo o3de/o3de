@@ -9,7 +9,6 @@
 #pragma once
 
 #include <ScriptCanvas/Execution/ExecutionStateStorage.h>
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
 
 namespace AZ
 {
@@ -18,6 +17,8 @@ namespace AZ
 
 namespace ScriptCanvas
 {
+    struct ActivationInfo;
+
     /**
     * ExecutionStateHandler provides RAII semantics and an interface for the ExecutionStateStorage for ScriptCanvas graph. It and executes
     * and stops the runtime graph, if possible.

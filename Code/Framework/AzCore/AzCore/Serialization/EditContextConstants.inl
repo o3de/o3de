@@ -270,8 +270,17 @@ namespace AZ
         namespace PropertyRefreshLevels
         {
             const static AZ::Crc32 None = AZ_CRC("RefreshNone", 0x98a5045b);
+
+            //! This will only update the values in each row that has a property
             const static AZ::Crc32 ValuesOnly = AZ_CRC("RefreshValues", 0x28e720d4);
+
+            //! This will re-consume all attributes and values, with the exception of the
+            //! Visibility attribute. This is due to the Visibility attribute being consumed
+            //! at a higher level in the system and would be a more expensive operation that
+            //! would essentially be the same as the EntireTree refresh level.
             const static AZ::Crc32 AttributesAndValues = AZ_CRC("RefreshAttributesAndValues", 0xcbc2147c);
+
+            //! Re-create the entire tree of properties.
             const static AZ::Crc32 EntireTree = AZ_CRC("RefreshEntireTree", 0xefbc823c);
         }
 

@@ -57,6 +57,7 @@ namespace PhysX
         void SetRestOffset(float restOffset) override;
         void SetContactOffset(float contactOffset) override;
         void* GetNativePointer() override;
+        const void* GetNativePointer() const override;
         AZ::Crc32 GetTag() const override;
         void AttachedToActor(void* actor) override;
         void DetachedFromActor() override;

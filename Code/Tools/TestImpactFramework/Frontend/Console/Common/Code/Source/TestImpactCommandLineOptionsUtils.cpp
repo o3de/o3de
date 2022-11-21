@@ -80,7 +80,7 @@ namespace TestImpact
         rapidjson::Document excludeData;
         excludeData.Parse(fileData.c_str());
         AZStd::vector<ExcludedTarget> targetExcludeList;
-        for (const auto& testExclude : excludeData["targetExclude"].GetArray())
+        for (const auto& testExclude : excludeData["exclude"].GetArray())
         {
             ExcludedTarget excludedTarget;
             excludedTarget.m_name = testExclude["target"].GetString();

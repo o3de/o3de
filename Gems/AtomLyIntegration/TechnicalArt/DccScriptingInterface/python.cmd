@@ -30,6 +30,10 @@ SET CMD_DIR=%~dp0
 SET CMD_DIR=%CMD_DIR:~0,-1%
 
 IF "%PATH_DCCSIG%"=="" (set "PATH_DCCSIG=%CMD_DIR%")
+echo     PATH_DCCSIG = %PATH_DCCSIG%
+
+:: Change to DCCsi root dir
+CD /D %PATH_DCCSIG%
 
 IF "%PATH_O3DE_PROJECT%"=="" (set "PATH_O3DE_PROJECT=%PATH_DCCSIG%")
 
@@ -44,6 +48,17 @@ popd
 
 SET O3DE_PYTHON=%O3DE_DEV%\python
 echo     O3DE_PYTHON = %O3DE_PYTHON%
+
+:: O3DE Technical Art Gems Location
+IF "%PATH_O3DE_TECHART_GEMS%"=="" (set "PATH_O3DE_TECHART_GEMS=%O3DE_DEV%\Gems\AtomLyIntegration\TechnicalArt")
+echo     PATH_O3DE_TECHART_GEMS = %PATH_O3DE_TECHART_GEMS%
+
+:: O3DE DccScriptingInterface Gem location
+IF "%PATH_DCCSIG%"=="" (set "DccScriptingInterface")
+echo     PATH_DCCSIG = %PATH_DCCSIG%
+
+SET PATH=%O3DE_DEV%;%PATH_O3DE_TECHART_GEMS%;%PATH_DCCSIG%;%PATH%
+SET PYTHONPATH=%O3DE_DEV%;%PATH_O3DE_TECHART_GEMS%;%PATH_DCCSIG%;%PYTHONPATH%
 
 :: get the o3de python home
 FOR /F "tokens=* USEBACKQ" %%F IN (`%O3DE_PYTHON%\python.cmd %O3DE_PYTHON%\get_python_path.py`) DO (SET O3DE_PYTHONHOME=%%F)
