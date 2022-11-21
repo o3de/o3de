@@ -356,15 +356,11 @@ def get_differences_between_lists(first: List[str], second: List[str]) -> bool:
     """
         Returns two lists that contain unique entries in lists, missing from the other list.
     """
-    diff_first = []
-    diff_second = []
-    for list_entry in first:
-        if list_entry not in second:
-            diff_first.append(list_entry)
-    for list_entry in second:
-        if list_entry not in first:
-            diff_second.append(list_entry)
-            
+    first_set = set(first)
+    second_set = set(second)
+    diff_first = [x for x in first_set if x not in second]
+    diff_second = [x for x in second_set if x not in first]
+    
     if diff_first or diff_second:
         # Print a simple header if there are differences, to make it easier to follow log output on build machines.
         logger.info("Differences were found comparing the given lists.")
