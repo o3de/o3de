@@ -279,7 +279,7 @@ namespace AZ::Reflection
                                 m_visitor->VisitObjectBegin(*this, *this);
                             }
                         }
-                        if (iter->second.m_classElement->m_editData->m_elementId == AZ::Edit::ClassElements::UIElement)
+                        else if (iter->second.m_classElement->m_editData->m_elementId == AZ::Edit::ClassElements::UIElement)
                         {
                             m_stack.push_back(iter->second);
                             CacheAttributes();
@@ -487,14 +487,6 @@ namespace AZ::Reflection
                                 CacheAttributes();
                                 m_visitor->VisitObjectBegin(*this, *this);
                             }
-                            //else //there is no group to visit?
-                            //{
-                            //    m_stack.back().m_entryClosed = true;
-                            //    m_visitor->VisitObjectEnd(*this, *this);
-                            //    m_stack.pop_back();
-                            //    EndNode();
-                            //    return true;
-                            //}
                         }
                         if (iter->second.m_classElement->m_editData->m_elementId == AZ::Edit::ClassElements::UIElement)
                         {
