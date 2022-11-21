@@ -129,7 +129,7 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E (AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error -T Test",
+      "CTEST_OPTIONS": "-E (AutomatedTesting::TerrainTests_Main) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error -T Test",
       "TEST_METRICS": "True",
       "TEST_RESULTS": "True"
     }
@@ -146,7 +146,7 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_UNITY_BUILD=FALSE -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DLY_PARALLEL_LINK_JOBS=4 -DLY_GCC_BUILD_FOR_GCOV=ON",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E (AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error -T Test",
+      "CTEST_OPTIONS": "-E (AutomatedTesting::TerrainTests_Main) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error -T Test",
       "TEST_METRICS": "True",
       "TEST_RESULTS": "True",
       "LY_MIN_MEMORY_PER_CORE": "2097152"
@@ -161,7 +161,7 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E (AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error -T Test",
+      "CTEST_OPTIONS": "-E (AutomatedTesting::TerrainTests_Main) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error -T Test",
       "TEST_METRICS": "True",
       "TEST_RESULTS": "True"
     }
