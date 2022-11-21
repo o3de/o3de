@@ -64,13 +64,13 @@ namespace PhysX
 
             auto pxShape = static_cast<physx::PxShape*>(shapes[0]->GetNativePointer());
             physx::PxTransform pxWorldTransform = PxMathConvert(m_worldTransform);
-            physx::PxBounds3 bounds = physx::PxGeometryQuery::getWorldBounds(pxShape->getGeometry().any(),
+            physx::PxBounds3 bounds = physx::PxGeometryQuery::getWorldBounds(pxShape->getGeometry(),
                 pxWorldTransform * pxShape->getLocalPose(), 1.0f);
 
             for (size_t shapeIndex = 1; shapeIndex < numShapes; ++shapeIndex)
             {
                 pxShape = static_cast<physx::PxShape*>(shapes[0]->GetNativePointer());
-                bounds.include(physx::PxGeometryQuery::getWorldBounds(pxShape->getGeometry().any(),
+                bounds.include(physx::PxGeometryQuery::getWorldBounds(pxShape->getGeometry(),
                     pxWorldTransform * pxShape->getLocalPose(), 1.0f));
             }
 

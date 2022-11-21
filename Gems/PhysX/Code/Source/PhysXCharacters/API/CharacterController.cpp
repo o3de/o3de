@@ -121,13 +121,13 @@ namespace PhysX
             : physx::PxQueryHitType::Enum::eBLOCK;
     }
 
-    physx::PxQueryHitType::Enum CharacterControllerCallbackManager::postFilter(
-        const physx::PxFilterData& filterData, const physx::PxQueryHit& hit)
-    {
-        return m_objectPostFilter
-            ? m_objectPostFilter(filterData, hit)
-            : physx::PxQueryHitType::Enum::eBLOCK;
-    }
+    //physx::PxQueryHitType::Enum CharacterControllerCallbackManager::postFilter(
+    //    const physx::PxFilterData& filterData, const physx::PxQueryHit& hit, const physx::PxShape* , const physx::PxRigidActor* )
+    //{
+    //    return m_objectPostFilter
+    //        ? m_objectPostFilter(filterData, hit)
+    //        : physx::PxQueryHitType::Enum::eBLOCK;
+    //}
 
     void CharacterControllerCallbackManager::onShapeHit(const physx::PxControllerShapeHit& hit)
     {
