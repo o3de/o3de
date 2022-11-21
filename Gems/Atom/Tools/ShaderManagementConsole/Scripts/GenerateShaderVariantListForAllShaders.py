@@ -25,6 +25,7 @@ def main():
 
     # Search in project folder
     search_and_save_shadervariant(azlmbr.paths.projectroot + '/Shaders')
+    search_and_save_shadervariant(azlmbr.paths.projectroot + '/Assets')
 
     print("==== Finish processing shader ==========================================================")
 if __name__ == "__main__":
