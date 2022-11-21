@@ -9,6 +9,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Module/Module.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 
 #include <Configuration/PhysXSettingsRegistryManager.h>
@@ -65,6 +66,8 @@ namespace PhysX
             m_physXSystem.Shutdown();
 
             UnloadModules();
+
+            AZ::GetCurrentSerializeContextModule().Cleanup();
         }
 
         AZ::ComponentTypeList GetRequiredSystemComponents() const override

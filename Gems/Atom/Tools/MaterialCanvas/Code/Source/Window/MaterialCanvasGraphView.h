@@ -39,5 +39,6 @@ namespace MaterialCanvas
         void OnDocumentDestroyed(const AZ::Uuid& documentId) override;
 
         const AZ::Uuid m_documentId;
+        bool m_openedBefore = false;
     };
 } // namespace MaterialCanvas

@@ -23,6 +23,7 @@
 #include <AzCore/IO/SystemFile.h>
 
 #include <AzCore/Memory/AllocationRecords.h>
+#include <AzCore/Memory/IAllocator.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
 #include <AzCore/std/parallel/containers/concurrent_unordered_set.h>
@@ -36,39 +37,6 @@
 using namespace AZ;
 using namespace AZ::Debug;
 
-// This test needs to be outside of a fixture, as it needs to bring up its own allocators
-TEST(ComponentApplication, Test)
-{
-    ComponentApplication app;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Create application environment code driven
-    ComponentApplication::Descriptor appDesc;
-    appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
-    appDesc.m_recordingMode = AllocationRecords::RECORD_FULL;
-    appDesc.m_stackRecordLevels = 20;
-    Entity* systemEntity = app.Create(appDesc);
-
-    systemEntity->CreateComponent<MemoryComponent>();
-    systemEntity->CreateComponent<StreamerComponent>();
-    systemEntity->CreateComponent(AZ::Uuid("{CAE3A025-FAC9-4537-B39E-0A800A2326DF}")); // JobManager component
-    systemEntity->CreateComponent(AZ::Uuid("{D5A73BCC-0098-4d1e-8FE4-C86101E374AC}")); // AssetDatabase component
-
-    systemEntity->Init();
-    systemEntity->Activate();
-
-    app.Destroy();
-    //////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////
-    // Create application environment data driven
-    systemEntity = app.Create(appDesc);
-    systemEntity->Init();
-    systemEntity->Activate();
-    app.Destroy();
-    //////////////////////////////////////////////////////////////////////////
-}
-
 namespace UnitTest
 {
     class Components
@@ -80,6 +48,38 @@ namespace UnitTest
         {
         }
     };
+
+    TEST_F(Components, Test)
+    {
+        ComponentApplication app;
+
+        //////////////////////////////////////////////////////////////////////////
+        // Create application environment code driven
+        ComponentApplication::Descriptor appDesc;
+        appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
+        appDesc.m_recordingMode = AllocationRecords::RECORD_FULL;
+        Entity* systemEntity = app.Create(appDesc);
+
+        systemEntity->CreateComponent<MemoryComponent>();
+        systemEntity->CreateComponent<StreamerComponent>();
+        systemEntity->CreateComponent(AZ::Uuid("{CAE3A025-FAC9-4537-B39E-0A800A2326DF}")); // JobManager component
+        systemEntity->CreateComponent(AZ::Uuid("{D5A73BCC-0098-4d1e-8FE4-C86101E374AC}")); // AssetDatabase component
+
+        systemEntity->Init();
+        systemEntity->Activate();
+
+        app.Destroy();
+        //////////////////////////////////////////////////////////////////////////
+
+        //////////////////////////////////////////////////////////////////////////
+        // Create application environment data driven
+        systemEntity = app.Create(appDesc);
+        systemEntity->Init();
+        systemEntity->Activate();
+        app.Destroy();
+
+        //////////////////////////////////////////////////////////////////////////
+    }
 
     //////////////////////////////////////////////////////////////////////////
     // Some component message bus, this is not really part of the component framework
@@ -1102,7 +1102,8 @@ namespace UnitTest
         int m_intOption1;
     };
 
-    TEST(UserSettings, Test)
+    using UserSettingsTestFixture = UnitTest::AllocatorsTestFixture;
+    TEST_F(UserSettingsTestFixture, Test)
     {
         UserSettingsTestApp app;
 

@@ -67,8 +67,6 @@ namespace AZ::IO
 
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
             AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-
-            TeardownAllocator();
         }
 
         void CreateTestEnvironmentImplementation(bool onlyEpilogWrites)

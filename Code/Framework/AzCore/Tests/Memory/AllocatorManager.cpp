@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/Memory/AllocatorManager.h>
-#include <AzCore/Memory/MallocSchema.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
 using namespace AZ;
@@ -19,7 +18,7 @@ namespace UnitTest
         class AllocatorManagerTestAllocator : public AZ::SystemAllocator
         {
         public:
-            AZ_TYPE_INFO(SystemAllocator, "{7E39571D-2E09-416C-BA37-F443C78110FA}")
+            AZ_RTTI(SystemAllocator, "{7E39571D-2E09-416C-BA37-F443C78110FA}", AZ::SystemAllocator)
         };
     }
 
@@ -79,7 +78,6 @@ namespace UnitTest
             m_systemAllocator = nullptr;
         }
 
-        MallocSchema m_mallocSchema;
         AllocatorManager* m_manager = nullptr;
         IAllocator* m_systemAllocator = nullptr;
     };

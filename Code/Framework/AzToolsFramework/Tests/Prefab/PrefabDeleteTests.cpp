@@ -38,7 +38,7 @@ namespace UnitTest
     TEST_F(PrefabDeleteTest, DeleteEntitiesAndAllDescendantsInInstance_DeleteSinglePrefabSucceeds)
     {
         // Verify that a valid entity is created.
-        AZ::EntityId createdEntityId = CreateEntityUnderRootPrefab("EntityUnderRootPrefab");
+        AZ::EntityId createdEntityId = CreateEditorEntityUnderRoot("EntityUnderRootPrefab");
         ASSERT_TRUE(createdEntityId.IsValid());
         AZ::Entity* createdEntity = AzToolsFramework::GetEntityById(createdEntityId);
         ASSERT_TRUE(createdEntity != nullptr);
@@ -80,10 +80,6 @@ namespace UnitTest
         AZ::Entity* childEntity = AzToolsFramework::GetEntityById(childEntityId);
         ASSERT_TRUE(childEntity != nullptr);
 
-        // PrefabTestFixture won't add required editor components by default. Hence we add them here.
-        AddRequiredEditorComponents(childEntity);
-        AddRequiredEditorComponents(parentEntity);
-
         // Parent the child entity under the parent entity.
         AZ::TransformBus::Event(childEntityId, &AZ::TransformBus::Events::SetParent, parentEntityId);
 
@@ -100,7 +96,7 @@ namespace UnitTest
     TEST_F(PrefabDeleteTest, DeleteEntitiesAndAllDescendantsInInstance_DeletingEntityDeletesChildPrefabToo)
     {
         // Verify that a valid entity is created that will be put in a prefab later.
-        AZ::EntityId entityToBePutUnderPrefabId = CreateEntityUnderRootPrefab("EntityToBePutUnderPrefab");
+        AZ::EntityId entityToBePutUnderPrefabId = CreateEditorEntityUnderRoot("EntityToBePutUnderPrefab");
         ASSERT_TRUE(entityToBePutUnderPrefabId.IsValid());
         AZ::Entity* entityToBePutUnderPrefab = AzToolsFramework::GetEntityById(entityToBePutUnderPrefabId);
         ASSERT_TRUE(entityToBePutUnderPrefab != nullptr);
@@ -124,10 +120,6 @@ namespace UnitTest
         ASSERT_TRUE(createdPrefabContainerId.IsValid());
         AZ::Entity* prefabContainerEntity = AzToolsFramework::GetEntityById(createdPrefabContainerId);
         ASSERT_TRUE(prefabContainerEntity != nullptr);
-
-        // PrefabTestFixture won't add required editor components by default. Hence we add them here.
-        AddRequiredEditorComponents(parentEntity);
-        AddRequiredEditorComponents(prefabContainerEntity);
 
         // Parent the prefab under the parent entity.
         AZ::TransformBus::Event(createdPrefabContainerId, &AZ::TransformBus::Events::SetParent, parentEntityId);

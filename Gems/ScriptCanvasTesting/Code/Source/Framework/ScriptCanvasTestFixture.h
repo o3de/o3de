@@ -136,7 +136,7 @@ namespace ScriptCanvasTests
                 s_application = nullptr;
             }
             
-            s_allocatorSetup.TeardownAllocator();
+            s_allocatorSetup.CheckAllocatorsForLeaks();
         }
 
         template<class T>

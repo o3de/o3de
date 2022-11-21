@@ -249,6 +249,13 @@ namespace AZ::DocumentPropertyEditor
         template<class T>
         void VisitPrimitive(T& value, const Reflection::IAttributes& attributes)
         {
+            auto visibilityAttribute = attributes.Find(Nodes::PropertyEditor::Visibility.GetName());
+            Nodes::PropertyVisibility visibility =
+                Nodes::PropertyEditor::Visibility.DomToValue(visibilityAttribute).value_or(Nodes::PropertyVisibility::Show);
+            if (visibility == Nodes::PropertyVisibility::Hide || visibility == Nodes::PropertyVisibility::ShowChildrenOnly)
+            {
+                return;
+            }
             VisitValue(
                 Dom::Utils::ValueFromType(value),
                 &value,

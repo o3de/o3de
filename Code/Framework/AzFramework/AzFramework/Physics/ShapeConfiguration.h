@@ -55,6 +55,7 @@ namespace Physics
         AZ_CLASS_ALLOCATOR(ShapeConfiguration, AZ::SystemAllocator, 0);
         AZ_RTTI(ShapeConfiguration, "{1FD56C72-6055-4B35-9253-07D432B94E91}");
         static void Reflect(AZ::ReflectContext* context);
+        explicit ShapeConfiguration(const AZ::Vector3& scale = ShapeConstants::DefaultScale);
         virtual ~ShapeConfiguration() = default;
         virtual ShapeType GetShapeType() const = 0;
 
@@ -67,7 +68,8 @@ namespace Physics
         AZ_CLASS_ALLOCATOR(SphereShapeConfiguration, AZ::SystemAllocator, 0);
         AZ_RTTI(SphereShapeConfiguration, "{0B9F3D2E-0780-4B0B-BFEE-B41C5FDE774A}", ShapeConfiguration);
         static void Reflect(AZ::ReflectContext* context);
-        explicit SphereShapeConfiguration(float radius = ShapeConstants::DefaultSphereRadius);
+        SphereShapeConfiguration(
+            float radius = ShapeConstants::DefaultSphereRadius, const AZ::Vector3& scale = ShapeConstants::DefaultScale);
 
         ShapeType GetShapeType() const override { return ShapeType::Sphere; }
         AZ::Sphere ToSphere(const AZ::Transform& transform = AZ::Transform::CreateIdentity()) const;
@@ -81,7 +83,9 @@ namespace Physics
         AZ_CLASS_ALLOCATOR(BoxShapeConfiguration, AZ::SystemAllocator, 0);
         AZ_RTTI(BoxShapeConfiguration, "{E58040ED-3E50-4882-B0E9-525E7A548F8D}", ShapeConfiguration);
         static void Reflect(AZ::ReflectContext* context);
-        explicit BoxShapeConfiguration(const AZ::Vector3& boxDimensions = ShapeConstants::DefaultBoxDimensions);
+        BoxShapeConfiguration(
+            const AZ::Vector3& boxDimensions = ShapeConstants::DefaultBoxDimensions,
+            const AZ::Vector3& scale = ShapeConstants::DefaultScale);
 
         ShapeType GetShapeType() const override { return ShapeType::Box; }
         AZ::Obb ToObb(const AZ::Transform& transform = AZ::Transform::CreateIdentity()) const;
@@ -95,8 +99,10 @@ namespace Physics
         AZ_CLASS_ALLOCATOR(CapsuleShapeConfiguration, AZ::SystemAllocator, 0);
         AZ_RTTI(CapsuleShapeConfiguration, "{19C6A07E-5644-46B7-A49E-48703B56ED32}", ShapeConfiguration);
         static void Reflect(AZ::ReflectContext* context);
-        explicit CapsuleShapeConfiguration(
-            float height = ShapeConstants::DefaultCapsuleHeight, float radius = ShapeConstants::DefaultCapsuleRadius);
+        CapsuleShapeConfiguration(
+            float height = ShapeConstants::DefaultCapsuleHeight,
+            float radius = ShapeConstants::DefaultCapsuleRadius,
+            const AZ::Vector3& scale = ShapeConstants::DefaultScale);
 
         ShapeType GetShapeType() const override { return ShapeType::Capsule; }
         AZ::Capsule ToCapsule(const AZ::Transform& transform = AZ::Transform::CreateIdentity()) const;
