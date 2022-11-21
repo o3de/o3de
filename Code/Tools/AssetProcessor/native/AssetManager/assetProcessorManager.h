@@ -275,6 +275,10 @@ namespace AssetProcessor
 
         void AddedToCatalog(JobEntry jobEntry);
 
+        //! Fired when FinishAnalysis is run for a file to notify that a source file has completely finished processing.
+        //! count is the number of files remaining waiting for FinishAnalysis to be called
+        void FinishedAnalysis(int count);
+
     public Q_SLOTS:
         void AssetProcessed(JobEntry jobEntry, AssetBuilderSDK::ProcessJobResponse response);
         void AssetProcessed_Impl();
@@ -335,7 +339,7 @@ namespace AssetProcessor
         void CheckModifiedSourceFile(QString normalizedPath, QString databaseSourceFile, const ScanFolderInfo* scanFolderInfo);
         bool AnalyzeJob(JobDetails& details);
         void CheckDeletedCacheFolder(QString normalizedPath);
-        void CheckDeletedSourceFolder(QString normalizedPath, QString relativePath, const ScanFolderInfo* scanFolderInfo);
+        void CheckDeletedSourceFolder(const SourceAssetReference& sourceAsset);
         void CheckCreatedSourceFolder(QString normalizedPath);
         void FailTopLevelSourceForIntermediate(const SourceAssetReference& intermediateAsset, AZStd::string_view errorMessage);
         void CheckMetaDataRealFiles(QString relativePath);
@@ -442,6 +446,7 @@ namespace AssetProcessor
         bool IsInCacheFolder(AZ::IO::PathView path) const;
 
         // Returns true if the path is inside the Intermediate Assets folder
+        bool IsInIntermediateAssetsFolder(const SourceAssetReference& sourceAsset) const;
         bool IsInIntermediateAssetsFolder(AZ::IO::PathView path) const;
         bool IsInIntermediateAssetsFolder(QString path) const;
 

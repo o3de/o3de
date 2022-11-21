@@ -16,10 +16,13 @@
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
 #include <SceneAPI/SceneCore/DataTypes/IManifestObject.h>
 #include <string>
+
+extern "C" AZ_DLL_EXPORT void CleanUpSceneCoreGenericClassInfo();
 
 namespace AZ
 {
@@ -106,7 +109,7 @@ namespace AZ
 
 
             class SceneManifestTest
-                : public ::testing::Test
+                : public UnitTest::AllocatorsTestFixture
                 , public AZ::Debug::TraceMessageBus::Handler
             {
             public:
@@ -155,6 +158,8 @@ namespace AZ
                     m_serializeContext.reset();
                     m_jsonRegistrationContext.reset();
                     m_jsonSystemComponent.reset();
+
+                    CleanUpSceneCoreGenericClassInfo();
                 }
 
                 bool OnPreAssert(const char* /*message*/, int /*line*/, const char* /*func*/, const char* /*message*/) override
@@ -173,13 +178,13 @@ namespace AZ
                 AZStd::unique_ptr<JsonSystemComponent> m_jsonSystemComponent;
             };
 
-            TEST(SceneManifest, IsEmpty_Empty_True)
+            TEST_F(SceneManifestTest, IsEmpty_Empty_True)
             {
                 SceneManifest testManifest;
                 EXPECT_TRUE(testManifest.IsEmpty());
             }
 
-            TEST(SceneManifest, AddEntry_AddNewValue_ResultTrue)
+            TEST_F(SceneManifestTest, AddEntry_AddNewValue_ResultTrue)
             {
                 SceneManifest testManifest;
                 AZStd::shared_ptr<MockManifestInt> testDataObject = AZStd::make_shared<MockManifestInt>(100);
@@ -187,7 +192,7 @@ namespace AZ
                 EXPECT_TRUE(result);
             }
 
-            TEST(SceneManifest, AddEntry_MoveNewValue_ResultTrueAndPointerClear)
+            TEST_F(SceneManifestTest, AddEntry_MoveNewValue_ResultTrueAndPointerClear)
             {
                 SceneManifest testManifest;
                 AZStd::shared_ptr<MockManifestInt> testDataObject = AZStd::make_shared<MockManifestInt>(100);
@@ -197,7 +202,7 @@ namespace AZ
             }
 
             //dependent on AddEntry
-            TEST(SceneManifest, IsEmpty_NotEmpty_False)
+            TEST_F(SceneManifestTest, IsEmpty_NotEmpty_False)
             {
                 SceneManifest testManifest;
                 AZStd::shared_ptr<MockManifestInt> testDataObject = AZStd::make_shared<MockManifestInt>(100);
@@ -206,7 +211,7 @@ namespace AZ
             }
 
             //dependent on AddEntry and IsEmpty
-            TEST(SceneManifest, Clear_NotEmpty_EmptyTrue)
+            TEST_F(SceneManifestTest, Clear_NotEmpty_EmptyTrue)
             {
                 SceneManifest testManifest;
                 AZStd::shared_ptr<MockManifestInt> testDataObject = AZStd::make_shared<MockManifestInt>(100);
@@ -217,7 +222,7 @@ namespace AZ
             }
 
             //RemoveEntry
-            TEST(SceneManifest, RemoveEntry_NameInList_ResultTrueAndNotStillInList)
+            TEST_F(SceneManifestTest, RemoveEntry_NameInList_ResultTrueAndNotStillInList)
             {
                 SceneManifest testManifest;
                 AZStd::shared_ptr<MockManifestInt> testDataObject = AZStd::make_shared<MockManifestInt>(1);
@@ -237,7 +242,7 @@ namespace AZ
             }
 
             // GetEntryCount
-            TEST(SceneManifest, GetEntryCount_EmptyManifest_CountIsZero)
+            TEST_F(SceneManifestTest, GetEntryCount_EmptyManifest_CountIsZero)
             {
                 SceneManifest testManifest;
                 EXPECT_TRUE(testManifest.IsEmpty());
@@ -281,7 +286,7 @@ namespace AZ
             }
 
             // RemoveEntry - continued
-            TEST(SceneManifest, RemoveEntry_IndexAdjusted_IndexReduced)
+            TEST_F(SceneManifestTest, RemoveEntry_IndexAdjusted_IndexReduced)
             {
                 SceneManifest testManifest;
                 AZStd::shared_ptr<MockManifestInt> testDataObject1 = AZStd::make_shared<MockManifestInt>(1);

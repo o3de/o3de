@@ -118,7 +118,6 @@ namespace UnitTest
             m_loggerComponent.reset();
 
             AZ::NameDictionary::Destroy();
-            TeardownAllocator();
         }
 
         AZStd::unique_ptr<AZ::LoggerSystemComponent> m_loggerComponent;

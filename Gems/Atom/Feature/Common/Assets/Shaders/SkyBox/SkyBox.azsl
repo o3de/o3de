@@ -11,10 +11,20 @@
 
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
+#include <Atom/Features/PostProcessing/Tonemap.azsli>
 #include <Atom/Features/MatrixUtility.azsli>
+#include <Atom/Features/ShaderQualityOptions.azsli>
 
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
+
+#ifndef ENABLE_PHYSICAL_SKY
+#define ENABLE_PHYSICAL_SKY              1
+#endif
+
+#ifndef ENABLE_MERGE_FILMIC_TONEMAP
+#define ENABLE_MERGE_FILMIC_TONEMAP              0
+#endif
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
@@ -114,6 +124,7 @@ PSOutput MainPS(VSOutput input)
     }
 
     float3 color = float3(0.5,0.5,0.5);
+#if ENABLE_PHYSICAL_SKY
     if(SceneSrg::m_physicalSky)
     {
         if(input.m_cubemapCoord.z >= 0.0)
@@ -163,6 +174,7 @@ PSOutput MainPS(VSOutput input)
         }
     }
     else
+#endif
     {
         color = SceneSrg::m_skyboxCubemap.Sample(PassSrg::LinearSampler, GetCubemapCoords(input.m_cubemapCoord)).rgb;
 
@@ -173,6 +185,14 @@ PSOutput MainPS(VSOutput input)
     
     // Clamp lower bounds of sky to prevent zero or negative values, which can leads to NaNs in other shaders like SMAA
     color = max(0.000001f, color);
+
+#if ENABLE_MERGE_FILMIC_TONEMAP
+    // Apply manual exposure compensation
+    color = ApplyManualExposure(color, ViewSrg::GetExposureValueCompensation());
+    
+    // We could add Aces support here as well if perf allows.
+    color = ApplyFilmicTonemap(color);
+#endif
 
     PSOutput OUT;
     OUT.m_specular = float4(color, 1.0);

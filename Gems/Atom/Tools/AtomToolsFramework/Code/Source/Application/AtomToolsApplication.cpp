@@ -48,8 +48,8 @@ namespace AtomToolsFramework
     AtomToolsApplication* AtomToolsApplication::m_instance = {};
 
     AtomToolsApplication::AtomToolsApplication(const char* targetName, int* argc, char*** argv)
-        : Application(argc, argv)
-        , AzQtApplication(*argc, *argv)
+        : AzQtApplication(*argc, *argv)
+        , Application(argc, argv)
         , m_targetName(targetName)
         , m_toolId(targetName)
     {
@@ -369,6 +369,8 @@ namespace AtomToolsFramework
                 .arg("Make sure this is an Atom project."));
             AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
         }
+
+        AZ_TracePrintf("AtomToolsApplication", "CriticalAssetsCompiled\n");
 
         AZ::ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "CriticalAssetsCompiled", R"({})");
 

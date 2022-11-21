@@ -16,6 +16,7 @@
 #include <AzCore/std/ranges/transform_view.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/typetraits/has_member_function.h>
+#include <AzCore/Memory/AllocatorWrappers.h>
 
 #if defined(HAVE_BENCHMARK)
 #include <benchmark/benchmark.h>
@@ -1403,11 +1404,11 @@ namespace UnitTest
     template<template <typename, typename, typename, typename> class ContainerTemplate>
     struct HashedSetWithCustomAllocatorConfig
     {
-        using ContainerType = ContainerTemplate<int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AZStdIAllocator>;
+        using ContainerType = ContainerTemplate<int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AllocatorPointerWrapper>;
 
         static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
-            ContainerType allocatorSet(intList, 0, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
+            ContainerType allocatorSet(intList, 0, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AllocatorPointerWrapper{ allocatorInstance });
             return allocatorSet;
         }
     };
@@ -1436,7 +1437,7 @@ namespace UnitTest
                 {
                     // AZ_Assert does not cause the application to exit in profile_test configuration
                     // Therefore an exit with a non-zero error code is invoked to trigger the death condition
-                    abort();
+                    exit(1);
                 }
             }, ".*");
     }
@@ -1899,11 +1900,11 @@ namespace UnitTest
     template<template <typename, typename, typename, typename, typename> class ContainerTemplate>
     struct HashedMapWithCustomAllocatorConfig
     {
-        using ContainerType = ContainerTemplate<int32_t, int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AZStdIAllocator>;
+        using ContainerType = ContainerTemplate<int32_t, int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AllocatorPointerWrapper>;
 
         static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
-            ContainerType allocatorMap(intList, 0, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
+            ContainerType allocatorMap(intList, 0, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AllocatorPointerWrapper{ allocatorInstance });
             return allocatorMap;
         }
     };
@@ -1932,7 +1933,7 @@ namespace UnitTest
             {
                 // AZ_Assert does not cause the application to exit in profile_test configuration
                 // Therefore an exit with a non-zero error code is invoked to trigger the death condition
-                abort();
+                exit(1);
             }
         } , ".*");
     }

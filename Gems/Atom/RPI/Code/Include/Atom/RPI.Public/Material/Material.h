@@ -18,7 +18,6 @@
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
-#include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
 #include <AtomCore/Instance/InstanceData.h>
@@ -50,9 +49,7 @@ namespace AZ
         //! operation is always performed.
         class Material
             : public Data::InstanceData
-            , public Data::AssetBus::Handler
             , public ShaderReloadNotificationBus::MultiHandler
-            , public MaterialReloadNotificationBus::Handler
         {
             friend class MaterialSystem;
         public:
@@ -142,14 +139,6 @@ namespace AZ
             //! Standard init path from asset data.
             static Data::Instance<Material> CreateInternal(MaterialAsset& materialAsset);
             RHI::ResultCode Init(MaterialAsset& materialAsset);
-
-            ///////////////////////////////////////////////////////////////////
-            // AssetBus overrides...
-            void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
-
-            ///////////////////////////////////////////////////////////////////
-            // MaterialReloadNotificationBus overrides...
-            void OnMaterialAssetReinitialized(const Data::Asset<MaterialAsset>& materialAsset) override;
 
             ///////////////////////////////////////////////////////////////////
             // ShaderReloadNotificationBus overrides...

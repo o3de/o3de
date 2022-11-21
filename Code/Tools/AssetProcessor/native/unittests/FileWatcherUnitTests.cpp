@@ -8,7 +8,7 @@
 
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <native/unittests/FileWatcherUnitTests.h>
-#include <native/unittests/UnitTestRunner.h>
+#include <native/unittests/UnitTestUtils.h>
 
 #include <QCoreApplication>
 

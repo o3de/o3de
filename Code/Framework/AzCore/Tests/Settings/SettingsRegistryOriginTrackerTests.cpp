@@ -43,15 +43,8 @@ namespace SettingsRegistryOriginTrackerTests
     class SettingsRegistryOriginTrackerFixture
         : public UnitTest::ScopedAllocatorSetupFixture
     {
-        static AZ::SystemAllocator::Descriptor CreateAllocatorDescriptorForFixture()
-        {
-            AZ::SystemAllocator::Descriptor desc;
-            desc.m_stackRecordLevels = 30;
-            return desc;
-        }
     public:
         SettingsRegistryOriginTrackerFixture()
-            : ScopedAllocatorSetupFixture(CreateAllocatorDescriptorForFixture())
         {
             if (!AZ::NameDictionary::IsReady())
             {

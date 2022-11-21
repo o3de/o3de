@@ -34,13 +34,6 @@ namespace Physics
             : UnitTest::ToolsTestApplication(AZStd::move(appName))
         {
         }
-
-        bool IsPrefabSystemEnabled() const override
-        {
-            // Some physx tests fail if prefabs are enabled for the application,
-            // for now, make them use slices
-            return false;
-        }
     };
 
     class PhysXEditorTestEnvironment

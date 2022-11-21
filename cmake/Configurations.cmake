@@ -173,6 +173,8 @@ endfunction()
 set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ Standard to target")
 ly_set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(O3DE_STACK_CAPTURE_DEPTH 3 CACHE STRING "The depth of the callstack to capture when tracking allocations")
+
 get_property(_isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(NOT _isMultiConfig)
     # No reason set CMAKE_BUILD_TYPE if it's a multiconfig generator.

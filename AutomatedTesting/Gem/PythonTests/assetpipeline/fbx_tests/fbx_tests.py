@@ -750,8 +750,7 @@ class TestsFBX_AllPlatforms(object):
     def compare_scene_debug_file(asset_processor, expected_file_path, actual_file_path):
         debug_graph_path = os.path.join(asset_processor.project_test_cache_folder(), actual_file_path)
         expected_debug_graph_path = os.path.join(asset_processor.project_test_source_folder(), "SceneDebug", expected_file_path)
-        import shutil
-        shutil.copyfile(debug_graph_path, f"C:/new/{actual_file_path}")
+
         logger.info(f"Parsing scene graph: {debug_graph_path}")
         with open(debug_graph_path, "r") as scene_file:
             actual_lines = scene_file.readlines()

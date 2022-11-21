@@ -507,7 +507,7 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::DeleteEntries()
         {
-            auto entries = GetSelectedAssets(false); // you cannot rename product files.
+            auto entries = GetSelectedAssets(false); // you cannot delete product files.
             if (entries.empty())
             {
                 return;
@@ -762,7 +762,7 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::MoveEntries()
         {
-            auto entries = GetSelectedAssets(false); // you cannot rename product files.
+            auto entries = GetSelectedAssets(false); // you cannot move product files.
             if (entries.empty())
             {
                 return;

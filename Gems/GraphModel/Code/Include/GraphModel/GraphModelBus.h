@@ -34,9 +34,10 @@ namespace GraphModelIntegration
         AZ_TYPE_INFO(GraphModelSerialization, "{0D4D420B-5D9E-429C-A567-DF8596439F5F}");
 
         using SerializedSlotMapping = AZStd::unordered_map<GraphModel::SlotId, GraphCanvas::SlotId>;
+        using SerializedNodeBuffer = AZStd::vector<AZ::u8>;
 
         //! Keep track of any nodes and their slots that have been serialized
-        AZStd::unordered_map<GraphCanvas::NodeId, GraphModel::NodePtr> m_serializedNodes;
+        AZStd::unordered_map<GraphCanvas::NodeId, SerializedNodeBuffer> m_serializedNodes;
         AZStd::unordered_map<GraphCanvas::NodeId, SerializedSlotMapping> m_serializedSlotMappings;
 
         //! Mapping of serialized nodeIds to their wrapper (parent) nodeId and layout order so they can be restored after deserialization

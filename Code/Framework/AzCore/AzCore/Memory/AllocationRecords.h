@@ -9,6 +9,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/allocator_stateless.h>
 
 #include <AzCore/std/function/function_fwd.h> // for callbacks
 
@@ -40,7 +41,7 @@ namespace AZ
         };
 
         // We use OSAllocator which uses system calls to allocate memory, they are not recorded or tracked!
-        using AllocationRecordsType = AZStd::unordered_map<void*, AllocationInfo, AZStd::hash<void*>, AZStd::equal_to<void*>, OSStdAllocator>;
+        using AllocationRecordsType = AZStd::unordered_map<void*, AllocationInfo, AZStd::hash<void*>, AZStd::equal_to<void*>, AZStd::stateless_allocator>;
 
         /**
          * Records enumeration callback
@@ -79,35 +80,6 @@ namespace AZ
         };
 
         /**
-         * Memory magic value 16 bit. Used to detect correctness of memory.
-         */
-        struct Magic16
-        {
-            static const u16 m_defValue = 0xfeed;
-            AZ_FORCE_INLINE Magic16()  { m_value = (m_defValue ^ (u16)((size_t) this)); }
-            AZ_FORCE_INLINE ~Magic16() { m_value = 0; }
-            AZ_FORCE_INLINE bool Validate() const { return m_value == (m_defValue^ (u16)((size_t) this)); }
-        private:
-            u16     m_value;
-        };
-
-        /**
-        * Memory magic value 32 bit. Used to detect correctness of memory.
-        */
-        struct Magic32
-        {
-            static const u32 m_defValue = 0xfeedf00d;
-            AZ_FORCE_INLINE Magic32()
-            {
-                m_value = (m_defValue ^ (u32)((size_t) this));
-            }
-            AZ_FORCE_INLINE ~Magic32() { m_value = 0; }
-            AZ_FORCE_INLINE bool Validate() const { return m_value == (m_defValue ^ (u32)((size_t) this)); }
-        private:
-            u32     m_value;
-        };
-
-        /**
         * Container for debug allocation records. This
         * records can be thread safe or not depending on your
         * needs. When you set the thread safe flag all
@@ -121,8 +93,6 @@ namespace AZ
         class AllocationRecords
         {
          public:
-            AZ_CLASS_ALLOCATOR(AllocationRecords, OSAllocator, 0);
-
             enum Mode : int
             {
                 RECORD_NO_RECORDS,              ///< Never record any information.
@@ -138,7 +108,6 @@ namespace AZ
              */
 
             AllocationRecords(unsigned char stackRecordLevels, bool isMemoryGuard, bool isMarkUnallocatedMemory, const char* allocatorName);
-            ~AllocationRecords();
 
             unsigned int  MemoryGuardSize() const               { return m_memoryGuardSize; }
 
@@ -186,10 +155,12 @@ namespace AZ
             const char* GetAllocatorName() const                { return m_allocatorName; }
 
             // @{ Allocation tracking management - we assume this functions are called with the lock locked.
-            const AllocationInfo*   RegisterAllocation(void* address, size_t byteSize, size_t alignment, const char* name, const char* fileName, int lineNum, unsigned int stackSuppressCount);
+            const AllocationInfo*   RegisterAllocation(void* address, size_t byteSize, size_t alignment, unsigned int stackSuppressCount);
             void    UnregisterAllocation(void* address, size_t byteSize, size_t alignment, AllocationInfo* info);
             // the address of the variable will not change we are just updating the statistics.
             void    ResizeAllocation(void* address, size_t newSize);
+
+            void RegisterReallocation(void* address, void* newAddress, size_t byteSize, size_t alignment, unsigned int stackSuppressCount);
             // @}
 
         protected:

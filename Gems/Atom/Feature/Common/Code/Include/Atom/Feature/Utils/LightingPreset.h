@@ -75,7 +75,7 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(LightingPreset, AZ::SystemAllocator, 0);
             static void Reflect(AZ::ReflectContext* context);
 
-            static constexpr const char* Extension = "lightingpreset.azasset";
+            static constexpr AZStd::string_view Extension = "lightingpreset.azasset";
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_iblDiffuseImageAsset;
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_iblSpecularImageAsset;
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_skyboxImageAsset;

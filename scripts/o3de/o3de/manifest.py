@@ -686,10 +686,15 @@ def get_registered(engine_name: str = None,
             gems = get_all_gems(project_path)
         else:
             # If project_path is not supplied
-            # query all registered projects
-            for registered_project_path in get_all_projects():
-                gems.extend(get_all_gems(registered_project_path))
-            gems = list(dict.fromkeys(gems))
+            registered_project_paths = get_all_projects()
+            if not registered_project_paths:
+                # query all gems from this engine if no projects exist
+                gems = get_all_gems()
+            else:
+                # query all registered projects
+                for registered_project_path in registered_project_paths:
+                    gems.extend(get_all_gems(registered_project_path))
+                gems = list(dict.fromkeys(gems))
 
         for gem_path in gems:
             gem_path = pathlib.Path(gem_path).resolve()
@@ -713,10 +718,15 @@ def get_registered(engine_name: str = None,
             templates = get_all_templates(project_path)
         else:
             # If project_path is not supplied
-            # query all registered projects
-            for registered_project_path in get_all_projects():
-                templates.extend(get_all_templates(registered_project_path))
-            templates = list(dict.fromkeys(templates))
+            registered_project_paths = get_all_projects()
+            if not registered_project_paths:
+                # if no projects exist, query all templates from this engine and gems
+                templates = get_all_templates()
+            else:
+                # query all registered projects
+                for registered_project_path in registered_project_paths:
+                    templates.extend(get_all_templates(registered_project_path))
+                templates = list(dict.fromkeys(templates))
 
         for template_path in templates:
             template_path = pathlib.Path(template_path).resolve()

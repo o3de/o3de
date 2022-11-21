@@ -17,6 +17,11 @@ namespace TestImpact
 {
     namespace Console
     {
+        static void PrintDivider()
+        {
+            std::cout << "-----------------------------------------------------------------------------\n";
+        }
+
         namespace Output
         {
             void TestSuiteFilter(SuiteType filter)
@@ -114,6 +119,8 @@ namespace TestImpact
             Output::TestSuiteFilter(suiteType);
             std::cout << selectedTests.GetNumIncludedTestRuns() << " tests selected, " << selectedTests.GetNumExcludedTestRuns()
                       << " excluded.\n";
+
+            PrintDivider();
         }
 
         void TestSequenceCompleteCallback(SuiteType suiteType, const Client::TestRunSelection& selectedTests)
@@ -131,6 +138,8 @@ namespace TestImpact
             Output::TestSuiteFilter(suiteType);
             Output::ImpactAnalysisTestSelection(
                 selectedTests.GetTotalNumTests(), discardedTests.size(), selectedTests.GetNumExcludedTestRuns(), draftedTests.size());
+
+            PrintDivider();
         }
 
         void SafeImpactAnalysisTestSequenceStartCallback(
@@ -145,6 +154,8 @@ namespace TestImpact
                 discardedTests.GetTotalNumTests(),
                 selectedTests.GetNumExcludedTestRuns() + discardedTests.GetNumExcludedTestRuns(),
                 draftedTests.size());
+
+            PrintDivider();
         }
 
         void RegularTestSequenceCompleteCallback(const Client::RegularSequenceReport& sequenceReport)
@@ -188,6 +199,16 @@ namespace TestImpact
             const auto progress =
                 AZStd::string::format("(%03zu/%03zu)", numTestRunsCompleted, totalNumTestRuns);
 
+            if (!testRun.GetStdOutput().empty())
+            {
+                std::cout << testRun.GetStdOutput().c_str();
+            }
+
+            if (!testRun.GetStdError().empty())
+            {
+                std::cout << testRun.GetStdError().c_str();
+            }
+
             AZStd::string result;
             switch (testRun.GetResult())
             {
@@ -224,6 +245,8 @@ namespace TestImpact
 
             std::cout << progress.c_str() << " " << result.c_str() << " " << testRun.GetTargetName().c_str() << " ("
                       << (testRun.GetDuration().count() / 1000.f) << "s)\n";
+
+            PrintDivider();
         }
     } // namespace Console
 } // namespace TestImpact
