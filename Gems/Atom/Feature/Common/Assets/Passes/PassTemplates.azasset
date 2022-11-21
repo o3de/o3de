@@ -497,6 +497,34 @@
                 "Path": "Passes/LowEndPipelineXRRight.pass"
             },
             {
+                "Name": "MultiViewForwardPassTemplate",
+                "Path": "Passes/MultiViewForward.pass"
+            },
+            {
+                "Name": "MultiViewPipelineTemplate",
+                "Path": "Passes/MultiViewPipeline.pass"
+            },
+            {
+                "Name": "MultiViewSkyBoxTemplate",
+                "Path": "Passes/MultiViewSkyBox.pass"
+            },
+            {
+                "Name": "MultiViewTransparentPassTemplate",
+                "Path": "Passes/MultiViewTransparent.pass"
+            },
+            {
+                "Name": "MultiViewTransparentParentTemplate",
+                "Path": "Passes/MultiViewTransparentParent.pass"
+            },
+            {
+                "Name": "MultiViewXRLeftPipelineTemplate",
+                "Path": "Passes/MultiViewXRLeftPipeline.pass"
+            },
+            {
+                "Name": "MultiViewXRRightPipelineTemplate",
+                "Path": "Passes/MultiViewXRRightPipeline.pass"
+            },
+            {
                 "Name": "KawaseShadowBlurTemplate",
                 "Path": "Passes/KawaseShadowBlur.pass"
             },

@@ -19,6 +19,7 @@ namespace AZStd
     using std::atan2;
     using std::ceil;
     using std::cos;
+    using std::exp;
     using std::exp2;
     using std::floor;
     using std::fmod;

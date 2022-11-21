@@ -54,11 +54,6 @@ namespace UnitTest
         {
             SetupAllocator();
         }
-
-        void TearDown() override
-        {
-            TeardownAllocator();
-        }
     };
 
     TEST_F(InputOutputSerializerTests, TestTypeValidatingSerializer)

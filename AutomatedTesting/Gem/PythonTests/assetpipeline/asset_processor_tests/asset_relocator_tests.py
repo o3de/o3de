@@ -19,6 +19,7 @@ from dataclasses import field
 from typing import List
 
 # Import LyTestTools
+import ly_test_tools
 import ly_test_tools.builtin.helpers as helpers
 import ly_test_tools.environment.file_system as fs
 import ly_test_tools.environment.process_utils as process_utils
@@ -263,6 +264,7 @@ class TestsAssetRelocator_WindowsAndMac(object):
     @pytest.mark.test_case_id("C21968359")
     @pytest.mark.test_case_id("C21968360")
     @pytest.mark.assetpipeline
+    @pytest.mark.skipif(ly_test_tools.LINUX, reason="Python based file locking does not function on Linux")
     @pytest.mark.parametrize(
         "test_id, read_only, confirm, expect_success, expected_queries, unexpected_queries",
         # Comprehend a list of tuples for pytest parametrize while maintaining readability of arguments
@@ -344,6 +346,7 @@ class TestsAssetRelocator_WindowsAndMac(object):
         4. Assert file existence or nonexistence based on the test case
         5. Validate the relocation report based on expected and unexpected messages
         """
+
         env = ap_setup_fixture
         test_file = "testFile.txt"
 

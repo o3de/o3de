@@ -251,8 +251,31 @@ void ValidateQuadLight(ViewSrg::QuadLight light, Surface surface, inout Lighting
 #endif
 }
 
+void ApplyQuadLightInternal(uint lightIndex, Surface surface, inout LightingData lightingData)
+{
+#if ENABLE_QUAD_LIGHTS
+
+    if (o_enableQuadLightApprox || o_enableQuadLightLTC)
+    {
+        ViewSrg::QuadLight light = ViewSrg::m_quadLights[lightIndex];
+            
+#if ENABLE_AREA_LIGHT_VALIDATION
+        if (o_area_light_validation)
+        {
+            ValidateQuadLight(light, surface, lightingData);
+        }
+        else
+#endif //ENABLE_AREA_LIGHT_VALIDATION
+        {
+            ApplyQuadLight(light, surface, lightingData);
+        }
+    }
+#endif // ENABLE_QUAD_LIGHTS
+}
+
 void ApplyQuadLights(Surface surface, inout LightingData lightingData)
 {
+#if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.LoadAdvance();
                 
     while( !lightingData.tileIterator.IsDone() ) 
@@ -260,23 +283,12 @@ void ApplyQuadLights(Surface surface, inout LightingData lightingData)
         uint currLightIndex = lightingData.tileIterator.GetValue(); 
         lightingData.tileIterator.LoadAdvance();
 
-#if ENABLE_QUAD_LIGHTS
-
-        if (o_enableQuadLightApprox || o_enableQuadLightLTC)
-        {
-            ViewSrg::QuadLight light = ViewSrg::m_quadLights[currLightIndex];
-            
-#if ENABLE_AREA_LIGHT_VALIDATION
-            if (o_area_light_validation)
-            {
-                ValidateQuadLight(light, surface, lightingData);
-            }
-            else
-#endif
-            {
-                ApplyQuadLight(light, surface, lightingData);
-            }
-        }
-#endif
+        ApplyQuadLightInternal(currLightIndex, surface, lightingData);
     }
+#else
+    for(uint lightIndex = 0; lightIndex < ViewSrg::m_quadLightCount; lightIndex++)
+    {
+        ApplyQuadLightInternal(lightIndex, surface, lightingData);
+    }
+#endif
 }

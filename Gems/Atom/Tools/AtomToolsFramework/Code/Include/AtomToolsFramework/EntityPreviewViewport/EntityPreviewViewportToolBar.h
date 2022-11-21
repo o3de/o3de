@@ -13,6 +13,7 @@
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsNotificationBus.h>
 
 #include <QAction>
+#include <QFutureWatcher>
 #include <QToolBar>
 #endif
 
@@ -29,7 +30,10 @@ namespace AtomToolsFramework
         ~EntityPreviewViewportToolBar();
 
     private:
+        // EntityPreviewViewportSettingsNotificationBus::Handler overrides...
         void OnViewportSettingsChanged() override;
+        void OnModelPresetAdded(const AZStd::string& path) override;
+        void OnLightingPresetAdded(const AZStd::string& path) override;
 
         const AZ::Crc32 m_toolId = {};
         AssetSelectionComboBox* m_lightingPresetComboBox = {};
@@ -37,5 +41,6 @@ namespace AtomToolsFramework
         QAction* m_toggleGrid = {};
         QAction* m_toggleShadowCatcher = {};
         QAction* m_toggleAlternateSkybox = {};
+        QFutureWatcher<AZStd::vector<AZStd::string>> m_watcher;
     };
 } // namespace AtomToolsFramework

@@ -16,20 +16,18 @@ namespace ScriptEvents
     {
         void ClearStatusAction(const ScriptCanvas::SourceHandle& sourceHandle);
 
-        AZStd::pair<bool, AZStd::string> MakeHelpersAction(const ScriptCanvas::SourceHandle& sourceHandle);
+        bool MakeHelpersAction(const ScriptCanvas::SourceHandle& sourceHandle);
 
-        AZStd::pair<ScriptCanvas::SourceHandle, AZStd::string> OpenAction();
+        ScriptCanvas::SourceHandle OpenAction(const AZ::IO::Path& sourceFilePath);
 
-        AZStd::pair<bool, AZStd::vector<AZStd::string>> ParseAsAction(const ScriptCanvas::SourceHandle& sourceHandle);
-
-        AZStd::pair<bool, AZStd::string> SaveAsAction(const ScriptCanvas::SourceHandle& sourceHandle);
+        ScriptCanvas::SourceHandle SaveAction(const ScriptCanvas::SourceHandle& sourceHandle, bool saveInPlace);
 
         struct MenuItemsEnabled
         {
             bool m_addHelpers = false;
             bool m_clear = false;
-            bool m_parse = false;
             bool m_save = false;
+            bool m_saveAs = false;
         };
 
         MenuItemsEnabled UpdateMenuItemsEnabled(const ScriptCanvas::SourceHandle& sourceHandle);
