@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/unordered_map.h>
 
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
@@ -45,6 +46,8 @@ namespace AzToolsFramework
         // ViewportEditorModeNotificationsBus overrides ...
         void OnEditorModeActivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
         void OnEditorModeDeactivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
+
+        AZStd::unordered_map<AZ::Uuid, AZStd::string> m_componentModeToActionContextModeMap;
 
         ActionManagerInterface* m_actionManagerInterface = nullptr;
         MenuManagerInterface* m_menuManagerInterface = nullptr;

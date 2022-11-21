@@ -11,6 +11,7 @@
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 
@@ -52,7 +53,20 @@ namespace AzToolsFramework
             "ComponentModeActionHandler - could not get ActionManagerInterface on ComponentModeActionHandler "
             "OnActionUpdaterRegistrationHook.");
 
-        m_actionManagerInterface->RegisterActionContextMode(EditorMainWindowActionContextIdentifier, "AnyComponentMode");
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+
+        serializeContext->EnumerateDerived<ComponentModeFramework::EditorBaseComponentMode>(
+            [&](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid&) -> bool
+            {
+                AZStd::string modeIdentifier = AZStd::string::format("o3de.context.mode.%s", classData->m_name);
+
+                m_actionManagerInterface->RegisterActionContextMode(EditorMainWindowActionContextIdentifier, modeIdentifier);
+                m_componentModeToActionContextModeMap.emplace(classData->m_typeId, AZStd::move(modeIdentifier));
+
+                return true;
+            }
+        );
     }
 
     void ComponentModeActionHandler::OnActionUpdaterRegistrationHook()
@@ -93,6 +107,22 @@ namespace AzToolsFramework
 
             m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Esc");
         }
+
+        // Add these Actions to all Component Modes
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+
+        serializeContext->EnumerateDerived<ComponentModeFramework::EditorBaseComponentMode>(
+            [&](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid&) -> bool
+            {
+                // Add default actions to all component modes
+                // TODO - provide a way to opt out?
+                AZStd::string modeIdentifier = AZStd::string::format("o3de.context.mode.%s", classData->m_name);
+                m_actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.componentMode.end");
+
+                return true;
+            }
+        );
     }
 
     void ComponentModeActionHandler::OnMenuBindingHook()
@@ -106,14 +136,17 @@ namespace AzToolsFramework
         m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.componentMode.end", 10001);
     }
 
-    void ComponentModeActionHandler::ActiveComponentModeChanged([[maybe_unused]] const AZ::Uuid& componentType)
+    void ComponentModeActionHandler::ActiveComponentModeChanged(const AZ::Uuid& componentType)
     {
         if (m_actionManagerInterface)
         {
-            m_actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, "AnyComponentMode");
-
-            // Update Component Mode Changed updater
-            m_actionManagerInterface->RegisterActionUpdater(ComponentModeChangedUpdaterIdentifier);
+            if (auto componentModeTypeIter = m_componentModeToActionContextModeMap.find(componentType);
+                componentModeTypeIter != m_componentModeToActionContextModeMap.end())
+            {
+                m_actionManagerInterface->SetActiveActionContextMode(
+                    EditorMainWindowActionContextIdentifier, componentModeTypeIter->second);
+                m_actionManagerInterface->TriggerActionUpdater(ComponentModeChangedUpdaterIdentifier);
+            }
         }
     }
 
@@ -122,10 +155,17 @@ namespace AzToolsFramework
     {
         if (m_actionManagerInterface && mode == ViewportEditorMode::Component)
         {
-            m_actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, "AnyComponentMode");
+            AZ::Uuid componentModeTypeId;
+            ComponentModeFramework::ComponentModeRequestBus::BroadcastResult(
+                componentModeTypeId, &ComponentModeFramework::ComponentModeRequests::GetComponentModeType);
 
-            // Update Component Mode Changed updater
-            m_actionManagerInterface->RegisterActionUpdater(ComponentModeChangedUpdaterIdentifier);
+            if (auto componentModeTypeIter = m_componentModeToActionContextModeMap.find(componentModeTypeId);
+                componentModeTypeIter != m_componentModeToActionContextModeMap.end())
+            {
+                m_actionManagerInterface->SetActiveActionContextMode(
+                    EditorMainWindowActionContextIdentifier, componentModeTypeIter->second);
+                m_actionManagerInterface->TriggerActionUpdater(ComponentModeChangedUpdaterIdentifier);
+            }
         }
     }
 
@@ -135,9 +175,7 @@ namespace AzToolsFramework
         if (m_actionManagerInterface && mode == ViewportEditorMode::Component)
         {
             m_actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, DefaultActionContextModeIdentifier);
-
-            // Update Component Mode Changed updater
-            m_actionManagerInterface->RegisterActionUpdater(ComponentModeChangedUpdaterIdentifier);
+            m_actionManagerInterface->TriggerActionUpdater(ComponentModeChangedUpdaterIdentifier);
         }
     }
 
