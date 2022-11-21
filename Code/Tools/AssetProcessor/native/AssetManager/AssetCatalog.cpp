@@ -495,6 +495,7 @@ namespace AssetProcessor
 
                     // also register it at the legacy id(s) if its different:
                     AZ::Data::AssetId legacyAssetId(combined.m_legacyGuid, 0);
+                    //auto legacyUuids = AssetUtilities::GetLegacySourceUuids();
                     AZ::Uuid  legacySourceUuid = AssetUtilities::CreateSafeSourceUUIDFromName(combined.m_sourceName.c_str(), false);
                     AZ::Data::AssetId legacySourceAssetId(legacySourceUuid, combined.m_subID);
 
@@ -637,19 +638,22 @@ namespace AssetProcessor
         }
     }
 
-    void AssetCatalog::OnSourceQueued(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid, const SourceAssetReference& sourceAsset)
+    void AssetCatalog::OnSourceQueued(AZ::Uuid sourceUuid, AZStd::unordered_set<AZ::Uuid> legacyUuids, const SourceAssetReference& sourceAsset)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_sourceUUIDToSourceNameMapMutex);
 
         m_sourceUUIDToSourceAssetMap.insert({ sourceUuid, sourceAsset });
 
         //adding legacy source uuid as well
+        for (const auto legacyUuid : legacyUuids)
+        {
         m_sourceUUIDToSourceAssetMap.insert({ legacyUuid, sourceAsset });
+        }
 
         m_sourceAssetToSourceUUIDMap.insert({ sourceAsset, sourceUuid });
     }
 
-    void AssetCatalog::OnSourceFinished(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid)
+    void AssetCatalog::OnSourceFinished(AZ::Uuid sourceUuid, AZStd::unordered_set<AZ::Uuid> legacyUuids)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_sourceUUIDToSourceNameMapMutex);
 
@@ -660,7 +664,11 @@ namespace AssetProcessor
         }
 
         m_sourceUUIDToSourceAssetMap.erase(sourceUuid);
+
+        for (const auto& legacyUuid : legacyUuids)
+        {
         m_sourceUUIDToSourceAssetMap.erase(legacyUuid);
+    }
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -1621,7 +1629,7 @@ namespace AssetProcessor
 
     bool AssetCatalog::GetUncachedSourceInfoFromDatabaseNameAndWatchFolder(const SourceAssetReference& sourceAsset, AZ::Data::AssetInfo& assetInfo)
     {
-        AZ::Uuid sourceUUID = AssetUtilities::CreateSafeSourceUUIDFromName(sourceAsset.RelativePath().c_str());
+        AZ::Uuid sourceUUID = AssetUtilities::GetSourceUuid(sourceAsset);
         if (sourceUUID.IsNull())
         {
             return false;
