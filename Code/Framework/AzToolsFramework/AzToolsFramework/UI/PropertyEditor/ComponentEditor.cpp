@@ -924,23 +924,16 @@ namespace AzToolsFramework
 
     void ComponentEditor::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)
     {
-        if (componentModeTypes.empty())
-        {
-            SetWidgetInteractEnabled(this, false);
-        }
-
-        // disable all component cards not matching the ComponentMode type
         if (AZStd::find(componentModeTypes.begin(), componentModeTypes.end(), m_componentType) == componentModeTypes.end())
         {
+            // disable all component cards that aren't in the active component mode.
             SetWidgetInteractEnabled(this, false);
         }
         else
         {
-            if (componentModeTypes.front() == m_componentType)
-            {
-                // only set the first item to be selected/highlighted
-                SetSelected(true);
-            }
+            // for components that *are* in the active component mode, try to set the first one
+            // to selected, and the rest to unselected.
+            SetSelected(componentModeTypes.front() == m_componentType);
         }
     }
 
