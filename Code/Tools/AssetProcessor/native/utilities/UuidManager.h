@@ -12,6 +12,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
+#include <native/AssetManager/SourceAssetReference.h>
 
 namespace AzToolsFramework
 {
