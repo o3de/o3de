@@ -20,7 +20,7 @@
       "EntryPoints":
       [
         {
-          "name": "MainVS",
+          "name": "VertexShader",
           "type": "Vertex"
         }
       ]

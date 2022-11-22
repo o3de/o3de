@@ -672,6 +672,13 @@ namespace AZ
                 return false;
             }
 
+            // If there were prior failures, continued processing could spam a bunch of irrelevant error messages,
+            // particularly from ResolveSourceValue() and CreateFunctor() functions.
+            if (materialTypeAssetCreator.IsFailed())
+            {
+                return false;
+            }
+
             ExtendNameContext(materialNameContext, *propertyGroup);
 
             for (const AZStd::unique_ptr<PropertyDefinition>& property : propertyGroup->m_properties)
@@ -755,6 +762,13 @@ namespace AZ
                         materialTypeAssetCreator.GetMaterialPropertiesLayout(),
                         [&](const char* message){ materialTypeAssetCreator.ReportError("%s", message); });
                     materialTypeAssetCreator.SetPropertyValue(propertyId, resolvedValue);
+                }
+
+                // If there were prior failures, continued processing could spam a bunch of irrelevant error messages,
+                // particularly from ResolveSourceValue() and CreateFunctor() functions.
+                if (materialTypeAssetCreator.IsFailed())
+                {
+                    return false;
                 }
             }
 

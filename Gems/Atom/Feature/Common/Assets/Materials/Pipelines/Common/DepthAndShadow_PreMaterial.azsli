@@ -5,10 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+ 
+#define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 0
 
-VsOutput VertexShader(VsInput IN)
-{
-    VsOutput OUT = EvaluateVertexGeometry(IN);
-    return OUT;
-}
-
+#include <Atom/RPI/MaterialPipelineCallbacks.azsli>
