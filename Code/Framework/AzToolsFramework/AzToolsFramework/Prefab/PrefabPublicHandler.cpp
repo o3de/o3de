@@ -1418,8 +1418,7 @@ namespace AzToolsFramework
                     parentEntitiesToUpdate.insert(GetEntityById(parentEntityId));
                 }
 
-                commonOwningInstance->get().DetachEntity(entityId).release();
-                AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, entityId);
+                commonOwningInstance->get().DetachEntity(entityId);
 
                 detachedEntityAliasPaths.push_back(AZStd::move(nestedEntityAliasPath));
             }

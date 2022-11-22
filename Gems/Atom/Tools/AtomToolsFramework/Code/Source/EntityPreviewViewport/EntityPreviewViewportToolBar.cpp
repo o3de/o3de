@@ -19,6 +19,7 @@
 #include <QIcon>
 #include <QMenu>
 #include <QToolButton>
+#include <QtConcurrent/QtConcurrent>
 
 namespace AtomToolsFramework
 {
@@ -87,22 +88,42 @@ namespace AtomToolsFramework
         m_lightingPresetComboBox = new AssetSelectionComboBox([](const AZStd::string& path) {
             return path.ends_with(AZ::Render::LightingPreset::Extension);
         }, this);
-        connect(m_lightingPresetComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
-            EntityPreviewViewportSettingsRequestBus::Event(
-                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPreset, path);
-        });
         addWidget(m_lightingPresetComboBox);
 
         // Add model preset combo box
         m_modelPresetComboBox = new AssetSelectionComboBox([](const AZStd::string& path) {
             return path.ends_with(AZ::Render::ModelPreset::Extension);
         }, this);
+        addWidget(m_modelPresetComboBox);
+
+        // Prepopulating preset selection widgets with previously registered presets.
+        EntityPreviewViewportSettingsRequestBus::Event(
+            m_toolId,
+            [this](EntityPreviewViewportSettingsRequests* viewportRequests)
+            {
+                m_lightingPresetComboBox->AddPath(viewportRequests->GetLastLightingPresetPath());
+                for (const auto& path : viewportRequests->GetRegisteredLightingPresetPaths())
+                {
+                    m_lightingPresetComboBox->AddPath(path);
+                }
+
+                m_modelPresetComboBox->AddPath(viewportRequests->GetLastModelPresetPath());
+                for (const auto& path : viewportRequests->GetRegisteredModelPresetPaths())
+                {
+                    m_modelPresetComboBox->AddPath(path);
+                }
+            });
+
+        connect(m_lightingPresetComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPreset, path);
+        });
+
         connect(m_modelPresetComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
             EntityPreviewViewportSettingsRequestBus::Event(
                 m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset, path);
         });
-        addWidget(m_modelPresetComboBox);
-
+ 
         OnViewportSettingsChanged();
         EntityPreviewViewportSettingsNotificationBus::Handler::BusConnect(m_toolId);
     }
