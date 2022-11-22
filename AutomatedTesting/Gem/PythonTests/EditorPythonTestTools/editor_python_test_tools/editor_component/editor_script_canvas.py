@@ -56,24 +56,20 @@ class ScriptCanvasComponent:
         self.script_canvas_component = editor_entity.add_component(SCRIPT_CANVAS_UI)
         self.script_canvas_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
 
-    def set_component_graph_file(self, sc_file_path: str) -> tuple:
+    def set_component_graph_file_from_path(self, sc_file_path: str) -> str:
         """
         Function for updating the script canvas file being used by the component
 
         param sc_file_path : the string path the new graph file on disk
         param component_index: the index of the script canvas component (entities can have multiple script canvas components)
 
-        returns the source handle from the file path and the previous component property value for validation in a tuple
+        returns the source handle from the file path
         """
         sourcehandle = scriptcanvas.SourceHandleFromPath(sc_file_path)
 
-        old_component_property_value = self.script_canvas_component.get_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
-
         self.script_canvas_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
 
-        return sourcehandle, old_component_property_value
-
-
+        return sourcehandle
 
     def set_variable_value(self, variable_name: str, variable_state: VariableState, variable_value) -> str:
         """
@@ -96,12 +92,15 @@ class ScriptCanvasComponent:
         return component_property_path
 
     def get_variable_value(self, variable_name: str, variable_state: VariableState):
+        """
+        Function for getting the value of an exposed variable off the script canvas component. The variable type
+        can vary but only 2 types are currently supported: String adn Boolean. See github GH-13344 for more info.
+        """
 
         component_property_path = self.__construct_variable_component_property_path(variable_name, variable_state)
         variable_value = self.script_canvas_component.get_component_property_value(component_property_path)
 
         return variable_value
-
 
     def __construct_variable_component_property_path(self, variable_name: str, variable_state: VariableState) -> str:
         """
