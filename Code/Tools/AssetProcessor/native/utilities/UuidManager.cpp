@@ -33,6 +33,14 @@ namespace AssetProcessor
         }
     }
 
+    void UuidSettings::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<UuidSettings>()->Version(1)->Field("EnabledTypes", &UuidSettings::m_enabledTypes);
+        }
+    }
+
     AZ::Uuid UuidManager::GetUuid(const SourceAssetReference& sourceAsset)
     {
         auto entry = GetOrCreateUuidEntry(sourceAsset);

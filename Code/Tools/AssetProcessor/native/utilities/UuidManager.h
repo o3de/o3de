@@ -49,15 +49,7 @@ namespace AssetProcessor
     {
         AZ_TYPE_INFO(UuidSettings, "{0E4FD61F-1BB3-4FFF-90DA-E583D75BF948}");
 
-        static void Reflect(AZ::ReflectContext* context)
-        {
-            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<UuidSettings>()
-                    ->Version(1)
-                    ->Field("EnabledTypes", &UuidSettings::m_enabledTypes);
-            }
-        }
+        static void Reflect(AZ::ReflectContext* context);
 
         AZStd::unordered_set<AZStd::string> m_enabledTypes;
     };
