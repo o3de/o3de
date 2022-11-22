@@ -229,6 +229,20 @@ namespace UnitTests
         EXPECT_EQ(uuid, uuid2);
     }
 
+    TEST_F(UuidManagerTests, GetUuid_DifferentFiles_ReturnsDifferentUuid)
+    {
+        static constexpr const char* FileA = "c:/somepath/fileA.txt";
+        static constexpr const char* FileB = "c:/somepath/fileB.txt";
+
+        auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileA));
+
+        EXPECT_FALSE(uuid.IsNull());
+
+        auto uuid2 = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileB));
+
+        EXPECT_NE(uuid, uuid2);
+    }
+
     TEST_F(UuidManagerTests, GetLegacyUuids_UppercaseFileName_ReturnsTwoDifferentUuids)
     {
         auto uuids = m_uuidInterface->GetLegacyUuids(AssetProcessor::SourceAssetReference("c:/somepath/Mockfile.txt"));
