@@ -7,7 +7,7 @@ import typing
 
 import azlmbr.asset as AzAsset
 import azlmbr.math as Math
-
+from typing import Any
 from editor_python_test_tools.utils import Report
 from editor_python_test_tools.editor_entity_utils import EditorComponent
 from consts.general import ComponentPropertyVisibilityStates as PropertyVisibility
@@ -240,7 +240,7 @@ def validate_script_canvas_graph_file(get_script_canvas_component: typing.Callab
 
 
 def validate_script_canvas_variable_changed(get_variable_value: typing.Callable, set_variable_value: typing.Callable,
-                                            variable_name: str, variable_state: VariableState, variable_value) -> None:
+                                            variable_name: str, variable_state: VariableState, variable_value: Any) -> None:
     """
     Function for validating that a script canvas component variable can be changed.
 
