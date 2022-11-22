@@ -1041,7 +1041,7 @@ namespace AssetProcessor
         // Setup:  Add a source to queue.
         m_data->m_assetCatalog->OnSourceQueued(
             m_customDataMembers->m_assetA.m_guid,
-            m_customDataMembers->m_assetALegacyUuid,
+            { m_customDataMembers->m_assetALegacyUuid },
             AssetProcessor::SourceAssetReference(
                 m_customDataMembers->m_subfolder1AbsolutePath.c_str(), m_customDataMembers->m_assetASourceRelPath.c_str()));
 
@@ -1058,7 +1058,7 @@ namespace AssetProcessor
         // Setup:  Add a source to queue.
         m_data->m_assetCatalog->OnSourceQueued(
             m_customDataMembers->m_assetA.m_guid,
-            m_customDataMembers->m_assetALegacyUuid,
+            { m_customDataMembers->m_assetALegacyUuid },
             AssetProcessor::SourceAssetReference(
                 m_customDataMembers->m_subfolder1AbsolutePath.c_str(), m_customDataMembers->m_assetASourceRelPath.c_str()));
 
@@ -1083,10 +1083,10 @@ namespace AssetProcessor
         EXPECT_TRUE(AddSourceAndJob("subfolder1", m_customDataMembers->m_assetASourceRelPath.c_str(), &(m_data->m_dbConn), jobId, m_customDataMembers->m_assetA.m_guid));
         m_data->m_assetCatalog->OnSourceQueued(
             m_customDataMembers->m_assetA.m_guid,
-            m_customDataMembers->m_assetALegacyUuid,
+            { m_customDataMembers->m_assetALegacyUuid },
             AssetProcessor::SourceAssetReference(
                 m_customDataMembers->m_subfolder1AbsolutePath.c_str(), m_customDataMembers->m_assetASourceRelPath.c_str()));
-        m_data->m_assetCatalog->OnSourceFinished(m_customDataMembers->m_assetA.m_guid, m_customDataMembers->m_assetALegacyUuid);
+        m_data->m_assetCatalog->OnSourceFinished(m_customDataMembers->m_assetA.m_guid, { m_customDataMembers->m_assetALegacyUuid });
         ProductDatabaseEntry assetAEntry(jobId, 0, m_customDataMembers->m_assetAProductRelPath.c_str(), m_customDataMembers->m_assetAType);
         m_data->m_dbConn.SetProduct(assetAEntry);
 
