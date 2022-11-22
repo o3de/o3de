@@ -29,7 +29,7 @@ namespace AssetProcessor
                 ->Field("uuid", &UuidEntry::m_uuid)
                 ->Field("legacyUuids", &UuidEntry::m_legacyUuids)
                 ->Field("originalPath", &UuidEntry::m_originalPath)
-                ->Field("millisecondsSinceUnixEpoch", &UuidEntry::m_millisecondsSinceUnixEpoch);
+                ->Field("creationUnixEpochMS", &UuidEntry::m_millisecondsSinceUnixEpoch);
         }
     }
 
@@ -136,7 +136,7 @@ namespace AssetProcessor
 
         const bool isEnabledType = m_enabledTypes.contains(sourceAsset.AbsolutePath().Extension().Native());
         // Last resort - generate a new UUID and save it to the metadata file
-        UuidEntry newUuid = CreateUuidEntry(normalizedPath, isEnabledType);
+        UuidEntry newUuid = CreateUuidEntry(sourceAsset, isEnabledType);
 
         if (!isEnabledType || GetMetadataManager()->SetValue(sourceAsset.AbsolutePath(), UuidKey, newUuid))
         {
@@ -158,13 +158,13 @@ namespace AssetProcessor
         return m_metadataManager;
     }
 
-    UuidManager::UuidEntry UuidManager::CreateUuidEntry(const AZStd::string& file, bool enabledType)
+    UuidManager::UuidEntry UuidManager::CreateUuidEntry(const SourceAssetReference& sourceAsset, bool enabledType)
     {
         UuidEntry newUuid;
 
-        newUuid.m_uuid = enabledType ? CreateUuid() : AssetUtilities::CreateSafeSourceUUIDFromName(file.c_str());
-        newUuid.m_legacyUuids = CreateLegacyUuids(file);
-        newUuid.m_originalPath = file;
+        newUuid.m_uuid = enabledType ? CreateUuid() : AssetUtilities::CreateSafeSourceUUIDFromName(sourceAsset.RelativePath().c_str());
+        newUuid.m_legacyUuids = CreateLegacyUuids(sourceAsset.RelativePath().c_str());
+        newUuid.m_originalPath = sourceAsset.RelativePath().c_str();
         newUuid.m_millisecondsSinceUnixEpoch = aznumeric_cast<AZ::u64>(QDateTime::currentMSecsSinceEpoch());
 
         return newUuid;
@@ -175,9 +175,9 @@ namespace AssetProcessor
         return AZ::Uuid::CreateRandom();
     }
 
-    AZStd::unordered_set<AZ::Uuid> UuidManager::CreateLegacyUuids(const AZStd::string& file)
+    AZStd::unordered_set<AZ::Uuid> UuidManager::CreateLegacyUuids(const AZStd::string& relativePath)
     {
-        return { AssetUtilities::CreateSafeSourceUUIDFromName(file.c_str()),
-                 AssetUtilities::CreateSafeSourceUUIDFromName(file.c_str(), false) };
+        return { AssetUtilities::CreateSafeSourceUUIDFromName(relativePath.c_str()),
+                 AssetUtilities::CreateSafeSourceUUIDFromName(relativePath.c_str(), false) };
     }
 } // namespace AssetProcessor

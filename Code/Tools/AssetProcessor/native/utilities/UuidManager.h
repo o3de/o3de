@@ -90,7 +90,7 @@ namespace AssetProcessor
         AZStd::string GetCanonicalPath(AZ::IO::PathView file);
         UuidEntry GetOrCreateUuidEntry(const SourceAssetReference& sourceAsset);
         AzToolsFramework::IMetadataRequests* GetMetadataManager();
-        UuidEntry CreateUuidEntry(const AZStd::string& file, bool enabledType);
+        UuidEntry CreateUuidEntry(const SourceAssetReference& sourceAsset, bool enabledType);
         AZ::Uuid CreateUuid();
         AZStd::unordered_set<AZ::Uuid> CreateLegacyUuids(const AZStd::string& file);
 
