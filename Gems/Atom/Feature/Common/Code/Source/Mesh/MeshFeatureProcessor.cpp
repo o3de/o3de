@@ -1663,7 +1663,7 @@ namespace AZ
             // update the material changeId list with the current material assignments
             m_materialChangeIds.clear();
 
-            for (const auto materialAssignment : m_materialAssignments)
+            for (const auto& materialAssignment : m_materialAssignments)
             {
                 const AZ::Data::Instance<RPI::Material>& materialInstance = materialAssignment.second.m_materialInstance;
                 if (materialInstance.get())
@@ -1682,7 +1682,7 @@ namespace AZ
             }
 
             // check for material changes using the changeId
-            for (const auto materialAssignment : m_materialAssignments)
+            for (const auto& materialAssignment : m_materialAssignments)
             {
                 const AZ::Data::Instance<RPI::Material>& materialInstance = materialAssignment.second.m_materialInstance;
 
