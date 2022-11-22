@@ -13,6 +13,7 @@
 #include <Metal/Metal.h>
 #include <RHI/Fence.h>
 #include <RHI/Metal.h>
+#include <RHI/ArgumentBuffer.h>
 
 namespace AZ
 {
@@ -90,8 +91,17 @@ namespace AZ
             /// Cache multisample state. Used mainly to validate the MSAA image descriptor against the one passed into the pipelinestate
             RHI::MultisampleState       m_renderPassMultiSampleState;
             
+            // Data structures to cache untracked resources for Graphics and Compute Passes
+            // At the end of the pass we call UseResource on them to tell the
+            // driver to ensure they are resident when eneded.
+            ArgumentBuffer::ResourcesPerStageForGraphics m_untrackedResourcesGfxRead;
+            ArgumentBuffer::ResourcesPerStageForGraphics m_untrackedResourcesGfxReadWrite;
+            ArgumentBuffer::ResourcesForCompute m_untrackedResourcesComputeRead;
+            ArgumentBuffer::ResourcesForCompute m_untrackedResourcesComputeReadWrite;
+
             //! Go through all the heaps and call UseHeap on them to make them resident for the upcoming pass.
             void MakeHeapsResident(MTLRenderStages renderStages);
+            
         private:
             
             bool m_isEncoded                                    = false;

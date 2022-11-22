@@ -108,6 +108,12 @@ namespace AZ
             
             ShaderResourceBindings& GetShaderResourceBindingsByPipelineType(RHI::PipelineStateType pipelineType);            
             
+            //Arrays to cache all the buffers and offsets (related to graphics work) in order to make batch calls
+            MetalArgumentBufferArray m_mtlVertexArgBuffers;
+            MetalArgumentBufferArrayOffsets m_mtlVertexArgBufferOffsets;
+            MetalArgumentBufferArray m_mtlFragmentOrComputeArgBuffers;
+            MetalArgumentBufferArrayOffsets m_mtlFragmentOrComputeArgBufferOffsets;
+
             //! This is kept as a separate struct so that we can robustly reset it. Every property
             //! on this struct should be in-class-initialized so that there are no "missed" states.
             //! Otherwise, it results in hard-to-track bugs down the road as it's too easy to add something

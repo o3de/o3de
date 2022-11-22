@@ -135,7 +135,7 @@ namespace AZ
                     {
                         AZ_PROFILE_SCOPE(RHI, "Copy CPU buffer");
                         memcpy(framePacket->m_stagingResourceData, sourceData + pendingByteOffset, bytesToCopy);
-                        Platform::SynchronizeBufferOnCPU(framePacket->m_stagingResource, 0, bytesToCopy);
+                        Platform::PublishBufferCpuChangeOnGpu(framePacket->m_stagingResource, 0, bytesToCopy);
                     }
 
                     id<MTLBlitCommandEncoder> blitEncoder = [framePacket->m_mtlCommandBuffer blitCommandEncoder];
@@ -255,7 +255,7 @@ namespace AZ
                                 }
 
                                 const uint32_t bytesCopied = subresourceLayout.m_rowCount * stagingRowPitch;
-                                Platform::SynchronizeBufferOnCPU(framePacket->m_stagingResource, framePacket->m_dataOffset, bytesCopied);
+                                Platform::PublishBufferCpuChangeOnGpu(framePacket->m_stagingResource, framePacket->m_dataOffset, bytesCopied);
 
                                 RHI::Size sourceSize = subresourceLayout.m_size;
                                 sourceSize.m_depth = 1;
@@ -300,7 +300,7 @@ namespace AZ
                                     }
 
                                     const uint32_t bytesCopied = (endRow - startRow) * stagingRowPitch;
-                                    Platform::SynchronizeBufferOnCPU(framePacket->m_stagingResource, framePacket->m_dataOffset, bytesCopied);
+                                    Platform::PublishBufferCpuChangeOnGpu(framePacket->m_stagingResource, framePacket->m_dataOffset, bytesCopied);
 
                                     //Clamp heightToCopy to match subresourceLayout.m_size.m_height as it is possible to go over
                                     //if subresourceLayout.m_size.m_height is not perfectly divisible by compressedTexelBlockSizeHeight

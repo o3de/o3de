@@ -122,7 +122,7 @@ namespace Platform
         return reinterpret_cast<RHIMetalView*>([nativeWindow.contentViewController view]);
     }
 
-    void SynchronizeBufferOnCPU(id<MTLBuffer> mtlBuffer, size_t bufferOffset, size_t bufferSize)
+    void PublishBufferCpuChangeOnGpu(id<MTLBuffer> mtlBuffer, size_t bufferOffset, size_t bufferSize)
     {
         if(mtlBuffer.storageMode == MTLStorageModeManaged)
         {
@@ -130,7 +130,7 @@ namespace Platform
         }
     }
 
-    void SynchronizeBufferOnGPU(id<MTLBlitCommandEncoder> blitEncoder, id<MTLBuffer> mtlBuffer)
+    void PublishBufferGpuChangeOnCpu(id<MTLBlitCommandEncoder> blitEncoder, id<MTLBuffer> mtlBuffer)
     {
         if(blitEncoder && mtlBuffer.storageMode == MTLStorageModeManaged)
         {
@@ -138,7 +138,7 @@ namespace Platform
         }
     }
 
-    void SynchronizeTextureOnGPU(id<MTLBlitCommandEncoder> blitEncoder, id<MTLTexture> mtlTexture)
+    void PublishTextureGpuChangeOnCpu(id<MTLBlitCommandEncoder> blitEncoder, id<MTLTexture> mtlTexture)
     {
         if(blitEncoder && mtlTexture.storageMode == MTLStorageModeManaged)
         {
@@ -180,7 +180,7 @@ namespace Platform
     {
         AZ::Metal::Buffer& buffer = static_cast<AZ::Metal::Buffer&>(bufferBase);
         //Ony need to handle MTLStorageModeManaged memory.
-        SynchronizeBufferOnCPU(buffer.GetMemoryView().GetGpuAddress<id<MTLBuffer>>(),
+        PublishBufferCpuChangeOnGpu(buffer.GetMemoryView().GetGpuAddress<id<MTLBuffer>>(),
                                buffer.GetMemoryView().GetOffset() + buffer.GetMapRequestOffset(),
                                buffer.GetMemoryView().GetSize());
     }
