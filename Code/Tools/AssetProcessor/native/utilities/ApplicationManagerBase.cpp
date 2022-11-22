@@ -479,6 +479,7 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> file
             if (!isCacheRoot)
             {
                 m_fileStateCache->UpdateFile(path);
+                m_uuidManager->FileChanged(path.toUtf8().constData());
             }
 
             [[maybe_unused]] bool result = QMetaObject::invokeMethod(
@@ -503,6 +504,8 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> file
                     m_fileProcessor->AssessDeletedFile(path);
                 }, Qt::QueuedConnection);
                 AZ_Assert(result, "Failed to invoke m_fileProcessor::AssessDeletedFile");
+
+                m_uuidManager->FileRemoved(path.toUtf8().constData());
             }
 
             result = QMetaObject::invokeMethod(m_assetProcessorManager, [this, path]()

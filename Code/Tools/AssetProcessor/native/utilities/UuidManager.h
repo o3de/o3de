@@ -26,13 +26,27 @@ namespace AssetProcessor
 
         virtual ~IUuidRequests() = default;
 
+        //! Gets the canonical UUID for a given source asset.  A new metadata file may be created with a randomly generated UUID if
+        //! generation is enabled for the file type.  Otherwise the UUID returned will follow the legacy system based on the file path.
+        //! @param file Absolute path to the source asset.
         virtual AZ::Uuid GetUuid(AZ::IO::PathView file) = 0;
+        //! Gets the set of legacy UUIDs for the given source asset.  These are all the UUIDs that may have been used to reference this asset based on previous generation methods.
+        //! @param file Absolute path to the source asset.
         virtual AZStd::unordered_set<AZ::Uuid> GetLegacyUuids(AZ::IO::PathView file) = 0;
+
+        //! Notifies the manager a metadata file has changed so the cache can be cleared.
+        //! @param file Absolute path to the metadata file that changed.
         virtual void FileChanged(AZ::IO::Path file) = 0;
+        //! Notifies the manager a metadata file has been removed so the cache can be cleared.
+        //! @param file Absolute path to the metadata file that was removed.
         virtual void FileRemoved(AZ::IO::Path file) = 0;
+        //! Sets the file types (based on file extension) which the manager will generate random UUIDs and store in a metadata file.  Types
+        //! which are not enabled will use legacy path-based UUIDs.
+        //! @param types Set of file extensions to enable generation for.
         virtual void EnableGenerationForTypes(AZStd::unordered_set<AZStd::string> types) = 0;
     };
 
+    //! Serialized settings type for storing the user preferences for the UUID manager
     struct UuidSettings
     {
         AZ_TYPE_INFO(UuidSettings, "{0E4FD61F-1BB3-4FFF-90DA-E583D75BF948}");
@@ -50,6 +64,7 @@ namespace AssetProcessor
         AZStd::unordered_set<AZStd::string> m_enabledTypes;
     };
 
+    //! Handles all UUID lookup (and generation) requests for the AssetProcessor
     class UuidManager : public AZ::Interface<IUuidRequests>::Registrar
     {
     public:
@@ -90,8 +105,9 @@ namespace AssetProcessor
         AZStd::unordered_set<AZ::Uuid> CreateLegacyUuids(const AZStd::string& file);
 
         AZStd::recursive_mutex m_uuidMutex;
+        // Cache of uuids.  AbsPath -> UUIDEntry
         AZStd::unordered_map<AZStd::string, UuidEntry> m_uuids;
-
+        // Types which should use randomly generated UUIDs
         AZStd::unordered_set<AZStd::string> m_enabledTypes;
         AzToolsFramework::IMetadataRequests* m_metadataManager{};
     };
