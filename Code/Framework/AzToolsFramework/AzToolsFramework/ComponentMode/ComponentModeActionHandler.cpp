@@ -180,7 +180,7 @@ namespace AzToolsFramework
     }
 
     void ComponentModeActionHandler::EnumerateComponentModes(
-        AZStd::function<bool(const AZ::SerializeContext::ClassData*, const AZ::Uuid&)>& handler)
+        const AZStd::function<bool(const AZ::SerializeContext::ClassData*, const AZ::Uuid&)>& handler)
     {
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
