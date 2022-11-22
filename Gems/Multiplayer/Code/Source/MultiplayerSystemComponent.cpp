@@ -980,6 +980,7 @@ namespace Multiplayer
             }
         }
 
+        m_versionMismatchEvent.Signal();
         return true;
     }
 
@@ -1276,6 +1277,11 @@ namespace Multiplayer
     void MultiplayerSystemComponent::AddNoServerLevelLoadedHandler(NoServerLevelLoadedEvent::Handler& handler)
     {
         handler.Connect(m_noServerLevelLoadedEvent);
+    }
+
+    void MultiplayerSystemComponent::AddVersionMismatchHandler(NoServerLevelLoadedEvent::Handler& handler)
+    {
+        handler.Connect(m_versionMismatchEvent);
     }
 
     void MultiplayerSystemComponent::SendNotifyClientMigrationEvent(AzNetworking::ConnectionId connectionId, const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId, NetEntityId controlledEntityId)
