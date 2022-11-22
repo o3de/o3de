@@ -218,24 +218,23 @@ def validate_asset_property(property_name: str, get_asset_value: typing.Callable
         f"{expected_asset.id} was expected but Asset Id: {set_value} was retrieved from \"{expected_asset.get_path()}\""
 
 
-def validate_script_canvas_graph_file(get_script_canvas_component: typing.Callable,
+def validate_script_canvas_graph_file(get_script_canvas_component_graph_file: typing.Callable,
                                       set_script_canvas_component_graph_file: typing.Callable, sc_file_path: str) -> None:
     """
     Function to validate the setting of a script canvas graph file to the file source field in the script canvas component
 
-    get_script_canvas_component: getter for the script canvas component field
+    get_script_canvas_component_graph_file: getter for the script canvas component file source handle field
     set_script_canvas_component_graph_file: setter for the script canvas component's file source field.
     sc_file_path: the path on disk where the graph file exists
 
     """
     Report.info(f"Validating Script Canvas component's file source field can be set.")
 
-    sc_component = get_script_canvas_component()
-    old_value = sc_component.get_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
+    old_value = get_script_canvas_component_graph_file(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
 
     set_script_canvas_component_graph_file(sc_file_path)
 
-    set_value = sc_component.get_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
+    set_value = get_script_canvas_component_graph_file(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
     assert set_value != old_value and set_value is not None, f"Graph file could not be set!"
 
 

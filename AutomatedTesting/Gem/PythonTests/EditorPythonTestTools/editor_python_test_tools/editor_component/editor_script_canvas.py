@@ -66,6 +66,14 @@ class ScriptCanvasComponent:
         sourcehandle = scriptcanvas.SourceHandleFromPath(sc_file_path)
 
         self.script_canvas_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
+    def get_component_graph_file(self) -> str:
+        """
+        function for getting the component property value of the graph file in the script canvas component
+
+        returns the component property value of the script canvas source handle (string)
+        """
+
+        return self.script_canvas_component.get_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
 
     def set_variable_value(self, variable_name: str, variable_state: VariableState, variable_value) -> str:
         """
