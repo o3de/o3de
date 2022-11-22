@@ -453,10 +453,14 @@ namespace GradientSignal
     AZ::Color EditorImageGradientComponentMode::OnGetColor(const AZ::Vector3& brushCenter)
     {
         // Get the gradient value at the given point.
-
+        // We use "GetPixelValuesByPosition" instead of "GetGradientValue" because we want to select unscaled, unsmoothed values.
         float gradientValue = 0.0f;
-        GradientSampleParams sampleParams = {brushCenter};
-        GradientRequestBus::EventResult(gradientValue, GetEntityId(), &GradientRequestBus::Events::GetValue, sampleParams);
+        ImageGradientModificationBus::Event(
+            GetEntityId(),
+            &ImageGradientModificationBus::Events::GetPixelValuesByPosition,
+            AZStd::span<const AZ::Vector3>(&brushCenter, 1),
+            AZStd::span<float>(&gradientValue, 1));
+
         return AZ::Color(gradientValue, gradientValue, gradientValue, 1.0f);
     }
 
