@@ -18,21 +18,11 @@ namespace UnitTest
     class VectorSets
         : public LeakDetectionFixture
     {
-
-        void SetUp() override
-        {
-            LeakDetectionFixture::SetUp();
-        }
     };
 
     class FixedVectorSets
         : public LeakDetectionFixture
     {
-
-        void SetUp() override
-        {
-            LeakDetectionFixture::SetUp();
-        }
     };
 
     template <typename SetType>

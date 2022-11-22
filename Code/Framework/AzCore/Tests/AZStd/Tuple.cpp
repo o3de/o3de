@@ -37,16 +37,6 @@ namespace UnitTest
         : public LeakDetectionFixture
     {
     protected:
-        void SetUp() override
-        {
-            LeakDetectionFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            LeakDetectionFixture::TearDown();
-        }
-
         struct MoveOnlyType
         {
             AZ_CLASS_ALLOCATOR(MoveOnlyType, AZ::SystemAllocator, 0);
@@ -67,16 +57,6 @@ namespace UnitTest
     class TupleTypedTest
         : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            LeakDetectionFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            LeakDetectionFixture::TearDown();
-        }
     };
     using TupleTestTypes = ::testing::Types<
         AZStd::tuple<>,
@@ -1115,16 +1095,6 @@ namespace UnitTest
             : public LeakDetectionFixture
         {
         protected:
-            void SetUp() override
-            {
-                LeakDetectionFixture::SetUp();
-            }
-
-            void TearDown() override
-            {
-                LeakDetectionFixture::TearDown();
-            }
-
             static void SetUpTestCase()
             {
                 ExtendedTupleTest::m_count = 0;

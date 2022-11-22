@@ -18,32 +18,12 @@ namespace UnitTest
     class VariantTest
         : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            LeakDetectionFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            LeakDetectionFixture::TearDown();
-        }
     };
 
     template<typename TestConfig>
     class VariantSizeTest
         : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            LeakDetectionFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            LeakDetectionFixture::TearDown();
-        }
     };
 
     template<typename VariantType, size_t ExpectedSize>
@@ -63,16 +43,6 @@ namespace UnitTest
     class VariantAlternativeTest
         : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            LeakDetectionFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            LeakDetectionFixture::TearDown();
-        }
     };
 
     template<typename VariantType, size_t Index, typename AlternativeType>

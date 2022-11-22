@@ -14,15 +14,5 @@ namespace ScriptCanvasUnitTest
     class ScriptCanvasUnitTestFixture
         : public UnitTest::LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            UnitTest::LeakDetectionFixture::SetUp();
-        };
-
-        void TearDown() override
-        {
-            UnitTest::LeakDetectionFixture::TearDown();
-        };
     };
 }

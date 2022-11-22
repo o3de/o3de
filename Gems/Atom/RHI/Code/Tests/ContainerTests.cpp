@@ -57,10 +57,6 @@ namespace UnitTest
         : public UnitTest::LeakDetectionFixture
     {
     public:
-        ChunkedVectorTest()
-            : LeakDetectionFixture()
-        {}
-
         void run()
         {
             static const size_t CapacityLogSize = 16; // 65535 elements.

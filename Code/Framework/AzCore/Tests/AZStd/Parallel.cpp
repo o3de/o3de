@@ -162,16 +162,6 @@ namespace UnitTest
         thread_desc      m_desc[3];
         int m_numThreadDesc = 0;
     public:
-        void SetUp() override
-        {
-            LeakDetectionFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            LeakDetectionFixture::TearDown();
-        }
-
         void increment_data()
         {
             while (m_data < m_dataMax)
@@ -1398,16 +1388,6 @@ namespace UnitTest
     class ThreadEventsBus :
         public LeakDetectionFixture
     {
-        public:
-        void SetUp() override
-        {
-            LeakDetectionFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            LeakDetectionFixture::TearDown();
-        }
     };
 
     template <typename T> class ThreadEventCounter :
@@ -1470,16 +1450,6 @@ namespace UnitTest
     class ThreadEventsDeathTest :
         public LeakDetectionFixture
     {
-        public:
-        void SetUp() override
-        {
-            LeakDetectionFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            LeakDetectionFixture::TearDown();
-        }
     };
 
     class DeadlockCauser : public AZStd::ThreadEventBus::Handler

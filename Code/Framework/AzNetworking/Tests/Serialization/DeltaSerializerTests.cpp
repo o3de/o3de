@@ -126,16 +126,6 @@ namespace UnitTest
     class DeltaSerializerTests
         : public UnitTest::LeakDetectionFixture
     {
-    public:
-        void SetUp() override
-        {
-            UnitTest::LeakDetectionFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            UnitTest::LeakDetectionFixture::TearDown();
-        }
     };
 
     static constexpr float BLEND_FACTOR_SCALE = 1.1f;

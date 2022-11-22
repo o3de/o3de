@@ -18,11 +18,6 @@
 
 namespace UnitTest
 {
-    void ScriptAutomationApplicationFixture::SetUp()
-    {
-        LeakDetectionFixture::SetUp();
-    }
-
     void ScriptAutomationApplicationFixture::TearDown()
     {
         if (m_application)

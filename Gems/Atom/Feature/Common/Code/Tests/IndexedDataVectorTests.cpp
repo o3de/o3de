@@ -21,16 +21,6 @@ namespace UnitTest
         : public UnitTest::LeakDetectionFixture
     {
     public:
-        void SetUp() override
-        {
-            UnitTest::LeakDetectionFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            UnitTest::LeakDetectionFixture::TearDown();
-        }
-
         template<typename T>
         IndexedDataVector<T> SetupIndexedDataVector(size_t size, T initialValue = T(0), T incrementAmount = T(1), AZStd::vector<uint16_t>* indices = nullptr)
         {

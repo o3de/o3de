@@ -20,17 +20,6 @@
 class MultiplayerCompressionTest
     : public UnitTest::LeakDetectionFixture
 {
-protected:
-
-    void SetUp() override
-    {
-        LeakDetectionFixture::SetUp();
-    }
-
-    void TearDown() override
-    {
-        LeakDetectionFixture::TearDown();
-    }
 };
 
 TEST_F(MultiplayerCompressionTest, MultiplayerCompression_CompressTest)

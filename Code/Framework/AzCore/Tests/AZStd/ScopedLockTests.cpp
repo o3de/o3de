@@ -17,16 +17,6 @@ namespace UnitTest
     class ScopedLockTest
         : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            LeakDetectionFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            LeakDetectionFixture::TearDown();
-        }
     };
 
     struct ScopedTestMutex

@@ -203,11 +203,6 @@ namespace UnitTest
         : public LeakDetectionFixture
     {
     public:
-        SliceTest()
-            : LeakDetectionFixture()
-        {
-        }
-
         void SetUp() override
         {
             LeakDetectionFixture::SetUp();

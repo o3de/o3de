@@ -51,17 +51,6 @@ namespace SimulatedObjectSetupTests
     class SimulatedObjectSetupTestsFixture
         : public UnitTest::LeakDetectionFixture
     {
-    public:
-        void SetUp() override
-        {
-            UnitTest::LeakDetectionFixture::SetUp();
-            AZ::AllocatorInstance<ActorAllocator>::Create();
-        }
-        void TearDown() override
-        {
-            AZ::AllocatorInstance<ActorAllocator>::Destroy();
-            UnitTest::LeakDetectionFixture::TearDown();
-        }
     };
 
     TEST_F(SimulatedObjectSetupTestsFixture, TestSimulatedObjectSetup_AddSimulatedObject)

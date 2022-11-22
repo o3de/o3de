@@ -424,11 +424,6 @@ namespace EMotionFX
         , public ::testing::WithParamInterface<::testing::tuple<bool, bool, CommandAdjustSimulatedJointTestsParam>>
     {
     public:
-        void SetUp() override
-        {
-            UnitTest::LeakDetectionFixture::SetUp();
-        }
-
         static std::string buildCommandLineFromTestParam(const CommandAdjustSimulatedJointTestsParam& param)
         {
             std::string string;

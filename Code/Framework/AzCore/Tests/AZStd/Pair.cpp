@@ -19,16 +19,6 @@ namespace UnitTest
     class CompressedPairTest
         : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            LeakDetectionFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            LeakDetectionFixture::TearDown();
-        }
     };
 
     template<typename TestConfig>

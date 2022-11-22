@@ -836,16 +836,6 @@ namespace UnitTest
     class TreeSetContainers
         : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            LeakDetectionFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            LeakDetectionFixture::TearDown();
-        }
     };
 
 
@@ -1206,16 +1196,6 @@ namespace UnitTest
     class TreeMapContainers
         : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            LeakDetectionFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            LeakDetectionFixture::TearDown();
-        }
     };
 
     template<typename ContainerType>

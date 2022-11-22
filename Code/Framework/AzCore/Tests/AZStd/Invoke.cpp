@@ -81,16 +81,6 @@ namespace UnitTest
     class InvocableTest
         : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            LeakDetectionFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            LeakDetectionFixture::TearDown();
-        }
     };
 
     TEST_F(InvocableTest, InvalidInvocableArgsTest)
@@ -294,16 +284,6 @@ namespace UnitTest
         : public LeakDetectionFixture
     {
     protected:
-        void SetUp() override
-        {
-            LeakDetectionFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            LeakDetectionFixture::TearDown();
-        }
-
         static int RawIntFunc(int num)
         {
             return num;

@@ -44,16 +44,6 @@ namespace UnitTest
     template<typename ExpectedResultTraits>
     class DurationTypedTest : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            LeakDetectionFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            LeakDetectionFixture::TearDown();
-        }
     };
     using ChronoTestTypes = ::testing::Types<
         DurationExpectation<AZStd::chrono::nanoseconds, 63, AZStd::nano>,

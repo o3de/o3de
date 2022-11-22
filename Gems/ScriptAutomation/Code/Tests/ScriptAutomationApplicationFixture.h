@@ -22,7 +22,6 @@ namespace UnitTest
         : public LeakDetectionFixture
     {
     public:
-        void SetUp() override;
         void TearDown() override;
 
     protected:

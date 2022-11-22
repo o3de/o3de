@@ -15,16 +15,6 @@ namespace UnitTest
     class CidrAddressTests
         : public LeakDetectionFixture
     {
-    public:
-        void SetUp() override
-        {
-            LeakDetectionFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            LeakDetectionFixture::TearDown();
-        }
     };
 
     static const AzNetworking::IpAddress testIp1 = AzNetworking::IpAddress(127, 0, 0, 1, 0);

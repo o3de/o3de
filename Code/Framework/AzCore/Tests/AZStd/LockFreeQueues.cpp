@@ -23,9 +23,6 @@ namespace UnitTest
     class LockFreeQueue
         : public LeakDetectionFixture
     {
-    public:
-        LockFreeQueue() : LeakDetectionFixture() {}
-
     protected:
 #ifdef _DEBUG
         static const int NUM_ITERATIONS = 5000;

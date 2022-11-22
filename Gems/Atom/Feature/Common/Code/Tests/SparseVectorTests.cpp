@@ -18,16 +18,6 @@ namespace UnitTest
     class SparseVectorTests
         : public UnitTest::LeakDetectionFixture
     {
-    public:
-        void SetUp() override
-        {
-            UnitTest::LeakDetectionFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            UnitTest::LeakDetectionFixture::TearDown();
-        }
     };
 
     struct TestData

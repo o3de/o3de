@@ -26,16 +26,6 @@ namespace UnitTest
     class DecalTextureArrayTests
         : public UnitTest::LeakDetectionFixture
     {
-    public:
-        void SetUp() override
-        {
-            UnitTest::LeakDetectionFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            UnitTest::LeakDetectionFixture::TearDown();
-        }
     };
 
     TEST_F(DecalTextureArrayTests, TestPackingNothing)

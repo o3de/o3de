@@ -21,12 +21,6 @@ namespace UnitTest
     class Base64Test
         : public LeakDetectionFixture
     {
-    public:
-        Base64Test()
-            : LeakDetectionFixture()
-        {
-        }
-
         void SetUp() override
         {
             LeakDetectionFixture::SetUp();

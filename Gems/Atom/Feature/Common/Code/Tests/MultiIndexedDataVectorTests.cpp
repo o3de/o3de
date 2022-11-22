@@ -21,16 +21,6 @@ namespace UnitTest
     class MultiIndexedDataVectorTests
         : public UnitTest::LeakDetectionFixture
     {
-    public:
-        void SetUp() override
-        {
-            UnitTest::LeakDetectionFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            UnitTest::LeakDetectionFixture::TearDown();
-        }
     };
 
     TEST_F(MultiIndexedDataVectorTests, TestInsert)
