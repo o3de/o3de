@@ -3019,6 +3019,7 @@ namespace AzToolsFramework
             actionProperties.m_description = "Select and move selected object(s)";
             actionProperties.m_category = "Edit";
             actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Move.svg";
+            actionProperties.m_hideFromMenusWhenDisabled = false;
 
             m_actionManagerInterface->RegisterCheckableAction(
                 EditorMainWindowActionContextIdentifier,
@@ -3037,6 +3038,9 @@ namespace AzToolsFramework
             // Update when the transform mode changes.
             m_actionManagerInterface->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
 
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
             m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "1");
         }
 
@@ -3048,6 +3052,7 @@ namespace AzToolsFramework
             actionProperties.m_description = "Select and rotate selected object(s)";
             actionProperties.m_category = "Edit";
             actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Rotate.svg";
+            actionProperties.m_hideFromMenusWhenDisabled = false;
 
             m_actionManagerInterface->RegisterCheckableAction(
                 EditorMainWindowActionContextIdentifier,
@@ -3066,6 +3071,9 @@ namespace AzToolsFramework
             // Update when the transform mode changes.
             m_actionManagerInterface->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
 
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
             m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "2");
         }
 
@@ -3077,6 +3085,7 @@ namespace AzToolsFramework
             actionProperties.m_description = "Select and scale selected object(s)";
             actionProperties.m_category = "Edit";
             actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Scale.svg";
+            actionProperties.m_hideFromMenusWhenDisabled = false;
 
             m_actionManagerInterface->RegisterCheckableAction(
                 EditorMainWindowActionContextIdentifier,
@@ -3094,6 +3103,9 @@ namespace AzToolsFramework
 
             // Update when the transform mode changes.
             m_actionManagerInterface->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
             m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "3");
         }

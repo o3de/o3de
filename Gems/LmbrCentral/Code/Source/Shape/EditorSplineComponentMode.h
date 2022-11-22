@@ -33,6 +33,10 @@ namespace LmbrCentral
 
         static void Reflect(AZ::ReflectContext* context);
 
+        static void RegisterActions();
+        static void BindActionsToModes();
+        static void BindActionsToMenus();
+
     private:
         // EditorBaseComponentMode
         void Refresh() override;

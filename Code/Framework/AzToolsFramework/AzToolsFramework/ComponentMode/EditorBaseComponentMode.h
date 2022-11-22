@@ -44,6 +44,12 @@ namespace AzToolsFramework
             /// @attention More specific actions come later in the ordering when they are added.
             AZStd::vector<ActionOverride> PopulateActions() final;
 
+            //! Register additional actions for this component mode.
+            static void RegisterActions() {}
+
+            //! Bind actions to appear in this component mode.
+            static void BindActionsToMode(const AZStd::string actionContextModeIdentifier) {}
+
             /// Populate the Viewport UI widget for this ComponentMode.
             AZStd::vector<ViewportUi::ClusterId> PopulateViewportUi() final;
 

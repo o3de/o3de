@@ -81,8 +81,12 @@ namespace AzToolsFramework
             m_hotKeyManagerInterface,
             "ComponentModeActionHandler - could not get HotKeyManagerInterface on ComponentModeActionHandler OnActionRegistrationHook.");
 
-        // Add default actions for every Component Mode
-        
+        // Register default actions common to every Component Mode
+        RegisterCommonComponentModeActions();
+    }
+
+    void ComponentModeActionHandler::RegisterCommonComponentModeActions()
+    {
         // Exit Component Mode
         {
             constexpr AZStd::string_view actionIdentifier = "o3de.action.componentMode.end";
@@ -131,6 +135,10 @@ namespace AzToolsFramework
         AZ_Assert(
             m_menuManagerInterface,
             "ComponentModeActionHandler - could not get MenuManagerInterface on ComponentModeActionHandler OnMenuBindingHook.");
+
+        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 1000);
+
+        // Component Mode Actions should be located between sort keys 1000 and 10000
 
         m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 10000);
         m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.componentMode.end", 10001);

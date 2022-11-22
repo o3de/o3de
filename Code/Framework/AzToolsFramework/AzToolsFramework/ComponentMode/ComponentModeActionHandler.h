@@ -47,6 +47,8 @@ namespace AzToolsFramework
         void OnEditorModeActivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
         void OnEditorModeDeactivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
 
+        void RegisterCommonComponentModeActions();
+
         AZStd::unordered_map<AZ::Uuid, AZStd::string> m_componentModeToActionContextModeMap;
 
         ActionManagerInterface* m_actionManagerInterface = nullptr;

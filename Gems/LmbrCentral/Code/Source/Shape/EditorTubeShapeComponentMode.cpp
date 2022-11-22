@@ -8,6 +8,9 @@
 
 #include "EditorTubeShapeComponentMode.h"
 
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
@@ -21,6 +24,9 @@
 namespace LmbrCentral
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorTubeShapeComponentMode, AZ::SystemAllocator, 0)
+
+    static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
+    static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 
     static const AZ::Crc32 s_resetVariableRadii = AZ_CRC_CE("org.o3de.action.tubeshape.reset_radii");
     static const char* const s_resetRadiiTitle = "Reset Radii";
@@ -58,6 +64,77 @@ namespace LmbrCentral
         {
             serializeContext->Class<EditorTubeShapeComponentMode, EditorBaseComponentMode>(AZ::Internal::NullFactory::GetInstance());
         }
+    }
+
+    void EditorTubeShapeComponentMode::RegisterActions()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "EditorTubeShapeComponentMode - could not get ActionManagerInterface on RegisterActions.");
+
+        auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+        AZ_Assert(hotKeyManagerInterface, "EditorTubeShapeComponentMode - could not get HotKeyManagerInterface on RegisterActions.");
+
+        // Duplicate Vertices
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.tubeShape.resetRadii";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = s_resetRadiiTitle;
+            actionProperties.m_description = s_resetRadiiDesc;
+            actionProperties.m_category = "Tube Shape";
+
+            actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    /*
+                    const AZ::EntityId entityId = GetEntityId();
+
+                    // ensure we record undo command for reset
+                    AzToolsFramework::ScopedUndoBatch undoBatch("Reset variable radii");
+                    AzToolsFramework::ScopedUndoBatch::MarkEntityDirty(entityId);
+
+                    TubeShapeComponentRequestsBus::Event(entityId, &TubeShapeComponentRequests::SetAllVariableRadii, 0.0f);
+
+                    RefreshManipulatorsLocal(entityId);
+
+                    EditorTubeShapeComponentRequestBus::Event(entityId, &EditorTubeShapeComponentRequests::GenerateVertices);
+
+                    AzToolsFramework::OnEntityComponentPropertyChanged(GetEntityComponentIdPair());
+
+                    // ensure property grid values are refreshed
+                    AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
+                        &AzToolsFramework::ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay,
+                        AzToolsFramework::Refresh_Values);
+                    */
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "R");
+        }
+    }
+
+    void EditorTubeShapeComponentMode::BindActionsToModes()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "EditorTubeShapeComponentMode - could not get ActionManagerInterface on BindActionsToModes.");
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+
+        AZStd::string modeIdentifier = AZStd::string::format(
+            "o3de.context.mode.%s", serializeContext->FindClassData(azrtti_typeid<EditorTubeShapeComponentMode>())->m_name);
+
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.tubeShape.resetRadii");
+    }
+
+    void EditorTubeShapeComponentMode::BindActionsToMenus()
+    {
+        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        AZ_Assert(menuManagerInterface, "EditorTubeShapeComponentMode - could not get MenuManagerInterface on BindActionsToMenus.");
+
+        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.tubeShape.resetRadii", 6000);
     }
 
     void EditorTubeShapeComponentMode::Refresh()

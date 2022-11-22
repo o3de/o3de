@@ -8,6 +8,7 @@
 
 #include "EditorSplineComponentMode.h"
 
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/Manipulators/SplineHoverSelection.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 
@@ -41,6 +42,32 @@ namespace LmbrCentral
         {
             serializeContext->Class<EditorSplineComponentMode, EditorBaseComponentMode>(AZ::Internal::NullFactory::GetInstance());
         }
+    }
+
+    void EditorSplineComponentMode::RegisterActions()
+    {
+        AzToolsFramework::EditorVertexSelection::RegisterEditorVertexSelectionActions();
+    }
+
+    void EditorSplineComponentMode::BindActionsToModes()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "EditorVertexSelection - could not get ActionManagerInterface on RegisterActions.");
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        
+        AZStd::string modeIdentifier = AZStd::string::format(
+            "o3de.context.mode.%s", serializeContext->FindClassData(azrtti_typeid<EditorSplineComponentMode>())->m_name);
+
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.vertexSelection.duplicate");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.vertexSelection.delete");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.vertexSelection.clearSelection");
+    }
+
+    void EditorSplineComponentMode::BindActionsToMenus()
+    {
+        AzToolsFramework::EditorVertexSelection::BindEditorVertexSelectionActionsToMenus();
     }
 
     void EditorSplineComponentMode::Refresh()
