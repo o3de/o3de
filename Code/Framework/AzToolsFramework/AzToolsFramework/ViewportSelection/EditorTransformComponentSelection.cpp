@@ -2565,6 +2565,9 @@ namespace AzToolsFramework
                 }
             );
 
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
             m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+D");
         }
 
@@ -2593,12 +2596,13 @@ namespace AzToolsFramework
 
                     m_selectedEntityIds.clear();
                     m_pivotOverrideFrame.Reset();
-                }
-            );
+                });
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
             m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Delete");
         }
-
 
         // Select All
         {
@@ -2650,6 +2654,9 @@ namespace AzToolsFramework
                     RegenerateManipulators();
                 }
             );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
             m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+A");
         }
@@ -2711,6 +2718,9 @@ namespace AzToolsFramework
                 }
             );
 
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
             m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Shift+I");
         }
         
@@ -2731,6 +2741,9 @@ namespace AzToolsFramework
                     ToggleCenterPivotSelection();
                 }
             );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
             m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "P");
         }
@@ -2764,6 +2777,9 @@ namespace AzToolsFramework
                 }
             );
 
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
             m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "R");
         }
 
@@ -2784,6 +2800,9 @@ namespace AzToolsFramework
                     DelegateClearManipulatorOverride();
                 }
             );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
             m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+R");
         }
@@ -2827,6 +2846,9 @@ namespace AzToolsFramework
                     showHide(true);
                 }
             );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
         }
 
         // Hide Selection
@@ -2846,6 +2868,9 @@ namespace AzToolsFramework
                     showHide(false);
                 }
             );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
             m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "H");
         }
@@ -2877,6 +2902,9 @@ namespace AzToolsFramework
                     );
                 }
             );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
             m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Shift+H");
         }
@@ -2921,6 +2949,9 @@ namespace AzToolsFramework
                 }
             );
 
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
             m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "L");
         }
 
@@ -2941,6 +2972,9 @@ namespace AzToolsFramework
                     lockUnlock(false);
                 }
             );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
         }
 
         // Unlock All Entities
@@ -2970,6 +3004,9 @@ namespace AzToolsFramework
                     );
                 }
             );
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
             m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Shift+L");
         }

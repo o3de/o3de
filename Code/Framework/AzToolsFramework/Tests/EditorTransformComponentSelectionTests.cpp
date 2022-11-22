@@ -54,7 +54,7 @@ namespace UnitTest
         return selectedEntitiesBefore;
     }
 
-    class EditorEntityVisibilityCacheFixture : public ToolsApplicationFixture
+    class EditorEntityVisibilityCacheFixture : public ToolsApplicationFixture<>
     {
     public:
         void CreateLayerAndEntityHierarchy()
@@ -119,7 +119,7 @@ namespace UnitTest
     }
 
     // Fixture to support testing EditorTransformComponentSelection functionality on an Entity selection.
-    class EditorTransformComponentSelectionFixture : public ToolsApplicationFixture
+    class EditorTransformComponentSelectionFixture : public ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override
@@ -145,7 +145,7 @@ namespace UnitTest
         return entityId;
     }
 
-    class EditorTransformComponentSelectionViewportPickingFixture : public ToolsApplicationFixture
+    class EditorTransformComponentSelectionViewportPickingFixture : public ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override
@@ -2621,7 +2621,7 @@ namespace UnitTest
             ReferenceFrameWithOrientation{ AzToolsFramework::ReferenceFrame::World, AZ::Quaternion::CreateIdentity() }));
 
     class EditorEntityModelVisibilityFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
         , private AzToolsFramework::EditorEntityVisibilityNotificationBus::Router
         , private AzToolsFramework::EditorEntityInfoNotificationBus::Handler
     {
@@ -2979,7 +2979,7 @@ namespace UnitTest
         }
     }
 
-    class EditorEntityModelEntityInfoRequestFixture : public ToolsApplicationFixture
+    class EditorEntityModelEntityInfoRequestFixture : public ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override
@@ -3244,7 +3244,7 @@ namespace UnitTest
         EXPECT_THAT(hoveredEntityEntityId, Eq(AZ::EntityId(12345)));
     }
 
-    class EditorTransformComponentSelectionRenderGeometryIntersectionFixture : public ToolsApplicationFixture
+    class EditorTransformComponentSelectionRenderGeometryIntersectionFixture : public ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override

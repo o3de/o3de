@@ -2113,7 +2113,7 @@ void CXConsole::ExecuteCommand(CConsoleCommand& cmd, AZStd::string& str, bool bI
             for (unsigned int i = 1; i <= args.size(); i++)
             {
                 char pat[10];
-                azsprintf(pat, "%%%d", i);
+                azsnprintf(pat, AZ_ARRAY_SIZE(pat), "%%%d", i);
                 size_t pos = buf.find(pat);
                 if (pos == AZStd::string::npos)
                 {

@@ -122,8 +122,6 @@ namespace SettingsRegistryTests
             m_registry.reset();
             m_registrationContext.reset();
             m_serializeContext.reset();
-
-            TeardownAllocator();
         }
 
         AZ::IO::FixedMaxPath CreateTestFile(AZStd::string_view name, AZStd::string_view content)

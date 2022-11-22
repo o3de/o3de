@@ -16,6 +16,8 @@
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/Utils/TypeHash.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzNetworking/Utilities/IpAddress.h>
@@ -50,6 +52,8 @@ namespace Multiplayer
     using NetEntityIdSet = AZStd::set<NetEntityId>;
 
     using NetEntityIdsForReset = AZStd::fixed_vector<NetEntityId, MaxAggregateEntityResets>;
+
+    using ComponentVersionMap = AZStd::unordered_map<AZ::Name, AZ::HashValue64>;
 
     AZ_TYPE_SAFE_INTEGRAL(NetComponentId, uint16_t);
     static constexpr NetComponentId InvalidNetComponentId = static_cast<NetComponentId>(-1);

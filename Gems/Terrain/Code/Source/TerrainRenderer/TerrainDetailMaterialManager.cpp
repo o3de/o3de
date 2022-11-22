@@ -601,12 +601,6 @@ namespace Terrain
     void TerrainDetailMaterialManager::UpdateDetailMaterialData(uint16_t detailMaterialIndex, MaterialInstance material)
     {
         DetailMaterialData& materialData = m_detailMaterials.GetData(detailMaterialIndex);
-        if (materialData.m_materialChangeId == material->GetCurrentChangeId())
-        {
-            return; // material hasn't changed, nothing to do
-        }
-
-        materialData.m_materialChangeId = material->GetCurrentChangeId();
         materialData.m_assetId = material->GetAssetId();
         
         DetailMaterialShaderData& shaderData = m_detailMaterialShaderData.GetElement(materialData.m_detailMaterialBufferIndex);

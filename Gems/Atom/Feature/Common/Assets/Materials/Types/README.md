@@ -22,6 +22,18 @@ For example, the `StandardPBR.materialtype` asset specifies the following shader
         "tag": "LowEndForward_EDS"
     },
     {
+        "file": "./StandardPBR_MultiViewForward.shader",
+        "tag": "MultiViewForward"
+    },
+    {
+        "file": "./StandardPBR_MultiViewForward_EDS.shader",
+        "tag": "MultiViewForward_EDS"
+    },
+    {
+        "file": "./StandardPBR_MultiViewTransparentForward_EDS.shader",
+        "tag": "MultiViewTransparentForward"
+    },
+    {
         "file": "Shaders/Shadow/Shadowmap.shader",
         "tag": "Shadowmap"
     },

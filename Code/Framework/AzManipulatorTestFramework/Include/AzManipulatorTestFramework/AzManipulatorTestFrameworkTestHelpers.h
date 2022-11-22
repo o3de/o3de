@@ -53,7 +53,7 @@ namespace UnitTest
     //! Fixture to provide the indirect call viewport interaction that inherits from ToolsApplicationFixture for the
     //! dependent on AzToolsFramework::ToolsApplication.
     using IndirectCallManipulatorViewportInteractionFixture =
-        IndirectCallManipulatorViewportInteractionFixtureMixin<ToolsApplicationFixture>;
+        IndirectCallManipulatorViewportInteractionFixtureMixin<ToolsApplicationFixture<false>>;
 
     //! Fixture to provide the direct call viewport interaction that is dependent on AllocatorsTestFixture.
     //! \tparam FixtureT The fixture that provides the AllocatorsTestFixture functionality.

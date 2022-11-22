@@ -575,7 +575,7 @@ namespace AZ
 
                     // It's significant that we check IsGroupHidden rather than IsGroupVisisble, because it follows the same rules as QWidget::isHidden().
                     // We don't care whether the widget and all its parents are visible, we only care about whether the group was hidden within the context
-                    // of the material property inspector.
+                    // of the Material Instance Editor.
                     metadata.m_visibility = IsGroupHidden(groupPair.first) ?
                         AZ::RPI::MaterialPropertyGroupVisibility::Hidden : AZ::RPI::MaterialPropertyGroupVisibility::Enabled;
                 }

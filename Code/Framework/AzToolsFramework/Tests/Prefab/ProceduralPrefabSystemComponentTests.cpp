@@ -95,6 +95,11 @@ namespace UnitTest
             AllocatorsTestFixture::TearDown();
 
             TestRunner::Instance().ResetSuppressionSettingsToDefault();
+
+            delete m_procSystem;
+            m_procSystem = nullptr;
+            delete m_prefabSystem;
+            m_prefabSystem = nullptr;
         }
 
         // ComponentApplicationBus

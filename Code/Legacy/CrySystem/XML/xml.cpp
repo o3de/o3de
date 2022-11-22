@@ -1370,15 +1370,15 @@ namespace
 {
     void* custom_xml_malloc(size_t nSize)
     {
-        return CryModuleMalloc(nSize);
+        return azmalloc(nSize);
     }
     void* custom_xml_realloc(void* p, size_t nSize)
     {
-        return CryModuleRealloc(p, nSize);
+        return azrealloc(p, nSize);
     }
     void custom_xml_free(void* p)
     {
-        CryModuleFree(p);
+        azfree(p);
     }
 }
 

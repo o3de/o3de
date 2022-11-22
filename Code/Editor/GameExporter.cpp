@@ -27,7 +27,6 @@
 
 #include "Objects/EntityObject.h"
 
-#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 //////////////////////////////////////////////////////////////////////////
