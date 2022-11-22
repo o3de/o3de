@@ -21,8 +21,14 @@
 
 #include "SrgSemantics.azsli"
 
+// The structure of this SRG must exactly match the code that refers to in the each of the RHI API implementations.
+// Todo: Find a way to make the bindless SRG structure data driven in code https://github.com/o3de/o3de/issues/13324
 partial ShaderResourceGroup Bindless : SRG_Bindless
 {
+    // UNBOUNDED_SIZE is used to approximate unbounded arrays on platforms that have issues with their
+    // unbounded array support. An example of that is Metal which natively supports unbounded arrays 
+    // but the sprir-v cross compiler that we use doesn't.
+    // The value is defined in Gems/Atom/Asset/Shader/Code/AZSL/Platform/<Platform Name>/Vulkan/AzslcHeader.azsli .
     Texture2D<float4> m_Texture2D[UNBOUNDED_SIZE];
     RWTexture2D<float4> m_RWTexture2D[UNBOUNDED_SIZE];
     ByteAddressBuffer m_ByteAddressBuffer[UNBOUNDED_SIZE];

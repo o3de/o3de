@@ -215,7 +215,7 @@ namespace AZ
                 Count
             };
 
-            // This number matches FrequencyId of SRG_Bindless within SRGSemanctics.azsli
+            // This number matches FrequencyId of SRG_Bindless within SRGSemantics.azsli
             // ShaderResourceGroupSemantic SRG_Bindless
             // {
             //     FrequencyId = 7;
