@@ -15,6 +15,8 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Utils/Utils.h>
 #include <native/utilities/UuidManager.h>
+#include <AssetManager/SourceAssetReference.h>
+#include <tests/UnitTestUtilities.h>
 
 namespace UnitTests
 {
@@ -199,14 +201,15 @@ namespace UnitTests
         AZStd::unordered_map<AZ::IO::HandleType, AZStd::string> m_mockFiles;
         AzToolsFramework::MetadataManager m_metadataManager;
         AssetProcessor::UuidManager m_uuidManager;
+        MockPathConversion m_pathConversion;
 
         AssetProcessor::IUuidRequests* m_uuidInterface{};
     };
 
     TEST_F(UuidManagerTests, GetUuid_FirstTime_ReturnsRandomUuid)
     {
-        static constexpr const char* TestFile = "mockfile.txt";
-        auto uuid = m_uuidInterface->GetUuid(TestFile);
+        static constexpr const char* TestFile = "c:/somepath/mockfile.txt";
+        auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
 
         EXPECT_FALSE(uuid.IsNull());
         // Make sure a metadata file was created
@@ -215,20 +218,20 @@ namespace UnitTests
 
     TEST_F(UuidManagerTests, GetUuidTwice_ReturnsSameUuid)
     {
-        static constexpr const char* TestFile = "Mockfile.txt";
+        static constexpr const char* TestFile = "c:/somepath/Mockfile.txt";
 
-        auto uuid = m_uuidInterface->GetUuid(TestFile);
+        auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
 
         EXPECT_FALSE(uuid.IsNull());
 
-        auto uuid2 = m_uuidInterface->GetUuid(TestFile);
+        auto uuid2 = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
 
         EXPECT_EQ(uuid, uuid2);
     }
 
     TEST_F(UuidManagerTests, GetLegacyUuids_UppercaseFileName_ReturnsTwoDifferentUuids)
     {
-        auto uuids = m_uuidInterface->GetLegacyUuids("Mockfile.txt");
+        auto uuids = m_uuidInterface->GetLegacyUuids(AssetProcessor::SourceAssetReference("c:/somepath/Mockfile.txt"));
 
         ASSERT_EQ(uuids.size(), 2);
         EXPECT_NE(*uuids.begin(), *++uuids.begin());
@@ -236,30 +239,30 @@ namespace UnitTests
 
     TEST_F(UuidManagerTests, GetLegacyUuids_LowercaseFileName_ReturnsOneUuid)
     {
-        auto uuids = m_uuidInterface->GetLegacyUuids("mockfile.txt");
+        auto uuids = m_uuidInterface->GetLegacyUuids(AssetProcessor::SourceAssetReference("c:/somepath/mockfile.txt"));
 
         EXPECT_EQ(uuids.size(), 1);
     }
 
     TEST_F(UuidManagerTests, GetLegacyUuids_DifferentFromCanonicalUuid)
     {
-        static constexpr const char* TestFile = "Mockfile.txt";
+        static constexpr const char* TestFile = "c:/somepath/Mockfile.txt";
 
-        auto legacyUuids = m_uuidInterface->GetLegacyUuids(TestFile);
+        auto legacyUuids = m_uuidInterface->GetLegacyUuids(AssetProcessor::SourceAssetReference(TestFile));
 
         ASSERT_EQ(legacyUuids.size(), 2);
 
-        auto canonicalUuid = m_uuidInterface->GetUuid(TestFile);
+        auto canonicalUuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
 
         EXPECT_THAT(legacyUuids, ::testing::Not(::testing::Contains(canonicalUuid)));
     }
 
     TEST_F(UuidManagerTests, MoveFile_UuidRemainsTheSame)
     {
-        static constexpr const char* FileA = "mockfile.txt";
-        static constexpr const char* FileB = "newfile.txt";
+        static constexpr const char* FileA = "c:/somepath/mockfile.txt";
+        static constexpr const char* FileB = "c:/somepath/newfile.txt";
 
-        auto uuid = m_uuidInterface->GetUuid(FileA);
+        auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileA));
 
         AZ::IO::FileIOBase::GetInstance()->Rename(
             (AZStd::string(FileA) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str(),
@@ -267,17 +270,17 @@ namespace UnitTests
 
         m_uuidInterface->FileRemoved((AZStd::string(FileA) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
 
-        auto movedUuid = m_uuidInterface->GetUuid(FileB);
+        auto movedUuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileB));
 
         EXPECT_EQ(uuid, movedUuid);
     }
 
     TEST_F(UuidManagerTests, MoveFileWithComplexName_UuidRemainsTheSame)
     {
-        static constexpr const char* FileA = "mockfile.ext1.ext2.txt";
-        static constexpr const char* FileB = "newfile.txt";
+        static constexpr const char* FileA = "c:/somepath/mockfile.ext1.ext2.txt";
+        static constexpr const char* FileB = "c:/somepath/newfile.txt";
 
-        auto uuid = m_uuidInterface->GetUuid(FileA);
+        auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileA));
 
         AZ::IO::FileIOBase::GetInstance()->Rename(
             (AZStd::string(FileA) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str(),
@@ -285,36 +288,36 @@ namespace UnitTests
 
         m_uuidInterface->FileRemoved((AZStd::string(FileA) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
 
-        auto movedUuid = m_uuidInterface->GetUuid(FileB);
+        auto movedUuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileB));
 
         EXPECT_EQ(uuid, movedUuid);
     }
 
     TEST_F(UuidManagerTests, MetadataRemoved_NewUuidAssigned)
     {
-        static constexpr const char* FileName = "mockfile.txt";
+        static constexpr const char* TestFile = "c:/somepath/mockfile.txt";
 
-        auto uuid = m_uuidInterface->GetUuid(FileName);
+        auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
 
         AZ::IO::FileIOBase::GetInstance()->Remove(
-            (AZStd::string(FileName) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
+            (AZStd::string(TestFile) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
 
-        m_uuidInterface->FileRemoved((AZStd::string(FileName) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
+        m_uuidInterface->FileRemoved((AZStd::string(TestFile) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
 
-        auto movedUuid = m_uuidInterface->GetUuid(FileName);
+        auto movedUuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
 
         EXPECT_NE(uuid, movedUuid);
     }
 
     TEST_F(UuidManagerTests, MetadataUpdated_NewUuidAssigned)
     {
-        static constexpr const char* FileA = "mockfile.txt";
-        static constexpr const char* FileB = "someotherfile.txt";
+        static constexpr const char* FileA = "c:/somepath/mockfile.txt";
+        static constexpr const char* FileB = "c:/somepath/someotherfile.txt";
 
-        auto uuid = m_uuidInterface->GetUuid(FileA);
+        auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileA));
 
         // Generate another metadata file, its the easiest way to "change" a UUID in the metadata file for this test
-        m_uuidInterface->GetUuid(FileB);
+        m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileB));
 
         // Copy FileB's metadata onto the FileA metadata
         AZ::IO::FileIOBase::GetInstance()->Rename(
@@ -323,22 +326,22 @@ namespace UnitTests
 
         m_uuidInterface->FileChanged((AZStd::string(FileA) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
 
-        auto newUuid = m_uuidInterface->GetUuid(FileA);
+        auto newUuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileA));
 
         EXPECT_NE(uuid, newUuid);
     }
 
     TEST_F(UuidManagerTests, RequestUuid_DisabledType_ReturnsLegacyUuid)
     {
-        static constexpr const char* FileName = "mockfile.png";
+        static constexpr const char* TestFile = "c:/somepath/mockfile.png";
 
-        auto uuid = m_uuidInterface->GetUuid(FileName);
-        auto legacyUuids = m_uuidInterface->GetLegacyUuids(FileName);
+        auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
+        auto legacyUuids = m_uuidInterface->GetLegacyUuids(AssetProcessor::SourceAssetReference(TestFile));
 
         EXPECT_THAT(legacyUuids, ::testing::Contains(uuid));
 
         // Make sure no metadata file was created
         EXPECT_FALSE(AZ::IO::FileIOBase::GetInstance()->Exists(
-            AZStd::string::format("%s%s", FileName, AzToolsFramework::MetadataManager::MetadataFileExtension).c_str()));
+            AZStd::string::format("%s%s", TestFile, AzToolsFramework::MetadataManager::MetadataFileExtension).c_str()));
     }
 }

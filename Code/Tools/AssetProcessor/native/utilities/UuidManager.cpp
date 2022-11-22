@@ -33,16 +33,16 @@ namespace AssetProcessor
         }
     }
 
-    AZ::Uuid UuidManager::GetUuid(AZ::IO::PathView file)
+    AZ::Uuid UuidManager::GetUuid(const SourceAssetReference& sourceAsset)
     {
-        auto entry = GetOrCreateUuidEntry(file);
+        auto entry = GetOrCreateUuidEntry(sourceAsset);
 
         return entry.m_uuid;
     }
 
-    AZStd::unordered_set<AZ::Uuid> UuidManager::GetLegacyUuids(AZ::IO::PathView file)
+    AZStd::unordered_set<AZ::Uuid> UuidManager::GetLegacyUuids(const SourceAssetReference& sourceAsset)
     {
-        auto entry = GetOrCreateUuidEntry(file);
+        auto entry = GetOrCreateUuidEntry(sourceAsset);
 
         return entry.m_legacyUuids;
     }
@@ -103,11 +103,11 @@ namespace AssetProcessor
         return file.LexicallyNormal().FixedMaxPathStringAsPosix().c_str();
     }
 
-    UuidManager::UuidEntry UuidManager::GetOrCreateUuidEntry(AZ::IO::PathView file)
+    UuidManager::UuidEntry UuidManager::GetOrCreateUuidEntry(const SourceAssetReference& sourceAsset)
     {
         AZStd::scoped_lock scopeLock(m_uuidMutex);
 
-        auto normalizedPath = GetCanonicalPath(file);
+        auto normalizedPath = GetCanonicalPath(sourceAsset.AbsolutePath());
         auto itr = m_uuids.find(normalizedPath);
 
         // Check if we already have the UUID loaded into memory
@@ -119,18 +119,18 @@ namespace AssetProcessor
         UuidEntry uuidInfo;
 
         // Check if there's a metadata file that already contains a saved UUID
-        if (GetMetadataManager()->GetValue(file, UuidKey, uuidInfo))
+        if (GetMetadataManager()->GetValue(sourceAsset.AbsolutePath(), UuidKey, uuidInfo))
         {
             m_uuids[normalizedPath] = uuidInfo;
 
             return uuidInfo;
         }
 
-        const bool isEnabledType = m_enabledTypes.contains(file.Extension().Native());
+        const bool isEnabledType = m_enabledTypes.contains(sourceAsset.AbsolutePath().Extension().Native());
         // Last resort - generate a new UUID and save it to the metadata file
         UuidEntry newUuid = CreateUuidEntry(normalizedPath, isEnabledType);
 
-        if (!isEnabledType || GetMetadataManager()->SetValue(file, UuidKey, newUuid))
+        if (!isEnabledType || GetMetadataManager()->SetValue(sourceAsset.AbsolutePath(), UuidKey, newUuid))
         {
             m_uuids[normalizedPath] = newUuid;
 

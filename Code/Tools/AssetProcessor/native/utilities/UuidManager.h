@@ -28,11 +28,9 @@ namespace AssetProcessor
 
         //! Gets the canonical UUID for a given source asset.  A new metadata file may be created with a randomly generated UUID if
         //! generation is enabled for the file type.  Otherwise the UUID returned will follow the legacy system based on the file path.
-        //! @param file Absolute path to the source asset.
-        virtual AZ::Uuid GetUuid(AZ::IO::PathView file) = 0;
+        virtual AZ::Uuid GetUuid(const SourceAssetReference& sourceAsset) = 0;
         //! Gets the set of legacy UUIDs for the given source asset.  These are all the UUIDs that may have been used to reference this asset based on previous generation methods.
-        //! @param file Absolute path to the source asset.
-        virtual AZStd::unordered_set<AZ::Uuid> GetLegacyUuids(AZ::IO::PathView file) = 0;
+        virtual AZStd::unordered_set<AZ::Uuid> GetLegacyUuids(const SourceAssetReference& sourceAsset) = 0;
 
         //! Notifies the manager a metadata file has changed so the cache can be cleared.
         //! @param file Absolute path to the metadata file that changed.
@@ -74,8 +72,8 @@ namespace AssetProcessor
 
         static void Reflect(AZ::ReflectContext* context);
 
-        AZ::Uuid GetUuid(AZ::IO::PathView file) override;
-        AZStd::unordered_set<AZ::Uuid> GetLegacyUuids(AZ::IO::PathView file) override;
+        AZ::Uuid GetUuid(const SourceAssetReference& sourceAsset) override;
+        AZStd::unordered_set<AZ::Uuid> GetLegacyUuids(const SourceAssetReference& sourceAsset) override;
         void FileChanged(AZ::IO::Path file) override;
         void FileRemoved(AZ::IO::Path file) override;
         void EnableGenerationForTypes(AZStd::unordered_set<AZStd::string> types) override;
@@ -98,7 +96,7 @@ namespace AssetProcessor
         };
 
         AZStd::string GetCanonicalPath(AZ::IO::PathView file);
-        UuidEntry GetOrCreateUuidEntry(AZ::IO::PathView file);
+        UuidEntry GetOrCreateUuidEntry(const SourceAssetReference& sourceAsset);
         AzToolsFramework::IMetadataRequests* GetMetadataManager();
         UuidEntry CreateUuidEntry(const AZStd::string& file, bool enabledType);
         AZ::Uuid CreateUuid();
