@@ -22,6 +22,7 @@ namespace Multiplayer
         MultiplayerStat_EntityCount = 1001,         // Number of multiplayer entities active
         MultiplayerStat_FrameTimeUs,                // Multiplayer tick cost within a single application frame
         MultiplayerStat_ClientConnectionCount,      // Current connection (applicable to a server)
-        MultiplayerStat_ApplicationFrameTimeUs      // The entire application frame time
+        MultiplayerStat_ApplicationFrameTimeUs,     // The entire application frame time
+        MultiplayerStat_DesyncCorrections,          // Number of corrections (desyncs)
     };
 }
