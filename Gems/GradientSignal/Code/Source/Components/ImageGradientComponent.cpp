@@ -365,8 +365,8 @@ namespace GradientSignal
     {
         if (!m_imageData.empty())
         {
-            const auto& width = m_imageDescriptor.m_size.m_width;
-            const auto& height = m_imageDescriptor.m_size.m_height;
+            const auto width = m_imageDescriptor.m_size.m_width;
+            const auto height = m_imageDescriptor.m_size.m_height;
 
             if (width > 0 && height > 0)
             {
@@ -416,11 +416,12 @@ namespace GradientSignal
         return defaultValue;
     }
 
-    float ImageGradientComponent::InvertHeightAndGetPixelValue(AZ::u32 x, AZ::u32 y) const
+    float ImageGradientComponent::InvertYAndGetPixelValue(AZ::u32 x, AZ::u32 invertedY) const
     {
-        // Flip the y because images are stored in reverse of our world axes
-        const auto& height = m_imageDescriptor.m_size.m_height;
-        y = (height - 1) - y;
+        // This is a convenience method that flips the y before calling GetPixelValue() because
+        // image heights are stored in the reverse direction of our world axes.
+        const auto height = m_imageDescriptor.m_size.m_height;
+        AZ::u32 y = (height - 1) - invertedY;
 
         return GetPixelValue(x, y);
     }
@@ -517,8 +518,8 @@ namespace GradientSignal
 
     float ImageGradientComponent::GetClampedValue(int32_t x, int32_t y) const
     {
-        const auto& width = m_imageDescriptor.m_size.m_width;
-        const auto& height = m_imageDescriptor.m_size.m_height;
+        const auto width = m_imageDescriptor.m_size.m_width;
+        const auto height = m_imageDescriptor.m_size.m_height;
 
         switch (m_gradientTransform.GetWrappingType())
         {
@@ -527,6 +528,7 @@ namespace GradientSignal
             {
                 return 0.0f;
             }
+            break;
         case WrappingType::ClampToEdge:
             x = AZ::GetClamp(x, 0, m_maxX);
             y = AZ::GetClamp(y, 0, m_maxY);
@@ -546,8 +548,9 @@ namespace GradientSignal
             }
             if (y > m_maxY)
             {
-                x = m_maxY - (y % height);
+                y = m_maxY - (y % height);
             }
+            break;
         case WrappingType::None:
         case WrappingType::Repeat:
         default:
@@ -555,7 +558,7 @@ namespace GradientSignal
             y = y % height;
             break;
         }
-        return  InvertHeightAndGetPixelValue(x, y);
+        return InvertYAndGetPixelValue(x, y);
     }
 
     void ImageGradientComponent::Get4x4Neighborhood(uint32_t x, uint32_t y, AZStd::array<AZStd::array<float, 4>, 4>& values) const
@@ -576,7 +579,7 @@ namespace GradientSignal
         case SamplingType::Point:
         default:
             // Retrieve the pixel value for the single point
-            return InvertHeightAndGetPixelValue(x0, y0);
+            return InvertYAndGetPixelValue(x0, y0);
 
         case SamplingType::Bilinear:
         {
@@ -767,8 +770,8 @@ namespace GradientSignal
             return;
         }
 
-        const auto& width = m_imageDescriptor.m_size.m_width;
-        const auto& height = m_imageDescriptor.m_size.m_height;
+        const auto width = m_imageDescriptor.m_size.m_width;
+        const auto height = m_imageDescriptor.m_size.m_height;
 
         if (m_modifiedImageData.empty())
         {
@@ -1007,8 +1010,8 @@ namespace GradientSignal
     {
         // Get the number of pixels in our image that maps to each meter based on the tiling settings.
 
-        const auto& width = m_imageDescriptor.m_size.m_width;
-        const auto& height = m_imageDescriptor.m_size.m_height;
+        const auto width = m_imageDescriptor.m_size.m_width;
+        const auto height = m_imageDescriptor.m_size.m_height;
 
         if (width > 0 && height > 0)
         {
@@ -1055,8 +1058,8 @@ namespace GradientSignal
 
     PixelIndex ImageGradientComponent::GetPixelIndexForPositionInternal(const AZ::Vector3& position) const
     {
-        const auto& width = m_imageDescriptor.m_size.m_width;
-        const auto& height = m_imageDescriptor.m_size.m_height;
+        const auto width = m_imageDescriptor.m_size.m_width;
+        const auto height = m_imageDescriptor.m_size.m_height;
 
         const AZ::Vector3 tiledDimensions((width * GetTilingX()), (height * GetTilingY()), 0.0f);
 
@@ -1090,8 +1093,8 @@ namespace GradientSignal
 
     bool ImageGradientComponent::PixelIndexIsValid(const PixelIndex& pixelIndex) const
     {
-        const auto& width = m_imageDescriptor.m_size.m_width;
-        const auto& height = m_imageDescriptor.m_size.m_height;
+        const auto width = m_imageDescriptor.m_size.m_width;
+        const auto height = m_imageDescriptor.m_size.m_height;
 
         const auto& [x, y] = pixelIndex;
 
@@ -1184,8 +1187,8 @@ namespace GradientSignal
                 return;
             }
 
-            const auto& width = m_imageDescriptor.m_size.m_width;
-            const auto& height = m_imageDescriptor.m_size.m_height;
+            const auto width = m_imageDescriptor.m_size.m_width;
+            const auto height = m_imageDescriptor.m_size.m_height;
 
             // No pixels, so nothing to modify.
             if ((width == 0) || (height == 0))

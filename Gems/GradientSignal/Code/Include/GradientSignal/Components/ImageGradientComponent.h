@@ -185,8 +185,26 @@ namespace GradientSignal
         void GetSubImageData();
         void GetValuesInternal(SamplingType samplingType, AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const;
         float GetValueFromImageData(SamplingType samplingType, const AZ::Vector3& uvw, float defaultValue) const;
+
+        //! Read the pixel from our image data at the given XY coordinates.
+        //! This will read from image modification buffer if it exists or else from the image asset, using the component's
+        //! mip and channel settings.
+        //! Note that image space Y is inverted from world space because in images, 0 is the top corner and +Y goes down, but in world
+        //! space we want 0 to be the bottom, and +Y goes up. If you want to get the pixel value using a Y calculated from world space,
+        //! call InvertYAndGetPixelValue() instead.
+        //! @param x The X coordinate in image space.
+        //! @param y The Y coordinate in image space.
         float GetPixelValue(AZ::u32 x, AZ::u32 y) const;
-        float InvertHeightAndGetPixelValue(AZ::u32 x, AZ::u32 y) const;
+
+        //! Read the pixel from our image data at the given X coordinate and an inverted Y coordinate.
+        //! This will read from image modification buffer if it exists or else from the image asset, using the component's
+        //! mip and channel settings.
+        //! This is a convenience method that will invert our Y coordinate before calling GetPixelValue() so that we can take
+        //! a Y coordinate that was calculated from world space axes and invert it into image space as a part of doing the pixel lookup.
+        //! @param x The X coordinate in image space.
+        //! @param invertedY The inverted Y coordinate in image space.
+        float InvertYAndGetPixelValue(AZ::u32 x, AZ::u32 invertedY) const;
+
         float GetTerrariumPixelValue(AZ::u32 x, AZ::u32 y) const;
         void SetupMultiplierAndOffset(float min, float max);
         void SetupDefaultMultiplierAndOffset();
