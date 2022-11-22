@@ -40,19 +40,25 @@ namespace AtomToolsFramework
         // EntityPreviewViewportSettingsRequestBus::Handler overrides ...
         void SetLightingPreset(const AZ::Render::LightingPreset& preset) override;
         const AZ::Render::LightingPreset& GetLightingPreset() const override;
-        bool SaveLightingPreset(const AZStd::string& path) const override;
+        bool SaveLightingPreset(const AZStd::string& path) override;
         bool LoadLightingPreset(const AZStd::string& path) override;
         bool LoadLightingPresetByAssetId(const AZ::Data::AssetId& assetId) override;
         AZStd::string GetLastLightingPresetPath() const override;
         AZ::Data::AssetId GetLastLightingPresetAssetId() const override;
+        void RegisterLightingPresetPath(const AZStd::string& path) override;
+        void UnregisterLightingPresetPath(const AZStd::string& path) override;
+        AZStd::set<AZStd::string> GetRegisteredLightingPresetPaths() const override;
 
         void SetModelPreset(const AZ::Render::ModelPreset& preset) override;
         const AZ::Render::ModelPreset& GetModelPreset() const override;
-        bool SaveModelPreset(const AZStd::string& path) const override;
+        bool SaveModelPreset(const AZStd::string& path) override;
         bool LoadModelPreset(const AZStd::string& path) override;
         bool LoadModelPresetByAssetId(const AZ::Data::AssetId& assetId) override;
         AZStd::string GetLastModelPresetPath() const override;
         AZ::Data::AssetId GetLastModelPresetAssetId() const override;
+        void RegisterModelPresetPath(const AZStd::string& path) override;
+        void UnregisterModelPresetPath(const AZStd::string& path) override;
+        AZStd::set<AZStd::string> GetRegisteredModelPresetPaths() const override;
 
         void SetShadowCatcherEnabled(bool enable) override;
         bool GetShadowCatcherEnabled() const override;
@@ -65,16 +71,19 @@ namespace AtomToolsFramework
         void SetDisplayMapperOperationType(AZ::Render::DisplayMapperOperationType operationType) override;
         AZ::Render::DisplayMapperOperationType GetDisplayMapperOperationType() const override;
 
+        void PreloadPreset(const AZStd::string& path) override;
+
     private:
         // AZ::TickBus::Handler overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         // AzFramework::AssetCatalogEventBus::Handler overrides ...
-        void OnCatalogLoaded(const char* catalogFile) override;
         void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
         void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
 
-        void QueueLoadPresetCache(const AZ::Data::AssetInfo& assetInfo);
+        void RegisterLightingPreset(const AZStd::string& path, const AZ::Render::LightingPreset& preset);
+        void RegisterModelPreset(const AZStd::string& path, const AZ::Render::ModelPreset& preset);
+        void PreloadPresets();
 
         const AZ::Crc32 m_toolId = {};
 

@@ -10,7 +10,7 @@
 ----------------------------------------------------------------------------------------------------
 
 function GetMaterialPropertyDependencies()
-    return {"opacity.mode", "parallax.textureMap", "parallax.useTexture", "parallax.pdo"}
+    return {"opacity.mode", "parallax.textureMap", "parallax.useTexture", "parallax.pdo", "general.castShadows"}
 end
 
 OpacityMode_Opaque = 0
@@ -43,6 +43,7 @@ function Process(context)
     local useDisplacementMap = context:GetMaterialPropertyValue_bool("parallax.useTexture")
     local parallaxEnabled = displacementMap ~= nil and useDisplacementMap
     local parallaxPdoEnabled = context:GetMaterialPropertyValue_bool("parallax.pdo")
+    local castShadows = context:GetMaterialPropertyValue_bool("general.castShadows")
     
     local depthPass = context:GetShaderByTag("DepthPass")
     local shadowMap = context:GetShaderByTag("Shadowmap")
@@ -66,7 +67,7 @@ function Process(context)
         forwardPassEDS:SetEnabled(false)
         
         depthPassWithPS:SetEnabled(true)
-        shadowMapWithPS:SetEnabled(true)
+        shadowMapWithPS:SetEnabled(castShadows)
         forwardPass:SetEnabled(true)
 
         TrySetShaderEnabled(lowEndForwardEDS, false)
@@ -75,11 +76,11 @@ function Process(context)
         TrySetShaderEnabled(multiViewForward, true)
     else
         depthPass:SetEnabled(opacityMode == OpacityMode_Opaque)
-        shadowMap:SetEnabled(opacityMode == OpacityMode_Opaque)
+        shadowMap:SetEnabled(opacityMode == OpacityMode_Opaque and castShadows)
         forwardPassEDS:SetEnabled((opacityMode == OpacityMode_Opaque) or (opacityMode == OpacityMode_Blended) or (opacityMode == OpacityMode_TintedTransparent))
         
         depthPassWithPS:SetEnabled(opacityMode == OpacityMode_Cutout)
-        shadowMapWithPS:SetEnabled(opacityMode == OpacityMode_Cutout)
+        shadowMapWithPS:SetEnabled(opacityMode == OpacityMode_Cutout and castShadows)
         forwardPass:SetEnabled(opacityMode == OpacityMode_Cutout)
 
         TrySetShaderEnabled(multiViewForward, opacityMode == OpacityMode_Cutout)
