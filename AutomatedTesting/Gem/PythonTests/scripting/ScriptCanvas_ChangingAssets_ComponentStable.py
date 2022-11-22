@@ -41,13 +41,12 @@ def ScriptCanvas_ChangingAssets_ComponentStable():
 
     :return: None
     """
-    from editor_python_test_tools.utils import TestHelper
-    from editor_python_test_tools.utils import Report, Tracer
+    from editor_python_test_tools.utils import TestHelper, Report, Tracer
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
     import scripting_utils.scripting_tools as scripting_tools
     import azlmbr.legacy.general as general
     from editor_python_test_tools.editor_component.editor_script_canvas import ScriptCanvasComponent
-    from editor_python_test_tools.editor_component.editor_component_validation import (
-        validate_script_canvas_graph_file)
+    import azlmbr.math as math
 
     # Preconditions
     general.idle_enable(True)
@@ -56,8 +55,10 @@ def ScriptCanvas_ChangingAssets_ComponentStable():
     TestHelper.open_level("", "Base")
 
     # 2) Create new entity
+    position = math.Vector3(512.0, 512.0, 32.0)
+    editor_entity = EditorEntity.create_editor_entity_at(position, TEST_ENTITY_NAME)
     script_canvas_component = ScriptCanvasComponent()
-    script_canvas_component.create_new_entity_with_component(TEST_ENTITY_NAME, ASSET_1)
+    script_canvas_component.add_component_to_existing_entity(editor_entity, ASSET_1)
 
     with Tracer() as section_tracer:
 
@@ -66,9 +67,7 @@ def ScriptCanvas_ChangingAssets_ComponentStable():
         TestHelper.exit_game_mode(Tests.game_mode_exited)
 
         # 4) Update Script Canvas file on entity's SC component
-        validation_data = script_canvas_component.set_component_graph_file(ASSET_2)
-        validate_script_canvas_graph_file(script_canvas_component.get_script_canvas_component, validation_data[0],
-                                          validation_data[1])
+        script_canvas_component.set_component_graph_file(ASSET_2)
 
         # 5) Enter and Exit Game Mode
         TestHelper.enter_game_mode(Tests.game_mode_entered)

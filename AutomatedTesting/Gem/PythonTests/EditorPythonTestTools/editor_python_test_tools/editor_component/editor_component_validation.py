@@ -12,9 +12,8 @@ from editor_python_test_tools.utils import Report
 from editor_python_test_tools.editor_entity_utils import EditorComponent
 from consts.general import ComponentPropertyVisibilityStates as PropertyVisibility
 from editor_python_test_tools.asset_utils import Asset
-from editor_python_test_tools.editor_component.editor_script_canvas import (ScriptCanvasComponent,
-                                                                            VariableState,
-                                                                            SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
+from editor_python_test_tools.editor_component.editor_script_canvas import VariableState,\
+    SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH
 
 def compare_vec3(expected: Math.Vector3, actual: Math.Vector3) -> bool:
     """
@@ -219,37 +218,50 @@ def validate_asset_property(property_name: str, get_asset_value: typing.Callable
         f"{expected_asset.id} was expected but Asset Id: {set_value} was retrieved from \"{expected_asset.get_path()}\""
 
 
-def validate_script_canvas_graph_file(get_script_canvas_component: typing.Callable, source_handle: str, old_value: str) -> None:
+def validate_script_canvas_graph_file(get_script_canvas_component: typing.Callable,
+                                      set_script_canvas_component_graph_file: typing.Callable, sc_file_path: str) -> None:
     """
     Function to validate the setting of a script canvas graph file to the file source field in the script canvas component
 
-    sc_component: The script canvas component object where we want to store the entity and graph file changes
-    sourcehandle: The on-disk path to azlmbr file location translation
-    component_index: which of the entity's script canvas components will have its graph file changed
+    get_script_canvas_component: getter for the script canvas component field
+    set_script_canvas_component_graph_file: setter for the script canvas component's file source field.
+    sc_file_path: the path on disk where the graph file exists
 
     """
     Report.info(f"Validating Script Canvas component's file source field can be set.")
 
-    assert source_handle is not None, "File not found!"
-
     sc_component = get_script_canvas_component()
+    old_value = sc_component.get_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
+
+    set_script_canvas_component_graph_file(sc_file_path)
 
     set_value = sc_component.get_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
     assert set_value != old_value and set_value is not None, f"Graph file could not be set!"
 
 
-def validate_script_canvas_variable_changed(get_script_canvas_component: typing.Callable, component_property_path: str,
-                                            variable_name: str, variable_value) -> None:
+def validate_script_canvas_variable_changed(get_variable_value: typing.Callable, set_variable_value: typing.Callable,
+                                            variable_name: str, variable_state: VariableState, variable_value) -> None:
     """
     Function for validating that a script canvas component variable can be changed.
+
+    get_variable_value: getter for variables on the script canvas component
+    set_variable_value: setter for variables on the script canvas component
+    variable_name: the name of the variable to change
+    variable_state: whether the variable is initialized or not within graph file(initialized by the script canvas editor).
+    variable_value: the value to set the variable to. has no rigid type since variables can be primitives or user created types.
+    we also only support basic types and need to update associated QtPy classes to allow exposing the basic types to
+    the component class. See github GH-13344. We currently only support strings and boolean variables.
+
 
     """
     Report.info(f"Validating Script Canvas component's variable was set.")
 
-    sc_component = get_script_canvas_component()
-    valid_path = sc_component.get_component_property_value(component_property_path) is not None
+    old_variable_value = get_variable_value(variable_name, variable_state)
 
-    assert valid_path, "Path to variable was invalid! Check use/unused state or variable name"
+    assert old_variable_value is not None, "Path to variable was invalid! Check use/unused state or variable name"
 
-    set_value = sc_component.get_component_property_value(component_property_path)
-    assert set_value == variable_value, f"Component variable {variable_name} was not set properly"
+    set_variable_value(variable_name, variable_state, variable_value)
+
+    new_variable_value = get_variable_value(variable_name, variable_state)
+
+    assert old_variable_value != new_variable_value, f"Component variable {variable_name} was not set properly"

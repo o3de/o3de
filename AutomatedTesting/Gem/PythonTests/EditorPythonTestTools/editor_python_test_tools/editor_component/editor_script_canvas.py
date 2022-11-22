@@ -41,27 +41,6 @@ class ScriptCanvasComponent:
     def get_script_canvas_component(self) -> EditorComponent:
         return self.script_canvas_component
 
-    def create_new_entity_with_component(self, entity_name: str, sc_file_path: str,
-                                         position=math.Vector3(512.0, 512.0, 32.0)) -> None:
-        """
-        Function for constructing the SC Component object. This will make a new entity, add a script canvas component and
-        then open a script canvas file from disk onto the component's source handle value.
-
-        param entity_name: The name you want the entity to have
-        param sc_file_path: The path on disk to the script canvas file
-        param position: optional parameter for the position of the entity
-
-        Returns None
-        """
-        sourcehandle = scriptcanvas.SourceHandleFromPath(sc_file_path)
-
-        editor_entity = EditorEntity.create_editor_entity_at(position, entity_name)
-
-        self.script_canvas_component = editor_entity.add_component(SCRIPT_CANVAS_UI)
-        self.script_canvas_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
-
-        return editor_entity
-
     def add_component_to_existing_entity(self, editor_entity: EditorEntity, sc_file_path: str) -> None:
         """
         Function for initializing a script canvas component object if you already have an editor entity you want to use.
@@ -115,6 +94,14 @@ class ScriptCanvasComponent:
         self.script_canvas_component.set_component_property_value(component_property_path, variable_value)
 
         return component_property_path
+
+    def get_variable_value(self, variable_name: str, variable_state: VariableState):
+
+        component_property_path = self.__construct_variable_component_property_path(variable_name, variable_state)
+        variable_value = self.script_canvas_component.get_component_property_value(component_property_path)
+
+        return variable_value
+
 
     def __construct_variable_component_property_path(self, variable_name: str, variable_state: VariableState) -> str:
         """
