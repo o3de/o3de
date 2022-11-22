@@ -545,9 +545,6 @@ class MultiTestSuite(object):
             pytest_class_instance.istestfunction = types.MethodType(istestfunction, pytest_class_instance)
             collection = pytest_class_instance.collect()
 
-            # def get_func_run_type(function):
-            #     return getattr(function, "marks", {}).setdefault("run_type", None)
-
             collected_run_pytestfuncs = [item for item in collection if
                                          # Gets function run type
                                          getattr(item.obj, "marks", {}).setdefault("run_type", None) == "run_shared"]
