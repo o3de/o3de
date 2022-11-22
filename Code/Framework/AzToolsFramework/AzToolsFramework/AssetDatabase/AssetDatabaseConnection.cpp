@@ -412,7 +412,7 @@ namespace AzToolsFramework
                 QUERY_PRODUCT_BY_SOURCENAME_SCANFOLDERID_STATEMENT,
                 LOG_NAME,
                 SqlParam<const char*>(":sourcename"),
-                SqlParam<AZ::s64>("scanfolderid"));
+                SqlParam<AZ::s64>(":scanfolderid"));
 
             //add sql statement for querying everything by source name
             static const char* QUERY_PRODUCT_BY_SOURCENAME_PLATFORM = "AzToolsFramework::AssetDatabase::QueryProductBySourceNamePlatform";
