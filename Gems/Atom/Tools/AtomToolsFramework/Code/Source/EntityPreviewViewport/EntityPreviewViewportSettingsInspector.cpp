@@ -51,57 +51,45 @@ namespace AtomToolsFramework
             return path.ends_with(AZ::Render::LightingPreset::Extension);
         }, QSize(lightingPresetDialogItemSize, lightingPresetDialogItemSize), GetToolMainWindow()));
 
-        // Add the last known paths for lighting and model presets to the browsers so they are not empty while the rest of the data is
-        // being processed in the background.
+        // Prepopulating preset selection widgets with previously registered presets.
         EntityPreviewViewportSettingsRequestBus::Event(
             m_toolId,
             [this](EntityPreviewViewportSettingsRequests* viewportRequests)
             {
                 m_lightingPresetDialog->AddPath(viewportRequests->GetLastLightingPresetPath());
+                for (const auto& path : viewportRequests->GetRegisteredLightingPresetPaths())
+                {
+                    m_lightingPresetDialog->AddPath(path);
+                }
+
                 m_modelPresetDialog->AddPath(viewportRequests->GetLastModelPresetPath());
+                for (const auto& path : viewportRequests->GetRegisteredModelPresetPaths())
+                {
+                    m_modelPresetDialog->AddPath(path);
+                }
             });
 
-        // Using a future watcher to monitor a background process that enumerates all of the lighting and model presets in the project.
-        // After the background process is complete, the watcher will receive the finished signal and add all of the enumerated files to
-        // the browsers.
-        connect(&m_watcher, &QFutureWatcher<AZStd::vector<AZStd::string>>::finished, this, [this](){
-            m_lightingPresetDialog->Clear();
-            m_modelPresetDialog->Clear();
-            for (const auto& path : m_watcher.result())
-            {
-                m_lightingPresetDialog->AddPath(path);
-                m_modelPresetDialog->AddPath(path);
-            }
-
-            connect(m_modelPresetDialog.get(), &AssetSelectionGrid::PathRejected, this, [this]() {
-                EntityPreviewViewportSettingsRequestBus::Event(
-                    m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset, m_modelPresetPath);
-            });
-
-            connect(m_modelPresetDialog.get(), &AssetSelectionGrid::PathSelected, this, [this](const AZStd::string& path) {
-                EntityPreviewViewportSettingsRequestBus::Event(
-                    m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset, path);
-            });
-
-            connect(m_lightingPresetDialog.get(), &AssetSelectionGrid::PathRejected, this, [this]() {
-                EntityPreviewViewportSettingsRequestBus::Event(
-                    m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPreset, m_lightingPresetPath);
-            });
-
-            connect(m_lightingPresetDialog.get(), &AssetSelectionGrid::PathSelected, this, [this](const AZStd::string& path) {
-                EntityPreviewViewportSettingsRequestBus::Event(
-                    m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPreset, path);
-            });
-
-            OnViewportSettingsChanged();
+        connect(m_modelPresetDialog.get(), &AssetSelectionGrid::PathRejected, this, [this]() {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset, m_modelPresetPath);
         });
 
-        m_watcher.setFuture(QtConcurrent::run([]() {
-            return GetPathsInSourceFoldersMatchingFilter([](const AZStd::string& path) {
-                return path.ends_with(AZ::Render::LightingPreset::Extension) || path.ends_with(AZ::Render::ModelPreset::Extension);
-            });
-        }));
+        connect(m_modelPresetDialog.get(), &AssetSelectionGrid::PathSelected, this, [this](const AZStd::string& path) {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset, path);
+        });
 
+        connect(m_lightingPresetDialog.get(), &AssetSelectionGrid::PathRejected, this, [this]() {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPreset, m_lightingPresetPath);
+        });
+
+        connect(m_lightingPresetDialog.get(), &AssetSelectionGrid::PathSelected, this, [this](const AZStd::string& path) {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPreset, path);
+        });
+
+        OnViewportSettingsChanged();
         EntityPreviewViewportSettingsNotificationBus::Handler::BusConnect(m_toolId);
     }
 

@@ -68,15 +68,12 @@ namespace AtomToolsFramework
             GetSettingsValue(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, AZStd::string()));
         m_styleManager.reset(new AzQtComponents::StyleManager(this));
         m_styleManager->initialize(this, engineRootPath);
-
-        AtomToolsMainWindowNotificationBus::Handler::BusConnect(m_toolId);
     }
 
     AtomToolsApplication ::~AtomToolsApplication()
     {
         m_instance = {};
         m_styleManager.reset();
-        AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
     }
@@ -232,7 +229,10 @@ namespace AtomToolsFramework
         }
 
         // Per Qt documentation, forcing Stop to be called when the application is about to quit in case exit bypasses Stop or destructor
-        connect(this, &QApplication::aboutToQuit, this, [this] { Stop(); });
+        connect(this, &QApplication::aboutToQuit, this, [this] {
+            AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+            Stop();
+        });
     }
 
     void AtomToolsApplication::Destroy()
@@ -259,7 +259,6 @@ namespace AtomToolsFramework
 
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
-        AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
         AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::StartDisconnectingAssetProcessor);
 
 #if AZ_TRAIT_ATOMTOOLSFRAMEWORK_SKIP_APP_DESTROY
@@ -295,11 +294,6 @@ namespace AtomToolsFramework
         }
 
         quit();
-    }
-
-    void AtomToolsApplication::OnMainWindowClosing()
-    {
-        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
     }
 
     AZStd::vector<AZStd::string> AtomToolsApplication::GetCriticalAssetFilters() const
