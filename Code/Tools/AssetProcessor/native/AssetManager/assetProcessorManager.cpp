@@ -5138,26 +5138,12 @@ namespace AssetProcessor
 
                 if (AZ::IO::PathView(toSearch.GetPath()).IsAbsolute())
                 {
-                    QString relativePath;
-                    QString scanFolderPath;
-
-                    if(!m_platformConfig->ConvertToRelativePath(toSearch.GetPath().c_str(), relativePath, scanFolderPath))
-                    {
-                        AZ_TracePrintf(
-                            AssetProcessor::DebugChannel,
-                            "QueryAbsolutePathDependenciesRecursive: Failed to convert path %s to relative path.  Source dependency chain "
-                            "may be broken.\n",
-                            toSearch.GetPath().c_str());
-                        searchUuid = AZ::Uuid::CreateNull();
-                    }
-                    else
-                    {
-                        searchUuid = AssetUtilities::CreateSafeSourceUUIDFromName(relativePath.toUtf8().constData());
-                    }
+                    searchUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(toSearch.GetPath().c_str()));
                 }
                 else
                 {
-                    searchUuid = AssetUtilities::CreateSafeSourceUUIDFromName(toSearch.GetPath().c_str());
+                    QString absolutePath = m_platformConfig->FindFirstMatchingFile(toSearch.GetPath().c_str());
+                    searchUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(absolutePath.toUtf8().constData()));
                 }
             }
             else
