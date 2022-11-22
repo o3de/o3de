@@ -103,60 +103,46 @@ namespace AtomToolsFramework
                 return path.ends_with(AZ::RPI::RenderPipelineDescriptor::Extension);
             }, this);
         addWidget(m_renderPipelineComboBox);
-
-        // Add the last known paths for lighting and model presets to the browsers so they are not empty while the rest of the data is
-        // being processed in the background.
+        
+        // Prepopulating preset selection widgets with previously registered presets.
         EntityPreviewViewportSettingsRequestBus::Event(
             m_toolId,
             [this](EntityPreviewViewportSettingsRequests* viewportRequests)
             {
                 m_lightingPresetComboBox->AddPath(viewportRequests->GetLastLightingPresetPath());
-                m_modelPresetComboBox->AddPath(viewportRequests->GetLastModelPresetPath());
-                m_renderPipelineComboBox->AddPath(viewportRequests->GetLastRenderPipelinePath());
-            });
-
-        // Using a future watcher to monitor a background process that enumerates all of the lighting and model presets in the project.
-        // After the background process is complete, the watcher will receive the finished signal and add all of the enumerated files to
-        // the browsers.
-        connect(&m_watcher, &QFutureWatcher<AZStd::vector<AZStd::string>>::finished, this, [this]() {
-            m_lightingPresetComboBox->Clear();
-            m_modelPresetComboBox->Clear();
-            for (const auto& path : m_watcher.result())
-            {
-                m_lightingPresetComboBox->AddPath(path);
-                m_modelPresetComboBox->AddPath(path);
-                m_renderPipelineComboBox->AddPath(path);
-            }
-
-            connect(m_lightingPresetComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
-                EntityPreviewViewportSettingsRequestBus::Event(
-                    m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPreset, path);
-            });
-
-            connect(m_modelPresetComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
-                EntityPreviewViewportSettingsRequestBus::Event(
-                    m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset, path);
-            });
-
-            connect(m_renderPipelineComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path)
+                for (const auto& path : viewportRequests->GetRegisteredLightingPresetPaths())
                 {
-                    EntityPreviewViewportSettingsRequestBus::Event(
-                        m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadRenderPipeline, path);
-                });
+                    m_lightingPresetComboBox->AddPath(path);
+                }
 
-            OnViewportSettingsChanged();
+                m_modelPresetComboBox->AddPath(viewportRequests->GetLastModelPresetPath());
+                for (const auto& path : viewportRequests->GetRegisteredModelPresetPaths())
+                {
+                    m_modelPresetComboBox->AddPath(path);
+                }
+                
+                m_renderPipelineComboBox->AddPath(viewportRequests->GetLastRenderPipelinePath());
+                for (const auto& path : viewportRequests->GetRegisteredRenderPipelinePaths())
+                {
+                    m_renderPipelineComboBox->AddPath(path);
+                }
+            });
+
+        connect(m_lightingPresetComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPreset, path);
         });
 
-        // Start the future watcher with the background process to enumerate all of the lighting and model preset files.
-        m_watcher.setFuture(QtConcurrent::run([]() {
-            return GetPathsInSourceFoldersMatchingFilter([](const AZStd::string& path) {
-                return
-                    path.ends_with(AZ::Render::LightingPreset::Extension) ||
-                    path.ends_with(AZ::Render::ModelPreset::Extension) ||
-                    path.ends_with(AZ::RPI::RenderPipelineDescriptor::Extension);
-            });
-        }));
-        
+        connect(m_modelPresetComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset, path);
+        });
+
+        connect(m_renderPipelineComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadRenderPipeline, path);
+        });
+ 
         OnViewportSettingsChanged();
         EntityPreviewViewportSettingsNotificationBus::Handler::BusConnect(m_toolId);
     }

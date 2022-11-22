@@ -13,7 +13,6 @@
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsNotificationBus.h>
 
 #include <QAction>
-#include <QFutureWatcher>
 #include <QToolBar>
 #endif
 
@@ -43,6 +42,5 @@ namespace AtomToolsFramework
         QAction* m_toggleGrid = {};
         QAction* m_toggleShadowCatcher = {};
         QAction* m_toggleAlternateSkybox = {};
-        QFutureWatcher<AZStd::vector<AZStd::string>> m_watcher;
     };
 } // namespace AtomToolsFramework

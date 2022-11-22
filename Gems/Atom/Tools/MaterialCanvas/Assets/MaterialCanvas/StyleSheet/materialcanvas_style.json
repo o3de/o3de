@@ -2223,7 +2223,7 @@
     "color": "#ffffff"
   },
   {
-    "selectors": [ "MaterialTemplateNodeTitlePalette" ],
+    "selectors": [ "MaterialOutputNodeTitlePalette" ],
     "palette-style": "solid",
     "line-color": "#FF0000",
     "background-color": "#FF0000",
