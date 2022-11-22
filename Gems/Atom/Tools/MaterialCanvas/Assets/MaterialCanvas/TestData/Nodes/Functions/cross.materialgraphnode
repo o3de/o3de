@@ -15,7 +15,7 @@
                 "name": "inValue1",
                 "displayName": "Value1",
                 "description": "Value1",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
                 "defaultDataType": "float3",
                 "defaultValue": {
                     "$type": "Vector3",
@@ -35,7 +35,7 @@
                 "name": "inValue2",
                 "displayName": "Value2",
                 "description": "Value2",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[134]?",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
                 "defaultDataType": "float3",
                 "defaultValue": {
                     "$type": "Vector3",

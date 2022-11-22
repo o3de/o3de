@@ -126,9 +126,9 @@ namespace AZ
             }
         }
 
-        MaterialTypeSourceData::PropertyConnection::PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view fieldName, int32_t shaderIndex)
+        MaterialTypeSourceData::PropertyConnection::PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view name, int32_t shaderIndex)
             : m_type(type)
-            , m_fieldName(fieldName)
+            , m_name(name)
             , m_shaderIndex(shaderIndex)
         {
         }
@@ -711,14 +711,14 @@ namespace AZ
                     {
                     case MaterialPropertyOutputType::ShaderInput:
                     {
-                        Name fieldName{output.m_fieldName};
+                        Name fieldName{output.m_name};
                         materialNameContext.ContextualizeSrgInput(fieldName);
                         materialTypeAssetCreator.ConnectMaterialPropertyToShaderInput(fieldName);
                         break;
                     }
                     case MaterialPropertyOutputType::ShaderOption:
                     {
-                        Name fieldName{output.m_fieldName};
+                        Name fieldName{output.m_name};
                         materialNameContext.ContextualizeShaderOption(fieldName);
 
                         if (output.m_shaderIndex >= 0)
@@ -729,6 +729,12 @@ namespace AZ
                         {
                             materialTypeAssetCreator.ConnectMaterialPropertyToShaderOptions(fieldName);
                         }
+                        break;
+                    }
+                    case MaterialPropertyOutputType::ShaderEnabled:
+                    {
+                        Name shaderTag{output.m_name};
+                        materialTypeAssetCreator.ConnectMaterialPropertyToShaderEnabled(shaderTag);
                         break;
                     }
                     case MaterialPropertyOutputType::Invalid:

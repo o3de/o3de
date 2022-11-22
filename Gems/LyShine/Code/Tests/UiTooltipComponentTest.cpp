@@ -84,7 +84,7 @@ namespace UnitTest
     };
 
     class UiTooltipComponentTest
-        : public testing::Test
+        : public UnitTest::AllocatorsTestFixture
     {
     protected:
         UiTooltipTestApplication* m_application = nullptr;
@@ -94,7 +94,7 @@ namespace UnitTest
         void SetUp() override
         {
             // start application
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create(AZ::SystemAllocator::Descriptor());
+            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
 
             AZ::ComponentApplication::Descriptor appDescriptor;
             appDescriptor.m_useExistingAllocator = true;

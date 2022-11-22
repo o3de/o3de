@@ -6,13 +6,47 @@
  *
  */
 
-#include <AzCore/Memory/BestFitExternalMapAllocator.h>
+#include <AzCore/Memory/AllocationRecords.h>
+#include <AzCore/Memory/AllocatorManager.h>
+#include <AzCore/Memory/IAllocator.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/Memory/ChildAllocatorSchema.h>
 
 
 namespace UnitTest
 {
+    static void CheckAllocatorsForLeaks(bool leakExpected)
+    {
+        auto& allocatorManager = AZ::AllocatorManager::Instance();
+        const int numAllocators = allocatorManager.GetNumAllocators();
+        bool anyAllocatorHasAllocations = false;
+        allocatorManager.GarbageCollect();
+        for (int i = numAllocators - 1; i >= 0; --i)
+        {
+            auto* allocator = allocatorManager.GetAllocator(i);
+            const AZ::Debug::AllocationRecords* records = allocator->GetRecords();
+            if (records)
+            {
+                const bool hasAllocations = records->RequestedBytes() != 0;
+                anyAllocatorHasAllocations = anyAllocatorHasAllocations || hasAllocations;
+            }
+        }
+        EXPECT_EQ(leakExpected, anyAllocatorHasAllocations);
+        if (leakExpected != anyAllocatorHasAllocations)
+        {
+            for (int i = numAllocators - 1; i >= 0; --i)
+            {
+                auto* allocator = allocatorManager.GetAllocator(i);
+                AZ::Debug::AllocationRecords* records = allocator->GetRecords();
+                if (records)
+                {
+                    records->EnumerateAllocations(AZ::Debug::PrintAllocationsCB{ true, true });
+                }
+            }
+        }
+    }
+
     // Dummy test class
     class TestClass
     {
@@ -25,58 +59,27 @@ namespace UnitTest
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     class AllocatorsTestFixtureLeakDetectionTest
         : public AllocatorsTestFixture
-        , public UnitTest::TraceBusRedirector
     {
     public:
-        void SetUp() override
-        {
-            AllocatorsTestFixture::SetUp();
-
-            AZ::Debug::TraceMessageBus::Handler::BusConnect();
-        }
         void TearDown() override
         {
-            AllocatorsTestFixture::TearDown();
+            UnitTest::CheckAllocatorsForLeaks(m_leakExpected);
 
-            EXPECT_EQ(m_leakExpected, m_leakDetected);
-            AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
-
-            if (m_leakExpected)
+            if (m_leakyObject)
             {
-                AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+                delete m_leakyObject;
+                m_leakyObject = nullptr;
+                AZ::AllocatorManager::Instance().GarbageCollect();
             }
+
+            AllocatorsTestFixture::TearDown();
         }
 
         void SetLeakExpected() { AZ_TEST_START_TRACE_SUPPRESSION; m_leakExpected = true; }
 
+    protected:
+        TestClass* m_leakyObject{};
     private:
-        bool OnPreError(const char* window, const char* file, int line, const char* func, const char* message) override
-        {
-            AZ_UNUSED(file);
-            AZ_UNUSED(line);
-            AZ_UNUSED(func);
-
-            if (AZStd::string_view(window) == "Memory"
-                && AZStd::string_view(message) == "We still have 1 allocations on record! They must be freed prior to destroy!")
-            {
-                // Leak detected, flag it so we validate on tear down that this happened. We also will 
-                // mark this test since it will assert
-                m_leakDetected = true;
-                return true;
-            }
-            return false;
-        }
-
-        bool OnPrintf(const char* window, const char* message) override
-        {
-            AZ_UNUSED(window);
-            AZ_UNUSED(message);
-            // Do not print the error message twice. The error message will already be printed by the TraceBusRedirector
-            // in UnitTest.h. Here we override it to prevent it from printing twice.
-            return true;
-        }
-
-        bool m_leakDetected = false;
         bool m_leakExpected = false;
     };
 
@@ -88,8 +91,7 @@ namespace UnitTest
     {
         SetLeakExpected();
 
-        TestClass* leakyObject = aznew TestClass();
-        AZ_UNUSED(leakyObject);
+        m_leakyObject = aznew TestClass();
     }
 
     TEST_F(AllocatorsTestFixtureLeakDetectionTest, NoLeak)
@@ -103,28 +105,15 @@ namespace UnitTest
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Create a dummy allocator so unit tests can leak it
-    class LeakDetection_TestAllocator
-        : public AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>
+    AZ_ALLOCATOR_DEFAULT_GLOBAL_WRAPPER(LeakDetection_TestAllocator, AZ::SystemAllocator, "{186B6E32-344D-4322-820A-4C3E4F30650B}")
+
+    // Dummy test class
+    class TestClassLeakDetection_TestAllocator
     {
     public:
-        AZ_TYPE_INFO(LeakDetection_TestAllocator, "{186B6E32-344D-4322-820A-4C3E4F30650B}");
-
-        using Base = AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>;
-        using Descriptor = Base::Descriptor;
-
-        LeakDetection_TestAllocator()
-            : LeakDetection_TestAllocator(TYPEINFO_Name(), "LeakDetection_TestAllocator")
-        {
-        }
-
-        LeakDetection_TestAllocator(const char* name, const char* desc)
-            : Base(name, desc)
-        {
-            Create();
-        }
-
-        ~LeakDetection_TestAllocator() override = default;
+        AZ_CLASS_ALLOCATOR(TestClass, LeakDetection_TestAllocator, 0);
     };
+
 
     class AllocatorsTestFixtureLeakDetectionDeathTest_SKIPCODECOVERAGE
         : public ::testing::Test
@@ -132,7 +121,9 @@ namespace UnitTest
     public:
         void TestAllocatorLeak()
         {
-            AZ::AllocatorInstance<LeakDetection_TestAllocator>::Create();
+            AZ::AllocatorManager::Instance().EnterProfilingMode();
+            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
+            [[maybe_unused]] TestClassLeakDetection_TestAllocator* object = new TestClassLeakDetection_TestAllocator();
 
             // In regular unit test operation, the environment will be teardown at the end and thats where the validation will happen. Here, we need
             // to do a teardown before the test ends so gtest detects the death before it starts to teardown.
@@ -156,86 +147,27 @@ namespace UnitTest
     // Testing ScopedAllocatorSetupFixture. Testing that detects leaks
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     class AllocatorSetupLeakDetectionTest
-        : public ::testing::Test
+        : public ScopedAllocatorSetupFixture
     {
-        // Internal class to manage the bus redirector so we can use construction/destruction order to detect leaks triggered
-        // by AllocatorSetup destructor.
-        class BusRedirector
-            : public UnitTest::TraceBusRedirector
-        {
-        public:
-            BusRedirector()
-            {
-                AZ::Debug::TraceMessageBus::Handler::BusConnect();
-            }
-            ~BusRedirector() override
-            {
-                EXPECT_EQ(m_leakExpected, m_leakDetected);
-                AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
-
-                if (m_leakExpected)
-                {
-                    // The macro AZ_TEST_STOP_TRACE_SUPPRESSION contains a return statement, therefore we cannot use it in a destructor, 
-                    // to overcome that, we wrap it in a lambda so we can drop the returned value.
-                    auto stopAsserts = [] {
-                        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-                    };
-                    stopAsserts();
-                }
-            }
-
-            bool OnPreError(const char* window, const char* file, int line, const char* func, const char* message) override
-            {
-                AZ_UNUSED(file);
-                AZ_UNUSED(line);
-                AZ_UNUSED(func);
-
-                if (AZStd::string_view(window) == "Memory"
-                    && AZStd::string_view(message) == "We still have 1 allocations on record! They must be freed prior to destroy!")
-                {
-                    // Leak detected, flag it so we validate on tear down that this happened. We also will 
-                    // mark this test since it will assert
-                    m_leakDetected = true;
-                    return true;
-                }
-                return false;
-            }
-
-            bool OnPrintf(const char* window, const char* message) override
-            {
-                AZ_UNUSED(window);
-                AZ_UNUSED(message);
-                // Do not print the error message twice. The error message will already be printed by the TraceBusRedirector
-                // in UnitTest.h. Here we override it to prevent it from printing twice.
-                return true;
-            }
-
-            bool m_leakDetected = false;
-            bool m_leakExpected = false;
-        };
-
-        // Inheriting to add default implementations for the virtual abstract methods.
-        class AllocatorSetup : public ScopedAllocatorSetupFixture
-        {
-        public:
-            void SetUp() override {}
-            void TearDown() override {}
-            void TestBody() override {}
-        };
-
     public:
         ~AllocatorSetupLeakDetectionTest() override
         {
-            EXPECT_EQ(m_busRedirector.m_leakExpected, UnitTest::TestRunner::Instance().m_isAssertTest);
+            UnitTest::CheckAllocatorsForLeaks(m_leakExpected);
+
+            if (m_leakyObject)
+            {
+                delete m_leakyObject;
+                m_leakyObject = nullptr;
+                AZ::AllocatorManager::Instance().GarbageCollect();
+            }
         }
 
-        void SetLeakExpected() { AZ_TEST_START_TRACE_SUPPRESSION; m_busRedirector.m_leakExpected = true; }
+        void SetLeakExpected() { m_leakExpected = true; }
 
+    protected:
+        TestClass* m_leakyObject = nullptr;
     private:
-        BusRedirector m_busRedirector;
-        // We need the BusRedirector to be destroyed before the AllocatorSetup is, therefore we cannot have this test fixture inheriting 
-        // from AllocatorSetup which would be the default implementation. 
-        AllocatorSetup m_allocatorSetup;
+        bool m_leakExpected = false;
     };
 
 #if AZ_TRAIT_DISABLE_FAILED_ALLOCATOR_LEAK_DETECTION_TESTS
@@ -246,8 +178,7 @@ namespace UnitTest
     {
         SetLeakExpected();
 
-        TestClass* leakyObject = aznew TestClass();
-        AZ_UNUSED(leakyObject);
+        m_leakyObject = aznew TestClass();
     }
 
     TEST_F(AllocatorSetupLeakDetectionTest, NoLeak)
@@ -264,45 +195,27 @@ namespace UnitTest
         : public ::testing::Test
     {
     public:
-        AllocatorTypeLeakDetectionTest()
-            : m_busRedirector(m_leakDetected)
-        {}
-
         void SetUp() override
         {
             AZ::AllocatorManager::Instance().EnterProfilingMode();
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
-
-            if (azrtti_typeid<AllocatorType>() != azrtti_typeid<AZ::SystemAllocator>()) // simplifies instead of template specialization
-            {
-                // Other allocators need the SystemAllocator in order to work
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-            }
-            AZ::AllocatorInstance<AllocatorType>::Create();
-
-            m_busRedirector.BusConnect();
         }
 
         void TearDown() override
         {
-            AZ::AllocatorInstance<AllocatorType>::Destroy();
-            if (azrtti_typeid<AllocatorType>() != azrtti_typeid<AZ::SystemAllocator>()) // simplifies instead of template specialization
+            UnitTest::CheckAllocatorsForLeaks(m_leakExpected);
+
+            if (m_leakyObject)
             {
-                // Other allocators need the SystemAllocator in order to work
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
+                delete m_leakyObject;
+                m_leakyObject = nullptr;
+                AZ::AllocatorManager::Instance().GarbageCollect();
             }
+
             AZ::AllocatorManager::Instance().ExitProfilingMode();
-
-            m_busRedirector.BusDisconnect();
-            EXPECT_EQ(m_leakExpected, m_leakDetected);
-
-            if (m_leakExpected)
-            {
-                AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-            }
         }
 
-        void SetLeakExpected() { AZ_TEST_START_TRACE_SUPPRESSION; m_leakExpected = true; }
+        void SetLeakExpected() { m_leakExpected = true; }
 
         // Dummy test class that uses AllocatorType
         class ThisAllocatorTestClass
@@ -311,47 +224,9 @@ namespace UnitTest
             AZ_CLASS_ALLOCATOR(ThisAllocatorTestClass, AllocatorType, 0);
         };
 
+    protected:
+        ThisAllocatorTestClass* m_leakyObject = nullptr;
     private:
-        class BusRedirector
-            : public UnitTest::TraceBusRedirector
-        {
-        public:
-            BusRedirector(bool& leakDetected)
-                : m_leakDetected(leakDetected)
-            {}
-
-            bool OnPreError(const char* window, const char* file, int line, const char* func, const char* message) override
-            {
-                AZ_UNUSED(file);
-                AZ_UNUSED(line);
-                AZ_UNUSED(func);
-
-                if (AZStd::string_view(window) == "Memory"
-                    && AZStd::string_view(message) == "We still have 1 allocations on record! They must be freed prior to destroy!")
-                {
-                    // Leak detected, flag it so we validate on tear down that this happened. We also will 
-                    // mark this test since it will assert
-                    m_leakDetected = true;
-                    return true;
-                }
-                return false;
-            }
-
-            bool OnPrintf(const char* window, const char* message) override
-            {
-                AZ_UNUSED(window);
-                AZ_UNUSED(message);
-                // Do not print the error message twice. The error message will already be printed by the TraceBusRedirector
-                // in UnitTest.h. Here we override it to prevent it from printing twice.
-                return true;
-            }
-
-        private:
-            bool& m_leakDetected;
-        };
-
-        BusRedirector m_busRedirector;
-        bool m_leakDetected = false;
         bool m_leakExpected = false;
     };
 
@@ -370,13 +245,12 @@ namespace UnitTest
     {
         TestFixture::SetLeakExpected();
 
-        typename TestFixture::ThisAllocatorTestClass* leakyObject = aznew typename TestFixture::ThisAllocatorTestClass();
-        AZ_UNUSED(leakyObject);
+        this->m_leakyObject = aznew typename TestFixture::ThisAllocatorTestClass();
     }
 
     TYPED_TEST(AllocatorTypeLeakDetectionTest, NoLeak)
     {
-        typename TestFixture::ThisAllocatorTestClass* leakyObject = aznew typename TestFixture::ThisAllocatorTestClass();
+        auto* leakyObject = aznew typename TestFixture::ThisAllocatorTestClass();
         delete leakyObject;
     }
 }

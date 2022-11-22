@@ -12,31 +12,14 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Memory/Memory.h>
 #include <CryCommon/platform.h>
-#include <CryCommon/LegacyAllocator.h>
 
 struct IOutputPrintSink;
-
-namespace O3DELauncher
-{
-    struct CryAllocatorsRAII
-    {
-        CryAllocatorsRAII()
-        {
-            AZ_Assert(!AZ::AllocatorInstance<AZ::LegacyAllocator>::IsReady(), "Expected allocator to not be initialized, hunt down the static that is initializing it");
-
-            AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
-        }
-
-        ~CryAllocatorsRAII()
-        {
-            AZ::AllocatorInstance<AZ::LegacyAllocator>::Destroy();
-        }
-    };
-
 
 #define COMMAND_LINE_ARG_COUNT_LIMIT (AZ_COMMAND_LINE_LEN+1) / 2        // Assume that the limit to how many arguments we can maintain is the max buffer size divided by 2
                                                                         // to account for an argument and a spec in between each argument (with the worse case scenario being
 
+namespace O3DELauncher
+{
     struct PlatformMainInfo
     {
         typedef bool (*ResourceLimitUpdater)();

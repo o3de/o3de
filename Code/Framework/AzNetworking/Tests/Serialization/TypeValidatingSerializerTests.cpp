@@ -64,7 +64,6 @@ namespace UnitTest
         {
             AZ::Interface<AZ::IConsole>::Unregister(m_console.get());
             m_console = nullptr;
-            TeardownAllocator();
         }
 
         AZStd::unique_ptr<AZ::Console> m_console;

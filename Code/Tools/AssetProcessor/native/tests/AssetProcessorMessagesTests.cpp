@@ -11,7 +11,9 @@
 #include <utilities/ApplicationServer.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include <AzCore/Utils/Utils.h>
 #include <connection/connectionManager.h>
 #include <QCoreApplication>

@@ -190,6 +190,32 @@ def check_entity_children_count(entity_id, expected_children_count):
     return entity_children_count_matched
 
 
+def validate_count_for_named_editor_entity(entity_name, expected_count):
+    """
+    This is a helper function which helps validate the number of entities for a given name in editor.
+
+    :param entity_name: Entity name for the entities to be validated.
+    :param expected_count: Expected number of entities.
+    """
+    entities = EditorEntity.find_editor_entities([entity_name])
+    assert len(entities) == expected_count, f"{len(entities)} entity(s) found. " \
+                                            f"Expected {expected_count} {entity_name} entity(s)."
+
+
+def validate_child_count_for_named_editor_entity(entity_name, expected_child_count):
+    """
+    This is a helper function which helps validate the number of children of entities for a given name in editor.
+
+    :param entity_name: Entity name for the entities to be validated.
+    :param expected_child_count: Expected number of children.
+    """
+    entities = EditorEntity.find_editor_entities([entity_name])
+    for entity in entities:
+        child_entities = entity.get_children()
+        assert len(child_entities) == expected_child_count, f"{len(child_entities)} children found. " \
+                                                            f"Expected {expected_child_count} children for all {entity_name} entity(s)."
+
+
 def open_base_tests_level():
     helper.init_idle()
     helper.open_level("Prefab", "Base")

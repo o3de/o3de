@@ -7,6 +7,7 @@
  */
 
 #include <AzTest/AzTest.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
@@ -14,7 +15,7 @@
 namespace AzToolsFramework
 {
     class EditorEntityContextComponentTests
-        : public ::testing::Test
+        : public UnitTest::AllocatorsTestFixture
     {
     protected:
         void SetUp() override

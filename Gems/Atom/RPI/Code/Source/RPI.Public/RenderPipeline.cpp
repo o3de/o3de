@@ -86,20 +86,25 @@ namespace AZ
         RenderPipelinePtr RenderPipeline::CreateRenderPipelineForWindow(const RenderPipelineDescriptor& desc, const WindowContext& windowContext,
                                                                         const ViewType viewType)
         {
-            RenderPipeline* pipeline = aznew RenderPipeline();
+            RenderPipelinePtr pipeline{aznew RenderPipeline()};
             PassSystemInterface* passSystem = PassSystemInterface::Get();
 
             PassDescriptor swapChainDescriptor(Name(desc.m_name));
             Name templateName = Name(desc.m_rootPassTemplate.c_str());
             swapChainDescriptor.m_passTemplate = passSystem->GetPassTemplate(templateName);
-            AZ_Assert(swapChainDescriptor.m_passTemplate, "Root-PassTemplate %s not found!", templateName.GetCStr());
+
+            if (!swapChainDescriptor.m_passTemplate)
+            {
+                AZ_Error("RPISystem", false, "Root-PassTemplate %s not found!", templateName.GetCStr());
+                return nullptr;
+            }
 
             pipeline->m_passTree.m_rootPass = aznew SwapChainPass(swapChainDescriptor, &windowContext, viewType);
             pipeline->m_windowHandle = windowContext.GetWindowHandle();
             pipeline->m_viewType = viewType;
-            InitializeRenderPipeline(pipeline, desc);
+            InitializeRenderPipeline(pipeline.get(), desc);
 
-            return RenderPipelinePtr(pipeline);
+            return pipeline;
         }
 
         void RenderPipeline::InitializeRenderPipeline(RenderPipeline* pipeline, const RenderPipelineDescriptor& desc)

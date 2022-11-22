@@ -23,6 +23,7 @@
 #include <QPushButton>
 #include <QToolButton>
 #include <QVBoxLayout>
+#include <QtConcurrent/QtConcurrent>
 
 namespace AtomToolsFramework
 {
@@ -42,6 +43,32 @@ namespace AtomToolsFramework
             return path.ends_with(AZ::Render::ModelPreset::Extension);
         }, QSize(modelPresetDialogItemSize, modelPresetDialogItemSize), GetToolMainWindow()));
 
+        // Pre create the lighting preset dialog so that it is not repopulated every time it's opened.
+        const int lightingPresetDialogItemSize = aznumeric_cast<int>(GetSettingsValue<AZ::u64>(
+            "/O3DE/AtomToolsFramework/EntityPreviewViewportSettingsInspector/AssetSelectionGrid/LightingItemSize", 128));
+
+        m_lightingPresetDialog.reset(new AssetSelectionGrid("Lighting Preset Browser", [](const AZStd::string& path) {
+            return path.ends_with(AZ::Render::LightingPreset::Extension);
+        }, QSize(lightingPresetDialogItemSize, lightingPresetDialogItemSize), GetToolMainWindow()));
+
+        // Prepopulating preset selection widgets with previously registered presets.
+        EntityPreviewViewportSettingsRequestBus::Event(
+            m_toolId,
+            [this](EntityPreviewViewportSettingsRequests* viewportRequests)
+            {
+                m_lightingPresetDialog->AddPath(viewportRequests->GetLastLightingPresetPath());
+                for (const auto& path : viewportRequests->GetRegisteredLightingPresetPaths())
+                {
+                    m_lightingPresetDialog->AddPath(path);
+                }
+
+                m_modelPresetDialog->AddPath(viewportRequests->GetLastModelPresetPath());
+                for (const auto& path : viewportRequests->GetRegisteredModelPresetPaths())
+                {
+                    m_modelPresetDialog->AddPath(path);
+                }
+            });
+
         connect(m_modelPresetDialog.get(), &AssetSelectionGrid::PathRejected, this, [this]() {
             EntityPreviewViewportSettingsRequestBus::Event(
                 m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset, m_modelPresetPath);
@@ -51,14 +78,6 @@ namespace AtomToolsFramework
             EntityPreviewViewportSettingsRequestBus::Event(
                 m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset, path);
         });
-
-        // Pre create the lighting preset dialog so that it is not repopulated every time it's opened.
-        const int lightingPresetDialogItemSize = aznumeric_cast<int>(GetSettingsValue<AZ::u64>(
-            "/O3DE/AtomToolsFramework/EntityPreviewViewportSettingsInspector/AssetSelectionGrid/LightingItemSize", 128));
-
-        m_lightingPresetDialog.reset(new AssetSelectionGrid("Lighting Preset Browser", [](const AZStd::string& path) {
-            return path.ends_with(AZ::Render::LightingPreset::Extension);
-        }, QSize(lightingPresetDialogItemSize, lightingPresetDialogItemSize), GetToolMainWindow()));
 
         connect(m_lightingPresetDialog.get(), &AssetSelectionGrid::PathRejected, this, [this]() {
             EntityPreviewViewportSettingsRequestBus::Event(
@@ -70,6 +89,7 @@ namespace AtomToolsFramework
                 m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPreset, path);
         });
 
+        OnViewportSettingsChanged();
         EntityPreviewViewportSettingsNotificationBus::Handler::BusConnect(m_toolId);
     }
 

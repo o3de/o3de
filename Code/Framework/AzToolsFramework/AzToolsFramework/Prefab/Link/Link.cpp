@@ -135,6 +135,16 @@ namespace AzToolsFramework
             return areOverridesPresent;
         }
 
+        PrefabOverridePrefixTree Link::RemoveOverrides(AZ::Dom::Path path)
+        {
+            return m_linkPatchesTree.DetachSubTree(path);
+        }
+
+        bool Link::AddOverrides(const AZ::Dom::Path& path, AZ::Dom::DomPrefixTree<PrefabOverrideMetadata>&& subTree)
+        {
+            return m_linkPatchesTree.AttachSubTree(path, AZStd::move(subTree));
+        }
+
         PrefabDomPath Link::GetInstancePath() const
         {
             return PrefabDomUtils::GetPrefabDomInstancePath(m_instanceName.c_str());

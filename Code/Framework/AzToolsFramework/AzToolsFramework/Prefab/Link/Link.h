@@ -38,6 +38,9 @@ namespace AzToolsFramework
             // The structure to store metadata information about individual patches on a link.
             struct PrefabOverrideMetadata
             {
+                AZ_RTTI(PrefabOverrideMetadata, "{03A2996F-8E93-4D78-B13B-A30AE5E778A4}");
+                virtual ~PrefabOverrideMetadata() = default;
+
                 PrefabOverrideMetadata(PrefabDom&& patch, AZ::u32 patchIndex) noexcept
                     : m_patch(AZStd::move(patch))
                     , m_patchIndex(patchIndex)
@@ -115,6 +118,17 @@ namespace AzToolsFramework
                 AZ::Dom::Path path,
                 AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags = AZ::Dom::PrefixTreeTraversalFlags::ExcludeParentPaths);
 
+            //! Removes overrides at the provided path and all the nodes under it from the override tree
+            //! @param path The path at which the overrides should be removed from
+            //! @return The sub-tree representing the removed overrides.
+            AZ::Dom::DomPrefixTree<PrefabOverrideMetadata> RemoveOverrides(AZ::Dom::Path path);
+
+            //! Adds overrides at the provided path by attaching the provided subtree representing new overrides
+            //! @param path The path at which new overrides should be added
+            //! @param subTree The tree representing the new overrides to be added
+            //! @return Whether the overrides are successfully added or not.
+            bool AddOverrides(const AZ::Dom::Path& path, AZ::Dom::DomPrefixTree<PrefabOverrideMetadata>&& subTree);
+
             PrefabDomPath GetInstancePath() const;
             const AZStd::string& GetInstanceName() const;
 
@@ -170,5 +184,7 @@ namespace AzToolsFramework
 
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         };
+
+        using PrefabOverridePrefixTree = AZ::Dom::DomPrefixTree<Link::PrefabOverrideMetadata>;
     } // namespace Prefab
 } // namespace AzToolsFramework
