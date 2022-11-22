@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 We are deprecating this file and moving the constants to area specific files. See the EditorPythonTestTools > consts
 folder for more info
 """
-from editor_python_test_tools.editor_entity_utils import EditorEntity
+from editor_python_test_tools.editor_entity_utils import EditorEntity, EditorComponent
 import azlmbr.scriptcanvas as scriptcanvas
 from enum import Enum
 import azlmbr.math as math
@@ -36,11 +36,10 @@ class VariableState(Enum):
 class ScriptCanvasComponent:
 
     def __init__(self):
-        self.editor_entity = None
-        self.script_canvas_components = []
+        self.script_canvas_component = None
 
-    def get_script_canvas_components(self) -> list:
-        return self.script_canvas_components
+    def get_script_canvas_component(self) -> EditorComponent:
+        return self.script_canvas_component
 
     def create_new_entity_with_component(self, entity_name: str, sc_file_path: str,
                                          position=math.Vector3(512.0, 512.0, 32.0)) -> None:
@@ -56,31 +55,14 @@ class ScriptCanvasComponent:
         """
         sourcehandle = scriptcanvas.SourceHandleFromPath(sc_file_path)
 
-        self.editor_entity = EditorEntity.create_editor_entity_at(position, entity_name)
-        self.editor_entity.add_components([SCRIPT_CANVAS_UI])
+        editor_entity = EditorEntity.create_editor_entity_at(position, entity_name)
 
-        self.script_canvas_components = self.editor_entity.get_components_of_type([SCRIPT_CANVAS_UI])
-        self.script_canvas_components[0].set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
+        self.script_canvas_component = editor_entity.add_component(SCRIPT_CANVAS_UI)
+        self.script_canvas_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
 
-    def set_component_graph_file(self, sc_file_path: str, component_index=0) -> tuple:
-        """
-        Function for updating the script canvas file being used by the component
+        return editor_entity
 
-        param sc_file_path : the string path the new graph file on disk
-        param component_index: the index of the script canvas component (entities can have multiple script canvas components)
-
-        returns the source handle from the file path and the previous component property value for validation in a tuple
-        """
-        sourcehandle = scriptcanvas.SourceHandleFromPath(sc_file_path)
-
-        old_component_property_value = self.script_canvas_components[component_index].get_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
-
-        self.script_canvas_components[component_index].set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH,
-                                                                    sourcehandle)
-
-        return sourcehandle, old_component_property_value
-
-    def add_components_to_existing_entity(self, editor_entity: EditorEntity, sc_file_path: str, sc_component_index=0) -> None:
+    def add_component_to_existing_entity(self, editor_entity: EditorEntity, sc_file_path: str) -> None:
         """
         Function for initializing a script canvas component object if you already have an editor entity you want to use.
 
@@ -92,13 +74,29 @@ class ScriptCanvasComponent:
         """
         sourcehandle = scriptcanvas.SourceHandleFromPath(sc_file_path)
 
-        self.editor_entity = editor_entity
-        self.script_canvas_components = self.editor_entity.get_components_of_type([SCRIPT_CANVAS_UI])
+        self.script_canvas_component = editor_entity.add_component(SCRIPT_CANVAS_UI)
+        self.script_canvas_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
 
-        sc_component = self.script_canvas_components[sc_component_index]
-        sc_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
+    def set_component_graph_file(self, sc_file_path: str) -> tuple:
+        """
+        Function for updating the script canvas file being used by the component
 
-    def set_variable_value(self, variable_name: str, variable_state: VariableState, variable_value, component_index=0) -> str:
+        param sc_file_path : the string path the new graph file on disk
+        param component_index: the index of the script canvas component (entities can have multiple script canvas components)
+
+        returns the source handle from the file path and the previous component property value for validation in a tuple
+        """
+        sourcehandle = scriptcanvas.SourceHandleFromPath(sc_file_path)
+
+        old_component_property_value = self.script_canvas_component.get_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
+
+        self.script_canvas_component.set_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
+
+        return sourcehandle, old_component_property_value
+
+
+
+    def set_variable_value(self, variable_name: str, variable_state: VariableState, variable_value) -> str:
         """
         Function for setting a value to a variable on the script canvas component.
 
@@ -114,8 +112,8 @@ class ScriptCanvasComponent:
         """
         component_property_path = self.__construct_variable_component_property_path(variable_name, variable_state)
 
-        self.script_canvas_components[component_index].set_component_property_value(component_property_path,
-                                                                                    variable_value)
+        self.script_canvas_component.set_component_property_value(component_property_path, variable_value)
+
         return component_property_path
 
     def __construct_variable_component_property_path(self, variable_name: str, variable_state: VariableState) -> str:

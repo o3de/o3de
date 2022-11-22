@@ -219,8 +219,7 @@ def validate_asset_property(property_name: str, get_asset_value: typing.Callable
         f"{expected_asset.id} was expected but Asset Id: {set_value} was retrieved from \"{expected_asset.get_path()}\""
 
 
-def validate_script_canvas_graph_file(get_script_canvas_components: typing.Callable, source_handle: str, old_value: str,
-                                      component_index=0) -> None:
+def validate_script_canvas_graph_file(get_script_canvas_component: typing.Callable, source_handle: str, old_value: str) -> None:
     """
     Function to validate the setting of a script canvas graph file to the file source field in the script canvas component
 
@@ -233,25 +232,24 @@ def validate_script_canvas_graph_file(get_script_canvas_components: typing.Calla
 
     assert source_handle is not None, "File not found!"
 
-    sc_components = get_script_canvas_components()
+    sc_component = get_script_canvas_component()
 
-    set_value = sc_components[component_index].get_component_property_value(
-        SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
+    set_value = sc_component.get_component_property_value(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
     assert set_value != old_value and set_value is not None, f"Graph file could not be set!"
 
 
-def validate_script_canvas_variable_changed(get_script_canvas_components: typing.Callable, component_property_path: str,
-                                            variable_name: str, variable_value, component_index=0) -> None:
+def validate_script_canvas_variable_changed(get_script_canvas_component: typing.Callable, component_property_path: str,
+                                            variable_name: str, variable_value) -> None:
     """
     Function for validating that a script canvas component variable can be changed.
 
     """
     Report.info(f"Validating Script Canvas component's variable was set.")
 
-    sc_components = get_script_canvas_components()
-    valid_path = sc_components[component_index].get_component_property_value(component_property_path) is not None
+    sc_component = get_script_canvas_component()
+    valid_path = sc_component.get_component_property_value(component_property_path) is not None
 
     assert valid_path, "Path to variable was invalid! Check use/unused state or variable name"
 
-    set_value = sc_components[component_index].get_component_property_value(component_property_path)
+    set_value = sc_component.get_component_property_value(component_property_path)
     assert set_value == variable_value, f"Component variable {variable_name} was not set properly"

@@ -67,7 +67,7 @@ def ScriptCanvas_ChangingAssets_ComponentStable():
 
         # 4) Update Script Canvas file on entity's SC component
         validation_data = script_canvas_component.set_component_graph_file(ASSET_2)
-        validate_script_canvas_graph_file(script_canvas_component.get_script_canvas_components, validation_data[0],
+        validate_script_canvas_graph_file(script_canvas_component.get_script_canvas_component, validation_data[0],
                                           validation_data[1])
 
         # 5) Enter and Exit Game Mode

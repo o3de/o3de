@@ -78,14 +78,13 @@ def VariableManager_ExposeVarsToComponent():
     # 8) Create an entity w/ component in the O3DE editor and attach the file
     position = math.Vector3(512.0, 512.0, 32.0)
     editor_entity = EditorEntity.create_editor_entity_at(position, ENTITY_NAME)
-    editor_entity.add_components(COMPONENT_LIST)
     script_canvas_component = ScriptCanvasComponent()
-    script_canvas_component.add_components_to_existing_entity(editor_entity, SCRIPT_CANVAS_TEST_FILE_PATH)
+    script_canvas_component.add_component_to_existing_entity(editor_entity, SCRIPT_CANVAS_TEST_FILE_PATH)
 
     # 9) Verify the new variables are exposed properly by modifying one of them
     new_variable_value = True
     variable_component_property_path = script_canvas_component.set_variable_value(VARIABLE_NAME, VariableState.UNUSEDVARIABLE, new_variable_value)
-    validate_script_canvas_variable_changed(script_canvas_component.get_script_canvas_components, variable_component_property_path,
+    validate_script_canvas_variable_changed(script_canvas_component.get_script_canvas_component, variable_component_property_path,
                                             VARIABLE_NAME, new_variable_value)
 
 
