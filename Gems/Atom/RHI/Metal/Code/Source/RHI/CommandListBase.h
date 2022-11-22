@@ -91,9 +91,9 @@ namespace AZ
             /// Cache multisample state. Used mainly to validate the MSAA image descriptor against the one passed into the pipelinestate
             RHI::MultisampleState       m_renderPassMultiSampleState;
             
-            // Data structures to cache untracked resources for Graphics and Compute Passes
-            // At the end of the pass we call UseResource on them to tell the
-            // driver to ensure they are resident when eneded.
+            // Data structures to cache untracked resources for Graphics and Compute Passes.
+            // At the end of the pass we call UseResource on them in a batch to tell the
+            // driver to ensure they are resident when needed.
             ArgumentBuffer::ResourcesPerStageForGraphics m_untrackedResourcesGfxRead;
             ArgumentBuffer::ResourcesPerStageForGraphics m_untrackedResourcesGfxReadWrite;
             ArgumentBuffer::ResourcesForCompute m_untrackedResourcesComputeRead;
