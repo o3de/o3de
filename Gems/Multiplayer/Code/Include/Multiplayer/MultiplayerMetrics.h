@@ -23,6 +23,6 @@ namespace Multiplayer
         MultiplayerStat_FrameTimeUs,                // Multiplayer tick cost within a single application frame
         MultiplayerStat_ClientConnectionCount,      // Current connection (applicable to a server)
         MultiplayerStat_ApplicationFrameTimeUs,     // The entire application frame time
-        MultiplayerStat_CorrectionCounter,          // Number of corrections (desyncs)
+        MultiplayerStat_DesyncCorrections,          // Number of corrections (desyncs)
     };
 }

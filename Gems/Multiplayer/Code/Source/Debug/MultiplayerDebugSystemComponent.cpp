@@ -97,7 +97,7 @@ namespace Multiplayer
     {
         if (category == AuditCategory::Desync)
         {
-            INCREMENT_PERFORMANCE_STAT(MultiplayerStat_CorrectionCounter);
+            INCREMENT_PERFORMANCE_STAT(MultiplayerStat_DesyncCorrections);
         }
 
 #ifdef IMGUI_ENABLED

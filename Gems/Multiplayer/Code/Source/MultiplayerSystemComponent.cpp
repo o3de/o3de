@@ -250,7 +250,7 @@ namespace Multiplayer
         DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_FrameTimeUs, "FrameTimeUs");
         DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_ClientConnectionCount, "ClientConnections");
         DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_ApplicationFrameTimeUs, "AppFrameTimeUs");
-        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_CorrectionCounter, "Corrections");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_DesyncCorrections, "DesyncCorrections");
 
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
