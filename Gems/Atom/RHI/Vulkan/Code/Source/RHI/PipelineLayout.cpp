@@ -136,7 +136,6 @@ namespace AZ
 
                 // In contrast to DX12, the "spaceId" in Vulkan (descriptor set index) permits multiple unbounded arrays, and we can assume
                 // that all inputs in a given SRG share the same spaceId.
-                // TODO: Verify
                 uint32_t spaceId = bindingInfo.m_constantDataBindingInfo.m_spaceId;
                 if (spaceId == ~0u)
                 {

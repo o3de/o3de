@@ -220,7 +220,7 @@ namespace AZ
             // {
             //     FrequencyId = 7;
             // };
-            // TODO::Need a more data driven way here 
+            // TODO::Need a more data driven way here - https://github.com/o3de/o3de/issues/13324
             static const uint32_t BindlessSRGFrequencyId = 7;
 
             // Structure to hold all the bindless views and the BindlessResourceType related to it
