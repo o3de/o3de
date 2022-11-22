@@ -47,7 +47,6 @@ class ScriptCanvasComponent:
 
         param editor_entity: The entity we want to configure
         param sc_file_path: location on disk to the script canvas file
-        param sc_component_index; the index of the script canvas component(if there are multiple) that you want to modify
 
         returns None
         """
@@ -61,7 +60,6 @@ class ScriptCanvasComponent:
         Function for updating the script canvas file being used by the component
 
         param sc_file_path : the string path the new graph file on disk
-        param component_index: the index of the script canvas component (entities can have multiple script canvas components)
 
         returns None
         """
@@ -79,7 +77,6 @@ class ScriptCanvasComponent:
         param variable_name: the name of the variable
         param variable_state: used/unused variable
         param variable_value: the value to assign to the variable
-        param component_index: the index of the script canvas component (entities can have multiple script canvas components)
 
         returns component property path as a string
         """
