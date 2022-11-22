@@ -877,7 +877,7 @@ namespace AssetUtilities
 
         if (uuidRequests)
         {
-            return uuidRequests->GetUuid(sourceAsset.AbsolutePath());
+            return uuidRequests->GetUuid(sourceAsset);
         }
 
         AZ_Assert(false, "Programmer Error: GetSourceUuid called before IUuidRequests interface is available.");
@@ -890,7 +890,7 @@ namespace AssetUtilities
 
         if (uuidRequests)
         {
-            return uuidRequests->GetLegacyUuids(sourceAsset.AbsolutePath());
+            return uuidRequests->GetLegacyUuids(sourceAsset);
         }
 
         AZ_Assert(false, "Programmer Error: GetSourceUuid called before IUuidRequests interface is available.");
