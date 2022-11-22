@@ -167,17 +167,17 @@ bool WelcomeScreenDialog::IsValidLevelName(const QString& path)
     QStringList pathParts = Path::SplitIntoSegments(path);
 
     QString levelName = pathParts.at(pathParts.size() - 1);
-    if (!levelName.endsWith(".prefab", Qt::CaseInsensitive))
-    {
-        return true;
-    }
 
-    QString containerName = pathParts.at(pathParts.size() - 2);
+    if (levelName.endsWith(".prefab", Qt::CaseInsensitive))
+    {
+        // If the level is a prefab, check the container name.
+        levelName = pathParts.at(pathParts.size() - 2);
+    }
 
     QRegExpValidator validator(QRegExp("^[a-zA-Z0-9_\\-./]*$"));
 
     int pos = 0;
-    return validator.validate(containerName, pos);
+    return validator.validate(levelName, pos);
 }
 
 void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
