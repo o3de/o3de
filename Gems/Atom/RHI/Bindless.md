@@ -25,7 +25,7 @@ When compiled, the SRG declaration is reflected to indicate that this shader req
 The compiler then assigns a binding slot and "space" associated with the input.
 In C++, the SRG then allows the user to associate an `ImageView` with the `m_textureResource` input slot.
 This slot location varies per-platform, and can be queried by name as part of the interface.
-Other engines have other "spellings" for this sort of reflection and input mapping interface, but these concepts for resource binding are otherwise fairly universal.
+Other engines have other names for this sort of reflection and input mapping interface, but these concepts for resource binding are otherwise fairly universal.
 
 ## Why Bindless
 
@@ -86,12 +86,6 @@ As views are created, an associated descriptor is also created in the next avail
 To access the static descriptors in D3D12, the root signature associates all unbounded arrays in the designated `Bindless` SRG to the static region.
 All such ranges have the _same base offset_ and are completely overlapping to ensure the ranges can encompass all the resources that may be needed in the frame.
 
-#### D3D12 TODO
-
-- Currently, the prototype implementation in #8410 breaks the existing unbounded array support. A change is needed to restore functionality for unbounded array declarations that reside in SRGs that are not the designated `Bindless` SRG (refer to changes made to `DX12/Code/Source/RHI/CommandList.h`)
-- In the same vein as the first TODO item, all unbounded arrays are mapped to the static range of the global descriptor heap, but this needs to be true only for non-`Bindless` SRGs
-- A restriction exists that hardcodes the number of unbounded arrays in an SRG to `8`. This was originally `2` (one SRG and one UAV unbounded array), but in reality, there shouldn't be any restrction at all in the `Bindless` case specifically, since all ranges can overlap. Only in the unbounded-and-contiugous case (non-`Bindless` SRGs) should the original limit of `2` be honored (see `RHI.Reflect/DX12/PipelineLayoutDescriptor.h`)
-
 ### Vulkan Implementation
 
 In contrast to D3D12, Vulkan descriptors are allocated from a strongly-typed pool of descriptors.
@@ -105,18 +99,23 @@ The descriptor bindings in the global layout request several feature bit capabil
 #### Vulkan TODO
 
 - The `VkDescriptorSetLayout` created in `BindlessDescriptorPool.cpp` doesn't leverage the existing `ShaderResourceGroup` abstraction due to differences in feature requirements that are incompatible with the existing unbounded array support. An attempt could be made to unify this, so that the layout of the `Bindless` SRG can be reflected from a pseudo-shader instead of hardcoded
-- The `Vulkan/Code/Source/RHI/CommandList.cpp` implementation was modified to assume that an unbound descriptor set must simply refer to the `Bindless` descriptor set, and validation is needed to ensure this is in fact the case.
-- The bindings are all hardcoded to require `100000` elements, but this is a gross overestimation of usage for many resource types (e.g. UAV textures, UAV buffers). To relax this requirement, the `PipelineLayout` compilation needs to change to adjust the unbounded array descriptor count estimation based on descriptor type.
+- The bindings are all hardcoded to require `100,000` elements, but this is a gross overestimation of usage for many resource types (e.g. UAV textures, UAV buffers). To relax this requirement, the `PipelineLayout` compilation needs to change to adjust the unbounded array descriptor count estimation based on descriptor type.
 
 ### Metal Implementation
 
-Metal currently has support for Bindless via teo approaches.
+Metal currently has support for Bindless via two approaches. Approach 1 is the current implementation.
 - Approach 1 (Unbounded arrays with an explicit limit of 100k) - We create one Argument buffer that encompasses all the bounded unbound arrays. Since the resource types can not alias like Dx12 we create separate regions for read only textures, read write textures, read only buffers and read write buffers. Each section gets enough space for 100k views. 
 - Approach 2 (Unbounded array with no limit) - Assuming spirv-cross adds support for it we create an argument buffer per resource type (read only textures, read write textures, read only buffers, read write buffers) and we create a  root argument buffer which acts as a container for all argument buffers per bindless resource type. 
 For both approaches when a view is created we add it to the global heap and at runtime we bind the appropriate AB as needed.
 
+### Metal TODOs
+
+- Add Sprir-v Cross support for approach 2 to work, once Sprir-v cross adds the support.
+- Similar to Vulkan the bindings are all hardcoded to require `100,000` elements, but this is a gross overestimation of usage for many resource types (e.g. UAV textures, UAV buffers). To relax this requirement, the `PipelineLayout` compilation needs to change to adjust the unbounded array descriptor count estimation based on descriptor type.
+- Need to enable bindless based on hardware support for Argument Buffers Tier 2 (only iOS).
+
+
 ### General TODOs
 
-- Designate an `SRG_Frequency` as the "bindless SRG" and enforce this
-- Enable unbounded arrays of `RaytracingAccelerationStructure` (TLAS) type
-- Recompile GI shader binaries with the new reflected `azshader` data format and test functionality continues to operate as normal with raytracing enabled
+- A restriction exists that hardcodes the number of unbounded arrays in an SRG to `8`. This was originally `2` (one SRV and one UAV unbounded array), but in reality, there shouldn't be any restrction at all in the `Bindless` case specifically, since all ranges can overlap. Only in the unbounded-and-contiugous case (non-`Bindless` SRGs) should the original limit of `2` be honored (see `RHI.Reflect/DX12/PipelineLayoutDescriptor.h`)
+- Make Bindless SRG layout data driven https://github.com/o3de/o3de/issues/13324
