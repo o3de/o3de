@@ -922,19 +922,17 @@ namespace AzToolsFramework
         return false;
     }
 
-    ComponentEditor::ComponentCardState ComponentEditor::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)
+    void ComponentEditor::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)
     {
         if (componentModeTypes.empty())
         {
             SetWidgetInteractEnabled(this, false);
-            return ComponentCardState::Disabled;
         }
 
         // disable all component cards not matching the ComponentMode type
         if (AZStd::find(componentModeTypes.begin(), componentModeTypes.end(), m_componentType) == componentModeTypes.end())
         {
             SetWidgetInteractEnabled(this, false);
-            return ComponentCardState::Disabled;
         }
         else
         {
@@ -942,11 +940,6 @@ namespace AzToolsFramework
             {
                 // only set the first item to be selected/highlighted
                 SetSelected(true);
-                return ComponentCardState::Selected;
-            }
-            else
-            {
-                return ComponentCardState::Enabled;
             }
         }
     }
@@ -964,24 +957,18 @@ namespace AzToolsFramework
         SetSelected(false);
     }
 
-    ComponentEditor::ComponentCardState ComponentEditor::ActiveComponentModeChanged(const AZ::Uuid& componentType)
+    void ComponentEditor::ActiveComponentModeChanged(const AZ::Uuid& componentType)
     {
         // refresh which Component Editor/Card looks selected in the Entity Outliner
         if (IsSelected())
         {
             SetSelected(false);
-            return ComponentCardState::Enabled;
         }
         else
         {
             if (componentType == m_componentType)
             {
                 SetSelected(true);
-                return ComponentCardState::Selected;
-            }
-            else
-            {
-                return ComponentCardState::Disabled;
             }
         }
     }

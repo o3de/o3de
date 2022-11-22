@@ -5900,8 +5900,10 @@ namespace AzToolsFramework
 
             for (auto componentEditor : m_componentEditors)
             {
+                componentEditor->EnteredComponentMode(componentModeTypes);
+
                 // if this component editor is active and editable during component mode
-                if (componentEditor->EnteredComponentMode(componentModeTypes) == ComponentEditor::ComponentCardState::Selected)
+                if (componentEditor->IsSelected())
                 {
                     // scroll to the relevant component card
                     m_gui->m_componentList->verticalScrollBar()->setValue(componentEditor->pos().y());
@@ -5949,8 +5951,10 @@ namespace AzToolsFramework
     {
         for (auto componentEditor : m_componentEditors)
         {
+            componentEditor->ActiveComponentModeChanged(componentType);
+
             // if this component editor has been changed to during component mode
-            if (componentEditor->ActiveComponentModeChanged(componentType) == ComponentEditor::ComponentCardState::Selected)
+            if (componentEditor->IsSelected())
             {
                 // scroll to the relevant component card
                 m_gui->m_componentList->verticalScrollBar()->setValue(componentEditor->pos().y());

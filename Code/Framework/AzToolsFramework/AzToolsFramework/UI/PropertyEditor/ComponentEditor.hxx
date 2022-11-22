@@ -101,18 +101,9 @@ namespace AzToolsFramework
 
         void SetComponentOverridden(const bool overridden);
 
-        enum class ComponentCardState
-        {
-            Enabled, //!< Component card is enabled and can be interacted with.
-            Disabled, //!< Component card is disabled and cannot be interacted with.
-            Selected //!< Component card is enabled, selected (outline visible) and can be interacted with.
-        };
-
-        /// Returns the state of this ComponentEditor's card when Component Mode is entered.
-        ComponentCardState EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes);
-        /// Enables previously disabled ComponentEditor widgets and un-highlights the widget that left component mode.
+        void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes);
         void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes);
-        ComponentEditor::ComponentCardState ActiveComponentModeChanged(const AZ::Uuid& componentType);
+        void ActiveComponentModeChanged(const AZ::Uuid& componentType);
 
     Q_SIGNALS:
         void OnExpansionContractionDone();
