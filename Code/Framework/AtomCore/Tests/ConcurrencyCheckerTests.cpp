@@ -14,16 +14,6 @@ using namespace AZStd;
 
 namespace UnitTest
 {
-    class ConcurrencyCheckerTestFixture
-        : public LeakDetectionFixture
-    {
-
-        void SetUp() override
-        {
-            LeakDetectionFixture::SetUp();
-        }
-    };
-
     TEST_F(LeakDetectionFixture, SoftLock_NoContention_NoAsserts)
     {
         concurrency_checker concurrencyChecker;
