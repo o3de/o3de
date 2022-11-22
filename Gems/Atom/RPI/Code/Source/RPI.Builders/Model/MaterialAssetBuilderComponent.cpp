@@ -72,7 +72,7 @@ namespace AZ
             SceneAPI::SceneBuilderDependencyBus::Handler::BusDisconnect();
         }
 
-        void MaterialAssetDependenciesComponent::ReportJobDependencies(SceneAPI::JobDependencyList& jobDependencyList, const char* platformIdentifier)
+        void MaterialAssetDependenciesComponent::ReportJobDependencies(SceneAPI::JobDependencyList& /*jobDependencyList*/, const char* /*platformIdentifier*/)
         {
             bool conversionEnabled = false;
             RPI::MaterialConverterBus::BroadcastResult(conversionEnabled, &RPI::MaterialConverterBus::Events::IsEnabled);
@@ -81,36 +81,36 @@ namespace AZ
             AZStd::string materialTypePath;
             RPI::MaterialConverterBus::BroadcastResult(materialTypePath, &RPI::MaterialConverterBus::Events::GetMaterialTypePath);
 
-            if (conversionEnabled && !materialTypePath.empty())
-            {
-                AssetBuilderSDK::SourceFileDependency materialTypeSource;
-                materialTypeSource.m_sourceFileDependencyPath = materialTypePath;
+            //if (conversionEnabled && !materialTypePath.empty())
+            //{
+            //    AssetBuilderSDK::SourceFileDependency materialTypeSource;
+            //    materialTypeSource.m_sourceFileDependencyPath = materialTypePath;
 
-                AssetBuilderSDK::JobDependency jobDependency;
-                jobDependency.m_jobKey = "Material Type Builder (Final Stage)";
-                jobDependency.m_sourceFile = materialTypeSource;
-                jobDependency.m_platformIdentifier = platformIdentifier;
-                jobDependency.m_productSubIds.push_back(0);
+            //    AssetBuilderSDK::JobDependency jobDependency;
+            //    jobDependency.m_jobKey = "Material Type Builder (Final Stage)";
+            //    jobDependency.m_sourceFile = materialTypeSource;
+            //    jobDependency.m_platformIdentifier = platformIdentifier;
+            //    jobDependency.m_productSubIds.push_back(0);
 
-                // If FinalizeMaterialAssets is true, then a job dependency is needed so the material builder can validate
-                // MaterialAsset properties against the MaterialTypeAsset at asset build time. If FinalizeMaterialAssets is false, the
-                // material properties will be validated at runtime when the material is loaded, so the job dependency is needed only for
-                // first-time processing to set up the initial MaterialAsset. This speeds up AP processing time when a materialtype file is
-                // edited (e.g. 10s when editing StandardPBR.materialtype on AtomTest project from 45s).
+            //    // If FinalizeMaterialAssets is true, then a job dependency is needed so the material builder can validate
+            //    // MaterialAsset properties against the MaterialTypeAsset at asset build time. If FinalizeMaterialAssets is false, the
+            //    // material properties will be validated at runtime when the material is loaded, so the job dependency is needed only for
+            //    // first-time processing to set up the initial MaterialAsset. This speeds up AP processing time when a materialtype file is
+            //    // edited (e.g. 10s when editing StandardPBR.materialtype on AtomTest project from 45s).
 
-                // If we aren't finalizing material assets, then a normal job dependency isn't needed because the MaterialTypeAsset data
-                // won't be used. However, we do still need at least an OrderOnce dependency to ensure the Asset Processor knows about the
-                // material type asset so the builder can get it's AssetId. This can significantly reduce AP processing time when a material
-                // type or its shaders are edited.
+            //    // If we aren't finalizing material assets, then a normal job dependency isn't needed because the MaterialTypeAsset data
+            //    // won't be used. However, we do still need at least an OrderOnce dependency to ensure the Asset Processor knows about the
+            //    // material type asset so the builder can get it's AssetId. This can significantly reduce AP processing time when a material
+            //    // type or its shaders are edited.
 
-                // Note that without the normal job dependencies, materials may not load or reload consistently or in sync with shader and
-                // material type changes without manually monitoring and handling dependency changes.
-                jobDependency.m_type = MaterialBuilderUtils::BuildersShouldFinalizeMaterialAssets()
-                    ? AssetBuilderSDK::JobDependencyType::Order
-                    : AssetBuilderSDK::JobDependencyType::OrderOnce;
+            //    // Note that without the normal job dependencies, materials may not load or reload consistently or in sync with shader and
+            //    // material type changes without manually monitoring and handling dependency changes.
+            //    jobDependency.m_type = MaterialBuilderUtils::BuildersShouldFinalizeMaterialAssets()
+            //        ? AssetBuilderSDK::JobDependencyType::Order
+            //        : AssetBuilderSDK::JobDependencyType::OrderOnce;
 
-                jobDependencyList.push_back(jobDependency);
-            }
+            //    jobDependencyList.push_back(jobDependency);
+            //}
         }
         
         void MaterialAssetDependenciesComponent::AddFingerprintInfo(AZStd::set<AZStd::string>& fingerprintInfo)
