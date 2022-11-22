@@ -298,11 +298,7 @@ namespace AZ
                 const RHI::ShaderResourceGroup* shaderResourceGroups[] = {
                     diffuseProbeGrid->GetVisualizationRayTraceSrg()->GetRHIShaderResourceGroup(),
                     rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup(),
-<<<<<<< HEAD
                     views[0]->GetRHIShaderResourceGroup(),
-=======
-                    views[0]->GetRHIShaderResourceGroup()
->>>>>>> 51bb84647c (Updated DiffuseGI precompiled shaders)
                 };
 
                 RHI::DispatchRaysItem dispatchRaysItem;

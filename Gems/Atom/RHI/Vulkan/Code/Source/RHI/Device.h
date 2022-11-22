@@ -196,7 +196,7 @@ namespace AZ
 
             RHI::Ptr<NullDescriptorManager> m_nullDescriptorManager;
             bool m_isXrNativeDevice = false;
-			
+
             BindlessDescriptorPool m_bindlessDescriptorPool;
         };
 

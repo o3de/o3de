@@ -368,7 +368,7 @@ namespace AZ
                 for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays; ++unboundedArrayIndex)
                 {
                     if (binding.m_bindlessTable.IsValid() 
-					    && compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex].ptr)
+                        && compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex].ptr)
                     {
                         GetCommandList()->SetComputeRootDescriptorTable(
                             binding.m_bindlessTable.GetIndex(),

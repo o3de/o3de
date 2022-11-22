@@ -113,7 +113,7 @@ namespace AZ
                     device.GetBindlessArgumentBuffer().DetachReadWriteImage(m_readWriteIndex);
                 }
             }
-			
+
             if(m_imageBufferMemoryView.IsValid())
             {
                 device.QueueForRelease(m_imageBufferMemoryView);
