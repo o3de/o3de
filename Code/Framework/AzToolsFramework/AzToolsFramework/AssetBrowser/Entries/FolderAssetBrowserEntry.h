@@ -27,20 +27,24 @@ namespace AzToolsFramework
             AZ_RTTI(FolderAssetBrowserEntry, "{938E6FCD-1582-4B63-A7EA-5C4FD28CABDC}", AssetBrowserEntry);
             AZ_CLASS_ALLOCATOR(FolderAssetBrowserEntry, AZ::SystemAllocator, 0);
 
-            FolderAssetBrowserEntry() = default;
-            ~FolderAssetBrowserEntry() override = default;
+            FolderAssetBrowserEntry();
+            ~FolderAssetBrowserEntry() override;
 
             AssetEntryType GetEntryType() const override;
 
             SharedThumbnailKey CreateThumbnailKey() override;
 
             bool IsScanFolder() const;
+            const AZ::Uuid& GetFolderUuid() const;
+
+            static const FolderAssetBrowserEntry* GetFolderByUuid(const AZ::Uuid& folderUuid);
 
         protected:
             void UpdateChildPaths(AssetBrowserEntry* child) const override;
 
         private:
             bool m_isScanFolder = false;
+            AZ::Uuid m_folderUuid;
 
             AZ_DISABLE_COPY_MOVE(FolderAssetBrowserEntry);
         };

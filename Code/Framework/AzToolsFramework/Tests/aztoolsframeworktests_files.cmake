@@ -65,6 +65,7 @@ set(FILES
     ManipulatorBoundsTests.cpp
     ManipulatorCoreTests.cpp
     ManipulatorViewTests.cpp
+    MetadataManagerTests.cpp
     PerforceComponentTests.cpp
     PlatformAddressedAssetCatalogTests.cpp
     PaintBrush/MockPaintBrushNotificationHandler.h
