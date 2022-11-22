@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
+#include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsRequestBus.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h>
 #include <AtomToolsFramework/Util/Util.h>
@@ -96,6 +97,13 @@ namespace AtomToolsFramework
         }, this);
         addWidget(m_modelPresetComboBox);
 
+        // Add render pipeline combo box
+        m_renderPipelineComboBox = new AssetSelectionComboBox([](const AZStd::string& path)
+            {
+                return path.ends_with(AZ::RPI::RenderPipelineDescriptor::Extension);
+            }, this);
+        addWidget(m_renderPipelineComboBox);
+        
         // Prepopulating preset selection widgets with previously registered presets.
         EntityPreviewViewportSettingsRequestBus::Event(
             m_toolId,
@@ -112,6 +120,12 @@ namespace AtomToolsFramework
                 {
                     m_modelPresetComboBox->AddPath(path);
                 }
+                
+                m_renderPipelineComboBox->AddPath(viewportRequests->GetLastRenderPipelinePath());
+                for (const auto& path : viewportRequests->GetRegisteredRenderPipelinePaths())
+                {
+                    m_renderPipelineComboBox->AddPath(path);
+                }
             });
 
         connect(m_lightingPresetComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
@@ -122,6 +136,11 @@ namespace AtomToolsFramework
         connect(m_modelPresetComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
             EntityPreviewViewportSettingsRequestBus::Event(
                 m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset, path);
+        });
+
+        connect(m_renderPipelineComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadRenderPipeline, path);
         });
  
         OnViewportSettingsChanged();
@@ -144,6 +163,7 @@ namespace AtomToolsFramework
                 m_toggleAlternateSkybox->setChecked(viewportRequests->GetAlternateSkyboxEnabled());
                 m_lightingPresetComboBox->SelectPath(viewportRequests->GetLastLightingPresetPath());
                 m_modelPresetComboBox->SelectPath(viewportRequests->GetLastModelPresetPath());
+                m_renderPipelineComboBox->SelectPath(viewportRequests->GetLastRenderPipelinePath());
             });
     }
 
@@ -155,6 +175,11 @@ namespace AtomToolsFramework
     void EntityPreviewViewportToolBar::OnLightingPresetAdded(const AZStd::string& path)
     {
         m_lightingPresetComboBox->AddPath(path);
+    }
+
+    void EntityPreviewViewportToolBar::OnRenderPipelineAdded(const AZStd::string& path)
+    {
+        m_renderPipelineComboBox->AddPath(path);
     }
 } // namespace AtomToolsFramework
 

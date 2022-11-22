@@ -94,6 +94,29 @@ namespace AtomToolsFramework
         //! Get a set of registered model preset pads available for selection
         virtual AZStd::set<AZStd::string> GetRegisteredModelPresetPaths() const = 0;
 
+        //! Load render pipeline
+        //! @returns true if render pipeline was loaded, otherwise false
+        virtual bool LoadRenderPipeline(const AZStd::string& path) = 0;
+
+        //! Load render pipeline
+        //! @returns true if render pipeline was loaded, otherwise false
+        virtual bool LoadRenderPipelineByAssetId(const AZ::Data::AssetId& assetId) = 0;
+
+        //! Get last render pipeline path
+        virtual AZStd::string GetLastRenderPipelinePath() const = 0;
+
+        //! Get last render pipeline asset id
+        virtual AZ::Data::AssetId GetLastRenderPipelineAssetId() const = 0;
+
+        //! Register a selectable render pipeline path
+        virtual void RegisterRenderPipelinePath(const AZStd::string& path) = 0;
+
+        //! Unregister a render pipeline path so it's no longer available for selection
+        virtual void UnregisterRenderPipelinePath(const AZStd::string& path) = 0;
+
+        //! Get a set of registered render pipeline pads available for selection
+        virtual AZStd::set<AZStd::string> GetRegisteredRenderPipelinePaths() const = 0;
+
         //! Preload and register a preset with a system without selecting or activating it.
         virtual void PreloadPreset(const AZStd::string& path) = 0;
 
