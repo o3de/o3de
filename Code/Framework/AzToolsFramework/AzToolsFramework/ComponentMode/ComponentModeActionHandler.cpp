@@ -53,14 +53,10 @@ namespace AzToolsFramework
             "ComponentModeActionHandler - could not get ActionManagerInterface on ComponentModeActionHandler "
             "OnActionUpdaterRegistrationHook.");
 
-        AZ::SerializeContext* serializeContext = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-
-        serializeContext->EnumerateDerived<ComponentModeFramework::EditorBaseComponentMode>(
+        EnumerateComponentModes(
             [&](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid&) -> bool
             {
                 AZStd::string modeIdentifier = AZStd::string::format("o3de.context.mode.%s", classData->m_name);
-
                 m_actionManagerInterface->RegisterActionContextMode(EditorMainWindowActionContextIdentifier, modeIdentifier);
                 m_componentModeToActionContextModeMap.emplace(classData->m_typeId, AZStd::move(modeIdentifier));
 
@@ -113,14 +109,10 @@ namespace AzToolsFramework
         }
 
         // Add these Actions to all Component Modes
-        AZ::SerializeContext* serializeContext = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-
-        serializeContext->EnumerateDerived<ComponentModeFramework::EditorBaseComponentMode>(
+        EnumerateComponentModes(
             [&](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid&) -> bool
             {
                 // Add default actions to all component modes
-                // TODO - provide a way to opt out?
                 AZStd::string modeIdentifier = AZStd::string::format("o3de.context.mode.%s", classData->m_name);
                 m_actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.componentMode.end");
 
@@ -185,6 +177,13 @@ namespace AzToolsFramework
             m_actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, DefaultActionContextModeIdentifier);
             m_actionManagerInterface->TriggerActionUpdater(ComponentModeChangedUpdaterIdentifier);
         }
+    }
+
+    void EnumerateComponentModes(AZStd::function<bool(const AZ::SerializeContext::ClassData*, const AZ::Uuid&)>& handler)
+    {
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        serializeContext->EnumerateDerived<ComponentModeFramework::EditorBaseComponentMode>(handler);
     }
 
 } // namespace AzToolsFramework

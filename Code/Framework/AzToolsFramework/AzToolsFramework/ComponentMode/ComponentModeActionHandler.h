@@ -49,6 +49,8 @@ namespace AzToolsFramework
 
         void RegisterCommonComponentModeActions();
 
+        void EnumerateComponentModes(AZStd::function<bool(const AZ::SerializeContext::ClassData*, const AZ::Uuid&)> handler);
+
         AZStd::unordered_map<AZ::Uuid, AZStd::string> m_componentModeToActionContextModeMap;
 
         ActionManagerInterface* m_actionManagerInterface = nullptr;
