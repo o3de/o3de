@@ -960,17 +960,7 @@ namespace AzToolsFramework
     void ComponentEditor::ActiveComponentModeChanged(const AZ::Uuid& componentType)
     {
         // refresh which Component Editor/Card looks selected in the Entity Outliner
-        if (IsSelected())
-        {
-            SetSelected(false);
-        }
-        else
-        {
-            if (componentType == m_componentType)
-            {
-                SetSelected(true);
-            }
-        }
+        SetSelected(componentType == m_componentType);
     }
 }
 
