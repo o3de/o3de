@@ -65,6 +65,10 @@ namespace AZ
             //! Will add one mapping for every ShaderAsset that has a matching shader option.
             void ConnectMaterialPropertyToShaderOptions(const Name& shaderOptionName);
 
+            //! Adds an output mapping from the current material property to a Enabled flag of a specific shader.
+            //! @param shaderTag  The tag name that unique identifies a shader in the material type.
+            void ConnectMaterialPropertyToShaderEnabled(const Name& shaderTag);
+
             //! Store the enum names if a property is an enum type.
             void SetMaterialPropertyEnumNames(const AZStd::vector<AZStd::string>& enumNames);
 

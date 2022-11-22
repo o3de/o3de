@@ -186,6 +186,7 @@ namespace MaterialCanvas
         documentTypeInfo = AtomToolsFramework::AtomToolsAnyDocument::BuildDocumentTypeInfo(
             "Material Graph Node Config",
             { "materialgraphnode" },
+            { "materialgraphnodetemplate" },
             AZStd::any(AtomToolsFramework::DynamicNodeConfig()),
             AZ::Uuid::CreateNull()); // Null ID because JSON file contains type info and can be loaded directly into AZStd::any
 
@@ -202,6 +203,7 @@ namespace MaterialCanvas
         documentTypeInfo = AtomToolsFramework::AtomToolsAnyDocument::BuildDocumentTypeInfo(
             "Shader Source Data",
             { "shader" },
+            {},
             AZStd::any(AZ::RPI::ShaderSourceData()),
             AZ::RPI::ShaderSourceData::TYPEINFO_Uuid()); // Supplying ID because it is not included in the JSON file
 
