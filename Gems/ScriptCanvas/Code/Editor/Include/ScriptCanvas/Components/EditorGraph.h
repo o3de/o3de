@@ -39,7 +39,6 @@
 namespace ScriptCanvas
 {
     struct NodeReplacementConfiguration;
-    struct NodeUpdateSlotReport;
 }
 
 namespace ScriptCanvasEditor
@@ -342,14 +341,6 @@ bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const Upgr
         // Function Definition Node Extension
         void HandleFunctionDefinitionExtension(ScriptCanvas::Node* node, GraphCanvas::SlotId graphCanvasSlotId, const GraphCanvas::NodeId& nodeId);
 
-        //// Version Update code
-
-        AZ::Outcome<ScriptCanvas::Node*> ReplaceNodeByConfig(ScriptCanvas::Node*, ScriptCanvas::NodeReplacementConfiguration&, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
-
-        bool SanityCheckNodeReplacement(ScriptCanvas::Node*, ScriptCanvas::Node*, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
-        bool SanityCheckNodeReplacementWithCustomLogic(ScriptCanvas::Node*, ScriptCanvas::Node*, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
-        bool SanityCheckNodeReplacementWithSameTopology(ScriptCanvas::Node*, ScriptCanvas::Node*, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
-
         // Live node replacement, that is, completely swap out a node, while the user is actively editing (rather then when opening or
         // versioning a graph). The default intention is to retain as much connection and data as is remotely appropriate.
         struct LiveSlotInfo
@@ -374,7 +365,6 @@ bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const Upgr
         using NodesById = AZStd::unordered_map<AZ::EntityId, ScriptCanvas::Node*>;
 
         AZ::Outcome<LiveSlotInfo, AZStd::string> ConvertToLiveStateInfo(const ScriptCanvas::Node& node, const ScriptCanvas::Slot& slot) const;
-        static ScriptCanvas::Node* GetOrCreateNodeFromReplacementConfig(ScriptCanvas::NodeReplacementConfiguration& config);
         AZ::Outcome<ScriptCanvas::Node*, AZStd::string> ReplaceLiveNode(ScriptCanvas::Node&, ScriptCanvas::NodeReplacementConfiguration&);
         AZ::Outcome<LiveSlotStates, AZStd::string> GetSlotState(const ScriptCanvas::Node& node) const;
         LiveSlotInfo* FindMatchingSlotState(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot, LiveSlotStates& slotState) const;

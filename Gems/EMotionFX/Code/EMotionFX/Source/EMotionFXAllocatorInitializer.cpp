@@ -16,8 +16,7 @@ namespace EMotionFX
     EMotionFXAllocatorInitializer::EMotionFXAllocatorInitializer()
     {
         // Start EMotionFX allocator.
-        EMotionFX::Integration::EMotionFXAllocator::Descriptor allocatorDescriptor;
-        AZ::AllocatorInstance<EMotionFX::Integration::EMotionFXAllocator>::Create(allocatorDescriptor);
+        AZ::AllocatorInstance<EMotionFX::Integration::EMotionFXAllocator>::Create();
     }
 
     EMotionFXAllocatorInitializer::~EMotionFXAllocatorInitializer()

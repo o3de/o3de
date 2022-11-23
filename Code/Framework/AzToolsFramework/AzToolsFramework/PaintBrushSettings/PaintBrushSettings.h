@@ -143,6 +143,11 @@ namespace AzToolsFramework
             return m_size;
         }
 
+        AZStd::pair<float, float> GetSizeRange() const
+        {
+            return { m_sizeMin, m_sizeMax };
+        }
+
         float GetHardnessPercent() const
         {
             return m_hardnessPercent;
@@ -157,9 +162,24 @@ namespace AzToolsFramework
         }
 
         void SetSize(float size);
+        void SetSizeRange(float minSize, float maxSize);
         void SetHardnessPercent(float hardnessPercent);
         void SetFlowPercent(float flowPercent);
         void SetDistancePercent(float distancePercent);
+
+        // Smoothing settings
+
+        size_t GetSmoothingRadius() const
+        {
+            return m_smoothingRadius;
+        }
+        size_t GetSmoothingSpacing() const
+        {
+            return m_smoothingSpacing;
+        }
+
+        void SetSmoothingRadius(size_t radius);
+        void SetSmoothingSpacing(size_t spacing);
 
     protected:
         AzToolsFramework::ColorEditorConfiguration GetColorEditorConfig();
@@ -179,8 +199,13 @@ namespace AzToolsFramework
         bool GetHardnessVisibility() const;
         bool GetFlowVisibility() const;
         bool GetDistanceVisibility() const;
+        bool GetSmoothingRadiusVisibility() const;
         bool GetBlendModeVisibility() const;
         bool GetSmoothModeVisibility() const;
+
+        float GetSizeMin() const;
+        float GetSizeMax() const;
+        float GetSizeStep() const;
 
         //! Brush settings brush mode
         PaintBrushMode m_brushMode = PaintBrushMode::Paintbrush;
@@ -197,12 +222,28 @@ namespace AzToolsFramework
 
         //! Brush stamp diameter in meters
         float m_size = 10.0f;
+        float m_sizeMin = 0.0f;
+        float m_sizeMax = 1024.0f;
+
         //! Brush stamp hardness percent (0=soft falloff, 100=hard edge)
         float m_hardnessPercent = 100.0f;
         //! Brush stamp flow percent (0=transparent stamps, 100=opaque stamps)
         float m_flowPercent = 100.0f;
         //! Brush distance to move between stamps in % of paintbrush size. (25% is the default in Photoshop.)
         float m_distancePercent = 25.0f;
+
+        static inline constexpr size_t MinSmoothingRadius = 1;  // We need to use at least 1 pixel in each direction for smoothing
+        static inline constexpr size_t MaxSmoothingRadius = 10; // Limit the max to 10 pixels in each direction due to performance
+
+        //! Brush smoothing radius - the number of pixels in each direction to use for smoothing calculations.
+        size_t m_smoothingRadius = MinSmoothingRadius;
+
+        static inline constexpr size_t MinSmoothingSpacing = 0;     // A spacing of 0 means use adjacent pixels
+        static inline constexpr size_t MaxSmoothingSpacing = 50;    // Reasonable limit that doesn't spread the pixels too far out
+
+        //! Brush smoothing spacing - the number of pixels to skip between each pixel used in the smoothing calculations.
+        //! This is a way to use a larger area of the image for smoothing without needing to query more pixels and hurt performance.
+        size_t m_smoothingSpacing = MinSmoothingSpacing;
 
         //! These only exist for alternate editing controls. They get stored back into m_brushColor.
 

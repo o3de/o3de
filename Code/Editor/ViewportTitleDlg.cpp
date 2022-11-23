@@ -137,23 +137,6 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     {
         SetupHelpersButton();
     }
-    else
-    {
-        // Temporary Helpers menu setup until this toolbar is refactored.
-        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
-        auto menuManagerInternalInterface = AZ::Interface<AzToolsFramework::MenuManagerInternalInterface>::Get();
-        if (menuManagerInterface && menuManagerInternalInterface)
-        {
-            const AZStd::string helpersMenuIdentifier = "o3de.menu.viewport.helpers";
-            AzToolsFramework::MenuProperties menuProperties;
-            menuProperties.m_name = "Helpers State";
-            menuManagerInterface->RegisterMenu(helpersMenuIdentifier, menuProperties);
-
-            QMenu* helpersMenu = menuManagerInternalInterface->GetMenu(helpersMenuIdentifier);
-            m_ui->m_helpers->setMenu(helpersMenu);
-            m_ui->m_helpers->setPopupMode(QToolButton::InstantPopup);
-        }
-    }
 
     SetupOverflowMenu();
 

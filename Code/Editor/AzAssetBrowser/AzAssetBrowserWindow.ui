@@ -116,6 +116,23 @@
           </widget>
          </item>
          <item>
+          <widget class="QToolButton" name="m_treeViewButton">
+           <property name="text">
+            <string>...</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+             <normaloff>:/stylesheet/img/UI20/browse-edit-select-files.svg</normaloff>:/stylesheet/img/UI20/browse-edit-select-files.svg</iconset>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">m_viewSelectButtonGroup</string>
+           </attribute>
+          </widget>
+         </item>
+         <item>
           <widget class="QToolButton" name="m_thumbnailViewButton">
            <property name="icon">
             <iconset resource="../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
@@ -133,7 +150,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QToolButton" name="m_listViewButton">
+          <widget class="QToolButton" name="m_tableViewButton">
            <property name="text">
             <string>...</string>
            </property>
@@ -249,9 +266,6 @@
              <property name="editTriggers">
               <set>QAbstractItemView::EditKeyPressed</set>
              </property>
-             <property name="dragDropMode">
-              <enum>QAbstractItemView::DragOnly</enum>
-             </property>
              <property name="selectionMode">
               <enum>QAbstractItemView::ExtendedSelection</enum>
              </property>
@@ -272,15 +286,15 @@
             <height>0</height>
            </size>
           </property>
-          <widget class="QWidget" name="m_iconView">
-           <layout class="QVBoxLayout" name="m_iconViewLayout">
+          <widget class="QWidget" name="m_thumbnailView">
+           <layout class="QVBoxLayout" name="m_thumbnailViewLayout">
             <property name="spacing">
              <number>0</number>
             </property>
             <item>
-             <widget class="QLabel" name="m_iconViewPlaceholder">
+             <widget class="QLabel" name="m_thumbnailViewPlaceholder">
               <property name="text">
-               <string>Icon view placeholder</string>
+               <string>Thumbnail view placeholder</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
@@ -297,7 +311,7 @@
             <item>
              <widget class="QLabel" name="m_tableViewPlaceholder">
               <property name="text">
-               <string>List view placeholder</string>
+               <string>Table view placeholder</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>

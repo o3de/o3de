@@ -24,7 +24,7 @@ namespace AZ
 
 namespace ScriptAutomation
 {
-    static constexpr float DefaultPauseTimeout = 5.0f;
+    static constexpr float DefaultPauseTimeout = 10.0f;
     static constexpr AZ::Crc32 AutomationServiceCrc = AZ_CRC_CE("AutomationService");
 
     class ScriptAutomationRequests
@@ -37,6 +37,12 @@ namespace ScriptAutomation
 
         //! Retrieve the specialized behaviour context used for automation purposes
         virtual AZ::BehaviorContext* GetAutomationContext() = 0;
+
+        //! Load and activate the script, and connect to the tick bus.
+        virtual void ActivateScript(const char* scriptPath) = 0;
+
+        //! Deactivate all scripts and disconnect from the tick bus.
+        virtual void DeactivateScripts() = 0;
 
         //! Can be used by sample components to temporarily pause script processing, for
         //! example to delay until some required resources are loaded and initialized.

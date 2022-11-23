@@ -152,10 +152,19 @@ namespace AzToolsFramework
             AZ::Dpe::Nodes::PropertyEditor::Align m_alignment = AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment;
             bool m_sharePriorColumn = false;
             bool m_minimumWidth = false;
-            AZStd::string_view m_descriptionString = "";
-            bool m_shouldDisable = false;
+            AZStd::string_view m_descriptionString = {};
+            bool m_isDisabled = false;
+
+            bool IsDefault() const
+            {
+                return m_alignment == AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment &&
+                    !m_sharePriorColumn &&
+                    !m_minimumWidth &&
+                    m_descriptionString.empty() &&
+                    !m_isDisabled;
+            }
         };
-        AZStd::unordered_map<size_t, AttributeInfo*> m_domOrderToAttributeInfo;
+        AZStd::unordered_map<size_t, AttributeInfo> m_childIndexToAttributeInfo;
         AttributeInfo* GetAttributes(size_t domIndex);
 
         // row attributes extracted from the DOM

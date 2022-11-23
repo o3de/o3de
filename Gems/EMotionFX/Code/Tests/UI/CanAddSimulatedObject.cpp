@@ -138,11 +138,7 @@ namespace EMotionFX
         QModelIndexList m_indexList;
     };
 
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(CanAddSimulatedObjectFixture, DISABLED_CanAddSimulatedObject)
-#else
     TEST_F(CanAddSimulatedObjectFixture, CanAddSimulatedObject)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         RecordProperty("test_case_id", "C13048820");
 

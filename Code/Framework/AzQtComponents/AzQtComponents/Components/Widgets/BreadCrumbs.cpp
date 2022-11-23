@@ -285,8 +285,10 @@ namespace AzQtComponents
         };
 
         const QString nonBreakingSpace = QStringLiteral("&nbsp;");
+        // Using Single Right-Pointing Angle Quotation Mark (U+203A) as separator
+        const QString arrowCharacter = QStringLiteral("&#8250;");
         auto prependSeparators = [&]() {
-            htmlString.prepend(QStringLiteral("%1%1<img src=\":/Breadcrumb/img/UI20/Breadcrumb/Next_level_arrow.svg\">%1%1").arg(nonBreakingSpace));
+            htmlString.prepend(QStringLiteral("%1%1%2%1%1").arg(nonBreakingSpace, arrowCharacter));
         };
 
         // last section is not clickable

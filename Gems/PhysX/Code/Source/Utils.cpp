@@ -1177,17 +1177,11 @@ namespace PhysX
             }
         }
 
-        AZ::Vector3 GetTransformScale(AZ::EntityId entityId)
+        float GetTransformScale(AZ::EntityId entityId)
         {
-            float worldUniformScale = 1.0f;
-            AZ::TransformBus::EventResult(worldUniformScale, entityId, &AZ::TransformBus::Events::GetWorldUniformScale);
-            return AZ::Vector3(worldUniformScale);
-        }
-
-        AZ::Vector3 GetUniformScale(AZ::EntityId entityId)
-        {
-            const float uniformScale = GetTransformScale(entityId).GetMaxElement();
-            return AZ::Vector3(uniformScale);
+            float transformScale = 1.0f;
+            AZ::TransformBus::EventResult(transformScale, entityId, &AZ::TransformBus::Events::GetWorldUniformScale);
+            return transformScale;
         }
 
         AZ::Vector3 GetNonUniformScale(AZ::EntityId entityId)
@@ -1199,7 +1193,7 @@ namespace PhysX
 
         AZ::Vector3 GetOverallScale(AZ::EntityId entityId)
         {
-            return GetUniformScale(entityId) * GetNonUniformScale(entityId);
+            return GetTransformScale(entityId) * GetNonUniformScale(entityId);
         }
 
         const AZ::Vector3& Sanitize(const AZ::Vector3& input, const AZ::Vector3& defaultValue)

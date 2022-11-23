@@ -13,6 +13,9 @@
     "user_tags": [
         "${Name}"
     ],
+    "platforms": [
+        "${Platforms}"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
     "documentation_url": "",

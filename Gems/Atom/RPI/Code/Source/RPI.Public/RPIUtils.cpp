@@ -1053,10 +1053,10 @@ namespace AZ
         }
 
         AZStd::optional<RenderPipelineDescriptor> GetRenderPipelineDescriptorFromAsset(
-            const AZStd::string& pipelineAssetPath, AZStd::string_view nameSuffix)
+            const Data::AssetId& pipelineAssetId, AZStd::string_view nameSuffix)
         {
             AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset =
-                AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(pipelineAssetPath.c_str(), AssetUtils::TraceLevel::Error);
+                AssetUtils::LoadAssetById<AZ::RPI::AnyAsset>(pipelineAssetId, AssetUtils::TraceLevel::Error);
             if (!pipelineAsset.IsReady())
             {
                 // Error already reported by LoadAssetByProductPath
@@ -1065,14 +1065,28 @@ namespace AZ
             const RenderPipelineDescriptor* assetPipelineDesc = GetDataFromAnyAsset<AZ::RPI::RenderPipelineDescriptor>(pipelineAsset);
             if (!assetPipelineDesc)
             {
-                AZ_Error("RPIUtils", false, "Invalid render pipeline descriptor from asset %s", pipelineAssetPath.c_str());
+                AZ_Error("RPIUtils", false, "Invalid render pipeline descriptor from asset %s", pipelineAssetId.ToString<AZStd::string>().c_str());
                 return AZStd::nullopt;
             }
 
             RenderPipelineDescriptor pipelineDesc = *assetPipelineDesc;
             pipelineDesc.m_name += nameSuffix;
 
-            return { AZStd::move(pipelineDesc) };
+            return {AZStd::move(pipelineDesc)};
+        }
+
+        AZStd::optional<RenderPipelineDescriptor> GetRenderPipelineDescriptorFromAsset(
+            const AZStd::string& pipelineAssetPath, AZStd::string_view nameSuffix)
+        {
+            Data::AssetId assetId = AssetUtils::GetAssetIdForProductPath(pipelineAssetPath.c_str(), AssetUtils::TraceLevel::Error);
+            if (assetId.IsValid())
+            {
+                return GetRenderPipelineDescriptorFromAsset(assetId, nameSuffix);
+            }
+            else
+            {
+                return AZStd::nullopt;
+            }
         }
     } // namespace RPI
 } // namespace AZ

@@ -362,16 +362,16 @@ namespace Multiplayer
 
             if (networkEntity.second.m_down > net_DebugEntities_ShowAboveKbps && networkEntity.second.m_up > net_DebugEntities_ShowAboveKbps)
             {
-                azsprintf(m_statusBuffer, "[%s] %.0f down / %0.f up (kbps)", networkEntity.second.m_name,
+                azsnprintf(m_statusBuffer, AZ_ARRAY_SIZE(m_statusBuffer), "[%s] %.0f down / %0.f up (kbps)", networkEntity.second.m_name,
                     networkEntity.second.m_down, networkEntity.second.m_up);
             }
             else if (networkEntity.second.m_down > net_DebugEntities_ShowAboveKbps)
             {
-                azsprintf(m_statusBuffer, "[%s] %.0f down (kbps)", networkEntity.second.m_name, networkEntity.second.m_down);
+                azsnprintf(m_statusBuffer, AZ_ARRAY_SIZE(m_statusBuffer), "[%s] %.0f down (kbps)", networkEntity.second.m_name, networkEntity.second.m_down);
             }
             else
             {
-                azsprintf(m_statusBuffer, "[%s] %.0f up (kbps)", networkEntity.second.m_name, networkEntity.second.m_up);
+                azsnprintf(m_statusBuffer, AZ_ARRAY_SIZE(m_statusBuffer), "[%s] %.0f up (kbps)", networkEntity.second.m_name, networkEntity.second.m_up);
             }
 
             AZ::Vector3 entityPosition = AZ::Vector3::CreateZero();
