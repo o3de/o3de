@@ -234,7 +234,7 @@ namespace MaterialCanvas
 
     AZStd::vector<AZStd::string> MaterialCanvasApplication::GetCriticalAssetFilters() const
     {
-        return AZStd::vector<AZStd::string>({ "passes/", "config/"});
+        return AZStd::vector<AZStd::string>({ "passes/", "config/", "MaterialEditor/", "MaterialCanvas/" });
     }
 
     QWidget* MaterialCanvasApplication::GetAppMainWindow()
