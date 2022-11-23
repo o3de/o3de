@@ -61,7 +61,6 @@ namespace std
 namespace AzToolsFramework
 {
     static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
-
     static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 
     static const char* const s_duplicateVerticesTitle = "Duplicate Vertices";

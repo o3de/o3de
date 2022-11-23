@@ -45,10 +45,19 @@ namespace AzToolsFramework
             AZStd::vector<ActionOverride> PopulateActions() final;
 
             //! Register additional actions for this component mode.
+            //! This is provided as guidance but it will not be called automatically;
+            //! you will need a system component to call it in the OnActionRegistrationHook handler.
             static void RegisterActions() {}
 
             //! Bind actions to appear in this component mode.
-            static void BindActionsToMode(const AZStd::string actionContextModeIdentifier) {}
+            //! This is provided as guidance but it will not be called automatically;
+            //! you will need a system component to call it in the OnActionContextModeBindingHook handler.
+            static void BindActionsToModes() {}
+
+            //! Bind actions to appear in menus.
+            //! This is provided as guidance but it will not be called automatically;
+            //! you will need a system component to call it in the OnMenuBindingHook handler.
+            static void BindActionsToMenus() {}
 
             /// Populate the Viewport UI widget for this ComponentMode.
             AZStd::vector<ViewportUi::ClusterId> PopulateViewportUi() final;
