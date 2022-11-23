@@ -120,17 +120,19 @@ namespace GraphCanvas
         void SubmitValue();
     
         Styling::StyleHelper m_styleHelper;
-        VectorDataInterface*  m_dataInterface;
-        
-        GraphCanvasLabel*                           m_disabledLabel;
-        AzQtComponents::VectorInput*                m_propertyVectorCtrl;
-        QToolButton*                                m_button;
-        QGraphicsProxyWidget*                       m_proxyWidget;
-        
-        QGraphicsWidget*                            m_displayWidget;
-        IconLayoutItem*                             m_iconDisplay;
-        AZStd::vector< ReadOnlyVectorControl* >     m_vectorDisplays;
+        VectorDataInterface* m_dataInterface{};
 
-        bool                                        m_releaseLayout;
+        QWidget* m_widgetContainer{};
+
+        GraphCanvasLabel* m_disabledLabel{};
+        AzQtComponents::VectorInput* m_propertyVectorCtrl{};
+        QToolButton* m_button{};
+        QGraphicsProxyWidget* m_proxyWidget{};
+
+        QGraphicsWidget* m_displayWidget{};
+        IconLayoutItem* m_iconDisplay{};
+        AZStd::vector<ReadOnlyVectorControl*> m_vectorDisplays{};
+
+        bool m_releaseLayout{};
     };
-}
+} // namespace GraphCanvas
