@@ -5891,7 +5891,7 @@ namespace AzToolsFramework
             SetPropertyEditorState(m_gui, false);
             const auto componentModeTypes = m_componentModeCollection->GetComponentTypes();
             m_disabled = true;
-            m_verticalScrollOffset = m_gui->m_componentList->verticalScrollBar()->value();
+
             
             if (!componentModeTypes.empty())
             {
@@ -5907,7 +5907,6 @@ namespace AzToolsFramework
                 {
                     // scroll to the relevant component card
                     m_gui->m_componentList->verticalScrollBar()->setValue(componentEditor->pos().y());
-                    m_componentModeVerticalScrollOffset = m_gui->m_componentList->verticalScrollBar()->value();
                 }
             }
 
@@ -5931,17 +5930,6 @@ namespace AzToolsFramework
                 componentEditor->LeftComponentMode(componentModeTypes);
             }
 
-            // return to the scroll offset before Component Mode was activated
-            if (m_verticalScrollOffset.has_value() &&
-                m_gui->m_componentList->verticalScrollBar()->value() == m_componentModeVerticalScrollOffset.value())
-            {
-                m_gui->m_componentList->verticalScrollBar()->setValue(m_verticalScrollOffset.value());
-                
-                // reset the scroll offsets
-                m_verticalScrollOffset = AZStd::nullopt;
-                m_componentModeVerticalScrollOffset = AZStd::nullopt;
-            }
-
             // record the selected state after leaving component mode
             SaveComponentEditorState();
         }
@@ -5958,7 +5946,6 @@ namespace AzToolsFramework
             {
                 // scroll to the relevant component card
                 m_gui->m_componentList->verticalScrollBar()->setValue(componentEditor->pos().y());
-                m_componentModeVerticalScrollOffset = m_gui->m_componentList->verticalScrollBar()->value();
             }
         }
     }

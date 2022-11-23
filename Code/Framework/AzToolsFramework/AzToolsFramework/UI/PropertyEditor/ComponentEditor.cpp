@@ -929,12 +929,10 @@ namespace AzToolsFramework
             // disable all component cards that aren't in the active component mode.
             SetWidgetInteractEnabled(this, false);
         }
-        else
-        {
-            // for components that *are* in the active component mode, try to set the first one
-            // to selected, and the rest to unselected.
-            SetSelected(componentModeTypes.front() == m_componentType);
-        }
+
+        // for components that *are* in the active component mode, try to set the first one
+        // to selected, and the rest to unselected.
+        SetSelected(componentModeTypes.front() == m_componentType);
     }
 
     void ComponentEditor::LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)
