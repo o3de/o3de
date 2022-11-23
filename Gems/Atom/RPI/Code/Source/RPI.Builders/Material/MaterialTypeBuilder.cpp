@@ -472,7 +472,7 @@ namespace AZ
 
                 // Intermediate azsl file
 
-                // At this point m_preMaterialAzsli and m_postMaterialAzsli should be absolute due to ResolvePathReference() being called above.
+                // At this point m_azsli should be absolute due to ResolvePathReference() being called above.
                 // It might be better for the include path to be relative to the generated .shader file path in the intermediate cache,
                 // so the project could be renamed or moved without having to rebuild the cache. But there's a good chance that moving
                 // the project would require a rebuild of the cache anyway.
