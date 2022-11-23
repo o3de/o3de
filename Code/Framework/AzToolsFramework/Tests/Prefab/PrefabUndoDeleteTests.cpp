@@ -39,43 +39,43 @@ namespace UnitTest
 
         AZ::EntityId secondCarContainerId = InstantiateEditorPrefab(carPrefabFilepath, GetRootContainerEntityId());
 
-        auto focusedCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(carContainerId);
-        ASSERT_TRUE(focusedCarInstance.has_value());
+        auto firstCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(carContainerId);
+        ASSERT_TRUE(firstCarInstance.has_value());
 
         auto secondCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(secondCarContainerId);
         ASSERT_TRUE(secondCarInstance.has_value());
 
         // Validate before deletion
-        ValidateEntityUnderInstance(focusedCarInstance->get().GetContainerEntityId(), tireEntityAlias, tireEntityName);
+        ValidateEntityUnderInstance(firstCarInstance->get().GetContainerEntityId(), tireEntityAlias, tireEntityName);
         ValidateEntityUnderInstance(secondCarInstance->get().GetContainerEntityId(), tireEntityAlias, tireEntityName);
 
         // Create an undo node
         PrefabUndoDeleteEntity undoDeleteNode("Undo Deleting Entity");
 
-        EntityOptionalReference parentEntityToUpdate = focusedCarInstance->get().GetContainerEntity();
+        EntityOptionalReference parentEntityToUpdate = firstCarInstance->get().GetContainerEntity();
         ASSERT_TRUE(parentEntityToUpdate.has_value());
 
-        AZ::EntityId firstTireEntityId = focusedCarInstance->get().GetEntityId(tireEntityAlias);
+        AZ::EntityId firstTireEntityId = firstCarInstance->get().GetEntityId(tireEntityAlias);
         ASSERT_TRUE(firstTireEntityId.IsValid());
 
         AZStd::string firstEngineEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(firstTireEntityId);
 
-        focusedCarInstance->get().DetachEntity(firstTireEntityId).reset();
+        firstCarInstance->get().DetachEntity(firstTireEntityId).reset();
 
-        undoDeleteNode.Capture({ firstEngineEntityAliasPath }, { &(parentEntityToUpdate->get()) }, focusedCarInstance->get());
+        undoDeleteNode.Capture({ firstEngineEntityAliasPath }, { &(parentEntityToUpdate->get()) }, firstCarInstance->get());
 
         // Redo
         undoDeleteNode.Redo();
         PropagateAllTemplateChanges();
         
-        ValidateEntityNotUnderInstance(focusedCarInstance->get().GetContainerEntityId(), tireEntityAlias);
+        ValidateEntityNotUnderInstance(firstCarInstance->get().GetContainerEntityId(), tireEntityAlias);
         ValidateEntityNotUnderInstance(secondCarInstance->get().GetContainerEntityId(), tireEntityAlias);
 
         // Undo
         undoDeleteNode.Undo();
         PropagateAllTemplateChanges();
 
-        ValidateEntityUnderInstance(focusedCarInstance->get().GetContainerEntityId(), tireEntityAlias, tireEntityName);
+        ValidateEntityUnderInstance(firstCarInstance->get().GetContainerEntityId(), tireEntityAlias, tireEntityName);
         ValidateEntityUnderInstance(secondCarInstance->get().GetContainerEntityId(), tireEntityAlias, tireEntityName);
     }
 
@@ -126,11 +126,11 @@ namespace UnitTest
 
         firstCarInstance->get().DetachEntity(firstEngineEntityId).reset();
 
-        auto focusedLevelInstance = m_instanceEntityMapperInterface->FindOwningInstance(GetRootContainerEntityId());
-        ASSERT_TRUE(focusedLevelInstance.has_value());
+        auto levelRootInstance = m_instanceEntityMapperInterface->FindOwningInstance(GetRootContainerEntityId());
+        ASSERT_TRUE(levelRootInstance.has_value());
 
         undoDeleteNode.Capture({ firstEngineEntityAliasPath }, {}, { &(parentEntityToUpdate->get()) },
-            firstCarInstance->get(), focusedLevelInstance->get());
+            firstCarInstance->get(), levelRootInstance->get());
 
         // Redo
         undoDeleteNode.Redo();
@@ -199,11 +199,11 @@ namespace UnitTest
 
         firstCarInstance->get().DetachNestedInstance(wheelInstanceAlias).reset();
 
-        auto focusedLevelInstance = m_instanceEntityMapperInterface->FindOwningInstance(GetRootContainerEntityId());
-        ASSERT_TRUE(focusedLevelInstance.has_value());
+        auto levelRootInstance = m_instanceEntityMapperInterface->FindOwningInstance(GetRootContainerEntityId());
+        ASSERT_TRUE(levelRootInstance.has_value());
 
         undoDeleteAsOverride.Capture({}, { firstWheelInstanceAliasPath }, { &(parentEntityToUpdate->get()) },
-            firstCarInstance->get(), focusedLevelInstance->get());
+            firstCarInstance->get(), levelRootInstance->get());
 
         // Redo
         undoDeleteAsOverride.Redo();
