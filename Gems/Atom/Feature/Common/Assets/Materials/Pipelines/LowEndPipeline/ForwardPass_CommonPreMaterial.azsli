@@ -8,4 +8,3 @@
  
 #define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 1
 
-#include <Atom/RPI/MaterialPipelineCallbacks.azsli>

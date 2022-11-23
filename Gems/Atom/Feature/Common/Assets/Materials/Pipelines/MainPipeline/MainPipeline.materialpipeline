@@ -23,7 +23,7 @@
         {
             "shader": "../Common/ShadowmapPass.shader.template",
             "preMaterialAzsli": "../Common/DepthAndShadow_PreMaterial.azsli",
-            "postMaterialAzsli": "../Common/ShadowmapPass.azsli"
+            "postMaterialAzsli": "../Common/DepthPass.azsli"
         }
     ],
     "pipelineScript": "./MainPipelineScript.lua"
