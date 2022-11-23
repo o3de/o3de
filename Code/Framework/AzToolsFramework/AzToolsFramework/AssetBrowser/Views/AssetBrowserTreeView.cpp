@@ -702,7 +702,10 @@ namespace AzToolsFramework
                 toPath.ReplaceFilename(newVal.toStdString().c_str());
                 toPath.ReplaceExtension(extension);
             }
-
+            if (fromPath == toPath)
+            {
+                return;
+            }
             using namespace AzFramework::AssetSystem;
             AssetChangeReportRequest moveRequest(
                 AZ::OSString(fromPath.c_str()), AZ::OSString(toPath.c_str()), AssetChangeReportRequest::ChangeType::Move);
