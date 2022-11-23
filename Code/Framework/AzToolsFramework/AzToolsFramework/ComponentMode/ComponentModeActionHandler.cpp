@@ -144,9 +144,7 @@ namespace AzToolsFramework
             if (auto componentModeTypeIter = m_componentModeToActionContextModeMap.find(componentType);
                 componentModeTypeIter != m_componentModeToActionContextModeMap.end())
             {
-                m_actionManagerInterface->SetActiveActionContextMode(
-                    EditorMainWindowActionContextIdentifier, componentModeTypeIter->second);
-                m_actionManagerInterface->TriggerActionUpdater(ComponentModeChangedUpdaterIdentifier);
+                ChangeToMode(componentModeTypeIter->second);
             }
         }
     }
@@ -166,9 +164,7 @@ namespace AzToolsFramework
             if (auto componentModeTypeIter = m_componentModeToActionContextModeMap.find(componentModeTypeId);
                 componentModeTypeIter != m_componentModeToActionContextModeMap.end())
             {
-                m_actionManagerInterface->SetActiveActionContextMode(
-                    EditorMainWindowActionContextIdentifier, componentModeTypeIter->second);
-                m_actionManagerInterface->TriggerActionUpdater(ComponentModeChangedUpdaterIdentifier);
+                ChangeToMode(componentModeTypeIter->second);
             }
         }
     }
@@ -181,8 +177,7 @@ namespace AzToolsFramework
         // for actions whose enabled state depends on which Component Mode is enabled.
         if (m_actionManagerInterface && mode == ViewportEditorMode::Component)
         {
-            m_actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, DefaultActionContextModeIdentifier);
-            m_actionManagerInterface->TriggerActionUpdater(ComponentModeChangedUpdaterIdentifier);
+            ChangeToMode(DefaultActionContextModeIdentifier);
         }
     }
 
@@ -192,6 +187,12 @@ namespace AzToolsFramework
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
         serializeContext->EnumerateDerived<ComponentModeFramework::EditorBaseComponentMode>(handler);
+    }
+
+    void ComponentModeActionHandler::ChangeToMode(const AZStd::string& modeIdentifier)
+    {
+        m_actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, modeIdentifier);
+        m_actionManagerInterface->TriggerActionUpdater(ComponentModeChangedUpdaterIdentifier);
     }
 
 } // namespace AzToolsFramework

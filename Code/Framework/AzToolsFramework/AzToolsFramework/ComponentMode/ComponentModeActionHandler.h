@@ -52,6 +52,8 @@ namespace AzToolsFramework
         // Enumerates all classes derived from the Component Mode Base class.
         void EnumerateComponentModes(const AZStd::function<bool(const AZ::SerializeContext::ClassData*, const AZ::Uuid&)>& handler);
 
+        void ChangeToMode(const AZStd::string& modeIdentifier);
+
         AZStd::unordered_map<AZ::Uuid, AZStd::string> m_componentModeToActionContextModeMap;
 
         ActionManagerInterface* m_actionManagerInterface = nullptr;
