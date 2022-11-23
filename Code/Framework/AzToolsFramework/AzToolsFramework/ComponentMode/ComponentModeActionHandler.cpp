@@ -128,16 +128,17 @@ namespace AzToolsFramework
             m_menuManagerInterface,
             "ComponentModeActionHandler - could not get MenuManagerInterface on ComponentModeActionHandler OnMenuBindingHook.");
 
-        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 1000);
-
-        // Component Mode Actions should be located between sort keys 1000 and 10000
-
+        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 3000);
+        // Component Mode Actions should be located between these two separators.
         m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 10000);
         m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.componentMode.end", 10001);
     }
 
     void ComponentModeActionHandler::ActiveComponentModeChanged(const AZ::Uuid& componentType)
     {
+        // This function triggers when the Editor changes from one Component Mode to another.
+        // This syncs up the Action Context Mode to the Component Mode, and triggers the updater
+        // for actions whose enabled state depends on which Component Mode is enabled.
         if (m_actionManagerInterface)
         {
             if (auto componentModeTypeIter = m_componentModeToActionContextModeMap.find(componentType);
@@ -153,6 +154,9 @@ namespace AzToolsFramework
     void ComponentModeActionHandler::OnEditorModeActivated(
         [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
     {
+        // This function triggers when the Editor changes from regular editing to a Component Mode.
+        // This syncs up the Action Context Mode to the Component Mode, and triggers the updater
+        // for actions whose enabled state depends on which Component Mode is enabled.
         if (m_actionManagerInterface && mode == ViewportEditorMode::Component)
         {
             AZ::Uuid componentModeTypeId;
@@ -172,6 +176,9 @@ namespace AzToolsFramework
     void ComponentModeActionHandler::OnEditorModeDeactivated(
         [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
     {
+        // This function triggers when the Editor changes from a Component Mode to regular editing.
+        // This sets the Action Context Mode back to the default value, and triggers the updater
+        // for actions whose enabled state depends on which Component Mode is enabled.
         if (m_actionManagerInterface && mode == ViewportEditorMode::Component)
         {
             m_actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, DefaultActionContextModeIdentifier);
