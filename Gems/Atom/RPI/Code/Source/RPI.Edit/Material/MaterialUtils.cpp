@@ -239,7 +239,7 @@ namespace AZ
                 return IsValidName(name.GetStringView());
             }
 
-            bool CheckIsValidName(AZStd::string_view name, AZStd::string_view nameTypeForDebug)
+            bool CheckIsValidName(AZStd::string_view name, [[maybe_unused]] AZStd::string_view nameTypeForDebug)
             {
                 if (IsValidName(name))
                 {
