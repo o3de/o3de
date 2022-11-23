@@ -30,9 +30,9 @@
             { 
                 "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/ParallaxPropertyGroup.json"
             },
-            { 
-                "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/OpacityPropertyGroup.json"
-            },
+ //           { 
+ //               "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/OpacityPropertyGroup.json"
+ //           },
             { 
                 "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/UvPropertyGroup.json"
             },
