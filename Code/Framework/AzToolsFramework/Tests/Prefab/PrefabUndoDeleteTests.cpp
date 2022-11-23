@@ -34,7 +34,7 @@ namespace UnitTest
         AZ::EntityId tireEntityId = CreateEditorEntity(tireEntityName, GetRootContainerEntityId());
         AZ::EntityId carContainerId = CreateEditorPrefab(carPrefabFilepath, { tireEntityId });
         
-        EntityAlias tireEntityAlias = FindEntityAliasInInstance(tireEntityName, carContainerId);
+        EntityAlias tireEntityAlias = FindEntityAliasInInstance(carContainerId, tireEntityName);
         ASSERT_FALSE(tireEntityAlias.empty());
 
         AZ::EntityId secondCarContainerId = InstantiateEditorPrefab(carPrefabFilepath, GetRootContainerEntityId());
@@ -98,7 +98,7 @@ namespace UnitTest
         AZ::EntityId tireEntityId = CreateEditorEntity(tireEntityName, GetRootContainerEntityId());
         AZ::EntityId carContainerId = CreateEditorPrefab(carPrefabFilepath, { tireEntityId });
 
-        EntityAlias tireEntityAlias = FindEntityAliasInInstance(tireEntityName, carContainerId);
+        EntityAlias tireEntityAlias = FindEntityAliasInInstance(carContainerId, tireEntityName);
         ASSERT_FALSE(tireEntityAlias.empty());
 
         AZ::EntityId secondCarContainerId = InstantiateEditorPrefab(carPrefabFilepath, GetRootContainerEntityId());
@@ -174,7 +174,7 @@ namespace UnitTest
         AZ::EntityId wheelContainerId = CreateEditorPrefab(wheelPrefabFilepath, { tireEntityId });
         AZ::EntityId carContainerId = CreateEditorPrefab(carPrefabFilepath, { wheelContainerId });
 
-        InstanceAlias wheelInstanceAlias = FindNestedInstanceAliasInInstance(wheelPrefabName, carContainerId);
+        InstanceAlias wheelInstanceAlias = FindNestedInstanceAliasInInstance(carContainerId, wheelPrefabName);
         ASSERT_FALSE(wheelInstanceAlias.empty());
 
         AZ::EntityId secondCarContainerId = InstantiateEditorPrefab(carPrefabFilepath, GetRootContainerEntityId());

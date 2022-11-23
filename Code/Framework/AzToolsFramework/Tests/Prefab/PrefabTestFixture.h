@@ -98,17 +98,17 @@ namespace UnitTest
         
         //! Helper function for finding entity alias by entity name in owning instance.
         //! If there are multiple entity aliases of the same entity name, then return one of them.
-        //! @param entityName Entity name for the entity alias to find.
         //! @param containerEntityId The given container entity id of the owning instance.
+        //! @param entityName Entity name for the entity alias to find.
         //! @return Entity alias for the given entity name. Returns "" if not found.
-        EntityAlias FindEntityAliasInInstance(const AZStd::string& entityName, AZ::EntityId containerEntityId);
+        EntityAlias FindEntityAliasInInstance(AZ::EntityId containerEntityId, const AZStd::string& entityName);
 
         //! Helper function for finding nested instance alias by container entity name in owning instance.
         //! If there are multiple instance aliases of the same container entity name, then return one of them.
-        //! @param nestedContainerEntityName Container entity name for the instance alias to find.
         //! @param containerEntityId The given container entity id of the owning instance.
+        //! @param nestedContainerEntityName Container entity name for the instance alias to find.
         //! @return Nested instance alias for the given container entity name. Returns "" if not found.
-        InstanceAlias FindNestedInstanceAliasInInstance(const AZStd::string& nestedContainerEntityName, AZ::EntityId containerEntityId);
+        InstanceAlias FindNestedInstanceAliasInInstance(AZ::EntityId containerEntityId, const AZStd::string& nestedContainerEntityName);
 
         //! Helper functions for validation.
         //! @{

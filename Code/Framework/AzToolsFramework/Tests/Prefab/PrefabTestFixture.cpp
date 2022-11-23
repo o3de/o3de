@@ -244,7 +244,7 @@ namespace UnitTest
     }
 
     EntityAlias PrefabTestFixture::FindEntityAliasInInstance(
-        const AZStd::string& entityName, AZ::EntityId containerEntityId)
+        AZ::EntityId containerEntityId, const AZStd::string& entityName)
     {
         auto owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(containerEntityId);
         EXPECT_TRUE(owningInstance.has_value());
@@ -266,7 +266,7 @@ namespace UnitTest
     }
 
     InstanceAlias PrefabTestFixture::FindNestedInstanceAliasInInstance(
-        const AZStd::string& nestedContainerEntityName, AZ::EntityId containerEntityId)
+        AZ::EntityId containerEntityId, const AZStd::string& nestedContainerEntityName)
     {
         auto owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(containerEntityId);
         EXPECT_TRUE(owningInstance.has_value());
