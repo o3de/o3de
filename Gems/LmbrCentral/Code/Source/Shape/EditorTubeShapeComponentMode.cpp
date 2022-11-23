@@ -74,7 +74,7 @@ namespace LmbrCentral
         auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
         AZ_Assert(hotKeyManagerInterface, "EditorTubeShapeComponentMode - could not get HotKeyManagerInterface on RegisterActions.");
 
-        // Duplicate Vertices
+        // Reset Radii
         {
             constexpr AZStd::string_view actionIdentifier = "o3de.action.tubeShape.resetRadii";
             AzToolsFramework::ActionProperties actionProperties;

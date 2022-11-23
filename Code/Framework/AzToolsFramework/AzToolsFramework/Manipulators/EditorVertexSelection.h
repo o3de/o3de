@@ -354,9 +354,9 @@ namespace AzToolsFramework
 
     private:
         // EditorVertexSelectionRequestBus overrides ...
-        virtual void DuplicateSelectedVertices() override;
-        virtual void DeleteSelectedVertices() override;
-        virtual void ClearVertexSelection() override;
+        void DuplicateSelectedVertices() override;
+        void DeleteSelectedVertices() override;
+        void ClearVertexSelection() override;
 
         void PrepareActions() override;
 
