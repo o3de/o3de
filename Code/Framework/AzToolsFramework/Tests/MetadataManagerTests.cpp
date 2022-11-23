@@ -310,7 +310,7 @@ namespace UnitTest
         EXPECT_TRUE(m_metadata->GetValueVersion("mockfile", "/Test", version));
         EXPECT_EQ(version, 1);
 
-        rapidjson_ly::Value inValue;
+        rapidjson_ly::Document inValue;
         EXPECT_TRUE(m_metadata->GetJsonValue("mockfile", "/Test", inValue));
 
         auto intItr = inValue.FindMember("int");

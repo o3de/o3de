@@ -28,7 +28,7 @@ namespace AzToolsFramework
 
     bool MetadataManager::GetValue(AZ::IO::PathView file, AZStd::string_view key, void* outValue, AZ::Uuid typeId)
     {
-        rapidjson_ly::Value value;
+        rapidjson_ly::Document value;
 
         if (!GetJsonValue(file, key, value))
         {
@@ -41,7 +41,7 @@ namespace AzToolsFramework
         return resultCode.GetProcessing() != AZ::JsonSerializationResult::Processing::Halted;
     }
 
-    bool MetadataManager::GetJsonValue(AZ::IO::PathView file, AZStd::string_view key, rapidjson_ly::Value& outValue)
+    bool MetadataManager::GetJsonValue(AZ::IO::PathView file, AZStd::string_view key, rapidjson_ly::Document& outValue)
     {
         auto path = ToMetadataPath(file);
 
@@ -91,13 +91,13 @@ namespace AzToolsFramework
             return false;
         }
 
-        outValue = *value;
+        outValue.CopyFrom(*value, document.GetAllocator());
         return true;
     }
 
     bool MetadataManager::GetValueVersion(AZ::IO::PathView file, AZStd::string_view key, int& version)
     {
-        rapidjson_ly::Value value;
+        rapidjson_ly::Document value;
         if (!GetJsonValue(file, key, value))
         {
             return false;
