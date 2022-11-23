@@ -57,8 +57,8 @@ def ScriptCanvas_ChangingAssets_ComponentStable():
     # 2) Create new entity
     position = math.Vector3(512.0, 512.0, 32.0)
     editor_entity = EditorEntity.create_editor_entity_at(position, TEST_ENTITY_NAME)
-    script_canvas_component = ScriptCanvasComponent()
-    script_canvas_component.add_component_to_existing_entity(editor_entity, ASSET_1)
+    script_canvas_component = ScriptCanvasComponent(editor_entity)
+    script_canvas_component.set_component_graph_file_from_path(ASSET_1)
 
     with Tracer() as section_tracer:
 

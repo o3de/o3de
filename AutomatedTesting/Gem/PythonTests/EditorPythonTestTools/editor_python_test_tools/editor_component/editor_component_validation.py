@@ -4,16 +4,14 @@
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT+
 import typing
-
 import azlmbr.asset as AzAsset
 import azlmbr.math as Math
-from typing import Any
 from editor_python_test_tools.utils import Report
 from editor_python_test_tools.editor_entity_utils import EditorComponent
 from consts.general import ComponentPropertyVisibilityStates as PropertyVisibility
 from editor_python_test_tools.asset_utils import Asset
-from editor_python_test_tools.editor_component.editor_script_canvas import VariableState,\
-    SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH
+from editor_python_test_tools.editor_component.editor_script_canvas import VariableState, Path
+from typing import Any
 
 def compare_vec3(expected: Math.Vector3, actual: Math.Vector3) -> bool:
     """
@@ -218,8 +216,8 @@ def validate_asset_property(property_name: str, get_asset_value: typing.Callable
         f"{expected_asset.id} was expected but Asset Id: {set_value} was retrieved from \"{expected_asset.get_path()}\""
 
 
-def validate_script_canvas_graph_file(get_script_canvas_component_graph_file: typing.Callable,
-                                      set_script_canvas_component_graph_file: typing.Callable, sc_file_path: str) -> None:
+def validate_script_canvas_graph_file(get_script_canvas_graph_file: typing.Callable,
+                                      set_script_canvas_graph_file: typing.Callable, sc_file_path: str) -> None:
     """
     Function to validate the setting of a script canvas graph file to the file source field in the script canvas component
 
@@ -230,11 +228,11 @@ def validate_script_canvas_graph_file(get_script_canvas_component_graph_file: ty
     """
     Report.info(f"Validating Script Canvas component's file source field can be set.")
 
-    old_value = get_script_canvas_component_graph_file(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
+    old_value = get_script_canvas_graph_file()
 
-    set_script_canvas_component_graph_file(sc_file_path)
+    set_script_canvas_graph_file(sc_file_path)
 
-    set_value = get_script_canvas_component_graph_file(SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
+    set_value = get_script_canvas_graph_file()
     assert set_value != old_value and set_value is not None, f"Graph file could not be set!"
 
 
