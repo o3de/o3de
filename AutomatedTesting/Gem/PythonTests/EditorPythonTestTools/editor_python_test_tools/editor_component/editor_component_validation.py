@@ -237,7 +237,7 @@ def validate_script_canvas_graph_file(get_script_canvas_graph_file: typing.Calla
 
 
 def validate_script_canvas_variable_changed(get_variable_value: typing.Callable, set_variable_value: typing.Callable,
-                                            variable_name: str, variable_state: VariableState, variable_value: Any) -> None:
+                                            variable_name: str, variable_state: VariableState, expected_variable_value: Any) -> None:
     """
     Function for validating that a script canvas component variable can be changed.
 
@@ -246,19 +246,14 @@ def validate_script_canvas_variable_changed(get_variable_value: typing.Callable,
     variable_name: the name of the variable to change
     variable_state: whether the variable is initialized or not within graph file(initialized by the script canvas editor).
     variable_value: the value to set the variable to. has no rigid type since variables can be primitives or user created types.
-    we also only support basic types and need to update associated QtPy classes to allow exposing the basic types to
-    the component class. See github GH-13344. We currently only support strings and boolean variables.
+    o3de/o3de#13344. We currently only support strings and boolean variables.
 
 
     """
     Report.info(f"Validating Script Canvas component's variable was set.")
 
-    old_variable_value = get_variable_value(variable_name, variable_state)
-
-    assert old_variable_value is not None, "Path to variable was invalid! Check use/unused state or variable name"
-
-    set_variable_value(variable_name, variable_state, variable_value)
+    set_variable_value(variable_name, variable_state, expected_variable_value)
 
     new_variable_value = get_variable_value(variable_name, variable_state)
 
-    assert old_variable_value != new_variable_value, f"Component variable {variable_name} was not set properly"
+    assert expected_variable_value == new_variable_value, f"Component variable {variable_name} was not set properly"
