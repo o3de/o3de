@@ -5,14 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
-// TODO(MaterialPipeline): In the end, after all refactoring and rearranging of our shader code is done, some of these flags might become unnecessary and should be re-evaluated.
-#define OUTPUT_DEPTH 0
-#define FORCE_OPAQUE 1
-#define OUTPUT_SUBSURFACE 1
-#define ENABLE_TRANSMISSION 1
-#define ENABLE_SHADER_DEBUGGING 1
-#define ENABLE_CLEAR_COAT 1
 
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
@@ -20,10 +12,9 @@
 // TODO(MaterialPipeline): I don't like how this file #includes something from BasePBR. I'd rather it include a file
 // called StandardPBR_LightingData.azsli which just #includes the BasePBR file. Otherwise this looks suspcious like
 // a mistake of some kind.
-#include "../../../Shaders/Materials/EnhancedPBR/EnhancedPBR_SurfaceData.azsli"
 #include "../../../Shaders/Materials/BasePBR/BasePBR_LightingData.azsli"
-#include "../../../Shaders/Materials/EnhancedPBR/EnhancedPBR_LightingBrdf.azsli"
+#include "../../../Shaders/Materials/StandardPBR/StandardPBR_LightingBrdf.azsli"
 #include "../../../Shaders/Materials/StandardPBR/StandardPBR_LightingEval.azsli"
 
-#include <Atom/Features/Pipeline/Forward/ForwardPassVertexAndPixel.azsli>
+#include <Atom/Features/Pipeline/Forward/LowEndForwardPassVertexAndPixel.azsli>
 

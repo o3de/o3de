@@ -2,13 +2,13 @@
     "shaderTemplates": [
         {
             "shader": "./ForwardPass_BaseLighting.shader.template",
-            "preMaterialAzsli": "./ForwardPass_CommonPreMaterial.azsli",
-            "postMaterialAzsli": "./ForwardPass_BaseLighting.azsli"
+            "preMaterialAzsli": "./ForwardPass_BaseLighting_A.azsli",
+            "postMaterialAzsli": "./ForwardPass_BaseLighting_B.azsli"
         },
         {
             "shader": "./ForwardPass_StandardLighting.shader.template",
-            "preMaterialAzsli": "./ForwardPass_CommonPreMaterial.azsli",
-            "postMaterialAzsli": "./ForwardPass_StandardLighting.azsli"
+            "preMaterialAzsli": "./ForwardPass_StandardLighting_A.azsli",
+            "postMaterialAzsli": "./ForwardPass_StandardLighting_B.azsli"
         }
     ],
     "pipelineScript": "./MultiViewPipelineScript.lua"

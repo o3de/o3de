@@ -49,7 +49,7 @@ void CalcPositions(float3 inPosition, out float3 worldPos, out float4 clipPos)
         float3 vertexNormal;
 
         //TODO(MaterialPipeline): Remove these, requires changes to the main VertexAndPixel azsli files
-        float4 tangents[1];
+        float3 tangents[1];
         float3 bitangents[1];
     };
 

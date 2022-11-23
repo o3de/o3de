@@ -65,7 +65,7 @@ void CalcPositions(float3 inPosition, out float3 worldPos, out float4 clipPos)
         float3 vertexNormal;
 
         //TODO(MaterialPipeline): use these or remove them
-        float4 tangents[1];
+        float3 tangents[1];
         float3 bitangents[1];
     };
 
