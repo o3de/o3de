@@ -164,8 +164,6 @@ set(FILES
     Source/MotionWindow/MotionPropertiesWindow.h
     Source/NodeGroups/NodeGroupManagementWidget.cpp
     Source/NodeGroups/NodeGroupManagementWidget.h
-    Source/NodeGroups/NodeGroupsPlugin.cpp
-    Source/NodeGroups/NodeGroupsPlugin.h
     Source/NodeGroups/NodeGroupWidget.cpp
     Source/NodeGroups/NodeGroupWidget.h
     Source/NodeWindow/ActorInfo.cpp
