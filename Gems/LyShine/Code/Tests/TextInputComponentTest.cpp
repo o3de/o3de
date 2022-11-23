@@ -96,14 +96,14 @@ namespace UnitTest
     };
 
     class UiTextInputComponentTest
-        : public ::testing::Test
+        : public UnitTest::AllocatorsTestFixture
     {
     protected:
 
         void SetUp() override
         {
             // Start application
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create(AZ::SystemAllocator::Descriptor());
+            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
 
             AZ::ComponentApplication::Descriptor appDescriptor;
             appDescriptor.m_useExistingAllocator = true;

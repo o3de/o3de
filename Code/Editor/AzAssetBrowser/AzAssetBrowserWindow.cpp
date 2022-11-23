@@ -111,7 +111,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     if (ed_useNewAssetBrowserTableView)
     {
         m_ui->m_toggleDisplayViewBtn->setVisible(true);
-        m_ui->m_toggleDisplayViewBtn->setEnabled(false);
+        m_ui->m_toggleDisplayViewBtn->setEnabled(true);
         m_ui->m_toggleDisplayViewBtn->setAutoRaise(true);
         m_ui->m_toggleDisplayViewBtn->setIcon(QIcon(AzAssetBrowser::MenuIcon));
 
@@ -314,7 +314,6 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
     namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
 
     const bool hasFilter = !m_ui->m_searchWidget->GetFilterString().isEmpty();
-    m_ui->m_toggleDisplayViewBtn->setEnabled(hasFilter);
     if (m_assetBrowserDisplayState == AzAssetBrowser::AssetBrowserDisplayState::ListViewMode)
     {
         m_ui->m_assetBrowserTableViewWidget->setVisible(hasFilter);

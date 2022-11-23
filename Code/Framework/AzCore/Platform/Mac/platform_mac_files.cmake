@@ -45,10 +45,7 @@ set(FILES
     AzCore/IPC/SharedMemory_Mac.h
     AzCore/IPC/SharedMemory_Mac.cpp
     ../Common/Apple/AzCore/Memory/OSAllocator_Apple.h
-    ../Common/Unimplemented/AzCore/Memory/OverrunDetectionAllocator_Unimplemented.h
-    AzCore/Memory/HeapSchema_Mac.cpp
     AzCore/Memory/OSAllocator_Platform.h
-    AzCore/Memory/OverrunDetectionAllocator_Platform.h
     AzCore/Module/Internal/ModuleManagerSearchPathTool_Mac.cpp
     AzCore/Math/Internal/MathTypes_Mac.h
     AzCore/Math/Random_Platform.h

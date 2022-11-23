@@ -43,6 +43,41 @@ namespace AssetProcessor
         Normalize();
     }
 
+    SourceAssetReference::SourceAssetReference(AZ::s64 scanFolderId, AZ::IO::PathView pathRelativeToScanFolder)
+    {
+            IPathConversion* pathConversion = AZ::Interface<IPathConversion>::Get();
+
+            AZ_Assert(pathConversion, "IPathConversion interface is not available");
+
+            auto* scanFolder = pathConversion->GetScanFolderById(scanFolderId);
+
+            if(!scanFolder)
+            {
+                return;
+            }
+
+            AZ::IO::Path scanFolderPath = scanFolder->ScanPath().toUtf8().constData();
+
+            if(scanFolderPath.empty() || pathRelativeToScanFolder.empty())
+            {
+                return;
+            }
+
+            auto* scanFolderInfo = pathConversion->GetScanFolderForFile(scanFolderPath.FixedMaxPathStringAsPosix().c_str());
+
+            if(!scanFolderInfo)
+            {
+                return;
+            }
+
+            m_scanFolderPath = scanFolderPath;
+            m_relativePath = pathRelativeToScanFolder;
+            m_absolutePath = m_scanFolderPath / m_relativePath;
+            m_scanFolderId = scanFolderInfo->ScanFolderID();
+
+            Normalize();
+        }
+
     SourceAssetReference::SourceAssetReference(AZ::IO::PathView scanFolderPath, AZ::IO::PathView pathRelativeToScanFolder)
     {
         IPathConversion* pathConversion = AZ::Interface<IPathConversion>::Get();
@@ -65,6 +100,22 @@ namespace AssetProcessor
         m_relativePath = pathRelativeToScanFolder;
         m_absolutePath = m_scanFolderPath / m_relativePath;
         m_scanFolderId = scanFolderInfo->ScanFolderID();
+
+        Normalize();
+    }
+
+    SourceAssetReference::SourceAssetReference(
+        AZ::s64 scanFolderId, AZ::IO::PathView scanFolderPath, AZ::IO::PathView pathRelativeToScanFolder)
+    {
+        if (scanFolderPath.empty() || pathRelativeToScanFolder.empty())
+        {
+            return;
+        }
+
+        m_scanFolderPath = scanFolderPath;
+        m_relativePath = pathRelativeToScanFolder;
+        m_absolutePath = m_scanFolderPath / m_relativePath;
+        m_scanFolderId = scanFolderId;
 
         Normalize();
     }

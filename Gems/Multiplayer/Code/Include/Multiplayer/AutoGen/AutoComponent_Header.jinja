@@ -533,6 +533,7 @@ namespace {{ Component.attrib['Namespace'] }}
         bool HasController() const override;
         Multiplayer::MultiplayerController* GetController() override;
         const Multiplayer::MultiplayerController* GetController() const override;
+        static AZ::HashValue64 GetVersionHash();
 
     protected:
         void ConstructController() override;
@@ -608,6 +609,7 @@ namespace {{ Component.attrib['Namespace'] }}
 {% endcall %}
 
         static Multiplayer::NetComponentId s_netComponentId;
+        static AZ::HashValue64 s_versionHash;
         friend void RegisterMultiplayerComponents();
     };
 }

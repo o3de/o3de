@@ -100,11 +100,16 @@ namespace AssetProcessor
 
             if (m_stateData->GetSourceByJobID(jobEntry.m_jobID, sourceEntry))
             {
-                JobDesc jobDesc(SourceAssetReference(sourceEntry.m_scanFolderPK, sourceEntry.m_sourceName.c_str()), jobEntry.m_jobKey, jobEntry.m_platform);
-                JobIndentifier jobIdentifier(jobDesc, jobEntry.m_builderGuid);
+                SourceAssetReference sourceAsset(sourceEntry.m_scanFolderPK, sourceEntry.m_sourceName.c_str());
 
-                m_jobDescToBuilderUuidMap[jobDesc].insert(jobEntry.m_builderGuid);
-                m_jobFingerprintMap[jobIdentifier] = jobEntry.m_fingerprint;
+                if (sourceAsset)
+                {
+                    JobDesc jobDesc(sourceAsset, jobEntry.m_jobKey, jobEntry.m_platform);
+                    JobIndentifier jobIdentifier(jobDesc, jobEntry.m_builderGuid);
+
+                    m_jobDescToBuilderUuidMap[jobDesc].insert(jobEntry.m_builderGuid);
+                    m_jobFingerprintMap[jobIdentifier] = jobEntry.m_fingerprint;
+                }
             }
         }
     }
@@ -142,9 +147,12 @@ namespace AssetProcessor
 
             auto sourcesFunction = [this](AzToolsFramework::AssetDatabase::SourceAndScanFolderDatabaseEntry& entry)
             {
-                SourceAssetReference sourceAsset(entry.m_scanFolder.c_str(), entry.m_sourceName.c_str());
+                SourceAssetReference sourceAsset(entry.m_scanFolderID, entry.m_scanFolder.c_str(), entry.m_sourceName.c_str());
 
-                m_sourceFilesInDatabase[sourceAsset.AbsolutePath().c_str()] = { sourceAsset, entry.m_analysisFingerprint.c_str() };
+                if (sourceAsset)
+                {
+                    m_sourceFilesInDatabase[sourceAsset.AbsolutePath().c_str()] = { sourceAsset, entry.m_analysisFingerprint.c_str() };
+                }
 
                 return true;
             };
@@ -498,10 +506,13 @@ namespace AssetProcessor
         // note that m_SourceFilesInDatabase is a map from (full absolute path) --> (database name for file)
         for (auto iter = m_sourceFilesInDatabase.begin(); iter != m_sourceFilesInDatabase.end(); iter++)
         {
-            // CheckDeletedSourceFile actually expects the database name as the second value
-            // iter.key is the full path normalized.  iter.value is the database path.
-            // we need the relative path too:
-            CheckDeletedSourceFile(iter.value().m_sourceAssetReference, AZStd::chrono::steady_clock::now());
+            if (iter.value().m_sourceAssetReference)
+            {
+                // CheckDeletedSourceFile actually expects the database name as the second value
+                // iter.key is the full path normalized.  iter.value is the database path.
+                // we need the relative path too:
+                CheckDeletedSourceFile(iter.value().m_sourceAssetReference, AZStd::chrono::steady_clock::now());
+            }
         }
 
         // we want to remove any left over scan folders from the database only after
@@ -667,13 +678,7 @@ namespace AssetProcessor
         // therefore won't get reprocessed. Set it to FAILED_FINGERPRINT.
         //create/update the source record for this job
         AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
-        AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
-        if (m_stateData->GetSourcesBySourceName(jobEntry.m_sourceAssetReference.RelativePath().c_str(), sources))
-        {
-            AZ_Assert(sources.size() == 1, "Should have only found one source!!!");
-            source = AZStd::move(sources[0]);
-        }
-        else
+        if (!m_stateData->GetSourceBySourceNameScanFolderId(jobEntry.m_sourceAssetReference.RelativePath().c_str(), jobEntry.m_sourceAssetReference.ScanFolderId(), source))
         {
             //if we didn't find a source, we make a new source
             const ScanFolderInfo* scanFolder = m_platformConfig->GetScanFolderByPath(jobEntry.m_sourceAssetReference.ScanFolderPath().c_str());
@@ -1173,7 +1178,6 @@ namespace AssetProcessor
 
             //create/update the source record for this job
             AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
-            AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
             auto scanFolder = m_platformConfig->GetScanFolderByPath(processedAsset.m_entry.m_sourceAssetReference.ScanFolderPath().c_str());
             if (!scanFolder)
             {
@@ -1182,12 +1186,7 @@ namespace AssetProcessor
                 continue;
             }
 
-            if (m_stateData->GetSourcesBySourceNameScanFolderId(processedAsset.m_entry.m_sourceAssetReference.RelativePath().c_str(), scanFolder->ScanFolderID(), sources))
-            {
-                AZ_Assert(sources.size() == 1, "Should have only found one source!!!");
-                source = AZStd::move(sources[0]);
-            }
-            else
+            if (!m_stateData->GetSourceBySourceNameScanFolderId(processedAsset.m_entry.m_sourceAssetReference.RelativePath().c_str(), scanFolder->ScanFolderID(), source))
             {
                 //if we didn't find a source, we make a new source
                 //add the new source
@@ -1905,85 +1904,80 @@ namespace AssetProcessor
         }
 
         bool deleteFailure = false;
-        AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
+        AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
 
-        auto scanFolder = m_platformConfig->GetScanFolderByPath(sourceAsset.ScanFolderPath().c_str());
-
-        if (m_stateData->GetSourcesBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), scanFolder->ScanFolderID(), sources))
+        if (m_stateData->GetSourceBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), source))
         {
-            for (const auto& source : sources)
+            if (IsInIntermediateAssetsFolder(sourceAsset))
             {
-                if (IsInIntermediateAssetsFolder(sourceAsset.AbsolutePath()))
+                auto topLevelSource = AssetUtilities::GetTopLevelSourceForIntermediateAsset(SourceAssetReference(source.m_scanFolderPK, source.m_sourceName.c_str()), m_stateData);
+
+                if (topLevelSource)
                 {
-                    auto topLevelSource = AssetUtilities::GetTopLevelSourceForIntermediateAsset(SourceAssetReference(source.m_scanFolderPK, source.m_sourceName.c_str()), m_stateData);
+                    ScanFolderDatabaseEntry scanfolderForTopLevelSource;
+                    m_stateData->GetScanFolderByScanFolderID(topLevelSource->m_scanFolderPK, scanfolderForTopLevelSource);
 
-                    if (topLevelSource)
+                    AZ::IO::Path fullPath = scanfolderForTopLevelSource.m_scanFolder;
+                    fullPath /= topLevelSource->m_sourceName;
+
+                    if (AZ::IO::SystemFile::Exists(fullPath.c_str()))
                     {
-                        ScanFolderDatabaseEntry scanfolderForTopLevelSource;
-                        m_stateData->GetScanFolderByScanFolderID(topLevelSource->m_scanFolderPK, scanfolderForTopLevelSource);
-
-                        AZ::IO::Path fullPath = scanfolderForTopLevelSource.m_scanFolder;
-                        fullPath /= topLevelSource->m_sourceName;
-
-                        if (AZ::IO::SystemFile::Exists(fullPath.c_str()))
-                        {
-                            // The top level file for this intermediate exists, treat this as a product deletion in that case which should
-                            // regenerate the product
-                            CheckDeletedProductFile(sourceAsset.AbsolutePath().c_str());
-                            return;
-                        }
-                        else
-                        {
-                            // The top level file is gone, so we need to continue on to delete the child products
-                        }
+                        // The top level file for this intermediate exists, treat this as a product deletion in that case which should
+                        // regenerate the product
+                        CheckDeletedProductFile(sourceAsset.AbsolutePath().c_str());
+                        return;
+                    }
+                    else
+                    {
+                        // The top level file is gone, so we need to continue on to delete the child products
                     }
                 }
+            }
 
-                AzToolsFramework::AssetSystem::JobInfo jobInfo;
-                jobInfo.m_watchFolder = sourceAsset.ScanFolderPath().Native();
-                jobInfo.m_sourceFile = sourceAsset.RelativePath().Native();
+            AzToolsFramework::AssetSystem::JobInfo jobInfo;
+            jobInfo.m_watchFolder = sourceAsset.ScanFolderPath().Native();
+            jobInfo.m_sourceFile = sourceAsset.RelativePath().Native();
 
-                AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer jobs;
-                if (m_stateData->GetJobsBySourceID(source.m_sourceID, jobs))
+            AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer jobs;
+            if (m_stateData->GetJobsBySourceID(source.m_sourceID, jobs))
+            {
+                for (auto& job : jobs)
                 {
-                    for (auto& job : jobs)
+                    // ToDo:  Add BuilderUuid here once we do the JobKey feature.
+                    AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer products;
+                    if (m_stateData->GetProductsByJobID(job.m_jobID, products))
                     {
-                        // ToDo:  Add BuilderUuid here once we do the JobKey feature.
-                        AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer products;
-                        if (m_stateData->GetProductsByJobID(job.m_jobID, products))
+                        if (!DeleteProducts(products))
                         {
-                            if (!DeleteProducts(products))
-                            {
-                                // DeleteProducts will make an attempt to retry deleting each product
-                                // We can't just re-queue the whole file with CheckSource because we're deleting bits from the database as we go
-                                deleteFailure = true;
-                                CheckSource(FileEntry(
-                                    sourceAsset.AbsolutePath().c_str(), true, false,
-                                    initialProcessTime > AZStd::chrono::steady_clock::time_point{} ? initialProcessTime
-                                                                                                   : AZStd::chrono::steady_clock::now()));
-                                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Delete failed on %s. Will retry!\n", sourceAsset.AbsolutePath().c_str());
-                                continue;
-                            }
+                            // DeleteProducts will make an attempt to retry deleting each product
+                            // We can't just re-queue the whole file with CheckSource because we're deleting bits from the database as we go
+                            deleteFailure = true;
+                            CheckSource(FileEntry(
+                                sourceAsset.AbsolutePath().c_str(), true, false,
+                                initialProcessTime > AZStd::chrono::steady_clock::time_point{} ? initialProcessTime
+                                                                                                : AZStd::chrono::steady_clock::now()));
+                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Delete failed on %s. Will retry!\n", sourceAsset.AbsolutePath().c_str());
+                            continue;
                         }
-                        else
-                        {
-                            // even with no products, still need to clear the fingerprint:
-                            job.m_fingerprint = FAILED_FINGERPRINT;
-                            m_stateData->SetJob(job);
-                        }
-
-                        // notify the GUI to remove any failed jobs that are currently onscreen:
-                        jobInfo.m_platform = job.m_platform;
-                        jobInfo.m_jobKey = job.m_jobKey;
-                        Q_EMIT JobRemoved(jobInfo);
                     }
-                }
+                    else
+                    {
+                        // even with no products, still need to clear the fingerprint:
+                        job.m_fingerprint = FAILED_FINGERPRINT;
+                        m_stateData->SetJob(job);
+                    }
 
-                if (!deleteFailure)
-                {
-                    // delete the source from the database too since otherwise it believes we have no products.
-                    m_stateData->RemoveSource(source.m_sourceID);
+                    // notify the GUI to remove any failed jobs that are currently onscreen:
+                    jobInfo.m_platform = job.m_platform;
+                    jobInfo.m_jobKey = job.m_jobKey;
+                    Q_EMIT JobRemoved(jobInfo);
                 }
+            }
+
+            if (!deleteFailure)
+            {
+                // delete the source from the database too since otherwise it believes we have no products.
+                m_stateData->RemoveSource(source.m_sourceID);
             }
         }
 
@@ -2006,10 +2000,10 @@ namespace AssetProcessor
         // now that the right hand column (in terms of [thing] -> [depends on thing]) has been updated, eliminate anywhere its on the left
         // hand side:
 
-        if (!sources.empty())
+        if (!source.m_sourceGuid.IsNull())
         {
             SourceFileDependencyEntryContainer results;
-            m_stateData->GetDependsOnSourceBySource(sources[0].m_sourceGuid, SourceFileDependencyEntry::DEP_Any, results);
+            m_stateData->GetDependsOnSourceBySource(source.m_sourceGuid, SourceFileDependencyEntry::DEP_Any, results);
             m_stateData->RemoveSourceFileDependencies(results);
         }
 
@@ -2411,25 +2405,23 @@ namespace AssetProcessor
         m_knownFolders.remove(normalizedPath);
     }
 
-    void AssetProcessorManager::CheckDeletedSourceFolder(QString normalizedPath, QString relativePath, const ScanFolderInfo* scanFolderInfo)
+    void AssetProcessorManager::CheckDeletedSourceFolder(const SourceAssetReference& sourceAsset)
     {
         AZ_TracePrintf(AssetProcessor::DebugChannel, "CheckDeletedSourceFolder...\n");
         // we deleted a folder that is somewhere that is a watched input folder.
 
-        QDir checkDir(normalizedPath);
-        if (checkDir.exists())
+        if (AZ::IO::SystemFile::Exists(sourceAsset.AbsolutePath().c_str()))
         {
             // this is possible because it could have been moved back by the time we get here, in which case, we take no action.
             return;
         }
 
         AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
-        QString sourceName = relativePath;
-        m_stateData->GetSourcesLikeSourceNameScanFolderId(sourceName, scanFolderInfo->ScanFolderID(), AzToolsFramework::AssetDatabase::AssetDatabaseConnection::StartsWith, sources);
+        m_stateData->GetSourcesLikeSourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), AzToolsFramework::AssetDatabase::AssetDatabaseConnection::StartsWith, sources);
 
         AZ_TracePrintf(AssetProcessor::DebugChannel, "CheckDeletedSourceFolder: %i matching files.\n", sources.size());
 
-        QDir scanFolder(scanFolderInfo->ScanPath());
+        QDir scanFolder(sourceAsset.ScanFolderPath().c_str());
         for (const auto& source : sources)
         {
             // reconstruct full path:
@@ -2443,9 +2435,9 @@ namespace AssetProcessor
             }
         }
 
-        m_knownFolders.remove(normalizedPath);
+        m_knownFolders.remove(sourceAsset.AbsolutePath().c_str());
 
-        SourceFolderDeleted(normalizedPath);
+        SourceFolderDeleted(sourceAsset.AbsolutePath().c_str());
     }
 
     namespace
@@ -2749,8 +2741,6 @@ namespace AssetProcessor
                     m_knownFolders.insert(sourceAssetReference.ScanFolderPath().c_str());
                 }
 
-
-
                 if (normalizedPath.length() >= AP_MAX_PATH_LEN)
                 {
                     // if we are here it means that we have found a source file whose filepath is greater than the maximum path length allowed
@@ -2791,7 +2781,7 @@ namespace AssetProcessor
                     // if its a delete for a known folder, we handle it differently.
                     if (m_knownFolders.contains(normalizedPath))
                     {
-                        CheckDeletedSourceFolder(normalizedPath, sourceAssetReference.RelativePath().c_str(), scanFolderInfo);
+                        CheckDeletedSourceFolder(sourceAssetReference);
                         continue;
                     }
                 }
@@ -3602,6 +3592,11 @@ namespace AssetProcessor
         return AssetUtilities::IsInCacheFolder(path, m_normalizedCacheRootPath.toUtf8().constData());
     }
 
+    bool AssetProcessorManager::IsInIntermediateAssetsFolder(const SourceAssetReference& sourceAsset) const
+    {
+        return sourceAsset.ScanFolderId() == m_platformConfig->GetIntermediateAssetsScanFolderId();
+    }
+
     bool AssetProcessorManager::IsInIntermediateAssetsFolder(AZ::IO::PathView path) const
     {
         return AssetUtilities::IsInIntermediateAssetsFolder(path, m_normalizedCacheRootPath.toUtf8().constData());
@@ -4146,19 +4141,21 @@ namespace AssetProcessor
             }
             else if (QFileInfo(encodedFileData).isAbsolute())
             {
-                // attempt to split:
                 QString scanFolderName;
-                if (!m_platformConfig->ConvertToRelativePath(encodedFileData, resultDatabaseSourceName, scanFolderName))
+                // Verify the path is in a scanfolder
+                if (!m_platformConfig->GetScanFolderForFile(encodedFileData))
                 {
                     AZ_Warning(AssetProcessor::ConsoleChannel, false, "'%s' does not appear to be in any input folder.  Use relative paths instead.", sourceDependency.m_sourceFileDependencyPath.c_str());
                 }
                 else
                 {
+                    // Return the absolute path
                     resultDatabaseSourceName = encodedFileData;
                 }
             }
             else
             {
+                // Return the relative path
                 resultDatabaseSourceName = encodedFileData;
             }
         }
@@ -5184,11 +5181,18 @@ namespace AssetProcessor
             }
             else
             {
-                absolutePath = m_platformConfig->FindFirstMatchingFile(dep.GetPath().c_str());
-
-                if (absolutePath.isEmpty())
+                if (AZ::IO::PathView(dep.GetPath()).IsAbsolute())
                 {
-                    continue;
+                    absolutePath = dep.GetPath().c_str();
+                }
+                else
+                {
+                    absolutePath = m_platformConfig->FindFirstMatchingFile(dep.GetPath().c_str());
+
+                    if (absolutePath.isEmpty())
+                    {
+                        continue;
+                    }
                 }
             }
 

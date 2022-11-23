@@ -97,7 +97,7 @@ namespace ScriptEventsTests
                 s_application = nullptr;
             }
 
-            s_allocatorSetup.TeardownAllocator();
+            s_allocatorSetup.CheckAllocatorsForLeaks();
         }
 
         void SetUp() override

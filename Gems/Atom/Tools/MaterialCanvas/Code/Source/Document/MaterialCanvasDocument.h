@@ -54,6 +54,7 @@ namespace MaterialCanvas
         bool IsModified() const override;
         bool BeginEdit() override;
         bool EndEdit() override;
+        void Clear() override;
 
         // MaterialCanvasDocumentRequestBus::Handler overrides...
         GraphModel::GraphPtr GetGraph() const override;
@@ -61,13 +62,14 @@ namespace MaterialCanvas
         AZStd::string GetGraphName() const override;
         const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const override;
         bool CompileGraph() const override;
-        void BuildSlotValueTable(const AZStd::vector<GraphModel::ConstNodePtr>& allNodes) const;
         void QueueCompileGraph() const override;
         bool IsCompileGraphQueued() const override;
 
     private:
-        // AtomToolsFramework::AtomToolsDocument overrides...
-        void Clear() override;
+        void BuildSlotValueTable() const;
+        void CompileGraphStarted() const;
+        void CompileGraphFailed() const;
+        void CompileGraphCompleted() const;
 
         // GraphModelIntegration::GraphControllerNotificationBus::Handler overrides...
         void OnGraphModelSlotModified(GraphModel::SlotPtr slot) override;
@@ -105,6 +107,12 @@ namespace MaterialCanvas
         template<typename T>
         AZStd::any ConvertToVector(const AZStd::any& slotValue) const;
         AZStd::any ConvertToVector(const AZStd::any& slotValue, unsigned int score) const;
+
+        // Returns the value of the slot or the slots incoming connection if present.
+        AZStd::any GetValueFromSlot(GraphModel::ConstSlotPtr slot) const;
+
+        // Returns the value for the corresponding slot or the slot providing its input, if connected. 
+        AZStd::any GetValueFromSlotOrConnection(GraphModel::ConstSlotPtr slot) const;
 
         // Convert special slot type names, like color, into one compatible with AZSL shader code.
         AZStd::string GetAzslTypeFromSlot(GraphModel::ConstSlotPtr slot) const;

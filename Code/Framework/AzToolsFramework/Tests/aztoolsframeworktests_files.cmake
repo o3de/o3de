@@ -65,8 +65,14 @@ set(FILES
     ManipulatorBoundsTests.cpp
     ManipulatorCoreTests.cpp
     ManipulatorViewTests.cpp
+    MetadataManagerTests.cpp
     PerforceComponentTests.cpp
     PlatformAddressedAssetCatalogTests.cpp
+    PaintBrush/MockPaintBrushNotificationHandler.h
+    PaintBrush/PaintBrushBaseTests.cpp
+    PaintBrush/PaintBrushPaintLocationTests.cpp
+    PaintBrush/PaintBrushPaintSettingsTests.cpp
+    PaintBrush/PaintBrushSmoothLocationTests.cpp
     Prefab/Benchmark/Link/SingleInstanceMultiplePatchesBenchmarks.cpp
     Prefab/Benchmark/Link/SingleInstanceMultiplePatchesBenchmarks.h
     Prefab/Benchmark/PrefabBenchmarkFixture.cpp

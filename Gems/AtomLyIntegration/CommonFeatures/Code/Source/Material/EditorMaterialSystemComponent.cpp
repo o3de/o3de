@@ -391,7 +391,7 @@ namespace AZ
             inspectorOptions.showInMenu = false;
             inspectorOptions.showOnToolsToolbar = false;
             AzToolsFramework::RegisterViewPane<AZ::Render::EditorMaterialComponentInspector::MaterialPropertyInspector>(
-                "Material Property Inspector", LyViewPane::CategoryTools, inspectorOptions);
+                "Material Instance Editor", LyViewPane::CategoryTools, inspectorOptions);
         }
         
         void EditorMaterialSystemComponent::AfterEntitySelectionChanged(const AzToolsFramework::EntityIdList& newlySelectedEntities, const AzToolsFramework::EntityIdList&)
