@@ -176,6 +176,7 @@ namespace AzQtComponents
         //! Handler to be called after a new tab is removed at position index.
         void tabRemoved(int index) override;
 
+        void SetUseMaxWidth(bool use) { m_useMaxWidth = use; }
     protected:
         explicit TabBar(QWidget* parent = nullptr);
 
@@ -186,7 +187,6 @@ namespace AzQtComponents
         void mouseReleaseEvent(QMouseEvent* mouseEvent) override;
         void paintEvent(QPaintEvent* paintEvent) override;
         QSize minimumSizeHint() const override;
-        void SetUseMaxWidth(bool use) { m_useMaxWidth = use; }
 
     private:
         friend class Style;

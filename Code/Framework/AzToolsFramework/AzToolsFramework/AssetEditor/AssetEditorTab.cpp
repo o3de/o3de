@@ -42,6 +42,7 @@
 
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
+#include <UI/DocumentPropertyEditor/FilteredDPE.h>
 
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>

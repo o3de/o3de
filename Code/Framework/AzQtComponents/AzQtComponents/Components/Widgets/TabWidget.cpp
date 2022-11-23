@@ -48,6 +48,7 @@ namespace AzQtComponents
     static QString g_secondaryStyleClass = QStringLiteral("Secondary");
     static QString g_borderedStyleClass = QStringLiteral("Bordered");
     static QString g_emptyStyleClass = QStringLiteral("Empty");
+    static int MinButtonWidth = 150;
 
     TabWidget::TabWidget(QWidget* parent)
         : QTabWidget(parent)
@@ -90,6 +91,9 @@ namespace AzQtComponents
         {
             Style::addClass(tabWidget->actionToolBar(), g_secondaryStyleClass);
         }
+
+        auto tabBar = qobject_cast<AzQtComponents::TabBar*>(tabWidget->tabBar());
+        tabBar->SetUseMaxWidth(true);
     }
 
     TabWidget::Config TabWidget::loadConfig(QSettings& settings)
@@ -747,12 +751,17 @@ namespace AzQtComponents
         }
 
         painter->save();
+
         if (tabBar->m_useMaxWidth)
         {
             QRect textRect = style->subElementRect(QStyle::SE_TabBarTabText, option, widget);
 
             // Extend the label to cover more of the tab width
             QSize widthExtension = QSize(config.closeButtonSize, 0);
+            if (!tabBar->tabsClosable())
+            {
+                widthExtension = QSize();
+            }
 
             if (option->state & QStyle::State_MouseOver)
             {
@@ -855,11 +864,10 @@ namespace AzQtComponents
         ToolButton* overflowButton = tabWidget->getOverflowButton();
         int overflowButtonWidth = overflowButton->isVisible() ? tabBar->height() : 0;
 
-        int minButtonWidth = size.width() + config.textRightPadding;
+        int minButtonWidth = MinButtonWidth;
 
         // Never show the overflow menu if there's one or zero tabs.
         bool overflowing = tabBar->count() > 1 ? minButtonWidth * tabBar->count() > availableWidth : false;
-
         if (overflowing)
         {
             availableWidth -= overflowButtonWidth;
