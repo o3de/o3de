@@ -40,6 +40,7 @@
 #include <AzFramework/Process/ProcessWatcher.h>
 
 #include <cmath>
+#include <System/PhysXSystem.h>
 
 AZ_DEFINE_BUDGET(MULTIPLAYER);
 
@@ -252,6 +253,20 @@ namespace Multiplayer
         DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_ApplicationFrameTimeUs, "AppFrameTimeUs");
         DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_DesyncCorrections, "DesyncCorrections");
 
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_TotalTimeSpentUpdatingMs, "TotalTimeSpentUpdatingMs");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_TotalSendTimeMs, "TotalSendTimeMs");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_TotalSentPackets, "TotalSentPackets");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_TotalSentBytesAfterCompression, "TotalSentBytesAfterCompression");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_TotalSentBytesBeforeCompression, "TotalSentBytesBeforeCompression");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_TotalPacketsSent, "TotalPacketsSent");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_TotalReceiveTimeInMs, "TotalReceiveTimeInMs");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_TotalReceivedPackets, "TotalReceivedPackets");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_TotalReceivedBytesAfterCompression, "TotalReceivedBytesAfterCompression");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_TotalReceivedBytesBeforeCompression, "TotalReceivedBytesBeforeCompression");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_TotalPacketsDiscardedDueToLoad, "TotalPacketsDiscardedDueToLoad");
+
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_PhysicsFrameTimeUs, "PhysicsFrameTimeUs");
+
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
         SessionNotificationBus::Handler::BusConnect();
@@ -273,10 +288,22 @@ namespace Multiplayer
                 console->PerformCommand("connect");
             }
         }
+
+        m_metricsEvent.Enqueue(AZ::TimeMs{ 1000 }, true);
+
+        if (auto* physXSystem = PhysX::GetPhysXSystem())
+        {
+            physXSystem->RegisterPreSimulateEvent(m_preSimulateHandler);
+            physXSystem->RegisterPostSimulateEvent(m_postSimulateHandler);
+        }
     }
 
     void MultiplayerSystemComponent::Deactivate()
     {
+        m_preSimulateHandler.Disconnect();
+        m_postSimulateHandler.Disconnect();
+
+        m_metricsEvent.RemoveFromQueue();
         AZ::Interface<ISessionHandlingClientRequests>::Unregister(this);
         m_consoleCommandHandler.Disconnect();
         const AZ::Name interfaceName = AZ::Name(MpNetworkInterfaceName);
@@ -1636,6 +1663,49 @@ namespace Multiplayer
                 connectionData->SetCanSendUpdates(true);
             }
         }
+    }
+
+    void MultiplayerSystemComponent::MetricsEvent()
+    {
+        const auto& networkInterfaces = AZ::Interface<AzNetworking::INetworking>::Get()->GetNetworkInterfaces();
+        for (const auto& networkInterface : networkInterfaces)
+        {
+            if (networkInterface.second->GetType() != ProtocolType::Udp)
+            {
+                continue;
+            }
+            if (networkInterface.second->GetTrustZone() != TrustZone::ExternalClientToServer)
+            {
+                continue;
+            }
+
+            const NetworkInterfaceMetrics& metrics = networkInterface.second->GetMetrics();
+            SET_PERFORMANCE_STAT(MultiplayerStat_TotalTimeSpentUpdatingMs, metrics.m_updateTimeMs);            
+            SET_PERFORMANCE_STAT(MultiplayerStat_TotalSendTimeMs, metrics.m_sendTimeMs);
+            SET_PERFORMANCE_STAT(MultiplayerStat_TotalSentPackets, metrics.m_sendPackets);
+            SET_PERFORMANCE_STAT(MultiplayerStat_TotalSentBytesAfterCompression, metrics.m_sendBytes);
+            SET_PERFORMANCE_STAT(MultiplayerStat_TotalSentBytesBeforeCompression, metrics.m_sendBytesUncompressed);
+            SET_PERFORMANCE_STAT(MultiplayerStat_TotalPacketsSent, metrics.m_sendPackets);
+            SET_PERFORMANCE_STAT(MultiplayerStat_TotalReceiveTimeInMs, metrics.m_recvTimeMs);
+            SET_PERFORMANCE_STAT(MultiplayerStat_TotalReceivedPackets, metrics.m_recvPackets);
+            SET_PERFORMANCE_STAT(MultiplayerStat_TotalReceivedBytesAfterCompression, metrics.m_recvBytes);
+            SET_PERFORMANCE_STAT(MultiplayerStat_TotalReceivedBytesBeforeCompression, metrics.m_recvBytesUncompressed);
+            SET_PERFORMANCE_STAT(MultiplayerStat_TotalPacketsDiscardedDueToLoad, metrics.m_discardedPackets);
+
+            break; // Assuming there is only one network interface for communicating with clients
+        }
+    }
+
+    void MultiplayerSystemComponent::OnPhysicsPresimulate([[maybe_unused]] float dt)
+    {
+        m_startPhysicsTickTime = AZStd::chrono::steady_clock::now();
+    }
+
+    void MultiplayerSystemComponent::OnPhysicsPostsimulate([[maybe_unused]] float dt)
+    {
+        const auto duration = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(
+            AZStd::chrono::steady_clock::now() - m_startPhysicsTickTime);
+        SET_PERFORMANCE_STAT(MultiplayerStat_PhysicsFrameTimeUs, AZ::TimeUs{ duration.count() });
     }
 
     void host([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
