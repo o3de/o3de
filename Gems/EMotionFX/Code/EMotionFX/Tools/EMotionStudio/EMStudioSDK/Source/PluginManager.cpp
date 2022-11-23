@@ -36,7 +36,6 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/SceneManager/SceneManagerPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/NodeGroups/NodeGroupsPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #include <Editor/Plugins/HitDetection/HitDetectionJointInspectorPlugin.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
@@ -225,7 +224,6 @@ namespace EMStudio
         RegisterPlugin(new TimeViewPlugin());
         RegisterPlugin(new SceneManagerPlugin());
         RegisterPlugin(new MotionSetsWindowPlugin());
-        RegisterPlugin(new NodeGroupsPlugin());
         RegisterPlugin(new AnimGraphPlugin());
         RegisterPlugin(new EMotionFX::HitDetectionJointInspectorPlugin());
         RegisterPlugin(new EMotionFX::SkeletonOutlinerPlugin());
