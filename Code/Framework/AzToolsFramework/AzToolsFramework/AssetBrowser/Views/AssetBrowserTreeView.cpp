@@ -33,6 +33,7 @@
 
 #include <AzQtComponents/Components/Widgets/MessageBox.h>
 
+#include <QDir>
 #include <QMenu>
 #include <QFile>
 #include <QHeaderView>
@@ -607,6 +608,11 @@ namespace AzToolsFramework
             }
         }
 
+        bool IsFolderEmpty(const char* pPath)
+        {
+            return QDir(pPath).entryList(QDir::NoDotAndDotDot | QDir::AllEntries).count() == 0;
+        }
+
         void AssetBrowserTreeView::RenameEntry()
         {
             auto entries = GetSelectedAssets(false); // you cannot rename product files.
@@ -629,6 +635,13 @@ namespace AzToolsFramework
                 Path fromPath;
                 if (isFolder)
                 {
+                    // There is currently a bug in AssetProcessorBatch that doesn't handle empty folders
+                    // This code is needed until that bug is fixed. GHI 13340
+                    if(IsFolderEmpty(item->GetFullPath().c_str()))
+                    {
+                        edit(currentIndex());
+                        return;
+                    }
                     fromPath = item->GetFullPath() + "/*";
                     toPath = item->GetFullPath() + "TempFolderTestName/*";
                 }
@@ -685,14 +698,27 @@ namespace AzToolsFramework
             using namespace AZ::IO;
             AssetBrowserEntry* item = entries[0];
             bool isFolder = item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
+            bool isEmptyFolder = isFolder && IsFolderEmpty(item->GetFullPath().c_str());
             Path toPath;
             Path fromPath;
             if (isFolder)
             {
-                fromPath = item->GetFullPath() + "/*";
                 Path tempPath = item->GetFullPath();
                 tempPath.ReplaceFilename(newVal.toStdString().c_str());
-                toPath = tempPath.String() + "/*";
+                // There is currently a bug in AssetProcessorBatch that doesn't handle empty folders
+                // This code is needed until that bug is fixed. GHI 13340
+                if (isEmptyFolder)
+                {
+                    fromPath = item->GetFullPath();
+                    toPath = tempPath.String();
+                    AZ::IO::SystemFile::Rename(fromPath.c_str(), toPath.c_str());
+                    return;
+                }
+                else
+                {
+                    fromPath = item->GetFullPath() + "/*";
+                    toPath = tempPath.String() + "/*";
+                }
             }
             else
             {
@@ -785,13 +811,26 @@ namespace AzToolsFramework
                         for (auto entry : entries)
                         {
                             using namespace AZ::IO;
+                            bool isEmptyFolder = isFolder && IsFolderEmpty(entry->GetFullPath().c_str());
                             Path fromPath;
                             Path toPath;
                             if (isFolder)
                             {
-                                fromPath = entry->GetFullPath() + "/*";
                                 Path filename = static_cast<Path>(entry->GetFullPath()).Filename();
-                                toPath = folderPath + "/" + filename.c_str() + "/*";
+                                if (isEmptyFolder)
+                                // There is currently a bug in AssetProcessorBatch that doesn't handle empty folders
+                                // This code is needed until that bug is fixed. GHI 13340
+                                {
+                                    fromPath = entry->GetFullPath();
+                                    toPath = folderPath + "/" + filename.c_str();
+                                    AZ::IO::SystemFile::CreateDir(toPath.c_str());
+                                    AZ::IO::SystemFile::DeleteDir(fromPath.c_str()); 
+                                }
+                                else
+                                {
+                                    fromPath = entry->GetFullPath() + "/*";
+                                    toPath = folderPath + "/" + filename.c_str() + "/*";
+                                }
                             }
                             else
                             {

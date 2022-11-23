@@ -104,7 +104,7 @@ namespace
             {
                 case AssetChangeReportRequest::ChangeType::CheckMove:
                 {
-                    auto resultCheck = relocationInterface->Move(messageData.m_message->m_fromPath, messageData.m_message->m_toPath);
+                    auto resultCheck = relocationInterface->Move(messageData.m_message->m_fromPath, messageData.m_message->m_toPath, true, true, false, true);
 
                     BuildReport(relocationInterface, resultCheck, lines);
                     break;
@@ -112,21 +112,21 @@ namespace
                 case AssetChangeReportRequest::ChangeType::Move:
                 {
                     auto resultMove = relocationInterface->Move(
-                        messageData.m_message->m_fromPath, messageData.m_message->m_toPath, false, true, true, true);
+                        messageData.m_message->m_fromPath, messageData.m_message->m_toPath, false, true, false, true);
 
                     BuildReport(relocationInterface, resultMove, lines);
                     break;
                 }
                 case AssetChangeReportRequest::ChangeType::CheckDelete:
                 {
-                    auto resultCheck = relocationInterface->Delete(messageData.m_message->m_fromPath);
+                    auto resultCheck = relocationInterface->Delete(messageData.m_message->m_fromPath, true, true, false);
 
                     BuildReport(relocationInterface, resultCheck, lines);
                     break;
                 }
                 case AssetChangeReportRequest::ChangeType::Delete:
                 {
-                    auto resultDelete = relocationInterface->Delete(messageData.m_message->m_fromPath, false, true, true);
+                    auto resultDelete = relocationInterface->Delete(messageData.m_message->m_fromPath, false, true, false);
 
                     BuildReport(relocationInterface, resultDelete, lines);
                     break;
