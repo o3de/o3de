@@ -15,9 +15,9 @@ namespace AzToolsFramework
 {
     namespace ComponentModeFramework
     {
-         /// Abstract class to be inherited from by concrete ComponentModes.
-         /// Exposes ComponentMode interface and handles some useful common
-         /// functionality all ComponentModes require.
+        /// Abstract class to be inherited from by concrete ComponentModes.
+        /// Exposes ComponentMode interface and handles some useful common
+        /// functionality all ComponentModes require.
         class EditorBaseComponentMode
             : public ComponentModeRequestBus::Handler
             , protected ToolsApplicationNotificationBus::Handler
@@ -95,5 +95,16 @@ namespace AzToolsFramework
             AZ::EntityComponentIdPair m_entityComponentIdPair; ///< Entity and Component Id associated with this ComponentMode.
             AZ::Uuid m_componentType; ///< The underlying type of the Component this ComponentMode is for.
         };
+
+        //! Templated helper to implement the Reflect function on classes derived from EditorBaseComponentMode
+        template<typename EditorBaseComponentModeDescendantClass>
+        void ReflectEditorBaseComponentModeDescendant(AZ::ReflectContext* context)
+        {
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<EditorBaseComponentModeDescendantClass, EditorBaseComponentMode>(
+                    AZ::Internal::NullFactory::GetInstance());
+            }
+        }
     } // namespace ComponentModeFramework
 } // namespace AzToolsFramework

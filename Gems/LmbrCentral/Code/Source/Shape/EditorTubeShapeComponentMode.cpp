@@ -60,10 +60,7 @@ namespace LmbrCentral
 
     void EditorTubeShapeComponentMode::Reflect(AZ::ReflectContext* context)
     {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<EditorTubeShapeComponentMode, EditorBaseComponentMode>(AZ::Internal::NullFactory::GetInstance());
-        }
+        AzToolsFramework::ComponentModeFramework::ReflectEditorBaseComponentModeDescendant<EditorTubeShapeComponentMode>(context);
     }
 
     void EditorTubeShapeComponentMode::RegisterActions()

@@ -38,10 +38,7 @@ namespace LmbrCentral
 
     void EditorSplineComponentMode::Reflect(AZ::ReflectContext* context)
     {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<EditorSplineComponentMode, EditorBaseComponentMode>(AZ::Internal::NullFactory::GetInstance());
-        }
+        AzToolsFramework::ComponentModeFramework::ReflectEditorBaseComponentModeDescendant<EditorSplineComponentMode>(context);
     }
 
     void EditorSplineComponentMode::RegisterActions()
