@@ -64,11 +64,11 @@ namespace AZ
 
             result.Combine(ContinueLoadingFromJsonObjectField(&propertyConnection->m_type, azrtti_typeid<MaterialPropertyOutputType>(), inputValue, Field::type, context));
             
-            JsonSerializationResult::ResultCode nameResult = ContinueLoadingFromJsonObjectField(&propertyConnection->m_fieldName, azrtti_typeid<AZStd::string>(), inputValue, Field::name, context);
+            JsonSerializationResult::ResultCode nameResult = ContinueLoadingFromJsonObjectField(&propertyConnection->m_name, azrtti_typeid<AZStd::string>(), inputValue, Field::name, context);
             if (nameResult.GetOutcome() == JsonSerializationResult::Outcomes::DefaultsUsed)
             {
                 // This "id" key is for backward compatibility.
-                result.Combine(ContinueLoadingFromJsonObjectField(&propertyConnection->m_fieldName, azrtti_typeid<AZStd::string>(), inputValue, Field::id, context));
+                result.Combine(ContinueLoadingFromJsonObjectField(&propertyConnection->m_name, azrtti_typeid<AZStd::string>(), inputValue, Field::id, context));
             }
             else
             {
@@ -109,7 +109,7 @@ namespace AZ
             MaterialTypeSourceData::PropertyConnection defaultConnection;
 
             result.Combine(ContinueStoringToJsonObjectField(outputValue, Field::type, &propertyConnection->m_type, &defaultConnection.m_type, azrtti_typeid<MaterialPropertyOutputType>(), context));
-            result.Combine(ContinueStoringToJsonObjectField(outputValue, Field::name, &propertyConnection->m_fieldName, &defaultConnection.m_fieldName, azrtti_typeid<AZStd::string>(), context));
+            result.Combine(ContinueStoringToJsonObjectField(outputValue, Field::name, &propertyConnection->m_name, &defaultConnection.m_name, azrtti_typeid<AZStd::string>(), context));
             result.Combine(ContinueStoringToJsonObjectField(outputValue, Field::shaderIndex, &propertyConnection->m_shaderIndex, &defaultConnection.m_shaderIndex, azrtti_typeid<int32_t>(), context));
 
             if (result.GetProcessing() == JsonSerializationResult::Processing::Completed)

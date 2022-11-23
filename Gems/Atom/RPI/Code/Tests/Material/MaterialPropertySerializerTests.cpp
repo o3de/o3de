@@ -133,7 +133,7 @@ namespace JsonSerializationTests
                 auto& leftConnection = lhs.m_outputConnections[i];
                 auto& rightConnection = rhs.m_outputConnections[i];
                 if (leftConnection.m_type != rightConnection.m_type) { return false; }
-                if (leftConnection.m_fieldName != rightConnection.m_fieldName) { return false; }
+                if (leftConnection.m_name!= rightConnection.m_name) { return false; }
                 if (leftConnection.m_shaderIndex != rightConnection.m_shaderIndex) { return false; }
             }
             return true;
@@ -798,7 +798,7 @@ namespace UnitTest
 
         EXPECT_EQ(1, propertyData.m_outputConnections.size());
         EXPECT_EQ(MaterialPropertyOutputType::ShaderOption, propertyData.m_outputConnections[0].m_type);
-        EXPECT_EQ("o_foo", propertyData.m_outputConnections[0].m_fieldName);
+        EXPECT_EQ("o_foo", propertyData.m_outputConnections[0].m_name);
         EXPECT_EQ(2, propertyData.m_outputConnections[0].m_shaderIndex);
 
         EXPECT_TRUE(loadResult.ContainsMessage("/connection/type", "Success"));
@@ -835,7 +835,7 @@ namespace UnitTest
 
         EXPECT_EQ(1, propertyData.m_outputConnections.size());
         EXPECT_EQ(MaterialPropertyOutputType::ShaderOption, propertyData.m_outputConnections[0].m_type);
-        EXPECT_EQ("o_foo", propertyData.m_outputConnections[0].m_fieldName);
+        EXPECT_EQ("o_foo", propertyData.m_outputConnections[0].m_name);
         EXPECT_EQ(2, propertyData.m_outputConnections[0].m_shaderIndex);
 
         EXPECT_TRUE(loadResult.ContainsMessage("/connection/type", "Success"));
@@ -873,11 +873,11 @@ namespace UnitTest
 
         EXPECT_EQ(2, propertyData.m_outputConnections.size());
         EXPECT_EQ(MaterialPropertyOutputType::ShaderInput, propertyData.m_outputConnections[0].m_type);
-        EXPECT_EQ("o_foo", propertyData.m_outputConnections[0].m_fieldName);
+        EXPECT_EQ("o_foo", propertyData.m_outputConnections[0].m_name);
         EXPECT_EQ(2, propertyData.m_outputConnections[0].m_shaderIndex);
 
         EXPECT_EQ(MaterialPropertyOutputType::ShaderOption, propertyData.m_outputConnections[1].m_type);
-        EXPECT_EQ("o_bar", propertyData.m_outputConnections[1].m_fieldName);
+        EXPECT_EQ("o_bar", propertyData.m_outputConnections[1].m_name);
         EXPECT_EQ(1, propertyData.m_outputConnections[1].m_shaderIndex);
 
         EXPECT_TRUE(loadResult.ContainsMessage("/connection/0/type", "Success"));
@@ -947,7 +947,7 @@ namespace UnitTest
         EXPECT_EQ(propertyData.GetName(), "testProperty");
         EXPECT_EQ(propertyData.m_dataType, MaterialPropertyDataType::Float);
         EXPECT_EQ(propertyData.m_outputConnections.size(), 1);
-        EXPECT_EQ(propertyData.m_outputConnections[0].m_fieldName, "o_foo");
+        EXPECT_EQ(propertyData.m_outputConnections[0].m_name, "o_foo");
         EXPECT_EQ(propertyData.m_outputConnections[0].m_type, MaterialPropertyOutputType::ShaderInput);
         EXPECT_EQ(propertyData.m_outputConnections[0].m_shaderIndex, -1);
 

@@ -11,7 +11,6 @@ import time
 import azlmbr.atom
 import azlmbr.atomtools
 import azlmbr.bus as bus
-import EditorPythonTestTools.editor_python_test_tools.asset_utils as asset_utils
 
 SCREENSHOTS_FOLDER = os.path.join(azlmbr.paths.products, "Screenshots")
 
@@ -90,31 +89,100 @@ def set_pane_visibility(pane_name: str, value: bool) -> None:
     azlmbr.atomtools.AtomToolsMainWindowRequestBus(bus.Broadcast, "SetDockWidgetVisible", pane_name, value)
 
 
-def select_lighting_config(asset_path: str) -> None:
-    asset_id = asset_utils.Asset.find_asset_by_path(asset_path)
-    azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
+def load_lighting_preset_by_asset_id(asset_id: azlmbr.math.Uuid) -> bool:
+    """
+    Takes in an asset ID and attempts to select the lighting background in the viewporet dropdown using that ID.
+    Returns True if it successfully changes it, False otherwise.
+    """
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
         azlmbr.bus.Broadcast, "LoadLightingPresetByAssetId", asset_id)
+
+
+def load_lighting_preset_by_path(asset_path: str) -> bool:
+    """
+    Takes in an asset path and attempts to select the lighting background in the viewport dropdown using that path.
+    Returns True if it successfully changes it, False otherwise.
+    """
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
+        azlmbr.bus.Broadcast, "LoadLightingPreset", asset_path)
+
+
+def get_last_lighting_preset_asset_id() -> azlmbr.math.Uuid:
+    """
+    Returns the asset ID of the currently selected viewport lighting background.
+    Example return values observed when selecting different lighting backgrounds from the viewport dropdown:
+    {B9AA460C-622D-5F38-A02C-C0BCB0B65D96}:0
+    {C4978B46-D509-5B71-86A1-09D8CC051DC4}:0
+    {AB7FA1BA-7207-5333-BDD6-69C3F5B7A410}:0
+    """
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
+        azlmbr.bus.Broadcast, "GetLastLightingPresetAssetId")
+
+
+def get_last_lighting_preset_path() -> str:
+    """
+    Returns the full path to the currently selected viewport lighting background.
+    Example return values observed when selecting different lighting backgrounds from the viewport dropdown:
+    "C:/git/o3de/Gems/Atom/Tools/MaterialEditor/Assets/MaterialEditor/LightingPresets/neutral_urban.lightingpreset.azasset"
+    "C:/git/o3de/Gems/Atom/Feature/Common/Assets/LightingPresets/LowContrast/artist_workshop.lightingpreset.azasset"
+    "C:/git/o3de/Gems/Atom/TestData/TestData/LightingPresets/beach_parking.lightingpreset.azasset"
+    """
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetLastLightingPresetPath")
+
+
+def get_last_model_preset_path() -> str:
+    """
+    Returns the full path to the currently selected viewport model.
+    Example return values observed when selecting different models from the vioewport dropdown:
+    "C:/git/o3de/Gems/Atom/Tools/MaterialEditor/Assets/MaterialEditor/ViewportModels/Shaderball.modelpreset.azasset"
+    "C:/git/o3de/Gems/Atom/Tools/MaterialEditor/Assets/MaterialEditor/ViewportModels/Cone.modelpreset.azasset"
+    "C:/git/o3de/Gems/Atom/Tools/MaterialEditor/Assets/MaterialEditor/ViewportModels/BeveledCone.modelpreset.azasset"
+    """
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetLastModelPresetPath")
+
+
+def get_last_model_preset_asset_id() -> azlmbr.math.Uuid:
+    """
+    Returns the asset ID of the currently selected viewport model.
+    Example return values observed when selecting different models from the viewport dropdown:
+    {9B61FAD7-2717-528C-9EBF-C1324D46ED56}:0
+    {56C02199-7B4F-5896-A713-F70E6EBA0726}:0
+    {46D4B53F-A900-591B-B4CD-75A79E47749B}:0
+    """
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetLastModelPresetAssetId")
 
 
 def set_grid_enabled(value: bool) -> None:
     azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "SetGridEnabled", value)
 
 
-def get_grid_enable_disable() -> bool:
+def get_grid_enabled() -> bool:
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetGridEnabled")
 
 
-def set_shadowcatcher_enable_disable(value: bool) -> None:
+def set_shadow_catcher_enabled(value: bool) -> None:
     azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "SetShadowCatcherEnabled", value)
 
 
-def is_shadowcatcher_enabled() -> bool:
+def get_shadow_catcher_enabled() -> bool:
     return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetShadowCatcherEnabled")
 
 
-def select_model_config(asset_path: str) -> None:
-    asset_id = asset_utils.Asset.find_asset_by_path(asset_path)
-    azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "LoadModelPresetByAssetId", asset_id)
+def load_model_preset_by_asset_id(asset_id: azlmbr.math.Uuid) -> bool:
+    """
+    Takes in an asset ID and attempts to select the model in the viewport dropdown using that ID.
+    Returns True if it successfully changes, False otherwise.
+    """
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
+        azlmbr.bus.Broadcast, "LoadModelPresetByAssetId", asset_id)
+
+
+def load_model_preset_by_path(asset_path: str) -> bool:
+    """
+    Takes in an asset path and attempts to select the model in the viewport dropdown using that path.
+    Returns True if it successfully changes it, False otherwise.
+    """
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "LoadModelPreset", asset_path)
 
 
 def undo(document_id: azlmbr.math.Uuid) -> bool:

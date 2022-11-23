@@ -409,6 +409,45 @@ namespace AZ
             }
         }
 
+        void MaterialTypeAssetCreator::ConnectMaterialPropertyToShaderEnabled(const Name& shaderTag)
+        {
+            if (!ValidateBeginMaterialProperty())
+            {
+                return;
+            }
+
+            if (m_wipMaterialProperty.GetDataType() != MaterialPropertyDataType::Bool)
+            {
+                ReportError("Material property '%s': Only a bool property can be mapped to a shader enable flag.", m_wipMaterialProperty.GetName().GetCStr());
+                return;
+            }
+
+            bool foundShader = false;
+            for (int i = 0; i < m_asset->m_shaderCollection.size() && GetErrorCount() == 0; ++i)
+            {
+                ShaderCollection::Item& shaderItem = m_asset->m_shaderCollection[i];
+
+                if (shaderItem.GetShaderTag() == shaderTag)
+                {
+                    foundShader = true;
+
+                    MaterialPropertyOutputId outputId;
+                    outputId.m_type = MaterialPropertyOutputType::ShaderEnabled;
+                    outputId.m_containerIndex = RHI::Handle<uint32_t>{i};
+
+                    m_wipMaterialProperty.m_outputConnections.push_back(outputId);
+
+                    break;
+                }
+            }
+
+            if (!foundShader)
+            {
+                ReportError("Material property '%s': Material contains no shaders with tag '%s'.", m_wipMaterialProperty.GetName().GetCStr(), shaderTag.GetCStr());
+                return;
+            }
+        }
+
         void MaterialTypeAssetCreator::SetMaterialPropertyEnumNames(const AZStd::vector<AZStd::string>& enumNames)
         {
             if (!ValidateBeginMaterialProperty())
