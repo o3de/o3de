@@ -221,8 +221,8 @@ def validate_script_canvas_graph_file(get_script_canvas_graph_file: typing.Calla
     """
     Function to validate the setting of a script canvas graph file to the file source field in the script canvas component
 
-    get_script_canvas_component_graph_file: getter for the script canvas component file source handle field
-    set_script_canvas_component_graph_file: setter for the script canvas component's file source field.
+    get_script_canvas_graph_file: getter for the script canvas component file source handle field
+    set_script_canvas_graph_file: setter for the script canvas component's file source field.
     sc_file_path: the path on disk where the graph file exists
 
     """
@@ -233,7 +233,7 @@ def validate_script_canvas_graph_file(get_script_canvas_graph_file: typing.Calla
     set_script_canvas_graph_file(sc_file_path)
 
     set_value = get_script_canvas_graph_file()
-    assert set_value != old_value and set_value is not None, f"Graph file could not be set!"
+    assert (set_value != old_value) and set_value is not None, f"Graph file could not be set!"
 
 
 def validate_script_canvas_variable_changed(get_variable_value: typing.Callable, set_variable_value: typing.Callable,
@@ -250,10 +250,12 @@ def validate_script_canvas_variable_changed(get_variable_value: typing.Callable,
 
 
     """
-    Report.info(f"Validating Script Canvas component's variable was set.")
+    Report.info(f"Validating Script Canvas component's variable can be set. This will seek out the variable in the "
+                f"script canvas component's exposed variable list and set data to it.")
 
     set_variable_value(variable_name, variable_state, expected_variable_value)
 
     new_variable_value = get_variable_value(variable_name, variable_state)
 
-    assert expected_variable_value == new_variable_value, f"Component variable {variable_name} was not set properly"
+    assert expected_variable_value == new_variable_value, f"Component variable {variable_name} was not set properly. " \
+                                                          f"check the variable's name, state or incomming type being set."

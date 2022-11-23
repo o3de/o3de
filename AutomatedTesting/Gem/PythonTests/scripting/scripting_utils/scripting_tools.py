@@ -23,8 +23,7 @@ from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_
                                  TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT, SAVE_STRING, NAME_STRING,
                                  SAVE_ASSET_AS, WAIT_TIME_3, NODE_INSPECTOR_TITLE_KEY, WAIT_FRAMES, SCRIPT_EVENT_UI,
                                  EVENTS_QT, DEFAULT_SCRIPT_EVENT, PARAMETERS_QT, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI,
-                                 VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES,
-                                 SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, ENTITY_STATES)
+                                 VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES, ENTITY_STATES)
 
 
 class Tests():

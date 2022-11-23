@@ -86,10 +86,11 @@ class ScriptCanvasComponent:
         returns the component property value of the script canvas source handle (string)
         """
 
-        return self.script_canvas_component.get_component_property_value(Path.SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
+        return self.script_canvas_component.get_component_property_value(Path.SCRIPT_CANVAS_ASSET_PROPERTY)
 
     def set_variable_value(self, variable_name: str, variable_state: VariableState, variable_value) -> str:
         """
+        o3de/o3de#13344. We currently only support strings and boolean variables.
         Function for setting a value to a variable on the script canvas component.
 
         Note: The variable must be exposed to the component. this can be done through the script canvas node inspector.
@@ -109,8 +110,8 @@ class ScriptCanvasComponent:
 
     def get_variable_value(self, variable_name: str, variable_state: VariableState):
         """
-        Function for getting the value of an exposed variable off the script canvas component. The variable type
-        can vary but only 2 types are currently supported: String adn Boolean. See github GH-13344 for more info.
+        o3de/o3de#13344. We currently only support strings and boolean variables.
+        Function for getting the value of an exposed variable off the script canvas component. .
         """
 
         component_property_path = Path.construct_variable_component_property_path(Path, variable_name, variable_state)
