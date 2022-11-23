@@ -22,8 +22,7 @@ namespace AZ
                 serializeContext->Class<ShaderTemplate>()
                     ->Version(1)
                     ->Field("shader", &ShaderTemplate::m_shader)
-                    ->Field("preMaterialAzsli", &ShaderTemplate::m_preMaterialAzsli)
-                    ->Field("postMaterialAzsli", &ShaderTemplate::m_postMaterialAzsli)
+                    ->Field("azsli", &ShaderTemplate::m_azsli)
                     ;
 
                 serializeContext->Class<MaterialPipelineSourceData>()
@@ -38,8 +37,7 @@ namespace AZ
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderTemplate::m_shader, "Shader", "The template used to create the .shader file.")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderTemplate::m_preMaterialAzsli, "Pre-Material AZSLi", "The azsli file that should stitched before the material shader code.")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderTemplate::m_postMaterialAzsli, "Post-Material AZSLi", "The azsli file that should stitched after the material shader code.")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderTemplate::m_azsli, "AZSLi", "The azsli file that should stitched together with material shader code.")
                         ;
 
                     editContext->Class<MaterialPipelineSourceData>("MaterialPipelineSourceData", "")
@@ -60,8 +58,7 @@ namespace AZ
                     ->Constructor()
                     ->Constructor<const ShaderTemplate&>()
                     ->Property("shader", BehaviorValueProperty(&ShaderTemplate::m_shader))
-                    ->Property("preMaterialAzsli", BehaviorValueProperty(&ShaderTemplate::m_preMaterialAzsli))
-                    ->Property("postMaterialAzsli", BehaviorValueProperty(&ShaderTemplate::m_postMaterialAzsli))
+                    ->Property("azsli", BehaviorValueProperty(&ShaderTemplate::m_azsli))
                     ;
 
                 behaviorContext->Class<MaterialPipelineSourceData>("MaterialPipelineSourceData")

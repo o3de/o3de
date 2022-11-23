@@ -35,12 +35,11 @@ namespace AZ
                 AZ_TYPE_INFO(AZ::RPI::MaterialPipelineSourceData::ShaderTemplate, "{CC8BAAB1-1C21-4125-A81A-7BB8541494A5}");
 
                 AZStd::string m_shader; //! Relative path to a template .shader file that will configure the final shader asset.
-                AZStd::string m_preMaterialAzsli; //! Relative path to a template .azsli file that will be stitched before the material-specific shader code.
-                AZStd::string m_postMaterialAzsli; //! Relative path to a template .azsli file that will be stitched after the material-specific shader code.
+                AZStd::string m_azsli; //! Relative path to a template .azsli file that will be stitched together with material-specific shader code.
 
                 bool operator==(const ShaderTemplate& rhs) const
                 {
-                    return m_shader == rhs.m_shader && m_preMaterialAzsli == rhs.m_preMaterialAzsli && m_postMaterialAzsli == rhs.m_postMaterialAzsli;
+                    return m_shader == rhs.m_shader && m_azsli == rhs.m_azsli;
                 }
             };
 
@@ -64,7 +63,7 @@ namespace AZStd
     {
         size_t operator()(const AZ::RPI::MaterialPipelineSourceData::ShaderTemplate& value) const
         {
-            return hash<AZStd::string>()(value.m_shader) ^ hash<AZStd::string>()(value.m_preMaterialAzsli) ^ hash<AZStd::string>()(value.m_postMaterialAzsli);
+            return hash<AZStd::string>()(value.m_shader) ^ hash<AZStd::string>()(value.m_azsli);
         }
     };
 } // namespace AZStd

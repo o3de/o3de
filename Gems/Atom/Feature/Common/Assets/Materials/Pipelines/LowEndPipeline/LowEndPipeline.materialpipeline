@@ -2,23 +2,19 @@
     "shaderTemplates": [
         {
             "shader": "./ForwardPass_BaseLighting.shader.template",
-            "preMaterialAzsli": "./ForwardPass_BaseLighting_A.azsli",
-            "postMaterialAzsli": "./ForwardPass_BaseLighting_B.azsli"
+            "azsli": "./ForwardPass_BaseLighting.azsli"
         },
         {
             "shader": "./ForwardPass_StandardLighting.shader.template",
-            "preMaterialAzsli": "./ForwardPass_StandardLighting_A.azsli",
-            "postMaterialAzsli": "./ForwardPass_StandardLighting_B.azsli"
+            "azsli": "./ForwardPass_StandardLighting.azsli"
         },
         {
             "shader": "../Common/DepthPass.shader.template",
-            "preMaterialAzsli": "../Common/DepthPass_A.azsli",
-            "postMaterialAzsli": "../Common/DepthPass_B.azsli"
+            "azsli": "../Common/DepthPass.azsli"
         },
         {
             "shader": "../Common/ShadowmapPass.shader.template",
-            "preMaterialAzsli": "../Common/DepthPass_A.azsli",
-            "postMaterialAzsli": "../Common/DepthPass_B.azsli"
+            "azsli": "../Common/DepthPass.azsli"
         }
     ],
     "pipelineScript": "./LowEndPipelineScript.lua"

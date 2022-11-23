@@ -5,6 +5,22 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+ 
+#define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 1
+
+// TODO(MaterialPipeline): In the end, after all refactoring and rearranging of our shader code is done, some of these flags might become unnecessary and should be re-evaluated.
+#define OUTPUT_DEPTH 0
+#define FORCE_OPAQUE 1
+#define OUTPUT_SUBSURFACE 0
+#define ENABLE_TRANSMISSION 0
+#define ENABLE_SHADER_DEBUGGING 1
+#define ENABLE_CLEAR_COAT 1
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include MATERIAL_TYPE_AZSLI_FILE_PATH
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
@@ -16,5 +32,5 @@
 #include "../../../Shaders/Materials/StandardPBR/StandardPBR_LightingBrdf.azsli"
 #include "../../../Shaders/Materials/StandardPBR/StandardPBR_LightingEval.azsli"
 
-#include <Atom/Features/Pipeline/Forward/LowEndForwardPassVertexAndPixel.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassVertexAndPixel.azsli>
 
