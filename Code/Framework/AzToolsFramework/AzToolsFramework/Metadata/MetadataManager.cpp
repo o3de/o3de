@@ -91,6 +91,7 @@ namespace AzToolsFramework
             return false;
         }
 
+        outValue = rapidjson_ly::Document(); // Make sure to release any existing memory if the document happens to be non-empty
         outValue.CopyFrom(*value, document.GetAllocator());
         return true;
     }
