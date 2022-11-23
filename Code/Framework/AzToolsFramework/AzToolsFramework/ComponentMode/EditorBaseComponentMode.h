@@ -77,6 +77,9 @@ namespace AzToolsFramework
             /// The underlying Component type for this ComponentMode.
             AZ::Uuid GetComponentType() const final { return m_componentType; }
 
+            // Default implementation of EditorComponentModeBus handler to aid developers.
+            AZ::Uuid GetComponentModeType() const;
+
             /// EditorBaseComponentMode interface
             /// @see To be overridden by derived ComponentModes
             virtual AZStd::vector<ViewportUi::ClusterId> PopulateViewportUiImpl();

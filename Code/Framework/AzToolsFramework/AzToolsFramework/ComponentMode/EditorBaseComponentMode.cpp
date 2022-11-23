@@ -111,6 +111,15 @@ namespace AzToolsFramework
             return PopulateActionsImpl();
         }
 
+        AZ::Uuid EditorBaseComponentMode::GetComponentModeType() const
+        {
+            AZ_Assert(
+                false,
+                "Classes derived from EditorBaseComponentMode need to override this function and return their typeid."
+                "Example: \"return azrtti_typeid<DerivedComponentMode>();\"");
+            return AZ::Uuid();
+        }
+
         void EditorBaseComponentMode::PostHandleMouseInteraction()
         {
             ComponentModeViewportUiRequestBus::Event(
