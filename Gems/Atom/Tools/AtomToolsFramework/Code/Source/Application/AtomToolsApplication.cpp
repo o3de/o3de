@@ -39,6 +39,7 @@
 #include "AtomToolsFramework_Traits_Platform.h"
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
+#include <QClipboard>
 #include <QMessageBox>
 #include <QObject>
 AZ_POP_DISABLE_WARNING
@@ -237,6 +238,9 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::Destroy()
     {
+        // Clearing graph canvas clipboard mime data for copied nodes before exiting the application to prevent a crash in qt_call_post_routines
+        QApplication::clipboard()->clear();
+
         m_assetBrowserInteractions.reset();
         m_styleManager.reset();
 

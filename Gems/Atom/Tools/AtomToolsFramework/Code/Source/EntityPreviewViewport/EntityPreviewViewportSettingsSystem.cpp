@@ -60,14 +60,27 @@ namespace AtomToolsFramework
                 ->Event("LoadLightingPreset", &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPreset)
                 ->Event("LoadLightingPresetByAssetId", &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPresetByAssetId)
                 ->Event("GetLastLightingPresetPath", &EntityPreviewViewportSettingsRequestBus::Events::GetLastLightingPresetPath)
-                ->Event("GetLastLightingPresetAssetId", &EntityPreviewViewportSettingsRequestBus::Events::GetLastLightingPresetAssetId)
+                ->Event("GetLastLightingPresetPathWithoutAlias", &EntityPreviewViewportSettingsRequestBus::Events::GetLastLightingPresetPathWithoutAlias)
+                ->Event("RegisterLightingPresetPath", &EntityPreviewViewportSettingsRequestBus::Events::RegisterLightingPresetPath)
+                ->Event("UnregisterLightingPresetPath", &EntityPreviewViewportSettingsRequestBus::Events::UnregisterLightingPresetPath)
+                ->Event("GetRegisteredLightingPresetPaths", &EntityPreviewViewportSettingsRequestBus::Events::GetRegisteredLightingPresetPaths)
                 ->Event("SetModelPreset", &EntityPreviewViewportSettingsRequestBus::Events::SetModelPreset)
                 ->Event("GetModelPreset", &EntityPreviewViewportSettingsRequestBus::Events::GetModelPreset)
                 ->Event("SaveModelPreset", &EntityPreviewViewportSettingsRequestBus::Events::SaveModelPreset)
                 ->Event("LoadModelPreset", &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset)
                 ->Event("LoadModelPresetByAssetId", &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPresetByAssetId)
                 ->Event("GetLastModelPresetPath", &EntityPreviewViewportSettingsRequestBus::Events::GetLastModelPresetPath)
-                ->Event("GetLastModelPresetAssetId", &EntityPreviewViewportSettingsRequestBus::Events::GetLastModelPresetAssetId)
+                ->Event("GetLastModelPresetPathWithoutAlias", &EntityPreviewViewportSettingsRequestBus::Events::GetLastModelPresetPathWithoutAlias)
+                ->Event("RegisterModelPresetPath", &EntityPreviewViewportSettingsRequestBus::Events::RegisterModelPresetPath)
+                ->Event("UnregisterModelPresetPath", &EntityPreviewViewportSettingsRequestBus::Events::UnregisterModelPresetPath)
+                ->Event("GetRegisteredModelPresetPaths", &EntityPreviewViewportSettingsRequestBus::Events::GetRegisteredModelPresetPaths)
+                ->Event("LoadRenderPipeline", &EntityPreviewViewportSettingsRequestBus::Events::LoadRenderPipeline)
+                ->Event("LoadRenderPipelineByAssetId", &EntityPreviewViewportSettingsRequestBus::Events::LoadRenderPipelineByAssetId)
+                ->Event("GetLastRenderPipelinePath", &EntityPreviewViewportSettingsRequestBus::Events::GetLastRenderPipelinePath)
+                ->Event("GetLastRenderPipelinePathWithoutAlias", &EntityPreviewViewportSettingsRequestBus::Events::GetLastRenderPipelinePathWithoutAlias)
+                ->Event("RegisterRenderPipelinePath", &EntityPreviewViewportSettingsRequestBus::Events::RegisterRenderPipelinePath)
+                ->Event("UnregisterRenderPipelinePath", &EntityPreviewViewportSettingsRequestBus::Events::UnregisterRenderPipelinePath)
+                ->Event("GetRegisteredRenderPipelinePaths", &EntityPreviewViewportSettingsRequestBus::Events::GetRegisteredRenderPipelinePaths)
                 ->Event("SetShadowCatcherEnabled", &EntityPreviewViewportSettingsRequestBus::Events::SetShadowCatcherEnabled)
                 ->Event("GetShadowCatcherEnabled", &EntityPreviewViewportSettingsRequestBus::Events::GetShadowCatcherEnabled)
                 ->Event("SetGridEnabled", &EntityPreviewViewportSettingsRequestBus::Events::SetGridEnabled)
@@ -188,6 +201,11 @@ namespace AtomToolsFramework
             "@gemroot:MaterialEditor@/Assets/MaterialEditor/LightingPresets/neutral_urban.lightingpreset.azasset");
     }
 
+    AZStd::string EntityPreviewViewportSettingsSystem::GetLastLightingPresetPathWithoutAlias() const
+    {
+        return GetPathWithoutAlias(GetLastLightingPresetPath());
+    }
+
     AZ::Data::AssetId EntityPreviewViewportSettingsSystem::GetLastLightingPresetAssetId() const
     {
         const auto& result = AZ::RPI::AssetUtils::MakeAssetId(GetLastLightingPresetPath(), 0);
@@ -288,6 +306,11 @@ namespace AtomToolsFramework
             "@gemroot:MaterialEditor@/Assets/MaterialEditor/ViewportModels/Shaderball.modelpreset.azasset");
     }
 
+    AZStd::string EntityPreviewViewportSettingsSystem::GetLastModelPresetPathWithoutAlias() const
+    {
+        return GetPathWithoutAlias(GetLastModelPresetPath());
+    }
+
     AZ::Data::AssetId EntityPreviewViewportSettingsSystem::GetLastModelPresetAssetId() const
     {
         const auto& result = AZ::RPI::AssetUtils::MakeAssetId(GetLastModelPresetPath(), 0);
@@ -375,6 +398,11 @@ namespace AtomToolsFramework
         return GetPathWithoutAlias(GetSettingsValue<AZStd::string>(
             "/O3DE/AtomToolsFramework/EntityPreviewViewportSettings/RenderPipelinePath",
             "@gemroot:Atom_Feature_Common@/Assets/Passes/MainRenderPipeline.azasset"));
+    }
+
+    AZStd::string EntityPreviewViewportSettingsSystem::GetLastRenderPipelinePathWithoutAlias() const
+    {
+        return GetPathWithoutAlias(GetLastRenderPipelinePath());
     }
 
     AZ::Data::AssetId EntityPreviewViewportSettingsSystem::GetLastRenderPipelineAssetId() const
