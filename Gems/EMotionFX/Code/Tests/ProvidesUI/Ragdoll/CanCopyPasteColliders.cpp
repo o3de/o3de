@@ -71,11 +71,7 @@ namespace EMotionFX
         Physics::MockJointHelpersInterface m_jointHelpers;
     };
 
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(CopyPasteRagdollCollidersFixture, DISABLED_CanCopyCollider)
-#else
     TEST_F(CopyPasteRagdollCollidersFixture, CanCopyCollider)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
         AZ::Data::Asset<Integration::ActorAsset> actorAsset =

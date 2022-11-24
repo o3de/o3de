@@ -623,6 +623,11 @@ namespace AtomToolsFramework
     void VisitFilesInFolder(
         const AZStd::string& folder, const AZStd::function<bool(const AZStd::string&)> visitorFn, bool recurse)
     {
+        if (!visitorFn)
+        {
+            return;
+        }
+
         AZStd::string fullFilter = folder + AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING + "*";
         AZ::StringFunc::Replace(fullFilter, "\\", "/");
 
@@ -660,6 +665,11 @@ namespace AtomToolsFramework
 
     void VisitFilesInScanFolders(const AZStd::function<bool(const AZStd::string&)> visitorFn)
     {
+        if (!visitorFn)
+        {
+            return;
+        }
+
         AZStd::vector<AZStd::string> scanFolders;
         scanFolders.reserve(100);
         AzToolsFramework::AssetSystemRequestBus::Broadcast(
@@ -691,7 +701,7 @@ namespace AtomToolsFramework
                     scanFolder,
                     [&](const AZStd::string& path)
                     {
-                        if (filterFn(path))
+                        if (!filterFn || filterFn(path))
                         {
                             AZStd::scoped_lock lock(resultsMutex);
                             results.emplace_back(path);

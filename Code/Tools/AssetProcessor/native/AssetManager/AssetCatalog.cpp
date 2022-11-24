@@ -1039,41 +1039,38 @@ namespace AssetProcessor
 
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_databaseMutex);
-            AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer returnedSources;
+            AzToolsFramework::AssetDatabase::SourceDatabaseEntry returnedSource;
 
-            if (m_db->GetSourcesBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), returnedSources))
+            if (m_db->GetSourceBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), returnedSource))
             {
-                if (!returnedSources.empty())
+                const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry = returnedSource;
+
+                AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanEntry;
+                if (m_db->GetScanFolderByScanFolderID(entry.m_scanFolderPK, scanEntry))
                 {
-                    AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry = returnedSources.front();
+                    watchFolder = scanEntry.m_scanFolder;
+                    // since we are returning the UUID of a source file, as opposed to the full assetId of a product file produced by that source file,
+                    // the subId part of the assetId will always be set to zero.
+                    assetInfo.m_assetId = AZ::Data::AssetId(entry.m_sourceGuid, 0);
 
-                    AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanEntry;
-                    if (m_db->GetScanFolderByScanFolderID(entry.m_scanFolderPK, scanEntry))
+                    assetInfo.m_relativePath = entry.m_sourceName;
+                    AZStd::string absolutePath;
+                    AzFramework::StringFunc::Path::Join(scanEntry.m_scanFolder.c_str(), assetInfo.m_relativePath.c_str(), absolutePath);
+                    assetInfo.m_sizeBytes = AZ::IO::SystemFile::Length(absolutePath.c_str());
+
+                    assetInfo.m_assetType = AZ::Uuid::CreateNull(); // most source files don't have a type!
+
+                    // Go through the list of source assets and see if this asset's file path matches any of the filters
+                    for (const auto& pair : m_sourceAssetTypeFilters)
                     {
-                        watchFolder = scanEntry.m_scanFolder;
-                        // since we are returning the UUID of a source file, as opposed to the full assetId of a product file produced by that source file,
-                        // the subId part of the assetId will always be set to zero.
-                        assetInfo.m_assetId = AZ::Data::AssetId(entry.m_sourceGuid, 0);
-
-                        assetInfo.m_relativePath = entry.m_sourceName;
-                        AZStd::string absolutePath;
-                        AzFramework::StringFunc::Path::Join(scanEntry.m_scanFolder.c_str(), assetInfo.m_relativePath.c_str(), absolutePath);
-                        assetInfo.m_sizeBytes = AZ::IO::SystemFile::Length(absolutePath.c_str());
-
-                        assetInfo.m_assetType = AZ::Uuid::CreateNull(); // most source files don't have a type!
-
-                        // Go through the list of source assets and see if this asset's file path matches any of the filters
-                        for (const auto& pair : m_sourceAssetTypeFilters)
+                        if (AZStd::wildcard_match(pair.first, assetInfo.m_relativePath))
                         {
-                            if (AZStd::wildcard_match(pair.first, assetInfo.m_relativePath))
-                            {
-                                assetInfo.m_assetType = pair.second;
-                                break;
-                            }
+                            assetInfo.m_assetType = pair.second;
+                            break;
                         }
-
-                        return true;
                     }
+
+                    return true;
                 }
             }
         }
