@@ -12,7 +12,7 @@
 #include <RHI/BufferView.h>
 #include <RHI/CommandList.h>
 #include <RHI/CommandPool.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <RHI/Conversion.h>
 #include <RHI/DescriptorSet.h>
 #include <RHI/Device.h>
 #include <RHI/Fence.h>
@@ -283,6 +283,7 @@ namespace AZ
 
             CommitScissorState();
             CommitViewportState();
+            CommitShadingRateState();
 
             const auto& context = static_cast<Device&>(GetDevice()).GetContext();
 
@@ -597,10 +598,11 @@ namespace AZ
                 FillClearValue(beginInfo.m_clearValues[idx], vClearValues[idx]);
             }
 
+            const RenderPass* renderpass = beginInfo.m_frameBuffer->GetRenderPass();
             VkRenderPassBeginInfo info{};
             info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             info.pNext = nullptr;
-            info.renderPass = beginInfo.m_frameBuffer->GetRenderPass()->GetNativeRenderPass();
+            info.renderPass = renderpass->GetNativeRenderPass();
             info.framebuffer = beginInfo.m_frameBuffer->GetNativeFramebuffer();
             info.renderArea.offset.x = 0;
             info.renderArea.offset.y = 0;
@@ -613,6 +615,33 @@ namespace AZ
 
             m_state.m_subpassIndex = 0;
             m_state.m_framebuffer = beginInfo.m_frameBuffer;
+
+            auto& device = static_cast<Device&>(GetDevice());
+            if (RHI::CheckBitsAll(
+                    device.GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerDraw | RHI::ShadingRateTypeFlags::PerImage))
+            {
+                const auto& subpasses = renderpass->GetDescriptor().m_subpassDescriptors;
+                auto findIt = AZStd::find_if(
+                    subpasses.begin(),
+                    subpasses.begin() + renderpass->GetDescriptor().m_subpassCount,
+                    [](const auto& subpassDesc)
+                    {
+                        return subpassDesc.m_fragmentShadingRateAttachment.IsValid();
+                    });
+
+                if (findIt != subpasses.end())
+                {
+                    SetFragmentShadingRate(
+                        RHI::ShadingRate::Rate1x1,
+                        RHI::ShadingRateCombinators{ RHI::ShadingRateCombinerOp::Passthrough, RHI::ShadingRateCombinerOp::Override });
+                }
+                else
+                {
+                    SetFragmentShadingRate(
+                        RHI::ShadingRate::Rate1x1,
+                        RHI::ShadingRateCombinators{ RHI::ShadingRateCombinerOp::Override, RHI::ShadingRateCombinerOp::Passthrough });
+                }
+            }
         }
 
         void CommandList::NextSubpass(VkSubpassContents contents)
@@ -849,6 +878,26 @@ namespace AZ
             m_state.m_scissorState.m_isDirty = false;
         }
 
+        void CommandList::CommitShadingRateState()
+        {
+            if (!m_state.m_shadingRateState.m_isDirty)
+            {
+                return;
+            }
+
+            VkExtent2D vkFragmentSize = ConvertFragmentShadingRate(m_state.m_shadingRateState.m_shadingRate);
+            AZStd::array<VkFragmentShadingRateCombinerOpKHR, RHI::ShadingRateCombinators::array_size> vkCombinators;
+            for (int i = 0; i < m_state.m_shadingRateState.m_shadingRateCombinators.size(); ++i)
+            {
+                vkCombinators[i] = ConvertShadingRateCombiner(m_state.m_shadingRateState.m_shadingRateCombinators[i]);
+            }
+
+            static_cast<Device&>(GetDevice())
+                .GetContext()
+                .CmdSetFragmentShadingRateKHR(m_nativeCommandBuffer, &vkFragmentSize, vkCombinators.data());
+            m_state.m_shadingRateState.m_isDirty = false;
+        }
+
         void CommandList::CommitShaderResourcePushConstants(VkPipelineLayout pipelineLayout, uint8_t rootConstantSize, const uint8_t *rootConstants)
         {
             static_cast<Device&>(GetDevice())
@@ -1045,6 +1094,23 @@ namespace AZ
                 nullptr,
                 0,
                 nullptr);
+        }
+
+        void CommandList::SetFragmentShadingRate(RHI::ShadingRate rate, const RHI::ShadingRateCombinators& combinators)
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+            if (!RHI::CheckBitsAll(device.GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerDraw))
+            {
+                AZ_Assert(false, "Per Draw shading rate is not supported on this platform");
+                return;
+            }
+
+            AZ_Assert(
+                static_cast<const PhysicalDevice&>(device.GetPhysicalDevice())
+                    .IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentShadingRate),
+                "VK_KHR_fragment_shading_rate is not supported on this platform");
+
+            m_state.m_shadingRateState.Set(rate, combinators);
         }
 
         void CommandList::ClearImage(const ResourceClearRequest& request)

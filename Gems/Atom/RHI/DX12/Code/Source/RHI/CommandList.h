@@ -82,13 +82,17 @@ namespace AZ
             void EndPredication() override;
             void BuildBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) override;
             void BuildTopLevelAccelerationStructure(const RHI::RayTracingTlas& rayTracingTlas) override;
+            void SetFragmentShadingRate(
+                RHI::ShadingRate rate,
+                const RHI::ShadingRateCombinators& combinators = s_defaultShadingRateCombinators) override;
             //////////////////////////////////////////////////////////////////////////
 
             void SetRenderTargets(
                 uint32_t renderTargetCount,
                 const ImageView* const* renderTarget,
                 const ImageView* depthStencilAttachment,
-                RHI::ScopeAttachmentAccess depthStencilAccess);
+                RHI::ScopeAttachmentAccess depthStencilAccess,
+                const ImageView* shadingRateAttachment);
 
             //////////////////////////////////////////////////////////////////////////
             // Tile Mapping Methods
@@ -192,6 +196,7 @@ namespace AZ
             void SetTopology(RHI::PrimitiveTopology topology);
             void CommitViewportState();
             void CommitScissorState();
+            void CommitShadingRateState();
 
             void ExecuteIndirect(const RHI::IndirectArguments& arguments);
 
@@ -226,6 +231,7 @@ namespace AZ
                 RHI::PrimitiveTopology m_topology = RHI::PrimitiveTopology::Undefined;
                 RHI::CommandListViewportState m_viewportState;
                 RHI::CommandListScissorState m_scissorState;
+                RHI::CommandListShadingRateState m_shadingRateState;
 
                 // Array of shader resource bindings, indexed by command pipe.
                 AZStd::array<ShaderResourceBindings, static_cast<size_t>(RHI::PipelineStateType::Count)> m_bindingsByPipe;
@@ -238,7 +244,6 @@ namespace AZ
 
                 // Signal if the commandlist is using custom sample positions for multisample
                 bool m_customSamplePositions = false;
-
             } m_state;
 
             AZStd::shared_ptr<DescriptorContext> m_descriptorContext;

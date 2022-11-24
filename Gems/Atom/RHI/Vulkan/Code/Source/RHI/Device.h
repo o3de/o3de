@@ -115,6 +115,16 @@ namespace AZ
             VkBuffer CreateBufferResouce(const RHI::BufferDescriptor& descriptor) const;
             void DestroyBufferResource(VkBuffer vkBuffer) const;
 
+            // Supported modes when specifiying the shading rate through an image.
+            enum class ShadingRateImageMode : uint32_t
+            {
+                None,           // Not supported
+                ImageAttachment,// Using the VK_KHR_fragment_shading_rate extension
+                DensityMap      // Using VK_EXT_fragment_density_map extension
+            };
+
+            ShadingRateImageMode GetImageShadingRageMode() const;
+
         private:
             Device();
 
@@ -141,6 +151,7 @@ namespace AZ
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::ImageDescriptor& descriptor) override;
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::BufferDescriptor& descriptor) override;
             void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
+            RHI::ShadingRateImageValue ConvertShadingRate(RHI::ShadingRate rate) override;
             //////////////////////////////////////////////////////////////////////////
 
             void InitFeaturesAndLimits(const PhysicalDevice& physicalDevice);
@@ -192,6 +203,8 @@ namespace AZ
 
             RHI::Ptr<NullDescriptorManager> m_nullDescriptorManager;
             bool m_isXrNativeDevice = false;
+
+            ShadingRateImageMode m_imageShadingRateMode = ShadingRateImageMode::None;
         };
 
         template<typename ObjectType, typename ...Args>
