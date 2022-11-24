@@ -256,11 +256,6 @@ namespace AzToolsFramework
         // EditorComponentModeNotificationBus overrides ...
         void ActiveComponentModeChanged(const AZ::Uuid& componentType) override;
 
-        // Save the offset of the scroll bar before entering Component Mode to return to after leaving Component Mode
-        AZStd::optional<int> m_verticalScrollOffset;
-        // Save the offset of scroll bar when Component Mode has been entered
-        AZStd::optional<int> m_componentModeVerticalScrollOffset;
-
         // EntityPropertEditorRequestBus overrides ...
         void GetSelectedAndPinnedEntities(EntityIdList& selectedEntityIds) override;
         void GetSelectedEntities(EntityIdList& selectedEntityIds) override;
