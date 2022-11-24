@@ -59,21 +59,6 @@ namespace AZ
         void DownsampleSinglePassMipChainPass::FrameBeginInternal(FramePrepareParams params)
         {
             SetConstants();
-
-            if (m_globalAtomicBuffer)
-            {
-                // Clear Global Atomic.
-                auto* buffer = static_cast<SpdGlobalAtomicBuffer*>(m_globalAtomicBuffer->Map(sizeof(SpdGlobalAtomicBuffer), 0));
-                {
-                    buffer->m_counter = 0;
-                }
-                m_globalAtomicBuffer->Unmap();
-            }
-            else
-            {
-                AZ_Assert(false, "DownsampleSingelPassMipChainPass Global Atomic Buffer has not been created.");
-            }
-
             ComputePass::FrameBeginInternal(params);
         }
 
@@ -134,11 +119,14 @@ namespace AZ
 
         void DownsampleSinglePassMipChainPass::BuildGlobalAtomicBuffer()
         {
+            const SpdGlobalAtomicBuffer initialData = {0};
+
             RPI::CommonBufferDescriptor descriptor;
             descriptor.m_poolType = RPI::CommonBufferPoolType::ReadWrite;
             descriptor.m_bufferName = "DownsampleSinglePassMipChainPass GlobalAtomic";
             descriptor.m_elementSize = sizeof(SpdGlobalAtomicBuffer);
             descriptor.m_byteCount = sizeof(SpdGlobalAtomicBuffer);
+            descriptor.m_bufferData = reinterpret_cast<const void*>(&initialData);
             m_globalAtomicBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(descriptor);
             AZ_Assert(m_globalAtomicBuffer, "DownsampleSinglePassMipChainPass Building Global Atomic Buffer failed.")
         }
