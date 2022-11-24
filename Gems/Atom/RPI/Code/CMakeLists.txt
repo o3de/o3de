@@ -17,8 +17,6 @@ else()
     set(MASKED_OCCLUSION_CULLING_FILES "")
 endif()
 
-include(3rdParty/FetchSPD.cmake)
-
 ly_add_target(
     NAME Atom_RPI.Public STATIC
     NAMESPACE Gem
@@ -27,6 +25,7 @@ ly_add_target(
         atom_rpi_public_files.cmake
         ../Assets/atom_rpi_asset_files.cmake
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        atom_rpi_fidelity_fx_files.cmake
         ${MASKED_OCCLUSION_CULLING_FILES}
     PLATFORM_INCLUDE_FILES
         ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common/${PAL_TRAIT_COMPILER_ID}/atom_rpi_public_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
@@ -34,7 +33,6 @@ ly_add_target(
         PRIVATE
             Source
             ${pal_source_dir}
-            ${SPD_INCLUDE_PATH}
         PUBLIC
             Include
             External

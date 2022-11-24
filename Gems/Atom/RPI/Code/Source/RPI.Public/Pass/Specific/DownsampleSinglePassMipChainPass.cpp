@@ -16,8 +16,8 @@
 #ifdef _MSC_VER
 #pragma warning(disable: 4505) // unreferenced local function has been removed.
 #endif
-#include <ffx_a.h>
-#include <ffx_spd.h>
+#include <FidelityFX/ffx-spd/ffx_a.h>
+#include <FidelityFX/ffx-spd/ffx_spd.h>
 
 namespace AZ
 {

@@ -31,7 +31,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 
 #define A_GPU
 #define A_HLSL
-#include <3rdParty/Features/PostProcessing/ffx-spd/ffx_a.h>
+#include <External/FidelityFX/ffx-spd/ffx_a.h>
 
 groupshared AU1 s_spdCounter;
 
@@ -133,8 +133,8 @@ AF4 SpdReduce4(AF4 v0, AF4 v1, AF4 v2, AF4 v3)
     return AF4(minValue, avgValue, maxValue, weightValue);
 }
 
-#include <3rdParty/Features/PostProcessing/ffx-spd/ffx_spd.h>
- 
+#include <External/FidelityFX/ffx-spd/ffx_spd.h>
+
 [numthreads(256, 1, 1)]
 void MainCS(uint3 workGroupId : SV_GroupID, uint localThreadIndex : SV_GroupIndex)
 {
