@@ -164,8 +164,11 @@ namespace AZ
         void DownsampleSinglePassMipChainPass::GetInputInfo()
         {
             // Get the input/output mip chain attachment for this pass (at binding 0)
-            AZ_Assert(
-                GetInputOutputCount() > 0, "[DownsampleSinglePassMipChainPass '%s']: must have an input/output", GetPathName().GetCStr());
+            AZ_Error(
+                "DownsampleSinglePassMipChainPass",
+                GetInputOutputCount() > 0,
+                "[DownsampleSinglePassMipChainPass '%s']: must have an input/output",
+                GetPathName().GetCStr());
             PassAttachment* attachment = GetInputOutputBinding(0).GetAttachment().get();
 
             if (attachment)
