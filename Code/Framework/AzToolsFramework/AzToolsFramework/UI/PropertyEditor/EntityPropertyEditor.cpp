@@ -5906,7 +5906,7 @@ namespace AzToolsFramework
                 if (componentEditor->IsSelected())
                 {
                     // scroll to the relevant component card
-                    m_gui->m_componentList->verticalScrollBar()->setValue(componentEditor->pos().y());
+                    m_gui->m_componentList->ensureWidgetVisible(componentEditor);
                 }
             }
 
