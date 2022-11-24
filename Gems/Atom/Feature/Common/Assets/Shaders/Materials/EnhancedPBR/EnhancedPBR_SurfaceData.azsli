@@ -23,7 +23,10 @@
     class SurfaceData_EnhancedPBR : SurfaceData_StandardPBR
     {
         AnisotropicSurfaceData anisotropy;
+        
+#if ENABLE_TRANSMISSION
         TransmissionSurfaceData transmission;
+#endif
 
         //! Subsurface scattering parameters
         float subsurfaceScatteringFactor;
@@ -35,9 +38,15 @@
 
     class SurfaceData_EnhancedPBR
     {
+#if ENABLE_CLEAR_COAT
         ClearCoatSurfaceData clearCoat;
+#endif
+
         AnisotropicSurfaceData anisotropy;
+        
+#if ENABLE_TRANSMISSION
         TransmissionSurfaceData transmission;
+#endif
 
         // ------- BasePbrSurfaceData -------
     

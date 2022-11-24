@@ -43,8 +43,9 @@ namespace AtomToolsFramework
         const AZ::Render::LightingPreset& GetLightingPreset() const override;
         bool SaveLightingPreset(const AZStd::string& path) override;
         bool LoadLightingPreset(const AZStd::string& path) override;
-        bool LoadLightingPresetByAssetId(const AZ::Data::AssetId& assetId) override;
         AZStd::string GetLastLightingPresetPath() const override;
+        AZStd::string GetLastLightingPresetPathWithoutAlias() const override;
+        bool LoadLightingPresetByAssetId(const AZ::Data::AssetId& assetId) override;
         AZ::Data::AssetId GetLastLightingPresetAssetId() const override;
         void RegisterLightingPresetPath(const AZStd::string& path) override;
         void UnregisterLightingPresetPath(const AZStd::string& path) override;
@@ -56,6 +57,7 @@ namespace AtomToolsFramework
         bool LoadModelPreset(const AZStd::string& path) override;
         bool LoadModelPresetByAssetId(const AZ::Data::AssetId& assetId) override;
         AZStd::string GetLastModelPresetPath() const override;
+        AZStd::string GetLastModelPresetPathWithoutAlias() const override;
         AZ::Data::AssetId GetLastModelPresetAssetId() const override;
         void RegisterModelPresetPath(const AZStd::string& path) override;
         void UnregisterModelPresetPath(const AZStd::string& path) override;
@@ -64,6 +66,7 @@ namespace AtomToolsFramework
         bool LoadRenderPipeline(const AZStd::string& path) override;
         bool LoadRenderPipelineByAssetId(const AZ::Data::AssetId& assetId) override;
         AZStd::string GetLastRenderPipelinePath() const override;
+        AZStd::string GetLastRenderPipelinePathWithoutAlias() const override;
         AZ::Data::AssetId GetLastRenderPipelineAssetId() const override;
         void RegisterRenderPipelinePath(const AZStd::string& path) override;
         void UnregisterRenderPipelinePath(const AZStd::string& path) override;

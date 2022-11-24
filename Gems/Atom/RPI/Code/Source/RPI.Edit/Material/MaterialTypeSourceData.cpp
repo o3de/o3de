@@ -139,7 +139,7 @@ namespace AZ
 
         /*static*/ MaterialTypeSourceData::PropertyGroup* MaterialTypeSourceData::PropertyGroup::AddPropertyGroup(AZStd::string_view name, AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& toPropertyGroupList)
         {
-            if (!MaterialPropertyId::CheckIsValidName(name))
+            if (!MaterialUtils::CheckIsValidGroupName(name))
             {
                 return nullptr;
             }
@@ -212,7 +212,7 @@ namespace AZ
 
         MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::PropertyGroup::AddProperty(AZStd::string_view name)
         {
-            if (!MaterialPropertyId::CheckIsValidName(name))
+            if (!MaterialUtils::CheckIsValidPropertyName(name))
             {
                 return nullptr;
             }
@@ -667,7 +667,14 @@ namespace AZ
             MaterialNameContext materialNameContext,
             const MaterialTypeSourceData::PropertyGroup* propertyGroup) const
         {
-            if (!MaterialPropertyId::CheckIsValidName(propertyGroup->m_name))
+            if (!MaterialUtils::CheckIsValidGroupName(propertyGroup->m_name))
+            {
+                return false;
+            }
+
+            // If there were prior failures, continued processing could spam a bunch of irrelevant error messages,
+            // particularly from ResolveSourceValue() and CreateFunctor() functions.
+            if (materialTypeAssetCreator.IsFailed())
             {
                 return false;
             }
@@ -678,7 +685,7 @@ namespace AZ
             {
                 // Register the property...
 
-                if (!MaterialPropertyId::CheckIsValidName(property->GetName()))
+                if (!MaterialUtils::CheckIsValidPropertyName(property->GetName()))
                 {
                     return false;
                 }
@@ -761,6 +768,13 @@ namespace AZ
                         materialTypeAssetCreator.GetMaterialPropertiesLayout(),
                         [&](const char* message){ materialTypeAssetCreator.ReportError("%s", message); });
                     materialTypeAssetCreator.SetPropertyValue(propertyId, resolvedValue);
+                }
+
+                // If there were prior failures, continued processing could spam a bunch of irrelevant error messages,
+                // particularly from ResolveSourceValue() and CreateFunctor() functions.
+                if (materialTypeAssetCreator.IsFailed())
+                {
+                    return false;
                 }
             }
 
