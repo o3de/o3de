@@ -225,28 +225,30 @@ namespace AZ
             }
 
             // Build "GlobalAtomic" buffer attachment.
-            auto bufferDescriptor = RHI::BufferDescriptor(RHI::BufferBindFlags::ShaderReadWrite, 4);
-            bufferDescriptor.m_alignment = 4;
+            {
+                auto bufferDescriptor = RHI::BufferDescriptor(RHI::BufferBindFlags::ShaderReadWrite, 4);
+                bufferDescriptor.m_alignment = 4;
 
-            m_counterPassAttachment = aznew PassAttachment();
-            m_counterPassAttachment->m_name = "GlobalAtomic";
-            const Name attachmentPath(AZStd::string::format(
-                "%s.%s",
-                GetPathName().GetCStr(),
-                m_counterPassAttachment->m_name.GetCStr()));
-            m_counterPassAttachment->m_path = attachmentPath;
-            m_counterPassAttachment->m_lifetime = RHI::AttachmentLifetimeType::Imported;
-            m_counterPassAttachment->m_descriptor = bufferDescriptor;
-            m_counterPassAttachment->m_importedResource = m_globalAtomicBuffer;
-            m_ownedAttachments.push_back(m_counterPassAttachment);
+                m_counterPassAttachment = aznew PassAttachment();
+                m_counterPassAttachment->m_name = "GlobalAtomic";
+                const Name attachmentPath(AZStd::string::format(
+                        "%s.%s",
+                        GetPathName().GetCStr(),
+                        m_counterPassAttachment->m_name.GetCStr()));
+                m_counterPassAttachment->m_path = attachmentPath;
+                m_counterPassAttachment->m_lifetime = RHI::AttachmentLifetimeType::Imported;
+                m_counterPassAttachment->m_descriptor = bufferDescriptor;
+                m_counterPassAttachment->m_importedResource = m_globalAtomicBuffer;
+                m_ownedAttachments.push_back(m_counterPassAttachment);
 
-            PassAttachmentBinding binding;
-            binding.m_name = m_counterPassAttachment->m_name;
-            binding.m_slotType = PassSlotType::InputOutput;
-            binding.m_shaderInputName = GlobalAtomicName;
-            binding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
-            binding.SetAttachment(m_counterPassAttachment);
-            AddAttachmentBinding(binding);
+                PassAttachmentBinding binding;
+                binding.m_name = m_counterPassAttachment->m_name;
+                binding.m_slotType = PassSlotType::InputOutput;
+                binding.m_shaderInputName = GlobalAtomicName;
+                binding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
+                binding.SetAttachment(m_counterPassAttachment);
+                AddAttachmentBinding(binding);
+            }
         }
 
         void DownsampleSinglePassMipChainPass::SetConstants()
