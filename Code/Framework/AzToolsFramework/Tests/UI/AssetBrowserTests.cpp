@@ -436,6 +436,7 @@ namespace UnitTest
 
     TEST_F(AssetBrowserTest, CheckCorrectNumberOfEntriesInTableView)
     {
+        m_searchWidget->GetFilter()->RemoveFilter(m_searchWidget->GetProjectSourceFilter());
         m_filterModel->FilterUpdatedSlotImmediate();
         const int tableViewRowcount = m_tableModel->rowCount();
 
@@ -456,6 +457,7 @@ namespace UnitTest
          */
 
         // Apply string filter
+        m_searchWidget->GetFilter()->RemoveFilter(m_searchWidget->GetProjectSourceFilter());
         m_searchWidget->SetTextFilter(QString("source_1"));
         m_filterModel->FilterUpdatedSlotImmediate();
 
