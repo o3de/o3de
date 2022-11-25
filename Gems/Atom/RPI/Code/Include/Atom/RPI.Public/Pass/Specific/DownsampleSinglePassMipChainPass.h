@@ -58,12 +58,15 @@ namespace AZ::RPI
 
         // Height and width of the input mip chain texture
         AZStd::array<uint32_t, 2> m_inputImageSize = {0, 0};
+        // Number of mip levels in the input mip chain texture
+        uint32_t m_inputMipLevelCount = 0;
 
         // Base height and width of SPD, which are of power of 2.
         AZStd::array<uint32_t, 2> m_baseSpdImageSize = {0, 0};
-
-        // Number of mip levels in the input mip chain texture
-        uint32_t m_mipLevelCount = 0;
+        // Number of mip levels for SPD computation
+        // which can be slightly greater than m_inputMipLevelCount for
+        // computation of non power of 2 width.
+        uint32_t m_baseMipLevelCount = 0;
 
         bool m_indicesAreInitialized = false;
         uint32_t m_targetThreadCountWidth = 1;

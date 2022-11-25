@@ -10,15 +10,6 @@
 #include <Atom/RPI.Public/Pass/Specific/DownsampleSinglePassMipChainPass.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 
-// For "A_CPU" macro, refer ffx_a.h and below:
-// https://github.com/GPUOpen-Effects/FidelityFX-SPD/blob/c52944f547884774a1b33066f740e6bf89f927f5/sample/src/DX12/SPDIntegration.hlsl
-#define A_CPU
-#ifdef _MSC_VER
-#pragma warning(disable: 4505) // unreferenced local function has been removed.
-#endif
-#include <FidelityFX/ffx-spd/ffx_a.h>
-#include <FidelityFX/ffx-spd/ffx_spd.h>
-
 namespace AZ::RPI
 {
     Ptr<DownsampleSinglePassMipChainPass> DownsampleSinglePassMipChainPass::Create(const PassDescriptor& descriptor)
@@ -90,7 +81,7 @@ namespace AZ::RPI
 
         RHI::ResultCode result = RHI::ResultCode::Success;
         RHI::ImageViewDescriptor imageViewDescriptor;
-        for (uint32_t mipIndex = 0; mipIndex < GetMin(m_mipLevelCount, SpdMipLevelCountMax); ++mipIndex)
+        for (uint32_t mipIndex = 0; mipIndex < GetMin(m_inputMipLevelCount, SpdMipLevelCountMax); ++mipIndex)
         {
             imageViewDescriptor.m_mipSliceMin = static_cast<uint16_t>(mipIndex);
             imageViewDescriptor.m_mipSliceMax = static_cast<uint16_t>(mipIndex);
@@ -159,7 +150,7 @@ namespace AZ::RPI
 
         if (attachment)
         {
-            m_mipLevelCount = attachment->m_descriptor.m_image.m_mipLevels;
+            m_inputMipLevelCount = attachment->m_descriptor.m_image.m_mipLevels;
             m_inputImageSize[0] = attachment->m_descriptor.m_image.m_size.m_width;
             m_inputImageSize[1] = attachment->m_descriptor.m_image.m_size.m_height;
         }
@@ -167,36 +158,41 @@ namespace AZ::RPI
 
     void DownsampleSinglePassMipChainPass::CalculateBaseSpdImageSize()
     {
-        const auto adjust = [&] (uint32_t value) -> uint32_t
+        const auto adjust = [&] (uint32_t value, uint32_t& outValue) -> uint32_t
         {
-            const auto logValue = static_cast<uint32_t>(floorf(log2f(value * 1.f)));
+            auto logValue = static_cast<uint32_t>(floorf(log2f(value * 1.f)));
             if (static_cast<uint32_t>(1 << logValue) == value)
             {
-                return value;
+                outValue = value;
             }
             else
             {
-                return static_cast<uint32_t>(1 << (logValue + 1));
+                logValue += 1;
+                outValue = static_cast<uint32_t>(1 << logValue);
             }
+            return logValue;
+
         };
-        m_baseSpdImageSize[0] = adjust(m_inputImageSize[0]);
-        m_baseSpdImageSize[1] = adjust(m_inputImageSize[1]);
+        const uint32_t logValue0 = adjust(m_inputImageSize[0], m_baseSpdImageSize[0]);
+        const uint32_t logValue1 = adjust(m_inputImageSize[1], m_baseSpdImageSize[1]);
+        m_baseMipLevelCount = GetMax(logValue0, logValue1);
+        
+        m_targetThreadCountWidth = GetMax<uint32_t>(1, m_baseSpdImageSize[0] >> GloballyCoherentMipIndex);
+        m_targetThreadCountHeight = GetMax<uint32_t>(1, m_baseSpdImageSize[1] >> GloballyCoherentMipIndex);
     }
 
     void DownsampleSinglePassMipChainPass::BuildPassAttachment()
     {
         // Build "Mip6" image attachment.
         {
-            const auto width = GetMax<uint32_t>(1, m_baseSpdImageSize[0] >> GloballyCoherentMipIndex);
-            const auto height = GetMax<uint32_t>(1, m_baseSpdImageSize[1] >> GloballyCoherentMipIndex);
             // SPD stores each mip level value into groupshared float arrays except mip 6,
             // and do into this "Mip6" image only for mip 6. So the precision of the image
             // should be same as float variable (32 bit float).
             m_mip6ImageDescriptor =
                 RHI::ImageDescriptor::Create2D(
                     RHI::ImageBindFlags::ShaderReadWrite,
-                    width, 
-                    height,
+                    m_targetThreadCountWidth,
+                    m_targetThreadCountHeight,
                     RHI::Format::R32G32B32A32_FLOAT);
 
             m_mip6PassAttachment = aznew PassAttachment();
@@ -263,28 +259,19 @@ namespace AZ::RPI
         {
             return;
         }
-        ShaderResourceGroup& srg = *m_shaderResourceGroup;
 
-        varAU2(dispatchThreadGroupCountXY);
-        varAU2(workGroupOffset); // needed if Left and Top are not 0,0
-        varAU2(numWorkGroupsAndMips);
-        varAU4(rectInfo) = initAU4(
-            0, // left
-            0, // top
-            m_baseSpdImageSize[0], // width
-            m_baseSpdImageSize[1]); // height
-        SpdSetup(dispatchThreadGroupCountXY, workGroupOffset, numWorkGroupsAndMips, rectInfo);
+        // For the setting up of the parameter for SPD shader, refer to:
+        // https://github.com/GPUOpen-Effects/FidelityFX-SPD/blob/c52944f547884774a1b33066f740e6bf89f927f5/ffx-spd/ffx_spd.h#L327
 
-        const AZStd::array<AU1, 2> workGroupOffsetArray =
-            { workGroupOffset[0], workGroupOffset[1] };
+        const AZStd::array<uint32_t, 2> workGroupOffsetArray = {0, 0};
         bool succeeded = true;
-        succeeded &= srg.SetConstant(m_numWorkGroupsIndex, numWorkGroupsAndMips[0]);
-        succeeded &= srg.SetConstant(m_mipsIndex, numWorkGroupsAndMips[1]);
+        ShaderResourceGroup& srg = *m_shaderResourceGroup;
+        succeeded &= srg.SetConstant(
+            m_numWorkGroupsIndex,
+            m_targetThreadCountWidth * m_targetThreadCountHeight);
+        succeeded &= srg.SetConstant(m_mipsIndex, m_baseMipLevelCount);
         succeeded &= srg.SetConstantArray(m_workGroupOffsetIndex, workGroupOffsetArray);
         succeeded &= srg.SetConstantArray(m_imageSizeIndex, m_inputImageSize);
         AZ_Assert(succeeded, "DownsampleSinglePassMipChainPass failed to set constants.");
-
-        m_targetThreadCountWidth = dispatchThreadGroupCountXY[0];
-        m_targetThreadCountHeight = dispatchThreadGroupCountXY[1];
     }
 }   // namespace AZ::RPI
