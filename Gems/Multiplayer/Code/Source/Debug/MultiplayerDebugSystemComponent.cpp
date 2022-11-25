@@ -16,6 +16,8 @@
 #include <AzNetworking/Framework/INetworkInterface.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/MultiplayerConstants.h>
+#include <Multiplayer/MultiplayerPerformanceStats.h>
+#include <Multiplayer/MultiplayerMetrics.h>
 #include <Atom/Feature/ImGui/SystemBus.h>
 #include <ImGuiContextScope.h>
 #include <ImGui/ImGuiPass.h>
@@ -93,6 +95,11 @@ namespace Multiplayer
         [[maybe_unused]] const AZStd::string& name,
         [[maybe_unused]] AZStd::vector<MultiplayerAuditingElement>&& entryDetails)
     {
+        if (category == AuditCategory::Desync)
+        {
+            INCREMENT_PERFORMANCE_STAT(MultiplayerStat_DesyncCorrections);
+        }
+
 #ifdef IMGUI_ENABLED
         while (m_auditTrailElems.size() >= net_DebutAuditTrail_HistorySize)
         {

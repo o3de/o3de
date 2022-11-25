@@ -56,10 +56,11 @@ namespace AtomToolsFramework
         setLayout(new QVBoxLayout());
 
         m_editorToolbar = aznew GraphCanvas::AssetEditorToolbar(m_toolId);
+        m_editorToolbar->setParent(this);
         layout()->addWidget(m_editorToolbar);
 
         // Screenshot
-        m_takeScreenshot = new QToolButton();
+        m_takeScreenshot = new QToolButton(m_editorToolbar);
         m_takeScreenshot->setToolTip("Captures a full resolution screenshot of the entire graph or selected nodes into the clipboard");
         m_takeScreenshot->setIcon(QIcon(":/Icons/screenshot.png"));
         m_takeScreenshot->setEnabled(false);
@@ -74,10 +75,10 @@ namespace AtomToolsFramework
         m_graphicsView->SetEditorId(m_toolId);
         layout()->addWidget(m_graphicsView);
 
-        m_presetEditor = aznew GraphCanvas::ConstructPresetDialog(nullptr);
+        m_presetEditor = aznew GraphCanvas::ConstructPresetDialog(this);
         m_presetEditor->SetEditorId(m_toolId);
 
-        m_presetWrapper = new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons);
+        m_presetWrapper = new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons, this);
         m_presetWrapper->setGuest(m_presetEditor);
         m_presetWrapper->hide();
 
@@ -610,8 +611,7 @@ namespace AtomToolsFramework
 
                     for (GraphCanvas::Endpoint proposedEndpoint : endpoints)
                     {
-                        QAction* action = aznew GraphCanvas::EndpointSelectionAction(proposedEndpoint);
-                        menu.addAction(action);
+                        menu.addAction(aznew GraphCanvas::EndpointSelectionAction(proposedEndpoint));
                     }
 
                     QAction* result = menu.exec(screenPoint);

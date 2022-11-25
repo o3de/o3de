@@ -155,7 +155,7 @@ namespace MaterialCanvas
         documentType.m_defaultDocumentTemplate =
             AtomToolsFramework::GetPathWithoutAlias(AtomToolsFramework::GetSettingsValue<AZStd::string>(
                 "/O3DE/Atom/MaterialCanvas/DefaultMaterialGraphTemplate",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/blank.materialgraphtemplate"));
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/blank_graph.materialgraphtemplate"));
         return documentType;
     }
 

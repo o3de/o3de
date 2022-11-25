@@ -65,6 +65,12 @@
         }
     ],
     "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "CastShadows.lua"
+            }
+        }
     ],
     "uvNameMap": {
         "UV0": "Tiled",
