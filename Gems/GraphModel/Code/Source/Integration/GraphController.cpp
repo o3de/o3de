@@ -244,7 +244,7 @@ namespace GraphModelIntegration
                 AZ::Vector2 position(0, 0);
 
                 const auto metadataIter = graphCanvasMetadata->m_nodeMetadata.find(nodeId);
-                if (metadataIter != graphCanvasMetadata->m_nodeMetadata.end(); metadataIter->second)
+                if (metadataIter != graphCanvasMetadata->m_nodeMetadata.end() && metadataIter->second)
                 {
                     GraphCanvas::EntitySaveDataRequestBus::Event(
                         nodeUiId, &GraphCanvas::EntitySaveDataRequests::ReadSaveData, *metadataIter->second);
