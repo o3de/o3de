@@ -10,10 +10,16 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Math/Color.h>
+#include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyColorCtrl.hxx>
 
+// This needs to be forward-declared so that we can make it a friend class.
 namespace AzToolsFramework
+{
+    class GlobalPaintBrushSettings;
+}
+
+namespace AzFramework
 {
     /*
        Paint brushes have multiple settings that all come together to produce the results that we're used to seeing in
@@ -87,17 +93,21 @@ namespace AzToolsFramework
         (Median, 2)
     );
 
-    //! Defines the specific global paintbrush settings.
-    //! They can be modified directly through the Property Editor or indirectly via the PaintBrushSettingsRequestBus.
+    //! Defines the specific paintbrush settings to use with a paintbrush.
     class PaintBrushSettings
     {
     public:
+
+        // GlobalPaintBrushSettings is declared as a friend class even though it's a subclass so that it can have the permissions
+        // to serialize an EditContext for PaintBrushSettings.
+        friend class AzToolsFramework::GlobalPaintBrushSettings;
+
         AZ_CLASS_ALLOCATOR(PaintBrushSettings, AZ::SystemAllocator, 0);
         AZ_TYPE_INFO(PaintBrushSettings, "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}");
         static void Reflect(AZ::ReflectContext* context);
 
         PaintBrushSettings() = default;
-        ~PaintBrushSettings() = default;
+        virtual ~PaintBrushSettings() = default;
 
         // Overall paintbrush settings
 
@@ -182,8 +192,6 @@ namespace AzToolsFramework
         void SetSmoothingSpacing(size_t spacing);
 
     protected:
-        AzToolsFramework::ColorEditorConfiguration GetColorEditorConfig();
-
         AZ::u32 OnColorChanged();
         AZ::u32 OnIntensityChanged();
         AZ::u32 OnOpacityChanged();
@@ -206,6 +214,13 @@ namespace AzToolsFramework
         float GetSizeMin() const;
         float GetSizeMax() const;
         float GetSizeStep() const;
+
+        //! Notification functions for editing changes that aren't used for anything in PaintBrushSettings but can be overridden.
+        //! They exist so that the GlobalPaintBrushSettings can notify listeners whenever the global settings change.
+        virtual void OnSizeRangeChanged();
+        virtual void OnBrushModeChanged();
+        virtual void OnColorModeChanged();
+        virtual AZ::u32 OnSettingsChanged();
 
         //! Brush settings brush mode
         PaintBrushMode m_brushMode = PaintBrushMode::Paintbrush;
@@ -252,16 +267,14 @@ namespace AzToolsFramework
         float m_intensityPercent = 100.0f;
         //! Brush stroke opacity percent (0=transparent brush stroke, 100=opaque brush stroke)
         float m_opacityPercent = 100.0f;
-
-        AZ::u32 OnSettingsChanged();
     };
 
-} // namespace AzToolsFramework
+} // namespace AzFramework
 
 namespace AZ
 {
-    AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::PaintBrushMode, "{88C6AEA1-5424-4F3A-9E22-6D55C050F06C}");
-    AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::PaintBrushColorMode, "{0D3B0981-BFB3-47E0-9E28-99CFB540D5AC}");
-    AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::PaintBrushBlendMode, "{8C52DEAF-C45B-4C3B-8300-5DBC44CE30AF}");
-    AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::PaintBrushSmoothMode, "{7FEF32F1-54B8-419C-A11E-1CE821BEDF1D}");
+    AZ_TYPE_INFO_SPECIALIZE(AzFramework::PaintBrushMode, "{88C6AEA1-5424-4F3A-9E22-6D55C050F06C}");
+    AZ_TYPE_INFO_SPECIALIZE(AzFramework::PaintBrushColorMode, "{0D3B0981-BFB3-47E0-9E28-99CFB540D5AC}");
+    AZ_TYPE_INFO_SPECIALIZE(AzFramework::PaintBrushBlendMode, "{8C52DEAF-C45B-4C3B-8300-5DBC44CE30AF}");
+    AZ_TYPE_INFO_SPECIALIZE(AzFramework::PaintBrushSmoothMode, "{7FEF32F1-54B8-419C-A11E-1CE821BEDF1D}");
 } // namespace AZ
