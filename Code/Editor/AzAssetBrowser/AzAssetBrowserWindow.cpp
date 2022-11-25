@@ -257,6 +257,12 @@ void AzAssetBrowserWindow::CreateSwitchViewMenu()
     connect(m_treeViewMode, &QAction::triggered, this, &AzAssetBrowserWindow::SetTreeViewMode);
     m_viewSwitchMenu->addAction(m_treeViewMode);
 
+    m_projectSourceAssets = new QAction(tr("Project Source Assets"), this);
+    m_projectSourceAssets->setCheckable(true);
+    m_projectSourceAssets->setChecked(true);
+    connect(m_projectSourceAssets, &QAction::triggered, this, &AzAssetBrowserWindow::FilterProjectSourceAssets);
+    m_viewSwitchMenu->addAction(m_projectSourceAssets);
+
     UpdateDisplayInfo();
 }
 
@@ -318,6 +324,18 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
     {
         m_ui->m_assetBrowserTableViewWidget->setVisible(hasFilter);
         m_ui->m_assetBrowserTreeViewWidget->setVisible(!hasFilter);
+    }
+}
+
+void AzAssetBrowserWindow::FilterProjectSourceAssets()
+{
+    if (m_projectSourceAssets->isChecked())
+    {
+        m_ui->m_searchWidget->GetFilter()->AddFilter(m_ui->m_searchWidget->GetProjectSourceFilter());
+    }
+    else
+    {
+        m_ui->m_searchWidget->GetFilter()->RemoveFilter(m_ui->m_searchWidget->GetProjectSourceFilter());
     }
 }
 

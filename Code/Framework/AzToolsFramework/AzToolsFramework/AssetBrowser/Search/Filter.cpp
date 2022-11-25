@@ -405,6 +405,30 @@ namespace AzToolsFramework
         }
 
         //////////////////////////////////////////////////////////////////////////
+        // AssetPathFilter
+        //////////////////////////////////////////////////////////////////////////
+        AssetPathFilter::AssetPathFilter()
+        {
+        }
+
+        void AssetPathFilter::SetAssetPath(AZ::IO::Path path)
+        {
+            m_assetPath = QString::fromUtf8(path.c_str());
+        }
+
+        QString AssetPathFilter::GetNameInternal() const
+        {
+            return m_assetPath;
+        }
+
+        bool AssetPathFilter::MatchInternal(const AssetBrowserEntry* entry) const
+        {
+            QStringList projectDirectory = m_assetPath.split("\\");
+            QString entryPath = QString::fromUtf8(entry->GetFullPath().data());
+            return StringMatch(projectDirectory.last(), entryPath);
+        }
+
+        //////////////////////////////////////////////////////////////////////////
         // CompositeFilter
         //////////////////////////////////////////////////////////////////////////
         CompositeFilter::CompositeFilter(LogicOperatorType logicOperator)

@@ -39,6 +39,8 @@ namespace AzToolsFramework
 
             QSharedPointer<CompositeFilter> GetTypesFilter() const;
 
+            QSharedPointer<CompositeFilter> GetProjectSourceFilter() const;
+
             QString GetFilterString() const { return textFilter(); }
             void ClearStringFilter() { ClearTextFilter(); }
 
@@ -46,6 +48,8 @@ namespace AzToolsFramework
             QSharedPointer<CompositeFilter> m_filter;
             QSharedPointer<CompositeFilter> m_stringFilter;
             QSharedPointer<CompositeFilter> m_typesFilter;
+            QSharedPointer<CompositeFilter> m_projectSourceFilter;
         };
+
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
