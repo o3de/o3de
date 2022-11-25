@@ -146,7 +146,6 @@ namespace Terrain
         struct DetailMaterialData
         {
             AZ::Data::AssetId m_assetId;
-            AZ::RPI::Material::ChangeId m_materialChangeId{AZ::RPI::Material::DEFAULT_CHANGE_ID};
             uint32_t m_refCount = 0;
             uint16_t m_detailMaterialBufferIndex{ 0xFFFF };
 

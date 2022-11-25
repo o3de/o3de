@@ -97,24 +97,8 @@ Node Type: MeshData
 	FaceList: Count 8676. Hash: 11155608373229651496
 	FaceMaterialIds: Count 8676. Hash: 723360536895379791
 
-Node Name: HubCap_default_shaderball_E95B8EA6_DCA7_501D_AE59_1088AB70DF38__optimized
-Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap_default_shaderball_E95B8EA6_DCA7_501D_AE59_1088AB70DF38__optimized
-Node Type: MeshData
-	Positions: Count 4724. Hash: 448283466401665158
-	Normals: Count 4724. Hash: 345267294337234954
-	FaceList: Count 8676. Hash: 11155608373229651496
-	FaceMaterialIds: Count 8676. Hash: 723360536895379791
-
 Node Name: InnerSphere_shaderball_optimized
 Node Path: RootNode.ShaderBall_1m.InnerPortion.InnerSphere_shaderball_optimized
-Node Type: MeshData
-	Positions: Count 5846. Hash: 18229431498904963984
-	Normals: Count 5846. Hash: 12980164457801827192
-	FaceList: Count 9800. Hash: 2914108932212582430
-	FaceMaterialIds: Count 9800. Hash: 2219364576630417284
-
-Node Name: InnerSphere_default_shaderball_473A4A86_CC7E_55D2_91F6_7EF87FBD5C01__optimized
-Node Path: RootNode.ShaderBall_1m.InnerPortion.InnerSphere_default_shaderball_473A4A86_CC7E_55D2_91F6_7EF87FBD5C01__optimized
 Node Type: MeshData
 	Positions: Count 5846. Hash: 18229431498904963984
 	Normals: Count 5846. Hash: 12980164457801827192
@@ -195,24 +179,8 @@ Node Type: MeshData
 	FaceList: Count 64. Hash: 9660474080562375138
 	FaceMaterialIds: Count 64. Hash: 6312841653578246165
 
-Node Name: InnerCone_default_shaderball_F50B5AC3_CCD7_5683_9F22_9A229001ABFF__optimized
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone_default_shaderball_F50B5AC3_CCD7_5683_9F22_9A229001ABFF__optimized
-Node Type: MeshData
-	Positions: Count 65. Hash: 832325255726840940
-	Normals: Count 65. Hash: 14121159448916141450
-	FaceList: Count 64. Hash: 9660474080562375138
-	FaceMaterialIds: Count 64. Hash: 6312841653578246165
-
 Node Name: InnerPost_shaderball_optimized
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost_shaderball_optimized
-Node Type: MeshData
-	Positions: Count 1300. Hash: 15277132209442728123
-	Normals: Count 1300. Hash: 1247055552073340932
-	FaceList: Count 2432. Hash: 16808521883586752319
-	FaceMaterialIds: Count 2432. Hash: 12393250111858627709
-
-Node Name: InnerPost_default_shaderball_FEA7D61B_0535_550B_86E8_B48BD812D84A__optimized
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost_default_shaderball_FEA7D61B_0535_550B_86E8_B48BD812D84A__optimized
 Node Type: MeshData
 	Positions: Count 1300. Hash: 15277132209442728123
 	Normals: Count 1300. Hash: 1247055552073340932
@@ -227,24 +195,8 @@ Node Type: MeshData
 	FaceList: Count 2048. Hash: 2887888015166354330
 	FaceMaterialIds: Count 2048. Hash: 2795877824940392899
 
-Node Name: InnerBaseCuff_default_shaderball_9714DB61_2272_55A8_80FD_0386DF43C72C__optimized
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_default_shaderball_9714DB61_2272_55A8_80FD_0386DF43C72C__optimized
-Node Type: MeshData
-	Positions: Count 1122. Hash: 15009434720129565864
-	Normals: Count 1122. Hash: 7245598986723209052
-	FaceList: Count 2048. Hash: 2887888015166354330
-	FaceMaterialIds: Count 2048. Hash: 2795877824940392899
-
 Node Name: Inset_shaderball_optimized
 Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset_shaderball_optimized
-Node Type: MeshData
-	Positions: Count 448. Hash: 9520190263881589378
-	Normals: Count 448. Hash: 8658432920439039136
-	FaceList: Count 768. Hash: 8621713142583851338
-	FaceMaterialIds: Count 768. Hash: 2979441869813298271
-
-Node Name: Inset_default_shaderball_6D25426B_F22E_54CA_B38A_1F8D65A05243__optimized
-Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset_default_shaderball_6D25426B_F22E_54CA_B38A_1F8D65A05243__optimized
 Node Type: MeshData
 	Positions: Count 448. Hash: 9520190263881589378
 	Normals: Count 448. Hash: 8658432920439039136
@@ -259,14 +211,6 @@ Node Type: MeshData
 	FaceList: Count 448. Hash: 16093592375171717669
 	FaceMaterialIds: Count 448. Hash: 15444662993354423801
 
-Node Name: BottomCap_default_shaderball_1C4F5C76_38DF_5289_AF68_EB96F7658B86__optimized
-Node Path: RootNode.ShaderBall_1m.MaterialBase.BottomCap_default_shaderball_1C4F5C76_38DF_5289_AF68_EB96F7658B86__optimized
-Node Type: MeshData
-	Positions: Count 257. Hash: 6437758550313952689
-	Normals: Count 257. Hash: 9382966961287919705
-	FaceList: Count 448. Hash: 16093592375171717669
-	FaceMaterialIds: Count 448. Hash: 15444662993354423801
-
 Node Name: InnerCushion_shaderball_optimized
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion_shaderball_optimized
 Node Type: MeshData
@@ -275,24 +219,8 @@ Node Type: MeshData
 	FaceList: Count 27104. Hash: 2523751700832022798
 	FaceMaterialIds: Count 27104. Hash: 12674758055018775830
 
-Node Name: InnerCushion_default_shaderball_491DD9C0_9F62_538A_8637_2F85BDEE4675__optimized
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion_default_shaderball_491DD9C0_9F62_538A_8637_2F85BDEE4675__optimized
-Node Type: MeshData
-	Positions: Count 13860. Hash: 15965614532178328362
-	Normals: Count 13860. Hash: 7297376140184766040
-	FaceList: Count 27104. Hash: 2523751700832022798
-	FaceMaterialIds: Count 27104. Hash: 12674758055018775830
-
 Node Name: OuterBaseCuff_shaderball_optimized
 Node Path: RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_shaderball_optimized
-Node Type: MeshData
-	Positions: Count 5206. Hash: 5201932106801476439
-	Normals: Count 5206. Hash: 15696187265416627056
-	FaceList: Count 10024. Hash: 10907381836011223214
-	FaceMaterialIds: Count 10024. Hash: 9849297365743356453
-
-Node Name: OuterBaseCuff_default_shaderball_61FA311B_958E_5E8A_A4C1_96AA01552B5D__optimized
-Node Path: RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_default_shaderball_61FA311B_958E_5E8A_A4C1_96AA01552B5D__optimized
 Node Type: MeshData
 	Positions: Count 5206. Hash: 5201932106801476439
 	Normals: Count 5206. Hash: 15696187265416627056
@@ -333,24 +261,8 @@ Node Type: MeshData
 	FaceList: Count 1280. Hash: 17583744445000895264
 	FaceMaterialIds: Count 1280. Hash: 6371267399123018661
 
-Node Name: RingLeft_default_shaderball_92798A1A_DA92_5BCB_8E70_6433043ABDB6__optimized
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft_default_shaderball_92798A1A_DA92_5BCB_8E70_6433043ABDB6__optimized
-Node Type: MeshData
-	Positions: Count 720. Hash: 14374869925777029719
-	Normals: Count 720. Hash: 2252820527750115179
-	FaceList: Count 1280. Hash: 17583744445000895264
-	FaceMaterialIds: Count 1280. Hash: 6371267399123018661
-
 Node Name: RingRight_shaderball_optimized
 Node Path: RootNode.ShaderBall_1m.InlayRings.RingRight_shaderball_optimized
-Node Type: MeshData
-	Positions: Count 720. Hash: 17033597990859129189
-	Normals: Count 720. Hash: 14263134585377771060
-	FaceList: Count 1280. Hash: 13824345071081010014
-	FaceMaterialIds: Count 1280. Hash: 6371267399123018661
-
-Node Name: RingRight_default_shaderball_60E3FD38_62BE_5AF8_8DF9_085F00380C7C__optimized
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingRight_default_shaderball_60E3FD38_62BE_5AF8_8DF9_085F00380C7C__optimized
 Node Type: MeshData
 	Positions: Count 720. Hash: 17033597990859129189
 	Normals: Count 720. Hash: 14263134585377771060
@@ -407,24 +319,8 @@ Node Type: MeshData
 	FaceList: Count 3152. Hash: 15437295155178226041
 	FaceMaterialIds: Count 3152. Hash: 17405713692885844041
 
-Node Name: RightHub_default_shaderball_51CC241B_C54B_50F2_AED7_113C1327FAD0__optimized
-Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub_default_shaderball_51CC241B_C54B_50F2_AED7_113C1327FAD0__optimized
-Node Type: MeshData
-	Positions: Count 1617. Hash: 9820946434895369083
-	Normals: Count 1617. Hash: 16951123277321747448
-	FaceList: Count 3152. Hash: 15437295155178226041
-	FaceMaterialIds: Count 3152. Hash: 17405713692885844041
-
 Node Name: LeftHub_shaderball_optimized
 Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub_shaderball_optimized
-Node Type: MeshData
-	Positions: Count 1617. Hash: 8811470420139443913
-	Normals: Count 1617. Hash: 11224729257132823435
-	FaceList: Count 3152. Hash: 16696390019846851737
-	FaceMaterialIds: Count 3152. Hash: 17405713692885844041
-
-Node Name: LeftHub_default_shaderball_2386C2AB_0C4B_554F_B3BC_43754B12017E__optimized
-Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub_default_shaderball_2386C2AB_0C4B_554F_B3BC_43754B12017E__optimized
 Node Type: MeshData
 	Positions: Count 1617. Hash: 8811470420139443913
 	Normals: Count 1617. Hash: 11224729257132823435
@@ -439,24 +335,8 @@ Node Type: MeshData
 	FaceList: Count 1760. Hash: 3382287220404120115
 	FaceMaterialIds: Count 1760. Hash: 3100204266221257056
 
-Node Name: Inside_default_shaderball_0E8A4436_3658_5EF3_8EA9_0503A42060D6__optimized
-Node Path: RootNode.ShaderBall_1m.MainSphere.Inside_default_shaderball_0E8A4436_3658_5EF3_8EA9_0503A42060D6__optimized
-Node Type: MeshData
-	Positions: Count 960. Hash: 1074011803485396393
-	Normals: Count 960. Hash: 16318911598614464642
-	FaceList: Count 1760. Hash: 3382287220404120115
-	FaceMaterialIds: Count 1760. Hash: 3100204266221257056
-
 Node Name: MainOuterSphere_shaderball_optimized
 Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_shaderball_optimized
-Node Type: MeshData
-	Positions: Count 4891. Hash: 9579089515723090907
-	Normals: Count 4891. Hash: 10089610259011330329
-	FaceList: Count 9456. Hash: 13541126452398082145
-	FaceMaterialIds: Count 9456. Hash: 13982281543095132650
-
-Node Name: MainOuterSphere_default_shaderball_1616D68E_F072_5643_BD07_565772CD0E30__optimized
-Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_default_shaderball_1616D68E_F072_5643_BD07_565772CD0E30__optimized
 Node Type: MeshData
 	Positions: Count 4891. Hash: 9579089515723090907
 	Normals: Count 4891. Hash: 10089610259011330329
@@ -637,6 +517,16 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 19800. Hash: 704744783983559605
 	GenerationMethod: 1
 
+Node Name: custom_properties
+Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap_shaderball_optimized.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	currentUVSet: Unwrapped
+	UserProperties: 
+	InheritType: 1
+
 Node Name: Tiled
 Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap_shaderball_optimized.Tiled
 Node Type: MeshVertexUVData
@@ -684,16 +574,6 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap_shaderball_optimized.custom_properties
-Node Type: CustomPropertyData
-	IsNull: false
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	currentUVSet: Unwrapped
-	UserProperties: 
-	InheritType: 1
-
 Node Name: blinn1
 Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap_shaderball_optimized.blinn1
 Node Type: MaterialData
@@ -724,92 +604,15 @@ Node Type: MaterialData
 	EmissiveTexture: 
 	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
-Node Name: Tiled
-Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap_default_shaderball_E95B8EA6_DCA7_501D_AE59_1088AB70DF38__optimized.Tiled
-Node Type: MeshVertexUVData
-	UVs: Count 4724. Hash: 10265340188340999982
-	UVCustomName: Tiled
-
-Node Name: Unwrapped
-Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap_default_shaderball_E95B8EA6_DCA7_501D_AE59_1088AB70DF38__optimized.Unwrapped
-Node Type: MeshVertexUVData
-	UVs: Count 4724. Hash: 6393506322209434620
-	UVCustomName: Unwrapped
-
-Node Name: TangentSet_0
-Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap_default_shaderball_E95B8EA6_DCA7_501D_AE59_1088AB70DF38__optimized.TangentSet_0
-Node Type: MeshVertexTangentData
-	Tangents: Count 4724. Hash: 7072046838448900487
-	GenerationMethod: 1
-	SetIndex: 0
-
-Node Name: TangentSet_1
-Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap_default_shaderball_E95B8EA6_DCA7_501D_AE59_1088AB70DF38__optimized.TangentSet_1
-Node Type: MeshVertexTangentData
-	Tangents: Count 4724. Hash: 14469479861311642848
-	GenerationMethod: 1
-	SetIndex: 1
-
-Node Name: BitangentSet_0
-Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap_default_shaderball_E95B8EA6_DCA7_501D_AE59_1088AB70DF38__optimized.BitangentSet_0
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 4724. Hash: 14586570136206675867
-	GenerationMethod: 1
-
-Node Name: BitangentSet_1
-Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap_default_shaderball_E95B8EA6_DCA7_501D_AE59_1088AB70DF38__optimized.BitangentSet_1
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 4724. Hash: 1080930468361041453
-	GenerationMethod: 1
-
-Node Name: transform
-Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap_default_shaderball_E95B8EA6_DCA7_501D_AE59_1088AB70DF38__optimized.transform
-Node Type: TransformData
-	Matrix:
-		BasisX: < 1.000000,  0.000000,  0.000000>
-		BasisY: < 0.000000,  1.000000,  0.000000>
-		BasisZ: < 0.000000,  0.000000,  1.000000>
-		Transl: < 0.000000,  0.000000,  0.000000>
-
 Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap_default_shaderball_E95B8EA6_DCA7_501D_AE59_1088AB70DF38__optimized.custom_properties
+Node Path: RootNode.ShaderBall_1m.InnerPortion.InnerSphere_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
 	IsNull: false
 	RotationActive: true
 	DefaultAttributeIndex: 0
-	currentUVSet: Unwrapped
+	currentUVSet: UVW
 	UserProperties: 
 	InheritType: 1
-
-Node Name: blinn1
-Node Path: RootNode.ShaderBall_1m.InnerPortion.HubCap_default_shaderball_E95B8EA6_DCA7_501D_AE59_1088AB70DF38__optimized.blinn1
-Node Type: MaterialData
-	MaterialName: blinn1
-	UniqueId: 2076548245838624187
-	IsNoDraw: false
-	DiffuseColor: < 0.800000,  0.800000,  0.800000>
-	SpecularColor: < 0.500000,  0.500000,  0.500000>
-	EmissiveColor: < 0.000000,  0.000000,  0.000000>
-	Opacity: 1.000000
-	Shininess: 6.311791
-	UseColorMap: Not set
-	BaseColor: Not set
-	UseMetallicMap: Not set
-	MetallicFactor: Not set
-	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
-	UseEmissiveMap: Not set
-	EmissiveIntensity: Not set
-	UseAOMap: Not set
-	DiffuseTexture: ShaderBall/_dev_shaderball_00_basecolor.png
-	SpecularTexture: 
-	BumpTexture: 
-	NormalTexture: 
-	MetallicTexture: 
-	RoughnessTexture: 
-	AmbientOcclusionTexture: 
-	EmissiveTexture: 
-	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
 Node Name: Tiled
 Node Path: RootNode.ShaderBall_1m.InnerPortion.InnerSphere_shaderball_optimized.Tiled
@@ -858,105 +661,8 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.InnerPortion.InnerSphere_shaderball_optimized.custom_properties
-Node Type: CustomPropertyData
-	IsNull: false
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	currentUVSet: UVW
-	UserProperties: 
-	InheritType: 1
-
 Node Name: blinn1
 Node Path: RootNode.ShaderBall_1m.InnerPortion.InnerSphere_shaderball_optimized.blinn1
-Node Type: MaterialData
-	MaterialName: blinn1
-	UniqueId: 2076548245838624187
-	IsNoDraw: false
-	DiffuseColor: < 0.800000,  0.800000,  0.800000>
-	SpecularColor: < 0.500000,  0.500000,  0.500000>
-	EmissiveColor: < 0.000000,  0.000000,  0.000000>
-	Opacity: 1.000000
-	Shininess: 6.311791
-	UseColorMap: Not set
-	BaseColor: Not set
-	UseMetallicMap: Not set
-	MetallicFactor: Not set
-	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
-	UseEmissiveMap: Not set
-	EmissiveIntensity: Not set
-	UseAOMap: Not set
-	DiffuseTexture: ShaderBall/_dev_shaderball_00_basecolor.png
-	SpecularTexture: 
-	BumpTexture: 
-	NormalTexture: 
-	MetallicTexture: 
-	RoughnessTexture: 
-	AmbientOcclusionTexture: 
-	EmissiveTexture: 
-	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
-
-Node Name: Tiled
-Node Path: RootNode.ShaderBall_1m.InnerPortion.InnerSphere_default_shaderball_473A4A86_CC7E_55D2_91F6_7EF87FBD5C01__optimized.Tiled
-Node Type: MeshVertexUVData
-	UVs: Count 5846. Hash: 2128276120164603588
-	UVCustomName: Tiled
-
-Node Name: Unwrapped
-Node Path: RootNode.ShaderBall_1m.InnerPortion.InnerSphere_default_shaderball_473A4A86_CC7E_55D2_91F6_7EF87FBD5C01__optimized.Unwrapped
-Node Type: MeshVertexUVData
-	UVs: Count 5846. Hash: 954788723450394678
-	UVCustomName: Unwrapped
-
-Node Name: TangentSet_0
-Node Path: RootNode.ShaderBall_1m.InnerPortion.InnerSphere_default_shaderball_473A4A86_CC7E_55D2_91F6_7EF87FBD5C01__optimized.TangentSet_0
-Node Type: MeshVertexTangentData
-	Tangents: Count 5846. Hash: 14309642535096835998
-	GenerationMethod: 1
-	SetIndex: 0
-
-Node Name: TangentSet_1
-Node Path: RootNode.ShaderBall_1m.InnerPortion.InnerSphere_default_shaderball_473A4A86_CC7E_55D2_91F6_7EF87FBD5C01__optimized.TangentSet_1
-Node Type: MeshVertexTangentData
-	Tangents: Count 5846. Hash: 2996000735336843208
-	GenerationMethod: 1
-	SetIndex: 1
-
-Node Name: BitangentSet_0
-Node Path: RootNode.ShaderBall_1m.InnerPortion.InnerSphere_default_shaderball_473A4A86_CC7E_55D2_91F6_7EF87FBD5C01__optimized.BitangentSet_0
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 5846. Hash: 6423899825309547347
-	GenerationMethod: 1
-
-Node Name: BitangentSet_1
-Node Path: RootNode.ShaderBall_1m.InnerPortion.InnerSphere_default_shaderball_473A4A86_CC7E_55D2_91F6_7EF87FBD5C01__optimized.BitangentSet_1
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 5846. Hash: 6861847030641362531
-	GenerationMethod: 1
-
-Node Name: transform
-Node Path: RootNode.ShaderBall_1m.InnerPortion.InnerSphere_default_shaderball_473A4A86_CC7E_55D2_91F6_7EF87FBD5C01__optimized.transform
-Node Type: TransformData
-	Matrix:
-		BasisX: < 1.000000,  0.000000,  0.000000>
-		BasisY: < 0.000000,  1.000000,  0.000000>
-		BasisZ: < 0.000000,  0.000000,  1.000000>
-		Transl: < 0.000000,  0.000000,  0.000000>
-
-Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.InnerPortion.InnerSphere_default_shaderball_473A4A86_CC7E_55D2_91F6_7EF87FBD5C01__optimized.custom_properties
-Node Type: CustomPropertyData
-	IsNull: false
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	currentUVSet: UVW
-	UserProperties: 
-	InheritType: 1
-
-Node Name: blinn1
-Node Path: RootNode.ShaderBall_1m.InnerPortion.InnerSphere_default_shaderball_473A4A86_CC7E_55D2_91F6_7EF87FBD5C01__optimized.blinn1
 Node Type: MaterialData
 	MaterialName: blinn1
 	UniqueId: 2076548245838624187
@@ -1594,6 +1300,16 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 20048. Hash: 7508591493894188819
 	GenerationMethod: 1
 
+Node Name: custom_properties
+Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone_shaderball_optimized.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	currentUVSet: Unwrapped
+	UserProperties: 
+	InheritType: 1
+
 Node Name: Tiled
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone_shaderball_optimized.Tiled
 Node Type: MeshVertexUVData
@@ -1641,16 +1357,6 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone_shaderball_optimized.custom_properties
-Node Type: CustomPropertyData
-	IsNull: false
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	currentUVSet: Unwrapped
-	UserProperties: 
-	InheritType: 1
-
 Node Name: blinn1
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone_shaderball_optimized.blinn1
 Node Type: MaterialData
@@ -1681,55 +1387,8 @@ Node Type: MaterialData
 	EmissiveTexture: 
 	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
-Node Name: Tiled
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone_default_shaderball_F50B5AC3_CCD7_5683_9F22_9A229001ABFF__optimized.Tiled
-Node Type: MeshVertexUVData
-	UVs: Count 65. Hash: 3145658351065228323
-	UVCustomName: Tiled
-
-Node Name: Unwrapped
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone_default_shaderball_F50B5AC3_CCD7_5683_9F22_9A229001ABFF__optimized.Unwrapped
-Node Type: MeshVertexUVData
-	UVs: Count 65. Hash: 13102825703658386866
-	UVCustomName: Unwrapped
-
-Node Name: TangentSet_0
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone_default_shaderball_F50B5AC3_CCD7_5683_9F22_9A229001ABFF__optimized.TangentSet_0
-Node Type: MeshVertexTangentData
-	Tangents: Count 65. Hash: 14651886668877289638
-	GenerationMethod: 1
-	SetIndex: 0
-
-Node Name: TangentSet_1
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone_default_shaderball_F50B5AC3_CCD7_5683_9F22_9A229001ABFF__optimized.TangentSet_1
-Node Type: MeshVertexTangentData
-	Tangents: Count 65. Hash: 7706988068999921308
-	GenerationMethod: 1
-	SetIndex: 1
-
-Node Name: BitangentSet_0
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone_default_shaderball_F50B5AC3_CCD7_5683_9F22_9A229001ABFF__optimized.BitangentSet_0
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 65. Hash: 1183045102730537867
-	GenerationMethod: 1
-
-Node Name: BitangentSet_1
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone_default_shaderball_F50B5AC3_CCD7_5683_9F22_9A229001ABFF__optimized.BitangentSet_1
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 65. Hash: 15200278891890596008
-	GenerationMethod: 1
-
-Node Name: transform
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone_default_shaderball_F50B5AC3_CCD7_5683_9F22_9A229001ABFF__optimized.transform
-Node Type: TransformData
-	Matrix:
-		BasisX: < 1.000000,  0.000000,  0.000000>
-		BasisY: < 0.000000,  1.000000,  0.000000>
-		BasisZ: < 0.000000,  0.000000,  1.000000>
-		Transl: < 0.000000,  0.000000,  0.000000>
-
 Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone_default_shaderball_F50B5AC3_CCD7_5683_9F22_9A229001ABFF__optimized.custom_properties
+Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
 	IsNull: false
 	RotationActive: true
@@ -1737,36 +1396,6 @@ Node Type: CustomPropertyData
 	currentUVSet: Unwrapped
 	UserProperties: 
 	InheritType: 1
-
-Node Name: blinn1
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCone_default_shaderball_F50B5AC3_CCD7_5683_9F22_9A229001ABFF__optimized.blinn1
-Node Type: MaterialData
-	MaterialName: blinn1
-	UniqueId: 2076548245838624187
-	IsNoDraw: false
-	DiffuseColor: < 0.800000,  0.800000,  0.800000>
-	SpecularColor: < 0.500000,  0.500000,  0.500000>
-	EmissiveColor: < 0.000000,  0.000000,  0.000000>
-	Opacity: 1.000000
-	Shininess: 6.311791
-	UseColorMap: Not set
-	BaseColor: Not set
-	UseMetallicMap: Not set
-	MetallicFactor: Not set
-	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
-	UseEmissiveMap: Not set
-	EmissiveIntensity: Not set
-	UseAOMap: Not set
-	DiffuseTexture: ShaderBall/_dev_shaderball_00_basecolor.png
-	SpecularTexture: 
-	BumpTexture: 
-	NormalTexture: 
-	MetallicTexture: 
-	RoughnessTexture: 
-	AmbientOcclusionTexture: 
-	EmissiveTexture: 
-	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
 Node Name: Tiled
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost_shaderball_optimized.Tiled
@@ -1815,16 +1444,6 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost_shaderball_optimized.custom_properties
-Node Type: CustomPropertyData
-	IsNull: false
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	currentUVSet: Unwrapped
-	UserProperties: 
-	InheritType: 1
-
 Node Name: blinn1
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost_shaderball_optimized.blinn1
 Node Type: MaterialData
@@ -1855,55 +1474,8 @@ Node Type: MaterialData
 	EmissiveTexture: 
 	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
-Node Name: Tiled
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost_default_shaderball_FEA7D61B_0535_550B_86E8_B48BD812D84A__optimized.Tiled
-Node Type: MeshVertexUVData
-	UVs: Count 1300. Hash: 519927422840758162
-	UVCustomName: Tiled
-
-Node Name: Unwrapped
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost_default_shaderball_FEA7D61B_0535_550B_86E8_B48BD812D84A__optimized.Unwrapped
-Node Type: MeshVertexUVData
-	UVs: Count 1300. Hash: 16690819534142395524
-	UVCustomName: Unwrapped
-
-Node Name: TangentSet_0
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost_default_shaderball_FEA7D61B_0535_550B_86E8_B48BD812D84A__optimized.TangentSet_0
-Node Type: MeshVertexTangentData
-	Tangents: Count 1300. Hash: 13697492049473980098
-	GenerationMethod: 1
-	SetIndex: 0
-
-Node Name: TangentSet_1
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost_default_shaderball_FEA7D61B_0535_550B_86E8_B48BD812D84A__optimized.TangentSet_1
-Node Type: MeshVertexTangentData
-	Tangents: Count 1300. Hash: 16069718749273082363
-	GenerationMethod: 1
-	SetIndex: 1
-
-Node Name: BitangentSet_0
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost_default_shaderball_FEA7D61B_0535_550B_86E8_B48BD812D84A__optimized.BitangentSet_0
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 1300. Hash: 9503213552298852479
-	GenerationMethod: 1
-
-Node Name: BitangentSet_1
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost_default_shaderball_FEA7D61B_0535_550B_86E8_B48BD812D84A__optimized.BitangentSet_1
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 1300. Hash: 14920629477034919393
-	GenerationMethod: 1
-
-Node Name: transform
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost_default_shaderball_FEA7D61B_0535_550B_86E8_B48BD812D84A__optimized.transform
-Node Type: TransformData
-	Matrix:
-		BasisX: < 1.000000,  0.000000,  0.000000>
-		BasisY: < 0.000000,  1.000000,  0.000000>
-		BasisZ: < 0.000000,  0.000000,  1.000000>
-		Transl: < 0.000000,  0.000000,  0.000000>
-
 Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost_default_shaderball_FEA7D61B_0535_550B_86E8_B48BD812D84A__optimized.custom_properties
+Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
 	IsNull: false
 	RotationActive: true
@@ -1911,36 +1483,6 @@ Node Type: CustomPropertyData
 	currentUVSet: Unwrapped
 	UserProperties: 
 	InheritType: 1
-
-Node Name: blinn1
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerPost_default_shaderball_FEA7D61B_0535_550B_86E8_B48BD812D84A__optimized.blinn1
-Node Type: MaterialData
-	MaterialName: blinn1
-	UniqueId: 2076548245838624187
-	IsNoDraw: false
-	DiffuseColor: < 0.800000,  0.800000,  0.800000>
-	SpecularColor: < 0.500000,  0.500000,  0.500000>
-	EmissiveColor: < 0.000000,  0.000000,  0.000000>
-	Opacity: 1.000000
-	Shininess: 6.311791
-	UseColorMap: Not set
-	BaseColor: Not set
-	UseMetallicMap: Not set
-	MetallicFactor: Not set
-	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
-	UseEmissiveMap: Not set
-	EmissiveIntensity: Not set
-	UseAOMap: Not set
-	DiffuseTexture: ShaderBall/_dev_shaderball_00_basecolor.png
-	SpecularTexture: 
-	BumpTexture: 
-	NormalTexture: 
-	MetallicTexture: 
-	RoughnessTexture: 
-	AmbientOcclusionTexture: 
-	EmissiveTexture: 
-	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
 Node Name: Tiled
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_shaderball_optimized.Tiled
@@ -1989,16 +1531,6 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_shaderball_optimized.custom_properties
-Node Type: CustomPropertyData
-	IsNull: false
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	currentUVSet: Unwrapped
-	UserProperties: 
-	InheritType: 1
-
 Node Name: blinn1
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_shaderball_optimized.blinn1
 Node Type: MaterialData
@@ -2029,55 +1561,8 @@ Node Type: MaterialData
 	EmissiveTexture: 
 	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
-Node Name: Tiled
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_default_shaderball_9714DB61_2272_55A8_80FD_0386DF43C72C__optimized.Tiled
-Node Type: MeshVertexUVData
-	UVs: Count 1122. Hash: 10794215007683911939
-	UVCustomName: Tiled
-
-Node Name: Unwrapped
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_default_shaderball_9714DB61_2272_55A8_80FD_0386DF43C72C__optimized.Unwrapped
-Node Type: MeshVertexUVData
-	UVs: Count 1122. Hash: 4030215540982392192
-	UVCustomName: Unwrapped
-
-Node Name: TangentSet_0
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_default_shaderball_9714DB61_2272_55A8_80FD_0386DF43C72C__optimized.TangentSet_0
-Node Type: MeshVertexTangentData
-	Tangents: Count 1122. Hash: 14289595630739500233
-	GenerationMethod: 1
-	SetIndex: 0
-
-Node Name: TangentSet_1
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_default_shaderball_9714DB61_2272_55A8_80FD_0386DF43C72C__optimized.TangentSet_1
-Node Type: MeshVertexTangentData
-	Tangents: Count 1122. Hash: 13010448485976282215
-	GenerationMethod: 1
-	SetIndex: 1
-
-Node Name: BitangentSet_0
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_default_shaderball_9714DB61_2272_55A8_80FD_0386DF43C72C__optimized.BitangentSet_0
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 1122. Hash: 8318401526835048407
-	GenerationMethod: 1
-
-Node Name: BitangentSet_1
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_default_shaderball_9714DB61_2272_55A8_80FD_0386DF43C72C__optimized.BitangentSet_1
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 1122. Hash: 100095329364523248
-	GenerationMethod: 1
-
-Node Name: transform
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_default_shaderball_9714DB61_2272_55A8_80FD_0386DF43C72C__optimized.transform
-Node Type: TransformData
-	Matrix:
-		BasisX: < 1.000000,  0.000000,  0.000000>
-		BasisY: < 0.000000,  1.000000,  0.000000>
-		BasisZ: < 0.000000,  0.000000,  1.000000>
-		Transl: < 0.000000,  0.000000,  0.000000>
-
 Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_default_shaderball_9714DB61_2272_55A8_80FD_0386DF43C72C__optimized.custom_properties
+Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
 	IsNull: false
 	RotationActive: true
@@ -2085,36 +1570,6 @@ Node Type: CustomPropertyData
 	currentUVSet: Unwrapped
 	UserProperties: 
 	InheritType: 1
-
-Node Name: blinn1
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_default_shaderball_9714DB61_2272_55A8_80FD_0386DF43C72C__optimized.blinn1
-Node Type: MaterialData
-	MaterialName: blinn1
-	UniqueId: 2076548245838624187
-	IsNoDraw: false
-	DiffuseColor: < 0.800000,  0.800000,  0.800000>
-	SpecularColor: < 0.500000,  0.500000,  0.500000>
-	EmissiveColor: < 0.000000,  0.000000,  0.000000>
-	Opacity: 1.000000
-	Shininess: 6.311791
-	UseColorMap: Not set
-	BaseColor: Not set
-	UseMetallicMap: Not set
-	MetallicFactor: Not set
-	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
-	UseEmissiveMap: Not set
-	EmissiveIntensity: Not set
-	UseAOMap: Not set
-	DiffuseTexture: ShaderBall/_dev_shaderball_00_basecolor.png
-	SpecularTexture: 
-	BumpTexture: 
-	NormalTexture: 
-	MetallicTexture: 
-	RoughnessTexture: 
-	AmbientOcclusionTexture: 
-	EmissiveTexture: 
-	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
 Node Name: Tiled
 Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset_shaderball_optimized.Tiled
@@ -2163,16 +1618,6 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset_shaderball_optimized.custom_properties
-Node Type: CustomPropertyData
-	IsNull: false
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	currentUVSet: Unwrapped
-	UserProperties: 
-	InheritType: 1
-
 Node Name: blinn1
 Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset_shaderball_optimized.blinn1
 Node Type: MaterialData
@@ -2203,55 +1648,8 @@ Node Type: MaterialData
 	EmissiveTexture: 
 	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
-Node Name: Tiled
-Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset_default_shaderball_6D25426B_F22E_54CA_B38A_1F8D65A05243__optimized.Tiled
-Node Type: MeshVertexUVData
-	UVs: Count 448. Hash: 11533511688039530581
-	UVCustomName: Tiled
-
-Node Name: Unwrapped
-Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset_default_shaderball_6D25426B_F22E_54CA_B38A_1F8D65A05243__optimized.Unwrapped
-Node Type: MeshVertexUVData
-	UVs: Count 448. Hash: 6463578982826635244
-	UVCustomName: Unwrapped
-
-Node Name: TangentSet_0
-Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset_default_shaderball_6D25426B_F22E_54CA_B38A_1F8D65A05243__optimized.TangentSet_0
-Node Type: MeshVertexTangentData
-	Tangents: Count 448. Hash: 10590255987412720146
-	GenerationMethod: 1
-	SetIndex: 0
-
-Node Name: TangentSet_1
-Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset_default_shaderball_6D25426B_F22E_54CA_B38A_1F8D65A05243__optimized.TangentSet_1
-Node Type: MeshVertexTangentData
-	Tangents: Count 448. Hash: 17744412650281038495
-	GenerationMethod: 1
-	SetIndex: 1
-
-Node Name: BitangentSet_0
-Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset_default_shaderball_6D25426B_F22E_54CA_B38A_1F8D65A05243__optimized.BitangentSet_0
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 448. Hash: 8278337182397882868
-	GenerationMethod: 1
-
-Node Name: BitangentSet_1
-Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset_default_shaderball_6D25426B_F22E_54CA_B38A_1F8D65A05243__optimized.BitangentSet_1
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 448. Hash: 8818080862566813062
-	GenerationMethod: 1
-
-Node Name: transform
-Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset_default_shaderball_6D25426B_F22E_54CA_B38A_1F8D65A05243__optimized.transform
-Node Type: TransformData
-	Matrix:
-		BasisX: < 1.000000,  0.000000,  0.000000>
-		BasisY: < 0.000000,  1.000000,  0.000000>
-		BasisZ: < 0.000000,  0.000000,  1.000000>
-		Transl: < 0.000000,  0.000000,  0.000000>
-
 Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset_default_shaderball_6D25426B_F22E_54CA_B38A_1F8D65A05243__optimized.custom_properties
+Node Path: RootNode.ShaderBall_1m.MaterialBase.BottomCap_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
 	IsNull: false
 	RotationActive: true
@@ -2259,36 +1657,6 @@ Node Type: CustomPropertyData
 	currentUVSet: Unwrapped
 	UserProperties: 
 	InheritType: 1
-
-Node Name: blinn1
-Node Path: RootNode.ShaderBall_1m.MaterialBase.Inset_default_shaderball_6D25426B_F22E_54CA_B38A_1F8D65A05243__optimized.blinn1
-Node Type: MaterialData
-	MaterialName: blinn1
-	UniqueId: 2076548245838624187
-	IsNoDraw: false
-	DiffuseColor: < 0.800000,  0.800000,  0.800000>
-	SpecularColor: < 0.500000,  0.500000,  0.500000>
-	EmissiveColor: < 0.000000,  0.000000,  0.000000>
-	Opacity: 1.000000
-	Shininess: 6.311791
-	UseColorMap: Not set
-	BaseColor: Not set
-	UseMetallicMap: Not set
-	MetallicFactor: Not set
-	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
-	UseEmissiveMap: Not set
-	EmissiveIntensity: Not set
-	UseAOMap: Not set
-	DiffuseTexture: ShaderBall/_dev_shaderball_00_basecolor.png
-	SpecularTexture: 
-	BumpTexture: 
-	NormalTexture: 
-	MetallicTexture: 
-	RoughnessTexture: 
-	AmbientOcclusionTexture: 
-	EmissiveTexture: 
-	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
 Node Name: Tiled
 Node Path: RootNode.ShaderBall_1m.MaterialBase.BottomCap_shaderball_optimized.Tiled
@@ -2337,16 +1705,6 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MaterialBase.BottomCap_shaderball_optimized.custom_properties
-Node Type: CustomPropertyData
-	IsNull: false
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	currentUVSet: Unwrapped
-	UserProperties: 
-	InheritType: 1
-
 Node Name: blinn1
 Node Path: RootNode.ShaderBall_1m.MaterialBase.BottomCap_shaderball_optimized.blinn1
 Node Type: MaterialData
@@ -2377,92 +1735,15 @@ Node Type: MaterialData
 	EmissiveTexture: 
 	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
-Node Name: Tiled
-Node Path: RootNode.ShaderBall_1m.MaterialBase.BottomCap_default_shaderball_1C4F5C76_38DF_5289_AF68_EB96F7658B86__optimized.Tiled
-Node Type: MeshVertexUVData
-	UVs: Count 257. Hash: 8823641736072761245
-	UVCustomName: Tiled
-
-Node Name: Unwrapped
-Node Path: RootNode.ShaderBall_1m.MaterialBase.BottomCap_default_shaderball_1C4F5C76_38DF_5289_AF68_EB96F7658B86__optimized.Unwrapped
-Node Type: MeshVertexUVData
-	UVs: Count 257. Hash: 17988941723121644388
-	UVCustomName: Unwrapped
-
-Node Name: TangentSet_0
-Node Path: RootNode.ShaderBall_1m.MaterialBase.BottomCap_default_shaderball_1C4F5C76_38DF_5289_AF68_EB96F7658B86__optimized.TangentSet_0
-Node Type: MeshVertexTangentData
-	Tangents: Count 257. Hash: 8180735114915510878
-	GenerationMethod: 1
-	SetIndex: 0
-
-Node Name: TangentSet_1
-Node Path: RootNode.ShaderBall_1m.MaterialBase.BottomCap_default_shaderball_1C4F5C76_38DF_5289_AF68_EB96F7658B86__optimized.TangentSet_1
-Node Type: MeshVertexTangentData
-	Tangents: Count 257. Hash: 6608315278879931556
-	GenerationMethod: 1
-	SetIndex: 1
-
-Node Name: BitangentSet_0
-Node Path: RootNode.ShaderBall_1m.MaterialBase.BottomCap_default_shaderball_1C4F5C76_38DF_5289_AF68_EB96F7658B86__optimized.BitangentSet_0
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 257. Hash: 15606348252975307518
-	GenerationMethod: 1
-
-Node Name: BitangentSet_1
-Node Path: RootNode.ShaderBall_1m.MaterialBase.BottomCap_default_shaderball_1C4F5C76_38DF_5289_AF68_EB96F7658B86__optimized.BitangentSet_1
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 257. Hash: 9909736394462106525
-	GenerationMethod: 1
-
-Node Name: transform
-Node Path: RootNode.ShaderBall_1m.MaterialBase.BottomCap_default_shaderball_1C4F5C76_38DF_5289_AF68_EB96F7658B86__optimized.transform
-Node Type: TransformData
-	Matrix:
-		BasisX: < 1.000000,  0.000000,  0.000000>
-		BasisY: < 0.000000,  1.000000,  0.000000>
-		BasisZ: < 0.000000,  0.000000,  1.000000>
-		Transl: < 0.000000,  0.000000,  0.000000>
-
 Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MaterialBase.BottomCap_default_shaderball_1C4F5C76_38DF_5289_AF68_EB96F7658B86__optimized.custom_properties
+Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
 	IsNull: false
 	RotationActive: true
 	DefaultAttributeIndex: 0
-	currentUVSet: Unwrapped
+	currentUVSet: UVW
 	UserProperties: 
 	InheritType: 1
-
-Node Name: blinn1
-Node Path: RootNode.ShaderBall_1m.MaterialBase.BottomCap_default_shaderball_1C4F5C76_38DF_5289_AF68_EB96F7658B86__optimized.blinn1
-Node Type: MaterialData
-	MaterialName: blinn1
-	UniqueId: 2076548245838624187
-	IsNoDraw: false
-	DiffuseColor: < 0.800000,  0.800000,  0.800000>
-	SpecularColor: < 0.500000,  0.500000,  0.500000>
-	EmissiveColor: < 0.000000,  0.000000,  0.000000>
-	Opacity: 1.000000
-	Shininess: 6.311791
-	UseColorMap: Not set
-	BaseColor: Not set
-	UseMetallicMap: Not set
-	MetallicFactor: Not set
-	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
-	UseEmissiveMap: Not set
-	EmissiveIntensity: Not set
-	UseAOMap: Not set
-	DiffuseTexture: ShaderBall/_dev_shaderball_00_basecolor.png
-	SpecularTexture: 
-	BumpTexture: 
-	NormalTexture: 
-	MetallicTexture: 
-	RoughnessTexture: 
-	AmbientOcclusionTexture: 
-	EmissiveTexture: 
-	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
 Node Name: Tiled
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion_shaderball_optimized.Tiled
@@ -2511,16 +1792,6 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion_shaderball_optimized.custom_properties
-Node Type: CustomPropertyData
-	IsNull: false
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	currentUVSet: UVW
-	UserProperties: 
-	InheritType: 1
-
 Node Name: blinn1
 Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion_shaderball_optimized.blinn1
 Node Type: MaterialData
@@ -2551,55 +1822,8 @@ Node Type: MaterialData
 	EmissiveTexture: 
 	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
-Node Name: Tiled
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion_default_shaderball_491DD9C0_9F62_538A_8637_2F85BDEE4675__optimized.Tiled
-Node Type: MeshVertexUVData
-	UVs: Count 13860. Hash: 263381874971540959
-	UVCustomName: Tiled
-
-Node Name: Unwrapped
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion_default_shaderball_491DD9C0_9F62_538A_8637_2F85BDEE4675__optimized.Unwrapped
-Node Type: MeshVertexUVData
-	UVs: Count 13860. Hash: 15191673020616208011
-	UVCustomName: Unwrapped
-
-Node Name: TangentSet_0
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion_default_shaderball_491DD9C0_9F62_538A_8637_2F85BDEE4675__optimized.TangentSet_0
-Node Type: MeshVertexTangentData
-	Tangents: Count 13860. Hash: 7105458185902008309
-	GenerationMethod: 1
-	SetIndex: 0
-
-Node Name: TangentSet_1
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion_default_shaderball_491DD9C0_9F62_538A_8637_2F85BDEE4675__optimized.TangentSet_1
-Node Type: MeshVertexTangentData
-	Tangents: Count 13860. Hash: 16259705089531364237
-	GenerationMethod: 1
-	SetIndex: 1
-
-Node Name: BitangentSet_0
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion_default_shaderball_491DD9C0_9F62_538A_8637_2F85BDEE4675__optimized.BitangentSet_0
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 13860. Hash: 16022317673583270139
-	GenerationMethod: 1
-
-Node Name: BitangentSet_1
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion_default_shaderball_491DD9C0_9F62_538A_8637_2F85BDEE4675__optimized.BitangentSet_1
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 13860. Hash: 7251784463761381809
-	GenerationMethod: 1
-
-Node Name: transform
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion_default_shaderball_491DD9C0_9F62_538A_8637_2F85BDEE4675__optimized.transform
-Node Type: TransformData
-	Matrix:
-		BasisX: < 1.000000,  0.000000,  0.000000>
-		BasisY: < 0.000000,  1.000000,  0.000000>
-		BasisZ: < 0.000000,  0.000000,  1.000000>
-		Transl: < 0.000000,  0.000000,  0.000000>
-
 Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion_default_shaderball_491DD9C0_9F62_538A_8637_2F85BDEE4675__optimized.custom_properties
+Node Path: RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
 	IsNull: false
 	RotationActive: true
@@ -2607,36 +1831,6 @@ Node Type: CustomPropertyData
 	currentUVSet: UVW
 	UserProperties: 
 	InheritType: 1
-
-Node Name: blinn1
-Node Path: RootNode.ShaderBall_1m.MaterialBase.InnerCushion_default_shaderball_491DD9C0_9F62_538A_8637_2F85BDEE4675__optimized.blinn1
-Node Type: MaterialData
-	MaterialName: blinn1
-	UniqueId: 2076548245838624187
-	IsNoDraw: false
-	DiffuseColor: < 0.800000,  0.800000,  0.800000>
-	SpecularColor: < 0.500000,  0.500000,  0.500000>
-	EmissiveColor: < 0.000000,  0.000000,  0.000000>
-	Opacity: 1.000000
-	Shininess: 6.311791
-	UseColorMap: Not set
-	BaseColor: Not set
-	UseMetallicMap: Not set
-	MetallicFactor: Not set
-	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
-	UseEmissiveMap: Not set
-	EmissiveIntensity: Not set
-	UseAOMap: Not set
-	DiffuseTexture: ShaderBall/_dev_shaderball_00_basecolor.png
-	SpecularTexture: 
-	BumpTexture: 
-	NormalTexture: 
-	MetallicTexture: 
-	RoughnessTexture: 
-	AmbientOcclusionTexture: 
-	EmissiveTexture: 
-	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
 Node Name: Tiled
 Node Path: RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_shaderball_optimized.Tiled
@@ -2685,105 +1879,8 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_shaderball_optimized.custom_properties
-Node Type: CustomPropertyData
-	IsNull: false
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	currentUVSet: UVW
-	UserProperties: 
-	InheritType: 1
-
 Node Name: blinn1
 Node Path: RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_shaderball_optimized.blinn1
-Node Type: MaterialData
-	MaterialName: blinn1
-	UniqueId: 2076548245838624187
-	IsNoDraw: false
-	DiffuseColor: < 0.800000,  0.800000,  0.800000>
-	SpecularColor: < 0.500000,  0.500000,  0.500000>
-	EmissiveColor: < 0.000000,  0.000000,  0.000000>
-	Opacity: 1.000000
-	Shininess: 6.311791
-	UseColorMap: Not set
-	BaseColor: Not set
-	UseMetallicMap: Not set
-	MetallicFactor: Not set
-	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
-	UseEmissiveMap: Not set
-	EmissiveIntensity: Not set
-	UseAOMap: Not set
-	DiffuseTexture: ShaderBall/_dev_shaderball_00_basecolor.png
-	SpecularTexture: 
-	BumpTexture: 
-	NormalTexture: 
-	MetallicTexture: 
-	RoughnessTexture: 
-	AmbientOcclusionTexture: 
-	EmissiveTexture: 
-	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
-
-Node Name: Tiled
-Node Path: RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_default_shaderball_61FA311B_958E_5E8A_A4C1_96AA01552B5D__optimized.Tiled
-Node Type: MeshVertexUVData
-	UVs: Count 5206. Hash: 1074257132915638034
-	UVCustomName: Tiled
-
-Node Name: Unwrapped
-Node Path: RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_default_shaderball_61FA311B_958E_5E8A_A4C1_96AA01552B5D__optimized.Unwrapped
-Node Type: MeshVertexUVData
-	UVs: Count 5206. Hash: 2243653809093009497
-	UVCustomName: Unwrapped
-
-Node Name: TangentSet_0
-Node Path: RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_default_shaderball_61FA311B_958E_5E8A_A4C1_96AA01552B5D__optimized.TangentSet_0
-Node Type: MeshVertexTangentData
-	Tangents: Count 5206. Hash: 11559777087289074275
-	GenerationMethod: 1
-	SetIndex: 0
-
-Node Name: TangentSet_1
-Node Path: RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_default_shaderball_61FA311B_958E_5E8A_A4C1_96AA01552B5D__optimized.TangentSet_1
-Node Type: MeshVertexTangentData
-	Tangents: Count 5206. Hash: 15450183130901763011
-	GenerationMethod: 1
-	SetIndex: 1
-
-Node Name: BitangentSet_0
-Node Path: RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_default_shaderball_61FA311B_958E_5E8A_A4C1_96AA01552B5D__optimized.BitangentSet_0
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 5206. Hash: 15359221084106995089
-	GenerationMethod: 1
-
-Node Name: BitangentSet_1
-Node Path: RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_default_shaderball_61FA311B_958E_5E8A_A4C1_96AA01552B5D__optimized.BitangentSet_1
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 5206. Hash: 8652443944286435468
-	GenerationMethod: 1
-
-Node Name: transform
-Node Path: RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_default_shaderball_61FA311B_958E_5E8A_A4C1_96AA01552B5D__optimized.transform
-Node Type: TransformData
-	Matrix:
-		BasisX: < 1.000000,  0.000000,  0.000000>
-		BasisY: < 0.000000,  1.000000,  0.000000>
-		BasisZ: < 0.000000,  0.000000,  1.000000>
-		Transl: < 0.000000,  0.000000,  0.000000>
-
-Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_default_shaderball_61FA311B_958E_5E8A_A4C1_96AA01552B5D__optimized.custom_properties
-Node Type: CustomPropertyData
-	IsNull: false
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	currentUVSet: UVW
-	UserProperties: 
-	InheritType: 1
-
-Node Name: blinn1
-Node Path: RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_default_shaderball_61FA311B_958E_5E8A_A4C1_96AA01552B5D__optimized.blinn1
 Node Type: MaterialData
 	MaterialName: blinn1
 	UniqueId: 2076548245838624187
@@ -2986,6 +2083,16 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 2560. Hash: 1620460765416970456
 	GenerationMethod: 1
 
+Node Name: custom_properties
+Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft_shaderball_optimized.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	currentUVSet: Unwrapped
+	UserProperties: 
+	InheritType: 1
+
 Node Name: Tiled
 Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft_shaderball_optimized.Tiled
 Node Type: MeshVertexUVData
@@ -3033,16 +2140,6 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft_shaderball_optimized.custom_properties
-Node Type: CustomPropertyData
-	IsNull: false
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	currentUVSet: Unwrapped
-	UserProperties: 
-	InheritType: 1
-
 Node Name: blinn1
 Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft_shaderball_optimized.blinn1
 Node Type: MaterialData
@@ -3073,55 +2170,8 @@ Node Type: MaterialData
 	EmissiveTexture: 
 	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
-Node Name: Tiled
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft_default_shaderball_92798A1A_DA92_5BCB_8E70_6433043ABDB6__optimized.Tiled
-Node Type: MeshVertexUVData
-	UVs: Count 720. Hash: 75483450873662317
-	UVCustomName: Tiled
-
-Node Name: Unwrapped
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft_default_shaderball_92798A1A_DA92_5BCB_8E70_6433043ABDB6__optimized.Unwrapped
-Node Type: MeshVertexUVData
-	UVs: Count 720. Hash: 3793407172213641704
-	UVCustomName: Unwrapped
-
-Node Name: TangentSet_0
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft_default_shaderball_92798A1A_DA92_5BCB_8E70_6433043ABDB6__optimized.TangentSet_0
-Node Type: MeshVertexTangentData
-	Tangents: Count 720. Hash: 2508676912793167321
-	GenerationMethod: 1
-	SetIndex: 0
-
-Node Name: TangentSet_1
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft_default_shaderball_92798A1A_DA92_5BCB_8E70_6433043ABDB6__optimized.TangentSet_1
-Node Type: MeshVertexTangentData
-	Tangents: Count 720. Hash: 2013136453053212946
-	GenerationMethod: 1
-	SetIndex: 1
-
-Node Name: BitangentSet_0
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft_default_shaderball_92798A1A_DA92_5BCB_8E70_6433043ABDB6__optimized.BitangentSet_0
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 720. Hash: 9302779689053257196
-	GenerationMethod: 1
-
-Node Name: BitangentSet_1
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft_default_shaderball_92798A1A_DA92_5BCB_8E70_6433043ABDB6__optimized.BitangentSet_1
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 720. Hash: 16922723248982534245
-	GenerationMethod: 1
-
-Node Name: transform
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft_default_shaderball_92798A1A_DA92_5BCB_8E70_6433043ABDB6__optimized.transform
-Node Type: TransformData
-	Matrix:
-		BasisX: < 1.000000,  0.000000,  0.000000>
-		BasisY: < 0.000000,  1.000000,  0.000000>
-		BasisZ: < 0.000000,  0.000000,  1.000000>
-		Transl: < 0.000000,  0.000000,  0.000000>
-
 Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft_default_shaderball_92798A1A_DA92_5BCB_8E70_6433043ABDB6__optimized.custom_properties
+Node Path: RootNode.ShaderBall_1m.InlayRings.RingRight_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
 	IsNull: false
 	RotationActive: true
@@ -3129,36 +2179,6 @@ Node Type: CustomPropertyData
 	currentUVSet: Unwrapped
 	UserProperties: 
 	InheritType: 1
-
-Node Name: blinn1
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingLeft_default_shaderball_92798A1A_DA92_5BCB_8E70_6433043ABDB6__optimized.blinn1
-Node Type: MaterialData
-	MaterialName: blinn1
-	UniqueId: 2076548245838624187
-	IsNoDraw: false
-	DiffuseColor: < 0.800000,  0.800000,  0.800000>
-	SpecularColor: < 0.500000,  0.500000,  0.500000>
-	EmissiveColor: < 0.000000,  0.000000,  0.000000>
-	Opacity: 1.000000
-	Shininess: 6.311791
-	UseColorMap: Not set
-	BaseColor: Not set
-	UseMetallicMap: Not set
-	MetallicFactor: Not set
-	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
-	UseEmissiveMap: Not set
-	EmissiveIntensity: Not set
-	UseAOMap: Not set
-	DiffuseTexture: ShaderBall/_dev_shaderball_00_basecolor.png
-	SpecularTexture: 
-	BumpTexture: 
-	NormalTexture: 
-	MetallicTexture: 
-	RoughnessTexture: 
-	AmbientOcclusionTexture: 
-	EmissiveTexture: 
-	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
 Node Name: Tiled
 Node Path: RootNode.ShaderBall_1m.InlayRings.RingRight_shaderball_optimized.Tiled
@@ -3207,105 +2227,8 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingRight_shaderball_optimized.custom_properties
-Node Type: CustomPropertyData
-	IsNull: false
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	currentUVSet: Unwrapped
-	UserProperties: 
-	InheritType: 1
-
 Node Name: blinn1
 Node Path: RootNode.ShaderBall_1m.InlayRings.RingRight_shaderball_optimized.blinn1
-Node Type: MaterialData
-	MaterialName: blinn1
-	UniqueId: 2076548245838624187
-	IsNoDraw: false
-	DiffuseColor: < 0.800000,  0.800000,  0.800000>
-	SpecularColor: < 0.500000,  0.500000,  0.500000>
-	EmissiveColor: < 0.000000,  0.000000,  0.000000>
-	Opacity: 1.000000
-	Shininess: 6.311791
-	UseColorMap: Not set
-	BaseColor: Not set
-	UseMetallicMap: Not set
-	MetallicFactor: Not set
-	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
-	UseEmissiveMap: Not set
-	EmissiveIntensity: Not set
-	UseAOMap: Not set
-	DiffuseTexture: ShaderBall/_dev_shaderball_00_basecolor.png
-	SpecularTexture: 
-	BumpTexture: 
-	NormalTexture: 
-	MetallicTexture: 
-	RoughnessTexture: 
-	AmbientOcclusionTexture: 
-	EmissiveTexture: 
-	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
-
-Node Name: Tiled
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingRight_default_shaderball_60E3FD38_62BE_5AF8_8DF9_085F00380C7C__optimized.Tiled
-Node Type: MeshVertexUVData
-	UVs: Count 720. Hash: 3542867785718437760
-	UVCustomName: Tiled
-
-Node Name: Unwrapped
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingRight_default_shaderball_60E3FD38_62BE_5AF8_8DF9_085F00380C7C__optimized.Unwrapped
-Node Type: MeshVertexUVData
-	UVs: Count 720. Hash: 5575788853295372734
-	UVCustomName: Unwrapped
-
-Node Name: TangentSet_0
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingRight_default_shaderball_60E3FD38_62BE_5AF8_8DF9_085F00380C7C__optimized.TangentSet_0
-Node Type: MeshVertexTangentData
-	Tangents: Count 720. Hash: 8244955966647049157
-	GenerationMethod: 1
-	SetIndex: 0
-
-Node Name: TangentSet_1
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingRight_default_shaderball_60E3FD38_62BE_5AF8_8DF9_085F00380C7C__optimized.TangentSet_1
-Node Type: MeshVertexTangentData
-	Tangents: Count 720. Hash: 17763430282605007327
-	GenerationMethod: 1
-	SetIndex: 1
-
-Node Name: BitangentSet_0
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingRight_default_shaderball_60E3FD38_62BE_5AF8_8DF9_085F00380C7C__optimized.BitangentSet_0
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 720. Hash: 5442657821959315522
-	GenerationMethod: 1
-
-Node Name: BitangentSet_1
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingRight_default_shaderball_60E3FD38_62BE_5AF8_8DF9_085F00380C7C__optimized.BitangentSet_1
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 720. Hash: 12477592739739533067
-	GenerationMethod: 1
-
-Node Name: transform
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingRight_default_shaderball_60E3FD38_62BE_5AF8_8DF9_085F00380C7C__optimized.transform
-Node Type: TransformData
-	Matrix:
-		BasisX: < 1.000000,  0.000000,  0.000000>
-		BasisY: < 0.000000,  1.000000,  0.000000>
-		BasisZ: < 0.000000,  0.000000,  1.000000>
-		Transl: < 0.000000,  0.000000,  0.000000>
-
-Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingRight_default_shaderball_60E3FD38_62BE_5AF8_8DF9_085F00380C7C__optimized.custom_properties
-Node Type: CustomPropertyData
-	IsNull: false
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	currentUVSet: Unwrapped
-	UserProperties: 
-	InheritType: 1
-
-Node Name: blinn1
-Node Path: RootNode.ShaderBall_1m.InlayRings.RingRight_default_shaderball_60E3FD38_62BE_5AF8_8DF9_085F00380C7C__optimized.blinn1
 Node Type: MaterialData
 	MaterialName: blinn1
 	UniqueId: 2076548245838624187
@@ -3682,6 +2605,16 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 18912. Hash: 4812378464029296668
 	GenerationMethod: 1
 
+Node Name: custom_properties
+Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub_shaderball_optimized.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	currentUVSet: Unwrapped
+	UserProperties: 
+	InheritType: 1
+
 Node Name: Tiled
 Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub_shaderball_optimized.Tiled
 Node Type: MeshVertexUVData
@@ -3729,16 +2662,6 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub_shaderball_optimized.custom_properties
-Node Type: CustomPropertyData
-	IsNull: false
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	currentUVSet: Unwrapped
-	UserProperties: 
-	InheritType: 1
-
 Node Name: blinn1
 Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub_shaderball_optimized.blinn1
 Node Type: MaterialData
@@ -3769,55 +2692,8 @@ Node Type: MaterialData
 	EmissiveTexture: 
 	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
-Node Name: Tiled
-Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub_default_shaderball_51CC241B_C54B_50F2_AED7_113C1327FAD0__optimized.Tiled
-Node Type: MeshVertexUVData
-	UVs: Count 1617. Hash: 16761061667647714654
-	UVCustomName: Tiled
-
-Node Name: Unwrapped
-Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub_default_shaderball_51CC241B_C54B_50F2_AED7_113C1327FAD0__optimized.Unwrapped
-Node Type: MeshVertexUVData
-	UVs: Count 1617. Hash: 14954885971875692232
-	UVCustomName: Unwrapped
-
-Node Name: TangentSet_0
-Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub_default_shaderball_51CC241B_C54B_50F2_AED7_113C1327FAD0__optimized.TangentSet_0
-Node Type: MeshVertexTangentData
-	Tangents: Count 1617. Hash: 37061345418264916
-	GenerationMethod: 1
-	SetIndex: 0
-
-Node Name: TangentSet_1
-Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub_default_shaderball_51CC241B_C54B_50F2_AED7_113C1327FAD0__optimized.TangentSet_1
-Node Type: MeshVertexTangentData
-	Tangents: Count 1617. Hash: 7368059604555723833
-	GenerationMethod: 1
-	SetIndex: 1
-
-Node Name: BitangentSet_0
-Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub_default_shaderball_51CC241B_C54B_50F2_AED7_113C1327FAD0__optimized.BitangentSet_0
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 1617. Hash: 6244533771017459078
-	GenerationMethod: 1
-
-Node Name: BitangentSet_1
-Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub_default_shaderball_51CC241B_C54B_50F2_AED7_113C1327FAD0__optimized.BitangentSet_1
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 1617. Hash: 6416015160247779547
-	GenerationMethod: 1
-
-Node Name: transform
-Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub_default_shaderball_51CC241B_C54B_50F2_AED7_113C1327FAD0__optimized.transform
-Node Type: TransformData
-	Matrix:
-		BasisX: < 1.000000,  0.000000,  0.000000>
-		BasisY: < 0.000000,  1.000000,  0.000000>
-		BasisZ: < 0.000000,  0.000000,  1.000000>
-		Transl: < 0.000000,  0.000000,  0.000000>
-
 Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub_default_shaderball_51CC241B_C54B_50F2_AED7_113C1327FAD0__optimized.custom_properties
+Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
 	IsNull: false
 	RotationActive: true
@@ -3825,36 +2701,6 @@ Node Type: CustomPropertyData
 	currentUVSet: Unwrapped
 	UserProperties: 
 	InheritType: 1
-
-Node Name: blinn1
-Node Path: RootNode.ShaderBall_1m.MainSphere.RightHub_default_shaderball_51CC241B_C54B_50F2_AED7_113C1327FAD0__optimized.blinn1
-Node Type: MaterialData
-	MaterialName: blinn1
-	UniqueId: 2076548245838624187
-	IsNoDraw: false
-	DiffuseColor: < 0.800000,  0.800000,  0.800000>
-	SpecularColor: < 0.500000,  0.500000,  0.500000>
-	EmissiveColor: < 0.000000,  0.000000,  0.000000>
-	Opacity: 1.000000
-	Shininess: 6.311791
-	UseColorMap: Not set
-	BaseColor: Not set
-	UseMetallicMap: Not set
-	MetallicFactor: Not set
-	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
-	UseEmissiveMap: Not set
-	EmissiveIntensity: Not set
-	UseAOMap: Not set
-	DiffuseTexture: ShaderBall/_dev_shaderball_00_basecolor.png
-	SpecularTexture: 
-	BumpTexture: 
-	NormalTexture: 
-	MetallicTexture: 
-	RoughnessTexture: 
-	AmbientOcclusionTexture: 
-	EmissiveTexture: 
-	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
 Node Name: Tiled
 Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub_shaderball_optimized.Tiled
@@ -3903,16 +2749,6 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub_shaderball_optimized.custom_properties
-Node Type: CustomPropertyData
-	IsNull: false
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	currentUVSet: Unwrapped
-	UserProperties: 
-	InheritType: 1
-
 Node Name: blinn1
 Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub_shaderball_optimized.blinn1
 Node Type: MaterialData
@@ -3943,55 +2779,8 @@ Node Type: MaterialData
 	EmissiveTexture: 
 	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
-Node Name: Tiled
-Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub_default_shaderball_2386C2AB_0C4B_554F_B3BC_43754B12017E__optimized.Tiled
-Node Type: MeshVertexUVData
-	UVs: Count 1617. Hash: 8467946356718878053
-	UVCustomName: Tiled
-
-Node Name: Unwrapped
-Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub_default_shaderball_2386C2AB_0C4B_554F_B3BC_43754B12017E__optimized.Unwrapped
-Node Type: MeshVertexUVData
-	UVs: Count 1617. Hash: 2373603727160338558
-	UVCustomName: Unwrapped
-
-Node Name: TangentSet_0
-Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub_default_shaderball_2386C2AB_0C4B_554F_B3BC_43754B12017E__optimized.TangentSet_0
-Node Type: MeshVertexTangentData
-	Tangents: Count 1617. Hash: 1521191693628786862
-	GenerationMethod: 1
-	SetIndex: 0
-
-Node Name: TangentSet_1
-Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub_default_shaderball_2386C2AB_0C4B_554F_B3BC_43754B12017E__optimized.TangentSet_1
-Node Type: MeshVertexTangentData
-	Tangents: Count 1617. Hash: 7175852234718691900
-	GenerationMethod: 1
-	SetIndex: 1
-
-Node Name: BitangentSet_0
-Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub_default_shaderball_2386C2AB_0C4B_554F_B3BC_43754B12017E__optimized.BitangentSet_0
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 1617. Hash: 12283058591680528758
-	GenerationMethod: 1
-
-Node Name: BitangentSet_1
-Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub_default_shaderball_2386C2AB_0C4B_554F_B3BC_43754B12017E__optimized.BitangentSet_1
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 1617. Hash: 14516337485055158228
-	GenerationMethod: 1
-
-Node Name: transform
-Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub_default_shaderball_2386C2AB_0C4B_554F_B3BC_43754B12017E__optimized.transform
-Node Type: TransformData
-	Matrix:
-		BasisX: < 1.000000,  0.000000,  0.000000>
-		BasisY: < 0.000000,  1.000000,  0.000000>
-		BasisZ: < 0.000000,  0.000000,  1.000000>
-		Transl: < 0.000000,  0.000000,  0.000000>
-
 Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub_default_shaderball_2386C2AB_0C4B_554F_B3BC_43754B12017E__optimized.custom_properties
+Node Path: RootNode.ShaderBall_1m.MainSphere.Inside_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
 	IsNull: false
 	RotationActive: true
@@ -3999,36 +2788,6 @@ Node Type: CustomPropertyData
 	currentUVSet: Unwrapped
 	UserProperties: 
 	InheritType: 1
-
-Node Name: blinn1
-Node Path: RootNode.ShaderBall_1m.MainSphere.LeftHub_default_shaderball_2386C2AB_0C4B_554F_B3BC_43754B12017E__optimized.blinn1
-Node Type: MaterialData
-	MaterialName: blinn1
-	UniqueId: 2076548245838624187
-	IsNoDraw: false
-	DiffuseColor: < 0.800000,  0.800000,  0.800000>
-	SpecularColor: < 0.500000,  0.500000,  0.500000>
-	EmissiveColor: < 0.000000,  0.000000,  0.000000>
-	Opacity: 1.000000
-	Shininess: 6.311791
-	UseColorMap: Not set
-	BaseColor: Not set
-	UseMetallicMap: Not set
-	MetallicFactor: Not set
-	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
-	UseEmissiveMap: Not set
-	EmissiveIntensity: Not set
-	UseAOMap: Not set
-	DiffuseTexture: ShaderBall/_dev_shaderball_00_basecolor.png
-	SpecularTexture: 
-	BumpTexture: 
-	NormalTexture: 
-	MetallicTexture: 
-	RoughnessTexture: 
-	AmbientOcclusionTexture: 
-	EmissiveTexture: 
-	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
 Node Name: Tiled
 Node Path: RootNode.ShaderBall_1m.MainSphere.Inside_shaderball_optimized.Tiled
@@ -4077,16 +2836,6 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MainSphere.Inside_shaderball_optimized.custom_properties
-Node Type: CustomPropertyData
-	IsNull: false
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	currentUVSet: Unwrapped
-	UserProperties: 
-	InheritType: 1
-
 Node Name: blinn1
 Node Path: RootNode.ShaderBall_1m.MainSphere.Inside_shaderball_optimized.blinn1
 Node Type: MaterialData
@@ -4117,55 +2866,8 @@ Node Type: MaterialData
 	EmissiveTexture: 
 	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
-Node Name: Tiled
-Node Path: RootNode.ShaderBall_1m.MainSphere.Inside_default_shaderball_0E8A4436_3658_5EF3_8EA9_0503A42060D6__optimized.Tiled
-Node Type: MeshVertexUVData
-	UVs: Count 960. Hash: 2691029117997309291
-	UVCustomName: Tiled
-
-Node Name: Unwrapped
-Node Path: RootNode.ShaderBall_1m.MainSphere.Inside_default_shaderball_0E8A4436_3658_5EF3_8EA9_0503A42060D6__optimized.Unwrapped
-Node Type: MeshVertexUVData
-	UVs: Count 960. Hash: 10093724573967674240
-	UVCustomName: Unwrapped
-
-Node Name: TangentSet_0
-Node Path: RootNode.ShaderBall_1m.MainSphere.Inside_default_shaderball_0E8A4436_3658_5EF3_8EA9_0503A42060D6__optimized.TangentSet_0
-Node Type: MeshVertexTangentData
-	Tangents: Count 960. Hash: 1221219959437752888
-	GenerationMethod: 1
-	SetIndex: 0
-
-Node Name: TangentSet_1
-Node Path: RootNode.ShaderBall_1m.MainSphere.Inside_default_shaderball_0E8A4436_3658_5EF3_8EA9_0503A42060D6__optimized.TangentSet_1
-Node Type: MeshVertexTangentData
-	Tangents: Count 960. Hash: 1294720383009806722
-	GenerationMethod: 1
-	SetIndex: 1
-
-Node Name: BitangentSet_0
-Node Path: RootNode.ShaderBall_1m.MainSphere.Inside_default_shaderball_0E8A4436_3658_5EF3_8EA9_0503A42060D6__optimized.BitangentSet_0
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 960. Hash: 10294793677923893113
-	GenerationMethod: 1
-
-Node Name: BitangentSet_1
-Node Path: RootNode.ShaderBall_1m.MainSphere.Inside_default_shaderball_0E8A4436_3658_5EF3_8EA9_0503A42060D6__optimized.BitangentSet_1
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 960. Hash: 6108415656799664788
-	GenerationMethod: 1
-
-Node Name: transform
-Node Path: RootNode.ShaderBall_1m.MainSphere.Inside_default_shaderball_0E8A4436_3658_5EF3_8EA9_0503A42060D6__optimized.transform
-Node Type: TransformData
-	Matrix:
-		BasisX: < 1.000000,  0.000000,  0.000000>
-		BasisY: < 0.000000,  1.000000,  0.000000>
-		BasisZ: < 0.000000,  0.000000,  1.000000>
-		Transl: < 0.000000,  0.000000,  0.000000>
-
 Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MainSphere.Inside_default_shaderball_0E8A4436_3658_5EF3_8EA9_0503A42060D6__optimized.custom_properties
+Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_shaderball_optimized.custom_properties
 Node Type: CustomPropertyData
 	IsNull: false
 	RotationActive: true
@@ -4173,36 +2875,6 @@ Node Type: CustomPropertyData
 	currentUVSet: Unwrapped
 	UserProperties: 
 	InheritType: 1
-
-Node Name: blinn1
-Node Path: RootNode.ShaderBall_1m.MainSphere.Inside_default_shaderball_0E8A4436_3658_5EF3_8EA9_0503A42060D6__optimized.blinn1
-Node Type: MaterialData
-	MaterialName: blinn1
-	UniqueId: 2076548245838624187
-	IsNoDraw: false
-	DiffuseColor: < 0.800000,  0.800000,  0.800000>
-	SpecularColor: < 0.500000,  0.500000,  0.500000>
-	EmissiveColor: < 0.000000,  0.000000,  0.000000>
-	Opacity: 1.000000
-	Shininess: 6.311791
-	UseColorMap: Not set
-	BaseColor: Not set
-	UseMetallicMap: Not set
-	MetallicFactor: Not set
-	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
-	UseEmissiveMap: Not set
-	EmissiveIntensity: Not set
-	UseAOMap: Not set
-	DiffuseTexture: ShaderBall/_dev_shaderball_00_basecolor.png
-	SpecularTexture: 
-	BumpTexture: 
-	NormalTexture: 
-	MetallicTexture: 
-	RoughnessTexture: 
-	AmbientOcclusionTexture: 
-	EmissiveTexture: 
-	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
 
 Node Name: Tiled
 Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_shaderball_optimized.Tiled
@@ -4251,105 +2923,8 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_shaderball_optimized.custom_properties
-Node Type: CustomPropertyData
-	IsNull: false
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	currentUVSet: Unwrapped
-	UserProperties: 
-	InheritType: 1
-
 Node Name: blinn1
 Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_shaderball_optimized.blinn1
-Node Type: MaterialData
-	MaterialName: blinn1
-	UniqueId: 2076548245838624187
-	IsNoDraw: false
-	DiffuseColor: < 0.800000,  0.800000,  0.800000>
-	SpecularColor: < 0.500000,  0.500000,  0.500000>
-	EmissiveColor: < 0.000000,  0.000000,  0.000000>
-	Opacity: 1.000000
-	Shininess: 6.311791
-	UseColorMap: Not set
-	BaseColor: Not set
-	UseMetallicMap: Not set
-	MetallicFactor: Not set
-	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
-	UseEmissiveMap: Not set
-	EmissiveIntensity: Not set
-	UseAOMap: Not set
-	DiffuseTexture: ShaderBall/_dev_shaderball_00_basecolor.png
-	SpecularTexture: 
-	BumpTexture: 
-	NormalTexture: 
-	MetallicTexture: 
-	RoughnessTexture: 
-	AmbientOcclusionTexture: 
-	EmissiveTexture: 
-	BaseColorTexture: ShaderBall/_dev_shaderball_00_basecolor.png
-
-Node Name: Tiled
-Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_default_shaderball_1616D68E_F072_5643_BD07_565772CD0E30__optimized.Tiled
-Node Type: MeshVertexUVData
-	UVs: Count 4891. Hash: 15498889522919365505
-	UVCustomName: Tiled
-
-Node Name: Unwrapped
-Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_default_shaderball_1616D68E_F072_5643_BD07_565772CD0E30__optimized.Unwrapped
-Node Type: MeshVertexUVData
-	UVs: Count 4891. Hash: 15832520573612498718
-	UVCustomName: Unwrapped
-
-Node Name: TangentSet_0
-Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_default_shaderball_1616D68E_F072_5643_BD07_565772CD0E30__optimized.TangentSet_0
-Node Type: MeshVertexTangentData
-	Tangents: Count 4891. Hash: 6697133368486369688
-	GenerationMethod: 1
-	SetIndex: 0
-
-Node Name: TangentSet_1
-Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_default_shaderball_1616D68E_F072_5643_BD07_565772CD0E30__optimized.TangentSet_1
-Node Type: MeshVertexTangentData
-	Tangents: Count 4891. Hash: 18420832496569008358
-	GenerationMethod: 1
-	SetIndex: 1
-
-Node Name: BitangentSet_0
-Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_default_shaderball_1616D68E_F072_5643_BD07_565772CD0E30__optimized.BitangentSet_0
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 4891. Hash: 2267250201584370787
-	GenerationMethod: 1
-
-Node Name: BitangentSet_1
-Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_default_shaderball_1616D68E_F072_5643_BD07_565772CD0E30__optimized.BitangentSet_1
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 4891. Hash: 7889928104085840247
-	GenerationMethod: 1
-
-Node Name: transform
-Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_default_shaderball_1616D68E_F072_5643_BD07_565772CD0E30__optimized.transform
-Node Type: TransformData
-	Matrix:
-		BasisX: < 1.000000,  0.000000,  0.000000>
-		BasisY: < 0.000000,  1.000000,  0.000000>
-		BasisZ: < 0.000000,  0.000000,  1.000000>
-		Transl: < 0.000000,  0.000000,  0.000000>
-
-Node Name: custom_properties
-Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_default_shaderball_1616D68E_F072_5643_BD07_565772CD0E30__optimized.custom_properties
-Node Type: CustomPropertyData
-	IsNull: false
-	RotationActive: true
-	DefaultAttributeIndex: 0
-	currentUVSet: Unwrapped
-	UserProperties: 
-	InheritType: 1
-
-Node Name: blinn1
-Node Path: RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_default_shaderball_1616D68E_F072_5643_BD07_565772CD0E30__optimized.blinn1
 Node Type: MaterialData
 	MaterialName: blinn1
 	UniqueId: 2076548245838624187

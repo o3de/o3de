@@ -43,7 +43,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = "Material Type Builder";
-            materialBuilderDescriptor.m_version = 6; // Fixed shader path casing
+            materialBuilderDescriptor.m_version = 10; // Reorg 3
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialTypeBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialTypeBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -152,16 +152,21 @@ namespace AZ
             outputJobDescriptor.m_additionalFingerprintInfo = GetBuilderSettingsFingerprint();
             outputJobDescriptor.SetPlatformIdentifier(AssetBuilderSDK::CommonPlatformName);
 
-            // Add dependencies for the material type file
+            auto addPossibleDependencies = [&response](const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath)
             {
-                // Even though the materialAzsliFilePath will be #included into the generated .azsl file, which would normally be handled by the final stage builder, we still need
-                // a source dependency on this file because PipelineStage::ProcessJobHelper tries to resolve the path and fails if it can't be found.
-                AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDepenencyPaths(request.m_sourceFile, materialTypeSourceData.m_materialShaderCode);
+                AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDepenencyPaths(originatingSourceFilePath, referencedSourceFilePath);
                 for (const AZStd::string& path : possibleDependencies)
                 {
                     response.m_sourceFileDependencyList.push_back({});
                     response.m_sourceFileDependencyList.back().m_sourceFileDependencyPath = path;
                 }
+            };
+
+            // Add dependencies for the material type file
+            {
+                // Even though the materialAzsliFilePath will be #included into the generated .azsl file, which would normally be handled by the final stage builder, we still need
+                // a source dependency on this file because PipelineStage::ProcessJobHelper tries to resolve the path and fails if it can't be found.
+                addPossibleDependencies(request.m_sourceFile, materialTypeSourceData.m_materialShaderCode);
             }
 
             // Add dependencies for each material pipeline, since the output of this builder is a combination of the .materialtype data and the .materialpipeline data.
@@ -181,31 +186,16 @@ namespace AZ
 
                 for (const MaterialPipelineSourceData::ShaderTemplate& shaderTemplate : materialPipeline.m_shaderTemplates)
                 {
-                    AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDepenencyPaths(materialPipelineFilePath.Native(), shaderTemplate.m_shader);
-                    for (const AZStd::string& path : possibleDependencies)
-                    {
-                        response.m_sourceFileDependencyList.push_back({});
-                        response.m_sourceFileDependencyList.back().m_sourceFileDependencyPath = path;
-                    }
+                    addPossibleDependencies(materialPipelineFilePath.Native(), shaderTemplate.m_shader);
 
                     // Even though the AZSLi file will be #included into the generated .azsl file, which would normally be handled by the final stage builder, we still need
                     // a source dependency on this file because PipelineStage::ProcessJobHelper tries to resolve the path and fails if it can't be found.
-                    possibleDependencies = RPI::AssetUtils::GetPossibleDepenencyPaths(materialPipelineFilePath.Native(), shaderTemplate.m_azsli);
-                    for (const AZStd::string& path : possibleDependencies)
-                    {
-                        response.m_sourceFileDependencyList.push_back({});
-                        response.m_sourceFileDependencyList.back().m_sourceFileDependencyPath = path;
-                    }
+                    addPossibleDependencies(materialPipelineFilePath.Native(), shaderTemplate.m_azsli);
                 }
 
                 if (!materialPipeline.m_pipelineScript.empty())
                 {
-                    AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDepenencyPaths(materialPipelineFilePath.Native(), materialPipeline.m_pipelineScript);
-                    for (const AZStd::string& path : possibleDependencies)
-                    {
-                        response.m_sourceFileDependencyList.push_back({});
-                        response.m_sourceFileDependencyList.back().m_sourceFileDependencyPath = path;
-                    }
+                    addPossibleDependencies(materialPipelineFilePath.Native(), materialPipeline.m_pipelineScript);
                 }
             }
 
@@ -390,6 +380,8 @@ namespace AZ
                 AZStd::map<AZ::IO::Path, MaterialPipelineSourceData> materialPipelines = LoadMaterialPipelines();
                 for (const auto& [materialPipelineFilePath, materialPipeline] : materialPipelines)
                 {
+                    AZ_TraceContext("Material Pipeline", materialPipelineFilePath.c_str());
+
                     if (!scriptRunner.RunScript(materialPipelineFilePath, materialPipeline, materialType))
                     {
                         // Error messages were be reported by RunScript, no need to report them here.
@@ -401,6 +393,8 @@ namespace AZ
 
                     for (const MaterialPipelineSourceData::ShaderTemplate& shaderTemplate : scriptRunner.GetRelevantShaderTemplates())
                     {
+                        AZ_TraceContext("Shader Template", shaderTemplate.m_shader.c_str());
+
                         // We need to normalize the content of the ShaderTemplate structure since it will be used as the key in the map.
                         // We also check for missing files now, where the original relative path is available for use in the error message.
 
@@ -412,7 +406,7 @@ namespace AZ
 
                             if (!AZ::IO::LocalFileIO::GetInstance()->Exists(resolvedFilePath.c_str()))
                             {
-                                AZ_Error(MaterialTypeBuilderName, false, "File is missing: '%s'", templateFilePath.c_str());
+                                AZ_Error(MaterialTypeBuilderName, false, "File is missing: '%s', referenced in '%s'", templateFilePath.c_str(), materialPipelineFilePath.Native().c_str());
                                 foundProblems = true;
                             }
 
@@ -447,6 +441,8 @@ namespace AZ
             // Generate the required shaders
             for (const auto& [shaderTemplate, materialPipelineList] : shaderTemplateReferences)
             {
+                AZ_TraceContext("Shader Template", shaderTemplate.m_shader.c_str());
+
                 AZStd::string materialPipelineName;
 
                 if (materialPipelineList.size() == 1)
@@ -473,40 +469,17 @@ namespace AZ
                     return;
                 }
 
-                // At this point shaderTemplate.m_azsli should be an absolute path due to ResolvePathReference() being called above.
-                // It might be better for the include path to be relative to the generated .shader file path in the intermediate cache,
-                // so the project could be renamed or moved without having to rebuild the cache. But there's a good chance that moving
-                // the project would require a rebuild of the cache anyway.
-                AZStd::string includeTemplateAzslPath = shaderTemplate.m_azsli;
 
                 // Intermediate azsl file
 
-                AZStd::string generatedAzsl = AZStd::string::format(
-                    "// This code was generated by %s. Do not modify.\n"
-                    "#include <%s>\n",
-                    MaterialTypeBuilderName,
-                    includeTemplateAzslPath.c_str());
+                // At this point m_azsli should be absolute due to ResolvePathReference() being called above.
+                // It might be better for the include path to be relative to the generated .shader file path in the intermediate cache,
+                // so the project could be renamed or moved without having to rebuild the cache. But there's a good chance that moving
+                // the project would require a rebuild of the cache anyway.
 
-                // The exact same material-specific shader code is included in every shader
-                if (!materialAzsliFilePath.empty())
-                {
-                    generatedAzsl += AZStd::string::format("#include <%s>\n", materialAzsliFilePath.c_str());
-                }
-
-                // The "_DEFINED" macros allow the material type to provide code for only the functions it needs to customize,
-                // and all other functions will be stubbed out.
-                generatedAzsl +=
-                    " \n"
-                    "#if !MaterialFunction_AdjustVertexData_DEFINED                                                    \n"
-                    "    void MaterialFunction_AdjustVertexData(in float3 positionLS, inout VertexData vertexData) {}  \n"
-                    "    #define MaterialFunction_AdjustVertexData_DEFINED 1                                           \n"
-                    "#endif                                                                                            \n"
-                    "                                                                                                  \n"
-                    "#if !MaterialFunction_AdjustSurface_DEFINED && MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE            \n"
-                    "    void MaterialFunction_AdjustSurface(inout Surface outSurface) {}                              \n"
-                    "    #define MaterialFunction_AdjustSurface_DEFINED 1                                              \n"
-                    "#endif                                                                                            \n"
-                    ;
+                AZStd::string generatedAzsl = AZStd::string::format("// This code was generated by %s. Do not modify.\n", MaterialTypeBuilderName);
+                generatedAzsl += AZStd::string::format("#define MATERIAL_TYPE_AZSLI_FILE_PATH \"%s\" \n", materialAzsliFilePath.c_str());
+                generatedAzsl += AZStd::string::format("#include \"%s\" \n", shaderTemplate.m_azsli.c_str());
 
                 AZ::IO::Path shaderName = shaderTemplate.m_shader;
                 shaderName = shaderName.Filename(); // Removes the folder path

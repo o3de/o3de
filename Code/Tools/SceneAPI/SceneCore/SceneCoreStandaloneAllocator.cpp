@@ -18,9 +18,9 @@ namespace AZ
 
         void SceneCoreStandaloneAllocator::Initialize()
         {
-            if (!AZ::AllocatorInstance<AZ::SystemAllocator>().IsReady())
+            if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
             {
-                AZ::AllocatorInstance<AZ::SystemAllocator>().Create();
+                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
                 m_allocatorInitialized = true;
             }
         }
@@ -29,7 +29,7 @@ namespace AZ
         {
             if (m_allocatorInitialized)
             {
-                AZ::AllocatorInstance<AZ::SystemAllocator>().Destroy();
+                AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
             }
         }
     }

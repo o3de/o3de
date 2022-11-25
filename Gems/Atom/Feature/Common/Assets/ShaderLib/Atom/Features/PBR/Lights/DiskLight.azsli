@@ -82,6 +82,7 @@ void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingDat
         // - If transmission mode is thin object -> ignore back lighting
         float transmissionDistance = -1.0f;
 
+#if ENABLE_SHADOWS
         if (o_enableShadows && o_enableDiskLightShadows)
         {
             litRatio = ProjectedShadow::GetVisibility(
@@ -104,6 +105,7 @@ void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingDat
             }
 #endif
         }
+#endif
 
         if (useConeAngle && dotWithDirection < light.m_cosInnerConeAngle) // in penumbra
         {   
@@ -209,8 +211,30 @@ void ValidateDiskLight(ViewSrg::DiskLight light, Surface surface, inout Lighting
     lightingData.specularLighting += (specularAcc / float(sampleCount)) * light.m_rgbIntensityCandelas;
 }
 
+void ApplyDiskLightInternal(uint lightIndex, Surface surface, inout LightingData lightingData)
+{
+#if ENABLE_DISK_LIGHTS
+    if (o_enableDiskLights)
+    {
+        ViewSrg::DiskLight light = ViewSrg::m_diskLights[lightIndex];
+            
+#if ENABLE_AREA_LIGHT_VALIDATION
+        if (o_area_light_validation)
+        {
+            ValidateDiskLight(light, surface, lightingData);
+        }
+        else
+#endif // ENABLE_AREA_LIGHT_VALIDATION
+        {
+            ApplyDiskLight(light, surface, lightingData);
+        }
+    }
+#endif // ENABLE_DISK_LIGHTS
+}
+
 void ApplyDiskLights(Surface surface, inout LightingData lightingData)
 {    
+#if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.LoadAdvance();
 
     while( !lightingData.tileIterator.IsDone() )
@@ -218,22 +242,12 @@ void ApplyDiskLights(Surface surface, inout LightingData lightingData)
         uint currLightIndex = lightingData.tileIterator.GetValue();
         lightingData.tileIterator.LoadAdvance();
         
-#if ENABLE_DISK_LIGHTS
-        if (o_enableDiskLights)
-        {
-            ViewSrg::DiskLight light = ViewSrg::m_diskLights[currLightIndex];
-            
-#if ENABLE_AREA_LIGHT_VALIDATION
-            if (o_area_light_validation)
-            {
-                ValidateDiskLight(light, surface, lightingData);
-            }
-            else
-#endif
-            {
-                ApplyDiskLight(light, surface, lightingData);
-            }
-        }
-#endif
+        ApplyDiskLightInternal(currLightIndex, surface, lightingData);
     }
+#else
+    for(uint lightIndex = 0; lightIndex < ViewSrg::m_diskLightCount; lightIndex++)
+    {
+        ApplyDiskLightInternal(lightIndex, surface, lightingData);
+    }
+#endif
 }

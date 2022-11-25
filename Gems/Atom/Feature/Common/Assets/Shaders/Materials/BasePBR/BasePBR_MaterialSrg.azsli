@@ -8,7 +8,6 @@
 
 #pragma once 
 
-#include <Atom/Features/PBR/LightingOptions.azsli>
 #include <Atom/Features/PBR/AlphaUtils.azsli>
 
 #include "../MaterialInputs/BaseColorInput.azsli"
@@ -17,6 +16,8 @@
 #include "../MaterialInputs/SpecularInput.azsli"
 #include "../MaterialInputs/NormalInput.azsli"
 #include "../MaterialInputs/UvSetCount.azsli"
+
+#include <Atom/Features/SrgSemantics.azsli>
 
 ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {

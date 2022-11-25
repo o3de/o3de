@@ -98,17 +98,21 @@ namespace DPEDebugView
         EnumType m_enumValue = EnumType::Value1;
         AZ::EntityId m_entityId;
 
+        // For testing invocable ReadOnly attributes
+        bool IsDataReadOnly()
+        {
+            return true;
+        }
+
         static void Reflect(AZ::ReflectContext* context)
         {
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<TestContainer>()
                     ->Field("simpleInt", &TestContainer::m_simpleInt)
-                    ->Field("readonlyInt", &TestContainer::m_readOnlyInt)
                     ->Field("doubleSlider", &TestContainer::m_doubleSlider)
                     ->Field("vector", &TestContainer::m_vector)
                     ->Field("map", &TestContainer::m_map)
-                    ->Field("map", &TestContainer::m_readOnlyMap)
                     ->Field("unorderedMap", &TestContainer::m_unorderedMap)
                     ->Field("simpleEnum", &TestContainer::m_simpleEnum)
                     ->Field("immutableEnum", &TestContainer::m_immutableEnum)
@@ -118,7 +122,9 @@ namespace DPEDebugView
                     ->Field("nestedMap", &TestContainer::m_nestedMap)
                     ->Field("entityIdMap", &TestContainer::m_entityIdMap)
                     ->Field("enumValue", &TestContainer::m_enumValue)
-                    ->Field("entityId", &TestContainer::m_entityId);
+                    ->Field("entityId", &TestContainer::m_entityId)
+                    ->Field("readonlyInt", &TestContainer::m_readOnlyInt)
+                    ->Field("map", &TestContainer::m_readOnlyMap);
 
                 serializeContext->Enum<EnumType>()
                     ->Value("Value1", EnumType::Value1)
@@ -167,7 +173,7 @@ namespace DPEDebugView
                         ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "ReadOnly")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_readOnlyInt, "readonly int", "")
-                        ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TestContainer::IsDataReadOnly)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_readOnlyMap, "readonly map<string, float>", "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, true);

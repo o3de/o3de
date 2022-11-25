@@ -199,27 +199,31 @@ namespace AzToolsFramework
         AZStd::unique_ptr<AZ::Entity> Instance::DetachEntity(const AZ::EntityId& entityId)
         {
             EntityAlias entityAliasToRemove;
-            auto instanceToTemplateEntityIdIterator = m_instanceToTemplateEntityIdMap.find(entityId);
-
-            if (instanceToTemplateEntityIdIterator != m_instanceToTemplateEntityIdMap.end())
+            if (auto instanceToTemplateEntityIdIterator = m_instanceToTemplateEntityIdMap.find(entityId);
+                instanceToTemplateEntityIdIterator != m_instanceToTemplateEntityIdMap.end())
             {
                 entityAliasToRemove = instanceToTemplateEntityIdIterator->second;
                 if (m_entityIdInstanceRelationship == EntityIdInstanceRelationship::OneToOne)
                 {
                     if (!UnregisterEntity(entityId))
                     {
-                        AZ_Error("Prefab", false, "An owning instance couldn't be found corresponding to the entity requested to be detached");
+                        AZ_Error(
+                            "Prefab",
+                            false,
+                            "An owning instance couldn't be found corresponding to the entity requested to be detached");
                         return nullptr;
                     }
                 }
                 else
                 {
                     [[maybe_unused]] bool isEntityRemoved =
-                        m_templateToInstanceEntityIdMap.erase(entityAliasToRemove) && m_instanceToTemplateEntityIdMap.erase(entityId);
-                    AZ_Assert(isEntityRemoved,
+                        (m_templateToInstanceEntityIdMap.erase(entityAliasToRemove) > 0) && (m_instanceToTemplateEntityIdMap.erase(entityId) > 0);
+                    AZ_Assert(
+                        isEntityRemoved,
                         "Prefab - Failed to remove entity with id %s with a Prefab Instance derived from source asset %s "
                         "This happens when the entity is not correctly removed from all the prefab system entity maps.",
-                        entityId.ToString().c_str(), m_templateSourcePath.c_str());
+                        entityId.ToString().c_str(),
+                        m_templateSourcePath.c_str());
                 }
             }
 
@@ -264,6 +268,17 @@ namespace AzToolsFramework
             }
 
             m_entities.clear();
+        }
+
+        bool Instance::DestroyEntity(const AZ::EntityId& entityId)
+        {
+            AZStd::unique_ptr<AZ::Entity> detachedEntity = DetachEntity(entityId);
+            if (detachedEntity)
+            {
+                detachedEntity.reset();
+                return true;
+            }
+            return false;
         }
 
         AZStd::unique_ptr<AZ::Entity> Instance::ReplaceEntity(AZStd::unique_ptr<AZ::Entity>&& entity, EntityAliasView alias)
@@ -899,6 +914,17 @@ namespace AzToolsFramework
                 UnregisterEntity(m_containerEntity->GetId());
             }
             return AZStd::move(m_containerEntity);
+        }
+
+        bool Instance::DestroyContainerEntity()
+        {
+            AZStd::unique_ptr<AZ::Entity> detachedEntity = DetachContainerEntity();
+            if (detachedEntity)
+            {
+                detachedEntity.reset();
+                return true;
+            }
+            return false;
         }
 
         PrefabDomConstReference Instance::GetCachedInstanceDom() const

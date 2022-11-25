@@ -393,9 +393,8 @@ namespace ScriptCanvasEditor
         void OnScriptEventAddHelpers();
         void OnScriptEventClearStatus();
         void OnScriptEventMenuPreShow();
-        void OnScriptEventOpen();
-        void OnScriptEventParseAs();
-        void OnScriptEventSaveAs();
+        void OnScriptEventOpen(const AZ::IO::Path& filePath);
+        bool OnScriptEventSave(Save save);
 
         void UpdateViewMenu();
         /////////////////////////////////////////////////////////////////////////////////////////////
@@ -765,7 +764,7 @@ namespace ScriptCanvasEditor
         AZStd::unique_ptr<VersionExplorer::FileSaver> m_fileSaver;
         VersionExplorer::FileSaveResult m_fileSaveResult;
         void OnSaveCallBack(const VersionExplorer::FileSaveResult& result);
-
+        SourceHandle OnSaveComplete(const SourceHandle& sourceHandle, const VersionExplorer::FileSaveResult& result);
         void ClearStaleSaves();
         bool IsRecentSave(const SourceHandle& handle) const;
         void MarkRecentSave(const SourceHandle& handle);
