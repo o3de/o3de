@@ -817,8 +817,8 @@ namespace AZ
 
         RHI::ShadingRateImageValue Device::ConvertShadingRate(RHI::ShadingRate rate)
         {
-            auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
-            if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentShadingRate))
+            ShadingRateImageMode mode = GetImageShadingRageMode();
+            if (mode == ShadingRateImageMode::ImageAttachment)
             {
                 // Fragment sizes are encoded in a single texel as follows:
                 // size(w) = 2^((texel/4) & 3)
@@ -859,8 +859,11 @@ namespace AZ
                 uint8_t encodedRate = rate_w << 2 | rate_h;
                 return RHI::ShadingRateImageValue{ encodedRate, 0 };
             }
-            else if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentDensityMap))
+            else if (mode == ShadingRateImageMode::DensityMap)
             {
+                // Horizontal rate is encoded in the first texel component.
+                // Vertical rate is encoded in the second texl component.
+                // Final density is calculated as (1/rate) and valid values must be in range (0, 1]
                 uint8_t rate_w, rate_h;
                 switch (rate)
                 {
@@ -897,7 +900,7 @@ namespace AZ
                 uint8_t density_h = 0xFF >> rate_h;
                 return RHI::ShadingRateImageValue{ density_w, density_h };
             }
-            AZ_Error("Vulkan", false, "Shading Rate is not supported on this platform");
+            AZ_Error("Vulkan", false, "Shading Rate Image is not supported on this platform");
             return RHI::ShadingRateImageValue{};
         } 
 
