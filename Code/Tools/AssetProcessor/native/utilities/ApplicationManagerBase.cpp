@@ -895,6 +895,7 @@ ApplicationManager::BeforeRunStatus ApplicationManagerBase::BeforeRun()
     qRegisterMetaType<QSet<QString> >("QSet<QString>");
     qRegisterMetaType<QSet<AssetProcessor::AssetFileInfo>>("QSet<AssetFileInfo>");
     qRegisterMetaType<AssetProcessor::SourceAssetReference>("SourceAssetReference");
+    qRegisterMetaType<AZStd::unordered_set<AZ::Uuid>>("AZStd::unordered_set<AZ::Uuid>");
 
     AssetBuilderSDK::AssetBuilderBus::Handler::BusConnect();
     AssetProcessor::AssetBuilderRegistrationBus::Handler::BusConnect();
