@@ -495,10 +495,6 @@ namespace AssetProcessor
 
                     // also register it at the legacy id(s) if its different:
                     AZ::Data::AssetId legacyAssetId(combined.m_legacyGuid, 0);
-                    //auto legacyUuids = AssetUtilities::GetLegacySourceUuids();
-                    AZ::Uuid  legacySourceUuid = AssetUtilities::CreateSafeSourceUUIDFromName(combined.m_sourceName.c_str(), false);
-                    AZ::Data::AssetId legacySourceAssetId(legacySourceUuid, combined.m_subID);
-
                     currentRegistry.RegisterAsset(assetId, info);
 
                     if (legacyAssetId != assetId)
@@ -506,16 +502,27 @@ namespace AssetProcessor
                         currentRegistry.RegisterLegacyAssetMapping(legacyAssetId, assetId);
                     }
 
-                    if (legacySourceAssetId != assetId)
+                    SourceAssetReference sourceAsset(combined.m_scanFolderID, combined.m_sourceName.c_str());
+                    AZStd::unordered_set<AZ::Data::AssetId> legacySourceAssetIds;
+                    auto legacySourceUuids = AssetUtilities::GetLegacySourceUuids(sourceAsset);
+                    legacySourceAssetIds.reserve(legacySourceUuids.size());
+
+                    for (const auto& legacyUuid : legacySourceUuids)
                     {
-                        currentRegistry.RegisterLegacyAssetMapping(legacySourceAssetId, assetId);
+                        AZ::Data::AssetId legacySourceAssetId(legacyUuid, combined.m_subID);
+
+                        if (legacySourceAssetId != assetId)
+                        {
+                            legacySourceAssetIds.emplace(legacySourceAssetId);
+                            currentRegistry.RegisterLegacyAssetMapping(legacySourceAssetId, assetId);
+                        }
                     }
 
                     // now include the additional legacies based on the SubIDs by which this asset was previously referred to.
                     for (const auto& entry : combined.m_legacySubIDs)
                     {
                         AZ::Data::AssetId legacySubID(combined.m_sourceGuid, entry.m_subID);
-                        if ((legacySubID != assetId) && (legacySubID != legacyAssetId) && (legacySubID != legacySourceAssetId))
+                        if ((legacySubID != assetId) && (legacySubID != legacyAssetId) && !legacySourceAssetIds.contains(legacySubID))
                         {
                             currentRegistry.RegisterLegacyAssetMapping(legacySubID, assetId);
                         }

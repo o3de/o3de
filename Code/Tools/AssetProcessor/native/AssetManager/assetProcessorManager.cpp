@@ -1318,7 +1318,6 @@ namespace AssetProcessor
 
                 // also compute the legacy ids that used to refer to this asset
                 AZ::Data::AssetId legacyAssetId(priorProduct.m_legacyGuid, 0);
-                AZ::Data::AssetId legacySourceAssetId(AssetUtilities::CreateSafeSourceUUIDFromName(source.m_sourceName.c_str(), false), priorProduct.m_subID);
 
                 AssetNotificationMessage message(productPath.GetRelativePath(), AssetNotificationMessage::AssetRemoved, priorProduct.m_assetType, processedAsset.m_entry.m_platformInfo.m_identifier.c_str());
                 message.m_assetId = assetId;
@@ -1328,9 +1327,15 @@ namespace AssetProcessor
                     message.m_legacyAssetIds.push_back(legacyAssetId);
                 }
 
-                if (legacySourceAssetId != assetId)
+                for (const auto& legacyUuid :
+                     AssetUtilities::GetLegacySourceUuids(SourceAssetReference(source.m_scanFolderPK, source.m_sourceName.c_str())))
                 {
-                    message.m_legacyAssetIds.push_back(legacySourceAssetId);
+                    AZ::Data::AssetId legacySourceAssetId(legacyUuid, priorProduct.m_subID);
+
+                    if (legacySourceAssetId != assetId)
+                    {
+                        message.m_legacyAssetIds.push_back(legacySourceAssetId);
+                    }
                 }
 
                 bool shouldDeleteFile = true;
@@ -1463,7 +1468,6 @@ namespace AssetProcessor
                 AssetNotificationMessage message(relativeProductPath, AssetNotificationMessage::AssetChanged, newProduct.m_assetType, processedAsset.m_entry.m_platformInfo.m_identifier.c_str());
                 AZ::Data::AssetId assetId(source.m_sourceGuid, newProduct.m_subID);
                 AZ::Data::AssetId legacyAssetId(newProduct.m_legacyGuid, 0);
-                AZ::Data::AssetId legacySourceAssetId(AssetUtilities::CreateSafeSourceUUIDFromName(source.m_sourceName.c_str(), false), newProduct.m_subID);
 
                 message.m_data = relativeProductPath;
                 message.m_sizeBytes = QFileInfo(fullProductPath).size();
@@ -1481,15 +1485,26 @@ namespace AssetProcessor
                     message.m_legacyAssetIds.push_back(legacyAssetId);
                 }
 
-                if (legacySourceAssetId != assetId)
+                SourceAssetReference sourceAsset(source.m_scanFolderPK, source.m_sourceName.c_str());
+                AZStd::unordered_set<AZ::Data::AssetId> legacySourceAssetIds;
+                auto legacySourceUuids = AssetUtilities::GetLegacySourceUuids(sourceAsset);
+                legacySourceAssetIds.reserve(legacySourceUuids.size());
+
+                for (const auto& legacyUuid : legacySourceUuids)
                 {
-                    message.m_legacyAssetIds.push_back(legacySourceAssetId);
+                    AZ::Data::AssetId legacySourceAssetId(legacyUuid, newProduct.m_subID);
+
+                    if (legacySourceAssetId != assetId)
+                    {
+                        legacySourceAssetIds.emplace(legacySourceAssetId);
+                        message.m_legacyAssetIds.push_back(legacySourceAssetId);
+                    }
                 }
 
                 for (AZ::u32 newLegacySubId : subIds)
                 {
                     AZ::Data::AssetId createdSubID(source.m_sourceGuid, newLegacySubId);
-                    if ((createdSubID != legacyAssetId) && (createdSubID != legacySourceAssetId) && (createdSubID != assetId))
+                    if ((createdSubID != legacyAssetId) && !legacySourceAssetIds.contains(createdSubID) && (createdSubID != assetId))
                     {
                         message.m_legacyAssetIds.push_back(createdSubID);
                     }
@@ -1850,7 +1865,6 @@ namespace AssetProcessor
                 {
                     AZ::Data::AssetId assetId(source.m_sourceGuid, product.m_subID);
                     AZ::Data::AssetId legacyAssetId(product.m_legacyGuid, 0);
-                    AZ::Data::AssetId legacySourceAssetId(AssetUtilities::CreateSafeSourceUUIDFromName(source.m_sourceName.c_str(), false), product.m_subID);
 
                     AssetNotificationMessage message(productPath.GetRelativePath(), AssetNotificationMessage::AssetRemoved, product.m_assetType, AZ::OSString(platform.data(), platform.size()));
                     message.m_assetId = assetId;
@@ -1860,10 +1874,17 @@ namespace AssetProcessor
                         message.m_legacyAssetIds.push_back(legacyAssetId);
                     }
 
-                    if (legacySourceAssetId != assetId)
+                    for (const auto& legacyUuid :
+                        AssetUtilities::GetLegacySourceUuids(SourceAssetReference(source.m_scanFolderPK, source.m_sourceName.c_str())))
                     {
-                        message.m_legacyAssetIds.push_back(legacySourceAssetId);
+                        AZ::Data::AssetId legacySourceAssetId(legacyUuid, product.m_subID);
+
+                        if (legacySourceAssetId != assetId)
+                        {
+                            message.m_legacyAssetIds.push_back(legacySourceAssetId);
+                        }
                     }
+
                     Q_EMIT AssetMessage( message);
                 }
 
