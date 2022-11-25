@@ -344,6 +344,7 @@ namespace AZ
                 ->Method("Set", [](Name* thisPtr, AZStd::string_view name) { thisPtr->SetName(name); })
                 ->Method("IsEmpty", &Name::IsEmpty)
                 ->Method("Equal", static_cast<bool(Name::*)(const Name&)const>(&Name::operator==))
+                ->Method("__repr__", &Name::GetCStr)
                 ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::Equal)
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ;
