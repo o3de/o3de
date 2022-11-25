@@ -9,8 +9,11 @@
 #if !defined(Q_MOC_RUN)
 #include <native/FileWatcher/FileWatcher.h>
 #include <native/unittests/UnitTestUtils.h>
-#include <native/utilities/AssetUtilEBusHelper.h>
 #include <native/unittests/AssetProcessorUnitTests.h>
+#include <native/tests/UnitTestUtilities.h>
+#include <native/utilities/AssetUtilEBusHelper.h>
+#include <native/utilities/UuidManager.h>
+#include <AzToolsFramework/Metadata/MetadataManager.h>
 #endif
 
 namespace AssetProcessor
@@ -36,9 +39,12 @@ namespace AssetProcessor
         QDir m_sourceRoot;
         QDir m_cacheRoot;
 
-        AZStd::unique_ptr<AssetProcessor::FileStatePassthrough> m_fileStateCache;    
+        AZStd::unique_ptr<AssetProcessor::FileStatePassthrough> m_fileStateCache;
         AZStd::unique_ptr<UnitTestUtils::ScopedDir> m_changeDir;
         FileWatcher m_fileWatcher;
+        ::UnitTests::MockVirtualFileIO m_virtualFileIO;
+        AzToolsFramework::MetadataManager m_metadataManager;
+        AssetProcessor::UuidManager m_uuidManager;
 
         QList<QMetaObject::Connection> m_assetProcessorConnections;
         bool m_idling = false;

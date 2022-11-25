@@ -13,6 +13,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <gmock/gmock.h>
+#include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
 
 namespace UnitTests
 {
@@ -119,13 +120,14 @@ namespace UnitTests
 
         bool ConvertToRelativePath(QString fullFileName, QString& databaseSourceName, QString& scanFolderName) const override
         {
+            EXPECT_TRUE(fullFileName.startsWith(m_scanFolderInfo.ScanPath(), Qt::CaseInsensitive));
+
             scanFolderName = m_scanFolderInfo.ScanPath();
             databaseSourceName = fullFileName.mid(scanFolderName.size() + 1);
 
             return true;
         }
 
-        //! given a full file name (assumed already fed through the normalization funciton), return the first matching scan folder
         const AssetProcessor::ScanFolderInfo* GetScanFolderForFile(const QString& /*fullFileName*/) const override
         {
             return &m_scanFolderInfo;
@@ -138,5 +140,140 @@ namespace UnitTests
 
     private:
         AssetProcessor::ScanFolderInfo m_scanFolderInfo;
+    };
+
+    struct MockVirtualFileIO
+    {
+        MockVirtualFileIO()
+        {
+            // Cache the existing file io instance and build our mock file io
+            m_priorFileIO = AZ::IO::FileIOBase::GetInstance();
+            m_fileIOMock = AZStd::make_unique<testing::NiceMock<AZ::IO::MockFileIOBase>>();
+
+            // Swap out current file io instance for our mock
+            AZ::IO::FileIOBase::SetInstance(nullptr);
+            AZ::IO::FileIOBase::SetInstance(m_fileIOMock.get());
+
+            // Setup the default returns for our mock file io calls
+            AZ::IO::MockFileIOBase::InstallDefaultReturns(*m_fileIOMock.get());
+
+            using namespace ::testing;
+            using namespace AZ;
+
+            ON_CALL(*m_fileIOMock, Open(_, _, _))
+                .WillByDefault(Invoke(
+                    [](auto filePath, auto, IO::HandleType& handle)
+                    {
+                        handle = AZ::u32(AZStd::hash<AZStd::string>{}(filePath));
+                        return AZ::IO::Result(AZ::IO::ResultCode::Success);
+                    }));
+
+            ON_CALL(*m_fileIOMock, Tell(_, _))
+                .WillByDefault(Invoke(
+                    [](auto, auto& offset)
+                    {
+                        offset = 0;
+                        return AZ::IO::ResultCode::Success;
+                    }));
+
+            ON_CALL(*m_fileIOMock, Size(An<AZ::IO::HandleType>(), _))
+                .WillByDefault(Invoke(
+                    [this](auto handle, AZ::u64& size)
+                    {
+                        size = m_mockFiles[handle].size();
+                        return AZ::IO::ResultCode::Success;
+                    }));
+
+            ON_CALL(*m_fileIOMock, Size(An<const char*>(), _))
+                .WillByDefault(Invoke(
+                    [this](const char* filePath, AZ::u64& size)
+                    {
+                        auto handle = AZ::u32(AZStd::hash<AZStd::string>{}(filePath));
+                        size = m_mockFiles[handle].size();
+                        return AZ::IO::ResultCode::Success;
+                    }));
+
+            ON_CALL(*m_fileIOMock, Exists(_))
+                .WillByDefault(Invoke(
+                    [this](const char* filePath)
+                    {
+                        auto handle = AZ::u32(AZStd::hash<AZStd::string>{}(filePath));
+                        auto itr = m_mockFiles.find(handle);
+                        return itr != m_mockFiles.end() && itr->second.size() > 0;
+                    }));
+
+            ON_CALL(*m_fileIOMock, Rename(_, _))
+                .WillByDefault(Invoke(
+                    [this](const char* originalPath, const char* newPath)
+                    {
+                        auto originalHandle = AZ::u32(AZStd::hash<AZStd::string>{}(originalPath));
+                        auto newHandle = AZ::u32(AZStd::hash<AZStd::string>{}(newPath));
+                        auto itr = m_mockFiles.find(originalHandle);
+
+                        if (itr != m_mockFiles.end())
+                        {
+                            m_mockFiles[newHandle] = itr->second;
+                            m_mockFiles.erase(itr);
+
+                            return AZ::IO::ResultCode::Success;
+                        }
+
+                        return AZ::IO::ResultCode::Error;
+                    }));
+
+            ON_CALL(*m_fileIOMock, Remove(_))
+                .WillByDefault(Invoke(
+                    [this](const char* path)
+                    {
+                        auto handle = AZ::u32(AZStd::hash<AZStd::string>{}(path));
+
+                        m_mockFiles.erase(handle);
+
+                        return AZ::IO::ResultCode::Success;
+                    }));
+
+            ON_CALL(*m_fileIOMock, Read(_, _, _, _, _))
+                .WillByDefault(Invoke(
+                    [this](auto handle, void* buffer, auto, auto, AZ::u64* bytesRead)
+                    {
+                        auto itr = m_mockFiles.find(handle);
+
+                        if (itr == m_mockFiles.end())
+                        {
+                            return AZ::IO::ResultCode::Error;
+                        }
+
+                        memcpy(buffer, itr->second.c_str(), itr->second.size());
+                        *bytesRead = itr->second.size();
+                        return AZ::IO::ResultCode::Success;
+                    }));
+
+            ON_CALL(*m_fileIOMock, Write(_, _, _, _))
+                .WillByDefault(Invoke(
+                    [this](IO::HandleType fileHandle, const void* buffer, AZ::u64 size, AZ::u64* bytesWritten)
+                    {
+                        AZStd::string& file = m_mockFiles[fileHandle];
+
+                        file.resize(size);
+                        memcpy((void*)file.c_str(), buffer, size);
+
+                        if (bytesWritten)
+                        {
+                            *bytesWritten = size;
+                        }
+
+                        return AZ::IO::ResultCode::Success;
+                    }));
+        }
+
+        ~MockVirtualFileIO()
+        {
+            AZ::IO::FileIOBase::SetInstance(nullptr);
+            AZ::IO::FileIOBase::SetInstance(m_priorFileIO);
+        }
+
+        AZ::IO::FileIOBase* m_priorFileIO = nullptr;
+        AZStd::unordered_map<AZ::IO::HandleType, AZStd::string> m_mockFiles;
+        AZStd::unique_ptr<testing::NiceMock<AZ::IO::MockFileIOBase>> m_fileIOMock;
     };
 }

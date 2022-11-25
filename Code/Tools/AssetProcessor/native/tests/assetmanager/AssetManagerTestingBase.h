@@ -123,6 +123,8 @@ namespace UnitTests
         AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry m_scanfolder;
         MockMultiBuilderInfoHandler m_builderInfoHandler;
         AZ::IO::LocalFileIO* m_localFileIo;
+        AzToolsFramework::MetadataManager m_metadataManager;
+        AssetProcessor::UuidManager m_uuidManager;
 
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZ::Entity* m_jobManagerEntity{};

@@ -140,7 +140,7 @@ namespace AssetProcessor
         for (const QMetaObject::Connection& connection : m_assetProcessorConnections)
         {
             QObject::disconnect(connection);
-        }        
+        }
 
         QCoreApplication::processEvents(QEventLoop::AllEvents);
 
@@ -207,7 +207,7 @@ namespace AssetProcessor
                     << AZStd::string::format("Failed to modify the creation time of %s", expect.toUtf8().data()).c_str();
                 file.close();
 
-                //Add 2 seconds to the next file timestamp since the file time resolution is one second on platforms other than Windows. 
+                //Add 2 seconds to the next file timestamp since the file time resolution is one second on platforms other than Windows.
                 fileTime = fileTime.addSecs(2);
             }
         }
@@ -289,7 +289,7 @@ namespace AssetProcessor
         ignore_rec.m_platformSpecs.insert({"android", AssetInternalSpec::Skip});
         m_config.AddRecognizer(ignore_rec);
         mockAppManager.RegisterAssetRecognizerAsBuilder(ignore_rec);
-     
+
         QSet<QString> expectedFiles;
         // subfolder3 is not recursive so none of these should show up in any scan or override check
         expectedFiles << m_sourceRoot.absoluteFilePath("subfolder3/aaa/basefile.txt");
@@ -1423,7 +1423,7 @@ namespace AssetProcessor
         rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
         m_config.AddRecognizer(rec);
         EXPECT_TRUE(mockAppManager.RegisterAssetRecognizerAsBuilder(rec));
-        
+
         QString absolutePath = AssetUtilities::NormalizeFilePath(m_sourceRoot.absoluteFilePath("subfolder3/somerandomfile.random"));
         AssetProcessorManagerUnitTestUtils::CreateExpectedFiles({absolutePath});
         QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
@@ -2271,7 +2271,7 @@ namespace AssetProcessor
 
             // note, uuid does not include watch folder name.  This is a quick test to make sure that the source file UUID actually makes it into the CreateJobRequest.
             // the ProcessJobRequest is populated frmo the CreateJobRequest.
-            EXPECT_EQ(builder->GetLastCreateJobRequest().m_sourceFileUUID, AssetUtilities::CreateSafeSourceUUIDFromName("uniquefile.txt"));
+            EXPECT_EQ(builder->GetLastCreateJobRequest().m_sourceFileUUID, AssetUtilities::GetSourceUuid(SourceAssetReference(absolutePath)));
             QString watchedFolder(AssetUtilities::NormalizeFilePath(builder->GetLastCreateJobRequest().m_watchFolder.c_str()));
             QString expectedWatchedFolder(m_sourceRoot.absoluteFilePath("subfolder3"));
             EXPECT_EQ(QString::compare(watchedFolder, expectedWatchedFolder, Qt::CaseInsensitive), 0); // verify watchfolder
@@ -2667,7 +2667,7 @@ namespace AssetProcessor
         QString sourceFileAPath = m_sourceRoot.absoluteFilePath("subfolder1/some/random/folders/FileA.txt");
         QString sourceFileBPath = m_sourceRoot.absoluteFilePath("subfolder1/FileB.txt");
         QString sourceFileCPath = m_sourceRoot.absoluteFilePath("FileC.txt");
-        sourceFileBUuid = AssetUtilities::CreateSafeSourceUUIDFromName("FileB.txt");
+        sourceFileBUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(sourceFileBPath));
 
         constexpr const char* productFileAFilename = "fileaproduct.txt";
         constexpr const char* productFileBFilename = "filebproduct1.txt";

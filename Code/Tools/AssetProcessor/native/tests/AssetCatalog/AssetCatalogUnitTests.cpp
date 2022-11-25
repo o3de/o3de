@@ -21,6 +21,8 @@
 
 #include "AssetManager/FileStateCache.h"
 #include <tests/UnitTestUtilities.h>
+#include <utilities/UuidManager.h>
+#include <AzToolsFramework/Metadata/MetadataManager.h>
 
 namespace AssetProcessor
 {
@@ -79,6 +81,8 @@ namespace AssetProcessor
             AssertAbsorber m_absorber;
             AZStd::string m_databaseLocation;
             QCoreApplication coreApp;
+            AzToolsFramework::MetadataManager m_metadataManager;
+            AssetProcessor::UuidManager m_uuidManager;
             int argc = 0;
             DataMembers() : coreApp(argc, nullptr)
             {
@@ -92,6 +96,7 @@ namespace AssetProcessor
         AZ::Entity* m_systemEntity = nullptr;
         DataMembers* m_data = nullptr;
         AZStd::unique_ptr<AZ::ComponentApplication> m_app; // the app is created seperately so that we can control its lifetime.
+        ::UnitTests::MockVirtualFileIO m_virtualFileIO;
 
         void SetUp() override
         {
@@ -892,6 +897,9 @@ namespace AssetProcessor
             AZStd::string m_assetAProductFullPath;
             AZStd::string m_assetTestString    = "Its the Asset A";
             AZStd::string m_productTestString  = "Its a product A";
+            UnitTests::MockVirtualFileIO m_virtualFileIO;
+            AzToolsFramework::MetadataManager m_metadataManager;
+            AssetProcessor::UuidManager m_uuidManager;
         };
 
         AssetCatalogTest_AssetInfo_DataMembers* m_customDataMembers = nullptr;
@@ -1102,7 +1110,7 @@ namespace AssetProcessor
     TEST_F(AssetCatalogTest_AssetInfo, FindSource_NotProcessed_NotInQueue_FindsSource)
     {
         // Get accurate UUID based on source database name instead of using the one that was randomly generated
-        AZ::Uuid expectedSourceUuid = AssetUtilities::CreateSafeSourceUUIDFromName(m_customDataMembers->m_assetASourceRelPath.c_str());
+        AZ::Uuid expectedSourceUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_customDataMembers->m_assetAFullPath.c_str()));
 
         // These calls should find the information even though the asset is not in the database and hasn't been queued up yet
         EXPECT_TRUE(GetSourceInfoBySourcePath(true, m_customDataMembers->m_assetASourceRelPath.c_str(), expectedSourceUuid, m_customDataMembers->m_assetASourceRelPath.c_str(), m_customDataMembers->m_subfolder1AbsolutePath.c_str()));
@@ -1112,7 +1120,7 @@ namespace AssetProcessor
     TEST_F(AssetCatalogTest_AssetInfo, FindSource_NotProcessed_NotInQueue_RegisteredAsSourceType_FindsSource)
     {
         // Get accurate UUID based on source database name instead of using the one that was randomly generated
-        AZ::Uuid expectedSourceUuid = AssetUtilities::CreateSafeSourceUUIDFromName(m_customDataMembers->m_assetASourceRelPath.c_str());
+        AZ::Uuid expectedSourceUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_customDataMembers->m_assetAFullPath.c_str()));
 
         // Register as source type
         AzToolsFramework::ToolsAssetSystemBus::Broadcast(&AzToolsFramework::ToolsAssetSystemRequests::RegisterSourceAssetType, m_customDataMembers->m_assetAType, m_customDataMembers->m_assetAFileFilter.c_str());
@@ -1142,8 +1150,8 @@ namespace AssetProcessor
             {
                 SourceDatabaseEntry sourceEntry;
                 sourceEntry.m_sourceName = AZStd::to_string(i);
-                sourceEntry.m_sourceGuid = AssetUtilities::CreateSafeSourceUUIDFromName(sourceEntry.m_sourceName.c_str());
                 sourceEntry.m_scanFolderPK = 1;
+                sourceEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(SourceAssetReference(sourceEntry.m_scanFolderPK, sourceEntry.m_sourceName.c_str()));
                 db.SetSource(sourceEntry);
 
                 JobDatabaseEntry jobEntry;

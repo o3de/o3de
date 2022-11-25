@@ -85,8 +85,9 @@ namespace AssetProcessor
             using namespace AzToolsFramework::AssetDatabase;
             SourceDatabaseEntry sourceEntry;
             sourceEntry.m_sourceName = sourceName;
-            sourceEntry.m_sourceGuid = AssetUtilities::CreateSafeSourceUUIDFromName(sourceEntry.m_sourceName.c_str());
             sourceEntry.m_scanFolderPK = scanFolderPK;
+            sourceEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(SourceAssetReference(sourceEntry.m_scanFolderPK, sourceEntry.m_sourceName.c_str()));
+
             if (!m_data->m_dbConn->SetSource(sourceEntry))
             {
                 return AZ::Failure(AZStd::string::format("Could not set source in the asset database for %s", sourceName.c_str()));
@@ -158,6 +159,9 @@ namespace AssetProcessor
             MockAssetDatabaseRequestsHandler m_databaseLocationListener;
             AZStd::shared_ptr<AssetDatabaseConnection> m_dbConn;
             MissingDependencyScanner_Test m_scanner;
+            UnitTests::MockPathConversion m_pathConversion;
+            AzToolsFramework::MetadataManager m_metadataManager;
+            AssetProcessor::UuidManager m_uuidManager;
             UnitTestUtils::ScopedDir m_scopedDir; // Sets up FileIO instance
         };
 
@@ -189,8 +193,8 @@ namespace AssetProcessor
 
         SourceDatabaseEntry sourceEntry;
         sourceEntry.m_sourceName = "tests/1.source";
-        sourceEntry.m_sourceGuid = AssetUtilities::CreateSafeSourceUUIDFromName(sourceEntry.m_sourceName.c_str());
         sourceEntry.m_scanFolderPK = 1;
+        sourceEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(SourceAssetReference(sourceEntry.m_scanFolderPK, sourceEntry.m_sourceName.c_str()));
         ASSERT_TRUE(m_data->m_dbConn->SetSource(sourceEntry));
 
         JobDatabaseEntry jobEntry;
@@ -220,7 +224,7 @@ namespace AssetProcessor
         AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer container;
         AZStd::string dependencyToken = "dummy";
 
-        // Since dependency rule map is empty this should show a missing dependency 
+        // Since dependency rule map is empty this should show a missing dependency
         m_data->m_scanner.ScanFile(sourceFilePath.toUtf8().constData(), AssetProcessor::MissingDependencyScanner::DefaultMaxScanIteration, m_data->m_dbConn, dependencyToken, false, missingDependencyCallback);
         ASSERT_EQ(productDependency, productReference);
 

@@ -64,10 +64,14 @@ namespace UnitTests
 
         // This is what we're testing, it will set up connections between the fileWatcher and the 2 QObject handlers we'll check
         m_applicationManager->InitFileMonitor(AZStd::move(fileWatcher)); // The manager is going to take ownership of the file watcher
+
+        m_applicationManager->InitUuidManager();
     }
 
     void ApplicationManagerTest::TearDown()
     {
+        m_applicationManager->DestroyFileMonitor();
+
         m_apmThread->exit();
         m_fileProcessorThread->exit();
         m_mockAPM = nullptr;

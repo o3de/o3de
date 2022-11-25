@@ -8,19 +8,20 @@
 
 #pragma once
 
-#include <utilities/BatchApplicationManager.h>
-#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
-#endif
+#include <AzToolsFramework/Metadata/MetadataManager.h>
+#include <native/utilities/BatchApplicationManager.h>
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
-#include "assetmanager/MockAssetProcessorManager.h"
-#include "assetmanager/MockFileProcessor.h"
+#include <native/tests/assetmanager/MockAssetProcessorManager.h>
+#include <native/tests/assetmanager/MockFileProcessor.h>
+#include <native/tests/UnitTestUtilities.h>
 
 namespace UnitTests
 {
     struct MockBatchApplicationManager : BatchApplicationManager
     {
         using ApplicationManagerBase::InitFileMonitor;
+        using ApplicationManagerBase::DestroyFileMonitor;
         using ApplicationManagerBase::InitFileStateCache;
         using ApplicationManagerBase::InitUuidManager;
         using ApplicationManagerBase::m_assetProcessorManager;
@@ -43,6 +44,9 @@ namespace UnitTests
         AZStd::unique_ptr<QThread> m_apmThread;
         AZStd::unique_ptr<QThread> m_fileProcessorThread;
         AZStd::unique_ptr<MockAssetProcessorManager> m_mockAPM;
+
+        MockVirtualFileIO m_virtualFileIO;
+        AzToolsFramework::MetadataManager m_metadataManager;
 
         // These are just aliases, no need to manage/delete them
         FileWatcher* m_fileWatcher{};
