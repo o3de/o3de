@@ -394,6 +394,7 @@ namespace MaterialCanvas
     void MaterialCanvasDocument::RecordGraphState()
     {
         // Serialize the current graph to a byte stream so that it can be restored with undo redo operations.
+        GraphCanvas::GraphModelRequestBus::Event(m_graphId, &GraphCanvas::GraphModelRequests::OnSaveDataDirtied, m_graphId);
         m_graphStateForUndoRedo.clear();
         AZ::IO::ByteContainerStream<decltype(m_graphStateForUndoRedo)> undoGraphStateStream(&m_graphStateForUndoRedo);
         AZ::Utils::SaveObjectToStream(undoGraphStateStream, AZ::ObjectStream::ST_BINARY, m_graph.get());
