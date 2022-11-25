@@ -48,7 +48,7 @@ namespace AZ
             uint64_t m_maxBufferSize = 0;
                         
             //! Size of the tile when specifying shading rate through an image. The size refers to the tile's width and
-            //! height in texels.fragmentDensityMapDynamic
+            //! height in texels.
             RHI::Size m_shadingRateTileSize;
 
             /// Additional limits here.

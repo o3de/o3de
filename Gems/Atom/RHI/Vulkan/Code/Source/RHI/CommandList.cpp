@@ -885,16 +885,20 @@ namespace AZ
                 return;
             }
 
-            VkExtent2D vkFragmentSize = ConvertFragmentShadingRate(m_state.m_shadingRateState.m_shadingRate);
-            AZStd::array<VkFragmentShadingRateCombinerOpKHR, RHI::ShadingRateCombinators::array_size> vkCombinators;
-            for (int i = 0; i < m_state.m_shadingRateState.m_shadingRateCombinators.size(); ++i)
+            auto& device = static_cast<Device&>(GetDevice());
+            if (RHI::CheckBitsAll(device.GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerDraw))
             {
-                vkCombinators[i] = ConvertShadingRateCombiner(m_state.m_shadingRateState.m_shadingRateCombinators[i]);
-            }
+                VkExtent2D vkFragmentSize = ConvertFragmentShadingRate(m_state.m_shadingRateState.m_shadingRate);
+                AZStd::array<VkFragmentShadingRateCombinerOpKHR, RHI::ShadingRateCombinators::array_size> vkCombinators;
+                for (int i = 0; i < m_state.m_shadingRateState.m_shadingRateCombinators.size(); ++i)
+                {
+                    vkCombinators[i] = ConvertShadingRateCombiner(m_state.m_shadingRateState.m_shadingRateCombinators[i]);
+                }
 
-            static_cast<Device&>(GetDevice())
-                .GetContext()
-                .CmdSetFragmentShadingRateKHR(m_nativeCommandBuffer, &vkFragmentSize, vkCombinators.data());
+                static_cast<Device&>(GetDevice())
+                    .GetContext()
+                    .CmdSetFragmentShadingRateKHR(m_nativeCommandBuffer, &vkFragmentSize, vkCombinators.data());
+            }
             m_state.m_shadingRateState.m_isDirty = false;
         }
 
