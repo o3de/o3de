@@ -61,8 +61,13 @@ namespace AzToolsFramework
             connect(m_delegate, &EntryDelegate::RenameEntry, this, &AssetBrowserTreeView::AfterRename);
 
             header()->hide();
-
+            setSelectionMode(QAbstractItemView::ExtendedSelection);
+            setDragEnabled(true);
+            setAcceptDrops(true);
+            setDragDropMode(QAbstractItemView::DragDrop);
+            setDropIndicatorShown(true);
             setContextMenuPolicy(Qt::CustomContextMenu);
+            setDragDropOverwriteMode(true);
 
             setMouseTracking(true);
 
@@ -697,7 +702,11 @@ namespace AzToolsFramework
                 toPath.ReplaceFilename(newVal.toStdString().c_str());
                 toPath.ReplaceExtension(extension);
             }
-
+            // if the source path is the same as the destintion path then we don't need to go any further
+            if (fromPath == toPath)
+            {
+                return;
+            }
             using namespace AzFramework::AssetSystem;
             AssetChangeReportRequest moveRequest(
                 AZ::OSString(fromPath.c_str()), AZ::OSString(toPath.c_str()), AssetChangeReportRequest::ChangeType::Move);
@@ -795,71 +804,7 @@ namespace AzToolsFramework
                                 toPath = folderPath;
                                 toPath /= filename;
                             }
-                            AssetChangeReportRequest request(
-                                AZ::OSString(fromPath.c_str()),
-                                AZ::OSString(toPath.c_str()),
-                                AssetChangeReportRequest::ChangeType::CheckMove);
-                            AssetChangeReportResponse response;
-
-                            if (SendRequest(request, response))
-                            {
-                                bool canMove = true;
-
-                                if (!response.m_lines.empty())
-                                {
-                                    AZStd::string message;
-                                    AZ::StringFunc::Join(message, response.m_lines.begin(), response.m_lines.end(), "\n");
-                                    AzQtComponents::FixedWidthMessageBox msgBox(
-                                        600,
-                                        tr(isFolder ? "Before Move Folder Information" : "Before Move Asset Information"),
-                                        tr("The asset you are moving may be referenced in other assets."),
-                                        tr("More information can be found by pressing \"Show Details...\"."),
-                                        message.c_str(),
-                                        QMessageBox::Warning,
-                                        QMessageBox::Cancel,
-                                        QMessageBox::Yes,
-                                        this);
-                                    auto* moveButton = msgBox.addButton(tr("Move"), QMessageBox::YesRole);
-                                    msgBox.exec();
-
-                                    if (msgBox.clickedButton() != static_cast<QAbstractButton*>(moveButton))
-                                    {
-                                        canMove = false;
-                                    }
-                                }
-                                if (canMove)
-                                {
-                                    AssetChangeReportRequest moveRequest(
-                                        AZ::OSString(fromPath.c_str()),
-                                        AZ::OSString(toPath.c_str()),
-                                        AssetChangeReportRequest::ChangeType::Move);
-                                    AssetChangeReportResponse moveResponse;
-                                    if (SendRequest(moveRequest, moveResponse))
-                                    {
-
-                                        if (!response.m_lines.empty())
-                                        {
-                                            AZStd::string moveMessage;
-                                            AZ::StringFunc::Join(moveMessage, response.m_lines.begin(), response.m_lines.end(), "\n");
-                                            AzQtComponents::FixedWidthMessageBox moveMsgBox(
-                                                600,
-                                                tr(isFolder ? "After Move Folder Information" : "After Move Asset Information"),
-                                                tr("The asset has been moved."),
-                                                tr("More information can be found by pressing \"Show Details...\"."),
-                                                moveMessage.c_str(),
-                                                QMessageBox::Information,
-                                                QMessageBox::Ok,
-                                                QMessageBox::Ok,
-                                                this);
-                                            moveMsgBox.exec();
-                                        }
-                                    }
-                                    if (isFolder)
-                                    {
-                                        AZ::IO::SystemFile::DeleteDir(entry->GetFullPath().c_str());
-                                    }
-                                }
-                            }
+                            MoveEntry(fromPath.c_str(), toPath.c_str(), isFolder, this);
                         }
                     }
                 }
@@ -883,6 +828,71 @@ namespace AzToolsFramework
                     }
                   }
                 });
+        }
+
+        void MoveEntry(AZStd::string_view fromPath, AZStd::string_view toPath, bool isFolder, QWidget* parent)
+        {
+            using namespace AzFramework::AssetSystem;
+            AssetChangeReportRequest request(
+                AZ::OSString(fromPath), AZ::OSString(toPath), AssetChangeReportRequest::ChangeType::CheckMove);
+            AssetChangeReportResponse response;
+
+            if (SendRequest(request, response))
+            {
+                bool canMove = true;
+
+                if (!response.m_lines.empty())
+                {
+                    AZStd::string message;
+                    AZ::StringFunc::Join(message, response.m_lines.begin(), response.m_lines.end(), "\n");
+                    AzQtComponents::FixedWidthMessageBox msgBox(
+                        600,
+                        QObject::tr(isFolder ? "Before Move Folder Information" : "Before Move Asset Information"),
+                        QObject::tr("The asset you are moving may be referenced in other assets."),
+                        QObject::tr("More information can be found by pressing \"Show Details...\"."),
+                        message.c_str(),
+                        QMessageBox::Warning,
+                        QMessageBox::Cancel,
+                        QMessageBox::Yes,
+                        parent);
+                    auto* moveButton = msgBox.addButton(QObject::tr("Move"), QMessageBox::YesRole);
+                    msgBox.exec();
+
+                    if (msgBox.clickedButton() != static_cast<QAbstractButton*>(moveButton))
+                    {
+                        canMove = false;
+                    }
+                }
+                if (canMove)
+                {
+                    AssetChangeReportRequest moveRequest(
+                        AZ::OSString(fromPath), AZ::OSString(toPath), AssetChangeReportRequest::ChangeType::Move);
+                    AssetChangeReportResponse moveResponse;
+                    if (SendRequest(moveRequest, moveResponse))
+                    {
+                        if (!response.m_lines.empty())
+                        {
+                            AZStd::string moveMessage;
+                            AZ::StringFunc::Join(moveMessage, response.m_lines.begin(), response.m_lines.end(), "\n");
+                            AzQtComponents::FixedWidthMessageBox moveMsgBox(
+                                600,
+                                QObject::tr(isFolder ? "After Move Folder Information" : "After Move Asset Information"),
+                                QObject::tr("The asset has been moved."),
+                                QObject::tr("More information can be found by pressing \"Show Details...\"."),
+                                moveMessage.c_str(),
+                                QMessageBox::Information,
+                                QMessageBox::Ok,
+                                QMessageBox::Ok,
+                                parent);
+                            moveMsgBox.exec();
+                        }
+                    }
+                    if (isFolder)
+                    {
+                        AZ::IO::SystemFile::DeleteDir(fromPath.substr(0, fromPath.size() - 2).data());
+                    }
+                }
+            }
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

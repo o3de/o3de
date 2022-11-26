@@ -629,7 +629,7 @@ namespace AzToolsFramework
             PrefabDom patchesCopyForUndoSupport;
             PrefabDom nestedInstanceLinkDom;
             nestedInstanceLink->get().GetLinkDom(nestedInstanceLinkDom, nestedInstanceLinkDom.GetAllocator());
-            PrefabDomValueConstReference nestedInstanceLinkPatches =
+            PrefabDomValueReference nestedInstanceLinkPatches =
                 PrefabDomUtils::FindPrefabDomValue(nestedInstanceLinkDom, PrefabDomUtils::PatchesName);
             if (nestedInstanceLinkPatches.has_value())
             {

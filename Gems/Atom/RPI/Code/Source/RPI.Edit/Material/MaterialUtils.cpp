@@ -25,6 +25,7 @@
 #include <AzCore/Settings/SettingsRegistry.h>
 
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/string/regex.h>
 
 namespace AZ
 {
@@ -225,6 +226,40 @@ namespace AZ
                 // If the source value type is a string, there are two possible property types: Image and Enum. If there is a "." in
                 // the string (for the extension) we can assume it's an Image file path.
                 return value.Is<AZStd::string>() && AzFramework::StringFunc::Contains(value.GetValue<AZStd::string>(), ".");
+            }
+
+            bool IsValidName(AZStd::string_view name)
+            {
+                // Checks for a c++ style identifier
+                return AZStd::regex_match(name.begin(), name.end(), AZStd::regex("^[a-zA-Z_][a-zA-Z0-9_]*$"));
+            }
+
+            bool IsValidName(const AZ::Name& name)
+            {
+                return IsValidName(name.GetStringView());
+            }
+
+            bool CheckIsValidName(AZStd::string_view name, [[maybe_unused]] AZStd::string_view nameTypeForDebug)
+            {
+                if (IsValidName(name))
+                {
+                    return true;
+                }
+                else
+                {
+                    AZ_Error("MaterialUtils", false, "%.*s '%.*s' is not a valid identifier", AZ_STRING_ARG(nameTypeForDebug), AZ_STRING_ARG(name));
+                    return false;
+                }
+            }
+
+            bool CheckIsValidPropertyName(AZStd::string_view name)
+            {
+                return CheckIsValidName(name, "Property name");
+            }
+
+            bool CheckIsValidGroupName(AZStd::string_view name)
+            {
+                return CheckIsValidName(name, "Group name");
             }
         }
     }

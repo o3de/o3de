@@ -150,5 +150,8 @@ namespace AzToolsFramework
             }
             return nullptr;
         }
+
+        void MoveEntry(AZStd::string_view fromPath, AZStd::string_view toPath, bool isFolder, QWidget* parent = nullptr);
+
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
