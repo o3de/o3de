@@ -21,6 +21,7 @@ namespace AtomToolsFramework
 {
     AssetSelectionComboBox::AssetSelectionComboBox(const FilterFn& filterFn, QWidget* parent)
         : QComboBox(parent)
+        , m_filterFn(filterFn)
     {
         QSignalBlocker signalBlocker(this);
 
@@ -32,7 +33,6 @@ namespace AtomToolsFramework
             this, static_cast<void (QComboBox::*)(const int)>(&QComboBox::currentIndexChanged), this,
             [this]() { emit PathSelected(GetSelectedPath()); });
 
-        SetFilter(filterFn);
         AzFramework::AssetCatalogEventBus::Handler::BusConnect();
     }
 
@@ -41,29 +41,41 @@ namespace AtomToolsFramework
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
     }
 
-    void AssetSelectionComboBox::Reset()
+    void AssetSelectionComboBox::Clear()
     {
         clear();
         m_thumbnailKeys.clear();
+    }
 
-        if (m_filterFn)
+    void AssetSelectionComboBox::Populate()
+    {
+        Clear();
+
+        for (const auto& path : GetPathsInSourceFoldersMatchingFilter(m_filterFn))
         {
-            for (const auto& path : GetPathsInSourceFoldersMatchingFilter(m_filterFn))
-            {
-                AddPath(path);
-            }
-            setCurrentIndex(0);
+            AddPath(path);
         }
+
+        setCurrentIndex(0);
     }
 
     void AssetSelectionComboBox::SetFilter(const FilterFn& filterFn)
     {
         m_filterFn = filterFn;
-        Reset();
+    }
+
+    const AssetSelectionComboBox::FilterFn& AssetSelectionComboBox::GetFilter() const
+    {
+        return m_filterFn;
     }
 
     void AssetSelectionComboBox::AddPath(const AZStd::string& path)
     {
+        if (m_filterFn && !m_filterFn(path))
+        {
+            return;
+        }
+
         const QVariant pathItemData(QString::fromUtf8(path.data(), static_cast<int>(path.size())));
         if (const int index = findData(pathItemData); index < 0)
         {
@@ -118,27 +130,13 @@ namespace AtomToolsFramework
 
     void AssetSelectionComboBox::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
     {
-        if (m_filterFn)
-        {
-            const auto& path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId);
-            if (m_filterFn(path))
-            {
-                AddPath(path);
-            }
-        }
+        AddPath(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId));
     }
 
     void AssetSelectionComboBox::OnCatalogAssetRemoved(
         const AZ::Data::AssetId& assetId, [[maybe_unused]] const AZ::Data::AssetInfo& assetInfo)
     {
-        if (m_filterFn)
-        {
-            const auto& path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId);
-            if (m_filterFn(path))
-            {
-                RemovePath(path);
-            }
-        }
+        RemovePath(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId));
     }
 
     void AssetSelectionComboBox::RegisterThumbnail(const AZStd::string& path)

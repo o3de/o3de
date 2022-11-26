@@ -1143,6 +1143,8 @@ m_{{ LowerFirst(Property.attrib['Name']) }} = m_{{ LowerFirst(Property.attrib['N
 namespace {{ Component.attrib['Namespace'] }}
 {
     Multiplayer::NetComponentId {{ UpperFirst(ComponentBaseName) }}::s_netComponentId = Multiplayer::InvalidNetComponentId;
+{%  set componentXMLString = Component | etreeToStringStripped %}
+    AZ::HashValue64 {{ UpperFirst(ComponentBaseName) }}::s_versionHash = {{ componentXMLString | createAZHashValue64 }};
 {% if NetworkInputCount > 0 %}
     Multiplayer::NetComponentId {{ ComponentName }}NetworkInput::s_netComponentId = Multiplayer::InvalidNetComponentId;
 {% endif %}
@@ -1451,6 +1453,11 @@ namespace {{ Component.attrib['Namespace'] }}
 
 {%      endif %}
 {% endfor %}
+
+    AZ::HashValue64 {{ ComponentBaseName }}::GetVersionHash() 
+    { 
+        return s_versionHash; 
+    }
 
     void {{ ComponentBaseName }}::Reflect(AZ::ReflectContext* context)
     {

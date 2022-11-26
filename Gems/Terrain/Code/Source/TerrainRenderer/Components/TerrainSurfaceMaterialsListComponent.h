@@ -10,6 +10,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Serialization/EditContext.h>
 
 #include <Atom/Feature/Material/MaterialAssignment.h>
@@ -37,14 +38,9 @@ namespace Terrain
         AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset;
         AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
 
-        AZ::Data::AssetId m_activeMaterialAssetId;
-        AZ::RPI::Material::ChangeId m_previousChangeId = AZ::RPI::Material::DEFAULT_CHANGE_ID;
-
         // Surface tags not used by default material
         SurfaceData::SurfaceTag m_surfaceTag;
         SurfaceData::SurfaceTag m_previousTag;
-
-        bool m_active = false;
     };
 
     class TerrainSurfaceMaterialsListConfig : public AZ::ComponentConfig
@@ -68,6 +64,7 @@ namespace Terrain
         : public AZ::Component
         , private TerrainAreaMaterialRequestBus::Handler
         , private AZ::Data::AssetBus::MultiHandler
+        , private AZ::TickBus::Handler
         , private LmbrCentral::ShapeComponentNotificationsBus::Handler
     {
     public:
@@ -91,9 +88,6 @@ namespace Terrain
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
     private:
-        void HandleMaterialStateChanges();
-        int CountMaterialIdInstances(AZ::Data::AssetId id) const;
-
         ////////////////////////////////////////////////////////////////////////
         // ShapeComponentNotificationsBus
         void OnShapeChanged(ShapeComponentNotifications::ShapeChangeReasons reasons) override;
@@ -103,6 +97,10 @@ namespace Terrain
         const AZ::Aabb& GetTerrainSurfaceMaterialRegion() const override;
         const AZStd::vector<TerrainSurfaceMaterialMapping>& GetSurfaceMaterialMappings() const override;
         const TerrainSurfaceMaterialMapping& GetDefaultMaterial() const override;
+
+        //////////////////////////////////////////////////////////////////////////
+        // AZ::TickBus::Handler
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::Data::AssetBus::Handler

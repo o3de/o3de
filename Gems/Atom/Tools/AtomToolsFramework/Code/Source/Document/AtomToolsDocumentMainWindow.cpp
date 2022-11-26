@@ -386,9 +386,9 @@ namespace AtomToolsFramework
             const QString name = tr("New %1 Document...").arg(documentType.m_documentTypeName.c_str());
             CreateActionAtPosition(parentMenu, insertPostion, name, [documentType, toolId = m_toolId, this]() {
                 // Open the create document dialog with labels and filters configured from the document type info.
-                    CreateDocumentDialog dialog(
-                        documentType, AZStd::string::format("%s/Assets", AZ::Utils::GetProjectPath().c_str()).c_str(), this);
-                    dialog.adjustSize();
+                CreateDocumentDialog dialog(
+                    documentType, AZStd::string::format("%s/Assets", AZ::Utils::GetProjectPath().c_str()).c_str(), this);
+                dialog.adjustSize();
 
                 if (dialog.exec() == QDialog::Accepted)
                 {
@@ -458,6 +458,9 @@ namespace AtomToolsFramework
         m_tabWidget->setMovable(true);
         m_tabWidget->setTabsClosable(true);
         m_tabWidget->setUsesScrollButtons(true);
+
+        // Update document tab styling to fix the close button and be conformant with similar windows 
+        AzQtComponents::TabWidget::applySecondaryStyle(m_tabWidget);
 
         // This signal will be triggered whenever a tab is added, removed, selected, clicked, dragged
         // When the last tab is removed tabIndex will be -1 and the document ID will be null

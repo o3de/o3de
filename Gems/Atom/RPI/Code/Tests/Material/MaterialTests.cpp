@@ -820,47 +820,6 @@ namespace UnitTest
         }
     }
 
-    TEST_F(MaterialTests, TestReinitializeForHotReload)
-    {
-        Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
-        const RHI::ShaderResourceGroupData* srgData = &material->GetRHIShaderResourceGroup()->GetData();
-        ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
-
-        // Check the default property value
-        EXPECT_EQ(material->GetPropertyValue<float>(material->FindPropertyIndex(Name{ "MyFloat" })), 1.5f);
-        EXPECT_EQ(srgData->GetConstant<float>(srgData->FindShaderInputConstantIndex(Name{ "m_float" })), 1.5f);
-        EXPECT_EQ(material->GetPropertyValue<int32_t>(material->FindPropertyIndex(Name{ "MyInt" })), -2);
-        EXPECT_EQ(srgData->GetConstant<int32_t>(srgData->FindShaderInputConstantIndex(Name{ "m_int" })), -2);
-
-        // Override a property value
-        EXPECT_TRUE(material->SetPropertyValue<float>(material->FindPropertyIndex(Name{ "MyFloat" }), 5.5f));
-
-        // Apply the changes
-        EXPECT_TRUE(material->Compile());
-        ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
-
-        // Check the updated values with one overridden
-        EXPECT_EQ(material->GetPropertyValue<float>(material->FindPropertyIndex(Name{ "MyFloat" })), 5.5f);
-        EXPECT_EQ(srgData->GetConstant<float>(srgData->FindShaderInputConstantIndex(Name{ "m_float" })), 5.5f);
-        EXPECT_EQ(material->GetPropertyValue<int32_t>(material->FindPropertyIndex(Name{ "MyInt" })), -2);
-        EXPECT_EQ(srgData->GetConstant<int32_t>(srgData->FindShaderInputConstantIndex(Name{ "m_int" })), -2);
-
-        // Pretend there was a hot-reload with new default values
-        AccessMaterialAssetPropertyValue(m_testMaterialAsset, Name{"MyFloat"}) = 0.5f;
-        AccessMaterialAssetPropertyValue(m_testMaterialAsset, Name{"MyInt"}) = -7;
-        AZ::Data::AssetBus::Event(m_testMaterialAsset.GetId(), &AZ::Data::AssetBus::Handler::OnAssetReloaded, m_testMaterialAsset);
-        srgData = &material->GetRHIShaderResourceGroup()->GetData();
-        ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
-
-        // Make sure the override values are still there
-        EXPECT_EQ(srgData->GetConstant<float>(srgData->FindShaderInputConstantIndex(Name{ "m_float" })), 5.5f);
-        EXPECT_EQ(material->GetPropertyValue<float>(material->FindPropertyIndex(Name{ "MyFloat" })), 5.5f);
-
-        // Make sure the new default value is applied where it was not overridden
-        EXPECT_EQ(material->GetPropertyValue<int32_t>(material->FindPropertyIndex(Name{ "MyInt" })), -7);
-        EXPECT_EQ(srgData->GetConstant<int32_t>(srgData->FindShaderInputConstantIndex(Name{ "m_int" })), -7);
-    }
-
     TEST_F(MaterialTests, TestFindPropertyIndexUsingOldName)
     {
         MaterialTypeAssetCreator materialTypeCreator;
