@@ -49,8 +49,6 @@ namespace AZ
 
         MaterialAsset::~MaterialAsset()
         {
-            MaterialReloadNotificationBus::Handler::BusDisconnect();
-            Data::AssetBus::Handler::BusDisconnect();
             AssetInitBus::Handler::BusDisconnect();
         }
 
@@ -240,30 +238,12 @@ namespace AZ
             }
             else
             {
-                Data::AssetBus::Handler::BusConnect(m_materialTypeAsset.GetId());
-                MaterialReloadNotificationBus::Handler::BusConnect(m_materialTypeAsset.GetId());
-                
                 AssetInitBus::Handler::BusDisconnect();
 
                 return true;
             }
         }
 
-        void MaterialAsset::OnMaterialTypeAssetReinitialized(const Data::Asset<MaterialTypeAsset>& materialTypeAsset)
-        {
-            // When reloads occur, it's possible for old Asset objects to hang around and report reinitialization,
-            // so we can reduce unnecessary reinitialization in that case.
-            if (materialTypeAsset.Get() == m_materialTypeAsset.Get())
-            {
-                ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialAsset::OnMaterialTypeAssetReinitialized %s", this, materialTypeAsset.GetHint().c_str());
-
-                // MaterialAsset doesn't need to reinitialize any of its own data when MaterialTypeAsset reinitializes,
-                // because all it depends on is the MaterialTypeAsset reference, rather than the data inside it.
-                // Ultimately it's the Material that cares about these changes, so we just forward any signal we get.
-                MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialAssetReinitialized, Data::Asset<MaterialAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
-            }
-        }
-        
         void MaterialAsset::ApplyVersionUpdates(AZStd::function<void(const char*)> reportError)
         {
             if (m_materialTypeVersion == m_materialTypeAsset->GetVersion())
@@ -301,43 +281,6 @@ namespace AZ
 #endif
 
             m_materialTypeVersion = m_materialTypeAsset->GetVersion();
-        }
-
-        void MaterialAsset::ReinitializeMaterialTypeAsset(Data::Asset<Data::AssetData> asset)
-        {
-            Data::Asset<MaterialTypeAsset> newMaterialTypeAsset = Data::static_pointer_cast<MaterialTypeAsset>(asset);
-
-            if (newMaterialTypeAsset)
-            {
-                // The order of asset reloads is non-deterministic. If the MaterialAsset reloads before the
-                // MaterialTypeAsset, this will make sure the MaterialAsset gets update with latest one.
-                // This also covers the case where just the MaterialTypeAsset is reloaded and not the MaterialAsset.
-                m_materialTypeAsset = newMaterialTypeAsset;
-
-                // If the material asset was not finalized on disk, then we clear the previously finalized property values to force re-finalize.
-                // This is necessary in case the property layout changed in some way.
-                if (!m_wasPreFinalized)
-                {
-                    m_isFinalized = false;
-                    m_propertyValues.clear();
-                }
-
-                // Notify interested parties that this MaterialAsset is changed and may require other data to reinitialize as well
-                MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialAssetReinitialized, Data::Asset<MaterialAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
-            }
-        }
-
-        void MaterialAsset::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
-        {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialAsset::OnAssetReloaded %s", this, asset.GetHint().c_str());
-            ReinitializeMaterialTypeAsset(asset);
-        }
-
-        void MaterialAsset::OnAssetReady(Data::Asset<Data::AssetData> asset)
-        {
-            // Regarding why we listen to both OnAssetReloaded and OnAssetReady, see explanation in ShaderAsset::OnAssetReady.
-            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialAsset::OnAssetReady %s", this, asset.GetHint().c_str());
-            ReinitializeMaterialTypeAsset(asset);
         }
 
         Data::AssetHandler::LoadResult MaterialAssetHandler::LoadAssetData(

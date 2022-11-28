@@ -112,7 +112,6 @@ class TestMaterialEditor(AtomToolsTestSuite):
         from Atom.tests import MaterialEditor_Atom_LaunchMaterialEditor as test_module
 
 
-@pytest.mark.skip(reason="GHI #12152 - Non-zero exit code on test success.")
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_atom_tools'])
 class TestMaterialCanvas(AtomToolsTestSuite):

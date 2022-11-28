@@ -35,6 +35,11 @@ namespace EMotionFX
     public:
         SimulatedObjectColliderWidget(QWidget* parent = nullptr);
 
+        QString GetCardTitle() const override { return "Object Collider "; }
+        QColor GetColor() const override { return QColor{"#1ad092"}; }
+
+        int WidgetCount() const override;
+
     public slots:
         void OnAddCollider(const AZ::TypeId& colliderType);
         void OnCopyCollider(size_t colliderIndex);
@@ -44,7 +49,6 @@ namespace EMotionFX
     private:
         // SkeletonModelJointWidget
         QWidget* CreateContentWidget(QWidget* parent) override;
-        QWidget* CreateNoSelectionWidget(QWidget* parent) override;
         void InternalReinit() override;
         void UpdateOwnershipLabel();
         void UpdateColliderNotification();
@@ -62,6 +66,8 @@ namespace EMotionFX
         QLabel* m_instruction2 = nullptr;
 
         NotificationWidget* m_colliderNotif = nullptr;
+
+        int m_widgetCount = 0;
     };
 
     class AddToSimulatedObjectButton

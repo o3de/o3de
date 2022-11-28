@@ -23,6 +23,7 @@ namespace AZ
             {
             case MaterialPropertyOutputType::ShaderInput:  return "ShaderInput";
             case MaterialPropertyOutputType::ShaderOption: return "ShaderOption";
+            case MaterialPropertyOutputType::ShaderEnabled: return "ShaderEnabled";
             default:
                 AZ_Assert(false, "Unhandled type");
                 return "<Unknown>";
@@ -169,6 +170,7 @@ namespace AZ
                 serializeContext->Enum<MaterialPropertyOutputType>()
                     ->Value(ToString(MaterialPropertyOutputType::ShaderInput), MaterialPropertyOutputType::ShaderInput)
                     ->Value(ToString(MaterialPropertyOutputType::ShaderOption), MaterialPropertyOutputType::ShaderOption)
+                    ->Value(ToString(MaterialPropertyOutputType::ShaderEnabled), MaterialPropertyOutputType::ShaderEnabled)
                     ;
 
                 serializeContext->Enum<MaterialPropertyDataType>()

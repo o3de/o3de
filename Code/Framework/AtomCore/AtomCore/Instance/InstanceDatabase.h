@@ -175,7 +175,7 @@ namespace AZ
 
             /**
              * Attempts to find an instance associated with the provided id. If the instance exists, it
-             * is returned. If no instance is found, nullptr is returned. If is safe to call this from
+             * is returned. If no instance is found, nullptr is returned. It is safe to call this from
              * multiple threads.
              *
              * @param id The id used to find an instance in the database.
@@ -362,7 +362,7 @@ namespace AZ
         template<typename Type>
         Data::Instance<Type> InstanceDatabase<Type>::FindOrCreate(const Asset<AssetData>& asset, const AZStd::any* param)
         {
-            return FindOrCreate(Data::InstanceId::CreateFromAssetId(asset.GetId()), asset, param);
+            return FindOrCreate(Data::InstanceId::CreateFromAsset(asset), asset, param);
         }
 
         template<typename Type>
