@@ -214,6 +214,7 @@ namespace Multiplayer
     {
         required.push_back(AZ_CRC_CE("NetworkingService"));
         required.push_back(AZ_CRC_CE("MultiplayerStatSystemComponent"));
+        required.push_back(AZ_CRC_CE("PhysicsService"));
     }
 
     void MultiplayerSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
