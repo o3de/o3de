@@ -155,10 +155,17 @@ function(query_gem_paths_from_external_subdirs output_gem_dirs gem_names registe
     if (gem_names)
         foreach(gem_name IN LISTS gem_names)
             unset(gem_path)
+            # Use the ERROR_VARIABLE to catch the common case when it's a simple string and not a json type.
+            string(JSON json_type ERROR_VARIABLE json_error TYPE ${gem_name})
+            set(gem_optional FALSE)
+            if(${json_type} STREQUAL "OBJECT")
+                string(JSON gem_optional GET ${gem_name} "optional")
+                string(JSON gem_name GET ${gem_name} "name")    # overwrite the gem_name variable
+            endif()
             o3de_find_gem_with_registered_external_subdirs(${gem_name} gem_path "${registered_external_subdirs}")
             if (gem_path)
                 list(APPEND gem_dirs ${gem_path})
-            else()
+            elseif(NOT gem_optional)
                 list(JOIN registered_external_subdirs "\n" external_subdirs_formatted)
                 message(SEND_ERROR "The gem \"${gem_name}\""
                 " could not be found in any gem.json from the following list of registered external subdirectories:\n"

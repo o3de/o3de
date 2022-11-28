@@ -18,25 +18,35 @@ from o3de import manifest, utils
 logger = logging.getLogger('o3de.engine_properties')
 logging.basicConfig(format=utils.LOG_FORMAT)
 
+
 def _edit_gem_names(engine_json: dict,
                     new_gem_names: str or list = None,
                     delete_gem_names: str or list = None,
-                    replace_gem_names: str or list = None):
+                    replace_gem_names: str or list = None,
+                    is_optional: bool = False):
     if new_gem_names:
-        tag_list = new_gem_names.split() if isinstance(new_gem_names, str) else new_gem_names
-        engine_json.setdefault('gem_names', []).extend(tag_list)
+        add_list = new_gem_names.split() if isinstance(new_gem_names, str) else new_gem_names
+        if is_optional:
+            add_list = [dict(name=gem_name, optional=True) for gem_name in add_list]
+        engine_json.setdefault('gem_names', []).extend(add_list)
+
     if delete_gem_names:
         removal_list = delete_gem_names.split() if isinstance(delete_gem_names, str) else delete_gem_names
         if 'gem_names' in engine_json:
-            for tag in removal_list:
-                if tag in engine_json['gem_names']:
-                    engine_json['gem_names'].remove(tag)
+            def in_list(gem: str or list, remove_list: list) -> bool:
+                if isinstance(gem, dict):
+                    return gem['name'] in remove_list
+                else:
+                    return gem in remove_list
+
+            engine_json['gem_names'] = [gem for gem in engine_json['gem_names'] if not in_list(gem, removal_list)]
+
     if replace_gem_names:
         tag_list = replace_gem_names.split() if isinstance(replace_gem_names, str) else replace_gem_names
         engine_json['gem_names'] = tag_list
 
     # Remove duplicates from list
-    engine_json['gem_names'] = list(dict.fromkeys(engine_json.get('gem_names', [])))
+    engine_json['gem_names'] = utils.remove_gem_duplicates(engine_json['gem_names'])
 
 
 def edit_engine_props(engine_path: pathlib.Path = None,
@@ -80,6 +90,7 @@ def edit_engine_props(engine_path: pathlib.Path = None,
 
     return 0 if manifest.save_o3de_manifest(engine_json_data, pathlib.Path(engine_path) / 'engine.json') else 1
 
+
 def _edit_engine_props(args: argparse) -> int:
     return edit_engine_props(args.engine_path,
                              args.engine_name,
@@ -89,6 +100,7 @@ def _edit_engine_props(args: argparse) -> int:
                              args.delete_gem_names,
                              args.replace_gem_names
                              )
+
 
 def add_parser_args(parser):
     group = parser.add_mutually_exclusive_group(required=True)
@@ -103,12 +115,13 @@ def add_parser_args(parser):
                        help='Sets the version for the engine.')
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('-agn', '--add-gem-names', type=str, nargs='*', required=False,
-                       help='Adds gem name(s) to gem_names field. Space delimited list (ex. -at A B C)')
+                       help='Adds gem name(s) to gem_names field. Space delimited list (ex. -agn A B C)')
     group.add_argument('-dgn', '--delete-gem-names', type=str, nargs='*', required=False,
-                       help='Removes gem name(s) from the gem_names field. Space delimited list (ex. -dt A B C')
+                       help='Removes gem name(s) from the gem_names field. Space delimited list (ex. -dgn A B C')
     group.add_argument('-rgn', '--replace-gem-names', type=str, nargs='*', required=False,
                        help='Replace entirety of gem_names field with space delimited list of values')
     parser.set_defaults(func=_edit_engine_props)
+
 
 def add_args(subparsers) -> None:
     enable_engine_props_subparser = subparsers.add_parser('edit-engine-properties')
@@ -121,6 +134,7 @@ def main():
     the_args = the_parser.parse_args()
     ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
     sys.exit(ret)
+
 
 if __name__ == "__main__":
     main()

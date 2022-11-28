@@ -319,3 +319,29 @@ def find_ancestor_dir_containing_file(target_file_name: pathlib.PurePath, start_
     """
     ancestor_file = find_ancestor_file(target_file_name, start_path, max_scan_up_range)
     return ancestor_file.parent if ancestor_file else None
+
+
+def remove_gem_duplicates(gems: list) -> list:
+    """
+    For working with the 'gem_names' lists in project.json
+    Adds names to a dict, and when a collision occurs, eject the existing one in favor of the new one.
+    This is because when adding gems the list is extended, so the override will come last.
+    :param gems: The original list of gems, strings or small dicts (json objects)
+    :return: A new list with duplicate gem entries removed
+    """
+    new_list = []
+    names = {}
+    for gem in gems:
+        if isinstance(gem, str):
+            if gem not in names:
+                names[gem] = len(new_list)
+                new_list.append(gem)
+            else:
+                new_list[names[gem]] = gem
+        else:
+            if gem['name'] not in names:
+                names[gem['name']] = len(new_list)
+                new_list.append(gem)
+            else:
+                new_list[names[gem['name']]] = gem
+    return new_list
