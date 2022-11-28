@@ -55,7 +55,7 @@ def _edit_gem_names(proj_json: dict,
         proj_json['gem_names'] = tag_list
 
     # Remove duplicates from list
-    proj_json['gem_names'] = utils.remove_gem_duplicates(proj_json['gem_names'])
+    proj_json['gem_names'] = utils.remove_gem_duplicates(proj_json.get('gem_names', []))
 
 
 def edit_project_props(proj_path: pathlib.Path = None,
@@ -76,7 +76,7 @@ def edit_project_props(proj_path: pathlib.Path = None,
                        is_optional: bool = False
                        ) -> int:
     proj_json = get_project_props(proj_name, proj_path)
-    
+
     if not proj_json:
         return 1
     if new_name:

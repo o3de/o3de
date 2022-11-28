@@ -46,7 +46,7 @@ def _edit_gem_names(engine_json: dict,
         engine_json['gem_names'] = tag_list
 
     # Remove duplicates from list
-    engine_json['gem_names'] = utils.remove_gem_duplicates(engine_json['gem_names'])
+    engine_json['gem_names'] = utils.remove_gem_duplicates(engine_json.get('gem_names', []))
 
 
 def edit_engine_props(engine_path: pathlib.Path = None,
