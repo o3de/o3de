@@ -108,8 +108,7 @@ namespace AzToolsFramework::ComponentModeFramework
         return toolsApplicationRequests->GetSelectedEntities();
     }
 
-    void ComponentModeSwitcher::UpdateSwitcher(
-        const EntityIdList& newlySelectedEntityIds, const EntityIdList& newlyDeselectedEntityIds)
+    void ComponentModeSwitcher::UpdateSwitcher(const EntityIdList& newlySelectedEntityIds, const EntityIdList& newlyDeselectedEntityIds)
     {
         const auto& selectedEntityIds = GetSelectedEntities();
 
@@ -259,12 +258,8 @@ namespace AzToolsFramework::ComponentModeFramework
             return;
         }
 
-        bool inComponentMode = false;
-        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
-            inComponentMode, &ComponentModeSystemRequests::InComponentMode);
-
         // if already in component mode, end current mode and switch active button to the selected component
-        if (inComponentMode)
+        if (InComponentMode())
         {
             AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
                 &ComponentModeSystemRequests::ChangeComponentMode, componentData->m_component->GetUnderlyingComponentType());
@@ -287,11 +282,7 @@ namespace AzToolsFramework::ComponentModeFramework
             AZ::TickBus::QueueFunction(
                 [this]()
                 {
-                    bool inComponentMode = false;
-                    AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
-                        inComponentMode, &ComponentModeSystemRequests::InComponentMode);
-
-                    if (!inComponentMode)
+                    if (!InComponentMode())
                     {
                         ViewportUi::ViewportUiRequestBus::Event(
                             ViewportUi::DefaultViewportId,
@@ -410,20 +401,26 @@ namespace AzToolsFramework::ComponentModeFramework
         const auto& selectedEntityIds = GetSelectedEntities();
         auto entityId = pairId.GetEntityId();
 
-        if (AZStd::ranges::find(selectedEntityIds, entityId) != selectedEntityIds.end())
+        if (!InComponentMode())
         {
-            AddComponentButton(pairId);
-        } 
+            if (AZStd::ranges::find(selectedEntityIds, entityId) != selectedEntityIds.end())
+            {
+                AddComponentButton(pairId);
+            }
+        }
     }
 
     void ComponentModeSwitcher::OnComponentModeDelegateDisconnect(const AZ::EntityComponentIdPair& pairId)
     {
-        const auto& selectedEntityIds = GetSelectedEntities();
-        auto entityId = pairId.GetEntityId();
-
-        if (AZStd::ranges::find(selectedEntityIds, entityId) != selectedEntityIds.end())
+        if (!InComponentMode())
         {
-            RemoveComponentButton(pairId);
+            const auto& selectedEntityIds = GetSelectedEntities();
+            auto entityId = pairId.GetEntityId();
+
+            if (AZStd::ranges::find(selectedEntityIds, entityId) != selectedEntityIds.end())
+            {
+                RemoveComponentButton(pairId);
+            }
         }
     }
 
