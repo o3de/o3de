@@ -53,7 +53,8 @@ Surface EvaluateSurface_StandardPBR(
     surface.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_specularOcclusionMapUvIndex], MaterialSrg::m_specularOcclusionFactor, o_specularOcclusion_useTexture);
 
     // ------- Clearcoat -------
-    
+
+#if ENABLE_CLEAR_COAT
     // Todo: Clean up the double uses of these clear coat flags
     if(o_clearCoat_feature_enabled)
     {
@@ -70,6 +71,7 @@ Surface EvaluateSurface_StandardPBR(
 
         ApplyClearCoatToSpecularF0(surface.specularF0, surface.clearCoat.factor);
     }
+#endif
     
     // ------- Opacity -------
     surface.opacityAffectsSpecularFactor = MaterialSrg::m_opacityAffectsSpecularFactor;

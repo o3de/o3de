@@ -121,14 +121,6 @@ namespace EMotionFX
         return result;
     }
 
-    QWidget* SimulatedObjectColliderWidget::CreateNoSelectionWidget(QWidget* parent)
-    {
-        QLabel* noSelectionLabel = new QLabel("Select a joint from the Skeleton Outliner", parent);
-        noSelectionLabel->setWordWrap(true);
-
-        return noSelectionLabel;
-    }
-
     void SimulatedObjectColliderWidget::InternalReinit()
     {
         const QModelIndexList& selectedModelIndices = GetSelectedModelIndices();
@@ -162,6 +154,13 @@ namespace EMotionFX
 
         UpdateOwnershipLabel();
         UpdateColliderNotification();
+
+        emit WidgetCountChanged();
+    }
+
+    int SimulatedObjectColliderWidget::WidgetCount() const
+    {
+        return m_widgetCount;
     }
 
     void SimulatedObjectColliderWidget::UpdateOwnershipLabel()

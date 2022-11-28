@@ -253,9 +253,6 @@ private:
     void RenderSnapMarker();
     void RenderAll();
 
-    // Draw a selected region if it has been selected
-    void RenderSelectedRegion();
-
     bool RayRenderMeshIntersection(IRenderMesh* pRenderMesh, const Vec3& vInPos, const Vec3& vInDir, Vec3& vOutPos, Vec3& vOutNormal) const;
 
     bool AddCameraMenuItems(QMenu* menu);

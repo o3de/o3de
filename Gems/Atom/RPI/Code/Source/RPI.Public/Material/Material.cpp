@@ -554,6 +554,19 @@ namespace AZ
                         return false;
                     }
                 }
+                else if (outputId.m_type == MaterialPropertyOutputType::ShaderEnabled)
+                {
+                    ShaderCollection::Item& shaderReference = m_shaderCollection[outputId.m_containerIndex.GetIndex()];
+                    if (savedPropertyValue.Is<bool>())
+                    {
+                        shaderReference.SetEnabled(savedPropertyValue.GetValue<bool>());
+                    }
+                    else
+                    {
+                        // We should never get here because MaterialTypeAssetCreator and ValidatePropertyAccess ensure savedPropertyValue is a bool.
+                        AZ_Assert(false, "Unsupported data type for MaterialPropertyOutputType::ShaderEnabled");
+                    }
+                }
                 else
                 {
                     AZ_Assert(false, "Unhandled MaterialPropertyOutputType");

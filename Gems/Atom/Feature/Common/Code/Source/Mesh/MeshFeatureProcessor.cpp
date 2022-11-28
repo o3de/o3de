@@ -264,6 +264,8 @@ namespace AZ
             meshDataHandle->m_originalModelAsset = descriptor.m_modelAsset;
             meshDataHandle->m_meshLoader = AZStd::make_unique<ModelDataInstance::MeshLoader>(descriptor.m_modelAsset, &*meshDataHandle);
 
+            meshDataHandle->UpdateMaterialChangeIds();
+
             return meshDataHandle;
         }
 
@@ -362,6 +364,8 @@ namespace AZ
                 {
                     meshHandle->m_materialAssignments = materials;
                 }
+
+                meshHandle->UpdateMaterialChangeIds();
 
                 meshHandle->m_objectSrgNeedsUpdate = true;
             }
@@ -822,6 +826,7 @@ namespace AZ
 
             m_drawPacketListsByLod.clear();
             m_materialAssignments.clear();
+            m_materialChangeIds.clear();
             m_objectSrgList = {};
             m_model = {};
         }
@@ -1653,11 +1658,55 @@ namespace AZ
             m_cullable.m_isHidden = !isVisible;
         }
 
+        void ModelDataInstance::UpdateMaterialChangeIds()
+        {
+            // update the material changeId list with the current material assignments
+            m_materialChangeIds.clear();
+
+            for (const auto& materialAssignment : m_materialAssignments)
+            {
+                const AZ::Data::Instance<RPI::Material>& materialInstance = materialAssignment.second.m_materialInstance;
+                if (materialInstance.get())
+                {
+                    m_materialChangeIds[materialInstance] = materialInstance->GetCurrentChangeId();
+                }
+            }
+        }
+
+        bool ModelDataInstance::CheckForMaterialChanges() const
+        {
+            // check for the same number of materials
+            if (m_materialChangeIds.size() != m_materialAssignments.size())
+            {
+                return true;
+            }
+
+            // check for material changes using the changeId
+            for (const auto& materialAssignment : m_materialAssignments)
+            {
+                const AZ::Data::Instance<RPI::Material>& materialInstance = materialAssignment.second.m_materialInstance;
+
+                MaterialChangeIdMap::const_iterator it = m_materialChangeIds.find(materialInstance);
+                if (it == m_materialChangeIds.end() || it->second != materialInstance->GetCurrentChangeId())
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         void ModelDataInstance::OnRebuildMaterialInstance()
         {
             if (m_visible && m_descriptor.m_isRayTracingEnabled)
             {
-                SetRayTracingData();
+                if (CheckForMaterialChanges())
+                {
+                    SetRayTracingData();
+
+                    // update the material changeId list with the latest materials
+                    UpdateMaterialChangeIds();
+                }
             }
         }
     } // namespace Render
