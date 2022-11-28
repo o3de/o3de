@@ -11,7 +11,6 @@ set(FILES
     ShaderLib/Atom/RPI/Math.azsli
     ShaderLib/Atom/RPI/TangentSpace.azsli
     ShaderLib/Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli
-    ShaderLib/Atom/RPI/ShaderResourceGroups/DefaultObjectSrg.azsli
     ShaderLib/Atom/RPI/ShaderResourceGroups/DefaultSceneSrg.azsli
     Shaders/DecomposeMsImage.azsl
     Shaders/DecomposeMsImage.shader

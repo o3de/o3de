@@ -6,55 +6,44 @@
  *
  */
     
+//TODO(MaterialPipeline): Inline the MaterialSrg files since they aren't reused.
+//TODO(MaterialPipeline): Try removing different parts of the SRG and see how hard/easy it is to customize the surface function.
+#include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_MaterialSrg.azsli>
+
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
 
-#include <Atom/Features/SrgSemantics.azsli>
+    // Subsurface
+    #include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/SubsurfaceInput.azsli"
 
-ShaderResourceGroup MaterialSrg : SRG_PerMaterial
-{
-    float3 m_baseColor;
-    float m_metallic;
-    float m_roughness;
-    float m_clearCoatFactor;
-    float m_clearCoatRoughness;
-    float m_subsurfaceScatteringFactor;
-    float m_subsurfaceScatteringQuality;
-    float3 m_scatterDistanceColor;
-}
+    // Transmission
+    #include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/TransmissionInput.azsli"
 
-void MaterialFunction_AdjustSurface(inout Surface surface)
-{
-    surface.roughnessLinear = MaterialSrg::m_roughness;
-    float3 baseColor = MaterialSrg::m_baseColor;
-    float metallic = MaterialSrg::m_metallic;
-    float specularF0Factor = 0.5f;
-    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
-    
-    // TODO(MaterialPipeline): I don't really like that the material code has to check whether the Surface includes certain properties.
-    // The Surface content should be dictated by the lighting model, not dictated by the render pipeline. Since the material type
-    // explicitly selects a lighting model, the content of the Surface should be fixed based on that selection ... although that approach
-    // could be problematic for performance if having a larger Surface struct increases the register pressure.
+    COMMON_OPTIONS_BASE_COLOR()
+    COMMON_OPTIONS_ROUGHNESS()
+    COMMON_OPTIONS_METALLIC()
+    COMMON_OPTIONS_SPECULAR_F0()
+    COMMON_OPTIONS_NORMAL()
+    COMMON_OPTIONS_CLEAR_COAT()
+    COMMON_OPTIONS_OCCLUSION()
+    COMMON_OPTIONS_EMISSIVE()
+    COMMON_OPTIONS_DETAIL_MAPS()
 
-#if ENABLE_CLEAR_COAT
-    if(o_clearCoat_feature_enabled)
-    {
-        surface.clearCoat.factor = MaterialSrg::m_clearCoatFactor;
-        surface.clearCoat.roughness = MaterialSrg::m_clearCoatRoughness;
-        surface.clearCoat.normal = surface.normal;
-        ApplyClearCoatToSpecularF0(surface.specularF0, surface.clearCoat.factor);
-    }
-#endif
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_VertexData.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_VertexEval.azsli>
 
-#if OUTPUT_SUBSURFACE
-    if(o_enableSubsurfaceScattering)
-    {
-        surface.subsurfaceScatteringFactor = MaterialSrg::m_subsurfaceScatteringFactor;
-        surface.subsurfaceScatteringQuality = MaterialSrg::m_subsurfaceScatteringQuality;
-        surface.scatterDistance = MaterialSrg::m_scatterDistanceColor * 10;
-    }
-#endif
-}
-#define MaterialFunction_AdjustSurface_DEFINED 1
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_PixelGeometryData.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_PixelGeometryEval.azsli>
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_SurfaceData.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_SurfaceEval.azsli>
+
+#else
+
+    //TODO(MaterialPipeline): I think we should rename these to "PositionOnly_*"
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexData.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexEval.azsli>
 
 #endif
-

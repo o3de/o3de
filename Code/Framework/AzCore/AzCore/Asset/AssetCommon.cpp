@@ -46,7 +46,7 @@ namespace AZ::Data
             return AssetId();
         }
 
-        assetId.m_subId = strtoul(&input[separatorIdx + 1], nullptr, 16);
+        assetId.m_subId = static_cast<AZ::u32>(strtoul(&input[separatorIdx + 1], nullptr, 16));
 
         return assetId;
     }

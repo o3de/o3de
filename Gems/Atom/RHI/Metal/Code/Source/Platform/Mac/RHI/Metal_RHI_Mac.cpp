@@ -164,7 +164,7 @@ namespace Platform
                 }
                 mappedData += request.m_byteOffset;                
                 response.m_data = mappedData;
-                buffer.SetMapRequestOffset(request.m_byteOffset);
+                buffer.SetMapRequestOffset(static_cast<uint32_t>(request.m_byteOffset));
                 break;
             }
             default:
