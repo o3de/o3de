@@ -8,9 +8,157 @@
                     }
                 }
             },
+            "InAppPurchases": {
+                "Targets": {
+                    "InAppPurchases": {
+                        "AutoLoad": false
+                    },
+                    "InAppPurchases.Editor": {
+                        "AutoLoad": false
+                    },
+                    "InAppPurchases.Tools": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "Stars": {
+                "Targets": {
+                    "Stars": {
+                        "AutoLoad": false
+                    },
+                    "Stars.Editor": {
+                        "AutoLoad": false
+                    },
+                    "Stars.Tools": {
+                        "AutoLoad": false
+                    }
+                }
+            },
             "LyShine": {
                 "Targets": {
+                    "LyShine": {
+                        "AutoLoad": false
+                    },
                     "LyShine.Editor": {
+                        "AutoLoad": false
+                    },
+                    "LyShine.Tools": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "LyShineExamples": {
+                "Targets": {
+                    "LyShineExamples": {
+                        "AutoLoad": false
+                    },
+                    "LyShineExamples.Editor": {
+                        "AutoLoad": false
+                    },
+                    "LyShineExamples.Tools": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "Vegetation": {
+                "Targets": {
+                    "Vegetation.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "Terrain": {
+                "Targets": {
+                    "Terrain.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "FastNoise": {
+                "Targets": {
+                    "FastNoise.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "GradientSignal": {
+                "Targets": {
+                    "GradientSignal.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "SurfaceData": {
+                "Targets": {
+                    "SurfaceData.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "PrefabBuilder": {
+                "Targets": {
+                    "PrefabBuilder.Builders": {
+                        "AutoLoad": false
+                    },
+                    "PrefabBuilder.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "SceneProcessing": {
+                "Targets": {
+                    "SceneProcessing.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "ScriptEvents": {
+                "Targets": {
+                    "ScriptEvents.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "ExpressionEvaluation": {
+                "Targets": {
+                    "ExpressionEvaluation": {
+                        "AutoLoad": false
+                    },
+                    "ExpressionEvaluation.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "AtomTressFX": {
+                "Targets": {
+                    "AtomTressFX": {
+                        "AutoLoad": false
+                    },
+                    "AtomTressFX.Builders": {
+                        "AutoLoad": false
+                    },
+                    "AtomTressFX.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "Maestro": {
+                "Targets": {
+                    "Maestro.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "EMotionFX": {
+                "Targets": {
+                    "EMotionFX.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "EMotionFX_Atom": {
+                "Targets": {
+                    "EMotionFX_Atom.Editor": {
                         "AutoLoad": false
                     }
                 }
@@ -31,7 +179,44 @@
             },
             "Gestures": {
                 "Targets": {
+                    "Gestures": {
+                        "AutoLoad": false
+                    },
                     "Gestures.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "EditorModeFeedback": {
+                "Targets": {
+                    "EditorModeFeedback": {
+                        "AutoLoad": false
+                    },
+                    "EditorModeFeedback.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "RecastNavigation": {
+                "Targets": {
+                    "RecastNavigation.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "AudioSystem": {
+                "Targets": {
+                    "AudioSystem.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "Metastream": {
+                "Targets": {
+                    "Metastream": {
+                        "AutoLoad": false
+                    },
+                    "Metastream.Editor": {
                         "AutoLoad": false
                     }
                 }
@@ -57,9 +242,12 @@
                     }
                 }
             },
-            "NVCloth": {
+            "NvCloth": {
                 "Targets": {
-                    "NVCloth.Editor": {
+                    "NvCloth.Editor": {
+                        "AutoLoad": false
+                    },
+                    "NvCloth.Editor.Gem": {
                         "AutoLoad": false
                     }
                 }

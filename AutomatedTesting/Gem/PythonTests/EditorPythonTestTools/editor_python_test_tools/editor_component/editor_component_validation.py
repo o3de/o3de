@@ -21,11 +21,12 @@ def compare_vec3(expected: Math.Vector3, actual: Math.Vector3) -> bool:
 
     return: boolean result of whether or not the two vector3s are the same.
     """
-    x_is_close = Math.Math_IsClose(expected.get_property('x'), actual.get_property('x'), 0.001)
-    y_is_close = Math.Math_IsClose(expected.get_property('y'), actual.get_property('y'), 0.001)
-    z_is_close = Math.Math_IsClose(expected.get_property('z'), actual.get_property('z'), 0.001)
+    x_is_close = Math.Math_IsClose(expected.get_property('x'), actual.get_property('x'), 0.01)
+    y_is_close = Math.Math_IsClose(expected.get_property('y'), actual.get_property('y'), 0.01)
+    z_is_close = Math.Math_IsClose(expected.get_property('z'), actual.get_property('z'), 0.01)
 
     return x_is_close and y_is_close and z_is_close
+
 
 def _validate_xyz_is_float(x: float, y: float, z: float, error_message: str) -> None:
     """
@@ -43,6 +44,7 @@ def _validate_xyz_is_float(x: float, y: float, z: float, error_message: str) -> 
     """
     assert isinstance(x, float) and isinstance(y, float) and isinstance(z, float), error_message
 
+
 def _validate_property_visibility(component: EditorComponent, component_property_path: str, expected: str) -> None:
     """
     Helper function for Editor Components to validate the current visibility of the property is expected value.
@@ -59,13 +61,13 @@ def _validate_property_visibility(component: EditorComponent, component_property
         f"Error: {component.get_component_name()}'s component property visibility found at {component_property_path} " \
         f"was set to \"{visibility}\" when \"{expected}\" was expected."
 
+
 def validate_integer_property(property_name: str, get_int_value: typing.Callable, set_int_value: typing.Callable,
                               component_name: str, tests: typing.Dict[str, typing.Tuple[int, bool]]) -> None:
     """
     Function to validate the behavior of a property that gets and sets an Integer value.
-
-    :get_float_value: The Editor Entity Component Property's get method.
-    :set_float_value: The Editor Entity Component Property's set method.
+    :get_int_value: The Editor Entity Component Property's get method.
+    :set_int_value: The Editor Entity Component Property's set method.
     :component_name: The name of the Editor Entity Component under test.
     :property_name: The name of the Editor Entity Component Property under test.
     :tests: A dictionary that stores an Int value and the intent of the values being passed. The following
@@ -75,23 +77,18 @@ def validate_integer_property(property_name: str, get_int_value: typing.Callable
         "Zero value Test": (0, True)
      }
     """
-    # Dictionary Keys
-    int_value = 0
-    expect_pass = 1
-
     Report.info(f"Validating {component_name}'s {property_name} Integer property can be set or fails gracefully.")
 
-    for test_name in tests:
-        test = tests[test_name]
+    for test_name, test in tests.items():
+        expected_value, expect_pass = test
 
-        set_int_value(test[int_value])
-
+        set_int_value(expected_value)
         set_value = get_int_value()
-        expected_value = test[int_value]
 
-        assert (expected_value is set_value) is test[expect_pass], \
+        assert (expected_value == set_value) is expect_pass, \
             f"Error: The {component_name}'s  {property_name} property failed to the \"{test_name}\" test. " \
-            f"{expected_value} was expected but {set_value} was retrieved. Negative Scenario Test: {not test[expect_pass]}."
+            f"{expected_value} was expected but {set_value} was retrieved. Negative Scenario Test: {not expect_pass}."
+
 
 def validate_float_property(property_name: str, get_float_value: typing.Callable, set_float_value: typing.Callable,
                             component_name: str, tests: typing.Dict[str, typing.Tuple[float, bool]]) -> None:
@@ -109,23 +106,18 @@ def validate_float_property(property_name: str, get_float_value: typing.Callable
         "Zero value Test": (0.0, True)
      }
     """
-    # Dictionary Keys
-    float_value = 0
-    expect_pass = 1
-
     Report.info(f"Validating {component_name}'s {property_name} Float property can be set or fails gracefully.")
 
-    for test_name in tests:
-        test = tests[test_name]
+    for test_name, test in tests.items():
+        expected_value, expect_pass = test
 
-        set_float_value(test[float_value])
-
+        set_float_value(expected_value)
         set_value = get_float_value()
-        expected_value = test[float_value]
 
-        assert Math.Math_IsClose(expected_value, set_value, 0.001) is test[expect_pass], \
+        assert Math.Math_IsClose(expected_value, set_value, 0.001) is expect_pass, \
             f"Error: The {component_name}'s  {property_name} property failed to the \"{test_name}\" test. " \
-            f"{expected_value} was expected but {set_value} was retrieved. Negative Scenario Test: {not test[expect_pass]}."
+            f"{expected_value} was expected but {set_value} was retrieved. Negative Scenario Test: {not expect_pass}."
+
 
 def validate_vector3_property(property_name: str, get_vector3_value: typing.Callable,
                               set_vector3_value: typing.Callable, component_name: str,
@@ -144,26 +136,20 @@ def validate_vector3_property(property_name: str, get_vector3_value: typing.Call
         "Zero Value Test": (0.0, 0.0, 0.0, True)
      }
     """
-    # Dictionary Keys
-    x = 0
-    y = 1
-    z = 2
-    expect_pass = 3
-
     Report.info(f"Validating {component_name}'s {property_name} Vector3 property can be set or fails gracefully.")
 
-    for test_name in tests:
-        test = tests[test_name]
+    for test_name, test in tests.items():
+        x, y, z, expect_pass = test
+        expected_value = Math.Vector3(x, y, z)
 
-        set_vector3_value(test[x], test[y], test[z])
-
+        set_vector3_value(x, y, z)
         set_value = get_vector3_value()
-        expected_value = Math.Vector3(test[x], test[y], test[z])
 
-        assert compare_vec3(expected_value, set_value) is test[expect_pass], \
+        assert compare_vec3(expected_value, set_value) is expect_pass, \
             f"Error: The {component_name}'s  {property_name} property failed to the \"{test_name}\" test. " \
             f"{expected_value} was expected but {set_value} was retrieved. " \
-            f"Negative Scenario Test: {not test[expect_pass]}."
+            f"Negative Scenario Test: {not expect_pass}."
+
 
 def validate_property_switch_toggle(property_name: str, get_toggle_value: typing.Callable,
                                     set_toggle_value: typing.Callable, component_name: str,
@@ -171,8 +157,6 @@ def validate_property_switch_toggle(property_name: str, get_toggle_value: typing
     """
     Used to toggle a property switch and validate that it toggled.
     param component_property_path: String of component property. (e.g. 'Settings|Visible')
-
-    :return: None
     """
     Report.info(f"Validating {component_name}'s {property_name} property toggle switch toggles.")
 
@@ -191,18 +175,13 @@ def validate_property_switch_toggle(property_name: str, get_toggle_value: typing
 def validate_asset_property(property_name: str, get_asset_value: typing.Callable, set_asset_value: typing.Callable,
                             component_name: str, asset_path: str) -> None:
     """
-    Function to validate the behavior of a property that gets and sets an Integer value.
+    Function to validate the behavior of a property that gets and sets an Asset value.
 
-    :get_float_value: The Editor Entity Component Property's get method.
-    :set_float_value: The Editor Entity Component Property's set method.
+    :get_asset_value: The Editor Entity Component Property's get method.
+    :set_asset_value: The Editor Entity Component Property's set method.
     :component_name: The name of the Editor Entity Component under test.
     :property_name: The name of the Editor Entity Component Property under test.
-    :tests: A dictionary that stores an Int value and the intent of the values being passed. The following
-    format is expected
-     {
-        "test_description": (int_value, expect_pass),
-        "Zero value Test": (0, True)
-     }
+    :asset_path: The relative path to an asset in the asset cache.
     """
     Report.info(f"Validating {component_name}'s {property_name} Asset property can be set.")
 

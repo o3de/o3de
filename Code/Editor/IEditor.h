@@ -121,10 +121,6 @@ enum EEditorNotifyEvent
     eNotify_OnEditModeChange,          // Sent when editing mode change (move,rotate,scale,....)
     eNotify_OnEditToolChange,          // Sent when edit tool is changed (ObjectMode,TerrainModify,....)
 
-    // Deferred terrain create event.
-    eNotify_OnBeginTerrainCreate,      // Sent when terrain is created later (and not during level creation)
-    eNotify_OnEndTerrainCreate,        // Sent when terrain is created later (and not during level creation)
-
     // Game related events.
     eNotify_OnBeginGameMode,           // Sent when editor goes to game mode.
     eNotify_OnEndGameMode,             // Sent when editor goes out of game mode.
@@ -148,12 +144,6 @@ enum EEditorNotifyEvent
     eNotify_OnStopSequence,            // Sent when editor stop playing animation sequence.
 
     // Task specific events.
-    eNotify_OnTerrainRebuild,          // Sent when terrain was rebuilt (resized,...)
-    eNotify_OnBeginTerrainRebuild,     // Sent when terrain begin rebuilt (resized,...)
-    eNotify_OnEndTerrainRebuild,       // Sent when terrain end rebuilt (resized,...)
-    eNotify_OnVegetationObjectSelection, // When vegetation objects selection change.
-    eNotify_OnVegetationPanelUpdate,   // When vegetation objects selection change.
-
     eNotify_OnDataBaseUpdate,          // DataBase Library was modified.
 
     eNotify_OnLayerImportBegin,         //layer import was started

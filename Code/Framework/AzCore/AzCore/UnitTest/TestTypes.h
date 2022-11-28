@@ -48,6 +48,12 @@ namespace UnitTest
             for (int i = 0; i < allocatorCount; ++i)
             {
                 const AZ::IAllocator* allocator = allMan.GetAllocator(i);
+
+                // Re-enable once https://github.com/o3de/o3de/issues/13263 is fixed
+                if (AZStd::string_view(allocator->GetName()) == "ThreadPoolAllocator")
+                {
+                    continue;
+                }
                 allocatedSizes[allocator] = allocator->NumAllocatedBytes();
             }
             return allocatedSizes;

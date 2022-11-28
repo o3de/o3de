@@ -98,7 +98,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
     // Add debug coloring for directional light shadow
     if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
     {
-        lightingData.specularLighting = DirectionalLightShadow::AddDebugColoring(lightingData.specularLighting, shadowIndex, surface.position, surface.vertexNormal, screenUv);
+        lightingData.specularLighting = DirectionalLightShadow::AddDebugColoring(lightingData.specularLighting, shadowIndex, surface.position, surface.vertexNormal);
     }
 #endif
 }

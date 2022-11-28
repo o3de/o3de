@@ -127,6 +127,14 @@
             "tag": "MeshMotionVector"
         }
     ],
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "CastShadows.lua"
+            }
+        }
+    ],
     "uvNameMap": {
         "UV0": "Tiled",
         "UV1": "Unwrapped"
