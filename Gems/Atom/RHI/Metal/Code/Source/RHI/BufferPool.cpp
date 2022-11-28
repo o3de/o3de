@@ -45,7 +45,7 @@ namespace AZ
             Device& device = static_cast<Device&>(deviceBase);
             
             RHI::HeapMemoryUsage* heapMemoryUsage = &m_memoryUsage.GetHeapMemoryUsage(descriptorBase.m_heapMemoryLevel);
-            uint32_t bufferPageSize = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_bufferPoolPageSizeInBytes;
+            uint32_t bufferPageSize = static_cast<uint32_t>(RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_bufferPoolPageSizeInBytes);
             
             // The descriptor provides an explicit buffer page size override.
             if (const Metal::BufferPoolDescriptor* descriptor = azrtti_cast<const Metal::BufferPoolDescriptor*>(&descriptorBase))

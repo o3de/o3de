@@ -4951,7 +4951,7 @@ namespace AssetProcessor
             // it may not be necessary to actually alter the database here.
             m_remainingJobsForEachSourceFile.erase(foundTrackingInfo);
 
-            Q_EMIT FinishedAnalysis(m_remainingJobsForEachSourceFile.size());
+            Q_EMIT FinishedAnalysis(static_cast<int>(m_remainingJobsForEachSourceFile.size()));
 
             return;
         }
@@ -5024,7 +5024,7 @@ namespace AssetProcessor
 
         m_remainingJobsForEachSourceFile.erase(foundTrackingInfo);
 
-        Q_EMIT FinishedAnalysis(m_remainingJobsForEachSourceFile.size());
+        Q_EMIT FinishedAnalysis(static_cast<int>(m_remainingJobsForEachSourceFile.size()));
     }
 
     void AssetProcessorManager::SetEnableModtimeSkippingFeature(bool enable)
