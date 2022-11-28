@@ -44,7 +44,7 @@ namespace LmbrCentral
 
     void EditorSplineComponentMode::RegisterActions()
     {
-        AzToolsFramework::EditorVertexSelection::RegisterEditorVertexSelectionActions();
+        AzToolsFramework::EditorVertexSelectionActionManagement::RegisterEditorVertexSelectionActions();
     }
 
     void EditorSplineComponentMode::BindActionsToModes()
@@ -65,7 +65,7 @@ namespace LmbrCentral
 
     void EditorSplineComponentMode::BindActionsToMenus()
     {
-        AzToolsFramework::EditorVertexSelection::BindEditorVertexSelectionActionsToMenus();
+        AzToolsFramework::EditorVertexSelectionActionManagement::BindEditorVertexSelectionActionsToMenus();
     }
 
     void EditorSplineComponentMode::Refresh()

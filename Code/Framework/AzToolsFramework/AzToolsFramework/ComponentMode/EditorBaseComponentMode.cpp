@@ -117,7 +117,7 @@ namespace AzToolsFramework
                 false,
                 "Classes derived from EditorBaseComponentMode need to override this function and return their typeid."
                 "Example: \"return azrtti_typeid<DerivedComponentMode>();\"");
-            return AZ::Uuid();
+            return AZ::Uuid::CreateNull();
         }
 
         void EditorBaseComponentMode::PostHandleMouseInteraction()

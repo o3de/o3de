@@ -22,6 +22,9 @@ namespace LmbrCentral
          /// of the tube to match the internals state.
         virtual void GenerateVertices() = 0;
 
+         /// Request the EditorTubeShapeComponent to reset all radii.
+        virtual void ResetRadii() = 0;
+
     protected:
         ~EditorTubeShapeComponentRequests() = default;
     };

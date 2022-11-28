@@ -71,7 +71,7 @@ namespace AzToolsFramework
     static const char* const s_deselectVerticesTitle = "Deselect Vertices";
     static const char* const s_deselectVerticesDesc = "Deselect current vertex selection";
 
-    void EditorVertexSelection::RegisterEditorVertexSelectionActions()
+    void EditorVertexSelectionActionManagement::RegisterEditorVertexSelectionActions()
     {
         auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
         AZ_Assert(
@@ -174,7 +174,7 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorVertexSelection::BindEditorVertexSelectionActionsToMenus()
+    void EditorVertexSelectionActionManagement::BindEditorVertexSelectionActionsToMenus()
     {
         auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
         AZ_Assert(

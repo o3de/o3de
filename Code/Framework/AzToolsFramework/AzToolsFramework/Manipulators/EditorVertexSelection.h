@@ -23,7 +23,7 @@ namespace AzToolsFramework
 {
     //! Registers the Actions provided by the EditorVertexSelection while it is active to the Action Manager.
     //! e.g. Vertex deletion, duplication etc.
-    struct EditorVertexSelection
+    struct EditorVertexSelectionActionManagement
     {
         static void RegisterEditorVertexSelectionActions();
         static void BindEditorVertexSelectionActionsToMenus();
