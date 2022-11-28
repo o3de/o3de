@@ -504,4 +504,41 @@ namespace UnitTest
         activeComponent = componentModeSwitcher->GetActiveComponent()->GetId();
         EXPECT_EQ(activeComponent, placeholder->GetId());
     }
+
+    TEST_F(ComponentModeSwitcherTestFixture, SwitcherDoesNotChangeCompositionWhileInComponentMode)
+    {
+        // Given an entity with two components
+        AZStd::shared_ptr<ComponentModeSwitcher> componentModeSwitcher = AZStd::make_shared<ComponentModeSwitcher>();
+
+        AzToolsFramework::EditorTransformComponentSelectionRequestBus::Event(
+            AzToolsFramework::GetEntityContextId(),
+            &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::OverrideComponentModeSwitcher,
+            componentModeSwitcher);
+
+        AZ::Entity* entity = nullptr;
+        AZ::EntityId entityId = CreateDefaultEditorEntity("ComponentModeEntity", &entity);
+
+        entity->Deactivate();
+        const AZ::Component* placeholder = entity->CreateComponent<AnotherPlaceholderEditorComponent>();
+        const AZ::Component* dependentPlaceholder = entity->CreateComponent<DependentPlaceholderEditorComponent>();
+        entity->Activate();
+
+        const AzToolsFramework::EntityIdList entityIds = { entityId };
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, entityIds);
+
+        // When the editor enters component mode
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::AddSelectedComponentModesOfType,
+            dependentPlaceholder->GetUnderlyingComponentType());
+
+        EXPECT_TRUE(AzToolsFramework::ComponentModeFramework::InComponentMode());
+        EXPECT_EQ(componentModeSwitcher->GetComponentCount(), 2);
+
+        // While in component mode 
+        AzFramework::ComponentModeDelegateNotificationBus::Broadcast(
+            &AzFramework::ComponentModeDelegateNotificationBus::Events::OnComponentModeDelegateDisconnect, AZ::EntityComponentIdPair(entityId, placeholder->GetId()));
+
+        EXPECT_EQ(componentModeSwitcher->GetComponentCount(), 2);
+    }
 } // namespace UnitTest

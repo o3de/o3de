@@ -61,11 +61,11 @@ protected:
     void resizeEvent(QResizeEvent* resizeEvent) override;
 
 private:
-    void OnInitViewToggleButton();
+    void OnInitToolsMenuButton();
     void UpdateDisplayInfo();
 
 protected slots:
-    void CreateSwitchViewMenu();
+    void CreateToolsMenu();
     void SetTreeViewMode();
     void SetListViewMode();
     void UpdateWidgetAfterFilter();
@@ -77,7 +77,7 @@ private:
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserFilterModel> m_filterModel;
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserTableModel> m_tableModel;
     AzToolsFramework::AssetBrowser::AssetBrowserModel* m_assetBrowserModel;
-    QMenu* m_viewSwitchMenu = nullptr;
+    QMenu* m_toolsMenu = nullptr;
     QAction* m_treeViewMode = nullptr;
     QAction* m_listViewMode = nullptr;
     AzToolsFramework::AssetBrowser::AssetBrowserDisplayState m_assetBrowserDisplayState =
