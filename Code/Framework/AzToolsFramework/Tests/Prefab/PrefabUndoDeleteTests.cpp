@@ -8,6 +8,7 @@
 
 #include <Prefab/PrefabTestFixture.h>
 
+#include <AzToolsFramework/Prefab/Undo/PrefabUndo.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoDelete.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoDeleteAsOverride.h>
 
@@ -145,6 +146,90 @@ namespace UnitTest
         
         ValidateEntityUnderInstance(firstCarInstance->get().GetContainerEntityId(), tireEntityAlias, tireEntityName);
         ValidateEntityUnderInstance(secondCarInstance->get().GetContainerEntityId(), tireEntityAlias, tireEntityName);
+    }
+
+    TEST_F(PrefabUndoDeleteTests, PrefabUndoDeleteTests_DeleteNestedInstance)
+    {
+        // Level
+        // | Car         <-- focused
+        //   | Wheel     <-- delete
+        //     | Tire
+        // | Car
+        //   | Wheel
+        //     | Tire
+
+        const AZStd::string carPrefabName = "Car";
+        const AZStd::string wheelPrefabName = "Wheel";
+        const AZStd::string tireEntityName = "Tire";
+
+        AZ::IO::Path engineRootPath;
+        m_settingsRegistryInterface->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+
+        AZ::IO::Path carPrefabFilepath(engineRootPath);
+        carPrefabFilepath.Append(carPrefabName);
+
+        AZ::IO::Path wheelPrefabFilepath(engineRootPath);
+        wheelPrefabFilepath.Append(wheelPrefabName);
+
+        AZ::EntityId tireEntityId = CreateEditorEntity(tireEntityName, GetRootContainerEntityId());
+        AZ::EntityId wheelContainerId = CreateEditorPrefab(wheelPrefabFilepath, { tireEntityId });
+        AZ::EntityId carContainerId = CreateEditorPrefab(carPrefabFilepath, { wheelContainerId });
+
+        InstanceAlias wheelInstanceAlias = FindNestedInstanceAliasInInstance(carContainerId, wheelPrefabName);
+        ASSERT_FALSE(wheelInstanceAlias.empty());
+
+        AZ::EntityId secondCarContainerId = InstantiateEditorPrefab(carPrefabFilepath, GetRootContainerEntityId());
+
+        auto firstCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(carContainerId);
+        ASSERT_TRUE(firstCarInstance.has_value());
+
+        auto secondCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(secondCarContainerId);
+        ASSERT_TRUE(secondCarInstance.has_value());
+
+        // Validate before deletion
+        ValidateNestedInstanceUnderInstance(firstCarInstance->get().GetContainerEntityId(), wheelInstanceAlias);
+        ValidateNestedInstanceUnderInstance(secondCarInstance->get().GetContainerEntityId(), wheelInstanceAlias);
+
+        // Create an undo node
+        // Note: Currently for deleting a nested instance, it depends on the PrefabUndoInstanceLink undo node.
+        PrefabUndoInstanceLink undoDeleteNestedInstance("Undo Delete Nested Instance");
+
+        AZStd::unique_ptr<Instance> firstWheelInstance = firstCarInstance->get().DetachNestedInstance(wheelInstanceAlias);
+        TemplateId wheelTemplateId = firstWheelInstance->GetTemplateId();
+        LinkId wheelLinkId = firstWheelInstance->GetLinkId();
+
+        LinkReference firstWheelLink = m_prefabSystemComponent->FindLink(wheelLinkId);
+        ASSERT_TRUE(firstWheelLink.has_value());
+
+        // Generate link patches needed for redo and undo support.
+        PrefabDom patchesCopyForUndoSupport;
+        PrefabDom wheelInstanceLinkDom;
+        firstWheelLink->get().GetLinkDom(wheelInstanceLinkDom, wheelInstanceLinkDom.GetAllocator());
+        PrefabDomValueConstReference wheelInstanceLinkPatches =
+            PrefabDomUtils::FindPrefabDomValue(wheelInstanceLinkDom, PrefabDomUtils::PatchesName);
+        if (wheelInstanceLinkPatches.has_value())
+        {
+            patchesCopyForUndoSupport.CopyFrom(wheelInstanceLinkPatches->get(), patchesCopyForUndoSupport.GetAllocator());
+        }
+
+        firstWheelInstance.reset();
+
+        undoDeleteNestedInstance.Capture(firstCarInstance->get().GetTemplateId(), wheelTemplateId,
+            wheelInstanceAlias, AZStd::move(patchesCopyForUndoSupport), wheelLinkId);
+
+        // Redo
+        undoDeleteNestedInstance.Redo();
+        PropagateAllTemplateChanges();
+
+        ValidateNestedInstanceNotUnderInstance(firstCarInstance->get().GetContainerEntityId(), wheelInstanceAlias);
+        ValidateNestedInstanceNotUnderInstance(secondCarInstance->get().GetContainerEntityId(), wheelInstanceAlias);
+
+        // Undo
+        undoDeleteNestedInstance.Undo();
+        PropagateAllTemplateChanges();
+
+        ValidateNestedInstanceUnderInstance(firstCarInstance->get().GetContainerEntityId(), wheelInstanceAlias);
+        ValidateNestedInstanceUnderInstance(secondCarInstance->get().GetContainerEntityId(), wheelInstanceAlias);
     }
 
     TEST_F(PrefabUndoDeleteTests, PrefabUndoDeleteTests_DeleteInstanceAsOverride)
