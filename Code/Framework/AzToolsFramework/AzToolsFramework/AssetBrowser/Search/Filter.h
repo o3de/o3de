@@ -224,7 +224,7 @@ namespace AzToolsFramework
             bool MatchInternal(const AssetBrowserEntry* entry) const override;
 
         private:
-            QString m_assetPath;
+            AZ::IO::Path m_assetPath;
         };
 
         //////////////////////////////////////////////////////////////////////////

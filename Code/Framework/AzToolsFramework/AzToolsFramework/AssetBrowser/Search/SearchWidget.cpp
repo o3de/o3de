@@ -164,7 +164,10 @@ namespace AzToolsFramework
                 m_filter->AddFilter(FilterConstType(m_typesFilter));
                 SetTypeFilters(buildTypesFilterList());
             }
+        }
 
+        void SearchWidget::CreateProjectSourceFilter()
+        {
             auto sourceFilter = new EntryTypeFilter();
             sourceFilter->SetName("Source");
             sourceFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Source);

@@ -413,19 +413,18 @@ namespace AzToolsFramework
 
         void AssetPathFilter::SetAssetPath(AZ::IO::Path path)
         {
-            m_assetPath = QString::fromUtf8(path.c_str());
+            m_assetPath = path;
         }
 
         QString AssetPathFilter::GetNameInternal() const
         {
-            return m_assetPath;
+            return QString::fromUtf8(m_assetPath.c_str());
         }
 
         bool AssetPathFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
-            QStringList projectDirectory = m_assetPath.split("\\");
-            QString entryPath = QString::fromUtf8(entry->GetFullPath().data());
-            return StringMatch(projectDirectory.last(), entryPath);
+            AZ::IO::Path entryPath = entry->GetFullPath();
+            return entryPath.IsRelativeTo(m_assetPath);
         }
 
         //////////////////////////////////////////////////////////////////////////

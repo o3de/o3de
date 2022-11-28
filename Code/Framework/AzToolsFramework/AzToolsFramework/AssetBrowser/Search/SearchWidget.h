@@ -33,6 +33,8 @@ namespace AzToolsFramework
 
             void Setup(bool stringFilter, bool assetTypeFilter);
 
+            void CreateProjectSourceFilter();
+
             QSharedPointer<CompositeFilter> GetFilter() const;
 
             QSharedPointer<CompositeFilter> GetStringFilter() const;
