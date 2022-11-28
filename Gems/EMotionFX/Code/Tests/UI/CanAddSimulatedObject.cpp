@@ -28,6 +28,7 @@
 #include <Tests/TestAssetCode/ActorFactory.h>
 #include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Tests/PhysicsSetupUtils.h>
+#include <Tests/UI/SkeletonOutlinerTestFixture.h>
 #include <Editor/ReselectingTreeView.h>
 
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
@@ -35,7 +36,7 @@
 namespace EMotionFX
 {
     class CanAddSimulatedObjectFixture
-        : public UIFixture
+        : public SkeletonOutlinerTestFixture
     {
     public:
         void TearDown() override
@@ -65,7 +66,7 @@ namespace EMotionFX
             EMStudio::GetMainWindow()->ApplicationModeChanged("SimulatedObjects");
 
             // Find the Simulated Object Manager and its button
-            m_simulatedObjectWidget = static_cast<EMotionFX::SimulatedObjectWidget*>(EMStudio::GetPluginManager()->FindActivePlugin(EMotionFX::SimulatedObjectWidget::CLASS_ID));
+            m_simulatedObjectWidget = EMStudio::GetPluginManager()->FindActivePlugin<EMotionFX::SimulatedObjectWidget>();
             ASSERT_TRUE(m_simulatedObjectWidget) << "Simulated Object plugin not found!";
 
             QPushButton* addSimulatedObjectButton = m_simulatedObjectWidget->GetDockWidget()->findChild<QPushButton*>("addSimulatedObjectButton");

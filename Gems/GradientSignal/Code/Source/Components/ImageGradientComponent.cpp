@@ -847,9 +847,10 @@ namespace GradientSignal
 
         AZStd::shared_lock lock(m_queryMutex);
 
-        // Return immediately if our cached image data hasn't been retrieved yet
+        // Just clear the output values and return if our cached image data hasn't been retrieved yet
         if (m_imageData.empty())
         {
+            AZStd::fill(outValues.begin(), outValues.end(), 0.0f);
             return;
         }
 
