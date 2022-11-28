@@ -279,6 +279,9 @@ function(ly_add_test)
     set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${ly_add_test_TIMEOUT}")
     # Store the params for this test target
     set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${test_target}_PARAMS ${LY_TEST_PARAMS})
+
+    # Allow TIAF to disable tests of supported types from being run by CTest 
+    o3de_test_impact_apply_test_properties(${LY_ADDED_TEST_NAME} ${ly_add_test_TEST_LIBRARY})
 endfunction()
 
 #! ly_add_pytest: registers target PyTest-based test with CTest
