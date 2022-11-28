@@ -65,3 +65,4 @@ class TestsSceneScripting(object):
 
         missing_assets, existing_assets = utils.compare_assets_with_cache(expected_product_list, asset_processor.project_test_cache_folder())
         assert not missing_assets, f'The following assets were expected to be in, but not found in cache: {missing_assets} + {existing_assets}'
+
