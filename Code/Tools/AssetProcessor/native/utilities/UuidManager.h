@@ -94,6 +94,7 @@ namespace AssetProcessor
         UuidEntry CreateUuidEntry(const SourceAssetReference& sourceAsset, bool enabledType);
         AZ::Uuid CreateUuid();
         AZStd::unordered_set<AZ::Uuid> CreateLegacyUuids(const AZStd::string& file);
+        void InvalidateCacheEntry(AZ::IO::Path file);
 
         AZStd::recursive_mutex m_uuidMutex;
         // Cache of uuids.  AbsPath -> UUIDEntry

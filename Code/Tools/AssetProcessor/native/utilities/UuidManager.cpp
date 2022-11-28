@@ -57,37 +57,25 @@ namespace AssetProcessor
 
     void UuidManager::FileChanged(AZ::IO::Path file)
     {
-        AZStd::string extension = file.Extension().Native();
-
-        if (extension != AzToolsFramework::MetadataManager::MetadataFileExtension)
-        {
-            return;
-        }
-
-        auto lastDot = extension.find_last_of('.');
-        extension = extension.substr(0, lastDot);
-        file.ReplaceExtension(extension.c_str());
-
-        AZStd::scoped_lock scopeLock(m_uuidMutex);
-
-        auto normalizedPath = GetCanonicalPath(file);
-        auto itr = m_uuids.find(normalizedPath);
-
-        if (itr != m_uuids.end())
-        {
-            m_uuids.erase(itr);
-        }
+        InvalidateCacheEntry(AZStd::move(file));
     }
 
     void UuidManager::FileRemoved(AZ::IO::Path file)
     {
+        InvalidateCacheEntry(AZStd::move(file));
+    }
+
+    void UuidManager::InvalidateCacheEntry(AZ::IO::Path file)
+    {
         AZStd::string extension = file.Extension().Native();
 
+        // Only metadata files are cached, so make sure the file is a metadata file before continuing
         if (extension != AzToolsFramework::MetadataManager::MetadataFileExtension)
         {
             return;
         }
 
+        // Remove the metadata part of the extension since the cache is actually keyed by the source file path
         file.ReplaceExtension("");
 
         AZStd::scoped_lock scopeLock(m_uuidMutex);

@@ -325,7 +325,7 @@ namespace UnitTests
 
     TEST_F(UuidManagerTests, MetadataUpdated_NewUuidAssigned)
     {
-        static constexpr const char* FileA = "c:/somepath/mockfile.txt";
+        static constexpr const char* FileA = "c:/somepath/mockfile.test.txt";
         static constexpr const char* FileB = "c:/somepath/someotherfile.txt";
 
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileA));
