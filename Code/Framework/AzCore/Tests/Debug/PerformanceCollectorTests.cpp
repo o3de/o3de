@@ -97,11 +97,6 @@ namespace UnitTest
             ASSERT_TRUE(argsObj.HasMember(AZ::Debug::PerformanceCollector::STDEV.data()));
             ASSERT_TRUE(argsObj.HasMember(AZ::Debug::PerformanceCollector::SAMPLE_COUNT.data()));
 
-            // Remark, here we call GetDouble() and later cast to unsigned int, because
-            // GetUint() returns weird numbers when reading a floating point value.
-            auto avgAsDouble = argsObj[AZ::Debug::PerformanceCollector::AVG.data()].GetDouble();
-            EXPECT_EQ(jsonDoc[i]["dur"].GetUint(), aznumeric_cast<unsigned int>(avgAsDouble));
-
             auto sampleCount = argsObj[AZ::Debug::PerformanceCollector::SAMPLE_COUNT.data()].GetUint();
             if (paramName == PerfParam1)
             {
