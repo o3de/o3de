@@ -46,7 +46,7 @@ namespace AZ::RPI
         void BuildGlobalAtomicBuffer();
         void InitializeIndices();
         void GetInputInfo();
-        void CalculateBaseSpdImageSize();
+        void CalculateSpdThreadDimensionAndMips();
         void BuildPassAttachment();
 
         void SetConstants();
@@ -61,8 +61,6 @@ namespace AZ::RPI
         // Number of mip levels in the input mip chain texture
         uint32_t m_inputMipLevelCount = 0;
 
-        // Base height and width of SPD, which are of power of 2.
-        AZStd::array<uint32_t, 2> m_baseSpdImageSize = {0, 0};
         // Number of mip levels for SPD computation
         // which can be slightly greater than m_inputMipLevelCount for
         // computation of non power of 2 width.
@@ -73,7 +71,6 @@ namespace AZ::RPI
         uint32_t m_targetThreadCountHeight = 1;
         RHI::ShaderInputConstantIndex m_mipsIndex;
         RHI::ShaderInputConstantIndex m_numWorkGroupsIndex;
-        RHI::ShaderInputConstantIndex m_workGroupOffsetIndex;
         RHI::ShaderInputConstantIndex m_imageSizeIndex;
         RHI::ShaderInputImageIndex m_inputOutputImageIndex;
         RHI::ShaderInputImageIndex m_mip6ImageIndex;

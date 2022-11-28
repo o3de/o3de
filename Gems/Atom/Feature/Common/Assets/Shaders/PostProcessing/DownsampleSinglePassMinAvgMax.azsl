@@ -24,7 +24,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 
     uint m_mips;
     uint m_numWorkGroups;
-    uint2 m_workGroupOffset;
 
     uint2 m_imageSize;
 }
@@ -57,7 +56,16 @@ AF4 SpdLoadSourceImage(AF2 tex, AU1 /* slice */)
 
 AF4 SpdLoad(ASU2 tex, AU1 /* slice */)
 {
-    return PassSrg::m_mip6[tex];
+    const AU1 GloballyCoherentMipIndex = 6;
+    if ((tex.x >> GloballyCoherentMipIndex) < PassSrg::m_imageSize.x &&
+        (tex.y >> GloballyCoherentMipIndex) < PassSrg::m_imageSize.y)
+    {
+        return PassSrg::m_mip6[tex];
+    }
+    else
+    {
+        return AF4(FLOAT_32_MAX, 0., 0., 0.);
+    }
 }
 
 void SpdStore(ASU2 pix, AF4 value, AU1 mip, AU1 /* slice */)
@@ -138,20 +146,11 @@ AF4 SpdReduce4(AF4 v0, AF4 v1, AF4 v2, AF4 v3)
 [numthreads(256, 1, 1)]
 void MainCS(uint3 workGroupId : SV_GroupID, uint localThreadIndex : SV_GroupIndex)
 {
-    if (workGroupId.x * 64 >= PassSrg::m_imageSize.x ||
-        workGroupId.y * 64 >= PassSrg::m_imageSize.y)
-    {
-        if (localThreadIndex == 0)
-        {
-            SpdIncreaseAtomicCounter(0);
-        }    
-        return;
-    } 
     SpdDownsample(
         AU2(workGroupId.xy), 
         AU1(localThreadIndex),  
         AU1(PassSrg::m_mips),
         AU1(PassSrg::m_numWorkGroups),
         AU1(workGroupId.z),
-        AU2(PassSrg::m_workGroupOffset));
+        AU2(0, 0));
 }

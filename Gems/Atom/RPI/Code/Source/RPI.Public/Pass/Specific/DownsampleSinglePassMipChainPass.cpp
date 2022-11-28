@@ -27,7 +27,7 @@ namespace AZ::RPI
     void DownsampleSinglePassMipChainPass::BuildInternal()
     {
         GetInputInfo();
-        CalculateBaseSpdImageSize();
+        CalculateSpdThreadDimensionAndMips();
         BuildPassAttachment();
         ComputePass::BuildInternal();
     }
@@ -37,7 +37,6 @@ namespace AZ::RPI
         m_indicesAreInitialized = false;
         m_mipsIndex.Reset();
         m_numWorkGroupsIndex.Reset();
-        m_workGroupOffsetIndex.Reset();
         m_imageSizeIndex.Reset();
         m_inputOutputImageIndex.Reset();
         m_mip6ImageIndex.Reset();
@@ -130,7 +129,6 @@ namespace AZ::RPI
 
         m_mipsIndex = srg.FindShaderInputConstantIndex(Name("m_mips"));
         m_numWorkGroupsIndex = srg.FindShaderInputConstantIndex(Name("m_numWorkGroups"));
-        m_workGroupOffsetIndex = srg.FindShaderInputConstantIndex(Name("m_workGroupOffset"));
         m_imageSizeIndex = srg.FindShaderInputConstantIndex(Name("m_imageSize"));
         m_inputOutputImageIndex = srg.FindShaderInputImageIndex(Name("m_imageDestination"));
         m_mip6ImageIndex = srg.FindShaderInputImageIndex(Mip6Name);
@@ -156,29 +154,20 @@ namespace AZ::RPI
         }
     }
 
-    void DownsampleSinglePassMipChainPass::CalculateBaseSpdImageSize()
+    void DownsampleSinglePassMipChainPass::CalculateSpdThreadDimensionAndMips()
     {
-        const auto adjust = [&] (uint32_t value, uint32_t& outValue) -> uint32_t
-        {
-            auto logValue = static_cast<uint32_t>(floorf(log2f(value * 1.f)));
-            if (static_cast<uint32_t>(1 << logValue) == value)
-            {
-                outValue = value;
-            }
-            else
-            {
-                logValue += 1;
-                outValue = static_cast<uint32_t>(1 << logValue);
-            }
-            return logValue;
+        // Each SPD thread group computes for sub-region of size 64x64 in mip level 0 slice
+        // where 64 == (1 << GloballyCoherentMipIndex).
+        static const uint32_t groupImageWidth = 1 << GloballyCoherentMipIndex;
+        m_targetThreadCountWidth = (m_inputImageSize[0] + groupImageWidth - 1) / groupImageWidth;
+        m_targetThreadCountHeight = (m_inputImageSize[1] + groupImageWidth - 1) / groupImageWidth;
 
-        };
-        const uint32_t logValue0 = adjust(m_inputImageSize[0], m_baseSpdImageSize[0]);
-        const uint32_t logValue1 = adjust(m_inputImageSize[1], m_baseSpdImageSize[1]);
-        m_baseMipLevelCount = GetMax(logValue0, logValue1);
-        
-        m_targetThreadCountWidth = GetMax<uint32_t>(1, m_baseSpdImageSize[0] >> GloballyCoherentMipIndex);
-        m_targetThreadCountHeight = GetMax<uint32_t>(1, m_baseSpdImageSize[1] >> GloballyCoherentMipIndex);
+        const uint32_t maxDimension = GetMax(m_inputImageSize[0], m_inputImageSize[1]);
+        m_baseMipLevelCount = static_cast<uint32_t>(floorf(log2f(maxDimension * 1.f)));
+        if (static_cast<uint32_t>(1 << m_baseMipLevelCount) != maxDimension)
+        {
+            ++m_baseMipLevelCount;
+        }
     }
 
     void DownsampleSinglePassMipChainPass::BuildPassAttachment()
@@ -206,17 +195,11 @@ namespace AZ::RPI
             m_mip6PassAttachment->m_descriptor = m_mip6ImageDescriptor;
             m_ownedAttachments.push_back(m_mip6PassAttachment);
 
-            RHI::AttachmentLoadStoreAction action;
-            // Components: (min, average, max, weight)
-            action.m_clearValue = RHI::ClearValue::CreateVector4Float(FLT_MAX, 0.f, 0.f, 0.f);
-            action.m_loadAction = RHI::AttachmentLoadAction::Clear;
-
             PassAttachmentBinding binding;
             binding.m_name = m_mip6PassAttachment->m_name;
             binding.m_slotType = PassSlotType::InputOutput;
             binding.m_shaderInputName = Mip6Name;
             binding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
-            binding.m_unifiedScopeDesc.m_loadStoreAction = action;
             binding.SetAttachment(m_mip6PassAttachment);
             AddAttachmentBinding(binding);
         }
@@ -263,14 +246,12 @@ namespace AZ::RPI
         // For the setting up of the parameter for SPD shader, refer to:
         // https://github.com/GPUOpen-Effects/FidelityFX-SPD/blob/c52944f547884774a1b33066f740e6bf89f927f5/ffx-spd/ffx_spd.h#L327
 
-        const AZStd::array<uint32_t, 2> workGroupOffsetArray = {0, 0};
         bool succeeded = true;
         ShaderResourceGroup& srg = *m_shaderResourceGroup;
         succeeded &= srg.SetConstant(
             m_numWorkGroupsIndex,
             m_targetThreadCountWidth * m_targetThreadCountHeight);
         succeeded &= srg.SetConstant(m_mipsIndex, m_baseMipLevelCount);
-        succeeded &= srg.SetConstantArray(m_workGroupOffsetIndex, workGroupOffsetArray);
         succeeded &= srg.SetConstantArray(m_imageSizeIndex, m_inputImageSize);
         AZ_Assert(succeeded, "DownsampleSinglePassMipChainPass failed to set constants.");
     }
