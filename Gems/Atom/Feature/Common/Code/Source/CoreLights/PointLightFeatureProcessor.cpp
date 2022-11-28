@@ -320,6 +320,11 @@ namespace AZ
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowBias, bias);
         }
 
+        void PointLightFeatureProcessor::SetUseCachedShadows(LightHandle handle, bool useCachedShadows)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetUseCachedShadows, useCachedShadows);
+        }
+
         void PointLightFeatureProcessor::SetAffectsGI(LightHandle handle, bool affectsGI)
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PointLightFeatureProcessor::SetAffectsGI().");
