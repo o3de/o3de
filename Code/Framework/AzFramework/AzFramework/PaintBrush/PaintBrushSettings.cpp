@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/PaintBrush/PaintBrushSettings.h>
@@ -33,6 +34,23 @@ namespace AzFramework
 
             // The EditContext for this class is reflected in AzToolsFramework::GlobalPaintBrushSettings instead of here.
             // This is because the Color field uses a Color Picker widget for editing, which isn't defined in AzFramework.
+
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<PaintBrushSettings>()
+                ->Constructor()
+                ->Attribute(AZ::Script::Attributes::Category, "PaintBrush")
+                ->Property("size", BehaviorValueProperty(&PaintBrushSettings::m_size))
+                ->Property("color", BehaviorValueProperty(&PaintBrushSettings::m_brushColor))
+                ->Property("hardnessPercent", BehaviorValueProperty(&PaintBrushSettings::m_hardnessPercent))
+                ->Property("flowPercent", BehaviorValueProperty(&PaintBrushSettings::m_flowPercent))
+                ->Property("distancePercent", BehaviorValueProperty(&PaintBrushSettings::m_distancePercent))
+                ->Property("blendMode", BehaviorValueProperty(&PaintBrushSettings::m_blendMode))
+                ->Property("smoothMode", BehaviorValueProperty(&PaintBrushSettings::m_smoothMode))
+                ->Property("smoothingRadius", BehaviorValueProperty(&PaintBrushSettings::m_smoothingRadius))
+                ;
         }
     }
 
