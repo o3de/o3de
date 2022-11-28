@@ -43,18 +43,38 @@ namespace EMStudio
 
         QMenu* nodeGroupMenu = new QMenu(tr("Assign To Node Group"), menu);
 
+        // We keep track of how many groups are valid for the level currently being shown on the animation graph.
+        // If there is none, we won't show the "assign" action on the context menu.
+        int validGroupCount = 0;
+
+        auto* activeGraph = GetActiveGraph();
+        auto currentLevelParentIndex = activeGraph->GetAnimGraphModel().GetFocus();
+        auto currentLevelParentId = currentLevelParentIndex.isValid()
+            ? currentLevelParentIndex.data(AnimGraphModel::ROLE_ID).value<EMotionFX::AnimGraphNodeId>()
+            : EMotionFX::AnimGraphNodeId{};
+
         for (size_t i = 0; i < numNodeGroups; ++i)
         {
             EMotionFX::AnimGraphNodeGroup* nodeGroup = animGraph->GetNodeGroup(i);
+            auto nodeGroupParentId = nodeGroup->GetParentNodeId();
 
-            AZ::Color nodeGroupColor;
-            nodeGroupColor.FromU32(nodeGroup->GetColor());
-            QAction* nodeGroupAction = nodeGroupMenu->addAction(QIcon(new SolidColorIconEngine(nodeGroupColor)), nodeGroup->GetName());
-            nodeGroupAction->setData(qulonglong(i + 1)); // index of the menu added, not used
-            connect(nodeGroupAction, &QAction::triggered, this, &BlendGraphWidget::AssignSelectedNodesToGroup);
+            // Check if the node group being iterated belongs to the same level currently being shown on the animation graph.
+            // We only want to add it to the assignable node groups list if the levels match.
+            if (nodeGroupParentId == currentLevelParentId)
+            {
+                AZ::Color nodeGroupColor;
+                nodeGroupColor.FromU32(nodeGroup->GetColor());
+                QAction* nodeGroupAction = nodeGroupMenu->addAction(QIcon(new SolidColorIconEngine(nodeGroupColor)), nodeGroup->GetName());
+                nodeGroupAction->setData(qulonglong(i + 1)); // index of the menu added, not used
+                connect(nodeGroupAction, &QAction::triggered, this, &BlendGraphWidget::AssignSelectedNodesToGroup);
+                validGroupCount++;
+            }
         }
 
-        menu->addMenu(nodeGroupMenu);
+        if (validGroupCount > 0)
+        {
+            menu->addMenu(nodeGroupMenu);
+        }
     }
 
     void BlendGraphWidget::AddPreviewMotionSubmenu(QMenu* menu, AnimGraphActionManager* actionManager, const EMotionFX::AnimGraphNode* selectedNode)
