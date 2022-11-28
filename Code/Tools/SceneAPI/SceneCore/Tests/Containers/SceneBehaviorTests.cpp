@@ -30,6 +30,8 @@ extern "C" AZ_DLL_EXPORT void ReflectBehavior(AZ::BehaviorContext* context);
 // the DLL entry point for SceneCore to reflect its serialize context
 extern "C" AZ_DLL_EXPORT void ReflectTypes(AZ::SerializeContext* context);
 
+extern "C" AZ_DLL_EXPORT void CleanUpSceneCoreGenericClassInfo();
+
 namespace AZ::SceneAPI::Containers
 {
     class MockManifestRule : public DataTypes::IManifestObject
@@ -836,6 +838,9 @@ namespace AZ::SceneAPI::Containers
             m_scriptContext.reset();
             m_behaviorContext.reset();
             m_componentApplication.reset();
+
+            CleanUpSceneCoreGenericClassInfo();
+
             UnitTest::AllocatorsFixture::TearDown();
         }
 

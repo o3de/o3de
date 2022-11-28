@@ -27,15 +27,17 @@ namespace UnitTest
     void PrefabOverrideTestFixture::CreateEntityInNestedPrefab(
         AZ::EntityId& newEntityId, AZ::EntityId& parentContainerId, AZ::EntityId& grandparentContainerId)
     {
-        AZ::EntityId entityToBePutUnderPrefabId = CreateEntityUnderRootPrefab("EntityUnderPrefab");
+        AZ::EntityId entityUnderRootId = CreateEditorEntityUnderRoot("EntityUnderPrefab");
 
         AZ::IO::Path path;
         m_settingsRegistryInterface->Get(path.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
 
-        AZ::EntityId nestedPrefabContainerId = CreatePrefab(AzToolsFramework::EntityIdList{ entityToBePutUnderPrefabId }, path);
+        AZ::EntityId nestedPrefabContainerId = CreateEditorPrefab(path, AzToolsFramework::EntityIdList{ entityUnderRootId });
 
         // Append '1' to the path so that there is no path collision when creating another prefab.
-        grandparentContainerId = CreatePrefab(AzToolsFramework::EntityIdList{ nestedPrefabContainerId }, path.Append("1"));
+        grandparentContainerId = CreateEditorPrefab(path.Append("1"), AzToolsFramework::EntityIdList{ nestedPrefabContainerId });
+
+        PropagateAllTemplateChanges();
 
         InstanceOptionalReference prefabInstance = m_instanceEntityMapperInterface->FindOwningInstance(grandparentContainerId);
         EXPECT_TRUE(prefabInstance.has_value());

@@ -58,7 +58,7 @@ namespace UnitTest
         WhiteBox::Api::WhiteBoxMeshPtr m_whiteBox;
     };
 
-    class EditorWhiteBoxComponentTestFixture : public ToolsApplicationFixture
+    class EditorWhiteBoxComponentTestFixture : public ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override;

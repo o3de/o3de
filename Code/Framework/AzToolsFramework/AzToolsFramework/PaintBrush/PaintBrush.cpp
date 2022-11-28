@@ -131,12 +131,16 @@ namespace AzToolsFramework
         case PaintBrushBlendMode::Add:
             return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
             {
+                // Note that this does NOT clamp the addition before applying opacity.
+                // This matches Photoshop's behavior, but other paint programs make different choices here.
                 return clampAndLerpFn(baseValue, baseValue + intensity, opacity);
             };
             break;
         case PaintBrushBlendMode::Subtract:
             return [&clampAndLerpFn](float baseValue, float intensity, float opacity)
             {
+                // Note that this does NOT clamp the subtraction before applying opacity.
+                // This matches Photoshop's behavior, but other paint programs make different choices here.
                 return clampAndLerpFn(baseValue, baseValue - intensity, opacity);
             };
             break;
@@ -274,7 +278,7 @@ namespace AzToolsFramework
         // as the starting point.
         if (m_isFirstPointInBrushStrokeMovement)
         {
-            brushStampCenters.emplace_back(currentAdjustedCenter);
+            brushStampCenters.push_back(currentAdjustedCenter);
             m_lastBrushCenter = currentAdjustedCenter;
             m_distanceSinceLastDraw = 0.0f;
             m_isFirstPointInBrushStrokeMovement = false;
@@ -352,7 +356,7 @@ namespace AzToolsFramework
         for (size_t index = 0; index < points.size(); index++)
         {
             float opacity = 0.0f;
-            AZ::Vector3 adjustedPoint = OptionallyAdjustTo2D(points[index]);
+            const AZ::Vector3 adjustedPoint = OptionallyAdjustTo2D(points[index]);
 
             // Loop through each stamp that we're drawing and accumulate the results for this point.
             for (auto& brushCenter : brushStampCenters)
@@ -528,7 +532,6 @@ namespace AzToolsFramework
             };
             break;
         case AzToolsFramework::PaintBrushSmoothMode::Mean:
-            // We'll use a 3x3 kernel, but any kernel size here would work.
             smoothFn = [&blendFn](float baseValue, AZStd::span<float> kernelValues, float opacity) -> float
             {
                 // Calculate the average value from the neighborhood of values surrounding (and including) the baseValue.

@@ -1,0 +1,122 @@
+{
+    "values": [
+        {
+            "$type": "{5B03C8E6-8CEE-4DA0-A7FA-CD88689DD45B} MeshGroup",
+            "id": "{A2C9B60B-5532-5D8B-8822-0E6CF19B4FBC}",
+            "name": "ShaderBall_simple",
+            "NodeSelectionList": {
+                "unselectedNodes": [
+                    "RootNode",
+                    "RootNode.ShaderBall",
+                    "RootNode.ShaderBall.custom_properties",
+                    "RootNode.ShaderBall.Material_Prev",
+                    "RootNode.ShaderBall.inner_shaderball",
+                    "RootNode.ShaderBall.Material_Prev.custom_properties",
+                    "RootNode.ShaderBall.Material_Prev.Cushion",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBaseInside",
+                    "RootNode.ShaderBall.Material_Prev.GrayInlay",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBase",
+                    "RootNode.ShaderBall.Material_Prev.MaterialSphere",
+                    "RootNode.ShaderBall.inner_shaderball.custom_properties",
+                    "RootNode.ShaderBall.inner_shaderball.sphere",
+                    "RootNode.ShaderBall.inner_shaderball.subsphere",
+                    "RootNode.ShaderBall.Material_Prev.Cushion.transform",
+                    "RootNode.ShaderBall.Material_Prev.Cushion.custom_properties",
+                    "RootNode.ShaderBall.Material_Prev.Cushion.UVW",
+                    "RootNode.ShaderBall.Material_Prev.Cushion.phong_0",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBaseInside.transform",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBaseInside.custom_properties",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBaseInside.UVW",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBaseInside.phong_0",
+                    "RootNode.ShaderBall.Material_Prev.GrayInlay.transform",
+                    "RootNode.ShaderBall.Material_Prev.GrayInlay.custom_properties",
+                    "RootNode.ShaderBall.Material_Prev.GrayInlay.UVW",
+                    "RootNode.ShaderBall.Material_Prev.GrayInlay.phong_0",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBase.transform",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBase.custom_properties",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBase.UVW",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBase.phong_0",
+                    "RootNode.ShaderBall.Material_Prev.MaterialSphere.transform",
+                    "RootNode.ShaderBall.Material_Prev.MaterialSphere.custom_properties",
+                    "RootNode.ShaderBall.Material_Prev.MaterialSphere.UVW",
+                    "RootNode.ShaderBall.Material_Prev.MaterialSphere.phong_0",
+                    "RootNode.ShaderBall.inner_shaderball.sphere.transform",
+                    "RootNode.ShaderBall.inner_shaderball.sphere.custom_properties",
+                    "RootNode.ShaderBall.inner_shaderball.sphere.UVW",
+                    "RootNode.ShaderBall.inner_shaderball.sphere.phong_0",
+                    "RootNode.ShaderBall.inner_shaderball.subsphere.transform",
+                    "RootNode.ShaderBall.inner_shaderball.subsphere.custom_properties",
+                    "RootNode.ShaderBall.inner_shaderball.subsphere.UVW",
+                    "RootNode.ShaderBall.inner_shaderball.subsphere.phong_0"
+                ]
+            },
+            "PhysicsMaterialSlots": {
+                "Slots": [
+                    {
+                        "Name": "Entire object"
+                    }
+                ]
+            }
+        },
+        {
+            "$type": "{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup",
+            "name": "ShaderBall_simple",
+            "nodeSelectionList": {
+                "selectedNodes": [
+                    "RootNode",
+                    "RootNode.ShaderBall",
+                    "RootNode.ShaderBall.custom_properties",
+                    "RootNode.ShaderBall.inner_shaderball",
+                    "RootNode.ShaderBall.inner_shaderball.custom_properties",
+                    "RootNode.ShaderBall.inner_shaderball.sphere",
+                    "RootNode.ShaderBall.inner_shaderball.subsphere",
+                    "RootNode.ShaderBall.inner_shaderball.sphere.transform",
+                    "RootNode.ShaderBall.inner_shaderball.sphere.custom_properties",
+                    "RootNode.ShaderBall.inner_shaderball.sphere.UVW",
+                    "RootNode.ShaderBall.inner_shaderball.sphere.phong_0",
+                    "RootNode.ShaderBall.inner_shaderball.subsphere.transform",
+                    "RootNode.ShaderBall.inner_shaderball.subsphere.custom_properties",
+                    "RootNode.ShaderBall.inner_shaderball.subsphere.UVW",
+                    "RootNode.ShaderBall.inner_shaderball.subsphere.phong_0"
+                ],
+                "unselectedNodes": [
+                    "RootNode.ShaderBall.Material_Prev",
+                    "RootNode.ShaderBall.Material_Prev.custom_properties",
+                    "RootNode.ShaderBall.Material_Prev.Cushion",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBaseInside",
+                    "RootNode.ShaderBall.Material_Prev.GrayInlay",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBase",
+                    "RootNode.ShaderBall.Material_Prev.MaterialSphere",
+                    "RootNode.ShaderBall.Material_Prev.Cushion.transform",
+                    "RootNode.ShaderBall.Material_Prev.Cushion.custom_properties",
+                    "RootNode.ShaderBall.Material_Prev.Cushion.UVW",
+                    "RootNode.ShaderBall.Material_Prev.Cushion.phong_0",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBaseInside.transform",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBaseInside.custom_properties",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBaseInside.UVW",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBaseInside.phong_0",
+                    "RootNode.ShaderBall.Material_Prev.GrayInlay.transform",
+                    "RootNode.ShaderBall.Material_Prev.GrayInlay.custom_properties",
+                    "RootNode.ShaderBall.Material_Prev.GrayInlay.UVW",
+                    "RootNode.ShaderBall.Material_Prev.GrayInlay.phong_0",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBase.transform",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBase.custom_properties",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBase.UVW",
+                    "RootNode.ShaderBall.Material_Prev.MaterialBase.phong_0",
+                    "RootNode.ShaderBall.Material_Prev.MaterialSphere.transform",
+                    "RootNode.ShaderBall.Material_Prev.MaterialSphere.custom_properties",
+                    "RootNode.ShaderBall.Material_Prev.MaterialSphere.UVW",
+                    "RootNode.ShaderBall.Material_Prev.MaterialSphere.phong_0"
+                ]
+            },
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "MaterialRule"
+                    }
+                ]
+            },
+            "id": "{861A8967-CEFA-5EC6-A257-C6EBB3CB6564}"
+        }
+    ]
+}

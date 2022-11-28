@@ -97,6 +97,8 @@ namespace AZ
             void UpdateObjectSrg();
             bool MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const;
             void SetVisible(bool isVisible);
+            void UpdateMaterialChangeIds();
+            bool CheckForMaterialChanges() const;
 
             // MaterialAssignmentNotificationBus overrides
             void OnRebuildMaterialInstance() override;
@@ -105,6 +107,9 @@ namespace AZ
 
             RPI::Cullable m_cullable;
             MaterialAssignmentMap m_materialAssignments;
+
+            typedef AZStd::unordered_map<Data::Instance<RPI::Material>, RPI::Material::ChangeId> MaterialChangeIdMap;
+            MaterialChangeIdMap m_materialChangeIds;
 
             MeshHandleDescriptor m_descriptor;
             Data::Instance<RPI::Model> m_model;

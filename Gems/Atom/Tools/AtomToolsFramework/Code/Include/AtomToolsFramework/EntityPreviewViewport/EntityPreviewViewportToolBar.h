@@ -33,10 +33,12 @@ namespace AtomToolsFramework
         void OnViewportSettingsChanged() override;
         void OnModelPresetAdded(const AZStd::string& path) override;
         void OnLightingPresetAdded(const AZStd::string& path) override;
+        void OnRenderPipelineAdded(const AZStd::string& path) override;
 
         const AZ::Crc32 m_toolId = {};
         AssetSelectionComboBox* m_lightingPresetComboBox = {};
         AssetSelectionComboBox* m_modelPresetComboBox = {};
+        AssetSelectionComboBox* m_renderPipelineComboBox = {};
         QAction* m_toggleGrid = {};
         QAction* m_toggleShadowCatcher = {};
         QAction* m_toggleAlternateSkybox = {};

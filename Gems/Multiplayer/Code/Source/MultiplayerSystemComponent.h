@@ -91,7 +91,8 @@ namespace Multiplayer
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::EntityRpcs& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::RequestReplicatorReset& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::ClientMigration& packet);
-    
+        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::VersionMismatch& packet);
+
         //! IConnectionListener interface
         //! @{
         AzNetworking::ConnectResult ValidateConnect(const AzNetworking::IpAddress& remoteAddress, const AzNetworking::IPacketHeader& packetHeader, AzNetworking::ISerializer& serializer) override;
@@ -124,6 +125,7 @@ namespace Multiplayer
         void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) override;
         void AddLevelLoadBlockedHandler(LevelLoadBlockedEvent::Handler& handler) override;
         void AddNoServerLevelLoadedHandler(NoServerLevelLoadedEvent::Handler& handler) override;
+        void AddVersionMismatchHandler(VersionMismatchEvent::Handler& handler) override;
         void AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler) override;
         void SendNotifyClientMigrationEvent(AzNetworking::ConnectionId connectionId, const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId, NetEntityId controlledEntityId) override;
         void SendNotifyEntityMigrationEvent(const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId) override;
@@ -155,6 +157,7 @@ namespace Multiplayer
 
     private:
 
+        bool AttemptPlayerConnect(AzNetworking::IConnection* connection, MultiplayerPackets::Connect& packet);
         void TickVisibleNetworkEntities(float deltaTime, float serverRateSeconds);
         void OnConsoleCommandInvoked(AZStd::string_view command, const AZ::ConsoleCommandContainer& args, AZ::ConsoleFunctorFlags flags, AZ::ConsoleInvokedFrom invokedFrom);
         void OnAutonomousEntityReplicatorCreated();
@@ -185,6 +188,7 @@ namespace Multiplayer
         NotifyEntityMigrationEvent m_notifyEntityMigrationEvent;
         LevelLoadBlockedEvent m_levelLoadBlockedEvent;
         NoServerLevelLoadedEvent m_noServerLevelLoadedEvent;
+        VersionMismatchEvent m_versionMismatchEvent;
 
         AZ::Event<NetEntityId>::Handler m_autonomousEntityReplicatorCreatedHandler;
 
@@ -216,6 +220,8 @@ namespace Multiplayer
 
         AZStd::vector<PlayerWaitingToBeSpawned> m_playersWaitingToBeSpawned;
         bool m_blockClientLoadLevel = true;
+
+        AZStd::unordered_map<AzNetworking::ConnectionId, MultiplayerPackets::Connect> m_originalConnectPackets;
 
 #if !defined(AZ_RELEASE_BUILD)
         MultiplayerEditorConnection m_editorConnectionListener;

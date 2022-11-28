@@ -1292,6 +1292,13 @@ namespace EMStudio
             }
 
             EMotionFX::AnimGraphNodeGroup* newGroup = animGraph->GetNodeGroup(animGraph->GetNumNodeGroups() - 1);
+            // A new group has just been created. We're making sure that it gets bound to the level that is currently being
+            // shown on the animation graph, so it can be properly filtered later on.
+            auto currentLevelParentIndex = GetActiveGraph()->GetAnimGraphModel().GetFocus();
+            auto currentLevelParentId = currentLevelParentIndex.isValid()
+                ? currentLevelParentIndex.data(AnimGraphModel::ROLE_ID).value<EMotionFX::AnimGraphNodeId>()
+                : EMotionFX::AnimGraphNodeId{};
+            newGroup->SetParentNodeId(currentLevelParentId);
             AZ_Assert(animGraph->GetNumNodeGroups() > 0, "Creating AnimGraphNodeGroup failed");
 
             AssignNodesToGroup(animGraph, nodes, newGroup);

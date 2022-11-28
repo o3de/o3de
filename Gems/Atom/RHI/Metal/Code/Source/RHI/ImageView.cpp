@@ -46,7 +46,7 @@ namespace AZ
                        
             //Since we divide the array length of a cubemap by NumCubeMapSlices when creating the base texture
             //we have to do reverse of that here
-            uint32_t textureLength = mtlTexture.arrayLength;
+            uint32_t textureLength = static_cast<uint32_t>(mtlTexture.arrayLength);
             if(imgDesc.m_isCubemap)
             {
                 textureLength = textureLength * RHI::ImageDescriptor::NumCubeMapSlices;

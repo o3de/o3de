@@ -13,7 +13,6 @@ from ly_test_tools.o3de.atom_tools_test import AtomToolsBatchedTest, AtomToolsTe
 logger = logging.getLogger(__name__)
 
 
-@pytest.mark.skip(reason="GHI #12152 - Non-zero exit code on test success.")
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_atom_tools'])
 class TestMaterialCanvas(AtomToolsTestSuite):
