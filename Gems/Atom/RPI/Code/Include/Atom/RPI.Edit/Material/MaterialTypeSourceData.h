@@ -63,15 +63,17 @@ namespace AZ
                 AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::PropertyConnection, "{C2F37C26-D7EF-4142-A650-EF50BB18610F}");
 
                 PropertyConnection() = default;
-                PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view fieldName, int32_t shaderIndex = -1);
+                PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view name, int32_t shaderIndex = -1);
 
                 MaterialPropertyOutputType m_type = MaterialPropertyOutputType::Invalid;
 
-                //! The name of a specific shader setting. This will either be a ShaderResourceGroup input or a ShaderOption, depending on m_type
-                AZStd::string m_fieldName;
+                //! The name of a specific shader setting. This will either be a ShaderResourceGroup input, a ShaderOption, or a shader tag, depending on m_type.
+                AZStd::string m_name;
 
+                // TODO: We might want to deprecate this field, I don't think anyone actually uses it.
                 //! For m_type==ShaderOption, this is either the index of a specific shader in m_shaderCollection, or -1 which means every shader in m_shaderCollection.
                 //! For m_type==ShaderInput, this field is not used.
+                //! For m_type==ShaderEnabled, this field is not used.
                 int32_t m_shaderIndex = -1; 
             };
 

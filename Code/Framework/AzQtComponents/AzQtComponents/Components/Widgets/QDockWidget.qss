@@ -29,3 +29,8 @@
     border: none;
     background-color: transparent;
 }
+
+QAbstractScrollArea
+{
+    margin: 0;
+}
