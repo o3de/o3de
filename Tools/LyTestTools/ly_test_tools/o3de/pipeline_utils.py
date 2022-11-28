@@ -352,7 +352,7 @@ def get_relative_file_paths(start_dir: str, ignore_list: Optional[List[str]] = N
                 all_files.append(os.path.relpath(full_path, start_dir))
     return all_files
 
-def get_differences_between_lists(first: List[str], second: List[str]) -> bool:
+def get_differences_between_lists(first: List[str], second: List[str]) -> (List[str], List[str]):
     """
         Returns two lists that contain unique entries in lists, missing from the other list.
     """
