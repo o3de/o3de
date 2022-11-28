@@ -15,6 +15,7 @@
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
@@ -96,7 +97,16 @@ namespace AzToolsFramework
                 actionProperties,
                 []
                 {
-                    EditorVertexSelectionRequestBus::Broadcast(&EditorVertexSelectionRequests::DuplicateSelectedVertices);
+                    auto componentModeCollectionInterface = AZ::Interface<ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorVertexSelectionRequestBus::Event(
+                                entityComponentIdPair, &EditorVertexSelectionRequests::DuplicateSelectedVertices);
+                        }
+                    );
                 }
             );
 
@@ -117,7 +127,16 @@ namespace AzToolsFramework
                 actionProperties,
                 []
                 {
-                    EditorVertexSelectionRequestBus::Broadcast(&EditorVertexSelectionRequests::DeleteSelectedVertices);
+                    auto componentModeCollectionInterface = AZ::Interface<ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorVertexSelectionRequestBus::Event(
+                                entityComponentIdPair, &EditorVertexSelectionRequests::DeleteSelectedVertices);
+                        }
+                    );
                 }
             );
 
@@ -138,7 +157,16 @@ namespace AzToolsFramework
                 actionProperties,
                 []
                 {
-                    EditorVertexSelectionRequestBus::Broadcast(&EditorVertexSelectionRequests::ClearVertexSelection);
+                    auto componentModeCollectionInterface = AZ::Interface<ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorVertexSelectionRequestBus::Event(
+                                entityComponentIdPair, &EditorVertexSelectionRequests::ClearVertexSelection);
+                        }
+                    );
                 }
             );
 
