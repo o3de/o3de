@@ -702,7 +702,11 @@ namespace AzToolsFramework
                 toPath.ReplaceFilename(newVal.toStdString().c_str());
                 toPath.ReplaceExtension(extension);
             }
-
+            // if the source path is the same as the destintion path then we don't need to go any further
+            if (fromPath == toPath)
+            {
+                return;
+            }
             using namespace AzFramework::AssetSystem;
             AssetChangeReportRequest moveRequest(
                 AZ::OSString(fromPath.c_str()), AZ::OSString(toPath.c_str()), AssetChangeReportRequest::ChangeType::Move);
