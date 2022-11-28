@@ -21,24 +21,15 @@ namespace EMotionFX
     class Node;
     class HitDetectionJointWidget;
 
-    class HitDetectionJointInspectorPlugin
-        : public EMStudio::DockWidgetPlugin
+    class HitDetectionOutlinerNotificationHandler
+        : public QObject
         , private EMotionFX::SkeletonOutlinerNotificationBus::Handler
     {
         Q_OBJECT //AUTOMOC
 
     public:
-        HitDetectionJointInspectorPlugin();
-        ~HitDetectionJointInspectorPlugin();
-
-        // EMStudioPlugin overrides
-        const char* GetName() const override                { return "Hit Detection"; }
-        uint32 GetClassID() const override                  { return 0x00047155; }
-        bool GetIsClosable() const override                 { return true;  }
-        bool GetIsFloatable() const override                { return true;  }
-        bool GetIsVertical() const override                 { return false; }
-        bool Init() override;
-        EMStudioPlugin* Clone() const override              { return new HitDetectionJointInspectorPlugin(); }
+        HitDetectionOutlinerNotificationHandler(HitDetectionJointWidget* jointWidget);
+        ~HitDetectionOutlinerNotificationHandler();
 
         // SkeletonOutlinerNotificationBus overrides
         void OnContextMenu(QMenu* menu, const QModelIndexList& selectedRowIndices) override;

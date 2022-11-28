@@ -9,27 +9,26 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/Character.h>
+#include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/Node.h>
-#include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
-#include <Editor/SkeletonModel.h>
-#include <Editor/Plugins/HitDetection/HitDetectionJointInspectorPlugin.h>
-#include <Editor/Plugins/HitDetection/HitDetectionJointWidget.h>
+#include <Editor/Plugins/ColliderWidgets/HitDetectionJointWidget.h>
+#include <Editor/Plugins/ColliderWidgets/HitDetectionOutlinerNotificationHandler.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
+#include <Editor/SkeletonModel.h>
 #include <QLabel>
 #include <QMessageBox>
 #include <QVBoxLayout>
-
 
 namespace EMotionFX
 {
     HitDetectionJointWidget::HitDetectionJointWidget(QWidget* parent)
         : SkeletonModelJointWidget(parent)
-        , m_addColliderButton(nullptr)
-        , m_collidersWidget(nullptr)
+        , m_handler(this)
     {
+        setObjectName("EMotionFX.HitDetectionJointWidget");
     }
 
     QWidget* HitDetectionJointWidget::CreateContentWidget(QWidget* parent)
@@ -39,11 +38,6 @@ namespace EMotionFX
         layout->setMargin(0);
         layout->setSpacing(ColliderContainerWidget::s_layoutSpacing);
         result->setLayout(layout);
-
-        // Add collider button
-        m_addColliderButton = new AddColliderButton("Add hit detection collider", result, PhysicsSetup::ColliderConfigType::HitDetection);
-        connect(m_addColliderButton, &AddColliderButton::AddCollider, this, &HitDetectionJointWidget::OnAddCollider);
-        layout->addWidget(m_addColliderButton);
 
         // Colliders
         m_collidersWidget = new ColliderContainerWidget(QIcon(SkeletonModel::s_hitDetectionColliderIconPath), result);
@@ -55,16 +49,9 @@ namespace EMotionFX
         return result;
     }
 
-    QWidget* HitDetectionJointWidget::CreateNoSelectionWidget(QWidget* parent)
-    {
-        QLabel* noSelectionLabel = new QLabel("Select a joint from the Skeleton Outliner", parent);
-        noSelectionLabel->setWordWrap(true);
-
-        return noSelectionLabel;
-    }
-
     void HitDetectionJointWidget::InternalReinit()
     {
+        m_widgetCount = 0;
         if (GetSelectedModelIndices().size() == 1)
         {
             Physics::CharacterColliderNodeConfiguration* hitDetectionNodeConfig = GetNodeConfig();
@@ -74,8 +61,14 @@ namespace EMotionFX
                 AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
                 AZ_Error("EMotionFX", serializeContext, "Can't get serialize context from component application.");
 
-                m_collidersWidget->Update(GetActor(), GetNode(), PhysicsSetup::ColliderConfigType::HitDetection, hitDetectionNodeConfig->m_shapes, serializeContext);
+                m_collidersWidget->Update(
+                    GetActor(),
+                    GetNode(),
+                    PhysicsSetup::ColliderConfigType::HitDetection,
+                    hitDetectionNodeConfig->m_shapes,
+                    serializeContext);
                 m_collidersWidget->show();
+                m_widgetCount = hitDetectionNodeConfig->m_shapes.size();
             }
             else
             {
@@ -86,6 +79,12 @@ namespace EMotionFX
         {
             m_collidersWidget->Reset();
         }
+        emit WidgetCountChanged();
+    }
+
+    int HitDetectionJointWidget::WidgetCount() const
+    {
+        return m_widgetCount;
     }
 
     void HitDetectionJointWidget::OnAddCollider(const AZ::TypeId& colliderType)
@@ -108,7 +107,7 @@ namespace EMotionFX
         CommandColliderHelpers::RemoveCollider(GetActor()->GetID(), GetNode()->GetNameString(), PhysicsSetup::HitDetection, colliderIndex);
     }
 
-    Physics::CharacterColliderNodeConfiguration* HitDetectionJointWidget::GetNodeConfig()
+    Physics::CharacterColliderNodeConfiguration* HitDetectionJointWidget::GetNodeConfig() const
     {
         AZ_Assert(GetSelectedModelIndices().size() == 1, "Get Node config function only return the config when it is single seleted");
         Actor* actor = GetActor();

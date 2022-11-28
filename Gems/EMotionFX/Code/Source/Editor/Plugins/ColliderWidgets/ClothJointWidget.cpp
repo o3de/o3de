@@ -15,22 +15,21 @@
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
 #include <Editor/SkeletonModel.h>
-#include <Editor/Plugins/Cloth/ClothJointInspectorPlugin.h>
-#include <Editor/Plugins/Cloth/ClothJointWidget.h>
+#include <Editor/Plugins/ColliderWidgets/ClothOutlinerNotificationHandler.h>
+#include <Editor/Plugins/ColliderWidgets/ClothJointWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
 #include <QLabel>
 #include <QMessageBox>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 
-
 namespace EMotionFX
 {
     ClothJointWidget::ClothJointWidget(QWidget* parent)
         : SkeletonModelJointWidget(parent)
-        , m_addColliderButton(nullptr)
-        , m_collidersWidget(nullptr)
+        , m_handler(this)
     {
+        setObjectName("EMotionFX.ClothJointWidget");
     }
 
     QWidget* ClothJointWidget::CreateContentWidget(QWidget* parent)
@@ -38,16 +37,7 @@ namespace EMotionFX
         QWidget* result = new QWidget(parent);
         QVBoxLayout* layout = new QVBoxLayout();
         layout->setMargin(0);
-        layout->setSpacing(ColliderContainerWidget::s_layoutSpacing);
         result->setLayout(layout);
-
-        // Add collider button
-        m_addColliderButton = new AddColliderButton("Add cloth collider", result,
-            PhysicsSetup::ColliderConfigType::Cloth,
-            {azrtti_typeid<Physics::CapsuleShapeConfiguration>(),
-             azrtti_typeid<Physics::SphereShapeConfiguration>()});
-        connect(m_addColliderButton, &AddColliderButton::AddCollider, this, &ClothJointWidget::OnAddCollider);
-        layout->addWidget(m_addColliderButton);
 
         // Colliders
         m_collidersWidget = new ColliderContainerWidget(QIcon(SkeletonModel::s_clothColliderIconPath), result);
@@ -59,16 +49,9 @@ namespace EMotionFX
         return result;
     }
 
-    QWidget* ClothJointWidget::CreateNoSelectionWidget(QWidget* parent)
-    {
-        QLabel* noSelectionLabel = new QLabel("Select a joint from the Skeleton Outliner", parent);
-        noSelectionLabel->setWordWrap(true);
-
-        return noSelectionLabel;
-    }
-
     void ClothJointWidget::InternalReinit()
     {
+        m_widgetCount = 0;
         if (GetSelectedModelIndices().size() == 1)
         {
             Physics::CharacterColliderNodeConfiguration* nodeConfig = GetNodeConfig();
@@ -80,6 +63,7 @@ namespace EMotionFX
 
                 m_collidersWidget->Update(GetActor(), GetNode(), PhysicsSetup::ColliderConfigType::Cloth, nodeConfig->m_shapes, serializeContext);
                 m_collidersWidget->show();
+                m_widgetCount = nodeConfig->m_shapes.size();
             }
             else
             {
@@ -90,6 +74,12 @@ namespace EMotionFX
         {
             m_collidersWidget->Reset();
         }
+        emit WidgetCountChanged();
+    }
+
+    int ClothJointWidget::WidgetCount() const
+    {
+        return m_widgetCount;
     }
 
     void ClothJointWidget::OnAddCollider(const AZ::TypeId& colliderType)

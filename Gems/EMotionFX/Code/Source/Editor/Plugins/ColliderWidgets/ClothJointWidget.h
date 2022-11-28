@@ -9,28 +9,37 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <Editor/Plugins/ColliderWidgets/ClothOutlinerNotificationHandler.h>
 #include <Editor/SkeletonModelJointWidget.h>
 #endif
-
 
 namespace Physics
 {
     class CharacterColliderNodeConfiguration;
-};
+}
 
 namespace EMotionFX
 {
     class AddColliderButton;
     class ColliderContainerWidget;
 
-    class HitDetectionJointWidget
-        : public SkeletonModelJointWidget
+    class ClothJointWidget : public SkeletonModelJointWidget
     {
-        Q_OBJECT //AUTOMOC
+        Q_OBJECT // AUTOMOC
 
     public:
-        HitDetectionJointWidget(QWidget* parent = nullptr);
-        ~HitDetectionJointWidget() = default;
+        ClothJointWidget(QWidget* parent = nullptr);
+        ~ClothJointWidget() = default;
+
+        static Physics::CharacterColliderNodeConfiguration* GetNodeConfig(const QModelIndex& modelIndex);
+        QString GetCardTitle() const override
+        {
+            return "Cloth Colliders";
+        }
+        QColor GetColor() const override
+        {
+            return QColor{ "#a675ff" };
+        }
 
     public slots:
         void OnAddCollider(const AZ::TypeId& colliderType);
@@ -38,15 +47,17 @@ namespace EMotionFX
         void OnPasteCollider(size_t colliderIndex, bool replace);
         void OnRemoveCollider(size_t colliderIndex);
 
+    protected:
+        int WidgetCount() const override;
+    public:
+        ClothOutlinerNotificationHandler m_handler;
+
     private:
         // SkeletonModelJointWidget
         QWidget* CreateContentWidget(QWidget* parent) override;
-        QWidget* CreateNoSelectionWidget(QWidget* parent) override;
         void InternalReinit() override;
 
-        Physics::CharacterColliderNodeConfiguration* GetNodeConfig();
-
-        AddColliderButton*          m_addColliderButton;
-        ColliderContainerWidget*    m_collidersWidget;
+        Physics::CharacterColliderNodeConfiguration* GetNodeConfig() const;
+        int m_widgetCount = 0;
     };
 } // namespace EMotionFX

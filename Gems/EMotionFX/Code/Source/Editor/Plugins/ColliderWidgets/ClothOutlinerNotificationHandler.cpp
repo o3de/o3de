@@ -7,33 +7,39 @@
  */
 
 #include <AzFramework/Physics/SystemBus.h>
-#include <MCore/Source/ReflectionSerializer.h>
-#include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
+#include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
+#include <Editor/Plugins/ColliderWidgets/ClothJointWidget.h>
+#include <Editor/Plugins/ColliderWidgets/ClothOutlinerNotificationHandler.h>
 #include <Editor/SkeletonModel.h>
-#include <Editor/Plugins/Cloth/ClothJointInspectorPlugin.h>
-#include <Editor/Plugins/Cloth/ClothJointWidget.h>
 #include <Integration/Rendering/RenderActorSettings.h>
+#include <MCore/Source/ReflectionSerializer.h>
 #include <QScrollArea>
-
 
 namespace EMotionFX
 {
-    ClothJointInspectorPlugin::ClothJointInspectorPlugin()
-        : EMStudio::DockWidgetPlugin()
-        , m_jointWidget(nullptr)
+    ClothOutlinerNotificationHandler::ClothOutlinerNotificationHandler(ClothJointWidget* colliderWidget)
+        : m_colliderWidget(colliderWidget)
     {
+        if (!IsNvClothGemAvailable() || !ColliderHelpers::AreCollidersReflected())
+        {
+            m_colliderWidget->ErrorNotification(
+                "Nvidia Cloth Gem not Available",
+                "Cloth collider editor depends on the NVIDIA Cloth gem. Please enable it in the Project Manager.");
+            return;
+        }
+        EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusConnect();
     }
 
-    ClothJointInspectorPlugin::~ClothJointInspectorPlugin()
+    ClothOutlinerNotificationHandler::~ClothOutlinerNotificationHandler()
     {
         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusDisconnect();
     }
 
-    bool ClothJointInspectorPlugin::IsNvClothGemAvailable() const
+    bool ClothOutlinerNotificationHandler::IsNvClothGemAvailable() const
     {
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
@@ -41,36 +47,10 @@ namespace EMotionFX
         // TypeId of NvCloth::SystemComponent
         const char* typeIDClothSystem = "{89DF5C48-64AC-4B8E-9E61-0D4C7A7B5491}";
 
-        return serializeContext
-            && serializeContext->FindClassData(AZ::TypeId::CreateString(typeIDClothSystem));
+        return serializeContext && serializeContext->FindClassData(AZ::TypeId::CreateString(typeIDClothSystem));
     }
 
-    bool ClothJointInspectorPlugin::Init()
-    {
-        if (IsNvClothGemAvailable() && ColliderHelpers::AreCollidersReflected())
-        {
-            m_jointWidget = new ClothJointWidget();
-            m_jointWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-            m_jointWidget->CreateGUI();
-
-            QScrollArea* scrollArea = new QScrollArea();
-            scrollArea->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-            scrollArea->setWidget(m_jointWidget);
-            scrollArea->setWidgetResizable(true);
-
-            m_dock->setWidget(scrollArea);
-
-            EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusConnect();
-        }
-        else
-        {
-            m_dock->setWidget(CreateErrorContentWidget("Cloth collider editor depends on the NVIDIA Cloth gem. Please enable it in the Project Manager."));
-        }
-
-        return true;
-    }
-
-    void ClothJointInspectorPlugin::OnContextMenu(QMenu* menu, const QModelIndexList& selectedRowIndices)
+    void ClothOutlinerNotificationHandler::OnContextMenu(QMenu* menu, const QModelIndexList& selectedRowIndices)
     {
         if (selectedRowIndices.empty())
         {
@@ -108,12 +88,11 @@ namespace EMotionFX
 
             QAction* addCapsuleAction = addColliderMenu->addAction("Add capsule");
             addCapsuleAction->setProperty("typeId", azrtti_typeid<Physics::CapsuleShapeConfiguration>().ToString<AZStd::string>().c_str());
-            connect(addCapsuleAction, &QAction::triggered, this, &ClothJointInspectorPlugin::OnAddCollider);
+            connect(addCapsuleAction, &QAction::triggered, this, &ClothOutlinerNotificationHandler::OnAddCollider);
 
             QAction* addSphereAction = addColliderMenu->addAction("Add sphere");
             addSphereAction->setProperty("typeId", azrtti_typeid<Physics::SphereShapeConfiguration>().ToString<AZStd::string>().c_str());
-            connect(addSphereAction, &QAction::triggered, this, &ClothJointInspectorPlugin::OnAddCollider);
-
+            connect(addSphereAction, &QAction::triggered, this, &ClothOutlinerNotificationHandler::OnAddCollider);
 
             ColliderHelpers::AddCopyFromMenu(this, contextMenu, PhysicsSetup::ColliderConfigType::Cloth, selectedRowIndices);
         }
@@ -121,16 +100,16 @@ namespace EMotionFX
         if (numJointsWithColliders > 0)
         {
             QAction* removeCollidersAction = contextMenu->addAction("Remove colliders");
-            connect(removeCollidersAction, &QAction::triggered, this, &ClothJointInspectorPlugin::OnClearColliders);
+            connect(removeCollidersAction, &QAction::triggered, this, &ClothOutlinerNotificationHandler::OnClearColliders);
         }
     }
 
-    bool ClothJointInspectorPlugin::IsJointInCloth(const QModelIndex& index)
+    bool ClothOutlinerNotificationHandler::IsJointInCloth(const QModelIndex& index)
     {
         return index.data(SkeletonModel::ROLE_CLOTH).toBool();
     }
 
-    void ClothJointInspectorPlugin::OnAddCollider()
+    void ClothOutlinerNotificationHandler::OnAddCollider()
     {
         AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
@@ -152,7 +131,7 @@ namespace EMotionFX
         ColliderHelpers::AddCollider(selectedRowIndices, PhysicsSetup::Cloth, colliderType);
     }
 
-    void ClothJointInspectorPlugin::OnClearColliders()
+    void ClothOutlinerNotificationHandler::OnClearColliders()
     {
         AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
