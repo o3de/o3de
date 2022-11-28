@@ -15,10 +15,17 @@
 
 namespace UnitTest
 {
-    static AzFramework::ModifierKeyStates OrbitModifierKeyStates(const AzFramework::InputChannelId orbitChannelId)
+    static AzFramework::ModifierKeyStates OrbitModifierKeyStates(const AzFramework::InputChannelId orbitChannelId, bool on = true)
     {
         AzFramework::ModifierKeyStates modifierKeyStates;
-        modifierKeyStates.SetActive(AzFramework::GetCorrespondingModifierKeyMask(orbitChannelId), true);
+        modifierKeyStates.SetActive(AzFramework::GetCorrespondingModifierKeyMask(orbitChannelId), on);
+        return modifierKeyStates;
+    }
+
+    static AzFramework::ModifierKeyStates BoostModifierKeyStates(const AzFramework::InputChannelId boostChannelId, bool on = true)
+    {
+        AzFramework::ModifierKeyStates modifierKeyStates;
+        modifierKeyStates.SetActive(AzFramework::GetCorrespondingModifierKeyMask(boostChannelId), on);
         return modifierKeyStates;
     }
 
@@ -611,10 +618,36 @@ namespace UnitTest
         HandleEvent(AzFramework::InputState{ AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began },
                                              orbitModifierKeystate });
         Update();
-        HandleEvent(AzFramework::InputState{ AzFramework::CursorEvent{ AzFramework::ScreenPoint{ 100, 100 } }, AzFramework::ModifierKeyStates{} });
+        HandleEvent(
+            AzFramework::InputState{ AzFramework::CursorEvent{ AzFramework::ScreenPoint{ 100, 100 } }, AzFramework::ModifierKeyStates{} });
         HandleEvent(AzFramework::InputState{ AzFramework::CursorEvent{ AzFramework::ScreenPoint{ 100, 100 } }, orbitModifierKeystate });
         Update();
 
         EXPECT_THAT(m_camera.Translation(), IsCloseTolerance(cameraStartingPosition, 0.01f));
+    }
+
+    TEST_F(CameraInputFixture, TranslateCameraInputBoostDoesNotGetStuckOn)
+    {
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_leftChannelId, AzFramework::InputChannel::State::Began },
+            BoostModifierKeyStates(m_translateCameraInputChannelIds.m_boostChannelId, false) });
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_boostChannelId, AzFramework::InputChannel::State::Began },
+            BoostModifierKeyStates(m_translateCameraInputChannelIds.m_boostChannelId, true) });
+
+        EXPECT_THAT(m_firstPersonTranslateCamera->Boosting(), ::testing::IsTrue());
+
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_leftChannelId, AzFramework::InputChannel::State::Ended },
+            BoostModifierKeyStates(m_translateCameraInputChannelIds.m_boostChannelId, true) });
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_boostChannelId, AzFramework::InputChannel::State::Ended },
+            BoostModifierKeyStates(m_translateCameraInputChannelIds.m_boostChannelId, false) });
+
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_leftChannelId, AzFramework::InputChannel::State::Began },
+            BoostModifierKeyStates(m_translateCameraInputChannelIds.m_boostChannelId, false) });
+
+        EXPECT_THAT(m_firstPersonTranslateCamera->Boosting(), ::testing::IsFalse());
     }
 } // namespace UnitTest
