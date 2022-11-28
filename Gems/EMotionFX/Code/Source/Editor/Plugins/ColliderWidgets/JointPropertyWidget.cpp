@@ -18,6 +18,7 @@
 #include <Editor/ColliderHelpers.h>
 #include <Editor/InspectorBus.h>
 #include <Editor/Plugins/ColliderWidgets/JointPropertyWidget.h>
+#include <Editor/Plugins/ColliderWidgets/SimulatedObjectColliderWidget.h>
 #include <Editor/SkeletonModel.h>
 #include <MCore/Source/ReflectionSerializer.h>
 #include <QBoxLayout>
@@ -88,13 +89,16 @@ namespace EMotionFX
         m_clothJointWidget = new ClothJointWidget;
         m_hitDetectionJointWidget = new HitDetectionJointWidget;
         m_ragdollJointWidget = new RagdollNodeWidget;
+        m_simulatedJointWidget = new SimulatedObjectColliderWidget;
         m_clothJointWidget->CreateGUI();
         m_hitDetectionJointWidget->CreateGUI();
         m_ragdollJointWidget->CreateGUI();
+        m_simulatedJointWidget->CreateGUI();
 
         mainLayout->addWidget(m_clothJointWidget);
         mainLayout->addWidget(m_hitDetectionJointWidget);
         mainLayout->addWidget(m_ragdollJointWidget);
+        mainLayout->addWidget(m_simulatedJointWidget);
     }
 
     JointPropertyWidget::~JointPropertyWidget()
@@ -225,7 +229,8 @@ namespace EMotionFX
         Shape = Qt::UserRole + 1,
         ConfigType = Qt::UserRole + 2,
         CopyFromType = Qt::UserRole + 3,
-        PasteCopiedCollider = Qt::UserRole + 4
+        PasteCopiedCollider = Qt::UserRole + 4,
+        CopyToType = Qt::UserRole + 5
     };
     struct AddCollidersPallete : public QTreeView
     {
@@ -255,11 +260,11 @@ namespace EMotionFX
         QFrame* newFrame = new QFrame{ this };
         newFrame->setWindowFlags(Qt::FramelessWindowHint | Qt::Popup);
         newFrame->setFixedWidth(this->width());
-        newFrame->move({ this->mapToGlobal({ 0, 0 }) });
+        newFrame->move({ this->mapToGlobal({ 0, 0 + height() }) });
         auto* treeView = new AddCollidersPallete(newFrame);
         treeView->setModel(model);
         treeView->setObjectName("EMotionFX.SkeletonOutlinerPlugin.AddCollidersButton.TreeView");
-        // hide header for dropdown-style, single-column, tree
+        // Hide header for dropdown-style, single-column, tree
         treeView->header()->hide();
         connect(treeView, &QTreeView::clicked, this, &AddCollidersButton::OnAddColliderActionTriggered);
         treeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -316,7 +321,7 @@ namespace EMotionFX
             ragdollItem->setData(PhysicsSetup::ColliderConfigType::Ragdoll, ItemRoles::ConfigType);
         }
 
-        // copy from other collider type
+        // Copy from other collider type
         for (const auto& section : sections)
         {
             const auto fromType = section.type;
@@ -339,6 +344,24 @@ namespace EMotionFX
                 item->setData(static_cast<int>(toType), ItemRoles::ConfigType);
                 item->setData(static_cast<int>(fromType), ItemRoles::CopyFromType);
                 model->appendRow(item);
+            }
+        }
+
+        // Paste a copied collider
+        const QMimeData* mimeData = QGuiApplication::clipboard()->mimeData();
+        const QByteArray clipboardContents = mimeData->data(ColliderHelpers::GetMimeTypeForColliderShape());
+
+        if (!clipboardContents.isEmpty())
+        {
+            AzPhysics::ShapeColliderPair colliderPair;
+            MCore::ReflectionSerializer::Deserialize(&colliderPair, mimeData->data(ColliderHelpers::GetMimeTypeForColliderShape()).data());
+
+            for (const auto& section : sections)
+            {
+                auto pasteNewColliderItem = new QStandardItem(QString{"Paste as %1 Collider"}.arg(section.name.c_str()));
+                pasteNewColliderItem->setData(true, ItemRoles::PasteCopiedCollider);
+                pasteNewColliderItem->setData(static_cast<int>(section.type), ItemRoles::CopyToType);
+                model->appendRow(pasteNewColliderItem);
             }
         }
 
@@ -370,6 +393,8 @@ namespace EMotionFX
 
         if (index.data(ItemRoles::PasteCopiedCollider).value<bool>())
         {
+            auto copyToType = static_cast<PhysicsSetup::ColliderConfigType>(index.data(ItemRoles::CopyToType).toInt());
+            ColliderHelpers::PasteColliderFromClipboard(selectedRowIndices.last(), 0, copyToType, false);
             return;
         }
         if (index.data(ItemRoles::ConfigType).isNull())
