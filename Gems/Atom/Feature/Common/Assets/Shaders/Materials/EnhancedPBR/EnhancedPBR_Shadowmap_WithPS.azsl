@@ -10,7 +10,6 @@
 #define ENABLE_ALPHA_CLIP 1
 
 // Shader Resource Groups
-#include <Atom/Features/SrgSemantics.azsli>
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 #include "EnhancedPBR_MaterialSrg.azsli"

@@ -55,7 +55,6 @@ AZ_POP_DISABLE_WARNING
 
 // AzFramework
 #include <AzFramework/Components/CameraBus.h>
-#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/ProjectManager/ProjectManager.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
@@ -2524,7 +2523,7 @@ void CCryEditApp::ExportToGame(bool bNoMsgBox)
         }
 
         CErrorsRecorder errRecorder(GetIEditor());
-        // If level not loaded first fast export terrain.
+        // If level not loaded first fast export the level.
         m_bIsExportingLegacyData = true;
         CGameExporter gameExporter;
         gameExporter.Export();
@@ -3138,7 +3137,7 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
 
     if (!usePrefabSystemForLevels)
     {
-        // No terrain, but still need to export default octree and visarea data.
+        // export default octree and visarea data.
         CGameExporter gameExporter;
         gameExporter.Export(eExp_CoverSurfaces | eExp_SurfaceTexture, eLittleEndian, ".");
     }

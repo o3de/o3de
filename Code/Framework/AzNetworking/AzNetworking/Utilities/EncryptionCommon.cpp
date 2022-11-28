@@ -54,9 +54,9 @@ namespace AzNetworking
 
         #if OPENSSL_VERSION_NUMBER >= 0x30000000L
             const char *func = nullptr;
-            const int32_t errorCode = ERR_get_error_all(nullptr, nullptr, &func, nullptr, nullptr);
+            const int32_t errorCode = static_cast<int32_t>(ERR_get_error_all(nullptr, nullptr, &func, nullptr, nullptr));
         #else
-            const int32_t errorCode = ERR_get_error();
+            const int32_t errorCode = static_cast<int32_t>(ERR_get_error());
         #endif 
         const int32_t systemError = GetLastNetworkError();
 

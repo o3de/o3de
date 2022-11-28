@@ -629,7 +629,7 @@ namespace AzToolsFramework
             PrefabDom patchesCopyForUndoSupport;
             PrefabDom nestedInstanceLinkDom;
             nestedInstanceLink->get().GetLinkDom(nestedInstanceLinkDom, nestedInstanceLinkDom.GetAllocator());
-            PrefabDomValueConstReference nestedInstanceLinkPatches =
+            PrefabDomValueReference nestedInstanceLinkPatches =
                 PrefabDomUtils::FindPrefabDomValue(nestedInstanceLinkDom, PrefabDomUtils::PatchesName);
             if (nestedInstanceLinkPatches.has_value())
             {
@@ -1418,8 +1418,7 @@ namespace AzToolsFramework
                     parentEntitiesToUpdate.insert(GetEntityById(parentEntityId));
                 }
 
-                commonOwningInstance->get().DetachEntity(entityId).release();
-                AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, entityId);
+                commonOwningInstance->get().DetachEntity(entityId);
 
                 detachedEntityAliasPaths.push_back(AZStd::move(nestedEntityAliasPath));
             }
