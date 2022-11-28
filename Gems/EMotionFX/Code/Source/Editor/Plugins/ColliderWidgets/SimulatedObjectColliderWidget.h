@@ -62,9 +62,6 @@ namespace EMotionFX
         QLabel* m_collideWithLabel = nullptr;
         QWidget* m_collideWithWidget = nullptr;
 
-        QLabel* m_instruction1 = nullptr;
-        QLabel* m_instruction2 = nullptr;
-
         NotificationWidget* m_colliderNotif = nullptr;
 
         int m_widgetCount = 0;
