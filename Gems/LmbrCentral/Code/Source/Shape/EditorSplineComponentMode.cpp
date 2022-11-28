@@ -19,6 +19,7 @@ namespace LmbrCentral
     EditorSplineComponentMode::EditorSplineComponentMode(
         const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid componentType)
         : EditorBaseComponentMode(entityComponentIdPair, componentType)
+        , m_vertexSelection(entityComponentIdPair)
     {
         AZ::TransformNotificationBus::Handler::BusConnect(entityComponentIdPair.GetEntityId());
         SplineComponentNotificationBus::Handler::BusConnect(entityComponentIdPair.GetEntityId());

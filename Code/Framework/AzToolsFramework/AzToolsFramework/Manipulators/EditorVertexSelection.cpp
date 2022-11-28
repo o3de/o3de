@@ -1174,9 +1174,9 @@ namespace AzToolsFramework
     }
 
     template<typename Vertex>
-    EditorVertexSelectionFixed<Vertex>::EditorVertexSelectionFixed()
+    EditorVertexSelectionFixed<Vertex>::EditorVertexSelectionFixed(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
-        EditorVertexSelectionRequestBus::Handler::BusConnect();
+        EditorVertexSelectionRequestBus::Handler::BusConnect(entityComponentIdPair);
     }
 
     template<typename Vertex>
@@ -1229,9 +1229,9 @@ namespace AzToolsFramework
     }
 
     template<typename Vertex>
-    EditorVertexSelectionVariable<Vertex>::EditorVertexSelectionVariable()
+    EditorVertexSelectionVariable<Vertex>::EditorVertexSelectionVariable(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
-        EditorVertexSelectionRequestBus::Handler::BusConnect();
+        EditorVertexSelectionRequestBus::Handler::BusConnect(entityComponentIdPair);
     }
 
     template<typename Vertex>

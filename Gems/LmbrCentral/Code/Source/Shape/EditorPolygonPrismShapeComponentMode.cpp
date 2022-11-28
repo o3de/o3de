@@ -39,6 +39,7 @@ namespace LmbrCentral
         const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid componentType)
         : EditorBaseComponentMode(entityComponentIdPair, componentType)
         , m_nonUniformScaleChangedHandler([this](const AZ::Vector3& scale){OnNonUniformScaleChanged(scale);})
+        , m_vertexSelection(entityComponentIdPair)
     {
         m_currentTransform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(

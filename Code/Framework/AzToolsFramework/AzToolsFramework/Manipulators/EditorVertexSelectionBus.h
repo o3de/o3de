@@ -8,12 +8,12 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
+#include <AzCore/Component/ComponentBus.h>
 
 namespace AzToolsFramework
 {
     //! Bus to request operations to the EditorVertexSelection classes.
-    class EditorVertexSelectionRequests : public AZ::EBusTraits
+    class EditorVertexSelectionRequests : public AZ::EntityComponentBus
     {
     public:
         virtual void DuplicateSelectedVertices() {};
@@ -24,20 +24,4 @@ namespace AzToolsFramework
         ~EditorVertexSelectionRequests() = default;
     };
     using EditorVertexSelectionRequestBus = AZ::EBus<EditorVertexSelectionRequests>;
-
-    //! Bus to be notified about changes in Editor Vertex Selection state.
-    class EditorVertexSelectionNotifications : public AZ::EBusTraits
-    {
-    public:
-        //////////////////////////////////////////////////////////////////////////
-        // EBusTraits overrides
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
-        //////////////////////////////////////////////////////////////////////////
-
-        virtual void OnEditorVertexSelectionChange() {}
-
-    protected:
-        ~EditorVertexSelectionNotifications() = default;
-    };
-    using EditorVertexSelectionNotificationBus = AZ::EBus<EditorVertexSelectionNotifications>;
 }

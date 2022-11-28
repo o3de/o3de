@@ -307,7 +307,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR_DECL
 
-        EditorVertexSelectionFixed();
+        EditorVertexSelectionFixed(const AZ::EntityComponentIdPair& entityComponentIdPair);
         ~EditorVertexSelectionFixed();
 
     private:
@@ -333,7 +333,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR_DECL
 
-        EditorVertexSelectionVariable();
+        EditorVertexSelectionVariable(const AZ::EntityComponentIdPair& entityComponentIdPair);
         ~EditorVertexSelectionVariable();
 
         void DuplicateSelected();
