@@ -1373,7 +1373,59 @@ namespace AssetProcessor
 
             for (const AZStd::string& affectedSourceFile : processedAsset.m_response.m_sourcesToReprocess)
             {
-                AssessFileInternal(affectedSourceFile.c_str(), false);
+                // the data coming in m_sourcesToReprocess comes directly from a builder, we have to sanitize, check, etc.
+                QString sanitizedFilePath = AssetUtilities::NormalizeFilePath(QString::fromUtf8(affectedSourceFile.c_str())).toUtf8().constData();
+                if (IsInCacheFolder(sanitizedFilePath.toUtf8().constData()))
+                {
+                    // this is a silent notification, that is, it makes it into the log but not
+                    // into any ui display or console.
+                    AZ_TracePrintf(AssetProcessor::DebugChannel,
+                        "File \"%s\" \n"
+                        "Builder UUID \"%s\" \n"
+                        "requested reprocess \"%s\" \n"
+                        "but that file lives in the Cache folder.  \nIgnored.",
+                        processedAsset.m_entry.m_sourceAssetReference.AbsolutePath().c_str(),
+                        processedAsset.m_entry.m_builderGuid.ToString<AZStd::string>().c_str(),
+                        affectedSourceFile.c_str());
+                    continue;
+                }
+                // is it even in a scan folder?
+                QString watchedFolder;
+                QString relPath;
+                if (!m_platformConfig->ConvertToRelativePath(sanitizedFilePath, watchedFolder, relPath))
+                {
+                    // this is probably a mistake by either the builder author, or asset author, so
+                    // it gets surfaced to the UI.
+                    AZ_Warning(
+                        AssetProcessor::DebugChannel,
+                        false,
+                        "File \"%s\" \n"
+                        "Builder UUID \"%s\" \n"
+                        "requested reprocess \"%s\" \n"
+                        "That file does not live in any folder monitored by AP. \nIgnored.",
+                        processedAsset.m_entry.m_sourceAssetReference.AbsolutePath().c_str(),
+                        processedAsset.m_entry.m_builderGuid.ToString<AZStd::string>().c_str(),
+                        affectedSourceFile.c_str());
+                    continue;
+                }
+
+                if (m_platformConfig->IsFileExcluded(sanitizedFilePath))
+                {
+                    // This is a silent notification, that is, it makes it into the log but not
+                    // into any ui display or console.
+                    AZ_TracePrintf(
+                        AssetProcessor::DebugChannel,
+                        "File \"%s\" \n"
+                        "Builder UUID \"%s\" \n"
+                        "requested reprocess \"%s\" \n"
+                        "That file is excluded by an exclude rule.  \nIgnored.",
+                        processedAsset.m_entry.m_sourceAssetReference.AbsolutePath().c_str(),
+                        processedAsset.m_entry.m_builderGuid.ToString<AZStd::string>().c_str(),
+                        affectedSourceFile.c_str());
+                    continue;
+                }
+
+                AssessFileInternal(sanitizedFilePath.toUtf8().constData(), false);
             }
 
             // If there are any new or updated products, trigger any source dependencies which depend on a specific product

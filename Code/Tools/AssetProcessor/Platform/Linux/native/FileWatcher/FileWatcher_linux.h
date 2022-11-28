@@ -11,22 +11,30 @@
 #include <FileWatcher/FileWatcher.h>
 #include <QMutex>
 #include <QHash>
+#include <QSet>
 
 class FileWatcher::PlatformImplementation
 {
 public:
     bool Initialize();
+    void CloseMainWatchHandle();
     void Finalize();
-    void AddWatchFolder(QString folder, bool recursive);
+    void AddWatchFolder(QString folder, bool recursive, FileWatcher& source, bool notifyFiles);
     void RemoveWatchFolder(int watchHandle);
 
     //! Try to watch the given path.
     //! @param errnoPtr If provided, gets set to the errno right after the inotify_add_watch() call.
     //!                 Note: only contains valid information if we actually failed.
     //! @return Was the watch successful?
-    bool TryToWatch(const QString &path, int* errnoPtr = nullptr);
+    bool TryToWatch(const QString &path, int* errnoPtr,  FileWatcher& source);
 
+    // This handle represents the handle to the entire notify tree.
+    // Individual watches will be added to this same handle.
     int                         m_inotifyHandle = -1;
-    QMutex                      m_handleToFolderMapLock;
+
+    // This handle is a simple semaphore, which will be signaled when its time to quit.
+    int                         m_wakeThreadHandle = -1;
+    
     QHash<int, QString>         m_handleToFolderMap;
+    QSet<QString>               m_alreadyNotifiedCreate;
 };
