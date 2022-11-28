@@ -739,6 +739,8 @@ set(FILES
     Archive/ArchiveComponent.h
     Archive/ArchiveComponent.cpp
     Archive/ArchiveAPI.h
+    Archive/MissingAssetNotificationHandler.cpp
+    Archive/MissingAssetNotificationHandler.h
     UI/PropertyEditor/Model/AssetCompleterModel.h
     UI/PropertyEditor/Model/AssetCompleterModel.cpp
     UI/PropertyEditor/View/AssetCompleterListView.h
