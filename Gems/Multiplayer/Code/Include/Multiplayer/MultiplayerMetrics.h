@@ -31,7 +31,7 @@ namespace Multiplayer
         MultiplayerStat_TotalSentPackets,
         MultiplayerStat_TotalSentBytesAfterCompression,
         MultiplayerStat_TotalSentBytesBeforeCompression,
-        MultiplayerStat_TotalPacketsSent,
+        MultiplayerStat_TotalResentPacketsDueToPacketLoss,
         MultiplayerStat_TotalReceiveTimeInMs,
         MultiplayerStat_TotalReceivedPackets,
         MultiplayerStat_TotalReceivedBytesAfterCompression,

@@ -259,7 +259,7 @@ namespace Multiplayer
         DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_TotalSentPackets, "TotalSentPackets");
         DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_TotalSentBytesAfterCompression, "TotalSentBytesAfterCompression");
         DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_TotalSentBytesBeforeCompression, "TotalSentBytesBeforeCompression");
-        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_TotalPacketsSent, "TotalPacketsSent");
+        DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_TotalResentPacketsDueToPacketLoss, "TotalResentPacketsDueToPacketLoss");
         DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_TotalReceiveTimeInMs, "TotalReceiveTimeInMs");
         DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_TotalReceivedPackets, "TotalReceivedPackets");
         DECLARE_PERFORMANCE_STAT(MultiplayerGroup_Networking, MultiplayerStat_TotalReceivedBytesAfterCompression, "TotalReceivedBytesAfterCompression");
@@ -1686,7 +1686,7 @@ namespace Multiplayer
             SET_PERFORMANCE_STAT(MultiplayerStat_TotalSentPackets, metrics.m_sendPackets);
             SET_PERFORMANCE_STAT(MultiplayerStat_TotalSentBytesAfterCompression, metrics.m_sendBytes);
             SET_PERFORMANCE_STAT(MultiplayerStat_TotalSentBytesBeforeCompression, metrics.m_sendBytesUncompressed);
-            SET_PERFORMANCE_STAT(MultiplayerStat_TotalPacketsSent, metrics.m_sendPackets);
+            SET_PERFORMANCE_STAT(MultiplayerStat_TotalResentPacketsDueToPacketLoss, metrics.m_resentPackets);
             SET_PERFORMANCE_STAT(MultiplayerStat_TotalReceiveTimeInMs, metrics.m_recvTimeMs);
             SET_PERFORMANCE_STAT(MultiplayerStat_TotalReceivedPackets, metrics.m_recvPackets);
             SET_PERFORMANCE_STAT(MultiplayerStat_TotalReceivedBytesAfterCompression, metrics.m_recvBytes);
