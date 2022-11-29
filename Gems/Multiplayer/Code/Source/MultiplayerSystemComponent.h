@@ -125,6 +125,7 @@ namespace Multiplayer
         void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) override;
         void AddLevelLoadBlockedHandler(LevelLoadBlockedEvent::Handler& handler) override;
         void AddNoServerLevelLoadedHandler(NoServerLevelLoadedEvent::Handler& handler) override;
+        void AddVersionMismatchHandler(VersionMismatchEvent::Handler& handler) override;
         void AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler) override;
         void SendNotifyClientMigrationEvent(AzNetworking::ConnectionId connectionId, const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId, NetEntityId controlledEntityId) override;
         void SendNotifyEntityMigrationEvent(const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId) override;
@@ -187,6 +188,7 @@ namespace Multiplayer
         NotifyEntityMigrationEvent m_notifyEntityMigrationEvent;
         LevelLoadBlockedEvent m_levelLoadBlockedEvent;
         NoServerLevelLoadedEvent m_noServerLevelLoadedEvent;
+        VersionMismatchEvent m_versionMismatchEvent;
 
         AZ::Event<NetEntityId>::Handler m_autonomousEntityReplicatorCreatedHandler;
 

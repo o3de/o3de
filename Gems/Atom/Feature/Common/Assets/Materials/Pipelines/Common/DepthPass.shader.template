@@ -10,7 +10,7 @@
         "EntryPoints":
         [
             {
-                "name": "DepthPassVS",
+                "name": "VertexShader",
                 "type" : "Vertex"
             }
         ] 

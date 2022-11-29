@@ -25,6 +25,7 @@ namespace AtomToolsFramework
         virtual void OnViewportSettingsChanged(){};
         virtual void OnModelPresetAdded([[maybe_unused]] const AZStd::string& path){};
         virtual void OnLightingPresetAdded([[maybe_unused]] const AZStd::string& path){};
+        virtual void OnRenderPipelineAdded([[maybe_unused]] const AZStd::string& path) {};
     };
 
     using EntityPreviewViewportSettingsNotificationBus = AZ::EBus<EntityPreviewViewportSettingsNotifications>;

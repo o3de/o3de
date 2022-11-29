@@ -266,36 +266,6 @@ namespace TestImpact
         return AZStd::pair{ CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     }
 
-    //! Helper function to generate the test engine job infos and the proceed to running the tests.
-    template<typename TestJobRunner, typename TestJobInfoGenerator, typename TestTarget>
-    auto GenerateJobInfosAndRunTests(
-        TestJobRunner* testRunner,
-        TestJobInfoGenerator* jobInfoGenerator,
-        const AZStd::vector<const TestTarget*>& testTargets,
-        ErrorCodeCheckerCallback<TestJobRunner> errorCheckerCallback,
-        Policy::ExecutionFailure executionFailurePolicy,
-        Policy::TestFailure testFailurePolicy,
-        Policy::TargetOutputCapture targetOutputCapture,
-        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback<TestTarget>> jobCallback,
-        AZStd::optional<typename TestJobRunner::StdContentCallback> stdContentCallback)
-    {
-        return RunTests(
-            testRunner,
-            jobInfoGenerator->GenerateJobInfos(testTargets),
-            testTargets,
-            errorCheckerCallback,
-            executionFailurePolicy,
-            testFailurePolicy,
-            targetOutputCapture,
-            testTargetTimeout,
-            globalTimeout,
-            jobCallback,
-            stdContentCallback
-        );
-    }
-
     template<typename TestEngineJob>
     auto GenerateInstrumentedRunResult(const AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineJob>>& engineJobs, Policy::IntegrityFailure integrityFailurePolicy)
     {

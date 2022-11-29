@@ -270,13 +270,13 @@ namespace AZ
             for (uint32_t slot = 0; slot < RHI::Limits::Pipeline::ShaderResourceGroupCountMax; ++slot)
             {
                 const ShaderResourceGroup* shaderResourceGroup = bindings.m_srgsBySlot[slot];
-                uint32_t slotIndex = pipelineLayout.GetIndexBySlot(slot);
+                uint32_t slotIndex = static_cast<uint32_t>(pipelineLayout.GetIndexBySlot(slot));
                 if(!shaderResourceGroup || slotIndex == RHI::Limits::Pipeline::ShaderResourceGroupCountMax)
                 {
                     continue;
                 }
 
-                uint32_t srgVisIndex = pipelineLayout.GetIndexBySlot(shaderResourceGroup->GetBindingSlot());
+                uint32_t srgVisIndex = static_cast<uint32_t>(pipelineLayout.GetIndexBySlot(shaderResourceGroup->GetBindingSlot()));
                 const RHI::ShaderStageMask& srgVisInfo = pipelineLayout.GetSrgVisibility(srgVisIndex);
                 const ShaderResourceGroupVisibility& srgResourcesVisInfo = pipelineLayout.GetSrgResourcesVisibility(srgVisIndex);
 
@@ -507,7 +507,7 @@ namespace AZ
                     uint32_t indexTypeSize = 0;
                     GetIndexTypeSizeInBytes(mtlIndexType, indexTypeSize);
 
-                    uint32_t indexOffset = indexBuffDescriptor.GetByteOffset() + (indexed.m_indexOffset * indexTypeSize) + buff->GetMemoryView().GetOffset();
+                    uint32_t indexOffset = static_cast<uint32_t>(indexBuffDescriptor.GetByteOffset() + (indexed.m_indexOffset * indexTypeSize) + buff->GetMemoryView().GetOffset());
                     [renderEncoder drawIndexedPrimitives: mtlPrimType
                                               indexCount: indexed.m_indexCount
                                                indexType: mtlIndexType
@@ -631,7 +631,7 @@ namespace AZ
                     {
                         const Buffer * buff = static_cast<const Buffer*>(streams[i].GetBuffer());
                         id<MTLBuffer> mtlBuff = buff->GetMemoryView().GetGpuAddress<id<MTLBuffer>>();
-                        uint32_t offset = streams[i].GetByteOffset() + buff->GetMemoryView().GetOffset();
+                        uint32_t offset = static_cast<uint32_t>(streams[i].GetByteOffset() + buff->GetMemoryView().GetOffset());
                         mtlStreamBuffers[bufferArrayLen] = mtlBuff;
                         mtlStreamBufferOffsets[bufferArrayLen] = offset;
                         bufferArrayLen++;

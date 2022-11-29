@@ -184,7 +184,7 @@ namespace AZ
                 FramePacket* framePacket = BeginFramePacket(commandQueue);
                 
                 //[GFX TODO][ATOM-5605] - Cache alignments for all formats at Init
-                const static uint32_t bufferOffsetAlign = [mtlDevice minimumTextureBufferAlignmentForPixelFormat: ConvertPixelFormat(image->GetDescriptor().m_format)];
+                const static uint32_t bufferOffsetAlign = static_cast<uint32_t>([mtlDevice minimumTextureBufferAlignmentForPixelFormat: ConvertPixelFormat(image->GetDescriptor().m_format)]);
 
                 // Variables for split subresource slice.
                 // If a subresource slice pitch is large than one staging size, we may split the slice by rows.

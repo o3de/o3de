@@ -63,6 +63,9 @@ class TestAutomation(EditorTestSuite):
     class test_DeleteEntity_UnderLevelPrefab(EditorBatchedTest):
         from .tests.delete_entity import DeleteEntity_UnderLevelPrefab as test_module
 
+    class test_DeleteEntity_UnderNestedEntityHierarchy(EditorBatchedTest):
+        from .tests.delete_entity import DeleteEntity_UnderNestedEntityHierarchy as test_module
+
     # Delete Prefab Tests
 
     class test_DeletePrefab_ContainingASingleEntity(EditorBatchedTest):
@@ -87,6 +90,12 @@ class TestAutomation(EditorTestSuite):
 
     # Duplicate Prefab Tests
 
+    class test_DuplicateEntity_WithNestedEntities(EditorBatchedTest):
+        from .tests.duplicate_prefab import DuplicateEntity_WithNestedEntities as test_module
+
+    class test_DuplicateEntity_WithNestedEntitiesAndNestedPrefabs(EditorBatchedTest):
+        from .tests.duplicate_prefab import DuplicateEntity_WithNestedEntitiesAndNestedPrefabs as test_module
+
     class test_DuplicatePrefab_ContainingASingleEntity(EditorBatchedTest):
         from .tests.duplicate_prefab import DuplicatePrefab_ContainingASingleEntity as test_module
 
@@ -100,6 +109,15 @@ class TestAutomation(EditorTestSuite):
 
     class test_InstantiatePrefab_FromCreatedPrefabWithSingleEntity(EditorBatchedTest):
         from .tests.instantiate_prefab import InstantiatePrefab_FromCreatedPrefabWithSingleEntity as test_module
+
+    class test_InstantiatePrefab_LevelPrefab(EditorBatchedTest):
+        from .tests.instantiate_prefab import InstantiatePrefab_LevelPrefab as test_module
+
+    class test_InstantiatePrefab_WithNestedEntities(EditorBatchedTest):
+        from .tests.instantiate_prefab import InstantiatePrefab_WithNestedEntities as test_module
+
+    class test_InstantiatePrefab_WithNestedEntitiesAndNestedPrefabs(EditorBatchedTest):
+        from .tests.instantiate_prefab import InstantiatePrefab_WithNestedEntitiesandNestedPrefabs as test_module
 
     # Open Level Tests
 
