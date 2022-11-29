@@ -336,16 +336,13 @@ def remove_gem_duplicates(gems: list) -> list:
     new_list = []
     names = {}
     for gem in gems:
-        if isinstance(gem, dict):
-            if gem['name'] not in names:
-                names[gem['name']] = len(new_list)
+        if not (isinstance(gem, dict) or isinstance(gem, str)):
+            continue
+        gem_name = gem.get('name', '') if isinstance(gem, dict) else gem
+        if gem_name:
+            if gem_name not in names:
+                names[gem_name] = len(new_list)
                 new_list.append(gem)
             else:
-                new_list[names[gem['name']]] = gem
-        else:
-            if gem not in names:
-                names[gem] = len(new_list)
-                new_list.append(gem)
-            else:
-                new_list[names[gem]] = gem
+                new_list[names[gem_name]] = gem
     return new_list

@@ -47,6 +47,8 @@ def test_validate_uuid4(value, expected_result):
         pytest.param(['A', 'B', 'C', 'A', 'C'], ['A', 'B', 'C']),
         pytest.param(['A', {'name': 'A', 'optional': True}], [{'name': 'A', 'optional': True}]),
         pytest.param([{'name': 'A', 'optional': True}, 'A'], ['A']),
+        pytest.param([{'name': 'A'}], [{'name': 'A'}]),
+        pytest.param([{'optional': False}], []),
     ]
 )
 def test_remove_gem_duplicates(in_list, out_list):
