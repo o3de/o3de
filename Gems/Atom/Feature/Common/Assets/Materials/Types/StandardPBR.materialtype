@@ -77,6 +77,18 @@
             "tag": "LowEndForward_EDS"
         },
         {
+            "file": "Shaders/Materials/StandardPBR/StandardPBR_MultiViewForward.shader",
+            "tag": "MultiViewForward"
+        },
+        {
+            "file": "Shaders/Materials/StandardPBR/StandardPBR_MultiViewForward_EDS.shader",
+            "tag": "MultiViewForward_EDS"
+        },
+        {
+            "file": "Shaders/Materials/StandardPBR/StandardPBR_MultiViewTransparentForward_EDS.shader",
+            "tag": "MultiViewTransparentForward"
+        },
+        {
             "file": "Shaders/Shadow/Shadowmap.shader",
             "tag": "Shadowmap"
         },

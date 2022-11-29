@@ -72,7 +72,7 @@ namespace AZ
             }
             
             const uint8_t* shaderByteCode = reinterpret_cast<const uint8_t*>(shaderFunction->GetByteCode().data());
-            const int byteCodeLength = shaderFunction->GetByteCode().size();
+            const int byteCodeLength = static_cast<int>(shaderFunction->GetByteCode().size());
             if(byteCodeLength > 0 && loadFromByteCode)
             {
                 dispatch_data_t dispatchByteCodeData = dispatch_data_create(shaderByteCode, byteCodeLength, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT);

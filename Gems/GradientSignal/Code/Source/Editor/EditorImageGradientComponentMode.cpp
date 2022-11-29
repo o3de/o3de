@@ -10,9 +10,9 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
-#include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
+#include <AzToolsFramework/PaintBrush/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsRequestBus.h>
 #include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsWindow.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
@@ -296,6 +296,7 @@ namespace GradientSignal
         const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType)
         : EditorBaseComponentMode(entityComponentIdPair, componentType)
         , m_ownerEntityComponentId(entityComponentIdPair)
+        , m_anyValuesChanged(false)
     {
         EditorImageGradientRequestBus::Event(GetEntityId(), &EditorImageGradientRequests::StartImageModification);
         ImageGradientModificationBus::Event(GetEntityId(), &ImageGradientModifications::StartImageModification);
@@ -326,17 +327,11 @@ namespace GradientSignal
 
         m_brushManipulator = AzToolsFramework::PaintBrushManipulator::MakeShared(
             worldFromLocal, entityComponentIdPair, AzToolsFramework::PaintBrushColorMode::Greyscale);
-        Refresh();
-
         m_brushManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
-
-        CreateSubModeSelectionCluster();
     }
 
     EditorImageGradientComponentMode::~EditorImageGradientComponentMode()
     {
-        RemoveSubModeSelectionCluster();
-
         AzToolsFramework::PaintBrushNotificationBus::Handler::BusDisconnect();
         m_brushManipulator->Unregister();
         m_brushManipulator.reset();
@@ -345,7 +340,7 @@ namespace GradientSignal
 
         // It's possible that we're leaving component mode as the result of an "undo" action.
         // If that's the case, don't prompt the user to save the changes.
-        if (!AzToolsFramework::UndoRedoOperationInProgress())
+        if (!AzToolsFramework::UndoRedoOperationInProgress() && m_anyValuesChanged)
         {
             EditorImageGradientRequestBus::Event(GetEntityId(), &EditorImageGradientRequests::SaveImage);
         }
@@ -396,7 +391,7 @@ namespace GradientSignal
         }
     }
 
-    void EditorImageGradientComponentMode::OnPaintStrokeBegin(const AZ::Color& color)
+    void EditorImageGradientComponentMode::OnBrushStrokeBegin(const AZ::Color& color)
     {
         BeginUndoBatch();
 
@@ -426,7 +421,7 @@ namespace GradientSignal
         m_paintStrokeData.m_strokeBuffer = AZStd::make_unique<ImageTileBuffer>(imageWidth, imageHeight, GetEntityId());
     }
 
-    void EditorImageGradientComponentMode::OnPaintStrokeEnd()
+    void EditorImageGradientComponentMode::OnBrushStrokeEnd()
     {
         AZ_Assert(m_paintBrushUndoBuffer != nullptr, "Undo batch is expected to exist while painting");
 
@@ -458,10 +453,14 @@ namespace GradientSignal
     AZ::Color EditorImageGradientComponentMode::OnGetColor(const AZ::Vector3& brushCenter)
     {
         // Get the gradient value at the given point.
-
+        // We use "GetPixelValuesByPosition" instead of "GetGradientValue" because we want to select unscaled, unsmoothed values.
         float gradientValue = 0.0f;
-        GradientSampleParams sampleParams = {brushCenter};
-        GradientRequestBus::EventResult(gradientValue, GetEntityId(), &GradientRequestBus::Events::GetValue, sampleParams);
+        ImageGradientModificationBus::Event(
+            GetEntityId(),
+            &ImageGradientModificationBus::Events::GetPixelValuesByPosition,
+            AZStd::span<const AZ::Vector3>(&brushCenter, 1),
+            AZStd::span<float>(&gradientValue, 1));
+
         return AZ::Color(gradientValue, gradientValue, gradientValue, 1.0f);
     }
 
@@ -569,6 +568,9 @@ namespace GradientSignal
         // Notify anything listening to the image gradient that the modified region has changed.
         LmbrCentral::DependencyNotificationBus::Event(
             GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, expandedDirtyArea);
+
+        // Track that we've changed image values, so we should prompt to save on exit.
+        m_anyValuesChanged = true;
     }
 
     void EditorImageGradientComponentMode::OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn)
@@ -586,45 +588,31 @@ namespace GradientSignal
     }
 
     void EditorImageGradientComponentMode::OnSmooth(
-        const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, size_t kernelSize, SmoothFn& smoothFn)
+        const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, AZStd::span<const AZ::Vector3> valuePointOffsets, SmoothFn& smoothFn)
     {
         AZ::EntityId entityId = GetEntityId();
 
-        AZ_Assert(kernelSize % 2, "Only odd-valued smoothing kernels are supported.");
-
         // Declare our vectors of kernel point locations and values once outside of the combine function so that we
         // don't keep reallocating them on every point.
-        AZStd::vector<AZ::Vector3> kernelPointOffsets;
         AZStd::vector<AZ::Vector3> kernelPoints;
         AZStd::vector<float> kernelValues;
 
-        kernelPointOffsets.reserve(kernelSize * kernelSize);
-        kernelPoints.reserve(kernelPointOffsets.size());
-        kernelValues.reserve(kernelPointOffsets.size());
+        const AZ::Vector3 valuePointOffsetScale(m_paintStrokeData.m_metersPerPixelX, m_paintStrokeData.m_metersPerPixelY, 0.0f);
 
-        // Calculate our list of kernel position offsets once for all points. We'll use this to calculate all of the relative positions
-        // around each point for fetching the blurring kernel values.
-        float halfKernelSize = aznumeric_cast<float>(kernelSize / 2);
-        for (float_t y = -halfKernelSize; y <= halfKernelSize; y += 1.0f)
-        {
-            for (float_t x = -halfKernelSize; x <= halfKernelSize; x += 1.0f)
-            {
-                kernelPointOffsets.emplace_back(
-                    AZ::Vector3(x * m_paintStrokeData.m_metersPerPixelX, y * m_paintStrokeData.m_metersPerPixelY, 0.0f));
-            }
-        }
+        kernelPoints.reserve(valuePointOffsets.size());
+        kernelValues.reserve(valuePointOffsets.size());
 
         // For smoothing notifications, we'll need to gather all of the neighboring gradient values to feed into the given smoothing
         // function for our blend operation.
-        auto combineFn = [this, entityId, smoothFn, &kernelPointOffsets, &kernelPoints, &kernelValues](
+        auto combineFn = [this, entityId, smoothFn, &valuePointOffsets, valuePointOffsetScale, &kernelPoints, &kernelValues](
                              const AZ::Vector3& worldPosition, float gradientValue, float opacityValue) -> float
         {
             kernelPoints.clear();
 
             // Calculate all of the world positions around our base position that we'll use for fetching our blurring kernel values.
-            for (auto& kernelPointOffset : kernelPointOffsets)
+            for (auto& valuePointOffset : valuePointOffsets)
             {
-                kernelPoints.emplace_back(worldPosition + kernelPointOffset);
+                kernelPoints.emplace_back(worldPosition + (valuePointOffset * valuePointOffsetScale));
             }
 
             kernelValues.assign(kernelPoints.size(), 0.0f);
@@ -639,78 +627,6 @@ namespace GradientSignal
 
         // Perform all the common logic between painting and smoothing to modify our image gradient.
         OnPaintSmoothInternal(dirtyArea, valueLookupFn, combineFn);
-    }
-
-    void EditorImageGradientComponentMode::CreateSubModeSelectionCluster()
-    {
-        auto RegisterClusterButton = [](AzToolsFramework::ViewportUi::ClusterId clusterId,
-                                        const char* iconName,
-                                        const char* tooltip) -> AzToolsFramework::ViewportUi::ButtonId
-        {
-            AzToolsFramework::ViewportUi::ButtonId buttonId;
-            AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
-                buttonId,
-                AzToolsFramework::ViewportUi::DefaultViewportId,
-                &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton,
-                clusterId,
-                AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
-
-            AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                AzToolsFramework::ViewportUi::DefaultViewportId,
-                &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
-                clusterId,
-                buttonId,
-                tooltip);
-
-            return buttonId;
-        };
-
-        // create the cluster for showing the Paint Brush Settings window
-        AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
-            m_paintBrushControlClusterId,
-            AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
-            AzToolsFramework::ViewportUi::Alignment::TopLeft);
-
-        // create and register the "Show Paint Brush Settings" button.
-        // This button is needed because the window is only shown while in component mode, and the window can be closed by the user,
-        // so we need to provide an alternate way for the user to re-open the window. 
-        m_paintModeButtonId = RegisterClusterButton(m_paintBrushControlClusterId, "Paint", "Switch to Paint Mode");
-        m_eyedropperModeButtonId = RegisterClusterButton(m_paintBrushControlClusterId, "Eyedropper", "Switch to Eyedropper Mode");
-        m_smoothModeButtonId = RegisterClusterButton(m_paintBrushControlClusterId, "Smooth", "Switch to Smooth Mode");
-
-        m_buttonSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(
-            [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
-            {
-                AzToolsFramework::PaintBrushMode brushMode = AzToolsFramework::PaintBrushMode::Paintbrush;
-
-                if (buttonId == m_eyedropperModeButtonId)
-                {
-                    brushMode = AzToolsFramework::PaintBrushMode::Eyedropper;
-                }
-                else if (buttonId == m_smoothModeButtonId)
-                {
-                    brushMode = AzToolsFramework::PaintBrushMode::Smooth;
-                }
-
-                AzToolsFramework::OpenViewPane(PaintBrush::s_paintBrushSettingsName);
-
-                AzToolsFramework::PaintBrushSettingsRequestBus::Broadcast(
-                    &AzToolsFramework::PaintBrushSettingsRequestBus::Events::SetBrushMode, brushMode);
-            });
-        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
-            m_paintBrushControlClusterId,
-            m_buttonSelectionHandler);
-    }
-
-    void EditorImageGradientComponentMode::RemoveSubModeSelectionCluster()
-    {
-        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
-            m_paintBrushControlClusterId);
     }
 
 } // namespace GradientSignal

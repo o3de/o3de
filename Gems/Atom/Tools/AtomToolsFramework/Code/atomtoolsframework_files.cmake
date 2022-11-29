@@ -176,7 +176,6 @@ set(FILES
     Source/Viewport/ViewportInteractionImpl.cpp
 
     Include/AtomToolsFramework/Window/AtomToolsMainWindow.h
-    Include/AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h
     Include/AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h
     Source/Window/AtomToolsMainWindow.cpp
     Source/Window/AtomToolsMainWindowSystemComponent.cpp

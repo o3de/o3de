@@ -894,6 +894,9 @@ void ApplicationManagerBase::Destroy()
     delete m_assetRequestHandler;
     m_assetRequestHandler = nullptr;
 
+    // Destroy file monitor early so that no callbacks fire during shutdown.
+    DestroyFileMonitor();
+
     ShutdownBuilderManager();
     ShutDownFileProcessor();
 
@@ -902,7 +905,6 @@ void ApplicationManagerBase::Destroy()
     DestroyAssetServerHandler();
     DestroyRCController();
     DestroyAssetScanner();
-    DestroyFileMonitor();
     ShutDownAssetDatabase();
     DestroyPlatformConfiguration();
     DestroyApplicationServer();

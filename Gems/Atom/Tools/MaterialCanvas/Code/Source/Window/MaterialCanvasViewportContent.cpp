@@ -202,7 +202,7 @@ namespace MaterialCanvas
 
         for (const auto& generatedFile : generatedFiles)
         {
-            if (AZ::StringFunc::EndsWith(generatedFile, ".material"))
+            if (generatedFile.ends_with(".material"))
             {
                 if (auto assetIdOutcome = AZ::RPI::AssetUtils::MakeAssetId(generatedFile, 0))
                 {
