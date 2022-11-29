@@ -8,6 +8,7 @@
 #pragma once
 
 #include <RHI/CommandListBase.h>
+#include <RHI/DescriptorContext.h>
 #include <RHI/PipelineLayout.h>
 #include <RHI/PipelineState.h>
 #include <RHI/MemoryView.h>
@@ -239,6 +240,9 @@ namespace AZ
                 // Signal if the commandlist is using custom sample positions for multisample
                 bool m_customSamplePositions = false;
 
+                // Signal that the global bindless heap is bound
+                bool m_bindBindlessHeap = false;
+
             } m_state;
 
             AZStd::shared_ptr<DescriptorContext> m_descriptorContext;
@@ -399,7 +403,41 @@ namespace AZ
             {
                 const size_t srgSlot = pipelineLayout->GetSlotByIndex(srgIndex);
                 const ShaderResourceGroup* shaderResourceGroup = bindings.m_srgsBySlot[srgSlot];
+                RootParameterBinding binding = pipelineLayout->GetRootParameterBindingByIndex(srgIndex);
 
+                //Check if we are iterating over the bindless srg slot
+                if (srgSlot != RHI::Limits::Pipeline::ShaderResourceGroupCountMax && shaderResourceGroup == nullptr)
+                {
+                    // Skip in case the global static heap is already bound
+                    if (m_state.m_bindBindlessHeap)
+                    {
+                        continue;
+                    }
+                    AZ_Assert(srgSlot == RHI::ShaderResourceGroupData::BindlessSRGFrequencyId,"Bindless SRG slot needs to match the one described in the shader.");
+                    AZ_Assert(binding.m_bindlessTable.IsValid(), "BindlessSRG handles is not valid.");
+
+                    switch (pipelineType)
+                    {
+                    case RHI::PipelineStateType::Draw:
+                        {
+                            GetCommandList()->SetGraphicsRootDescriptorTable(
+                                binding.m_bindlessTable.GetIndex(), m_descriptorContext->GetBindlessGpuPlatformHandle());
+                            break;
+                        }
+                    case RHI::PipelineStateType::Dispatch:
+                        {
+                            GetCommandList()->SetComputeRootDescriptorTable(
+                                binding.m_bindlessTable.GetIndex(), m_descriptorContext->GetBindlessGpuPlatformHandle());
+                            break;
+                        }
+                    default:
+                        AZ_Assert(false, "Invalid PipelineType");
+                        break;
+                    }
+                    m_state.m_bindBindlessHeap = true;
+                    continue;
+                }
+                
                 if (AZ::RHI::Validation::IsEnabled())
                 {
                     if (!shaderResourceGroup)
@@ -430,12 +468,12 @@ namespace AZ
                 }
 
                 bool updateSRG = bindings.m_srgsByIndex[srgIndex] != shaderResourceGroup;
+
                 if (updateSRG)
                 {
                     bindings.m_srgsByIndex[srgIndex] = shaderResourceGroup;
 
                     const ShaderResourceGroupCompiledData& compiledData = shaderResourceGroup->GetCompiledData();
-                    RootParameterBinding binding = pipelineLayout->GetRootParameterBindingByIndex(srgIndex);
 
                     switch (pipelineType)
                     {
@@ -455,16 +493,19 @@ namespace AZ
                             GetCommandList()->SetGraphicsRootDescriptorTable(binding.m_samplerTable.GetIndex(), compiledData.m_gpuSamplersDescriptorHandle);
                         }
 
-                        for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays; ++unboundedArrayIndex)
+                        
+                        for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays;
+                             ++unboundedArrayIndex)
                         {
-                            if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid() &&
+                            if (binding.m_bindlessTable.IsValid() &&
                                 compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex].ptr)
                             {
                                 GetCommandList()->SetGraphicsRootDescriptorTable(
-                                    binding.m_unboundedArrayResourceTables[unboundedArrayIndex].GetIndex(),
+                                    binding.m_bindlessTable.GetIndex(),
                                     compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex]);
                             }
                         }
+                        
                         break;
 
                     case RHI::PipelineStateType::Dispatch:
@@ -483,13 +524,14 @@ namespace AZ
                             GetCommandList()->SetComputeRootDescriptorTable(binding.m_samplerTable.GetIndex(), compiledData.m_gpuSamplersDescriptorHandle);
                         }
 
-                        for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays; ++unboundedArrayIndex)
+                        for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays;
+                             ++unboundedArrayIndex)
                         {
-                            if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid() &&
+                            if (binding.m_bindlessTable.IsValid() &&
                                 compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex].ptr)
                             {
                                 GetCommandList()->SetComputeRootDescriptorTable(
-                                    binding.m_unboundedArrayResourceTables[unboundedArrayIndex].GetIndex(),
+                                    binding.m_bindlessTable.GetIndex(),
                                     compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex]);
                             }
                         }
