@@ -60,7 +60,6 @@ namespace AzQtComponents
         struct Config
         {
             QString linkColor;      //!< Color for links. Must be a string using the hex format #rrggbb.
-            float optimalPathWidth; //!< The portion of the total width used to display the path. Must be a value between 0.0 and 1.0.
         };
 
         explicit BreadCrumbs(QWidget* parent = nullptr);
@@ -103,6 +102,10 @@ namespace AzQtComponents
         //! @return The pointer to the newly created separator.
         //! Note: the separator will need to be added to a layout manually.
         QWidget* createSeparator();
+
+        //! Size hint reports the space that would be taken if the whole
+        //! path would be shown.
+        QSize sizeHint() const override;
 
         //! Sets the Breadcrumbs style configuration.
         //! @param settings The settings object to load the configuration from.

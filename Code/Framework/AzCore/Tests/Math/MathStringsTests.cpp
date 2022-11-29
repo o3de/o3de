@@ -21,7 +21,7 @@
 
 namespace UnitTest
 {
-    class MathStrings : public AllocatorsTestFixture
+    class MathStrings : public LeakDetectionFixture
     {
 
     };

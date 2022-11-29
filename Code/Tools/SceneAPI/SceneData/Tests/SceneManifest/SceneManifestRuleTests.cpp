@@ -114,7 +114,7 @@ namespace AZ
     namespace SceneData
     {
         class SceneManifest_JSON
-            : public UnitTest::AllocatorsFixture
+            : public UnitTest::LeakDetectionFixture
         {
         public:
             AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
@@ -123,7 +123,7 @@ namespace AZ
 
             void SetUp() override
             {
-                UnitTest::AllocatorsFixture::SetUp();
+                UnitTest::LeakDetectionFixture::SetUp();
                 AZ::NameDictionary::Create();
 
                 m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
@@ -178,7 +178,7 @@ namespace AZ
                 CleanUpSceneDataGenericClassInfo();
 
                 AZ::NameDictionary::Destroy();
-                UnitTest::AllocatorsFixture::TearDown();
+                UnitTest::LeakDetectionFixture::TearDown();
             }
 
             void PrepareMockPythonInterface()

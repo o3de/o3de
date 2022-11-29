@@ -2557,7 +2557,6 @@ namespace EMStudio
                 else
                 {
                     // Draw group name label
-                    m_nodeGroupNameLineEdit->hide();
                     QRect textRect = groupRect;
                     textRect.setHeight(m_groupFontMetrics->height());
                     textRect.setLeft(textRect.left() + sGroupRectTextHPadding);
@@ -2598,6 +2597,10 @@ namespace EMStudio
             m_nodeGroupNameLineEdit->setText({});
             m_currentNameEditNodeGroup->SetNameEditOngoing(false);
             m_currentNameEditNodeGroup = nullptr;
+            // This needs to be done after setting m_currentNameEditNodeGroup = nullptr because
+            // it triggers the QLineEdit::editingFinished signal which this function is connected to,
+            // which is effectively a recursive function call.
+            m_nodeGroupNameLineEdit->hide();
         }
     }
 

@@ -542,17 +542,18 @@ namespace AZ::Render
             const AZ::Vector3 bone = parentWorldPos - nodeWorldPos;
             const AZ::Vector3 boneDirection = bone.GetNormalizedEstimate();
             const AZ::Vector3 centerWorldPos = bone / 2 + nodeWorldPos;
+            const float maxBoneScale = 0.05f;
             const float boneLength = bone.GetLengthEstimate();
-            const float boneScale = CalculateBoneScale(instance, joint);
-            const float parentBoneScale = CalculateBoneScale(instance, skeleton->GetNode(parentIndex));
+            const float boneScale = AZStd::min(CalculateBoneScale(instance, joint), maxBoneScale);
+            const float parentBoneScale = AZStd::min(CalculateBoneScale(instance, skeleton->GetNode(parentIndex)), maxBoneScale);
             const float cylinderSize = boneLength - boneScale - parentBoneScale;
 
             renderColor = GetModifiedColor(color, parentIndex, cachedSelectedJointIndices, cachedHoveredJointIndex);
-            renderColor.SetA(0.75f);
+            renderColor.SetA(0.5f);
             debugDisplay->SetColor(renderColor);
 
             // Render the bone cylinder, the cylinder will be directed towards the node's parent and must fit between the spheres
-            debugDisplay->DrawSolidCylinder(centerWorldPos, boneDirection, boneScale * 0.75f, cylinderSize);
+            debugDisplay->DrawSolidCylinder(centerWorldPos, boneDirection, boneScale, cylinderSize);
             debugDisplay->DrawBall(nodeWorldPos, boneScale);
         }
 

@@ -17,12 +17,12 @@
 #include <AzCore/UnitTest/TestTypes.h>
 
 class GameStateTest
-    : public UnitTest::AllocatorsTestFixture
+    : public UnitTest::LeakDetectionFixture
 {
 protected:
     void SetUp() override
     {
-        AllocatorsTestFixture::SetUp();
+        LeakDetectionFixture::SetUp();
         m_gameStateSystemComponent = AZStd::make_unique<GameState::GameStateSystemComponent>();
         m_gameStateSystemComponent->GameState::GameStateRequestBus::Handler::BusConnect();
     }
@@ -31,7 +31,7 @@ protected:
     {
         m_gameStateSystemComponent->GameState::GameStateRequestBus::Handler::BusDisconnect();
         m_gameStateSystemComponent.reset();
-        AllocatorsTestFixture::TearDown();
+        LeakDetectionFixture::TearDown();
     }
 
 private:

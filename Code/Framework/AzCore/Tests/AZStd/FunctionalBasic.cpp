@@ -15,7 +15,7 @@
 namespace UnitTest
 {
     class FunctionalBasicTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     };
 

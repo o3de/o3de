@@ -542,6 +542,11 @@ namespace AzFramework
         AZStd::function<float()> m_translateSpeedFn;
         AZStd::function<float()> m_boostMultiplierFn;
 
+        bool Boosting() const
+        {
+            return m_boost;
+        }
+
     private:
         //! The type of translation the camera input is performing (multiple may be active at once).
         enum class TranslationType

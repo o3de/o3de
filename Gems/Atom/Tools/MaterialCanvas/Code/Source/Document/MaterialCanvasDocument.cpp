@@ -155,7 +155,7 @@ namespace MaterialCanvas
         documentType.m_defaultDocumentTemplate =
             AtomToolsFramework::GetPathWithoutAlias(AtomToolsFramework::GetSettingsValue<AZStd::string>(
                 "/O3DE/Atom/MaterialCanvas/DefaultMaterialGraphTemplate",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/blank.materialgraphtemplate"));
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/blank_graph.materialgraphtemplate"));
         return documentType;
     }
 
@@ -393,6 +393,10 @@ namespace MaterialCanvas
 
     void MaterialCanvasDocument::RecordGraphState()
     {
+        // Forcing all of the graph model metadata to be updated before serializing to the binary stream. This will ensure that data for
+        // bookmarks, comments, and groups is recorded.
+        GraphCanvas::GraphModelRequestBus::Event(m_graphId, &GraphCanvas::GraphModelRequests::OnSaveDataDirtied, m_graphId);
+
         // Serialize the current graph to a byte stream so that it can be restored with undo redo operations.
         m_graphStateForUndoRedo.clear();
         AZ::IO::ByteContainerStream<decltype(m_graphStateForUndoRedo)> undoGraphStateStream(&m_graphStateForUndoRedo);

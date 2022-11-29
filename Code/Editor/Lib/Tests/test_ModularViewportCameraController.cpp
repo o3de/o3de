@@ -88,14 +88,14 @@ namespace UnitTest
         return m_mousePosition;
     }
 
-    class ModularViewportCameraControllerFixture : public AllocatorsTestFixture
+    class ModularViewportCameraControllerFixture : public LeakDetectionFixture
     {
     public:
         static inline constexpr AzFramework::ViewportId TestViewportId = 1234;
 
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_rootWidget = AZStd::make_unique<QWidget>();
             // set root widget to the the active window to ensure focus in/out events are fired
@@ -130,7 +130,7 @@ namespace UnitTest
             m_otherWidget.reset();
             m_rootWidget.reset();
 
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void PrepareCollaborators()

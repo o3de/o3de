@@ -15,7 +15,7 @@
 namespace AWSMetrics
 {
     class MetricsEventTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         static constexpr int NumTestMetrics = 10;

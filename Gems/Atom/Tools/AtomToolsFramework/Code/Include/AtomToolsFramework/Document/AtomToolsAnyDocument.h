@@ -48,6 +48,7 @@ namespace AtomToolsFramework
         static DocumentTypeInfo BuildDocumentTypeInfo(
             const AZStd::string& documentTypeName,
             const AZStd::vector<AZStd::string>& documentTypeExtensions,
+            const AZStd::vector<AZStd::string>& documentTypeTemplateExtensions,
             const AZStd::any& defaultValue,
             const AZ::Uuid& contentTypeIdIfNotEmbedded);
 
