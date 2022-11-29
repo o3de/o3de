@@ -536,6 +536,8 @@ namespace AzFramework
     {
         if (const auto& input = AZStd::get_if<DiscreteInputEvent>(&state.m_inputEvent))
         {
+            m_boost = state.m_modifiers.IsActive(GetCorrespondingModifierKeyMask(m_translateCameraInputChannelIds.m_boostChannelId));
+
             if (input->m_state == InputChannel::State::Began)
             {
                 if (auto translation = TranslationFromKey(input->m_channelId, m_translateCameraInputChannelIds);
@@ -543,11 +545,6 @@ namespace AzFramework
                 {
                     m_translation |= translation;
                     BeginActivation();
-                }
-
-                if (input->m_channelId == m_translateCameraInputChannelIds.m_boostChannelId)
-                {
-                    m_boost = true;
                 }
             }
             // ensure we don't process end events in the idle state
@@ -561,11 +558,6 @@ namespace AzFramework
                     {
                         EndActivation();
                     }
-                }
-
-                if (input->m_channelId == m_translateCameraInputChannelIds.m_boostChannelId)
-                {
-                    m_boost = false;
                 }
             }
         }

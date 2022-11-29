@@ -97,6 +97,7 @@ namespace LyShine
                 ->Event("IsUiCursorVisible", &UiCursorBus::Events::IsUiCursorVisible)
                 ->Event("SetUiCursor", &UiCursorBus::Events::SetUiCursor)
                 ->Event("GetUiCursorPosition", &UiCursorBus::Events::GetUiCursorPosition)
+                ->Event("SetUiCursorPosition", &UiCursorBus::Events::SetUiCursorPosition)
                 ;
         }
         

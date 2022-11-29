@@ -256,7 +256,7 @@ namespace EMotionFX
         m_commandGroup.Clear();
     }
 
-    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ColliderWidget::ColliderWidget(QIcon* icon, QWidget* parent, AZ::SerializeContext* serializeContext)
         : AzQtComponents::Card(parent)
@@ -326,8 +326,19 @@ namespace EMotionFX
         {
             return;
         }
+        setVisible(HasDisplayedNodes());
+    }
 
-        m_editor->InvalidateValues();
+    void ColliderWidget::SetFilterString(QString filterString)
+    {
+        m_editor->SetFilterString(filterString);
+
+        Update();
+    }
+
+    bool ColliderWidget::HasDisplayedNodes() const
+    {
+        return m_editor->HasDisplayedNodes();
     }
 
     void ColliderWidget::OnCardContextMenu(const QPoint& position)
@@ -506,7 +517,7 @@ namespace EMotionFX
         return colliderType.ToString<AZStd::string>();
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Align the layout spacing with the entity inspector.
     int ColliderContainerWidget::s_layoutSpacing = 13;
@@ -515,10 +526,10 @@ namespace EMotionFX
         : QWidget(parent)
         , m_colliderIcon(colliderIcon)
     {
-        m_layout = new QVBoxLayout(this);
-        m_layout->setAlignment(Qt::AlignTop);
+        m_layout = new QVBoxLayout();
         m_layout->setMargin(0);
         m_layout->setSpacing(s_layoutSpacing);
+        setLayout(m_layout);
 
         m_commandCallback = new ColliderEditedCallback(this, /*executePreUndo*/false);
         CommandSystem::GetCommandManager()->RegisterCommandCallback(CommandAdjustCollider::s_commandName, m_commandCallback);
@@ -538,6 +549,8 @@ namespace EMotionFX
         const size_t numColliders = colliders.size();
         size_t numAvailableColliderWidgets = m_colliderWidgets.size();
 
+        setVisible(numColliders > 0);
+
         // Create new collider widgets in case we don't have enough.
         if (numColliders > numAvailableColliderWidgets)
         {
@@ -549,11 +562,11 @@ namespace EMotionFX
                 connect(colliderWidget, &ColliderWidget::CopyCollider, this, &ColliderContainerWidget::CopyCollider);
                 connect(colliderWidget, &ColliderWidget::PasteCollider, this, [this](size_t index) { PasteCollider(index, true); } );
                 m_colliderWidgets.emplace_back(colliderWidget);
-                m_layout->addWidget(colliderWidget, 0, Qt::AlignTop);
+                m_layout->addWidget(colliderWidget, 0);
             }
             numAvailableColliderWidgets = m_colliderWidgets.size();
         }
-        AZ_Assert(numAvailableColliderWidgets >= numColliders, "Not enough collider widgets available. Something went one with creating new ones.");
+        AZ_Assert(numAvailableColliderWidgets >= numColliders, "Not enough collider widgets available. Something went wrong with creating new ones.");
 
         for (size_t i = 0; i < numColliders; ++i)
         {
@@ -582,6 +595,25 @@ namespace EMotionFX
     void ColliderContainerWidget::Reset()
     {
         Update(nullptr, nullptr, PhysicsSetup::ColliderConfigType::Unknown, AzPhysics::ShapeColliderPairList(), nullptr);
+    }
+
+    void ColliderContainerWidget::SetFilterString(QString filterString)
+    {
+        for (auto* widget : m_colliderWidgets)
+        {
+            widget->SetFilterString(filterString);
+        }
+    }
+
+    bool ColliderContainerWidget::HasVisibleColliders() const
+    {
+        return AZStd::any_of(
+                   m_colliderWidgets.begin(),
+                   m_colliderWidgets.end(),
+                   [](auto w)
+                   {
+                       return !w->isHidden();
+                   });
     }
 
     void ColliderContainerWidget::contextMenuEvent(QContextMenuEvent* event)
@@ -619,12 +651,7 @@ namespace EMotionFX
         event->accept();
     }
 
-    QSize ColliderContainerWidget::sizeHint() const
-    {
-        return QWidget::sizeHint() + QSize(0, s_layoutSpacing);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ColliderContainerWidget::ColliderEditedCallback::ColliderEditedCallback(ColliderContainerWidget* parent, bool executePreUndo, bool executePreCommand)
         : MCore::Command::Callback(executePreUndo, executePreCommand)

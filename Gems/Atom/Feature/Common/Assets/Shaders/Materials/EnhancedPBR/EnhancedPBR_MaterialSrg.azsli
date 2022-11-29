@@ -23,6 +23,8 @@
 #include "../MaterialInputs/UvSetCount.azsli"
 #include "../MaterialInputs/DetailMapsInput.azsli"
 
+#include <Atom/Features/SrgSemantics.azsli>
+
 ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {
     // Auto-generate material SRG fields for common inputs

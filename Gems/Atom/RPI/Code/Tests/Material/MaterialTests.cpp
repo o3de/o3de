@@ -581,6 +581,43 @@ namespace UnitTest
         }
     }
 
+    TEST_F(MaterialTests, TestSetPropertyValue_ConnectedToShaderEnabled)
+    {
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, Name{"one"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, Name{"two"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, Name{"three"});
+        materialTypeCreator.BeginMaterialProperty(Name{"EnableSecondShader"}, MaterialPropertyDataType::Bool);
+        materialTypeCreator.ConnectMaterialPropertyToShaderEnabled(Name{"two"});
+        materialTypeCreator.EndMaterialProperty();
+        materialTypeCreator.End(m_testMaterialTypeAsset);
+
+        MaterialAssetCreator materialAssetCreator;
+        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
+        materialAssetCreator.End(m_testMaterialAsset);
+
+        Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
+
+        MaterialPropertyIndex enableShader = material->FindPropertyIndex(Name{"EnableSecondShader"});
+
+        EXPECT_TRUE(material->GetShaderCollection()[0].IsEnabled());
+        EXPECT_FALSE(material->GetShaderCollection()[1].IsEnabled());
+        EXPECT_TRUE(material->GetShaderCollection()[2].IsEnabled());
+
+        material->SetPropertyValue(enableShader, true);
+
+        EXPECT_TRUE(material->GetShaderCollection()[0].IsEnabled());
+        EXPECT_TRUE(material->GetShaderCollection()[1].IsEnabled());
+        EXPECT_TRUE(material->GetShaderCollection()[2].IsEnabled());
+
+        material->SetPropertyValue(enableShader, false);
+
+        EXPECT_TRUE(material->GetShaderCollection()[0].IsEnabled());
+        EXPECT_FALSE(material->GetShaderCollection()[1].IsEnabled());
+        EXPECT_TRUE(material->GetShaderCollection()[2].IsEnabled());
+    }
+
 
     TEST_F(MaterialTests, TestSetSystemShaderOption)
     {

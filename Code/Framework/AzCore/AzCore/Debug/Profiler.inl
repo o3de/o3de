@@ -16,6 +16,9 @@ namespace AZ::Debug
         void BeginProfileRegion(Budget* budget, const char* eventName, T const&... args);
         void BeginProfileRegion(Budget* budget, const char* eventName);
         void EndProfileRegion(Budget* budget);
+        template<typename T>
+        void ReportCounter(const Budget* budget, const wchar_t* counterName, const T& value);
+        void ReportProfileEvent(const Budget* budget, const char* eventName);
     } // namespace Platform
 
     template<typename... T>
@@ -64,6 +67,23 @@ namespace AZ::Debug
     inline ProfileScope::~ProfileScope()
     {
         EndRegion(m_budget);
+    }
+
+    template<typename T>
+    inline void Profiler::ReportCounter(
+        [[maybe_unused]] const Budget* budget, [[maybe_unused]] const wchar_t* counterName,
+        [[maybe_unused]] const T& value)
+    {
+#if !defined(_RELEASE)
+        Platform::ReportCounter(budget, counterName, value);
+#endif // !defined(_RELEASE)
+    }
+    inline void Profiler::ReportProfileEvent([[maybe_unused]] const Budget* budget,
+        [[maybe_unused]] const char* eventName)
+    {
+#if !defined(_RELEASE)
+        Platform::ReportProfileEvent(budget, eventName);
+#endif // !defined(_RELEASE)
     }
 
 } // namespace AZ::Debug

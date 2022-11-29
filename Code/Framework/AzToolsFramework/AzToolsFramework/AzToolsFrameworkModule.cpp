@@ -60,6 +60,7 @@
 #include <AzToolsFramework/Viewport/SharedViewBookmarkComponent.h>
 #include <AzToolsFramework/Viewport/LocalViewBookmarkComponent.h>
 #include <AzToolsFramework/Viewport/ViewBookmarkSystemComponent.h>
+#include <Metadata/MetadataManager.h>
 #include <Prefab/ProceduralPrefabSystemComponent.h>
 
 AZ_DEFINE_BUDGET(AzToolsFramework);
@@ -121,6 +122,7 @@ namespace AzToolsFramework
             AzToolsFramework::Script::LuaSymbolsReporterSystemComponent::CreateDescriptor(),
             AzToolsFramework::Script::LuaEditorSystemComponent::CreateDescriptor(),
             AzToolsFramework::PaintBrushSettingsSystemComponent::CreateDescriptor(),
+            AzToolsFramework::MetadataManager::CreateDescriptor(),
         });
     }
 }
