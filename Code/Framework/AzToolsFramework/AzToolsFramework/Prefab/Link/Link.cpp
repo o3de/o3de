@@ -120,7 +120,7 @@ namespace AzToolsFramework
             return ConstructLinkDomFromPatches(linkDom, allocator);
         }
 
-        bool Link::AreOverridesPresent(AZ::Dom::Path path, AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags)
+        bool Link::AreOverridesPresent(AZ::Dom::Path path, AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags) const
         {
             bool areOverridesPresent = false;
             auto visitorFn = [&areOverridesPresent](AZ::Dom::Path, const PrefabOverrideMetadata&)
@@ -137,7 +137,7 @@ namespace AzToolsFramework
 
         PrefabDomConstReference Link::FindOverridePatch(
             AZ::Dom::Path path,
-            AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags)
+            AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags) const
         {
             PrefabDomConstReference overridePatch = {};
             auto visitorFn = [&overridePatch](AZ::Dom::Path, const PrefabOverrideMetadata& overrideData)

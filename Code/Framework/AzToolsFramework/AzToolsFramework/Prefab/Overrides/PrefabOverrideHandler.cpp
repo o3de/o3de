@@ -18,13 +18,15 @@
     {
         namespace Internal
         {
-            // Helper to differentiate between adding/removing
-            // an entity object or adding/removing an entity property
+            // Helper to differentiate between adding/removing an entire
+            // entity object or adding/removing a property within an entity
             bool IsDirectEntityPatch(PrefabDomConstReference patch)
             {
                 auto pathMember = patch->get().FindMember("path");
                 if (pathMember != patch->get().MemberEnd())
                 {
+                    // Check whether the patch path points to an entity directly (ex. /Entities/Entity_[123213123123])
+                    // or to something else (ex. /Entities/Entity_[123213123123]/Components/Component_[1232131231231231231]/...)
                     AZ::Dom::Path path(pathMember->value.GetString());
                     if (path.Size() > 1)
                     {
@@ -86,33 +88,29 @@
         {
             AZStd::optional<EntityOverrideType> overrideType = {};
 
-            PrefabSystemComponentInterface* prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
-            if (prefabSystemComponentInterface != nullptr)
+            LinkReference link = m_prefabSystemComponentInterface->FindLink(linkId);
+            if (link.has_value())
             {
-                LinkReference link = prefabSystemComponentInterface->FindLink(linkId);
-                if (link.has_value())
+                // Look for an override in the provided path
+                if (PrefabDomConstReference overridePatch = link->get().FindOverridePatch(path); overridePatch.has_value())
                 {
-                    // Look for an override in the provided path
-                    if (PrefabDomConstReference overridePatch = link->get().FindOverridePatch(path); overridePatch.has_value())
+                    PrefabDomValue::ConstMemberIterator patchEntryIterator = overridePatch->get().FindMember("op");
+                    if (patchEntryIterator != overridePatch->get().MemberEnd())
                     {
-                        PrefabDomValue::ConstMemberIterator patchEntryIterator = overridePatch->get().FindMember("op");
-                        if (patchEntryIterator != overridePatch->get().MemberEnd())
+                        AZStd::string opPath = patchEntryIterator->value.GetString();
+                        if (opPath == "remove")
                         {
-                            AZStd::string opPath = patchEntryIterator->value.GetString();
-                            if (opPath == "remove")
-                            {
-                                overrideType = Internal::IsDirectEntityPatch(overridePatch)
-                                    ? EntityOverrideType::RemoveEntity : EntityOverrideType::EditEntity;
-                            }
-                            else if (opPath == "add")
-                            {
-                                overrideType = Internal::IsDirectEntityPatch(overridePatch)
-                                    ? EntityOverrideType::AddEntity : EntityOverrideType::EditEntity;
-                            }
-                            else if (opPath == "replace")
-                            {
-                                overrideType = EntityOverrideType::EditEntity;
-                            }
+                            overrideType = Internal::IsDirectEntityPatch(overridePatch)
+                                ? EntityOverrideType::RemoveEntity : EntityOverrideType::EditEntity;
+                        }
+                        else if (opPath == "add")
+                        {
+                            overrideType = Internal::IsDirectEntityPatch(overridePatch)
+                                ? EntityOverrideType::AddEntity : EntityOverrideType::EditEntity;
+                        }
+                        else if (opPath == "replace")
+                        {
+                            overrideType = EntityOverrideType::EditEntity;
                         }
                     }
                 }

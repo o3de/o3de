@@ -116,7 +116,7 @@ namespace AzToolsFramework
             //! @return true if overrides are present at the provided path.
             bool AreOverridesPresent(
                 AZ::Dom::Path path,
-                AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags = AZ::Dom::PrefixTreeTraversalFlags::ExcludeParentPaths);
+                AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags = AZ::Dom::PrefixTreeTraversalFlags::ExcludeParentPaths) const;
 
             //! Finds an override patch by querying the patches tree at the provided path
             //! @param path The path to query the overrides tree with.
@@ -125,7 +125,7 @@ namespace AzToolsFramework
             //! @return an override patch if overrides are present at the provided path.
             PrefabDomConstReference FindOverridePatch(
                 AZ::Dom::Path path,
-                AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags = AZ::Dom::PrefixTreeTraversalFlags::ExcludeParentPaths);
+                AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags = AZ::Dom::PrefixTreeTraversalFlags::ExcludeParentPaths) const;
             
             //! Removes overrides at the provided path and all the nodes under it from the override tree
             //! @param path The path at which the overrides should be removed from
