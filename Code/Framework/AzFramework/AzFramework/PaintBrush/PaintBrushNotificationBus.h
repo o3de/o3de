@@ -17,7 +17,7 @@
 #include <AzCore/std/functional.h>
 #include <AzCore/Component/ComponentBus.h>
 
-namespace AzToolsFramework
+namespace AzFramework
 {
     //! PaintBrushNotificationBus is used to send out notifications whenever anything about the paintbrush has changed.
     class PaintBrushNotifications : public AZ::EBusTraits
@@ -118,4 +118,4 @@ namespace AzToolsFramework
     };
 
     using PaintBrushNotificationBus = AZ::EBus<PaintBrushNotifications>;
-} // namespace AzToolsFramework
+} // namespace AzFramework

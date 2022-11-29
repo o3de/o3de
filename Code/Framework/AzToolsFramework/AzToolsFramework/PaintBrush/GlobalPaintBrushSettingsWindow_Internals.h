@@ -12,7 +12,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsNotificationBus.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsNotificationBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 
 namespace AZ
@@ -23,10 +23,7 @@ namespace AZ
 namespace AzToolsFramework
 {
     class ReflectedPropertyEditor;
-} // namespace AzToolsFramework
 
-namespace PaintBrush
-{
     namespace Internal
     {
         //! PaintBrushSettingsWindow is a simple view pane that lets us view and edit the global paint brush settings.
@@ -34,14 +31,14 @@ namespace PaintBrush
         //! Unlike other component modes, this is built as a separate pane because the controls might get fairly complex over time
         //! and will likely get used frequently while painting, so the user should have the ability to move and dock these settings
         //! to wherever is best for their paint session.
-        class PaintBrushSettingsWindow
+        class GlobalPaintBrushSettingsWindow
             : public QListView
             , private AzToolsFramework::IPropertyEditorNotify
-            , private AzToolsFramework::PaintBrushSettingsNotificationBus::Handler
+            , private AzToolsFramework::GlobalPaintBrushSettingsNotificationBus::Handler
         {
         public:
-            PaintBrushSettingsWindow(QWidget* parent = nullptr);
-            ~PaintBrushSettingsWindow();
+            GlobalPaintBrushSettingsWindow(QWidget* parent = nullptr);
+            ~GlobalPaintBrushSettingsWindow();
 
         protected:
 
@@ -70,7 +67,7 @@ namespace PaintBrush
 
         private:
             void OnVisiblePropertiesChanged() override;
-            void OnSettingsChanged([[maybe_unused]] const AzToolsFramework::PaintBrushSettings& newSettings) override;
+            void OnSettingsChanged([[maybe_unused]] const GlobalPaintBrushSettings& newSettings) override;
 
             // RPE Support
             AzToolsFramework::ReflectedPropertyEditor* m_propertyEditor = nullptr;
@@ -78,6 +75,6 @@ namespace PaintBrush
         };
 
         // simple factory method
-        PaintBrushSettingsWindow* CreateNewPaintBrushSettingsWindow(QWidget* parent = nullptr);
-    } // namespace PaintBrush::Internal
-} // namespace PaintBrush
+        GlobalPaintBrushSettingsWindow* CreateNewPaintBrushSettingsWindow(QWidget* parent = nullptr);
+    } // namespace AzToolsFramework::Internal
+} // namespace AzToolsFramework

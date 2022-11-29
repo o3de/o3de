@@ -18,7 +18,7 @@
 
 #include <AzToolsFramework/AzToolsFrameworkModule.h>
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsSystemComponent.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsSystemComponent.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
@@ -299,7 +299,7 @@ namespace AzToolsFramework
                 azrtti_typeid<AzToolsFramework::EntityUtilityComponent>(),
                 azrtti_typeid<AzToolsFramework::Script::LuaSymbolsReporterSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::Script::LuaEditorSystemComponent>(),
-                azrtti_typeid<AzToolsFramework::PaintBrushSettingsSystemComponent>(),
+                azrtti_typeid<AzToolsFramework::GlobalPaintBrushSettingsSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::MetadataManager>(),
             });
 
