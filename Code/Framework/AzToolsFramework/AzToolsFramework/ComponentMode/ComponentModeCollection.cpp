@@ -137,9 +137,10 @@ namespace AzToolsFramework
             if (componentTypeIt == m_activeComponentTypes.end())
             {
                 m_activeComponentTypes.push_back(componentType);
-                m_activeComponentEntityIdPairs.push_back(entityComponentIdPair);
                 m_viewportUiHandlers.emplace_back(componentType);
             }
+
+            m_activeComponentModes.push_back(AZStd::make_pair(entityComponentIdPair, componentType));
 
             // see if we already have a ComponentModeBuilder for the specific component on this entity
             const auto builderEntityIt = AZStd::find_if(
@@ -211,18 +212,12 @@ namespace AzToolsFramework
             return InComponentMode() ? m_activeComponentTypes : AZStd::vector<AZ::Uuid>{};
         }
 
-        AZStd::vector<AZ::EntityComponentIdPair> ComponentModeCollection::GetEntityComponentIdPairs() const
-        {
-            // If in component mode, return the active ComponentEntityIdPairs, otherwise return an empty vector
-            return InComponentMode() ? m_activeComponentEntityIdPairs : AZStd::vector<AZ::EntityComponentIdPair>{};
-        }
-
         void ComponentModeCollection::EnumerateActiveComponents(
             AZStd::function<void(const AZ::EntityComponentIdPair&, const AZ::Uuid&)> handler) const
         {
-            for (size_t i = 0; i < m_activeComponentTypes.size(); ++i)
+            for (size_t i = 0; i < m_activeComponentModes.size(); ++i)
             {
-                handler(m_activeComponentEntityIdPairs[i], m_activeComponentTypes[i]);
+                handler(m_activeComponentModes[i].first, m_activeComponentModes[i].second);
             }
         }
 
@@ -323,7 +318,7 @@ namespace AzToolsFramework
             }
             m_entitiesAndComponentModeBuilders.clear();
             m_activeComponentTypes.clear();
-            m_activeComponentEntityIdPairs.clear();
+            m_activeComponentModes.clear();
             m_viewportUiHandlers.clear();
 
             m_selectedComponentModeIndex = 0;
