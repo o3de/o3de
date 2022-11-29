@@ -525,7 +525,7 @@ namespace UnitTest
         // update the viewport
         m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(1.0f), AZ::ScriptTimePoint() });
 
-        // ensure the 
+        // ensure the camera did not move from its last position
         const AZ::Vector3 lastCameraTranslation = m_cameraViewportContextView->GetCameraTransform().GetTranslation();
         EXPECT_THAT(lastCameraTranslation, IsClose(nextCameraTranslation));
 
