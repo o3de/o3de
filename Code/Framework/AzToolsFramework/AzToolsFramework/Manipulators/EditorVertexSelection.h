@@ -306,6 +306,10 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR_DECL
 
+        EditorVertexSelectionFixed() = default;
+        EditorVertexSelectionFixed(EditorVertexSelectionFixed&&) = default;
+        EditorVertexSelectionFixed& operator=(EditorVertexSelectionFixed&&) = default;
+
     private:
         // EditorVertexSelectionBase
         void SetupSelectionManipulator(
