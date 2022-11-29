@@ -50,7 +50,7 @@ namespace MaterialCanvas
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
 
         // AtomToolsFramework::AtomToolsDocumentMainWindow overrides...
-        AZStd::vector<AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup>> GetSettingsDialogGroups() const override;
+        void PopulateSettingsInspector(AtomToolsFramework::InspectorWidget* inspector) const override;
         AZStd::string GetHelpDialogText() const override;
 
     private:
@@ -63,5 +63,6 @@ namespace MaterialCanvas
         GraphCanvas::NodePaletteDockWidget* m_nodePalette = {};
         GraphCanvas::StyleManager m_styleManager;
         QTranslator m_translator;
+        mutable AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup> m_materialCanvasCompileSettingsGroup;
     };
 } // namespace MaterialCanvas

@@ -144,25 +144,35 @@ namespace MaterialCanvas
         m_materialViewport->UnlockRenderTargetSize();
     }
 
-    AZStd::vector<AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup>> MaterialCanvasMainWindow::GetSettingsDialogGroups() const
+    void MaterialCanvasMainWindow::PopulateSettingsInspector(AtomToolsFramework::InspectorWidget* inspector) const
     {
-        AZStd::vector<AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup>> groups;
-        groups.push_back(AtomToolsFramework::CreateSettingsGroup(
-            "Material Canvas Settings",
-            "Material Canvas Settings",
-           {
-                AtomToolsFramework::CreatePropertyFromSetting(
-                    "/O3DE/Atom/MaterialCanvas/EnableMinimalShaderBuilds",
-                    "Enable Minimal Shader Builds",
-                    "Improve shader and material iteration and preview times by limiting the asset processor and shader compiler to the "
-                    "current platform and RHI. Changing this setting requires restarting Material Canvas and the asset processor.",
-                    false),
-            }));
+        Base::PopulateSettingsInspector(inspector);
 
-        // Add base class settings after app specific settings
-        AZStd::vector<AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup>> groupsFromBase = Base::GetSettingsDialogGroups();
-        groups.insert(groups.end(), groupsFromBase.begin(), groupsFromBase.end());
-        return groups;
+        m_materialCanvasCompileSettingsGroup = AtomToolsFramework::CreateSettingsPropertyGroup(
+            "Material Canvas Compile Settings",
+            "Material Canvas Compile Settings",
+            { AtomToolsFramework::CreateSettingsPropertyValue(
+                "/O3DE/Atom/MaterialCanvas/EnableMinimalShaderBuilds",
+                "Enable Minimal Shader Builds",
+                "Improve shader and material iteration and preview times by limiting the asset processor and shader compiler to the "
+                "current platform and RHI. Changing this setting requires restarting Material Canvas and the asset processor.",
+                false) });
+
+        inspector->AddGroup(
+            m_materialCanvasCompileSettingsGroup->m_name,
+            m_materialCanvasCompileSettingsGroup->m_displayName,
+            m_materialCanvasCompileSettingsGroup->m_description,
+            new AtomToolsFramework::InspectorPropertyGroupWidget(
+                m_materialCanvasCompileSettingsGroup.get(),
+                m_materialCanvasCompileSettingsGroup.get(),
+                azrtti_typeid<AtomToolsFramework::DynamicPropertyGroup>()));
+
+        inspector->AddGroup(
+            "Material Canvas Graph View Settings",
+            "Material Canvas Graph View Settings",
+            "Configuration settings for the graph view interaction, animation, and other behavior.",
+            new AtomToolsFramework::InspectorPropertyGroupWidget(
+                m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr->RTTI_Type()));
     }
 
     AZStd::string MaterialCanvasMainWindow::GetHelpDialogText() const
