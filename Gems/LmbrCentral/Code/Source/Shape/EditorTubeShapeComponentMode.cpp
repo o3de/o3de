@@ -11,6 +11,7 @@
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
@@ -46,10 +47,14 @@ namespace LmbrCentral
         EditorSplineComponentNotificationBus::Handler::BusConnect(entityComponentIdPair.GetEntityId());
 
         CreateManipulators();
+
+        EditorTubeShapeComponentModeRequestBus::Handler::BusConnect(entityComponentIdPair);
     }
 
     EditorTubeShapeComponentMode::~EditorTubeShapeComponentMode()
     {
+        EditorTubeShapeComponentModeRequestBus::Handler::BusDisconnect();
+
         DestroyManipulators();
 
         EditorSplineComponentNotificationBus::Handler::BusDisconnect();
@@ -85,26 +90,16 @@ namespace LmbrCentral
                 actionProperties,
                 []
                 {
-                    /*
-                    const AZ::EntityId entityId = GetEntityId();
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
 
-                    // ensure we record undo command for reset
-                    AzToolsFramework::ScopedUndoBatch undoBatch("Reset variable radii");
-                    AzToolsFramework::ScopedUndoBatch::MarkEntityDirty(entityId);
-
-                    TubeShapeComponentRequestsBus::Event(entityId, &TubeShapeComponentRequests::SetAllVariableRadii, 0.0f);
-
-                    RefreshManipulatorsLocal(entityId);
-
-                    EditorTubeShapeComponentRequestBus::Event(entityId, &EditorTubeShapeComponentRequests::GenerateVertices);
-
-                    AzToolsFramework::OnEntityComponentPropertyChanged(GetEntityComponentIdPair());
-
-                    // ensure property grid values are refreshed
-                    AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
-                        &AzToolsFramework::ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay,
-                        AzToolsFramework::Refresh_Values);
-                    */
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorTubeShapeComponentModeRequestBus::Event(
+                                entityComponentIdPair, &EditorTubeShapeComponentModeRequests::ResetRadii);
+                        }
+                    );
                 }
             );
 
@@ -353,6 +348,27 @@ namespace LmbrCentral
     void EditorTubeShapeComponentMode::OnSplineTypeChanged()
     {
         ContainerChanged();
+    }
+
+    void EditorTubeShapeComponentMode::ResetRadii()
+    {
+        const AZ::EntityId entityId = GetEntityId();
+
+        // ensure we record undo command for reset
+        AzToolsFramework::ScopedUndoBatch undoBatch("Reset variable radii");
+        AzToolsFramework::ScopedUndoBatch::MarkEntityDirty(entityId);
+
+        TubeShapeComponentRequestsBus::Event(entityId, &TubeShapeComponentRequests::SetAllVariableRadii, 0.0f);
+
+        RefreshManipulatorsLocal(entityId);
+
+        EditorTubeShapeComponentRequestBus::Event(entityId, &EditorTubeShapeComponentRequests::GenerateVertices);
+
+        AzToolsFramework::OnEntityComponentPropertyChanged(GetEntityComponentIdPair());
+
+        // ensure property grid values are refreshed
+        AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
     }
 
     void EditorTubeShapeComponentMode::OnOpenCloseChanged(const bool /*closed*/)

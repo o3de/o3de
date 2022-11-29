@@ -12,6 +12,7 @@
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Shape/EditorSplineComponentBus.h>
+#include <LmbrCentral/Shape/EditorTubeShapeComponentBus.h>
 #include <LmbrCentral/Shape/SplineComponentBus.h>
 
 namespace AzToolsFramework
@@ -28,6 +29,7 @@ namespace LmbrCentral
         , private ShapeComponentNotificationsBus::Handler
         , private SplineComponentNotificationBus::Handler
         , private EditorSplineComponentNotificationBus::Handler
+        , private EditorTubeShapeComponentModeRequestBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -78,6 +80,9 @@ namespace LmbrCentral
 
         // EditorSplineComponentNotificationBus
         void OnSplineTypeChanged() override;
+
+        // EditorTubeShapeComponentModeRequestBus overrides ...
+        void ResetRadii() override;
 
         void RefreshManipulatorsLocal(AZ::EntityId entityId);
 

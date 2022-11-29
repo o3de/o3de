@@ -22,13 +22,25 @@ namespace LmbrCentral
          /// of the tube to match the internals state.
         virtual void GenerateVertices() = 0;
 
-         /// Request the EditorTubeShapeComponent to reset all radii.
-        virtual void ResetRadii() = 0;
-
     protected:
         ~EditorTubeShapeComponentRequests() = default;
     };
 
     /// Type to inherit to provide EditorTubeShapeComponentRequests
     using EditorTubeShapeComponentRequestBus = AZ::EBus<EditorTubeShapeComponentRequests>;
+
+    /// Editor specific TubeShapeComponentMode requests.
+    class EditorTubeShapeComponentModeRequests
+        : public AZ::EntityComponentBus
+    {
+    public:
+         /// Request the EditorTubeShapeComponent to reset all radii.
+        virtual void ResetRadii() = 0;
+
+    protected:
+        ~EditorTubeShapeComponentModeRequests() = default;
+    };
+
+    /// Type to inherit to provide EditorTubeShapeComponentRequests
+    using EditorTubeShapeComponentModeRequestBus = AZ::EBus<EditorTubeShapeComponentModeRequests>;
 } // namespace LmbrCentral
