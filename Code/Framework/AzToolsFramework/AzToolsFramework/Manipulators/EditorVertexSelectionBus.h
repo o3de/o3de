@@ -13,15 +13,15 @@
 namespace AzToolsFramework
 {
     //! Bus to request operations to the EditorVertexSelection classes.
-    class EditorVertexSelectionRequests : public AZ::EntityComponentBus
+    class EditorVertexSelectionVariableRequests : public AZ::EntityComponentBus
     {
     public:
-        virtual void DuplicateSelectedVertices() {};
-        virtual void DeleteSelectedVertices() {};
+        virtual void DuplicateSelectedVertices() = 0;
+        virtual void DeleteSelectedVertices() = 0;
         virtual void ClearVertexSelection() = 0;
 
     protected:
-        ~EditorVertexSelectionRequests() = default;
+        ~EditorVertexSelectionVariableRequests() = default;
     };
-    using EditorVertexSelectionRequestBus = AZ::EBus<EditorVertexSelectionRequests>;
+    using EditorVertexSelectionVariableRequestBus = AZ::EBus<EditorVertexSelectionVariableRequests>;
 }

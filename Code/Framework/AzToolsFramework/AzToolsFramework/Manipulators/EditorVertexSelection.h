@@ -302,18 +302,11 @@ namespace AzToolsFramework
     template<typename Vertex>
     class EditorVertexSelectionFixed
         : public EditorVertexSelectionBase<Vertex>
-        , private AzToolsFramework::EditorVertexSelectionRequestBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
 
-        EditorVertexSelectionFixed(const AZ::EntityComponentIdPair& entityComponentIdPair);
-        ~EditorVertexSelectionFixed();
-
     private:
-        // EditorVertexSelectionRequestBus overrides ...
-        virtual void ClearVertexSelection() override;
-
         // EditorVertexSelectionBase
         void SetupSelectionManipulator(
             const AZStd::shared_ptr<SelectionManipulator>& selectionManipulator,
@@ -328,19 +321,23 @@ namespace AzToolsFramework
     template<typename Vertex>
     class EditorVertexSelectionVariable
         : public EditorVertexSelectionBase<Vertex>
-        , private AzToolsFramework::EditorVertexSelectionRequestBus::Handler
+        , private AzToolsFramework::EditorVertexSelectionVariableRequestBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
 
-        EditorVertexSelectionVariable(const AZ::EntityComponentIdPair& entityComponentIdPair);
+        explicit EditorVertexSelectionVariable(const AZ::EntityComponentIdPair& entityComponentIdPair);
         ~EditorVertexSelectionVariable();
 
         void DuplicateSelected();
         void DestroySelected();
 
-    protected:
+        // EditorVertexSelectionVariableRequests overrides ...
+        void DuplicateSelectedVertices() override;
+        void DeleteSelectedVertices() override;
+        void ClearVertexSelection() override;
 
+    protected:
         // EditorVertexSelectionBase
         void SetupSelectionManipulator(
             const AZStd::shared_ptr<SelectionManipulator>& selectionManipulator,
@@ -353,11 +350,6 @@ namespace AzToolsFramework
         virtual void ShowVertexDeletionWarning();
 
     private:
-        // EditorVertexSelectionRequestBus overrides ...
-        void DuplicateSelectedVertices() override;
-        void DeleteSelectedVertices() override;
-        void ClearVertexSelection() override;
-
         void PrepareActions() override;
 
         //! @return The center point of the selected vertices.

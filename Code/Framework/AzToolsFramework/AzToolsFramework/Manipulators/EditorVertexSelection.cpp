@@ -103,8 +103,8 @@ namespace AzToolsFramework
                     componentModeCollectionInterface->EnumerateActiveComponents(
                         [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
                         {
-                            EditorVertexSelectionRequestBus::Event(
-                                entityComponentIdPair, &EditorVertexSelectionRequests::DuplicateSelectedVertices);
+                            EditorVertexSelectionVariableRequestBus::Event(
+                                entityComponentIdPair, &EditorVertexSelectionVariableRequests::DuplicateSelectedVertices);
                         }
                     );
                 }
@@ -133,8 +133,8 @@ namespace AzToolsFramework
                     componentModeCollectionInterface->EnumerateActiveComponents(
                         [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
                         {
-                            EditorVertexSelectionRequestBus::Event(
-                                entityComponentIdPair, &EditorVertexSelectionRequests::DeleteSelectedVertices);
+                            EditorVertexSelectionVariableRequestBus::Event(
+                                entityComponentIdPair, &EditorVertexSelectionVariableRequests::DeleteSelectedVertices);
                         }
                     );
                 }
@@ -163,8 +163,8 @@ namespace AzToolsFramework
                     componentModeCollectionInterface->EnumerateActiveComponents(
                         [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
                         {
-                            EditorVertexSelectionRequestBus::Event(
-                                entityComponentIdPair, &EditorVertexSelectionRequests::ClearVertexSelection);
+                            EditorVertexSelectionVariableRequestBus::Event(
+                                entityComponentIdPair, &EditorVertexSelectionVariableRequests::ClearVertexSelection);
                         }
                     );
                 }
@@ -1201,24 +1201,6 @@ namespace AzToolsFramework
         }
     }
 
-    template<typename Vertex>
-    EditorVertexSelectionFixed<Vertex>::EditorVertexSelectionFixed(const AZ::EntityComponentIdPair& entityComponentIdPair)
-    {
-        EditorVertexSelectionRequestBus::Handler::BusConnect(entityComponentIdPair);
-    }
-
-    template<typename Vertex>
-    EditorVertexSelectionFixed<Vertex>::~EditorVertexSelectionFixed()
-    {
-        EditorVertexSelectionRequestBus::Handler::BusDisconnect();
-    }
-
-    template<typename Vertex>
-    void EditorVertexSelectionFixed<Vertex>::ClearVertexSelection()
-    {
-        EditorVertexSelectionBase<Vertex>::ClearSelected();
-    }
-
     // configure the selection manipulator for fixed editor selection - this configures the view and action
     // of interacting with the selection manipulator. Vertices can just be selected (create a translation
     // manipulator) but not added or removed.
@@ -1259,13 +1241,13 @@ namespace AzToolsFramework
     template<typename Vertex>
     EditorVertexSelectionVariable<Vertex>::EditorVertexSelectionVariable(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
-        EditorVertexSelectionRequestBus::Handler::BusConnect(entityComponentIdPair);
+        EditorVertexSelectionVariableRequestBus::Handler::BusConnect(entityComponentIdPair);
     }
 
     template<typename Vertex>
     EditorVertexSelectionVariable<Vertex>::~EditorVertexSelectionVariable()
     {
-        EditorVertexSelectionRequestBus::Handler::BusDisconnect();
+        EditorVertexSelectionVariableRequestBus::Handler::BusDisconnect();
     }
 
     // configure the selection manipulator for variable editor selection - this configures the view and action
