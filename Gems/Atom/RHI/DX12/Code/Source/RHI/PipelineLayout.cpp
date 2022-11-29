@@ -165,7 +165,7 @@ namespace AZ
                 if (groupLayout.GetConstantDataSize())
                 {
                     const auto& bindingInfo = descriptor.GetShaderResourceGroupBindingInfo(groupLayoutIndex);
-                    const uint32_t registerSpace = bindingInfo.m_spaceId;
+                    const uint32_t registerSpace = bindingInfo.m_constantDataBindingInfo.m_spaceId;
                     const uint32_t cbvRegister = groupBindInfo.m_constantDataBindingInfo.m_registerId;
 
                     D3D12_ROOT_PARAMETER parameter;
@@ -190,15 +190,13 @@ namespace AZ
 
                 if (groupLayout.GetGroupSizeForBuffers() || groupLayout.GetGroupSizeForImages())
                 {
-                    const uint32_t registerSpace = descriptor.GetShaderResourceGroupBindingInfo(groupLayoutIndex).m_spaceId;
- 
                     for (const RHI::ShaderInputBufferDescriptor& shaderInputBuffer : groupLayout.GetShaderInputListForBuffers())
                     {
                         auto findIt = groupBindInfo.m_resourcesRegisterMap.find(shaderInputBuffer.m_name);
                         AZ_Assert(findIt != groupBindInfo.m_resourcesRegisterMap.end(), "Could not find register for shader input %s", shaderInputBuffer.m_name.GetCStr());
                         const RHI::ResourceBindingInfo& bindingInfo = findIt->second;
                         D3D12_DESCRIPTOR_RANGE descriptorRange;
-                        descriptorRange.RegisterSpace = registerSpace;
+                        descriptorRange.RegisterSpace = bindingInfo.m_spaceId;
                         descriptorRange.NumDescriptors = shaderInputBuffer.m_count;
                         descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
                         descriptorRange.BaseShaderRegister = bindingInfo.m_registerId;
@@ -228,7 +226,7 @@ namespace AZ
 
                         const RHI::ResourceBindingInfo& bindingInfo = findIt->second;
                         D3D12_DESCRIPTOR_RANGE descriptorRange;
-                        descriptorRange.RegisterSpace = registerSpace;
+                        descriptorRange.RegisterSpace = bindingInfo.m_spaceId;
                         descriptorRange.NumDescriptors = shaderInputImage.m_count;
                         descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
                         descriptorRange.BaseShaderRegister = bindingInfo.m_registerId;
@@ -256,101 +254,73 @@ namespace AZ
                     m_indexToRootParameterBindingTable[groupLayoutIndex].m_resourceTable = RootParameterIndex(parameters.size());
                     parameters.push_back(parameter);
                 }
-            }
 
-            // Next, process the unbounded array descriptor tables by frequency.
-            // Note that each unbounded array is placed into its own D3D12_ROOT_PARAMETER, and there is a maximum of one SRV and one UAV
-            // unbounded array in a single SRG (sampler and constant buffer unbounded arrays are currently not supported).
-            for (const uint32_t groupLayoutIndex : indexesSortedByFrequency)
-            {
-                const RHI::ShaderResourceGroupLayout& groupLayout = *descriptor.GetShaderResourceGroupLayout(groupLayoutIndex);
-                const RHI::ShaderResourceGroupBindingInfo& groupBindInfo = dx12Descriptor->GetShaderResourceGroupBindingInfo(groupLayoutIndex);
-                const ShaderResourceGroupVisibility& groupVisibility = dx12Descriptor->GetShaderResourceGroupVisibility(groupLayoutIndex);
-
-                [[maybe_unused]] bool hasSrvUnboundedArray = false;
-                [[maybe_unused]] bool hasUavUnboundedArray = false;
-
-                if (groupLayout.GetGroupSizeForBufferUnboundedArrays() || groupLayout.GetGroupSizeForImageUnboundedArrays())
+                for (const RHI::ShaderInputBufferUnboundedArrayDescriptor& shaderInputBufferUnboundedArray :
+                     groupLayout.GetShaderInputListForBufferUnboundedArrays())
                 {
-                    const uint32_t registerSpace = descriptor.GetShaderResourceGroupBindingInfo(groupLayoutIndex).m_spaceId;
-                    
-                    for (const RHI::ShaderInputBufferUnboundedArrayDescriptor& shaderInputBufferUnboundedArray : groupLayout.GetShaderInputListForBufferUnboundedArrays())
+                    auto findIt = groupBindInfo.m_resourcesRegisterMap.find(shaderInputBufferUnboundedArray.m_name);
+                    AZ_Assert(
+                        findIt != groupBindInfo.m_resourcesRegisterMap.end(), "Could not find register for shader input %s",
+                        shaderInputBufferUnboundedArray.m_name.GetCStr());
+                    const RHI::ResourceBindingInfo& bindingInfo = findIt->second;
+                    D3D12_DESCRIPTOR_RANGE descriptorRange;
+                    descriptorRange.RegisterSpace = shaderInputBufferUnboundedArray.m_spaceId;
+                    descriptorRange.NumDescriptors = aznumeric_cast<UINT>(-1);
+                    descriptorRange.OffsetInDescriptorsFromTableStart = 0;
+                    descriptorRange.BaseShaderRegister = bindingInfo.m_registerId;
+
+                    switch (shaderInputBufferUnboundedArray.m_access)
                     {
-                        auto findIt = groupBindInfo.m_resourcesRegisterMap.find(shaderInputBufferUnboundedArray.m_name);
-                        AZ_Assert(findIt != groupBindInfo.m_resourcesRegisterMap.end(), "Could not find register for shader input %s", shaderInputBufferUnboundedArray.m_name.GetCStr());
-                        const RHI::ResourceBindingInfo& bindingInfo = findIt->second;
-                        D3D12_DESCRIPTOR_RANGE descriptorRange;
-                        descriptorRange.RegisterSpace = registerSpace;
-                        descriptorRange.NumDescriptors = aznumeric_cast<UINT>(-1);
-                        descriptorRange.OffsetInDescriptorsFromTableStart = 0;
-                        descriptorRange.BaseShaderRegister = bindingInfo.m_registerId;
+                    case RHI::ShaderInputBufferAccess::Read:
+                        descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+                        break;
 
-                        switch (shaderInputBufferUnboundedArray.m_access)
-                        {
-                        case RHI::ShaderInputBufferAccess::Read:
-                            AZ_Assert(hasSrvUnboundedArray == false, "Multiple SRV unbounded arrays encountered, second entry is [%s]", shaderInputBufferUnboundedArray.m_name.GetCStr());
-                            hasSrvUnboundedArray = true;
-                            descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-                            break;
-
-                        case RHI::ShaderInputBufferAccess::ReadWrite:
-                            AZ_Assert(hasUavUnboundedArray == false, "Multiple UAV unbounded arrays encountered, second entry is [%s]", shaderInputBufferUnboundedArray.m_name.GetCStr());
-                            hasUavUnboundedArray = true;
-                            descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-                            break;
-                        }
-
-                        unboundedArraydescriptorRanges[groupLayoutIndex].push_back(descriptorRange);
-
-                        D3D12_ROOT_PARAMETER parameter;
-                        parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-                        parameter.ShaderVisibility = ConvertShaderStageMask(groupVisibility.m_descriptorTableShaderStageMask);
-                        parameter.DescriptorTable.NumDescriptorRanges = 1;
-                        parameter.DescriptorTable.pDescriptorRanges = &unboundedArraydescriptorRanges[groupLayoutIndex].back();
-
-                        uint32_t tableIndex = aznumeric_cast<uint32_t>(unboundedArraydescriptorRanges[groupLayoutIndex].size()) - 1;
-                        m_indexToRootParameterBindingTable[groupLayoutIndex].m_unboundedArrayResourceTables[tableIndex] = RootParameterIndex(parameters.size());
-                        parameters.push_back(parameter);
+                    case RHI::ShaderInputBufferAccess::ReadWrite:
+                        descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+                        break;
                     }
 
-                    for (const RHI::ShaderInputImageUnboundedArrayDescriptor& shaderInputImageUnboundedArray : groupLayout.GetShaderInputListForImageUnboundedArrays())
+                    unboundedArraydescriptorRanges[groupLayoutIndex].push_back(descriptorRange);
+                }
+
+                for (const RHI::ShaderInputImageUnboundedArrayDescriptor& shaderInputImageUnboundedArray :
+                     groupLayout.GetShaderInputListForImageUnboundedArrays())
+                {
+                    auto findIt = groupBindInfo.m_resourcesRegisterMap.find(shaderInputImageUnboundedArray.m_name);
+                    AZ_Assert(
+                        findIt != groupBindInfo.m_resourcesRegisterMap.end(), "Could not find register for shader input %s",
+                        shaderInputImageUnboundedArray.m_name.GetCStr());
+                    const RHI::ResourceBindingInfo& bindingInfo = findIt->second;
+                    D3D12_DESCRIPTOR_RANGE descriptorRange;
+                    descriptorRange.RegisterSpace = shaderInputImageUnboundedArray.m_spaceId;
+                    descriptorRange.NumDescriptors = aznumeric_cast<UINT>(-1);
+                    descriptorRange.OffsetInDescriptorsFromTableStart = 0;
+                    descriptorRange.BaseShaderRegister = bindingInfo.m_registerId;
+
+                    switch (shaderInputImageUnboundedArray.m_access)
                     {
-                        auto findIt = groupBindInfo.m_resourcesRegisterMap.find(shaderInputImageUnboundedArray.m_name);
-                        AZ_Assert(findIt != groupBindInfo.m_resourcesRegisterMap.end(), "Could not find register for shader input %s", shaderInputImageUnboundedArray.m_name.GetCStr());
-                        const RHI::ResourceBindingInfo& bindingInfo = findIt->second;
-                        D3D12_DESCRIPTOR_RANGE descriptorRange;
-                        descriptorRange.RegisterSpace = registerSpace;
-                        descriptorRange.NumDescriptors = aznumeric_cast<UINT>(-1);
-                        descriptorRange.OffsetInDescriptorsFromTableStart = 0;
-                        descriptorRange.BaseShaderRegister = bindingInfo.m_registerId;
+                    case RHI::ShaderInputImageAccess::Read:
+                        descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+                        break;
 
-                        switch (shaderInputImageUnboundedArray.m_access)
-                        {
-                        case RHI::ShaderInputImageAccess::Read:
-                            AZ_Assert(hasSrvUnboundedArray == false, "Multiple SRV unbounded arrays encountered, second entry is [%s]", shaderInputImageUnboundedArray.m_name.GetCStr());
-                            hasSrvUnboundedArray = true;
-                            descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-                            break;
-
-                        case RHI::ShaderInputImageAccess::ReadWrite:
-                            AZ_Assert(hasUavUnboundedArray == false, "Multiple UAV unbounded arrays encountered, second entry is [%s]", shaderInputImageUnboundedArray.m_name.GetCStr());
-                            hasUavUnboundedArray = true;
-                            descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-                            break;
-                        }
-
-                        unboundedArraydescriptorRanges[groupLayoutIndex].push_back(descriptorRange);
-
-                        D3D12_ROOT_PARAMETER parameter;
-                        parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-                        parameter.ShaderVisibility = ConvertShaderStageMask(groupVisibility.m_descriptorTableShaderStageMask);
-                        parameter.DescriptorTable.NumDescriptorRanges = 1;
-                        parameter.DescriptorTable.pDescriptorRanges = &unboundedArraydescriptorRanges[groupLayoutIndex].back();
-
-                        uint32_t tableIndex = aznumeric_cast<uint32_t>(unboundedArraydescriptorRanges[groupLayoutIndex].size()) - 1;
-                        m_indexToRootParameterBindingTable[groupLayoutIndex].m_unboundedArrayResourceTables[tableIndex] = RootParameterIndex(parameters.size());
-                        parameters.push_back(parameter);
+                    case RHI::ShaderInputImageAccess::ReadWrite:
+                        descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+                        break;
                     }
+
+                    unboundedArraydescriptorRanges[groupLayoutIndex].push_back(descriptorRange);
+                }
+
+                if (!unboundedArraydescriptorRanges[groupLayoutIndex].empty())
+                {
+                    D3D12_ROOT_PARAMETER parameter;
+                    parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+                    parameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+                    parameter.DescriptorTable.NumDescriptorRanges = static_cast<uint32_t>(unboundedArraydescriptorRanges[groupLayoutIndex].size());
+                    parameter.DescriptorTable.pDescriptorRanges = unboundedArraydescriptorRanges[groupLayoutIndex].data();
+
+                    m_indexToRootParameterBindingTable[groupLayoutIndex].m_bindlessTable = RootParameterIndex(parameters.size());
+                    parameters.push_back(parameter);
                 }
             }
 
@@ -363,8 +333,6 @@ namespace AZ
 
                 if (groupLayout.GetGroupSizeForSamplers())
                 {
-                    const uint32_t registerSpace = descriptor.GetShaderResourceGroupBindingInfo(groupLayoutIndex).m_spaceId;
-
                     for (const RHI::ShaderInputSamplerDescriptor& shaderInputSampler : groupLayout.GetShaderInputListForSamplers())
                     {
                         auto findIt = groupBindInfo.m_resourcesRegisterMap.find(shaderInputSampler.m_name);
@@ -372,7 +340,7 @@ namespace AZ
 
                         const RHI::ResourceBindingInfo& bindingInfo = findIt->second;
                         D3D12_DESCRIPTOR_RANGE descriptorRange;
-                        descriptorRange.RegisterSpace = registerSpace;
+                        descriptorRange.RegisterSpace = bindingInfo.m_spaceId;
                         descriptorRange.NumDescriptors = shaderInputSampler.m_count;
                         descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
@@ -398,8 +366,6 @@ namespace AZ
                 const RHI::ShaderResourceGroupLayout& groupLayout = *descriptor.GetShaderResourceGroupLayout(groupLayoutIndex);
                 const RHI::ShaderResourceGroupBindingInfo& groupBindInfo = dx12Descriptor->GetShaderResourceGroupBindingInfo(groupLayoutIndex);
 
-                const uint32_t registerSpace = descriptor.GetShaderResourceGroupBindingInfo(groupLayoutIndex).m_spaceId;
-
                 for (const RHI::ShaderInputStaticSamplerDescriptor& samplerInput : groupLayout.GetStaticSamplers())
                 {
                     auto findRegisterIt = groupBindInfo.m_resourcesRegisterMap.find(samplerInput.m_name);
@@ -407,7 +373,9 @@ namespace AZ
                     
                     const RHI::ResourceBindingInfo& bindingInfo = findRegisterIt->second;
                     D3D12_STATIC_SAMPLER_DESC desc;
-                    ConvertStaticSampler(samplerInput.m_samplerState, bindingInfo.m_registerId, registerSpace, ConvertShaderStageMask(bindingInfo.m_shaderStageMask), desc);
+                    ConvertStaticSampler(
+                        samplerInput.m_samplerState, bindingInfo.m_registerId, bindingInfo.m_spaceId,
+                        ConvertShaderStageMask(bindingInfo.m_shaderStageMask), desc);
 
                     staticSamplers.push_back(desc);
                 }

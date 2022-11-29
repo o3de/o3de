@@ -33,7 +33,7 @@ namespace UnitTest
      * Hash functions test.
      */
     class HashedContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         template <class H, bool hasValidate>
@@ -1163,7 +1163,7 @@ namespace UnitTest
 
     template<typename ContainerType>
     class HashedSetContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -1397,7 +1397,7 @@ namespace UnitTest
 
     template <typename ContainerType>
     class HashedSetDifferentAllocatorFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -1445,7 +1445,7 @@ namespace UnitTest
 
     template<typename ContainerType>
     class HashedMapContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -1893,7 +1893,7 @@ namespace UnitTest
 
     template <typename ContainerType>
     class HashedMapDifferentAllocatorFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -2013,7 +2013,7 @@ namespace UnitTest
     };
     template <typename ContainerType>
     class HashedContainerTransparentFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override

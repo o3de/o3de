@@ -17,7 +17,7 @@
 
 namespace UnitTest
 {
-    class PaintBrushPaintSettingsTestFixture : public ScopedAllocatorSetupFixture
+    class PaintBrushPaintSettingsTestFixture : public LeakDetectionFixture
     {
     public:
         // Some common default values that we'll use in our tests.

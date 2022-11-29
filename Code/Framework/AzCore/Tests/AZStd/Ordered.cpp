@@ -49,7 +49,7 @@ namespace UnitTest
     };
 
     class Tree_RedBlack
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
     
@@ -169,7 +169,7 @@ namespace UnitTest
     }
 
     class Tree_IntrusiveMultiSet
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         struct Node
@@ -280,7 +280,7 @@ namespace UnitTest
 
     // SetContainerTest-Begin
     class Tree_Set
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -409,7 +409,7 @@ namespace UnitTest
     }
 
     class Tree_MultiSet
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -531,7 +531,7 @@ namespace UnitTest
     }
 
     class Tree_Map
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -689,7 +689,7 @@ namespace UnitTest
     }
 
     class Tree_MultiMap
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -834,18 +834,8 @@ namespace UnitTest
 
     template<typename ContainerType>
     class TreeSetContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
     };
 
 
@@ -1136,7 +1126,7 @@ namespace UnitTest
 
     template <typename ContainerType>
     class TreeSetDifferentAllocatorFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -1204,18 +1194,8 @@ namespace UnitTest
 
     template<typename ContainerType>
     class TreeMapContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
     };
 
     template<typename ContainerType>
@@ -1607,7 +1587,7 @@ namespace UnitTest
 
     template <typename ContainerType>
     class TreeMapDifferentAllocatorFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -1731,7 +1711,7 @@ namespace UnitTest
 
     template <typename ContainerType>
     class TreeContainerTransparentFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
