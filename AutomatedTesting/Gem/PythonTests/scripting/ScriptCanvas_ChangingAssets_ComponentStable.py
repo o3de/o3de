@@ -4,14 +4,6 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
-import os
-import azlmbr.paths as paths
-
-TEST_ENTITY_NAME = "test_entity"
-ASSET_1 = os.path.join(paths.projectroot, "scriptcanvas", "ScriptCanvas_TwoComponents0.scriptcanvas")
-ASSET_2 = os.path.join(paths.projectroot, "scriptcanvas", "ScriptCanvas_TwoComponents1.scriptcanvas")
-EXPECTED_LINES = ["Greetings from the first script", "Greetings from the second script"]
-
 class Tests:
     game_mode_entered = ("Game Mode successfully entered", "Game mode failed to enter")
     game_mode_exited  = ("Game Mode successfully exited",  "Game mode failed to exited")
@@ -47,6 +39,13 @@ def ScriptCanvas_ChangingAssets_ComponentStable():
     import azlmbr.legacy.general as general
     from editor_python_test_tools.editor_component.editor_script_canvas import ScriptCanvasComponent
     import azlmbr.math as math
+    import os
+    import azlmbr.paths as paths
+
+    TEST_ENTITY_NAME = "test_entity"
+    ASSET_1 = os.path.join(paths.projectroot, "scriptcanvas", "ScriptCanvas_TwoComponents0.scriptcanvas")
+    ASSET_2 = os.path.join(paths.projectroot, "scriptcanvas", "ScriptCanvas_TwoComponents1.scriptcanvas")
+    EXPECTED_LINES = ["Greetings from the first script", "Greetings from the second script"]
 
     # Preconditions
     general.idle_enable(True)
@@ -78,11 +77,10 @@ def ScriptCanvas_ChangingAssets_ComponentStable():
         Report.result(Tests.found_lines, result)
 
 if __name__ == "__main__":
-
     import ImportPathHelper as imports
 
     imports.init()
-    from editor_python_test_tools.utils import Report
+    from utils import Report
 
     Report.start_test(ScriptCanvas_ChangingAssets_ComponentStable)
 
