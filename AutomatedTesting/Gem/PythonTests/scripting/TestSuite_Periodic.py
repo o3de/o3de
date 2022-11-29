@@ -56,6 +56,10 @@ class TestAutomationQtPyTests(TestAutomationBase):
         from . import VariableManager_UnpinVariableType_Works as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    def test_ScriptCanvas_TwoComponents_InteractSuccessfully(self, request, workspace, editor, launcher_platform):
+        from . import ScriptCanvas_TwoComponents_InteractSuccessfully as test_module
+        self._run_test(request, workspace, editor, test_module)
+
     """
     This test fails in multi test. QCheckbox state change does not trigger table changes like in hydra/editor test run
     def test_ScriptEvent_AddRemoveMethod_UpdatesInSC(self, request, workspace, editor, launcher_platform):
@@ -401,7 +405,7 @@ class TestScriptCanvasTests(object):
             auto_test_mode=False,
             timeout=60,
         )
-
+    """
     def test_ScriptCanvas_TwoComponents_InteractSuccessfully(self, request, workspace, editor, launcher_platform):
         expected_lines = [
             "New entity created",
@@ -418,6 +422,7 @@ class TestScriptCanvasTests(object):
             auto_test_mode=False,
             timeout=60,
         )
+    """
     def test_ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage(self, request, workspace, editor, launcher_platform):
         expected_lines = [
             "Successfully found controller entity",

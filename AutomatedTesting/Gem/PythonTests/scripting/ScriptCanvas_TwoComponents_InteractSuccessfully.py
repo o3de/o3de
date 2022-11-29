@@ -6,6 +6,13 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 
+class Tests:
+    entity_created     = ("New entity created",              "New entity not created")
+    game_mode_entered = ("Game Mode successfully entered", "Game mode failed to enter")
+    game_mode_exited  = ("Game Mode successfully exited",  "Game mode failed to exited")
+    lines_found       = ("Expected log lines were found",  "Expected log lines were not found")
+
+
 def ScriptCanvas_TwoComponents_InteractSuccessfully():
     """
     Summary:
@@ -72,7 +79,6 @@ def ScriptCanvas_TwoComponents_InteractSuccessfully():
             lambda: scripting_tools.located_expected_tracer_lines(section_tracer, EXPECTED_LINES),
             WAIT_TIME_3)
         Report.result(Tests.lines_found, lines_located)
-
 
     # 5) Exit game mode
     TestHelper.exit_game_mode(Tests.game_mode_exited)
