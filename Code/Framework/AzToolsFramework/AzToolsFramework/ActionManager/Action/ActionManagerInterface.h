@@ -16,6 +16,8 @@ class QWidget;
 
 namespace AzToolsFramework
 {
+    constexpr const char* DefaultActionContextModeIdentifier = "default";
+
     using ActionManagerOperationResult = AZ::Outcome<void, AZStd::string>;
     using ActionManagerBooleanResult = AZ::Outcome<bool, AZStd::string>;
     using ActionManagerGetterResult = AZ::Outcome<AZStd::string, AZStd::string>;
@@ -45,6 +47,9 @@ namespace AzToolsFramework
         AZStd::string m_description; //!< The description for the Action.
         AZStd::string m_category; //!< The category for the Action to be used in UI.
         AZStd::string m_iconPath; //!< The qrc path to the icon to be used in UI.
+        //! Determines in which mode this action should be accessible.
+        //! Empty means action will always appear regardless of the mode.
+        AZStd::vector<AZStd::string> m_modes = {}; 
         bool m_hideFromMenusWhenDisabled = true; //!< Determines whether this actions should be hidden in menus when disabled.
         bool m_hideFromToolBarsWhenDisabled = false; //!< Determines whether this actions should be hidden in toolbars when disabled.
     };
@@ -86,6 +91,13 @@ namespace AzToolsFramework
         //! @param contextIdentifier The identifier for the action context to query.
         //! @return True if an Action Context with the identifier provided was found, false otherwise.
         virtual bool IsActionContextRegistered(const AZStd::string& contextIdentifier) const = 0;
+
+        //! Register a new Mode for an Action Context to the Action Manager.
+        //! @param actionContextIdentifier The identifier for the action context the newly registered mode should be added to.
+        //! @param modeIdentifier The new value for the category property of the widget action.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ActionManagerOperationResult RegisterActionContextMode(
+            const AZStd::string& actionContextIdentifier, const AZStd::string& modeIdentifier) = 0;
 
         //! Register a new Action to the Action Manager.
         //! @param contextIdentifier The identifier for the action context the newly registered action should be added to.
@@ -245,6 +257,25 @@ namespace AzToolsFramework
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ActionManagerOperationResult SetWidgetActionCategory(
             const AZStd::string& widgetActionIdentifier, const AZStd::string& category) = 0;
+
+        //! Sets an additional mode for an action via its identifier.
+        //! @param modeIdentifier The action context mode identifier to add to the action.
+        //! @param actionIdentifier The action to set the mode to.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ActionManagerOperationResult AssignModeToAction(
+            const AZStd::string& modeIdentifier, const AZStd::string& actionIdentifier) = 0;
+
+        //! Sets the active mode for an action context via its identifier.
+        //! @param actionContextIdentifier The action context to set the active mode to.
+        //! @param modeIdentifier The action context mode identifier to set as active.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ActionManagerOperationResult SetActiveActionContextMode(
+            const AZStd::string& actionContextIdentifier, const AZStd::string& modeIdentifier) = 0;
+
+        //! Gets the active mode for an action context via its identifier.
+        //! @param actionContextIdentifier The action context to get the active mode of.
+        //! @return A successful outcome object containing the value, or a string with a message detailing the error in case of failure.
+        virtual ActionManagerGetterResult GetActiveActionContextMode(const AZStd::string& actionContextIdentifier) const = 0;
     };
 
 } // namespace AzToolsFramework

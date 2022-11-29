@@ -46,7 +46,7 @@ namespace TestImpact
             //! @param unexecutedTestRuns The set of test runs that were queued up for execution but did not get the opportunity to execute.
             TestRunReport(
                 TestSequenceResult result,
-                AZStd::chrono::high_resolution_clock::time_point startTime,
+                AZStd::chrono::steady_clock::time_point startTime,
                 AZStd::chrono::milliseconds duration,
                 AZStd::vector<PassingTestRun>&& passingTestRuns,
                 AZStd::vector<FailingTestRun>&& failingTestRuns,
@@ -58,10 +58,10 @@ namespace TestImpact
             TestSequenceResult GetResult() const;
 
             //! Returns the time this sequence of test runs started relative to T0.
-            AZStd::chrono::high_resolution_clock::time_point GetStartTime() const;
+            AZStd::chrono::steady_clock::time_point GetStartTime() const;
 
             //! Returns the time this sequence of test runs ended relative to T0.
-            AZStd::chrono::high_resolution_clock::time_point GetEndTime() const;
+            AZStd::chrono::steady_clock::time_point GetEndTime() const;
 
             //! Returns the duration this sequence of test runs took to complete.
             AZStd::chrono::milliseconds GetDuration() const;
@@ -109,7 +109,7 @@ namespace TestImpact
             const AZStd::vector<UnexecutedTestRun>& GetUnexecutedTestRuns() const;
         private:
             TestSequenceResult m_result = TestSequenceResult::Success;
-            AZStd::chrono::high_resolution_clock::time_point m_startTime;
+            AZStd::chrono::steady_clock::time_point m_startTime;
             AZStd::chrono::milliseconds m_duration = AZStd::chrono::milliseconds{ 0 };
             AZStd::vector<PassingTestRun> m_passingTestRuns;
             AZStd::vector<FailingTestRun> m_failingTestRuns;
@@ -230,13 +230,13 @@ namespace TestImpact
             }
 
             //! Returns the start time of the sequence.
-            AZStd::chrono::high_resolution_clock::time_point GetStartTime() const
+            AZStd::chrono::steady_clock::time_point GetStartTime() const
             {
                 return m_selectedTestRunReport.GetStartTime();
             }
 
             //! Returns the end time of the sequence.
-            AZStd::chrono::high_resolution_clock::time_point GetEndTime() const
+            AZStd::chrono::steady_clock::time_point GetEndTime() const
             {
                 return GetStartTime() + GetDuration();
             }

@@ -53,12 +53,12 @@ namespace AZ
                 TimedScope(StatisticalProfiler& profiler, const StatIdType& statId)
                     : m_profiler(profiler), m_statId(statId)
                 {
-                    m_startTime = AZStd::chrono::system_clock::now();
+                    m_startTime = AZStd::chrono::steady_clock::now();
                 }
 
                 ~TimedScope()
                 {
-                    AZStd::chrono::system_clock::time_point stopTime = AZStd::chrono::system_clock::now();
+                    AZStd::chrono::steady_clock::time_point stopTime = AZStd::chrono::steady_clock::now();
                     auto duration = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(stopTime - m_startTime);
                     m_profiler.PushSample(m_statId, static_cast<double>(duration.count()));
                 }
@@ -66,7 +66,7 @@ namespace AZ
             private:
                 StatisticalProfiler& m_profiler;
                 const StatIdType& m_statId;
-                AZStd::chrono::system_clock::time_point m_startTime;
+                AZStd::chrono::steady_clock::time_point m_startTime;
             }; //class TimedScope
 
             friend class TimedScope;

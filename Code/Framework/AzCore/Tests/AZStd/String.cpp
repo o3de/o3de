@@ -2470,9 +2470,9 @@ namespace UnitTest
         // Is the size of the pointer (used for storing the memory address of the string)
         // + the size of the string "size" member used to store the size of the string
         // + the size of the string "capacity" member used to store the capacity of the string
-        size_t constexpr ExpectedBasicStringSize = sizeof(void*) + 2 * sizeof(size_t) + sizeof(AZStd::allocator);
+        size_t constexpr ExpectedBasicStringSize = sizeof(void*) + 2 * sizeof(size_t);
         static_assert(ExpectedBasicStringSize == sizeof(AZStd::string),
-            "Using Stateful allocator with basic_string class should result in a 32-byte string class"
+            "Using Stateful allocator with basic_string class should result in a 24-byte string class"
             " on 64-bit platforms ");
     }
 

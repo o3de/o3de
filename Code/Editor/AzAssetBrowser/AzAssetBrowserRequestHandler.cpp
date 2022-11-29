@@ -427,6 +427,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
 
     AZStd::string fullFilePath;
     AZStd::string extension;
+    bool selectionIsSource{ true };
 
     switch (entry->GetEntryType())
     {
@@ -439,6 +440,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             AZ_Assert(false, "Asset Browser entry product has a non-source parent?");
             break;     // no valid parent.
         }
+        selectionIsSource = false;
     // the fall through to the next case is intentional here.
     case AssetBrowserEntry::AssetEntryType::Source:
     {
@@ -543,7 +545,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             {
                 CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
             }
-            if (calledFromAssetBrowser)
+            if (calledFromAssetBrowser && selectionIsSource)
             {
                 // Add Rename option
                 QAction* action = menu->addAction(
@@ -557,7 +559,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             }
         }
 
-        if (calledFromAssetBrowser)
+        if (calledFromAssetBrowser && selectionIsSource)
         {
             // Add Delete option
             QAction* action = menu->addAction(
@@ -595,7 +597,40 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
 
         CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
 
-        AddCreateMenu(menu, fullFilePath);
+        if (calledFromAssetBrowser)
+        {
+            if (numOfEntries == 1)
+            {
+                // Add Rename option
+                QAction* action = menu->addAction(
+                    QObject::tr("Rename Folder"),
+                    [treeView]()
+                    {
+                        treeView->RenameEntry();
+                    });
+                action->setShortcut(Qt::Key_F2);
+                action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
+                // Add Delete option
+                action = menu->addAction(
+                    QObject::tr("Delete Folder"),
+                    [treeView]()
+                    {
+                        treeView->DeleteEntries();
+                    });
+                action->setShortcut(QKeySequence::Delete);
+                action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
+                // Add Move to option
+                menu->addAction(
+                    QObject::tr("Move to"),
+                    [treeView]()
+                    {
+                        treeView->MoveEntries();
+                    });
+                AddCreateMenu(menu, fullFilePath);
+            }
+        }
     }
     break;
     default:

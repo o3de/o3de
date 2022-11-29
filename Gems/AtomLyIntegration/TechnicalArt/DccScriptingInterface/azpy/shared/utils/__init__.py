@@ -32,10 +32,3 @@ from DccScriptingInterface.globals import *
 
 _MODULE_PATH = Path(__file__)  # To Do: what if frozen?
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
-
-# dev mode will enable nested import tests
-if DCCSI_DEV_MODE:
-    from DccScriptingInterface.azpy.shared.utils.init import test_imports
-    # If in dev mode this will test imports of __all__
-    _LOGGER.debug(f'Testing Imports from {_PACKAGENAME}')
-    test_imports(_all=__all__,_pkg=_PACKAGENAME,_logger=_LOGGER)

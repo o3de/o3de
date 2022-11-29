@@ -6,7 +6,9 @@
  *
  */
 
+#include <AtomToolsFramework/SettingsDialog/SettingsDialog.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
 #include <Window/MaterialCanvasMainWindow.h>
 #include <Window/MaterialCanvasViewportContent.h>
@@ -40,7 +42,7 @@ namespace MaterialCanvas
 
         // Initialize the atom scene and pipeline that will bind to the viewport window to render entities and presets
         auto viewportScene = AZStd::make_shared<AtomToolsFramework::EntityPreviewViewportScene>(
-            m_toolId, m_materialViewport, entityContext, "MaterialCanvasViewportWidget", "passes/MainRenderPipeline.azasset");
+            m_toolId, m_materialViewport, entityContext, "MaterialCanvasViewportWidget", "passes/mainrenderpipeline.azasset");
 
         // Viewport content will instantiate all of the entities that will be displayed and controlled by the viewport
         auto viewportContent = AZStd::make_shared<MaterialCanvasViewportContent>(m_toolId, m_materialViewport, entityContext);
@@ -83,27 +85,25 @@ namespace MaterialCanvas
         m_nodePalette = aznew GraphCanvas::NodePaletteDockWidget(this, "Node Palette", nodePaletteConfig);
         AddDockWidget("Node Palette", m_nodePalette, Qt::LeftDockWidgetArea);
 
-        AZStd::array<char, AZ::IO::MaxPathLength> unresolvedPath;
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath(m_graphViewConfig.m_translationPath.c_str(), unresolvedPath.data(), unresolvedPath.size());
-
-        QString translationFilePath(unresolvedPath.data());
-        if (m_translator.load(QLocale::Language::English, translationFilePath))
+        AZ::IO::FixedMaxPath resolvedPath;
+        AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(resolvedPath, m_graphViewConfig.m_translationPath.c_str());
+        const AZ::IO::FixedMaxPathString translationFilePath = resolvedPath.LexicallyNormal().FixedMaxPathString();
+        if (m_translator.load(QLocale::Language::English, translationFilePath.c_str()))
         {
             if (!qApp->installTranslator(&m_translator))
             {
-                AZ_Warning("MaterialCanvas", false, "Error installing translation %s!", unresolvedPath.data());
+                AZ_Warning("MaterialCanvas", false, "Error installing translation %s!", translationFilePath.c_str());
             }
         }
         else
         {
-            AZ_Warning("MaterialCanvas", false, "Error loading translation file %s", unresolvedPath.data());
+            AZ_Warning("MaterialCanvas", false, "Error loading translation file %s", translationFilePath.c_str());
         }
 
-        OnDocumentOpened(AZ::Uuid::CreateNull());
-    }
+        // Set up style sheet to fix highlighting in the node palette
+        AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral(":/GraphView/GraphView.qss"));
 
-    MaterialCanvasMainWindow::~MaterialCanvasMainWindow()
-    {
+        OnDocumentOpened(AZ::Uuid::CreateNull());
     }
 
     void MaterialCanvasMainWindow::OnDocumentOpened(const AZ::Uuid& documentId)
@@ -144,9 +144,36 @@ namespace MaterialCanvas
         m_materialViewport->UnlockRenderTargetSize();
     }
 
+    AZStd::vector<AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup>> MaterialCanvasMainWindow::GetSettingsDialogGroups() const
+    {
+        AZStd::vector<AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup>> groups;
+        groups.push_back(AtomToolsFramework::CreateSettingsGroup(
+            "Material Canvas Settings",
+            "Material Canvas Settings",
+           {
+                AtomToolsFramework::CreatePropertyFromSetting(
+                    "/O3DE/Atom/MaterialCanvas/EnableMinimalShaderBuilds",
+                    "Enable Minimal Shader Builds",
+                    "Improve shader and material iteration and preview times by limiting the asset processor and shader compiler to the "
+                    "current platform and RHI. Changing this setting requires restarting Material Canvas and the asset processor.",
+                    false),
+            }));
+
+        // Add base class settings after app specific settings
+        AZStd::vector<AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup>> groupsFromBase = Base::GetSettingsDialogGroups();
+        groups.insert(groups.end(), groupsFromBase.begin(), groupsFromBase.end());
+        return groups;
+    }
+
     AZStd::string MaterialCanvasMainWindow::GetHelpDialogText() const
     {
         return R"(<html><head/><body>
+            <p><h3><u>Shader Build Settings</u></h3></p>
+            <p>Shaders, materials, and other assets will be generated as changes are applied to the graph.
+            The viewport will update and display the generated materials and shaders once they have been
+            compiled by the Asset Processor. This can take a few seconds. Compilation times and preview
+            responsiveness can be improved by enabling the Minimal Shader Build settings in the Tools->Settings
+            menu. Changing the settings will require restarting Material Canvas and the Asset Processor.</p>
             <p><h3><u>Camera Controls</u></h3></p>
             <p><b>LMB</b> - rotate camera</p>
             <p><b>RMB</b> or <b>Alt+LMB</b> - orbit camera around target</p>

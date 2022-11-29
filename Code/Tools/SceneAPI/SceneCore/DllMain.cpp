@@ -309,6 +309,11 @@ extern "C" AZ_DLL_EXPORT void ReflectTypes(AZ::SerializeContext * context)
     AZ::SceneAPI::SceneCore::ReflectTypes(context);
 }
 
+extern "C" AZ_DLL_EXPORT void CleanUpSceneCoreGenericClassInfo()
+{
+    AZ::GetCurrentSerializeContextModule().Cleanup();
+}
+
 extern "C" AZ_DLL_EXPORT void Activate()
 {
     AZ::SceneAPI::SceneCore::Activate();

@@ -143,6 +143,8 @@ set(FILES
     DocumentPropertyEditor/DocumentAdapter.h
     DocumentPropertyEditor/DocumentSchema.cpp
     DocumentPropertyEditor/DocumentSchema.h
+    DocumentPropertyEditor/FilterAdapter.cpp
+    DocumentPropertyEditor/FilterAdapter.h
     DocumentPropertyEditor/PropertyEditorNodes.cpp
     DocumentPropertyEditor/PropertyEditorNodes.h
     DocumentPropertyEditor/PropertyEditorSystem.cpp
@@ -150,10 +152,16 @@ set(FILES
     DocumentPropertyEditor/PropertyEditorSystemInterface.h
     DocumentPropertyEditor/CvarAdapter.cpp
     DocumentPropertyEditor/CvarAdapter.h
+    DocumentPropertyEditor/MetaAdapter.cpp
+    DocumentPropertyEditor/MetaAdapter.h
     DocumentPropertyEditor/RoutingAdapter.cpp
     DocumentPropertyEditor/RoutingAdapter.h
     DocumentPropertyEditor/SettingsRegistryAdapter.cpp
     DocumentPropertyEditor/SettingsRegistryAdapter.h
+    DocumentPropertyEditor/SortAdapter.cpp
+    DocumentPropertyEditor/SortAdapter.h
+    DocumentPropertyEditor/ValueStringSort.cpp
+    DocumentPropertyEditor/ValueStringSort.h
     DocumentPropertyEditor/ReflectionAdapter.cpp
     DocumentPropertyEditor/ReflectionAdapter.h
     DocumentPropertyEditor/Reflection/Attribute.h
@@ -211,6 +219,11 @@ set(FILES
     StreamingInstall/StreamingInstall.cpp
     StreamingInstall/StreamingInstallRequests.h
     StreamingInstall/StreamingInstallNotifications.h
+    PaintBrush/PaintBrush.cpp
+    PaintBrush/PaintBrush.h
+    PaintBrush/PaintBrushNotificationBus.h
+    PaintBrush/PaintBrushSettings.cpp
+    PaintBrush/PaintBrushSettings.h
     Physics/Collision/CollisionEvents.h
     Physics/Collision/CollisionEvents.cpp
     Physics/Collision/CollisionLayers.h

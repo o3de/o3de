@@ -20,7 +20,6 @@
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientModificationBus.h>
 #include <GradientSignal/Util.h>
-#include <LmbrCentral/Dependency/DependencyMonitor.h>
 
 namespace GradientSignal
 {
@@ -62,7 +61,8 @@ namespace GradientSignal
     enum class SamplingType : AZ::u8
     {
         Point,                  //! Point sampling just queries the X,Y point as specified (Default)
-        Bilinear                //! Apply a bilinear filter to the image data
+        Bilinear,               //! Apply a bilinear filter to the image data
+        Bicubic,                //! Apply a bicubic filter to the image data
     };
 
     class ImageGradientConfig
@@ -145,7 +145,6 @@ namespace GradientSignal
 
         // AZ::Data::AssetBus overrides...
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-        void OnAssetMoved(AZ::Data::Asset<AZ::Data::AssetData> asset, void* oldDataPointer) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
         // ImageGradientRequestBus overrides...
@@ -178,8 +177,6 @@ namespace GradientSignal
         // GradientTransformNotificationBus overrides...
         void OnGradientTransformChanged(const GradientTransform& newTransform) override;
 
-        void SetupDependencies();
-
         void CreateImageModificationBuffer();
         void ClearImageModificationBuffer();
         bool ModificationBufferIsActive() const;
@@ -188,12 +185,33 @@ namespace GradientSignal
         void GetSubImageData();
         void GetValuesInternal(SamplingType samplingType, AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const;
         float GetValueFromImageData(SamplingType samplingType, const AZ::Vector3& uvw, float defaultValue) const;
+
+        //! Read the pixel from our image data at the given XY coordinates.
+        //! This will read from image modification buffer if it exists or else from the image asset, using the component's
+        //! mip and channel settings.
+        //! Note that image space Y is inverted from world space because in images, 0 is the top corner and +Y goes down, but in world
+        //! space we want 0 to be the bottom, and +Y goes up. If you want to get the pixel value using a Y calculated from world space,
+        //! call InvertYAndGetPixelValue() instead.
+        //! @param x The X coordinate in image space.
+        //! @param y The Y coordinate in image space.
         float GetPixelValue(AZ::u32 x, AZ::u32 y) const;
+
+        //! Read the pixel from our image data at the given X coordinate and an inverted Y coordinate.
+        //! This will read from image modification buffer if it exists or else from the image asset, using the component's
+        //! mip and channel settings.
+        //! This is a convenience method that will invert our Y coordinate before calling GetPixelValue() so that we can take
+        //! a Y coordinate that was calculated from world space axes and invert it into image space as a part of doing the pixel lookup.
+        //! @param x The X coordinate in image space.
+        //! @param invertedY The inverted Y coordinate in image space.
+        float InvertYAndGetPixelValue(AZ::u32 x, AZ::u32 invertedY) const;
+
         float GetTerrariumPixelValue(AZ::u32 x, AZ::u32 y) const;
         void SetupMultiplierAndOffset(float min, float max);
         void SetupDefaultMultiplierAndOffset();
         void SetupAutoScaleMultiplierAndOffset();
         void SetupManualScaleMultiplierAndOffset();
+        void Get4x4Neighborhood(uint32_t x, uint32_t y, AZStd::array<AZStd::array<float, 4>, 4>& values) const;
+        float GetClampedValue(int32_t x, int32_t y) const;
         float GetValueForSamplingType(SamplingType samplingType, AZ::u32 x0, AZ::u32 y0, float pixelX, float pixelY) const;
 
         float GetTilingX() const override;
@@ -202,16 +220,28 @@ namespace GradientSignal
         float GetTilingY() const override;
         void SetTilingY(float tilingY) override;
 
+        bool PixelIndexIsValid(const PixelIndex& pixelIndex) const;
+        PixelIndex GetPixelIndexForPositionInternal(const AZ::Vector3& position) const;
+
     private:
         ImageGradientConfig m_configuration;
-        LmbrCentral::DependencyMonitor m_dependencyMonitor;
         mutable AZStd::shared_mutex m_queryMutex;
         GradientTransform m_gradientTransform;
         ChannelToUse m_currentChannel = ChannelToUse::Red;
         CustomScaleType m_currentScaleType = CustomScaleType::None;
+
+        //! The multiplier and offset values are used for scaling our input pixel values to different ranges.
         float m_multiplier = 1.0f;
         float m_offset = 0.0f;
+
+        //! Keep track of the min/max values that occur in the data so that if we modify the pixel values, we can readjust
+        //! the scaling values appropriately.
+        float m_minValue = 0.0f;
+        float m_maxValue = 1.0f;
+
         AZ::u32 m_currentMipIndex = 0;
+        int32_t m_maxX = 0;
+        int32_t m_maxY = 0;
         SamplingType m_currentSamplingType = SamplingType::Point;
 
         //! Cached information for our loaded image data.

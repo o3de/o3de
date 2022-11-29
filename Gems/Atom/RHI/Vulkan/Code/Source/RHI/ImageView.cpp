@@ -35,6 +35,16 @@ namespace AZ
             return m_imageSubresourceRange;
         }
 
+        uint32_t ImageView::GetBindlessReadIndex() const
+        {
+            return m_readIndex;
+        }
+
+        uint32_t ImageView::GetBindlessReadWriteIndex() const
+        {
+            return m_readWriteIndex;
+        }
+
         void ImageView::SetNameInternal(const AZStd::string_view& name)
         {
             if (IsInitialized() && !name.empty())
@@ -93,6 +103,19 @@ namespace AZ
             m_hash = TypeHash64(m_imageSubresourceRange.GetHash(), m_hash);
             m_hash = TypeHash64(m_format, m_hash);
 
+            if (!descriptor.m_isArray && !descriptor.m_isCubemap)
+            {
+                if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
+                {
+                    m_readIndex = device.GetBindlessDescriptorPool().AttachReadImage(this);
+                }
+
+                if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
+                {
+                    m_readWriteIndex = device.GetBindlessDescriptorPool().AttachReadWriteImage(this);
+                }
+            }
+
             SetName(GetName());
             return RHI::ResultCode::Success;
         }
@@ -111,6 +134,16 @@ namespace AZ
                 device.QueueForRelease(
                     new ReleaseContainer<VkImageView>(device.GetNativeDevice(), m_vkImageView, device.GetContext().DestroyImageView));
                 m_vkImageView = VK_NULL_HANDLE;
+
+                if (m_readIndex != ~0u)
+                {
+                    device.GetBindlessDescriptorPool().DetachReadImage(m_readIndex);
+                }
+
+                if (m_readWriteIndex != ~0u)
+                {
+                    device.GetBindlessDescriptorPool().DetachReadWriteImage(m_readWriteIndex);
+                }
             }
         }
 
@@ -150,7 +183,7 @@ namespace AZ
                         AZ_Assert(width == height, "Image of Cube or CubeArray form a square.");
                         AZ_Assert(depth == 1, "Depth of Cube or CubeArray = 1.");
                         AZ_Assert(samples == 1, "Sample of Cube or CubeArray = 1.");
-                        AZ_Assert(arrayLayers % 6 == 0, "ArrayLayers % 6 == 0 for Cube or CubeArray.");
+                        AZ_Assert(arrayLayers % 6 == 0, "ArrayLayers %% 6 == 0 for Cube or CubeArray.");
                         if (arrayLayers == 6)
                         {
                             return VK_IMAGE_VIEW_TYPE_CUBE;

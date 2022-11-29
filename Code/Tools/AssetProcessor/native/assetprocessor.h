@@ -28,6 +28,7 @@
 #include <native/AssetManager/assetScanFolderInfo.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include "AssetProcessor_Traits_Platform.h"
+#include <AssetManager/SourceAssetReference.h>
 
 namespace AssetProcessor
 {
@@ -37,7 +38,6 @@ namespace AssetProcessor
     const char* const AutoFailReasonKey = "failreason"; // the key to look in for auto-fail reason.
     const char* const AutoFailLogFile = "faillogfile"; // if this is provided, this is a complete log of the failure and will be added after the failreason.
     const char* const AutoFailOmitFromDatabaseKey = "failreason_omitFromDatabase"; // if set in your job info hash, your job will not be tracked by the database.
-    const char* const PlaceHolderFileName = "$missing_dependency$"; // Used as a placeholder in the dependency system, such as when a source file is deleted and a previously met dependency is broken.
     const unsigned int g_RetriesForFenceFile = 5; // number of retries for fencing
     constexpr int RetriesForJobLostConnection = ASSETPROCESSOR_TRAIT_ASSET_BUILDER_LOST_CONNECTION_RETRIES; // number of times to retry a job when a network error due to network issues or a crashed AssetBuilder process is determined to have caused a job failure
     constexpr const char* IntermediateAssetsFolderName = "Intermediate Assets"; // name of the intermediate assets folder
@@ -118,9 +118,7 @@ namespace AssetProcessor
     public:
         // note that QStrings are ref-counted copy-on-write, so a move operation will not be beneficial unless this struct gains considerable heap allocated fields.
 
-        QString m_databaseSourceName;                           //! DATABASE "SourceName" Column, which includes the 'output prefix' if present, used for keying
-        QString m_watchFolderPath;                              //! contains the absolute path to the watch folder that the file was found in.
-        QString m_pathRelativeToWatchFolder;                    //! contains the relative path (from the above watch folder) that the file was found in.
+        SourceAssetReference m_sourceAssetReference;
         AZ::Uuid m_builderGuid = AZ::Uuid::CreateNull();        //! the builder that will perform the job
         AssetBuilderSDK::PlatformInfo m_platformInfo;
         AZ::Uuid m_sourceFileUUID = AZ::Uuid::CreateNull(); ///< The actual UUID of the source being processed
@@ -128,21 +126,18 @@ namespace AssetProcessor
         AZ::u32 m_computedFingerprint = 0;     // what the fingerprint was at the time of job creation.
         qint64 m_computedFingerprintTimeStamp = 0; // stores the number of milliseconds since the universal coordinated time when the fingerprint was computed.
         AZ::u64 m_jobRunKey = 0;
-        bool m_checkExclusiveLock = false;      ///< indicates whether we need to check the input file for exclusive lock before we process this job
+        bool m_checkExclusiveLock = true;      ///< indicates whether we need to check the input file for exclusive lock before we process this job
         bool m_addToDatabase = true; ///< If false, this is just a UI job, and should not affect the database.
 
         QString GetAbsoluteSourcePath() const
         {
-            if (!m_watchFolderPath.isEmpty())
-            {
-                return m_watchFolderPath + "/" + m_pathRelativeToWatchFolder;
-            }
-            return m_pathRelativeToWatchFolder;
+            return m_sourceAssetReference.AbsolutePath().c_str();
         }
 
         AZ::u32 GetHash() const
         {
-            AZ::Crc32 crc(m_databaseSourceName.toUtf8().constData());
+            AZ::Crc32 crc(m_sourceAssetReference.ScanFolderPath().c_str());
+            crc.Add(m_sourceAssetReference.RelativePath().c_str());
             crc.Add(m_platformInfo.m_identifier.c_str());
             crc.Add(m_jobKey.toUtf8().constData());
             crc.Add(m_builderGuid.ToString<AZStd::string>().c_str());
@@ -150,10 +145,8 @@ namespace AssetProcessor
         }
 
         JobEntry() = default;
-        JobEntry(QString watchFolderPath, QString relativePathToFile, QString databaseSourceName, const AZ::Uuid& builderGuid, const AssetBuilderSDK::PlatformInfo& platformInfo, QString jobKey, AZ::u32 computedFingerprint, AZ::u64 jobRunKey, const AZ::Uuid &sourceUuid, bool addToDatabase = true)
-            : m_watchFolderPath(watchFolderPath)
-            , m_pathRelativeToWatchFolder(relativePathToFile)
-            , m_databaseSourceName(databaseSourceName)
+        JobEntry(SourceAssetReference sourceAssetReference, const AZ::Uuid& builderGuid, const AssetBuilderSDK::PlatformInfo& platformInfo, QString jobKey, AZ::u32 computedFingerprint, AZ::u64 jobRunKey, const AZ::Uuid &sourceUuid, bool addToDatabase = true)
+            : m_sourceAssetReference(AZStd::move(sourceAssetReference))
             , m_builderGuid(builderGuid)
             , m_platformInfo(platformInfo)
             , m_jobKey(jobKey)
@@ -239,12 +232,12 @@ namespace AssetProcessor
 
         AZStd::string ToString() const
         {
-            return QString("%1 %2 %3").arg(m_jobEntry.m_databaseSourceName, m_jobEntry.m_platformInfo.m_identifier.c_str(), m_jobEntry.m_jobKey).toUtf8().data();
+            return QString("%1 %2 %3").arg(m_jobEntry.GetAbsoluteSourcePath(), m_jobEntry.m_platformInfo.m_identifier.c_str(), m_jobEntry.m_jobKey).toUtf8().data();
         }
 
         bool operator==(const JobDetails& rhs) const
         {
-            return ((m_jobEntry.m_databaseSourceName == rhs.m_jobEntry.m_databaseSourceName) &&
+            return ((m_jobEntry.GetAbsoluteSourcePath() == rhs.m_jobEntry.GetAbsoluteSourcePath()) &&
                 (m_jobEntry.m_platformInfo.m_identifier == rhs.m_jobEntry.m_platformInfo.m_identifier) &&
                 (m_jobEntry.m_jobKey == rhs.m_jobEntry.m_jobKey) &&
                 m_jobEntry.m_builderGuid == rhs.m_jobEntry.m_builderGuid);
@@ -257,19 +250,19 @@ namespace AssetProcessor
     //! because of job dependency declared on them by other jobs
     struct JobDesc
     {
-        AZStd::string m_databaseSourceName;
+        SourceAssetReference m_sourceAsset;
         AZStd::string m_jobKey;
         AZStd::string m_platformIdentifier;
 
         bool operator==(const JobDesc& rhs) const
         {
-            return AzFramework::StringFunc::Equal(m_databaseSourceName.c_str(), rhs.m_databaseSourceName.c_str())
+            return m_sourceAsset == rhs.m_sourceAsset
                 && m_platformIdentifier == rhs.m_platformIdentifier
                 && m_jobKey == rhs.m_jobKey;
         }
 
-        JobDesc(const AZStd::string& databaseSourceName, const AZStd::string& jobKey, const AZStd::string& platformIdentifier)
-            : m_databaseSourceName(databaseSourceName)
+        JobDesc(SourceAssetReference sourceAsset, const AZStd::string& jobKey, const AZStd::string& platformIdentifier)
+            : m_sourceAsset(AZStd::move(sourceAsset))
             , m_jobKey(jobKey)
             , m_platformIdentifier(platformIdentifier)
         {
@@ -277,7 +270,7 @@ namespace AssetProcessor
 
         AZStd::string ToString() const
         {
-            AZStd::string lowerSourceName = m_databaseSourceName;
+            AZStd::string lowerSourceName = m_sourceAsset.AbsolutePath().Native();
             AZStd::to_lower(lowerSourceName.begin(), lowerSourceName.end());
 
             return AZStd::string::format("%s %s %s", lowerSourceName.c_str(), m_platformIdentifier.c_str(), m_jobKey.c_str());

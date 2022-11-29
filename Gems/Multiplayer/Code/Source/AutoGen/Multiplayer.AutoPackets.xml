@@ -11,17 +11,22 @@
         <Member Type="uint16_t" Name="networkProtocolVersion" Init="0" />
         <Member Type="uint64_t" Name="temporaryUserId" Init="0" />
         <Member Type="Multiplayer::LongNetworkString" Name="ticket" />
+        <Member Type="AZ::HashValue64" Name="systemVersionHash" />
     </Packet>
 
     <Packet Name="Accept" HandshakePacket="true" Desc="Server accept packet">
         <Member Type="Multiplayer::LongNetworkString" Name="map" />
     </Packet>
 
+    <Packet Name="VersionMismatch" HandshakePacket="true" Desc="Tells the receiver (client or server) that there is a component mismatch and sends a map of all the multiplayer components' name and version hashes in order to compare which particular components are mismatched. Note: Marked as a handshake packet so it can be sent back to the client without having received the server acceptance packet.">
+        <Member Type="Multiplayer::ComponentVersionMap" Name="componentVersions"/>
+    </Packet>
+
     <Packet Name="ReadyForEntityUpdates" Desc="Client confirming it is ready to receive entity updates">
       <Member Type="bool" Name="readyForEntityUpdates" />
     </Packet>
 
-    <Packet Name="SyncConsole" Desc="Packet for synchornizing cvars between hosts">
+    <Packet Name="SyncConsole" Desc="Packet for synchronizing cvars between hosts">
         <Member Type="Multiplayer::LongNetworkString" Name="commandSet" Container="Vector" Count="32" />
     </Packet>
 

@@ -38,7 +38,8 @@ namespace AZ
             void Open(id <MTLCommandBuffer> mtlCommandBuffer);
             
             //! @param subEncoder - Since subRenderEncoders are created by higher level code (in order to maintain correct ordering) they can be directly provided to the commandlist to order to be used for encoding. SubEncoders only apply to Graphics related work.
-            void Open(id <MTLCommandEncoder> subEncoder);
+            //! @param mtlCommandBuffer - The command buffer that is assigned to this command list to be used for fencing related commands
+            void Open(id <MTLCommandEncoder> subEncoder, id <MTLCommandBuffer> mtlCommandBuffer);
             
             //! This function returns true if the commandlist is going to encode something.
             bool IsEncoded();
@@ -91,6 +92,7 @@ namespace AZ
             
             //! Go through all the heaps and call UseHeap on them to make them resident for the upcoming pass.
             void MakeHeapsResident(MTLRenderStages renderStages);
+            Device* m_device = nullptr;
         private:
             
             bool m_isEncoded                                    = false;

@@ -7,19 +7,19 @@
 #
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-    ly_add_pytest(
-        NAME AutomatedTesting::Atom_Main_Null_Render_00
-        TEST_SUITE main
-        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_Null_Render_Level_Loads.py
-        TEST_SERIAL
-        TIMEOUT 600
-        RUNTIME_DEPENDENCIES
-            AssetProcessor
-            AutomatedTesting.Assets
-            Editor
-        COMPONENT
-            Atom
-    )
+#    ly_add_pytest(
+#        NAME AutomatedTesting::Atom_Main_Null_Render_00
+#        TEST_SUITE main
+#        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_Null_Render_Level_Loads.py
+#        TEST_SERIAL
+#        TIMEOUT 600
+#        RUNTIME_DEPENDENCIES
+#            AssetProcessor
+#            AutomatedTesting.Assets
+#            Editor
+#        COMPONENT
+#            Atom
+#    )
     ly_add_pytest(
         NAME AutomatedTesting::Atom_Main_Null_Render_01
         TEST_SUITE main
@@ -122,6 +122,34 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         RUNTIME_DEPENDENCIES
             AssetProcessor
             AutomatedTesting.Assets
+            MaterialEditor
+        COMPONENT
+            Atom
+    )
+    ly_add_pytest(
+        NAME AutomatedTesting::Atom_Main_Null_Render_MaterialCanvas
+        TEST_SUITE main
+        TEST_SERIAL
+        TIMEOUT 700
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_Null_Render_MaterialCanvas_01.py
+        RUNTIME_DEPENDENCIES
+            AssetProcessor
+            AutomatedTesting.Assets
+            MaterialCanvas
+        COMPONENT
+            Atom
+    )
+    ly_add_pytest(
+        NAME AutomatedTesting::Atom_Periodic_Null_Render_01
+        TEST_SUITE periodic
+        TEST_SERIAL
+        TIMEOUT 1200
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Periodic_Null_Render_01.py
+        RUNTIME_DEPENDENCIES
+            AssetProcessor
+            AutomatedTesting.Assets
+            Editor
+            MaterialCanvas
             MaterialEditor
         COMPONENT
             Atom

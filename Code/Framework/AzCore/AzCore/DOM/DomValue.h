@@ -10,9 +10,10 @@
 
 #include <AzCore/DOM/DomBackend.h>
 #include <AzCore/DOM/DomVisitor.h>
-#include <AzCore/Memory/HphaSchema.h>
+#include <AzCore/Memory/AllocatorWrappers.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/stack.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -43,20 +44,9 @@ namespace AZ::Dom
 
     //! The allocator used by Value.
     //! Value heap allocates shared_ptrs for its container storage (Array / Object / Node) alongside
-    class ValueAllocator final : public SimpleSchemaAllocator<AZ::HphaSchema, AZ::HphaSchema::Descriptor, false, false>
-    {
-    public:
-        AZ_TYPE_INFO(ValueAllocator, "{5BC8B389-72C7-459E-B502-12E74D61869F}");
+    AZ_ALLOCATOR_DEFAULT_GLOBAL_WRAPPER(ValueAllocator, AZ::SystemAllocator, "{5BC8B389-72C7-459E-B502-12E74D61869F}")
 
-        using Base = SimpleSchemaAllocator<AZ::HphaSchema, AZ::HphaSchema::Descriptor, false, false>;
-
-        ValueAllocator()
-            : Base("DomValueAllocator", "Allocator for AZ::Dom::Value")
-        {
-        }
-    };
-
-    using StdValueAllocator = AZStdAlloc<ValueAllocator>;
+    using StdValueAllocator = ValueAllocator;
 
     class Value;
 

@@ -5,7 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #include <Atom/RHI.Reflect/SamplerState.h>
+#include <AzCore/Preprocessor/Enum.h>
+#include <AzCore/Preprocessor/EnumReflectUtils.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/TypeHash.h>
 
@@ -13,126 +19,36 @@ namespace AZ
 {
     namespace RHI
     {
-        const char* ToString(FilterMode filterMode)
-        {
-            switch (filterMode)
-            {
-            case FilterMode::Point:  return "Point";
-            case FilterMode::Linear:  return "Linear";
-            default:
-                AZ_Assert(false, "Unhandled type");
-                return "<Unknown>";
-            }
-        }
-
-        const char* ToString(ReductionType reductionType)
-        {
-            switch (reductionType)
-            {
-            case ReductionType::Filter:  return "Filter";
-            case ReductionType::Comparison:  return "Comparison";
-            case ReductionType::Minimum:  return "Minimum";
-            case ReductionType::Maximum:  return "Maximum";
-            default:
-                AZ_Assert(false, "Unhandled type");
-                return "<Unknown>";
-            }
-        }
-
-        const char* ToString(AddressMode addressMode)
-        {
-            switch (addressMode)
-            {
-            case AddressMode::Wrap:  return "Wrap";
-            case AddressMode::Mirror:  return "Mirror";
-            case AddressMode::Clamp:  return "Clamp";
-            case AddressMode::Border:  return "Border";
-            case AddressMode::MirrorOnce:  return "MirrorOnce";
-            default:
-                AZ_Assert(false, "Unhandled type");
-                return "<Unknown>";
-            }
-        }
-
-        const char* ToString(ComparisonFunc comparisonFunc)
-        {
-            switch (comparisonFunc)
-            {
-            case ComparisonFunc::Never:  return "Never";
-            case ComparisonFunc::Less:  return "Less";
-            case ComparisonFunc::Equal:  return "Equal";
-            case ComparisonFunc::LessEqual:  return "LessEqual";
-            case ComparisonFunc::Greater:  return "Greater";
-            case ComparisonFunc::NotEqual:  return "NotEqual";
-            case ComparisonFunc::GreaterEqual:  return "GreaterEqual";
-            case ComparisonFunc::Always:  return "Always";
-            default:
-                AZ_Assert(false, "Unhandled type");
-                return "<Unknown>";
-            }
-        }
-
-        const char* ToString(BorderColor borderColor)
-        {
-            switch (borderColor)
-            {
-            case BorderColor::OpaqueBlack:  return "OpaqueBlack";
-            case BorderColor::TransparentBlack:  return "TransparentBlack";
-            case BorderColor::OpaqueWhite:  return "OpaqueWhite";
-            default:
-                AZ_Assert(false, "Unhandled type");
-                return "<Unknown>";
-            }
-        }
-
+        AZ_ENUM_DEFINE_REFLECT_UTILITIES(FilterMode);
+        AZ_ENUM_DEFINE_REFLECT_UTILITIES(ReductionType);
+        AZ_ENUM_DEFINE_REFLECT_UTILITIES(AddressMode);
+        AZ_ENUM_DEFINE_REFLECT_UTILITIES(ComparisonFunc);
+        AZ_ENUM_DEFINE_REFLECT_UTILITIES(BorderColor);
 
         void ReflectSamplerStateEnums(ReflectContext* context)
         {
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+            if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Enum<FilterMode>()
-                    ->Value(ToString(FilterMode::Point), FilterMode::Point)
-                    ->Value(ToString(FilterMode::Linear), FilterMode::Linear)
-                    ;
+                FilterModeReflect(*serializeContext);
+                ReductionTypeReflect(*serializeContext);
+                AddressModeReflect(*serializeContext);
+                ComparisonFuncReflect(*serializeContext);
+                BorderColorReflect(*serializeContext);
+            }
 
-                serializeContext->Enum<ReductionType>()
-                    ->Value(ToString(ReductionType::Filter), ReductionType::Filter)
-                    ->Value(ToString(ReductionType::Comparison), ReductionType::Comparison)
-                    ->Value(ToString(ReductionType::Minimum), ReductionType::Minimum)
-                    ->Value(ToString(ReductionType::Maximum), ReductionType::Maximum)
-                    ;
-
-                serializeContext->Enum<AddressMode>()
-                    ->Value(ToString(AddressMode::Wrap), AddressMode::Wrap)
-                    ->Value(ToString(AddressMode::Mirror), AddressMode::Mirror)
-                    ->Value(ToString(AddressMode::Clamp), AddressMode::Clamp)
-                    ->Value(ToString(AddressMode::Border), AddressMode::Border)
-                    ->Value(ToString(AddressMode::MirrorOnce), AddressMode::MirrorOnce)
-                    ;
-
-                serializeContext->Enum<ComparisonFunc>()
-                    ->Value(ToString(ComparisonFunc::Never), ComparisonFunc::Never)
-                    ->Value(ToString(ComparisonFunc::Less), ComparisonFunc::Less)
-                    ->Value(ToString(ComparisonFunc::Equal), ComparisonFunc::Equal)
-                    ->Value(ToString(ComparisonFunc::LessEqual), ComparisonFunc::LessEqual)
-                    ->Value(ToString(ComparisonFunc::Greater), ComparisonFunc::Greater)
-                    ->Value(ToString(ComparisonFunc::NotEqual), ComparisonFunc::NotEqual)
-                    ->Value(ToString(ComparisonFunc::GreaterEqual), ComparisonFunc::GreaterEqual)
-                    ->Value(ToString(ComparisonFunc::Always), ComparisonFunc::Always)
-                    ;
-
-                serializeContext->Enum<BorderColor>()
-                    ->Value(ToString(BorderColor::OpaqueBlack), BorderColor::OpaqueBlack)
-                    ->Value(ToString(BorderColor::TransparentBlack), BorderColor::TransparentBlack)
-                    ->Value(ToString(BorderColor::OpaqueWhite), BorderColor::OpaqueWhite)
-                    ;
-
+            if (auto behaviorContext = azrtti_cast<BehaviorContext*>(context))
+            {
+                FilterModeReflect(*behaviorContext);
+                ReductionTypeReflect(*behaviorContext);
+                AddressModeReflect(*behaviorContext);
+                ComparisonFuncReflect(*behaviorContext);
+                BorderColorReflect(*behaviorContext);
             }
         }
 
         void SamplerState::Reflect(AZ::ReflectContext* context)
         {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
+            if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<SamplerState>()
                     ->Version(3)
@@ -149,7 +65,64 @@ namespace AZ
                     ->Field("m_mipLodMin", &SamplerState::m_mipLodMin)
                     ->Field("m_mipLodMax", &SamplerState::m_mipLodMax)
                     ->Field("m_mipLodBias", &SamplerState::m_mipLodBias)
-                    ->Field("m_borderColor", &SamplerState::m_borderColor);
+                    ->Field("m_borderColor", &SamplerState::m_borderColor)
+                    ;
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<SamplerState>("SamplerState", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_anisotropyMax, "Anisotropy Max", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_anisotropyEnable, "Anisotropy Enable", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_filterMin, "Filter Min", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<FilterMode>())
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_filterMag, "Filter Mag", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<FilterMode>())
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_filterMip, "Filter Mip", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<FilterMode>())
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_reductionType, "Reduction Type", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<ReductionType>())
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_comparisonFunc, "Comparison Func", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<ComparisonFunc>())
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_addressU, "Address U", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<AddressMode>())
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_addressV, "Address V", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<AddressMode>())
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_addressW, "Address W", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<AddressMode>())
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_mipLodMin, "Mip Lod Min", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_mipLodMax, "Mip Lod Max", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_mipLodBias, "Mip Lod Bias", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_borderColor, "Border Color", "")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<BorderColor>())
+                        ;
+                }
+            }
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->Class<SamplerState>("SamplerState")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "RHI")
+                    ->Attribute(AZ::Script::Attributes::Module, "rhi")
+                    ->Constructor()
+                    ->Constructor<const SamplerState&>()
+                    ->Property("anisotropyMax", BehaviorValueProperty(&SamplerState::m_anisotropyMax))
+                    ->Property("anisotropyEnable", BehaviorValueProperty(&SamplerState::m_anisotropyEnable))
+                    ->Property("filterMin", BehaviorValueProperty(&SamplerState::m_filterMin))
+                    ->Property("filterMag", BehaviorValueProperty(&SamplerState::m_filterMag))
+                    ->Property("filterMip", BehaviorValueProperty(&SamplerState::m_filterMip))
+                    ->Property("reductionType", BehaviorValueProperty(&SamplerState::m_reductionType))
+                    ->Property("comparisonFunc", BehaviorValueProperty(&SamplerState::m_comparisonFunc))
+                    ->Property("addressU", BehaviorValueProperty(&SamplerState::m_addressU))
+                    ->Property("addressV", BehaviorValueProperty(&SamplerState::m_addressV))
+                    ->Property("addressW", BehaviorValueProperty(&SamplerState::m_addressW))
+                    ->Property("mipLodMin", BehaviorValueProperty(&SamplerState::m_mipLodMin))
+                    ->Property("mipLodMax", BehaviorValueProperty(&SamplerState::m_mipLodMax))
+                    ->Property("mipLodBias", BehaviorValueProperty(&SamplerState::m_mipLodBias))
+                    ->Property("borderColor", BehaviorValueProperty(&SamplerState::m_borderColor))
+                    ;
             }
         }
 

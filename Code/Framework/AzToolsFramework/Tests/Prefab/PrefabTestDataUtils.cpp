@@ -81,8 +81,9 @@ namespace UnitTest
 
         void ValidateTemplatePatches(const Link& actualLink, const PrefabDom& expectedTemplatePatches)
         {
-            PrefabDomValueConstReference patchesReference =
-                PrefabDomUtils::FindPrefabDomValue(actualLink.GetLinkDom(), PrefabDomUtils::PatchesName);
+            PrefabDom linkDom;
+            actualLink.GetLinkDom(linkDom, linkDom.GetAllocator());
+            PrefabDomValueConstReference patchesReference = PrefabDomUtils::FindPrefabDomValue(linkDom, PrefabDomUtils::PatchesName);
 
             if (!expectedTemplatePatches.IsNull())
             {

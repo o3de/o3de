@@ -13,10 +13,11 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <ScriptCanvas/Translation/Translation.h>
+
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
 #include <ScriptCanvas/Core/Core.h>
+#include <ScriptCanvas/Translation/Translation.h>
 
 namespace AZ
 {
@@ -30,8 +31,7 @@ namespace AZ
 
 namespace ScriptCanvas
 {
-    class RuntimeAsset;
-    class SubgraphInterfaceAsset;
+    struct SubgraphInterfaceData;
 }
 
 namespace ScriptCanvasEditor

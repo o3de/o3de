@@ -425,6 +425,32 @@ namespace UnitTest
         EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{2})->GetOutputConnections()[1].m_itemIndex.GetIndex(), 0);
     }
 
+    TEST_F(MaterialTypeAssetTests, ConnectToShaderEnabled)
+    {
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+
+        materialTypeCreator.AddShader(m_testShaderAsset, Name{"first"});
+        materialTypeCreator.AddShader(m_testShaderAsset, Name{"second"});
+        materialTypeCreator.AddShader(m_testShaderAsset, Name{"third"});
+
+        materialTypeCreator.BeginMaterialProperty(Name{"SecondShaderEnabled"}, MaterialPropertyDataType::Bool);
+        materialTypeCreator.ConnectMaterialPropertyToShaderEnabled(Name{"second"});
+        materialTypeCreator.EndMaterialProperty();
+
+        EXPECT_TRUE(materialTypeCreator.End(materialTypeAsset));
+
+        const MaterialPropertiesLayout* propertyLayout = materialTypeAsset->GetMaterialPropertiesLayout();
+
+        EXPECT_EQ(1, propertyLayout->GetPropertyCount());
+
+        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{0})->GetOutputConnections().size(), 1);
+        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{0})->GetOutputConnections()[0].m_type, MaterialPropertyOutputType::ShaderEnabled);
+        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{0})->GetOutputConnections()[0].m_containerIndex.GetIndex(), 1);
+    }
+
     TEST_F(MaterialTypeAssetTests, Error_SetPropertyInvalidInputs)
     {
         Data::AssetId assetId(Uuid::CreateRandom());

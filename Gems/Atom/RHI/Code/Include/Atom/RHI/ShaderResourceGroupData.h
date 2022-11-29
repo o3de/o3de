@@ -60,7 +60,7 @@ namespace AZ
             ShaderInputImageIndex    FindShaderInputImageIndex(const Name& name) const;
             ShaderInputSamplerIndex  FindShaderInputSamplerIndex(const Name& name) const;
             ShaderInputConstantIndex FindShaderInputConstantIndex(const Name& name) const;
-
+            
             //! Sets one image view for the given shader input index.
             bool SetImageView(ShaderInputImageIndex inputIndex, const ImageView* imageView, uint32_t arrayIndex);
 
@@ -205,6 +205,31 @@ namespace AZ
                 SamplerMask = AZ_BIT(static_cast<uint32_t>(ResourceType::Sampler))
             };
 
+            //This enum order needs to match the order in Bindless.azsli
+            enum class BindlessResourceType : uint32_t
+            {
+                ReadTexture = 0,
+                ReadWriteTexture,
+                ReadBuffer,
+                ReadWriteBuffer,
+                Count
+            };
+
+            // This number matches FrequencyId of SRG_Bindless within SRGSemantics.azsli
+            // ShaderResourceGroupSemantic SRG_Bindless
+            // {
+            //     FrequencyId = 7;
+            // };
+            // TODO::Need a more data driven way here - https://github.com/o3de/o3de/issues/13324
+            static const uint32_t BindlessSRGFrequencyId = 7;
+
+            // Structure to hold all the bindless views and the BindlessResourceType related to it
+            struct BindlessResourceViews
+            {
+                BindlessResourceType m_bindlessResourceType = BindlessResourceType::Count;
+                AZStd::vector<ConstPtr<ResourceView>> m_bindlessResources;
+            };
+            
             //! Reset the update mask
             void ResetUpdateMask();
 
@@ -213,6 +238,30 @@ namespace AZ
 
             //! Returns the mask that is suppose to indicate which resource type was updated
             uint32_t GetUpdateMask() const;
+            
+            //! Update the indirect buffer view with the indices of all the image views which reside in the global gpu heap.
+            void SetBindlessViews(
+                ShaderInputBufferIndex indirectResourceBufferIndex,
+                const RHI::BufferView* indirectResourceBuffer,
+                AZStd::span<const ImageView* const> imageViews,
+                uint32_t* outIndices,
+                bool viewReadOnly = true,
+                uint32_t arrayIndex = 0);
+            
+            //! Update the indirect buffer view with the indices of all the buffer views which reside in the global gpu heap.
+            void SetBindlessViews(
+                ShaderInputBufferIndex indirectResourceBufferIndex,
+                const RHI::BufferView* indirectResourceBuffer,
+                AZStd::span<const BufferView* const> bufferViews,
+                uint32_t* outIndices,
+                bool viewReadOnly = true,
+                uint32_t arrayIndex = 0);
+
+            //! Get the size of the bindless view map
+            const uint32_t GetBindlessViewsSize() const;
+            
+            //! Return all the view data stored within bindless view map
+            const AZStd::vector<BindlessResourceViews> GetAllBindlessViews() const;
             
         private:
             static const ConstPtr<ImageView> s_nullImageView;
@@ -235,6 +284,11 @@ namespace AZ
             AZStd::vector<SamplerState> m_samplers;
             AZStd::vector<ConstPtr<ImageView>> m_imageViewsUnboundedArray;
             AZStd::vector<ConstPtr<BufferView>> m_bufferViewsUnboundedArray;
+
+            // The map below is used to manage ownership of buffer and image views that aren't bound directly to the shader, but implicitly
+            // referenced through indirection constants. The key corresponds to the pair of (buffer input slot, index) where the indirection
+            // constants reside (an array of indirection buffers is supported)            
+            AZStd::unordered_map<AZStd::pair<ShaderInputBufferIndex, uint32_t>, BindlessResourceViews> m_bindlessResourceViews;
 
             //! The backing data store of constants for the shader resource group.
             ConstantsData m_constantsData;
@@ -337,7 +391,23 @@ namespace AZ
                 // command list submission time.
             }
 
-            bool isValidType = true;
+            auto checkImageType = [&imageDescriptor, &shaderInputImage, arrayIndex](ImageDimension expected)
+            {
+                if (imageDescriptor.m_dimension != expected)
+                {
+                    AZ_UNUSED(shaderInputImage);
+                    AZ_UNUSED(arrayIndex);
+                    AZ_Error("ShaderResourceGroupData", false,
+                        "Image Input '%s[%d]': The image is %dD but the shader expected %dD",
+                        shaderInputImage.m_name.GetCStr(),
+                        arrayIndex,
+                        static_cast<int>(imageDescriptor.m_dimension),
+                        static_cast<int>(expected));
+                    return false;
+                }
+                return true;
+            };
+
             switch (shaderInputImage.m_type)
             {
             case ShaderInputImageType::Unknown:
@@ -346,45 +416,78 @@ namespace AZ
 
             case ShaderInputImageType::Image1DArray:
             case ShaderInputImageType::Image1D:
-                isValidType &= (imageDescriptor.m_dimension == ImageDimension::Image1D);
+                if (!checkImageType(ImageDimension::Image1D))
+                {
+                    return false;
+                }
                 break;
 
             case ShaderInputImageType::SubpassInput:
-                isValidType &= (imageDescriptor.m_dimension == ImageDimension::Image2D);
+                if (!checkImageType(ImageDimension::Image2D))
+                {
+                    return false;
+                }
                 break;
 
             case ShaderInputImageType::Image2DArray:
             case ShaderInputImageType::Image2D:
-                isValidType &= (imageDescriptor.m_dimension == ImageDimension::Image2D);
-                isValidType &= (imageDescriptor.m_multisampleState.m_samples == 1);
+                if (!checkImageType(ImageDimension::Image2D))
+                {
+                    return false;
+                }
+                if (imageDescriptor.m_multisampleState.m_samples != 1)
+                {
+                    AZ_Error("ShaderResourceGroupData", false,
+                        "Image Input '%s[%d]': The image has multisample count %u but the shader expected 1.",
+                        shaderInputImage.m_name.GetCStr(),
+                        arrayIndex,
+                        imageDescriptor.m_multisampleState.m_samples);
+                    return false;
+                }
                 break;
 
             case ShaderInputImageType::Image2DMultisample:
             case ShaderInputImageType::Image2DMultisampleArray:
-                isValidType &= (imageDescriptor.m_dimension == ImageDimension::Image2D);
-                isValidType &= (imageDescriptor.m_multisampleState.m_samples > 1);
+                if (!checkImageType(ImageDimension::Image2D))
+                {
+                    return false;
+                }
+                if (imageDescriptor.m_multisampleState.m_samples <= 1)
+                {
+                    AZ_Error("ShaderResourceGroupData", false,
+                        "Image Input '%s[%d]': The image has multisample count %u but the shader expected more than 1.",
+                        shaderInputImage.m_name.GetCStr(),
+                        arrayIndex,
+                        imageDescriptor.m_multisampleState.m_samples);
+                    return false;
+                }
                 break;
 
             case ShaderInputImageType::Image3D:
-                isValidType &= (imageDescriptor.m_dimension == ImageDimension::Image3D);
+                if (!checkImageType(ImageDimension::Image3D))
+                {
+                    return false;
+                }
                 break;
 
             case ShaderInputImageType::ImageCube:
             case ShaderInputImageType::ImageCubeArray:
-                isValidType &= (imageDescriptor.m_dimension == ImageDimension::Image2D);
-                isValidType &= (imageViewDescriptor.m_isCubemap != 0);
+                if (!checkImageType(ImageDimension::Image2D))
+                {
+                    return false;
+                }
+                if (imageViewDescriptor.m_isCubemap == 0)
+                {
+                    AZ_Error("ShaderResourceGroupData", false,
+                        "Image Input '%s[%d]': The shader expected a cubemap.",
+                        shaderInputImage.m_name.GetCStr(),
+                        arrayIndex);
+                    return false;
+                }
                 break;
 
             default:
                 AZ_Assert(false, "Image Input '%s[%d]': Invalid image type!", shaderInputImage.m_name.GetCStr(), arrayIndex);
-                return false;
-            }
-
-            if (!isValidType)
-            {
-                AZ_Error("ShaderResourceGroupData", false,
-                    "Image Input '%s[%d]': Does not match expected type '%s'",
-                    shaderInputImage.m_name.GetCStr(), arrayIndex, GetShaderInputTypeName(shaderInputImage.m_type));
                 return false;
             }
 

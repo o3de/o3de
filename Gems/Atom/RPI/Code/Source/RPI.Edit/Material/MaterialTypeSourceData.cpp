@@ -30,6 +30,11 @@ namespace AZ
 {
     namespace RPI
     {
+        namespace
+        {
+            [[maybe_unused]] static constexpr char const MaterialTypeSourceDataDebugName[] = "MaterialTypeSourceData";
+        }
+
         MaterialFunctorSourceDataHolder::MaterialFunctorSourceDataHolder(Ptr<MaterialFunctorSourceData> actualSourceData)
             : m_actualSourceData(actualSourceData)
         {}
@@ -112,6 +117,8 @@ namespace AZ
                     ->Field("version", &MaterialTypeSourceData::m_version)
                     ->Field("versionUpdates", &MaterialTypeSourceData::m_versionUpdates)
                     ->Field("propertyLayout", &MaterialTypeSourceData::m_propertyLayout)
+                    ->Field("lightingModel", &MaterialTypeSourceData::m_lightingModel)
+                    ->Field("materialShaderCode", &MaterialTypeSourceData::m_materialShaderCode)
                     ->Field("shaders", &MaterialTypeSourceData::m_shaderCollection)
                     ->Field("functors", &MaterialTypeSourceData::m_materialFunctorSourceData)
                     ->Field("uvNameMap", &MaterialTypeSourceData::m_uvNameMap)
@@ -119,9 +126,9 @@ namespace AZ
             }
         }
 
-        MaterialTypeSourceData::PropertyConnection::PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view fieldName, int32_t shaderIndex)
+        MaterialTypeSourceData::PropertyConnection::PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view name, int32_t shaderIndex)
             : m_type(type)
-            , m_fieldName(fieldName)
+            , m_name(name)
             , m_shaderIndex(shaderIndex)
         {
         }
@@ -132,7 +139,7 @@ namespace AZ
 
         /*static*/ MaterialTypeSourceData::PropertyGroup* MaterialTypeSourceData::PropertyGroup::AddPropertyGroup(AZStd::string_view name, AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& toPropertyGroupList)
         {
-            if (!MaterialPropertyId::CheckIsValidName(name))
+            if (!MaterialUtils::CheckIsValidGroupName(name))
             {
                 return nullptr;
             }
@@ -144,7 +151,7 @@ namespace AZ
 
             if (iter != toPropertyGroupList.end())
             {
-                AZ_Error("Material source data", false, "PropertyGroup named '%.*s' already exists", AZ_STRING_ARG(name));
+                AZ_Error(MaterialTypeSourceDataDebugName, false, "PropertyGroup named '%.*s' already exists", AZ_STRING_ARG(name));
                 return nullptr;
             }
 
@@ -205,7 +212,7 @@ namespace AZ
 
         MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::PropertyGroup::AddProperty(AZStd::string_view name)
         {
-            if (!MaterialPropertyId::CheckIsValidName(name))
+            if (!MaterialUtils::CheckIsValidPropertyName(name))
             {
                 return nullptr;
             }
@@ -217,7 +224,7 @@ namespace AZ
 
             if (propertyIter != m_properties.end())
             {
-                AZ_Error("Material source data", false, "PropertyGroup '%s' already contains a property named '%.*s'", m_name.c_str(), AZ_STRING_ARG(name));
+                AZ_Error(MaterialTypeSourceDataDebugName, false, "PropertyGroup '%s' already contains a property named '%.*s'", m_name.c_str(), AZ_STRING_ARG(name));
                 return nullptr;
             }
 
@@ -228,7 +235,7 @@ namespace AZ
 
             if (propertyGroupIter != m_propertyGroups.end())
             {
-                AZ_Error("Material source data", false, "Property name '%.*s' collides with a PropertyGroup of the same name", AZ_STRING_ARG(name));
+                AZ_Error(MaterialTypeSourceDataDebugName, false, "Property name '%.*s' collides with a PropertyGroup of the same name", AZ_STRING_ARG(name));
                 return nullptr;
             }
 
@@ -245,7 +252,7 @@ namespace AZ
 
             if (iter != m_properties.end())
             {
-                AZ_Error("Material source data", false, "PropertyGroup name '%.*s' collides with a Property of the same name", AZ_STRING_ARG(name));
+                AZ_Error(MaterialTypeSourceDataDebugName, false, "PropertyGroup name '%.*s' collides with a Property of the same name", AZ_STRING_ARG(name));
                 return nullptr;
             }
 
@@ -265,7 +272,7 @@ namespace AZ
 
             if (!parentPropertyGroup)
             {
-                AZ_Error("Material source data", false, "PropertyGroup '%.*s' does not exists", AZ_STRING_ARG(splitPropertyGroupId[0]));
+                AZ_Error(MaterialTypeSourceDataDebugName, false, "PropertyGroup '%.*s' does not exists", AZ_STRING_ARG(splitPropertyGroupId[0]));
                 return nullptr;
             }
 
@@ -278,7 +285,7 @@ namespace AZ
 
             if (splitPropertyId.size() == 1)
             {
-                AZ_Error("Material source data", false, "Property id '%.*s' is invalid. Properties must be added to a PropertyGroup (i.e. \"general.%.*s\").", AZ_STRING_ARG(propertyId), AZ_STRING_ARG(propertyId));
+                AZ_Error(MaterialTypeSourceDataDebugName, false, "Property id '%.*s' is invalid. Properties must be added to a PropertyGroup (i.e. \"general.%.*s\").", AZ_STRING_ARG(propertyId), AZ_STRING_ARG(propertyId));
                 return nullptr;
             }
 
@@ -286,7 +293,7 @@ namespace AZ
 
             if (!parentPropertyGroup)
             {
-                AZ_Error("Material source data", false, "PropertyGroup '%.*s' does not exists", AZ_STRING_ARG(splitPropertyId[0]));
+                AZ_Error(MaterialTypeSourceDataDebugName, false, "PropertyGroup '%.*s' does not exists", AZ_STRING_ARG(splitPropertyId[0]));
                 return nullptr;
             }
 
@@ -489,7 +496,7 @@ namespace AZ
             return EnumerateProperties(callback, {}, m_propertyLayout.m_propertyGroups);
         }
 
-        bool MaterialTypeSourceData::ConvertToNewDataFormat()
+        bool MaterialTypeSourceData::UpgradeLegacyFormat()
         {
             for (const auto& group : GetOldFormatGroupDefinitionsInDisplayOrder())
             {
@@ -559,7 +566,7 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_Warning("Material source data", false, "Duplicate group '%s' found.", groupDefinition.m_name.c_str());
+                    AZ_Warning(MaterialTypeSourceDataDebugName, false, "Duplicate group '%s' found.", groupDefinition.m_name.c_str());
                 }
             }
 
@@ -660,7 +667,14 @@ namespace AZ
             MaterialNameContext materialNameContext,
             const MaterialTypeSourceData::PropertyGroup* propertyGroup) const
         {
-            if (!MaterialPropertyId::CheckIsValidName(propertyGroup->m_name))
+            if (!MaterialUtils::CheckIsValidGroupName(propertyGroup->m_name))
+            {
+                return false;
+            }
+
+            // If there were prior failures, continued processing could spam a bunch of irrelevant error messages,
+            // particularly from ResolveSourceValue() and CreateFunctor() functions.
+            if (materialTypeAssetCreator.IsFailed())
             {
                 return false;
             }
@@ -671,7 +685,7 @@ namespace AZ
             {
                 // Register the property...
 
-                if (!MaterialPropertyId::CheckIsValidName(property->GetName()))
+                if (!MaterialUtils::CheckIsValidPropertyName(property->GetName()))
                 {
                     return false;
                 }
@@ -687,7 +701,7 @@ namespace AZ
 
                 if (propertyGroupIter != propertyGroup->GetPropertyGroups().end())
                 {
-                    AZ_Error("Material source data", false, "Material property '%s' collides with a PropertyGroup with the same ID.", propertyId.GetCStr());
+                    AZ_Error(MaterialTypeSourceDataDebugName, false, "Material property '%s' collides with a PropertyGroup with the same ID.", propertyId.GetCStr());
                     return false;
                 }
 
@@ -704,14 +718,14 @@ namespace AZ
                     {
                     case MaterialPropertyOutputType::ShaderInput:
                     {
-                        Name fieldName{output.m_fieldName};
+                        Name fieldName{output.m_name};
                         materialNameContext.ContextualizeSrgInput(fieldName);
                         materialTypeAssetCreator.ConnectMaterialPropertyToShaderInput(fieldName);
                         break;
                     }
                     case MaterialPropertyOutputType::ShaderOption:
                     {
-                        Name fieldName{output.m_fieldName};
+                        Name fieldName{output.m_name};
                         materialNameContext.ContextualizeShaderOption(fieldName);
 
                         if (output.m_shaderIndex >= 0)
@@ -722,6 +736,12 @@ namespace AZ
                         {
                             materialTypeAssetCreator.ConnectMaterialPropertyToShaderOptions(fieldName);
                         }
+                        break;
+                    }
+                    case MaterialPropertyOutputType::ShaderEnabled:
+                    {
+                        Name shaderTag{output.m_name};
+                        materialTypeAssetCreator.ConnectMaterialPropertyToShaderEnabled(shaderTag);
                         break;
                     }
                     case MaterialPropertyOutputType::Invalid:
@@ -748,6 +768,13 @@ namespace AZ
                         materialTypeAssetCreator.GetMaterialPropertiesLayout(),
                         [&](const char* message){ materialTypeAssetCreator.ReportError("%s", message); });
                     materialTypeAssetCreator.SetPropertyValue(propertyId, resolvedValue);
+                }
+
+                // If there were prior failures, continued processing could spam a bunch of irrelevant error messages,
+                // particularly from ResolveSourceValue() and CreateFunctor() functions.
+                if (materialTypeAssetCreator.IsFailed())
+                {
+                    return false;
                 }
             }
 
@@ -804,9 +831,40 @@ namespace AZ
             return true;
         }
 
+        MaterialTypeSourceData::Format MaterialTypeSourceData::GetFormat() const
+        {
+            if (m_shaderCollection.empty())
+            {
+                // Whenever there is no explicit shader collection, the material type is considered to be in the abstract format.
+                // Even if materialShaderCode and lightingModel are missing, it should still technically work as an abstract format by using
+                // the material pipeline to generate default shaders.
+                return Format::Abstract;
+            }
+            else if(!m_materialShaderCode.empty() || !m_lightingModel.empty())
+            {
+                AZ_Error(MaterialTypeSourceDataDebugName, false,
+                    "Invalid material type format, an explicit shader list cannot be combined with materialShaderCode or lightingModel fields.");
+                return Format::Invalid;
+            }
+            else
+            {
+                return Format::Direct;
+            }
+        }
 
         Outcome<Data::Asset<MaterialTypeAsset>> MaterialTypeSourceData::CreateMaterialTypeAsset(Data::AssetId assetId, AZStd::string_view materialTypeSourceFilePath, bool elevateWarnings) const
         {
+            if (Format::Invalid == GetFormat())
+            {
+                // GetFormat() will report an error message in this case
+                return Failure();
+            }
+            else if (Format::Abstract == GetFormat())
+            {
+                AZ_Assert(false, "This material type is not structured for creating a MaterialTypeAsset. It can only be used to generate an intermediate material type for further processing. See MaterialTypeBuilder.");
+                return Failure();
+            }
+
             MaterialTypeAssetCreator materialTypeAssetCreator;
             materialTypeAssetCreator.SetElevateWarnings(elevateWarnings);
             materialTypeAssetCreator.Begin(assetId);
@@ -835,13 +893,13 @@ namespace AZ
                 if (shaderAssetResult)
                 {
                     auto shaderAsset = shaderAssetResult.GetValue();
-                    auto optionsLayout = shaderAsset->GetShaderOptionGroupLayout();
-                    ShaderOptionGroup options{ optionsLayout };
+
+                    ShaderOptionGroup options = shaderAsset->GetDefaultShaderOptions();
                     for (auto& iter : shaderRef.m_shaderOptionValues)
                     {
                         if (!options.SetValue(iter.first, iter.second))
                         {
-                            return Failure();
+                            materialTypeAssetCreator.ReportWarning("Could not set shader option '%s' to '%s'.", iter.first.GetCStr(), iter.second.GetCStr());
                         }
                     }
 

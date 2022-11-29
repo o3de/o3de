@@ -269,7 +269,7 @@ namespace AZ::IO
         AverageType CalculateAverage() const
         {
             size_t count = m_count > 0 ? m_count : 1;
-            return static_cast<AverageType>(static_cast<AverageType>(m_runningTotal) / static_cast<AverageType>(count < WindowSize ? count : WindowSize)); 
+            return static_cast<AverageType>(static_cast<AverageType>(m_runningTotal) / static_cast<AverageType>(count < WindowSize ? count : WindowSize));
         }
         //! Gets the running total of the values in the window.
         StorageType GetTotal() const { return m_runningTotal; }
@@ -290,7 +290,7 @@ namespace AZ::IO
 
     template<size_t WindowSize>
     using TimedAverageWindow = AverageWindow<Statistic::TimeValue, Statistic::TimeValue, WindowSize>;
-        
+
     template<size_t WindowSize>
     class TimedAverageWindowScope
     {
@@ -298,19 +298,19 @@ namespace AZ::IO
         explicit TimedAverageWindowScope(TimedAverageWindow<WindowSize>& window)
             : m_window(window)
         {
-            m_startTime = AZStd::chrono::system_clock::now();
+            m_startTime = AZStd::chrono::steady_clock::now();
         }
-            
+
         ~TimedAverageWindowScope()
         {
-            AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
+            AZStd::chrono::steady_clock::time_point now = AZStd::chrono::steady_clock::now();
             Statistic::TimeValue duration = AZStd::chrono::duration_cast<Statistic::TimeValue>(now - m_startTime);
             m_window.PushEntry(duration);
         }
 
     private:
         TimedAverageWindow<WindowSize>& m_window;
-        AZStd::chrono::system_clock::time_point m_startTime;
+        AZStd::chrono::steady_clock::time_point m_startTime;
     };
 
 #define TIMED_AVERAGE_WINDOW_SCOPE(window) TimedAverageWindowScope<decltype(window)::s_windowSize> TIMED_AVERAGE_WINDOW##__COUNTER__ (window)

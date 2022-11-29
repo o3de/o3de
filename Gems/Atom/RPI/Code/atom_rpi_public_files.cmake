@@ -23,6 +23,7 @@ set(FILES
     Include/Atom/RPI.Public/Scene.h
     Include/Atom/RPI.Public/SceneBus.h
     Include/Atom/RPI.Public/View.h
+    Include/Atom/RPI.Public/ViewGroup.h
     Include/Atom/RPI.Public/ViewportContext.h
     Include/Atom/RPI.Public/ViewportContextBus.h
     Include/Atom/RPI.Public/ViewportContextManager.h
@@ -43,7 +44,6 @@ set(FILES
     Include/Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h
     Include/Atom/RPI.Public/Image/AttachmentImage.h
     Include/Atom/RPI.Public/Image/AttachmentImagePool.h
-    Include/Atom/RPI.Public/Image/DefaultStreamingImageController.h
     Include/Atom/RPI.Public/Image/ImageSystem.h
     Include/Atom/RPI.Public/Image/ImageSystemInterface.h
     Include/Atom/RPI.Public/Image/StreamingImage.h
@@ -51,7 +51,6 @@ set(FILES
     Include/Atom/RPI.Public/Image/StreamingImageController.h
     Include/Atom/RPI.Public/Image/StreamingImagePool.h
     Include/Atom/RPI.Public/Material/Material.h
-    Include/Atom/RPI.Public/Material/MaterialReloadNotificationBus.h
     Include/Atom/RPI.Public/Material/MaterialSystem.h
     Include/Atom/RPI.Public/Model/Model.h
     Include/Atom/RPI.Public/Model/ModelLod.h
@@ -99,6 +98,7 @@ set(FILES
     Include/Atom/RPI.Public/GpuQuery/Query.h
     Include/Atom/RPI.Public/GpuQuery/QueryPool.h
     Include/Atom/RPI.Public/GpuQuery/TimestampQueryPool.h
+    Include/Atom/RPI.Public/GpuQuery/GpuPassProfiler.h
     Include/Atom/RPI.Public/XR/XRRenderingInterface.h
     Source/RPI.Public/Culling.cpp
     Source/RPI.Public/FeatureProcessor.cpp
@@ -111,6 +111,7 @@ set(FILES
     Source/RPI.Public/RPIUtils.cpp
     Source/RPI.Public/Scene.cpp
     Source/RPI.Public/View.cpp
+    Source/RPI.Public/ViewGroup.cpp
     Source/RPI.Public/ViewportContext.cpp
     Source/RPI.Public/ViewportContextManager.cpp
     Source/RPI.Public/WindowContext.cpp
@@ -124,7 +125,6 @@ set(FILES
     Source/RPI.Public/DynamicDraw/DynamicDrawSystem.cpp
     Source/RPI.Public/Image/AttachmentImage.cpp
     Source/RPI.Public/Image/AttachmentImagePool.cpp
-    Source/RPI.Public/Image/DefaultStreamingImageController.cpp
     Source/RPI.Public/Image/ImageSystem.cpp
     Source/RPI.Public/Image/StreamingImage.cpp
     Source/RPI.Public/Image/StreamingImageContext.cpp
@@ -178,4 +178,5 @@ set(FILES
     Source/RPI.Public/GpuQuery/Query.cpp
     Source/RPI.Public/GpuQuery/QueryPool.cpp
     Source/RPI.Public/GpuQuery/TimestampQueryPool.cpp
+    Source/RPI.Public/GpuQuery/GpuPassProfiler.cpp
 )

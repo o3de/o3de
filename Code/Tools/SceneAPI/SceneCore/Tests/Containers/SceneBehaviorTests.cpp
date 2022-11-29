@@ -30,6 +30,8 @@ extern "C" AZ_DLL_EXPORT void ReflectBehavior(AZ::BehaviorContext* context);
 // the DLL entry point for SceneCore to reflect its serialize context
 extern "C" AZ_DLL_EXPORT void ReflectTypes(AZ::SerializeContext* context);
 
+extern "C" AZ_DLL_EXPORT void CleanUpSceneCoreGenericClassInfo();
+
 namespace AZ::SceneAPI::Containers
 {
     class MockManifestRule : public DataTypes::IManifestObject
@@ -493,6 +495,8 @@ namespace AZ::SceneAPI::Containers
             UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("Scene")->second->m_attributes);
             UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("ExportProduct")->second->m_attributes);
             UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("ExportProductList")->second->m_attributes);
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("GraphObjectProxy")->second->m_attributes);
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("PythonBehaviorInfo")->second->m_attributes);
 
             m_scriptContext = AZStd::make_unique<AZ::ScriptContext>();
             m_scriptContext->BindTo(m_behaviorContext.get());
@@ -714,7 +718,7 @@ namespace AZ::SceneAPI::Containers
         ExpectExecute("mockAssetType = Uuid.CreateString('{B7AD6A54-963F-4F0F-A70E-1CFC0364BE6B}')");
         ExpectExecute("exportProduct = ExportProduct()");
         ExpectExecute("exportProduct.filename = 'some/file.name'");
-        ExpectExecute("exportProduct.sourceId = Uuid.CreateString('{A19F5FDB-C5FB-478F-A0B0-B697D2C10DB5}', 0)");
+        ExpectExecute("exportProduct.sourceId = Uuid.CreateString('{A19F5FDB-C5FB-478F-A0B0-B697D2C10DB5}')");
         ExpectExecute("exportProduct.assetType = mockAssetType");
         ExpectExecute("exportProduct.subId = 10101");
         ExpectExecute("TestExpectEquals(exportProduct.subId, 10101)");
@@ -722,7 +726,7 @@ namespace AZ::SceneAPI::Containers
 
         ExpectExecute("exportProductDep = ExportProduct()");
         ExpectExecute("exportProductDep.filename = 'some/file.dep'");
-        ExpectExecute("exportProductDep.sourceId = Uuid.CreateString('{A19F5FDB-C5FB-478F-A0B0-B697D2C10DB5}', 0)");
+        ExpectExecute("exportProductDep.sourceId = Uuid.CreateString('{A19F5FDB-C5FB-478F-A0B0-B697D2C10DB5}')");
         ExpectExecute("exportProductDep.assetType = mockAssetType");
         ExpectExecute("exportProductDep.subId = 2");
 
@@ -834,6 +838,9 @@ namespace AZ::SceneAPI::Containers
             m_scriptContext.reset();
             m_behaviorContext.reset();
             m_componentApplication.reset();
+
+            CleanUpSceneCoreGenericClassInfo();
+
             UnitTest::AllocatorsFixture::TearDown();
         }
 

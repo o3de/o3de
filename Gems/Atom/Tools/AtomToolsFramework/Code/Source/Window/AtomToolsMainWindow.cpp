@@ -11,7 +11,6 @@
 #include <AtomToolsFramework/SettingsDialog/SettingsDialog.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
-#include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/containers/map.h>
@@ -19,6 +18,7 @@
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
 
+#include <QClipboard>
 #include <QCloseEvent>
 #include <QFileDialog>
 #include <QInputDialog>
@@ -195,7 +195,7 @@ namespace AtomToolsFramework
         if (!m_updateMenus)
         {
             m_updateMenus = true;
-            QTimer::singleShot(0, [this]() {
+            QTimer::singleShot(0, this, [this]() {
                 if (m_rebuildMenus)
                 {
                     // Clearing all actions that were added directly to the menu bar
@@ -203,14 +203,14 @@ namespace AtomToolsFramework
 
                     // Instead of destroying and recreating the menu bar, destroying the individual child menus to prevent the UI from
                     // popping when the menu bar is recreated
-                    auto menus = menuBar()->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly);
-                    for (auto menu : menus)
+                    for (auto menu : menuBar()->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly))
                     {
                         delete menu;
                     }
 
                     AtomToolsMainMenuRequestBus::Event(m_toolId, &AtomToolsMainMenuRequestBus::Events::CreateMenus, menuBar());
                 }
+
                 AtomToolsMainMenuRequestBus::Event(m_toolId, &AtomToolsMainMenuRequestBus::Events::UpdateMenus, menuBar());
                 m_updateMenus = false;
                 m_rebuildMenus = false;
@@ -250,10 +250,18 @@ namespace AtomToolsFramework
 
         m_menuHelp->addAction(tr("&Help..."), [this]() {
             OpenHelpDialog();
-        });
+        }, QKeySequence::HelpContents);
 
         m_menuHelp->addAction(tr("&About..."), [this]() {
             OpenAboutDialog();
+        });
+
+        connect(m_menuEdit, &QMenu::aboutToShow, menuBar, [toolId = m_toolId](){
+            AtomToolsMainWindowRequestBus::Event(toolId, &AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, false);
+        });
+
+        connect(QApplication::clipboard(), &QClipboard::dataChanged, menuBar, [toolId = m_toolId](){
+            AtomToolsMainWindowRequestBus::Event(toolId, &AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, false);
         });
     }
 
@@ -367,7 +375,6 @@ namespace AtomToolsFramework
         {
             const QByteArray windowState = m_advancedDockManager->saveState();
             SetSettingsObject("/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string(windowState.begin(), windowState.end()));
-            AtomToolsMainWindowNotificationBus::Event(m_toolId, &AtomToolsMainWindowNotifications::OnMainWindowClosing);
         }
 
         Base::closeEvent(closeEvent);

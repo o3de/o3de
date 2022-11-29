@@ -219,11 +219,13 @@ namespace EMotionFX
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(entityId);
             AzToolsFramework::EditorVisibilityNotificationBus::Handler::BusConnect(entityId);
             AzFramework::BoundsRequestBus::Handler::BusConnect(entityId);
+            AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
         }
 
         //////////////////////////////////////////////////////////////////////////
         void EditorActorComponent::Deactivate()
         {
+            AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
             AzFramework::BoundsRequestBus::Handler::BusDisconnect();
             AzToolsFramework::EditorVisibilityNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
@@ -542,10 +544,57 @@ namespace EMotionFX
             CheckActorCreation();
         }
 
-        void EditorActorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+        void EditorActorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData>)
         {
+            // Release the asset so everything can get unloaded.
+            // The Actor asset holds a reference to a ModelAsset which can only be reloaded with a manual call.
+            // Since the Actor asset passed into this function has already been reloaded with the old ModelAsset,
+            // let it and the current Actor reference unload first.
+            // In the Unloaded event, the model will be requested for reload.
+            // When the model has finished reloading, the Actor will be QueueLoaded and will pick up the newly reloaded ModelAsset.
+            m_reloading = true;
             DestroyActorInstance();
-            OnAssetReady(asset);
+            m_actorAsset.Release();
+        }
+
+        void EditorActorComponent::OnAssetUnloaded(AZ::Data::AssetId assetId, AZ::Data::AssetType)
+        {
+            if(!m_reloading)
+            {
+                return;
+            }
+
+            m_reloading = false;
+
+            // Get the direct dependencies and find the ModelAsset
+            AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> result;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                result, &AZ::Data::AssetCatalogRequestBus::Events::GetDirectProductDependencies, assetId);
+
+            if (!result.IsSuccess())
+            {
+                AZ_Error("EditorActorComponent", false, "Failed to get dependencies for actor asset %s, reload aborted", assetId.ToFixedString().c_str());
+                return;
+            }
+
+            for (const auto& dependency : result.GetValue())
+            {
+                auto dependencyAsset =
+                    AZ::Data::AssetManager::Instance().FindAsset(dependency.m_assetId, AZ::Data::AssetLoadBehavior::Default);
+
+                if (dependencyAsset && dependencyAsset.GetType() == azrtti_typeid<AZ::RPI::ModelAsset>())
+                {
+                    m_modelReloadedEventHandler = AZ::Render::ModelReloadedEvent::Handler(
+                        [this](AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset)
+                        {
+                            m_actorAsset.QueueLoad();
+                        });
+
+                    // Now that the ModelAsset has been found, request a reload.
+                    // When this finishes, the callback will trigger a QueueLoad on m_actorAsset.
+                    AZ::Render::ModelReloaderSystemInterface::Get()->ReloadModel(dependencyAsset, m_modelReloadedEventHandler);
+                }
+            }
         }
 
         void EditorActorComponent::SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset)
@@ -646,6 +695,15 @@ namespace EMotionFX
             {
                 m_renderActorInstance->OnTick(deltaTime);
                 m_renderActorInstance->UpdateBounds();
+            }
+        }
+
+        void EditorActorComponent::DisplayEntityViewport(
+            [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
+            [[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay)
+        {
+            if (m_renderActorInstance)
+            {
                 m_renderActorInstance->DebugDraw(m_renderFlags);
             }
         }

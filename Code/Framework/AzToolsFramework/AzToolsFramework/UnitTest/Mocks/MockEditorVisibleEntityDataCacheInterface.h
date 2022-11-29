@@ -32,6 +32,7 @@ namespace UnitTest
         MOCK_CONST_METHOD1(IsVisibleEntitySelected, bool(size_t));
         MOCK_CONST_METHOD1(IsVisibleEntityIconHidden, bool(size_t));
         MOCK_CONST_METHOD1(IsVisibleEntityIndividuallySelectableInViewport, bool(size_t));
+        MOCK_CONST_METHOD1(IsVisibleEntityInFocusSubTree, bool(size_t));
         MOCK_CONST_METHOD1(GetVisibleEntityIndexFromId, AZStd::optional<size_t>(AZ::EntityId entityId));
     };
 } // namespace UnitTest

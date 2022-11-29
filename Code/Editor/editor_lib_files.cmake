@@ -263,6 +263,8 @@ set(FILES
     Core/QtEditorApplication.h
     Core/LevelEditorMenuHandler.cpp
     Core/LevelEditorMenuHandler.h
+    Core/Widgets/PrefabEditVisualModeWidget.h
+    Core/Widgets/PrefabEditVisualModeWidget.cpp
     StartupTraceHandler.cpp
     StartupTraceHandler.h
     LevelTreeModel.cpp
@@ -319,6 +321,8 @@ set(FILES
     Controls/ConsoleSCB.h
     Controls/ConsoleSCB.ui
     Controls/ConsoleSCB.qrc
+    Controls/CvarDPE.cpp
+    Controls/CvarDPE.h
     Controls/FolderTreeCtrl.cpp
     Controls/FolderTreeCtrl.h
     Controls/ImageHistogramCtrl.cpp

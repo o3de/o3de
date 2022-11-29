@@ -70,6 +70,8 @@ namespace AzToolsFramework::Prefab
 
         // Currently hide this button until we can correctly disable/enable it based on context.
         m_backButton->hide();
+
+        Refresh();
     }
 
     void PrefabViewportFocusPathHandler::OnPrefabFocusChanged(
@@ -85,14 +87,82 @@ namespace AzToolsFramework::Prefab
 
     void PrefabViewportFocusPathHandler::Refresh()
     {
+        if (int prefabFocusPathLength = m_prefabFocusPublicInterface->GetPrefabFocusPathLength(m_editorEntityContextId);
+            prefabFocusPathLength > 0)
+        {
+            // Push new Path
+            m_breadcrumbsWidget->pushPath(m_prefabFocusPublicInterface->GetPrefabFocusPath(m_editorEntityContextId).c_str());
+
+            // Set root icon
+            m_breadcrumbsWidget->setIconAt(0, QString(":/Level/level.svg"));
+
+            // If root instance is focused, disable the back button; else enable it.
+            m_backButton->setEnabled(prefabFocusPathLength > 1);
+        }
+    }
+
+    PrefabFocusPathWidget::PrefabFocusPathWidget()
+    {
+        // Initialize internal variables
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            m_editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+
+        m_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
+        if (m_prefabFocusPublicInterface == nullptr)
+        {
+            AZ_Assert(false, "Prefab - could not get PrefabFocusInterface on PrefabViewportFocusPathHandler construction.");
+            return;
+        }
+
+        // If a part of the path is clicked, focus on that instance
+        connect(
+            this,
+            &AzQtComponents::BreadCrumbs::linkClicked,
+            this,
+            [&](const QString&, int linkIndex)
+            {
+                m_prefabFocusPublicInterface->FocusOnPathIndex(m_editorEntityContextId, linkIndex);
+
+                // Manually refresh path
+                QTimer::singleShot(
+                    0,
+                    [&]()
+                    {
+                        Refresh();
+                    }
+                );
+            }
+        );
+
+        PrefabFocusNotificationBus::Handler::BusConnect(m_editorEntityContextId);
+    }
+
+    PrefabFocusPathWidget::~PrefabFocusPathWidget()
+    {
+        PrefabFocusNotificationBus::Handler::BusDisconnect();
+    }
+
+    void PrefabFocusPathWidget::OnPrefabFocusChanged(
+        [[maybe_unused]] AZ::EntityId previousContainerEntityId, [[maybe_unused]] AZ::EntityId newContainerEntityId)
+    {
+        Refresh();
+    }
+
+    void PrefabFocusPathWidget::OnPrefabFocusRefreshed()
+    {
+        Refresh();
+    }
+
+    void PrefabFocusPathWidget::Refresh()
+    {
         // Push new Path
-        m_breadcrumbsWidget->pushPath(m_prefabFocusPublicInterface->GetPrefabFocusPath(m_editorEntityContextId).c_str());
+        pushPath(m_prefabFocusPublicInterface->GetPrefabFocusPath(m_editorEntityContextId).c_str());
+
+        // Add icons to the widget
+        setDefaultIcon(QString(":/Entity/prefab_edit.svg"));
 
         // Set root icon
-        m_breadcrumbsWidget->setIconAt(0, QString(":/Level/level.svg"));
-
-        // If root instance is focused, disable the back button; else enable it.
-        m_backButton->setEnabled(m_prefabFocusPublicInterface->GetPrefabFocusPathLength(m_editorEntityContextId) > 1);
+        setIconAt(0, QString(":/Level/level.svg"));
     }
 
 } // namespace AzToolsFramework::Prefab

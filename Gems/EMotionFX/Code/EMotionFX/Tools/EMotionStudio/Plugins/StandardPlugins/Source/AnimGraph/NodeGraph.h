@@ -20,8 +20,13 @@
 #include <QTransform>
 #endif
 
+QT_FORWARD_DECLARE_CLASS(QLineEdit);
 QT_FORWARD_DECLARE_CLASS(QPainter);
 
+namespace EMotionFX
+{
+    class AnimGraphNodeGroup;
+}
 namespace EMStudio
 {
     // forward declarations
@@ -30,6 +35,7 @@ namespace EMStudio
     class NodeGraphWidget;
     class NodePort;
     class StateConnection;
+    class ZoomableLineEdit;
 
     class NodeGraph
         : public QObject
@@ -120,6 +126,12 @@ namespace EMStudio
         QRect CalcRectFromGraph() const;
         NodePort* FindPort(int32 x, int32 y, GraphNode** outNode, AZ::u16* outPortNr, bool* outIsInputPort, bool includeInputPorts = true);
 
+        EMotionFX::AnimGraphNodeGroup* FindNodeGroup(const QPoint& globalPoint) const;
+        bool CheckInsideNodeGroupTitleRect(const EMotionFX::AnimGraphNodeGroup* nodeGroup, const QPoint& globalPoint) const;
+        void EnableNameEditForNodeGroup(EMotionFX::AnimGraphNodeGroup* nodeGroup);
+        void DisableNameEditForNodeGroup();
+        void RemoveNodeGroup(EMotionFX::AnimGraphNodeGroup* nodeGroup);
+
         // entry state helper functions
         void SetEntryNode(GraphNode* entryNode)                                        { m_entryNode = entryNode; }
         static void RenderEntryPoint(QPainter& painter, GraphNode* node);
@@ -152,6 +164,7 @@ namespace EMStudio
 
         GraphNode* FindGraphNode(const QModelIndex& modelIndex);
         GraphNode* FindGraphNode(const EMotionFX::AnimGraphNode* node);
+        const GraphNode* FindGraphNode(const EMotionFX::AnimGraphNode* node) const;
         StateConnection* FindStateConnection(const QModelIndex& modelIndex);
         NodeConnection* FindNodeConnection(const QModelIndex& modelIndex);
 
@@ -168,6 +181,7 @@ namespace EMStudio
         void RenderTitlebar(QPainter& painter, const QString& text, int32 width);
         void RenderTitlebar(QPainter& painter, int32 width);
         void SyncTransition(StateConnection* visualStateConnection, const EMotionFX::AnimGraphStateTransition* transition, GraphNode* targetGraphNode);
+        QRect ComputeNodeGroupRect(const EMotionFX::AnimGraphNodeGroup* nodeGroup) const;
 
         NodeGraphWidget*            m_graphWidget;
         QPersistentModelIndex       m_currentModelIndex;
@@ -232,6 +246,8 @@ namespace EMStudio
         // Group drawing
         QFont                       m_groupFont;
         QScopedPointer<QFontMetrics> m_groupFontMetrics;
+        QScopedPointer<ZoomableLineEdit> m_nodeGroupNameLineEdit;
+        EMotionFX::AnimGraphNodeGroup* m_currentNameEditNodeGroup = nullptr;
 
     protected slots:
         void UpdateAnimatedScrollOffset();

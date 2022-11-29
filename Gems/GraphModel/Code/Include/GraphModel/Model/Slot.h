@@ -111,12 +111,60 @@ namespace GraphModel
         virtual ~SlotDefinition() = default;
 
         //! This set of factory functions create a SlotDefinition for each of the valid SlotDirection/SlotType combinations
-        static SlotDefinitionPtr CreateInputData(AZStd::string_view name, AZStd::string_view displayName, DataTypePtr dataType, AZStd::any defaultValue, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr, bool supportsEditingOnNode = true);
-        static SlotDefinitionPtr CreateInputData(AZStd::string_view name, AZStd::string_view displayName, DataTypeList supportedDataTypes, AZStd::any defaultValue, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr, bool supportsEditingOnNode = true);
-        static SlotDefinitionPtr CreateOutputData(AZStd::string_view name, AZStd::string_view displayName, DataTypePtr dataType, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr, bool supportsEditingOnNode = true);
-        static SlotDefinitionPtr CreateInputEvent(AZStd::string_view name, AZStd::string_view displayName, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr, bool supportsEditingOnNode = true);
-        static SlotDefinitionPtr CreateOutputEvent(AZStd::string_view name, AZStd::string_view displayName, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr, bool supportsEditingOnNode = true);
-        static SlotDefinitionPtr CreateProperty(AZStd::string_view name, AZStd::string_view displayName, DataTypePtr dataType, AZStd::any defaultValue, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr, bool supportsEditingOnNode = true);
+        static SlotDefinitionPtr CreateInputData(
+            AZStd::string_view name,
+            AZStd::string_view displayName,
+            DataTypePtr dataType,
+            AZStd::any defaultValue,
+            AZStd::string_view description,
+            ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr,
+            bool visibleOnNode = true,
+            bool editableOnNode = true);
+
+        static SlotDefinitionPtr CreateInputData(
+            AZStd::string_view name,
+            AZStd::string_view displayName,
+            DataTypeList supportedDataTypes,
+            AZStd::any defaultValue,
+            AZStd::string_view description,
+            ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr,
+            bool visibleOnNode = true,
+            bool editableOnNode = true);
+
+        static SlotDefinitionPtr CreateOutputData(
+            AZStd::string_view name,
+            AZStd::string_view displayName,
+            DataTypePtr dataType,
+            AZStd::string_view description,
+            ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr,
+            bool visibleOnNode = true,
+            bool editableOnNode = true);
+
+        static SlotDefinitionPtr CreateInputEvent(
+            AZStd::string_view name,
+            AZStd::string_view displayName,
+            AZStd::string_view description,
+            ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr,
+            bool visibleOnNode = true,
+            bool editableOnNode = true);
+
+        static SlotDefinitionPtr CreateOutputEvent(
+            AZStd::string_view name,
+            AZStd::string_view displayName,
+            AZStd::string_view description,
+            ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr,
+            bool visibleOnNode = true,
+            bool editableOnNode = true);
+
+        static SlotDefinitionPtr CreateProperty(
+            AZStd::string_view name,
+            AZStd::string_view displayName,
+            DataTypePtr dataType,
+            AZStd::any defaultValue,
+            AZStd::string_view description,
+            ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr,
+            bool visibleOnNode = true,
+            bool editableOnNode = true);
 
         SlotDirection GetSlotDirection() const;  
         SlotType GetSlotType() const;        
@@ -130,12 +178,15 @@ namespace GraphModel
         //! Returns whether this slot's configuration allows connections to other slots
         bool SupportsConnections() const;
 
-        //! Returns whether or not the value for this slot should be editable on the node ui
-        bool SupportsEditingOnNode() const;
-
         //! Returns whether or not this slot is configured to be extendable
         bool SupportsExtendability() const;
 
+        //! Return true if this slot is configured to appear on node UI, otherwise false
+        bool IsVisibleOnNode() const;
+
+        //! Returns true if the value of this slot should be editable on the node UI, otherwise false
+        bool IsEditableOnNode() const;
+ 
         //! Returns whether this slot matches the given configuration
         bool Is(SlotDirection slotDirection, SlotType slotType) const;
 
@@ -162,7 +213,8 @@ namespace GraphModel
         AZStd::string m_description;
         DataTypeList m_supportedDataTypes;
         AZStd::any m_defaultValue;
-        bool m_supportsEditingOnNode = true;
+        bool m_visibleOnNode = true;
+        bool m_editableOnNode = true;
         ExtendableSlotConfiguration m_extendableSlotConfiguration;
     };
 
@@ -214,12 +266,14 @@ namespace GraphModel
         bool SupportsDataTypes() const;
         bool SupportsConnections() const;
         bool SupportsExtendability() const;
-        bool SupportsEditingOnNode() const;
-        const SlotName& GetName() const;                    //!< Valid for all slot configurations
-        const AZStd::string& GetDisplayName() const;        //!< Valid for all slot configurations
-        const AZStd::string& GetDescription() const;        //!< Valid for all slot configurations
-        DataTypePtr GetDataType() const;                    //!< Valid for Data and Property slots. Otherwise returns null.
-        AZStd::any GetDefaultValue() const;                 //!< Valid for Input Data and Property slots. Otherwise returns an empty AZStd::any.
+        bool IsVisibleOnNode() const;
+        bool IsEditableOnNode() const;
+        const SlotName& GetName() const;
+        const AZStd::string& GetDisplayName() const;
+        const AZStd::string& GetDescription() const;
+        DataTypePtr GetDataType() const; //!< Valid for Data and Property slots. Otherwise returns null.
+        DataTypePtr GetDefaultDataType() const; //!< Valid for Data and Property slots. Otherwise returns null.
+        AZStd::any GetDefaultValue() const; //!< Valid for Data and Property slots. Otherwise returns an empty AZStd::any.
 
         //! Valid for Data and Property slots. Otherwise returns an empty DataTypeList.
         //! If valid, this will return the full list of all data types this slot could support.
@@ -260,61 +314,35 @@ namespace GraphModel
         //! Valid for Input Data and Property slots.
         void SetValue(const AZStd::any& value);
 
-        // CJS TODO: More functions to add a bit later...
-        // CJS TODO: Also cache connection information here so Slot doesn't have to search the Graph for connections
-
-        //! Whether it's connected to other Slots in the Graph
-        //! (Property slots will never have connections)
-        // bool IsConnected() const;
-
         //! Returns the list of connections to this Slot.
         //! (Property slots will never have connections)
         ConnectionList GetConnections() const;
 
-        //! Returns the list of other Slots that this Slot is connected to
-        //! (Property slots will never have connections)
-        // AZStd::vector<SlotPtr> GetConnectedSlots();    
-
-        //! Returns the list of all Nodes that this Slot is connected to
-        //! (Property slots will never have connections)
-        //AZStd::vector<NodePtr> GetConnectedNodes();
-
-        //! Returns the list of IDs for other Slots that this Slot is connected to
-        //! (Property slots will never have connections)
-        // AZStd::vector<Endpoint> GetConnectedEndpoints();
-
-        //! Returns the list of IDs for all Nodes that this Slot is connected to
-        //! (Property slots will never have connections)
-        // AZStd::vector<NodeId> GetConnectedNodeIds();
-
     private:
 
 #if defined(AZ_ENABLE_TRACING)
-        void AssertWithTypeInfo(bool expression, DataTypePtr dataTypeUsed, const char* message) const;
+        void AssertWithTypeInfo(bool expression, DataTypePtr dataTypeRequested, const char* message) const;
 #endif
         DataTypePtr GetDataTypeForTypeId(const AZ::Uuid& typeId) const;
         DataTypePtr GetDataTypeForValue(const AZStd::any& value) const;
 
-        mutable AZStd::weak_ptr<Node> m_parentNode; //!< This is a mutable because it is just-in-time initialized in a const accessor function. This is okay because it's just a cache.
         SlotDefinitionPtr m_slotDefinition;         //!< Pointer to the SlotDefinition in the parent Node, that defines this slot.
         AZStd::any m_value;                         //!< This is the value that gets used for a Property slot or an Input Data slot that doesn't have any connection.
-        WeakConnectionList m_connections;           //!< List of connections to this Slot. Not reflected/serialized because this is just a cache of information owned by the Graph.
         SlotSubId m_subId = 0;                      //!< SubId to uniquely identify extendable slots of the same name (regular slots will always have a SubId of 0)
     };
-        
 
     template<typename T>
     T Slot::GetValue() const
     {
+        const AZStd::any& value = GetValue();
 #if defined(AZ_ENABLE_TRACING)
-        DataTypePtr dataTypeUsed = GetDataTypeForTypeId(azrtti_typeid<T>());
-        AssertWithTypeInfo(SupportsValues(), dataTypeUsed, "This slot type does not support values");
-        AssertWithTypeInfo(IsSupportedDataType(dataTypeUsed), dataTypeUsed, "Slot::GetValue used with the wrong type");
-        AssertWithTypeInfo(m_value.is<T>(), dataTypeUsed, "m_value does not hold data of the appropriate type");
+        DataTypePtr dataTypeRequested = GetDataTypeForTypeId(azrtti_typeid<T>());
+        AssertWithTypeInfo(SupportsValues(), dataTypeRequested, "This slot type does not support values");
+        AssertWithTypeInfo(IsSupportedDataType(dataTypeRequested), dataTypeRequested, "Slot::GetValue used with the wrong type");
+        AssertWithTypeInfo(value.is<T>(), dataTypeRequested, "value does not hold data of the appropriate type");
 #endif
-        return m_value.is<T>() ? AZStd::any_cast<T>(m_value) : T{};
+        return value.is<T>() ? AZStd::any_cast<T>(value) : T{};
     }
-
 
     template<typename T>
     void Slot::SetValue(const T& value)

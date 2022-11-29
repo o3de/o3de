@@ -68,7 +68,7 @@ namespace AZStd
         template <class Clock, class Duration>
         bool try_acquire_until(const chrono::time_point<Clock, Duration>& abs_time)
         {
-            auto timeNow = chrono::system_clock::now();
+            auto timeNow = chrono::steady_clock::now();
             if (timeNow >= abs_time)
             {
                 return false; // we timed out already!
@@ -113,7 +113,7 @@ namespace AZStd
             AZStd::unique_lock<AZStd::mutex> ulock(m_mutex);
             if (!m_isReady)
             {
-                auto absTime = chrono::system_clock::now() + rel_time;
+                auto absTime = chrono::steady_clock::now() + rel_time;
 
                 // Note that the standard specifies that try_acquire_for(.. rel_time) is the MINIMUM time to wait
                 // whereas condition_var's wait_for is the maximum time to wait, and may return early.

@@ -38,15 +38,17 @@ namespace GradientSignal
         virtual void GetPixelIndicesForPositions(AZStd::span<const AZ::Vector3> positions, AZStd::span<PixelIndex> outIndices) const = 0;
 
         //! Get the image pixel values at a list of positions.
-        //! Unlike GetValues on the GradientRequestBus, this will always use point sampling regardless of
-        //! the Image Gradient sampler type because the specific pixel values are being requested.
+        //! This provides different results than GradientRequestBus::GetValues because it's returning raw pixel values.
+        //!  - This will always use point sampling instead of the Image Gradient sampler type
+        //!  - This will always return back an unscaled value, instead of using the Image Gradient scale mode and range
         //! @param positions The list of world positions to query
         //! @param outValues [out] The list of output values. This list is expected to be the same size as the positions list.
         virtual void GetPixelValuesByPosition(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const = 0;
 
         //! Get the image pixel values at a list of pixel indices.
-        //! Unlike GetValues on the GradientRequestBus, this will always use point sampling regardless of
-        //! the Image Gradient sampler type because the specific pixel values are being requested.
+        //! This provides different results than GradientRequestBus::GetValues because it's returning raw pixel values.
+        //!  - This will always use point sampling instead of the Image Gradient sampler type
+        //!  - This will always return back an unscaled value, instead of using the Image Gradient scale mode and range
         //! @param positions The list of pixel indices to query
         //! @param outValues [out] The list of output values. This list is expected to be the same size as the positions list.
         virtual void GetPixelValuesByPixelIndex(AZStd::span<const PixelIndex> indices, AZStd::span<float> outValues) const = 0;

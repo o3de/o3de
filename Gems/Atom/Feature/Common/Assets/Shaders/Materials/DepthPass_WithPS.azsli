@@ -22,8 +22,7 @@ struct VSInput
 
     // only used for parallax depth calculation
     float3 m_normal : NORMAL;
-    float4 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
+    float4 m_tangent : TANGENT;
 
 #if MULTILAYER
     // This gets set automatically by the system at runtime only if it's available.
@@ -42,8 +41,7 @@ struct VSDepthOutput
 
     // only used for parallax depth calculation
     float3 m_normal : NORMAL;
-    float3 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
+    float4 m_tangent : TANGENT;
     float3 m_worldPosition : UV0;
 
 #if MULTILAYER
@@ -63,13 +61,9 @@ VSDepthOutput MainVS(VSInput IN)
     OUT.m_uv[0] = mul(MaterialSrg::m_uvMatrix, float3(IN.m_uv0, 1.0)).xy;
     OUT.m_uv[1] = IN.m_uv1;
 
-    if(ShouldHandleParallaxInDepthShaders())
-    {
-        OUT.m_worldPosition = worldPosition.xyz;
-
-        float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
-        ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
-    }
+    OUT.m_worldPosition = worldPosition.xyz;
+    OUT.m_normal = IN.m_normal;
+    OUT.m_tangent = IN.m_tangent;
 
 #if MULTILAYER
     if(o_blendMask_isBound)
@@ -92,16 +86,20 @@ struct PSDepthOutput
 
 PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
-    const float3 vertexNormal = normalize(IN.m_normal);
-
     PSDepthOutput OUT;
 
     OUT.m_depth = IN.m_position.z;
 
     if(ShouldHandleParallaxInDepthShaders())
     {
-        float3 tangents[UvSetCount] = { IN.m_tangent, IN.m_tangent };
-        float3 bitangents[UvSetCount] = { IN.m_bitangent, IN.m_bitangent };
+        float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+        float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+
+        float3 vertexNormal, vertexTangent, vertexBitangent;
+        ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+
+        float3 tangents[UvSetCount] = { vertexTangent, vertexTangent };
+        float3 bitangents[UvSetCount] = { vertexBitangent, vertexBitangent };
 
         for (int i = 0; i != UvSetCount; ++i)
         {
@@ -111,8 +109,8 @@ PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
                 isFrontFace,
                 IN.m_uv[i],
                 i,
-                IN.m_tangent,
-                IN.m_bitangent,
+                vertexTangent,
+                vertexBitangent,
                 tangents[i],
                 bitangents[i]);
         }

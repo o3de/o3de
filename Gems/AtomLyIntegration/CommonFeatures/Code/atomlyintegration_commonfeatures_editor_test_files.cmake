@@ -8,4 +8,5 @@
 
 set(FILES
     Tests/Main.cpp
-    Tests/MeshComponentControllerTests.cpp)
+    Tests/MeshComponentControllerTests.cpp
+    Tests/EditorAreaLightComponentTests.cpp)

@@ -48,21 +48,22 @@ namespace ShaderManagementConsole
         m_actionSaveAsChild->setVisible(false);
     }
 
-    AZStd::string ShaderManagementConsoleWindow::GetSaveDocumentParams(const AZStd::string& initialPath) const
+    AZStd::string ShaderManagementConsoleWindow::GetSaveDocumentParams(const AZStd::string& initialPath, const AZ::Uuid& documentId) const
     {
         // Get shader file path
         AZ::IO::Path shaderFullPath;
         AZ::RPI::ShaderVariantListSourceData shaderVariantList = {};
         ShaderManagementConsoleDocumentRequestBus::EventResult(
             shaderVariantList,
-            GetCurrentDocumentId(),
+            documentId,
             &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderVariantListSourceData);
         shaderFullPath = AZ::RPI::AssetUtils::ResolvePathReference(initialPath, shaderVariantList.m_shaderFilePath);
         
         QMessageBox msgBox;
         msgBox.setText("Where do you want to save the list?");
-        QPushButton* projectBtn = msgBox.addButton(QObject::tr("Save to project"), QMessageBox::YesRole);
-        QPushButton* engineBtn = msgBox.addButton(QObject::tr("Save to engine"), QMessageBox::NoRole);
+        QPushButton* projectBtn = msgBox.addButton(QObject::tr("Save to project"), QMessageBox::ActionRole);
+        QPushButton* engineBtn = msgBox.addButton(QObject::tr("Save to engine"), QMessageBox::ActionRole);
+        msgBox.addButton(QObject::tr("Cancel"), QMessageBox::RejectRole);
         msgBox.exec();
 
         AZ::IO::Path result;

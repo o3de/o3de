@@ -26,6 +26,9 @@ namespace AzToolsFramework
         //! Synchronization signal to register Action Contexts.
         virtual void OnActionContextRegistrationHook() {}
 
+        //! Synchronization signal to register Action Context Modes.
+        virtual void OnActionContextModeRegistrationHook() {}
+
         //! Synchronization signal to register Action Updaters.
         virtual void OnActionUpdaterRegistrationHook() {}
 

@@ -29,22 +29,12 @@ namespace UnitTest
     {
         void SetUp() override
         {
-            SystemAllocator::Descriptor desc;
-            desc.m_heap.m_numFixedMemoryBlocks = 1;
-            desc.m_heap.m_fixedMemoryBlocksByteSize[0] = 100 * 1024 * 1024;
-            m_memBlock = AZ_OS_MALLOC(
-                desc.m_heap.m_fixedMemoryBlocksByteSize[0],
-                desc.m_heap.m_memoryBlockAlignment);
-            desc.m_heap.m_fixedMemoryBlocks[0] = m_memBlock;
-
-            AllocatorInstance<AZ::SystemAllocator>::Create(desc);
+            AllocatorInstance<AZ::SystemAllocator>::Create();
         }
 
         void TearDown() override
         {
             AllocatorInstance<AZ::SystemAllocator>::Destroy();
-            AZ_OS_FREE(m_memBlock);
-            m_memBlock = nullptr;
         }
 
     public:
@@ -92,9 +82,6 @@ namespace UnitTest
             }
             return pixelArray;
         }
-
-    private:
-        void* m_memBlock = nullptr;
     };
 
     // no shadowmap
