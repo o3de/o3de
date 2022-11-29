@@ -1432,7 +1432,7 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        // if no vertex is selected, bail
+        // if no vertex is selected, early out
         if (!EditorVertexSelectionBase<Vertex>::m_translationManipulator)
         {
             return;

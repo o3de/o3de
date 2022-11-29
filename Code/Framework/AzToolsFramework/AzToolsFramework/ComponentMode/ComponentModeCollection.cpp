@@ -211,13 +211,13 @@ namespace AzToolsFramework
             // If in component mode, return the active component types, otherwise return an empty vector
             return InComponentMode() ? m_activeComponentTypes : AZStd::vector<AZ::Uuid>{};
         }
-
+        
         void ComponentModeCollection::EnumerateActiveComponents(
-            AZStd::function<void(const AZ::EntityComponentIdPair&, const AZ::Uuid&)> handler) const
+            const ComponentModeCollectionInterface::ActiveComponentModeCB& callBack) const
         {
             for (size_t i = 0; i < m_activeComponentModes.size(); ++i)
             {
-                handler(m_activeComponentModes[i].first, m_activeComponentModes[i].second);
+                callBack(m_activeComponentModes[i].first, m_activeComponentModes[i].second);
             }
         }
 

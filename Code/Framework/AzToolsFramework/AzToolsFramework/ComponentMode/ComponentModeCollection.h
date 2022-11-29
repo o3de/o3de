@@ -94,7 +94,7 @@ namespace AzToolsFramework
 
             // ComponentModeCollectionInterface overrides ...
             AZStd::vector<AZ::Uuid> GetComponentTypes() const override;
-            void EnumerateActiveComponents(AZStd::function<void(const AZ::EntityComponentIdPair&, const AZ::Uuid&)> handler) const override;
+            void EnumerateActiveComponents(const ComponentModeCollectionInterface::ActiveComponentModeCB& callBack) const override;
 
         private:
             enum class ComponentModeState : uint8_t
