@@ -727,7 +727,7 @@ namespace AZ
                 result = StringType::format("%s:%x", m_guid.ToString<StringType>().c_str(), m_subId);
                 break;
             case SubIdDisplayType::Decimal:
-                result = StringType::format("%s:%d", m_guid.ToString<StringType>().c_str(), m_subId);
+                result = StringType::format("%s:%lu", m_guid.ToString<StringType>().c_str(), m_subId);
                 break;
             }
         }
