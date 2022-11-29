@@ -33,7 +33,7 @@ def _edit_gem_names(engine_json: dict,
     if delete_gem_names:
         removal_list = delete_gem_names.split() if isinstance(delete_gem_names, str) else delete_gem_names
         if 'gem_names' in engine_json:
-            def in_list(gem: str or list, remove_list: list) -> bool:
+            def in_list(gem: str or dict, remove_list: list) -> bool:
                 if isinstance(gem, dict):
                     return gem['name'] in remove_list
                 else:
