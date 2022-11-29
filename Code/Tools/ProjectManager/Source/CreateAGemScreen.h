@@ -10,23 +10,28 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
-#include <FormFolderBrowseEditWidget.h>
-#include <FormLineEditWidget.h>
-#include <FormLineEditTagsWidget.h>
-#include <FormComboBoxWidget.h>
 #include <GemCatalog/GemInfo.h>
 #include <PythonBindings.h>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QButtonGroup)
+QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QDialogButtonBox)
 QT_FORWARD_DECLARE_CLASS(QRadioButton)
 QT_FORWARD_DECLARE_CLASS(QScrollArea)
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QStackedWidget)
+QT_FORWARD_DECLARE_CLASS(QDir)
 
 namespace O3DE::ProjectManager
 {
+    class FormFolderBrowseEditWidget;
+    class FormLineEditWidget;
+    class FormLineEditTagsWidget;
+    class FormOptionsWidget;
+    class FormComboBoxWidget;
+    class ScreenHeader;
+
     class CreateGem : public ScreenWidget
     {
         Q_OBJECT
@@ -34,29 +39,32 @@ namespace O3DE::ProjectManager
         explicit CreateGem(QWidget* parent = nullptr);
         ~CreateGem() = default;
 
+        ProjectManagerScreen GetScreenEnum() override
+        {
+            return ProjectManagerScreen::CreateGem;
+        }
+
+        void Init() override;
+
     signals:
         void GemCreated(const GemInfo& gemInfo);
 
-    private slots:
+    protected slots:
         void HandleBackButton();
         void HandleNextButton();
-        void HandleGemTemplateSelectionTab();
         void HandleGemDetailsTab();
+        
+
+    private slots:
+        void HandleGemTemplateSelectionTab();
         void HandleGemCreatorDetailsTab();
 
-    private:
-        void LoadButtonsFromGemTemplatePaths(QVBoxLayout* gemSetupLayout);
-        QScrollArea* CreateGemSetupScrollArea();
-        QScrollArea* CreateGemDetailsScrollArea();
-        QScrollArea* CreateGemCreatorScrollArea();
-        QFrame* CreateTabButtonsFrame();
-        QFrame* CreateTabPaneFrame();
-        bool ValidateGemTemplateLocation();
-        bool ValidateGemDisplayName();
-        bool ValidateGemName();
-        bool ValidateGemPath();
-        bool ValidateFormNotEmpty(FormLineEditWidget* form);
-        bool ValidateRepositoryURL();
+    protected:
+        void ClearFields();
+
+        virtual void GemAction();
+
+        virtual bool ValidateGemLocation(const QDir& chosenGemLocation) const;
 
         //Gem Setup
         QVector<TemplateInfo> m_gemTemplates;
@@ -64,10 +72,13 @@ namespace O3DE::ProjectManager
         QRadioButton* m_formFolderRadioButton = nullptr;
         FormFolderBrowseEditWidget* m_gemTemplateLocation = nullptr;
 
+        ScreenHeader* m_header = nullptr;
+
         //Gem Details
         FormLineEditWidget* m_gemDisplayName = nullptr;
         FormLineEditWidget* m_gemName = nullptr;
         FormLineEditWidget* m_gemSummary = nullptr;
+        FormOptionsWidget* m_platformOptions = nullptr;
         FormLineEditWidget* m_requirements = nullptr;
         FormLineEditWidget* m_license = nullptr;
         FormLineEditWidget* m_licenseURL = nullptr;
@@ -92,12 +103,39 @@ namespace O3DE::ProjectManager
         QRadioButton* m_gemDetailsTab = nullptr;
         QRadioButton* m_gemCreatorDetailsTab = nullptr;
 
-        GemInfo m_createGemInfo;
+        GemInfo m_gemInfo;
 
         static constexpr int GemTemplateSelectionScreen = 0;
         static constexpr int GemDetailsScreen = 1;
         static constexpr int GemCreatorDetailsScreen = 2;
+
+        static inline constexpr int s_platformOptionItemSpacing = 24;
+
+        int m_indexBackLimit = 0;
+
+        QString m_gemActionString;
+
+        GemInfo::Platforms m_platformSupportMask = GemInfo::Platform::Windows | GemInfo::Platform::Linux |
+                                                 GemInfo::Platform::iOS | GemInfo::Platform::Android;
+
+    private:
+        void LoadButtonsFromGemTemplatePaths(QVBoxLayout* gemSetupLayout);
+        QScrollArea* CreateGemSetupScrollArea();
+        QScrollArea* CreateGemDetailsScrollArea();
+        QScrollArea* CreateGemCreatorScrollArea();
+        QFrame* CreateTabButtonsFrame();
+        QFrame* CreateTabPaneFrame();
+        void SetupCreateWorkflow();
+
+        void ProceedToGemDetailsPage();
+        void ProceedToGemCreatorDetailsPage();
+        void ProceedToGemAction();
+
+        bool ValidateGemTemplateLocation();
+        bool ValidateGemDisplayName();
+        bool ValidateGemName();
+        bool ValidateGemPath();
+        bool ValidateFormNotEmpty(FormLineEditWidget* form);
+        bool ValidateRepositoryURL();
     };
-
-
 } // namespace O3DE::ProjectManager

@@ -22,6 +22,7 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface);
 
 void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surface)
 {
+#if ENABLE_LIGHT_CULLING
     tileIterator.LoadAdvance();
     
     while( !tileIterator.IsDone() )
@@ -30,7 +31,13 @@ void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surf
         tileIterator.LoadAdvance();
         
         ApplyDecal(currDecalIndex, surface);
-    }    
+    }
+#else
+    for(uint decalIndex = 0; decalIndex < ViewSrg::m_decalCount; decalIndex++)
+    {
+        ApplyDecal(decalIndex, surface);
+    }
+#endif
 }
 
 float GetDecalAttenuation(float3 surfNormal, float3 decalUp, float decalAngleAttenutation)

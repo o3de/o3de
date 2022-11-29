@@ -45,6 +45,7 @@ namespace EMStudio
         QHBoxLayout* valueTypeLayout = new QHBoxLayout();
         m_valueTypeLabel = new QLabel("Value type", this);
         m_valueTypeLabel->setFixedWidth(100);
+        valueTypeLayout->addItem(new QSpacerItem(4, 0, QSizePolicy::Fixed, QSizePolicy::Fixed));
         valueTypeLayout->addWidget(m_valueTypeLabel);
         m_valueTypeCombo = new QComboBox(this);
         m_valueTypeCombo->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
@@ -301,7 +302,6 @@ namespace EMStudio
     void ParameterCreateEditWidget::AfterPropertyModified(AzToolsFramework::InstanceDataNode*)
     {
         m_previewWidget->InvalidateAttributesAndValues();
-        adjustSize();
     }
 } // namespace EMStudio
 

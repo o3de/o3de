@@ -11,7 +11,7 @@
 
 namespace UnitTest
 {
-    class AValidViewportInteraction : public ToolsApplicationFixture
+    class AValidViewportInteraction : public ToolsApplicationFixture<>
     {
     public:
         AValidViewportInteraction()

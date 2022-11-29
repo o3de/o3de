@@ -21,28 +21,6 @@
 
 namespace
 {
-    class DebugAllocator
-    {
-    public:
-        using pointer_type = void*;
-        using size_type = AZStd::size_t;
-        using difference_type = AZStd::ptrdiff_t;
-        using allow_memory_leaks = AZStd::false_type; ///< Regular allocators should not leak.
-
-        AZ_FORCE_INLINE pointer_type allocate(size_t byteSize, size_t alignment, int = 0)
-        {
-            return AZ_OS_MALLOC(byteSize, alignment);
-        }
-        AZ_FORCE_INLINE size_type resize(pointer_type, size_type)
-        {
-            return 0;
-        }
-        AZ_FORCE_INLINE void deallocate(pointer_type ptr, size_type, size_type)
-        {
-            AZ_OS_FREE(ptr);
-        }
-    };
-
     #pragma pack(push, 1)
     struct alignas(1) AllocatorOperation
     {
@@ -160,30 +138,14 @@ namespace
 
 namespace AZ
 {
-    AllocatorBase::AllocatorBase(IAllocatorSchema* allocationSchema, const char* name, const char* desc)
-        : IAllocator(allocationSchema)
-        , m_name(name)
-        , m_desc(desc)
-    {
-    }
-
     AllocatorBase::~AllocatorBase()
     {
+        PreDestroy();
         AZ_Assert(
             !m_isReady,
-            "Allocator %s (%s) is being destructed without first having gone through proper calls to PreDestroy() and Destroy(). Use "
+            "Allocator %s is being destructed without first having gone through proper calls to PreDestroy() and Destroy(). Use "
             "AllocatorInstance<> for global allocators or AllocatorWrapper<> for local allocators.",
-            m_name, m_desc);
-    }
-
-    const char* AllocatorBase::GetName() const
-    {
-        return m_name;
-    }
-
-    const char* AllocatorBase::GetDescription() const
-    {
-        return m_desc;
+            GetName());
     }
 
     Debug::AllocationRecords* AllocatorBase::GetRecords()
@@ -237,16 +199,6 @@ namespace AZ
         m_isReady = false;
     }
 
-    void AllocatorBase::SetLazilyCreated(bool lazy)
-    {
-        m_isLazilyCreated = lazy;
-    }
-
-    bool AllocatorBase::IsLazilyCreated() const
-    {
-        return m_isLazilyCreated;
-    }
-
     void AllocatorBase::SetProfilingActive(bool active)
     {
         m_isProfilingActive = active;
@@ -263,14 +215,14 @@ namespace AZ
     }
 
     void AllocatorBase::ProfileAllocation(
-        void* ptr, size_t byteSize, size_t alignment, const char* name, const char* fileName, int lineNum, int suppressStackRecord)
+        void* ptr, size_t byteSize, size_t alignment, int suppressStackRecord)
     {
         if (m_isProfilingActive)
         {
             auto records = GetRecords();
             if (records)
             {
-                records->RegisterAllocation(ptr, byteSize, alignment, name, fileName, lineNum, suppressStackRecord + 1);
+                records->RegisterAllocation(ptr, byteSize, alignment, suppressStackRecord + 1);
             }
         }
 
@@ -294,27 +246,20 @@ namespace AZ
 #endif
     }
 
-    void AllocatorBase::ProfileReallocationBegin([[maybe_unused]] void* ptr, [[maybe_unused]] size_t newSize)
+    void AllocatorBase::ProfileReallocation(void* ptr, void* newPtr, size_t newSize, size_t newAlignment)
     {
-    }
-
-    void AllocatorBase::ProfileReallocationEnd(void* ptr, void* newPtr, size_t newSize, size_t newAlignment)
-    {
-        if (m_isProfilingActive)
+        if (newSize && m_isProfilingActive)
         {
-            Debug::AllocationInfo info;
-            ProfileDeallocation(ptr, 0, 0, &info);
-            ProfileAllocation(newPtr, newSize, newAlignment, info.m_name, info.m_fileName, info.m_lineNum, 0);
+            auto records = GetRecords();
+            if (records)
+            {
+                records->RegisterReallocation(ptr, newPtr, newSize, newAlignment, 1);
+            }
         }
 #if O3DE_RECORDING_ENABLED
         RecordAllocatorOperation(AllocatorOperation::DEALLOCATE, ptr);
         RecordAllocatorOperation(AllocatorOperation::ALLOCATE, newPtr, newSize, newAlignment);
 #endif
-    }
-
-    void AllocatorBase::ProfileReallocation(void* ptr, void* newPtr, size_t newSize, size_t newAlignment)
-    {
-        ProfileReallocationEnd(ptr, newPtr, newSize, newAlignment);
     }
 
     void AllocatorBase::ProfileResize(void* ptr, size_t newSize)
@@ -332,11 +277,11 @@ namespace AZ
 #endif
     }
 
-    bool AllocatorBase::OnOutOfMemory(size_t byteSize, size_t alignment, int flags, const char* name, const char* fileName, int lineNum)
+    bool AllocatorBase::OnOutOfMemory(size_t byteSize, size_t alignment)
     {
         if (AllocatorManager::IsReady() && AllocatorManager::Instance().m_outOfMemoryListener)
         {
-            AllocatorManager::Instance().m_outOfMemoryListener(this, byteSize, alignment, flags, name, fileName, lineNum);
+            AllocatorManager::Instance().m_outOfMemoryListener(this, byteSize, alignment);
             return true;
         }
         return false;

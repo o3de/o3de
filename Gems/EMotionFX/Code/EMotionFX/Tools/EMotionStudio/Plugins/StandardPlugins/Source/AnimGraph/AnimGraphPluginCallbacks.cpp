@@ -11,7 +11,6 @@
 #include "AnimGraphModel.h"
 #include "BlendGraphWidget.h"
 #include "NodeGraph.h"
-#include "NodeGroupWindow.h"
 #include "NodePaletteWidget.h"
 #include "BlendGraphViewWidget.h"
 #include "GraphNode.h"

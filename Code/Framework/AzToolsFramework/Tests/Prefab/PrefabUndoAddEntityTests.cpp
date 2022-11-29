@@ -147,7 +147,7 @@ namespace UnitTest
         AZStd::unique_ptr<Instance> wheelInstancePtr =
             m_prefabSystemComponent->CreatePrefab({}, {}, "test/path/wheel");
         ASSERT_TRUE(wheelInstancePtr);
-        Instance& leftWheelInstance = *wheelInstancePtr;
+        Instance& leftWheelInstanceBeforePropagation = *wheelInstancePtr;
         const InstanceAlias leftWheelInstanceAlias = wheelInstancePtr->GetInstanceAlias();
 
         // Create another wheel instance to be added under an axle instance later.
@@ -174,12 +174,12 @@ namespace UnitTest
 
         // Create a left wheel entity and add it under our left wheel instance.
         const AZStd::string leftWheelEntityName = "LeftWheel";
-        const EntityAlias leftWheelEntityAlias = CreateEntity(leftWheelEntityName, leftWheelInstance);
+        const EntityAlias leftWheelEntityAlias = CreateEntity(leftWheelEntityName, leftWheelInstanceBeforePropagation);
         ASSERT_FALSE(leftWheelEntityAlias.empty());
 
         // Create undo/redo node for adding the left wheel entity under the left wheel instance.
         PrefabUndoAddEntityAsOverride undoAddLeftWheelEntityNode = CreatePrefabUndoAddEntityAsOverrideNode(
-            leftWheelEntityAlias, leftWheelInstance, focusedCarInstance, "Undo Adding Left Wheel Entity");
+            leftWheelEntityAlias, leftWheelInstanceBeforePropagation, focusedCarInstance, "Undo Adding Left Wheel Entity");
 
         size_t expectedLeftWheelInstanceEntityCount = 0;
         size_t expectedRightWheelInstanceEntityCount = 0;
@@ -192,6 +192,10 @@ namespace UnitTest
         auto findAxleInstanceResult = focusedCarInstance.FindNestedInstance(axleInstanceAlias);
         ASSERT_TRUE(findAxleInstanceResult.has_value());
         Instance& axleInstance = findAxleInstanceResult->get();
+
+        auto findLeftWheelInstanceResult = axleInstance.FindNestedInstance(leftWheelInstanceAlias);
+        ASSERT_TRUE(findLeftWheelInstanceResult.has_value());
+        Instance& leftWheelInstance = findLeftWheelInstanceResult->get();
 
         auto findRightWheelInstanceResult = axleInstance.FindNestedInstance(rightWheelInstanceAlias);
         ASSERT_TRUE(findRightWheelInstanceResult.has_value());

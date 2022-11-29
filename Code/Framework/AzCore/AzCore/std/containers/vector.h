@@ -214,7 +214,7 @@ namespace AZStd
                     // Call destructor if we need to.
                     Internal::destroy<pointer>::range(m_start, m_last);
                     // Free memory if we need to.
-                    deallocate_memory(typename allocator_type::allow_memory_leaks(), 0);
+                    deallocate_memory(0);
                 }
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
                 swap_all((this_type&)rhs);
@@ -335,7 +335,7 @@ namespace AZStd
                 // Call destructor if we need to.
                 Internal::destroy<pointer>::range(m_start, m_last);
                 // Free memory if we need to.
-                deallocate_memory(typename allocator_type::allow_memory_leaks(), 0);
+                deallocate_memory(0);
             }
         }
 
@@ -351,22 +351,6 @@ namespace AZStd
 #endif
             size_type newSize = rhs.m_last - rhs.m_start;
             size_type capacity = m_end - m_start;
-            size_type expandedSize = 0;
-
-            // if we have an allocated block and we need more memory, try to expand first!
-            if (m_start && capacity < newSize)
-            {
-                expandedSize = m_allocator.resize(m_start, newSize * sizeof(node_type));
-                if (expandedSize % sizeof(node_type) == 0)
-                {
-                    size_type expandedCapacity = expandedSize / sizeof(node_type);
-                    if (capacity < expandedCapacity)
-                    {
-                        capacity = expandedCapacity;
-                        m_end = m_start + expandedCapacity;
-                    }
-                }
-            }
 
             if (newSize > capacity)
             {
@@ -376,7 +360,7 @@ namespace AZStd
                     // Destroy current vector.
                     Internal::destroy<pointer>::range(m_start, m_last);
                     // Free memory if we need to.
-                    deallocate_memory(typename allocator_type::allow_memory_leaks(), expandedSize);
+                    deallocate_memory(0);
                 }
 
                 // allocate and copy new
@@ -407,7 +391,7 @@ namespace AZStd
                             // Destroy the rest.
                             Internal::destroy<pointer>::range(m_start, m_last);
                             // Free memory if we need to.
-                            deallocate_memory(typename allocator_type::allow_memory_leaks(), expandedSize);
+                            deallocate_memory(0);
 
                             m_start = 0;
                             m_end = 0;
@@ -433,25 +417,11 @@ namespace AZStd
         void reserve(size_type numElements)
         {
             size_type capacity = m_end - m_start;
-            size_type expandedSize = 0;
-            // if we have an allocated block and we need more memory, try to expand first!
-            if (m_start && capacity < numElements)
-            {
-                expandedSize = m_allocator.resize(m_start, numElements * sizeof(node_type));
-                if (expandedSize % sizeof(node_type) == 0) // we need exact size to be able to compute the size on free
-                {
-                    size_type expandedCapacity = expandedSize / sizeof(node_type);
-                    if (expandedCapacity >= numElements)
-                    {
-                        m_end = m_start + expandedCapacity;
-                        return;
-                    }
-                }
-            }
             if (numElements > capacity)
             {
                 // need more capacity - reallocate
                 size_type byteSize = sizeof(node_type) * numElements;
+                // TODO: here we can use reallocate, if possible, reallocate will extend the current allocation
                 pointer newStart = reinterpret_cast<pointer>(m_allocator.allocate(byteSize, alignment_of<node_type>::value));
                 pointer newLast = AZStd::uninitialized_move(m_start, m_last, newStart);
 
@@ -461,7 +431,7 @@ namespace AZStd
                     // Call destructor if we need to.
                     Internal::destroy<pointer>::range(m_start, m_last);
                     // Free memory (if needed).
-                    deallocate_memory(typename allocator_type::allow_memory_leaks(), expandedSize);
+                    deallocate_memory(0);
                 }
 
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
@@ -693,22 +663,6 @@ namespace AZStd
             size_type capacity   = m_end - m_start;
             size_type size       = m_last - m_start;
             size_type newSize    = size + numElements;
-            size_type expandedSize = 0;
-
-            // if we have an allocated block and we need more memory, try to expand first!
-            if (m_start && capacity < newSize)
-            {
-                expandedSize = m_allocator.resize(m_start, newSize * sizeof(node_type));
-                if (expandedSize % sizeof(node_type) == 0)
-                {
-                    size_type expandedCapacity = expandedSize / sizeof(node_type);
-                    if (capacity < expandedCapacity)
-                    {
-                        capacity = expandedCapacity;
-                        m_end = m_start + expandedCapacity;
-                    }
-                }
-            }
 
             if (capacity < newSize)
             {
@@ -738,7 +692,7 @@ namespace AZStd
                     // Call destructor if we need to.
                     Internal::destroy<pointer>::range(m_start, m_last);
                     // Free memory (if needed).
-                    deallocate_memory(typename allocator_type::allow_memory_leaks(), expandedSize);
+                    deallocate_memory(0);
                 }
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
                 orphan_all();
@@ -965,7 +919,7 @@ namespace AZStd
                     // destroy objects
                     Internal::destroy<pointer>::range(m_start, m_last);
                     // Free memory (if needed).
-                    deallocate_memory(typename allocator_type::allow_memory_leaks(), 0);
+                    deallocate_memory(0);
 
                     m_start = newStart;
                     m_last  = newLast;
@@ -1037,22 +991,7 @@ namespace AZStd
         {
             // sets the new capacity of the vector, can be smaller than size()
             size_type capacity = m_end - m_start;
-            size_type expandedSize = 0;
 
-            // if we have an allocated block and we need more memory, try to expand first!
-            if (m_start && capacity < numElements)
-            {
-                expandedSize = m_allocator.resize(m_start, numElements * sizeof(node_type));
-                if (expandedSize % sizeof(node_type) == 0)
-                {
-                    size_type expandedCapacity = expandedSize / sizeof(node_type);
-                    if (expandedCapacity >= numElements)
-                    {
-                        m_end = m_start + expandedCapacity;
-                        return;
-                    }
-                }
-            }
             if (capacity != numElements)
             {
                 pointer newStart;
@@ -1066,6 +1005,7 @@ namespace AZStd
                     // need more capacity - reallocate
                     size_type byteSize = sizeof(node_type) * numElements;
 
+                    // TODO: here we can use reallocate, if possible, reallocate will extend the current allocation
                     newStart = reinterpret_cast<pointer>(m_allocator.allocate(byteSize, alignment_of<node_type>::value));
 
                     if (numMoved > 0)
@@ -1089,7 +1029,7 @@ namespace AZStd
                     // Call destructor if we need to.
                     Internal::destroy<pointer>::range(m_start, m_last);
                     // Free memory (if needed).
-                    deallocate_memory(typename allocator_type::allow_memory_leaks(), expandedSize);
+                    deallocate_memory(0);
                 }
 
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
@@ -1105,14 +1045,10 @@ namespace AZStd
     private:
 
         //#pragma region Deallocate memory specializations
-        AZ_FORCE_INLINE void    deallocate_memory(const true_type& /* allocator::allow_memory_leaks */, size_type /*expandedSize*/)
-        {
-        }
-
-        AZ_FORCE_INLINE void    deallocate_memory(const false_type& /* !allocator::allow_memory_leaks */, size_type expandedSize)
+        AZ_FORCE_INLINE void    deallocate_memory(size_type expandedSize)
         {
             size_type byteSize = (expandedSize == 0) ? (sizeof(node_type) * (m_end - m_start)) : expandedSize;
-            m_allocator.deallocate(m_start, byteSize, alignment_of<node_type>::value);
+            m_allocator.deallocate(m_start, byteSize, alignof(node_type));
         }
         //#pragma endregion
 
@@ -1166,22 +1102,6 @@ namespace AZStd
                 size_type capacity = m_end - m_start;
                 size_type size = m_last - m_start;
                 size_type newSize = size + numElements;
-                size_type expandedSize = 0;
-
-                // if we have an allocated block and we need more memory, try to expand first!
-                if (m_start && capacity < newSize)
-                {
-                    expandedSize = m_allocator.resize(m_start, newSize * sizeof(node_type));
-                    if (expandedSize % sizeof(node_type) == 0) // make sure it's the exact number of nodes otherwise we can't compute the size on free
-                    {
-                        size_type expandedCapacity = expandedSize / sizeof(node_type);
-                        if (capacity < expandedCapacity)
-                        {
-                            capacity = expandedCapacity;
-                            m_end = m_start + expandedCapacity;
-                        }
-                    }
-                }
 
                 if (capacity < newSize)
                 {
@@ -1210,7 +1130,7 @@ namespace AZStd
                         // Call destructor if we need to.
                         Internal::destroy<pointer>::range(m_start, m_last);
                         // Free memory (if needed).
-                        deallocate_memory(typename allocator_type::allow_memory_leaks(), expandedSize);
+                        deallocate_memory(0);
                     }
 
 #ifdef AZSTD_HAS_CHECKED_ITERATORS

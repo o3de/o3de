@@ -12,6 +12,7 @@
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectActionManager.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
+#include <Editor/Plugins/SimulatedObject/SimulatedJointWidget.h>
 #include <Editor/SimulatedObjectBus.h>
 #include <Editor/SimulatedObjectModel.h>
 #include <MCore/Source/Command.h>
@@ -26,7 +27,6 @@ namespace EMotionFX
 {
     class Actor;
     class ActorInstance;
-    class SimulatedJointWidget;
 
     class SimulatedObjectWidget
         : public EMStudio::DockWidgetPlugin
