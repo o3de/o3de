@@ -10,12 +10,12 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/EBus.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettings.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettings.h>
 
 namespace AzToolsFramework
 {
-    //! PaintBrushSettingsNotificationBus is used to send out notifications whenever the global paintbrush settings have changed.
-    class PaintBrushSettingsNotifications : public AZ::EBusTraits
+    //! GlobalPaintBrushSettingsNotificationBus is used to send out notifications whenever the global paintbrush settings have changed.
+    class GlobalPaintBrushSettingsNotifications : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
@@ -27,11 +27,11 @@ namespace AzToolsFramework
 
         //! Notifies listeners that the paintbrush settings have changed.
         //! @param newSettings The settings after the change
-        virtual void OnSettingsChanged([[maybe_unused]] const PaintBrushSettings& newSettings)
+        virtual void OnSettingsChanged([[maybe_unused]] const GlobalPaintBrushSettings& newSettings)
         {
         }
     };
 
-    using PaintBrushSettingsNotificationBus = AZ::EBus<PaintBrushSettingsNotifications>;
+    using GlobalPaintBrushSettingsNotificationBus = AZ::EBus<GlobalPaintBrushSettingsNotifications>;
 
 } // namespace AzToolsFramework

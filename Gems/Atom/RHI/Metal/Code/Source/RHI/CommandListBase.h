@@ -78,7 +78,10 @@ namespace AZ
             
             void Init(RHI::HardwareQueueClass hardwareQueueClass, Device* device);
             void Shutdown();
-                        
+                
+			//! Go through all the heaps and call UseHeap on them to make them resident for the upcoming pass.
+            void MakeHeapsResident(MTLRenderStages renderStages);
+			        
             template <typename T>
             T GetEncoder() const
             {
@@ -99,9 +102,7 @@ namespace AZ
             ArgumentBuffer::ResourcesForCompute m_untrackedResourcesComputeRead;
             ArgumentBuffer::ResourcesForCompute m_untrackedResourcesComputeReadWrite;
 
-            //! Go through all the heaps and call UseHeap on them to make them resident for the upcoming pass.
-            void MakeHeapsResident(MTLRenderStages renderStages);
-            
+            Device* m_device = nullptr;
         private:
             
             bool m_isEncoded                                    = false;

@@ -9,7 +9,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>
-#include <AzToolsFramework/PaintBrush/PaintBrush.h>
+#include <AzFramework/PaintBrush/PaintBrush.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <Tests/PaintBrush/MockPaintBrushNotificationHandler.h>
 
@@ -33,14 +33,14 @@ namespace UnitTest
         const AZ::Color TestColor{ 0.25f, 0.50f, 0.75f, 1.0f };
 
         // Useful helpers for our tests
-        AzToolsFramework::PaintBrushSettings m_settings;
+        AzFramework::PaintBrushSettings m_settings;
     };
 
     TEST_F(PaintBrushTestFixture, TrivialConstruction)
     {
         // We can construct / destroy a PaintBrush without any errors.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
     }
 
     TEST_F(PaintBrushTestFixture, BeginAndEndPaintModeMustBePairedCorrectly)
@@ -48,7 +48,7 @@ namespace UnitTest
         // BeginPaintMode() / EndPaintMode() can only be called in the correct order in pairs.
         // They will error if they're called in the wrong order or more than once in a row.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
 
         // End before Begin should assert.
         AZ_TEST_START_TRACE_SUPPRESSION;
@@ -74,7 +74,7 @@ namespace UnitTest
     {
         // IsInPaintMode() correctly identifies when we're between a BeginPaintMode() and EndPaintMode() call.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
 
         EXPECT_FALSE(paintBrush.IsInPaintMode());
         paintBrush.BeginPaintMode();
@@ -88,7 +88,7 @@ namespace UnitTest
         // BeginBrushStroke() / EndBrushStroke() can only be called in the correct order in pairs.
         // They will error if they're called in the wrong order, more than once in a row, or outside of BeginPaintMode().
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
 
         // BeginBrushStroke without BeginPaintMode should assert.
         AZ_TEST_START_TRACE_SUPPRESSION;
@@ -123,7 +123,7 @@ namespace UnitTest
     {
         // IsInBrushStroke() correctly identifies when we're between a BeginBrushStroke() and EndBrushStroke() call.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
 
         paintBrush.BeginPaintMode();
 
@@ -140,7 +140,7 @@ namespace UnitTest
     {
         // BeginPaintMode() / EndPaintMode() should call the PaintBrushNotificationBus with OnPaintModeBegin() / OnPaintModeEnd().
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         EXPECT_CALL(mockHandler, OnPaintModeBegin()).Times(1);
@@ -155,7 +155,7 @@ namespace UnitTest
         // BeginBrushStroke() / EndBrushStroke() should call the PaintBrushNotificationBus with OnBrushStrokeBegin() / OnBrushStrokeEnd().
         // OnBrushStrokeBegin should be passed the current color in the PaintBrushSettings that we called BeginBrushStroke() with.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         m_settings.SetColor(TestColor);
@@ -185,7 +185,7 @@ namespace UnitTest
         // This verifies that PaintBrushNotificationBus::OnGetColor is called with the expected world position and that the color
         // returned from UseEyedropper matches the one we returned from OnGetColor.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         ON_CALL(mockHandler, OnGetColor)
@@ -212,7 +212,7 @@ namespace UnitTest
         // This verifies that PaintBrushNotificationBus::OnGetColor is called with the expected world position and that the color
         // returned from UseEyedropper matches the one we returned from OnGetColor.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         ON_CALL(mockHandler, OnGetColor)
@@ -239,7 +239,7 @@ namespace UnitTest
     {
         // PaintToLocation() can only be called if we're currently within a brush stroke.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         AZ_TEST_START_TRACE_SUPPRESSION;
