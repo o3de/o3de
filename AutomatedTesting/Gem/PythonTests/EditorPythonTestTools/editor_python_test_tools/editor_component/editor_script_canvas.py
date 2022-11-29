@@ -4,8 +4,6 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-We are deprecating this file and moving the constants to area specific files. See the EditorPythonTestTools > consts
-folder for more info
 """
 from editor_python_test_tools.editor_entity_utils import EditorEntity, EditorComponent
 import azlmbr.scriptcanvas as scriptcanvas
