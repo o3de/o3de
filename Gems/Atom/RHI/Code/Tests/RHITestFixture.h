@@ -25,7 +25,7 @@
 namespace UnitTest
 {
     class RHITestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
         AZStd::unique_ptr<AZ::ReflectionManager> m_reflectionManager;
 

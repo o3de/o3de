@@ -148,7 +148,7 @@ namespace AZ
             GetName());
     }
 
-    Debug::AllocationRecords* AllocatorBase::GetRecords()
+    const Debug::AllocationRecords* AllocatorBase::GetRecords() const
     {
         return m_records;
     }
@@ -184,10 +184,9 @@ namespace AZ
 
     void AllocatorBase::PreDestroy()
     {
-        Debug::AllocationRecords* allocatorRecords = GetRecords();
-        if (allocatorRecords)
+        if (m_records)
         {
-            delete allocatorRecords;
+            delete m_records;
             SetRecords(nullptr);
         }
 
@@ -219,10 +218,9 @@ namespace AZ
     {
         if (m_isProfilingActive)
         {
-            auto records = GetRecords();
-            if (records)
+            if (m_records)
             {
-                records->RegisterAllocation(ptr, byteSize, alignment, suppressStackRecord + 1);
+                m_records->RegisterAllocation(ptr, byteSize, alignment, suppressStackRecord + 1);
             }
         }
 
@@ -235,10 +233,9 @@ namespace AZ
     {
         if (m_isProfilingActive)
         {
-            auto records = GetRecords();
-            if (records)
+            if (m_records)
             {
-                records->UnregisterAllocation(ptr, byteSize, alignment, info);
+                m_records->UnregisterAllocation(ptr, byteSize, alignment, info);
             }
         }
 #if O3DE_RECORDING_ENABLED
@@ -250,10 +247,9 @@ namespace AZ
     {
         if (newSize && m_isProfilingActive)
         {
-            auto records = GetRecords();
-            if (records)
+            if (m_records)
             {
-                records->RegisterReallocation(ptr, newPtr, newSize, newAlignment, 1);
+                m_records->RegisterReallocation(ptr, newPtr, newSize, newAlignment, 1);
             }
         }
 #if O3DE_RECORDING_ENABLED
@@ -266,10 +262,9 @@ namespace AZ
     {
         if (newSize && m_isProfilingActive)
         {
-            auto records = GetRecords();
-            if (records)
+            if (m_records)
             {
-                records->ResizeAllocation(ptr, newSize);
+                m_records->ResizeAllocation(ptr, newSize);
             }
         }
 #if O3DE_RECORDING_ENABLED

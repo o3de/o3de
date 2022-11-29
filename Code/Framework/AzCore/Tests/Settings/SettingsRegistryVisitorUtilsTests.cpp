@@ -29,7 +29,7 @@ namespace SettingsRegistryVisitorUtilsTests
 
     template <typename VisitorParams>
     class SettingsRegistryVisitorUtilsParamFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<VisitorParams>
     {
     public:

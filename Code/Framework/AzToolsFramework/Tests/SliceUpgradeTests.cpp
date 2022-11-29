@@ -100,7 +100,7 @@ namespace UnitTest
     };
 
     class SliceUpgradeTest
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     protected:
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;

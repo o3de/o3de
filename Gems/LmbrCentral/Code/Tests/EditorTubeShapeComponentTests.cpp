@@ -22,7 +22,7 @@ namespace AZ
 namespace UnitTest
 {
     class EditorTubeShapeFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
         , public ::testing::WithParamInterface<bool>
     {
     };

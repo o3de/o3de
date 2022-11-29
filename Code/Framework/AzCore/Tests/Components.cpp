@@ -40,11 +40,11 @@ using namespace AZ::Debug;
 namespace UnitTest
 {
     class Components
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         Components()
-            : AllocatorsFixture()
+            : LeakDetectionFixture()
         {
         }
     };
@@ -605,7 +605,7 @@ namespace UnitTest
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             // component descriptors are cleaned up when application shuts down
             m_descriptorComponentA = aznew ComponentADescriptor;
@@ -645,7 +645,7 @@ namespace UnitTest
             delete m_entity;
             delete m_componentApp;
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void CreateComponents_ABCDE()
@@ -1102,7 +1102,7 @@ namespace UnitTest
         int m_intOption1;
     };
 
-    using UserSettingsTestFixture = UnitTest::AllocatorsTestFixture;
+    using UserSettingsTestFixture = UnitTest::LeakDetectionFixture;
     TEST_F(UserSettingsTestFixture, Test)
     {
         UserSettingsTestApp app;

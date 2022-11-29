@@ -141,7 +141,7 @@ namespace UnitTest
     };
 
     struct AssetValidationTest
-        : UnitTest::ScopedAllocatorSetupFixture
+        : UnitTest::LeakDetectionFixture
         , UnitTest::SetRestoreFileIOBaseRAII
         , AzFramework::ApplicationRequests::Bus::Handler
     {
