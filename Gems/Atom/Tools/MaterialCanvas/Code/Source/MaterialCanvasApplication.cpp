@@ -149,12 +149,15 @@ namespace MaterialCanvas
         m_graphContext->CreateModuleGraphManager();
 
         // This configuration data is passed through the main window and graph views to setup translation data, styling, and node palettes
-        AtomToolsFramework::GraphViewConfig graphViewConfig;
-        graphViewConfig.m_translationPath = "@products@/materialcanvas/translation/materialcanvas_en_us.qm";
-        graphViewConfig.m_styleManagerPath = "MaterialCanvas/StyleSheet/materialcanvas_style.json";
-        graphViewConfig.m_nodeMimeType = "MaterialCanvas/node-palette-mime-event";
-        graphViewConfig.m_nodeSaveIdentifier = "MaterialCanvas/ContextMenu";
-        graphViewConfig.m_createNodeTreeItemsFn = [](const AZ::Crc32& toolId)
+        m_graphViewSettingsPtr = AtomToolsFramework::GetSettingsObject(
+            "/O3DE/Atom/MaterialCanvas/GraphViewSettings", AZStd::make_shared<AtomToolsFramework::GraphViewSettings>());
+        m_graphViewSettingsPtr->Initialize(m_toolId);
+
+        m_graphViewSettingsPtr->m_translationPath = "@products@/materialcanvas/translation/materialcanvas_en_us.qm";
+        m_graphViewSettingsPtr->m_styleManagerPath = "MaterialCanvas/StyleSheet/materialcanvas_style.json";
+        m_graphViewSettingsPtr->m_nodeMimeType = "MaterialCanvas/node-palette-mime-event";
+        m_graphViewSettingsPtr->m_nodeSaveIdentifier = "MaterialCanvas/ContextMenu";
+        m_graphViewSettingsPtr->m_createNodeTreeItemsFn = [](const AZ::Crc32& toolId)
         {
             GraphCanvas::GraphCanvasTreeItem* rootTreeItem = {};
             AtomToolsFramework::DynamicNodeManagerRequestBus::EventResult(
@@ -173,9 +176,9 @@ namespace MaterialCanvas
         };
 
         // Overriding documentview factory function to create graph view
-        documentTypeInfo.m_documentViewFactoryCallback = [this, graphViewConfig](const AZ::Crc32& toolId, const AZ::Uuid& documentId)
+        documentTypeInfo.m_documentViewFactoryCallback = [this](const AZ::Crc32& toolId, const AZ::Uuid& documentId)
         {
-            return m_window->AddDocumentTab(documentId, aznew MaterialCanvasGraphView(toolId, documentId, graphViewConfig, m_window.get()));
+            return m_window->AddDocumentTab(documentId, aznew MaterialCanvasGraphView(toolId, documentId, m_graphViewSettingsPtr, m_window.get()));
         };
 
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
@@ -217,13 +220,17 @@ namespace MaterialCanvas
 
         m_viewportSettingsSystem.reset(aznew AtomToolsFramework::EntityPreviewViewportSettingsSystem(m_toolId));
 
-        m_window.reset(aznew MaterialCanvasMainWindow(m_toolId, graphViewConfig));
+        m_window.reset(aznew MaterialCanvasMainWindow(m_toolId, m_graphViewSettingsPtr));
         m_window->show();
         ApplyShaderBuildSettings();
     }
 
     void MaterialCanvasApplication::Destroy()
     {
+        // Save all of the graph view configuration settings to the settings registry.
+        AtomToolsFramework::SetSettingsObject("/O3DE/Atom/MaterialCanvas/GraphViewSettings", m_graphViewSettingsPtr);
+        m_graphViewSettingsPtr.reset();
+
         m_window.reset();
         m_viewportSettingsSystem.reset();
         m_graphContext.reset();

@@ -14,7 +14,7 @@
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportWidget.h>
-#include <AtomToolsFramework/GraphView/GraphViewConfig.h>
+#include <AtomToolsFramework/GraphView/GraphViewSettings.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <GraphCanvas/Styling/StyleManager.h>
 #include <GraphCanvas/Widgets/Bookmarks/BookmarkDockWidget.h>
@@ -36,7 +36,8 @@ namespace MaterialCanvas
 
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
-        MaterialCanvasMainWindow(const AZ::Crc32& toolId, const AtomToolsFramework::GraphViewConfig& graphViewConfig, QWidget* parent = 0);
+        MaterialCanvasMainWindow(
+            const AZ::Crc32& toolId, const AZStd::shared_ptr<AtomToolsFramework::GraphViewSettings>& graphViewSettingsPtr, QWidget* parent = 0);
         ~MaterialCanvasMainWindow() = default;
 
     protected:
@@ -57,7 +58,7 @@ namespace MaterialCanvas
         AtomToolsFramework::EntityPreviewViewportSettingsInspector* m_viewportSettingsInspector = {};
         AtomToolsFramework::EntityPreviewViewportToolBar* m_toolBar = {};
         AtomToolsFramework::EntityPreviewViewportWidget* m_materialViewport = {};
-        AtomToolsFramework::GraphViewConfig m_graphViewConfig;
+        AZStd::shared_ptr<AtomToolsFramework::GraphViewSettings> m_graphViewSettingsPtr;
         GraphCanvas::BookmarkDockWidget* m_bookmarkDockWidget = {};
         GraphCanvas::NodePaletteDockWidget* m_nodePalette = {};
         GraphCanvas::StyleManager m_styleManager;

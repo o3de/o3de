@@ -18,10 +18,10 @@
 namespace MaterialCanvas
 {
     MaterialCanvasMainWindow::MaterialCanvasMainWindow(
-        const AZ::Crc32& toolId, const AtomToolsFramework::GraphViewConfig& graphViewConfig, QWidget* parent)
+        const AZ::Crc32& toolId, const AZStd::shared_ptr<AtomToolsFramework::GraphViewSettings>& graphViewSettingsPtr, QWidget* parent)
         : Base(toolId, "MaterialCanvasMainWindow", parent)
-        , m_graphViewConfig(graphViewConfig)
-        , m_styleManager(toolId, graphViewConfig.m_styleManagerPath)
+        , m_graphViewSettingsPtr(graphViewSettingsPtr)
+        , m_styleManager(toolId, graphViewSettingsPtr->m_styleManagerPath)
     {
         m_assetBrowser->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
         m_assetBrowser->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
@@ -76,17 +76,17 @@ namespace MaterialCanvas
         SetDockWidgetVisible("MiniMap", false);
 
         GraphCanvas::NodePaletteConfig nodePaletteConfig;
-        nodePaletteConfig.m_rootTreeItem = m_graphViewConfig.m_createNodeTreeItemsFn(m_toolId);
+        nodePaletteConfig.m_rootTreeItem = m_graphViewSettingsPtr->m_createNodeTreeItemsFn(m_toolId);
         nodePaletteConfig.m_editorId = m_toolId;
-        nodePaletteConfig.m_mimeType = m_graphViewConfig.m_nodeMimeType.c_str();
+        nodePaletteConfig.m_mimeType = m_graphViewSettingsPtr->m_nodeMimeType.c_str();
         nodePaletteConfig.m_isInContextMenu = false;
-        nodePaletteConfig.m_saveIdentifier = m_graphViewConfig.m_nodeSaveIdentifier;
+        nodePaletteConfig.m_saveIdentifier = m_graphViewSettingsPtr->m_nodeSaveIdentifier;
 
         m_nodePalette = aznew GraphCanvas::NodePaletteDockWidget(this, "Node Palette", nodePaletteConfig);
         AddDockWidget("Node Palette", m_nodePalette, Qt::LeftDockWidgetArea);
 
         AZ::IO::FixedMaxPath resolvedPath;
-        AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(resolvedPath, m_graphViewConfig.m_translationPath.c_str());
+        AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(resolvedPath, m_graphViewSettingsPtr->m_translationPath.c_str());
         const AZ::IO::FixedMaxPathString translationFilePath = resolvedPath.LexicallyNormal().FixedMaxPathString();
         if (m_translator.load(QLocale::Language::English, translationFilePath.c_str()))
         {
