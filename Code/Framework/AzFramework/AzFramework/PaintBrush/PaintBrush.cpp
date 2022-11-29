@@ -9,10 +9,10 @@
 #include <AzCore/Math/Geometry2DUtils.h>
 #include <AzCore/std/sort.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzToolsFramework/PaintBrush/PaintBrush.h>
-#include <AzToolsFramework/PaintBrush/PaintBrushNotificationBus.h>
+#include <AzFramework/PaintBrush/PaintBrush.h>
+#include <AzFramework/PaintBrush/PaintBrushNotificationBus.h>
 
-namespace AzToolsFramework
+namespace AzFramework
 {
     PaintBrush::PaintBrush(const AZ::EntityComponentIdPair& entityComponentIdPair)
         : m_ownerEntityComponentId(entityComponentIdPair)
@@ -512,7 +512,7 @@ namespace AzToolsFramework
 
         switch (brushSettings.GetSmoothMode())
         {
-        case AzToolsFramework::PaintBrushSmoothMode::Gaussian:
+        case AzFramework::PaintBrushSmoothMode::Gaussian:
             gaussianWeights = CalculateGaussianWeights(brushSettings.GetSmoothingRadius());
 
             smoothFn = [&gaussianWeights, &blendFn](float baseValue, AZStd::span<float> kernelValues, float opacity) -> float
@@ -531,7 +531,7 @@ namespace AzToolsFramework
                 return blendFn(baseValue, smoothedValue, opacity);
             };
             break;
-        case AzToolsFramework::PaintBrushSmoothMode::Mean:
+        case AzFramework::PaintBrushSmoothMode::Mean:
             smoothFn = [&blendFn](float baseValue, AZStd::span<float> kernelValues, float opacity) -> float
             {
                 // Calculate the average value from the neighborhood of values surrounding (and including) the baseValue.
@@ -544,7 +544,7 @@ namespace AzToolsFramework
                 return blendFn(baseValue, smoothedValue / kernelValues.size(), opacity);
             };
             break;
-        case AzToolsFramework::PaintBrushSmoothMode::Median:
+        case AzFramework::PaintBrushSmoothMode::Median:
             smoothFn = [&blendFn](float baseValue, AZStd::span<float> kernelValues, float opacity) -> float
             {
                 // Find the middle value from the neighborhood of values surrounding (and including) the baseValue.
@@ -581,4 +581,4 @@ namespace AzToolsFramework
         return brushColor;
     }
 
-} // namespace AzToolsFramework
+} // namespace AzFramework

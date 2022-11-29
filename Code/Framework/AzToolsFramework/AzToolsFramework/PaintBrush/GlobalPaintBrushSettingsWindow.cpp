@@ -12,22 +12,22 @@
 
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsRequestBus.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsWindow.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsWindow_Internals.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsRequestBus.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsWindow.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsWindow_Internals.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 
 #include <UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <UI/PropertyEditor/PropertyRowWidget.hxx>
 #include <UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 
-namespace PaintBrush
+namespace AzToolsFramework
 {
-    class PaintBrushSettingsWindow;
+    class GlobalPaintBrushSettingsWindow;
 
     namespace Internal
     {
-        PaintBrushSettingsWindow::PaintBrushSettingsWindow(QWidget* parent)
+        GlobalPaintBrushSettingsWindow::GlobalPaintBrushSettingsWindow(QWidget* parent)
         {
             setObjectName("PaintBrushSettings");
             setParent(parent);
@@ -42,9 +42,9 @@ namespace PaintBrush
             m_propertyEditor = new AzToolsFramework::ReflectedPropertyEditor(this);
             m_propertyEditor->Setup(m_serializeContext, this, true);
 
-            AzToolsFramework::PaintBrushSettings* settings = nullptr;
-            AzToolsFramework::PaintBrushSettingsRequestBus::BroadcastResult(
-                settings, &AzToolsFramework::PaintBrushSettingsRequestBus::Events::GetSettingsPointerForPropertyEditor);
+            GlobalPaintBrushSettings* settings = nullptr;
+            AzToolsFramework::GlobalPaintBrushSettingsRequestBus::BroadcastResult(
+                settings, &AzToolsFramework::GlobalPaintBrushSettingsRequestBus::Events::GetSettingsPointerForPropertyEditor);
 
             m_propertyEditor->ClearInstances();
             m_propertyEditor->AddInstance(settings, azrtti_typeid(*settings), nullptr);
@@ -59,30 +59,30 @@ namespace PaintBrush
 
             setLayout(mainLayout);
 
-            AzToolsFramework::PaintBrushSettingsNotificationBus::Handler::BusConnect();
+            AzToolsFramework::GlobalPaintBrushSettingsNotificationBus::Handler::BusConnect();
         }
 
-        PaintBrushSettingsWindow::~PaintBrushSettingsWindow()
+        GlobalPaintBrushSettingsWindow::~GlobalPaintBrushSettingsWindow()
         {
-            AzToolsFramework::PaintBrushSettingsNotificationBus::Handler::BusDisconnect();
+            AzToolsFramework::GlobalPaintBrushSettingsNotificationBus::Handler::BusDisconnect();
         }
 
-        void PaintBrushSettingsWindow::OnVisiblePropertiesChanged()
+        void GlobalPaintBrushSettingsWindow::OnVisiblePropertiesChanged()
         {
             m_propertyEditor->InvalidateAll();
         }
 
-        void PaintBrushSettingsWindow::OnSettingsChanged([[maybe_unused]] const AzToolsFramework::PaintBrushSettings& newSettings)
+        void GlobalPaintBrushSettingsWindow::OnSettingsChanged([[maybe_unused]] const GlobalPaintBrushSettings& newSettings)
         {
             m_propertyEditor->InvalidateValues();
         }
 
         // simple factory method
-        PaintBrushSettingsWindow* CreateNewPaintBrushSettingsWindow(QWidget* parent)
+        GlobalPaintBrushSettingsWindow* CreateNewPaintBrushSettingsWindow(QWidget* parent)
         {
-            return new PaintBrushSettingsWindow(parent);
+            return new GlobalPaintBrushSettingsWindow(parent);
         }
-    } // namespace PaintBrush::Internal
+    } // namespace AzToolsFramework::Internal
 
     void RegisterPaintBrushSettingsWindow()
     {
@@ -102,4 +102,4 @@ namespace PaintBrush
             viewOptions,
             &Internal::CreateNewPaintBrushSettingsWindow);
     }
-} // namespace PaintBrush
+} // namespace AzToolsFramework

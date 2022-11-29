@@ -9,10 +9,10 @@
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzToolsFramework/PaintBrush/PaintBrushNotificationBus.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettings.h>
+#include <AzFramework/PaintBrush/PaintBrushNotificationBus.h>
+#include <AzFramework/PaintBrush/PaintBrushSettings.h>
 
-namespace AzToolsFramework
+namespace AzFramework
 {
     //! PaintBrush contains the core logic for painting functionality.
     //! It handles all of the specific calculations for determining the correct values to paint or smooth as a brush moves
@@ -140,4 +140,4 @@ namespace AzToolsFramework
         //! The first point in a brush stroke movement starts the stroke, and subsequent points continue from the previous location.
         bool m_isFirstPointInBrushStrokeMovement = false;
     };
-} // namespace AzToolsFramework
+} // namespace AzFramework

@@ -9,7 +9,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>
-#include <AzToolsFramework/PaintBrush/PaintBrush.h>
+#include <AzFramework/PaintBrush/PaintBrush.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <Tests/PaintBrush/MockPaintBrushNotificationHandler.h>
 
@@ -28,7 +28,7 @@ namespace UnitTest
         const AZ::Color TestColor{ 0.25f, 0.50f, 0.75f, 1.0f };
 
         // Useful helpers for our tests
-        AzToolsFramework::PaintBrushSettings m_settings;
+        AzFramework::PaintBrushSettings m_settings;
     };
 
     TEST_F(PaintBrushSmoothLocationTestFixture, SmoothToLocationAtSingleLocationFunctionsCorrectly)
@@ -38,23 +38,23 @@ namespace UnitTest
         // - The valueLookupFn will only return valid points that occur within the brush.
         // - The smoothFn will smooth values together.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         const float TestBrushRadius = 1.0f;
         m_settings.SetSize(TestBrushRadius * 2.0f);
 
         // We'll set the smooth mode to "Mean" just so that it's easy to verify that the smoothFn trivially works.
-        m_settings.SetSmoothMode(AzToolsFramework::PaintBrushSmoothMode::Mean);
+        m_settings.SetSmoothMode(AzFramework::PaintBrushSmoothMode::Mean);
 
         EXPECT_CALL(mockHandler, OnSmooth(::testing::_, ::testing::_, ::testing::_, ::testing::_)).Times(1);
 
         ON_CALL(mockHandler, OnSmooth)
             .WillByDefault(
                 [=](const AZ::Aabb& dirtyArea,
-                    AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                    AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                     AZStd::span<const AZ::Vector3> valuePointOffsets,
-                    AzToolsFramework::PaintBrushNotifications::SmoothFn& smoothFn)
+                    AzFramework::PaintBrushNotifications::SmoothFn& smoothFn)
                 {
                     // The OnSmooth method for a listener to the PaintBrushNotificationBus should work as follows:
                     // - It should receive a dirtyArea AABB that contains the region that's been smoothed.
@@ -140,7 +140,7 @@ namespace UnitTest
         // This verifies that if the distance between two SmoothToLocation calls is small enough, it won't trigger
         // an OnSmooth. "small" is defined as less than (brush size * distance %).
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         // Set the distance between brush stamps to 50%
@@ -192,7 +192,7 @@ namespace UnitTest
         // If the Distance % is anything less than 100% in the paint brush settings, the Os will overlap.
         // We'll set it to 100% just to make it obvious that we've gotten the correct result.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         // Set the distance between brush stamps to 100%
@@ -217,9 +217,9 @@ namespace UnitTest
         ON_CALL(mockHandler, OnSmooth)
             .WillByDefault(
                 [=](const AZ::Aabb& dirtyArea,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                     [[maybe_unused]] AZStd::span<const AZ::Vector3> valuePointOffsets,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::SmoothFn& smoothFn)
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::SmoothFn& smoothFn)
                 {
                     // On the first SmoothToLocation, we expect to get a dirtyArea that exactly fits our first paint brush stamp.
                     const AZ::Aabb expectedFirstDirtyArea = AZ::Aabb::CreateCenterRadius(TestBrushCenter2d, TestBrushRadius);
@@ -231,9 +231,9 @@ namespace UnitTest
         ON_CALL(mockHandler, OnSmooth)
             .WillByDefault(
                 [=](const AZ::Aabb& dirtyArea,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                     [[maybe_unused]] AZStd::span<const AZ::Vector3> valuePointOffsets,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::SmoothFn& smoothFn)
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::SmoothFn& smoothFn)
                 {
                     // On the second SmoothToLocation, we expect the dirtyArea to only contain the next 3 paint brush stamps,
                     // but not the first one.
@@ -255,7 +255,7 @@ namespace UnitTest
         // When smoothing, we should be able to call UseEyedropper at any arbitrary location without affecting the current
         // state of SmoothToLocation.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         // Set the brush radius to 1 meter (diameter is 2 meters)
@@ -272,9 +272,9 @@ namespace UnitTest
         ON_CALL(mockHandler, OnSmooth)
             .WillByDefault(
                 [=](const AZ::Aabb& dirtyArea,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                     [[maybe_unused]] AZStd::span<const AZ::Vector3> valuePointOffsets,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::SmoothFn& smoothFn)
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::SmoothFn& smoothFn)
                 {
                     // We expect that the Y value for our dirtyArea won't be changed even though we'll call UseEyedropper
                     // with a large Y value in-between the two paint calls.
@@ -304,7 +304,7 @@ namespace UnitTest
         // This is typically used for handling things like leaving the edge of the image at one location and coming back onto
         // the image at a different location.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         // Set the distance between brush stamps to 100%
@@ -329,9 +329,9 @@ namespace UnitTest
         ON_CALL(mockHandler, OnSmooth)
             .WillByDefault(
                 [=](const AZ::Aabb& dirtyArea,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                     [[maybe_unused]] AZStd::span<const AZ::Vector3> valuePointOffsets,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::SmoothFn& smoothFn)
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::SmoothFn& smoothFn)
                 {
                     // On the first PaintToLocation, we expect to get a dirtyArea that exactly fits our first paint brush stamp.
                     const AZ::Aabb expectedFirstDirtyArea = AZ::Aabb::CreateCenterRadius(TestBrushCenter2d, TestBrushRadius);
@@ -346,9 +346,9 @@ namespace UnitTest
         ON_CALL(mockHandler, OnSmooth)
             .WillByDefault(
                 [=](const AZ::Aabb& dirtyArea,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                     [[maybe_unused]] AZStd::span<const AZ::Vector3> valuePointOffsets,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::SmoothFn& smoothFn)
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::SmoothFn& smoothFn)
                 {
                     // On the second PaintToLocation, we expect to get a dirtyArea that exactly fits our second paint brush stamp.
                     // It should *not* include any of the space bewteen the first and the second brush stamp.
