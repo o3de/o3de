@@ -385,9 +385,9 @@ class MultiTestSuite(object):
         @staticmethod
         def _make_single_run(inner_test_spec: AbstractTestBase) -> typing.Callable:
             """
-            Prepares a test run to be collected as a SingleTest, regardless of its actual tes type. Single tests are ran
-            independently of each other, as opposed to a SharedTest. This also includes setup() and teardown() functions
-            if applicable.
+            Prepares a test run to be collected as a SingleTest, regardless of its actual test type. Single tests are
+            ran independently of each other, as opposed to a SharedTest. This also includes setup() and teardown()
+            functions if applicable.
 
             :param inner_test_spec: The test spec class (i.e. SingleTest, SharedTest)
             :return: The function to run as a single test
