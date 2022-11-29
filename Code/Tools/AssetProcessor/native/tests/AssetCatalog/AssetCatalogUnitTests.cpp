@@ -59,7 +59,7 @@ namespace AssetProcessor
     };
 
     class AssetCatalogTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
 

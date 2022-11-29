@@ -17,7 +17,7 @@
 
 namespace UnitTest
 {
-    class PaintBrushPaintLocationTestFixture : public ScopedAllocatorSetupFixture
+    class PaintBrushPaintLocationTestFixture : public LeakDetectionFixture
     {
     public:
 

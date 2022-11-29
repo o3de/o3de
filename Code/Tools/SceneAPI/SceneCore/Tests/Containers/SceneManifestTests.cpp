@@ -109,7 +109,7 @@ namespace AZ
 
 
             class SceneManifestTest
-                : public UnitTest::AllocatorsTestFixture
+                : public UnitTest::LeakDetectionFixture
                 , public AZ::Debug::TraceMessageBus::Handler
             {
             public:

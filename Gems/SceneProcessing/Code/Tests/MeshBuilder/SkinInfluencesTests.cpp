@@ -25,7 +25,7 @@ namespace AZ::MeshBuilder
     };
 
     class SkinInfluencesFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<SkinInfluencesTestParam>
     {
     public:

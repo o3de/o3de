@@ -115,19 +115,19 @@ namespace AnimGraphParameterCommandsTests
     };
 
     class AnimGraphParameterCommandsFixture
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            UnitTest::AllocatorsTestFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
             ::MCore::Initializer::Init(); // create the MCoreSystem object for MCore containers
         }
 
         void TearDown() override
         {
             ::MCore::Initializer::Shutdown();
-            UnitTest::AllocatorsTestFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
     };
 

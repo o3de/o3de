@@ -36,7 +36,7 @@ namespace AZ
             * ProcessingResultCombinerTests
             */
 
-            using ProcessingResultCombinerTests = UnitTest::AllocatorsTestFixture;
+            using ProcessingResultCombinerTests = UnitTest::LeakDetectionFixture;
             TEST_F(ProcessingResultCombinerTests, GetResult_GetStoredValue_ReturnsTheDefaultValue)
             {
                 ProcessingResultCombiner combiner;
@@ -78,7 +78,7 @@ namespace AZ
             * LoadingResultCombinerTests
             */
 
-            using LoadingResultCombinerTests = UnitTest::AllocatorsTestFixture;
+            using LoadingResultCombinerTests = UnitTest::LeakDetectionFixture;
             TEST_F(LoadingResultCombinerTests, GetResult_GetStoredValues_ReturnsTheDefaultValues)
             {
                 LoadingResultCombiner combiner;
@@ -149,7 +149,7 @@ namespace AZ
             * AssetImporterRequestTests
             */
             class AssetImporterRequestTests
-                : public UnitTest::AllocatorsTestFixture
+                : public UnitTest::LeakDetectionFixture
                 , public Debug::TraceMessageBus::Handler
             {
             public:
@@ -372,12 +372,12 @@ namespace AZ
             * AssetImporterRequestToolTests
             */
             class AssetImporterRequestToolTests
-                : public ::UnitTest::ScopedAllocatorSetupFixture
+                : public ::UnitTest::LeakDetectionFixture
             {
             public:
                 void SetUp() override
                 {
-                    UnitTest::ScopedAllocatorSetupFixture::SetUp();
+                    UnitTest::LeakDetectionFixture::SetUp();
 
                     m_settings.reset(new AZ::NiceSettingsRegistrySimpleMock);
                     ON_CALL(*m_settings.get(), Get(::testing::Matcher<bool&>(::testing::_), ::testing::_))
@@ -401,7 +401,7 @@ namespace AZ
                     AZ::SettingsRegistry::Unregister(m_settings.get());
                     m_settings.reset();
 
-                    UnitTest::ScopedAllocatorSetupFixture::TearDown();
+                    UnitTest::LeakDetectionFixture::TearDown();
                 }
 
                 void SetDefaultResults(StrictMock<MockAssetImportRequestHandler>& handler)

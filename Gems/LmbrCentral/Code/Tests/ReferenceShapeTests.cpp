@@ -22,7 +22,7 @@
 namespace UnitTest
 {
     class ReferenceComponentTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
         AZ::ComponentApplication m_app;
