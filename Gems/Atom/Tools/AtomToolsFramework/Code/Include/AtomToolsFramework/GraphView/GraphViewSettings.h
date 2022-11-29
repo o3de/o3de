@@ -28,9 +28,9 @@ namespace AtomToolsFramework
         GraphViewSettings() = default;
         ~GraphViewSettings();
 
-        void Initialize(const AZ::Crc32& toolId);
+        void Initialize(const AZ::Crc32& toolId, const AZStd::map<AZStd::string, AZ::Color>& defaultGroupPresets);
 
-       // GraphCanvas::AssetEditorSettingsRequestBus::Handler overrides...
+        // GraphCanvas::AssetEditorSettingsRequestBus::Handler overrides...
         double GetSnapDistance() const override;
 
         bool IsGroupDoubleClickCollapseEnabled() const override;
@@ -80,54 +80,40 @@ namespace AtomToolsFramework
         // Callback function used to create node palette items
         AZStd::function<GraphCanvas::GraphCanvasTreeItem*(const AZ::Crc32&)> m_createNodeTreeItemsFn;
 
+        // Settings related to Basic movement and selection
         double m_snapDistance = 20.0;
-
-        bool m_groupDoubleClickCollapseEnabled = true;
-        bool m_bookmarkViewportControlEnabled = false;
-
-        bool m_dragNodeCouplingEnabled = true;
-        int m_dragCouplingTime = 500;
-
-        bool m_dragConnectionSpliceEnabled = true;
-        int m_dragConnectionSpliceTime = 500;
-
-        bool m_dropConnectionSpliceEnabled = true;
-        int m_dropConnectionSpliceTime = 500;
-
-        bool m_splicedNodeNudgingEnabled = true;
-
-        bool m_nodeNudgingEnabled = true;
-
-        // Shake Configuration
-        bool m_shakeToDespliceEnabled = true;
-        int m_shakesToDesplice = 3;
-
-        // minimum amount of distance and object must move in order for it to be considered
-        // a shake.
-        float m_minimumShakePercent = 40.0f;
-
-        // minimum amount of distance the cursor must move before shake processing begins
-        float m_shakeDeadZonePercent = 20.0f;
-
-        // how 'straight' the given shakes must be in order to be classified.
-        float m_shakeStraightnessPercent = 0.75f;
-        int m_maximumShakeDuration = 1000;
-
-        // Alignment
         int m_alignmentTime = 200;
-
-        // Zoom Configuration
         float m_maxZoom = 2.0f;
-
-        // Edge of Screen Pan Configurations
         float m_edgePanningPercentage = 0.1f;
         float m_edgePanningScrollSpeed = 100.0f;
 
-        // Styling
+        // Settings related to coupling and decoupling connections between nodes
+        bool m_dragNodeCouplingEnabled = true;
+        int m_dragCouplingTime = 500;
+
+        // Settings related to splicing nodes along existing connections
+        bool m_dragConnectionSpliceEnabled = true;
+        int m_dragConnectionSpliceTime = 500;
+        bool m_dropConnectionSpliceEnabled = true;
+        int m_dropConnectionSpliceTime = 500;
+        bool m_shakeToDespliceEnabled = true;
+        int m_shakesToDesplice = 3;
+        float m_minimumShakePercent = 40.0f;
+        float m_shakeDeadZonePercent = 20.0f;
+        float m_shakeStraightnessPercent = 0.75f;
+        int m_maximumShakeDuration = 1000;
+
+        // Settings related to nudging or Moving nodes around in relation to each other
+        bool m_splicedNodeNudgingEnabled = true;
+        bool m_nodeNudgingEnabled = true;
+
+        // Settings related to how lines are rendered between connections
         GraphCanvas::Styling::ConnectionCurveType m_connectionCurveType = GraphCanvas::Styling::ConnectionCurveType::Curved;
         GraphCanvas::Styling::ConnectionCurveType m_dataConnectionCurveType = GraphCanvas::Styling::ConnectionCurveType::Curved;
 
-        // Enable Node Disabling
+        // Other miscellaneous settings
+        bool m_groupDoubleClickCollapseEnabled = true;
+        bool m_bookmarkViewportControlEnabled = false;
         bool m_allowNodeDisabling = false;
         bool m_allowDataReferenceSlots = false;
 

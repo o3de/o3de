@@ -16,16 +16,14 @@ namespace AtomToolsFramework
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<GraphViewConstructPresets, GraphCanvas::EditorConstructPresets>()
-                ->Version(0)
-                ;
+                ->Version(0);
 
             if (auto editContext = serialize->GetEditContext())
             {
                 editContext->Class<GraphViewConstructPresets>("GraphViewConstructPresets", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ;
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
     }
@@ -39,19 +37,15 @@ namespace AtomToolsFramework
             {
                 presetBucket->ClearPresets();
 
-                const AZStd::map<AZStd::string, AZ::Color> defaultPresetGroups = { { "Logic", AZ::Color(0.188f, 0.972f, 0.243f, 1.0f) },
-                                                                                   { "Function", AZ::Color(0.396f, 0.788f, 0.788f, 1.0f) },
-                                                                                   { "Output", AZ::Color(0.866f, 0.498f, 0.427f, 1.0f) },
-                                                                                   { "Input", AZ::Color(0.396f, 0.788f, 0.549f, 1.0f) } };
-
-                for (const auto& defaultPresetPair : defaultPresetGroups)
+                // Create all of the initial node group presets using the default names and colors
+                for (const auto& defaultGroupPresetPair : m_defaultGroupPresets)
                 {
-                    if (auto preset = presetBucket->CreateNewPreset(defaultPresetPair.first))
+                    if (auto preset = presetBucket->CreateNewPreset(defaultGroupPresetPair.first))
                     {
                         const auto& presetSaveData = preset->GetPresetData();
                         if (auto saveData = presetSaveData.FindSaveDataAs<GraphCanvas::CommentNodeTextSaveData>())
                         {
-                            saveData->m_backgroundColor = defaultPresetPair.second;
+                            saveData->m_backgroundColor = defaultGroupPresetPair.second;
                         }
                     }
                 }
@@ -65,5 +59,10 @@ namespace AtomToolsFramework
                 presetBucket->ClearPresets();
             }
         }
+    }
+
+    void GraphViewConstructPresets::SetDefaultGroupPresets(const AZStd::map<AZStd::string, AZ::Color>& defaultGroupPresets)
+    {
+        m_defaultGroupPresets = defaultGroupPresets;
     }
 } // namespace AtomToolsFramework

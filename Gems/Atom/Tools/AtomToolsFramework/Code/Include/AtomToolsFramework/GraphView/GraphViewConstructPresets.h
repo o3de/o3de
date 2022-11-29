@@ -23,7 +23,12 @@ namespace AtomToolsFramework
         static void Reflect(AZ::ReflectContext* context);
 
         GraphViewConstructPresets() = default;
-        ~GraphViewConstructPresets() = default;
+        ~GraphViewConstructPresets() override = default;
+        void SetDefaultGroupPresets(const AZStd::map<AZStd::string, AZ::Color>& defaultGroupPresets);
         void InitializeConstructType(GraphCanvas::ConstructType constructType) override;
+
+    private:
+        // Default names and colors for node group presets
+        AZStd::map<AZStd::string, AZ::Color> m_defaultGroupPresets;
     };
 } // namespace AtomToolsFramework

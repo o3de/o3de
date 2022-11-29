@@ -41,6 +41,13 @@ namespace MaterialCanvas
         // AzToolsFramework::EditorWindowRequests::Bus::Handler
         QWidget* GetAppMainWindow() override;
 
+        void InitDynamicNodeManager();
+        void InitDynamicNodeEditData();
+        void InitSharedGraphContext();
+        void InitGraphViewSettings();
+        void InitMaterialGraphDocumentType();
+        void InitMaterialGraphNodeDocumentType();
+        void InitShaderSourceDataDocumentType();
         void ApplyShaderBuildSettings();
 
         AZStd::unique_ptr<MaterialCanvasMainWindow> m_window;
