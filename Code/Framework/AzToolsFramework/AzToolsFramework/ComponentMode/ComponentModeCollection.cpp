@@ -140,7 +140,7 @@ namespace AzToolsFramework
                 m_viewportUiHandlers.emplace_back(componentType);
             }
 
-            m_activeComponentModes.push_back(AZStd::make_pair(entityComponentIdPair, componentType));
+            m_activeComponentModes.emplace_back(ComponentModeItem{ entityComponentIdPair, componentType });
 
             // see if we already have a ComponentModeBuilder for the specific component on this entity
             const auto builderEntityIt = AZStd::find_if(
@@ -215,9 +215,9 @@ namespace AzToolsFramework
         void ComponentModeCollection::EnumerateActiveComponents(
             const ComponentModeCollectionInterface::ActiveComponentModeCB& callBack) const
         {
-            for (size_t i = 0; i < m_activeComponentModes.size(); ++i)
+            for (const auto& componentMode : m_activeComponentModes)
             {
-                callBack(m_activeComponentModes[i].first, m_activeComponentModes[i].second);
+                callBack(componentMode.m_entityComponentIdPair, componentMode.m_componentType);
             }
         }
 
