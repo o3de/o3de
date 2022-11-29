@@ -57,6 +57,7 @@ class VerbosityAction(argparse.Action):
         elif count == 1:
             log.setLevel(logging.INFO)
 
+
 def add_verbosity_arg(parser: argparse.ArgumentParser) -> None:
     """
     Add a consistent/common verbosity option to an arg parser
@@ -163,6 +164,7 @@ def backup_folder(folder: str or pathlib.Path) -> None:
             if backup_folder_name.is_dir():
                 renamed = True
 
+
 def get_git_provider(parsed_uri):
     """
     Returns a git provider if one exists given the passed uri
@@ -170,6 +172,7 @@ def get_git_provider(parsed_uri):
     :return: A git provider implementation providing functions to get infomration about or clone a repository, see gitproviderinterface
     """
     return github_utils.get_github_provider(parsed_uri)
+
 
 def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool = False, object_name: str = "", download_progress_callback = None) -> int:
     """
@@ -255,6 +258,7 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
 
     return 0
 
+
 def download_zip_file(parsed_uri, download_zip_path: pathlib.Path, force_overwrite: bool, object_name: str, download_progress_callback = None) -> int:
     """
     :param parsed_uri: uniform resource identifier to zip file to download
@@ -332,16 +336,16 @@ def remove_gem_duplicates(gems: list) -> list:
     new_list = []
     names = {}
     for gem in gems:
-        if isinstance(gem, str):
-            if gem not in names:
-                names[gem] = len(new_list)
-                new_list.append(gem)
-            else:
-                new_list[names[gem]] = gem
-        else:
+        if isinstance(gem, dict):
             if gem['name'] not in names:
                 names[gem['name']] = len(new_list)
                 new_list.append(gem)
             else:
                 new_list[names[gem['name']]] = gem
+        else:
+            if gem not in names:
+                names[gem] = len(new_list)
+                new_list.append(gem)
+            else:
+                new_list[names[gem]] = gem
     return new_list
