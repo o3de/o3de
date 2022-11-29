@@ -638,9 +638,11 @@ namespace TestImpact
     Client::TestRunBase DeserializeTestRunBase(const rapidjson::Value& serialTestRun)
     {
         return Client::TestRunBase(
-            "",
+            "", // Namespace
             serialTestRun[SequenceReportFields::Keys[SequenceReportFields::Name]].GetString(),
             serialTestRun[SequenceReportFields::Keys[SequenceReportFields::CommandArgs]].GetString(),
+            "", // StdOut
+            "", // StdError
             TimePointFromMsInt64(serialTestRun[SequenceReportFields::Keys[SequenceReportFields::StartTime]].GetInt64()),
             AZStd::chrono::milliseconds(serialTestRun[SequenceReportFields::Keys[SequenceReportFields::Duration]].GetInt64()),
             TestRunResultFromString(serialTestRun[SequenceReportFields::Keys[SequenceReportFields::Result]].GetString()));

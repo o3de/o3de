@@ -9,7 +9,9 @@
 #pragma once
 
 #include <utilities/BatchApplicationManager.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include "assetmanager/MockAssetProcessorManager.h"
 #include "assetmanager/MockFileProcessor.h"
@@ -19,6 +21,7 @@ namespace UnitTests
     struct MockBatchApplicationManager : BatchApplicationManager
     {
         using ApplicationManagerBase::InitFileMonitor;
+        using ApplicationManagerBase::InitFileStateCache;
         using ApplicationManagerBase::m_assetProcessorManager;
         using ApplicationManagerBase::m_fileProcessor;
         using ApplicationManagerBase::m_fileStateCache;

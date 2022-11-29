@@ -11,6 +11,7 @@
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Application/Application.h>
 #ifdef LMBR_CENTRAL_EDITOR
 #include <AzToolsFramework/Application/ToolsApplication.h>
@@ -26,14 +27,14 @@
  */
 template<class ApplicationT, class ModuleT>
 class ModuleReflectionTest
-    : public ::testing::Test
+    : public UnitTest::AllocatorsTestFixture
 {
 public:
     static ApplicationT* GetApplication() { return s_application.get(); }
 
 protected:
-    static void SetUpTestCase();
-    static void TearDownTestCase();
+    void SetUp() override;
+    void TearDown() override;
 
 private:
     // We need reflection from ApplicationT and nothing more.
@@ -112,18 +113,18 @@ protected:
     };
 
     AZStd::unique_ptr<AZ::Entity> m_entity;
+    AZ::ComponentDescriptor* m_transformComponentDescriptor{};
 };
 #endif
 
 template<class ApplicationT, class ModuleT>
-void ModuleReflectionTest<ApplicationT, ModuleT>::SetUpTestCase()
+void ModuleReflectionTest<ApplicationT, ModuleT>::SetUp()
 {
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Create(AZ::SystemAllocator::Descriptor());
+    AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
 
     s_application.reset(new ModuleReflectionTest::InternalApplication);
 
     AZ::ComponentApplication::Descriptor appDescriptor;
-    appDescriptor.m_allocationRecords = true;
     appDescriptor.m_useExistingAllocator = true;
     appDescriptor.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
 
@@ -142,7 +143,7 @@ void ModuleReflectionTest<ApplicationT, ModuleT>::SetUpTestCase()
 }
 
 template<class ApplicationT, class ModuleT>
-void ModuleReflectionTest<ApplicationT, ModuleT>::TearDownTestCase()
+void ModuleReflectionTest<ApplicationT, ModuleT>::TearDown()
 {
     s_application->GetSerializeContext()->DestroyEditContext();
     s_systemEntity = nullptr;
@@ -161,6 +162,7 @@ AZ::Entity* ModuleReflectionTest<ApplicationT, ModuleT>::s_systemEntity = nullpt
 template<class ApplicationT, class ModuleT, class ObjectT>
 void LoadReflectedObjectTest<ApplicationT, ModuleT, ObjectT>::SetUp()
 {
+    BaseType::SetUp();
     const char* buffer = GetSourceDataBuffer();
     if (buffer)
     {
@@ -176,13 +178,15 @@ template<class ApplicationT, class ModuleT, class ObjectT>
 void LoadReflectedObjectTest<ApplicationT, ModuleT, ObjectT>::TearDown()
 {
     m_object.reset();
+    BaseType::TearDown();
 }
 
 #ifdef LMBR_CENTRAL_EDITOR
 template<class ComponentT>
 void LoadEditorComponentTest<ComponentT>::SetUp()
 {
-    AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::RegisterComponentDescriptor, DummyTransformComponent::CreateDescriptor());
+    this->m_transformComponentDescriptor = DummyTransformComponent::CreateDescriptor();
+    AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::RegisterComponentDescriptor, this->m_transformComponentDescriptor);
 
     m_entity = AZStd::make_unique<AZ::Entity>("LoadEditorComponentTestEntity");
     m_entity->Init();
@@ -207,6 +211,7 @@ void LoadEditorComponentTest<ComponentT>::TearDown()
     LoadReflectedObjectTestBase::TearDown();
     m_entity.reset();
 
-    AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::UnregisterComponentDescriptor, DummyTransformComponent::CreateDescriptor());
+    AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::UnregisterComponentDescriptor, this->m_transformComponentDescriptor);
+    this->m_transformComponentDescriptor = nullptr;
 }
 #endif

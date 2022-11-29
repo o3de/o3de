@@ -43,10 +43,7 @@ set(FILES
     AzCore/IO/SystemFile_Platform.h
     AzCore/IPC/SharedMemory_Platform.h
     ../Common/Apple/AzCore/Memory/OSAllocator_Apple.h
-    ../Common/Unimplemented/AzCore/Memory/OverrunDetectionAllocator_Unimplemented.h
-    AzCore/Memory/HeapSchema_iOS.cpp
     AzCore/Memory/OSAllocator_Platform.h
-    AzCore/Memory/OverrunDetectionAllocator_Platform.h
     AzCore/Math/Internal/MathTypes_iOS.h
     ../Common/Default/AzCore/Module/Internal/ModuleManagerSearchPathTool_Default.cpp
     AzCore/Math/Random_Platform.h

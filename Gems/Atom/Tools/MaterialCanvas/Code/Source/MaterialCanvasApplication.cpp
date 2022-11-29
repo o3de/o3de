@@ -124,6 +124,8 @@ namespace MaterialCanvas
         editData.m_elementId = AZ_CRC_CE("MultilineStringDialog");
         m_dynamicNodeManager->RegisterEditDataForSetting("instructions", editData);
         m_dynamicNodeManager->RegisterEditDataForSetting("materialInputs", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("classDefinitions", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("functionDefinitions", editData);
 
         editData = {};
         editData.m_elementId = AZ_CRC_CE("StringFilePath");
@@ -139,11 +141,11 @@ namespace MaterialCanvas
         m_dynamicNodeManager->RegisterEditDataForSetting("includePaths", editData);
 
         // Search the project and gems for dynamic node configurations and register them with the manager
-        m_dynamicNodeManager->LoadConfigFiles("materialcanvasnode");
+        m_dynamicNodeManager->LoadConfigFiles("materialgraphnode");
 
         // Each graph document creates its own graph context but we want to use a shared graph context instead to avoid data duplication
         m_graphContext = AZStd::make_shared<GraphModel::GraphContext>(
-            "Material Canvas", ".materialcanvas.azasset", m_dynamicNodeManager->GetRegisteredDataTypes());
+            "Material Graph", ".materialgraph", m_dynamicNodeManager->GetRegisteredDataTypes());
         m_graphContext->CreateModuleGraphManager();
 
         // This configuration data is passed through the main window and graph views to setup translation data, styling, and node palettes
@@ -173,7 +175,7 @@ namespace MaterialCanvas
         // Overriding documentview factory function to create graph view
         documentTypeInfo.m_documentViewFactoryCallback = [this, graphViewConfig](const AZ::Crc32& toolId, const AZ::Uuid& documentId)
         {
-            return m_window->AddDocumentTab(documentId, aznew MaterialCanvasGraphView(toolId, documentId, graphViewConfig));
+            return m_window->AddDocumentTab(documentId, aznew MaterialCanvasGraphView(toolId, documentId, graphViewConfig, m_window.get()));
         };
 
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
@@ -182,13 +184,14 @@ namespace MaterialCanvas
         // Register document type for editing material canvas node configurations. This document type does not have a central view widget
         // and will show a label directing users to the inspector.
         documentTypeInfo = AtomToolsFramework::AtomToolsAnyDocument::BuildDocumentTypeInfo(
-            "Material Canvas Node Config",
-            { "materialcanvasnode" },
+            "Material Graph Node Config",
+            { "materialgraphnode" },
+            { "materialgraphnodetemplate" },
             AZStd::any(AtomToolsFramework::DynamicNodeConfig()),
             AZ::Uuid::CreateNull()); // Null ID because JSON file contains type info and can be loaded directly into AZStd::any
 
         documentTypeInfo.m_documentViewFactoryCallback = [this]([[maybe_unused]] const AZ::Crc32& toolId, const AZ::Uuid& documentId) {
-            auto viewWidget = new QLabel("Material Canvas Node Config properties can be edited in the inspector.", m_window.get());
+            auto viewWidget = new QLabel("Material Graph Node Config properties can be edited in the inspector.", m_window.get());
             viewWidget->setAlignment(Qt::AlignCenter);
             return m_window->AddDocumentTab(documentId, viewWidget);
         };
@@ -200,6 +203,7 @@ namespace MaterialCanvas
         documentTypeInfo = AtomToolsFramework::AtomToolsAnyDocument::BuildDocumentTypeInfo(
             "Shader Source Data",
             { "shader" },
+            {},
             AZStd::any(AZ::RPI::ShaderSourceData()),
             AZ::RPI::ShaderSourceData::TYPEINFO_Uuid()); // Supplying ID because it is not included in the JSON file
 
@@ -230,7 +234,7 @@ namespace MaterialCanvas
 
     AZStd::vector<AZStd::string> MaterialCanvasApplication::GetCriticalAssetFilters() const
     {
-        return AZStd::vector<AZStd::string>({ "passes/", "config/"});
+        return AZStd::vector<AZStd::string>({ "passes/", "config/", "MaterialEditor/", "MaterialCanvas/" });
     }
 
     QWidget* MaterialCanvasApplication::GetAppMainWindow()

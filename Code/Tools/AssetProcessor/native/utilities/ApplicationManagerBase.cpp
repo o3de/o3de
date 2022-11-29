@@ -894,6 +894,9 @@ void ApplicationManagerBase::Destroy()
     delete m_assetRequestHandler;
     m_assetRequestHandler = nullptr;
 
+    // Destroy file monitor early so that no callbacks fire during shutdown.
+    DestroyFileMonitor();
+
     ShutdownBuilderManager();
     ShutDownFileProcessor();
 
@@ -902,7 +905,6 @@ void ApplicationManagerBase::Destroy()
     DestroyAssetServerHandler();
     DestroyRCController();
     DestroyAssetScanner();
-    DestroyFileMonitor();
     ShutDownAssetDatabase();
     DestroyPlatformConfiguration();
     DestroyApplicationServer();
@@ -1182,7 +1184,7 @@ void ApplicationManagerBase::HandleFileRelocation() const
 
 bool ApplicationManagerBase::CheckFullIdle()
 {
-    bool isIdle = m_rcController->IsIdle() && m_AssetProcessorManagerIdleState;
+    bool isIdle = m_rcController->IsIdle() && m_AssetProcessorManagerIdleState && m_remainingAssetsToFinalize == 0;
     if (isIdle != m_fullIdle)
     {
         m_fullIdle = isIdle;
@@ -1190,7 +1192,6 @@ bool ApplicationManagerBase::CheckFullIdle()
     }
     return isIdle;
 }
-
 
 void ApplicationManagerBase::CheckForIdle()
 {
@@ -1486,6 +1487,11 @@ bool ApplicationManagerBase::Activate()
     m_connectionsToRemoveOnShutdown << QObject::connect(
         m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::AssetProcessorManagerIdleState,
         this, &ApplicationManagerBase::OnAssetProcessorManagerIdleState);
+
+    m_connectionsToRemoveOnShutdown << QObject::connect(m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::FinishedAnalysis, this, [this](int count)
+    {
+        m_remainingAssetsToFinalize = count;
+    });
 
     m_connectionsToRemoveOnShutdown << QObject::connect(
         m_rcController, &AssetProcessor::RCController::BecameIdle,

@@ -17,6 +17,7 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
@@ -28,12 +29,13 @@
 #include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
-#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
+#include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
+#include <AzToolsFramework/UI/Prefab/PrefabViewportFocusPathHandler.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 
@@ -44,6 +46,7 @@
 #include <QTimer>
 
 static constexpr AZStd::string_view LevelLoadedUpdaterIdentifier = "o3de.updater.onLevelLoaded";
+static constexpr AZStd::string_view PrefabFocusChangedUpdaterIdentifier = "o3de.updater.onPrefabFocusChanged";
 
 namespace AzToolsFramework
 {
@@ -55,7 +58,6 @@ namespace AzToolsFramework
         EditorEntityUiInterface* PrefabIntegrationManager::s_editorEntityUiInterface = nullptr;
         PrefabFocusInterface* PrefabIntegrationManager::s_prefabFocusInterface = nullptr;
         PrefabFocusPublicInterface* PrefabIntegrationManager::s_prefabFocusPublicInterface = nullptr;
-        PrefabLoaderInterface* PrefabIntegrationManager::s_prefabLoaderInterface = nullptr;
         PrefabPublicInterface* PrefabIntegrationManager::s_prefabPublicInterface = nullptr;
 
         PrefabIntegrationManager::PrefabIntegrationManager()
@@ -81,13 +83,6 @@ namespace AzToolsFramework
                 return;
             }
 
-            s_prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
-            if (s_prefabLoaderInterface == nullptr)
-            {
-                AZ_Assert(false, "Prefab - could not get PrefabLoaderInterface on PrefabIntegrationManager construction.");
-                return;
-            }
-
             s_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
             if (s_prefabFocusInterface == nullptr)
             {
@@ -99,6 +94,13 @@ namespace AzToolsFramework
             if (s_prefabFocusPublicInterface == nullptr)
             {
                 AZ_Assert(false, "Prefab - could not get PrefabFocusPublicInterface on PrefabIntegrationManager construction.");
+                return;
+            }
+
+            m_prefabOverridePublicInterface = AZ::Interface<PrefabOverridePublicInterface>::Get();
+            if (m_prefabOverridePublicInterface == nullptr)
+            {
+                AZ_Assert(false, "Prefab - could not get PrefabOverridePublicInterface on PrefabIntegrationManager construction.");
                 return;
             }
 
@@ -120,15 +122,20 @@ namespace AzToolsFramework
                 AZ_Assert(
                     m_actionManagerInterface, "Prefab - could not get m_actionManagerInterface on PrefabIntegrationManager construction.");
 
+                m_toolBarManagerInterface = AZ::Interface<ToolBarManagerInterface>::Get();
+                AZ_Assert(
+                    m_toolBarManagerInterface, "Prefab - could not get m_toolBarManagerInterface on PrefabIntegrationManager construction.");
+
                 // Register an updater that will refresh actions when a level is loaded.
                 if (m_actionManagerInterface)
                 {
-                    m_actionManagerInterface->RegisterActionUpdater(LevelLoadedUpdaterIdentifier);
+                    ActionManagerRegistrationNotificationBus::Handler::BusConnect();
                 }
             }
             
             EditorContextMenuBus::Handler::BusConnect();
             EditorEventsBus::Handler::BusConnect();
+            PrefabFocusNotificationBus::Handler::BusConnect(s_editorEntityContextId);
             PrefabInstanceContainerNotificationBus::Handler::BusConnect();
             AZ::Interface<PrefabIntegrationInterface>::Register(this);
             EditorEntityContextNotificationBus::Handler::BusConnect();
@@ -141,10 +148,16 @@ namespace AzToolsFramework
         {
             UninitializeShortcuts();
 
+            if (m_actionManagerInterface)
+            {
+                ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
+            }
+
             PrefabPublicNotificationBus::Handler::BusDisconnect();
             EditorEntityContextNotificationBus::Handler::BusDisconnect();
             AZ::Interface<PrefabIntegrationInterface>::Unregister(this);
             PrefabInstanceContainerNotificationBus::Handler::BusDisconnect();
+            PrefabFocusNotificationBus::Handler::BusDisconnect();
             EditorEventsBus::Handler::BusDisconnect();
             EditorContextMenuBus::Handler::BusDisconnect();
         }
@@ -220,6 +233,72 @@ namespace AzToolsFramework
         void PrefabIntegrationManager::UninitializeShortcuts()
         {
             m_actions.clear();
+        }
+
+        void PrefabIntegrationManager::OnActionUpdaterRegistrationHook()
+        {
+            // Update actions whenever a new root prefab is loaded.
+            m_actionManagerInterface->RegisterActionUpdater(LevelLoadedUpdaterIdentifier);
+
+            // Update actions whenever Prefab Focus changes (or is refreshed).
+            m_actionManagerInterface->RegisterActionUpdater(PrefabFocusChangedUpdaterIdentifier);
+        }
+
+        void PrefabIntegrationManager::OnActionRegistrationHook()
+        {
+            {
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = "Focus up one level";
+                actionProperties.m_description = "Move the Prefab Focus up one level.";
+                actionProperties.m_category = "Prefabs";
+                actionProperties.m_iconPath = ":/Breadcrumb/img/UI20/Breadcrumb/arrow_left-default.svg";
+
+                m_actionManagerInterface->RegisterAction(
+                    "o3de.context.editor.mainwindow",
+                    "o3de.action.prefabs.upOneLevel",
+                    actionProperties,
+                    [prefabFocusPublicInterface = s_prefabFocusPublicInterface, editorEntityContextId = s_editorEntityContextId]()
+                    {
+                        prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(editorEntityContextId);
+                    }
+                );
+
+                m_actionManagerInterface->InstallEnabledStateCallback(
+                    "o3de.action.prefabs.upOneLevel",
+                    [prefabFocusPublicInterface = s_prefabFocusPublicInterface, editorEntityContextId = s_editorEntityContextId]() -> bool
+                    {
+                        return prefabFocusPublicInterface->GetPrefabFocusPathLength(editorEntityContextId) > 1;
+                    }
+                );
+
+                m_actionManagerInterface->AddActionToUpdater(PrefabFocusChangedUpdaterIdentifier, "o3de.action.prefabs.upOneLevel");
+            }
+        }
+
+        void PrefabIntegrationManager::OnWidgetActionRegistrationHook()
+        {
+            // Prefab Focus Path Widget
+            {
+                AzToolsFramework::WidgetActionProperties widgetActionProperties;
+                widgetActionProperties.m_name = "Prefab Focus Path";
+                widgetActionProperties.m_category = "Prefabs";
+
+                auto outcome = m_actionManagerInterface->RegisterWidgetAction(
+                    "o3de.widgetAction.prefab.focusPath",
+                    widgetActionProperties,
+                    []() -> QWidget*
+                    {
+                        return new PrefabFocusPathWidget();
+                    }
+                );
+            }
+        }
+
+        void PrefabIntegrationManager::OnToolBarBindingHook()
+        {
+            // Populate Viewport top menu with Prefab actions and widgets
+            m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.viewport.top", "o3de.action.prefabs.upOneLevel", 100);
+            m_toolBarManagerInterface->AddWidgetToToolBar("o3de.toolbar.viewport.top", "o3de.widgetAction.prefab.focusPath", 200);
         }
 
         int PrefabIntegrationManager::GetMenuPosition() const
@@ -544,6 +623,29 @@ namespace AzToolsFramework
                 );
             }
 
+            // Revert Overrides
+            {
+                if (IsPrefabOverridesUxEnabled() && selectedEntities.size() == 1)
+                {
+                    AZ::EntityId selectedEntity = selectedEntities[0];
+                    if (!s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity) &&
+                        m_prefabOverridePublicInterface->AreOverridesPresent(selectedEntity))
+                    {
+                        QAction* revertAction = menu->addAction(QObject::tr("Revert Overrides"));
+                        QObject::connect(
+                            revertAction,
+                            &QAction::triggered,
+                            revertAction,
+                            [this, selectedEntity]
+                            {
+                                ContextMenu_RevertOverrides(selectedEntity);
+                            });
+
+                        menu->addSeparator();
+                    }
+                }
+            }
+
             menu->addSeparator();
         }
 
@@ -566,7 +668,8 @@ namespace AzToolsFramework
                 [&]()
                 {
                     s_containerEntityInterface->RefreshAllContainerEntities(s_editorEntityContextId);
-                });
+                }
+            );
         }
 
         void PrefabIntegrationManager::ContextMenu_CreatePrefab(AzToolsFramework::EntityIdList selectedEntities)
@@ -783,6 +886,11 @@ namespace AzToolsFramework
             {
                 WarningDialog("Detach Prefab error", detachPrefabResult.GetError());
             }
+        }
+
+        void PrefabIntegrationManager::ContextMenu_RevertOverrides(AZ::EntityId entityId)
+        {
+            m_prefabOverridePublicInterface->RevertOverrides(entityId);
         }
 
         void PrefabIntegrationManager::GatherAllReferencedEntitiesAndCompare(
@@ -1076,6 +1184,23 @@ namespace AzToolsFramework
             if (m_actionManagerInterface)
             {
                 m_actionManagerInterface->TriggerActionUpdater(LevelLoadedUpdaterIdentifier);
+            }
+        }
+
+        void PrefabIntegrationManager::OnPrefabFocusChanged(
+            [[maybe_unused]] AZ::EntityId previousContainerEntityId, [[maybe_unused]] AZ::EntityId newContainerEntityId)
+        {
+            if (m_actionManagerInterface)
+            {
+                m_actionManagerInterface->TriggerActionUpdater(PrefabFocusChangedUpdaterIdentifier);
+            }
+        }
+
+        void PrefabIntegrationManager::OnPrefabFocusRefreshed()
+        {
+            if (m_actionManagerInterface)
+            {
+                m_actionManagerInterface->TriggerActionUpdater(PrefabFocusChangedUpdaterIdentifier);
             }
         }
 

@@ -7,6 +7,7 @@
  */
 
 #include <AtomToolsFramework/DynamicNode/DynamicNode.h>
+#include <AtomToolsFramework/DynamicNode/DynamicNodeManager.h>
 #include <AtomToolsFramework/DynamicNode/DynamicNodeManagerRequestBus.h>
 #include <GraphModel/Model/Graph.h>
 #include <GraphModel/Model/GraphContext.h>
@@ -18,6 +19,7 @@ namespace AtomToolsFramework
     {
         DynamicNodeSlotConfig::Reflect(context);
         DynamicNodeConfig::Reflect(context);
+        DynamicNodeManager::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -114,7 +116,8 @@ namespace AtomToolsFramework
                 defaultValue,
                 slotConfig.m_description,
                 nullptr,
-                slotConfig.m_supportsEditingOnNode));
+                slotConfig.m_visibleOnNode,
+                slotConfig.m_editableOnNode));
         }
 
         for (const auto& slotConfig : m_config.m_outputSlots)
@@ -138,7 +141,8 @@ namespace AtomToolsFramework
                 dataType,
                 slotConfig.m_description,
                 nullptr,
-                slotConfig.m_supportsEditingOnNode));
+                slotConfig.m_visibleOnNode,
+                slotConfig.m_editableOnNode));
         }
 
         for (const auto& slotConfig : m_config.m_propertySlots)
@@ -176,7 +180,8 @@ namespace AtomToolsFramework
                 defaultValue,
                 slotConfig.m_description,
                 nullptr,
-                slotConfig.m_supportsEditingOnNode));
+                slotConfig.m_visibleOnNode,
+                slotConfig.m_editableOnNode));
         }
     }
 } // namespace AtomToolsFramework

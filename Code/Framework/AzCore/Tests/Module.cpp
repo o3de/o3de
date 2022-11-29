@@ -24,7 +24,6 @@ using namespace AZ;
 using ::testing::Return;
 using ::testing::StrEq;
 using ::testing::Matcher;
-using ::testing::_;
 
 namespace UnitTest
 {
@@ -118,10 +117,14 @@ namespace UnitTest
     {
         modulesOut.push_back(new UnitTest::StaticModule());
     }
+
+    class ModuleManager : public UnitTest::AllocatorsTestFixture
+    {
+    };
 #if AZ_TRAIT_DISABLE_FAILED_MODULE_TESTS
-    TEST(ModuleManager, DISABLED_Test)
+    TEST_F(ModuleManager, DISABLED_Test)
 #else
-    TEST(ModuleManager, Test)
+    TEST_F(ModuleManager, Test)
 #endif // AZ_TRAIT_DISABLE_FAILED_MODULE_TESTS
     {
         {
@@ -225,9 +228,9 @@ namespace UnitTest
     }
 
 #if AZ_TRAIT_DISABLE_FAILED_MODULE_TESTS
-    TEST(ModuleManager, DISABLED_SequentialLoadTest)
+    TEST_F(ModuleManager, DISABLED_SequentialLoadTest)
 #else
-    TEST(ModuleManager, SequentialLoadTest)
+    TEST_F(ModuleManager, SequentialLoadTest)
 #endif
     {
         {
@@ -349,7 +352,7 @@ namespace UnitTest
         AZ::OSString m_stringToWatchFor;
     };
 
-    TEST(ModuleManager, OwnerInitializesAndDeinitializesTest)
+    TEST_F(ModuleManager, OwnerInitializesAndDeinitializesTest)
     {
         // in this test, we make sure that a module is always initialized even if the operating
         // system previously loaded it (due to static linkage or other reason)

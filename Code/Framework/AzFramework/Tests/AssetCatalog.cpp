@@ -419,6 +419,7 @@ namespace UnitTest
             deltaCatalog3.reset();
             m_app->Stop();
             m_app.reset();
+            AZ::AllocatorInstance<AZ::SystemAllocator>::Get().GarbageCollect();
         }
 
         void CheckDirectDependencies(AZ::Data::AssetId assetId, AZStd::initializer_list<AZ::Data::AssetId> expectedDependencies)

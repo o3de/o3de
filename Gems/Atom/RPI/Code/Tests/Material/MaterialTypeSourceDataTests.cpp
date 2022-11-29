@@ -420,7 +420,6 @@ namespace UnitTest
             for (int i = 0; i < expectedValues.m_outputConnections.size() && i < propertyDescriptor->GetOutputConnections().size(); ++i)
             {
                 EXPECT_EQ(propertyDescriptor->GetOutputConnections()[i].m_type, expectedValues.m_outputConnections[i].m_type);
-                EXPECT_EQ(propertyDescriptor->GetOutputConnections()[i].m_containerIndex.GetIndex(), expectedValues.m_outputConnections[i].m_shaderIndex);
             }
         }
     };
@@ -920,6 +919,7 @@ namespace UnitTest
         const MaterialPropertyDescriptor* propertyDescriptor = materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex);
 
         ValidateCommonDescriptorFields(*property, propertyDescriptor);
+        EXPECT_TRUE(propertyDescriptor->GetOutputConnections()[0].m_containerIndex.IsNull());
         EXPECT_EQ(propertyDescriptor->GetOutputConnections()[0].m_itemIndex.GetIndex(), 7);
     }
 
@@ -950,6 +950,7 @@ namespace UnitTest
         const MaterialPropertyDescriptor* propertyDescriptor = materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex);
 
         ValidateCommonDescriptorFields(*property, propertyDescriptor);
+        EXPECT_TRUE(propertyDescriptor->GetOutputConnections()[0].m_containerIndex.IsNull());
         EXPECT_EQ(propertyDescriptor->GetOutputConnections()[0].m_itemIndex.GetIndex(), 1);
     }
 
@@ -975,6 +976,7 @@ namespace UnitTest
         const MaterialPropertyDescriptor* propertyDescriptor = materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex);
 
         ValidateCommonDescriptorFields(*property, propertyDescriptor);
+        EXPECT_TRUE(propertyDescriptor->GetOutputConnections()[0].m_containerIndex.IsNull());
         EXPECT_EQ(propertyDescriptor->GetOutputConnections()[0].m_itemIndex.GetIndex(), 0);
     }
 
@@ -998,7 +1000,46 @@ namespace UnitTest
         const MaterialPropertyDescriptor* propertyDescriptor = materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyDescriptor(MaterialPropertyIndex{0});
 
         ValidateCommonDescriptorFields(*property, propertyDescriptor);
+        EXPECT_EQ(propertyDescriptor->GetOutputConnections()[0].m_containerIndex.GetIndex(), 0);
         EXPECT_EQ(propertyDescriptor->GetOutputConnections()[0].m_itemIndex.GetIndex(), 1);
+    }
+
+    TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_BoolPropertyConnectedToShaderEnabled)
+    {
+        MaterialTypeSourceData sourceData;
+
+        sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{TestShaderFilename});
+        sourceData.m_shaderCollection.back().m_shaderTag = Name{"first"};
+        sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{TestShaderFilename2});
+        sourceData.m_shaderCollection.back().m_shaderTag = Name{"second"};
+
+        MaterialTypeSourceData::PropertyGroup* propertyGroup = sourceData.AddPropertyGroup("general");
+
+        MaterialTypeSourceData::PropertyDefinition* property1 = propertyGroup->AddProperty("EnableShader1");
+        property1->m_displayName = "Enable Shader 1";
+        property1->m_dataType = MaterialPropertyDataType::Bool;
+        property1->m_value = true;
+        property1->m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection { MaterialPropertyOutputType::ShaderEnabled, AZStd::string("first") });
+
+        MaterialTypeSourceData::PropertyDefinition* property2 = propertyGroup->AddProperty("EnableShader2");
+        property2->m_displayName = "Enable Shader 2";
+        property2->m_dataType = MaterialPropertyDataType::Bool;
+        property2->m_value = true;
+        property2->m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection { MaterialPropertyOutputType::ShaderEnabled, AZStd::string("second") });
+
+        auto materialTypeOutcome = sourceData.CreateMaterialTypeAsset(Uuid::CreateRandom());
+        EXPECT_TRUE(materialTypeOutcome.IsSuccess());
+        Data::Asset<MaterialTypeAsset> materialTypeAsset = materialTypeOutcome.GetValue();
+
+        const MaterialPropertyIndex propertyIndex1 = materialTypeAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(Name{"general.EnableShader1"});
+        const MaterialPropertyIndex propertyIndex2 = materialTypeAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(Name{"general.EnableShader2"});
+        const MaterialPropertyDescriptor* propertyDescriptor1 = materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex1);
+        const MaterialPropertyDescriptor* propertyDescriptor2 = materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex2);
+
+        ValidateCommonDescriptorFields(*property1, propertyDescriptor1);
+        ValidateCommonDescriptorFields(*property2, propertyDescriptor2);
+        EXPECT_EQ(propertyDescriptor1->GetOutputConnections()[0].m_containerIndex.GetIndex(), 0);
+        EXPECT_EQ(propertyDescriptor2->GetOutputConnections()[0].m_containerIndex.GetIndex(), 1);
     }
 
     TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_Error_PropertyConnectedToInvalidShaderOptionId)
@@ -2010,7 +2051,7 @@ namespace UnitTest
     TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_PropertyImagePath)
     {
         char inputJson[2048];
-        azsprintf(inputJson,
+        azsnprintf(inputJson, AZ_ARRAY_SIZE(inputJson),
             R"(
                 {
                     "description": "",
@@ -2060,7 +2101,7 @@ namespace UnitTest
     TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_ResolveSetValueVersionUpdates)
     {
         char inputJson[2048];
-        azsprintf(inputJson,
+        azsnprintf(inputJson, AZ_ARRAY_SIZE(inputJson),
         R"(
             {
                 "description": "",

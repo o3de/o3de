@@ -23,6 +23,7 @@
 #include <AdjustableHeaderWidget.h>
 #include <ScreensCtrl.h>
 #include <CreateAGemScreen.h>
+#include <EditAGemScreen.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -74,13 +75,21 @@ namespace O3DE::ProjectManager
         connect(m_headerWidget, &GemCatalogHeaderWidget::UpdateGemCart, this, &GemCatalogScreen::UpdateAndShowGemCart);
         connect(m_downloadController, &DownloadController::Done, this, &GemCatalogScreen::OnGemDownloadResult);
 
-        ScreensCtrl* screensControl = qobject_cast<ScreensCtrl*>(parent);
-        if (screensControl)
+        m_screensControl = qobject_cast<ScreensCtrl*>(parent);
+        if (m_screensControl)
         {
-            ScreenWidget* createGemScreen = screensControl->FindScreen(ProjectManagerScreen::CreateGem);
+            ScreenWidget* createGemScreen = m_screensControl->FindScreen(ProjectManagerScreen::CreateGem);
             if (createGemScreen)
             {
-                connect(static_cast<CreateGem*>(createGemScreen), &CreateGem::GemCreated, this, &GemCatalogScreen::HandleGemCreated);
+                CreateGem* createGem = static_cast<CreateGem*>(createGemScreen);
+                connect(createGem, &CreateGem::GemCreated, this, &GemCatalogScreen::HandleGemCreated);
+            }
+
+            ScreenWidget* editGemScreen = m_screensControl->FindScreen(ProjectManagerScreen::EditGem);
+            if (editGemScreen)
+            {
+                EditGem* editGem = static_cast<EditGem*>(editGemScreen);
+                connect(editGem, &EditGem::GemEdited, this, &GemCatalogScreen::HandleGemEdited);
             }
         }
 
@@ -96,6 +105,7 @@ namespace O3DE::ProjectManager
         connect(m_gemInspector, &GemInspector::TagClicked, [=](const Tag& tag) { SelectGem(tag.id); });
         connect(m_gemInspector, &GemInspector::UpdateGem, this, &GemCatalogScreen::UpdateGem);
         connect(m_gemInspector, &GemInspector::UninstallGem, this, &GemCatalogScreen::UninstallGem);
+        connect(m_gemInspector, &GemInspector::EditGem, this, &GemCatalogScreen::HandleEditGem);
 
         QWidget* filterWidget = new QWidget(this);
         filterWidget->setFixedWidth(sidePanelWidth);
@@ -640,6 +650,20 @@ namespace O3DE::ProjectManager
         emit ChangeScreenRequest(ProjectManagerScreen::CreateGem);
     }
 
+    void GemCatalogScreen::HandleEditGem(const QModelIndex& currentModelIndex)
+    {
+        if (m_screensControl)
+        {
+            auto editGemScreen = qobject_cast<EditGem*>(m_screensControl->FindScreen(ProjectManagerScreen::EditGem));
+            if (editGemScreen)
+            {
+                m_curEditedIndex = currentModelIndex;
+                editGemScreen->ResetWorkflow(m_gemModel->GetGemInfo(currentModelIndex));
+                emit ChangeScreenRequest(ProjectManagerScreen::EditGem);
+            }
+        }
+    }
+
     void GemCatalogScreen::UpdateAndShowGemCart(QWidget* cartWidget)
     {
         QWidget* previousCart = m_rightPanelStack->widget(RightPanelWidgetOrder::Cart);
@@ -718,6 +742,23 @@ namespace O3DE::ProjectManager
 
         // create Toast Notification for project gem catalog
         QString notification = tr("%1 has been created.").arg(gemInfo.m_displayName);
+        ShowStandardToastNotification(notification);
+    }
+
+    void GemCatalogScreen::HandleGemEdited(const GemInfo& newGemInfo)
+    {
+        // This signal only occurs upon successful completion of editing a gem. As such, the gemInfo is assumed to be valid
+
+        // Make sure to update the current model index in the gem catalog model.
+        // The current edited index is only set by HandleEdit before editing a gem, and nowhere else.
+        // As such, the index should be valid.
+        m_gemModel->RemoveGem(m_curEditedIndex);
+        m_gemModel->AddGem(newGemInfo);
+
+        //gem inspector needs to have its selection updated to the newly added gem
+        SelectGem(newGemInfo.m_name);
+
+        QString notification = tr("%1 was edited.").arg(newGemInfo.m_displayName);
         ShowStandardToastNotification(notification);
     }
 

@@ -75,11 +75,6 @@ namespace UnitTest
         {
             SetupAllocator();
         }
-
-        void TearDown() override
-        {
-            TeardownAllocator();
-        }
     };
 
     TEST_F(TrackChangedSerializerTests, TestTrackChangedSerializer)

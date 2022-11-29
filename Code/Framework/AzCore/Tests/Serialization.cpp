@@ -8260,12 +8260,6 @@ namespace UnitTest
         , public ::testing::WithParamInterface<ParamType>
     {
     public:
-        PathSerializationParamFixture()
-            : ScopedAllocatorSetupFixture(
-                []() { AZ::SystemAllocator::Descriptor desc; desc.m_stackRecordLevels = 30; return desc; }()
-            )
-        {}
-
         // We must expose the class for serialization first.
         void SetUp() override
         {

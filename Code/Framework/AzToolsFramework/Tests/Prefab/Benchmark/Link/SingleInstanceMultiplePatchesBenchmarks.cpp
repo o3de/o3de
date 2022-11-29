@@ -99,7 +99,8 @@ namespace Benchmark
         {
             LinkReference link = m_prefabSystemComponent->FindLink(m_linkId);
             AZ_Assert(link.has_value(), "Link between prefabs is missing.");
-            link->get().GetLinkDom();
+            PrefabDom linkDom;
+            link->get().GetLinkDom(linkDom, linkDom.GetAllocator());
         }
     }
     REGISTER_MULTIPLE_PATCHES_BENCHMARK(SingleInstanceMultiplePatchesBenchmarks, GetLinkDom);

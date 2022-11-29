@@ -29,4 +29,5 @@ set(ENABLED_GEMS
     TextureAtlas
     WhiteBox
     DiffuseProbeGrid
+    Compression
 )

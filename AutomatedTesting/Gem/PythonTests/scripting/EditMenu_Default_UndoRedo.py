@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 VARIABLE_COUNT_BEFORE = 1
 VARIABLE_COUNT_AFTER = 0
+VARIABLE_NAME = "Test Boolean"
 
 def EditMenu_Default_UndoRedo():
     """
@@ -24,8 +25,8 @@ def EditMenu_Default_UndoRedo():
      1) Open Script Canvas window
      2) Create Graph
      3) Create and verify the new variable exists in variable manager
-     4) Trigger Undo action and verify if variable is removed in Variable Manager
-     5) Trigger Redo action and verify if variable is re-added in Variable Manager
+     4) Delete the variable and verify it's removed in Variable Manager
+     5) Trigger undo action and verify if variable is re-added in Variable Manager
      6) Close SC window
 
     Note:
@@ -51,15 +52,15 @@ def EditMenu_Default_UndoRedo():
 
     # 3) Create and verify the new variable exists in variable manager
     variable_manager = sc_editor.variable_manager
-    variable_manager.create_new_variable(variable_manager.variable_types.Boolean)
+    variable_manager.create_new_variable(VARIABLE_NAME, variable_manager.variable_types.Boolean)
     variable_manager.validate_variable_count(VARIABLE_COUNT_BEFORE)
 
-    # 4) Trigger Undo action and verify if variable is removed in Variable Manager
-    sc_editor.trigger_undo_action()
+    # 4) Delete the variable and verify it's removed in Variable Manager
+    variable_manager.delete_variable(VARIABLE_NAME)
     variable_manager.validate_variable_count(VARIABLE_COUNT_AFTER)
-
-    # 5) Trigger Redo action and verify if variable is re-added in Variable Manager
-    sc_editor.trigger_redo_action()
+    
+    # 5) Trigger undo action and verify if variable is re-added in Variable Manager
+    sc_editor.trigger_undo_action()
     variable_manager.validate_variable_count(VARIABLE_COUNT_BEFORE)
 
     # 6) Close SC window
