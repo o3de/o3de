@@ -54,6 +54,9 @@ namespace AZ
         private:
             ///////////////////////////////////////////////////////////////////
             // IntrusivePtrCountPolicy template overrides
+
+            //! We override release to handle threading issues that would otherwise occur
+            //! due to raw pointers ResourceViews being cached on the Resource
             void release() const final;
             template<typename Type>
             friend struct AZStd::IntrusivePtrCountPolicy;

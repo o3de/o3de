@@ -35,7 +35,7 @@ namespace AZ
             // It is possible that some other thread, not us, will delete this ResourceView after we
             // decrement m_useCount. For example, another thread could create and release an instance
             // immediately after we decrement. So we copy the necessary data to the callstack before
-            // decrementing. This ensures the call to ReleaseInstance() below won't crash even if this
+            // decrementing. This ensures the call to EraseResourceView() below won't crash even if this
             // ResourceView gets deleted by another thread first.
             ConstPtr<Resource> resource = m_resource;
             const int useCount = --m_useCount;
