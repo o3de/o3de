@@ -1432,6 +1432,12 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
+        // if no vertex is selected, bail
+        if (!EditorVertexSelectionBase<Vertex>::m_translationManipulator)
+        {
+            return;
+        }
+
         ScopedUndoBatch duplicateUndo("Duplicate Vertices");
         ScopedUndoBatch::MarkEntityDirty(EditorVertexSelectionBase<Vertex>::GetEntityId());
 
