@@ -49,9 +49,9 @@ namespace UnitTest
 
     void ActionManagerFixture::TearDown()
     {
-        LeakDetectionFixture::TearDown();
-
         delete m_defaultParentWidget;
+
+        LeakDetectionFixture::TearDown();
     }
 
 } // namespace UnitTest

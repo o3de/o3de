@@ -349,8 +349,6 @@ namespace UnitTests
         AzToolsFramework::AssetDatabase::ProductDatabaseEntry m_product1, m_product2, m_product4;
         AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer m_dependencies;
 
-        void TestBody() override {}
-
         void SetupTestData()
         {
             using namespace AzToolsFramework::AssetDatabase;
