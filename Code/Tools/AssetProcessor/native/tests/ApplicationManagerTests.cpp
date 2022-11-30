@@ -23,7 +23,7 @@ namespace UnitTests
 {
     void ApplicationManagerTest::SetUp()
     {
-        ScopedAllocatorSetupFixture::SetUp();
+        LeakDetectionFixture::SetUp();
 
         AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
 
@@ -70,10 +70,10 @@ namespace UnitTests
         m_fileProcessorThread->exit();
         m_mockAPM = nullptr;
 
-        ScopedAllocatorSetupFixture::TearDown();
+        LeakDetectionFixture::TearDown();
     }
 
-    using BatchApplicationManagerTest = UnitTest::ScopedAllocatorSetupFixture;
+    using BatchApplicationManagerTest = UnitTest::LeakDetectionFixture;
 
     TEST_F(BatchApplicationManagerTest, FileCreatedOnDisk_ShowsUpInFileCache)
     {
@@ -121,8 +121,6 @@ namespace UnitTests
 
     TEST(AssetProcessorAssetServerHandler, AssetServerHandler_FutureCalls_FailsNoExceptions)
     {
-        UnitTest::ScopedAllocatorFixture fixture;
-
         char executablePath[AZ_MAX_PATH_LEN];
         AZ::Utils::GetExecutablePath(executablePath, AZ_MAX_PATH_LEN);
 

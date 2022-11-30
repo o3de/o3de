@@ -15,7 +15,7 @@
 #include <AzCore/UnitTest/TestTypes.h>
 
 class AWSGameLiftServerFixture
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public UnitTest::LeakDetectionFixture
 {
 public:
     AWSGameLiftServerFixture() {}

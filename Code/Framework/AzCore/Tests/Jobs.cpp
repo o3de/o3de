@@ -61,7 +61,7 @@ namespace UnitTest
     static AZStd::sys_time_t s_totalJobsTime = 0;
 
     class DefaultJobManagerSetupFixture
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
 
     {
     protected:
@@ -76,7 +76,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             AllocatorInstance<PoolAllocator>::Create();
             AllocatorInstance<ThreadPoolAllocator>::Create();
@@ -116,7 +116,7 @@ namespace UnitTest
             AllocatorInstance<ThreadPoolAllocator>::Destroy();
             AllocatorInstance<PoolAllocator>::Destroy();
 
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 

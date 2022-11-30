@@ -8,8 +8,8 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/PaintBrush/PaintBrushSubModeCluster.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsRequestBus.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsWindow.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsRequestBus.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsWindow.h>
 
 namespace AzToolsFramework
 {
@@ -54,21 +54,21 @@ namespace AzToolsFramework
         m_buttonSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(
             [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
             {
-                AzToolsFramework::PaintBrushMode brushMode = AzToolsFramework::PaintBrushMode::Paintbrush;
+                AzFramework::PaintBrushMode brushMode = AzFramework::PaintBrushMode::Paintbrush;
 
                 if (buttonId == m_eyedropperModeButtonId)
                 {
-                    brushMode = AzToolsFramework::PaintBrushMode::Eyedropper;
+                    brushMode = AzFramework::PaintBrushMode::Eyedropper;
                 }
                 else if (buttonId == m_smoothModeButtonId)
                 {
-                    brushMode = AzToolsFramework::PaintBrushMode::Smooth;
+                    brushMode = AzFramework::PaintBrushMode::Smooth;
                 }
 
-                AzToolsFramework::OpenViewPane(::PaintBrush::s_paintBrushSettingsName);
+                AzToolsFramework::OpenViewPane(AzToolsFramework::s_paintBrushSettingsName);
 
-                AzToolsFramework::PaintBrushSettingsRequestBus::Broadcast(
-                    &AzToolsFramework::PaintBrushSettingsRequestBus::Events::SetBrushMode, brushMode);
+                AzToolsFramework::GlobalPaintBrushSettingsRequestBus::Broadcast(
+                    &AzToolsFramework::GlobalPaintBrushSettingsRequestBus::Events::SetBrushMode, brushMode);
             });
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,

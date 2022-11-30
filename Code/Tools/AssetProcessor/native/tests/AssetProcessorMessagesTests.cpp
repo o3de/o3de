@@ -105,7 +105,7 @@ namespace AssetProcessorMessagesTests
     };
 
     class AssetProcessorMessages
-        : public ::UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override

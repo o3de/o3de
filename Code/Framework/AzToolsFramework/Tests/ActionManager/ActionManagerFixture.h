@@ -26,7 +26,7 @@
 
 namespace UnitTest
 {
-    class ActionManagerFixture : public AllocatorsTestFixture
+    class ActionManagerFixture : public LeakDetectionFixture
     {
     protected:
         void SetUp() override;

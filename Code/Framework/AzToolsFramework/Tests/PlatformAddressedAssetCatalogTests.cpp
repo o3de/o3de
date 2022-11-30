@@ -29,7 +29,7 @@ namespace
 namespace UnitTest
 {
     class PlatformAddressedAssetCatalogManagerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
 
@@ -180,7 +180,7 @@ namespace UnitTest
     };
 
     class MessageTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override

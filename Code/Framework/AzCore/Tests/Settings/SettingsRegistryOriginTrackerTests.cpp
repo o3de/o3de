@@ -41,7 +41,7 @@ namespace SettingsRegistryOriginTrackerTests
     const AZStd::string ARRAY_VALUE = "<array>";
 
     class SettingsRegistryOriginTrackerFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         SettingsRegistryOriginTrackerFixture()

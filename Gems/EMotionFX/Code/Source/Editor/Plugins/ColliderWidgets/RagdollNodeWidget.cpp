@@ -128,9 +128,9 @@ namespace EMotionFX
 
                 if (colliderNodeConfig)
                 {
-                    m_widgetCount = colliderNodeConfig->m_shapes.size() + 2;
+                    m_widgetCount = static_cast<int>(colliderNodeConfig->m_shapes.size() + 2);
                     m_collidersWidget->Update(GetActor(), GetNode(), PhysicsSetup::ColliderConfigType::Ragdoll, colliderNodeConfig->m_shapes, serializeContext);
-                    m_widgetCount = colliderNodeConfig->m_shapes.size() + 2;
+                    m_widgetCount = static_cast<int>(colliderNodeConfig->m_shapes.size() + 2);
                 }
                 else
                 {

@@ -12,9 +12,9 @@
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
-#include <AzToolsFramework/PaintBrush/PaintBrushNotificationBus.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsRequestBus.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsWindow.h>
+#include <AzFramework/PaintBrush/PaintBrushNotificationBus.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsRequestBus.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsWindow.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 #include <Editor/EditorImageGradientComponentMode.h>
@@ -301,7 +301,7 @@ namespace GradientSignal
         EditorImageGradientRequestBus::Event(GetEntityId(), &EditorImageGradientRequests::StartImageModification);
         ImageGradientModificationBus::Event(GetEntityId(), &ImageGradientModifications::StartImageModification);
 
-        AzToolsFramework::PaintBrushNotificationBus::Handler::BusConnect(entityComponentIdPair);
+        AzFramework::PaintBrushNotificationBus::Handler::BusConnect(entityComponentIdPair);
 
         // Set our paint brush min/max world size range. The minimum size should be large enough to paint at least one pixel, and
         // the max size is clamped so that we can't paint more than 256 x 256 pixels per brush stamp.
@@ -319,20 +319,20 @@ namespace GradientSignal
         minBrushSize = (minBrushSize <= 0.0f) ? 0.0f : (1.0f / minBrushSize);
         maxBrushSize = (maxBrushSize <= 0.0f) ? 0.0f : (MaxBrushPixelSize / maxBrushSize);
 
-        AzToolsFramework::PaintBrushSettingsRequestBus::Broadcast(
-            &AzToolsFramework::PaintBrushSettingsRequestBus::Events::SetSizeRange, minBrushSize, maxBrushSize);
+        AzToolsFramework::GlobalPaintBrushSettingsRequestBus::Broadcast(
+            &AzToolsFramework::GlobalPaintBrushSettingsRequestBus::Events::SetSizeRange, minBrushSize, maxBrushSize);
 
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldFromLocal, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
 
         m_brushManipulator = AzToolsFramework::PaintBrushManipulator::MakeShared(
-            worldFromLocal, entityComponentIdPair, AzToolsFramework::PaintBrushColorMode::Greyscale);
+            worldFromLocal, entityComponentIdPair, AzFramework::PaintBrushColorMode::Greyscale);
         m_brushManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
     }
 
     EditorImageGradientComponentMode::~EditorImageGradientComponentMode()
     {
-        AzToolsFramework::PaintBrushNotificationBus::Handler::BusDisconnect();
+        AzFramework::PaintBrushNotificationBus::Handler::BusDisconnect();
         m_brushManipulator->Unregister();
         m_brushManipulator.reset();
 

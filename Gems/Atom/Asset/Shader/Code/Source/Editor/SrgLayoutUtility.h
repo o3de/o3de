@@ -22,7 +22,8 @@ namespace AZ
         {
 
             bool LoadShaderResourceGroupLayouts(
-                [[maybe_unused]] const char* builderName, const SrgDataContainer& resourceGroups, const bool platformUsesRegisterSpaces,
+                [[maybe_unused]] const char* builderName,
+                const SrgDataContainer& resourceGroups,
                 RPI::ShaderResourceGroupLayoutList& srgLayoutList);
 
         }  // SrgLayoutUtility namespace
