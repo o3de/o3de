@@ -146,8 +146,6 @@ namespace MaterialCanvas
 
     void MaterialCanvasMainWindow::PopulateSettingsInspector(AtomToolsFramework::InspectorWidget* inspector) const
     {
-        Base::PopulateSettingsInspector(inspector);
-
         m_materialCanvasCompileSettingsGroup = AtomToolsFramework::CreateSettingsPropertyGroup(
             "Material Canvas Compile Settings",
             "Material Canvas Compile Settings",
@@ -173,6 +171,8 @@ namespace MaterialCanvas
             "Configuration settings for the graph view interaction, animation, and other behavior.",
             new AtomToolsFramework::InspectorPropertyGroupWidget(
                 m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr->RTTI_Type()));
+
+        Base::PopulateSettingsInspector(inspector);
     }
 
     AZStd::string MaterialCanvasMainWindow::GetHelpDialogText() const
