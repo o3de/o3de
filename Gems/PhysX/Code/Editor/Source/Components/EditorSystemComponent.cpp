@@ -21,6 +21,7 @@
 #include <Editor/EditorJointConfiguration.h>
 #include <Editor/EditorWindow.h>
 #include <Editor/PropertyTypes.h>
+#include <Editor/Source/ComponentModes/Joints/JointsComponentMode.h>
 #include <Editor/Source/Material/PhysXEditorMaterialAsset.h>
 #include <Editor/Source/Material/Conversion/LegacyPhysicsMaterialLibraryConversion.h>
 #include <System/PhysXSystem.h>
@@ -35,6 +36,8 @@ namespace PhysX
         EditorJointLimitLinearPairConfig::Reflect(context);
         EditorJointLimitConeConfig::Reflect(context);
         EditorJointConfig::Reflect(context);
+        JointMotorProperties::Reflect(context);
+        JointsComponentMode::Reflect(context);
 
         EditorMaterialAsset::Reflect(context);
         ReflectLegacyMaterialClasses(context);
@@ -138,16 +141,19 @@ namespace PhysX
     void EditorSystemComponent::OnActionRegistrationHook()
     {
         ColliderComponentMode::RegisterActions();
+        JointsComponentMode::RegisterActions();
     }
 
     void EditorSystemComponent::OnActionContextModeBindingHook()
     {
         ColliderComponentMode::BindActionsToModes();
+        JointsComponentMode::BindActionsToModes();
     }
 
     void EditorSystemComponent::OnMenuBindingHook()
     {
         ColliderComponentMode::BindActionsToMenus();
+        JointsComponentMode::BindActionsToMenus();
     }
 
     void EditorSystemComponent::OnStartPlayInEditorBegin()

@@ -41,17 +41,17 @@ namespace Terrain
 
         HeightfieldProviderNotifications::HeightfieldChangeMask result = HeightfieldProviderNotifications::HeightfieldChangeMask::None;
 
-        if (mask & TerrainDataNotifications::Settings)
+        if ((mask & TerrainDataNotifications::TerrainDataChangedMask::Settings) == TerrainDataNotifications::TerrainDataChangedMask::Settings)
         {
             result |= HeightfieldProviderNotifications::HeightfieldChangeMask::Settings;
         }
 
-        if (mask & TerrainDataNotifications::HeightData)
+        if ((mask & TerrainDataNotifications::TerrainDataChangedMask::HeightData) == TerrainDataNotifications::TerrainDataChangedMask::HeightData)
         {
             result |= HeightfieldProviderNotifications::HeightfieldChangeMask::HeightData;
         }
 
-        if (mask & TerrainDataNotifications::SurfaceData)
+        if ((mask & TerrainDataNotifications::TerrainDataChangedMask::SurfaceData) == TerrainDataNotifications::TerrainDataChangedMask::SurfaceData)
         {
             result |= HeightfieldProviderNotifications::HeightfieldChangeMask::SurfaceData;
         }

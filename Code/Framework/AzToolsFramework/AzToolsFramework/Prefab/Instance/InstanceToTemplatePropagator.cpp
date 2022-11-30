@@ -290,7 +290,7 @@ namespace AzToolsFramework
                 patchPathReference->get().SetString(patchPathString.c_str(), patches.GetAllocator());
             }
 
-            linkToApplyPatches.AddPatchesToLink(patches);
+            linkToApplyPatches.SetLinkPatches(patches);
             linkToApplyPatches.UpdateTarget();
 
             m_prefabSystemComponentInterface->SetTemplateDirtyFlag(linkToApplyPatches.GetTargetTemplateId(), true);

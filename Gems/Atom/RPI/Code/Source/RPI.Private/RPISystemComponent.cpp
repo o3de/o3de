@@ -123,6 +123,16 @@ namespace AZ
             settingsRegistry->GetObject(m_rpiDescriptor, settingPath);
 
             m_rpiSystem.Initialize(m_rpiDescriptor);
+
+            // Part of RPI system initialization requires asset system to be ready
+            // which happens after the game system started
+            // Use the tick bus to delay this initialization
+            AZ::TickBus::QueueFunction(
+                [this]()
+                {
+                    m_rpiSystem.InitializeSystemAssets();
+                });
+
             AZ::SystemTickBus::Handler::BusConnect();
             AZ::RHI::RHISystemNotificationBus::Handler::BusConnect();
         }

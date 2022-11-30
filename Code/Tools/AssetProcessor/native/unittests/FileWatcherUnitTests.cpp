@@ -300,10 +300,10 @@ namespace FileWatcherTests
         {
             QString filename = QDir(m_assetRootPath).absoluteFilePath(QString("test%1.tif").arg(fileIndex));
             filename = QDir::toNativeSeparators(filename);
-            EXPECT_STREQ(m_filesAdded[fileIndex].toUtf8().constData(), filename.toUtf8().constData());
+            EXPECT_STREQ(m_filesAdded[static_cast<unsigned int>(fileIndex)].toUtf8().constData(), filename.toUtf8().constData());
             // there may be more modifications than expected but we should at least see each one, once.
             EXPECT_TRUE(m_filesModified.contains(filename));
-            EXPECT_STREQ(m_filesRemoved[fileIndex].toUtf8().constData(), filename.toUtf8().constData());
+            EXPECT_STREQ(m_filesRemoved[static_cast<unsigned int>(fileIndex)].toUtf8().constData(), filename.toUtf8().constData());
         }
     }
 
