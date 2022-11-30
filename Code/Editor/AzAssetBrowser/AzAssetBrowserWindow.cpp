@@ -257,8 +257,9 @@ void AzAssetBrowserWindow::CreateToolsMenu()
         auto* projectSourceAssets = new QAction(tr("Filter Project and Source Assets"), this);
         projectSourceAssets->setCheckable(true);
         projectSourceAssets->setChecked(true);
-        connect(projectSourceAssets, &QAction::triggered, this, [this] { m_ui->m_searchWidget->FilterProjectSourceAssets(); });
+        connect(projectSourceAssets, &QAction::triggered, this, [this] { m_ui->m_searchWidget->ToggleProjectSourceAssetFilter(); });
         m_ui->m_searchWidget->GetFilter()->AddFilter(m_ui->m_searchWidget->GetProjectSourceFilter());
+        m_ui->m_searchWidget->AddFolderFilter();
         m_toolsMenu->addAction(projectSourceAssets);
     }
 
@@ -344,11 +345,13 @@ void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
 {
     m_ui->m_middleStackWidget->show();
     m_ui->m_middleStackWidget->setCurrentWidget(viewToShow);
+    m_ui->m_searchWidget->AddFolderFilter();
 }
 
 void AzAssetBrowserWindow::SetOneColumnMode()
 {
     m_ui->m_middleStackWidget->hide();
+    m_ui->m_searchWidget->RemoveFolderFilter();
 }
 
 static void ExpandTreeToIndex(QTreeView* treeView, const QModelIndex& index)
