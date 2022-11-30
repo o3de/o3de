@@ -18,7 +18,6 @@
 #include <AzFramework/Viewport/ClickDetector.h>
 #include <AzFramework/Viewport/CursorState.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
-#include <AzFramework/Viewport/ViewportId.h>
 
 namespace AzFramework
 {
@@ -684,6 +683,11 @@ namespace AzFramework
     private:
         InputChannelId m_orbitChannelId; //!< Input channel to begin the orbit camera input (note: A modifier key is preferred).
         PivotFn m_pivotFn; //!< The pivot position to use for this orbit camera (how is the pivot point calculated/retrieved).
+
+        void ResetImpl() override
+        {
+            m_orbitCameras.Reset();
+        }
     };
 
     inline void OrbitCameraInput::SetPivotFn(PivotFn pivotFn)
