@@ -230,7 +230,7 @@ Q_SIGNALS:
         void OnFenceFileDetected(unsigned int fenceId);
 
         //!  This will get called for every asset related messages or messages that require fencing 
-        void OnNewIncomingRequest(unsigned int connId, unsigned int serial, QByteArray payload, QString platform);
+        virtual void OnNewIncomingRequest(unsigned int connId, unsigned int serial, QByteArray payload, QString platform);
 
     public:
 
@@ -249,7 +249,7 @@ Q_SIGNALS:
         // Invokes the appropriate handler and returns true if the message should be deleted by the caller and false if the request handler is responsible for deleting the message
         virtual bool InvokeHandler(MessageData<AzFramework::AssetSystem::BaseAssetProcessorMessage> message);
 
-    private:
+    protected:
 
         void DeleteFenceFile_Retry(unsigned fenceId, QString fenceFileName, NetworkRequestID key, AZStd::shared_ptr<BaseAssetProcessorMessage> message, QString platform, int retriesRemaining);
 
