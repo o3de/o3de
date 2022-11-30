@@ -288,7 +288,6 @@ namespace UnitTest
 
         return foundInstanceAlias;
     }
-    }
 
     void PrefabTestFixture::ValidateEntityUnderInstance(
         AZ::EntityId containerEntityId, const EntityAlias& entityAlias, const AZStd::string& entityName)
