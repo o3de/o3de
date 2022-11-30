@@ -9,7 +9,6 @@
 
 #include <limits>
 
-#include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <AzCore/std/containers/unordered_set.h>
@@ -2526,12 +2525,9 @@ namespace AZ
     class SerializeContext::PerModuleGenericClassInfo final
     {
     public:
-        using GenericInfoModuleMap = AZStd::unordered_map<AZ::Uuid, AZ::GenericClassInfo*, AZStd::hash<AZ::Uuid>, AZStd::equal_to<AZ::Uuid>, AZ::AZStdIAllocator>;
+        using GenericInfoModuleMap = AZStd::unordered_map<AZ::Uuid, AZ::GenericClassInfo*>;
 
-        PerModuleGenericClassInfo();
         ~PerModuleGenericClassInfo();
-
-        AZ::IAllocator& GetAllocator();
 
         void AddGenericClassInfo(AZ::GenericClassInfo* genericClassInfo);
         void RemoveGenericClassInfo(const AZ::TypeId& canonicalTypeId);
@@ -2552,10 +2548,8 @@ namespace AZ
         void Cleanup();
 
     private:
-        AZ::OSAllocator m_moduleOSAllocator;
-
         GenericInfoModuleMap m_moduleLocalGenericClassInfos;
-        using SerializeContextSet = AZStd::unordered_set<SerializeContext*, AZStd::hash<SerializeContext*>, AZStd::equal_to<SerializeContext*>, AZ::AZStdIAllocator>;
+        using SerializeContextSet = AZStd::unordered_set<SerializeContext*>;
         SerializeContextSet m_serializeContextSet;
     };
 
@@ -2572,8 +2566,7 @@ namespace AZ
             return static_cast<GenericClassInfoType*>(findIt->second);
         }
 
-        void* rawMemory = m_moduleOSAllocator.Allocate(sizeof(GenericClassInfoType), alignof(GenericClassInfoType));
-        auto genericClassInfo = new (rawMemory) GenericClassInfoType();
+        auto genericClassInfo = azcreate(GenericClassInfoType, ());
         if (genericClassInfo)
         {
             AddGenericClassInfo(genericClassInfo);
@@ -2594,17 +2587,15 @@ namespace AZ
     template <typename T, typename ContainerType>
     AttributePtr CreateModuleAttribute(T&& attrValue)
     {
-        IAllocator& moduleAllocator = GetCurrentSerializeContextModule().GetAllocator();
-        void* rawMemory = moduleAllocator.Allocate(sizeof(ContainerType), alignof(ContainerType));
+        void* rawMemory = AllocatorInstance<SystemAllocator>::Get().allocate(sizeof(ContainerType), alignof(ContainerType));
         new (rawMemory) ContainerType{ AZStd::forward<T>(attrValue) };
         auto attributeDeleter = [](Attribute* attribute)
         {
-            IAllocator& moduleAllocator = GetCurrentSerializeContextModule().GetAllocator();
             attribute->~Attribute();
-            moduleAllocator.DeAllocate(attribute);
+            AllocatorInstance<SystemAllocator>::Get().deallocate(attribute);
         };
 
-        return AttributePtr{ static_cast<ContainerType*>(rawMemory), AZStd::move(attributeDeleter), AZStdIAllocator(&moduleAllocator) };
+        return AttributePtr{ static_cast<ContainerType*>(rawMemory), AZStd::move(attributeDeleter) };
     }
 }   // namespace AZ
 

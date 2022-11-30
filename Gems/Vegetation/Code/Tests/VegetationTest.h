@@ -21,7 +21,7 @@
 namespace UnitTest
 {
     class VegetationComponentTests
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
 

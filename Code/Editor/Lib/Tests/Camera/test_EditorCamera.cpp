@@ -21,7 +21,7 @@
 
 namespace UnitTest
 {
-    class EditorCameraFixture : public UnitTest::AllocatorsTestFixture
+    class EditorCameraFixture : public UnitTest::LeakDetectionFixture
     {
     public:
         AZ::ComponentApplication* m_application = nullptr;
@@ -276,7 +276,7 @@ namespace UnitTest
         EXPECT_THAT(nextInterpolationBegan, ::testing::IsTrue());
     }
 
-    using GotoPositionPitchConstraintsTest = UnitTest::AllocatorsTestFixture;
+    using GotoPositionPitchConstraintsTest = UnitTest::LeakDetectionFixture;
     TEST_F(GotoPositionPitchConstraintsTest, GoToPositionPitchIsSetToPlusOrMinusNinetyDegrees)
     {
         float minPitch = 0.0f;

@@ -17,13 +17,13 @@
 namespace UnitTest
 {
     class VariantSerializationTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         // We must expose the class for serialization first.
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
@@ -44,7 +44,7 @@ namespace UnitTest
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
             AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
     protected:

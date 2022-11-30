@@ -4,6 +4,8 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
+
+
 class Tests:
     game_mode_entered = ("Game Mode successfully entered", "Game mode failed to enter")
     game_mode_exited  = ("Game Mode successfully exited",  "Game mode failed to exited")
@@ -39,6 +41,7 @@ def ScriptCanvas_ChangingAssets_ComponentStable():
     import azlmbr.legacy.general as general
     from editor_python_test_tools.editor_component.editor_script_canvas import ScriptCanvasComponent
     import azlmbr.math as math
+
     import os
     import azlmbr.paths as paths
 
@@ -76,11 +79,13 @@ def ScriptCanvas_ChangingAssets_ComponentStable():
         result = scripting_tools.located_expected_tracer_lines(section_tracer, EXPECTED_LINES)
         Report.result(Tests.found_lines, result)
 
+
 if __name__ == "__main__":
+
     import ImportPathHelper as imports
 
     imports.init()
-    from utils import Report
+    from editor_python_test_tools.utils import Report
 
     Report.start_test(ScriptCanvas_ChangingAssets_ComponentStable)
 

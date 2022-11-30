@@ -9,7 +9,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>
-#include <AzToolsFramework/PaintBrush/PaintBrush.h>
+#include <AzFramework/PaintBrush/PaintBrush.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <Tests/PaintBrush/MockPaintBrushNotificationHandler.h>
 
@@ -17,7 +17,7 @@
 
 namespace UnitTest
 {
-    class PaintBrushPaintSettingsTestFixture : public ScopedAllocatorSetupFixture
+    class PaintBrushPaintSettingsTestFixture : public LeakDetectionFixture
     {
     public:
         // Some common default values that we'll use in our tests.
@@ -27,13 +27,13 @@ namespace UnitTest
         const AZ::Color TestColor{ 0.25f, 0.50f, 0.75f, 1.0f };
 
         // Useful helpers for our tests
-        AzToolsFramework::PaintBrushSettings m_settings;
+        AzFramework::PaintBrushSettings m_settings;
 
         // Verify that for whatever PaintBrushSettings have already been set, that both PaintToLocation() and SmoothToLocation()
         // won't produce any notifications when they're triggered, because the settings won't produce any valid points.
         void TestZeroNotificationsForPaintAndSmooth()
         {
-            AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+            AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
             ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
             EXPECT_CALL(mockHandler, OnPaint(::testing::_, ::testing::_, ::testing::_)).Times(0);
@@ -56,10 +56,10 @@ namespace UnitTest
         // This validation only checks for valid dirtyArea and valueLookupFn results, which are common to both OnPaint() and OnSmooth()
         // notifications. The *ToLocation() call will be called once for each validationFn provided.
         using ValidationFn =
-            AZStd::function<void(const AZ::Aabb& dirtyArea, AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)>;
+            AZStd::function<void(const AZ::Aabb& dirtyArea, AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)>;
 
         void ValidatePaintAndSmooth(
-            AzToolsFramework::PaintBrush& paintBrush,
+            AzFramework::PaintBrush& paintBrush,
             ::testing::NiceMock<MockPaintBrushNotificationBusHandler>& mockHandler,
             AZStd::span<const AZ::Vector3> locations,
             AZStd::span<ValidationFn> validationFns)
@@ -76,8 +76,8 @@ namespace UnitTest
                 ON_CALL(mockHandler, OnPaint)
                     .WillByDefault(
                         [=](const AZ::Aabb& dirtyArea,
-                            AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
-                            [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::BlendFn& blendFn)
+                            AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                            [[maybe_unused]] AzFramework::PaintBrushNotifications::BlendFn& blendFn)
                         {
                             validationFns[index](dirtyArea, valueLookupFn);
                         });
@@ -94,9 +94,9 @@ namespace UnitTest
                 ON_CALL(mockHandler, OnSmooth)
                     .WillByDefault(
                         [=](const AZ::Aabb& dirtyArea,
-                            AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                            AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                             [[maybe_unused]] AZStd::span<const AZ::Vector3> valuePointOffsets,
-                            [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::SmoothFn& smoothFn)
+                            [[maybe_unused]] AzFramework::PaintBrushNotifications::SmoothFn& smoothFn)
                         {
                             validationFns[index](dirtyArea, valueLookupFn);
                         });
@@ -110,16 +110,16 @@ namespace UnitTest
         // Test out the blendFn that we're provided from the requested blend mode by running through sets of values and blending them.
         // The caller needs to provide a verifyFn that should produce an expected value that we'll compare against.
         void TestBlendModeForPaintAndSmooth(
-            AzToolsFramework::PaintBrushBlendMode blendMode,
+            AzFramework::PaintBrushBlendMode blendMode,
             AZStd::function<float(float baseValue, float newValue, float opacity)> verifyFn)
         {
-            AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+            AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
             ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
             // Set the smooth mode to "Mean" so that we can fill the kernel values with all of the same values, which
             // lets us use the same verification function for testing the blendFn and the smoothFn since we'll have the
             // same baseValue, newValue, and opacity.
-            m_settings.SetSmoothMode(AzToolsFramework::PaintBrushSmoothMode::Mean);
+            m_settings.SetSmoothMode(AzFramework::PaintBrushSmoothMode::Mean);
 
             m_settings.SetBlendMode(blendMode);
 
@@ -131,8 +131,8 @@ namespace UnitTest
             ON_CALL(mockHandler, OnPaint)
                 .WillByDefault(
                     [=]([[maybe_unused]] const AZ::Aabb& dirtyArea,
-                        [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
-                        AzToolsFramework::PaintBrushNotifications::BlendFn& blendFn)
+                        [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                        AzFramework::PaintBrushNotifications::BlendFn& blendFn)
                     {
                         for (float baseValue = 0.0f; baseValue <= 1.0f; baseValue += 0.25f)
                         {
@@ -157,9 +157,9 @@ namespace UnitTest
             ON_CALL(mockHandler, OnSmooth)
                 .WillByDefault(
                     [=]([[maybe_unused]] const AZ::Aabb& dirtyArea,
-                        [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                        [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                         [[maybe_unused]] AZStd::span<const AZ::Vector3> valuePointOffsets,
-                        AzToolsFramework::PaintBrushNotifications::SmoothFn& smoothFn)
+                        AzFramework::PaintBrushNotifications::SmoothFn& smoothFn)
                     {
                         for (float baseValue = 0.0f; baseValue <= 1.0f; baseValue += 0.25f)
                         {
@@ -198,7 +198,7 @@ namespace UnitTest
     {
         // The PaintBrush 'Size' setting should affect the overall size of the paint brush circle that's being used to paint/smooth.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         // Loop through a series of different brush radius sizes.
@@ -207,7 +207,7 @@ namespace UnitTest
             m_settings.SetSize(brushRadiusSize * 2.0f);
 
             ValidationFn validateFn = [=](const AZ::Aabb& dirtyArea,
-                                  AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
+                                  AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
             {
                 // The dirtyArea AABB should change size based on the current brush radius size that we're using.
                 EXPECT_THAT(dirtyArea, IsClose(AZ::Aabb::CreateCenterRadius(TestBrushCenter2d, brushRadiusSize)));
@@ -259,7 +259,7 @@ namespace UnitTest
         // The 'Hardness %' setting should apply an opacity falloff curve. It starts at the (radius * hardness%) distance from the
         // center and ends at the radius distance from the center.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         const float TestRadiusSize = 10.0f;
@@ -271,7 +271,7 @@ namespace UnitTest
             m_settings.SetHardnessPercent(hardnessPercent);
 
             ValidationFn validateFn =
-                [=]([[maybe_unused]] const AZ::Aabb& dirtyArea, AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
+                [=]([[maybe_unused]] const AZ::Aabb& dirtyArea, AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
             {
                 // The falloff function should start at the hardness percentage from the center.
                 const float falloffStart = hardnessPercent / 100.0f;
@@ -314,7 +314,7 @@ namespace UnitTest
     {
         // Verify that 100% Hardness on PaintBrushSettings means there is no falloff.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         const float TestRadiusSize = 10.0f;
@@ -323,7 +323,7 @@ namespace UnitTest
 
         // Verify that paint/smooth uses the hardness percent correctly.
         ValidationFn validateFn =
-            [=]([[maybe_unused]] const AZ::Aabb& dirtyArea, AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
+            [=]([[maybe_unused]] const AZ::Aabb& dirtyArea, AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
         {
             const AZStd::vector<AZ::Vector3> points = {
                 // Test the opacity at the brush center + 0%, 25%, 50%, 75%, 100%
@@ -359,7 +359,7 @@ namespace UnitTest
         // opacity = 0.19 + (1 - 0.19) * 0.1 = 0.271
         // ...
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         const float TestRadiusSize = 10.0f;
@@ -380,7 +380,7 @@ namespace UnitTest
         // On the first PaintToLocation() call, we only have a single brush circle, so it should have a constant
         // opacity value that matches our flow percentage.
         ValidationFn validateFirstCallFn =
-            [=]([[maybe_unused]] const AZ::Aabb& dirtyArea, AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
+            [=]([[maybe_unused]] const AZ::Aabb& dirtyArea, AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
         {
             AZStd::vector<AZ::Vector3> points;
 
@@ -428,7 +428,7 @@ namespace UnitTest
           fall in both circles and be 19%. (0) to (1 * radius) falls in circle 'b' only and should be 10% again.
         */
         ValidationFn validateSecondCallFn =
-            [=](const AZ::Aabb& dirtyArea, AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
+            [=](const AZ::Aabb& dirtyArea, AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
         {
             AZStd::vector<AZ::Vector3> points;
 
@@ -487,7 +487,7 @@ namespace UnitTest
         // The % is in terms of the brush size, so 50% produces circles that overlap by 50%, 100% produces circles that
         // perfectly don't overlap, 200% produces circles with exactly one empty circle between each one, etc.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         const float TestRadiusSize = 10.0f;
@@ -504,14 +504,14 @@ namespace UnitTest
             // On the first *ToLocation() call, we only have a single brush circle, so it should have a constant
             // opacity value that matches our flow percentage.
             ValidationFn validateFirstCallFn =
-                [=](const AZ::Aabb& dirtyArea, [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
+                [=](const AZ::Aabb& dirtyArea, [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
             {
                 // On the first call, the dirtyArea AABB should match the size of the brush.
                 EXPECT_THAT(dirtyArea, IsClose(AZ::Aabb::CreateCenterRadius(TestBrushCenter2d, TestRadiusSize)));
             };
 
             ValidationFn validateSecondCallFn =
-                [=](const AZ::Aabb& dirtyArea, [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
+                [=](const AZ::Aabb& dirtyArea, [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
             {
                 // On the second call, a number of brush circles will be applied based on the distance %. The first
                 // brush circle in this call will start distance % further than the left edge of our initial circle.
@@ -539,7 +539,7 @@ namespace UnitTest
     {
         // The 'Normal' Blend brush setting is just a standard lerp.
         TestBlendModeForPaintAndSmooth(
-            AzToolsFramework::PaintBrushBlendMode::Normal,
+            AzFramework::PaintBrushBlendMode::Normal,
             [](float baseValue, float newValue, float opacity) -> float
             {
                 return AZStd::lerp(baseValue, newValue, opacity);
@@ -552,7 +552,7 @@ namespace UnitTest
         // Note that we specifically do NOT expect it to clamp the add. This matches Photoshop's behavior,
         // but other paint programs vary in their choice here.
         TestBlendModeForPaintAndSmooth(
-            AzToolsFramework::PaintBrushBlendMode::Add,
+            AzFramework::PaintBrushBlendMode::Add,
             [](float baseValue, float newValue, float opacity) -> float
             {
                 return AZStd::lerp(baseValue, baseValue + newValue, opacity);
@@ -565,7 +565,7 @@ namespace UnitTest
         // Note that we specifically do NOT expect it to clamp the subtract. This matches Photoshop's behavior,
         // but other paint programs vary in their choice here.
         TestBlendModeForPaintAndSmooth(
-            AzToolsFramework::PaintBrushBlendMode::Subtract,
+            AzFramework::PaintBrushBlendMode::Subtract,
             [](float baseValue, float newValue, float opacity) -> float
             {
                 return AZStd::lerp(baseValue, baseValue - newValue, opacity);
@@ -576,7 +576,7 @@ namespace UnitTest
     {
         // The 'Multiply' Blend brush setting lerps between the base and 'base * new'
         TestBlendModeForPaintAndSmooth(
-            AzToolsFramework::PaintBrushBlendMode::Multiply,
+            AzFramework::PaintBrushBlendMode::Multiply,
             [](float baseValue, float newValue, float opacity) -> float
             {
                 return AZStd::lerp(baseValue, baseValue * newValue, opacity);
@@ -587,7 +587,7 @@ namespace UnitTest
     {
         // The 'Screen' Blend brush setting lerps between the base and '1 - (1 - base) * (1 - new)'
         TestBlendModeForPaintAndSmooth(
-            AzToolsFramework::PaintBrushBlendMode::Screen,
+            AzFramework::PaintBrushBlendMode::Screen,
             [](float baseValue, float newValue, float opacity) -> float
             {
                 return AZStd::lerp(baseValue, 1.0f - ((1.0f - baseValue) * (1.0f - newValue)), opacity);
@@ -598,7 +598,7 @@ namespace UnitTest
     {
         // The 'Darken' Blend brush setting lerps between the base and 'min(base, new)'
         TestBlendModeForPaintAndSmooth(
-            AzToolsFramework::PaintBrushBlendMode::Darken,
+            AzFramework::PaintBrushBlendMode::Darken,
             [](float baseValue, float newValue, float opacity) -> float
             {
                 return AZStd::lerp(baseValue, AZStd::min(baseValue, newValue), opacity);
@@ -609,7 +609,7 @@ namespace UnitTest
     {
         // The 'Lighten' Blend brush setting lerps between the base and 'max(base, new)'
         TestBlendModeForPaintAndSmooth(
-            AzToolsFramework::PaintBrushBlendMode::Lighten,
+            AzFramework::PaintBrushBlendMode::Lighten,
             [](float baseValue, float newValue, float opacity) -> float
             {
                 return AZStd::lerp(baseValue, AZStd::max(baseValue, newValue), opacity);
@@ -620,7 +620,7 @@ namespace UnitTest
     {
         // The 'Average' Blend brush setting lerps between the base and '(base + new) / 2'
         TestBlendModeForPaintAndSmooth(
-            AzToolsFramework::PaintBrushBlendMode::Average,
+            AzFramework::PaintBrushBlendMode::Average,
             [](float baseValue, float newValue, float opacity) -> float
             {
                 return AZStd::lerp(baseValue, (baseValue + newValue) / 2.0f, opacity);
@@ -633,7 +633,7 @@ namespace UnitTest
         // if base >= 0.5 : (1 - (2 * (1 - base) * (1 - new)))
         // if base <  0.5 : 2 * base * new
         TestBlendModeForPaintAndSmooth(
-            AzToolsFramework::PaintBrushBlendMode::Overlay,
+            AzFramework::PaintBrushBlendMode::Overlay,
             [](float baseValue, float newValue, float opacity) -> float
             {
                 if (baseValue >= 0.5f)
@@ -651,11 +651,11 @@ namespace UnitTest
         // The values should be an NxN square, where N = (radius * 2) + 1.
         // Radius 1 = 3x3 square. Radius 2 = 5x5 square. Radius 3 = 7x7 square. etc.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         // Set the smoothing mode to "Mean" so that we have an easily-predictable result.
-        m_settings.SetSmoothMode(AzToolsFramework::PaintBrushSmoothMode::Mean);
+        m_settings.SetSmoothMode(AzFramework::PaintBrushSmoothMode::Mean);
 
         paintBrush.BeginPaintMode();
 
@@ -667,9 +667,9 @@ namespace UnitTest
             ON_CALL(mockHandler, OnSmooth)
                 .WillByDefault(
                     [=]([[maybe_unused]] const AZ::Aabb& dirtyArea,
-                        [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                        [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                         AZStd::span<const AZ::Vector3> valuePointOffsets,
-                        AzToolsFramework::PaintBrushNotifications::SmoothFn& smoothFn)
+                        AzFramework::PaintBrushNotifications::SmoothFn& smoothFn)
                     {
                         const size_t kernelSize1d = (radius * 2) + 1;
                         const size_t expectedKernelSize = kernelSize1d * kernelSize1d;
@@ -679,9 +679,9 @@ namespace UnitTest
 
                         // Verify that the actual offsets we've been given go from -radius to radius in each direction.
                         size_t index = 0;
-                        for (float y = -radius; y <= radius; y++)
+                        for (float y = aznumeric_cast<float>(-radius); y <= aznumeric_cast<float>(radius); y++)
                         {
-                            for (float x = -radius; x <= radius; x++)
+                            for (float x = aznumeric_cast<float>(-radius); x <= aznumeric_cast<float>(radius); x++)
                             {
                                 EXPECT_THAT(valuePointOffsets[index], IsClose(AZ::Vector3(x, y, 0.0f)));
                                 index++;
@@ -712,11 +712,11 @@ namespace UnitTest
     {
         // Verify that the Gaussian Smoothing mode produces the expected results.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         // Use Gaussian with a 3x3 matrix for easily-testable results.
-        m_settings.SetSmoothMode(AzToolsFramework::PaintBrushSmoothMode::Gaussian);
+        m_settings.SetSmoothMode(AzFramework::PaintBrushSmoothMode::Gaussian);
         m_settings.SetSmoothingRadius(1);
 
         paintBrush.BeginPaintMode();
@@ -725,9 +725,9 @@ namespace UnitTest
         ON_CALL(mockHandler, OnSmooth)
             .WillByDefault(
                 [=]([[maybe_unused]] const AZ::Aabb& dirtyArea,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                     [[maybe_unused]] AZStd::span<const AZ::Vector3> valuePointOffsets,
-                    AzToolsFramework::PaintBrushNotifications::SmoothFn& smoothFn)
+                    AzFramework::PaintBrushNotifications::SmoothFn& smoothFn)
                 {
                     // It's a bit tricky to validate Gaussian smoothing without just recreating the Gaussian calculations,
                     // so we'll use "golden values" that are the precomputed 3x3 Gaussian matrix with known-good values.
@@ -760,11 +760,11 @@ namespace UnitTest
     {
         // Verify that the Mean Smoothing mode produces the expected results.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         // Use Mean with a 3x3 matrix for easily-testable results.
-        m_settings.SetSmoothMode(AzToolsFramework::PaintBrushSmoothMode::Mean);
+        m_settings.SetSmoothMode(AzFramework::PaintBrushSmoothMode::Mean);
         m_settings.SetSmoothingRadius(1);
 
         paintBrush.BeginPaintMode();
@@ -773,9 +773,9 @@ namespace UnitTest
         ON_CALL(mockHandler, OnSmooth)
             .WillByDefault(
                 [=]([[maybe_unused]] const AZ::Aabb& dirtyArea,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                     [[maybe_unused]] AZStd::span<const AZ::Vector3> valuePointOffsets,
-                    AzToolsFramework::PaintBrushNotifications::SmoothFn& smoothFn)
+                    AzFramework::PaintBrushNotifications::SmoothFn& smoothFn)
                 {
                     // Loop through and try smoothing with all values set to 0 except for one.
                     // The result should always be 1/9, since we're averaging all 9 values.
@@ -802,11 +802,11 @@ namespace UnitTest
     {
         // Verify that the Median Smoothing mode produces the expected results.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         // Use Median with a 3x3 matrix for easily-testable results.
-        m_settings.SetSmoothMode(AzToolsFramework::PaintBrushSmoothMode::Median);
+        m_settings.SetSmoothMode(AzFramework::PaintBrushSmoothMode::Median);
         m_settings.SetSmoothingRadius(1);
 
         paintBrush.BeginPaintMode();
@@ -815,9 +815,9 @@ namespace UnitTest
         ON_CALL(mockHandler, OnSmooth)
             .WillByDefault(
                 [=]([[maybe_unused]] const AZ::Aabb& dirtyArea,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                     [[maybe_unused]] AZStd::span<const AZ::Vector3> valuePointOffsets,
-                    AzToolsFramework::PaintBrushNotifications::SmoothFn& smoothFn)
+                    AzFramework::PaintBrushNotifications::SmoothFn& smoothFn)
                 {
                     // Set our kernel values to 0.0, 0.01, 0.02, 0.03, 0.04, 0.5, 0.6, 0.7, 0.8 in scrambled order.
                     // The middle value should be 0.04. These values are non-linear to ensure that we're

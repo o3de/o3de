@@ -26,7 +26,7 @@ using namespace AZ;
 using namespace SceneBuilder;
 
 class SceneBuilderTests
-    : public UnitTest::AllocatorsFixture
+    : public UnitTest::LeakDetectionFixture
     , public UnitTest::TraceBusRedirector
 {
 protected:
@@ -231,7 +231,7 @@ struct ImportHandler
     }
 };
 
-using SourceDependencyTests = UnitTest::ScopedAllocatorSetupFixture;
+using SourceDependencyTests = UnitTest::LeakDetectionFixture;
 
 namespace SourceDependencyJson
 {
@@ -283,7 +283,7 @@ TEST_F(SourceDependencyTests, PopulateSourceDependencies_WithEmptyManifest_Shoul
     ASSERT_EQ(dependencies.size(), 0);
 }
 
-struct SourceDependencyMockedIOTests : UnitTest::ScopedAllocatorSetupFixture
+struct SourceDependencyMockedIOTests : UnitTest::LeakDetectionFixture
     , UnitTest::SetRestoreFileIOBaseRAII
 {
     SourceDependencyMockedIOTests()

@@ -37,7 +37,7 @@ namespace UnitTests
 
     void AssetManagerTestingBase::SetUp()
     {
-        ScopedAllocatorSetupFixture::SetUp();
+        LeakDetectionFixture::SetUp();
 
         // File IO is needed to hash the files
         if (AZ::IO::FileIOBase::GetInstance() == nullptr)
@@ -176,7 +176,7 @@ namespace UnitTests
         m_stateData.reset();
         m_assetProcessorManager.reset();
 
-        ScopedAllocatorSetupFixture::TearDown();
+        LeakDetectionFixture::TearDown();
     }
 
     void AssetManagerTestingBase::RunFile(int expectedJobCount, int expectedFileCount, int dependencyFileCount)

@@ -9,7 +9,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>
-#include <AzToolsFramework/PaintBrush/PaintBrush.h>
+#include <AzFramework/PaintBrush/PaintBrush.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <Tests/PaintBrush/MockPaintBrushNotificationHandler.h>
 
@@ -17,7 +17,7 @@
 
 namespace UnitTest
 {
-    class PaintBrushPaintLocationTestFixture : public ScopedAllocatorSetupFixture
+    class PaintBrushPaintLocationTestFixture : public LeakDetectionFixture
     {
     public:
 
@@ -28,7 +28,7 @@ namespace UnitTest
         const AZ::Color TestColor{ 0.25f, 0.50f, 0.75f, 1.0f };
 
         // Useful helpers for our tests
-        AzToolsFramework::PaintBrushSettings m_settings;
+        AzFramework::PaintBrushSettings m_settings;
     };
 
     TEST_F(PaintBrushPaintLocationTestFixture, PaintToLocationAtSingleLocationFunctionsCorrectly)
@@ -38,7 +38,7 @@ namespace UnitTest
         // - The valueLookupFn will only return valid points that occur within the brush.
         // - The blendFn will blend two values together.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         const float TestBrushRadius = 1.0f;
@@ -49,8 +49,8 @@ namespace UnitTest
         ON_CALL(mockHandler, OnPaint)
             .WillByDefault(
                 [=](const AZ::Aabb& dirtyArea,
-                    AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
-                    AzToolsFramework::PaintBrushNotifications::BlendFn& blendFn)
+                    AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                    AzFramework::PaintBrushNotifications::BlendFn& blendFn)
                 {
                     // The OnPaint method for a listener to the PaintBrushNotificationBus should work as follows:
                     // - It should receive a dirtyArea AABB that contains the region that's been painted.
@@ -118,7 +118,7 @@ namespace UnitTest
         // This verifies that if the distance between two PaintToLocation calls is small enough, it won't trigger
         // an OnPaint. "small" is defined as less than (brush size * distance %).
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         // Set the distance between brush stamps to 50%
@@ -170,7 +170,7 @@ namespace UnitTest
         // If the Distance % is anything less than 100% in the paint brush settings, the Os will overlap.
         // We'll set it to 100% just to make it obvious that we've gotten the correct result.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         // Set the distance between brush stamps to 100%
@@ -195,8 +195,8 @@ namespace UnitTest
         ON_CALL(mockHandler, OnPaint)
             .WillByDefault(
                 [=](const AZ::Aabb& dirtyArea,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::BlendFn& blendFn)
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::BlendFn& blendFn)
                 {
                     // On the first PaintToLocation, we expect to get a dirtyArea that exactly fits our first paint brush stamp.
                     const AZ::Aabb expectedFirstDirtyArea = AZ::Aabb::CreateCenterRadius(TestBrushCenter2d, TestBrushRadius);
@@ -208,8 +208,8 @@ namespace UnitTest
         ON_CALL(mockHandler, OnPaint)
             .WillByDefault(
                 [=](const AZ::Aabb& dirtyArea,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::BlendFn& blendFn)
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::BlendFn& blendFn)
                 {
                     // On the second PaintToLocation, we expect the dirtyArea to only contain the next 3 paint brush stamps,
                     // but not the first one.
@@ -231,7 +231,7 @@ namespace UnitTest
         // When painting, we should be able to call UseEyedropper at any arbitrary location without affecting the current
         // state of PaintToLocation.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         // Set the brush radius to 1 meter (diameter is 2 meters)
@@ -248,8 +248,8 @@ namespace UnitTest
         ON_CALL(mockHandler, OnPaint)
             .WillByDefault(
                 [=](const AZ::Aabb& dirtyArea,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::BlendFn& blendFn)
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::BlendFn& blendFn)
                 {
                     // We expect that the Y value for our dirtyArea won't be changed even though we'll call UseEyedropper
                     // with a large Y value in-between the two paint calls.
@@ -279,7 +279,7 @@ namespace UnitTest
         // This is typically used for handling things like leaving the edge of the image at one location and coming back onto
         // the image at a different location.
 
-        AzToolsFramework::PaintBrush paintBrush(EntityComponentIdPair);
+        AzFramework::PaintBrush paintBrush(EntityComponentIdPair);
         ::testing::NiceMock<MockPaintBrushNotificationBusHandler> mockHandler(EntityComponentIdPair);
 
         // Set the distance between brush stamps to 100%
@@ -304,8 +304,8 @@ namespace UnitTest
         ON_CALL(mockHandler, OnPaint)
             .WillByDefault(
                 [=](const AZ::Aabb& dirtyArea,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::BlendFn& blendFn)
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::BlendFn& blendFn)
                 {
                     // On the first PaintToLocation, we expect to get a dirtyArea that exactly fits our first paint brush stamp.
                     const AZ::Aabb expectedFirstDirtyArea = AZ::Aabb::CreateCenterRadius(TestBrushCenter2d, TestBrushRadius);
@@ -320,8 +320,8 @@ namespace UnitTest
         ON_CALL(mockHandler, OnPaint)
             .WillByDefault(
                 [=](const AZ::Aabb& dirtyArea,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
-                    [[maybe_unused]] AzToolsFramework::PaintBrushNotifications::BlendFn& blendFn)
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                    [[maybe_unused]] AzFramework::PaintBrushNotifications::BlendFn& blendFn)
                 {
                     // On the second PaintToLocation, we expect to get a dirtyArea that exactly fits our second paint brush stamp.
                     // It should *not* include any of the space bewteen the first and the second brush stamp.

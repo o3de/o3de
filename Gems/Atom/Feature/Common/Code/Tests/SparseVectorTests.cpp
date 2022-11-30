@@ -16,18 +16,8 @@ namespace UnitTest
     using namespace AZ::Render;
 
     class SparseVectorTests
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
-    public:
-        void SetUp() override
-        {
-            UnitTest::AllocatorsTestFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            UnitTest::AllocatorsTestFixture::TearDown();
-        }
     };
 
     struct TestData

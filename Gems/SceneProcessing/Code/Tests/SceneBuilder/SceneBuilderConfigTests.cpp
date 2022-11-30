@@ -16,7 +16,7 @@
 #include <Config/Components/SceneProcessingConfigSystemComponent.h>
 
 class SceneProcessingConfigTest
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public UnitTest::LeakDetectionFixture
 {
 public:
     void SetUp() override
