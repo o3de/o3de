@@ -93,7 +93,7 @@ namespace AZ::Metal
         {
             m_boundedArgBuffer = ArgumentBuffer::Create();
             //For the bounded approach we have one AB hold all the bindless resource types
-            for (uint32_t i = 0; i < static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::Count)-1; ++i)
+            for (uint32_t i = 0; i < static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::Count); ++i)
             {
                 MTLArgumentDescriptor* textureArgDescriptor = [[MTLArgumentDescriptor alloc] init];
                 textureArgDescriptor.index = UnboundedArraySize*i;
