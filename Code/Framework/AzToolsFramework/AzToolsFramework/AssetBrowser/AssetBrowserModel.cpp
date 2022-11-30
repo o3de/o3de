@@ -238,7 +238,6 @@ namespace AzToolsFramework
             }
             return defaultFlags;
         }
-
         QStringList AssetBrowserModel::mimeTypes() const
         {
             QStringList list = QAbstractItemModel::mimeTypes();
@@ -249,26 +248,26 @@ namespace AzToolsFramework
         bool AssetBrowserModel::canDropMimeData(
             const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const
         {
-            Q_UNUSED(data);
-            Q_UNUSED(action);
-            Q_UNUSED(row);
-            Q_UNUSED(column);
+            #if 0
             const AssetBrowserEntry* item = static_cast<const AssetBrowserEntry*>(parent.internalPointer());
 
-            // We can only drop onto a folder
-            if (item && (item->RTTI_IsTypeOf(FolderAssetBrowserEntry::RTTI_Type())))
+            if (item)
             {
-                return true;
+                // We can only drop onto a folder for within Asset Browser moves
+                if (item->RTTI_IsTypeOf(FolderAssetBrowserEntry::RTTI_Type()))
+                {
+                    return true;
+                }
             }
 
-            return false;
+            return QAbstractItemModel::canDropMimeData(data, action, row, column, parent);
+            #else
+            return QAbstractItemModel::canDropMimeData(data, action, row, column, parent);
+            #endif
         }
 
         bool AssetBrowserModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
         {
-            if (!canDropMimeData(data, action, row, column, parent))
-                return false;
-
             if (action == Qt::IgnoreAction)
                 return true;
 
@@ -304,10 +303,9 @@ namespace AzToolsFramework
                         }
                         MoveEntry(fromPath.c_str(), toPath.c_str(), isFolder);
                     }
+                    return true;
                 }
-                return true;
             }
-
             return QAbstractItemModel::dropMimeData(data, action, row, column, parent);
 
         }
