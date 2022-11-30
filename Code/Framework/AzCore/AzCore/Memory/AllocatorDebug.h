@@ -14,26 +14,6 @@
 
 namespace AZ::Debug
 {
-    struct Magic32
-    {
-        static const AZ::u32 m_defValue = 0xfeedf00d;
-        AZ_FORCE_INLINE Magic32()
-        {
-            m_value = (m_defValue ^ (AZ::u32)((AZStd::size_t)this));
-        }
-        AZ_FORCE_INLINE ~Magic32()
-        {
-            m_value = 0;
-        }
-        AZ_FORCE_INLINE bool Validate() const
-        {
-            return m_value == (m_defValue ^ (AZ::u32)((AZStd::size_t)this));
-        }
-
-    private:
-        AZ::u32 m_value;
-    };
-
     /**
      * The DebugAllocator is a wrapper to direct OS allocation, it doesnt have tracking and is meant
      * to be used by allocator structures to track memory allocations.
