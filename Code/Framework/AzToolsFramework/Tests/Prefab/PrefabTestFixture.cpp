@@ -249,20 +249,21 @@ namespace UnitTest
         auto owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(containerEntityId);
         EXPECT_TRUE(owningInstance.has_value());
 
-        AZStd::vector<EntityAlias> entityAliases;
+        EntityAlias foundEntityAlias = "";
         owningInstance->get().GetEntities(
-            [&entityAliases, &owningInstance, &entityName](AZStd::unique_ptr<AZ::Entity>& entity)
+            [&foundEntityAlias, &owningInstance, &entityName](AZStd::unique_ptr<AZ::Entity>& entity)
             {
                 if (entity->GetName() == entityName)
                 {
                     auto entityAlias = owningInstance->get().GetEntityAlias(entity->GetId());
-                    EXPECT_TRUE(entityAlias.has_value());
-                    entityAliases.push_back(entityAlias->get());
+                    EXPECT_TRUE(entityAlias.has_value()) << "FindEntityAliasInInstance - Retrieved entity alias is null.";
+                    foundEntityAlias = entityAlias->get();
+                    return false;
                 }
                 return true;
             });
 
-        return entityAliases.empty() ? "" : entityAliases[0];
+        return foundEntityAlias;
     }
 
     InstanceAlias PrefabTestFixture::FindNestedInstanceAliasInInstance(
@@ -271,20 +272,22 @@ namespace UnitTest
         auto owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(containerEntityId);
         EXPECT_TRUE(owningInstance.has_value());
 
-        AZStd::vector<InstanceAlias> nestedInstanceAliases;
+        InstanceAlias foundInstanceAlias = "";
         owningInstance->get().GetNestedInstances(
-            [&nestedInstanceAliases, &nestedContainerEntityName](AZStd::unique_ptr<Instance>& nestedInstance)
+            [&foundInstanceAlias, &nestedContainerEntityName](AZStd::unique_ptr<Instance>& nestedInstance)
             {
                 auto nestedContainerEntity = nestedInstance->GetContainerEntity();
                 EXPECT_TRUE(nestedContainerEntity.has_value());
 
                 if (nestedContainerEntity->get().GetName() == nestedContainerEntityName)
                 {
-                    nestedInstanceAliases.push_back(nestedInstance->GetInstanceAlias());
+                    foundInstanceAlias = nestedInstance->GetInstanceAlias();
+                    return;
                 }
             });
 
-        return nestedInstanceAliases.empty() ? "" : nestedInstanceAliases[0];
+        return foundInstanceAlias;
+    }
     }
 
     void PrefabTestFixture::ValidateEntityUnderInstance(

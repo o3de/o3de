@@ -59,11 +59,11 @@ namespace UnitTest
         AZ::EntityId firstTireEntityId = firstCarInstance->get().GetEntityId(tireEntityAlias);
         ASSERT_TRUE(firstTireEntityId.IsValid());
 
-        AZStd::string firstEngineEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(firstTireEntityId);
+        AZStd::string firstTireEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(firstTireEntityId);
 
         firstCarInstance->get().DetachEntity(firstTireEntityId).reset();
 
-        undoDeleteNode.Capture({ firstEngineEntityAliasPath }, { &(parentEntityToUpdate->get()) }, firstCarInstance->get());
+        undoDeleteNode.Capture({ firstTireEntityAliasPath }, { &(parentEntityToUpdate->get()) }, firstCarInstance->get());
 
         // Redo
         undoDeleteNode.Redo();

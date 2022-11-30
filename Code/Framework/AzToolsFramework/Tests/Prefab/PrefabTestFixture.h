@@ -97,14 +97,14 @@ namespace UnitTest
         void DeleteInstances(const InstanceList& instancesToDelete);
         
         //! Helper function for finding entity alias by entity name in owning instance.
-        //! If there are multiple entity aliases of the same entity name, then return one of them.
+        //! If there are multiple aliases, then return the first one it found.
         //! @param containerEntityId The given container entity id of the owning instance.
         //! @param entityName Entity name for the entity alias to find.
         //! @return Entity alias for the given entity name. Returns "" if not found.
         EntityAlias FindEntityAliasInInstance(AZ::EntityId containerEntityId, const AZStd::string& entityName);
 
         //! Helper function for finding nested instance alias by container entity name in owning instance.
-        //! If there are multiple instance aliases of the same container entity name, then return one of them.
+        //! If there are multiple aliases, then return the first one it found.
         //! @param containerEntityId The given container entity id of the owning instance.
         //! @param nestedContainerEntityName Container entity name for the instance alias to find.
         //! @return Nested instance alias for the given container entity name. Returns "" if not found.
