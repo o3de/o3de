@@ -29,7 +29,7 @@ namespace UnitTests
         using BatchApplicationManager::BatchApplicationManager;
     };
 
-    struct ApplicationManagerTest : ::UnitTest::ScopedAllocatorSetupFixture
+    struct ApplicationManagerTest : ::UnitTest::LeakDetectionFixture
     {
     protected:
         void SetUp() override;

@@ -30,6 +30,7 @@ import re
 import tempfile
 import threading
 import types
+import typing
 import warnings
 
 import pytest
@@ -37,6 +38,7 @@ import _pytest.python
 import _pytest.outcomes
 from _pytest.skipping import pytest_runtest_setup as skip_pytest_runtest_setup
 
+import ly_test_tools.launchers.platforms.base as Launchers
 import ly_test_tools.o3de.editor_test_utils as editor_utils
 from ly_test_tools._internal.managers.workspace import AbstractWorkspaceManager
 from ly_test_tools._internal.exceptions import EditorToolsFrameworkException, TestResultException
@@ -361,6 +363,123 @@ class MultiTestSuite(object):
         Custom pytest collector which programmatically adds test functions based on data in the MultiTestSuite class
         """
 
+        # Decorator function to add extra lookup information for the test functions
+        @staticmethod
+        def _set_marks(marks: dict) -> typing.Callable:
+            """
+            Sets pytest marks for a MultiTest test
+
+            :param marks: The pytest marks to set as a dict
+            :return: A function to set the marks
+            """
+            def spec_impl(func):
+                @functools.wraps(func)
+                def inner(*args, **argv):
+                    return func(*args, **argv)
+
+                inner.marks = marks
+                return inner
+
+            return spec_impl
+
+        @staticmethod
+        def _make_single_run(inner_test_spec: AbstractTestBase) -> typing.Callable:
+            """
+            Prepares a test run to be collected as a SingleTest, regardless of its actual test type. Single tests are
+            ran independently of each other, as opposed to a SharedTest. This also includes setup() and teardown()
+            functions if applicable.
+
+            :param inner_test_spec: The test spec class (i.e. SingleTest, SharedTest)
+            :return: The function to run as a single test
+            """
+            @MultiTestSuite.MultiTestCollector._set_marks({"run_type": "run_single"})
+            def single_run(self,
+                           request: pytest.FixtureRequest,
+                           workspace: AbstractWorkspaceManager,
+                           collected_test_data: MultiTestSuite.TestData,
+                           launcher_platform: Launchers) -> typing.Callable:
+                """
+                The actual function to be called by pytest. This wraps around _run_single_test() for a customized
+                handling of setup() and teardown().
+
+                :param request: The pytest request
+                :param workspace: The LyTestTools workspace object
+                :param collected_test_data: The TestData object to store the test results
+                :param launcher_platform: The LyTestTools launcher
+                :return: The function to run the pytest.
+                """
+                # only single tests are allowed to have setup/teardown, however we can have shared tests that
+                # were explicitly set as single, for example via cmdline argument override
+                is_single_test = issubclass(inner_test_spec, SingleTest)
+                if is_single_test:
+                    # Setup step for wrap_run
+                    wrap = inner_test_spec.wrap_run(
+                        self, request, workspace, collected_test_data)
+                    if not isinstance(wrap, types.GeneratorType):
+                        raise EditorToolsFrameworkException("wrap_run must return a generator, did you forget 'yield'?")
+                    next(wrap, None)
+                    # Setup step
+                    inner_test_spec.setup(
+                        self, request, workspace)
+                # Run
+                self._run_single_test(request, workspace, collected_test_data, inner_test_spec)
+                if is_single_test:
+                    # Teardown
+                    inner_test_spec.teardown(
+                        self, request, workspace, collected_test_data)
+                    # Teardown step for wrap_run
+                    next(wrap, None)
+
+            return single_run
+
+        @staticmethod
+        def _create_runner(runner_name: str, function: typing.Callable, tests: list, cls) -> MultiTestSuite.Runner:
+            """
+            Create a test runner for SharedTests. This involves both test running and reporting. Create functions
+            that runs the tests and sets it to attributes based off of the test names.
+
+            :param runner_name: Name of the test runner
+            :param function: The function that will run the tests
+            :param tests: A list of AbstractTestBase objects
+            :param cls: The MultiTestCollector self.obj
+            :return: The MultiTestSuite runner object
+            """
+            target_runner = MultiTestSuite.Runner(runner_name, function, tests)
+
+            def make_shared_run():
+                @MultiTestSuite.MultiTestCollector._set_marks({"runner": target_runner, "run_type": "run_shared"})
+                def shared_run(self, request, workspace, collected_test_data, launcher_platform):
+                    getattr(self, function.__name__)(
+                        request, workspace, collected_test_data, target_runner.tests)
+
+                return shared_run
+
+            setattr(cls, runner_name, make_shared_run())
+
+            # Add the shared tests results, which succeed/fail based what happened on the Runner.
+            for shared_test_spec in tests:
+                def make_results_run(inner_test_spec):
+                    @MultiTestSuite.MultiTestCollector._set_marks(
+                        {"runner": target_runner, "test_spec": inner_test_spec, "run_type": "result"})
+                    def result(self, request, workspace, collected_test_data, launcher_platform):
+                        result_key = inner_test_spec.__name__
+                        # The runner must have filled the collected_test_data.results dict fixture for this test.
+                        # Hitting this assert could mean if there was an error executing the runner
+                        if result_key not in collected_test_data.results:
+                            raise TestResultException(f"No results found for {result_key}. "
+                                                      f"Test may not have ran due to the executable "
+                                                      f"shutting down. Check for issues in previous "
+                                                      f"tests.")
+                        cls._report_result(result_key, collected_test_data.results[result_key])
+
+                    return result
+
+                result_func = make_results_run(shared_test_spec)
+                if hasattr(shared_test_spec, "pytestmark"):
+                    result_func.pytestmark = shared_test_spec.pytestmark
+                setattr(cls, shared_test_spec.__name__, result_func)
+            return target_runner
+
         def collect(self):
             """
             This collector does the following:
@@ -373,18 +492,6 @@ class MultiTestSuite(object):
                from the previously executed runner function
             """
             cls = self.obj
-
-            # Decorator function to add extra lookup information for the test functions
-            def set_marks(marks):
-                def spec_impl(func):
-                    @functools.wraps(func)
-                    def inner(*args, **argv):
-                        return func(*args, **argv)
-
-                    inner.marks = marks
-                    return inner
-
-                return spec_impl
 
             # Retrieve the test classes.
             single_tests = self.obj.get_single_tests()
@@ -410,35 +517,7 @@ class MultiTestSuite(object):
             # Add the single tests, these will run separately
             for test_spec in single_tests:
                 name = test_spec.__name__
-
-                def make_single_run(inner_test_spec):
-                    @set_marks({"run_type": "run_single"})
-                    def single_run(self, request, workspace, collected_test_data, launcher_platform):
-                        # only single tests are allowed to have setup/teardown, however we can have shared tests that
-                        # were explicitly set as single, for example via cmdline argument override
-                        is_single_test = issubclass(inner_test_spec, SingleTest)
-                        if is_single_test:
-                            # Setup step for wrap_run
-                            wrap = inner_test_spec.wrap_run(
-                                self, request, workspace, collected_test_data)
-                            if not isinstance(wrap, types.GeneratorType):
-                                raise EditorToolsFrameworkException("wrap_run must return a generator, did you forget 'yield'?")
-                            next(wrap, None)
-                            # Setup step
-                            inner_test_spec.setup(
-                                self, request, workspace)
-                        # Run
-                        self._run_single_test(request, workspace, collected_test_data, inner_test_spec)
-                        if is_single_test:
-                            # Teardown
-                            inner_test_spec.teardown(
-                                self, request, workspace, collected_test_data)
-                            # Teardown step for wrap_run
-                            next(wrap, None)
-
-                    return single_run
-
-                single_run_test = make_single_run(test_spec)
+                single_run_test = MultiTestSuite.MultiTestCollector._make_single_run(test_spec)
                 if hasattr(test_spec, "pytestmark"):
                     single_run_test.pytestmark = test_spec.pytestmark
                 setattr(self.obj, name, single_run_test)
@@ -446,44 +525,10 @@ class MultiTestSuite(object):
             # Add the shared tests, with a runner class for storing information from each shared run
             runners = []
 
-            def create_runner(runner_name, function, tests):
-                target_runner = MultiTestSuite.Runner(runner_name, function, tests)
-
-                def make_shared_run():
-                    @set_marks({"runner": target_runner, "run_type": "run_shared"})
-                    def shared_run(self, request, workspace, collected_test_data, launcher_platform):
-                        getattr(self, function.__name__)(
-                            request, workspace, collected_test_data, target_runner.tests)
-
-                    return shared_run
-
-                setattr(self.obj, runner_name, make_shared_run())
-
-                # Add the shared tests results, which succeed/fail based what happened on the Runner.
-                for shared_test_spec in tests:
-                    def make_results_run(inner_test_spec):
-                        @set_marks({"runner": target_runner, "test_spec": inner_test_spec, "run_type": "result"})
-                        def result(self, request, workspace, collected_test_data, launcher_platform):
-                            result_key = inner_test_spec.__name__
-                            # The runner must have filled the collected_test_data.results dict fixture for this test.
-                            # Hitting this assert could mean if there was an error executing the runner
-                            if result_key not in collected_test_data.results:
-                                raise TestResultException(f"No results found for {result_key}. "
-                                                          f"Test may not have ran due to the executable "
-                                                          f"shutting down. Check for issues in previous "
-                                                          f"tests.")
-                            cls._report_result(result_key, collected_test_data.results[result_key])
-
-                        return result
-                    result_func = make_results_run(shared_test_spec)
-                    if hasattr(shared_test_spec, "pytestmark"):
-                        result_func.pytestmark = shared_test_spec.pytestmark
-                    setattr(self.obj, shared_test_spec.__name__, result_func)
-                runners.append(target_runner)
-
-            create_runner("run_batched_tests", cls._run_batched_tests, batched_tests)
-            create_runner("run_parallel_tests", cls._run_parallel_tests, parallel_tests)
-            create_runner("run_parallel_batched_tests", cls._run_parallel_batched_tests, parallel_batched_tests)
+            runners.append(self._create_runner("run_batched_tests", cls._run_batched_tests, batched_tests, cls))
+            runners.append(self._create_runner("run_parallel_tests", cls._run_parallel_tests, parallel_tests, cls))
+            runners.append(self._create_runner("run_parallel_batched_tests", cls._run_parallel_batched_tests,
+                                               parallel_batched_tests, cls))
 
             # Now that we have added the functions to the class, have pytest retrieve all the tests the class contains
             pytest_class_instance = super().collect()[0]
@@ -501,11 +546,11 @@ class MultiTestSuite(object):
             pytest_class_instance.istestfunction = types.MethodType(istestfunction, pytest_class_instance)
             collection = pytest_class_instance.collect()
 
-            def get_func_run_type(function):
-                return getattr(function, "marks", {}).setdefault("run_type", None)
-
-            collected_run_pytestfuncs = [item for item in collection if get_func_run_type(item.obj) == "run_shared"]
-            collected_result_pytestfuncs = [item for item in collection if get_func_run_type(item.obj) == "result"]
+            collected_run_pytestfuncs = [item for item in collection if
+                                         # Gets function run type
+                                         getattr(item.obj, "marks", {}).setdefault("run_type", None) == "run_shared"]
+            collected_result_pytestfuncs = [item for item in collection if
+                                            getattr(item.obj, "marks", {}).setdefault("run_type", None) == "result"]
             # We'll remove and store the runner functions for later, this way they won't be deselected by any
             # filtering mechanism. This collection process helps us determine which subset of tests to run.
             collection = [item for item in collection if item not in collected_run_pytestfuncs]

@@ -7,7 +7,7 @@
  */
 #pragma once
 
-namespace PaintBrush
+namespace AzToolsFramework
 {
     static constexpr const char* s_paintBrushSettingsName = "Paint Brush Settings";
 

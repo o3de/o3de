@@ -518,7 +518,6 @@ namespace AZ
             const AssetBuilderSDK::PlatformInfo& platformInfo,
             const AzslCompiler& azslCompiler, const AZStd::string& shaderSourceFileFullPath,
             const RPI::SupervariantIndex supervariantIndex,
-            const bool platformUsesRegisterSpaces,
             RPI::ShaderResourceGroupLayoutList& srgLayoutList,
             RootConstantData& rootConstantData)
         {
@@ -544,7 +543,7 @@ namespace AZ
                 return false;
             }
             // Add all Shader Resource Group Assets that were defined in the shader code to the shader asset
-            if (!SrgLayoutUtility::LoadShaderResourceGroupLayouts(ShaderVariantAssetBuilderName, srgData, platformUsesRegisterSpaces, srgLayoutList))
+            if (!SrgLayoutUtility::LoadShaderResourceGroupLayouts(ShaderVariantAssetBuilderName, srgData, srgLayoutList))
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to load ShaderResourceGroupLayouts");
                 return false;
@@ -868,17 +867,12 @@ namespace AZ
                     //! It is important to keep this refcounted pointer outside of the if block to prevent it from being destroyed.
                     RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor;
                     if (shaderPlatformInterface->VariantCompilationRequiresSrgLayoutData())
-                    {
-                        const auto& azslcArguments = buildArgsManager.GetCurrentArguments().m_azslcArguments;
-                        const bool platformUsesRegisterSpaces = RHI::ShaderBuildArguments::HasArgument(azslcArguments, "--use-spaces");
-                    
+                    {                    
                         RPI::ShaderResourceGroupLayoutList srgLayoutList;
                         RootConstantData rootConstantData;
                         if (!LoadSrgLayoutListFromShaderAssetBuilder(
                             shaderPlatformInterface, request.m_platformInfo, azslc, shaderSourceFileFullPath, supervariantIndex,
-                            platformUsesRegisterSpaces,
-                            srgLayoutList,
-                            rootConstantData))
+                            srgLayoutList, rootConstantData))
                         {
                             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                             return;

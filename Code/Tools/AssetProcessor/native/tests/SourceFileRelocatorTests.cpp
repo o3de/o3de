@@ -46,7 +46,7 @@ namespace UnitTests
 
 
     class SourceFileRelocatorTest
-        : public ::UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::LeakDetectionFixture
         , public ::UnitTest::SourceControlTest
     {
     public:

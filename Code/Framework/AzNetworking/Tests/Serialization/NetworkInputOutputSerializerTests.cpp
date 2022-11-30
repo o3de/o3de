@@ -47,13 +47,8 @@ namespace UnitTest
         }
     };
 
-    class InputOutputSerializerTests : public AllocatorsFixture
+    class InputOutputSerializerTests : public LeakDetectionFixture
     {
-    public:
-        void SetUp() override
-        {
-            SetupAllocator();
-        }
     };
 
     TEST_F(InputOutputSerializerTests, TestTypeValidatingSerializer)

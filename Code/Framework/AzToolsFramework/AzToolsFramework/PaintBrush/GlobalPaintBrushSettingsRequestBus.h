@@ -10,12 +10,12 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/EBus.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettings.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettings.h>
 
 namespace AzToolsFramework
 {
     //! This is used to get/set the global paintbrush settings.
-    class PaintBrushSettingsRequests : public AZ::EBusTraits
+    class GlobalPaintBrushSettingsRequests : public AZ::EBusTraits
     {
     public:
         // EBusTraits
@@ -26,22 +26,22 @@ namespace AzToolsFramework
         //! This shouldn't normally be used, but it's necessary for exposing the global paintbrush settings
         //! outwards to the Property Editor window.
         //! @return The paintbrush settings pointer
-        virtual PaintBrushSettings* GetSettingsPointerForPropertyEditor() = 0;
+        virtual GlobalPaintBrushSettings* GetSettingsPointerForPropertyEditor() = 0;
 
-        //! Returns a copy of the current paintbrush settings
-        virtual PaintBrushSettings GetSettings() const = 0;
+        //! Returns a copy of the current global paintbrush settings
+        virtual GlobalPaintBrushSettings GetSettings() const = 0;
 
         //! Returns the current brush mode for the paint brush settings
-        virtual PaintBrushMode GetBrushMode() const = 0;
+        virtual AzFramework::PaintBrushMode GetBrushMode() const = 0;
 
         //! Sets the brush mode for the paint brush settings.
-        virtual void SetBrushMode(PaintBrushMode brushMode) = 0;
+        virtual void SetBrushMode(AzFramework::PaintBrushMode brushMode) = 0;
 
         //! Returns the current color mode for the paint brush settings
-        virtual PaintBrushColorMode GetBrushColorMode() const = 0;
+        virtual AzFramework::PaintBrushColorMode GetBrushColorMode() const = 0;
 
         //! Sets the color mode for the paint brush settings.
-        virtual void SetBrushColorMode(PaintBrushColorMode colorMode) = 0;
+        virtual void SetBrushColorMode(AzFramework::PaintBrushColorMode colorMode) = 0;
 
         // Paint Brush Stroke settings
 
@@ -50,18 +50,18 @@ namespace AzToolsFramework
         virtual AZ::Color GetColor() const = 0;
 
         //! Returns the current brush stroke blend mode.
-        virtual PaintBrushBlendMode GetBlendMode() const = 0;
+        virtual AzFramework::PaintBrushBlendMode GetBlendMode() const = 0;
 
         //! Returns the current brush stroke smooth mode.
-        virtual PaintBrushSmoothMode GetSmoothMode() const = 0;
+        virtual AzFramework::PaintBrushSmoothMode GetSmoothMode() const = 0;
 
         //! Sets the brush stroke blend mode.
         //! @param blendMode The new blend mode.
-        virtual void SetBlendMode(PaintBrushBlendMode blendMode) = 0;
+        virtual void SetBlendMode(AzFramework::PaintBrushBlendMode blendMode) = 0;
 
         //! Sets the brush stroke smooth mode.
         //! @param smoothMode The new smooth mode.
-        virtual void SetSmoothMode(PaintBrushSmoothMode smoothMode) = 0;
+        virtual void SetSmoothMode(AzFramework::PaintBrushSmoothMode smoothMode) = 0;
 
         //! Set the brush stroke color, including opacity.
         //! @param color The new brush color. In monochrome painting, only the Red value will be used.
@@ -130,9 +130,9 @@ namespace AzToolsFramework
         virtual void SetSmoothingSpacing(size_t spacing) = 0;
 
     protected:
-        ~PaintBrushSettingsRequests() = default;
+        ~GlobalPaintBrushSettingsRequests() = default;
     };
 
-    using PaintBrushSettingsRequestBus = AZ::EBus<PaintBrushSettingsRequests>;
+    using GlobalPaintBrushSettingsRequestBus = AZ::EBus<GlobalPaintBrushSettingsRequests>;
 
 } // namespace AzToolsFramework

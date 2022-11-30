@@ -29,7 +29,7 @@ namespace UnitTest
         return modifierKeyStates;
     }
 
-    class CameraInputFixture : public AllocatorsTestFixture
+    class CameraInputFixture : public LeakDetectionFixture
     {
     public:
         AzFramework::Camera m_camera;
@@ -57,7 +57,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_cameraSystem = AZStd::make_shared<AzFramework::CameraSystem>();
 
@@ -118,7 +118,7 @@ namespace UnitTest
             m_cameraSystem->m_cameras.Clear();
             m_cameraSystem.reset();
 
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AzFramework::InputChannelId m_orbitChannelId = AzFramework::InputChannelId("keyboard_key_modifier_alt_l");
