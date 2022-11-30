@@ -63,7 +63,7 @@ namespace EMotionFX
 
                 m_collidersWidget->Update(GetActor(), GetNode(), PhysicsSetup::ColliderConfigType::Cloth, nodeConfig->m_shapes, serializeContext);
                 m_collidersWidget->show();
-                m_widgetCount = nodeConfig->m_shapes.size();
+                m_widgetCount = static_cast<int>(nodeConfig->m_shapes.size());
             }
             else
             {
