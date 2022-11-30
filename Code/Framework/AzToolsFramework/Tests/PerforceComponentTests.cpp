@@ -24,7 +24,7 @@ namespace UnitTest
     };
 
     struct PerforceComponentFixture
-        : ScopedAllocatorSetupFixture
+        : LeakDetectionFixture
         , SourceControlTest
 
     {

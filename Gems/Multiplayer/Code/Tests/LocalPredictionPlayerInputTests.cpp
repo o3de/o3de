@@ -32,7 +32,7 @@
 
 namespace Multiplayer
 {
-    class LocalPredictionPlayerInputTests : public AllocatorsFixture
+    class LocalPredictionPlayerInputTests : public LeakDetectionFixture
     {
     public:
         void SetUp() override

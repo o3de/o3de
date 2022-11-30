@@ -659,7 +659,7 @@ namespace UnitTest
     }
 
     class SortTransformParentsBeforeChildrenTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
         AZStd::vector<AZ::Entity*> m_unsorted;
@@ -1043,7 +1043,7 @@ namespace UnitTest
 
 
     class SliceCompilerTest
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     protected:
         AzToolsFramework::ToolsApplication m_app;

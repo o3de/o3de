@@ -171,19 +171,19 @@ namespace UnitTest
         AZStd::string m_originalName;
     };
 
-    class NameTest : public AllocatorsFixture
+    class NameTest : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             NameDictionaryTester::Create();
         }
 
         void TearDown() override
         {
             NameDictionaryTester::Destroy();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         static constexpr int RandomStringBufferSize = 16;
@@ -210,7 +210,7 @@ namespace UnitTest
     // Implemented in script.cpp
     void AZTestAssert(bool check);
 
-    class NameScriptingTest : public AllocatorsFixture
+    class NameScriptingTest : public LeakDetectionFixture
     {
     public:
         void run()
@@ -920,7 +920,7 @@ namespace UnitTest
 
     // Fixture for validating that multiple NameDictionarys can exist at once.
     class MultiNameDictionaryFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         MultiNameDictionaryFixture()

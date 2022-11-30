@@ -3160,23 +3160,9 @@ namespace AZ
         return (reflectedClassData != nullptr);
     }
 
-    // Create the member OSAllocator and construct the unordered_map with that allocator
-    SerializeContext::PerModuleGenericClassInfo::PerModuleGenericClassInfo()
-        : m_moduleLocalGenericClassInfos(AZ::AZStdIAllocator(&m_moduleOSAllocator))
-        , m_serializeContextSet(AZ::AZStdIAllocator(&m_moduleOSAllocator))
-    {
-    }
-
     SerializeContext::PerModuleGenericClassInfo::~PerModuleGenericClassInfo()
     {
         Cleanup();
-
-        // Reconstructs the module generic info map with the OSAllocator so that it the previous allocated memory is cleared
-        // Afterwards destroy the OSAllocator
-        {
-            m_moduleLocalGenericClassInfos = GenericInfoModuleMap(AZ::AZStdIAllocator(&m_moduleOSAllocator));
-            m_serializeContextSet = SerializeContextSet(AZ::AZStdIAllocator(&m_moduleOSAllocator));
-        }
     }
 
     void SerializeContext::PerModuleGenericClassInfo::Cleanup()
@@ -3199,12 +3185,9 @@ namespace AZ
         }
 
         // Cleanup the memory for the GenericClassInfo objects.
-        // This isn't explicitly needed as the OSAllocator owned by this class will take the memory with it.
         for (const auto& [specializedTypeId, genericClassInfo] : genericClassInfoContainer)
         {
-            // Explicitly invoke the destructor and clear the memory from the module OSAllocator
-            genericClassInfo->~GenericClassInfo();
-            m_moduleOSAllocator.DeAllocate(genericClassInfo);
+            azdestroy(genericClassInfo);
         }
     }
 
@@ -3254,11 +3237,6 @@ namespace AZ
     {
         auto genericClassInfoFoundIt = m_moduleLocalGenericClassInfos.find(genericTypeId);
         return genericClassInfoFoundIt != m_moduleLocalGenericClassInfos.end() ? genericClassInfoFoundIt->second : nullptr;
-    }
-
-    AZ::IAllocator& SerializeContext::PerModuleGenericClassInfo::GetAllocator()
-    {
-        return m_moduleOSAllocator;
     }
 
     // Take advantage of static variables being unique per dll module to clean up module specific registered classes when the module unloads

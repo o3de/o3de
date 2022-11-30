@@ -84,7 +84,7 @@ namespace UnitTest
     };
 
     class UiTooltipComponentTest
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     protected:
         UiTooltipTestApplication* m_application = nullptr;

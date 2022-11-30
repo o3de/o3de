@@ -10,21 +10,21 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettings.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsRequestBus.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettings.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsRequestBus.h>
 
 namespace AzToolsFramework
 {
-    //! PaintBrushSettingsSystemComponent owns the current global paintbrush settings for the Editor.
-    class PaintBrushSettingsSystemComponent
+    //! GlobalPaintBrushSettingsSystemComponent owns the current global paintbrush settings for the Editor.
+    class GlobalPaintBrushSettingsSystemComponent
         : public AZ::Component
-        , private AzToolsFramework::PaintBrushSettingsRequestBus::Handler
+        , private AzToolsFramework::GlobalPaintBrushSettingsRequestBus::Handler
     {
     public:
-        AZ_COMPONENT(PaintBrushSettingsSystemComponent, "{78C4CCDE-BDDE-4A49-9534-6D0B62404338}");
+        AZ_COMPONENT(GlobalPaintBrushSettingsSystemComponent, "{78C4CCDE-BDDE-4A49-9534-6D0B62404338}");
 
-        PaintBrushSettingsSystemComponent() = default;
-        ~PaintBrushSettingsSystemComponent() override = default;
+        GlobalPaintBrushSettingsSystemComponent() = default;
+        ~GlobalPaintBrushSettingsSystemComponent() override = default;
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -32,21 +32,21 @@ namespace AzToolsFramework
         void Activate() override;
         void Deactivate() override;
 
-        // PaintBrushSettingsRequestBus overrides...
-        PaintBrushSettings* GetSettingsPointerForPropertyEditor() override;
-        PaintBrushSettings GetSettings() const override;
-        PaintBrushMode GetBrushMode() const override;
-        void SetBrushMode(PaintBrushMode brushMode) override;
-        PaintBrushColorMode GetBrushColorMode() const override;
-        void SetBrushColorMode(PaintBrushColorMode colorMode) override;
+        // GlobalPaintBrushSettingsRequestBus overrides...
+        GlobalPaintBrushSettings* GetSettingsPointerForPropertyEditor() override;
+        GlobalPaintBrushSettings GetSettings() const override;
+        AzFramework::PaintBrushMode GetBrushMode() const override;
+        void SetBrushMode(AzFramework::PaintBrushMode brushMode) override;
+        AzFramework::PaintBrushColorMode GetBrushColorMode() const override;
+        void SetBrushColorMode(AzFramework::PaintBrushColorMode colorMode) override;
         float GetSize() const override;
         AZStd::pair<float, float> GetSizeRange() const override;
         AZ::Color GetColor() const override;
         float GetHardnessPercent() const override;
         float GetFlowPercent() const override;
         float GetDistancePercent() const override;
-        PaintBrushBlendMode GetBlendMode() const override;
-        PaintBrushSmoothMode GetSmoothMode() const override;
+        AzFramework::PaintBrushBlendMode GetBlendMode() const override;
+        AzFramework::PaintBrushSmoothMode GetSmoothMode() const override;
         size_t GetSmoothingRadius() const override;
         size_t GetSmoothingSpacing() const override;
         void SetSize(float size) override;
@@ -55,11 +55,11 @@ namespace AzToolsFramework
         void SetHardnessPercent(float hardnessPercent) override;
         void SetFlowPercent(float flowPercent) override;
         void SetDistancePercent(float distancePercent) override;
-        void SetBlendMode(PaintBrushBlendMode blendMode) override;
-        void SetSmoothMode(PaintBrushSmoothMode smoothMode) override;
+        void SetBlendMode(AzFramework::PaintBrushBlendMode blendMode) override;
+        void SetSmoothMode(AzFramework::PaintBrushSmoothMode smoothMode) override;
         void SetSmoothingRadius(size_t radius) override;
         void SetSmoothingSpacing(size_t spacing) override;
 
-        PaintBrushSettings m_settings;
+        GlobalPaintBrushSettings m_settings;
     };
 }; // namespace AzToolsFramework

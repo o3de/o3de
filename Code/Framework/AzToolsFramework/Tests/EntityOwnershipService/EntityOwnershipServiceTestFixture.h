@@ -25,7 +25,7 @@ namespace UnitTest
     using EntityList = AZStd::vector<AZ::Entity*>;
 
     class EntityOwnershipServiceTestFixture
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     protected:
         AzFramework::RootSliceAsset GetRootSliceAsset();

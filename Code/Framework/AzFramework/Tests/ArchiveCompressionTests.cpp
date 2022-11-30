@@ -27,7 +27,7 @@ namespace UnitTest
         int, int, int>>;
 
     class ArchiveCompressionTestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
         , public ArchiveCompressionParamInterface
     {
     public:
