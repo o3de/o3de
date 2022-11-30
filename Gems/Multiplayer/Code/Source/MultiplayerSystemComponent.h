@@ -224,6 +224,7 @@ namespace Multiplayer
 
         AZStd::unordered_map<AzNetworking::ConnectionId, MultiplayerPackets::Connect> m_originalConnectPackets;
 
+        void RegisterMetrics();
         void MetricsEvent();
         AZ::ScheduledEvent m_metricsEvent{ [this]()
         {
