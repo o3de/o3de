@@ -47,8 +47,9 @@ namespace Multiplayer
         const ReplicationSet& GetReplicationSet() const override;
         uint32_t GetMaxProxyEntityReplicatorSendCount() const override;
         bool IsInWindow(const ConstNetworkEntityHandle& entityPtr, NetEntityRole& outNetworkRole) const override;
+        bool AddEntity(AZ::Entity* entity) override;
+        void RemoveEntity(AZ::Entity* entity) override;
         void UpdateWindow() override;
-        void AddEntityAddedToReplciationSetEvent(EntityAddedToReplicatorSetEvent::Handler& handler) override;
         AzNetworking::PacketId SendEntityUpdateMessages(NetworkEntityUpdateVector& entityUpdateVector) override;
         void SendEntityRpcs(NetworkEntityRpcVector& entityRpcVector, bool reliable) override;
         void SendEntityResets(const NetEntityIdSet& resetIds) override;
@@ -56,8 +57,6 @@ namespace Multiplayer
         //! @}
 
     private:
-        void OnEntityActivated(AZ::Entity* entity);
-        void OnEntityDeactivated(AZ::Entity* entity);
 
         void UpdateHierarchyReplicationSet(ReplicationSet& replicationSet, NetworkHierarchyRootComponent& hierarchyComponent);
 
@@ -70,12 +69,9 @@ namespace Multiplayer
         ReplicationCandidateQueue m_candidateQueue;
         ReplicationSet m_replicationSet;
 
-        AZ::ScheduledEvent m_updateWindowEvent;
-
         NetworkEntityHandle m_controlledEntity;
         AZ::TransformInterface* m_controlledEntityTransform = nullptr;
 
-        EntityAddedToReplicatorSetEvent m_addEntityReplicatorEvent;
         AZ::EntityActivatedEvent::Handler m_entityActivatedEventHandler;
         AZ::EntityDeactivatedEvent::Handler m_entityDeactivatedEventHandler;
 
