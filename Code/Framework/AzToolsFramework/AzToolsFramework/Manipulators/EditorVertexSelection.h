@@ -330,6 +330,8 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR_DECL
 
+        EditorVertexSelectionVariable() = default;
+        EditorVertexSelectionVariable(EditorVertexSelectionVariable&&) = default;
         explicit EditorVertexSelectionVariable(const AZ::EntityComponentIdPair& entityComponentIdPair);
         ~EditorVertexSelectionVariable();
 

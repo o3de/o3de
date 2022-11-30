@@ -109,6 +109,14 @@ namespace AzToolsFramework
 
             struct ComponentModeItem
             {
+                ComponentModeItem(
+                    AZ::EntityComponentIdPair entityComponentIdPair = AZ::EntityComponentIdPair(),
+                    AZ::Uuid componentType = AZ::Uuid::CreateNull())
+                    : m_entityComponentIdPair(entityComponentIdPair)
+                    , m_componentType(componentType)
+                {
+                }
+
                 AZ::EntityComponentIdPair m_entityComponentIdPair;
                 AZ::Uuid m_componentType;
             };

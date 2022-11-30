@@ -140,7 +140,7 @@ namespace AzToolsFramework
                 m_viewportUiHandlers.emplace_back(componentType);
             }
 
-            m_activeComponentModes.emplace_back(ComponentModeItem{ entityComponentIdPair, componentType });
+            m_activeComponentModes.emplace_back(entityComponentIdPair, componentType);
 
             // see if we already have a ComponentModeBuilder for the specific component on this entity
             const auto builderEntityIt = AZStd::find_if(

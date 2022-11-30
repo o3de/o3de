@@ -1247,7 +1247,10 @@ namespace AzToolsFramework
     template<typename Vertex>
     EditorVertexSelectionVariable<Vertex>::~EditorVertexSelectionVariable()
     {
-        EditorVertexSelectionVariableRequestBus::Handler::BusDisconnect();
+        if (EditorVertexSelectionVariableRequestBus::Handler::BusIsConnected())
+        {
+            EditorVertexSelectionVariableRequestBus::Handler::BusDisconnect();
+        }
     }
 
     // configure the selection manipulator for variable editor selection - this configures the view and action
