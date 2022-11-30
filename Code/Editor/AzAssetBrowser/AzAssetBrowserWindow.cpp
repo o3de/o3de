@@ -253,12 +253,13 @@ void AzAssetBrowserWindow::CreateToolsMenu()
 
     if (ed_useWIPAssetBrowserDesign)
     {
-        m_projectSourceAssets = new QAction(tr("Project Source Assets"), this);
-        m_projectSourceAssets->setCheckable(true);
-        m_projectSourceAssets->setChecked(true);
-        connect(m_projectSourceAssets, &QAction::triggered, this, &AzAssetBrowserWindow::FilterProjectSourceAssets);
-        m_viewSwitchMenu->addAction(m_projectSourceAssets);
-        m_ui->m_searchWidget->CreateProjectSourceFilter();
+        m_toolsMenu->addSeparator();
+        auto* projectSourceAssets = new QAction(tr("Filter Project and Source Assets"), this);
+        projectSourceAssets->setCheckable(true);
+        projectSourceAssets->setChecked(true);
+        connect(projectSourceAssets, &QAction::triggered, this, [this] { m_ui->m_searchWidget->FilterProjectSourceAssets(); });
+        m_ui->m_searchWidget->GetFilter()->AddFilter(m_ui->m_searchWidget->GetProjectSourceFilter());
+        m_toolsMenu->addAction(projectSourceAssets);
     }
 
     UpdateDisplayInfo();
@@ -322,18 +323,6 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
     {
         m_ui->m_assetBrowserTableViewWidget->setVisible(hasFilter);
         m_ui->m_assetBrowserTreeViewWidget->setVisible(!hasFilter);
-    }
-}
-
-void AzAssetBrowserWindow::FilterProjectSourceAssets()
-{
-    if (m_projectSourceAssets->isChecked())
-    {
-        m_ui->m_searchWidget->GetFilter()->AddFilter(m_ui->m_searchWidget->GetProjectSourceFilter());
-    }
-    else
-    {
-        m_ui->m_searchWidget->GetFilter()->RemoveFilter(m_ui->m_searchWidget->GetProjectSourceFilter());
     }
 }
 

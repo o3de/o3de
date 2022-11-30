@@ -164,10 +164,7 @@ namespace AzToolsFramework
                 m_filter->AddFilter(FilterConstType(m_typesFilter));
                 SetTypeFilters(buildTypesFilterList());
             }
-        }
 
-        void SearchWidget::CreateProjectSourceFilter()
-        {
             auto sourceFilter = new EntryTypeFilter();
             sourceFilter->SetName("Source");
             sourceFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Source);
@@ -176,8 +173,18 @@ namespace AzToolsFramework
             auto pathFilter = new AssetPathFilter();
             pathFilter->SetAssetPath(AZStd::string_view{ AZ::Utils::GetProjectPath() });
             m_projectSourceFilter->AddFilter(FilterConstType(pathFilter));
+        }
 
-            m_filter->AddFilter(FilterConstType(m_projectSourceFilter));
+        void SearchWidget::FilterProjectSourceAssets()
+        {
+            if (m_filter->GetSubFilters().contains(m_projectSourceFilter))
+            {
+                m_filter->RemoveFilter(FilterConstType(m_projectSourceFilter));
+            }
+            else
+            {
+                m_filter->AddFilter(FilterConstType(m_projectSourceFilter));
+            }
         }
 
         QSharedPointer<CompositeFilter> SearchWidget::GetFilter() const
@@ -199,6 +206,7 @@ namespace AzToolsFramework
         {
             return m_projectSourceFilter;
         }
+
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 

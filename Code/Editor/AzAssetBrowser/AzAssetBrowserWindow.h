@@ -71,7 +71,6 @@ protected slots:
     void UpdateWidgetAfterFilter();
     void SetTwoColumnMode(QWidget* viewToShow);
     void SetOneColumnMode();
-    void FilterProjectSourceAssets();
 
 private:
     QScopedPointer<Ui::AzAssetBrowserWindowClass> m_ui;
@@ -81,7 +80,6 @@ private:
     QMenu* m_toolsMenu = nullptr;
     QAction* m_treeViewMode = nullptr;
     QAction* m_listViewMode = nullptr;
-    QAction* m_projectSourceAssets = nullptr;
     AzToolsFramework::AssetBrowser::AssetBrowserDisplayState m_assetBrowserDisplayState =
         AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::ListViewMode;
 
