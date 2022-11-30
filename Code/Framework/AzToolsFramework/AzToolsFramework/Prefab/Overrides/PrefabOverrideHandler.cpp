@@ -84,15 +84,15 @@
             return false;
         }
 
-        AZStd::optional<EntityOverrideType> PrefabOverrideHandler::GetOverrideType(AZ::Dom::Path path, LinkId linkId) const
+        AZStd::optional<OverrideType> PrefabOverrideHandler::GetOverrideType(AZ::Dom::Path path, LinkId linkId) const
         {
-            AZStd::optional<EntityOverrideType> overrideType = {};
+            AZStd::optional<OverrideType> overrideType = {};
 
             LinkReference link = m_prefabSystemComponentInterface->FindLink(linkId);
             if (link.has_value())
             {
-                // Look for an override in the provided path
-                if (PrefabDomConstReference overridePatch = link->get().FindOverridePatch(path); overridePatch.has_value())
+                // Look for an override at the exact provided path
+                if (PrefabDomConstReference overridePatch = link->get().GetOverridePatch(path); overridePatch.has_value())
                 {
                     PrefabDomValue::ConstMemberIterator patchEntryIterator = overridePatch->get().FindMember("op");
                     if (patchEntryIterator != overridePatch->get().MemberEnd())
@@ -100,19 +100,18 @@
                         AZStd::string opPath = patchEntryIterator->value.GetString();
                         if (opPath == "remove")
                         {
-                            overrideType = Internal::IsDirectEntityPatch(overridePatch)
-                                ? EntityOverrideType::RemoveEntity : EntityOverrideType::EditEntity;
+                            overrideType = OverrideType::RemoveEntity;
                         }
                         else if (opPath == "add")
                         {
-                            overrideType = Internal::IsDirectEntityPatch(overridePatch)
-                                ? EntityOverrideType::AddEntity : EntityOverrideType::EditEntity;
-                        }
-                        else if (opPath == "replace")
-                        {
-                            overrideType = EntityOverrideType::EditEntity;
+                            overrideType = OverrideType::AddEntity;
                         }
                     }
+                }
+                else if (link->get().AreOverridesPresent(path))
+                {
+                    // Any overrides on descendant paths are edits
+                    overrideType = OverrideType::EditEntity;
                 }
             }
 

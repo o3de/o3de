@@ -92,7 +92,7 @@ namespace AzToolsFramework
 
         inline static const QPoint s_overrideImageOffset = QPoint(13, 12);
         inline static const QSize s_overrideImageSize = QSize(7, 7);
-        QPixmap m_overrideImageReplace = QPixmap(QString(":/Entity/entity_overridden.svg"));
-        QPixmap m_overrideImageAdd = QPixmap(QString(":/Entity/entity_override_add.svg"));
+        QPixmap m_editEntityOverrideImage = QPixmap(QString(":/Entity/entity_modified_as_override.svg"));
+        QPixmap m_addEntityOverrideImage = QPixmap(QString(":/Entity/entity_added_as_override.svg"));
     };
 } // namespace AzToolsFramework

@@ -118,14 +118,10 @@ namespace AzToolsFramework
                 AZ::Dom::Path path,
                 AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags = AZ::Dom::PrefixTreeTraversalFlags::ExcludeParentPaths) const;
 
-            //! Finds an override patch by querying the patches tree at the provided path
-            //! @param path The path to query the overrides tree with.
-            //! @param prefixTreeTraversalFlags The traversal flags for the prefix tree. The default is to exclude parent paths because
-            //!                                 we usually check for overrides on one or more components/properties within an entity.
-            //! @return an override patch if overrides are present at the provided path.
-            PrefabDomConstReference FindOverridePatch(
-                AZ::Dom::Path path,
-                AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags = AZ::Dom::PrefixTreeTraversalFlags::ExcludeParentPaths) const;
+            //! Gets an override patch at the exact provided path
+            //! @param path The path to get override for.
+            //! @return an override patch if an override is present at the exact provided path.
+            PrefabDomConstReference GetOverridePatch(AZ::Dom::Path path) const;
             
             //! Removes overrides at the provided path and all the nodes under it from the override tree
             //! @param path The path at which the overrides should be removed from

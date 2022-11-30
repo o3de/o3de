@@ -47,7 +47,7 @@ namespace AzToolsFramework
             return false;
         }
 
-        AZStd::optional<EntityOverrideType> PrefabOverridePublicHandler::GetOverrideType(AZ::EntityId entityId)
+        AZStd::optional<OverrideType> PrefabOverridePublicHandler::GetOverrideType(AZ::EntityId entityId)
         {
             AZStd::pair<AZ::Dom::Path, LinkId> pathAndLinkIdPair = GetPathAndLinkIdFromFocusedPrefab(entityId);
             if (!pathAndLinkIdPair.first.IsEmpty() && pathAndLinkIdPair.second != InvalidLinkId)

@@ -12,11 +12,12 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        enum class EntityOverrideType
+        enum class OverrideType
         {
             AddEntity,
             RemoveEntity,
-            EditEntity
+            EditEntity,
+            RemovePrefab
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

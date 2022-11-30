@@ -61,10 +61,6 @@ namespace AzToolsFramework
             return;
         }
 
-
-        m_overrideImageReplace = 
-        m_overrideImageAdd = 
-
         // Get EditorEntityContextId
         EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
     }
@@ -241,12 +237,12 @@ namespace AzToolsFramework
     {
         if (auto overrideType = m_prefabOverridePublicInterface->GetOverrideType(entityId); overrideType.has_value())
         {
-            if (overrideType == AzToolsFramework::Prefab::EntityOverrideType::AddEntity)
+            if (overrideType == AzToolsFramework::Prefab::OverrideType::AddEntity)
             {
-                return m_overrideImageAdd;
+                return m_addEntityOverrideImage;
             }
         }
-        return m_overrideImageReplace;
+        return m_editEntityOverrideImage;
     }
 
     void PrefabUiHandler::PaintDescendantForeground(

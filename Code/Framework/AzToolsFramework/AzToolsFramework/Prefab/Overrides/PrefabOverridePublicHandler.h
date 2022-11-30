@@ -36,7 +36,7 @@ namespace AzToolsFramework
             //! this function specifically checks for overrides from the focused prefab.
             //! @param entityId The id of the entity for which to get the override type.
             //! @return an override type if an override exists on the given entity id.
-            AZStd::optional<EntityOverrideType> GetOverrideType(AZ::EntityId entityId) override;
+            AZStd::optional<OverrideType> GetOverrideType(AZ::EntityId entityId) override;
 
             //! Revert overrides on the entity matching the given id from the focused prefab. Returns false if no overrides are present.
             //! @param entityId The id of the entity on which overrides should be reverted.

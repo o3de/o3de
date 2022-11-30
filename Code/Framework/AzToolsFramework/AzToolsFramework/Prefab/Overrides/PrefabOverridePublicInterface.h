@@ -31,7 +31,7 @@ namespace AzToolsFramework
             //! by the class implmenting this interface based on certain selections in the editor. eg: the prefab currently being edited.
             //! @param entityId The id of the entity for which to get the override type.
             //! @return an override type if an override exists on the given entity id.
-            virtual AZStd::optional<EntityOverrideType> GetOverrideType(AZ::EntityId entityId) = 0;
+            virtual AZStd::optional<OverrideType> GetOverrideType(AZ::EntityId entityId) = 0;
             
             //! Revert overrides on the entity matching the entity id. Returns false if no overrides are present on the entity.
             //! @param entityId The id of the entity on which overrides should be reverted.
