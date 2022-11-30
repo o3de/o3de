@@ -39,7 +39,7 @@ namespace UnitTest
         wheelEntity = AzToolsFramework::GetEntityById(wheelEntityId);
         EXPECT_TRUE(wheelEntity) << "Could not get entity object.";
         PrefabDom entityDomAfterEdit;
-        m_instanceToTemplateInterface->GenerateDomForEntity(entityDomAfterEdit, *wheelEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDomAfterEdit, *wheelEntity);
         EXPECT_TRUE(entityDomAfterEdit.IsObject()) << "Could not create after-state entity DOM.";
 
         // Get before-state DOM value

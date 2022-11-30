@@ -2540,17 +2540,6 @@ void CCryEditApp::OnFileExportToGameNoSurfaceTexture()
     UserExportToGame(false);
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::DeleteSelectedEntities([[maybe_unused]] bool includeDescendants)
-{
-    GetIEditor()->BeginUndo();
-    CUndo undo("Delete Selected Object");
-    GetIEditor()->GetObjectManager()->DeleteSelection();
-    GetIEditor()->AcceptUndo("Delete Selection");
-    GetIEditor()->SetModifiedFlag();
-    GetIEditor()->SetModifiedModule(eModifiedBrushes);
-}
-
 void CCryEditApp::OnMoveObject()
 {
     ////////////////////////////////////////////////////////////////////////

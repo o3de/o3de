@@ -78,7 +78,7 @@ namespace AzToolsFramework
                 const AZStd::string entityPathFromTopInstance = overridePatchPathToOwningInstance + entityAliasPath;
 
                 PrefabDom entityDomAfterUpdate;
-                m_instanceToTemplateInterface->GenerateDomForEntity(entityDomAfterUpdate, *entity);
+                m_instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDomAfterUpdate, *entity);
 
                 // Get the before-state entity DOM inside the source template DOM of the top instance.
                 const TemplateId topTemplateId = link->get().GetSourceTemplateId();
