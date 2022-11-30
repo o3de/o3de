@@ -34,13 +34,12 @@ def _edit_gem_names(proj_json: dict,
                     replace_gem_names: str or list = None,
                     is_optional: bool = False):
     """
-    Edits the current list of gems and returns an updated list.
+    Edits and modifies the 'gem_names' list in the proj_json parameter.
     :param proj_json: The project json data
     :param new_gem_names: Any gem names to be added to the list
     :param delete_gem_names: Any gem names to be removed from the list
     :param replace_gem_names: A list of gem names that will completely replace the current list
     :param is_optional: Only applies to new_gem_names, when true will add an 'optional' property to the gem(s)
-    :return: The modified list of gems (a json blob)
     """
     if new_gem_names:
         add_list = new_gem_names.split() if isinstance(new_gem_names, str) else new_gem_names
