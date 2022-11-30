@@ -213,13 +213,13 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
         Report.result(Tests.viewport_background_selected, neutral_urban_background_loaded is True)
 
         # 11. Verify the lighting background asset is the expected value.
-        # neutral_urban_background_path = os.path.join(
-        #     azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
-        #     "LightingPresets", "neutral_urban.lightingpreset.azasset")
-        # neutral_urban_background_path = neutral_urban_background_path.replace(os.sep, '/')
-        # Report.result(
-        #     Tests.viewport_background_has_expected_asset,
-        #     atom_tools_utils.get_last_lighting_preset_path() == neutral_urban_background_path)
+        neutral_urban_background_path = os.path.join(
+            azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
+            "LightingPresets", "neutral_urban.lightingpreset.azasset")
+        neutral_urban_background_path = neutral_urban_background_path.replace(os.sep, '/')
+        Report.result(
+            Tests.viewport_background_has_expected_asset,
+            atom_tools_utils.get_last_lighting_preset_path() == neutral_urban_background_path)
 
         # 12. Change the lighting background again and verify the change succeeded.
         lythwood_room_asset_path = os.path.join(
@@ -229,13 +229,13 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
         Report.result(Tests.viewport_background_changed, lythwood_room_asset_loaded is True)
 
         # 13. Verify the lighting background asset is changed to a new expected value.
-        # lythwood_room_background_path = os.path.join(
-        #     azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
-        #     "LightingPresets", "lythwood_room.lightingpreset.azasset")
-        # lythwood_room_background_path = lythwood_room_background_path.replace(os.sep, '/')
-        # Report.result(
-        #     Tests.viewport_background_has_changed_asset,
-        #     atom_tools_utils.get_last_lighting_preset_path() == lythwood_room_background_path)
+        lythwood_room_background_path = os.path.join(
+            azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
+            "LightingPresets", "lythwood_room.lightingpreset.azasset")
+        lythwood_room_background_path = lythwood_room_background_path.replace(os.sep, '/')
+        Report.result(
+            Tests.viewport_background_has_changed_asset,
+            atom_tools_utils.get_last_lighting_preset_path() == lythwood_room_background_path)
 
         # 14. Select the model and verify the selection  succeeded.
         beveled_cone_model_path = os.path.join(
@@ -244,13 +244,13 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
         Report.result(Tests.viewport_model_selected, beveled_cone_model_asset is True)
 
         # 15. Verify the model asset is the expected value.
-        # beveled_cone_model_asset_path = os.path.join(
-        #     azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
-        #     "ViewPortModels", "BeveledCone.modelpreset.azasset")
-        # beveled_cone_model_asset_path = beveled_cone_model_asset_path.replace(os.sep, '/')
-        # Report.result(
-        #     Tests.viewport_model_has_expected_asset,
-        #     atom_tools_utils.get_last_model_preset_path() == beveled_cone_model_asset_path)
+        beveled_cone_model_asset_path = os.path.join(
+            azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
+            "ViewPortModels", "BeveledCone.modelpreset.azasset")
+        beveled_cone_model_asset_path = beveled_cone_model_asset_path.replace(os.sep, '/')
+        Report.result(
+            Tests.viewport_model_has_expected_asset,
+            atom_tools_utils.get_last_model_preset_path() == beveled_cone_model_asset_path)
 
         # 16. Change the model asset and verify the change succeeded.
         cone_model_path = os.path.join(
@@ -259,13 +259,13 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
         Report.result(Tests.viewport_model_changed, cone_model_asset is True)
 
         # 17. Verify the model asset is changed to a new expected value.
-        # cone_model_asset_path = os.path.join(
-        #     azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
-        #     "ViewPortModels", "Cone.modelpreset.azasset")
-        # cone_model_asset_path = cone_model_asset_path.replace(os.sep, '/')
-        # Report.result(
-        #     Tests.viewport_model_has_changed_asset,
-        #     atom_tools_utils.get_last_model_preset_path() == cone_model_asset_path)
+        cone_model_asset_path = os.path.join(
+            azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
+            "ViewPortModels", "Cone.modelpreset.azasset")
+        cone_model_asset_path = cone_model_asset_path.replace(os.sep, '/')
+        Report.result(
+            Tests.viewport_model_has_changed_asset,
+            atom_tools_utils.get_last_model_preset_path() == cone_model_asset_path)
 
         # 18. Disable the Grid.
         atom_tools_utils.set_grid_enabled(False)
