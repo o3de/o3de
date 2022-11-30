@@ -7,16 +7,16 @@
  */
 #pragma once
 
-#include <RHI/HeapAllocator.h>
+#include <RHI/MemoryPageAllocator.h>
 
 #include <Atom/RHI/TileAllocator.h>
 #include <Atom/RHI/PageTileAllocator.h>
 
 namespace AZ
 {
-    namespace DX12
+    namespace Vulkan
     {
-        using TileAllocator = RHI::TileAllocator<HeapAllocatorTraits>;
-        using HeapTiles = RHI::TileAllocator<HeapAllocatorTraits>::HeapTiles;
+        using TileAllocator = RHI::TileAllocator<MemoryPageAllocatorTraits>;
+        using HeapTiles = RHI::TileAllocator<MemoryPageAllocatorTraits>::HeapTiles;
     }
 }

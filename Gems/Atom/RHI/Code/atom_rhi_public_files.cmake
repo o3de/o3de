@@ -183,6 +183,8 @@ set(FILES
     Include/Atom/RHI/AliasedAttachmentAllocator.h
     Include/Atom/RHI/AliasingBarrierTracker.h
     Source/RHI/AliasingBarrierTracker.cpp
+    Include/Atom/RHI/TileAllocator.h
+    Include/Atom/RHI/TileAllocator.inl
     Include/Atom/RHI/TransientAttachmentPool.h
     Source/RHI/TransientAttachmentPool.cpp
     Include/Atom/RHI/RHIUtils.h

@@ -131,7 +131,7 @@ namespace AZ
             RHI::ImageDescriptor imgDescriptor = image.GetDescriptor();
             image.SetDescriptor(imgDescriptor);
             image.SetName(name);
-            image.m_isSwapChainImage = true;
+            image.m_isSwapChainImage = true;            
 
             return RHI::ResultCode::Success;
         }
@@ -143,8 +143,8 @@ namespace AZ
             const size_t sizeInBytes = image.GetMemoryView().GetSize();
 
             RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            memoryUsage.m_reservedInBytes -= sizeInBytes;
-            memoryUsage.m_residentInBytes -= sizeInBytes;
+            memoryUsage.m_totalResidentInBytes -= sizeInBytes;
+            memoryUsage.m_usedResidentInBytes -= sizeInBytes;
 
             image.m_memoryView = {};
         }
@@ -236,6 +236,11 @@ namespace AZ
                         
                         RHI::Ptr<MetalResource> resc = MetalResource::Create(MetalResourceDescriptor{mtlDrawableTexture, ResourceType::MtlTextureType, swapChainImage->m_isSwapChainImage});
                         swapChainImage->m_memoryView = MemoryView(resc, 0, mtlDrawableTexture.allocatedSize, 0);
+
+                        const size_t sizeInBytes = swapChainImage->m_memoryView.GetSize();
+                        RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
+                        memoryUsage.m_totalResidentInBytes += sizeInBytes;
+                        memoryUsage.m_usedResidentInBytes += sizeInBytes;
                     }
                 }
                 return mtlDrawableTexture;

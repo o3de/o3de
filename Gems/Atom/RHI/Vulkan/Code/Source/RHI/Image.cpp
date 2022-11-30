@@ -115,7 +115,6 @@ namespace AZ
                     emptyBindInfo.image = m_image;
                 }
             }
-            m_allocatedMip = imageDescriptor.m_mipLevels;
         }
 
         uint64_t SparseImageInfo::GetRequiredMemorySize(uint16_t residentMipLevel) const
@@ -138,9 +137,18 @@ namespace AZ
 
             MemoryViews& memoryViews = m_mipMemoryViews[mipLevel];
             size_t memoryViewCount = memoryViews.size();
-            AZ_Assert(memoryViewCount > 0, "There wasn't memory allocated for mip level %u", mipLevel);
-            MipMemoryBinds& memoryBinds = m_mipMemoryBinds[mipLevel];
             auto imageGranularity = m_sparseImageMemoryRequirements.formatProperties.imageGranularity;
+            MipMemoryBinds& memoryBinds = m_mipMemoryBinds[mipLevel];
+            memoryBinds.clear();
+
+            if (memoryViewCount == 0)
+            {
+                VkSparseImageMemoryBindInfo& info = m_mipMemoryBindInfos[mipLevel];
+                info.image = nullptr;
+                info.bindCount = 0;
+                info.pBinds = nullptr;
+                return;
+            }
 
             // subresource for this mip level
             VkImageSubresource subResource;
@@ -154,7 +162,6 @@ namespace AZ
             const uint32_t blockCountPerColumn = AZ::DivideAndRoundUp(mipSize.m_height, imageGranularity.height);
 
             // convert memory views to memory binds
-            memoryBinds.clear();
             uint32_t boundBlockCount = 0;
             for (size_t index = 0; index < memoryViewCount; index++)
             {
@@ -219,19 +226,23 @@ namespace AZ
             info.image = m_image;
             info.bindCount = aznumeric_cast<uint32_t>(memoryBinds.size());
             info.pBinds = memoryBinds.data();
-
-            m_allocatedMip = mipLevel;
         }
 
         void SparseImageInfo::UpdateMipTailMemoryBindInfo()
         {
-            AZ_Assert(m_mipTailMemoryViews.size() > 0, "There are no memory view bound for mip tail");
+            m_mipTailMemoryBinds.clear();
+
+            if (m_mipTailMemoryViews.size() == 0)
+            {
+                m_mipTailMemoryBindInfo.bindCount = 0;
+                m_mipTailMemoryBindInfo.image = nullptr;
+                m_mipTailMemoryBindInfo.pBinds = nullptr;
+                return;
+            }
 
             uint32_t arrayIndex = 0;
             // bound block count for current array layer
             uint32_t boundBlockCount = 0;
-
-            m_mipTailMemoryBinds.clear();
 
             // it's possible there are multiple memory views bound to one array layer mip tail
             // It's also possible one memory view have blocks bound to multiple array layers of mip tail.
@@ -276,8 +287,6 @@ namespace AZ
             m_mipTailMemoryBindInfo.bindCount = aznumeric_cast<uint32_t>(m_mipTailMemoryBinds.size());
             m_mipTailMemoryBindInfo.image = m_image;
             m_mipTailMemoryBindInfo.pBinds = m_mipTailMemoryBinds.data();
-                        
-            m_allocatedMip = m_tailStartMip;
         }
 
         void SparseImageInfo::UpdateMemoryBindInfo(uint16_t startMipLevel, uint16_t endMipLevel)
@@ -560,8 +569,6 @@ namespace AZ
                             m_sparseImageInfo->UpdateMipMemoryBindInfo(mip);
                         }
 
-                        m_sparseImageInfo->m_allocatedMip = adjustedTargetMipLevel;
-
                         // unbound sparse memories for these mips
                         VkBindSparseInfo bindSparseInfo = m_sparseImageInfo->GetBindSparseInfo(adjustedTargetMipLevel-1, m_highestMipLevel);
                         m_highestMipLevel = adjustedTargetMipLevel;
@@ -604,13 +611,8 @@ namespace AZ
 
             if (m_isSparse)
             {
-                if (residentMipLevel >= m_sparseImageInfo->m_allocatedMip)
-                {
-                    return RHI::ResultCode::Success;
-                }
-
                 // The mip we need to start to allocate memory from
-                const uint16_t startMip = m_sparseImageInfo->m_allocatedMip - 1;
+                const uint16_t startMip = m_highestMipLevel - 1;
                 const uint16_t endMip = AZStd::min(residentMipLevel, m_sparseImageInfo->m_tailStartMip);
                 const size_t blockSize = m_sparseImageInfo->m_blockSizeInBytes;
 

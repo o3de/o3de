@@ -63,7 +63,7 @@ namespace AZ
 
             // Memory bind for non-tail mips
             using MemoryViews = AZStd::vector<MemoryView>;
-            AZStd::vector<MemoryViews> m_mipMemoryViews;                         // Memory views for each non-tail mip levels. For example: m_mipMemoryViews[0] is the memory views for mip level 0 (with all array layers)
+            AZStd::vector<MemoryViews> m_mipMemoryViews;                              // Memory views for each non-tail mip levels. For example: m_mipMemoryViews[0] is the memory views for mip level 0 (with all array layers)
             using MipMemoryBinds = AZStd::vector<VkSparseImageMemoryBind>;
             AZStd::vector<MipMemoryBinds> m_mipMemoryBinds;                         // Memory binds for each non-tail mip levels
             AZStd::vector<VkSparseImageMemoryBindInfo> m_mipMemoryBindInfos;        // Helper structure for sparse binding
@@ -76,9 +76,6 @@ namespace AZ
             MemoryViews m_mipTailMemoryViews;
             AZStd::vector<VkSparseMemoryBind> m_mipTailMemoryBinds;                 // Opaque memory bindings for mip tail
             VkSparseImageOpaqueMemoryBindInfo m_mipTailMemoryBindInfo;              // Helper structure for sparse binding
-
-            // The start mip of mips which are allocated
-            uint16_t m_allocatedMip;
 
             uint64_t GetRequiredMemorySize(uint16_t residentMipLevel) const;
 

@@ -66,6 +66,54 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
+        RHI::ResultCode StreamingImagePool::AllocateMemoryBlocks(AZStd::vector<HeapTiles>& outHeapTiles, uint32_t blockCount)
+        {
+            AZ_Assert(outHeapTiles.empty(), "outHeapTiles should be empty");
+
+             // Check if heap memory is enough for the tiles.
+            RHI::HeapMemoryLevel heapMemoryLevel = RHI::HeapMemoryLevel::Device;
+            RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
+            size_t pageAllocationInBytes = m_tileAllocator.EvaluateMemoryAllocation(blockCount);
+
+            // Try to release some memory if there isn't enough memory available in the pool
+            bool canAllocate = heapMemoryUsage.CanAllocate(pageAllocationInBytes);
+            if (!canAllocate && m_memoryReleaseCallback)
+            {
+                bool releaseSuccess = false;
+                while (!canAllocate)
+                {
+                    // Request to release some memory
+                    releaseSuccess = m_memoryReleaseCallback();
+
+                    // break out of the loop if memory release did not happen
+                    if (!releaseSuccess)
+                    {
+                        break;
+                    }
+
+                    // re-evaluation page memory allocation since there are tiles were released.
+                    pageAllocationInBytes = m_tileAllocator.EvaluateMemoryAllocation(blockCount);
+                    canAllocate = heapMemoryUsage.CanAllocate(pageAllocationInBytes);
+                }
+
+                if (!releaseSuccess)
+                {
+                    AZ_Warning("Vulkan::StreamingImagePool", false, "There isn't enough memory."
+                        "Try increase the StreamingImagePool memory budget");
+                }
+            }
+
+            outHeapTiles = m_tileAllocator.Allocate(blockCount);
+            if (outHeapTiles.size() == 0)
+            {
+                return RHI::ResultCode::OutOfMemory;
+            }
+            else
+            {
+                return RHI::ResultCode::Success;
+            }
+        }
+
         void StreamingImagePool::DeAllocateMemory(MemoryView& memoryView)
         {
             m_memoryAllocator.DeAllocate(memoryView);
@@ -78,6 +126,12 @@ namespace AZ
                 m_memoryAllocator.DeAllocate(memoryView);
             }
             memoryViews.clear();
+        }
+
+        void StreamingImagePool::DeAllocateMemoryBlocks(AZStd::vector<HeapTiles>& heapTiles)
+        {
+            m_tileAllocator.DeAllocate(heapTiles);
+            m_tileAllocator.GarbageCollect();
         }
 
         RHI::ResultCode StreamingImagePool::InitInternal(RHI::Device& deviceBase, [[maybe_unused]] const RHI::StreamingImagePoolDescriptor& descriptor)
@@ -111,6 +165,15 @@ namespace AZ
             memoryAllocDescriptor.m_recycleOnCollect = false;
             memoryAllocDescriptor.m_collectLatency = RHI::Limits::Device::FrameCountMax;
             m_memoryAllocator.Init(memoryAllocDescriptor);
+
+            // Initialize tile allocator
+            m_heapPageAllocator.Init(memoryAllocDescriptor);
+            const uint32_t TileSizeInBytes = 64*1024; // standard block size
+            TileAllocator::Descriptor tileAllocatorDesc;
+            tileAllocatorDesc.m_tileSizeInBytes = TileSizeInBytes;
+            // Tile allocator updates used resident memory
+            tileAllocatorDesc.m_getHeapMemoryUsageFunction = [&]() { return &heapMemoryUsage; };
+            m_tileAllocator.Init(tileAllocatorDesc, m_heapPageAllocator);
 
             return RHI::ResultCode::Success;
         }
