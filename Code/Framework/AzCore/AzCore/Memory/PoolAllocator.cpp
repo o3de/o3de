@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/PlatformIncl.h>
-#include <AzCore/Memory/AllocatorDebug.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 #include <AzCore/std/allocator_stateless.h>
