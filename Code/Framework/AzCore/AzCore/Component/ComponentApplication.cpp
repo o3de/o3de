@@ -662,7 +662,7 @@ namespace AZ
                 fileStream != nullptr && fileStream->IsOpen())
             {
                 // Configure core event logger with the name of "Core"
-                AZ::Metrics::JsonTraceLoggerEventConfig config{ "Core" };
+                AZ::Metrics::JsonTraceEventLoggerConfig config{ "Core" };
                 auto coreEventLogger = AZStd::make_unique<AZ::Metrics::JsonTraceEventLogger>(AZStd::move(fileStream), config);
                 m_eventLoggerFactory->RegisterEventLogger(AZ::Metrics::CoreEventLoggerId, AZStd::move(coreEventLogger));
             }
@@ -756,9 +756,6 @@ namespace AZ
 
         MergeSettingsToRegistry(*m_settingsRegistry);
 
-        // Register the Core metrics Event logger with the IEventLoggerFactory
-        RegisterCoreEventLogger();
-
         m_systemEntity = AZStd::make_unique<AZ::Entity>(SystemEntityId, "SystemEntity");
         CreateCommon();
         AZ_Assert(m_systemEntity, "SystemEntity failed to initialize!");
@@ -790,6 +787,10 @@ namespace AZ
 
         TickBus::AllowFunctionQueuing(true);
         SystemTickBus::AllowFunctionQueuing(true);
+
+        // Register the Core metrics Event logger with the IEventLoggerFactory
+        // after the TickBus has enabled function queuing
+        RegisterCoreEventLogger();
 
         ComponentApplicationBus::Handler::BusConnect();
 

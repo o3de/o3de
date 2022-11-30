@@ -69,6 +69,7 @@ set(FILES
     native/tests/BuilderManagerTests.h
     native/tests/MockAssetDatabaseRequestsHandler.h
     native/tests/SourceAssetReferenceTests.cpp
+    native/tests/UuidManagerTests.cpp
     native/unittests/AssetCacheServerUnitTests.cpp
     native/unittests/AssetProcessingStateDataUnitTests.cpp
     native/unittests/AssetProcessorUnitTests.h
@@ -82,7 +83,6 @@ set(FILES
     native/unittests/ConnectionUnitTests.cpp
     native/unittests/ConnectionManagerUnitTests.cpp
     native/unittests/FileWatcherUnitTests.cpp
-    native/unittests/FileWatcherUnitTests.h
     native/unittests/PlatformConfigurationUnitTests.cpp
     native/unittests/RCcontrollerUnitTests.cpp
     native/unittests/RCcontrollerUnitTests.h

@@ -142,6 +142,9 @@ namespace AZ
                 return RHI::ResultCode::Success;
             };
 
+            //! Converts a shading rate enum to the proper texel value to be used in a shading rate image.
+            virtual ShadingRateImageValue ConvertShadingRate(ShadingRate rate) = 0;
+
             bool WasDeviceRemoved();
             void SetDeviceRemoved();
 

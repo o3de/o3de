@@ -45,6 +45,8 @@ namespace AzQtComponents
         //! Enable content modified styling.
         Q_PROPERTY(bool contentModified READ isContentModified WRITE setContentModified NOTIFY contentModifiedChanged)
     public:
+        static int s_iconSize;
+
         //! Enum used to determine which icon to use for the context menu button.
         enum ContextMenuIcon
         {
@@ -187,6 +189,6 @@ namespace AzQtComponents
         QIcon m_icon;
         QString m_helpUrl;
 
-        static int s_iconSize;
+        
     };
 } // namespace AzQtComponents

@@ -8,7 +8,7 @@
 
 #pragma once
 
-
+#define OUTPUT_DEPTH 0 // Never use custom depth, the VR pipeline is too optimized to support PDO.
 #include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
 #include <Atom/Features/PostProcessing/Tonemap.azsli>
 
@@ -22,7 +22,7 @@ VsOutput VertexShader(VsInput IN)
 
 // --- Pixel Shader ---
 
-#if !OUTPUT_DEPTH
+#if FORCE_EARLY_DEPTH_STENCIL
     [earlydepthstencil]
 #endif
 ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
@@ -51,15 +51,11 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     OUT.m_color.rgb = color;
 
-#ifndef FORCE_OPAQUE
+#if !FORCE_OPAQUE
     if (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent)
     {
         OUT.m_color.a = surface.alpha;
     }
-#endif
-#if OUTPUT_DEPTH
-    // Can be modified in Parallax calculations in EvaluatePixelGeometry
-    OUT.m_depth = IN.position.z;
 #endif
 
     return OUT;

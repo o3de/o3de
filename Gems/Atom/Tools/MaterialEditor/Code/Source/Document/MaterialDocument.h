@@ -47,6 +47,7 @@ namespace MaterialEditor
         bool SaveAsCopy(const AZStd::string& savePath) override;
         bool SaveAsChild(const AZStd::string& savePath) override;
         bool IsModified() const override;
+        bool CanSaveAsChild() const override;
         bool BeginEdit() override;
         bool EndEdit() override;
 

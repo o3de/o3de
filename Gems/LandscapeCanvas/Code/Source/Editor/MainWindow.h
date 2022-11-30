@@ -158,6 +158,10 @@ namespace LandscapeCanvasEditor
         GraphModel::NodePtrList GetAllNodesMatchingEntityComponent(const AZ::EntityComponentIdPair& entityComponentId) override;
         ////////////////////////////////////////////////////////////////////////
 
+        GraphModel::NodePtrList GetAllNodesMatchingEntityInGraph(const GraphCanvas::GraphId& graphId, const AZ::EntityId& entityId);
+        GraphModel::NodePtrList GetAllNodesMatchingEntityComponentInGraph(
+            const GraphCanvas::GraphId& graphId, const AZ::EntityComponentIdPair& entityComponentId);
+
         ////////////////////////////////////////////////////////////////////////
         // GraphCanvas::AssetEditorMainWindow overrides
         bool ConfigureDefaultLayout() override;

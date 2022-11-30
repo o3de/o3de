@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "ToLower",
-                    "context": "String_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ToLower"
@@ -42,7 +41,6 @@
                 },
                 {
                     "base": "ToUpper",
-                    "context": "String_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ToUpper"
@@ -74,7 +72,6 @@
                 },
                 {
                     "base": "Substring",
-                    "context": "String_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Substring"

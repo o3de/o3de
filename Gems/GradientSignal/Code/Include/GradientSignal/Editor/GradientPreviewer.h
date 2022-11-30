@@ -59,6 +59,8 @@ namespace GradientSignal
         AZ::u32 GetPreviewConstrainToShapeVisibility() const;
         AZ::u32 PreviewSettingsAndSettingsVisibilityChanged() const;
 
+        AZ::EntityId GetActiveBoundsEntityId() const;
+
         //! This is used by the preview so we can pass an invalid entity Id if our component is disabled
         AZ::EntityId GetGradientEntityId() const;
 

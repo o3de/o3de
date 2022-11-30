@@ -267,6 +267,13 @@
             }
         ],
         "m_uiMetadata": {
+            "m_sceneMetadata": {
+                "ComponentData": {
+                    "{5F84B500-8C45-40D1-8EFC-A5306B241444}": {
+                        "$type": "SceneComponentSaveData"
+                    }
+                }
+            },
             "m_nodeMetadata": [
                 {
                     "Key": 1,

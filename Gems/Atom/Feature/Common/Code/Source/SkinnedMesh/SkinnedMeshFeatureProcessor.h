@@ -88,8 +88,6 @@ namespace AZ
             StableDynamicArray<SkinnedMeshRenderProxy> m_renderProxies;
             AZStd::unique_ptr<SkinnedMeshStatsCollector> m_statsCollector;
 
-            MeshFeatureProcessor* m_meshFeatureProcessor = nullptr;
-
             AZStd::unordered_set<const RHI::DispatchItem*> m_skinningDispatches;
             bool m_alreadyCreatedSkinningScopeThisFrame = false;
 

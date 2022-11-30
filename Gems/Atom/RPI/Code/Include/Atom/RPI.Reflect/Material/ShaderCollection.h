@@ -123,5 +123,6 @@ namespace AZ
             AZStd::vector<Item> m_shaderItems;
             NameReflectionMapForIndex m_shaderTagIndexMap;
         };
+
     } // namespace RPI
 } // namespace AZ

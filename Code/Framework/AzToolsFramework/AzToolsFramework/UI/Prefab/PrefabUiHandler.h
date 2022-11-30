@@ -63,6 +63,8 @@ namespace AzToolsFramework
         static QModelIndex GetLastVisibleChild(const QModelIndex& parent);
         static QModelIndex Internal_GetLastVisibleChild(const QAbstractItemModel* model, const QModelIndex& index);
 
+        const QPixmap& GetOverrideImageForEntity(AZ::EntityId entityId) const;
+
         void PaintDescendantBorder(
             QPainter* painter,
             const QStyleOptionViewItem& option,
@@ -71,11 +73,6 @@ namespace AzToolsFramework
             const QColor borderColor) const;
 
         static AzFramework::EntityContextId s_editorEntityContextId;
-
-        int m_prefabCapsuleRadius = 6;
-        int m_prefabBorderThickness = 2;
-        int m_prefabFileNameFontSize = 10;
-        int m_prefabEditIconSize = 16;
 
         QColor m_backgroundColor = QColor("#444444");
         QColor m_backgroundHoverColor = QColor("#5A5A5A");
@@ -88,9 +85,11 @@ namespace AzToolsFramework
         QString m_prefabEditOpenIconPath = QString(":/Entity/prefab_edit_open.svg");
         QString m_prefabEditCloseIconPath = QString(":/Entity/prefab_edit_close.svg");
 
-        inline static const QColor s_overrideIconBackgroundColor = QColor("#444444");
-        inline static const QPoint s_overrideIconOffset = QPoint(10, 10);
-        inline static const int s_overrideIconSize = 5;
-        QIcon s_overrideIcon = QIcon(QString(":/Entity/entity_overridden.svg"));
+        inline static const QPoint s_overrideImageOffset = QPoint(13, 12);
+        inline static const QSize s_overrideImageSize = QSize(7, 7);
+        QString m_editEntityOverrideImagePath = QString(":/Entity/entity_modified_as_override.svg");
+        QString m_addEntityOverrideImagePath = QString(":/Entity/entity_added_as_override.svg");
+        QPixmap m_editEntityOverrideImage;
+        QPixmap m_addEntityOverrideImage;
     };
 } // namespace AzToolsFramework
