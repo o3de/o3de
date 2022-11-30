@@ -72,9 +72,10 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MeshComponentConfig>()
-                    ->Version(2, &MeshComponentControllerVersionUtility::VersionConverter)
+                    ->Version(3, &MeshComponentControllerVersionUtility::VersionConverter)
                     ->Field("ModelAsset", &MeshComponentConfig::m_modelAsset)
                     ->Field("SortKey", &MeshComponentConfig::m_sortKey)
+                    ->Field("IsAlwaysDynamic", &MeshComponentConfig::m_isAlwaysDynamic)
                     ->Field("ExcludeFromReflectionCubeMaps", &MeshComponentConfig::m_excludeFromReflectionCubeMaps)
                     ->Field("UseForwardPassIBLSpecular", &MeshComponentConfig::m_useForwardPassIblSpecular)
                     ->Field("IsRayTracingEnabled", &MeshComponentConfig::m_isRayTracingEnabled)
@@ -174,6 +175,8 @@ namespace AZ
                     ->Event("SetModelAssetPath", &MeshComponentRequestBus::Events::SetModelAssetPath)
                     ->Event("SetSortKey", &MeshComponentRequestBus::Events::SetSortKey)
                     ->Event("GetSortKey", &MeshComponentRequestBus::Events::GetSortKey)
+                    ->Event("SetIsAlwaysDynamic", &MeshComponentRequestBus::Events::SetIsAlwaysDynamic)
+                    ->Event("GetIsAlwaysDynamic", &MeshComponentRequestBus::Events::GetIsAlwaysDynamic)
                     ->Event("SetLodType", &MeshComponentRequestBus::Events::SetLodType)
                     ->Event("GetLodType", &MeshComponentRequestBus::Events::GetLodType)
                     ->Event("SetLodOverride", &MeshComponentRequestBus::Events::SetLodOverride)
@@ -189,6 +192,7 @@ namespace AZ
                     ->VirtualProperty("ModelAssetId", "GetModelAssetId", "SetModelAssetId")
                     ->VirtualProperty("ModelAssetPath", "GetModelAssetPath", "SetModelAssetPath")
                     ->VirtualProperty("SortKey", "GetSortKey", "SetSortKey")
+                    ->VirtualProperty("IsAlwaysDynamic", "GetIsAlwaysDynamic", "SetIsAlwaysDynamic")
                     ->VirtualProperty("LodType", "GetLodType", "SetLodType")
                     ->VirtualProperty("LodOverride", "GetLodOverride", "SetLodOverride")
                     ->VirtualProperty("MinimumScreenCoverage", "GetMinimumScreenCoverage", "SetMinimumScreenCoverage")
@@ -412,6 +416,7 @@ namespace AZ
                     m_transformInterface ? m_transformInterface->GetWorldTM() : AZ::Transform::CreateIdentity();
 
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, transform, m_cachedNonUniformScale);
+                m_meshFeatureProcessor->SetIsAlwaysDynamic(m_meshHandle, m_configuration.m_isAlwaysDynamic);
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
                 m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, GetMeshLodConfiguration());
                 m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_meshHandle, m_configuration.m_excludeFromReflectionCubeMaps);
@@ -520,6 +525,17 @@ namespace AZ
         RHI::DrawItemSortKey MeshComponentController::GetSortKey() const
         {
             return m_meshFeatureProcessor->GetSortKey(m_meshHandle);
+        }
+
+        void MeshComponentController::SetIsAlwaysDynamic(bool isAlwaysDynamic)
+        {
+            m_configuration.m_isAlwaysDynamic = isAlwaysDynamic; // Save for serialization
+            m_meshFeatureProcessor->SetIsAlwaysDynamic(m_meshHandle, isAlwaysDynamic);
+        }
+
+        bool MeshComponentController::GetIsAlwaysDynamic() const
+        {
+            return m_meshFeatureProcessor->GetIsAlwaysDynamic(m_meshHandle);
         }
 
         RPI::Cullable::LodConfiguration MeshComponentController::GetMeshLodConfiguration() const

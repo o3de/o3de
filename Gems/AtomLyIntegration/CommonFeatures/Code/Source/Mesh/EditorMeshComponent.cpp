@@ -76,6 +76,7 @@ namespace AZ
                             ->DataElement(AZ::Edit::UIHandlers::Default, &MeshComponentConfig::m_sortKey, "Sort Key", "Transparent meshes are first drawn by sort key, then depth. Use this to force certain transparent meshes to draw before or after others.")
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_excludeFromReflectionCubeMaps, "Exclude from reflection cubemaps", "Model will not be visible in baked reflection probe cubemaps")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_isAlwaysDynamic, "Always Moving", "Forces this mesh to be considered to always be moving, even if the transform didn't update. Useful for meshes with vertex shader animation.")
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_useForwardPassIblSpecular, "Use Forward Pass IBL Specular",
                                 "Renders image-based lighting (IBL) specular reflections in the forward pass, by using only the most influential probe (based on the position of the entity) and the global IBL cubemap. It can reduce rendering costs, but is only recommended for static objects that are affected by at most one reflection probe.")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)

@@ -652,6 +652,8 @@ namespace AZ::Render
 
             m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
                 m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials));
+
+            m_meshFeatureProcessor->SetIsAlwaysDynamic(*m_meshHandle, true);
         }
 
         // If render proxies already exist, they will be auto-freed

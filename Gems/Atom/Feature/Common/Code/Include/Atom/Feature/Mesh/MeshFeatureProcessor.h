@@ -125,10 +125,13 @@ namespace AZ
             bool m_cullBoundsNeedsUpdate = false;
             bool m_cullableNeedsRebuild = false;
             bool m_objectSrgNeedsUpdate = true;
+            bool m_isAlwaysDynamic = false;
             bool m_excludeFromReflectionCubeMaps = false;
             bool m_visible = true;
             bool m_hasForwardPassIblSpecularMaterial = false;
         };
+
+        static constexpr size_t foo = sizeof(ModelDataInstance);
 
         //! This feature processor handles static and dynamic non-skinned meshes.
         class MeshFeatureProcessor final
@@ -196,6 +199,8 @@ namespace AZ
             RPI::Cullable::LodConfiguration GetMeshLodConfiguration(const MeshHandle& meshHandle) const override;
 
             void SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps) override;
+            void SetIsAlwaysDynamic(const MeshHandle& meshHandle, bool isAlwaysDynamic) override;
+            bool GetIsAlwaysDynamic(const MeshHandle& meshHandle) const override;
             void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) override;
             bool GetRayTracingEnabled(const MeshHandle& meshHandle) const override;
             void SetVisible(const MeshHandle& meshHandle, bool visible) override;

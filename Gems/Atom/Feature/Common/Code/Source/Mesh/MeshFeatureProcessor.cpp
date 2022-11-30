@@ -253,7 +253,7 @@ namespace AZ
             for (auto& model : m_modelData)
             {
                 model.m_cullable.m_prevShaderOptionFlags = model.m_cullable.m_shaderOptionFlags.exchange(0);
-                model.m_cullable.m_flags = 0;
+                model.m_cullable.m_flags = model.m_isAlwaysDynamic ? m_meshMovedFlag.GetIndex() : 0;
             }
         }
 
@@ -499,6 +499,24 @@ namespace AZ
                 AZ_Assert(false, "Invalid mesh handle");
                 return {RPI::Cullable::LodType::Default, 0, 0.0f, 0.0f };
             }
+        }
+
+        void MeshFeatureProcessor::SetIsAlwaysDynamic(const MeshHandle & meshHandle, bool isAlwaysDynamic)
+        {
+            if (meshHandle.IsValid())
+            {
+                meshHandle->m_isAlwaysDynamic = isAlwaysDynamic;
+            }
+        }
+
+        bool MeshFeatureProcessor::GetIsAlwaysDynamic(const MeshHandle& meshHandle) const
+        {
+            if (!meshHandle.IsValid())
+            {
+                AZ_Assert(false, "Invalid mesh handle");
+                return false;
+            }
+            return meshHandle->m_isAlwaysDynamic;
         }
 
         void MeshFeatureProcessor::SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps)
