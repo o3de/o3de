@@ -8,8 +8,6 @@
 
 #include "CameraInput.h"
 
-#include <AzCore/Math/MathUtils.h>
-#include <AzCore/Math/Plane.h>
 #include <AzCore/std/numeric.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
@@ -134,7 +132,7 @@ namespace AzFramework
         camera.m_offset = AZ::Vector3::CreateZero();
     }
 
-    float SmoothValueTime(const float smoothness, float deltaTime)
+    float SmoothValueTime(const float smoothness, const float deltaTime)
     {
         // note: the math for the lerp smoothing implementation for camera rotation and translation was inspired by this excellent
         // article by Scott Lembcke: https://www.gamasutra.com/blogs/ScottLembcke/20180404/316046/Improved_Lerp_Smoothing.php
@@ -532,7 +530,7 @@ namespace AzFramework
     }
 
     bool TranslateCameraInput::HandleEvents(
-        const InputState& state, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
+        const InputState& state, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
     {
         if (const auto& input = AZStd::get_if<DiscreteInputEvent>(&state.m_inputEvent))
         {
