@@ -120,17 +120,17 @@ namespace UnitTest
         EntityOptionalReference parentEntityToUpdate = firstCarInstance->get().GetContainerEntity();
         ASSERT_TRUE(parentEntityToUpdate.has_value());
 
-        AZ::EntityId firstEngineEntityId = firstCarInstance->get().GetEntityId(tireEntityAlias);
-        ASSERT_TRUE(firstEngineEntityId.IsValid());
+        AZ::EntityId firstTireEntityId = firstCarInstance->get().GetEntityId(tireEntityAlias);
+        ASSERT_TRUE(firstTireEntityId.IsValid());
 
-        AZStd::string firstEngineEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(firstEngineEntityId);
+        AZStd::string firstTireEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(firstTireEntityId);
 
-        firstCarInstance->get().DetachEntity(firstEngineEntityId).reset();
+        firstCarInstance->get().DetachEntity(firstTireEntityId).reset();
 
         auto levelRootInstance = m_instanceEntityMapperInterface->FindOwningInstance(GetRootContainerEntityId());
         ASSERT_TRUE(levelRootInstance.has_value());
 
-        undoDeleteNode.Capture({ firstEngineEntityAliasPath }, {}, { &(parentEntityToUpdate->get()) },
+        undoDeleteNode.Capture({ firstTireEntityAliasPath }, {}, { &(parentEntityToUpdate->get()) },
             firstCarInstance->get(), levelRootInstance->get());
 
         // Redo
