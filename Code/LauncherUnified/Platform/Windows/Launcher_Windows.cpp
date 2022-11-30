@@ -23,8 +23,6 @@ int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINS
 
     mainInfo.CopyCommandLine(__argc, __argv);
 
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
     ReturnCode status = Run(mainInfo);
 
 #if !defined(_RELEASE)
@@ -37,10 +35,6 @@ int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINS
     {
         MessageBoxA(0, GetReturnCodeString(status), "Error", MB_OK | MB_DEFAULT_DESKTOP_ONLY | MB_ICONERROR);
     }
-
-    // there is no way to transfer ownership of the allocator to the component application
-    // without altering the app descriptor, so it must be destroyed here
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
 
     return static_cast<int>(status);
 }

@@ -112,8 +112,6 @@ public:
     void SetUp() override
     {
         // start application
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
         AZ::ComponentApplication::Descriptor appDescriptor;
         appDescriptor.m_useExistingAllocator = true;
 
@@ -165,8 +163,6 @@ public:
         m_application->Stop();
         delete m_application;
         m_application = nullptr;
-
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
     }
 
     // Tick application until 'condition' function returns true.

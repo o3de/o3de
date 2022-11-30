@@ -91,8 +91,6 @@ namespace PhysX
 
     void Environment::SetupInternal()
     {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
         m_fileIo = AZStd::make_unique<AZ::IO::LocalFileIO>();
 
         AZ::IO::FileIOBase::SetInstance(m_fileIo.get());

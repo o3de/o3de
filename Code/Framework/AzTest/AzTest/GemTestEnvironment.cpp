@@ -84,8 +84,6 @@ namespace AZ
 
             UnitTest::TraceBusHook::SetupEnvironment();
 
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
             m_parameters = new Parameters;
 
             AddGemsAndComponents();
@@ -168,8 +166,6 @@ namespace AZ
             m_parameters = nullptr;
 
             AZ::GetCurrentSerializeContextModule().Cleanup();
-
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
 
             UnitTest::TraceBusHook::TeardownEnvironment();
         }

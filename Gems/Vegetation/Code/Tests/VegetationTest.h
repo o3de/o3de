@@ -31,7 +31,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            if (AZ::Debug::AllocationRecords* records = AZ::AllocatorInstance<AZ::SystemAllocator>::GetAllocator().GetRecords();
+            if (AZ::Debug::AllocationRecords* records = AZ::AllocatorInstance<AZ::SystemAllocator>::Get().GetRecords();
                 records != nullptr)
             {
                 records->SetMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);

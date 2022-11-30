@@ -335,17 +335,6 @@ extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule()
     g_sceneCoreInitialized = false;
 
     AZ::SceneAPI::SceneCore::Uninitialize();
-
-    // This module does not own these allocators, but must clear its cached EnvironmentVariables
-    // because it is linked into other modules, and thus does not get unloaded from memory always
-    if (AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-    {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-    }
-    if (AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-    {
-        AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
-    }
 }
 
 #endif // !defined(AZ_MONOLITHIC_BUILD)

@@ -102,8 +102,6 @@ namespace PhysX
         , m_sceneInterface(this)
     {
         // Start PhysX allocator
-        AZ::AllocatorInstance<PhysXAllocator>::Create();
-
         InitializePhysXSdk(cookingParams);
 
         InitializePerformanceCollector();
@@ -135,7 +133,6 @@ namespace PhysX
     {
         Shutdown();
         ShutdownPhysXSdk();
-        AZ::AllocatorInstance<PhysXAllocator>::Destroy();
     }
 
     void PhysXSystem::Initialize(const AzPhysics::SystemConfiguration* config)

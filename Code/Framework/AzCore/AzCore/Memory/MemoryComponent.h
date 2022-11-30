@@ -25,32 +25,19 @@ namespace AZ
     public:
         AZ_COMPONENT(AZ::MemoryComponent, "{6F450DDA-6F4D-40fd-A93B-E5CCCDBC72AB}")
 
-        MemoryComponent();
-        virtual ~MemoryComponent();
-
         //////////////////////////////////////////////////////////////////////////
         // Component base
-        void Init() override;
         void Activate() override;
         void Deactivate() override;
         //////////////////////////////////////////////////////////////////////////
 
     private:
-
         /// \ref ComponentDescriptor::GetProvidedServices
         static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided);
         /// \ref ComponentDescriptor::GetIncompatibleServices
         static void GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible);
         /// \ref ComponentDescriptor::Reflect
         static void Reflect(ReflectContext* reflection);
-
-        // serialized data
-        bool m_isPoolAllocator;
-        bool m_isThreadPoolAllocator;
-
-        // non-serialized data
-        bool m_createdPoolAllocator;
-        bool m_createdThreadPoolAllocator;
     };
 }
 

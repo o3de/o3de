@@ -103,8 +103,6 @@ namespace UnitTest
         void SetUp() override
         {
             // Start application
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
             AZ::ComponentApplication::Descriptor appDescriptor;
             appDescriptor.m_useExistingAllocator = true;
 
@@ -127,7 +125,6 @@ namespace UnitTest
             m_applicationPtr->Stop();
             delete m_applicationPtr;
             m_applicationPtr = nullptr;
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
         }
 
     private:

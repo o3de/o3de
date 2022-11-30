@@ -157,11 +157,6 @@ namespace LegacyFramework
 
     int Application::Run(const ApplicationDesc& desc)
     {
-        if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-        {
-            AZ::AllocatorInstance<AZ::OSAllocator>::Create();
-        }
-
         QString appNameConcat = QStringLiteral("%1_GLOBALMUTEX").arg(desc.m_applicationName);
         {
             // If the application crashed before, it may have left behind shared memory

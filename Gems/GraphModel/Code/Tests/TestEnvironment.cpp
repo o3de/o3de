@@ -195,9 +195,6 @@ namespace GraphModelIntegrationTest
     // GraphModelTestEnvironment
     void GraphModelTestEnvironment::SetupEnvironment()
     {
-        // Setup a system allocator
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
         // Create application and descriptor
         m_application = aznew AZ::ComponentApplication;
         AZ::ComponentApplication::Descriptor appDesc;
@@ -233,7 +230,5 @@ namespace GraphModelIntegrationTest
     void GraphModelTestEnvironment::TeardownEnvironment()
     {
         delete m_application;
-
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
     }
 }

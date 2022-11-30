@@ -29,9 +29,7 @@
 #include <SceneAPI/SceneCore/Events/ExportEventContext.h>
 #include <SceneAPI/SceneCore/Events/ExportProductList.h>
 #include <SceneAPI/SceneCore/Mocks/DataTypes/MockIGraphObject.h>
-#include <SceneAPI/SceneCore/SceneCoreStandaloneAllocator.h>
 #include <SceneAPI/SceneData/GraphData/MeshData.h>
-#include <SceneAPI/SceneData/SceneDataStandaloneAllocator.h>
 
 #include <PrefabGroup/tests/PrefabBehaviorTests.inl>
 
@@ -41,24 +39,6 @@ namespace UnitTest
         : public PrefabBuilderTests
     {
     public:
-        static void SetUpTestCase()
-        {
-            // Allocator needed by SceneCore
-            if (!AZ::AllocatorInstance<AZ::SystemAllocator>().IsReady())
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>().Create();
-            }
-            AZ::SceneAPI::SceneCoreStandaloneAllocator::Initialize();
-            AZ::SceneAPI::SceneDataStandaloneAllocator::Initialize();
-        }
-
-        static void TearDownTestCase()
-        {
-            AZ::SceneAPI::SceneDataStandaloneAllocator::TearDown();
-            AZ::SceneAPI::SceneCoreStandaloneAllocator::TearDown();
-            AZ::AllocatorInstance<AZ::SystemAllocator>().Destroy();
-        }
-
         void SetUp() override
         {
             PrefabBuilderTests::SetUp();

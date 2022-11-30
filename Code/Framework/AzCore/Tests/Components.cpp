@@ -175,9 +175,7 @@ namespace UnitTest
         ComponentApplication componentApp;
         ComponentApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
-        ComponentApplication::StartupParameters startupParams;
-        startupParams.m_allocator = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
-        Entity* systemEntity = componentApp.Create(desc, startupParams);
+        Entity* systemEntity = componentApp.Create(desc, {});
         AZ_TEST_ASSERT(systemEntity);
         systemEntity->Init();
 
@@ -631,10 +629,7 @@ namespace UnitTest
             ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
 
-            ComponentApplication::StartupParameters startupParams;
-            startupParams.m_allocator = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
-
-            Entity* systemEntity = m_componentApp->Create(desc, startupParams);
+            Entity* systemEntity = m_componentApp->Create(desc, {});
             systemEntity->Init();
 
             m_entity = aznew Entity();
@@ -1978,10 +1973,7 @@ namespace Benchmark
         ComponentApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
 
-        ComponentApplication::StartupParameters startupParams;
-        startupParams.m_allocator = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
-
-        Entity* systemEntity = componentApp.Create(desc, startupParams);
+        Entity* systemEntity = componentApp.Create(desc, {});
         systemEntity->Init();
 
         while(state.KeepRunning())
