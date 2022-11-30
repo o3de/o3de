@@ -24,6 +24,15 @@ def _edit_gem_names(engine_json: dict,
                     delete_gem_names: str or list = None,
                     replace_gem_names: str or list = None,
                     is_optional: bool = False):
+    """
+    Edits the current list of gems and returns an updated list.
+    :param engine_json: The project json data
+    :param new_gem_names: Any gem names to be added to the list
+    :param delete_gem_names: Any gem names to be removed from the list
+    :param replace_gem_names: A list of gem names that will completely replace the current list
+    :param is_optional: Only applies to new_gem_names, when true will add an 'optional' property to the gem(s)
+    :return: The modified list of gems (a json blob)
+    """
     if new_gem_names:
         add_list = new_gem_names.split() if isinstance(new_gem_names, str) else new_gem_names
         if is_optional:
@@ -35,7 +44,7 @@ def _edit_gem_names(engine_json: dict,
         if 'gem_names' in engine_json:
             def in_list(gem: str or dict, remove_list: list) -> bool:
                 if isinstance(gem, dict):
-                    return gem['name'] in remove_list
+                    return gem.get('name', '') in remove_list
                 else:
                     return gem in remove_list
 
