@@ -251,6 +251,17 @@ void AzAssetBrowserWindow::CreateToolsMenu()
     connect(collapseAllAction, &QAction::triggered, this, [this] { m_ui->m_assetBrowserTreeViewWidget->collapseAll(); });
     m_toolsMenu->addAction(collapseAllAction);
 
+    if (ed_useWIPAssetBrowserDesign)
+    {
+        m_toolsMenu->addSeparator();
+        auto* projectSourceAssets = new QAction(tr("Filter Project and Source Assets"), this);
+        projectSourceAssets->setCheckable(true);
+        projectSourceAssets->setChecked(true);
+        connect(projectSourceAssets, &QAction::triggered, this, [this] { m_ui->m_searchWidget->FilterProjectSourceAssets(); });
+        m_ui->m_searchWidget->GetFilter()->AddFilter(m_ui->m_searchWidget->GetProjectSourceFilter());
+        m_toolsMenu->addAction(projectSourceAssets);
+    }
+
     UpdateDisplayInfo();
 }
 
