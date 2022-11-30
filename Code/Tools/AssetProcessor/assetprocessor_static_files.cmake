@@ -50,6 +50,7 @@ set(FILES
     native/FileProcessor/FileProcessor.h
     native/FileWatcher/FileWatcher.cpp
     native/FileWatcher/FileWatcher.h
+    native/FileWatcher/FileWatcherBase.h
     native/InternalBuilders/SettingsRegistryBuilder.cpp
     native/InternalBuilders/SettingsRegistryBuilder.h
     native/resourcecompiler/JobsModel.cpp
