@@ -231,16 +231,16 @@ namespace Multiplayer
             MetricsEvent();
         }, AZ::Name("MultiplayerSystemComponent Metrics") };
 
-        void OnPhysicsPresimulate(float dt);
+        void OnPhysicsPreSimulate(float dt);
         AzPhysics::SystemEvents::OnPresimulateEvent::Handler m_preSimulateHandler{[this](float dt)
         {
-            OnPhysicsPresimulate(dt);
+            OnPhysicsPreSimulate(dt);
         }};
         AZStd::chrono::steady_clock::time_point m_startPhysicsTickTime;
-        void OnPhysicsPostsimulate(float dt);
+        void OnPhysicsPostSimulate(float dt);
         AzPhysics::SystemEvents::OnPostsimulateEvent::Handler m_postSimulateHandler{ [this](float dt)
         {
-            OnPhysicsPostsimulate(dt);
+            OnPhysicsPostSimulate(dt);
         } };
 
 #if !defined(AZ_RELEASE_BUILD)

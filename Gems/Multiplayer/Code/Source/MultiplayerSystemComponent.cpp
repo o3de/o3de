@@ -1728,12 +1728,12 @@ namespace Multiplayer
         }
     }
 
-    void MultiplayerSystemComponent::OnPhysicsPresimulate([[maybe_unused]] float dt)
+    void MultiplayerSystemComponent::OnPhysicsPreSimulate([[maybe_unused]] float dt)
     {
         m_startPhysicsTickTime = AZStd::chrono::steady_clock::now();
     }
 
-    void MultiplayerSystemComponent::OnPhysicsPostsimulate([[maybe_unused]] float dt)
+    void MultiplayerSystemComponent::OnPhysicsPostSimulate([[maybe_unused]] float dt)
     {
         const auto duration = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(
             AZStd::chrono::steady_clock::now() - m_startPhysicsTickTime);
