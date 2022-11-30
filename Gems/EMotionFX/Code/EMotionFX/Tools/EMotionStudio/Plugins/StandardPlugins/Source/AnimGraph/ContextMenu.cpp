@@ -72,6 +72,15 @@ namespace EMStudio
                 if (currentlyAssignedGroup == nodeGroup && selectedNodeCount == 1)
                 {
                     nodeGroupAction->setChecked(true);
+                    // Remove the nodes from the group they are already in
+                    connect(
+                        nodeGroupAction,
+                        &QAction::triggered,
+                        this,
+                        [this]()
+                        {
+                            AssignSelectedNodesToGroup(nullptr);
+                        });
                 }
                 else
                 {
