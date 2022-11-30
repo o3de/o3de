@@ -1473,7 +1473,7 @@ namespace AZ
             else
             {
                 // Otherwise use the AZ::SystemAllocator
-                return azmalloc(sizeof(T), alignof(T), AZ::SystemAllocator, "");
+                return azmalloc(sizeof(T), alignof(T), AZ::SystemAllocator);
             }
         }
         template<typename T>
@@ -1731,7 +1731,7 @@ namespace AZ
         {
             void* Create([[maybe_unused]] const char* name) override
             {
-                return new(azmalloc(sizeof(T), AZStd::alignment_of<T>::value, AZ::SystemAllocator, name))T;
+                return new(azmalloc(sizeof(T), AZStd::alignment_of<T>::value, AZ::SystemAllocator))T;
             }
             void Destroy(void* ptr) override
             {
