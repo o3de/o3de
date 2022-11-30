@@ -24,6 +24,7 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        class AssetBrowserEntry;
         class AssetBrowserFilterModel;
         class AssetBrowserTableModel;
         class AssetBrowserModel;
@@ -63,6 +64,7 @@ protected:
 private:
     void OnInitToolsMenuButton();
     void UpdateDisplayInfo();
+    void SetNarrowMode(bool narrow);
 
 protected slots:
     void CreateToolsMenu();
@@ -83,7 +85,15 @@ private:
     AzToolsFramework::AssetBrowser::AssetBrowserDisplayState m_assetBrowserDisplayState =
         AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::ListViewMode;
 
-    void UpdatePreview() const;
+    //! Updates the asset preview panel with data about the passed entry.
+    //! Clears the panel if nullptr is passed
+    void UpdatePreview(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) const;
+
+    //! Updates breadcrumbs with the selectedEntry relative path if it's a folder or with the
+    //! relative path of the first folder parent of the passed entry.
+    //! Clears breadcrumbs if nullptr is passed or there's no folder parent.
+    void UpdateBreadcrumbs(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) const;
+    bool m_inNarrowMode = false;
 
 private Q_SLOTS:
     void SelectionChangedSlot(const QItemSelection& selected, const QItemSelection& deselected) const;
