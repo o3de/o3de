@@ -245,27 +245,6 @@ namespace AzToolsFramework
             return list;
         }
 
-        bool AssetBrowserModel::canDropMimeData(
-            const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const
-        {
-            #if 0
-            const AssetBrowserEntry* item = static_cast<const AssetBrowserEntry*>(parent.internalPointer());
-
-            if (item)
-            {
-                // We can only drop onto a folder for within Asset Browser moves
-                if (item->RTTI_IsTypeOf(FolderAssetBrowserEntry::RTTI_Type()))
-                {
-                    return true;
-                }
-            }
-
-            return QAbstractItemModel::canDropMimeData(data, action, row, column, parent);
-            #else
-            return QAbstractItemModel::canDropMimeData(data, action, row, column, parent);
-            #endif
-        }
-
         bool AssetBrowserModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
         {
             if (action == Qt::IgnoreAction)
