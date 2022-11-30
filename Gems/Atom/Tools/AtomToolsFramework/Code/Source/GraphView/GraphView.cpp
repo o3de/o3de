@@ -45,10 +45,7 @@
 namespace AtomToolsFramework
 {
     GraphView::GraphView(
-        const AZ::Crc32& toolId,
-        const GraphCanvas::GraphId& activeGraphId,
-        AZStd::shared_ptr<GraphViewSettings> graphViewSettingsPtr,
-        QWidget* parent)
+        const AZ::Crc32& toolId, const GraphCanvas::GraphId& activeGraphId, GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent)
         : QWidget(parent)
         , m_toolId(toolId)
         , m_graphViewSettingsPtr(graphViewSettingsPtr)

@@ -18,7 +18,7 @@
 namespace MaterialCanvas
 {
     MaterialCanvasMainWindow::MaterialCanvasMainWindow(
-        const AZ::Crc32& toolId, const AZStd::shared_ptr<AtomToolsFramework::GraphViewSettings>& graphViewSettingsPtr, QWidget* parent)
+        const AZ::Crc32& toolId, AtomToolsFramework::GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent)
         : Base(toolId, "MaterialCanvasMainWindow", parent)
         , m_graphViewSettingsPtr(graphViewSettingsPtr)
         , m_styleManager(toolId, graphViewSettingsPtr->m_styleManagerPath)

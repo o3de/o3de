@@ -64,7 +64,7 @@ namespace AtomToolsFramework
         GraphView(
             const AZ::Crc32& toolId,
             const GraphCanvas::GraphId& activeGraphId,
-            AZStd::shared_ptr<GraphViewSettings> graphViewSettingsPtr,
+            GraphViewSettingsPtr graphViewSettingsPtr,
             QWidget* parent = 0);
         ~GraphView();
 
@@ -134,7 +134,7 @@ namespace AtomToolsFramework
         const AZ::Crc32 m_toolId;
         GraphCanvas::GraphId m_activeGraphId;
 
-        AZStd::shared_ptr<GraphViewSettings> m_graphViewSettingsPtr;
+        GraphViewSettingsPtr m_graphViewSettingsPtr;
         AzQtComponents::WindowDecorationWrapper* m_presetWrapper = {};
         GraphCanvas::ConstructPresetDialog* m_presetEditor = {};
         GraphCanvas::GraphCanvasGraphicsView* m_graphicsView = {};

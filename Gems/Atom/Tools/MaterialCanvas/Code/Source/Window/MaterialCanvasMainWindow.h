@@ -37,7 +37,7 @@ namespace MaterialCanvas
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
         MaterialCanvasMainWindow(
-            const AZ::Crc32& toolId, const AZStd::shared_ptr<AtomToolsFramework::GraphViewSettings>& graphViewSettingsPtr, QWidget* parent = 0);
+            const AZ::Crc32& toolId, AtomToolsFramework::GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent = 0);
         ~MaterialCanvasMainWindow() = default;
 
     protected:
@@ -58,7 +58,7 @@ namespace MaterialCanvas
         AtomToolsFramework::EntityPreviewViewportSettingsInspector* m_viewportSettingsInspector = {};
         AtomToolsFramework::EntityPreviewViewportToolBar* m_toolBar = {};
         AtomToolsFramework::EntityPreviewViewportWidget* m_materialViewport = {};
-        AZStd::shared_ptr<AtomToolsFramework::GraphViewSettings> m_graphViewSettingsPtr;
+        AtomToolsFramework::GraphViewSettingsPtr m_graphViewSettingsPtr;
         GraphCanvas::BookmarkDockWidget* m_bookmarkDockWidget = {};
         GraphCanvas::NodePaletteDockWidget* m_nodePalette = {};
         GraphCanvas::StyleManager m_styleManager;

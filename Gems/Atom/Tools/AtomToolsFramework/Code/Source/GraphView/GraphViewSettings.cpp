@@ -47,7 +47,6 @@ namespace AtomToolsFramework
                 ->Field("constructPresets", &GraphViewSettings::m_constructPresets)
                 ;
 
-            using GraphViewSettingsPtr =AZStd::shared_ptr<AtomToolsFramework::GraphViewSettings>;
             serialize->RegisterGenericType<GraphViewSettingsPtr>();
 
             if (auto editContext = serialize->GetEditContext())

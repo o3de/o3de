@@ -119,4 +119,7 @@ namespace AtomToolsFramework
 
         mutable GraphViewConstructPresets m_constructPresets;
     };
+
+    using GraphViewSettingsPtr = AZStd::shared_ptr<GraphViewSettings>;
+
 } // namespace AtomToolsFramework

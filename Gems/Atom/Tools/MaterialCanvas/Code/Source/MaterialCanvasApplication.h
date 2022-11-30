@@ -54,6 +54,6 @@ namespace MaterialCanvas
         AZStd::unique_ptr<AtomToolsFramework::EntityPreviewViewportSettingsSystem> m_viewportSettingsSystem;
         AZStd::unique_ptr<AtomToolsFramework::DynamicNodeManager> m_dynamicNodeManager;
         AZStd::shared_ptr<GraphModel::GraphContext> m_graphContext;
-        AZStd::shared_ptr<AtomToolsFramework::GraphViewSettings> m_graphViewSettingsPtr;
+        AtomToolsFramework::GraphViewSettingsPtr m_graphViewSettingsPtr;
     };
 } // namespace MaterialCanvas
