@@ -7,5 +7,5 @@
 #
 
 set(FILES
-    main.cpp
+    Tests/test_main.cpp
 )
