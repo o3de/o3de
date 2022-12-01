@@ -22,7 +22,7 @@ namespace UnitTest
      * Test InterProcessCommunication utils.
      */
     class IPC
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 

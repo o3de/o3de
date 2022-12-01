@@ -169,6 +169,8 @@ namespace AZ::Render
                 m_atmospherePassData.push_back({ index, srg, AZStd::move(shaderOptionGroup) });
             }
         }
+
+        m_updateConstants = true;
     }
 
     void SkyAtmospherePass::BuildInternal()
@@ -181,7 +183,6 @@ namespace AZ::Render
 
         BindLUTs();
 
-        m_updateConstants = true;
         m_enableLUTPass = true;
     }
 
@@ -200,8 +201,40 @@ namespace AZ::Render
         }
     }
 
+    bool SkyAtmospherePass::NeedsShaderDataRebuild() const
+    {
+        if (m_children.empty())
+        {
+            return false;
+        }
+        else if (m_children.size() != m_atmospherePassData.size())
+        {
+            return true;
+        }
+
+        // SRG may change due to a shader reload
+        for (int i = 0; i < m_atmospherePassData.size(); ++i)
+        {
+            if (RPI::RenderPass* renderPass = azrtti_cast<RPI::RenderPass*>(m_children[i].get()))
+            {
+                auto srg = renderPass->GetShaderResourceGroup();
+                if (m_atmospherePassData[i].m_srg != srg)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     void SkyAtmospherePass::FrameBeginInternal(AZ::RPI::Pass::FramePrepareParams params)
     {
+        if (NeedsShaderDataRebuild())
+        {
+            BuildShaderData();
+        }
+
         if (m_updateConstants && !m_atmospherePassData.empty())
         {
             m_updateConstants = false;

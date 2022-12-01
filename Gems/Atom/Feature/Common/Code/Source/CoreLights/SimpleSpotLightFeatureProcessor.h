@@ -8,6 +8,9 @@
 
 #pragma once
 
+#include <AzCore/Math/Frustum.h>
+#include <AzCore/Math/Hemisphere.h>
+#include <Atom/Feature/CoreLights/LightCommon.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/SimpleSpotLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
@@ -73,7 +76,7 @@ namespace AZ
 
             static constexpr const char* FeatureProcessorName = "SimpleSpotLightFeatureProcessor";
 
-            IndexedDataVector<SimpleSpotLightData> m_pointLightData;
+            IndexedDataVector<SimpleSpotLightData> m_lightData;
             GpuBufferHandler m_lightBufferHandler;
             bool m_deviceBufferNeedsUpdate = false;
         };

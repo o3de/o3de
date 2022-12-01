@@ -2,6 +2,7 @@
     "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
     "propertyValues": {
+        "general.applySpecularAA": false,
         "metallic.factor": 1.0,
         "normal.flipY": true,
         "normal.textureMap": "../../Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_normal.png",

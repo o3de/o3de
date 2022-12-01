@@ -51,12 +51,11 @@ namespace AZ
         ", Option3/6 sets the CVar to the Option3 value");
 
     class ConsoleTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            SetupAllocator();
             m_console = AZStd::make_unique<AZ::Console>();
             m_console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
             AZ::Interface<AZ::IConsole>::Register(m_console.get());
@@ -66,7 +65,6 @@ namespace AZ
         {
             AZ::Interface<AZ::IConsole>::Unregister(m_console.get());
             m_console = nullptr;
-            TeardownAllocator();
         }
 
         void TestClassFunc(const AZ::ConsoleCommandContainer& someStrings)
@@ -410,7 +408,7 @@ namespace ConsoleSettingsRegistryTests
         AZStd::string_view m_testConfigContents;
     };
     class ConsoleSettingsRegistryFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<ConfigFileParams>
     {
     public:

@@ -467,7 +467,8 @@ namespace AssetUtilities
         fileName.toWCharArray(usableFileName.data());
 
         // third parameter dwShareMode (0) prevents share access
-        HANDLE fileHandle = CreateFileW(usableFileName.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, 0, 0);
+        const DWORD dwShareMode = 0;
+        HANDLE fileHandle = CreateFileW(usableFileName.c_str(), GENERIC_READ, dwShareMode, nullptr, OPEN_EXISTING, 0, 0);
 
         if (fileHandle != INVALID_HANDLE_VALUE)
         {
@@ -1436,15 +1437,13 @@ namespace AssetUtilities
 
         if (!topLevelSource)
         {
-            AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer source;
-            db->GetSourcesBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), source);
-
-            if(source.empty())
+            AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
+            if(!db->GetSourceBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), source))
             {
                 return {};
             }
 
-            topLevelSource = source[0];
+            topLevelSource = source;
         }
 
         AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanFolder;

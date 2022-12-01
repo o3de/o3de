@@ -72,6 +72,7 @@ namespace AzToolsFramework
             AddedStatsTable,
             ChangedSourceDependencySourceColumn,
             SplitMaterialBuilderAndMaterialAssetBuilder,
+            NewMaterialTypeBuildPipeline,
             //Add all new versions before this
             DatabaseVersionCount,
             LatestVersion = DatabaseVersionCount - 1

@@ -77,6 +77,8 @@ namespace SceneBuilder
 
         AZ::u32 BuildSubId(const AZ::SceneAPI::Events::ExportProduct& product) const;
 
+        void DefaultSriptDependencyCheck(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response);
+
         bool m_isShuttingDown = false;
         mutable AZStd::string m_cachedFingerprint;
     };

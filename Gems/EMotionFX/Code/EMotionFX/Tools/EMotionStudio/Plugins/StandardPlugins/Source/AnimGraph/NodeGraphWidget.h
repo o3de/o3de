@@ -17,10 +17,15 @@
 #include <QPoint>
 #endif
 
+QT_FORWARD_DECLARE_CLASS(QLineEdit)
 QT_FORWARD_DECLARE_CLASS(QPainter)
 
-
 #define NODEGRAPHWIDGET_USE_OPENGL
+
+namespace EMotionFX
+{
+    class AnimGraphNodeGroup;
+}
 
 namespace EMStudio
 {
@@ -156,5 +161,7 @@ namespace EMStudio
         QColor                      m_borderOverwriteColor;
         float                       m_borderOverwriteWidth;
         QString                     m_titleBarText;
+
+        void SelectNodesInGroup(EMotionFX::AnimGraphNodeGroup* nodeGroup);
     };
 } // namespace EMStudio

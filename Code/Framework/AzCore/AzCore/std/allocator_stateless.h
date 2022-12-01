@@ -9,45 +9,31 @@
 #pragma once
 
 #include <AzCore/std/base.h>
-#include <AzCore/std/typetraits/integral_constant.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/Memory/IAllocator.h>
 
 namespace AZStd
 {
     class stateless_allocator
     {
     public:
-
         AZ_TYPE_INFO(stateless_allocator, "{E4976C53-0B20-4F39-8D41-0A76F59A7D68}");
 
-        using value_type = uint8_t;
-        using pointer_type = void*;
-        using size_type = size_t;
-        using difference_type = ptrdiff_t;
-        using allow_memory_leaks = AZStd::true_type;
+        AZ_ALLOCATOR_DEFAULT_TRAITS
 
-        stateless_allocator();
-        explicit stateless_allocator(const char*); // Stateless allocator does not store a name
+        stateless_allocator() = default;
         stateless_allocator(const stateless_allocator& rhs) = default;
-
         stateless_allocator& operator=(const stateless_allocator& rhs) = default;
 
-        const char* get_name() const;
-        void set_name(const char* name);
+        pointer allocate(size_type byteSize, align_type alignment = 1);
+        void deallocate(pointer ptr, size_type byteSize = 0, align_type alignment = 0);
+        pointer reallocate(pointer ptr, size_type newSize, align_type alignment = 1);
+        size_type resize(pointer ptr, size_type newSize);
 
-        pointer_type allocate(size_type byteSize);
-        pointer_type allocate(size_type byteSize, size_type alignment, int flags = 0);
-        void deallocate(pointer_type ptr, size_type alignment);
-        void deallocate(pointer_type ptr, size_type byteSize, size_type alignment);
-
-        // max_size actually returns the true maximum size of a single allocation
-        size_type max_size() const;
-
-        // Returns a copy of the allocator
-        stateless_allocator select_on_container_copy_construction() const;
-
-        //! extensions
-        size_type resize(pointer_type ptr, size_type newSize);
+        size_type max_size() const
+        {
+            return AZ_TRAIT_OS_MEMORY_MAX_ALLOCATOR_SIZE;
+        }
 
         bool is_lock_free();
         bool is_stale_read_allowed();

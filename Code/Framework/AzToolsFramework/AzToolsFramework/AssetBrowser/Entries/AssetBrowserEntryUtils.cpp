@@ -186,6 +186,13 @@ namespace AzToolsFramework
                             static_cast<const ProductAssetBrowserEntry*>(entry)->GetAssetId().ToString<AZStd::string>().c_str(),
                             entry->GetName().c_str());
                         break;
+                    case AssetBrowserEntry::AssetEntryType::Folder:
+                        return AZStd::string::format(
+                            "%s|%s//%s", // "Folder|{SOME ASSETID}//friendly name hint
+                            entryTypeString.c_str(),
+                            static_cast<const FolderAssetBrowserEntry*>(entry)->GetFolderUuid().ToString<AZStd::string>().c_str(),
+                            entry->GetName().c_str());
+                        break;
                     default:
                         AZ_Warning("Asset Browser", false, "Asset browser does not support this operation on folders.");
                         break;
@@ -224,6 +231,13 @@ namespace AzToolsFramework
                     // the data is an asset id.
                     AZ::Data::AssetId assetId = AZ::Data::AssetId::CreateString(dataPortion);
                     return ProductAssetBrowserEntry::GetProductByAssetId(assetId);
+                }
+                else if (typeNamePortion.compare(
+                        AssetBrowserEntry::AssetEntryTypeToString(AssetBrowserEntry::AssetEntryType::Folder).toUtf8().constData()) == 0)
+                {
+                    // the data is an folder uuid.
+                    AZ::Uuid folderUuid = AZ::Uuid::CreateString(dataPortion.data(), dataPortion.size());
+                    return FolderAssetBrowserEntry::GetFolderByUuid(folderUuid);
                 }
                 else
                 {

@@ -34,7 +34,7 @@
 namespace UnitTest
 {
     class RangesViewTestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {};
 
     TEST_F(RangesViewTestFixture, AllRangeAdaptor_Succeeds)
@@ -849,12 +849,6 @@ namespace UnitTest
             }
         }
         EXPECT_THAT(resultValues, ::testing::ElementsAreArray(expectedValues));
-    }
-
-    TEST_F(RangesViewTestFixture, IotaView_WithReverseView_CanGenerateDecrementingValues)
-    {
-        constexpr AZStd::array expectedValues{ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
-        EXPECT_THAT(AZStd::vector(AZStd::from_range, AZStd::views::iota(0, 10) | AZStd::views::reverse), ::testing::ElementsAreArray(expectedValues));
     }
 
     TEST_F(RangesViewTestFixture, IotaView_WithZipView_CanGenerateIndexForEveryElementOfOtherView)

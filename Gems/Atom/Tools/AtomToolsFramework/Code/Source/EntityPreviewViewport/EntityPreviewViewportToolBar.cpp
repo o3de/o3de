@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
+#include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsRequestBus.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h>
 #include <AtomToolsFramework/Util/Util.h>
@@ -19,6 +20,7 @@
 #include <QIcon>
 #include <QMenu>
 #include <QToolButton>
+#include <QtConcurrent/QtConcurrent>
 
 namespace AtomToolsFramework
 {
@@ -83,30 +85,71 @@ namespace AtomToolsFramework
         });
         displayMapperAction->setCheckable(false);
 
+        // Setting the minimum drop down with for all asset selection combo boxes to compensate for longer file names, like render
+        // pipelines.
+        const int minComboBoxDropdownWidth = 220;
+
         // Add lighting preset combo box
-        m_lightingPresetComboBox = new AssetSelectionComboBox([](const AZ::Data::AssetInfo& assetInfo) {
-            return assetInfo.m_assetType == AZ::RPI::AnyAsset::RTTI_Type() &&
-                AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), AZ::Render::LightingPreset::Extension);
+        m_lightingPresetComboBox = new AssetSelectionComboBox([](const AZStd::string& path) {
+            return path.ends_with(AZ::Render::LightingPreset::Extension);
         }, this);
-        connect(m_lightingPresetComboBox, &AssetSelectionComboBox::AssetSelected, this, [this](const AZ::Data::AssetId& assetId) {
-            EntityPreviewViewportSettingsRequestBus::Event(
-                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPresetByAssetId, assetId);
-        });
+        m_lightingPresetComboBox->view()->setMinimumWidth(minComboBoxDropdownWidth);
         addWidget(m_lightingPresetComboBox);
 
         // Add model preset combo box
-        m_modelPresetComboBox = new AssetSelectionComboBox([](const AZ::Data::AssetInfo& assetInfo) {
-            return assetInfo.m_assetType == AZ::RPI::AnyAsset::RTTI_Type() &&
-                AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), AZ::Render::ModelPreset::Extension);
+        m_modelPresetComboBox = new AssetSelectionComboBox([](const AZStd::string& path) {
+            return path.ends_with(AZ::Render::ModelPreset::Extension);
         }, this);
-        connect(m_modelPresetComboBox, &AssetSelectionComboBox::AssetSelected, this, [this](const AZ::Data::AssetId& assetId) {
-            EntityPreviewViewportSettingsRequestBus::Event(
-                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPresetByAssetId, assetId);
-        });
+        m_modelPresetComboBox->view()->setMinimumWidth(minComboBoxDropdownWidth);
         addWidget(m_modelPresetComboBox);
 
-        OnViewportSettingsChanged();
+        // Add render pipeline combo box
+        m_renderPipelineComboBox = new AssetSelectionComboBox([](const AZStd::string& path) {
+            return path.ends_with(AZ::RPI::RenderPipelineDescriptor::Extension);
+        }, this);
+        m_renderPipelineComboBox->view()->setMinimumWidth(minComboBoxDropdownWidth);
+        addWidget(m_renderPipelineComboBox);
+        
+        // Prepopulating preset selection widgets with previously registered presets.
+        EntityPreviewViewportSettingsRequestBus::Event(
+            m_toolId,
+            [this](EntityPreviewViewportSettingsRequests* viewportRequests)
+            {
+                m_lightingPresetComboBox->AddPath(viewportRequests->GetLastLightingPresetPath());
+                for (const auto& path : viewportRequests->GetRegisteredLightingPresetPaths())
+                {
+                    m_lightingPresetComboBox->AddPath(path);
+                }
 
+                m_modelPresetComboBox->AddPath(viewportRequests->GetLastModelPresetPath());
+                for (const auto& path : viewportRequests->GetRegisteredModelPresetPaths())
+                {
+                    m_modelPresetComboBox->AddPath(path);
+                }
+                
+                m_renderPipelineComboBox->AddPath(viewportRequests->GetLastRenderPipelinePath());
+                for (const auto& path : viewportRequests->GetRegisteredRenderPipelinePaths())
+                {
+                    m_renderPipelineComboBox->AddPath(path);
+                }
+            });
+
+        connect(m_lightingPresetComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPreset, path);
+        });
+
+        connect(m_modelPresetComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset, path);
+        });
+
+        connect(m_renderPipelineComboBox, &AssetSelectionComboBox::PathSelected, this, [this](const AZStd::string& path) {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadRenderPipeline, path);
+        });
+ 
+        OnViewportSettingsChanged();
         EntityPreviewViewportSettingsNotificationBus::Handler::BusConnect(m_toolId);
     }
 
@@ -124,9 +167,25 @@ namespace AtomToolsFramework
                 m_toggleGrid->setChecked(viewportRequests->GetGridEnabled());
                 m_toggleShadowCatcher->setChecked(viewportRequests->GetShadowCatcherEnabled());
                 m_toggleAlternateSkybox->setChecked(viewportRequests->GetAlternateSkyboxEnabled());
-                m_lightingPresetComboBox->SelectAsset(viewportRequests->GetLastLightingPresetAssetId());
-                m_modelPresetComboBox->SelectAsset(viewportRequests->GetLastModelPresetAssetId());
+                m_lightingPresetComboBox->SelectPath(viewportRequests->GetLastLightingPresetPath());
+                m_modelPresetComboBox->SelectPath(viewportRequests->GetLastModelPresetPath());
+                m_renderPipelineComboBox->SelectPath(viewportRequests->GetLastRenderPipelinePath());
             });
+    }
+
+    void EntityPreviewViewportToolBar::OnModelPresetAdded(const AZStd::string& path)
+    {
+        m_modelPresetComboBox->AddPath(path);
+    }
+
+    void EntityPreviewViewportToolBar::OnLightingPresetAdded(const AZStd::string& path)
+    {
+        m_lightingPresetComboBox->AddPath(path);
+    }
+
+    void EntityPreviewViewportToolBar::OnRenderPipelineAdded(const AZStd::string& path)
+    {
+        m_renderPipelineComboBox->AddPath(path);
     }
 } // namespace AtomToolsFramework
 

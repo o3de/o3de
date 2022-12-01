@@ -46,6 +46,7 @@ namespace Multiplayer
         void DeclareStatGroup(int uniqueGroupId, const char* groupName) override;
         void DeclareStat(int uniqueGroupId, int uniqueStatId, const char* statName) override;
         void SetStat(int uniqueStatId, double value) override;
+        void IncrementStat(int uniqueStatId) override;
         //! @}
 
     private:
@@ -58,9 +59,12 @@ namespace Multiplayer
 
         struct CumulativeAverage
         {
+            using AverageWindowType = AZ::IO::AverageWindow<double, double, AZ::IO::s_statisticsWindowSize>;
+
             AZStd::string m_name;
-            AZ::IO::AverageWindow<double, double, AZ::IO::s_statisticsWindowSize> m_average;
-            AZ::u64 m_sampleCount = 0;
+            AverageWindowType m_average;
+            double m_lastValue = 0;
+            AZ::u64 m_counterValue = 0; // Used by counters.
         };
 
         //! A custom combined data structure for fast iteration and fast insertion.

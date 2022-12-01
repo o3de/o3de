@@ -340,16 +340,16 @@ namespace UnitTest
             m_testMaterialSrgLayout = RHI::ShaderResourceGroupLayout::Create();
             m_testMaterialSrgLayout->SetName(materialSrgId);
             m_testMaterialSrgLayout->SetBindingSlot(SrgBindingSlot::Material);
-            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_color" }, 4, 16, 0 });
-            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float" }, 20, 4, 0 });
-            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_int" }, 24, 4, 0 });
-            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_uint" }, 28, 4, 0 });
-            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float2" }, 32, 8, 0 });
-            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float3" }, 40, 12, 0 });
-            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float4" }, 52, 16, 0 });
-            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_bool" }, 68, 1, 0 });
-            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_image" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_attachmentImage" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_color" }, 4, 16, 0, 0});
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float" }, 20, 4, 0, 0});
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_int" }, 24, 4, 0, 0});
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_uint" }, 28, 4, 0, 0});
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float2" }, 32, 8, 0, 0});
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float3" }, 40, 12, 0, 0});
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float4" }, 52, 16, 0, 0});
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_bool" }, 68, 1, 0, 0});
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_image" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_attachmentImage" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
             EXPECT_TRUE(m_testMaterialSrgLayout->Finalize());
 
             AZStd::vector<RPI::ShaderOptionValuePair> optionValues = CreateEnumShaderOptionValues({"Low", "Med", "High"});
@@ -420,7 +420,6 @@ namespace UnitTest
             for (int i = 0; i < expectedValues.m_outputConnections.size() && i < propertyDescriptor->GetOutputConnections().size(); ++i)
             {
                 EXPECT_EQ(propertyDescriptor->GetOutputConnections()[i].m_type, expectedValues.m_outputConnections[i].m_type);
-                EXPECT_EQ(propertyDescriptor->GetOutputConnections()[i].m_containerIndex.GetIndex(), expectedValues.m_outputConnections[i].m_shaderIndex);
             }
         }
     };
@@ -920,6 +919,7 @@ namespace UnitTest
         const MaterialPropertyDescriptor* propertyDescriptor = materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex);
 
         ValidateCommonDescriptorFields(*property, propertyDescriptor);
+        EXPECT_TRUE(propertyDescriptor->GetOutputConnections()[0].m_containerIndex.IsNull());
         EXPECT_EQ(propertyDescriptor->GetOutputConnections()[0].m_itemIndex.GetIndex(), 7);
     }
 
@@ -950,6 +950,7 @@ namespace UnitTest
         const MaterialPropertyDescriptor* propertyDescriptor = materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex);
 
         ValidateCommonDescriptorFields(*property, propertyDescriptor);
+        EXPECT_TRUE(propertyDescriptor->GetOutputConnections()[0].m_containerIndex.IsNull());
         EXPECT_EQ(propertyDescriptor->GetOutputConnections()[0].m_itemIndex.GetIndex(), 1);
     }
 
@@ -975,6 +976,7 @@ namespace UnitTest
         const MaterialPropertyDescriptor* propertyDescriptor = materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex);
 
         ValidateCommonDescriptorFields(*property, propertyDescriptor);
+        EXPECT_TRUE(propertyDescriptor->GetOutputConnections()[0].m_containerIndex.IsNull());
         EXPECT_EQ(propertyDescriptor->GetOutputConnections()[0].m_itemIndex.GetIndex(), 0);
     }
 
@@ -998,7 +1000,46 @@ namespace UnitTest
         const MaterialPropertyDescriptor* propertyDescriptor = materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyDescriptor(MaterialPropertyIndex{0});
 
         ValidateCommonDescriptorFields(*property, propertyDescriptor);
+        EXPECT_EQ(propertyDescriptor->GetOutputConnections()[0].m_containerIndex.GetIndex(), 0);
         EXPECT_EQ(propertyDescriptor->GetOutputConnections()[0].m_itemIndex.GetIndex(), 1);
+    }
+
+    TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_BoolPropertyConnectedToShaderEnabled)
+    {
+        MaterialTypeSourceData sourceData;
+
+        sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{TestShaderFilename});
+        sourceData.m_shaderCollection.back().m_shaderTag = Name{"first"};
+        sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{TestShaderFilename2});
+        sourceData.m_shaderCollection.back().m_shaderTag = Name{"second"};
+
+        MaterialTypeSourceData::PropertyGroup* propertyGroup = sourceData.AddPropertyGroup("general");
+
+        MaterialTypeSourceData::PropertyDefinition* property1 = propertyGroup->AddProperty("EnableShader1");
+        property1->m_displayName = "Enable Shader 1";
+        property1->m_dataType = MaterialPropertyDataType::Bool;
+        property1->m_value = true;
+        property1->m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection { MaterialPropertyOutputType::ShaderEnabled, AZStd::string("first") });
+
+        MaterialTypeSourceData::PropertyDefinition* property2 = propertyGroup->AddProperty("EnableShader2");
+        property2->m_displayName = "Enable Shader 2";
+        property2->m_dataType = MaterialPropertyDataType::Bool;
+        property2->m_value = true;
+        property2->m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection { MaterialPropertyOutputType::ShaderEnabled, AZStd::string("second") });
+
+        auto materialTypeOutcome = sourceData.CreateMaterialTypeAsset(Uuid::CreateRandom());
+        EXPECT_TRUE(materialTypeOutcome.IsSuccess());
+        Data::Asset<MaterialTypeAsset> materialTypeAsset = materialTypeOutcome.GetValue();
+
+        const MaterialPropertyIndex propertyIndex1 = materialTypeAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(Name{"general.EnableShader1"});
+        const MaterialPropertyIndex propertyIndex2 = materialTypeAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(Name{"general.EnableShader2"});
+        const MaterialPropertyDescriptor* propertyDescriptor1 = materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex1);
+        const MaterialPropertyDescriptor* propertyDescriptor2 = materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex2);
+
+        ValidateCommonDescriptorFields(*property1, propertyDescriptor1);
+        ValidateCommonDescriptorFields(*property2, propertyDescriptor2);
+        EXPECT_EQ(propertyDescriptor1->GetOutputConnections()[0].m_containerIndex.GetIndex(), 0);
+        EXPECT_EQ(propertyDescriptor2->GetOutputConnections()[0].m_containerIndex.GetIndex(), 1);
     }
 
     TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_Error_PropertyConnectedToInvalidShaderOptionId)
@@ -1035,7 +1076,12 @@ namespace UnitTest
                             ]
                         }
                     ]
-                }
+                },
+                "shaders": [
+                    {
+                        "file": "test.shader"
+                    }
+                ]
             }
         )";
 
@@ -1065,7 +1111,12 @@ namespace UnitTest
                             ]
                         }
                     ]
-                }
+                },
+                "shaders": [
+                    {
+                        "file": "test.shader"
+                    }
+                ]
             }
         )";
 
@@ -1099,7 +1150,12 @@ namespace UnitTest
                             ]
                         }
                     ]
-                }
+                },
+                "shaders": [
+                    {
+                        "file": "test.shader"
+                    }
+                ]
             }
         )";
 
@@ -1141,7 +1197,12 @@ namespace UnitTest
                             ]
                         }
                     ]
-                }
+                },
+                "shaders": [
+                    {
+                        "file": "test.shader"
+                    }
+                ]
             }
         )";
 
@@ -1483,14 +1544,14 @@ namespace UnitTest
         RHI::Ptr<RHI::ShaderResourceGroupLayout> layeredMaterialSrgLayout = RHI::ShaderResourceGroupLayout::Create();
         layeredMaterialSrgLayout->SetName(Name{"MaterialSrg"});
         layeredMaterialSrgLayout->SetBindingSlot(SrgBindingSlot::Material);
-        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer1_baseColor_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer1_roughness_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer2_baseColor_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer2_roughness_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer2_clearCoat_roughness_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer2_clearCoat_normal_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_layer2_clearCoat_normal_factor" }, 0, 4, 0 });
-        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_blendFactor" }, 4, 4, 0 });
+        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer1_baseColor_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer1_roughness_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer2_baseColor_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer2_roughness_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer2_clearCoat_roughness_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer2_clearCoat_normal_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_layer2_clearCoat_normal_factor" }, 0, 4, 0, 0});
+        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_blendFactor" }, 4, 4, 0, 0});
         layeredMaterialSrgLayout->Finalize();
         
         AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues = CreateBoolShaderOptionValues();
@@ -1922,7 +1983,7 @@ namespace UnitTest
         EXPECT_EQ(material.GetPropertyLayout().m_propertiesOld.size(), 2);
         EXPECT_EQ(material.GetPropertyLayout().m_propertyGroups.size(), 0);
 
-        material.ConvertToNewDataFormat();
+        material.UpgradeLegacyFormat();
         
         // After conversion to the new format, the data is in the new place
         EXPECT_EQ(material.GetPropertyLayout().m_groupsOld.size(), 0);
@@ -1990,7 +2051,7 @@ namespace UnitTest
     TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_PropertyImagePath)
     {
         char inputJson[2048];
-        azsprintf(inputJson,
+        azsnprintf(inputJson, AZ_ARRAY_SIZE(inputJson),
             R"(
                 {
                     "description": "",
@@ -2014,7 +2075,12 @@ namespace UnitTest
                                 ]
                             }
                         ]
-                    }
+                    },
+                    "shaders": [
+                        {
+                            "file": "test.shader"
+                        }
+                    ]
                 }
             )",
             MaterialTypeSourceDataTests::TestImageFilepathAbsolute,
@@ -2035,7 +2101,7 @@ namespace UnitTest
     TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_ResolveSetValueVersionUpdates)
     {
         char inputJson[2048];
-        azsprintf(inputJson,
+        azsnprintf(inputJson, AZ_ARRAY_SIZE(inputJson),
         R"(
             {
                 "description": "",
@@ -2070,7 +2136,12 @@ namespace UnitTest
                             ]
                         }
                     ]
-                }
+                },
+                "shaders": [
+                    {
+                        "file": "test.shader"
+                    }
+                ]
             }
             )",
             MaterialTypeSourceDataTests::TestImageFilepathAbsolute);
@@ -2110,7 +2181,12 @@ namespace UnitTest
             {
                 "propertyLayout": {
                     "version": 4
-                }
+                },
+                "shaders": [
+                    {
+                        "file": "test.shader"
+                    }
+                ]
             }
         )";
 
@@ -2182,11 +2258,11 @@ namespace UnitTest
         RHI::Ptr<RHI::ShaderResourceGroupLayout> materialSrgLayout = RHI::ShaderResourceGroupLayout::Create();
         materialSrgLayout->SetName(materialSrgId);
         materialSrgLayout->SetBindingSlot(SrgBindingSlot::Material);
-        materialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_unused1" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-        materialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_unused2" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-        materialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_groupA_m_groupB_m_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-        materialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_unused3" }, 0, 4, 0 });
-        materialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_groupA_m_groupB_m_number" }, 4, 4, 0 });
+        materialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_unused1" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+        materialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_unused2" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+        materialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_groupA_m_groupB_m_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+        materialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_unused3" }, 0, 4, 0, 0});
+        materialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_groupA_m_groupB_m_number" }, 4, 4, 0, 0});
         EXPECT_TRUE(materialSrgLayout->Finalize());
 
         Ptr<ShaderOptionGroupLayout> shaderOptions = ShaderOptionGroupLayout::Create();

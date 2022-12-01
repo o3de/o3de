@@ -50,5 +50,11 @@ namespace Multiplayer
         //! @param uniqueStatId a unique stat id
         //! @param value current value
         virtual void SetStat(int uniqueStatId, double value) = 0;
+
+        //! It's recommended to use INCREASE_PERFORMANCE_STAT macro instead.
+        //! Increments the value of a given stat by one (1) that has been already declared with DECLARE_PERFORMANCE_STAT
+        //! Note: metrics will take the average value of a stat within the period configured with @SetReportPeriod and reset to back to zero each time.
+        //! @param uniqueStatId a unique stat id
+        virtual void IncrementStat(int uniqueStatId) = 0;
     };
 } // namespace Multiplayer
