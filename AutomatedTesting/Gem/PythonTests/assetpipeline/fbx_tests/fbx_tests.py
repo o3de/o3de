@@ -9,6 +9,7 @@ import binascii
 from dataclasses import dataclass
 import logging
 import os
+from pprint import pformat
 import pytest
 import re
 import shutil
@@ -809,8 +810,146 @@ class TestsFBX_AllPlatforms(object):
                     product.product_name = job.platform + "/" \
                                            + product.product_name
 
+
     @staticmethod
-    def compare_scene_debug_file(asset_processor, expected_file_path, actual_file_path, expected_hashes_to_skip = None, actual_hashes_to_skip = None):
+    def trim_floating_point_values_from_same_length_lists(diff_actual: List[str], diff_expected: List[str],
+            actual_file_path:str, expected_file_path:str) -> (List[str], List[str]):
+        # Linux and non-Linux platforms generate slightly different values for floating points.
+        # Long term, it will be important to stabilize the output of product assets, because this difference
+        # will cause problems: If an Android asset is generated from a Linux versus Windows machine, for example,
+        # it will be different when it's not expected to be different.
+        # In the short term, it's not something addressed yet, so instead this function will
+        # truncate any floating point values to be short enough to be stable. It will then emit a warning, to help keep track of this issue.
+        
+        # Get the initial list lengths, so they can be compared to the list lengths later to see if any differences were
+        # removed due to floating point value drift.
+        initial_diff_actual_len = len(diff_actual)
+        initial_diff_expected_len = len(diff_expected)
+
+        # This function requires the two lists to be equal length.
+        assert initial_diff_actual_len == initial_diff_expected_len, "Scene mismatch - different line counts"
+
+        # Floating point values between Linux and Windows aren't consistent yet. For now, trim these values for comparison.
+        # Store the trimmed values and compare the un-trimmed values separately, emitting warnings.
+        # Trim decimals from the lists to be compared, if any where found, re-compare and generate new lists.
+        DECIMAL_DIGITS_TO_PRESERVE = 3
+        floating_point_regex = re.compile(f"(.*?-?[0-9]+\\.[0-9]{{{DECIMAL_DIGITS_TO_PRESERVE},{DECIMAL_DIGITS_TO_PRESERVE}}})[0-9]+(.*)")
+        for index, diff_actual_line in enumerate(diff_actual):
+            # Loop, because there may be multiple floats on the same line.
+            while True:
+                match_result = floating_point_regex.match(diff_actual[index])
+                if not match_result:
+                    break
+                diff_actual[index] = f"{match_result.group(1)}{match_result.group(2)}"
+            # diff_actual and diff_expected have the same line count, so they can both be checked here
+            while True:
+                match_result = floating_point_regex.match(diff_expected[index])
+                if not match_result:
+                    break
+                diff_expected[index] = f"{match_result.group(1)}{match_result.group(2)}"
+                
+        # Re-run the diff now that floating point values have been truncated.
+        diff_actual, diff_expected = utils.get_differences_between_lists(diff_actual, diff_expected)
+        
+        # If both lists are now empty, then the only differences between the two scene files were floating point drift.
+        if (diff_actual == None and diff_expected == None) or (len(diff_actual) == 0 and len(diff_actual) == 0):
+            warnings.warn(f"Floating point drift detected between {expected_file_path} and {actual_file_path}.")
+            return diff_actual, diff_expected
+            
+        # Something has gone wrong if the lists are now somehow different lengths after the comparison.
+        assert len(diff_actual) == len(diff_expected), "Scene mismatch - different line counts after truncation"
+
+        # If some entries were removed from both lists but not all, then there was some floating point drift causing
+        # differences to appear between the scene files. Provide a warning on that so it can be tracked, then
+        # continue on to the next set of list comparisons.
+        if len(diff_actual) != initial_diff_actual_len or len(diff_expected) != initial_diff_expected_len:
+            warnings.warn(f"Floating point drift detected between {expected_file_path} and {actual_file_path}.")
+
+        return diff_actual, diff_expected
+
+        
+    @staticmethod
+    def scan_scene_debug_xml_file_for_issues(diff_actual: List[str], diff_expected: List[str],
+            actual_hashes_to_skip: List[str], expected_hashes_to_skip: List[str]) -> (List[str], List[str]):
+        # Given the differences between the newly generated XML file versus the last known good, and the lists of hashes that were
+        # skipped in the non-XML debug scene graph comparison, check if the differences in the XML file are the same as the hashes
+        # that were skipped in the non-XML file.
+        # Hashes are generated differently on Linux than other platforms right now. Long term this is a problem, it will mean that
+        # product assets generated on Linux are different than other platforms. Short term, this is a known issue. This automated
+        # test handles this by emitting warnings when this occurs.
+
+        # If the difference count doesn't match the non-XML file, then it's not just hash mis-matches in the XML file, and the test has failed.
+        assert len(expected_hashes_to_skip) == len(diff_expected), "Scene mismatch"
+        assert len(actual_hashes_to_skip) == len(diff_actual), "Scene mismatch"                
+
+        # This test did a simple line by line comparison, and didn't actually load the XML data into a graph to compare.
+        # Which means that the relevant info for this field to make it clear that it is a hash and not another number is not immediately available.
+        # So instead, extract the number and compare it to the known list of hashes.
+        # If this regex fails or the number isn't in the hash list, then it means this is a non-hash difference and should cause a test failure.
+        # Otherwise, if it's just a hash difference, it can be a warning for now, while the information being hashed is not stable across platforms.
+        xml_number_regex = re.compile('.*<Class name="AZ::u64" field="m_data" value="([0-9]*)" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"\\/>')
+
+        for list_entry in diff_actual:
+            match_result = xml_number_regex.match(list_entry)
+            assert match_result, "Scene mismatch"
+            data_value = match_result.group(1)
+            # This value doesn't match the list of known hash differences, so mark this test as failed.
+            assert (data_value in actual_hashes_to_skip), "Scene mismatch"
+                
+        for list_entry in diff_expected:
+            match_result = xml_number_regex.match(list_entry)
+            assert match_result, "Scene mismatch"
+            data_value = match_result.group(1)
+            # This value doesn't match the list of known hash differences, so mark this test as failed.
+            assert (data_value in expected_hashes_to_skip), "Scene mismatch"
+        return expected_hashes_to_skip, actual_hashes_to_skip
+
+
+    @staticmethod
+    def scan_scene_debug_scene_graph_file_differences_for_issues(diff_actual: List[str], diff_expected: List[str],
+            actual_file_path:str, expected_file_path:str) -> (List[str], List[str]):
+        # Given the set of differences between two debug scene graph files, check for any known issues and emit warnings.
+        # For unknown issues, fail the test. This primarily checks for hashes that are different.
+        # Right now, hash generation is sometimes different on Linux from other platforms, and the test assets were generated on Windows,
+        # so the hashes may be different when run on Linux. Also, it's been a pain point to need to re-generate debug scene graphs
+        # when small changes occur in the scenes. This layer of data changing hasn't been causing issues yet, and is caught by other
+        # automated tests focused on the specific set of data. This automated test is to verify that the basic structure of the scene
+        # is the same with each run.
+        diff_actual_hashes_removed = []
+        diff_expected_hashes_removed = []
+
+        hash_regex = re.compile("(.*Hash: )([0-9]*)")
+
+        actual_hashes = []
+        expected_hashes = []
+
+        for list_entry in diff_actual:
+            match_result = hash_regex.match(list_entry)
+            assert match_result, "Scene mismatch"
+            diff_actual_hashes_removed.append(match_result.group(1))
+            actual_hashes.append(match_result.group(2))
+                
+        for list_entry in diff_expected:
+            match_result = hash_regex.match(list_entry)
+            assert match_result, "Scene mismatch"
+            diff_expected_hashes_removed.append(match_result.group(1))
+            expected_hashes.append(match_result.group(2))
+
+        hashes_removed_diffs_identical = utils.compare_lists(diff_actual_hashes_removed, diff_expected_hashes_removed)
+
+        # If, after removing all of the hash values, the lists are now identical, emit a warning.
+        if hashes_removed_diffs_identical == True:
+            warnings.warn(f"Hash values no longer match for debug scene graph between files {expected_file_path} and {actual_file_path}")
+
+        return expected_hashes, actual_hashes
+
+
+    @staticmethod
+    def compare_scene_debug_file(asset_processor, expected_file_path: str, actual_file_path: str,
+            expected_hashes_to_skip: List[str] = None, actual_hashes_to_skip: List[str] = None):
+        # Given the paths to the debug scene graph generated by re-processing the test scene file and the path to the
+        # last known good debug scene graph for that file, load both debug scene graphs into memory and scan them for differences.
+        # Warns on known issues, and fails on unknown issues.
         debug_graph_path = os.path.join(get_cache_folder(asset_processor), actual_file_path)
         expected_debug_graph_path = os.path.join(asset_processor.project_test_source_folder(), "SceneDebug", expected_file_path)
 
@@ -828,112 +967,17 @@ class TestsFBX_AllPlatforms(object):
         # There are some differences that are currently considered warnings.
         # Long term these should become errors, but right now product assets on Linux and non-Linux
         # are showing differences in hashes.
-
-        # If both scene graphs are identical, then bail, everything is working as expected.
-        diff_actual_len = len(diff_actual)
-        diff_expected_len = len(diff_expected)
-        if diff_actual_len == 0 and diff_expected_len == 0:
-            return None, None
-
-        # If one scene has more lines than the other, it's always an error
-        assert diff_actual_len == diff_expected_len, "Scene mismatch - different line counts"
-
-        # Floating point values between Linux and Windows aren't consistent yet. For now, trim these values for comparison.
-        # Store the trimmed values and compare the un-trimmed values separately, emitting warnings.
-
-        # Trim decimals from the lists to be compared, if any where found, re-compare and generate new lists.
-        decimal_digits_to_preserve = 3
-        floating_point_regex = re.compile(f"(.*?-?[0-9]+\\.[0-9]{{{decimal_digits_to_preserve},{decimal_digits_to_preserve}}})[0-9]+(.*)")
-        for index, actual_line in enumerate(diff_actual):
-            # Loop, because there may be multiple floats on the same line.
-            while True:
-                match_result = floating_point_regex.match(diff_actual[index])
-                if not match_result:
-                    break
-                diff_actual[index] = f"{match_result.group(1)}{match_result.group(2)}"
-            # actual and expected have the same line count, so they can both be checked here
-            while True:
-                match_result = floating_point_regex.match(diff_expected[index])
-                if not match_result:
-                    break
-                diff_expected[index] = f"{match_result.group(1)}{match_result.group(2)}"
-                
-        # Re-run the diff now that floating point values have been truncated.
-        # Use that for the rest of this test
-        diff_actual, diff_expected = utils.get_differences_between_lists(diff_actual, diff_expected)
-        
-        if (diff_actual == None and diff_expected == None) or (len(diff_actual) == 0 and len(diff_actual) == 0):
-            warnings.warn(f"Floating point drift detected between {expected_file_path} and {actual_file_path}.")
-            return None, None
-            
-        assert len(diff_actual) == len(diff_expected), "Scene mismatch - different line counts after truncation"
-
-        if len(diff_actual) != diff_actual_len or len(diff_expected) != diff_expected_len:
-            # Emit a warning, so this can be tracked. It's something that will be addressed in the future.
-            warnings.warn(f"Floating point drift detected between {expected_file_path} and {actual_file_path}.")
-            
+        # Linux and non-Linux platforms are also generating different floating point values.
+        diff_actual, diff_expected = TestsFBX_AllPlatforms.trim_floating_point_values_from_same_length_lists(diff_actual, diff_expected, actual_file_path, expected_file_path)
 
         # If this is the XML debug file, then it will be difficult to verify if a line is a hash line or another integer.
         # However, because XML files are always compared after standard dbgsg files, the hashes from that initial comparison can be used here to check.
         is_xml_dbgsg = os.path.splitext(expected_file_path)[-1].lower() == ".xml"        
 
         if is_xml_dbgsg:
-            # If the difference count doesn't match the non-xml file, then it's not just a hash mis-match, fail.
-            assert len(expected_hashes_to_skip) == len(diff_expected), "Scene mismatch"
-            assert len(actual_hashes_to_skip) == len(diff_actual), "Scene mismatch"                
-
-            # This test did a simple line by line comparison, and didn't actually load the XML data into a graph to compare.
-            # Which means that the relevant info for this field to make it clear that it is a hash and not another number is not immediately available.
-            # So instead, extract the number and compare it to the known list of hashes.
-            # If this regex fails or the number isn't in the hash list, then it means this is a non-hash difference and should cause a test failure.
-            # Otherwise, if it's just a hash difference, it can be a warning for now, while the information being hashed is not stable across platforms.
-            xml_number_regex = re.compile('.*<Class name="AZ::u64" field="m_data" value="([0-9]*)" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"\\/>')
-
-            for list_entry in diff_actual:
-                match_result = xml_number_regex.match(list_entry)
-                assert match_result, "Scene mismatch"
-                data_value = match_result.group(1)
-                # This value doesn't match the list of known hash differences, so mark this test as failed.
-                assert (data_value in actual_hashes_to_skip), "Scene mismatch"
-                
-            for list_entry in diff_expected:
-                match_result = xml_number_regex.match(list_entry)
-                assert match_result, "Scene mismatch"
-                data_value = match_result.group(1)
-                # This value doesn't match the list of known hash differences, so mark this test as failed.
-                assert (data_value in expected_hashes_to_skip), "Scene mismatch"
-
-            return expected_hashes_to_skip, actual_hashes_to_skip
+            return TestsFBX_AllPlatforms.scan_scene_debug_xml_file_for_issues(diff_actual, diff_expected, actual_hashes_to_skip, expected_hashes_to_skip)
         else:
-            # The last check is to see if the difference is just hash mismatch.
-            # If so, make it a warning instead of an error for now, until hash mismatches can be better handled.
-            diff_actual_hashes_removed = []
-            diff_expected_hashes_removed = []
-
-            hash_regex = re.compile("(.*Hash: )([0-9]*)")
-
-            actual_hashes = []
-            expected_hashes = []
-
-            for list_entry in diff_actual:
-                match_result = hash_regex.match(list_entry)
-                assert match_result, "Scene mismatch"
-                diff_actual_hashes_removed.append(match_result.group(1))
-                actual_hashes.append(match_result.group(2))
-                
-            for list_entry in diff_expected:
-                match_result = hash_regex.match(list_entry)
-                assert match_result, "Scene mismatch"
-                diff_expected_hashes_removed.append(match_result.group(1))
-                expected_hashes.append(match_result.group(2))
-
-            hashes_removed_diffs_identical = utils.compare_lists(diff_actual_hashes_removed, diff_expected_hashes_removed)
-
-            # If, after removing all of the hash values, the lists are now identical, emit a warning.
-            if hashes_removed_diffs_identical == True:
-                warnings.warn(f"Hash values no longer match for debug scene graph between files {expected_file_path} and {actual_file_path}")
-
-            return expected_hashes, actual_hashes
+            return TestsFBX_AllPlatforms.scan_scene_debug_scene_graph_file_differences_for_issues(diff_actual, diff_expected, actual_file_path, expected_file_path)
 
 
     # Helper to run Asset Processor with debug output enabled and Atom output disabled
@@ -942,8 +986,7 @@ class TestsFBX_AllPlatforms(object):
         result, output = asset_processor.batch_process(capture_output=True, extra_params=["--debugOutput",
                                                              "--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\""])
         # If the test fails, it's helpful to have the output from asset processor in the logs, to track the failure down.
-        for line in output:
-            logger.info(f"{line}")
+        logger.info(f"Asset Processor Output: {pformat(output)}")
         assert result, "Asset Processor Failed"
 
     def run_fbx_test(self, workspace, ap_setup_fixture, asset_processor,
@@ -990,13 +1033,9 @@ class TestsFBX_AllPlatforms(object):
 
         # If the test is going to fail, print information to help track down the cause of failure.
         if missing_assets:
-            logger.info(f"The following assets were missing from cache:")
-            for asset in missing_assets:
-                logger.info(f"\t{asset}")
-            logger.info(f"The cache {cache_folder} contains this content:")
+            logger.info(f"The following assets were missing from cache: {pformat(missing_assets)}")
             in_cache = os.listdir(cache_folder)
-            for path in in_cache:
-                logger.info(f"\t{path}")
+            logger.info(f"The cache {cache_folder} contains this content: {pformat(in_cache)}")
 
         assert not missing_assets, \
             f'The following assets were expected to be in, but not found in cache: {str(missing_assets)}'
@@ -1045,9 +1084,9 @@ class TestsFBX_AllPlatforms(object):
             6. Validate that Asset Processor generates the expected output
         """
         # Copying test assets to project folder
-        test_folder_name = "ModifiedFBXFile_ConsistentProductOutput"
+        TEST_FOLDER_NAME = "ModifiedFBXFile_ConsistentProductOutput"
 
-        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], test_folder_name)
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], TEST_FOLDER_NAME)
         # Run AP against the FBX file and the .assetinfo file
         self.run_ap_debug_skip_atom_output(asset_processor)
 
@@ -1058,7 +1097,7 @@ class TestsFBX_AllPlatforms(object):
         # Set path to actual dbgsg output, obtained when running AP
         scene_debug_actual = os.path.join(
             asset_processor.temp_project_cache(asset_platform=ASSET_PROCESSOR_PLATFORM_MAP[workspace.asset_processor_platform]),
-            test_folder_name.lower(),
+            TEST_FOLDER_NAME.lower(),
             "modifiedfbxfile.dbgsg")
 
         assert os.path.exists(scene_debug_actual)
