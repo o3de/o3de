@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 struct VertexOutput
 {
     float4 m_position : SV_Position;

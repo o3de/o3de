@@ -48,7 +48,7 @@ namespace AZ
             void SetClearEnabled(bool enabled);
 
             //! Sets this shadow pass to only update its shadows when a mesh in view moves.
-            void SetIsStatic(bool isSatic);
+            void SetIsStatic(bool isStatic);
 
             //! Sets which bit to check to see if a caster in the view moved.
             void SetCasterMovedBit(RHI::Handle<uint32_t> bit);

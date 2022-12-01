@@ -83,7 +83,7 @@ namespace AZ
             //! using &, and are combined with m_orFlags using |.
             void ApplyFlags(uint32_t flags);
 
-            //! Clears and resets the flag positions marked with flag. This means the and flag is set to 1 and the or flag is set to 0.
+            //! Clears and resets the flag positions marked with flag. This means the 'and' flag is set to 1 and the 'or' flag is set to 0.
             void ClearFlags(uint32_t flags);
 
             //! Clears and resets all the flags. This effectively sets the and flags back to 0xFFFFFFFF and the or flags to 0x00000000;

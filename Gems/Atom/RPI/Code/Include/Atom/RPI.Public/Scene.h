@@ -11,7 +11,7 @@
 #include <Atom/RHI/DrawList.h>
 #include <Atom/RHI/PipelineStateDescriptor.h>
 #include <Atom/RHI/DrawFilterTagRegistry.h>
-#include <atom/RHI/TagBitRegistry.h>
+#include <Atom/RHI/TagBitRegistry.h>
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RPI.Reflect/System/SceneDescriptor.h>

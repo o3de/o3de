@@ -164,7 +164,7 @@ namespace AZ
                 }
             }
 
-            for (auto it : sliceInfo)
+            for (const auto& it : sliceInfo)
             {
                 if (!it.m_hasStaticShadows)
                 {

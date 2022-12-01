@@ -75,6 +75,12 @@ namespace AZ::Render
         //! Sets the sample count for filtering of the shadow boundary, max 64.
         virtual void SetFilteringSampleCount(ShadowId id, uint16_t count) = 0;
         //! Sets if this shadow should be rendered every frame or only when it detects a change.
+        //! Changes are detected by the presence of a flag on the view which tracks if any of the draws 
+        //! submitted to it contained that flag. The mesh feature processor sets this flag on any cullable that
+        //! moves, and it is combined with all other flags for draws submitted to each view.
+        //! See MeshCommon::MeshMovedName for the name of the flag used to track movement
+        //! See RPI::Scene::GetViewTagBitRegistry() for where the flag bits are determined
+        //! See RPI::View::GetOrFlags() for how the bits are retrieved
         virtual void SetUseCachedShadows(ShadowId id, bool useCachedShadows) = 0;
         //! Sets all of the shadow properties in one call
         virtual void SetShadowProperties(ShadowId id, const ProjectedShadowDescriptor& descriptor) = 0;
