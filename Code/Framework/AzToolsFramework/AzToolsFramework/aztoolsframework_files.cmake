@@ -803,6 +803,7 @@ set(FILES
     Prefab/Overrides/PrefabOverridePublicInterface.h
     Prefab/Overrides/PrefabOverridePublicHandler.h
     Prefab/Overrides/PrefabOverridePublicHandler.cpp
+    Prefab/Overrides/PrefabOverrideTypes.h
     Prefab/Procedural/ProceduralPrefabAsset.h
     Prefab/Procedural/ProceduralPrefabAsset.cpp
     Prefab/PrefabPublicHandler.h
