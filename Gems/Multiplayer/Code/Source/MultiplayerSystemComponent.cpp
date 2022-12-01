@@ -133,10 +133,10 @@ namespace Multiplayer
             behaviorContext->Class<ClientInputId>();
             behaviorContext->Class<HostFrameId>();
 
-            behaviorContext->Enum<(int)MultiplayerAgentType::Uninitialized>("MultiplayerAgentType_Uninitialized")
-                ->Enum<(int)MultiplayerAgentType::Client>("MultiplayerAgentType_Client")
-                ->Enum<(int)MultiplayerAgentType::ClientServer>("MultiplayerAgentType_ClientServer")
-                ->Enum<(int)MultiplayerAgentType::DedicatedServer>("MultiplayerAgentType_DedicatedServer");
+            behaviorContext->Enum<static_cast<int>(MultiplayerAgentType::Uninitialized)>("MultiplayerAgentType_Uninitialized")
+                ->Enum<static_cast<int>(MultiplayerAgentType::Client)>("MultiplayerAgentType_Client")
+                ->Enum<static_cast<int>(MultiplayerAgentType::ClientServer)>("MultiplayerAgentType_ClientServer")
+                ->Enum<static_cast<int>(MultiplayerAgentType::DedicatedServer)>("MultiplayerAgentType_DedicatedServer");
 
             behaviorContext->Class<MultiplayerSystemComponent>("MultiplayerSystemComponent")
                 ->Attribute(AZ::Script::Attributes::Module, "multiplayer")
@@ -1050,7 +1050,7 @@ namespace Multiplayer
     void MultiplayerSystemComponent::OnDisconnect(AzNetworking::IConnection* connection, DisconnectReason reason, TerminationEndpoint endpoint)
     {
         const char* endpointString = (endpoint == TerminationEndpoint::Local) ? "Disconnecting" : "Remotely disconnected";
-        AZStd::string reasonString = ToString(reason);
+        const AZStd::string reasonString = ToString(reason);
         AZLOG_INFO("%s from remote address %s due to %s", endpointString, connection->GetRemoteAddress().GetString().c_str(), reasonString.c_str());
 
         // The client is disconnecting
@@ -1126,7 +1126,7 @@ namespace Multiplayer
         // Clean up any multiplayer connection data we've bound to this connection instance
         if (connection->GetUserData() != nullptr)
         {
-            IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection->GetUserData());
+            auto connectionData = reinterpret_cast<IConnectionData*>(connection->GetUserData());
             delete connectionData;
             connection->SetUserData(nullptr);
         }
@@ -1137,6 +1137,7 @@ namespace Multiplayer
         {   
             if (m_networkInterface->GetConnectionSet().GetActiveConnectionCount() == 0)
             {
+                AZLOG_INFO("Server exiting due to zero active connections (sv_terminateOnPlayerExit=true)");
                 Terminate(DisconnectReason::TerminatedByServer);
                 AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
             }
@@ -1197,7 +1198,7 @@ namespace Multiplayer
                 MultiplayerAgentDatum datum;
                 datum.m_agentType = MultiplayerAgentType::ClientServer;
                 datum.m_id = InvalidConnectionId;
-                const uint64_t userId = 0;
+                constexpr uint64_t userId = 0;
 
                 NetworkEntityHandle controlledEntity = spawner->OnPlayerJoin(userId, datum);
                 if (controlledEntity.Exists())
@@ -1715,7 +1716,7 @@ namespace Multiplayer
                 mutableAddress[portSeparator] = '\0';
                 const char* addressStr = mutableAddress;
                 const char* portStr = &(mutableAddress[portSeparator + 1]);
-                int32_t portNumber = static_cast<int32_t>(atol(portStr));
+                const int32_t portNumber = static_cast<int32_t>(atol(portStr));
                 AZ::Interface<IMultiplayer>::Get()->Connect(addressStr, static_cast<uint16_t>(portNumber));
             }
         }
