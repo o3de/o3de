@@ -149,7 +149,7 @@ namespace UnitTest
     * InstanceDataHierarchyBasicTest
     */
     class InstanceDataHierarchyBasicTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         InstanceDataHierarchyBasicTest()
@@ -473,7 +473,7 @@ namespace UnitTest
     static AZ::u8 s_persistentIdCounter = 0;
 
     class InstanceDataHierarchyCopyContainerChangesTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
 
@@ -652,7 +652,7 @@ namespace AZ
 namespace UnitTest
 {
     class InstanceDataHierarchyEnumContainerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class EnumContainer
@@ -814,7 +814,7 @@ namespace UnitTest
         SubData m_subGroupForToggle;
     };
 
-    class InstanceDataHierarchyGroupTestFixture : public AllocatorsFixture
+    class InstanceDataHierarchyGroupTestFixture : public LeakDetectionFixture
     {
     public:
         InstanceDataHierarchyGroupTestFixture() = default;
@@ -826,7 +826,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             using AzToolsFramework::InstanceDataHierarchy;
             using AzToolsFramework::InstanceDataNode;
@@ -871,12 +871,12 @@ namespace UnitTest
             testEntity1.reset();
             delete instanceDataHierarchy;
             AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 
     class InstanceDataHierarchyKeyedContainerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class CustomKeyWithoutStringRepresentation
@@ -1132,7 +1132,7 @@ namespace UnitTest
     };
 
     class InstanceDataHierarchyCompareAssociativeContainerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class Container
@@ -1238,7 +1238,7 @@ namespace UnitTest
 
 
     class InstanceDataHierarchyElementTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class UIElementContainer
@@ -1317,7 +1317,7 @@ namespace UnitTest
     };
 
     class InstanceDataHierarchyEndGroupTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class EndGroupContainer
@@ -1414,7 +1414,7 @@ namespace UnitTest
     };
 
     class InstanceDataHierarchyAggregateInstanceTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class AggregatedContainer

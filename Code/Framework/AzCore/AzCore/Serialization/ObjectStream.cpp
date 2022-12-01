@@ -251,12 +251,13 @@ namespace AZ
             // whenever tracing is available we make error logging available.
 #if defined(AZ_ENABLE_TRACING) 
             {
-                SerializeContext::DbgStackEntry de;
-                de.m_dataPtr = nullptr;
-                de.m_uuidPtr = &elementClass->m_typeId;
-                de.m_elementName = elementNode.GetNameString();
-                de.m_classData = elementClass;
-                de.m_classElement = nullptr;
+                SerializeContext::DbgStackEntry de {
+                    /*.m_dataPtr =*/ nullptr,
+                    /*.m_uuid =*/ elementClass ? elementClass->m_typeId : AZ::Uuid{},
+                    /*.m_classData =*/ elementClass,
+                    /*.m_elementName =*/ elementNode.GetNameString(),
+                    /*.m_classElement =*/ nullptr,
+                };
                 m_errorLogger.Push(de);
             }
 #endif // AZ_ENABLE_TRACING
@@ -769,12 +770,13 @@ namespace AZ
 
 #if defined(AZ_ENABLE_TRACING)
                 {
-                    SerializeContext::DbgStackEntry de;
-                    de.m_dataPtr = dataAddress;
-                    de.m_uuidPtr = &element.m_id;
-                    de.m_elementName = element.m_name;
-                    de.m_classData = classData;
-                    de.m_classElement = classElement;
+                    SerializeContext::DbgStackEntry de {
+                        /*.m_dataPtr =*/ dataAddress,
+                        /*.m_uuid =*/ element.m_id,
+                        /*.m_classData =*/ classData,
+                        /*.m_elementName =*/ element.m_name,
+                        /*.m_classElement =*/ classElement,
+                    };
                     m_errorLogger.Push(de);
                 }
 #endif // AZ_ENABLE_TRACING

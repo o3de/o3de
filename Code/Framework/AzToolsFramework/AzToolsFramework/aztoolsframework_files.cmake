@@ -255,20 +255,17 @@ set(FILES
     Metadata/MetadataManager.h
     Metadata/MetadataManager.cpp
     Maths/TransformUtils.h
-    PaintBrush/PaintBrush.cpp
-    PaintBrush/PaintBrush.h
-    PaintBrush/PaintBrushNotificationBus.h
     PaintBrush/PaintBrushSubModeCluster.cpp
     PaintBrush/PaintBrushSubModeCluster.h
-    PaintBrushSettings/PaintBrushSettings.cpp
-    PaintBrushSettings/PaintBrushSettings.h
-    PaintBrushSettings/PaintBrushSettingsNotificationBus.h
-    PaintBrushSettings/PaintBrushSettingsRequestBus.h
-    PaintBrushSettings/PaintBrushSettingsSystemComponent.cpp
-    PaintBrushSettings/PaintBrushSettingsSystemComponent.h
-    PaintBrushSettings/PaintBrushSettingsWindow.cpp
-    PaintBrushSettings/PaintBrushSettingsWindow.h
-    PaintBrushSettings/PaintBrushSettingsWindow_Internals.h
+    PaintBrush/GlobalPaintBrushSettings.cpp
+    PaintBrush/GlobalPaintBrushSettings.h
+    PaintBrush/GlobalPaintBrushSettingsNotificationBus.h
+    PaintBrush/GlobalPaintBrushSettingsRequestBus.h
+    PaintBrush/GlobalPaintBrushSettingsSystemComponent.cpp
+    PaintBrush/GlobalPaintBrushSettingsSystemComponent.h
+    PaintBrush/GlobalPaintBrushSettingsWindow.cpp
+    PaintBrush/GlobalPaintBrushSettingsWindow.h
+    PaintBrush/GlobalPaintBrushSettingsWindow_Internals.h
     Picking/BoundInterface.h
     Picking/ContextBoundAPI.h
     Picking/Manipulators/ManipulatorBoundManager.cpp

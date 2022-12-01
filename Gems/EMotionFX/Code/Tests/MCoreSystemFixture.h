@@ -13,7 +13,7 @@
 namespace EMotionFX
 {
     class MCoreSystemFixture
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override;

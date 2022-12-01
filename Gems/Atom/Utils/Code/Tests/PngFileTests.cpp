@@ -21,7 +21,7 @@ namespace UnitTest
     using namespace AZ::Utils;
 
     class PngFileTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
         AZ::IO::Path m_testImageFolder;
@@ -31,7 +31,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
             AZ::SettingsRegistryImpl localRegistry;
@@ -72,7 +72,7 @@ namespace UnitTest
             AZ::IO::FileIOBase::SetInstance(nullptr);
             m_localFileIO.reset();
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         struct Color3 : public AZStd::array<uint8_t, 3>

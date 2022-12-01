@@ -11,22 +11,22 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>
-#include <AzToolsFramework/PaintBrush/PaintBrush.h>
+#include <AzFramework/PaintBrush/PaintBrush.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 
 namespace UnitTest
 {
-    class MockPaintBrushNotificationBusHandler : public AzToolsFramework::PaintBrushNotificationBus::Handler
+    class MockPaintBrushNotificationBusHandler : public AzFramework::PaintBrushNotificationBus::Handler
     {
     public:
         MockPaintBrushNotificationBusHandler(const AZ::EntityComponentIdPair& entityComponentIdPair)
         {
-            AzToolsFramework::PaintBrushNotificationBus::Handler::BusConnect(entityComponentIdPair);
+            AzFramework::PaintBrushNotificationBus::Handler::BusConnect(entityComponentIdPair);
         }
 
         ~MockPaintBrushNotificationBusHandler() override
         {
-            AzToolsFramework::PaintBrushNotificationBus::Handler::BusDisconnect();
+            AzFramework::PaintBrushNotificationBus::Handler::BusDisconnect();
         }
 
         MOCK_METHOD0(OnPaintModeBegin, void());

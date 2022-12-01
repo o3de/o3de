@@ -434,11 +434,8 @@ class TestScriptCanvasTests(object):
 
     def test_ScriptCanvas_ChangingAssets_ComponentStable(self, request, workspace, editor, launcher_platform):
         expected_lines = [
-            "Test Entity created",
             "Game Mode successfully entered",
             "Game Mode successfully exited",
-            "Script Canvas File Updated",
-            "Expected log lines were found",
         ]
         hydra.launch_and_validate_results(
             request,

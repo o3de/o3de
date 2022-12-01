@@ -459,12 +459,12 @@ namespace UnitTest
     }
 
     class PatchingTest
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_serializeContext = AZStd::make_unique<SerializeContext>();
 
@@ -491,7 +491,7 @@ namespace UnitTest
         {
             m_serializeContext.reset();
             m_addressTypeSerializer = nullptr;
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void LoadPatchFromXML(const AZStd::string_view& xmlSrc, DataPatch& patchDest)
