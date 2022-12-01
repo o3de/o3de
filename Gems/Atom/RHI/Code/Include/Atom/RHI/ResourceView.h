@@ -52,15 +52,10 @@ namespace AZ
             ResultCode Init(const Resource& resource);
 
         private:
-            ///////////////////////////////////////////////////////////////////
-            // IntrusivePtrCountPolicy template overrides
-
-            //! We override release to handle threading issues that would otherwise occur
-            //! due to raw pointers ResourceViews being cached on the Resource
-            void release() const final;
-            template<typename Type>
-            friend struct AZStd::IntrusivePtrCountPolicy;
-            ///////////////////////////////////////////////////////////////////
+            //////////////////////////////////////////////////////////////////////////
+            // RHI::Object
+            void Shutdown() final;
+            //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
             // ResourceInvalidateBus::Handler
@@ -88,9 +83,6 @@ namespace AZ
 
             /// The version number from the resource at view creation time. If the keys differ, the view is stale.
             uint32_t m_version = 0;
-
-            /// Track whether or not this resource view was created in the cache via GetBufferView or GetImageView
-            bool m_isCachedView = false;
         };
     }
 }

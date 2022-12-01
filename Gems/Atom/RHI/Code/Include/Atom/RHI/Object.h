@@ -42,7 +42,7 @@ namespace AZ
             // IntrusivePtrCountPolicy overrides
             template<typename Type>
             friend struct AZStd::IntrusivePtrCountPolicy;
-            virtual void add_ref() const;
+            void add_ref() const;
 
             //! All objects have an explicit Init / Shutdown path in addition to
             //! creation / deletion. The user is expected to Init the derived variant
@@ -50,7 +50,7 @@ namespace AZ
             //! explicitly and depend on the Ptr ref-counting if necessary.
             //!
             //! This requires that Shutdown properly account for being called multiple times.
-            virtual void release() const;
+            void release() const;
             mutable AZStd::atomic_int m_useCount;
 
         private:

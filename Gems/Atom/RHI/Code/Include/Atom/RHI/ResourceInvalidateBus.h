@@ -44,7 +44,7 @@ namespace AZ
             static const EBusAddressPolicy AddressPolicy = EBusAddressPolicy::ById;
             using MutexType = AZStd::mutex;
             using BusIdType = const Resource*;
-            static const bool LocklessDispatch = true;
+            static const bool LocklessDispatch = false;
             static const bool EnableEventQueue = true;
 
             /// Access to the priority of the input notification handler (sorted from highest to lowest)

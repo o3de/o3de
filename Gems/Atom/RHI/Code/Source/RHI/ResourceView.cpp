@@ -30,41 +30,16 @@ namespace AZ
             return ResultCode::Success;
         }
 
-        void ResourceView::release() const
+        void ResourceView::Shutdown()
         {
-            // It is possible that some other thread, not us, will delete this ResourceView after we
-            // decrement m_useCount. For example, another thread could create and release an instance
-            // immediately after we decrement. So we copy the necessary data to the callstack before
-            // decrementing. This ensures the call to EraseResourceView() below won't crash even if this
-            // ResourceView gets deleted by another thread first.
-            ConstPtr<Resource> resource = m_resource;
-            const int useCount = --m_useCount;
-
-            AZ_Assert(useCount >= 0, "m_useCount is negative");
-
-            if (useCount == 0)
+            if (IsInitialized())
             {
-                if (IsInitialized())
-                {
-                    ResourceView* resourceView = const_cast<ResourceView*>(this);
-                    // If the resource view was created independently of the cache, or if it was found in the cache,
-                    // it needs to be shutdown and deleted.
-                    // If EraseResourceView fails, another thread got there first, so we skip the shutdown and delete
-                    if (!m_isCachedView || resource->EraseResourceView(resourceView) == ResultCode::Success)
-                    {
-                        resourceView->ResourceInvalidateBus::Handler::BusDisconnect(resource.get());
-                        resourceView->ShutdownInternal();
+                ResourceInvalidateBus::Handler::BusDisconnect(m_resource.get());
+                ShutdownInternal();
 
-                        resourceView->m_resource = nullptr;
-                        resourceView->DeviceObject::Shutdown();
-                        delete this;
-                    }
-                }
-                else
-                {
-                    // If it's not initialized, it doesn't need to be shutdown, but it should still be deleted
-                    delete this;
-                }
+                m_resource->EraseResourceView(this);
+                m_resource = nullptr;
+                DeviceObject::Shutdown();
             }
         }
 
