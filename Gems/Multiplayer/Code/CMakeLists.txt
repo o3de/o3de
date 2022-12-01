@@ -23,11 +23,35 @@ ly_add_target(
 )
 
 ly_add_target(
+    NAME Multiplayer.Common.Static STATIC
+    NAMESPACE Gem
+    FILES_CMAKE
+        multiplayer_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            ${pal_source_dir}
+            Source
+            .
+        PUBLIC
+            Include
+    BUILD_DEPENDENCIES
+        PUBLIC
+            AZ::AzCore
+            AZ::AzFramework
+            AZ::AzNetworking
+    AUTOGEN_RULES
+        *.AutoPackets.xml,AutoPackets_Header.jinja,$path/$fileprefix.AutoPackets.h
+        *.AutoPackets.xml,AutoPackets_Inline.jinja,$path/$fileprefix.AutoPackets.inl
+        *.AutoPackets.xml,AutoPackets_Source.jinja,$path/$fileprefix.AutoPackets.cpp
+        *.AutoPackets.xml,AutoPacketDispatcher_Header.jinja,$path/$fileprefix.AutoPacketDispatcher.h
+        *.AutoPackets.xml,AutoPacketDispatcher_Inline.jinja,$path/$fileprefix.AutoPacketDispatcher.inl
+)
+
+ly_add_target(
     NAME Multiplayer.Client.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
-        multiplayer_autogen_files.cmake
-        multiplayer_files.cmake
+        multiplayer_split_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             ${pal_source_dir}
@@ -45,14 +69,10 @@ ly_add_target(
             AZ::AzFramework
             AZ::AzNetworking
         PRIVATE
+            Gem::Multiplayer.Common.Static
             Gem::EMotionFXStaticLib
             Gem::PhysX.Static
     AUTOGEN_RULES
-        *.AutoPackets.xml,AutoPackets_Header.jinja,$path/$fileprefix.AutoPackets.h
-        *.AutoPackets.xml,AutoPackets_Inline.jinja,$path/$fileprefix.AutoPackets.inl
-        *.AutoPackets.xml,AutoPackets_Source.jinja,$path/$fileprefix.AutoPackets.cpp
-        *.AutoPackets.xml,AutoPacketDispatcher_Header.jinja,$path/$fileprefix.AutoPacketDispatcher.h
-        *.AutoPackets.xml,AutoPacketDispatcher_Inline.jinja,$path/$fileprefix.AutoPacketDispatcher.inl
         *.AutoComponent.xml,AutoComponent_Header.jinja,$path/$fileprefix.AutoComponent.h
         *.AutoComponent.xml,AutoComponent_Source.jinja,$path/$fileprefix.AutoComponent.cpp
         *.AutoComponent.xml,AutoComponentTypes_Header.jinja,$path/AutoComponentTypes.h
@@ -63,8 +83,7 @@ ly_add_target(
     NAME Multiplayer.Server.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
-        multiplayer_autogen_files.cmake
-        multiplayer_files.cmake
+        multiplayer_split_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             ${pal_source_dir}
@@ -82,14 +101,10 @@ ly_add_target(
             AZ::AzFramework
             AZ::AzNetworking
         PRIVATE
+            Gem::Multiplayer.Common.Static
             Gem::EMotionFXStaticLib
             Gem::PhysX.Static
     AUTOGEN_RULES
-        *.AutoPackets.xml,AutoPackets_Header.jinja,$path/$fileprefix.AutoPackets.h
-        *.AutoPackets.xml,AutoPackets_Inline.jinja,$path/$fileprefix.AutoPackets.inl
-        *.AutoPackets.xml,AutoPackets_Source.jinja,$path/$fileprefix.AutoPackets.cpp
-        *.AutoPackets.xml,AutoPacketDispatcher_Header.jinja,$path/$fileprefix.AutoPacketDispatcher.h
-        *.AutoPackets.xml,AutoPacketDispatcher_Inline.jinja,$path/$fileprefix.AutoPacketDispatcher.inl
         *.AutoComponent.xml,AutoComponent_Header.jinja,$path/$fileprefix.AutoComponent.h
         *.AutoComponent.xml,AutoComponent_Source.jinja,$path/$fileprefix.AutoComponent.cpp
         *.AutoComponent.xml,AutoComponentTypes_Header.jinja,$path/AutoComponentTypes.h
@@ -100,8 +115,7 @@ ly_add_target(
     NAME Multiplayer.Unified.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
-        multiplayer_autogen_files.cmake
-        multiplayer_files.cmake
+        multiplayer_split_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             ${pal_source_dir}
@@ -119,14 +133,10 @@ ly_add_target(
             AZ::AzFramework
             AZ::AzNetworking
         PRIVATE
+            Gem::Multiplayer.Common.Static
             Gem::EMotionFXStaticLib
             Gem::PhysX.Static
     AUTOGEN_RULES
-        *.AutoPackets.xml,AutoPackets_Header.jinja,$path/$fileprefix.AutoPackets.h
-        *.AutoPackets.xml,AutoPackets_Inline.jinja,$path/$fileprefix.AutoPackets.inl
-        *.AutoPackets.xml,AutoPackets_Source.jinja,$path/$fileprefix.AutoPackets.cpp
-        *.AutoPackets.xml,AutoPacketDispatcher_Header.jinja,$path/$fileprefix.AutoPacketDispatcher.h
-        *.AutoPackets.xml,AutoPacketDispatcher_Inline.jinja,$path/$fileprefix.AutoPacketDispatcher.inl
         *.AutoComponent.xml,AutoComponent_Header.jinja,$path/$fileprefix.AutoComponent.h
         *.AutoComponent.xml,AutoComponent_Source.jinja,$path/$fileprefix.AutoComponent.cpp
         *.AutoComponent.xml,AutoComponentTypes_Header.jinja,$path/AutoComponentTypes.h

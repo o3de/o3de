@@ -13,13 +13,7 @@
 #include "ScriptCanvasMultiplayerSystemComponent.h"
 #include <AutoGenNodeableRegistry.generated.h>
 
-#if AZ_TRAIT_CLIENT && AZ_TRAIT_SERVER
-REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(Multiplayer_ScriptCanvasUnifiedStatic);
-#elif AZ_TRAIT_CLIENT
-REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(Multiplayer_ScriptCanvasClientStatic);
-#elif AZ_TRAIT_SERVER
-REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(Multiplayer_ScriptCanvasServerStatic);
-#endif
+REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(Multiplayer_ScriptCanvasStatic);
 
 namespace ScriptCanvasMultiplayer
 {
