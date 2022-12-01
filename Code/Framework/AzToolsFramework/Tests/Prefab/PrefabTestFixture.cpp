@@ -58,6 +58,9 @@ namespace UnitTest
         m_prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
         EXPECT_TRUE(m_prefabEditorEntityOwnershipInterface);
 
+        m_settingsRegistryInterface = AZ::SettingsRegistry::Get();
+        EXPECT_TRUE(m_settingsRegistryInterface);
+
         // This is for calling CreateEditorRepresentation that adds required editor components.
         AzToolsFramework::EditorRequestBus::Handler::BusConnect();
 
@@ -238,6 +241,93 @@ namespace UnitTest
             delete instanceToDelete;
             instanceToDelete = nullptr;
         }
+    }
+
+    EntityAlias PrefabTestFixture::FindEntityAliasInInstance(
+        AZ::EntityId containerEntityId, const AZStd::string& entityName)
+    {
+        auto owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(containerEntityId);
+        EXPECT_TRUE(owningInstance.has_value());
+
+        EntityAlias foundEntityAlias = "";
+        owningInstance->get().GetEntities(
+            [&foundEntityAlias, &owningInstance, &entityName](AZStd::unique_ptr<AZ::Entity>& entity)
+            {
+                if (entity->GetName() == entityName)
+                {
+                    auto entityAlias = owningInstance->get().GetEntityAlias(entity->GetId());
+                    EXPECT_TRUE(entityAlias.has_value()) << "FindEntityAliasInInstance - Retrieved entity alias is null.";
+                    foundEntityAlias = entityAlias->get();
+                    return false;
+                }
+                return true;
+            });
+
+        return foundEntityAlias;
+    }
+
+    InstanceAlias PrefabTestFixture::FindNestedInstanceAliasInInstance(
+        AZ::EntityId containerEntityId, const AZStd::string& nestedContainerEntityName)
+    {
+        auto owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(containerEntityId);
+        EXPECT_TRUE(owningInstance.has_value());
+
+        InstanceAlias foundInstanceAlias = "";
+        owningInstance->get().GetNestedInstances(
+            [&foundInstanceAlias, &nestedContainerEntityName](AZStd::unique_ptr<Instance>& nestedInstance)
+            {
+                auto nestedContainerEntity = nestedInstance->GetContainerEntity();
+                EXPECT_TRUE(nestedContainerEntity.has_value());
+
+                if (nestedContainerEntity->get().GetName() == nestedContainerEntityName)
+                {
+                    foundInstanceAlias = nestedInstance->GetInstanceAlias();
+                    return;
+                }
+            });
+
+        return foundInstanceAlias;
+    }
+
+    void PrefabTestFixture::ValidateEntityUnderInstance(
+        AZ::EntityId containerEntityId, const EntityAlias& entityAlias, const AZStd::string& entityName)
+    {
+        auto owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(containerEntityId);
+        EXPECT_TRUE(owningInstance.has_value());
+
+        auto entity = owningInstance->get().GetEntity(entityAlias);
+        ASSERT_TRUE(entity.has_value());
+        ASSERT_EQ(entity->get().GetName(), entityName);
+    }
+
+    void PrefabTestFixture::ValidateEntityNotUnderInstance(
+        AZ::EntityId containerEntityId, const EntityAlias& entityAlias)
+    {
+        auto owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(containerEntityId);
+        EXPECT_TRUE(owningInstance.has_value());
+
+        auto entity = owningInstance->get().GetEntity(entityAlias);
+        ASSERT_FALSE(entity.has_value());
+    }
+
+    void PrefabTestFixture::ValidateNestedInstanceUnderInstance(
+        AZ::EntityId containerEntityId, const InstanceAlias& nestedInstanceAlias)
+    {
+        auto owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(containerEntityId);
+        EXPECT_TRUE(owningInstance.has_value());
+
+        auto nestedInstance = owningInstance->get().FindNestedInstance(nestedInstanceAlias);
+        ASSERT_TRUE(nestedInstance.has_value());
+    }
+
+    void PrefabTestFixture::ValidateNestedInstanceNotUnderInstance(
+        AZ::EntityId containerEntityId, const InstanceAlias& nestedInstanceAlias)
+    {
+        auto owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(containerEntityId);
+        EXPECT_TRUE(owningInstance.has_value());
+
+        auto nestedInstance = owningInstance->get().FindNestedInstance(nestedInstanceAlias);
+        ASSERT_FALSE(nestedInstance.has_value());
     }
 
     void PrefabTestFixture::ValidateInstanceEntitiesActive(Instance& instance)

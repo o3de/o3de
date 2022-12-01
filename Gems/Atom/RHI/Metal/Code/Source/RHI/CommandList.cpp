@@ -10,6 +10,7 @@
 #include <AzCore/std/algorithm.h>
 #include <RHI/ArgumentBuffer.h>
 #include <RHI/Buffer.h>
+#include <RHI/BufferView.h>
 #include <RHI/BufferMemoryView.h>
 #include <RHI/CommandList.h>
 #include <RHI/Conversions.h>

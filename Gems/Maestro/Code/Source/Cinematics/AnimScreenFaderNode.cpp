@@ -21,7 +21,7 @@
 namespace
 {
     bool s_screenFaderNodeParamsInitialized = false;
-    StaticInstance<std::vector<CAnimNode::SParamInfo>> s_screenFaderNodeParams;
+    AZStd::vector<CAnimNode::SParamInfo> s_screenFaderNodeParams;
 
     void AddSupportedParams(const char* sName, AnimParamType paramId, AnimValueType valueType)
     {

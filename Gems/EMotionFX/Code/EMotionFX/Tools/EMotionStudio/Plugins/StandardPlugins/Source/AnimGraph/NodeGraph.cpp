@@ -2550,7 +2550,7 @@ namespace EMStudio
                     m_nodeGroupNameLineEdit->move(m_transform.dx() + x_delta, m_transform.dy() + y_delta);
                     m_nodeGroupNameLineEdit->setBaseSize(
                         QSize(groupRect.width() - 2 * sGroupRectTextHPadding, m_groupFontMetrics->height()));
-                    m_nodeGroupNameLineEdit->setBaseFontPointSizeF(m_groupFont.pointSizeF());
+                    m_nodeGroupNameLineEdit->setBaseFontPixelSize(m_groupFont.pixelSize());
                     m_nodeGroupNameLineEdit->setScale(GetScale());
                     m_nodeGroupNameLineEdit->show();
                 }
