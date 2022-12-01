@@ -1,5 +1,5 @@
 {
-    "Source": "DownsampleSinglePassMinAvgMax.azsl",
+    "Source": "DownsampleSinglePassLuminance.azsl",
 
     "ProgramSettings":
     {

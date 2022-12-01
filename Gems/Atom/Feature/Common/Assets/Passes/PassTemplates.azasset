@@ -129,8 +129,8 @@
                 "Path": "Passes/DownsampleMipChain.pass"
             },
             {
-                "Name": "DownsampleSinglePassMipChainTemplate",
-                "Path": "Passes/DownsampleSinglePassMipChain.pass"
+                "Name": "DownsampleSinglePassLuminanceTemplate",
+                "Path": "Passes/DownsampleSinglePassLuminance.pass"
             },
             {
                 "Name": "DisplayMapperTemplate",

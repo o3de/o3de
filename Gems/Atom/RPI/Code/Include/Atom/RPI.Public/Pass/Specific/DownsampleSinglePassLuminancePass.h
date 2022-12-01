@@ -13,19 +13,20 @@
 
 namespace AZ::RPI
 {
-    //! This pass takes a mip mapped texture as input where the most detailed mip is already written to.
+    //! This pass takes a texture without auxiliary mip slices as input
+    //! a texture with mip slices as output.
     //! It then recursively downsamples that mip to lower mip levels using single dispatch of compute shader.
-    class DownsampleSinglePassMipChainPass final
+    class DownsampleSinglePassLuminancePass final
         : public ComputePass
     {
         AZ_RPI_PASS(DownsampleSinglePassMipChainPass);
 
     public:
-        AZ_RTTI(DownsampleSinglePassMipChainPass, "{653D5F1C-6070-4DDF-9F0A-2AF831F3C3AA}", ComputePass);
-        AZ_CLASS_ALLOCATOR(DownsampleSinglePassMipChainPass, SystemAllocator, 0);
+        AZ_RTTI(DownsampleSinglePassMipChainPass, "{6842F4D2-D884-4E2A-B48B-E9240BCB8F45}", ComputePass);
+        AZ_CLASS_ALLOCATOR(DownsampleSinglePassLuminancePass, SystemAllocator, 0);
 
-        static Ptr<DownsampleSinglePassMipChainPass> Create(const PassDescriptor& descriptor);
-        virtual ~DownsampleSinglePassMipChainPass() = default;
+        static Ptr<DownsampleSinglePassLuminancePass> Create(const PassDescriptor& descriptor);
+        virtual ~DownsampleSinglePassLuminancePass() = default;
 
     private:
         struct SpdGlobalAtomicBuffer
@@ -33,7 +34,7 @@ namespace AZ::RPI
             uint32_t m_counter;
         };
 
-        explicit DownsampleSinglePassMipChainPass(const PassDescriptor& descriptor);
+        explicit DownsampleSinglePassLuminancePass(const PassDescriptor& descriptor);
 
         // Pass Behaviour Overrides...
         void BuildInternal() override;
@@ -45,7 +46,7 @@ namespace AZ::RPI
 
         void BuildGlobalAtomicBuffer();
         void InitializeIndices();
-        void GetInputInfo();
+        void GetDestinationInfo();
         void CalculateSpdThreadDimensionAndMips();
         void BuildPassAttachment();
 
@@ -56,23 +57,23 @@ namespace AZ::RPI
         const Name Mip6Name{"m_mip6"};
         const Name GlobalAtomicName{"m_globalAtomic"};
 
-        // Height and width of the input mip chain texture
-        AZStd::array<uint32_t, 2> m_inputImageSize = {0, 0};
-        // Number of mip levels in the input mip chain texture
-        uint32_t m_inputMipLevelCount = 0;
+        // Dimension of the destination mip chain image.
+        AZStd::array<uint32_t, 2> m_destinationImageSize = {0, 0};
+        uint32_t m_destinationMipLevelCount = 0;
 
         // Number of mip levels for SPD computation
-        // which can be slightly greater than m_inputMipLevelCount for
+        // which can be slightly greater than m_destinationMipLevelCount for
         // computation of non power of 2 width.
-        uint32_t m_baseMipLevelCount = 0;
+        uint32_t m_spdMipLevelCount = 0;
 
         bool m_indicesAreInitialized = false;
         uint32_t m_targetThreadCountWidth = 1;
         uint32_t m_targetThreadCountHeight = 1;
-        RHI::ShaderInputConstantIndex m_mipsIndex;
+        RHI::ShaderInputConstantIndex m_spdMipLevelCountIndex;
+        RHI::ShaderInputConstantIndex m_destinationMipLevelCountIndex;
         RHI::ShaderInputConstantIndex m_numWorkGroupsIndex;
         RHI::ShaderInputConstantIndex m_imageSizeIndex;
-        RHI::ShaderInputImageIndex m_inputOutputImageIndex;
+        RHI::ShaderInputImageIndex m_imageDestinationIndex;
         RHI::ShaderInputImageIndex m_mip6ImageIndex;
         RHI::ShaderInputBufferIndex m_globalAtomicIndex;
 

@@ -39,34 +39,21 @@
                 {
                     "LocalSlot": "LuminanceMipChainOutput",
                     "AttachmentRef": {
-                        "Pass": "DownsampleLuminanceMipChain",
-                        "Attachment": "MipChainInputOutput"
+                        "Pass": "DownsampleSinglePassLuminance",
+                        "Attachment": "Output"
                     }
                 }
             ],
             "PassRequests": [
                 {
-                    "Name": "DownsampleLuminanceMinAvgMax",
-                    "TemplateName": "DownsampleLuminanceMinAvgMaxCS",
+                    "Name": "DownsampleSinglePassLuminance",
+                    "TemplateName": "DownsampleSinglePassLuminanceTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "Input",
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "LightingInput"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "DownsampleLuminanceMipChain",
-                    "TemplateName": "DownsampleSinglePassMipChainTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "MipChainInputOutput",
-                            "AttachmentRef": {
-                                "Pass": "DownsampleLuminanceMinAvgMax",
-                                "Attachment": "Output"
                             }
                         }
                     ]
@@ -79,8 +66,8 @@
                         {
                             "LocalSlot": "SceneLuminanceInput",
                             "AttachmentRef": {
-                                "Pass": "DownsampleLuminanceMipChain",
-                                "Attachment": "MipChainInputOutput"
+                                "Pass": "DownsampleSinglePassLuminance",
+                                "Attachment": "Output"
                             }
                         }
                     ]

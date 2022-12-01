@@ -7,50 +7,51 @@
  */
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RPI.Public/Pass/Specific/DownsampleSinglePassMipChainPass.h>
+#include <Atom/RPI.Public/Pass/Specific/DownsampleSinglePassLuminancePass.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 
 namespace AZ::RPI
 {
-    Ptr<DownsampleSinglePassMipChainPass> DownsampleSinglePassMipChainPass::Create(const PassDescriptor& descriptor)
+    Ptr<DownsampleSinglePassLuminancePass> DownsampleSinglePassLuminancePass::Create(const PassDescriptor& descriptor)
     {
-        Ptr<DownsampleSinglePassMipChainPass> pass = aznew DownsampleSinglePassMipChainPass(descriptor);
+        Ptr<DownsampleSinglePassLuminancePass> pass = aznew DownsampleSinglePassLuminancePass(descriptor);
         return pass;
     }
 
-    DownsampleSinglePassMipChainPass::DownsampleSinglePassMipChainPass(const PassDescriptor& descriptor)
+    DownsampleSinglePassLuminancePass::DownsampleSinglePassLuminancePass(const PassDescriptor& descriptor)
         : ComputePass(descriptor)
     {
         BuildGlobalAtomicBuffer();
     }
 
-    void DownsampleSinglePassMipChainPass::BuildInternal()
+    void DownsampleSinglePassLuminancePass::BuildInternal()
     {
-        GetInputInfo();
+        GetDestinationInfo();
         CalculateSpdThreadDimensionAndMips();
         BuildPassAttachment();
         ComputePass::BuildInternal();
     }
 
-    void DownsampleSinglePassMipChainPass::ResetInternal()
+    void DownsampleSinglePassLuminancePass::ResetInternal()
     {
         m_indicesAreInitialized = false;
-        m_mipsIndex.Reset();
+        m_spdMipLevelCountIndex.Reset();
+        m_destinationMipLevelCountIndex.Reset();
         m_numWorkGroupsIndex.Reset();
         m_imageSizeIndex.Reset();
-        m_inputOutputImageIndex.Reset();
+        m_imageDestinationIndex.Reset();
         m_mip6ImageIndex.Reset();
         m_globalAtomicIndex.Reset();
         ComputePass::ResetInternal();
     }
 
-    void DownsampleSinglePassMipChainPass::FrameBeginInternal(FramePrepareParams params)
+    void DownsampleSinglePassLuminancePass::FrameBeginInternal(FramePrepareParams params)
     {
         SetConstants();
         ComputePass::FrameBeginInternal(params);
     }
 
-    void DownsampleSinglePassMipChainPass::CompileResources(const RHI::FrameGraphCompileContext& context)
+    void DownsampleSinglePassLuminancePass::CompileResources(const RHI::FrameGraphCompileContext& context)
     {
         if (!m_shaderResourceGroup)
         {
@@ -65,12 +66,13 @@ namespace AZ::RPI
             ArraySliceCount);
 
         // Input/Output Mip Slices
-        PassAttachmentBinding& inOutBinding = GetInputOutputBinding(0);
-        PassAttachment* attachment = inOutBinding.GetAttachment().get();
+        PassAttachmentBinding& outBinding = GetOutputBinding(0);
+        PassAttachment* attachment = outBinding.GetAttachment().get();
         if (!attachment)
         {
             return;
         }
+        const uint32_t mipLevelCount = attachment->m_descriptor.m_image.m_mipLevels;
         RHI::AttachmentId attachmentId = attachment->GetAttachmentId();
         const RHI::Image* rhiImage = context.GetImage(attachmentId);
         if (!rhiImage)
@@ -80,7 +82,7 @@ namespace AZ::RPI
 
         RHI::ResultCode result = RHI::ResultCode::Success;
         RHI::ImageViewDescriptor imageViewDescriptor;
-        for (uint32_t mipIndex = 0; mipIndex < GetMin(m_inputMipLevelCount, SpdMipLevelCountMax); ++mipIndex)
+        for (uint32_t mipIndex = 0; mipIndex < GetMin(mipLevelCount, SpdMipLevelCountMax); ++mipIndex)
         {
             imageViewDescriptor.m_mipSliceMin = static_cast<uint16_t>(mipIndex);
             imageViewDescriptor.m_mipSliceMax = static_cast<uint16_t>(mipIndex);
@@ -91,7 +93,7 @@ namespace AZ::RPI
                 AZ_Assert(false, "DownsampleSingelPassMipChainPass failed to create RHI::ImageView.");
                 return;
             }
-            srg.SetImageView(m_inputOutputImageIndex, imageView.get(), mipIndex);
+            srg.SetImageView(m_imageDestinationIndex, imageView.get(), mipIndex);
             m_imageViews[mipIndex] = imageView;
         }
 
@@ -105,7 +107,7 @@ namespace AZ::RPI
         ComputePass::CompileResources(context);
     }
 
-    void DownsampleSinglePassMipChainPass::BuildGlobalAtomicBuffer()
+    void DownsampleSinglePassLuminancePass::BuildGlobalAtomicBuffer()
     {
         const SpdGlobalAtomicBuffer initialData = {0};
 
@@ -119,7 +121,7 @@ namespace AZ::RPI
         AZ_Assert(m_globalAtomicBuffer, "DownsampleSinglePassMipChainPass Building Global Atomic Buffer failed.")
     }
 
-    void DownsampleSinglePassMipChainPass::InitializeIndices()
+    void DownsampleSinglePassLuminancePass::InitializeIndices()
     {
         if (!m_shaderResourceGroup)
         {
@@ -127,50 +129,54 @@ namespace AZ::RPI
         }
         const ShaderResourceGroup& srg = *m_shaderResourceGroup;
 
-        m_mipsIndex = srg.FindShaderInputConstantIndex(Name("m_mips"));
+        m_spdMipLevelCountIndex = srg.FindShaderInputConstantIndex(Name("m_spdMipLevelCount"));
+        m_destinationMipLevelCountIndex = srg.FindShaderInputConstantIndex(Name("m_destinationMipLevelCount"));
         m_numWorkGroupsIndex = srg.FindShaderInputConstantIndex(Name("m_numWorkGroups"));
         m_imageSizeIndex = srg.FindShaderInputConstantIndex(Name("m_imageSize"));
-        m_inputOutputImageIndex = srg.FindShaderInputImageIndex(Name("m_imageDestination"));
+        m_imageDestinationIndex = srg.FindShaderInputImageIndex(Name("m_imageDestination"));
         m_mip6ImageIndex = srg.FindShaderInputImageIndex(Mip6Name);
         m_globalAtomicIndex = srg.FindShaderInputBufferIndex(GlobalAtomicName);
         m_indicesAreInitialized = true;
     }
 
-    void DownsampleSinglePassMipChainPass::GetInputInfo()
+    void DownsampleSinglePassLuminancePass::GetDestinationInfo()
     {
-        // Get the input/output mip chain attachment for this pass (at binding 0)
+        // Get the input attachment for this pass (at binding 0)
         AZ_Error(
             "DownsampleSinglePassMipChainPass",
-            GetInputOutputCount() > 0,
-            "[DownsampleSinglePassMipChainPass '%s']: must have an input/output",
+            GetInputCount() > 0,
+            "[DownsampleSinglePassMipChainPass '%s']: must have an input",
             GetPathName().GetCStr());
-        PassAttachment* attachment = GetInputOutputBinding(0).GetAttachment().get();
+        PassAttachment* attachment = GetInputBinding(0).GetAttachment().get();
 
         if (attachment)
         {
-            m_inputMipLevelCount = attachment->m_descriptor.m_image.m_mipLevels;
-            m_inputImageSize[0] = attachment->m_descriptor.m_image.m_size.m_width;
-            m_inputImageSize[1] = attachment->m_descriptor.m_image.m_size.m_height;
+            m_destinationImageSize[0] = attachment->m_descriptor.m_image.m_size.m_width;
+            m_destinationImageSize[1] = attachment->m_descriptor.m_image.m_size.m_height;
+
+            // m_mipLevels of the attachment has not been initialized yet, so it is calculated below:
+            const uint32_t maxDimension = GetMax(m_destinationImageSize[0], m_destinationImageSize[1]);
+            m_destinationMipLevelCount = static_cast<uint32_t>(floorf(log2f(maxDimension * 1.f)));
         }
     }
 
-    void DownsampleSinglePassMipChainPass::CalculateSpdThreadDimensionAndMips()
+    void DownsampleSinglePassLuminancePass::CalculateSpdThreadDimensionAndMips()
     {
         // Each SPD thread group computes for sub-region of size 64x64 in mip level 0 slice
         // where 64 == (1 << GloballyCoherentMipIndex).
         static const uint32_t groupImageWidth = 1 << GloballyCoherentMipIndex;
-        m_targetThreadCountWidth = (m_inputImageSize[0] + groupImageWidth - 1) / groupImageWidth;
-        m_targetThreadCountHeight = (m_inputImageSize[1] + groupImageWidth - 1) / groupImageWidth;
+        m_targetThreadCountWidth = (m_destinationImageSize[0] + groupImageWidth - 1) / groupImageWidth;
+        m_targetThreadCountHeight = (m_destinationImageSize[1] + groupImageWidth - 1) / groupImageWidth;
 
-        const uint32_t maxDimension = GetMax(m_inputImageSize[0], m_inputImageSize[1]);
-        m_baseMipLevelCount = static_cast<uint32_t>(floorf(log2f(maxDimension * 1.f)));
-        if (static_cast<uint32_t>(1 << m_baseMipLevelCount) != maxDimension)
+        const uint32_t maxDimension = GetMax(m_destinationImageSize[0], m_destinationImageSize[1]);
+        m_spdMipLevelCount = m_destinationMipLevelCount;
+        if (static_cast<uint32_t>(1 << m_spdMipLevelCount) != maxDimension)
         {
-            ++m_baseMipLevelCount;
+            ++m_spdMipLevelCount;
         }
     }
 
-    void DownsampleSinglePassMipChainPass::BuildPassAttachment()
+    void DownsampleSinglePassLuminancePass::BuildPassAttachment()
     {
         // Build "Mip6" image attachment.
         {
@@ -231,7 +237,7 @@ namespace AZ::RPI
         }
     }
 
-    void DownsampleSinglePassMipChainPass::SetConstants()
+    void DownsampleSinglePassLuminancePass::SetConstants()
     {
         if (!m_indicesAreInitialized)
         {
@@ -251,8 +257,9 @@ namespace AZ::RPI
         succeeded &= srg.SetConstant(
             m_numWorkGroupsIndex,
             m_targetThreadCountWidth * m_targetThreadCountHeight);
-        succeeded &= srg.SetConstant(m_mipsIndex, m_baseMipLevelCount);
-        succeeded &= srg.SetConstantArray(m_imageSizeIndex, m_inputImageSize);
+        succeeded &= srg.SetConstant(m_spdMipLevelCountIndex, m_spdMipLevelCount);
+        succeeded &= srg.SetConstant(m_destinationMipLevelCountIndex, m_destinationMipLevelCount);
+        succeeded &= srg.SetConstantArray(m_imageSizeIndex, m_destinationImageSize);
         AZ_Assert(succeeded, "DownsampleSinglePassMipChainPass failed to set constants.");
     }
 }   // namespace AZ::RPI

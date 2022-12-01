@@ -10,6 +10,7 @@
 
 #include <Atom/RPI/Math.azsli>
 #include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
 
 struct SpdGlobalAtomicBuffer
 {
@@ -18,11 +19,15 @@ struct SpdGlobalAtomicBuffer
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
+    Texture2D<float4> m_inputImage;
     RWTexture2D<float4> m_imageDestination[13];
     [[verbatim("globallycoherent")]] RWTexture2D<float4> m_mip6;
     [[verbatim("globallycoherent")]] RWStructuredBuffer<SpdGlobalAtomicBuffer> m_globalAtomic;
 
-    uint m_mips;
+    // Mip level count of m_imageDestination.
+    uint m_destinationMipLevelCount;
+    // The steps of this downsample computation.  It may slightly larger than m_destinationMipLevelCount.
+    uint m_spdMipLevelCount;
     uint m_numWorkGroups;
 
     uint2 m_imageSize;
@@ -44,9 +49,9 @@ AF4 SpdLoadSourceImage(AF2 tex, AU1 /* slice */)
     if (tex.x < PassSrg::m_imageSize.x &&
         tex.y < PassSrg::m_imageSize.y)
     {
-        float4 value = PassSrg::m_imageDestination[0][tex];
-        value.w = 1.;
-        return value;
+        const float3 rgb = PassSrg::m_inputImage[tex].rgb;
+        const float luminance = CalculateLuminance(rgb, ColorSpaceId::ACEScg);
+        return AF4(luminance, luminance, luminance, 1.);
     }
     else
     {
@@ -74,7 +79,7 @@ void SpdStore(ASU2 pix, AF4 value, AU1 mip, AU1 /* slice */)
     if (mip == 5 && value.w > 0.)
         PassSrg::m_mip6[pix] = value;
     
-    const AU1 mipAdjusted = min(mip + 1, PassSrg::m_mips - 1);
+    const AU1 mipAdjusted = min(mip, PassSrg::m_destinationMipLevelCount - 1);
     PassSrg::m_imageDestination[mipAdjusted][pix] = value;
 }
 
@@ -133,9 +138,9 @@ AF4 SpdReduce4(AF4 v0, AF4 v1, AF4 v2, AF4 v3)
 {
     const float weightSum = v0.w + v1.w + v2.w + v3.w;
     const float minValue = min(MinWithFlag(v0, v1), MinWithFlag(v2, v3));
-    const float avgValue = weightSum > 0 ? 
+    const float avgValue = weightSum > 0. ? 
         (v0.y * v0.w + v1.y * v1.w + v2.y * v2.w + v3.y * v3.w) / weightSum :
-        0.f;
+        0.;
     const float maxValue = max(MaxWithFlag(v0, v1), MaxWithFlag(v2, v3));
     const float weightValue =  weightSum * 0.25;
     return AF4(minValue, avgValue, maxValue, weightValue);
@@ -149,7 +154,7 @@ void MainCS(uint3 workGroupId : SV_GroupID, uint localThreadIndex : SV_GroupInde
     SpdDownsample(
         AU2(workGroupId.xy), 
         AU1(localThreadIndex),  
-        AU1(PassSrg::m_mips),
+        AU1(PassSrg::m_spdMipLevelCount),
         AU1(PassSrg::m_numWorkGroups),
         AU1(workGroupId.z),
         AU2(0, 0));
