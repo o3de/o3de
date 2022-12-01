@@ -226,7 +226,7 @@ namespace AZ
         {
             void  ToString(AZStd::string& str) const;
             const void*         m_dataPtr;
-            const Uuid*         m_uuidPtr;
+            Uuid                m_uuid;
             const ClassData*    m_classData;
             const char*         m_elementName;
             const ClassElement* m_classElement;
@@ -298,7 +298,7 @@ namespace AZ
          * \param errorHandler optional pointer to the error handler.
          */
         bool EnumerateInstanceConst(EnumerateInstanceCallContext* callContext, const void* ptr, const Uuid& classId, const ClassData* classData, const ClassElement* classElement) const;
-        bool EnumerateInstance(EnumerateInstanceCallContext* callContext, void* ptr, const Uuid& classId, const ClassData* classData, const ClassElement* classElement) const;
+        bool EnumerateInstance(EnumerateInstanceCallContext* callContext, void* ptr, Uuid classId, const ClassData* classData, const ClassElement* classElement) const;
 
         // Deprecated overloads for EnumerateInstance*. Prefer versions that take a \ref EnumerateInstanceCallContext directly.
         bool EnumerateInstanceConst(const void* ptr, const Uuid& classId, const BeginElemEnumCB& beginElemCB, const EndElemEnumCB& endElemCB, unsigned int accessFlags, const ClassData* classData, const ClassElement* classElement, ErrorHandler* errorHandler = nullptr) const;
@@ -1513,12 +1513,15 @@ namespace AZ
                 }
                 case AZStd::any::Action::Construct:
                 {
-                    // Default construct the ValueType object
-                    // This occurs in the case where a Copy and Move action is invoked
-                    void* ptr = AZStd::any_cast<void>(dest);
-                    if (ptr)
+                    if constexpr (AZStd::is_default_constructible_v<ValueType>)
                     {
-                        new (ptr) ValueType();
+                        // Default construct the ValueType object
+                        // This occurs in the case where a Copy and Move action is invoked
+                        void* ptr = AZStd::any_cast<void>(dest);
+                        if (ptr)
+                        {
+                            new (ptr) ValueType();
+                        }
                     }
                     break;
                 }
@@ -1567,8 +1570,7 @@ namespace AZ
             }
             else
             {
-                ValueType instance;
-                return serializeContext ? AZStd::any(reinterpret_cast<const void*>(&instance), typeinfo) : AZStd::any();
+                return {};
             }
         }
     };
