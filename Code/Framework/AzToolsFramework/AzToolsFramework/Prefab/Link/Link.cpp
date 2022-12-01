@@ -135,7 +135,7 @@ namespace AzToolsFramework
             return areOverridesPresent;
         }
 
-        PrefabDomConstReference Link::GetOverridePatch(AZ::Dom::Path path) const
+        PrefabDomConstReference Link::GetOverridePatchAtExactPath(AZ::Dom::Path path) const
         {
             PrefabDomConstReference overridePatch = {};
             const PrefabOverrideMetadata* overrideData = m_linkPatchesTree.ValueAtPath(path, AZ::Dom::PrefixTreeMatch::ExactPath);

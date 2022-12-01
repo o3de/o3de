@@ -16,28 +16,6 @@
 {
     namespace Prefab
     {
-        namespace Internal
-        {
-            // Helper to differentiate between adding/removing an entire
-            // entity object or adding/removing a property within an entity
-            bool IsDirectEntityPatch(PrefabDomConstReference patch)
-            {
-                auto pathMember = patch->get().FindMember("path");
-                if (pathMember != patch->get().MemberEnd())
-                {
-                    // Check whether the patch path points to an entity directly (ex. /Entities/Entity_[123213123123])
-                    // or to something else (ex. /Entities/Entity_[123213123123]/Components/Component_[1232131231231231231]/...)
-                    AZ::Dom::Path path(pathMember->value.GetString());
-                    if (path.Size() > 1)
-                    {
-                        return (path[path.Size() - 2] == PrefabDomUtils::EntitiesName);
-                    }
-                }
-
-                return false;
-            }
-        }
-
         PrefabOverrideHandler::PrefabOverrideHandler()
         {
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
@@ -92,7 +70,7 @@
             if (link.has_value())
             {
                 // Look for an override at the exact provided path
-                if (PrefabDomConstReference overridePatch = link->get().GetOverridePatch(path); overridePatch.has_value())
+                if (PrefabDomConstReference overridePatch = link->get().GetOverridePatchAtExactPath(path); overridePatch.has_value())
                 {
                     PrefabDomValue::ConstMemberIterator patchEntryIterator = overridePatch->get().FindMember("op");
                     if (patchEntryIterator != overridePatch->get().MemberEnd())

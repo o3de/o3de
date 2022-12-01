@@ -121,7 +121,7 @@ namespace AzToolsFramework
             //! Gets an override patch at the exact provided path
             //! @param path The path to get override for.
             //! @return an override patch if an override is present at the exact provided path.
-            PrefabDomConstReference GetOverridePatch(AZ::Dom::Path path) const;
+            PrefabDomConstReference GetOverridePatchAtExactPath(AZ::Dom::Path path) const;
             
             //! Removes overrides at the provided path and all the nodes under it from the override tree
             //! @param path The path at which the overrides should be removed from

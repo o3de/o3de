@@ -61,6 +61,12 @@ namespace AzToolsFramework
             return;
         }
 
+        // Cache override pixmaps. QIcon handles dpi scaling
+        QIcon editOverrideIcon = QIcon(m_editEntityOverrideImagePath);
+        m_editEntityOverrideImage = editOverrideIcon.pixmap(s_overrideImageSize);
+        QIcon addOverrideIcon = QIcon(m_addEntityOverrideImagePath);
+        m_addEntityOverrideImage = addOverrideIcon.pixmap(s_overrideImageSize);
+
         // Get EditorEntityContextId
         EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
     }
