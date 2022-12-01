@@ -82,6 +82,7 @@ private:
     void OnAngleSnappingChanged(bool enabled) override;
     void OnDrawHelpersChanged(bool enabled) override;
     void OnGridSnappingChanged(bool enabled) override;
+    void OnGridShowingChanged(bool showing) override;
     void OnIconsVisibilityChanged(bool enabled) override;
     void OnOnlyShowHelpersForSelectedEntitiesChanged(bool enabled) override;
 

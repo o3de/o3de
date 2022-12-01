@@ -220,6 +220,9 @@ namespace SandboxEditor
     void SetGridSnappingSize(const float size)
     {
         AzToolsFramework::SetRegistry(GridSizeSetting, size);
+
+        AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+            &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnGridSnappingSizeChanged, size);
     }
 
     bool AngleSnappingEnabled()
@@ -240,6 +243,9 @@ namespace SandboxEditor
     void SetAngleSnappingSize(const float size)
     {
         AzToolsFramework::SetRegistry(AngleSizeSetting, size);
+
+        AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+            &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnAngleSnappingSizeChanged, size);
     }
 
     bool ShowingGrid()
@@ -250,6 +256,9 @@ namespace SandboxEditor
     void SetShowingGrid(const bool showing)
     {
         AzToolsFramework::SetRegistry(ShowGridSetting, showing);
+
+        AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+            &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnGridSnappingShowingChanged, showing);
     }
 
     bool StickySelectEnabled()

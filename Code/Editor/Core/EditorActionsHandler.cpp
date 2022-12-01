@@ -55,6 +55,7 @@ static constexpr AZStd::string_view AngleSnappingStateChangedUpdaterIdentifier =
 static constexpr AZStd::string_view DrawHelpersStateChangedUpdaterIdentifier = "o3de.updater.onViewportDrawHelpersStateChanged";
 static constexpr AZStd::string_view EntitySelectionChangedUpdaterIdentifier = "o3de.updater.onEntitySelectionChanged";
 static constexpr AZStd::string_view GameModeStateChangedUpdaterIdentifier = "o3de.updater.onGameModeStateChanged";
+static constexpr AZStd::string_view GridShowingChangedUpdaterIdentifier = "o3de.updater.onGridShowingChanged";
 static constexpr AZStd::string_view GridSnappingStateChangedUpdaterIdentifier = "o3de.updater.onGridSnappingStateChanged";
 static constexpr AZStd::string_view IconsStateChangedUpdaterIdentifier = "o3de.updater.onViewportIconsStateChanged";
 static constexpr AZStd::string_view OnlyShowHelpersForSelectedEntitiesIdentifier =  "o3de.updater.onOnlyShowHelpersForSelectedEntitiesChanged";
@@ -699,6 +700,36 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         // Trigger update when the grid snapping setting changes
         m_actionManagerInterface->AddActionToUpdater(GridSnappingStateChangedUpdaterIdentifier, actionIdentifier);
+
+        // This action is only accessible outside of Component Modes
+        m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
+    }
+
+    // Show Grid
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.edit.snap.toggleGrid";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Show Grid";
+        actionProperties.m_description = "Show grid";
+        actionProperties.m_category = "Edit";
+        actionProperties.m_hideFromMenusWhenDisabled = false;
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorMainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                SandboxEditor::SetShowingGrid(!SandboxEditor::ShowingGrid());
+            },
+            []() -> bool
+            {
+                return SandboxEditor::ShowingGrid();
+            }
+        );
+
+        // Trigger update when the grid snapping setting changes
+        m_actionManagerInterface->AddActionToUpdater(GridShowingChangedUpdaterIdentifier, actionIdentifier);
 
         // This action is only accessible outside of Component Modes
         m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
@@ -2031,6 +2062,11 @@ void EditorActionsHandler::OnDrawHelpersChanged([[maybe_unused]] bool enabled)
 void EditorActionsHandler::OnGridSnappingChanged([[maybe_unused]] bool enabled)
 {
     m_actionManagerInterface->TriggerActionUpdater(GridSnappingStateChangedUpdaterIdentifier);
+}
+
+void EditorActionsHandler::OnGridShowingChanged([[maybe_unused]] bool showing)
+{
+    m_actionManagerInterface->TriggerActionUpdater(GridShowingChangedUpdaterIdentifier);
 }
 
 void EditorActionsHandler::OnIconsVisibilityChanged([[maybe_unused]] bool enabled)

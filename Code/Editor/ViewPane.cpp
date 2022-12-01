@@ -435,31 +435,6 @@ void CLayoutViewPane::OnActionRegistrationHook()
         m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
 
-    // Grid Snapping
-    {
-        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.gridSnapping.toggle";
-        AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Grid Snapping";
-        actionProperties.m_category = "Viewport Grid Snapping";
-
-        m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
-            actionIdentifier,
-            actionProperties,
-            []
-            {
-                SandboxEditor::SetGridSnapping(!SandboxEditor::GridSnappingEnabled());
-            },
-            []() -> bool
-            {
-                return SandboxEditor::GridSnappingEnabled();
-            }
-        );
-
-        // TODO - Grid Snapping Toggled Updated?
-        // m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
-    }
-
     // Show Grid
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.gridSnapping.show";
@@ -482,31 +457,6 @@ void CLayoutViewPane::OnActionRegistrationHook()
         );
 
         // TODO - Grid Snapping Showing Updated?
-        // m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
-    }
-
-    // Angle Snapping
-    {
-        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.angleSnapping.toggle";
-        AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Angle Snapping";
-        actionProperties.m_category = "Viewport Angle Snapping";
-
-        m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
-            actionIdentifier,
-            actionProperties,
-            []
-            {
-                SandboxEditor::SetAngleSnapping(!SandboxEditor::AngleSnappingEnabled());
-            },
-            []() -> bool
-            {
-                return SandboxEditor::AngleSnappingEnabled();
-            }
-        );
-
-        // TODO - Angle Snapping Toggled Updated?
         // m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
 }
@@ -538,11 +488,11 @@ void CLayoutViewPane::OnMenuBindingHook()
 
     // Options
     {
-        m_menuManagerInterface->AddActionToMenu(ViewportOptionsMenuIdentifier, "o3de.action.viewport.gridSnapping.toggle", 300);
-        m_menuManagerInterface->AddActionToMenu(ViewportOptionsMenuIdentifier, "o3de.action.viewport.gridSnapping.show", 400);
+        m_menuManagerInterface->AddActionToMenu(ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.toggleGridSnapping", 300);
+        m_menuManagerInterface->AddActionToMenu(ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.toggleGrid", 400);
         m_menuManagerInterface->AddWidgetToMenu(ViewportOptionsMenuIdentifier, "o3de.widgetAction.viewport.gridSnappingSize", 500);
         m_menuManagerInterface->AddSeparatorToMenu(ViewportOptionsMenuIdentifier, 600);
-        m_menuManagerInterface->AddActionToMenu(ViewportOptionsMenuIdentifier, "o3de.action.viewport.angleSnapping.toggle", 700);
+        m_menuManagerInterface->AddActionToMenu(ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.toggleAngleSnapping", 700);
         m_menuManagerInterface->AddWidgetToMenu(ViewportOptionsMenuIdentifier, "o3de.widgetAction.viewport.angleSnappingSize", 800);
     }
 }

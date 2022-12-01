@@ -278,7 +278,7 @@ namespace AzToolsFramework
             virtual void OnGridSnappingChanged([[maybe_unused]] bool enabled)
             {
             }
-            virtual void OnGridSnappingShowingChanged([[maybe_unused]] bool enabled)
+            virtual void OnGridShowingChanged([[maybe_unused]] bool showing)
             {
             }
             virtual void OnGridSnappingSizeChanged([[maybe_unused]] float size)
