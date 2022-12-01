@@ -6,6 +6,8 @@
  *
  */
 
+#include <cstdint>
+
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
@@ -35,7 +37,7 @@ namespace
         static const AZ::u32 m_defValue = 0xfeedf00d;
         AZ_FORCE_INLINE Magic32()
         {
-            m_value = (m_defValue ^ (AZ::u32)((AZStd::size_t)this));
+            m_value = (m_defValue ^ AZ::u32(reinterpret_cast<uintptr_t>(this)));
         }
         AZ_FORCE_INLINE ~Magic32()
         {
@@ -43,7 +45,7 @@ namespace
         }
         AZ_FORCE_INLINE bool Validate() const
         {
-            return m_value == (m_defValue ^ (AZ::u32)((AZStd::size_t)this));
+            return m_value == (m_defValue ^ AZ::u32(reinterpret_cast<uintptr_t>(this)));
         }
 
     private:
