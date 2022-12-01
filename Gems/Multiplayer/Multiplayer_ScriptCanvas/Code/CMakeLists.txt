@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME ${gem_name}.Static STATIC
+    NAME ${gem_name}.Unified.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         scriptcanvas_multiplayer_files.cmake
@@ -18,7 +18,7 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PUBLIC
-            Gem::Multiplayer.Static
+            Gem::Multiplayer.Unified.Static
             Gem::ScriptCanvas
     AUTOGEN_RULES
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
@@ -39,12 +39,85 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
-            Gem::${gem_name}.Static
+            Gem::${gem_name}.Unified.Static
+)
+
+ly_add_target(
+    NAME ${gem_name}.Client.Static STATIC
+    NAMESPACE Gem
+    FILES_CMAKE
+        scriptcanvas_multiplayer_files.cmake
+        scriptcanvas_autogen_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            .
+            Source
+    BUILD_DEPENDENCIES
+        PUBLIC
+            Gem::Multiplayer.Client.Static
+            Gem::ScriptCanvas
+    AUTOGEN_RULES
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Header.jinja,AutoGenNodeableRegistry.generated.h
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Source.jinja,AutoGenNodeableRegistry.generated.cpp
+)
+
+ly_add_target(
+    NAME ${gem_name}.Client ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAMESPACE Gem
+    FILES_CMAKE
+        scriptcanvas_multiplayer_shared_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            .
+            Source
+    BUILD_DEPENDENCIES
+        PRIVATE
+            Legacy::CryCommon
+            Gem::${gem_name}.Client.Static
+)
+
+ly_add_target(
+    NAME ${gem_name}.Server.Static STATIC
+    NAMESPACE Gem
+    FILES_CMAKE
+        scriptcanvas_multiplayer_files.cmake
+        scriptcanvas_autogen_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            .
+            Source
+    BUILD_DEPENDENCIES
+        PUBLIC
+            Gem::Multiplayer.Server.Static
+            Gem::ScriptCanvas
+    AUTOGEN_RULES
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Header.jinja,AutoGenNodeableRegistry.generated.h
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Source.jinja,AutoGenNodeableRegistry.generated.cpp
+)
+
+ly_add_target(
+    NAME ${gem_name}.Server ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAMESPACE Gem
+    FILES_CMAKE
+        scriptcanvas_multiplayer_shared_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            .
+            Source
+    BUILD_DEPENDENCIES
+        PRIVATE
+            Legacy::CryCommon
+            Gem::${gem_name}.Server.Static
 )
 
 # By default, the above module is used by all application types, however, the module depends at runtime to ScriptCanvas
 # and the dependency needs to be different per application type
-ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name} Gem::ScriptCanvas)
-ly_create_alias(NAME ${gem_name}.Servers  NAMESPACE Gem TARGETS Gem::${gem_name} Gem::ScriptCanvas)
+ly_create_alias(NAME ${gem_name}.Unified  NAMESPACE Gem TARGETS Gem::${gem_name} Gem::ScriptCanvas)
+ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name}.Client Gem::ScriptCanvas)
+ly_create_alias(NAME ${gem_name}.Servers  NAMESPACE Gem TARGETS Gem::${gem_name}.Server Gem::ScriptCanvas)
 ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name} Gem::ScriptCanvas.Editor)
 ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name} Gem::ScriptCanvas.Editor)

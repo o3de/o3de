@@ -350,7 +350,11 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ PrintRpcParam
                 AZ_Warning("Network RPC", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }}ByEntityId has been deprecated. Please use {{ UpperFirst(Property.attrib['Name']) }} instead.");
             }, {}, "Deprecated. Please use {{ UpperFirst(Property.attrib['Name']) }} instead.")
                 ->Attribute(AZ::Script::Attributes::Deprecated, true)
-            ->Method("{{ UpperFirst(Property.attrib['Name']) }}", [](AZ::EntityId id{{ PrintRpcParameters(', ', paramDefines) }}) {
+{%     if paramDefines|count > 0 %}
+            ->Method("{{ UpperFirst(Property.attrib['Name']) }}", [](AZ::EntityId id, [[maybe_unused]] {{ ', [[maybe_unused]] '.join(paramDefines) }}) {
+{%     else %}
+            ->Method("{{ UpperFirst(Property.attrib['Name']) }}", [](AZ::EntityId id) {
+{%     endif %}
                 AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
                 if (!entity)
                 {
@@ -364,7 +368,15 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ PrintRpcParam
                     return;
                 }
 {%            if (InvokeFrom == 'Server') %}
+{% if HandleOn == 'Authority' %}
+#if AZ_TRAIT_SERVER
                 networkComponent->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
+#endif
+{% else %}
+#if AZ_TRAIT_CLIENT
+                networkComponent->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
+#endif
+{% endif %}
 {%            elif (InvokeFrom == 'Authority') or (InvokeFrom == 'Autonomous') %}
                 {{ ClassName }}Controller* controller = static_cast<{{ ClassName }}Controller*>(networkComponent->GetController());
                 if (!controller)
@@ -372,7 +384,15 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ PrintRpcParam
                     AZ_Warning("Network RPC", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }}ByEntityId method failed. Entity '%s' (id: %s) {{ ClassName }} is missing the network controller. This RemoteProcedure can only be invoked from {{InvokeFrom}} network entities, because this entity doesn't have a controller, it must not be a {{InvokeFrom}} entity. Please check your network context before attempting to call {{ UpperFirst(Property.attrib['Name']) }}.", entity->GetName().c_str(), id.ToString().c_str())
                     return;
                 }
+{% if HandleOn == 'Authority' or HandleOn == 'Server' %}
+#if AZ_TRAIT_SERVER
                 controller->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
+#endif
+{% else %}
+#if AZ_TRAIT_CLIENT
+                controller->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
+#endif
+{% endif %}
 {%            endif %}
             }, { { { "Source", "The Source containing the {{ ClassName }}Controller" }{% for paramName in paramNames %}, {"{{ paramName }}"}{% endfor %}}})
                 ->Attribute(AZ::Script::Attributes::ToolTip, "{{Property.attrib['Description']}}")
