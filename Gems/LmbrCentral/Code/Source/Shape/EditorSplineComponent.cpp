@@ -74,6 +74,8 @@ namespace LmbrCentral
                         ;
             }
         }
+
+        EditorSplineComponentMode::Reflect(context);
     }
 
     void EditorSplineComponent::Activate()
