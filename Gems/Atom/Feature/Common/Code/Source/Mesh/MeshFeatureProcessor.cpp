@@ -41,8 +41,6 @@ namespace AZ
 {
     namespace Render
     {
-        const AZ::Name MeshFeatureProcessor::MeshMovedTagName = AZ::Name::FromStringLiteral("MeshMoved", AZ::Interface<AZ::NameDictionary>::Get());
-
         void MeshFeatureProcessor::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -77,7 +75,7 @@ namespace AZ
                 console->PerformCommand(AZStd::string::format("r_enablePerMeshShaderOptionFlags %s", enablePerMeshShaderOptionFlagsCvar ? "true" : "false").c_str());
             }
 
-            m_meshMovedFlag = GetParentScene()->GetViewTagBitRegistry().AcquireTag(MeshMovedTagName);
+            m_meshMovedFlag = GetParentScene()->GetViewTagBitRegistry().AcquireTag(MeshCommon::MeshMovedName);
         }
 
         void MeshFeatureProcessor::Deactivate()

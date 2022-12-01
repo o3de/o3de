@@ -68,12 +68,12 @@ namespace AZ::Render
         m_shadowProperties.Clear();
 
         m_projectedShadowmapsPasses.clear();
-        m_esmShadowmapsPasses.clear();
         
         for (EsmShadowmapsPass* esmPass : m_esmShadowmapsPasses)
         {
             esmPass->SetEnabledComputation(false);
         }
+        m_esmShadowmapsPasses.clear();
     }
 
     
@@ -268,14 +268,8 @@ namespace AZ::Render
         esmData.m_n_f_n = nearDist / (farDist - nearDist);
         esmData.m_n_f = nearDist - farDist;
         esmData.m_f = farDist;
-
         esmData.m_isEnabled = FilterMethodIsEsm(shadowData);
         m_filterParameterNeedsUpdate = m_filterParameterNeedsUpdate || esmData.m_isEnabled;
-        
-        for (EsmShadowmapsPass* esmPass : m_esmShadowmapsPasses)
-        {
-            esmPass->SetEnabledComputation(esmData.m_isEnabled);
-        }
 
         // Set depth bias matrix.
         const Matrix4x4& worldToLightClipMatrix = view->GetWorldToClipMatrix();
@@ -369,17 +363,20 @@ namespace AZ::Render
             return;
         }
 
-        if (m_shadowProperties.GetDataCount() == 0)
+        bool anyShadowsUseEsm = false;
+        for (const auto& shadowProperty : m_shadowProperties.GetDataVector())
         {
-            for (EsmShadowmapsPass* esmPass : m_esmShadowmapsPasses)
+            FilterParameter& esmData = m_shadowData.GetElement<FilterParamIndex>(shadowProperty.m_shadowId.GetIndex());
+            if (esmData.m_isEnabled)
             {
-                esmPass->SetEnabledComputation(false);
+                anyShadowsUseEsm = true;
+                break;
             }
-            return;
         }
+
         for (EsmShadowmapsPass* esmPass : m_esmShadowmapsPasses)
         {
-            esmPass->SetEnabledComputation(true);
+            esmPass->SetEnabledComputation(anyShadowsUseEsm);
         }
     }
 
@@ -467,6 +464,20 @@ namespace AZ::Render
         {
             m_shadowBufferHandler.UpdateBuffer(m_shadowData.GetRawData<ShadowDataIndex>(), static_cast<uint32_t>(m_shadowData.GetSize()));
             m_deviceBufferNeedsUpdate = false;
+        }
+
+        // Turn off cached esm shadow maps for next frame
+        for (const auto& shadowProperty : m_shadowProperties.GetDataVector())
+        {
+            if (shadowProperty.m_useCachedShadows)
+            {
+                FilterParameter& esmData = m_shadowData.GetElement<FilterParamIndex>(shadowProperty.m_shadowId.GetIndex());
+                if (esmData.m_isEnabled != 0)
+                {
+                    esmData.m_isEnabled = false;
+                    m_filterParameterNeedsUpdate = true;
+                }
+            }
         }
     }
     

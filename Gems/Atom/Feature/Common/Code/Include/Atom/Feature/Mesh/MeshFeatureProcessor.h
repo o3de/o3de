@@ -145,8 +145,6 @@ namespace AZ
 
             using FlagRegistry = RHI::TagBitRegistry<RPI::Cullable::FlagType>;
 
-            static const AZ::Name MeshMovedTagName;
-
             static void Reflect(AZ::ReflectContext* context);
 
             MeshFeatureProcessor() = default;

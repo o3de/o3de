@@ -17,7 +17,7 @@
 #include <Atom/RPI.Reflect/Pass/RasterPassData.h>
 #include <CoreLights/ProjectedShadowmapsPass.h>
 #include <AzCore/std/iterator.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
+#include <Atom/Feature/Mesh/MeshCommon.h>
 
 namespace AZ
 {
@@ -232,7 +232,7 @@ namespace AZ
                 CreateClearShadowDrawPacket();
                 m_updateChildren = true;
             }
-            m_casterMovedBit = GetScene()->GetViewTagBitRegistry().FindTag(MeshFeatureProcessor::MeshMovedTagName);
+            m_casterMovedBit = GetScene()->GetViewTagBitRegistry().FindTag(MeshCommon::MeshMovedName);
             Base::FrameBeginInternal(params);
         }
 

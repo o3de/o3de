@@ -13,6 +13,7 @@
 #include <AzCore/Math/Hemisphere.h>
 #include <AzCore/Math/ShapeIntersection.h>
 #include <AzCore/Math/Sphere.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <AzCore/std/containers/variant.h>
 
 #include <Atom/RPI.Public/Culling.h>
@@ -20,6 +21,9 @@
 
 namespace AZ::Render::MeshCommon
 {
+
+    inline static AZ::Name MeshMovedName = AZ::Name::FromStringLiteral("MeshMoved", AZ::Interface<AZ::NameDictionary>::Get());
+
     template <typename BoundsType>
     void MarkMeshesForBounds(AZ::RPI::Scene* scene, const BoundsType& bounds, AZ::RPI::Cullable::FlagType flag)
     {
