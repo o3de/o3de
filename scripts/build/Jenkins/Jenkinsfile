@@ -10,9 +10,10 @@
 import groovy.json.JsonOutput
 import java.util.regex.Pattern
 
-PIPELINE_CONFIG_FILE = 'scripts/build/Jenkins/o3de.json'
-INCREMENTAL_BUILD_SCRIPT_PATH = 'scripts/build/bootstrap/incremental_build_util.py'
-EBS_SNAPSHOT_SCRIPT_PATH = 'scripts/build/tools/ebs_snapshot.py'
+SCRIPTS_PATH = 'scripts/build' // Root path for all CI scripts
+PIPELINE_CONFIG_FILE = "${SCRIPTS_PATH}/Jenkins/o3de.json"
+INCREMENTAL_BUILD_SCRIPT_PATH = "${SCRIPTS_PATH}/bootstrap/incremental_build_util.py"
+EBS_SNAPSHOT_SCRIPT_PATH = "${SCRIPTS_PATH}/tools/ebs_snapshot.py"
 PIPELINE_RETRY_ATTEMPTS = 3
 
 // Number of minutes of inactivity in all stages of the pipeline to reach the timeout
@@ -286,18 +287,7 @@ def GetExtrasRemoteConfig() {
     return GetRemoteConfig(EXTRAS_REPOSITORY_NAME, EXTRAS_URL)
 }
 
-def UnInstallGitLFS() {
-    PlatformSh('git lfs uninstall', 'Git LFS Uninstall')
-}
-
-def InstallAndPullGitLFS() {
-    if(fileExists('.lfsconfig')) {
-        PlatformSh("git lfs install --force", "LFS config exists. Installing LFS hooks to local repo")
-        PlatformSh("git lfs pull", "Pulling new LFS objects")
-    }
-}
-
-def CheckoutEngineBootstrapScripts(String branchName) {
+def CheckoutEngineBootstrapScripts(branchName, userRemoteConfig = [GetEngineRemoteConfig()]) {
     checkout([$class: 'GitSCM',
         branches: [[name: "*/${branchName}"]],
         doGenerateSubmoduleConfigurations: false,
@@ -305,16 +295,16 @@ def CheckoutEngineBootstrapScripts(String branchName) {
             [$class: 'PruneStaleBranch'],
             [$class: 'AuthorInChangelog'],
             [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [
-                [ $class: 'SparseCheckoutPath', path: 'scripts/build/Jenkins/' ],
-                [ $class: 'SparseCheckoutPath', path: 'scripts/build/bootstrap/' ],
-                [ $class: 'SparseCheckoutPath', path: 'scripts/build/Platform' ],
-                [ $class: 'SparseCheckoutPath', path: 'scripts/build/tools/' ]
+                [ $class: 'SparseCheckoutPath', path: "${SCRIPTS_PATH}/Jenkins/" ],
+                [ $class: 'SparseCheckoutPath', path: "${SCRIPTS_PATH}/bootstrap/" ],
+                [ $class: 'SparseCheckoutPath', path: "${SCRIPTS_PATH}/Platform" ],
+                [ $class: 'SparseCheckoutPath', path: "${SCRIPTS_PATH}/tools/" ]
             ]],
             // Shallow checkouts break changelog computation. Do not enable.
             [$class: 'CloneOption', noTags: false, reference: '', shallow: false]
         ],
         submoduleCfg: [],
-        userRemoteConfigs: scm.userRemoteConfigs
+        userRemoteConfigs: userRemoteConfig
     ])
 }
 
@@ -345,6 +335,7 @@ def CheckoutRepo(String branchName, userRemoteConfigs, boolean disableSubmodules
                 [$class: 'PruneStaleBranch'],
                 [$class: 'AuthorInChangelog'],
                 [$class: 'SubmoduleOption', disableSubmodules: disableSubmodules, recursiveSubmodules: true],
+                [$class: 'GitLFSPull'],
                 [$class: 'CheckoutOption', timeout: 60]
             ],
             userRemoteConfigs: userRemoteConfigs
@@ -414,7 +405,13 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
         }
     }
 
+    def workspace_retry = 5
     dir(workspace) {
+        while(!fileExists(workspace) || workspace_retry > 0) {
+            sleep 1 // sleep in case directory creation is slow
+            PlatformSh("ls ${workspace}", "Printing directory listing")
+            workspace_retry--
+        }
 
         // Add folder where we will store the 3rdParty downloads and packages
         dir('3rdParty') {
@@ -425,18 +422,18 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             echo "Checkout Engine: ${ENGINE_URL}"
             def setEnvCommit = false
             def the_branch = branchName
+            def remoteConfig = scm.userRemoteConfigs
             if(ENGINE_COMMIT) {
                 //the pr is for the engine repo, so we want to use the passed in branch name and record the change id and change date
                 setEnvCommit = true
             } else {
                 //this pr is for another repo so we want to use the development branch for the engine and do not set the commit id or change date
                 the_branch = ENGINE_DEVELOPMENT_BRANCH
+                remoteConfig = [GetEngineRemoteConfig()]
             }
 
-            UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
-
             //checkout the engine branch
-            CheckoutRepo(the_branch, scm.userRemoteConfigs, disableSubmodules, setEnvCommit)
+            CheckoutRepo(the_branch, remoteConfig, disableSubmodules, setEnvCommit)
 
             // Get python and clean.
             // Always run the clean step, the scripts detect what variables were set, but it also cleans if
@@ -452,8 +449,6 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
                 bat label: "Running ${platform} clean",
                     script: "${pipelineConfig.PYTHON_DIR}/python.cmd -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
             }
-
-            InstallAndPullGitLFS()
         }
         dir(EXTRAS_REPOSITORY_NAME) {
             echo "Checkout Extras: ${EXTRAS_URL}"
@@ -467,12 +462,8 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
                 the_branch = EXTRAS_DEVELOPMENT_BRANCH
             }
 
-            UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
-
-            //checkout the engine branch
+            //checkout the extras branch
             CheckoutRepo(the_branch, [GetExtrasRemoteConfig()], disableSubmodules, setEnvCommit)
-
-            InstallAndPullGitLFS()
         }
         //get any other external repos next, set the env.CHANGE_ID and env.CHANGE_DATE only if the repo is the pr repo
         pipelineConfig.EXTERNAL_REPOS.each { repo ->
@@ -488,12 +479,8 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
                     the_branch = repo.DEVELOPMENT_BRANCH
                 }
 
-                UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
-
                 //checkout the branch
                 CheckoutRepo(the_branch, GetRemoteConfig(repo.REPOSITORY_NAME, repo.URL), disableSubmodules, setEnvCommit)
-
-                InstallAndPullGitLFS()
             }
         }
     }
@@ -761,7 +748,7 @@ def ExportTestScreenshots(Map options, String branchName, String platformName, S
         dir(workspace){
             dir(ENGINE_REPOSITORY_NAME) {
                 def screenshotsFolder = "AutomatedTesting/user/PythonTests/Automated/Screenshots"
-                def s3Uploader = "scripts/build/tools/upload_to_s3.py"
+                def s3Uploader = "${SCRIPTS_PATH}/tools/upload_to_s3.py"
                 def command = "${options.PYTHON_DIR}/python.cmd -u ${s3Uploader} --base_dir ${screenshotsFolder} " +
                               '--file_regex \\"(.*zip\$)\\" ' +
                               "--bucket ${env.TEST_SCREENSHOT_BUCKET} " +
@@ -1163,8 +1150,14 @@ try {
 
                         echo "Running repository: \"${repositoryName}\", pipeline: \"${pipelineName}\", branch: \"${branchName}\", CHANGE_ID: \"${env.CHANGE_ID}\", GIT_COMMMIT: \"${scm.GIT_COMMIT}\"..."
 
-                        CheckoutEngineBootstrapScripts(branchName)
-
+                        // Project or external repos may not have the bootstrapping scripts. For these cases, pull the bootstrap scripts from the engine repo at the default branch
+                        if (!fileExists(SCRIPTS_PATH) || !fileExists(PIPELINE_CONFIG_FILE) || !(COMMIT_REPOSITORY_NAME == ENGINE_REPOSITORY_NAME)) {
+                            echo "No bootstrap scripts found in ${SCRIPTS_PATH} or working repo is not the engine repo, downloading it from the engine repo at ${ENGINE_DEVELOPMENT_BRANCH}"
+                            CheckoutEngineBootstrapScripts(ENGINE_DEVELOPMENT_BRANCH)
+                        }
+                        else {
+                            CheckoutEngineBootstrapScripts(branchName)
+                        }
                         // Load configs
                         pipelineConfig = LoadPipelineConfig(pipelineName, branchName)
 
