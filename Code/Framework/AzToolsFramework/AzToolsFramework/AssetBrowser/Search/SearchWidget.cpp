@@ -83,6 +83,7 @@ namespace AzToolsFramework
             , m_stringFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND))
             , m_typesFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::OR))
             , m_projectSourceFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND))
+            , m_folderFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND))
         {
             m_filter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
 
@@ -94,6 +95,9 @@ namespace AzToolsFramework
 
             m_projectSourceFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
             m_projectSourceFilter->SetTag("ProjectSource");
+
+            m_folderFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+            m_folderFilter->SetTag("Folder");
 
             connect(this, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, this,
                     [this](const QString& text)
@@ -173,9 +177,14 @@ namespace AzToolsFramework
             auto pathFilter = new AssetPathFilter();
             pathFilter->SetAssetPath(AZStd::string_view{ AZ::Utils::GetProjectPath() });
             m_projectSourceFilter->AddFilter(FilterConstType(pathFilter));
+
+            auto directoryFilter = new EntryTypeFilter();
+            directoryFilter->SetName("Folder");
+            directoryFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Folder);
+            m_folderFilter->AddFilter(FilterConstType(directoryFilter));
         }
 
-        void SearchWidget::FilterProjectSourceAssets()
+        void SearchWidget::ToggleProjectSourceAssetFilter()
         {
             if (m_filter->GetSubFilters().contains(m_projectSourceFilter))
             {
@@ -184,6 +193,22 @@ namespace AzToolsFramework
             else
             {
                 m_filter->AddFilter(FilterConstType(m_projectSourceFilter));
+            }
+        }
+
+        void SearchWidget::AddFolderFilter()
+        {
+            if (!m_filter->GetSubFilters().contains(m_folderFilter))
+            {
+                m_filter->AddFilter(FilterConstType(m_folderFilter));
+            }
+        }
+
+        void SearchWidget::RemoveFolderFilter()
+        {
+            if (m_filter->GetSubFilters().contains(m_folderFilter))
+            {
+                m_filter->RemoveFilter(FilterConstType(m_folderFilter));
             }
         }
 
@@ -207,6 +232,10 @@ namespace AzToolsFramework
             return m_projectSourceFilter;
         }
 
+        QSharedPointer<CompositeFilter> SearchWidget::GetFolderFilter() const
+        {
+            return m_folderFilter;
+        }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
