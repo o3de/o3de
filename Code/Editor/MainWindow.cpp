@@ -53,6 +53,7 @@
 // AzQtComponents
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
 #include <AzQtComponents/Components/DockMainWindow.h>
+#include <AzQtComponents/Components/InputDialog.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
@@ -1640,7 +1641,7 @@ void MainWindow::SaveLayout()
         return;
     }
 
-    QString layoutName = QInputDialog::getText(this, tr("Layout Name"), QString()).toLower();
+    QString layoutName = InputDialog::getText(this, tr("Layout Name"), QString(), QLineEdit::Normal, QString(), "[a-z]+[a-z0-9\\-\\_]*");
     if (layoutName.isEmpty())
     {
         return;
@@ -1694,11 +1695,7 @@ void MainWindow::ViewRenamePaneLayout(const QString& layoutName)
     bool validName = false;
     while (!validName)
     {
-        newLayoutName = QInputDialog::getText(this, tr("Rename layout '%1'").arg(layoutName), QString());
-        if (newLayoutName.isEmpty())
-        {
-            return;
-        }
+        newLayoutName = InputDialog::getText(this, tr("Layout Name"), QString(), QLineEdit::Normal, QString(), "[a-z]+[a-z0-9\\-\\_]*");
 
         if (m_viewPaneManager->HasLayout(newLayoutName))
         {
