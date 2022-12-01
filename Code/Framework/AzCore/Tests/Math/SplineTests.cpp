@@ -17,7 +17,7 @@ using namespace AZ;
 namespace UnitTest
 {
     class MATH_SplineTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void Linear_NearestAddressFromPosition()

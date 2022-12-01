@@ -19,7 +19,7 @@
 namespace UnitTest
 {
     class ProcessLaunchParseTests
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         using ParsedArgMap = AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>>;

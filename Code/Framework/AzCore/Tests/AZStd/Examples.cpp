@@ -94,7 +94,7 @@ namespace UnitTest
     }
 
     class ContainersExamples
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void Array()

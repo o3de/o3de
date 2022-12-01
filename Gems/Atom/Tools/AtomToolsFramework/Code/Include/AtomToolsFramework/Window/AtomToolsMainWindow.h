@@ -10,6 +10,7 @@
 
 #include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowser.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
+#include <AtomToolsFramework/SettingsDialog/SettingsDialog.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzQtComponents/Components/DockMainWindow.h>
@@ -51,7 +52,7 @@ namespace AtomToolsFramework
         void SetStatusWarning(const QString& message);
         void SetStatusError(const QString& message);
 
-        virtual AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> GetSettingsDialogGroups() const;
+        virtual void PopulateSettingsInspector(InspectorWidget* inspector) const;
         virtual void OpenSettingsDialog();
 
         virtual AZStd::string GetHelpDialogText() const;
@@ -103,5 +104,8 @@ namespace AtomToolsFramework
 
         AtomToolsFramework::AtomToolsAssetBrowser* m_assetBrowser = {};
         AzToolsFramework::LogPanel::TracePrintFLogPanel* m_logPanel = {};
+
+        mutable AZStd::shared_ptr<DynamicPropertyGroup> m_applicationSettingsGroup;
+        mutable AZStd::shared_ptr<DynamicPropertyGroup> m_assetBrowserSettingsGroup;
     };
 } // namespace AtomToolsFramework

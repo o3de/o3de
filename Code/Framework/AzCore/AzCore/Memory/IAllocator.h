@@ -198,7 +198,8 @@ namespace AZ
         virtual AllocatorDebugConfig GetDebugConfig() { return {}; }
 
         /// Returns a pointer to the allocation records. They might be available or not depending on the build type. \ref Debug::AllocationRecords
-        virtual Debug::AllocationRecords* GetRecords() { return nullptr; }
+        virtual const Debug::AllocationRecords* GetRecords() const { return nullptr; }
+        Debug::AllocationRecords* GetRecords() { return const_cast<Debug::AllocationRecords*>(static_cast<const IAllocator*>(this)->GetRecords()); }
 
         /// Sets the allocation records.
         virtual void SetRecords([[maybe_unused]] Debug::AllocationRecords* records) {}

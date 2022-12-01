@@ -325,45 +325,50 @@ namespace AtomToolsFramework
         m_actionNextTab->setEnabled(m_tabWidget->count() > 1);
     }
 
-    AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> AtomToolsDocumentMainWindow::GetSettingsDialogGroups() const
+    void AtomToolsDocumentMainWindow::PopulateSettingsInspector(InspectorWidget* inspector) const
     {
-        AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> groups = Base::GetSettingsDialogGroups();
-        groups.push_back(CreateSettingsGroup(
+        Base::PopulateSettingsInspector(inspector);
+
+        m_documentSystemSettingsGroup = CreateSettingsPropertyGroup(
             "Document System Settings",
             "Document System Settings",
-            {
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayWarningMessageDialogs",
-                    "Display Warning Message Dialogs",
-                    "Display message boxes for warnings opening documents",
-                    true),
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayErrorMessageDialogs",
-                    "Display Error Message Dialogs",
-                    "Display message boxes for errors opening documents",
-                    true),
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReload",
-                    "Enable Automatic Reload",
-                    "Automatically reload documents after external modifications",
-                    true),
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReloadPrompts",
-                    "Enable Automatic Reload Prompts",
-                    "Confirm before automatically reloading modified documents",
-                    true),
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveEnabled",
-                    "Enable Auto Save",
-                    "Automatically save documents after they are modified",
-                    false),
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveInterval",
-                    "Auto Save Interval",
-                    "How often (in milliseconds) auto save occurs",
-                    aznumeric_cast<AZ::s64>(250)),
-            }));
-        return groups;
+            { CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayWarningMessageDialogs",
+                  "Display Warning Message Dialogs",
+                  "Display message boxes for warnings opening documents",
+                  true),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayErrorMessageDialogs",
+                  "Display Error Message Dialogs",
+                  "Display message boxes for errors opening documents",
+                  true),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReload",
+                  "Enable Automatic Reload",
+                  "Automatically reload documents after external modifications",
+                  true),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReloadPrompts",
+                  "Enable Automatic Reload Prompts",
+                  "Confirm before automatically reloading modified documents",
+                  true),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveEnabled",
+                  "Enable Auto Save",
+                  "Automatically save documents after they are modified",
+                  false),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveInterval",
+                  "Auto Save Interval",
+                  "How often (in milliseconds) auto save occurs",
+                  aznumeric_cast<AZ::s64>(250)) });
+
+        inspector->AddGroup(
+            m_documentSystemSettingsGroup->m_name,
+            m_documentSystemSettingsGroup->m_displayName,
+            m_documentSystemSettingsGroup->m_description,
+            new InspectorPropertyGroupWidget(
+                m_documentSystemSettingsGroup.get(), m_documentSystemSettingsGroup.get(), azrtti_typeid<DynamicPropertyGroup>()));
     }
 
     void AtomToolsDocumentMainWindow::BuildCreateMenu(QAction* insertPostion)

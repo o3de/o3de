@@ -26,6 +26,7 @@ namespace AZ
             const Buffer& buffer = static_cast<const Buffer&>(resourceBase);
             const RHI::BufferViewDescriptor& viewDescriptor = GetDescriptor();
             const RHI::BufferDescriptor& bufferDescriptor = buffer.GetDescriptor();
+            auto& device = static_cast<Device&>(deviceBase);
             
             MemoryView buffMemView = buffer.GetMemoryView();
             size_t buffMemOffset = buffMemView.GetOffset() + viewDescriptor.m_elementOffset * viewDescriptor.m_elementSize;
@@ -64,19 +65,60 @@ namespace AZ
                 RHI::Ptr<MetalResource> textureViewResource = MetalResource::Create(MetalResourceDescriptor{mtlTexture, ResourceType::MtlTextureType});
                 m_imageBufferMemoryView = MemoryView(textureViewResource, 0, (viewDescriptor.m_elementCount * bytesPerPixel), 0);
             }
+            
+            bool hasOverrideFlags = viewDescriptor.m_overrideBindFlags != RHI::BufferBindFlags::None;
+            const RHI::BufferBindFlags bindFlags = hasOverrideFlags ? viewDescriptor.m_overrideBindFlags : buffer.GetDescriptor().m_bindFlags;
+            bool shaderRead = RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderRead);
+            bool shaderReadWrite = RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderWrite);
+            // Cache the read and readwrite index of the view within the global Bindless Argument buffer
+            if (shaderRead || shaderReadWrite)
+            {
+                if (shaderRead)
+                {
+                    m_readIndex =
+                        device.GetBindlessArgumentBuffer().AttachReadBuffer(m_memoryView.GetGpuAddress<id<MTLBuffer>>(),
+                                                                            static_cast<uint32_t>(m_memoryView.GetOffset()));
+                }
+
+                if (shaderReadWrite)
+                {
+                    m_readWriteIndex =
+                        device.GetBindlessArgumentBuffer().AttachReadWriteBuffer(m_memoryView.GetGpuAddress<id<MTLBuffer>>(),
+                                                                                 static_cast<uint32_t>(m_memoryView.GetOffset()));
+                }
+            }
             return RHI::ResultCode::Success;
         }
 
         RHI::ResultCode BufferView::InvalidateInternal()
         {
+            ShutdownInternal();
             return InitInternal(GetDevice(), GetResource());
         }
         
         void BufferView::ShutdownInternal()
         {
             auto& device = static_cast<Device&>(GetDevice());
-            device.QueueForRelease(m_memoryView);
-            m_memoryView = {};
+            if(m_memoryView.IsValid())
+            {
+                device.QueueForRelease(m_memoryView);
+                m_memoryView = {};
+                if (m_readIndex != ~0u)
+                {
+                    device.GetBindlessArgumentBuffer().DetachReadImage(m_readIndex);
+                }
+
+                if (m_readWriteIndex != ~0u)
+                {
+                    device.GetBindlessArgumentBuffer().DetachReadWriteImage(m_readWriteIndex);
+                }
+            }
+
+            if(m_imageBufferMemoryView.IsValid())
+            {
+                device.QueueForRelease(m_imageBufferMemoryView);
+                m_imageBufferMemoryView = {};
+            }
         }
     
         const MemoryView& BufferView::GetMemoryView() const
@@ -97,6 +139,16 @@ namespace AZ
         MemoryView& BufferView::GetTextureBufferView()
         {
             return m_imageBufferMemoryView;
+        }
+    
+        uint32_t BufferView::GetBindlessReadIndex() const
+        {
+            return m_readIndex;
+        }
+
+        uint32_t BufferView::GetBindlessReadWriteIndex() const
+        {
+            return m_readWriteIndex;
         }
     }
 }

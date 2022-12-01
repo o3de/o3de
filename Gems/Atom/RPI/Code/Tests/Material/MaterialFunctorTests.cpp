@@ -446,8 +446,8 @@ namespace UnitTest
         srgLayout->SetName(Name("MaterialSrg"));
         srgLayout->SetUniqueId(Uuid::CreateRandom().ToString<AZStd::string>()); // Any random string will suffice.
         srgLayout->SetBindingSlot(SrgBindingSlot::Material);
-        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_layer1_baseColor_factor" }, 0, 4, 0});
-        srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{Name{ "m_layer1_baseColor_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1});
+        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_layer1_baseColor_factor" }, 0, 4, 0, 0});
+        srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{Name{ "m_layer1_baseColor_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
         srgLayout->Finalize();
 
         Data::Asset<ShaderAsset> shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), srgLayout);

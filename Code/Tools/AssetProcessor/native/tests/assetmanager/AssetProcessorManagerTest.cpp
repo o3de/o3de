@@ -959,13 +959,13 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_BasicTe
     newEntry1.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry1.m_builderGuid = AZ::Uuid::CreateRandom();
     newEntry1.m_sourceGuid = m_aUuid;
-    newEntry1.m_dependsOnSource = PathOrUuid(m_bUuid);
+    newEntry1.m_dependsOnSource = PathOrUuid(m_assetRootDir.absoluteFilePath("subfolder1/b.txt").toUtf8().constData());
 
     SourceFileDependencyEntry newEntry2; // b depends on C
     newEntry2.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry2.m_builderGuid = AZ::Uuid::CreateRandom();
     newEntry2.m_sourceGuid = m_bUuid;
-    newEntry2.m_dependsOnSource = PathOrUuid("c.txt");
+    newEntry2.m_dependsOnSource = PathOrUuid(m_cUuid);
 
     SourceFileDependencyEntry newEntry3;  // b also depends on D
     newEntry3.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
@@ -988,8 +988,8 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_BasicTe
 
     // make sure the corresponding values in the map are also correct
     EXPECT_STREQ(dependencies[m_assetRootDir.absoluteFilePath("subfolder1/a.txt").toUtf8().constData()].c_str(), m_aUuid.ToFixedString(false, false).c_str());
-    EXPECT_STREQ(dependencies[m_assetRootDir.absoluteFilePath("subfolder1/b.txt").toUtf8().constData()].c_str(), m_bUuid.ToFixedString(false, false).c_str());
-    EXPECT_STREQ(dependencies[m_assetRootDir.absoluteFilePath("subfolder1/c.txt").toUtf8().constData()].c_str(), "c.txt");
+    EXPECT_STREQ(dependencies[m_assetRootDir.absoluteFilePath("subfolder1/b.txt").toUtf8().constData()].c_str(), m_assetRootDir.absoluteFilePath("subfolder1/b.txt").toUtf8().constData());
+    EXPECT_STREQ(dependencies[m_assetRootDir.absoluteFilePath("subfolder1/c.txt").toUtf8().constData()].c_str(), m_cUuid.ToFixedString(false, false).c_str());
     EXPECT_STREQ(dependencies[m_assetRootDir.absoluteFilePath("subfolder1/d.txt").toUtf8().constData()].c_str(), "d.txt");
 
     dependencies.clear();

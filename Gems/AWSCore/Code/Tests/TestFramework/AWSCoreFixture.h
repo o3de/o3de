@@ -108,7 +108,7 @@ struct TestObject
 };
 
 class AWSCoreFixture
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public UnitTest::LeakDetectionFixture
 {
 public:
     AWSCoreFixture() = default;

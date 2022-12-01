@@ -10,7 +10,7 @@
 
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
-#include <AzToolsFramework/PaintBrush/PaintBrushNotificationBus.h>
+#include <AzFramework/PaintBrush/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/PaintBrush/PaintBrushSubModeCluster.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
@@ -22,7 +22,7 @@ namespace GradientSignal
 
     class EditorImageGradientComponentMode
         : public AzToolsFramework::ComponentModeFramework::EditorBaseComponentMode
-        , private AzToolsFramework::PaintBrushNotificationBus::Handler
+        , private AzFramework::PaintBrushNotificationBus::Handler
     {
     public:
         EditorImageGradientComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);

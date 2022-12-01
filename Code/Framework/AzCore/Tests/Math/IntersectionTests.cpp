@@ -264,7 +264,7 @@ namespace UnitTest
         }
     }
 
-    class MATH_IntersectSegmentTriangleTest : public AllocatorsFixture
+    class MATH_IntersectSegmentTriangleTest : public LeakDetectionFixture
     {
         public:
 
@@ -596,7 +596,7 @@ namespace UnitTest
     }
 
     class MATH_IntersectRayCappedCylinderTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
 
@@ -780,7 +780,7 @@ namespace UnitTest
     }
 
     class MATH_IntersectRayConeTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
 
@@ -962,7 +962,7 @@ namespace UnitTest
     }
 
     class MATH_IntersectRayQuadTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
 
@@ -1107,7 +1107,7 @@ namespace UnitTest
     }
 
     class MATH_IntersectRayBoxTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
 
@@ -1185,7 +1185,7 @@ namespace UnitTest
     }
 
     class MATH_IntersectRayPolyhedronTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
@@ -1299,7 +1299,7 @@ namespace UnitTest
         EXPECT_EQ(intersections, 0);
     }
 
-    class MATH_ClipRayWithAabbTest : public AllocatorsFixture
+    class MATH_ClipRayWithAabbTest : public LeakDetectionFixture
     {
     };
 
