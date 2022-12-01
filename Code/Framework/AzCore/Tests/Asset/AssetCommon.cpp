@@ -89,6 +89,14 @@ namespace UnitTest
         EXPECT_EQ(dynamic, fixed);
     }
 
+    TEST_F(AssetIdTest, CreateString_SubIdIsNotNegative_Succeeds)
+    {
+        auto assetId = AssetId::CreateString("{A9F596D7-FFFF-4BA4-AD4E-7E477FB9B542}:0xFFFFFFFF");
+        AZStd::string asString = assetId.ToString<AZStd::string>(AZ::Data::AssetId::SubIdDisplayType::Decimal);
+        auto subId = asString.substr(asString.find_first_of(':') + 1);
+        EXPECT_STRCASEEQ(subId.c_str(), "4294967295");
+    }
+
     using AssetTest = LeakDetectionFixture;
 
     TEST_F(AssetTest, AssetPreserveHintTest_Const_Copy)
