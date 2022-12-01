@@ -24,6 +24,8 @@ namespace AZ
             AZ_TYPE_INFO(RenderPipelineDescriptor, "{B1A5CF41-AC8D-440E-A1E9-3544D7F3445B}");
             static void Reflect(AZ::ReflectContext* context);
 
+            static constexpr char const Extension[] = "RenderPipeline.azasset";
+
             //! The root pass template name 
             AZStd::string m_rootPassTemplate;
 

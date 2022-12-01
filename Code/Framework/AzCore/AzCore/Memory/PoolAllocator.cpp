@@ -6,8 +6,9 @@
  *
  */
 
+#include <cstdint>
+
 #include <AzCore/PlatformIncl.h>
-#include <AzCore/Memory/AllocatorDebug.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 #include <AzCore/std/allocator_stateless.h>
@@ -28,6 +29,29 @@
 #define POOL_ALLOCATION_PAGE_SIZE (size_t{4} * size_t{1024})
 #define POOL_ALLOCATION_MIN_ALLOCATION_SIZE size_t{8}
 #define POOL_ALLOCATION_MAX_ALLOCATION_SIZE size_t{512}
+
+namespace
+{
+    struct Magic32
+    {
+        static const AZ::u32 m_defValue = 0xfeedf00d;
+        AZ_FORCE_INLINE Magic32()
+        {
+            m_value = (m_defValue ^ AZ::u32(reinterpret_cast<uintptr_t>(this)));
+        }
+        AZ_FORCE_INLINE ~Magic32()
+        {
+            m_value = 0;
+        }
+        AZ_FORCE_INLINE bool Validate() const
+        {
+            return m_value == (m_defValue ^ AZ::u32(reinterpret_cast<uintptr_t>(this)));
+        }
+
+    private:
+        AZ::u32 m_value;
+    };
+}
 
 namespace AZ
 {
@@ -97,7 +121,7 @@ namespace AZ
 
             FreeListType m_freeList;
             u32 m_bin;
-            Debug::Magic32 m_magic;
+            Magic32 m_magic;
             u32 m_elementSize;
             u32 m_maxNumElements;
         };
@@ -210,7 +234,7 @@ namespace AZ
             AZStd::lock_free_intrusive_stack_node<Page> m_lfStack; ///< Lock Free stack node
             struct ThreadPoolData* m_threadData; ///< The thread data that own's the page.
             u32 m_bin;
-            Debug::Magic32 m_magic;
+            Magic32 m_magic;
             u32 m_elementSize;
             u32 m_maxNumElements;
         };

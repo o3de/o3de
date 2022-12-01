@@ -15,7 +15,7 @@
 namespace UnitTest
 {
     class LyShineTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
         LyShineTest()

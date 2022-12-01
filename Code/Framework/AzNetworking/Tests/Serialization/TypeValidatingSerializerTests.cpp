@@ -48,12 +48,11 @@ namespace UnitTest
         }
     };
 
-    class TypeValidatingSerializerTests : public AllocatorsFixture
+    class TypeValidatingSerializerTests : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            SetupAllocator();
             m_console = AZStd::make_unique<AZ::Console>();
             m_console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
             m_console->PerformCommand("net_validateSerializedTypes true");

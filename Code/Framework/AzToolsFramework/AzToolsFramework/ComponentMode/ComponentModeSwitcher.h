@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzFramework/Viewport/ViewportBus.h>
+
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
@@ -109,6 +110,9 @@ namespace AzToolsFramework
             // ComponentModeDelegateNotificationBus overrides ...
             void OnComponentModeDelegateConnect(const AZ::EntityComponentIdPair& pairId) override;
             void OnComponentModeDelegateDisconnect(const AZ::EntityComponentIdPair& pairId) override;
+
+            // EditorComponentModeNotificationBus overrides ...
+            void ActiveComponentModeChanged(const AZ::Uuid& componentType) override;
 
             // Member variables
             AZ::Component* m_activeSwitcherComponent = nullptr; //!< The component that is currently in component mode

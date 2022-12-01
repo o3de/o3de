@@ -61,7 +61,7 @@ namespace
         }
         else if (pCVar->GetType() == CVAR_INT)
         {
-            PySetCVarFromInt(pName, std::stol(pValue));
+            PySetCVarFromInt(pName, static_cast<int>(std::stol(pValue)));
         }
         else if (pCVar->GetType() == CVAR_FLOAT)
         {

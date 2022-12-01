@@ -81,20 +81,8 @@ UiAnimationSystem::UiAnimationSystem()
 
     m_nextSequenceId = 1;
 
-    DoNodeStaticInitialisation();
     RegisterNodeTypes();
     RegisterParamTypes();
-}
-
-//////////////////////////////////////////////////////////////////////////
-UiAnimationSystem::~UiAnimationSystem()
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-void UiAnimationSystem::DoNodeStaticInitialisation()
-{
-    CUiAnimAzEntityNode::Initialize();
 }
 
 //////////////////////////////////////////////////////////////////////////

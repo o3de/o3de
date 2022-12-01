@@ -216,33 +216,73 @@ namespace TestImpact
         [[maybe_unused]] AZStd::optional<TestSequenceCompleteCallback<Client::RegularSequenceReport>> testSequenceEndCallback,
         [[maybe_unused]] AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
     {
-        return Client::RegularSequenceReport(
+        const Timer sequenceTimer;
+        AZStd::vector<const TestTarget*> includedTestTargets;
+        AZStd::vector<const TestTarget*> excludedTestTargets;
+
+        // Separate the test targets into those that are excluded by either the test filter or exclusion list and those that are not
+        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargetList()->GetTestTargetList().GetTargets())
+        {
+            if (m_testTargetExcludeList->IsTestTargetFullyExcluded(&testTarget))
+            {
+                excludedTestTargets.push_back(&testTarget);
+            }
+            else
+            {
+                includedTestTargets.push_back(&testTarget);
+            }
+        }
+
+        // Extract the client facing representation of selected test targets
+        const Client::TestRunSelection selectedTests(
+            ExtractTestTargetNames(includedTestTargets), ExtractTestTargetNames(excludedTestTargets));
+
+        // Inform the client that the sequence is about to start
+        if (testSequenceStartCallback.has_value())
+        {
+            (*testSequenceStartCallback)(m_suiteFilter, selectedTests);
+        }
+
+        // Run the test targets and collect the test run results
+        const Timer testRunTimer;
+        const auto [result, testJobs] = m_testEngine->RegularRun(
+            includedTestTargets,
+            m_executionFailurePolicy,
+            m_testFailurePolicy,
+            m_targetOutputCapture,
+            testTargetTimeout,
+            globalTimeout,
+            TestRunCompleteCallbackHandler<TestTarget>(includedTestTargets.size(), testCompleteCallback));
+        const auto testRunDuration = testRunTimer.GetElapsedMs();
+
+        // Generate the sequence report for the client
+        const auto sequenceReport = Client::RegularSequenceReport(
             1,
-            AZStd::nullopt,
-            AZStd::nullopt,
-            SequencePolicyState{},
+            testTargetTimeout,
+            globalTimeout,
+            GenerateSequencePolicyState(),
             m_suiteFilter,
-            Client::TestRunSelection(),
-            Client::TestRunReport(
-                TestSequenceResult::Success,
-                AZStd::chrono::steady_clock::time_point(),
-                AZStd::chrono::milliseconds{ 0 },
-                {},
-                {},
-                {},
-                {},
-                {}));
+            selectedTests,
+            GenerateTestRunReport(result, testRunTimer.GetStartTimePointRelative(sequenceTimer), testRunDuration, testJobs));
+
+        // Inform the client that the sequence has ended
+        if (testSequenceEndCallback.has_value())
+        {
+            (*testSequenceEndCallback)(sequenceReport);
+        }
+
+        return sequenceReport;
     }
 
     Client::ImpactAnalysisSequenceReport PythonRuntime::ImpactAnalysisTestSequence(
-        [[maybe_unused]] const ChangeList& changeList,
-        [[maybe_unused]] Policy::TestPrioritization testPrioritizationPolicy,
-        [[maybe_unused]] Policy::DynamicDependencyMap dynamicDependencyMapPolicy,
-        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        [[maybe_unused]] AZStd::optional<ImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
-        [[maybe_unused]] AZStd::optional<TestSequenceCompleteCallback<Client::ImpactAnalysisSequenceReport>> testSequenceEndCallback,
-        [[maybe_unused]] AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
+        const ChangeList& changeList,
+        Policy::TestPrioritization testPrioritizationPolicy,
+        Policy::DynamicDependencyMap dynamicDependencyMapPolicy,
+        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+        AZStd::optional<ImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
+        AZStd::optional<TestSequenceCompleteCallback<Client::ImpactAnalysisSequenceReport>> testSequenceEndCallback,
+        AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
     {
         const Timer sequenceTimer;
 
@@ -338,50 +378,173 @@ namespace TestImpact
     }
 
     Client::SafeImpactAnalysisSequenceReport PythonRuntime::SafeImpactAnalysisTestSequence(
-        [[maybe_unused]] const ChangeList& changeList,
-        [[maybe_unused]] Policy::TestPrioritization testPrioritizationPolicy,
-        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        [[maybe_unused]] AZStd::optional<SafeImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
-        [[maybe_unused]] AZStd::optional<TestSequenceCompleteCallback<Client::SafeImpactAnalysisSequenceReport>> testSequenceEndCallback,
-        [[maybe_unused]] AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
+        const ChangeList& changeList,
+        Policy::TestPrioritization testPrioritizationPolicy,
+        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+        AZStd::optional<SafeImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
+        AZStd::optional<TestSequenceCompleteCallback<Client::SafeImpactAnalysisSequenceReport>> testSequenceEndCallback,
+        AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
     {
-        return Client::SafeImpactAnalysisSequenceReport(
+        const Timer sequenceTimer;
+        TestRunData<TestEngineInstrumentedRun<TestTarget, TestCoverage>> selectedTestRunData, draftedTestRunData;
+        TestRunData<TestEngineRegularRun<TestTarget>> discardedTestRunData;
+        AZStd::optional<AZStd::chrono::milliseconds> sequenceTimeout = globalTimeout;
+
+        // Draft in the test targets that have no coverage entries in the dynamic dependency map
+        AZStd::vector<const TestTarget*> draftedTestTargets = m_dynamicDependencyMap->GetNotCoveringTests();
+
+        // The test targets that were selected for the change list by the dynamic dependency map and the test targets that were not
+        const auto [selectedTestTargets, discardedTestTargets] = SelectCoveringTestTargets(changeList, testPrioritizationPolicy);
+
+        // The subset of selected test targets that are not on the configuration's exclude list and those that are
+        const auto [includedSelectedTestTargets, excludedSelectedTestTargets] =
+            SelectTestTargetsByExcludeList(*m_testTargetExcludeList, selectedTestTargets);
+
+        // The subset of discarded test targets that are not on the configuration's exclude list and those that are
+        const auto [includedDiscardedTestTargets, excludedDiscardedTestTargets] =
+            SelectTestTargetsByExcludeList(*m_testTargetExcludeList, discardedTestTargets);
+
+        // Extract the client facing representation of selected, discarded and drafted test targets
+        const Client::TestRunSelection selectedTests(
+            ExtractTestTargetNames(includedSelectedTestTargets), ExtractTestTargetNames(excludedSelectedTestTargets));
+        const Client::TestRunSelection discardedTests(
+            ExtractTestTargetNames(includedDiscardedTestTargets), ExtractTestTargetNames(excludedDiscardedTestTargets));
+        const auto draftedTests = ExtractTestTargetNames(draftedTestTargets);
+
+        // Inform the client that the sequence is about to start
+        if (testSequenceStartCallback.has_value())
+        {
+            (*testSequenceStartCallback)(m_suiteFilter, selectedTests, discardedTests, draftedTests);
+        }
+
+        // We share the test run complete handler between the selected, discarded and drafted test runs as to present them together as one
+        // continuous test sequence to the client rather than three discrete test runs
+        const size_t totalNumTestRuns =
+            includedSelectedTestTargets.size() + draftedTestTargets.size() + includedDiscardedTestTargets.size();
+        TestRunCompleteCallbackHandler<TestTarget> testRunCompleteHandler(totalNumTestRuns, testCompleteCallback);
+
+        // Functor for running instrumented test targets
+        const auto instrumentedTestRun =
+            [this, &testTargetTimeout, &sequenceTimeout, &testRunCompleteHandler](const AZStd::vector<const TestTarget*>& testsTargets)
+        {
+            return m_testEngine->InstrumentedRun(
+                testsTargets,
+                m_executionFailurePolicy,
+                m_integrationFailurePolicy,
+                m_testFailurePolicy,
+                m_targetOutputCapture,
+                testTargetTimeout,
+                sequenceTimeout,
+                AZStd::ref(testRunCompleteHandler));
+        };
+
+        // Functor for running uninstrumented test targets
+        const auto regularTestRun =
+            [this, &testTargetTimeout, &sequenceTimeout, &testRunCompleteHandler](const AZStd::vector<const TestTarget*>& testsTargets)
+        {
+            return m_testEngine->RegularRun(
+                testsTargets,
+                m_executionFailurePolicy,
+                m_testFailurePolicy,
+                m_targetOutputCapture,
+                testTargetTimeout,
+                sequenceTimeout,
+                AZStd::ref(testRunCompleteHandler));
+        };
+
+        // Functor for running instrumented test targets
+        const auto gatherTestRunData =
+            [&sequenceTimer](const AZStd::vector<const TestTarget*>& testsTargets, const auto& testRunner, auto& testRunData)
+        {
+            const Timer testRunTimer;
+            testRunData.m_relativeStartTime = testRunTimer.GetStartTimePointRelative(sequenceTimer);
+            auto [result, jobs] = testRunner(testsTargets);
+            testRunData.m_result = result;
+            testRunData.m_jobs = AZStd::move(jobs);
+            testRunData.m_duration = testRunTimer.GetElapsedMs();
+        };
+
+        if (!includedSelectedTestTargets.empty())
+        {
+            // Run the selected test targets and collect the test run results
+            gatherTestRunData(includedSelectedTestTargets, instrumentedTestRun, selectedTestRunData);
+
+            // Carry the remaining global sequence time over to the discarded test run
+            if (globalTimeout.has_value())
+            {
+                const auto elapsed = selectedTestRunData.m_duration;
+                sequenceTimeout = elapsed < globalTimeout.value() ? globalTimeout.value() - elapsed : AZStd::chrono::milliseconds(0);
+            }
+        }
+
+        if (!includedDiscardedTestTargets.empty())
+        {
+            // Run the discarded test targets and collect the test run results
+            gatherTestRunData(includedDiscardedTestTargets, regularTestRun, discardedTestRunData);
+
+            // Carry the remaining global sequence time over to the drafted test run
+            if (globalTimeout.has_value())
+            {
+                const auto elapsed = selectedTestRunData.m_duration + discardedTestRunData.m_duration;
+                sequenceTimeout = elapsed < globalTimeout.value() ? globalTimeout.value() - elapsed : AZStd::chrono::milliseconds(0);
+            }
+        }
+
+        if (!draftedTestTargets.empty())
+        {
+            // Run the drafted test targets and collect the test run results
+            gatherTestRunData(draftedTestTargets, instrumentedTestRun, draftedTestRunData);
+        }
+
+        auto selectedTestRunReport = GenerateTestRunReport(
+            selectedTestRunData.m_result,
+            selectedTestRunData.m_relativeStartTime,
+            selectedTestRunData.m_duration,
+            selectedTestRunData.m_jobs);
+
+        auto discardedTestRunReport = GenerateTestRunReport(
+            discardedTestRunData.m_result,
+            discardedTestRunData.m_relativeStartTime,
+            discardedTestRunData.m_duration,
+            discardedTestRunData.m_jobs);
+
+        auto draftedTestRunReport = GenerateTestRunReport(
+            draftedTestRunData.m_result,
+            draftedTestRunData.m_relativeStartTime,
+            draftedTestRunData.m_duration,
+            draftedTestRunData.m_jobs);
+
+        // Generate the sequence report for the client
+        const auto sequenceReport = Client::SafeImpactAnalysisSequenceReport(
             1,
-            AZStd::nullopt,
-            AZStd::nullopt,
-            SafeImpactAnalysisSequencePolicyState{},
+            testTargetTimeout,
+            globalTimeout,
+            GenerateSafeImpactAnalysisSequencePolicyState(testPrioritizationPolicy),
             m_suiteFilter,
-            {},
-            {},
-            {},
-            Client::TestRunReport(
-                TestSequenceResult::Success,
-                AZStd::chrono::steady_clock::time_point(),
-                AZStd::chrono::milliseconds{ 0 },
-                {},
-                {},
-                {},
-                {},
-                {}),
-            Client::TestRunReport(
-                TestSequenceResult::Success,
-                AZStd::chrono::steady_clock::time_point(),
-                AZStd::chrono::milliseconds{ 0 },
-                {},
-                {},
-                {},
-                {},
-                {}),
-            Client::TestRunReport(
-                TestSequenceResult::Success,
-                AZStd::chrono::steady_clock::time_point(),
-                AZStd::chrono::milliseconds{ 0 },
-                {},
-                {},
-                {},
-                {},
-                {}));
+            selectedTests,
+            discardedTests,
+            draftedTests,
+            std::move(selectedTestRunReport),
+            std::move(discardedTestRunReport),
+            std::move(draftedTestRunReport));
+
+        // Inform the client that the sequence has ended
+        if (testSequenceEndCallback.has_value())
+        {
+            (*testSequenceEndCallback)(sequenceReport);
+        }
+
+        m_hasImpactAnalysisData = UpdateAndSerializeDynamicDependencyMap(
+            *m_dynamicDependencyMap.get(),
+            ConcatenateVectors(selectedTestRunData.m_jobs, draftedTestRunData.m_jobs),
+            m_failedTestCoveragePolicy,
+            m_integrationFailurePolicy,
+            m_config.m_commonConfig.m_repo.m_root,
+            m_sparTiaFile)
+            .value_or(m_hasImpactAnalysisData);
+
+        return sequenceReport;
     }
 
     Client::SeedSequenceReport PythonRuntime::SeededTestSequence(
