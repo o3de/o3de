@@ -21,7 +21,6 @@ namespace AZ
             // try a value
             if (auto data = azdynamic_cast<AttributeData<AttrType>*>(attr); data != nullptr)
             {
-                // This is where we should probably be landing, but instead we get a nullptr from that azdynamic_cast above
                 value = static_cast<DestType>(data->Get(instance));
                 return true;
             }

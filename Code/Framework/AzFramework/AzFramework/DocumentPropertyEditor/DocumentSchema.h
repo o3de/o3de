@@ -247,11 +247,12 @@ namespace AZ::DocumentPropertyEditor
         AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override;
     };
 
-    using EnumConstantValue = AZ::Edit::EnumConstant<AZ::u64>;
+    using EnumConstantValue = SerializeContextEnumInternal::EnumConstant<AZ::u64>;
     class EnumValueAttributeDefinition final : public AttributeDefinition<EnumConstantValue>
     {
     public:
         static constexpr const char* EntryDescriptionKey = "description";
+        static constexpr const char* EntryNameKey = "name";
         static constexpr const char* EntryValueKey = "value";
 
         explicit constexpr EnumValueAttributeDefinition(AZStd::string_view name)
@@ -261,9 +262,10 @@ namespace AZ::DocumentPropertyEditor
 
         Dom::Value ValueToDom(const EnumConstantValue& attribute) const override;
         AZStd::optional<EnumConstantValue> DomToValue(const Dom::Value& value) const override;
+        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override;
     };
 
-    using EnumValuesContainer = AZStd::vector<EnumConstantValue>;
+    using EnumValuesContainer = AZStd::vector<AZ::Edit::EnumConstant<AZ::u64>>;
     class EnumValuesAttributeDefinition final : public AttributeDefinition<EnumValuesContainer>
     {
     public:
