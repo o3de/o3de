@@ -53,7 +53,7 @@ namespace AzToolsFramework
             LinkReference link = m_prefabSystemComponentInterface->FindLink(m_linkId);
             if (link.has_value())
             {
-                link->get().RemoveOverrides(m_pathToSubTree);
+                m_overrideSubTree = AZStd::move(link->get().RemoveOverrides(m_pathToSubTree));
                 link->get().UpdateTarget();
                 m_prefabSystemComponentInterface->SetTemplateDirtyFlag(link->get().GetTargetTemplateId(), true);
                 m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId());
