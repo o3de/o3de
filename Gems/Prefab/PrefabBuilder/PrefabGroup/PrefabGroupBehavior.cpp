@@ -203,7 +203,7 @@ namespace AZ::SceneAPI::Behaviors
 
         if (!manifestUpdates)
         {
-            AZ_Warning("prefab", false, "Scene doesn't contain IMeshData, add atleast 1 IMeshData to generate Manifest Updates");
+            AZ_Warning("prefab", false, "Scene doesn't contain IMeshData, add at least 1 IMeshData to generate Manifest Updates");
             return Events::ProcessingResult::Ignored;
         }
 
