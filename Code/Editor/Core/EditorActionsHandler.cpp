@@ -25,11 +25,12 @@
 #include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
 
 #include <Core/Widgets/PrefabEditVisualModeWidget.h>
+#include <Core/Widgets/ViewportSettingsWidgets.h>
 #include <CryEdit.h>
 #include <EditorCoreAPI.h>
-#include <Editor/Undo/Undo.h>
 #include <Editor/EditorViewportCamera.h>
 #include <Editor/EditorViewportSettings.h>
+#include <Editor/Undo/Undo.h>
 #include <GameEngine.h>
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 #include <MainWindow.h>
@@ -1465,6 +1466,38 @@ void EditorActionsHandler::OnWidgetActionRegistrationHook()
             []() -> QWidget*
             {
                 return new PrefabEditVisualModeWidget();
+            }
+        );
+    }
+
+    // Viewport - Field of View Property Widget
+    {
+        AzToolsFramework::WidgetActionProperties widgetActionProperties;
+        widgetActionProperties.m_name = "Viewport Field of View";
+        widgetActionProperties.m_category = "Viewport";
+
+        auto outcome = m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.viewport.fieldOfView",
+            widgetActionProperties,
+            []() -> QWidget*
+            {
+                return new ViewportFieldOfViewPropertyWidget();
+            }
+        );
+    }
+
+    // Viewport - Camera Speed Scale Property Widget
+    {
+        AzToolsFramework::WidgetActionProperties widgetActionProperties;
+        widgetActionProperties.m_name = "Viewport Camera Speed Scale";
+        widgetActionProperties.m_category = "Viewport";
+
+        auto outcome = m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.viewport.cameraSpeedScale",
+            widgetActionProperties,
+            []() -> QWidget*
+            {
+                return new ViewportCameraSpeedScalePropertyWidget();
             }
         );
     }

@@ -408,8 +408,12 @@ void CLayoutViewPane::OnMenuBindingHook()
 {
     // Camera
     {
-        m_menuManagerInterface->AddActionToMenu(ViewportCameraMenuIdentifier, "o3de.action.view.goToPosition", 100);
+        m_menuManagerInterface->AddWidgetToMenu(ViewportCameraMenuIdentifier, "o3de.widgetAction.viewport.fieldOfView", 100);
+        m_menuManagerInterface->AddActionToMenu(ViewportCameraMenuIdentifier, "o3de.action.view.goToPosition", 200);
+        m_menuManagerInterface->AddSeparatorToMenu(ViewportCameraMenuIdentifier, 300);
+        m_menuManagerInterface->AddWidgetToMenu(ViewportCameraMenuIdentifier, "o3de.widgetAction.viewport.cameraSpeedScale", 400);
     }
+
     // Debug Info
     {
         m_menuManagerInterface->AddActionToMenu(ViewportDebugInfoMenuIdentifier, "o3de.action.viewport.info.normal", 100);
@@ -430,7 +434,7 @@ void CLayoutViewPane::OnToolBarBindingHook()
 {
     m_toolBarManagerInterface->AddWidgetToToolBar(ViewportTopToolBarIdentifier, "o3de.widgetAction.expander", 300);
     m_toolBarManagerInterface->AddWidgetToToolBar(ViewportTopToolBarIdentifier, "o3de.widgetAction.prefab.editVisualMode", 400);
-    auto outcome = m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
+    m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
         ViewportTopToolBarIdentifier, "o3de.action.view.goToPosition", ViewportCameraMenuIdentifier, 500);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
         ViewportTopToolBarIdentifier, "o3de.action.viewport.info.toggle", ViewportDebugInfoMenuIdentifier, 600);
