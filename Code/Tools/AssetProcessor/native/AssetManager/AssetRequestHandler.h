@@ -249,6 +249,24 @@ Q_SIGNALS:
         // Invokes the appropriate handler and returns true if the message should be deleted by the caller and false if the request handler is responsible for deleting the message
         virtual bool InvokeHandler(MessageData<AzFramework::AssetSystem::BaseAssetProcessorMessage> message);
 
+        //! This is an internal struct that is used for storing all the necessary information for requests that require fencing
+        struct RequestInfo
+        {
+            RequestInfo() = default;
+
+            RequestInfo(NetworkRequestID requestId, AZStd::shared_ptr<BaseAssetProcessorMessage> message, QString platform)
+                : m_requestId(requestId)
+                , m_message(AZStd::move(message))
+                , m_platform(platform)
+            {
+            }
+
+            NetworkRequestID m_requestId{};
+            AZStd::shared_ptr<BaseAssetProcessorMessage> m_message{};
+            QString m_platform{};
+        };
+        AZStd::unordered_map<unsigned int, RequestInfo> m_pendingFenceRequestMap;
+
     protected:
 
         void DeleteFenceFile_Retry(unsigned fenceId, QString fenceFileName, NetworkRequestID key, AZStd::shared_ptr<BaseAssetProcessorMessage> message, QString platform, int retriesRemaining);
@@ -279,23 +297,6 @@ Q_SIGNALS:
         // this map keeps track of whether a request was for a compile (FALSE), or a status (TRUE)
         QHash<NetworkRequestID, AssetRequestLine> m_pendingAssetRequests;
 
-        //! This is an internal struct that is used for storing all the necessary information for requests that require fencing
-        struct RequestInfo
-        {
-            RequestInfo() = default;
-
-            RequestInfo(NetworkRequestID requestId, AZStd::shared_ptr<BaseAssetProcessorMessage> message, QString platform)
-                :m_requestId(requestId)
-                , m_message(AZStd::move(message))
-                , m_platform(platform)
-            {
-            }
-
-            NetworkRequestID m_requestId{};
-            AZStd::shared_ptr<BaseAssetProcessorMessage> m_message{};
-            QString m_platform{};
-        };
-        AZStd::unordered_map<unsigned int, RequestInfo> m_pendingFenceRequestMap;
         unsigned int m_fenceId = 0;
 
         IRequestRouter m_requestRouter{ [this](unsigned int connId, unsigned int serial, QByteArray payload, QString platform) {OnNewIncomingRequest(connId, serial, payload, platform); } };
