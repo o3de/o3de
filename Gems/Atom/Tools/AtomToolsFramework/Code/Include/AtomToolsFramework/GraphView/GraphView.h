@@ -9,7 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AtomToolsFramework/GraphView/GraphViewConfig.h>
+#include <AtomToolsFramework/GraphView/GraphViewSettings.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
@@ -55,7 +55,6 @@ namespace AtomToolsFramework
         : public QWidget
         , private AtomToolsFramework::AtomToolsMainMenuRequestBus::Handler
         , private GraphCanvas::SceneNotificationBus::Handler
-        , private GraphCanvas::AssetEditorSettingsRequestBus::Handler
         , private GraphCanvas::AssetEditorRequestBus::Handler
     {
         Q_OBJECT
@@ -65,7 +64,7 @@ namespace AtomToolsFramework
         GraphView(
             const AZ::Crc32& toolId,
             const GraphCanvas::GraphId& activeGraphId,
-            const GraphViewConfig& graphViewConfig,
+            GraphViewSettingsPtr graphViewSettingsPtr,
             QWidget* parent = 0);
         ~GraphView();
 
@@ -113,12 +112,6 @@ namespace AtomToolsFramework
             const QPointF& scenePoint,
             const QPoint& screenPoint) override;
 
-        // GraphCanvas::AssetEditorSettingsRequestBus::Handler overrides...
-        GraphCanvas::EditorConstructPresets* GetConstructPresets() const override;
-        const GraphCanvas::ConstructTypePresetBucket* GetConstructTypePresetBucket(GraphCanvas::ConstructType constructType) const override;
-        GraphCanvas::Styling::ConnectionCurveType GetConnectionCurveType() const override;
-        GraphCanvas::Styling::ConnectionCurveType GetDataConnectionCurveType() const override;
-
         // GraphCanvas::SceneNotificationBus::Handler overrides...
         void OnSelectionChanged() override;
 
@@ -141,14 +134,13 @@ namespace AtomToolsFramework
         const AZ::Crc32 m_toolId;
         GraphCanvas::GraphId m_activeGraphId;
 
-        GraphViewConfig m_graphViewConfig;
+        GraphViewSettingsPtr m_graphViewSettingsPtr;
         AzQtComponents::WindowDecorationWrapper* m_presetWrapper = {};
         GraphCanvas::ConstructPresetDialog* m_presetEditor = {};
         GraphCanvas::GraphCanvasGraphicsView* m_graphicsView = {};
         GraphCanvas::AssetEditorToolbar* m_editorToolbar = {};
         GraphCanvas::SceneContextMenu* m_sceneContextMenu = {};
         GraphCanvas::EditorContextMenu* m_createNodeProposalContextMenu = {};
-        GraphCanvas::EditorConstructPresets m_constructPresetDefaults;
 
         QAction* m_actionCut = {};
         QAction* m_actionCopy = {};

@@ -106,7 +106,7 @@ class SpawnerApplication
 };
 
 class SpawnerComponentTest
-    : public UnitTest::AllocatorsTestFixture
+    : public UnitTest::LeakDetectionFixture
 {
 public:
     void SetUp() override

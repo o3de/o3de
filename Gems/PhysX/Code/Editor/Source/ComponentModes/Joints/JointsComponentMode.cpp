@@ -324,6 +324,11 @@ namespace PhysX
         return "Joint Edit Mode";
     }
 
+    AZ::Uuid JointsComponentMode::GetComponentModeType() const
+    {
+        return azrtti_typeid<JointsComponentMode>();
+    }
+
     void JointsComponentMode::SetCurrentMode(JointsComponentModeCommon::SubComponentModes::ModeType newMode, ButtonData& buttonData)
     {
         

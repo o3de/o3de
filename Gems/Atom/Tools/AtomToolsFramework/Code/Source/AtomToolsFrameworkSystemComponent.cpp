@@ -17,6 +17,8 @@
 #include <AtomToolsFramework/DynamicNode/DynamicNodePaletteItem.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.h>
+#include <AtomToolsFramework/GraphView/GraphViewSettings.h>
+#include <AtomToolsFramework/GraphView/GraphViewConstructPresets.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AtomToolsFrameworkSystemComponent.h>
 #include <Inspector/PropertyWidgets/PropertyStringBrowseEditCtrl.h>
@@ -32,6 +34,8 @@ namespace AtomToolsFramework
         DynamicProperty::Reflect(context);
         DynamicPropertyGroup::Reflect(context);
         EntityPreviewViewportSettingsSystem::Reflect(context);
+        GraphViewSettings::Reflect(context);
+        GraphViewConstructPresets::Reflect(context);
         InspectorWidget::Reflect(context);
 
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))

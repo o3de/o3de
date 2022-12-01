@@ -11,7 +11,6 @@
 #if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/GraphView/GraphView.h>
-#include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 #endif
 
 namespace MaterialCanvas
@@ -28,7 +27,7 @@ namespace MaterialCanvas
         MaterialCanvasGraphView(
             const AZ::Crc32& toolId,
             const AZ::Uuid& documentId,
-            const AtomToolsFramework::GraphViewConfig& graphViewConfig,
+            AtomToolsFramework::GraphViewSettingsPtr graphViewSettingsPtr,
             QWidget* parent = 0);
         ~MaterialCanvasGraphView();
 

@@ -76,28 +76,31 @@ namespace AtomToolsFramework
             return;
         }
 
-        const QVariant pathItemData(QString::fromUtf8(path.data(), static_cast<int>(path.size())));
+        const auto& pathWithAlias = GetPathWithAlias(path);
+        const QVariant pathItemData(QString::fromUtf8(pathWithAlias.c_str(), static_cast<int>(pathWithAlias.size())));
         if (const int index = findData(pathItemData); index < 0)
         {
-            addItem(GetDisplayNameFromPath(path).c_str(), pathItemData);
+            addItem(GetDisplayNameFromPath(pathWithAlias).c_str(), pathItemData);
             QueueSort();
-            RegisterThumbnail(path);
+            RegisterThumbnail(pathWithAlias);
         }
     }
 
     void AssetSelectionComboBox::RemovePath(const AZStd::string& path)
     {
-        const QVariant pathItemData(QString::fromUtf8(path.data(), static_cast<int>(path.size())));
+        const auto& pathWithAlias = GetPathWithAlias(path);
+        const QVariant pathItemData(QString::fromUtf8(pathWithAlias.c_str(), static_cast<int>(pathWithAlias.size())));
         if (const int index = findData(pathItemData); index >= 0)
         {
             removeItem(index);
-            m_thumbnailKeys.erase(path);
+            m_thumbnailKeys.erase(pathWithAlias);
         }
     }
 
     void AssetSelectionComboBox::SelectPath(const AZStd::string& path)
     {
-        const QVariant pathItemData(QString::fromUtf8(path.data(), static_cast<int>(path.size())));
+        const auto& pathWithAlias = GetPathWithAlias(path);
+        const QVariant pathItemData(QString::fromUtf8(pathWithAlias.c_str(), static_cast<int>(pathWithAlias.size())));
         if (const int index = findData(pathItemData); index >= 0)
         {
             setCurrentIndex(index);
@@ -143,25 +146,28 @@ namespace AtomToolsFramework
     {
         if (m_thumbnailsEnabled)
         {
+            const auto& pathWithAlias = GetPathWithAlias(path);
+            const auto& pathWithoutAlias = GetPathWithoutAlias(path);
+
             bool result = false;
             AZ::Data::AssetInfo assetInfo;
             AZStd::string watchFolder;
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
                 result,
                 &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
-                path.data(),
+                pathWithoutAlias.c_str(),
                 assetInfo,
                 watchFolder);
 
             AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey =
                 MAKE_TKEY(AzToolsFramework::AssetBrowser::SourceThumbnailKey, assetInfo.m_assetId.m_guid);
-            m_thumbnailKeys[path] = thumbnailKey;
+            m_thumbnailKeys[pathWithAlias] = thumbnailKey;
 
             connect(
                 thumbnailKey.data(), &AzToolsFramework::Thumbnailer::ThumbnailKey::ThumbnailUpdatedSignal, this,
-                [this, path]() { QueueUpdateThumbnail(path); });
+                [this, pathWithAlias]() { QueueUpdateThumbnail(pathWithAlias); });
 
-            QueueUpdateThumbnail(path);
+            QueueUpdateThumbnail(pathWithAlias);
         }
     }
 
@@ -169,10 +175,11 @@ namespace AtomToolsFramework
     {
         if (m_thumbnailsEnabled)
         {
-            auto thumbnailKeyItr = m_thumbnailKeys.find(path);
+            const auto& pathWithAlias = GetPathWithAlias(path);
+            auto thumbnailKeyItr = m_thumbnailKeys.find(pathWithAlias);
             if (thumbnailKeyItr != m_thumbnailKeys.end())
             {
-                const QVariant pathItemData(QString::fromUtf8(path.data(), static_cast<int>(path.size())));
+                const QVariant pathItemData(QString::fromUtf8(pathWithAlias.c_str(), static_cast<int>(pathWithAlias.size())));
                 if (const int index = findData(pathItemData); index >= 0)
                 {
                     AzToolsFramework::Thumbnailer::SharedThumbnail thumbnail;

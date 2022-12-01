@@ -64,7 +64,7 @@ namespace UnitTest
     };
 
     class UiDynamicScrollBoxComponentTest
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     protected:
 

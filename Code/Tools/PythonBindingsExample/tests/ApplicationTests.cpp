@@ -24,8 +24,7 @@ namespace PythonBindingsExample
     }
 
     class PythonBindingsExampleTest
-        : public ::testing::Test
-        , public ::UnitTest::AllocatorsBase
+        : public ::UnitTest::LeakDetectionFixture
     {
     public:
 

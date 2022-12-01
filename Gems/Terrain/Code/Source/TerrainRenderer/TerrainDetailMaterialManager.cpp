@@ -273,7 +273,7 @@ namespace Terrain
             m_detailTextureScale, &AzFramework::Terrain::TerrainDataRequests::GetTerrainSurfaceDataQueryResolution);
 
         // Texture size needs to be twice the render distance because the camera is positioned in the middle of the texture.
-        m_detailTextureSize = lroundf(m_config.m_renderDistance / m_detailTextureScale) * 2;
+        m_detailTextureSize = static_cast<int32_t>(lroundf(m_config.m_renderDistance / m_detailTextureScale) * 2);
 
         ClipmapBoundsDescriptor desc;
         desc.m_clipmapUpdateMultiple = 1;

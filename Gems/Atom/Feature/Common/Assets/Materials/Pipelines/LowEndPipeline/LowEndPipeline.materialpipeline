@@ -14,7 +14,7 @@
         },
         {
             "shader": "../Common/ShadowmapPass.shader.template",
-            "azsli": "../Common/ShadowmapPass.azsli"
+            "azsli": "../Common/DepthPass.azsli"
         }
     ],
     "pipelineScript": "./LowEndPipelineScript.lua"

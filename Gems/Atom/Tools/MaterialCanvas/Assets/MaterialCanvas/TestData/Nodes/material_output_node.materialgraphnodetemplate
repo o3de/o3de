@@ -1,0 +1,25 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "category": "Material Outputs",
+        "title": "",
+        "titlePaletteName": "MaterialOutputNodeTitlePalette",
+        "settings": {
+            "templatePaths": [
+            ]
+        },
+        "propertySlots": [
+            {
+                "name": "inDescription",
+                "displayName": "Description",
+                "description": "Description",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "visibleOnNode": false,
+                "editableOnNode": false
+            }
+        ]
+    }
+}

@@ -15,7 +15,7 @@
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
 class SeedBuilderTests
-    : public UnitTest::AllocatorsTestFixture
+    : public UnitTest::LeakDetectionFixture
 {
     void SetUp() override
     {

@@ -110,11 +110,9 @@ namespace DPEDebugView
             {
                 serializeContext->Class<TestContainer>()
                     ->Field("simpleInt", &TestContainer::m_simpleInt)
-                    ->Field("readonlyInt", &TestContainer::m_readOnlyInt)
                     ->Field("doubleSlider", &TestContainer::m_doubleSlider)
                     ->Field("vector", &TestContainer::m_vector)
                     ->Field("map", &TestContainer::m_map)
-                    ->Field("map", &TestContainer::m_readOnlyMap)
                     ->Field("unorderedMap", &TestContainer::m_unorderedMap)
                     ->Field("simpleEnum", &TestContainer::m_simpleEnum)
                     ->Field("immutableEnum", &TestContainer::m_immutableEnum)
@@ -124,7 +122,9 @@ namespace DPEDebugView
                     ->Field("nestedMap", &TestContainer::m_nestedMap)
                     ->Field("entityIdMap", &TestContainer::m_entityIdMap)
                     ->Field("enumValue", &TestContainer::m_enumValue)
-                    ->Field("entityId", &TestContainer::m_entityId);
+                    ->Field("entityId", &TestContainer::m_entityId)
+                    ->Field("readonlyInt", &TestContainer::m_readOnlyInt)
+                    ->Field("map", &TestContainer::m_readOnlyMap);
 
                 serializeContext->Enum<EnumType>()
                     ->Value("Value1", EnumType::Value1)

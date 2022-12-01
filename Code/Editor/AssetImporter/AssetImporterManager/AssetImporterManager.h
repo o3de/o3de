@@ -70,8 +70,6 @@ private:
     ProcessFilesMethod UpdateProcessFileMethod(ProcessFilesMethod processMethod, bool applyToAll);
     bool ProcessFileMethod(ProcessFilesMethod processMethod, QString relativePath, QString oldAbsolutePath);
     
-    void OnOpenProcessingAssetsDialog(int numberOfProcessedFiles);
-
     void ProcessCopyFiles();
     void ProcessMoveFiles();
 

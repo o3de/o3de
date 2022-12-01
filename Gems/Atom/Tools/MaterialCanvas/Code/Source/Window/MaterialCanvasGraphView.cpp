@@ -14,9 +14,9 @@ namespace MaterialCanvas
     MaterialCanvasGraphView::MaterialCanvasGraphView(
         const AZ::Crc32& toolId,
         const AZ::Uuid& documentId,
-        const AtomToolsFramework::GraphViewConfig& graphViewConfig,
+        AtomToolsFramework::GraphViewSettingsPtr graphViewSettingsPtr,
         QWidget* parent)
-        : AtomToolsFramework::GraphView(toolId, GraphCanvas::GraphId(), graphViewConfig, parent)
+        : AtomToolsFramework::GraphView(toolId, GraphCanvas::GraphId(), graphViewSettingsPtr, parent)
         , m_documentId(documentId)
     {
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);

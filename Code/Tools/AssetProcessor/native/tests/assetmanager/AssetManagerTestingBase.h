@@ -70,7 +70,7 @@ namespace UnitTests
         void CheckJobEntries(int count);
     };
 
-    class AssetManagerTestingBase : public ::UnitTest::ScopedAllocatorSetupFixture
+    class AssetManagerTestingBase : public ::UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override;

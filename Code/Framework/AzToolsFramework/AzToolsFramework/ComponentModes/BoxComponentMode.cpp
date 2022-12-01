@@ -33,4 +33,9 @@ namespace AzToolsFramework
     {
         return "Box Edit Mode";
     }
+
+    AZ::Uuid BoxComponentMode::GetComponentModeType() const
+    {
+        return azrtti_typeid<BoxComponentMode>();
+    }
 } // namespace AzToolsFramework
