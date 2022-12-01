@@ -49,8 +49,8 @@ def ScriptCanvas_TwoComponents_InteractSuccessfully():
     from scripting_utils.scripting_constants import (WAIT_TIME_3)
 
     EXPECTED_LINES = ["Greetings from the first script", "Greetings from the second script"]
-    SOURCE_FILES = [os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents0.scriptcanvas"),
-                    os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents1.scriptcanvas")]
+    SOURCE_FILE_0 = os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents0.scriptcanvas")
+    SOURCE_FILE_1 = os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents1.scriptcanvas")
     TEST_ENTITY_NAME = "test_entity"
 
     # Preconditions
@@ -64,10 +64,10 @@ def ScriptCanvas_TwoComponents_InteractSuccessfully():
     editor_entity = EditorEntity.create_editor_entity_at(position, TEST_ENTITY_NAME)
 
     script_canvas_component_1 = ScriptCanvasComponent(editor_entity)
-    script_canvas_component_1.set_component_graph_file_from_path(SOURCE_FILES[0])
+    script_canvas_component_1.set_component_graph_file_from_path(SOURCE_FILE_0)
 
     script_canvas_component_2 = ScriptCanvasComponent(editor_entity)
-    script_canvas_component_2.set_component_graph_file_from_path(SOURCE_FILES[1])
+    script_canvas_component_2.set_component_graph_file_from_path(SOURCE_FILE_1)
 
     with Tracer() as section_tracer:
 
