@@ -134,6 +134,7 @@ namespace EMStudio
 #if defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
         void AddProfilingAction(const char* actionName, EOptionFlag optionFlag);
         void OnDisplayProfiling(EOptionFlag profileOption);
+        void OnDisplayAllProfiling(bool enableAll); // enabledAll = false -> disableAllProfiling
 #endif
 
     private:

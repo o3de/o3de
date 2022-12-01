@@ -220,14 +220,18 @@ namespace EMStudio
         connect(m_actions[VISUALIZATION_PLAYPOSITIONS], &QAction::triggered, this, &BlendGraphViewWidget::OnDisplayPlayPositions);
 
 #if defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
-        AddProfilingAction("None", VISUALIZATION_PROFILING_NONE);
+        m_actions[VISUALIZATION_PROFILING_NONE] = new QAction(tr("None"), this);
+        m_actions[VISUALIZATION_PROFILING_NONE]->setCheckable(false);
+        connect(m_actions[VISUALIZATION_PROFILING_NONE], &QAction::triggered, this, [this]{ OnDisplayAllProfiling(false); });
+        
+        m_actions[VISUALIZATION_PROFILING_ALL] = new QAction(tr("All"), this);
+        m_actions[VISUALIZATION_PROFILING_ALL]->setCheckable(false);
+        connect(m_actions[VISUALIZATION_PROFILING_ALL], &QAction::triggered, this, [this]{ OnDisplayAllProfiling(true); });
+
         AddProfilingAction("Update", VISUALIZATION_PROFILING_UPDATE);
         AddProfilingAction("TopDownUpdate", VISUALIZATION_PROFILING_TOPDOWN);
         AddProfilingAction("PostUpdate", VISUALIZATION_PROFILING_POSTUPDATE);
         AddProfilingAction("Output", VISUALIZATION_PROFILING_OUTPUT);
-        AddProfilingAction("All", VISUALIZATION_PROFILING_ALL);
-        AddProfilingAction("None", VISUALIZATION_PROFILING_NONE);
-        m_actions[VISUALIZATION_PROFILING_NONE]->trigger();
 #endif
 
         m_actions[EDIT_CUT] = new QAction(
@@ -363,31 +367,21 @@ namespace EMStudio
             contextMenu->addAction(m_actions[VISUALIZATION_PLAYPOSITIONS]);
 
             menuAction->setMenu(contextMenu);
-        }
 
 #if defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
-        // Profiler options
-        {
-            QAction* menuAction = toolBar->addAction(
-                QIcon(":/EMotionFX/Visualization.svg"),
-                tr("Profiling"));
-
-            QToolButton* toolButton = qobject_cast<QToolButton*>(toolBar->widgetForAction(menuAction));
-            AZ_Assert(toolButton, "The action widget must be a tool button.");
-            toolButton->setPopupMode(QToolButton::InstantPopup);
-
-            QMenu* contextMenu = new QMenu(toolBar);
-
-            contextMenu->addAction(m_actions[VISUALIZATION_PROFILING_NONE]);
-            contextMenu->addAction(m_actions[VISUALIZATION_PROFILING_UPDATE]);
-            contextMenu->addAction(m_actions[VISUALIZATION_PROFILING_TOPDOWN]);
-            contextMenu->addAction(m_actions[VISUALIZATION_PROFILING_POSTUPDATE]);
-            contextMenu->addAction(m_actions[VISUALIZATION_PROFILING_OUTPUT]);
-            contextMenu->addAction(m_actions[VISUALIZATION_PROFILING_ALL]);
-
-            menuAction->setMenu(contextMenu);
-        }
+            // Profiler options
+            {
+                QMenu* profilerMenu = new QMenu("Profiler", toolBar);
+                profilerMenu->addAction(m_actions[VISUALIZATION_PROFILING_NONE]);
+                profilerMenu->addAction(m_actions[VISUALIZATION_PROFILING_UPDATE]);
+                profilerMenu->addAction(m_actions[VISUALIZATION_PROFILING_TOPDOWN]);
+                profilerMenu->addAction(m_actions[VISUALIZATION_PROFILING_POSTUPDATE]);
+                profilerMenu->addAction(m_actions[VISUALIZATION_PROFILING_OUTPUT]);
+                profilerMenu->addAction(m_actions[VISUALIZATION_PROFILING_ALL]);
+                contextMenu->addMenu(profilerMenu);
+            }
 #endif
+        }
 
         toolBar->addSeparator();
 
@@ -612,11 +606,40 @@ namespace EMStudio
 
     void BlendGraphViewWidget::OnDisplayProfiling(EOptionFlag profileOption)
     {
-        bool showAll = profileOption == VISUALIZATION_PROFILING_ALL;
-        m_parentPlugin->SetDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_UPDATE, profileOption == VISUALIZATION_PROFILING_UPDATE || showAll);
-        m_parentPlugin->SetDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_TOPDOWN, profileOption == VISUALIZATION_PROFILING_TOPDOWN || showAll);
-        m_parentPlugin->SetDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_POSTUPDATE, profileOption == VISUALIZATION_PROFILING_POSTUPDATE || showAll);
-        m_parentPlugin->SetDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_OUTPUT, profileOption == VISUALIZATION_PROFILING_OUTPUT || showAll);
+        bool show = GetOptionFlag(profileOption);
+
+        uint32 displayFlags = m_parentPlugin->GetDisplayFlags();
+        switch (profileOption)
+        {
+        case VISUALIZATION_PROFILING_UPDATE:
+            displayFlags = AnimGraphPlugin::DISPLAYFLAG_PROFILING_UPDATE;
+            break;
+        case VISUALIZATION_PROFILING_TOPDOWN:
+            displayFlags = AnimGraphPlugin::DISPLAYFLAG_PROFILING_TOPDOWN;
+            break;
+        case VISUALIZATION_PROFILING_POSTUPDATE:
+            displayFlags = AnimGraphPlugin::DISPLAYFLAG_PROFILING_POSTUPDATE;
+            break;
+        case VISUALIZATION_PROFILING_OUTPUT:
+            displayFlags = AnimGraphPlugin::DISPLAYFLAG_PROFILING_OUTPUT;
+            break;
+        default:
+            AZ_Error("EMotionFX", true,
+                     "Undefined profile option flags.");
+        };
+        m_parentPlugin->SetDisplayFlagEnabled(displayFlags, show);
+    }
+
+    void BlendGraphViewWidget::OnDisplayAllProfiling(bool enabledAll)
+    {
+        m_parentPlugin->SetDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_UPDATE, enabledAll);
+        m_parentPlugin->SetDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_TOPDOWN, enabledAll);
+        m_parentPlugin->SetDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_POSTUPDATE, enabledAll);
+        m_parentPlugin->SetDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_OUTPUT, enabledAll);
+        SetOptionFlag(VISUALIZATION_PROFILING_UPDATE, enabledAll);
+        SetOptionFlag(VISUALIZATION_PROFILING_TOPDOWN, enabledAll);
+        SetOptionFlag(VISUALIZATION_PROFILING_POSTUPDATE, enabledAll);
+        SetOptionFlag(VISUALIZATION_PROFILING_OUTPUT, enabledAll);
     }
 #endif
 
