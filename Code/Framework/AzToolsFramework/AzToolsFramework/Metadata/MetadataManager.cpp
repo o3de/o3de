@@ -30,7 +30,7 @@ namespace AzToolsFramework
     {
         rapidjson_ly::Document value;
 
-        if (!GetJsonValue(file, key, value))
+        if (!GetJson(file, key, value))
         {
             return false;
         }
@@ -41,7 +41,7 @@ namespace AzToolsFramework
         return resultCode.GetProcessing() != AZ::JsonSerializationResult::Processing::Halted;
     }
 
-    bool MetadataManager::GetJsonValue(AZ::IO::PathView file, AZStd::string_view key, rapidjson_ly::Document& outValue)
+    bool MetadataManager::GetJson(AZ::IO::PathView file, AZStd::string_view key, rapidjson_ly::Document& outValue)
     {
         auto path = ToMetadataPath(file);
 
@@ -99,7 +99,7 @@ namespace AzToolsFramework
     bool MetadataManager::GetValueVersion(AZ::IO::PathView file, AZStd::string_view key, int& version)
     {
         rapidjson_ly::Document value;
-        if (!GetJsonValue(file, key, value))
+        if (!GetJson(file, key, value))
         {
             return false;
         }
