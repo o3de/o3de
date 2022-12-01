@@ -1501,6 +1501,38 @@ void EditorActionsHandler::OnWidgetActionRegistrationHook()
             }
         );
     }
+
+    // Viewport - Grid Size Property Widget
+    {
+        AzToolsFramework::WidgetActionProperties widgetActionProperties;
+        widgetActionProperties.m_name = "Viewport Grid Snapping Size";
+        widgetActionProperties.m_category = "Viewport";
+
+        auto outcome = m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.viewport.gridSnappingSize",
+            widgetActionProperties,
+            []() -> QWidget*
+            {
+                return new ViewportGridSnappingSizePropertyWidget();
+            }
+        );
+    }
+
+    // Viewport - Angle Size Property Widget
+    {
+        AzToolsFramework::WidgetActionProperties widgetActionProperties;
+        widgetActionProperties.m_name = "Viewport Angle Snapping Size";
+        widgetActionProperties.m_category = "Viewport";
+
+        auto outcome = m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.viewport.angleSnappingSize",
+            widgetActionProperties,
+            []() -> QWidget*
+            {
+                return new ViewportAngleSnappingSizePropertyWidget();
+            }
+        );
+    }
 }     
 
 void EditorActionsHandler::OnMenuBarRegistrationHook()

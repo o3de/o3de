@@ -8,6 +8,8 @@
 
 #include <EditorViewportSettings.h>
 
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
+
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Settings/SettingsRegistry.h>
@@ -288,6 +290,9 @@ namespace SandboxEditor
     void SetCameraSpeedScale(float speedScale)
     {
         AzToolsFramework::SetRegistry(CameraSpeedScaleSetting, speedScale);
+
+        AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+            &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnCameraSpeedScaleChanged, speedScale);
     }
 
     float CameraTranslateSpeed()

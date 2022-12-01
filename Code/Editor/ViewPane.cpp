@@ -51,10 +51,13 @@
 static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
 
 static constexpr AZStd::string_view ViewportDisplayInfoStateChangedUpdaterIdentifier = "o3de.updater.onViewportDisplayInfoStateChanged";
+static constexpr AZStd::string_view ViewportFovChangedUpdaterIdentifier = "o3de.updater.onViewportFovChanged";
 
 static constexpr AZStd::string_view ViewportCameraMenuIdentifier = "o3de.menu.editor.viewport.camera";
 static constexpr AZStd::string_view ViewportHelpersMenuIdentifier = "o3de.menu.editor.viewport.helpers";
 static constexpr AZStd::string_view ViewportDebugInfoMenuIdentifier = "o3de.menu.editor.viewport.debugInfo";
+static constexpr AZStd::string_view ViewportSizeMenuIdentifier = "o3de.menu.editor.viewport.size";
+static constexpr AZStd::string_view ViewportOptionsMenuIdentifier = "o3de.menu.editor.viewport.options";
 
 static constexpr AZStd::string_view ViewportTopToolBarIdentifier = "o3de.toolbar.viewport.top";
 
@@ -254,6 +257,16 @@ void CLayoutViewPane::OnMenuRegistrationHook()
         menuProperties.m_name = "Viewport Helpers";
         m_menuManagerInterface->RegisterMenu(ViewportHelpersMenuIdentifier, menuProperties);
     }
+    {
+        AzToolsFramework::MenuProperties menuProperties;
+        menuProperties.m_name = "Viewport Size";
+        m_menuManagerInterface->RegisterMenu(ViewportSizeMenuIdentifier, menuProperties);
+    }
+    {
+        AzToolsFramework::MenuProperties menuProperties;
+        menuProperties.m_name = "Viewport Options";
+        m_menuManagerInterface->RegisterMenu(ViewportOptionsMenuIdentifier, menuProperties);
+    }
 }
 
 void CLayoutViewPane::OnToolBarRegistrationHook()
@@ -270,6 +283,25 @@ void CLayoutViewPane::OnToolBarRegistrationHook()
 
 void CLayoutViewPane::OnActionRegistrationHook()
 {
+    // Dummy Action with Menu Icon
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.menuIcon";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Menu";
+        actionProperties.m_iconPath = ":/Menu/menu.svg";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+            }
+        );
+    }
+
+
+
     // Viewport Debug Information
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.info.toggle";
@@ -402,6 +434,81 @@ void CLayoutViewPane::OnActionRegistrationHook()
 
         m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
+
+    // Grid Snapping
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.gridSnapping.toggle";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Grid Snapping";
+        actionProperties.m_category = "Viewport Grid Snapping";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorMainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                SandboxEditor::SetGridSnapping(!SandboxEditor::GridSnappingEnabled());
+            },
+            []() -> bool
+            {
+                return SandboxEditor::GridSnappingEnabled();
+            }
+        );
+
+        // TODO - Grid Snapping Toggled Updated?
+        // m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
+    }
+
+    // Show Grid
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.gridSnapping.show";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Show Grid";
+        actionProperties.m_category = "Viewport Grid Snapping";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorMainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                SandboxEditor::SetShowingGrid(!SandboxEditor::ShowingGrid());
+            },
+            []() -> bool
+            {
+                return SandboxEditor::ShowingGrid();
+            }
+        );
+
+        // TODO - Grid Snapping Showing Updated?
+        // m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
+    }
+
+    // Angle Snapping
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.angleSnapping.toggle";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Angle Snapping";
+        actionProperties.m_category = "Viewport Angle Snapping";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorMainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                SandboxEditor::SetAngleSnapping(!SandboxEditor::AngleSnappingEnabled());
+            },
+            []() -> bool
+            {
+                return SandboxEditor::AngleSnappingEnabled();
+            }
+        );
+
+        // TODO - Angle Snapping Toggled Updated?
+        // m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
+    }
 }
 
 void CLayoutViewPane::OnMenuBindingHook()
@@ -428,6 +535,16 @@ void CLayoutViewPane::OnMenuBindingHook()
         m_menuManagerInterface->AddActionToMenu(ViewportHelpersMenuIdentifier, "o3de.action.view.toggleIcons", 200);
         m_menuManagerInterface->AddActionToMenu(ViewportHelpersMenuIdentifier, "o3de.action.view.toggleSelectedEntityHelpers", 300);
     }
+
+    // Options
+    {
+        m_menuManagerInterface->AddActionToMenu(ViewportOptionsMenuIdentifier, "o3de.action.viewport.gridSnapping.toggle", 300);
+        m_menuManagerInterface->AddActionToMenu(ViewportOptionsMenuIdentifier, "o3de.action.viewport.gridSnapping.show", 400);
+        m_menuManagerInterface->AddWidgetToMenu(ViewportOptionsMenuIdentifier, "o3de.widgetAction.viewport.gridSnappingSize", 500);
+        m_menuManagerInterface->AddSeparatorToMenu(ViewportOptionsMenuIdentifier, 600);
+        m_menuManagerInterface->AddActionToMenu(ViewportOptionsMenuIdentifier, "o3de.action.viewport.angleSnapping.toggle", 700);
+        m_menuManagerInterface->AddWidgetToMenu(ViewportOptionsMenuIdentifier, "o3de.widgetAction.viewport.angleSnappingSize", 800);
+    }
 }
 
 void CLayoutViewPane::OnToolBarBindingHook()
@@ -440,6 +557,8 @@ void CLayoutViewPane::OnToolBarBindingHook()
         ViewportTopToolBarIdentifier, "o3de.action.viewport.info.toggle", ViewportDebugInfoMenuIdentifier, 600);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
         ViewportTopToolBarIdentifier, "o3de.action.view.toggleHelpers", ViewportHelpersMenuIdentifier, 700);
+    m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
+        ViewportTopToolBarIdentifier, "o3de.action.viewport.menuIcon", ViewportOptionsMenuIdentifier, 900);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -885,6 +1004,9 @@ void CLayoutViewPane::OnFOVChanged(const float fovRadians)
     {
         m_viewportTitleDlg->OnViewportFOVChanged(fovRadians);
     }
+
+    AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+        &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnCameraFovChanged, fovRadians);
 }
 
 //////////////////////////////////////////////////////////////////////////

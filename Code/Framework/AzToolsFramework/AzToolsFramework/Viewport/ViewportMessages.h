@@ -272,7 +272,16 @@ namespace AzToolsFramework
             virtual void OnAngleSnappingChanged([[maybe_unused]] bool enabled)
             {
             }
+            virtual void OnAngleSnappingSizeChanged([[maybe_unused]] float size)
+            {
+            }
             virtual void OnGridSnappingChanged([[maybe_unused]] bool enabled)
+            {
+            }
+            virtual void OnGridSnappingShowingChanged([[maybe_unused]] bool enabled)
+            {
+            }
+            virtual void OnGridSnappingSizeChanged([[maybe_unused]] float size)
             {
             }
             virtual void OnDrawHelpersChanged([[maybe_unused]] bool enabled)
@@ -282,6 +291,12 @@ namespace AzToolsFramework
             {
             }
             virtual void OnOnlyShowHelpersForSelectedEntitiesChanged([[maybe_unused]] bool enabled)
+            {
+            }
+            virtual void OnCameraFovChanged([[maybe_unused]] float fovRadians)
+            {
+            }
+            virtual void OnCameraSpeedScaleChanged([[maybe_unused]] float value)
             {
             }
 

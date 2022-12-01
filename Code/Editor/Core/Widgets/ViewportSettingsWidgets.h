@@ -10,6 +10,8 @@
 
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
+
 #include <QLabel>
 #include <QWidget>
 
@@ -22,8 +24,6 @@ public:
     ~PropertyInputDoubleWidget();
 
 protected:
-    // TODO - add function to initialize value.
-    // TODO - add way to update the widget if the value is changed elsewhere.
     virtual void OnSpinBoxValueChanged(double newValue) = 0;
 
     QLabel* m_label = nullptr;
@@ -33,20 +33,52 @@ protected:
 // Field of View Widget
 class ViewportFieldOfViewPropertyWidget
     : public PropertyInputDoubleWidget
+    , private AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler
 {
 public:
     ViewportFieldOfViewPropertyWidget();
+    ~ViewportFieldOfViewPropertyWidget();
 
 private:
     void OnSpinBoxValueChanged(double newValue) override;
+
+    // ViewportSettingsNotificationBus overrides ...
+    void OnCameraFovChanged(float fovRadians) override;
 };
 
 // Camera Speed Scale Widget
 class ViewportCameraSpeedScalePropertyWidget
     : public PropertyInputDoubleWidget
+    , private AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler
 {
 public:
     ViewportCameraSpeedScalePropertyWidget();
+    ~ViewportCameraSpeedScalePropertyWidget();
+
+private:
+    void OnSpinBoxValueChanged(double newValue) override;
+
+    // ViewportSettingsNotificationBus overrides ...
+    void OnCameraSpeedScaleChanged(float value) override;
+};
+
+// Grid Size
+class ViewportGridSnappingSizePropertyWidget
+    : public PropertyInputDoubleWidget
+{
+public:
+    ViewportGridSnappingSizePropertyWidget();
+
+private:
+    void OnSpinBoxValueChanged(double newValue) override;
+};
+
+// Angle Snap Interval
+class ViewportAngleSnappingSizePropertyWidget
+    : public PropertyInputDoubleWidget
+{
+public:
+    ViewportAngleSnappingSizePropertyWidget();
 
 private:
     void OnSpinBoxValueChanged(double newValue) override;

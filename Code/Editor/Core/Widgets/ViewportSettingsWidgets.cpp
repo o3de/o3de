@@ -55,7 +55,7 @@ ViewportFieldOfViewPropertyWidget::ViewportFieldOfViewPropertyWidget()
     m_label->setText("Field of View");
 
     // Set suffix on SpinBox
-    m_spinBox->setSuffix("deg");
+    m_spinBox->setSuffix(" deg");
 
     // Set starting value.
     m_spinBox->setValue(SandboxEditor::CameraDefaultFovDegrees());
@@ -64,11 +64,29 @@ ViewportFieldOfViewPropertyWidget::ViewportFieldOfViewPropertyWidget()
     // These should be set after the current value.
     m_spinBox->setMinimum(30.0);
     m_spinBox->setMaximum(120.0);
+
+    const int DefaultViewportId = 0;
+    AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusConnect(DefaultViewportId);
+}
+
+ViewportFieldOfViewPropertyWidget::~ViewportFieldOfViewPropertyWidget()
+{
+    AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusDisconnect();
 }
 
 void ViewportFieldOfViewPropertyWidget::OnSpinBoxValueChanged(double newValue)
 {
     SandboxEditor::SetCameraDefaultFovDegrees(aznumeric_cast<float>(newValue));
+}
+
+void ViewportFieldOfViewPropertyWidget::OnCameraFovChanged(float fovRadians)
+{
+    const float fovDegrees = AZ::RadToDeg(fovRadians);
+
+    // Prevent signaling to avoid infinite loop.
+    m_spinBox->blockSignals(true);
+    m_spinBox->setValue(fovDegrees);
+    m_spinBox->blockSignals(false);
 }
 
 ViewportCameraSpeedScalePropertyWidget::ViewportCameraSpeedScalePropertyWidget()
@@ -78,9 +96,59 @@ ViewportCameraSpeedScalePropertyWidget::ViewportCameraSpeedScalePropertyWidget()
 
     // Set starting value.
     m_spinBox->setValue(SandboxEditor::CameraSpeedScale());
+
+    const int DefaultViewportId = 0;
+    AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusConnect(DefaultViewportId);
+}
+
+ViewportCameraSpeedScalePropertyWidget::~ViewportCameraSpeedScalePropertyWidget()
+{
+    AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusDisconnect();
 }
 
 void ViewportCameraSpeedScalePropertyWidget::OnSpinBoxValueChanged(double newValue)
 {
     SandboxEditor::SetCameraSpeedScale(aznumeric_cast<float>(newValue));
+}
+
+void ViewportCameraSpeedScalePropertyWidget::OnCameraSpeedScaleChanged(float value)
+{
+    // Prevent signaling to avoid infinite loop.
+    m_spinBox->blockSignals(true);
+    m_spinBox->setValue(value);
+    m_spinBox->blockSignals(false);
+}
+
+ViewportGridSnappingSizePropertyWidget::ViewportGridSnappingSizePropertyWidget()
+{
+    // Set label name.
+    m_label->setText("Grid Snapping Size");
+
+    // Set suffix on SpinBox
+    m_spinBox->setSuffix(" m");
+
+    // Set starting value.
+    m_spinBox->setValue(SandboxEditor::GridSnappingSize());
+}
+
+void ViewportGridSnappingSizePropertyWidget::OnSpinBoxValueChanged(double newValue)
+{
+    SandboxEditor::SetGridSnappingSize(aznumeric_cast<float>(newValue));
+}
+
+ViewportAngleSnappingSizePropertyWidget::ViewportAngleSnappingSizePropertyWidget()
+{
+    // Set label name.
+    m_label->setText("Angle Snapping Size");
+
+    // Set suffix on SpinBox
+    m_spinBox->setSuffix(" deg");
+
+    // Set starting value.
+    m_spinBox->setValue(SandboxEditor::AngleSnappingSize());
+}
+
+void ViewportAngleSnappingSizePropertyWidget::OnSpinBoxValueChanged(double newValue)
+{
+    SandboxEditor::SetAngleSnappingSize(aznumeric_cast<float>(newValue));
 }
