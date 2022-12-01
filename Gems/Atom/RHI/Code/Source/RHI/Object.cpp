@@ -49,7 +49,7 @@ namespace AZ
 
         void Object::release() const
         {
-            int useCount = --m_useCount;
+            [[maybe_unused]] int useCount = --m_useCount;
             AZ_Assert(useCount >= 0, "Releasing an already released object");
 
             int expectedRefCount = 0;
