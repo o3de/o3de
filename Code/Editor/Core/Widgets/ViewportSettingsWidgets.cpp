@@ -56,11 +56,14 @@ ViewportFieldOfViewPropertyWidget::ViewportFieldOfViewPropertyWidget()
 
     // Set suffix on SpinBox
     m_spinBox->setSuffix("deg");
-    m_spinBox->setMinimum(30.0);
-    m_spinBox->setMaximum(120.0);
 
     // Set starting value.
     m_spinBox->setValue(SandboxEditor::CameraDefaultFovDegrees());
+
+    // Set minimum and maximun.
+    // These should be set after the current value.
+    m_spinBox->setMinimum(30.0);
+    m_spinBox->setMaximum(120.0);
 }
 
 void ViewportFieldOfViewPropertyWidget::OnSpinBoxValueChanged(double newValue)
