@@ -38,7 +38,7 @@ namespace Multiplayer
         AZ::Event<NetEntityId>::Handler m_parentChangedEventHandler;
         AZ::Event<uint8_t>::Handler m_resetCountChangedEventHandler;
 
-        Multiplayer::HostFrameId m_targetHostFrameId = HostFrameId(0);
+        Multiplayer::HostFrameId m_targetHostFrameId = HostFrameId{ 0 };
         bool m_syncTransformImmediate = false;
     };
 
@@ -50,6 +50,8 @@ namespace Multiplayer
 
         void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+        
+        void HandleMultiplayerTeleport(AzNetworking::IConnection* invokingConnection, const AZ::Vector3& teleportToPosition) override;
 
     private:
         void OnTransformChangedEvent(const AZ::Transform& localTm, const AZ::Transform& worldTm);

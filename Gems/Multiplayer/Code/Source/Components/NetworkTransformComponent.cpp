@@ -23,6 +23,43 @@ namespace Multiplayer
                 ->Version(1);
         }
         NetworkTransformComponentBase::Reflect(context);
+
+        AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
+        if (behaviorContext)
+        {
+            behaviorContext->Class<NetworkTransformComponent>("NetworkTransformComponent")
+                ->Attribute(AZ::Script::Attributes::Module, "multiplayer")
+                ->Attribute(AZ::Script::Attributes::Category, "Multiplayer")
+
+                ->Method("IncrementResetCount", [](AZ::EntityId id)
+                    {
+                        const AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
+                        if (!entity)
+                        {
+                            AZ_Warning("Network Property", false, "NetworkTransformComponent IncrementResetCount failed. "
+                                "The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str());
+                        }
+
+                        NetworkTransformComponent* networkComponent = entity->FindComponent<NetworkTransformComponent>();
+                        if (!networkComponent)
+                        {
+                            AZ_Warning("Network Property", false, "NetworkTransformComponent IncrementResetCount failed. "
+                                "Entity '%s' (id: %s) is missing NetworkTransformComponent, be sure to add NetworkTransformComponent to this entity.", entity->GetName().c_str(), id.ToString().c_str());
+                        }
+                        else
+                        {
+                            if (networkComponent->HasController())
+                            {
+                                static_cast<NetworkTransformComponentController*>(networkComponent->GetController())->ModifyResetCount()++;
+                            }
+                            else
+                            {
+                                AZ_Warning("Network Property", false, "NetworkTransformComponent IncrementResetCount failed. "
+                                    "Entity '%s' (id: %s) does not have Authority or Autonomous role.", entity->GetName().c_str(), id.ToString().c_str());
+                            }
+                        }
+                    });
+        }
     }
 
     NetworkTransformComponent::NetworkTransformComponent()
@@ -196,5 +233,12 @@ namespace Multiplayer
                 SetParentEntityId(parentHandle.GetNetEntityId());
             }
         }
+    }
+
+    void NetworkTransformComponentController::HandleMultiplayerTeleport(
+        [[maybe_unused]] AzNetworking::IConnection* invokingConnection, const AZ::Vector3& teleportToPosition)
+    {
+        GetEntity()->GetTransform()->SetWorldTranslation(teleportToPosition);
+        ModifyResetCount()++;
     }
 }

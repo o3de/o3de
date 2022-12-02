@@ -11,13 +11,13 @@
 #include <AzCore/std/sort.h>
 
 #include <native/tests/AssetProcessorTest.h>
+#include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <native/AssetDatabase/AssetDatabase.h>
 #include <AzToolsFramework/AssetDatabase/PathOrUuid.h>
 
 namespace UnitTests
 {
     using namespace testing;
-    using ::testing::NiceMock;
     using namespace AssetProcessor;
     using namespace AzToolsFramework::AssetDatabase;
 
@@ -36,12 +36,6 @@ namespace UnitTests
     using AzToolsFramework::AssetDatabase::StatDatabaseEntryContainer;
 
 
-    class AssetDatabaseTestMockDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
-    {
-    public:
-        MOCK_METHOD1(GetAssetDatabaseLocation, bool(AZStd::string&));
-    };
-
     class AssetDatabaseTest : public AssetProcessorTest
     {
     public:
@@ -49,22 +43,13 @@ namespace UnitTests
         {
             AssetProcessorTest::SetUp();
             m_data.reset(new StaticData());
-            m_data->m_databaseLocation = ":memory:"; // this special string causes SQLITE to open the database in memory and not touch disk at all.
-            m_data->m_databaseLocationListener.BusConnect();
-
-            ON_CALL(m_data->m_databaseLocationListener, GetAssetDatabaseLocation(_))
-                .WillByDefault(
-                    DoAll( // set the 0th argument ref (string) to the database location and return true.
-                        SetArgReferee<0>(":memory:"),
-                        Return(true)));
-
+            m_data->m_databaseLocationListener.m_assetDatabasePath = ":memory:"; // this special string causes SQLITE to open the database in memory and not touch disk at all.
             // Initialize the database:
             m_data->m_connection.ClearData(); // this is expected to reset/clear/reopen
         }
 
         void TearDown() override
         {
-            m_data->m_databaseLocationListener.BusDisconnect();
             m_data.reset();
             AssetProcessorTest::TearDown();
         }
@@ -144,7 +129,7 @@ namespace UnitTests
         {
             // these variables are created during SetUp() and destroyed during TearDown() and thus are always available during tests using this fixture:
             AZStd::string m_databaseLocation;
-            NiceMock<AssetDatabaseTestMockDatabaseLocationListener> m_databaseLocationListener;
+            AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
             AssetProcessor::AssetDatabaseConnection m_connection;
 
             // The following database entry variables are initialized only when you call coverage test data CreateCoverageTestData().
@@ -2241,7 +2226,7 @@ namespace UnitTests
 
         SourceDatabaseEntry resultSource;
 
-        EXPECT_FALSE(m_data->m_connection.GetSourceBySourceName("non_existent", resultSource));
+        EXPECT_FALSE(m_data->m_connection.GetSourceBySourceNameScanFolderId("non_existent", m_data->m_scanFolder.m_scanFolderID, resultSource));
 
         EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
     }
@@ -2252,7 +2237,7 @@ namespace UnitTests
 
         SourceDatabaseEntry resultSource;
 
-        EXPECT_TRUE(m_data->m_connection.GetSourceBySourceName("somefile.tif", resultSource));
+        EXPECT_TRUE(m_data->m_connection.GetSourceBySourceNameScanFolderId("somefile.tif", m_data->m_scanFolder.m_scanFolderID, resultSource));
         EXPECT_EQ(resultSource.m_sourceGuid, m_data->m_sourceFile1.m_sourceGuid);
 
         EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);

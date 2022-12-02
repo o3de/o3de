@@ -21,7 +21,7 @@ namespace UnitTest
 
     // Fixture for non-typed tests
     class DurationTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -42,18 +42,8 @@ namespace UnitTest
 
     // Fixture for typed tests
     template<typename ExpectedResultTraits>
-    class DurationTypedTest : public AllocatorsFixture
+    class DurationTypedTest : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
     };
     using ChronoTestTypes = ::testing::Types<
         DurationExpectation<AZStd::chrono::nanoseconds, 63, AZStd::nano>,

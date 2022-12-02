@@ -11,7 +11,10 @@
         {
             "Enable" : false
         }
-    },
+    }, 
+    
+    "AddBuildArguments"
+        : { "dxc" : ["-fspv-target-env=vulkan1.2"] },
 
     "ProgramSettings":
     {

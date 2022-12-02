@@ -1757,7 +1757,11 @@
               </widget>
              </item>
              <item row="5" column="0" colspan="4">
-              <widget class="QLineEdit" name="serverAddressLineEdit"/>
+              <widget class="QLineEdit" name="serverAddressLineEdit">
+               <property name="toolTip">
+                <string>Set the remote folder location for the shared cache</string>
+               </property>
+              </widget>
              </item>
              <item row="9" column="4">
               <widget class="QPushButton" name="sharedCacheDiscardButton">
@@ -1965,6 +1969,45 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>supportButton</tabstop>
+  <tabstop>sharedCacheSupport</tabstop>
+  <tabstop>serverCacheModeOptions</tabstop>
+  <tabstop>serverAddressLineEdit</tabstop>
+  <tabstop>serverAddressToolButton</tabstop>
+  <tabstop>sharedCacheAddPattern</tabstop>
+  <tabstop>sharedCacheTable</tabstop>
+  <tabstop>sharedCacheSubmitButton</tabstop>
+  <tabstop>sharedCacheDiscardButton</tabstop>
+  <tabstop>editConnectionButton</tabstop>
+  <tabstop>addConnectionButton</tabstop>
+  <tabstop>removeConnectionButton</tabstop>
+  <tabstop>connectionTreeView</tabstop>
+  <tabstop>allowedListEnableCheckBox</tabstop>
+  <tabstop>allowedListAddHostNameLineEdit</tabstop>
+  <tabstop>allowedListAddHostNameToolButton</tabstop>
+  <tabstop>allowedListAddIPLineEdit</tabstop>
+  <tabstop>allowedListAddIPToolButton</tabstop>
+  <tabstop>allowListAllowedListConnectionsListView</tabstop>
+  <tabstop>allowedListToAllowedListToolButton</tabstop>
+  <tabstop>allowedListToRejectedListToolButton</tabstop>
+  <tabstop>allowedListRejectedConnectionsListView</tabstop>
+  <tabstop>builderList</tabstop>
+  <tabstop>builderInfoTabWidget</tabstop>
+  <tabstop>builderInfoPatternsTableView</tabstop>
+  <tabstop>builderInfoMetricsTreeView</tabstop>
+  <tabstop>modtimeSkippingCheckBox</tabstop>
+  <tabstop>debugOutputCheckBox</tabstop>
+  <tabstop>fullScanButton</tabstop>
+  <tabstop>missingDependencyScanResults</tabstop>
+  <tabstop>assetsTabWidget</tabstop>
+  <tabstop>logButton</tabstop>
+  <tabstop>ProductAssetsTreeView</tabstop>
+  <tabstop>IntermediateAssetsTreeView</tabstop>
+  <tabstop>jobContextLogTableView</tabstop>
+  <tabstop>SourceAssetsTreeView</tabstop>
+  <tabstop>jobTreeView</tabstop>
+ </tabstops>
  <resources>
   <include location="style/AssetProcessor.qrc"/>
  </resources>

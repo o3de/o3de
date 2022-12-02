@@ -7,7 +7,7 @@
 #
 
 if(NOT PROJECT_NAME)
-    cmake_minimum_required(VERSION 3.20)
+    cmake_minimum_required(VERSION 3.22)
     include(cmake/EngineFinder.cmake OPTIONAL)
     find_package(o3de REQUIRED)
     project(AutomatedTesting

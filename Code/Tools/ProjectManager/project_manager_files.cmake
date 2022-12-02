@@ -21,6 +21,10 @@ set(FILES
     Source/EngineInfo.cpp
     Source/FormLineEditWidget.h
     Source/FormLineEditWidget.cpp
+    Source/FormLineEditTagsWidget.h
+    Source/FormLineEditTagsWidget.cpp
+    Source/FormOptionsWidget.h
+    Source/FormOptionsWidget.cpp
     Source/FormBrowseEditWidget.h
     Source/FormBrowseEditWidget.cpp
     Source/FormComboBoxWidget.h
@@ -100,6 +104,8 @@ set(FILES
     Source/TextOverflowWidget.cpp
     Source/CreateAGemScreen.h
     Source/CreateAGemScreen.cpp
+    Source/EditAGemScreen.h
+    Source/EditAGemScreen.cpp
     Source/GemCatalog/GemCatalogHeaderWidget.h
     Source/GemCatalog/GemCatalogHeaderWidget.cpp
     Source/GemCatalog/GemCatalogScreen.h

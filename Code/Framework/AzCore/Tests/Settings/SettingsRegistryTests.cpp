@@ -65,7 +65,7 @@ namespace SettingsRegistryTests
     };
 
     class SettingsRegistryTest
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         ~SettingsRegistryTest() override = default;
@@ -101,8 +101,6 @@ namespace SettingsRegistryTests
 
         void SetUp() override
         {
-            SetupAllocator();
-
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
             m_registrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
             
@@ -122,8 +120,6 @@ namespace SettingsRegistryTests
             m_registry.reset();
             m_registrationContext.reset();
             m_serializeContext.reset();
-
-            TeardownAllocator();
         }
 
         AZ::IO::FixedMaxPath CreateTestFile(AZStd::string_view name, AZStd::string_view content)

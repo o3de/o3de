@@ -7,10 +7,14 @@
  */
 
 #include <QGraphicsLinearLayout>
-#include <QGraphicsSceneDragDropEvent>
+#include <QGraphicsPixmapItem>
 #include <QGraphicsProxyWidget>
+#include <QGraphicsSceneDragDropEvent>
 #include <QGraphicsView>
+#include <QHBoxLayout>
 #include <QMimeData>
+#include <QPixmap>
+#include <QToolButton>
 
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 
@@ -121,6 +125,22 @@ namespace GraphCanvas
         return m_valueLabel;
     }
 
+    IconLayoutItem::IconLayoutItem(QGraphicsItem* parent)
+        : QGraphicsWidget(parent)
+        , m_pixmap(new QGraphicsPixmapItem(this))
+    {
+        setGraphicsItem(m_pixmap);
+    }
+
+    void IconLayoutItem::setIcon(const QPixmap& pixmap)
+    {
+        m_pixmap->setPixmap(pixmap);
+    }
+
+    IconLayoutItem::~IconLayoutItem()
+    {
+    }
+
     //////////////////////////////
     // VectorNodePropertyDisplay
     //////////////////////////////
@@ -129,8 +149,10 @@ namespace GraphCanvas
         , m_dataInterface(dataInterface)
         , m_disabledLabel(nullptr)
         , m_propertyVectorCtrl(nullptr)
+        , m_button(nullptr)
         , m_proxyWidget(nullptr)
         , m_displayWidget(nullptr)
+        , m_iconDisplay(nullptr)
     {
         m_displayWidget = new QGraphicsWidget();
         m_displayWidget->setContentsMargins(0, 0, 0, 0);
@@ -140,7 +162,13 @@ namespace GraphCanvas
         displayLayout->setSpacing(5);
         displayLayout->setContentsMargins(0, 0, 0, 0);
         displayLayout->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        
+        m_iconDisplay = new IconLayoutItem();
+        m_iconDisplay->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
+        displayLayout->addItem(m_iconDisplay);
+        displayLayout->setAlignment(m_iconDisplay, Qt::AlignBottom);
+ 
         int elementCount = dataInterface->GetElementCount();
         m_vectorDisplays.reserve(elementCount);
         for (int i=0; i < elementCount; ++i)
@@ -153,12 +181,12 @@ namespace GraphCanvas
         
         m_disabledLabel = aznew GraphCanvasLabel();
     }
-    
+
     VectorNodePropertyDisplay::~VectorNodePropertyDisplay()
     {
         delete m_dataInterface;
         m_dataInterface = nullptr;
-        
+    
         delete m_disabledLabel;
         delete m_displayWidget;
         CleanupProxyWidget();
@@ -205,6 +233,7 @@ namespace GraphCanvas
             elementWidth += AZ::GetMin(maximumSize.width(), k_sizingConstraint) + spacing;
             elementHeight = AZStd::GetMax(elementHeight, AZ::GetMin(k_sizingConstraint, maximumSize.height()));
         }
+        elementWidth += m_iconDisplay->preferredWidth();
 
         m_displayWidget->setMinimumSize(elementWidth, elementHeight);
         m_displayWidget->setPreferredSize(elementWidth, elementHeight);
@@ -218,12 +247,35 @@ namespace GraphCanvas
             m_propertyVectorCtrl->adjustSize();
         }
     }
-    
+
     void VectorNodePropertyDisplay::UpdateDisplay()
     {
         for (auto control : m_vectorDisplays)
         {
             control->UpdateDisplay();
+        }
+
+        const auto buttonIcon = m_dataInterface->GetIcon();
+        if (m_iconDisplay)
+        {
+            if (!buttonIcon.isNull())
+            {
+                m_iconDisplay->setPreferredSize(buttonIcon.size());
+                m_iconDisplay->setIcon(buttonIcon);
+            }
+            m_iconDisplay->setVisible(!buttonIcon.isNull());
+        }
+
+        if (m_button)
+        {
+            if (!buttonIcon.isNull())
+            {
+                QIcon newIcon(buttonIcon);
+                m_button->setFixedSize(buttonIcon.size());
+                m_button->setIconSize(buttonIcon.size());
+                m_button->setIcon(newIcon);
+            }
+            m_button->setVisible(!buttonIcon.isNull());
         }
 
         if (m_propertyVectorCtrl)
@@ -232,10 +284,11 @@ namespace GraphCanvas
             {
                 m_propertyVectorCtrl->setValuebyIndex(m_dataInterface->GetValue(i), i);
             }
+
             m_proxyWidget->update();
         }
     }
-    
+
     QGraphicsLayoutItem* VectorNodePropertyDisplay::GetDisabledGraphicsLayoutItem()
     {
         CleanupProxyWidget();
@@ -302,13 +355,30 @@ namespace GraphCanvas
         {
             m_proxyWidget = new QGraphicsProxyWidget();
 
+            m_widgetContainer = new QWidget();
+            QHBoxLayout* layout = new QHBoxLayout(m_widgetContainer);
+            m_widgetContainer->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+
+            layout->setAlignment(Qt::AlignLeft);
+            layout->setContentsMargins(0, 0, 0, 0);
+
+            m_button = new QToolButton(m_widgetContainer);
+            m_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+            m_button->setVisible(false);
+            QObject::connect(m_button, &QToolButton::clicked, [this] () {
+                NodePropertiesRequestBus::Event(GetNodeId(), &NodePropertiesRequests::LockEditState, this);
+                m_dataInterface->OnPressButton();
+                UpdateDisplay();
+                NodePropertiesRequestBus::Event(GetNodeId(), &NodePropertiesRequests::UnlockEditState, this);
+            });
+            layout->addWidget(m_button);
+
             m_proxyWidget->setFlag(QGraphicsItem::ItemIsFocusable, true);
             m_proxyWidget->setFocusPolicy(Qt::StrongFocus);
             m_proxyWidget->setAcceptDrops(false);
 
             const int elementCount = m_dataInterface->GetElementCount();
-            m_propertyVectorCtrl = new AzQtComponents::VectorInput(nullptr, elementCount);
-            m_propertyVectorCtrl->setProperty("HasNoWindowDecorations", true);
+            m_propertyVectorCtrl = new AzQtComponents::VectorInput(m_widgetContainer, elementCount);
 
             for (int i = 0; i < elementCount; ++i)
             {
@@ -323,7 +393,10 @@ namespace GraphCanvas
             m_propertyVectorCtrl->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
             QObject::connect(m_propertyVectorCtrl, &AzQtComponents::VectorInput::editingFinished, [this]() { SubmitValue(); });
 
-            m_proxyWidget->setWidget(m_propertyVectorCtrl);
+            layout->addWidget(m_propertyVectorCtrl);
+            m_widgetContainer->setProperty("HasNoWindowDecorations", true);
+            m_proxyWidget->setWidget(m_widgetContainer);
+            
             UpdateDisplay();
             RefreshStyle();
             RegisterShortcutDispatcher(m_propertyVectorCtrl);
@@ -335,8 +408,10 @@ namespace GraphCanvas
         if (m_propertyVectorCtrl)
         {
             UnregisterShortcutDispatcher(m_propertyVectorCtrl);
-            delete m_propertyVectorCtrl; // NB: this implicitly deletes m_proxy widget
+            delete m_widgetContainer; // NB: this implicitly deletes m_proxy widget
+            m_widgetContainer = nullptr;
             m_propertyVectorCtrl = nullptr;
+            m_button= nullptr;
             m_proxyWidget = nullptr;
         }
     }

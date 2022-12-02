@@ -15,6 +15,7 @@
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
+#include <AzFramework/Visibility/BoundsBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <PhysX/ColliderComponentBus.h>
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
@@ -45,6 +46,7 @@ namespace PhysX
         , private AZ::TransformNotificationBus::Handler
         , private Physics::ColliderComponentEventBus::Handler
         , private AzPhysics::SimulatedBodyComponentRequestsBus::Handler
+        , public AzFramework::BoundsRequestBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(EditorRigidBodyComponent, "{F2478E6B-001A-4006-9D7E-DCB5A6B041DD}", AzToolsFramework::Components::EditorComponentBase);
@@ -81,6 +83,10 @@ namespace PhysX
         // AZ::Component
         void Activate() override;
         void Deactivate() override;
+
+        // BoundsRequestBus overrides ...
+        AZ::Aabb GetWorldBounds() override;
+        AZ::Aabb GetLocalBounds() override;
 
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;

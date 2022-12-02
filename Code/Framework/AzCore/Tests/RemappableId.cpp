@@ -16,11 +16,11 @@ namespace UnitTest
 
     //! Unit Test for IdUtils GenerateNewIdsAndFixRefs functions for generating new unique ids
     class RemappableIdTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         RemappableIdTest()
-            : AllocatorsFixture()
+            : LeakDetectionFixture()
         {
         }
 
@@ -30,7 +30,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             m_serializeContext.reset(aznew AZ::SerializeContext());
 
             Entity::Reflect(m_serializeContext.get());
@@ -44,7 +44,7 @@ namespace UnitTest
         {
             m_serializeContext.reset();
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AZStd::unique_ptr<SerializeContext> m_serializeContext;

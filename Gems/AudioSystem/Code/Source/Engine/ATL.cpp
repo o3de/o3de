@@ -767,7 +767,7 @@ namespace Audio
                 pGlobalObjectData, &AudioSystemImplementationRequestBus::Events::NewGlobalAudioObjectData, m_nGlobalAudioObjectID);
 
             m_pGlobalAudioObject = azcreate(
-                CATLGlobalAudioObject, (m_nGlobalAudioObjectID, pGlobalObjectData), Audio::AudioSystemAllocator, "ATLGlobalAudioObject");
+                CATLGlobalAudioObject, (m_nGlobalAudioObjectID, pGlobalObjectData), Audio::AudioSystemAllocator);
 
             m_oAudioListenerMgr.Initialize();
             m_oAudioObjectMgr.Initialize();

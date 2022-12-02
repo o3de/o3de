@@ -13,6 +13,7 @@
 #include <AzCore/Math/Random.h>
 #include <AzCore/Math/Geometry3DUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
 #include <random>
 #include <Tests/Math/IntersectionTestHelpers.h>
 
@@ -263,7 +264,7 @@ namespace UnitTest
         }
     }
 
-    class MATH_IntersectSegmentTriangleTest : public AllocatorsFixture
+    class MATH_IntersectSegmentTriangleTest : public LeakDetectionFixture
     {
         public:
 
@@ -595,7 +596,7 @@ namespace UnitTest
     }
 
     class MATH_IntersectRayCappedCylinderTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
 
@@ -779,7 +780,7 @@ namespace UnitTest
     }
 
     class MATH_IntersectRayConeTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
 
@@ -961,7 +962,7 @@ namespace UnitTest
     }
 
     class MATH_IntersectRayQuadTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
 
@@ -1106,7 +1107,7 @@ namespace UnitTest
     }
 
     class MATH_IntersectRayBoxTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
 
@@ -1184,7 +1185,7 @@ namespace UnitTest
     }
 
     class MATH_IntersectRayPolyhedronTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
@@ -1297,4 +1298,96 @@ namespace UnitTest
 
         EXPECT_EQ(intersections, 0);
     }
-}
+
+    class MATH_ClipRayWithAabbTest : public LeakDetectionFixture
+    {
+    };
+
+    TEST_F(MATH_ClipRayWithAabbTest, RayDoesNotGetClippedWhenMissingAabb)
+    {
+        // Test a ray that points straight down and completely misses a box.
+
+        const Aabb aabb = Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 10.0f);
+
+        Vector3 rayStart(50.0f, 50.0f, 20.0f);
+        Vector3 rayEnd(50.0f, 50.0f, -20.0f);
+
+        float tClipStart = AZStd::numeric_limits<float>::max();
+        float tClipEnd = AZStd::numeric_limits<float>::max();
+
+        bool clipped = Intersect::ClipRayWithAabb(aabb, rayStart, rayEnd, tClipStart, tClipEnd);
+
+        // We expect the ray not to get clipped. There are no guarantees on the validity of any of the output values
+        // (rayStart, rayEnd, tClipStart, tClipEnd), so we won't validate them here.
+        EXPECT_FALSE(clipped);
+    }
+
+    TEST_F(MATH_ClipRayWithAabbTest, RayIsClippedWithAabb)
+    {
+        // Test a ray that starts 10 above a box, points straight down, and continues to 10 below the box.
+        // The z values should get clipped to the box.
+
+        const Aabb aabb = Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 10.0f);
+
+        Vector3 rayStart(5.0f, 5.0f, 20.0f);
+        Vector3 rayEnd(5.0f, 5.0f, -20.0f);
+
+        float tClipStart = AZStd::numeric_limits<float>::max();
+        float tClipEnd = AZStd::numeric_limits<float>::max();
+
+        bool clipped = Intersect::ClipRayWithAabb(aabb, rayStart, rayEnd, tClipStart, tClipEnd);
+
+        // We expect the ray to get clipped.
+        EXPECT_TRUE(clipped);
+        EXPECT_THAT(rayStart, IsClose(AZ::Vector3(5.0f, 5.0f, 10.0f)));
+        EXPECT_THAT(rayEnd, IsClose(AZ::Vector3(5.0f, 5.0f, -10.0f)));
+        EXPECT_NEAR(tClipStart, 0.25f, 0.001f);
+        EXPECT_NEAR(tClipEnd, 0.75f, 0.001f);
+    }
+
+    TEST_F(MATH_ClipRayWithAabbTest, RayStartingInsideAabbGetsClipped)
+    {
+        // Test a ray that starts inside a box, points straight down, and continues to 10 below the box.
+        // The z values should get clipped to the box.
+
+        const Aabb aabb = Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 10.0f);
+
+        Vector3 rayStart(5.0f, 5.0f, 0.0f);
+        Vector3 rayEnd(5.0f, 5.0f, -20.0f);
+
+        float tClipStart = AZStd::numeric_limits<float>::max();
+        float tClipEnd = AZStd::numeric_limits<float>::max();
+
+        bool clipped = Intersect::ClipRayWithAabb(aabb, rayStart, rayEnd, tClipStart, tClipEnd);
+
+        // We expect the ray to get clipped.
+        EXPECT_TRUE(clipped);
+        EXPECT_THAT(rayStart, IsClose(AZ::Vector3(5.0f, 5.0f, 0.0f)));
+        EXPECT_THAT(rayEnd, IsClose(AZ::Vector3(5.0f, 5.0f, -10.0f)));
+        EXPECT_NEAR(tClipStart, 0.0f, 0.001f);
+        EXPECT_NEAR(tClipEnd, 0.5f, 0.001f);
+    }
+
+    TEST_F(MATH_ClipRayWithAabbTest, RayEndingInsideAabbGetsClipped)
+    {
+        // Test a ray that starts 10 above a box, points straight down, and ends inside the box.
+        // The z values should get clipped to the box.
+
+        const Aabb aabb = Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 10.0f);
+
+        Vector3 rayStart(5.0f, 5.0f, 20.0f);
+        Vector3 rayEnd(5.0f, 5.0f, 0.0f);
+
+        float tClipStart = AZStd::numeric_limits<float>::max();
+        float tClipEnd = AZStd::numeric_limits<float>::max();
+
+        bool clipped = Intersect::ClipRayWithAabb(aabb, rayStart, rayEnd, tClipStart, tClipEnd);
+
+        // We expect the ray to get clipped.
+        EXPECT_TRUE(clipped);
+        EXPECT_THAT(rayStart, IsClose(AZ::Vector3(5.0f, 5.0f, 10.0f)));
+        EXPECT_THAT(rayEnd, IsClose(AZ::Vector3(5.0f, 5.0f, 0.0f)));
+        EXPECT_NEAR(tClipStart, 0.5f, 0.001f);
+        EXPECT_NEAR(tClipEnd, 1.0f, 0.001f);
+    }
+} // namespace UnitTest

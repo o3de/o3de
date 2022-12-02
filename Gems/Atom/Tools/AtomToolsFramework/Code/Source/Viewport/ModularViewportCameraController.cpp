@@ -193,10 +193,12 @@ namespace AtomToolsFramework
         m_modularCameraViewportContext->ConnectViewMatrixChangedHandler(m_cameraViewMatrixChangeHandler);
 
         ModularViewportCameraControllerRequestBus::Handler::BusConnect(viewportId);
+        AzToolsFramework::ViewportInteraction::ViewportInteractionNotificationBus::Handler::BusConnect(viewportId);
     }
 
     ModularViewportCameraControllerInstance::~ModularViewportCameraControllerInstance()
     {
+        AzToolsFramework::ViewportInteraction::ViewportInteractionNotificationBus::Handler::BusDisconnect();
         ModularViewportCameraControllerRequestBus::Handler::BusDisconnect();
     }
 
@@ -346,6 +348,15 @@ namespace AtomToolsFramework
         return m_cameraSystem.m_cameras.RemoveCameras(cameraInputs);
     }
 
+    void ModularViewportCameraControllerInstance::ResetCameras()
+    {
+        // clear any pivot oribit offset and store combined
+        // translation as new pivot
+        m_targetCamera.m_pivot = m_targetCamera.Translation();
+        m_targetCamera.m_offset = AZ::Vector3::CreateZero();
+        m_cameraSystem.m_cameras.Reset();
+    }
+
     bool ModularViewportCameraControllerInstance::IsInterpolating() const
     {
         return m_cameraMode == CameraMode::Animation;
@@ -380,6 +391,11 @@ namespace AtomToolsFramework
     bool ModularViewportCameraControllerInstance::IsTrackingTransform() const
     {
         return m_storedCamera.has_value();
+    }
+
+    void ModularViewportCameraControllerInstance::OnViewportFocusOut()
+    {
+        ResetCameras();
     }
 
     AZ::Transform PlaceholderModularCameraViewportContextImpl::GetCameraTransform() const

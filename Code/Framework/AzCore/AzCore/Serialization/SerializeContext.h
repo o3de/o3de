@@ -9,7 +9,6 @@
 
 #include <limits>
 
-#include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <AzCore/std/containers/unordered_set.h>
@@ -227,7 +226,7 @@ namespace AZ
         {
             void  ToString(AZStd::string& str) const;
             const void*         m_dataPtr;
-            const Uuid*         m_uuidPtr;
+            Uuid                m_uuid;
             const ClassData*    m_classData;
             const char*         m_elementName;
             const ClassElement* m_classElement;
@@ -299,7 +298,7 @@ namespace AZ
          * \param errorHandler optional pointer to the error handler.
          */
         bool EnumerateInstanceConst(EnumerateInstanceCallContext* callContext, const void* ptr, const Uuid& classId, const ClassData* classData, const ClassElement* classElement) const;
-        bool EnumerateInstance(EnumerateInstanceCallContext* callContext, void* ptr, const Uuid& classId, const ClassData* classData, const ClassElement* classElement) const;
+        bool EnumerateInstance(EnumerateInstanceCallContext* callContext, void* ptr, Uuid classId, const ClassData* classData, const ClassElement* classElement) const;
 
         // Deprecated overloads for EnumerateInstance*. Prefer versions that take a \ref EnumerateInstanceCallContext directly.
         bool EnumerateInstanceConst(const void* ptr, const Uuid& classId, const BeginElemEnumCB& beginElemCB, const EndElemEnumCB& endElemCB, unsigned int accessFlags, const ClassData* classData, const ClassElement* classElement, ErrorHandler* errorHandler = nullptr) const;
@@ -1474,7 +1473,7 @@ namespace AZ
             else
             {
                 // Otherwise use the AZ::SystemAllocator
-                return azmalloc(sizeof(T), alignof(T), AZ::SystemAllocator, "");
+                return azmalloc(sizeof(T), alignof(T), AZ::SystemAllocator);
             }
         }
         template<typename T>
@@ -1514,12 +1513,15 @@ namespace AZ
                 }
                 case AZStd::any::Action::Construct:
                 {
-                    // Default construct the ValueType object
-                    // This occurs in the case where a Copy and Move action is invoked
-                    void* ptr = AZStd::any_cast<void>(dest);
-                    if (ptr)
+                    if constexpr (AZStd::is_default_constructible_v<ValueType>)
                     {
-                        new (ptr) ValueType();
+                        // Default construct the ValueType object
+                        // This occurs in the case where a Copy and Move action is invoked
+                        void* ptr = AZStd::any_cast<void>(dest);
+                        if (ptr)
+                        {
+                            new (ptr) ValueType();
+                        }
                     }
                     break;
                 }
@@ -1568,8 +1570,7 @@ namespace AZ
             }
             else
             {
-                ValueType instance;
-                return serializeContext ? AZStd::any(reinterpret_cast<const void*>(&instance), typeinfo) : AZStd::any();
+                return {};
             }
         }
     };
@@ -1730,9 +1731,9 @@ namespace AZ
         struct InstanceFactory<T, false, false>
             : public SerializeContext::IObjectFactory
         {
-            void* Create(const char* name) override
+            void* Create([[maybe_unused]] const char* name) override
             {
-                return new(azmalloc(sizeof(T), AZStd::alignment_of<T>::value, AZ::SystemAllocator, name))T;
+                return new(azmalloc(sizeof(T), AZStd::alignment_of<T>::value, AZ::SystemAllocator))T;
             }
             void Destroy(void* ptr) override
             {
@@ -2526,12 +2527,9 @@ namespace AZ
     class SerializeContext::PerModuleGenericClassInfo final
     {
     public:
-        using GenericInfoModuleMap = AZStd::unordered_map<AZ::Uuid, AZ::GenericClassInfo*, AZStd::hash<AZ::Uuid>, AZStd::equal_to<AZ::Uuid>, AZ::AZStdIAllocator>;
+        using GenericInfoModuleMap = AZStd::unordered_map<AZ::Uuid, AZ::GenericClassInfo*>;
 
-        PerModuleGenericClassInfo();
         ~PerModuleGenericClassInfo();
-
-        AZ::IAllocator& GetAllocator();
 
         void AddGenericClassInfo(AZ::GenericClassInfo* genericClassInfo);
         void RemoveGenericClassInfo(const AZ::TypeId& canonicalTypeId);
@@ -2548,13 +2546,12 @@ namespace AZ
         template <typename T>
         AZ::GenericClassInfo* FindGenericClassInfo() const;
         AZ::GenericClassInfo* FindGenericClassInfo(const AZ::TypeId& genericTypeId) const;
-    private:
+
         void Cleanup();
 
-        AZ::OSAllocator m_moduleOSAllocator;
-
+    private:
         GenericInfoModuleMap m_moduleLocalGenericClassInfos;
-        using SerializeContextSet = AZStd::unordered_set<SerializeContext*, AZStd::hash<SerializeContext*>, AZStd::equal_to<SerializeContext*>, AZ::AZStdIAllocator>;
+        using SerializeContextSet = AZStd::unordered_set<SerializeContext*>;
         SerializeContextSet m_serializeContextSet;
     };
 
@@ -2571,9 +2568,7 @@ namespace AZ
             return static_cast<GenericClassInfoType*>(findIt->second);
         }
 
-        void* rawMemory = m_moduleOSAllocator.Allocate(sizeof(GenericClassInfoType), alignof(GenericClassInfoType));
-        new (rawMemory) GenericClassInfoType();
-        auto genericClassInfo = static_cast<GenericClassInfoType*>(rawMemory);
+        auto genericClassInfo = azcreate(GenericClassInfoType, ());
         if (genericClassInfo)
         {
             AddGenericClassInfo(genericClassInfo);
@@ -2594,17 +2589,15 @@ namespace AZ
     template <typename T, typename ContainerType>
     AttributePtr CreateModuleAttribute(T&& attrValue)
     {
-        IAllocator& moduleAllocator = GetCurrentSerializeContextModule().GetAllocator();
-        void* rawMemory = moduleAllocator.Allocate(sizeof(ContainerType), alignof(ContainerType));
+        void* rawMemory = AllocatorInstance<SystemAllocator>::Get().allocate(sizeof(ContainerType), alignof(ContainerType));
         new (rawMemory) ContainerType{ AZStd::forward<T>(attrValue) };
         auto attributeDeleter = [](Attribute* attribute)
         {
-            IAllocator& moduleAllocator = GetCurrentSerializeContextModule().GetAllocator();
             attribute->~Attribute();
-            moduleAllocator.DeAllocate(attribute);
+            AllocatorInstance<SystemAllocator>::Get().deallocate(attribute);
         };
 
-        return AttributePtr{ static_cast<ContainerType*>(rawMemory), AZStd::move(attributeDeleter), AZStdIAllocator(&moduleAllocator) };
+        return AttributePtr{ static_cast<ContainerType*>(rawMemory), AZStd::move(attributeDeleter) };
     }
 }   // namespace AZ
 

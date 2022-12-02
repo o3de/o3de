@@ -35,6 +35,7 @@
 #include <EMotionFX/Source/AnimGraphSyncTrack.h>
 #include <EMotionFX/Source/AnimGraph.h>
 #include <EMotionFX/Source/ActorManager.h>
+#include <EMotionFX/Source/ObjectId.h>
 
 #include <EMotionFX/Source/PhysicsSetup.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>
@@ -291,6 +292,8 @@ namespace EMotionFX
             MCore::ReflectionSerializer::Reflect(context);
             MCore::StringIdPoolIndex::Reflect(context);
             EMotionFX::ConstraintTransformRotationAngles::Reflect(context);
+
+            EMotionFX::ObjectId::Reflect(context);
 
             // Actor
             EMotionFX::PhysicsSetup::Reflect(context);
@@ -870,7 +873,7 @@ namespace EMotionFX
             if (HandlesSource(fullSourceFileName))
             {
                 auto animationEditorCallback =
-                    [fullSourceFileName]([[maybe_unused]] const char* fullSourceFileNameInCall, const AZ::Uuid& sourceUUIDInCall)
+                    []([[maybe_unused]] const char* fullSourceFileNameInCall, const AZ::Uuid& sourceUUIDInCall)
                 {
                     AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
                     const SourceAssetBrowserEntry* fullDetails = SourceAssetBrowserEntry::GetSourceByUuid(sourceUUIDInCall);
@@ -880,7 +883,7 @@ namespace EMotionFX
 
                         EMStudio::GetMainWindow()->ApplicationModeChanged("AnimGraph");
 
-                        if (AZStd::wildcard_match("*.motionset", fullSourceFileName))
+                        if (AZStd::wildcard_match("*.motionset", fullSourceFileNameInCall))
                         {
                             EMStudio::EMStudioPlugin* plugin =
                                 EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::MotionSetsWindowPlugin::CLASS_ID);
@@ -890,9 +893,9 @@ namespace EMotionFX
                                 // We need to wait for the end of frame otherwise setting the current widget fails
                                 QTimer::singleShot(
                                     0,
-                                    [motionSetPlugin, fullSourceFileName]()
+                                    [motionSetPlugin, fullSourceFileNameInCall]()
                                     {
-                                        motionSetPlugin->LoadMotionSet(AZStd::string(fullSourceFileName));
+                                        motionSetPlugin->LoadMotionSet(AZStd::string(fullSourceFileNameInCall));
                                         QDockWidget* dockWidget = motionSetPlugin->GetDockWidget();
                                         AzQtComponents::DockTabWidget* tabWidget =
                                             AzQtComponents::DockTabWidget::ParentTabWidget(dockWidget);
@@ -907,7 +910,7 @@ namespace EMotionFX
                             EMStudio::AnimGraphPlugin* animGraphPlugin = (EMStudio::AnimGraphPlugin*)plugin;
                             if (plugin)
                             {
-                                animGraphPlugin->FileOpen(AZStd::string(fullSourceFileName));
+                                animGraphPlugin->FileOpen(AZStd::string(fullSourceFileNameInCall));
                             }
                         }
 

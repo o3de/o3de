@@ -72,11 +72,18 @@ namespace EMotionFX
         // Nodes to test addition capabilities
         const AZStd::vector<QString> graphNodeTypeNames{"Motion", "Entry", "Hub"};
 
+        // We need to offset subsequent requests for context menu because if we
+        // keep the same point, we'll "click" on a node created during the
+        // first iteration of the loop and in such case, menu won't have entry for
+        // node creation.
+        int clickYOffset = 0;
         for (QString nodeName : graphNodeTypeNames)
         {
             // Right Click on GraphWidget
             const QRect graphRect = graphWidget->rect();
-            graphWidget->OnContextMenuEvent(graphWidget, graphRect.center(), graphWidget->LocalToGlobal(graphRect.center()), animGraphPlugin, selectedAnimGraphNodes, true, false, animGraphPlugin->GetActionFilter());
+            const QPoint clickPoint{ graphRect.center().x(), graphRect.center().y() + clickYOffset };
+            clickYOffset += 150;
+            graphWidget->OnContextMenuEvent(graphWidget, clickPoint, graphWidget->LocalToGlobal(clickPoint), animGraphPlugin, selectedAnimGraphNodes, true, false, animGraphPlugin->GetActionFilter());
 
             // Grab the node index from the tree view in the graphWidget context menu
             auto* tree = UIFixture::GetFirstChildOfType<GraphCanvas::NodePaletteTreeView>(graphWidget);
@@ -87,6 +94,11 @@ namespace EMotionFX
 
             // Selection should spawn the node
             tree->setCurrentIndex(idx);
+
+            // Need one pass of the event loop so that context menu can be destroyed by
+            // QObject::deleteLater. Otherwise, UIFixture::GetFirstChildOfType<GraphCanvas::NodePaletteTreeView>
+            // will pick up the tree view from the first iteration each time and they shouldn't be reused.
+            QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
         }
 
         // Make sure animgraph node was created

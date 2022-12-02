@@ -47,8 +47,7 @@ namespace AZ
             void ReleaseDrawQueueForView(const RPI::View* view) override;
 
             // RPI::SceneNotificationBus::Handler overrides...
-            void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
-            void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
+            void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
 
         private: // functions
 

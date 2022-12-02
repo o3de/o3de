@@ -55,7 +55,6 @@ AZ_POP_DISABLE_WARNING
 
 // AzFramework
 #include <AzFramework/Components/CameraBus.h>
-#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/ProjectManager/ProjectManager.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
@@ -679,7 +678,7 @@ void CCryEditApp::OnFileSave()
     }
 
     const QScopedValueRollback<bool> rollback(m_savingLevel, true);
-    
+
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
         usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
@@ -1653,11 +1652,6 @@ bool CCryEditApp::InitInstance()
         return false;
     }
 
-    // Reflect property control classes to the serialize context...
-    AZ::SerializeContext* serializeContext = nullptr;
-    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-    AZ_Assert(serializeContext, "Serialization context not available");
-    ReflectedVarInit::setupReflection(serializeContext);
     RegisterReflectedVarHandlers();
 
     CreateSplashScreen();
@@ -1794,7 +1788,7 @@ bool CCryEditApp::InitInstance()
         }
     }
 
-    SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectName().c_str(), nullptr);
+    SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectDisplayName().c_str(), nullptr);
     if (!GetIEditor()->IsInMatEditMode())
     {
         m_pEditor->InitFinished();
@@ -1872,7 +1866,7 @@ void CCryEditApp::LoadFile(QString fileName)
 
     if (MainWindow::instance() || m_pConsoleDialog)
     {
-        SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectName().c_str(), GetIEditor()->GetGameEngine()->GetLevelName());
+        SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectDisplayName().c_str(), GetIEditor()->GetGameEngine()->GetLevelName());
     }
 
     GetIEditor()->SetModifiedFlag(false);
@@ -2529,7 +2523,7 @@ void CCryEditApp::ExportToGame(bool bNoMsgBox)
         }
 
         CErrorsRecorder errRecorder(GetIEditor());
-        // If level not loaded first fast export terrain.
+        // If level not loaded first fast export the level.
         m_bIsExportingLegacyData = true;
         CGameExporter gameExporter;
         gameExporter.Export();
@@ -3143,7 +3137,7 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
 
     if (!usePrefabSystemForLevels)
     {
-        // No terrain, but still need to export default octree and visarea data.
+        // export default octree and visarea data.
         CGameExporter gameExporter;
         gameExporter.Export(eExp_CoverSurfaces | eExp_SurfaceTexture, eLittleEndian, ".");
     }
@@ -3891,26 +3885,8 @@ extern "C"
 #pragma comment(lib, "Shell32.lib")
 #endif
 
-struct CryAllocatorsRAII
-{
-    CryAllocatorsRAII()
-    {
-        AZ_Assert(!AZ::AllocatorInstance<AZ::LegacyAllocator>::IsReady(), "Expected allocator to not be initialized, hunt down the static that is initializing it");
-
-        AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
-    }
-
-    ~CryAllocatorsRAII()
-    {
-        AZ::AllocatorInstance<AZ::LegacyAllocator>::Destroy();
-    }
-};
-
-
 extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
 {
-    CryAllocatorsRAII cryAllocatorsRAII;
-
     // Debugging utilities
     for (int i = 1; i < argc; ++i)
     {

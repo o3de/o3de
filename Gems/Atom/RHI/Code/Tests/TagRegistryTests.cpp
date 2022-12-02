@@ -132,6 +132,33 @@ namespace UnitTest
         EXPECT_EQ(tagRegistry->FindTag(Name("B")), TagType::Null);
     }
 
+    TEST_F(TagRegistryTest, VisitTagRegistry)
+    {
+        auto tagRegistry = RHI::TagRegistry<IndexType, Count>::Create();
+
+        AZStd::array<Name, Count> names = { Name("A"), Name("B"), Name("C"), Name("D"), };
+        AZStd::array<TagType, Count> tags;
+        for (uint8_t i = 0; i < Count; ++i)
+        {
+            tags[i] = tagRegistry->AcquireTag(names[i]);
+        }
+
+        uint32_t visitCount = 0;
+        auto visitor = [&](const AZ::Name& name, TagType tag)
+        {
+            ++visitCount;
+            EXPECT_EQ(tagRegistry->GetName(tag), name);
+        };
+
+        tagRegistry->VisitTags(visitor);
+        EXPECT_EQ(visitCount, Count);
+
+        tagRegistry->ReleaseTag(tags[1]);
+        visitCount = 0;
+        tagRegistry->VisitTags(visitor);
+        EXPECT_EQ(visitCount, Count - 1);
+    }
+
     TEST_F(TagRegistryTest, ConstructResetTagBitRegistry)
     {
         auto tagBitRegistry = RHI::TagBitRegistry<IndexType>::Create();
@@ -177,4 +204,32 @@ namespace UnitTest
             tagBitRegistry->ReleaseTag(tags[i]);
         }
     }
+
+    TEST_F(TagRegistryTest, VisitTagBitRegistry)
+    {
+        auto tagBitRegistry = RHI::TagBitRegistry<IndexType>::Create();
+
+        AZStd::array<Name, Count> names = { Name("A"), Name("B"), Name("C"), Name("D"), };
+        AZStd::array<TagType, Count> tags;
+        for (uint8_t i = 0; i < Count; ++i)
+        {
+            tags[i] = tagBitRegistry->AcquireTag(names[i]);
+        }
+
+        uint32_t visitCount = 0;
+        auto visitor = [&](const AZ::Name& name, TagType tag)
+        {
+            ++visitCount;
+            EXPECT_EQ(tagBitRegistry->GetName(tag), name);
+        };
+
+        tagBitRegistry->VisitTags(visitor);
+        EXPECT_EQ(visitCount, Count);
+
+        tagBitRegistry->ReleaseTag(tags[1]);
+        visitCount = 0;
+        tagBitRegistry->VisitTags(visitor);
+        EXPECT_EQ(visitCount, Count - 1);
+    }
+
 }

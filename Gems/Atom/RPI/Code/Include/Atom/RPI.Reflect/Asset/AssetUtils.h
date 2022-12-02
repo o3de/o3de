@@ -46,7 +46,7 @@ namespace AZ
             //! @return a null asset if the asset could not be found or loaded.
             template<typename AssetDataT>
             Data::Asset<AssetDataT> LoadAssetById(Data::AssetId assetId, TraceLevel reporting = TraceLevel::Warning);
-            
+
             //! Loads a critial asset using a file path (both source and product path should be same), on the current thread.
             //! If the asset wasn't compiled, wait until the asset is compiled.
             //! @return a null asset if the asset could not be compiled or loaded.
@@ -141,7 +141,7 @@ namespace AZ
                     AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
                     AzFramework::AssetSystemRequestBus::BroadcastResult(
                         status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, assetFilePath);
-                    if (status != AzFramework::AssetSystem::AssetStatus_Compiled)
+                    if (status != AzFramework::AssetSystem::AssetStatus_Compiled && status != AzFramework::AssetSystem::AssetStatus_Unknown)
                     {
                         AssetUtilsInternal::ReportIssue(reporting, AZStd::string::format("Could not compile asset '%s'", assetFilePath.c_str()).c_str());
                         return {};

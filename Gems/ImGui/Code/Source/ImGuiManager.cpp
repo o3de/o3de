@@ -10,10 +10,14 @@
 #include <ImGuiContextScope.h>
 #include <AzCore/PlatformIncl.h>
 #include <OtherActiveImGuiBus.h>
+#include <AzCore/Debug/Profiler.h>
 
 #ifdef IMGUI_ENABLED
 
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Jobs/Algorithms.h>
+#include <AzCore/Jobs/JobCompletion.h>
+#include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/std/containers/fixed_unordered_map.h>
 #include <AzCore/Time/ITime.h>
@@ -39,6 +43,8 @@ static const constexpr uint32_t IMGUI_WHEEL_DELTA = 120; // From WinUser.h, for 
 using LyButtonImGuiNavIndexPair = AZStd::pair<AzFramework::InputChannelId, ImGuiNavInput_>;
 using LyButtonImGuiNavIndexMap = AZStd::fixed_unordered_map<AzFramework::InputChannelId, ImGuiNavInput_, 11, 32>;
 static LyButtonImGuiNavIndexMap s_lyInputToImGuiNavIndexMap;
+
+AZ_DEFINE_BUDGET(ImGui);
 
 /**
     An anonymous namespace containing helper functions for interoperating with AzFrameworkInput.
@@ -243,8 +249,10 @@ float ImGui::ImGuiManager::GetDpiScalingFactor() const
     return io.FontGlobalScale;
 }
 
-void ImGuiManager::Render()
+void ImGui::ImGuiManager::Render()
 {
+    AZ_PROFILE_FUNCTION(ImGui);
+
     if (m_clientMenuBarState == DisplayState::Hidden && m_editorWindowState == DisplayState::Hidden)
     {
         // the first frame that this is true means that it has been deactivated, the following condtional is to avoid
