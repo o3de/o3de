@@ -601,7 +601,7 @@ namespace EMStudio
             tr(actionName),
             this);
         m_actions[optionFlag]->setCheckable(true);
-        connect(m_actions[optionFlag], &QAction::triggered, this, [=]([[maybe_unused]] bool checked) { OnDisplayProfiling(optionFlag); });
+        connect(m_actions[optionFlag], &QAction::triggered, this, [this, optionFlag]{ OnDisplayProfiling(optionFlag); });
     }
 
     void BlendGraphViewWidget::OnDisplayProfiling(EOptionFlag profileOption)

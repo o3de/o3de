@@ -2606,15 +2606,15 @@ namespace EMotionFX
         if (m_node->GetProfileMode() & static_cast<AZ::u8>(m_profileMode))
         {
             AZStd::chrono::nanoseconds duration = AZStd::chrono::system_clock::now() - m_startPoint;
-            if (AnimGraphNodeData* pUniqueData = m_node->FindOrCreateUniqueNodeData(m_animGraphInstance))
+            if (AnimGraphNodeData* uniqueData = m_node->FindOrCreateUniqueNodeData(m_animGraphInstance))
             {
                 if (m_isIncomingNode)
                 {
-                    pUniqueData->mInputNodesUpdateTime += duration;
+                    uniqueData->mInputNodesUpdateTime += duration;
                 }
                 else
                 {
-                    pUniqueData->mTotalUpdateTime += duration;
+                    uniqueData->mTotalUpdateTime += duration;
                 }
             }
         }

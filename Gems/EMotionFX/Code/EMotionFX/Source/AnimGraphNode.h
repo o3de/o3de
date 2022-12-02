@@ -955,7 +955,7 @@ namespace EMotionFX
 
         AZ::u8 m_profileMode = 0;
         virtual void SetProfileMode(AZ::u8 profileMode) { m_profileMode = profileMode; };
-        virtual AZ::u8 GetProfileMode() { return m_profileMode; };
+        virtual AZ::u8 GetProfileMode() const { return m_profileMode; };
 
         void ClearProfileTimers(AnimGraphInstance* animGraphInstance);
         AZStd::chrono::microseconds GetTotalUpdateTime(AnimGraphInstance* animGraphInstance) const;
