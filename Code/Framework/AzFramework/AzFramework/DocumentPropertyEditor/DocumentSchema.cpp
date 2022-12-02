@@ -104,48 +104,6 @@ namespace AZ::DocumentPropertyEditor
         return Dom::Value(result.GetStringView(), false);
     }
 
-    Dom::Value EnumValueAttributeDefinition::ValueToDom(const EnumConstantValue& attribute) const
-    {
-        Dom::Value result(Dom::Type::Object);
-        result[EntryNameKey] = Dom::Value(attribute.m_name, true);
-        result[EntryValueKey] = Dom::Value(static_cast<uint64_t>(attribute.m_value));
-        return result;
-    }
-
-    AZStd::optional<EnumConstantValue> EnumValueAttributeDefinition::DomToValue(const Dom::Value& value) const
-    {
-        if (!value.IsObject() || !value.HasMember(EntryNameKey) || !value.HasMember(EntryValueKey))
-        {
-            return {};
-        }
-
-        return EnumConstantValue{ value[EntryNameKey].GetString(), static_cast<AZ::u64>(value[EntryValueKey].GetUint64()) };
-    }
-
-    AZ::Dom::Value EnumValueAttributeDefinition::LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const
-    {
-        if (attribute == nullptr)
-        {
-            return AZ::Dom::Value();
-        }
-
-        using EnumConstantBasePtr = AZStd::unique_ptr<SerializeContextEnumInternal::EnumConstantBase>;
-        if (auto internalEnumConsantBase = azdynamic_cast<AttributeData<EnumConstantBasePtr>*>(attribute); internalEnumConsantBase)
-        {
-            EnumConstantValue* value = reinterpret_cast<EnumConstantValue*>(internalEnumConsantBase->Get(instance).get());
-            return ValueToDom(*value);
-        }
-        else if (auto azEditEnumConstant = azdynamic_cast<AttributeData<AZ::Edit::EnumConstant<AZ::u64>>*>(attribute); azEditEnumConstant)
-        {
-            AZ::Edit::EnumConstant<AZ::u64> value = static_cast<AZ::Edit::EnumConstant<AZ::u64>>(azEditEnumConstant->Get(instance));
-            Dom::Value domValue(Dom::Type::Object);
-            domValue[EntryDescriptionKey] = Dom::Value(value.m_description, true);
-            domValue[EntryValueKey] = Dom::Value(static_cast<uint64_t>(value.m_value));
-            return domValue;
-        }
-        return Dom::Value();
-    }
-
     Dom::Value EnumValuesAttributeDefinition::ValueToDom(const EnumValuesContainer& attribute) const
     {
         Dom::Value result(Dom::Type::Array);
