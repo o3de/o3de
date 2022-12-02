@@ -83,6 +83,13 @@ function(ly_get_runtime_dependencies ly_RUNTIME_DEPENDENCIES ly_TARGET)
             if(is_imported AND is_system_library)
                 continue()
             endif()
+
+            # If the link dependency target is a shared library then
+            # add it as a runtime dependency as well.
+            get_target_property(link_dependency_type ${link_dependency} TYPE)
+            if(${link_dependency_type} STREQUAL "SHARED_LIBRARY")
+                list(APPEND all_runtime_dependencies ${link_dependency})
+            endif()
         endif()
 
         unset(dependencies)
