@@ -8,12 +8,8 @@
 
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DPEComponentAdapter.h>
-<<<<<<< HEAD
-
-=======
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
->>>>>>> 24a9e116d7 (Initial prototype for prefabs-dpe integration)
 #include <QtCore/QTimer>
 namespace AZ::DocumentPropertyEditor
 {
