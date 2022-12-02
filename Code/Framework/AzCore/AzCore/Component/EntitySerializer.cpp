@@ -89,6 +89,7 @@ namespace AZ
                 if (component && (component->GetUnderlyingComponentType() != genericComponentWrapperTypeId))
                 {
                     entityInstance->m_components.emplace_back(component);
+                    component->SetAlias(componentKey);
                 }
             }
 

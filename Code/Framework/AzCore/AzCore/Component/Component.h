@@ -118,6 +118,13 @@ namespace AZ
          */
         void SetId(const ComponentId& id)   { m_id = id; }
 
+        virtual void SetAlias(const AZStd::string&){};
+
+        virtual AZStd::string GetAlias()
+        {
+            return AZStd::string();
+        }
+
         /**
         * Override to conduct per-component or per-slice validation logic during slice asset processing.
         * @param sliceEntities All entities that belong to the slice that the entity with this component is on.

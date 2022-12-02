@@ -117,6 +117,16 @@ namespace AzToolsFramework
             virtual void Deactivate() override;
             //////////////////////////////////////////////////////////////////////////
 
+            void SetAlias(const AZStd::string& alias) override
+            {
+                m_alias = alias;
+            }
+
+            AZStd::string GetAlias() override
+            {
+                return m_alias;
+            }
+
             /**
              * Gets the transform interface of the entity that the component
              * belongs to, if the entity has a transform component.
@@ -191,6 +201,7 @@ namespace AzToolsFramework
             static void Reflect(AZ::ReflectContext* context);
 
         private:
+            AZStd::string m_alias;
             AZ::TransformInterface* m_transform;
         };
 

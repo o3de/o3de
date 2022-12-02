@@ -254,7 +254,7 @@ namespace AZ::Reflection
                 else if (classElement)
                 {
                     AZStd::string_view elementName = classElement->m_name;
-                    if (!elementName.empty())
+                    if (!elementName.empty() && classElement->m_editData)
                     {
                         path.append("/");
                         path.append(elementName);
