@@ -77,14 +77,14 @@ namespace AZ
                 {
                     m_readIndex =
                         device.GetBindlessArgumentBuffer().AttachReadBuffer(m_memoryView.GetGpuAddress<id<MTLBuffer>>(),
-                                                                            m_memoryView.GetOffset());
+                                                                            static_cast<uint32_t>(m_memoryView.GetOffset()));
                 }
 
                 if (shaderReadWrite)
                 {
                     m_readWriteIndex =
                         device.GetBindlessArgumentBuffer().AttachReadWriteBuffer(m_memoryView.GetGpuAddress<id<MTLBuffer>>(),
-                                                                                 m_memoryView.GetOffset());
+                                                                                 static_cast<uint32_t>(m_memoryView.GetOffset()));
                 }
             }
             return RHI::ResultCode::Success;
