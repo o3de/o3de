@@ -39,6 +39,7 @@ namespace LmbrCentral
         const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid componentType)
         : EditorBaseComponentMode(entityComponentIdPair, componentType)
         , m_nonUniformScaleChangedHandler([this](const AZ::Vector3& scale){OnNonUniformScaleChanged(scale);})
+        , m_vertexSelection(entityComponentIdPair)
     {
         m_currentTransform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(
@@ -83,9 +84,14 @@ namespace LmbrCentral
         return m_vertexSelection.HandleMouse(mouseInteraction);
     }
 
-     AZStd::string EditorPolygonPrismShapeComponentMode::GetComponentModeName() const
+    AZStd::string EditorPolygonPrismShapeComponentMode::GetComponentModeName() const
     {
         return "Polygon Prism Shape Edit Mode";
+    }
+
+    AZ::Uuid EditorPolygonPrismShapeComponentMode::GetComponentModeType() const
+    {
+        return azrtti_typeid<EditorPolygonPrismShapeComponentMode>();
     }
 
     void EditorPolygonPrismShapeComponentMode::CreateManipulators()

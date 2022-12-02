@@ -139,7 +139,7 @@ def test_get_template_json_data():
     assert template_path.annotation == str or template_path.annotation == pathlib.Path
     project_path = parameters[2]
     assert project_path.name == 'project_path'
-    assert project_path.annotation == str or project_path.annotation == pathlib.Path 
+    assert project_path.annotation == str or project_path.annotation == pathlib.Path
 
     assert sig.return_annotation == dict
 
@@ -194,7 +194,7 @@ def test_edit_engine_props():
 # register interface
 def test_register():
     sig = signature(register.register)
-    assert len(sig.parameters) >= 17
+    assert len(sig.parameters) >= 18
 
     parameters = list(sig.parameters.values())
     engine_path = parameters[0]
@@ -224,10 +224,19 @@ def test_register():
     default_third_party_folder = parameters[12]
     assert default_third_party_folder.name == 'default_third_party_folder'
     assert default_third_party_folder.annotation == pathlib.Path
-    remove = parameters[15]
+    external_subdir_engine_path = parameters[13]
+    assert external_subdir_engine_path.name == 'external_subdir_engine_path'
+    assert external_subdir_engine_path.annotation == pathlib.Path
+    external_subdir_project_path = parameters[14]
+    assert external_subdir_project_path.name == 'external_subdir_project_path'
+    assert external_subdir_project_path.annotation == pathlib.Path
+    external_subdir_gem_path = parameters[15]
+    assert external_subdir_gem_path.name == 'external_subdir_gem_path'
+    assert external_subdir_gem_path.annotation == pathlib.Path
+    remove = parameters[16]
     assert remove.name == 'remove'
     assert remove.annotation == bool
-    force = parameters[16]
+    force = parameters[17]
     assert force.name == 'force'
     assert force.annotation == bool
 

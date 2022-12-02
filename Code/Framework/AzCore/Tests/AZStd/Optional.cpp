@@ -59,7 +59,7 @@ namespace UnitTest
     using namespace OptionalTestClasses;
 
     class OptionalFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 

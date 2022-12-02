@@ -52,7 +52,7 @@ R"DELIMITER(<ObjectStream version="1">
 </ObjectStream>)DELIMITER";
 
 class WrappedEditorComponentTest
-    : public UnitTest::AllocatorsTestFixture
+    : public UnitTest::LeakDetectionFixture
 {
 protected:
     void SetUp() override
@@ -179,7 +179,7 @@ public:
 };
 
 class FindWrappedComponentsTest
-    : public UnitTest::AllocatorsTestFixture
+    : public UnitTest::LeakDetectionFixture
 {
 public:
     void SetUp() override

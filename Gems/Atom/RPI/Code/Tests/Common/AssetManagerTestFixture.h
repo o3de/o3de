@@ -19,7 +19,7 @@ namespace UnitTest
      * Unit test fixture for setting up an AssetManager
      */
     class AssetManagerTestFixture
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
         // Only used to provide the serialize context for now
         , public AZ::ComponentApplicationBus::Handler
     {

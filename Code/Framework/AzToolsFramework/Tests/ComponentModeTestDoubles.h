@@ -207,6 +207,7 @@ namespace AzToolsFramework
             void Refresh() override {}
             AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl() override;
             AZStd::string GetComponentModeName() const override;
+            AZ::Uuid GetComponentModeType() const override;
 
             // ComponentModeActionSignalRequestBus ...
             void SetComponentModeActionNotificationBusToNotify(int busId) override;
@@ -232,6 +233,7 @@ namespace AzToolsFramework
             // EditorBaseComponentMode ...
             void Refresh() override {}
             AZStd::string GetComponentModeName() const override;
+            AZ::Uuid GetComponentModeType() const override;
         };
 
         // ComponentMode which overrides mouse events
@@ -247,6 +249,7 @@ namespace AzToolsFramework
             // EditorBaseComponentMode ...
             void Refresh() override {}
             AZStd::string GetComponentModeName() const override;
+            AZ::Uuid GetComponentModeType() const override;
 
         private:
             /// AzToolsFramework::ViewportInteraction::ViewportSelectionRequests ...

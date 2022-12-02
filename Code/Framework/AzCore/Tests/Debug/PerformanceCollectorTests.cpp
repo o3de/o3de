@@ -16,7 +16,7 @@
 namespace UnitTest
 {
     class PerformanceCollectorTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     }; //class PerformanceCollectorTest
 

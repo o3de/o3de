@@ -66,7 +66,7 @@ struct MockAssetRefComponent
 };
 
 class ScriptCanvasBuilderTests
-    : public UnitTest::AllocatorsFixture
+    : public UnitTest::LeakDetectionFixture
     , public AZ::ComponentApplicationBus::Handler
 {
 protected:
@@ -97,7 +97,7 @@ protected:
 
     void SetUp() override
     {
-        UnitTest::AllocatorsFixture::SetUp();
+        UnitTest::LeakDetectionFixture::SetUp();
 
         AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
         AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
@@ -134,7 +134,7 @@ protected:
         AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
 
-        UnitTest::AllocatorsFixture::TearDown();
+        UnitTest::LeakDetectionFixture::TearDown();
     }
 
     AZ::SerializeContext* m_serializeContext = nullptr;

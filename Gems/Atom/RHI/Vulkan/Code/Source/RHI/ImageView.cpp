@@ -58,7 +58,7 @@ namespace AZ
             DeviceObject::Init(deviceBase);
             auto& device = static_cast<Device&>(deviceBase);
             const auto& image = static_cast<const Image&>(resourceBase);
-            const RHI::ImageViewDescriptor& descriptor = GetDescriptor();
+            const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
 
             // this can happen when image has been invalidated/released right before re-compiling the image
             if (image.GetNativeImage() == VK_NULL_HANDLE)
@@ -66,7 +66,7 @@ namespace AZ
                 return RHI::ResultCode::Fail;
             }
 
-            RHI::Format viewFormat = descriptor.m_overrideFormat;
+            RHI::Format viewFormat = viewDescriptor.m_overrideFormat;
             // If an image is not owner of native image, it is a swapchain image.
             // Swapchain images are not mutable, so we can not change the format for the view.
             if (viewFormat == RHI::Format::Unknown || !image.IsOwnerOfNativeImage())
@@ -75,7 +75,7 @@ namespace AZ
             }
             m_format = viewFormat;
 
-            VkImageAspectFlags aspectFlags = ConvertImageAspectFlags(RHI::FilterBits(descriptor.m_aspectFlags, image.GetAspectFlags()));
+            VkImageAspectFlags aspectFlags = ConvertImageAspectFlags(RHI::FilterBits(viewDescriptor.m_aspectFlags, image.GetAspectFlags()));
             
             const VkImageViewType imageViewType = GetImageViewType(image);
             BuildImageSubresourceRange(imageViewType, aspectFlags);
@@ -103,7 +103,12 @@ namespace AZ
             m_hash = TypeHash64(m_imageSubresourceRange.GetHash(), m_hash);
             m_hash = TypeHash64(m_format, m_hash);
 
-            if (!descriptor.m_isArray && !descriptor.m_isCubemap)
+            // If a depth stencil image does not have depth or aspect flag set it is probably going to be used as
+            // a render target and do not need to be added to the bindless heap
+            bool isReadOnlyDSView = RHI::CheckBitsAll(viewDescriptor.m_aspectFlags, RHI::ImageAspectFlags::Depth) ||
+                                        RHI::CheckBitsAll(viewDescriptor.m_aspectFlags, RHI::ImageAspectFlags::Stencil);
+
+            if (!viewDescriptor.m_isArray && !viewDescriptor.m_isCubemap && !isReadOnlyDSView)
             {
                 if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
                 {

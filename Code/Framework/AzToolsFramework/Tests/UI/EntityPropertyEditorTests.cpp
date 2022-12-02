@@ -34,7 +34,7 @@ namespace UnitTest
     using namespace AzToolsFramework;
 
     class EntityPropertyEditorTests
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     };
 
