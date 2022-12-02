@@ -11,10 +11,10 @@
 #include "BaseManipulator.h"
 
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzToolsFramework/PaintBrush/PaintBrush.h>
-#include <AzToolsFramework/PaintBrush/PaintBrushNotificationBus.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettings.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsNotificationBus.h>
+#include <AzFramework/PaintBrush/PaintBrush.h>
+#include <AzFramework/PaintBrush/PaintBrushNotificationBus.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettings.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsNotificationBus.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
@@ -32,11 +32,12 @@ namespace AzToolsFramework
     class PaintBrushManipulator
         : public BaseManipulator
         , public ManipulatorSpace
-        , protected PaintBrushSettingsNotificationBus::Handler
+        , protected GlobalPaintBrushSettingsNotificationBus::Handler
     {
         //! Private constructor.
         PaintBrushManipulator(
-            const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair, PaintBrushColorMode colorMode);
+            const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair,
+            AzFramework::PaintBrushColorMode colorMode);
 
     public:
         AZ_RTTI(PaintBrushManipulator, "{0621CB58-21FD-474A-A296-5B1192E714E7}", BaseManipulator);
@@ -50,7 +51,8 @@ namespace AzToolsFramework
 
         //! A Manipulator must only be created and managed through a shared_ptr.
         static AZStd::shared_ptr<PaintBrushManipulator> MakeShared(
-            const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair, PaintBrushColorMode colorMode);
+            const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair,
+            AzFramework::PaintBrushColorMode colorMode);
 
         //! Draw the current manipulator state.
         void Draw(
@@ -77,10 +79,10 @@ namespace AzToolsFramework
         //! Calculate the radius for the inner and out circles for the paintbrush manipulator views based on the given brush settings.
         //! @param settings The paint brush settings to use for calculating the two radii
         //! @return The inner radius and the outer radius for the brush manipulator views
-        AZStd::pair<float, float> GetBrushRadii(const PaintBrushSettings& settings) const;
+        AZStd::pair<float, float> GetBrushRadii(const GlobalPaintBrushSettings& settings) const;
 
-        //! PaintBrushSettingsNotificationBus overrides...
-        void OnSettingsChanged(const PaintBrushSettings& newSettings) override;
+        //! GlobalPaintBrushSettingsNotificationBus overrides...
+        void OnSettingsChanged(const GlobalPaintBrushSettings& newSettings) override;
 
         //! Move the paint brush and perform any appropriate brush actions if in the middle of a brush stroke.
         //! @param viewportId The viewport to move the paint brush in.
@@ -93,6 +95,6 @@ namespace AzToolsFramework
         //! The entity/component that owns this paintbrush.
         AZ::EntityComponentIdPair m_ownerEntityComponentId;
 
-        PaintBrush m_paintBrush;
+        AzFramework::PaintBrush m_paintBrush;
     };
 } // namespace AzToolsFramework

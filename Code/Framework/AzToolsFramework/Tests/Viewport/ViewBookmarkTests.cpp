@@ -29,8 +29,6 @@ namespace UnitTest
         {
             PrefabTestFixture::SetUpEditorFixtureImpl();
 
-            CreateRootPrefab();
-
             m_oldSettingsRegistry = AZ::SettingsRegistry::Get();
             if (m_oldSettingsRegistry)
             {

@@ -368,13 +368,13 @@ namespace UnitTest
 
     class Tests
         : public ::testing::WithParamInterface <FrustumTestCase>
-        , public UnitTest::AllocatorsTestFixture
+        , public UnitTest::LeakDetectionFixture
     {
 
     protected:
         void SetUp() override
         {
-            UnitTest::AllocatorsTestFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
 
             // Build a frustum from 8 points
             // This allows us to generate test cases in each of the 9 regions in the 3x3 grid divided by the 6 planes,

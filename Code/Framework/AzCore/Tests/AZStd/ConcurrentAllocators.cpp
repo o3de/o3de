@@ -23,7 +23,7 @@ namespace UnitTest
 
     template <typename AllocatorType>
     class ConcurrentAllocatorTestFixture
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     protected:
         using this_type = ConcurrentAllocatorTestFixture<AllocatorType>;
@@ -143,7 +143,7 @@ namespace UnitTest
         EXPECT_EQ(0, myalloc.get_allocated_size());
     }
 
-    using StaticPoolConcurrentAllocatorTestFixture = AllocatorsTestFixture;
+    using StaticPoolConcurrentAllocatorTestFixture = LeakDetectionFixture;
 
     TEST(StaticPoolConcurrentAllocatorTestFixture, Aligment)
     {

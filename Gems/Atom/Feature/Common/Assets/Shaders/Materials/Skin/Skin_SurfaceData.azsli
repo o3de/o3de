@@ -20,7 +20,9 @@
 
 class SurfaceData_Skin
 {
+#if ENABLE_TRANSMISSION
     TransmissionSurfaceData transmission;
+#endif
 
     // ------- BasePbrSurfaceData -------
     

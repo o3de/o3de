@@ -70,6 +70,7 @@ namespace Multiplayer
     using SessionShutdownEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using LevelLoadBlockedEvent = AZ::Event<>;
     using NoServerLevelLoadedEvent = AZ::Event<>;
+    using VersionMismatchEvent = AZ::Event<>;
 
     //! @class IMultiplayer
     //! @brief IMultiplayer provides insight into the Multiplayer session and its Agents
@@ -162,6 +163,11 @@ namespace Multiplayer
         //! Adds a NoServerLevelLoadedEvent Handler which is invoked whenever a client connects to a server that doesn't have any level loaded.
         //! @param handler The NoServerLevelLoadedEvent handler to add
         virtual void AddNoServerLevelLoadedHandler(NoServerLevelLoadedEvent::Handler& handler) = 0;
+
+        //! Adds a VersionMismatchEvent Handler which is invoked whenever two multiplayer endpoints have a version mismatch.
+        //! For example, the provided handler will be triggered if a client tries connecting to a server that's using a different multiplayer version.
+        //! @param handler The VersionMismatchEvent handler to add
+        virtual void AddVersionMismatchHandler(VersionMismatchEvent::Handler& handler) = 0;
 
         //! Signals a NotifyClientMigrationEvent with the provided parameters.
         //! @param connectionId       the connection id of the client that is migrating

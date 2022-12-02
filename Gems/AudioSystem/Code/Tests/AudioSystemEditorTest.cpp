@@ -77,12 +77,12 @@ private:
 AZ_UNIT_TEST_HOOK(new AudioControlsEditorTestEnvironment);
 
 class AudioControlsEditorTest
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public UnitTest::LeakDetectionFixture
 {
 public:
     void SetUp() override
     {
-        UnitTest::ScopedAllocatorSetupFixture::SetUp();
+        UnitTest::LeakDetectionFixture::SetUp();
 
         // Store and remove the existing fileIO...
         m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
@@ -108,7 +108,7 @@ public:
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
             m_prevFileIO = nullptr;
         }
-        UnitTest::ScopedAllocatorSetupFixture::TearDown();
+        UnitTest::LeakDetectionFixture::TearDown();
     }
 
 protected:

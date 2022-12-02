@@ -16,7 +16,7 @@ namespace UnitTest
 {
     class AssetScannerUnitTest
         : public QObject
-        , public AllocatorsFixture
+        , public LeakDetectionFixture
     {
         Q_OBJECT
     public:
