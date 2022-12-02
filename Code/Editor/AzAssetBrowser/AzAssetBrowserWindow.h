@@ -96,7 +96,7 @@ private:
     bool m_inNarrowMode = false;
 
 private Q_SLOTS:
-    void SelectionChangedSlot(const QItemSelection& selected, const QItemSelection& deselected) const;
+    void CurrentIndexChangedSlot(const QModelIndex& idx) const;
     void DoubleClickedItem(const QModelIndex& element);
 };
 
