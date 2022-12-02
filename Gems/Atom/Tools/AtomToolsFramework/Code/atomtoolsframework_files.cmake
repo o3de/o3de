@@ -96,10 +96,13 @@ set(FILES
     Source/EntityPreviewViewport/EntityPreviewViewportWidget.cpp
 
     Include/AtomToolsFramework/GraphView/GraphView.h
-    Include/AtomToolsFramework/GraphView/GraphViewConfig.h
+    Include/AtomToolsFramework/GraphView/GraphViewConstructPresets.h
+    Include/AtomToolsFramework/GraphView/GraphViewSettings.h
     Source/GraphView/GraphView.cpp
     Source/GraphView/GraphView.qrc
     Source/GraphView/GraphView.qss
+    Source/GraphView/GraphViewConstructPresets.cpp
+    Source/GraphView/GraphViewSettings.cpp
 
     Include/AtomToolsFramework/Inspector/InspectorGroupHeaderWidget.h
     Include/AtomToolsFramework/Inspector/InspectorGroupWidget.h

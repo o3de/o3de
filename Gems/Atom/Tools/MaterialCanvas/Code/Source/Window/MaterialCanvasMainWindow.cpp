@@ -18,10 +18,10 @@
 namespace MaterialCanvas
 {
     MaterialCanvasMainWindow::MaterialCanvasMainWindow(
-        const AZ::Crc32& toolId, const AtomToolsFramework::GraphViewConfig& graphViewConfig, QWidget* parent)
+        const AZ::Crc32& toolId, AtomToolsFramework::GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent)
         : Base(toolId, "MaterialCanvasMainWindow", parent)
-        , m_graphViewConfig(graphViewConfig)
-        , m_styleManager(toolId, graphViewConfig.m_styleManagerPath)
+        , m_graphViewSettingsPtr(graphViewSettingsPtr)
+        , m_styleManager(toolId, graphViewSettingsPtr->m_styleManagerPath)
     {
         m_assetBrowser->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
         m_assetBrowser->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
@@ -76,17 +76,17 @@ namespace MaterialCanvas
         SetDockWidgetVisible("MiniMap", false);
 
         GraphCanvas::NodePaletteConfig nodePaletteConfig;
-        nodePaletteConfig.m_rootTreeItem = m_graphViewConfig.m_createNodeTreeItemsFn(m_toolId);
+        nodePaletteConfig.m_rootTreeItem = m_graphViewSettingsPtr->m_createNodeTreeItemsFn(m_toolId);
         nodePaletteConfig.m_editorId = m_toolId;
-        nodePaletteConfig.m_mimeType = m_graphViewConfig.m_nodeMimeType.c_str();
+        nodePaletteConfig.m_mimeType = m_graphViewSettingsPtr->m_nodeMimeType.c_str();
         nodePaletteConfig.m_isInContextMenu = false;
-        nodePaletteConfig.m_saveIdentifier = m_graphViewConfig.m_nodeSaveIdentifier;
+        nodePaletteConfig.m_saveIdentifier = m_graphViewSettingsPtr->m_nodeSaveIdentifier;
 
         m_nodePalette = aznew GraphCanvas::NodePaletteDockWidget(this, "Node Palette", nodePaletteConfig);
         AddDockWidget("Node Palette", m_nodePalette, Qt::LeftDockWidgetArea);
 
         AZ::IO::FixedMaxPath resolvedPath;
-        AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(resolvedPath, m_graphViewConfig.m_translationPath.c_str());
+        AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(resolvedPath, m_graphViewSettingsPtr->m_translationPath.c_str());
         const AZ::IO::FixedMaxPathString translationFilePath = resolvedPath.LexicallyNormal().FixedMaxPathString();
         if (m_translator.load(QLocale::Language::English, translationFilePath.c_str()))
         {
@@ -144,25 +144,35 @@ namespace MaterialCanvas
         m_materialViewport->UnlockRenderTargetSize();
     }
 
-    AZStd::vector<AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup>> MaterialCanvasMainWindow::GetSettingsDialogGroups() const
+    void MaterialCanvasMainWindow::PopulateSettingsInspector(AtomToolsFramework::InspectorWidget* inspector) const
     {
-        AZStd::vector<AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup>> groups;
-        groups.push_back(AtomToolsFramework::CreateSettingsGroup(
-            "Material Canvas Settings",
-            "Material Canvas Settings",
-           {
-                AtomToolsFramework::CreatePropertyFromSetting(
-                    "/O3DE/Atom/MaterialCanvas/EnableMinimalShaderBuilds",
-                    "Enable Minimal Shader Builds",
-                    "Improve shader and material iteration and preview times by limiting the asset processor and shader compiler to the "
-                    "current platform and RHI. Changing this setting requires restarting Material Canvas and the asset processor.",
-                    false),
-            }));
+        m_materialCanvasCompileSettingsGroup = AtomToolsFramework::CreateSettingsPropertyGroup(
+            "Material Canvas Compile Settings",
+            "Material Canvas Compile Settings",
+            { AtomToolsFramework::CreateSettingsPropertyValue(
+                "/O3DE/Atom/MaterialCanvas/EnableMinimalShaderBuilds",
+                "Enable Minimal Shader Builds",
+                "Improve shader and material iteration and preview times by limiting the asset processor and shader compiler to the "
+                "current platform and RHI. Changing this setting requires restarting Material Canvas and the asset processor.",
+                false) });
 
-        // Add base class settings after app specific settings
-        AZStd::vector<AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup>> groupsFromBase = Base::GetSettingsDialogGroups();
-        groups.insert(groups.end(), groupsFromBase.begin(), groupsFromBase.end());
-        return groups;
+        inspector->AddGroup(
+            m_materialCanvasCompileSettingsGroup->m_name,
+            m_materialCanvasCompileSettingsGroup->m_displayName,
+            m_materialCanvasCompileSettingsGroup->m_description,
+            new AtomToolsFramework::InspectorPropertyGroupWidget(
+                m_materialCanvasCompileSettingsGroup.get(),
+                m_materialCanvasCompileSettingsGroup.get(),
+                azrtti_typeid<AtomToolsFramework::DynamicPropertyGroup>()));
+
+        inspector->AddGroup(
+            "Material Canvas Graph View Settings",
+            "Material Canvas Graph View Settings",
+            "Configuration settings for the graph view interaction, animation, and other behavior.",
+            new AtomToolsFramework::InspectorPropertyGroupWidget(
+                m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr->RTTI_Type()));
+
+        Base::PopulateSettingsInspector(inspector);
     }
 
     AZStd::string MaterialCanvasMainWindow::GetHelpDialogText() const

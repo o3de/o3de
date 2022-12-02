@@ -29,6 +29,7 @@
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Math/ShapeIntersection.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -38,6 +39,44 @@ namespace AZ
 {
     namespace Render
     {
+        static AZ::Name s_o_meshUseForwardPassIBLSpecular_Name =
+            AZ::Name::FromStringLiteral("o_meshUseForwardPassIBLSpecular", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_Manual_Name = AZ::Name::FromStringLiteral("Manual", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_Multiply_Name = AZ::Name::FromStringLiteral("Multiply", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_BaseColorTint_Name = AZ::Name::FromStringLiteral("BaseColorTint", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_BaseColor_Name = AZ::Name::FromStringLiteral("BaseColor", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_baseColor_color_Name = AZ::Name::FromStringLiteral("baseColor.color", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_baseColor_factor_Name = AZ::Name::FromStringLiteral("baseColor.factor", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_baseColor_useTexture_Name =
+            AZ::Name::FromStringLiteral("baseColor.useTexture", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_metallic_factor_Name = AZ::Name::FromStringLiteral("metallic.factor", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_roughness_factor_Name = AZ::Name::FromStringLiteral("roughness.factor", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_emissive_enable_Name = AZ::Name::FromStringLiteral("emissive.enable", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_emissive_color_Name = AZ::Name::FromStringLiteral("emissive.color", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_emissive_intensity_Name =
+            AZ::Name::FromStringLiteral("emissive.intensity", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_baseColor_textureMap_Name =
+            AZ::Name::FromStringLiteral("baseColor.textureMap", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_normal_textureMap_Name =
+            AZ::Name::FromStringLiteral("normal.textureMap", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_metallic_textureMap_Name =
+            AZ::Name::FromStringLiteral("metallic.textureMap", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_roughness_textureMap_Name =
+            AZ::Name::FromStringLiteral("roughness.textureMap", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_irradiance_irradianceColorSource_Name =
+            AZ::Name::FromStringLiteral("irradiance.irradianceColorSource", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_emissive_textureMap_Name =
+            AZ::Name::FromStringLiteral("emissive.textureMap", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_irradiance_manualColor_Name =
+            AZ::Name::FromStringLiteral("irradiance.manualColor", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_irradiance_color_Name = AZ::Name::FromStringLiteral("irradiance.color", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_baseColor_textureBlendMode_Name =
+            AZ::Name::FromStringLiteral("baseColor.textureBlendMode", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_irradiance_factor_Name =
+            AZ::Name::FromStringLiteral("irradiance.factor", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_opacity_mode_Name = AZ::Name::FromStringLiteral("opacity.mode", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_opacity_factor_Name = AZ::Name::FromStringLiteral("opacity.factor", AZ::Interface<AZ::NameDictionary>::Get());
+
         void MeshFeatureProcessor::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -937,7 +976,7 @@ namespace AZ
                 RPI::MeshDrawPacket drawPacket(modelLod, meshIndex, material, meshObjectSrg, materialAssignment.m_matModUvOverrides);
 
                 // set the shader option to select forward pass IBL specular if necessary
-                if (!drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ m_descriptor.m_useForwardPassIblSpecular }))
+                if (!drawPacket.SetShaderOption(s_o_meshUseForwardPassIBLSpecular_Name, AZ::RPI::ShaderOptionValue{ m_descriptor.m_useForwardPassIblSpecular }))
                 {
                     AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
                 }
@@ -1138,45 +1177,45 @@ namespace AZ
                     RPI::MaterialPropertyIndex propertyIndex;
 
                     // base color
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.color"));
+                    propertyIndex = material->FindPropertyIndex(s_baseColor_color_Name);
                     if (propertyIndex.IsValid())
                     {
                         subMesh.m_baseColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
                     }
 
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.factor"));
+                    propertyIndex = material->FindPropertyIndex(s_baseColor_factor_Name);
                     if (propertyIndex.IsValid())
                     {
                         subMesh.m_baseColor *= material->GetPropertyValue<float>(propertyIndex);
                     }
 
                     // metallic
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("metallic.factor"));
+                    propertyIndex = material->FindPropertyIndex(s_metallic_factor_Name);
                     if (propertyIndex.IsValid())
                     {
                         subMesh.m_metallicFactor = material->GetPropertyValue<float>(propertyIndex);
                     }
 
                     // roughness
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("roughness.factor"));
+                    propertyIndex = material->FindPropertyIndex(s_roughness_factor_Name);
                     if (propertyIndex.IsValid())
                     {
                         subMesh.m_roughnessFactor = material->GetPropertyValue<float>(propertyIndex);
                     }
 
                     // emissive color
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("emissive.enable"));
+                    propertyIndex = material->FindPropertyIndex(s_emissive_enable_Name);
                     if (propertyIndex.IsValid())
                     {
                         if (material->GetPropertyValue<bool>(propertyIndex))
                         {
-                            propertyIndex = material->FindPropertyIndex(AZ::Name("emissive.color"));
+                            propertyIndex = material->FindPropertyIndex(s_emissive_color_Name);
                             if (propertyIndex.IsValid())
                             {
                                 subMesh.m_emissiveColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
                             }
 
-                            propertyIndex = material->FindPropertyIndex(AZ::Name("emissive.intensity"));
+                            propertyIndex = material->FindPropertyIndex(s_emissive_intensity_Name);
                             if (propertyIndex.IsValid())
                             {
                                 subMesh.m_emissiveColor *= material->GetPropertyValue<float>(propertyIndex);
@@ -1186,7 +1225,7 @@ namespace AZ
 
                     // textures
                     Data::Instance<RPI::Image> baseColorImage; // can be used for irradiance color below
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.textureMap"));
+                    propertyIndex = material->FindPropertyIndex(s_baseColor_textureMap_Name);
                     if (propertyIndex.IsValid())
                     {
                         Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
@@ -1198,7 +1237,7 @@ namespace AZ
                         }
                     }
 
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("normal.textureMap"));
+                    propertyIndex = material->FindPropertyIndex(s_normal_textureMap_Name);
                     if (propertyIndex.IsValid())
                     {
                         Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
@@ -1209,7 +1248,7 @@ namespace AZ
                         }
                     }
 
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("metallic.textureMap"));
+                    propertyIndex = material->FindPropertyIndex(s_metallic_textureMap_Name);
                     if (propertyIndex.IsValid())
                     {
                         Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
@@ -1220,7 +1259,7 @@ namespace AZ
                         }
                     }
 
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("roughness.textureMap"));
+                    propertyIndex = material->FindPropertyIndex(s_roughness_textureMap_Name);
                     if (propertyIndex.IsValid())
                     {
                         Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
@@ -1231,7 +1270,7 @@ namespace AZ
                         }
                     }
 
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("emissive.textureMap"));
+                    propertyIndex = material->FindPropertyIndex(s_emissive_textureMap_Name);
                     if (propertyIndex.IsValid())
                     {
                         Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
@@ -1261,7 +1300,7 @@ namespace AZ
             const Data::Instance<RPI::Material> material,
             const Data::Instance<RPI::Image> baseColorImage)
         {
-            RPI::MaterialPropertyIndex propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.irradianceColorSource"));
+            RPI::MaterialPropertyIndex propertyIndex = material->FindPropertyIndex(s_irradiance_irradianceColorSource_Name);
             if (!propertyIndex.IsValid())
             {
                 return;
@@ -1270,9 +1309,9 @@ namespace AZ
             uint32_t enumVal = material->GetPropertyValue<uint32_t>(propertyIndex);
             AZ::Name irradianceColorSource = material->GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex)->GetEnumName(enumVal);
 
-            if (irradianceColorSource.IsEmpty() || irradianceColorSource == AZ::Name("Manual"))
+            if (irradianceColorSource.IsEmpty() || irradianceColorSource == s_Manual_Name)
             {
-                propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.manualColor"));
+                propertyIndex = material->FindPropertyIndex(s_irradiance_manualColor_Name);
                 if (propertyIndex.IsValid())
                 {
                     subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
@@ -1281,7 +1320,7 @@ namespace AZ
                 {
                     // Couldn't find irradiance.manualColor -> check for an irradiance.color in case the material type
                     // doesn't have the concept of manual vs. automatic irradiance color, allow a simpler property name
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.color"));
+                    propertyIndex = material->FindPropertyIndex(s_irradiance_color_Name);
                     if (propertyIndex.IsValid())
                     {
                         subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
@@ -1295,16 +1334,16 @@ namespace AZ
                     }
                 }
             }
-            else if (irradianceColorSource == AZ::Name("BaseColorTint"))
+            else if (irradianceColorSource == s_BaseColorTint_Name)
             {
                 // Use only the baseColor, no texture on top of it
                 subMesh.m_irradianceColor = subMesh.m_baseColor;
             }
-            else if (irradianceColorSource == AZ::Name("BaseColor"))
+            else if (irradianceColorSource == s_BaseColor_Name)
             {
                 // Check if texturing is enabled
                 bool useTexture;
-                propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.useTexture"));
+                propertyIndex = material->FindPropertyIndex(s_baseColor_useTexture_Name);
                 if (propertyIndex.IsValid())
                 {
                     useTexture = material->GetPropertyValue<bool>(propertyIndex);
@@ -1335,13 +1374,13 @@ namespace AZ
 
                         // We do a simple 'multiply' blend with the base color for now. Warn
                         // the user if something else was intended.
-                        propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.textureBlendMode"));
+                        propertyIndex = material->FindPropertyIndex(s_baseColor_textureBlendMode_Name);
                         if (propertyIndex.IsValid())
                         {
                             AZ::Name textureBlendMode = material->GetMaterialPropertiesLayout()
                                      ->GetPropertyDescriptor(propertyIndex)
                                      ->GetEnumName(material->GetPropertyValue<uint32_t>(propertyIndex));
-                            if (textureBlendMode != AZ::Name("Multiply"))
+                            if (textureBlendMode != s_Multiply_Name)
                             {
                                 AZ_Warning("MeshFeatureProcessor", false, "textureBlendMode '%s' is not "
                                         "yet supported when requesting BaseColor irradiance source, "
@@ -1375,7 +1414,7 @@ namespace AZ
 
 
             // Overall scale factor
-            propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.factor"));
+            propertyIndex = material->FindPropertyIndex(s_irradiance_factor_Name);
             if (propertyIndex.IsValid())
             {
                 subMesh.m_irradianceColor *= material->GetPropertyValue<float>(propertyIndex);
@@ -1383,14 +1422,14 @@ namespace AZ
 
             // set the raytracing transparency from the material opacity factor
             float opacity = 1.0f;
-            propertyIndex = material->FindPropertyIndex(AZ::Name("opacity.mode"));
+            propertyIndex = material->FindPropertyIndex(s_opacity_mode_Name);
             if (propertyIndex.IsValid())
             {
                 // only query the opacity factor if it's a non-Opaque mode
                 uint32_t mode = material->GetPropertyValue<uint32_t>(propertyIndex);
                 if (mode > 0)
                 {
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("opacity.factor"));
+                    propertyIndex = material->FindPropertyIndex(s_opacity_factor_Name);
                     if (propertyIndex.IsValid())
                     {
                         opacity = material->GetPropertyValue<float>(propertyIndex);

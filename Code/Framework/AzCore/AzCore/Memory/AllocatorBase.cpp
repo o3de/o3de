@@ -18,6 +18,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/scoped_lock.h>
+#include <AzCore/std/allocator_stateless.h>
 
 namespace
 {
@@ -46,9 +47,9 @@ namespace
     static uint64_t s_operationCounter = 0;
 
     static unsigned int s_nextRecordId = 1;
-    using AllocatorOperationByAddress = AZStd::map<void*, AllocatorOperation, AZStd::less<void*>, DebugAllocator>;
+    using AllocatorOperationByAddress = AZStd::map<void*, AllocatorOperation, AZStd::less<void*>, AZStd::stateless_allocator>;
     static AllocatorOperationByAddress s_allocatorOperationByAddress;
-    using AvailableRecordIds = AZStd::vector<unsigned int, DebugAllocator>;
+    using AvailableRecordIds = AZStd::vector<unsigned int, AZStd::stateless_allocator>;
     AvailableRecordIds s_availableRecordIds;
 
     void RecordAllocatorOperation(AllocatorOperation::OperationType type, void* ptr, size_t size = 0, size_t alignment = 0)
@@ -148,7 +149,7 @@ namespace AZ
             GetName());
     }
 
-    Debug::AllocationRecords* AllocatorBase::GetRecords()
+    const Debug::AllocationRecords* AllocatorBase::GetRecords() const
     {
         return m_records;
     }
@@ -184,10 +185,9 @@ namespace AZ
 
     void AllocatorBase::PreDestroy()
     {
-        Debug::AllocationRecords* allocatorRecords = GetRecords();
-        if (allocatorRecords)
+        if (m_records)
         {
-            delete allocatorRecords;
+            delete m_records;
             SetRecords(nullptr);
         }
 
@@ -219,10 +219,9 @@ namespace AZ
     {
         if (m_isProfilingActive)
         {
-            auto records = GetRecords();
-            if (records)
+            if (m_records)
             {
-                records->RegisterAllocation(ptr, byteSize, alignment, suppressStackRecord + 1);
+                m_records->RegisterAllocation(ptr, byteSize, alignment, suppressStackRecord + 1);
             }
         }
 
@@ -235,10 +234,9 @@ namespace AZ
     {
         if (m_isProfilingActive)
         {
-            auto records = GetRecords();
-            if (records)
+            if (m_records)
             {
-                records->UnregisterAllocation(ptr, byteSize, alignment, info);
+                m_records->UnregisterAllocation(ptr, byteSize, alignment, info);
             }
         }
 #if O3DE_RECORDING_ENABLED
@@ -250,10 +248,9 @@ namespace AZ
     {
         if (newSize && m_isProfilingActive)
         {
-            auto records = GetRecords();
-            if (records)
+            if (m_records)
             {
-                records->RegisterReallocation(ptr, newPtr, newSize, newAlignment, 1);
+                m_records->RegisterReallocation(ptr, newPtr, newSize, newAlignment, 1);
             }
         }
 #if O3DE_RECORDING_ENABLED
@@ -266,10 +263,9 @@ namespace AZ
     {
         if (newSize && m_isProfilingActive)
         {
-            auto records = GetRecords();
-            if (records)
+            if (m_records)
             {
-                records->ResizeAllocation(ptr, newSize);
+                m_records->ResizeAllocation(ptr, newSize);
             }
         }
 #if O3DE_RECORDING_ENABLED

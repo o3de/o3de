@@ -340,16 +340,16 @@ namespace UnitTest
             m_testMaterialSrgLayout = RHI::ShaderResourceGroupLayout::Create();
             m_testMaterialSrgLayout->SetName(materialSrgId);
             m_testMaterialSrgLayout->SetBindingSlot(SrgBindingSlot::Material);
-            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_color" }, 4, 16, 0 });
-            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float" }, 20, 4, 0 });
-            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_int" }, 24, 4, 0 });
-            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_uint" }, 28, 4, 0 });
-            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float2" }, 32, 8, 0 });
-            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float3" }, 40, 12, 0 });
-            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float4" }, 52, 16, 0 });
-            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_bool" }, 68, 1, 0 });
-            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_image" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_attachmentImage" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_color" }, 4, 16, 0, 0});
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float" }, 20, 4, 0, 0});
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_int" }, 24, 4, 0, 0});
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_uint" }, 28, 4, 0, 0});
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float2" }, 32, 8, 0, 0});
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float3" }, 40, 12, 0, 0});
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float4" }, 52, 16, 0, 0});
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_bool" }, 68, 1, 0, 0});
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_image" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_attachmentImage" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
             EXPECT_TRUE(m_testMaterialSrgLayout->Finalize());
 
             AZStd::vector<RPI::ShaderOptionValuePair> optionValues = CreateEnumShaderOptionValues({"Low", "Med", "High"});
@@ -1544,14 +1544,14 @@ namespace UnitTest
         RHI::Ptr<RHI::ShaderResourceGroupLayout> layeredMaterialSrgLayout = RHI::ShaderResourceGroupLayout::Create();
         layeredMaterialSrgLayout->SetName(Name{"MaterialSrg"});
         layeredMaterialSrgLayout->SetBindingSlot(SrgBindingSlot::Material);
-        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer1_baseColor_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer1_roughness_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer2_baseColor_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer2_roughness_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer2_clearCoat_roughness_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer2_clearCoat_normal_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_layer2_clearCoat_normal_factor" }, 0, 4, 0 });
-        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_blendFactor" }, 4, 4, 0 });
+        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer1_baseColor_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer1_roughness_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer2_baseColor_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer2_roughness_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer2_clearCoat_roughness_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_layer2_clearCoat_normal_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_layer2_clearCoat_normal_factor" }, 0, 4, 0, 0});
+        layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_blendFactor" }, 4, 4, 0, 0});
         layeredMaterialSrgLayout->Finalize();
         
         AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues = CreateBoolShaderOptionValues();
@@ -2258,11 +2258,11 @@ namespace UnitTest
         RHI::Ptr<RHI::ShaderResourceGroupLayout> materialSrgLayout = RHI::ShaderResourceGroupLayout::Create();
         materialSrgLayout->SetName(materialSrgId);
         materialSrgLayout->SetBindingSlot(SrgBindingSlot::Material);
-        materialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_unused1" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-        materialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_unused2" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-        materialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_groupA_m_groupB_m_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-        materialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_unused3" }, 0, 4, 0 });
-        materialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_groupA_m_groupB_m_number" }, 4, 4, 0 });
+        materialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_unused1" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+        materialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_unused2" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+        materialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_groupA_m_groupB_m_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+        materialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_unused3" }, 0, 4, 0, 0});
+        materialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_groupA_m_groupB_m_number" }, 4, 4, 0, 0});
         EXPECT_TRUE(materialSrgLayout->Finalize());
 
         Ptr<ShaderOptionGroupLayout> shaderOptions = ShaderOptionGroupLayout::Create();

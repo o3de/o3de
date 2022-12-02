@@ -53,7 +53,7 @@ namespace UnitTest
     };
 
     class HphaSchemaTestFixture
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
         , public ::testing::WithParamInterface<HphaSchemaTestParameters>
     {
     public:

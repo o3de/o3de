@@ -45,7 +45,7 @@ namespace UnitTest
     };
 
     class AssetServerHandlerUnitTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
 
     public:

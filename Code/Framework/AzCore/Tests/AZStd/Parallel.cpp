@@ -153,7 +153,7 @@ namespace UnitTest
      * Thread test
      */
     class Parallel_Thread
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
         int m_data;
         int m_dataMax;
@@ -162,16 +162,6 @@ namespace UnitTest
         thread_desc      m_desc[3];
         int m_numThreadDesc = 0;
     public:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
-
         void increment_data()
         {
             while (m_data < m_dataMax)
@@ -686,7 +676,7 @@ namespace UnitTest
     }
 
     class Parallel_Combinable
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void run()
@@ -847,7 +837,7 @@ namespace UnitTest
     }
 
     class Parallel_SharedMutex
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         static const int s_numOfReaders = 4;
@@ -980,7 +970,7 @@ namespace UnitTest
     }
 
     class ConditionVariable
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {};
     
     TEST_F(ConditionVariable, NotifyOneSingleWait)
@@ -1396,18 +1386,8 @@ namespace UnitTest
     // Fixture for thread-event-bus related calls
     // exists only to categorize the tests.
     class ThreadEventsBus :
-        public AllocatorsFixture
+        public LeakDetectionFixture
     {
-        public:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
     };
 
     template <typename T> class ThreadEventCounter :
@@ -1468,18 +1448,8 @@ namespace UnitTest
     // OnThreadExit() because it cannot lock the mutex.
 
     class ThreadEventsDeathTest :
-        public AllocatorsFixture
+        public LeakDetectionFixture
     {
-        public:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
     };
 
     class DeadlockCauser : public AZStd::ThreadEventBus::Handler

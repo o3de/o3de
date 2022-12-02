@@ -11,6 +11,7 @@
 #if defined(AZ_ENABLE_TRACING)
 
 #include <AzCore/Memory/Memory.h>
+#include <AzCore/std/allocator_stateless.h>
 #include <AzCore/std/parallel/scoped_lock.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/parallel/atomic.h>
@@ -29,7 +30,7 @@ namespace AZ
         AZStd::atomic_size_t m_allocated; // Total amount of bytes allocated (i.e. requested to the OS, assuming 1-alignment)
 
         AZStd::spin_mutex m_allocationRecordsMutex;
-        using AllocationRecords = AZStd::set<AllocationRecord, AZStd::less<AllocationRecord>, AZ::Debug::DebugAllocator>;
+        using AllocationRecords = AZStd::set<AllocationRecord, AZStd::less<AllocationRecord>, AZStd::stateless_allocator>;
         AllocationRecords m_allocationRecords;
     };
 
@@ -100,17 +101,17 @@ namespace AZ
 #endif // defined(AZ_ENABLE_TRACING)
 
     IAllocatorWithTracking::IAllocatorWithTracking()
-    {
 #if defined(AZ_ENABLE_TRACING)
-        m_data = new (AZ::Debug::DebugAllocator().allocate(sizeof(IAllocatorTrackingRecorderData), alignof(IAllocatorTrackingRecorderData))) IAllocatorTrackingRecorderData();
+        : m_data(new (AZStd::stateless_allocator().allocate(sizeof(IAllocatorTrackingRecorderData), AZStd ::alignment_of<IAllocatorTrackingRecorderData>::value)) IAllocatorTrackingRecorderData())
 #endif
+    {
     }
 
     IAllocatorWithTracking::~IAllocatorWithTracking()
     {
 #if defined(AZ_ENABLE_TRACING)
         m_data->~IAllocatorTrackingRecorderData();
-        AZ::Debug::DebugAllocator().deallocate(m_data, sizeof(IAllocatorTrackingRecorderData), alignof(IAllocatorTrackingRecorderData));
+        AZStd::stateless_allocator().deallocate(m_data, sizeof(IAllocatorTrackingRecorderData), alignof(IAllocatorTrackingRecorderData));
 #endif
     }
 
@@ -190,13 +191,8 @@ namespace AZ
 #if defined(AZ_ENABLE_TRACING)
     AllocationRecordVector IAllocatorWithTracking::GetAllocationRecords() const
     {
-        AZStd::vector<AllocationRecord, AZ::Debug::DebugAllocator> allocationRecords;
-        allocationRecords.reserve(m_data->m_allocationRecords.size());
-        {
-            AZStd::scoped_lock lock(m_data->m_allocationRecordsMutex);
-            AZStd::copy(m_data->m_allocationRecords.begin(), m_data->m_allocationRecords.end(), AZStd::back_inserter(allocationRecords));
-        }
-        return allocationRecords;
+        AZStd::scoped_lock lock(m_data->m_allocationRecordsMutex);
+        return {m_data->m_allocationRecords.begin(), m_data->m_allocationRecords.end()};
     }
 #endif
 

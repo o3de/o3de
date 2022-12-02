@@ -19,14 +19,14 @@
 
 namespace UnitTest
 {
-    class EditorViewportIconFixture : public AllocatorsTestFixture
+    class EditorViewportIconFixture : public LeakDetectionFixture
     {
     public:
         inline static constexpr AzFramework::ViewportId TestViewportId = 2468;
 
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_focusModeMock = AZStd::make_unique<::testing::NiceMock<MockFocusModeInterface>>();
             m_editorViewportIconDisplayMock = AZStd::make_unique<::testing::NiceMock<MockEditorViewportIconDisplayInterface>>();
@@ -58,7 +58,7 @@ namespace UnitTest
             m_editorViewportIconDisplayMock.reset();
             m_focusModeMock.reset();
 
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AZStd::unique_ptr<ViewportSettingsTestImpl> m_viewportSettings;
