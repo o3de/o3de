@@ -152,15 +152,11 @@ namespace GradientSignal
         const AZ::EntityComponentIdPair& entityComponentIdPair)
         : m_ownerEntityComponentId(entityComponentIdPair)
     {
-        AZ::EntityId entityId = m_ownerEntityComponentId.GetEntityId();
-
         AzFramework::PaintBrushNotificationBus::Handler::BusConnect(entityComponentIdPair);
     }
 
     ImageGradientModifier::~ImageGradientModifier()
     {
-        AZ::EntityId entityId = m_ownerEntityComponentId.GetEntityId();
-
         AzFramework::PaintBrushNotificationBus::Handler::BusDisconnect();
     }
 
