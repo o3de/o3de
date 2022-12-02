@@ -136,94 +136,126 @@ namespace AZ::Vulkan
     {
         const uint32_t roTextureIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture);
         AZStd::array<RHI::ConstPtr<RHI::ImageView>, 1> span{ view };
-        uint32_t index = static_cast<uint32_t>(m_allocators[roTextureIndex].Allocate(1, 1).m_ptr);
 
-        VkWriteDescriptorSet write = PrepareWrite(index, roTextureIndex, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
-        VkDescriptorImageInfo imageInfo{};
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = view->GetNativeImageView();
-        write.pImageInfo = &imageInfo;
-        m_device->GetContext().UpdateDescriptorSets(m_device->GetNativeDevice(), 1, &write, 0, nullptr);
+        RHI::VirtualAddress address;
+        {
+            AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
+            address = m_allocators[roTextureIndex].Allocate(1, 1).m_ptr;
+            AZ_Assert(address.IsValid(), "Bindless descriptor heap ran out of space.");
 
-        return index;
+            VkWriteDescriptorSet write =
+                PrepareWrite(static_cast<uint32_t>(address.m_ptr), roTextureIndex, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
+            VkDescriptorImageInfo imageInfo{};
+            imageInfo.imageLayout = RHI::CheckBitsAny(view->GetImage().GetAspectFlags(), RHI::ImageAspectFlags::DepthStencil)
+                ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
+                : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            imageInfo.imageView = view->GetNativeImageView();
+            write.pImageInfo = &imageInfo;
+            m_device->GetContext().UpdateDescriptorSets(m_device->GetNativeDevice(), 1, &write, 0, nullptr);
+        }
+
+        return static_cast<uint32_t>(address.m_ptr);
     }
 
     uint32_t BindlessDescriptorPool::AttachReadWriteImage(ImageView* view)
     {
         const uint32_t rwTextureIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture);
         AZStd::array<RHI::ConstPtr<RHI::ImageView>, 1> span{ view };
-        uint32_t index = static_cast<uint32_t>(m_allocators[rwTextureIndex].Allocate(1, 1).m_ptr);
+        RHI::VirtualAddress address;
+        {
+            AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
+            address = m_allocators[rwTextureIndex].Allocate(1, 1).m_ptr;
+            AZ_Assert(address.IsValid(), "Bindless descriptor heap ran out of space.");
 
-        VkWriteDescriptorSet write = PrepareWrite(index, rwTextureIndex, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
-        VkDescriptorImageInfo imageInfo{};
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-        imageInfo.imageView = view->GetNativeImageView();
-        write.pImageInfo = &imageInfo;
-        m_device->GetContext().UpdateDescriptorSets(m_device->GetNativeDevice(), 1, &write, 0, nullptr);
+            VkWriteDescriptorSet write =
+                PrepareWrite(static_cast<uint32_t>(address.m_ptr), rwTextureIndex, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+            VkDescriptorImageInfo imageInfo{};
+            imageInfo.imageLayout = RHI::CheckBitsAny(view->GetImage().GetAspectFlags(), RHI::ImageAspectFlags::DepthStencil)
+                ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+                : VK_IMAGE_LAYOUT_GENERAL;
 
-        return index;
+            imageInfo.imageView = view->GetNativeImageView();
+            write.pImageInfo = &imageInfo;
+            m_device->GetContext().UpdateDescriptorSets(m_device->GetNativeDevice(), 1, &write, 0, nullptr);
+        }
+        return static_cast<uint32_t>(address.m_ptr);
     }
 
     uint32_t BindlessDescriptorPool::AttachReadBuffer(BufferView* view)
     {
         const uint32_t roBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer);
         AZStd::array<const RHI::ConstPtr<RHI::BufferView>, 1> span{ view };
-        uint32_t index = static_cast<uint32_t>(m_allocators[roBufferIndex].Allocate(1, 1).m_ptr);
+        RHI::VirtualAddress address;
+        {
+            AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
+            address = m_allocators[roBufferIndex].Allocate(1, 1).m_ptr;
+            AZ_Assert(address.IsValid(), "Bindless descriptor heap ran out of space.");
 
-        const auto& viewDesc = view->GetDescriptor();
-        const Vulkan::BufferMemoryView& bufferMemoryView = *static_cast<const Vulkan::Buffer&>(view->GetBuffer()).GetBufferMemoryView();
+            const auto& viewDesc = view->GetDescriptor();
+            const Vulkan::BufferMemoryView& bufferMemoryView = *static_cast<const Vulkan::Buffer&>(view->GetBuffer()).GetBufferMemoryView();
 
-        VkWriteDescriptorSet write = PrepareWrite(index, roBufferIndex, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-        VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = bufferMemoryView.GetNativeBuffer();
-        bufferInfo.offset = bufferMemoryView.GetOffset() + viewDesc.m_elementSize * viewDesc.m_elementOffset;
-        bufferInfo.range = viewDesc.m_elementSize * viewDesc.m_elementCount;
-        write.pBufferInfo = &bufferInfo;
-        m_device->GetContext().UpdateDescriptorSets(m_device->GetNativeDevice(), 1, &write, 0, nullptr);
-
-        return index;
+            VkWriteDescriptorSet write =
+                PrepareWrite(static_cast<uint32_t>(address.m_ptr), roBufferIndex, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            VkDescriptorBufferInfo bufferInfo{};
+            bufferInfo.buffer = bufferMemoryView.GetNativeBuffer();
+            bufferInfo.offset = bufferMemoryView.GetOffset() + viewDesc.m_elementSize * viewDesc.m_elementOffset;
+            bufferInfo.range = viewDesc.m_elementSize * viewDesc.m_elementCount;
+            write.pBufferInfo = &bufferInfo;
+            m_device->GetContext().UpdateDescriptorSets(m_device->GetNativeDevice(), 1, &write, 0, nullptr);
+        }
+        return static_cast<uint32_t>(address.m_ptr);
     }
 
     uint32_t BindlessDescriptorPool::AttachReadWriteBuffer(BufferView* view)
     {
         const uint32_t rwBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer);
         AZStd::array<RHI::ConstPtr<RHI::BufferView>, 1> span{ view };
-        uint32_t index = static_cast<uint32_t>(m_allocators[rwBufferIndex].Allocate(1, 1).m_ptr);
+        RHI::VirtualAddress address;
+        {
+            AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
+            address = m_allocators[rwBufferIndex].Allocate(1, 1).m_ptr;
+            AZ_Assert(address.IsValid(), "Bindless descriptor heap ran out of space.");
 
-        const auto& viewDesc = view->GetDescriptor();
-        const Vulkan::BufferMemoryView& bufferMemoryView = *static_cast<const Vulkan::Buffer&>(view->GetBuffer()).GetBufferMemoryView();
+            const auto& viewDesc = view->GetDescriptor();
+            const Vulkan::BufferMemoryView& bufferMemoryView = *static_cast<const Vulkan::Buffer&>(view->GetBuffer()).GetBufferMemoryView();
 
-        VkWriteDescriptorSet write = PrepareWrite(index, rwBufferIndex, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-        VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = bufferMemoryView.GetNativeBuffer();
-        bufferInfo.offset = bufferMemoryView.GetOffset() + viewDesc.m_elementSize * viewDesc.m_elementOffset;
-        bufferInfo.range = viewDesc.m_elementSize * viewDesc.m_elementCount;
-        write.pBufferInfo = &bufferInfo;
-        m_device->GetContext().UpdateDescriptorSets(m_device->GetNativeDevice(), 1, &write, 0, nullptr);
-
-        return index;
+            VkWriteDescriptorSet write =
+                PrepareWrite(static_cast<uint32_t>(address.m_ptr), rwBufferIndex, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            VkDescriptorBufferInfo bufferInfo{};
+            bufferInfo.buffer = bufferMemoryView.GetNativeBuffer();
+            bufferInfo.offset = bufferMemoryView.GetOffset() + viewDesc.m_elementSize * viewDesc.m_elementOffset;
+            bufferInfo.range = viewDesc.m_elementSize * viewDesc.m_elementCount;
+            write.pBufferInfo = &bufferInfo;
+            m_device->GetContext().UpdateDescriptorSets(m_device->GetNativeDevice(), 1, &write, 0, nullptr);
+        }
+        return static_cast<uint32_t>(address.m_ptr);
     }
 
     void BindlessDescriptorPool::DetachReadImage(uint32_t index)
     {
+        AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
         const uint32_t roTextureIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture);
         m_allocators[roTextureIndex].DeAllocate({ index });
     }
 
     void BindlessDescriptorPool::DetachReadWriteImage(uint32_t index)
     {
+        AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
         const uint32_t rwTextureIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture);
         m_allocators[rwTextureIndex].DeAllocate({ index });
     }
 
     void BindlessDescriptorPool::DetachReadBuffer(uint32_t index)
     {
+        AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
         const uint32_t roBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer);
         m_allocators[roBufferIndex].DeAllocate({ index });
     }
 
     void BindlessDescriptorPool::DetachReadWriteBuffer(uint32_t index)
     {
+        AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
         const uint32_t rwBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer);
         m_allocators[rwBufferIndex].DeAllocate({ index });
     }

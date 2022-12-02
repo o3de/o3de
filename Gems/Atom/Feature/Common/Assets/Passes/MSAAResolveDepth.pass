@@ -24,6 +24,11 @@
                     "LoadStoreAction": {
                         "LoadAction": "DontCare",
                         "LoadActionStencil": "DontCare"
+                    },
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
                     }
                 }
             ],
