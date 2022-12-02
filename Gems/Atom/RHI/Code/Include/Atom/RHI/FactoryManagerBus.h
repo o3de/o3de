@@ -63,7 +63,7 @@ namespace AZ
             virtual void FactoryUnregistered(){};
 
         public:
-            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         };
 
         /// EBus for sending notifications frpm the RHI factory.
