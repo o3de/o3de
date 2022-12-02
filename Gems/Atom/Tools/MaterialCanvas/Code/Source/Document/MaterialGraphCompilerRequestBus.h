@@ -14,21 +14,12 @@
 
 namespace MaterialCanvas
 {
-    class MaterialCanvasDocumentRequests : public AZ::EBusTraits
+    class MaterialGraphCompilerRequests : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         typedef AZ::Uuid BusIdType;
-
-        // Get the graph model graph pointer for this document.
-        virtual GraphModel::GraphPtr GetGraph() const = 0;
-
-        // Get the graph canvas scene ID for this document.
-        virtual GraphCanvas::GraphId GetGraphId() const = 0;
-
-        // Convert the document file name into one that can be used as a symbol in graph template files.
-        virtual AZStd::string GetGraphName() const = 0;
 
         // Get a list of all of the generated files from the last time this graph was compiled.
         virtual const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const = 0;
@@ -43,5 +34,5 @@ namespace MaterialCanvas
         virtual bool IsCompileGraphQueued() const = 0;
     };
 
-    using MaterialCanvasDocumentRequestBus = AZ::EBus<MaterialCanvasDocumentRequests>;
+    using MaterialGraphCompilerRequestBus = AZ::EBus<MaterialGraphCompilerRequests>;
 } // namespace MaterialCanvas

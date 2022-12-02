@@ -13,26 +13,23 @@
 #include <AtomToolsFramework/GraphView/GraphView.h>
 #endif
 
-namespace MaterialCanvas
+namespace AtomToolsFramework
 {
-    //! MaterialCanvasGraphView handles displaying and managing interactions for a single graph
-    class MaterialCanvasGraphView
-        : public AtomToolsFramework::GraphView
-        , private AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
+    //! GraphDocumentView bridges document system managed graph model graphs with a single graph view per document 
+    class GraphDocumentView
+        : public GraphView
+        , private AtomToolsDocumentNotificationBus::Handler
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(MaterialCanvasGraphView, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphDocumentView, AZ::SystemAllocator, 0);
 
-        MaterialCanvasGraphView(
-            const AZ::Crc32& toolId,
-            const AZ::Uuid& documentId,
-            AtomToolsFramework::GraphViewSettingsPtr graphViewSettingsPtr,
-            QWidget* parent = 0);
-        ~MaterialCanvasGraphView();
+        GraphDocumentView(
+            const AZ::Crc32& toolId, const AZ::Uuid& documentId, GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent = 0);
+        ~GraphDocumentView();
 
     protected:
-        // AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler overrides...
+        // AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
         void OnDocumentClosed(const AZ::Uuid& documentId) override;
         void OnDocumentDestroyed(const AZ::Uuid& documentId) override;
@@ -40,4 +37,4 @@ namespace MaterialCanvas
         const AZ::Uuid m_documentId;
         bool m_openedBefore = false;
     };
-} // namespace MaterialCanvas
+} // namespace AtomToolsFramework

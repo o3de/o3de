@@ -95,9 +95,14 @@ set(FILES
     Source/EntityPreviewViewport/EntityPreviewViewportToolBar.cpp
     Source/EntityPreviewViewport/EntityPreviewViewportWidget.cpp
 
+    Include/AtomToolsFramework/GraphView/GraphDocument.h
+    Include/AtomToolsFramework/GraphView/GraphDocumentRequestBus.h
+    Include/AtomToolsFramework/GraphView/GraphDocumentView.h
     Include/AtomToolsFramework/GraphView/GraphView.h
     Include/AtomToolsFramework/GraphView/GraphViewConstructPresets.h
     Include/AtomToolsFramework/GraphView/GraphViewSettings.h
+    Source/GraphView/GraphDocument.cpp
+    Source/GraphView/GraphDocumentView.cpp
     Source/GraphView/GraphView.cpp
     Source/GraphView/GraphView.qrc
     Source/GraphView/GraphView.qss

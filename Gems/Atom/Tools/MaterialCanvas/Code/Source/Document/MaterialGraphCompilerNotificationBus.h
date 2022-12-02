@@ -12,7 +12,7 @@
 
 namespace MaterialCanvas
 {
-    class MaterialCanvasDocumentNotifications : public AZ::EBusTraits
+    class MaterialGraphCompilerNotifications : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
@@ -29,5 +29,5 @@ namespace MaterialCanvas
         virtual void OnCompileGraphFailed([[maybe_unused]] const AZ::Uuid& documentId){};
     };
 
-    using MaterialCanvasDocumentNotificationBus = AZ::EBus<MaterialCanvasDocumentNotifications>;
+    using MaterialGraphCompilerNotificationBus = AZ::EBus<MaterialGraphCompilerNotifications>;
 } // namespace MaterialCanvas

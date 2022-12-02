@@ -6,36 +6,32 @@
  *
  */
 
-#include <Document/MaterialCanvasDocumentRequestBus.h>
-#include <Window/MaterialCanvasGraphView.h>
+#include <AtomToolsFramework/GraphView/GraphDocumentRequestBus.h>
+#include <AtomToolsFramework/GraphView/GraphDocumentView.h>
 
-namespace MaterialCanvas
+namespace AtomToolsFramework
 {
-    MaterialCanvasGraphView::MaterialCanvasGraphView(
-        const AZ::Crc32& toolId,
-        const AZ::Uuid& documentId,
-        AtomToolsFramework::GraphViewSettingsPtr graphViewSettingsPtr,
-        QWidget* parent)
-        : AtomToolsFramework::GraphView(toolId, GraphCanvas::GraphId(), graphViewSettingsPtr, parent)
+    GraphDocumentView::GraphDocumentView(
+        const AZ::Crc32& toolId, const AZ::Uuid& documentId, GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent)
+        : GraphView(toolId, GraphCanvas::GraphId(), graphViewSettingsPtr, parent)
         , m_documentId(documentId)
     {
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
+        AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
         OnDocumentOpened(m_documentId);
         m_openedBefore = false;
     }
 
-    MaterialCanvasGraphView::~MaterialCanvasGraphView()
+    GraphDocumentView::~GraphDocumentView()
     {
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
+        AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
     }
 
-    void MaterialCanvasGraphView::OnDocumentOpened(const AZ::Uuid& documentId)
+    void GraphDocumentView::OnDocumentOpened(const AZ::Uuid& documentId)
     {
         if (m_documentId == documentId)
         {
             GraphCanvas::GraphId activeGraphId = GraphCanvas::GraphId();
-            MaterialCanvasDocumentRequestBus::EventResult(
-                activeGraphId, m_documentId, &MaterialCanvasDocumentRequestBus::Events::GetGraphId);
+            GraphDocumentRequestBus::EventResult(activeGraphId, m_documentId, &GraphDocumentRequestBus::Events::GetGraphId);
             SetActiveGraphId(activeGraphId, true);
 
             // Show the entire graph and center the view the first time a graph is opened
@@ -52,7 +48,7 @@ namespace MaterialCanvas
         SetActiveGraphId(GraphCanvas::GraphId(), false);
     }
 
-    void MaterialCanvasGraphView::OnDocumentClosed([[maybe_unused]] const AZ::Uuid& documentId)
+    void GraphDocumentView::OnDocumentClosed([[maybe_unused]] const AZ::Uuid& documentId)
     {
         if (m_documentId == documentId)
         {
@@ -60,13 +56,11 @@ namespace MaterialCanvas
         }
     }
 
-    void MaterialCanvasGraphView::OnDocumentDestroyed([[maybe_unused]] const AZ::Uuid& documentId)
+    void GraphDocumentView::OnDocumentDestroyed([[maybe_unused]] const AZ::Uuid& documentId)
     {
         if (m_documentId == documentId)
         {
             SetActiveGraphId(GraphCanvas::GraphId(), true);
         }
     }
-} // namespace MaterialCanvas
-
-#include <Window/moc_MaterialCanvasGraphView.cpp>
+} // namespace AtomToolsFramework
