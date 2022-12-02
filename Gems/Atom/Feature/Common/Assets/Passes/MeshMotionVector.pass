@@ -31,11 +31,6 @@
                         "LoadActionStencil": "Clear",
                         "StoreAction": "DontCare",
                         "StoreActionStencil": "DontCare"
-                    },
-                    "ImageViewDesc": {
-                        "AspectFlags": [
-                            "Depth"
-                        ]
                     }
                 }
             ],

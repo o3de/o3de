@@ -16,11 +16,6 @@
                             "Type": "DepthStencil"
                         },
                         "LoadActionStencil": "Clear"
-                    },
-                    "ImageViewDesc": {
-                        "AspectFlags": [
-                            "Depth"
-                        ]
                     }
                 },
                 {

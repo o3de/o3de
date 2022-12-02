@@ -15,12 +15,7 @@
                 {
                     "Name": "DepthInputOutput",
                     "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "DepthStencil",
-                    "ImageViewDesc": {
-                        "AspectFlags": [
-                            "Depth"
-                        ]
-                    }
+                    "ScopeAttachmentUsage": "DepthStencil"
                 }
             ],
             "Connections": [

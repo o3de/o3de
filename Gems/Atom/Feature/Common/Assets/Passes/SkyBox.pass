@@ -15,12 +15,7 @@
                 {
                     "Name": "SkyBoxDepth",
                     "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "DepthStencil",
-                    "ImageViewDesc": {
-                        "AspectFlags": [
-                            "Depth"
-                        ]
-                    }
+                    "ScopeAttachmentUsage": "DepthStencil"
                 }
             ],
             "PassData": {

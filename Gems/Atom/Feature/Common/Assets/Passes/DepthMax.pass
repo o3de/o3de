@@ -24,11 +24,6 @@
                         },
                         "LoadAction": "Clear",
                         "LoadActionStencil": "Clear"
-                    },
-                    "ImageViewDesc": {
-                        "AspectFlags": [
-                            "Depth"
-                        ]
                     }
                 },
                 {
