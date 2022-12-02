@@ -2334,7 +2334,7 @@ namespace AZ::StringFunc
                 AZStd::string originalFname;
                 do
                 {
-                    originalFname = AZStd::string(stem.Native()) + suffix + AZStd::to_string(value++);
+                    originalFname = AZStd::string(stem.Native()) + suffix + AZStd::to_string(value++) + extension.Native().data();
                     ConstructFull(directoryPath.c_str(), originalFname.c_str(), extension.Native().data(), outFilePath);
                 } while (AZ::IO::FileIOBase::GetInstance()->Exists(outFilePath.c_str()));
             }
