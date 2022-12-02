@@ -51,7 +51,7 @@ namespace AZ
             //!
             //! This requires that Shutdown properly account for being called multiple times.
             void release() const;
-            mutable AZStd::atomic_int m_useCount;
+            mutable AZStd::atomic_int m_useCount = 0;
 
         private:
 
