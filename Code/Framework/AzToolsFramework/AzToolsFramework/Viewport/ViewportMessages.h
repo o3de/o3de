@@ -272,16 +272,10 @@ namespace AzToolsFramework
             virtual void OnAngleSnappingChanged([[maybe_unused]] bool enabled)
             {
             }
-            virtual void OnAngleSnappingSizeChanged([[maybe_unused]] float size)
-            {
-            }
             virtual void OnGridSnappingChanged([[maybe_unused]] bool enabled)
             {
             }
             virtual void OnGridShowingChanged([[maybe_unused]] bool showing)
-            {
-            }
-            virtual void OnGridSnappingSizeChanged([[maybe_unused]] float size)
             {
             }
             virtual void OnDrawHelpersChanged([[maybe_unused]] bool enabled)

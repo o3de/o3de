@@ -127,6 +127,11 @@ namespace SandboxEditor
             handler.Connect(m_angleSnappingChanged);
         }
 
+        void SetGridShowingChangedEvent(GridShowingChangedEvent::Handler& handler) override
+        {
+            handler.Connect(m_gridShowingChanged);
+        }
+
         void SetGridSnappingChangedEvent(GridSnappingChangedEvent::Handler& handler) override
         {
             handler.Connect(m_gridSnappingChanged);
@@ -148,12 +153,14 @@ namespace SandboxEditor
         }
 
         AngleSnappingChangedEvent m_angleSnappingChanged;
+        GridSnappingChangedEvent m_gridShowingChanged;
         GridSnappingChangedEvent m_gridSnappingChanged;
         PerspectiveChangedEvent m_perspectiveChanged;
         NearFarPlaneChangedEvent m_farPlaneChanged;
         NearFarPlaneChangedEvent m_nearPlaneChanged;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_angleSnappingNotifyEventHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_farPlaneDistanceNotifyEventHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_gridShowingNotifyEventHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_gridSnappingNotifyEventHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_nearPlaneDistanceNotifyEventHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_perspectiveNotifyEventHandler;
@@ -220,9 +227,6 @@ namespace SandboxEditor
     void SetGridSnappingSize(const float size)
     {
         AzToolsFramework::SetRegistry(GridSizeSetting, size);
-
-        AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-            &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnGridSnappingSizeChanged, size);
     }
 
     bool AngleSnappingEnabled()
@@ -243,9 +247,6 @@ namespace SandboxEditor
     void SetAngleSnappingSize(const float size)
     {
         AzToolsFramework::SetRegistry(AngleSizeSetting, size);
-
-        AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-            &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnAngleSnappingSizeChanged, size);
     }
 
     bool ShowingGrid()
@@ -256,9 +257,6 @@ namespace SandboxEditor
     void SetShowingGrid(const bool showing)
     {
         AzToolsFramework::SetRegistry(ShowGridSetting, showing);
-
-        AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-            &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnGridSnappingShowingChanged, showing);
     }
 
     bool StickySelectEnabled()

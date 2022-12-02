@@ -707,10 +707,10 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
     // Show Grid
     {
-        constexpr AZStd::string_view actionIdentifier = "o3de.action.edit.snap.toggleGrid";
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.edit.snap.toggleShowingGrid";
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Show Grid";
-        actionProperties.m_description = "Show grid";
+        actionProperties.m_description = "Show Grid for entity snapping.";
         actionProperties.m_category = "Edit";
         actionProperties.m_hideFromMenusWhenDisabled = false;
 
@@ -2059,14 +2059,14 @@ void EditorActionsHandler::OnDrawHelpersChanged([[maybe_unused]] bool enabled)
     m_actionManagerInterface->TriggerActionUpdater(DrawHelpersStateChangedUpdaterIdentifier);
 }
 
-void EditorActionsHandler::OnGridSnappingChanged([[maybe_unused]] bool enabled)
-{
-    m_actionManagerInterface->TriggerActionUpdater(GridSnappingStateChangedUpdaterIdentifier);
-}
-
 void EditorActionsHandler::OnGridShowingChanged([[maybe_unused]] bool showing)
 {
     m_actionManagerInterface->TriggerActionUpdater(GridShowingChangedUpdaterIdentifier);
+}
+
+void EditorActionsHandler::OnGridSnappingChanged([[maybe_unused]] bool enabled)
+{
+    m_actionManagerInterface->TriggerActionUpdater(GridSnappingStateChangedUpdaterIdentifier);
 }
 
 void EditorActionsHandler::OnIconsVisibilityChanged([[maybe_unused]] bool enabled)

@@ -848,6 +848,15 @@ void EditorViewportWidget::SetViewportId(int id)
 
     m_editorViewportSettingsCallbacks = SandboxEditor::CreateEditorViewportSettingsCallbacks();
 
+    m_gridShowingHandler = SandboxEditor::GridShowingChangedEvent::Handler(
+        [id](const bool showing)
+        {
+            AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Event(
+                id, &AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Events::OnGridShowingChanged, showing);
+        }
+    );
+    m_editorViewportSettingsCallbacks->SetGridShowingChangedEvent(m_gridShowingHandler);
+
     m_gridSnappingHandler = SandboxEditor::GridSnappingChangedEvent::Handler(
         [id](const bool snapping)
         {

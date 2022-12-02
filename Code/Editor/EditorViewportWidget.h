@@ -389,6 +389,7 @@ private:
 
     // Handlers for snapping/editor event callbacks
     SandboxEditor::AngleSnappingChangedEvent::Handler m_angleSnappingHandler;
+    SandboxEditor::GridShowingChangedEvent::Handler m_gridShowingHandler;
     SandboxEditor::GridSnappingChangedEvent::Handler m_gridSnappingHandler;
     SandboxEditor::NearFarPlaneChangedEvent::Handler m_nearPlaneDistanceHandler;
     SandboxEditor::NearFarPlaneChangedEvent::Handler m_farPlaneDistanceHandler;

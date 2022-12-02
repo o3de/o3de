@@ -11,7 +11,8 @@
 
 #include <QHBoxLayout>
 
-constexpr int FieldMargins = 18;
+constexpr int FieldMargins = 16;
+constexpr int SpinBoxWidth = 64;
 
 PropertyInputDoubleWidget::PropertyInputDoubleWidget()
 {
@@ -21,8 +22,7 @@ PropertyInputDoubleWidget::PropertyInputDoubleWidget()
 
     // Create SpinBox.
     m_spinBox = new AzQtComponents::DoubleSpinBox(this);
-    // TODO - turn 64 into a constant
-    m_spinBox->setFixedWidth(64);
+    m_spinBox->setFixedWidth(SpinBoxWidth);
 
     // Trigger OnSpinBoxValueChanged when the user changes the value.
     connect(

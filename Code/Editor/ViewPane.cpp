@@ -296,11 +296,8 @@ void CLayoutViewPane::OnActionRegistrationHook()
             actionProperties,
             []
             {
-            }
-        );
+            });
     }
-
-
 
     // Viewport Debug Information
     {
@@ -325,8 +322,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
                     currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
 
                 return currentState != AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
-            }
-        );
+            });
 
         m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
@@ -351,8 +347,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
                     currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
 
                 return currentState == AZ::AtomBridge::ViewportInfoDisplayState::NormalInfo;
-            }
-        );
+            });
 
         m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
@@ -377,8 +372,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
                     currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
 
                 return currentState == AZ::AtomBridge::ViewportInfoDisplayState::FullInfo;
-            }
-        );
+            });
 
         m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
@@ -403,8 +397,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
                     currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
 
                 return currentState == AZ::AtomBridge::ViewportInfoDisplayState::CompactInfo;
-            }
-        );
+            });
 
         m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
@@ -429,35 +422,13 @@ void CLayoutViewPane::OnActionRegistrationHook()
                     currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
 
                 return currentState == AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
-            }
-        );
+            });
 
         m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
 
-    // Show Grid
+    // Viewport Size
     {
-        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.gridSnapping.show";
-        AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Show Grid";
-        actionProperties.m_category = "Viewport Grid Snapping";
-
-        m_actionManagerInterface->RegisterCheckableAction(
-            EditorMainWindowActionContextIdentifier,
-            actionIdentifier,
-            actionProperties,
-            []
-            {
-                SandboxEditor::SetShowingGrid(!SandboxEditor::ShowingGrid());
-            },
-            []() -> bool
-            {
-                return SandboxEditor::ShowingGrid();
-            }
-        );
-
-        // TODO - Grid Snapping Showing Updated?
-        // m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
 }
 
@@ -489,7 +460,7 @@ void CLayoutViewPane::OnMenuBindingHook()
     // Options
     {
         m_menuManagerInterface->AddActionToMenu(ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.toggleGridSnapping", 300);
-        m_menuManagerInterface->AddActionToMenu(ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.toggleGrid", 400);
+        m_menuManagerInterface->AddActionToMenu(ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.toggleShowingGrid", 400);
         m_menuManagerInterface->AddWidgetToMenu(ViewportOptionsMenuIdentifier, "o3de.widgetAction.viewport.gridSnappingSize", 500);
         m_menuManagerInterface->AddSeparatorToMenu(ViewportOptionsMenuIdentifier, 600);
         m_menuManagerInterface->AddActionToMenu(ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.toggleAngleSnapping", 700);
