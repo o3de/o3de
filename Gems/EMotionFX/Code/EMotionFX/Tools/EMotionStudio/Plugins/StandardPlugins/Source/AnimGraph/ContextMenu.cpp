@@ -41,8 +41,6 @@ namespace EMStudio
             return;
         }
 
-        const size_t selectedNodeCount = GetActiveGraph()->GetSelectedAnimGraphNodes().size();
-
         QMenu* nodeGroupMenu = new QMenu(tr("Assign To Node Group"), menu);
 
         // We keep track of how many groups are valid for the level currently being shown on the animation graph.
@@ -69,7 +67,7 @@ namespace EMStudio
                 QAction* nodeGroupAction = nodeGroupMenu->addAction(QIcon(new SolidColorIconEngine(nodeGroupColor)), nodeGroup->GetName());
                 nodeGroupAction->setCheckable(true);
                 nodeGroupAction->setData(qulonglong(i + 1)); // index of the menu added, not used
-                if (currentlyAssignedGroup == nodeGroup && selectedNodeCount == 1)
+                if (currentlyAssignedGroup == nodeGroup)
                 {
                     nodeGroupAction->setChecked(true);
                     // Remove the nodes from the group they are already in
@@ -572,7 +570,19 @@ namespace EMStudio
             }
             else
             {
-                AddAssignNodeToGroupSubmenu(&menu, selectedNodes[0]->GetAnimGraph(), nullptr);
+                // Only pass nodeGroup through to the group assignment menu if all selected nodes are within
+                // the same nodeGroup. This allows removing the selected nodes from the group via the
+                // assignment menu.
+                bool allSelectedNodesWithinGroup = AZStd::all_of(
+                    selectedNodes.cbegin(),
+                    selectedNodes.cend(),
+                    [&nodeGroup](EMotionFX::AnimGraphNode* node)
+                    {
+                        return nodeGroup ? nodeGroup->Contains(node->GetId()) : false;
+                    });
+                auto* nodeGroupForAssignmentMenu = allSelectedNodesWithinGroup ? nodeGroup : nullptr;
+
+                AddAssignNodeToGroupSubmenu(&menu, selectedNodes[0]->GetAnimGraph(), nodeGroupForAssignmentMenu);
                 QAction* removeFromGroupAction = menu.addAction(tr("Remove From Node Group"));
                 connect(
                     removeFromGroupAction,
