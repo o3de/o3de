@@ -109,8 +109,8 @@ namespace Multiplayer
         "Should the Multiplayer gem record average physics tick time?");
     AZ_CVAR(bool, bg_captureTransportMetrics, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Should the Multiplayer gem record transport metrics?");
-    AZ_CVAR(int, bg_captureTransportType, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
-        "If 0, will capture UDP transport metrics, otherwise will capture TCP transport metrics.");
+    AZ_CVAR(AzNetworking::ProtocolType, bg_captureTransportType, AzNetworking::ProtocolType::Udp, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "Capture either UDP or TCP transport metrics.");
     AZ_CVAR(AZ::TimeMs, bg_captureTransportPeriod, AZ::TimeMs{1000}, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "How often in milliseconds to record transport metrics.");
 
@@ -223,7 +223,6 @@ namespace Multiplayer
     {
         required.push_back(AZ_CRC_CE("NetworkingService"));
         required.push_back(AZ_CRC_CE("MultiplayerStatSystemComponent"));
-        required.push_back(AZ_CRC_CE("PhysicsService"));
     }
 
     void MultiplayerSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -283,15 +282,6 @@ namespace Multiplayer
         if (bg_captureTransportMetrics)
         {
             m_metricsEvent.Enqueue(bg_captureTransportPeriod, true);
-        }
-
-        if (bg_capturePhysicsTickMetric)
-        {
-            if (auto* physXSystem = PhysX::GetPhysXSystem())
-            {
-                physXSystem->RegisterPreSimulateEvent(m_preSimulateHandler);
-                physXSystem->RegisterPostSimulateEvent(m_postSimulateHandler);
-            }
         }
     }
 
@@ -1198,6 +1188,17 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::InitializeMultiplayer(MultiplayerAgentType multiplayerType)
     {
+        if (bg_capturePhysicsTickMetric)
+        {
+            if (auto* physXSystem = PhysX::GetPhysXSystem())
+            {
+                m_preSimulateHandler.Disconnect();
+                physXSystem->RegisterPreSimulateEvent(m_preSimulateHandler);
+                m_postSimulateHandler.Disconnect();
+                physXSystem->RegisterPostSimulateEvent(m_postSimulateHandler);
+            }
+        }
+
         m_lastReplicatedHostFrameId = HostFrameId{0};
 
         if (m_agentType == multiplayerType)
@@ -1691,19 +1692,9 @@ namespace Multiplayer
         const auto& networkInterfaces = AZ::Interface<AzNetworking::INetworking>::Get()->GetNetworkInterfaces();
         for (const auto& networkInterface : networkInterfaces)
         {
-            if (bg_captureTransportType == 0) // look for UDP
+            if (networkInterface.second->GetType() != bg_captureTransportType)
             {
-                if (networkInterface.second->GetType() != ProtocolType::Udp)
-                {
-                    continue;
-                }
-            }
-            else // look for TCP
-            {
-                if (networkInterface.second->GetType() != ProtocolType::Tcp)
-                {
-                    continue;
-                }
+                continue;
             }
             
             if (networkInterface.second->GetTrustZone() != TrustZone::ExternalClientToServer)
