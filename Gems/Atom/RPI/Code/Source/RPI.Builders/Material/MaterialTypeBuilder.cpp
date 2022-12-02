@@ -66,22 +66,8 @@ namespace AZ
             auto materialPipelinePaths = GetMaterialPipelinePaths();
             AZStd::string materialPipelinePathString;
             AzFramework::StringFunc::Join(materialPipelinePathString, materialPipelinePaths.begin(), materialPipelinePaths.end(), ", ");
-            AZStd::string fingerprint = AZStd::string::format("[MaterialPipelineList %s][EnableMaterialPipelineSystem %d]", materialPipelinePathString.c_str(), ShouldEnableMaterialPipelineSystem());
+            AZStd::string fingerprint = AZStd::string::format("[MaterialPipelineList %s]", materialPipelinePathString.c_str());
             return fingerprint;
-        }
-
-        bool MaterialTypeBuilder::PipelineStage::ShouldEnableMaterialPipelineSystem() const
-        {
-            // This setting is needed temporarily while we address some issues in the Asset Processor.
-            // https://github.com/o3de/o3de/issues/12745
-            // So for now the material pipeline system is enabled by default, but we will disable it in
-            // the AumatedTesting project so it does not cause Automated Review (AR) failures on Jeknins.
-            bool value = true;
-            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-            {
-                settingsRegistry->Get(value, "/O3DE/Atom/RPI/MaterialTypeBuilder/EnableMaterialPipelineSystem");
-            }
-            return value;
         }
 
         AZStd::string MaterialTypeBuilder::FinalStage::GetBuilderSettingsFingerprint() const
@@ -140,13 +126,6 @@ namespace AZ
 
         void MaterialTypeBuilder::PipelineStage::CreateJobsHelper(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response, const MaterialTypeSourceData& materialTypeSourceData) const
         {
-            if (!ShouldEnableMaterialPipelineSystem())
-            {
-                AZ_Warning(MaterialTypeBuilderName, false, "The material pipeline system is disabled. This could cause other asset failures if something depends on this material type or one of its products.");
-                response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
-                return;
-            }
-
             AssetBuilderSDK::JobDescriptor outputJobDescriptor;
             outputJobDescriptor.m_jobKey = MaterialTypeBuilder::PipelineStageJobKey;
             outputJobDescriptor.m_additionalFingerprintInfo = GetBuilderSettingsFingerprint();

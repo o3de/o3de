@@ -43,6 +43,8 @@ namespace GraphCanvas { class NodePaletteTreeView; }
 namespace EMotionFX
 {
     class SimulatedObjectColliderWidget;
+    class SkeletonOutlinerPlugin;
+    class SimulatedObjectWidget;
 
     class MakeQtApplicationBase
     {
@@ -134,6 +136,9 @@ namespace EMotionFX
 
         QApplication* m_uiApp = nullptr;
         EMStudio::AnimGraphPlugin* m_animGraphPlugin = nullptr;
+        EMotionFX::SkeletonOutlinerPlugin* m_skeletonOutlinerPlugin = nullptr;
+        EMotionFX::SimulatedObjectWidget* m_simulatedObjectPlugin = nullptr;
+
         testing::NiceMock<UnitTests::MockAssetSystemRequest> m_assetSystemRequestMock;
     };
 } // end namespace EMotionFX

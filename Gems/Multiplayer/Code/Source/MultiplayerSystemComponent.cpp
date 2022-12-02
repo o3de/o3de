@@ -1715,7 +1715,7 @@ namespace Multiplayer
                 mutableAddress[portSeparator] = '\0';
                 const char* addressStr = mutableAddress;
                 const char* portStr = &(mutableAddress[portSeparator + 1]);
-                int32_t portNumber = atol(portStr);
+                int32_t portNumber = static_cast<int32_t>(atol(portStr));
                 AZ::Interface<IMultiplayer>::Get()->Connect(addressStr, static_cast<uint16_t>(portNumber));
             }
         }

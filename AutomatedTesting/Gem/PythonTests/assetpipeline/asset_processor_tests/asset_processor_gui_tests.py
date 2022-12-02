@@ -65,9 +65,9 @@ def ap_idle(workspace, ap_setup_fixture):
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.SUITE_periodic
 @pytest.mark.assetpipeline
-class TestsAssetProcessorGUI_Windows(object):
+class TestsAssetProcessorGUI(object):
     """
-    Specific Tests for Asset Processor GUI To Only Run on Windows
+    Specific Tests for Asset Processor GUI
     """
 
     @pytest.mark.assetpipeline
@@ -95,7 +95,7 @@ class TestsAssetProcessorGUI_Windows(object):
     @pytest.mark.test_case_id("C1564070")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    def test_WindowsPlatforms_ProcessAssets_ReprocessDeletedCache(self, asset_processor, workspace):
+    def test_ProcessAssets_ReprocessDeletedCache(self, asset_processor, workspace):
         """
         Deleting assets from Cache will make them re-processed in the already running AP
         """
@@ -128,7 +128,7 @@ class TestsAssetProcessorGUI_Windows(object):
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     # fmt:off
-    def test_WindowsPlatforms_RemoveProjectAssets_ProcessedAssetsDeleted(self, asset_processor, ap_setup_fixture,
+    def test_RemoveProjectAssets_ProcessedAssetsDeleted(self, asset_processor, ap_setup_fixture,
                                                                          ):
         # fmt:on
         """
@@ -177,7 +177,7 @@ class TestsAssetProcessorGUI_Windows(object):
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     # fmt:off
-    def test_WindowsPlatforms_ModifyAsset_UpdatedAssetProcessed(self, asset_processor, ap_setup_fixture,
+    def test_ModifyAsset_UpdatedAssetProcessed(self, asset_processor, ap_setup_fixture,
                                                                 ):
         # fmt:on
         """
@@ -202,7 +202,7 @@ class TestsAssetProcessorGUI_Windows(object):
 
         # Save path to test asset in project folder and path to test asset in cache
         project_asset_path = os.path.join(test_assets_folder, "C1591563_test_asset.txt")
-        cache_asset_path = os.path.join(cache_path, "C1591563_test_asset.txt")
+        cache_asset_path = os.path.join(cache_path, "c1591563_test_asset.txt")
 
         result, _ = asset_processor.gui_process(quitonidle=False)
         assert result, "AP GUI failed"
@@ -236,7 +236,7 @@ class TestsAssetProcessorGUI_Windows(object):
     @pytest.mark.test_case_id("C24168803")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    def test_WindowsPlatforms_RunAP_ProcessesIdle(self, asset_processor):
+    def test_RunAP_ProcessesIdle(self, asset_processor):
         """
         Asset Processor goes idle
 
@@ -269,7 +269,7 @@ class TestsAssetProcessorGUI_Windows(object):
     @pytest.mark.test_case_id("C1564064")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    def test_WindowsPlatforms_AddAssetsWhileRunning_AssetsProcessed(
+    def test_AddAssetsWhileRunning_AssetsProcessed(
         self, ap_setup_fixture, workspace, asset_processor
     ):
         """
@@ -298,7 +298,7 @@ class TestsAssetProcessorGUI_Windows(object):
         # Expected test asset sources and products
         exp_project_level_assets = ["TestDependenciesLevel.prefab"]
         exp_project_test_assets = [new_asset]
-        exp_cache_level_assets = ["TestDependenciesLevel.spawnable".lower(),"TestDependenciesLevel.network.spawnable".lower()]
+        exp_cache_level_assets = ["TestDependenciesLevel.spawnable".lower()]
         exp_cache_test_assets = [f"{new_asset_lower}_compiled", f"{new_asset_lower}_fn_compiled", "c1564064_vm.luac"]
 
         result, _ = asset_processor.gui_process(quitonidle=False)

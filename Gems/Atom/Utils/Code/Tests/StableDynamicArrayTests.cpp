@@ -16,12 +16,12 @@ namespace UnitTest
     // Fixture that creates a bare-bones app
 
     class StableDynamicArrayTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
 
             handles.reserve(s_testCount);
@@ -32,7 +32,7 @@ namespace UnitTest
             handles = AZStd::vector<AZ::StableDynamicArray<TestItem>::Handle>(); // force memory deallocation.
             
             AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         struct TestItem
@@ -425,7 +425,7 @@ namespace UnitTest
 
     // Fixture for testing handles and ensuring the correct number of objects are created, modified, and/or destroyed
     class StableDynamicArrayHandleTests
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
         friend class StableDynamicArrayOwner;
         friend class MoveTest;

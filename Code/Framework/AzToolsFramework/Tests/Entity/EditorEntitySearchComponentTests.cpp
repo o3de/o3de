@@ -143,7 +143,7 @@ namespace AzToolsFramework
     const float EntitySearch_TestComponent2::DefaultFloatValue = 5.0f;
 
     class EditorEntitySearchComponentTests
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     protected:
         void SetUp() override
