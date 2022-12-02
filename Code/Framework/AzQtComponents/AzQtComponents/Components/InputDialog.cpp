@@ -20,11 +20,9 @@ namespace AzQtComponents
     {
     }
 
-    void InputDialog::setValidator(QValidator* validator)
+    void InputDialog::AttemptAssignValidator()
     {
-        m_validator = validator;
-
-        // If this is called after show has been called, the QLineEdit will be available to patch.
+        // This will succeed only if show() has happened, which sets up the UI.
         QLineEdit* lineEdit = this->findChild<QLineEdit*>();
         if (lineEdit)
         {
@@ -32,18 +30,16 @@ namespace AzQtComponents
         }
     }
 
+    void InputDialog::setValidator(QValidator* validator)
+    {
+        AttemptAssignValidator();
+    }
+
     void InputDialog::show()
     {
         QInputDialog::show();
 
-        if (m_validator)
-        {
-            QLineEdit* lineEdit = this->findChild<QLineEdit*>();
-            if (lineEdit)
-            {
-                lineEdit->setValidator(m_validator);
-            }
-        }
+        AttemptAssignValidator();
     }
 
     int InputDialog::exec()

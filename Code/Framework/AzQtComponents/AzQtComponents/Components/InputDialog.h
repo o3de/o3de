@@ -49,6 +49,8 @@ namespace AzQtComponents
                                const QString& text = QString(),
                                const QString& validationRegExp = QString());
     private:
+        void AttemptAssignValidator();
+
         QValidator* m_validator = nullptr;
     };
 } // namespace AzQtComponents
