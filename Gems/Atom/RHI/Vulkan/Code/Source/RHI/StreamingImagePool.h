@@ -33,10 +33,8 @@ namespace AZ
             ~StreamingImagePool() = default;
 
             MemoryView AllocateMemory(size_t size, size_t alignment);
-            RHI::ResultCode AllocateMemoryBlocks(AZStd::vector<MemoryView>& outMemoryViews, uint32_t blockCount, size_t blockSize);
             RHI::ResultCode AllocateMemoryBlocks(AZStd::vector<HeapTiles>& outHeapTiles, uint32_t blockCount);
             void DeAllocateMemory(MemoryView& memoryView);
-            void DeAllocateMemory(AZStd::vector<MemoryView>& memoryViews);
             void DeAllocateMemoryBlocks(AZStd::vector<HeapTiles>& heapTiles);
 
         private:

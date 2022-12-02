@@ -35,37 +35,6 @@ namespace AZ
             return m_memoryAllocator.Allocate(size, alignment);
         }
 
-        RHI::ResultCode StreamingImagePool::AllocateMemoryBlocks(AZStd::vector<MemoryView>& outMemoryViews, uint32_t blockCount, size_t blockSize)
-        {
-            AZ_Assert(outMemoryViews.empty(), "outMemoryViews should be empty");
-            const uint32_t blockCountPerPage = aznumeric_cast<uint32_t>(m_memoryAllocator.GetDescriptor().m_pageSizeInBytes / blockSize);
-
-            bool allocationFailed = false;
-            while (blockCount > 0)
-            {
-                uint32_t allocateBlockCount = AZStd::min(blockCount, blockCountPerPage);
-                auto memoryView = m_memoryAllocator.Allocate(allocateBlockCount * blockSize, blockSize);
-                if (!memoryView.IsValid())
-                {
-                    allocationFailed = true;
-                    break;
-                }
-                
-                AZ_Assert(memoryView.GetAllocationType() == MemoryAllocationType::SubAllocated, "Memory block should always be sub-allocated");
-                blockCount -= allocateBlockCount;
-                outMemoryViews.push_back(memoryView);
-            }
-
-            // If failed, release allocated MemoryViews
-            if (allocationFailed)
-            {
-                DeAllocateMemory(outMemoryViews);
-                return RHI::ResultCode::OutOfMemory;
-            }
-
-            return RHI::ResultCode::Success;
-        }
-
         RHI::ResultCode StreamingImagePool::AllocateMemoryBlocks(AZStd::vector<HeapTiles>& outHeapTiles, uint32_t blockCount)
         {
             AZ_Assert(outHeapTiles.empty(), "outHeapTiles should be empty");
@@ -119,18 +88,10 @@ namespace AZ
             m_memoryAllocator.DeAllocate(memoryView);
         }
 
-        void StreamingImagePool::DeAllocateMemory(AZStd::vector<MemoryView>& memoryViews)
-        {
-            for (MemoryView& memoryView : memoryViews)
-            {
-                m_memoryAllocator.DeAllocate(memoryView);
-            }
-            memoryViews.clear();
-        }
-
         void StreamingImagePool::DeAllocateMemoryBlocks(AZStd::vector<HeapTiles>& heapTiles)
         {
             m_tileAllocator.DeAllocate(heapTiles);
+            heapTiles.clear();
             m_tileAllocator.GarbageCollect();
         }
 
@@ -163,12 +124,12 @@ namespace AZ
             memoryAllocDescriptor.m_memoryTypeBits = memoryTypeBits;
             memoryAllocDescriptor.m_getHeapMemoryUsageFunction = [&]() { return &heapMemoryUsage; };
             memoryAllocDescriptor.m_recycleOnCollect = false;
-            memoryAllocDescriptor.m_collectLatency = RHI::Limits::Device::FrameCountMax;
+            memoryAllocDescriptor.m_collectLatency = 0;
             m_memoryAllocator.Init(memoryAllocDescriptor);
 
             // Initialize tile allocator
             m_heapPageAllocator.Init(memoryAllocDescriptor);
-            const uint32_t TileSizeInBytes = 64*1024; // standard block size
+            const uint32_t TileSizeInBytes = SparseImageInfo::StandardBlockSize;
             TileAllocator::Descriptor tileAllocatorDesc;
             tileAllocatorDesc.m_tileSizeInBytes = TileSizeInBytes;
             // Tile allocator updates used resident memory

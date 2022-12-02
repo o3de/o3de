@@ -114,6 +114,7 @@ set(FILES
     Include/Atom/RHI/ObjectPool.h
     Source/RHI/Object.cpp
     Include/Atom/RHI/PageTileAllocator.h
+    Include/Atom/RHI/PageTiles.h
     Source/RHI/PageTileAllocator.cpp
     Include/Atom/RHI/PhysicalDevice.h
     Source/RHI/PhysicalDevice.cpp

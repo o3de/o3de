@@ -19,6 +19,7 @@
 #include <RHI/MemoryView.h>
 #include <RHI/Queue.h>
 #include <Atom/RHI/AsyncWorkQueue.h>
+#include <Atom/RHI/PageTiles.h>
 
 namespace AZ
 {
@@ -34,10 +35,15 @@ namespace AZ
         class ImagePool;
         class StreamingImagePool;
 
+        // Same as HeapTiles in <RHI/TileAllocator.h>
+        using HeapTiles = RHI::PageTiles<Memory>;
+
         // contains all the information of the sparse image which includes memory bindings
         // To-do: add implementation to support non-color sparse image such as depth-stencil image
         struct SparseImageInfo
         {
+            const static uint32_t StandardBlockSize = 64*1024;
+
             void Init(const Device& device, VkImage vkImage, const RHI::ImageDescriptor& imageDescriptor);
 
             // Memory requirements for color aspect only.
@@ -62,8 +68,9 @@ namespace AZ
             AZStd::vector<uint32_t> m_mipBlockCount;
 
             // Memory bind for non-tail mips
-            using MemoryViews = AZStd::vector<MemoryView>;
-            AZStd::vector<MemoryViews> m_mipMemoryViews;                              // Memory views for each non-tail mip levels. For example: m_mipMemoryViews[0] is the memory views for mip level 0 (with all array layers)
+            using MultiHeapTiles = AZStd::vector<HeapTiles>; 
+            using MemoryViews = AZStd::vector<MemoryView>; 
+            AZStd::vector<MultiHeapTiles> m_mipHeapTiles;                           // Tiles (from multiple heaps) for each non-tail mip levels. For example: m_mipHeapTiles[0] contains all the tiles for mip level 0 (with all array layers)
             using MipMemoryBinds = AZStd::vector<VkSparseImageMemoryBind>;
             AZStd::vector<MipMemoryBinds> m_mipMemoryBinds;                         // Memory binds for each non-tail mip levels
             AZStd::vector<VkSparseImageMemoryBindInfo> m_mipMemoryBindInfos;        // Helper structure for sparse binding
@@ -73,9 +80,12 @@ namespace AZ
 
             // Memory bind for mip tail
             uint16_t m_tailStartMip;                                                // First mip level in mip tail. mip levels from m_mipTailStart to (mipmap count - 1) are all belong to mip tail
-            MemoryViews m_mipTailMemoryViews;
+            MultiHeapTiles m_mipTailHeapTiles;
             AZStd::vector<VkSparseMemoryBind> m_mipTailMemoryBinds;                 // Opaque memory bindings for mip tail
             VkSparseImageOpaqueMemoryBindInfo m_mipTailMemoryBindInfo;              // Helper structure for sparse binding
+            
+            // helper function to convert MultiHeapTiles to MemoryViews
+            static void MultiHeapTilesToMemoryViews(MemoryViews& output, const MultiHeapTiles& multiHeapTiles);
 
             uint64_t GetRequiredMemorySize(uint16_t residentMipLevel) const;
 

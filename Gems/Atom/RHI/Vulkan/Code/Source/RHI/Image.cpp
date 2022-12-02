@@ -77,7 +77,7 @@ namespace AZ
             {
                 m_mipSizes.resize(nonTailMipLevels);
                 m_mipBlockCount.resize(nonTailMipLevels);
-                m_mipMemoryViews.resize(nonTailMipLevels);
+                m_mipHeapTiles.resize(nonTailMipLevels);
                 m_mipMemoryBinds.resize(nonTailMipLevels);
                 m_mipMemoryBindInfos.resize(nonTailMipLevels);
                 m_emptyMipMemoryBinds.resize(nonTailMipLevels);
@@ -117,6 +117,19 @@ namespace AZ
             }
         }
 
+        void SparseImageInfo::MultiHeapTilesToMemoryViews(MemoryViews& output, const MultiHeapTiles& multiHeapTiles)
+        {
+            for (const HeapTiles& heapTiles : multiHeapTiles)
+            {
+                for (const RHI::PageTileSpan& tileSpan : heapTiles.m_tileSpanList)
+                {
+                    MemoryView memoryView { heapTiles.m_heap, tileSpan.m_offset * SparseImageInfo::StandardBlockSize,
+                        tileSpan.m_tileCount * SparseImageInfo::StandardBlockSize, SparseImageInfo::StandardBlockSize, MemoryAllocationType::SubAllocated };
+                    output.push_back(memoryView);
+                }
+            }
+        }
+
         uint64_t SparseImageInfo::GetRequiredMemorySize(uint16_t residentMipLevel) const
         {
             // minimum memory size should be mip tail size
@@ -135,7 +148,9 @@ namespace AZ
         {
             AZ_Assert(mipLevel < m_tailStartMip, "Invalid mip level. Mip level should be smaller than m_tailStartMip");
 
-            MemoryViews& memoryViews = m_mipMemoryViews[mipLevel];
+            MemoryViews memoryViews;
+            MultiHeapTilesToMemoryViews(memoryViews, m_mipHeapTiles[mipLevel]);
+
             size_t memoryViewCount = memoryViews.size();
             auto imageGranularity = m_sparseImageMemoryRequirements.formatProperties.imageGranularity;
             MipMemoryBinds& memoryBinds = m_mipMemoryBinds[mipLevel];
@@ -232,7 +247,11 @@ namespace AZ
         {
             m_mipTailMemoryBinds.clear();
 
-            if (m_mipTailMemoryViews.size() == 0)
+            // convert heap tiles to memory views
+            MemoryViews memoryViews;
+            MultiHeapTilesToMemoryViews(memoryViews, m_mipTailHeapTiles);
+
+            if (memoryViews.size() == 0)
             {
                 m_mipTailMemoryBindInfo.bindCount = 0;
                 m_mipTailMemoryBindInfo.image = nullptr;
@@ -247,7 +266,7 @@ namespace AZ
             // it's possible there are multiple memory views bound to one array layer mip tail
             // It's also possible one memory view have blocks bound to multiple array layers of mip tail.
             // Each array layer need to be bound separately.
-            for (const MemoryView& memoryView : m_mipTailMemoryViews)
+            for (const MemoryView& memoryView : memoryViews)
             {
                 // blocks in the MemoryView which are available to bind
                 uint32_t memoryBlockCount = aznumeric_cast<uint32_t>(memoryView.GetSize() / m_blockSizeInBytes);
@@ -565,7 +584,7 @@ namespace AZ
                         for (uint16_t mip = m_highestMipLevel; mip < adjustedTargetMipLevel; mip++)
                         {
                             // release memories
-                            pool.DeAllocateMemory(m_sparseImageInfo->m_mipMemoryViews[mip]);
+                            pool.DeAllocateMemoryBlocks(m_sparseImageInfo->m_mipHeapTiles[mip]);
                             m_sparseImageInfo->UpdateMipMemoryBindInfo(mip);
                         }
 
@@ -617,7 +636,7 @@ namespace AZ
                 const size_t blockSize = m_sparseImageInfo->m_blockSizeInBytes;
 
                 // allocated memory views
-                AZStd::vector<SparseImageInfo::MemoryViews*> allocatedMemoryViews;
+                AZStd::vector<SparseImageInfo::MultiHeapTiles*> allocatedHeapTiles;
 
                 // mip tail
                 if (startMip >= m_sparseImageInfo->m_tailStartMip)
@@ -628,13 +647,13 @@ namespace AZ
                         blockCount *= GetDescriptor().m_arraySize;
                     }
                     
-                    result = imagePool.AllocateMemoryBlocks(m_sparseImageInfo->m_mipTailMemoryViews, blockCount, blockSize);
+                    result = imagePool.AllocateMemoryBlocks(m_sparseImageInfo->m_mipTailHeapTiles, blockCount);
                     if (result != RHI::ResultCode::Success)
                     {
                         return result;
                     }
 
-                    allocatedMemoryViews.push_back(&m_sparseImageInfo->m_mipTailMemoryViews);
+                    allocatedHeapTiles.push_back(&m_sparseImageInfo->m_mipTailHeapTiles);
                 }
 
                 // non-tail mips
@@ -646,22 +665,22 @@ namespace AZ
                     for (uint16_t mipLevel = endMip; mipLevel <= nonTailStart; mipLevel++ )
                     {
                         uint32_t blockCount = m_sparseImageInfo->m_mipBlockCount[mipLevel] * GetDescriptor().m_arraySize;
-                        result = imagePool.AllocateMemoryBlocks(m_sparseImageInfo->m_mipMemoryViews[mipLevel], blockCount, blockSize);
+                        result = imagePool.AllocateMemoryBlocks(m_sparseImageInfo->m_mipHeapTiles[mipLevel], blockCount);
                         if (result != RHI::ResultCode::Success)
                         {
                             allocationSuccess = false;
                             break;
                         }
-                        allocatedMemoryViews.push_back(&m_sparseImageInfo->m_mipTailMemoryViews);
+                        allocatedHeapTiles.push_back(&m_sparseImageInfo->m_mipHeapTiles[mipLevel]);
                     }
                 }
 
                 // release allocated memory views and return if any allocation was failed
                 if (!allocationSuccess)
                 {
-                    for (SparseImageInfo::MemoryViews* memoryViews:allocatedMemoryViews)
+                    for (SparseImageInfo::MultiHeapTiles* multiHeapTiles:allocatedHeapTiles)
                     {
-                        imagePool.DeAllocateMemory(*memoryViews);
+                        imagePool.DeAllocateMemoryBlocks(*multiHeapTiles);
                     }
                     return result;
                 }
@@ -768,10 +787,19 @@ namespace AZ
             createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
             const VkResult result = device.GetContext().CreateImage(device.GetNativeDevice(), &createInfo, nullptr, &m_vkImage);
-            AssertSuccess(result);
 
             if (result == VkResult::VK_SUCCESS)
             {
+                // If the sparse image's alignment is not standard block size, release the image and return fail
+                // We only support images with standard block size due to memory allocator restriction
+                VkMemoryRequirements memoryRequirements;
+                device.GetContext().GetImageMemoryRequirements(device.GetNativeDevice(), m_vkImage, &memoryRequirements);
+                if (memoryRequirements.alignment != SparseImageInfo::StandardBlockSize)
+                {
+                    device.GetContext().DestroyImage(device.GetNativeDevice(), m_vkImage, nullptr);
+                    return RHI::ResultCode::Fail;
+                }
+
                 m_sparseImageInfo = AZStd::make_unique<SparseImageInfo>();
                 m_sparseImageInfo->Init(device, m_vkImage, descriptor);
             }
@@ -837,19 +865,11 @@ namespace AZ
         {
             if (m_isSparse)
             {
-                for (auto& tailMemoryView : m_sparseImageInfo->m_mipTailMemoryViews)
+                imagePool.DeAllocateMemoryBlocks(m_sparseImageInfo->m_mipTailHeapTiles);
+
+                for (auto& heapTiles : m_sparseImageInfo->m_mipHeapTiles)
                 {
-                    imagePool.DeAllocateMemory(tailMemoryView);
-                    tailMemoryView = MemoryView{ };
-                }
-                for (auto& mipMemoryViews : m_sparseImageInfo->m_mipMemoryViews)
-                {
-                    for (auto& mipMemoryView : mipMemoryViews)
-                    {
-                        imagePool.DeAllocateMemory(mipMemoryView);
-                        mipMemoryView = MemoryView{ };
-                    }
-                    mipMemoryViews.clear();
+                    imagePool.DeAllocateMemoryBlocks(heapTiles);
                 }
             }
             else

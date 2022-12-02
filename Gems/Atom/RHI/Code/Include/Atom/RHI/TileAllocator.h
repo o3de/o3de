@@ -10,6 +10,7 @@
 #include <Atom/RHI.Reflect/MemoryUsage.h>
 #include <Atom/RHI/ObjectPool.h>
 #include <Atom/RHI/PageTileAllocator.h>
+#include <Atom/RHI/PageTiles.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/set.h>
@@ -18,18 +19,6 @@ namespace AZ
 {
     namespace RHI
     {
-        //! A list of tile groups in one memory page
-        template<typename PageType>
-        struct PageTiles
-        {
-            //! The memory object which is evenly divided to multiple tiles
-            RHI::Ptr<PageType> m_heap;
-            //! Multiple tile spans. Each tile span represents a continuous number of tiles in the page
-            AZStd::vector<RHI::PageTileSpan> m_tileSpanList;
-            //! The total amount tiles in the m_tileSpanList
-            uint32_t m_totalTileCount = 0;
-        };
-
          //! An allocator which can allocate multiple tiles from multiple heap pages at once.
          //! It uses a HeapAllocator to allocate heap pages.
          //! It maintains a free list of free tiles. Each node of the list represents a set of continuous tiles.
