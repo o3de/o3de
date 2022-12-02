@@ -27,7 +27,7 @@
 
 namespace MaterialCanvas
 {
-    //! MaterialCanvasMainWindow Creates and manages all of the craft canvas and viewport related docked windows for Material Canvas. 
+    //! MaterialCanvasMainWindow creates and manages all of the graph canvas and viewport related docked windows for Material Canvas. 
     class MaterialCanvasMainWindow : public AtomToolsFramework::AtomToolsDocumentMainWindow
     {
         Q_OBJECT

@@ -19,7 +19,7 @@
 
 namespace MaterialCanvas
 {
-    // The main application class for Material Canvas, setting up top level systems, document types, and the main window. 
+    //! The main application class for Material Canvas, setting up top level systems, document types, and the main window. 
     class MaterialCanvasApplication
         : public AtomToolsFramework::AtomToolsDocumentApplication
         , private AzToolsFramework::EditorWindowRequestBus::Handler
