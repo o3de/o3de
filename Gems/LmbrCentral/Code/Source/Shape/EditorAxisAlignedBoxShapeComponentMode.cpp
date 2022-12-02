@@ -22,4 +22,9 @@ namespace LmbrCentral
     {
         return "Axis Aligned Box Edit Mode";
     }
+
+    AZ::Uuid EditorAxisAlignedBoxShapeComponentMode::GetComponentModeType() const
+    {
+        return azrtti_typeid<EditorAxisAlignedBoxShapeComponentMode>();
+    }
 } // namespace LmbrCentral

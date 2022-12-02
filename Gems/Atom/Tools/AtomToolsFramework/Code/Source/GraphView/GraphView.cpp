@@ -45,13 +45,10 @@
 namespace AtomToolsFramework
 {
     GraphView::GraphView(
-        const AZ::Crc32& toolId,
-        const GraphCanvas::GraphId& activeGraphId,
-        const GraphViewConfig& graphViewConfig,
-        QWidget* parent)
+        const AZ::Crc32& toolId, const GraphCanvas::GraphId& activeGraphId, GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent)
         : QWidget(parent)
         , m_toolId(toolId)
-        , m_graphViewConfig(graphViewConfig)
+        , m_graphViewSettingsPtr(graphViewSettingsPtr)
     {
         setLayout(new QVBoxLayout());
 
@@ -86,16 +83,16 @@ namespace AtomToolsFramework
         // which is what is displayed when right-clicking on an empty space in the graph
         GraphCanvas::NodePaletteConfig nodePaletteConfig;
         nodePaletteConfig.m_editorId = m_toolId;
-        nodePaletteConfig.m_mimeType = m_graphViewConfig.m_nodeMimeType.c_str();
+        nodePaletteConfig.m_mimeType = m_graphViewSettingsPtr->m_nodeMimeType.c_str();
         nodePaletteConfig.m_isInContextMenu = true;
-        nodePaletteConfig.m_saveIdentifier = m_graphViewConfig.m_nodeSaveIdentifier;
-        nodePaletteConfig.m_rootTreeItem = m_graphViewConfig.m_createNodeTreeItemsFn(m_toolId);
+        nodePaletteConfig.m_saveIdentifier = m_graphViewSettingsPtr->m_nodeSaveIdentifier;
+        nodePaletteConfig.m_rootTreeItem = m_graphViewSettingsPtr->m_createNodeTreeItemsFn(m_toolId);
         m_sceneContextMenu = aznew GraphCanvas::SceneContextMenu(m_toolId, this);
         m_sceneContextMenu->AddNodePaletteMenuAction(nodePaletteConfig);
 
         // Setup the context menu with node palette for proposing a new node
         // when dropping a connection in an empty space in the graph
-        nodePaletteConfig.m_rootTreeItem = m_graphViewConfig.m_createNodeTreeItemsFn(m_toolId);
+        nodePaletteConfig.m_rootTreeItem = m_graphViewSettingsPtr->m_createNodeTreeItemsFn(m_toolId);
         m_createNodeProposalContextMenu = aznew GraphCanvas::EditorContextMenu(m_toolId, this);
         m_createNodeProposalContextMenu->AddNodePaletteMenuAction(nodePaletteConfig);
 
@@ -125,7 +122,6 @@ namespace AtomToolsFramework
         // We are enforcing that only one graph is active and connected at any given time.
         AtomToolsMainMenuRequestBus::Handler::BusDisconnect();
         GraphCanvas::AssetEditorRequestBus::Handler::BusDisconnect();
-        GraphCanvas::AssetEditorSettingsRequestBus::Handler::BusDisconnect();
         GraphCanvas::SceneNotificationBus::Handler::BusDisconnect();
 
         // Update the value of the active graph ID and only reconnect the buses if it's valid.
@@ -138,11 +134,10 @@ namespace AtomToolsFramework
         {
             AtomToolsMainMenuRequestBus::Handler::BusConnect(m_toolId);
             GraphCanvas::AssetEditorRequestBus::Handler::BusConnect(m_toolId);
-            GraphCanvas::AssetEditorSettingsRequestBus::Handler::BusConnect(m_toolId);
             GraphCanvas::SceneNotificationBus::Handler::BusConnect(m_activeGraphId);
 
             GraphCanvas::SceneRequestBus::Event(
-                m_activeGraphId, &GraphCanvas::SceneRequests::SetMimeType, m_graphViewConfig.m_nodeMimeType.c_str());
+                m_activeGraphId, &GraphCanvas::SceneRequests::SetMimeType, m_graphViewSettingsPtr->m_nodeMimeType.c_str());
         }
 
         if (notify)
@@ -250,28 +245,32 @@ namespace AtomToolsFramework
             GraphCanvas::AlignConfig alignConfig;
             alignConfig.m_horAlign = GraphCanvas::GraphUtils::HorizontalAlignment::None;
             alignConfig.m_verAlign = GraphCanvas::GraphUtils::VerticalAlignment::Top;
-            alignConfig.m_alignTime = GetAlignmentTime();
+            GraphCanvas::AssetEditorSettingsRequestBus::EventResult(
+                alignConfig.m_alignTime, m_toolId, &GraphCanvas::AssetEditorSettingsRequestBus::Events::GetAlignmentTime);
             AlignSelected(alignConfig);
         }, {});
         m_actionAlignBottom = makeAction("menuEdit", tr("Align Bottom"), [this](){
             GraphCanvas::AlignConfig alignConfig;
             alignConfig.m_horAlign = GraphCanvas::GraphUtils::HorizontalAlignment::None;
             alignConfig.m_verAlign = GraphCanvas::GraphUtils::VerticalAlignment::Bottom;
-            alignConfig.m_alignTime = GetAlignmentTime();
+            GraphCanvas::AssetEditorSettingsRequestBus::EventResult(
+                alignConfig.m_alignTime, m_toolId, &GraphCanvas::AssetEditorSettingsRequestBus::Events::GetAlignmentTime);
             AlignSelected(alignConfig);
         }, {});
         m_actionAlignLeft = makeAction("menuEdit", tr("Align Left"), [this](){
             GraphCanvas::AlignConfig alignConfig;
             alignConfig.m_horAlign = GraphCanvas::GraphUtils::HorizontalAlignment::Left;
             alignConfig.m_verAlign = GraphCanvas::GraphUtils::VerticalAlignment::None;
-            alignConfig.m_alignTime = GetAlignmentTime();
+            GraphCanvas::AssetEditorSettingsRequestBus::EventResult(
+                alignConfig.m_alignTime, m_toolId, &GraphCanvas::AssetEditorSettingsRequestBus::Events::GetAlignmentTime);
             AlignSelected(alignConfig);
         }, {});
         m_actionAlignRight = makeAction("menuEdit", tr("Align Right"), [this](){
             GraphCanvas::AlignConfig alignConfig;
             alignConfig.m_horAlign = GraphCanvas::GraphUtils::HorizontalAlignment::Right;
             alignConfig.m_verAlign = GraphCanvas::GraphUtils::VerticalAlignment::None;
-            alignConfig.m_alignTime = GetAlignmentTime();
+            GraphCanvas::AssetEditorSettingsRequestBus::EventResult(
+                alignConfig.m_alignTime, m_toolId, &GraphCanvas::AssetEditorSettingsRequestBus::Events::GetAlignmentTime);
             AlignSelected(alignConfig);
         }, {});
 
@@ -524,27 +523,6 @@ namespace AtomToolsFramework
         [[maybe_unused]] const QPointF& scenePoint,
         [[maybe_unused]] const QPoint& screenPoint)
     {
-    }
-
-    GraphCanvas::EditorConstructPresets* GraphView::GetConstructPresets() const
-    {
-        return const_cast<GraphCanvas::EditorConstructPresets*>(&m_constructPresetDefaults);
-    }
-
-    const GraphCanvas::ConstructTypePresetBucket* GraphView::GetConstructTypePresetBucket(
-        GraphCanvas::ConstructType constructType) const
-    {
-        return m_constructPresetDefaults.FindPresetBucket(constructType);
-    }
-
-    GraphCanvas::Styling::ConnectionCurveType GraphView::GetConnectionCurveType() const
-    {
-        return GraphCanvas::Styling::ConnectionCurveType::Curved;
-    }
-
-    GraphCanvas::Styling::ConnectionCurveType GraphView::GetDataConnectionCurveType() const
-    {
-        return GraphCanvas::Styling::ConnectionCurveType::Curved;
     }
 
     void GraphView::OnSelectionChanged()
