@@ -60,8 +60,6 @@ namespace Terrain
 
     void TerrainFeatureProcessor::Initialize()
     {
-        m_imageArrayHandler = AZStd::make_shared<AZ::Render::BindlessImageArrayHandler>();
-
         auto sceneSrgLayout = AZ::RPI::RPISystemInterface::Get()->GetSceneSrgLayout();
 
         // Load the terrain material asynchronously
@@ -230,22 +228,13 @@ namespace Terrain
 
         if (m_terrainSrg)
         {
-            if (m_imageArrayHandler->IsInitialized())
-            {
-                m_imageArrayHandler->UpdateSrgIndices(m_terrainSrg, AZ::Name(TerrainSrgInputs::Textures));
-            }
-            else
-            {
-                m_imageArrayHandler->Initialize(m_terrainSrg, AZ::Name(TerrainSrgInputs::Textures));
-            }
-
             if (m_macroMaterialManager.IsInitialized())
             {
                 m_macroMaterialManager.UpdateSrgIndices(m_terrainSrg);
             }
             else
             {
-                m_macroMaterialManager.Initialize(m_imageArrayHandler, m_terrainSrg);
+                m_macroMaterialManager.Initialize(m_terrainSrg);
             }
             
             if (m_detailMaterialManager.IsInitialized())
@@ -254,7 +243,7 @@ namespace Terrain
             }
             else if(m_materialInstance)
             {
-                m_detailMaterialManager.Initialize(m_imageArrayHandler, m_terrainSrg, m_materialInstance);
+                m_detailMaterialManager.Initialize(m_terrainSrg, m_materialInstance);
             }
 
             if (m_clipmapManager.IsClipmapEnabled())
@@ -272,7 +261,6 @@ namespace Terrain
         }
         else
         {
-            m_imageArrayHandler->Reset();
             m_macroMaterialManager.Reset();
             m_detailMaterialManager.Reset();
             if (m_clipmapManager.IsClipmapEnabled())
@@ -329,11 +317,6 @@ namespace Terrain
                         m_clipmapManager.Update(cameraPosition, GetParentScene(), m_terrainSrg);
                     }
                 }
-            }
-            if (m_imageArrayHandler->IsInitialized())
-            {
-                bool result [[maybe_unused]] = m_imageArrayHandler->UpdateSrg(m_terrainSrg);
-                AZ_Error(TerrainFPName, result, "Failed to set image view unbounded array into shader resource group.");
             }
 
             if (m_meshManager.IsInitialized())
