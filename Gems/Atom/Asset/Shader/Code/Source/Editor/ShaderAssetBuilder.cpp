@@ -389,8 +389,8 @@ namespace AZ
             RPI::ShaderAssetCreator shaderAssetCreator;
             shaderAssetCreator.Begin(Uuid::CreateRandom());
 
-            shaderAssetCreator.SetName(AZ::Name{shaderFileName.c_str()});
-            shaderAssetCreator.SetDrawListName(Name(shaderSourceData.m_drawListName));
+            shaderAssetCreator.SetName(AZ::Name{shaderFileName});
+            shaderAssetCreator.SetDrawListName(shaderSourceData.m_drawListName);
             shaderAssetCreator.SetShaderAssetBuildTimestamp(shaderAssetBuildTimestamp);
 
             // The ShaderOptionGroupLayout must be the same across all supervariants because

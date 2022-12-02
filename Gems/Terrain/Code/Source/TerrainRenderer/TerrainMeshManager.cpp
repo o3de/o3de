@@ -124,7 +124,7 @@ namespace Terrain
             m_materialInstance = materialInstance;
 
             // Queue the load of the material's shaders now since they'll be needed later.
-            for (auto& shaderItem : m_materialInstance->GetShaderCollection())
+            for (auto& shaderItem : m_materialInstance->GetShaderCollection(AZ::RPI::MaterialPipelineNameCommon))
             {
                 AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = shaderItem.GetShaderAsset();
                 if (!shaderAsset.IsReady())
@@ -444,7 +444,7 @@ namespace Terrain
         m_candidateSectors.clear();
 
         // Rebuild common draw packet data
-        for (auto& shaderItem : m_materialInstance->GetShaderCollection())
+        for (auto& shaderItem : m_materialInstance->GetShaderCollection(AZ::RPI::MaterialPipelineNameCommon))
         {
             if (!shaderItem.IsEnabled())
             {
