@@ -58,11 +58,13 @@ namespace MaterialCanvas
         QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
+        AZ::RHI::FactoryManagerNotificationBus::Handler::BusConnect();
     }
 
     MaterialCanvasApplication::~MaterialCanvasApplication()
     {
         AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
+        AZ::RHI::FactoryManagerNotificationBus::Handler::BusDisconnect();
         m_window.reset();
     }
 
@@ -107,8 +109,6 @@ namespace MaterialCanvas
 
         m_window.reset(aznew MaterialCanvasMainWindow(m_toolId, m_graphViewSettingsPtr));
         m_window->show();
-
-        ApplyShaderBuildSettings();
     }
 
     void MaterialCanvasApplication::Destroy()
@@ -134,6 +134,11 @@ namespace MaterialCanvas
     QWidget* MaterialCanvasApplication::GetAppMainWindow()
     {
         return m_window.get();
+    }
+
+    void MaterialCanvasApplication::FactoryRegistered()
+    {
+        ApplyShaderBuildSettings();
     }
 
     void MaterialCanvasApplication::InitDynamicNodeManager()

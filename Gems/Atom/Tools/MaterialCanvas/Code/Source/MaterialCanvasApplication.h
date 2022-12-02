@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RHI/FactoryManagerBus.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentApplication.h>
 #include <AtomToolsFramework/DynamicNode/DynamicNodeManager.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.h>
@@ -20,6 +21,7 @@ namespace MaterialCanvas
     class MaterialCanvasApplication
         : public AtomToolsFramework::AtomToolsDocumentApplication
         , private AzToolsFramework::EditorWindowRequestBus::Handler
+        , private AZ::RHI::FactoryManagerNotificationBus::Handler
     {
     public:
         AZ_TYPE_INFO(MaterialCanvas::MaterialCanvasApplication, "{30F90CA5-1253-49B5-8143-19CEE37E22BB}");
@@ -40,6 +42,9 @@ namespace MaterialCanvas
 
         // AzToolsFramework::EditorWindowRequests::Bus::Handler
         QWidget* GetAppMainWindow() override;
+
+        // AZ::RHI::FactoryManagerNotificationBus::Handler overrides...
+        void FactoryRegistered() override;
 
         void InitDynamicNodeManager();
         void InitDynamicNodeEditData();
