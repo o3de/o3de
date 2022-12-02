@@ -360,8 +360,7 @@ namespace AzToolsFramework
                 auto productEntry = GetEntryFromIndex<ProductAssetBrowserEntry>(rowIdx);
                 if (productEntry && productEntry->GetAssetId() == assetID)
                 {
-                    selectionModel()->clear();
-                    selectionModel()->select(rowIdx, QItemSelectionModel::Select);
+                    selectionModel()->select(rowIdx, QItemSelectionModel::ClearAndSelect);
                     setCurrentIndex(rowIdx);
                     return true;
                 }
@@ -420,8 +419,7 @@ namespace AzToolsFramework
                                 expand(rowIdx);
                             }
 
-                            selectionModel()->clear();
-                            selectionModel()->select(rowIdx, QItemSelectionModel::Select);
+                            selectionModel()->select(rowIdx, QItemSelectionModel::ClearAndSelect);
                             setCurrentIndex(rowIdx);
 
                             return true;
