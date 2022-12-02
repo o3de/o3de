@@ -1869,21 +1869,7 @@ namespace AssetProcessor
                     AssetNotificationMessage message(productPath.GetRelativePath(), AssetNotificationMessage::AssetRemoved, product.m_assetType, AZ::OSString(platform.data(), platform.size()));
                     message.m_assetId = assetId;
 
-                    if (legacyAssetId != assetId)
-                    {
-                        message.m_legacyAssetIds.push_back(legacyAssetId);
-                    }
-
-                    for (const auto& legacyUuid :
-                        AssetUtilities::GetLegacySourceUuids(SourceAssetReference(source.m_scanFolderPK, source.m_sourceName.c_str())))
-                    {
-                        AZ::Data::AssetId legacySourceAssetId(legacyUuid, product.m_subID);
-
-                        if (legacySourceAssetId != assetId)
-                        {
-                            message.m_legacyAssetIds.push_back(legacySourceAssetId);
-                        }
-                    }
+                    // Note: legacy asset ids are not needed in the message, they'll be looked up based on the actual id
 
                     Q_EMIT AssetMessage( message);
                 }
@@ -2939,9 +2925,24 @@ namespace AssetProcessor
                 {
                     AZ_TracePrintf(AssetProcessor::DebugChannel, "Input was deleted and no overrider was found.\n");
 
-                    AZ::Uuid sourceUUID = AssetUtilities::GetSourceUuid(sourceAssetReference);
-                    AzToolsFramework::AssetSystem::SourceFileNotificationMessage message(AZ::OSString(sourceAssetReference.RelativePath().c_str()), AZ::OSString(scanFolderInfo->ScanPath().toUtf8().constData()), AzToolsFramework::AssetSystem::SourceFileNotificationMessage::FileRemoved, sourceUUID);
-                    EBUS_EVENT(AssetProcessor::ConnectionBus, Send, 0, message);
+                    AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceDatabaseEntry;
+                    if (!m_stateData->GetSourceBySourceNameScanFolderId(
+                            sourceAssetReference.RelativePath().c_str(), sourceAssetReference.ScanFolderId(), sourceDatabaseEntry))
+                    {
+                        AZ_TracePrintf(
+                            AssetProcessor::DebugChannel, "ProcessFilesToExamineQueue - deleted source is not in asset database - cannot send SourceFileNotificationMessage::FileRemoved message - %s\n",
+                            sourceAssetReference.AbsolutePath().c_str());
+                    }
+                    else
+                    {
+                        AzToolsFramework::AssetSystem::SourceFileNotificationMessage message(
+                            AZ::OSString(sourceAssetReference.RelativePath().c_str()),
+                            AZ::OSString(scanFolderInfo->ScanPath().toUtf8().constData()),
+                            AzToolsFramework::AssetSystem::SourceFileNotificationMessage::FileRemoved,
+                            sourceDatabaseEntry.m_sourceGuid);
+                        EBUS_EVENT(AssetProcessor::ConnectionBus, Send, 0, message);
+                    }
+
                     CheckDeletedSourceFile(sourceAssetReference, examineFile.m_initialProcessTime);
                 }
                 else
@@ -4668,7 +4669,17 @@ namespace AssetProcessor
         if (m_platformConfig->ConvertToRelativePath(sourcePath, databasePath, scanFolder))
         {
             SourceAssetReference sourceAsset(sourcePath);
-            AZ::Uuid uuid = AssetUtilities::GetSourceUuid(sourceAsset);
+
+            AzToolsFramework::AssetDatabase::SourceDatabaseEntry databaseEntry;
+            if(!m_stateData->GetSourceBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), databaseEntry))
+            {
+                AZ_TracePrintf(
+                    AssetProcessor::DebugChannel,
+                    "GetSourceFilesWhichDependOnSourceFile - failed to find source %s in asset database - dependency lookup may be incomplete\n",
+                    sourceAsset.AbsolutePath().c_str());
+            }
+
+            AZ::Uuid uuid = databaseEntry.m_sourceGuid;
             m_stateData->QuerySourceDependencyByDependsOnSource(
                 uuid,
                 databasePath.toUtf8().constData(),
@@ -5157,13 +5168,19 @@ namespace AssetProcessor
                 // If the dependency is not an asset, this will resolve to an invalid UUID which will simply return no results for our
                 // search
 
+                QString absolutePath;
+
                 if (AZ::IO::PathView(toSearch.GetPath()).IsAbsolute())
                 {
-                    searchUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(toSearch.GetPath().c_str()));
+                    absolutePath = toSearch.GetPath().c_str();
                 }
                 else
                 {
-                    QString absolutePath = m_platformConfig->FindFirstMatchingFile(toSearch.GetPath().c_str());
+                    absolutePath = m_platformConfig->FindFirstMatchingFile(toSearch.GetPath().c_str());
+                }
+
+                if (AZ::IO::FileIOBase::GetInstance()->Exists(absolutePath.toUtf8().constData()))
+                {
                     searchUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(absolutePath.toUtf8().constData()));
                 }
             }

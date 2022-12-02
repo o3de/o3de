@@ -34,7 +34,7 @@ namespace AzFramework
         void UnregisterAsset(AZ::Data::AssetId id);
 
         void RegisterLegacyAssetMapping(const AZ::Data::AssetId& legacyId, const AZ::Data::AssetId& newId);
-        void UnregisterLegacyAssetMapping(const AZ::Data::AssetId& legacyId);
+        void UnregisterLegacyAssetMappingsForAsset(const AZ::Data::AssetId& id);
 
         void SetAssetDependencies(const AZ::Data::AssetId& id, const AZStd::vector<AZ::Data::ProductDependency>& dependencies);
         void RegisterAssetDependency(const AZ::Data::AssetId& id, const AZ::Data::ProductDependency& dependency);

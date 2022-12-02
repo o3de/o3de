@@ -122,6 +122,13 @@ namespace AssetProcessor
             return uuidInfo;
         }
 
+        if (!AZ::IO::FileIOBase::GetInstance()->Exists(sourceAsset.AbsolutePath().c_str()))
+        {
+            AZ_Assert(
+                false, "Programmer Error - cannot request UUID for file which does not exist - %s", sourceAsset.AbsolutePath().c_str());
+            return {};
+        }
+
         const bool isEnabledType = m_enabledTypes.contains(sourceAsset.AbsolutePath().Extension().Native());
         // Last resort - generate a new UUID and save it to the metadata file
         UuidEntry newUuid = CreateUuidEntry(sourceAsset, isEnabledType);
