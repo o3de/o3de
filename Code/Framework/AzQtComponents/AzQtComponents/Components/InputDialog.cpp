@@ -32,6 +32,8 @@ namespace AzQtComponents
 
     void InputDialog::setValidator(QValidator* validator)
     {
+        m_validator = validator;
+
         AttemptAssignValidator();
     }
 
