@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AtomToolsFramework/DynamicNode/DynamicNodeSlotConfig.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeSlotConfig.h>
 #include <AzCore/Serialization/EditContext.h>
 
 namespace AtomToolsFramework

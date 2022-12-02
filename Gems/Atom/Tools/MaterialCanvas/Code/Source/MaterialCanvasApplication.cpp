@@ -12,9 +12,9 @@
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsAnyDocument.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNodeUtil.h>
-#include <AtomToolsFramework/GraphView/GraphDocument.h>
-#include <AtomToolsFramework/GraphView/GraphDocumentView.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeUtil.h>
+#include <AtomToolsFramework/Graph/GraphDocument.h>
+#include <AtomToolsFramework/Graph/GraphDocumentView.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector2.h>

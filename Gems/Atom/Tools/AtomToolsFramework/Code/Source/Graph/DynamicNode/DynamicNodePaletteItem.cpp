@@ -6,7 +6,7 @@
  *
  */
 
-#include <AtomToolsFramework/DynamicNode/DynamicNodePaletteItem.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodePaletteItem.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/StringFunc/StringFunc.h>

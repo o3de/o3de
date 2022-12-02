@@ -15,10 +15,10 @@
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNode.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNodeManagerRequestBus.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNodeUtil.h>
-#include <AtomToolsFramework/GraphView/GraphDocumentRequestBus.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNode.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManagerRequestBus.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeUtil.h>
+#include <AtomToolsFramework/Graph/GraphDocumentRequestBus.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/IO/ByteContainerStream.h>

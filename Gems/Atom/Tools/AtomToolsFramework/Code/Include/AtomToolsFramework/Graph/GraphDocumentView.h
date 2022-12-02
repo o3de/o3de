@@ -10,7 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
-#include <AtomToolsFramework/GraphView/GraphView.h>
+#include <AtomToolsFramework/Graph/GraphView.h>
 #endif
 
 namespace AtomToolsFramework

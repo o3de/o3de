@@ -6,8 +6,8 @@
  *
  */
 
-#include <AtomToolsFramework/GraphView/GraphDocumentRequestBus.h>
-#include <AtomToolsFramework/GraphView/GraphDocumentView.h>
+#include <AtomToolsFramework/Graph/GraphDocumentRequestBus.h>
+#include <AtomToolsFramework/Graph/GraphDocumentView.h>
 
 namespace AtomToolsFramework
 {

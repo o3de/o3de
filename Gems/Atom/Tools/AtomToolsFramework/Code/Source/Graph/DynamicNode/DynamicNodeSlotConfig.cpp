@@ -6,9 +6,9 @@
  *
  */
 
-#include <AtomToolsFramework/DynamicNode/DynamicNodeManagerRequestBus.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNodeSlotConfig.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNodeUtil.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManagerRequestBus.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeSlotConfig.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>

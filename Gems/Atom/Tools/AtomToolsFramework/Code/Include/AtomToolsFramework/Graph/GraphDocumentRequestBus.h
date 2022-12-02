@@ -14,6 +14,7 @@
 
 namespace AtomToolsFramework
 {
+    //! GraphDocumentRequests establishes a common interface for graph model graphs managed by the document system
     class GraphDocumentRequests : public AZ::EBusTraits
     {
     public:

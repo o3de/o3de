@@ -10,8 +10,8 @@
 
 #include <Atom/RHI/FactoryManagerBus.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentApplication.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNodeManager.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManager.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <Document/MaterialGraphCompiler.h>
 #include <GraphModel/Model/GraphContext.h>

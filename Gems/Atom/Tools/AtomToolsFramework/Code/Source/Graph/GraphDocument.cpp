@@ -6,27 +6,25 @@
  *
  */
 
-#include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNode.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNodeManagerRequestBus.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNodeUtil.h>
-#include <AtomToolsFramework/GraphView/GraphDocument.h>
+#include <AtomToolsFramework/Graph/GraphDocument.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/sort.h>
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/GraphCanvasBus.h>
 #include <GraphModel/Model/Connection.h>
+#include <GraphModel/Model/Graph.h>
 
 namespace AtomToolsFramework
 {
@@ -430,60 +428,48 @@ namespace AtomToolsFramework
 
         for (const auto& currentNode : selectedNodes)
         {
-            auto dynamicNode = azrtti_cast<const DynamicNode*>(currentNode.get());
-            if (!dynamicNode)
-            {
-                continue;
-            }
-
-            const auto& nodeConfig = dynamicNode->GetConfig();
-
             // Create a new property group and set up the header to match the node
             AZStd::shared_ptr<DynamicPropertyGroup> group;
             group.reset(aznew DynamicPropertyGroup);
             group->m_name = GetSymbolNameFromNode(currentNode);
-            group->m_displayName =
-                GetDisplayNameFromText(AZStd::string::format("Node%u %s", currentNode->GetId(), currentNode->GetTitle()));
+            group->m_displayName = GetDisplayNameFromText(AZStd::string::format("Node%u %s", currentNode->GetId(), currentNode->GetTitle()));
             group->m_description = currentNode->GetSubTitle();
+            group->m_properties.reserve(currentNode->GetSlotDefinitions().size());
 
-            group->m_properties.reserve(currentNode->GetSlots().size());
-
-            // Visit all of the slots in the order to find in the configuration to add properties to the container for the inspector.
-            VisitDynamicNodeSlotConfigs(
-                nodeConfig,
-                [&](const DynamicNodeSlotConfig& slotConfig)
+            // Visit all of the slots in the order to add properties to the container for the inspector.
+            for (const auto& slotDefinition : currentNode->GetSlotDefinitions())
+            {
+                if (auto currentSlot = currentNode->GetSlot(slotDefinition->GetName()))
                 {
-                    if (auto currentSlot = currentNode->GetSlot(slotConfig.m_name))
+                    if (currentSlot->GetSlotDirection() == GraphModel::SlotDirection::Input)
                     {
-                        if (currentSlot->GetSlotDirection() == GraphModel::SlotDirection::Input)
+                        // Create and add a dynamic property for each input slot on the node
+                        DynamicPropertyConfig propertyConfig;
+                        propertyConfig.m_id = currentSlot->GetName();
+                        propertyConfig.m_name = currentSlot->GetName();
+                        propertyConfig.m_displayName = currentSlot->GetDisplayName();
+                        propertyConfig.m_groupName = group->m_name;
+                        propertyConfig.m_groupDisplayName = group->m_displayName;
+                        propertyConfig.m_description = currentSlot->GetDescription();
+                        propertyConfig.m_defaultValue = currentSlot->GetDefaultValue();
+                        propertyConfig.m_originalValue = currentSlot->GetValue();
+                        propertyConfig.m_parentValue = currentSlot->GetDefaultValue();
+                        propertyConfig.m_readOnly = !currentSlot->GetConnections().empty();
+                        propertyConfig.m_showThumbnail = true;
+
+                        // Set up the change call back to apply the value of the property from the inspector to the slot. This could
+                        // also send a document modified notifications and queue regeneration of shader and material assets but the
+                        // compilation process and going through the ap is not responsive enough for this to matter.
+                        propertyConfig.m_dataChangeCallback = [currentSlot](const AZStd::any& value)
                         {
-                            // Create and add a dynamic property for each input slot on the node
-                            DynamicPropertyConfig propertyConfig;
-                            propertyConfig.m_id = currentSlot->GetName();
-                            propertyConfig.m_name = currentSlot->GetName();
-                            propertyConfig.m_displayName = currentSlot->GetDisplayName();
-                            propertyConfig.m_groupName = group->m_name;
-                            propertyConfig.m_groupDisplayName = group->m_displayName;
-                            propertyConfig.m_description = currentSlot->GetDescription();
-                            propertyConfig.m_defaultValue = currentSlot->GetDefaultValue();
-                            propertyConfig.m_originalValue = currentSlot->GetValue();
-                            propertyConfig.m_parentValue = currentSlot->GetDefaultValue();
-                            propertyConfig.m_readOnly = !currentSlot->GetConnections().empty();
-                            propertyConfig.m_showThumbnail = true;
+                            currentSlot->SetValue(value);
+                            return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
+                        };
 
-                            // Set up the change call back to apply the value of the property from the inspector to the slot. This could
-                            // also send a document modified notifications and queue regeneration of shader and material assets but the
-                            // compilation process and going through the ap is not responsive enough for this to matter.
-                            propertyConfig.m_dataChangeCallback = [currentSlot](const AZStd::any& value)
-                            {
-                                currentSlot->SetValue(value);
-                                return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
-                            };
-
-                            group->m_properties.emplace_back(AZStd::move(propertyConfig));
-                        }
+                        group->m_properties.emplace_back(AZStd::move(propertyConfig));
                     }
-                });
+                }
+            }
 
             m_groups.emplace_back(group);
         }

@@ -9,7 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AtomToolsFramework/GraphView/GraphViewSettings.h>
+#include <AtomToolsFramework/Graph/GraphViewSettings.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>

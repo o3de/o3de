@@ -6,9 +6,9 @@
  *
  */
 
-#include <AtomToolsFramework/DynamicNode/DynamicNode.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNodeManager.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNodeManagerRequestBus.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNode.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManager.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManagerRequestBus.h>
 #include <GraphModel/Model/Graph.h>
 #include <GraphModel/Model/GraphContext.h>
 #include <GraphModel/Model/Slot.h>

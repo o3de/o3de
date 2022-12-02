@@ -16,9 +16,9 @@
 #include <GraphModel/Model/Node.h>
 
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNodeConfig.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
-#include <AtomToolsFramework/GraphView/GraphDocumentRequestBus.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeConfig.h>
+#include <AtomToolsFramework/Graph/GraphDocumentRequestBus.h>
 
 namespace AtomToolsFramework
 {

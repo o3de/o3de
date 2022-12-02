@@ -6,7 +6,7 @@
  *
  */
 
-#include <AtomToolsFramework/GraphView/GraphViewConstructPresets.h>
+#include <AtomToolsFramework/Graph/GraphViewConstructPresets.h>
 #include <GraphCanvas/Components/Nodes/Comment/CommentBus.h>
 
 namespace AtomToolsFramework
