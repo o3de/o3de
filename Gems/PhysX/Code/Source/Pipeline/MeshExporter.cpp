@@ -385,16 +385,6 @@ namespace PhysX
         {
             // Use by default 3.4 since 3.3 is being deprecated (despite being default)
             return physx::PxMeshMidPhase::eBVH34;
-            /*
-            physx::PxMeshMidPhase::Enum ret = physx::PxMeshMidPhase::eBVH34;
-
-            // Fallback to 3.3 on Android and iOS platforms since they don't support SSE2, which is required for 3.4
-            if (platformIdentifier == "android" || platformIdentifier == "ios")
-            {
-                ret = physx::PxMeshMidPhase::eBVH33;
-            }
-            return ret;
-            */
         }
 
         // Checks that the entire mesh is assigned (at most) one material (required for convexes and primitives).
