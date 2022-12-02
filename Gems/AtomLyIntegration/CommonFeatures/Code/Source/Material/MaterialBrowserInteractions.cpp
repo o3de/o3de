@@ -131,7 +131,7 @@ namespace AZ
                       const AZStd::string defaultMaterialGraphTemplate =
                           AtomToolsFramework::GetPathWithoutAlias(AtomToolsFramework::GetSettingsValue<AZStd::string>(
                               "/O3DE/Atom/MaterialCanvas/DefaultMaterialGraphTemplate",
-                              "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/blank.materialgraphtemplate"));
+                              "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/blank_graph.materialgraphtemplate"));
 
                       QWidget* mainWindow = nullptr;
                       AzToolsFramework::EditorRequests::Bus::BroadcastResult(
