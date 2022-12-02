@@ -141,7 +141,7 @@ namespace AZ::Vulkan
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
             address = m_allocators[roTextureIndex].Allocate(1, 1).m_ptr;
-            AZ_Assert(address.IsValid(), "Bindless descriptor heap ran out of space.");
+            AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
 
             VkWriteDescriptorSet write =
                 PrepareWrite(static_cast<uint32_t>(address.m_ptr), roTextureIndex, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
@@ -166,7 +166,7 @@ namespace AZ::Vulkan
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
             address = m_allocators[rwTextureIndex].Allocate(1, 1).m_ptr;
-            AZ_Assert(address.IsValid(), "Bindless descriptor heap ran out of space.");
+            AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
 
             VkWriteDescriptorSet write =
                 PrepareWrite(static_cast<uint32_t>(address.m_ptr), rwTextureIndex, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
@@ -190,7 +190,7 @@ namespace AZ::Vulkan
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
             address = m_allocators[roBufferIndex].Allocate(1, 1).m_ptr;
-            AZ_Assert(address.IsValid(), "Bindless descriptor heap ran out of space.");
+            AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
 
             const auto& viewDesc = view->GetDescriptor();
             const Vulkan::BufferMemoryView& bufferMemoryView = *static_cast<const Vulkan::Buffer&>(view->GetBuffer()).GetBufferMemoryView();
@@ -215,7 +215,7 @@ namespace AZ::Vulkan
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
             address = m_allocators[rwBufferIndex].Allocate(1, 1).m_ptr;
-            AZ_Assert(address.IsValid(), "Bindless descriptor heap ran out of space.");
+            AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
 
             const auto& viewDesc = view->GetDescriptor();
             const Vulkan::BufferMemoryView& bufferMemoryView = *static_cast<const Vulkan::Buffer&>(view->GetBuffer()).GetBufferMemoryView();

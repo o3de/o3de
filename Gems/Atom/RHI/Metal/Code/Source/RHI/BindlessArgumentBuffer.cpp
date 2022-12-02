@@ -144,7 +144,7 @@ namespace AZ::Metal
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
             uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture);
             address = m_allocators[allocatorIndex].Allocate(1, 1).m_ptr;
-            AZ_Assert(address.IsValid(), "Bindless descriptor heap ran out of space.");
+            AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
             uint32_t heapIndex = static_cast<uint32_t>(address.m_ptr);
             if (m_unboundedArraySupported)
             {
@@ -165,7 +165,7 @@ namespace AZ::Metal
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
             uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture);
             address = static_cast<uint32_t>(m_allocators[allocatorIndex].Allocate(1, 1).m_ptr);
-            AZ_Assert(address.IsValid(), "Bindless descriptor heap ran out of space.");
+            AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
             uint32_t heapIndex = static_cast<uint32_t>(address.m_ptr);
             if (m_unboundedArraySupported)
             {
@@ -186,7 +186,7 @@ namespace AZ::Metal
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
             uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer);
             address = static_cast<uint32_t>(m_allocators[allocatorIndex].Allocate(1, 1).m_ptr);
-            AZ_Assert(address.IsValid(), "Bindless descriptor heap ran out of space.");
+            AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
             uint32_t heapIndex = static_cast<uint32_t>(address.m_ptr);
             if (m_unboundedArraySupported)
             {
@@ -207,7 +207,7 @@ namespace AZ::Metal
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
             uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer);
             address = static_cast<uint32_t>(m_allocators[allocatorIndex].Allocate(1, 1).m_ptr);
-            AZ_Assert(address.IsValid(), "Bindless descriptor heap ran out of space.");
+            AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
             uint32_t heapIndex = static_cast<uint32_t>(address.m_ptr);
             if (m_unboundedArraySupported)
             {
