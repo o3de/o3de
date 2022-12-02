@@ -22,7 +22,7 @@ namespace AzToolsFramework
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             // Note the version here is not the same as the MetadataFile version, since this is a separate serialization
-            serializeContext->Class<MetadataManager>()->Version(1);
+            serializeContext->Class<MetadataManager, AZ::Component>()->Version(1);
         }
     }
 

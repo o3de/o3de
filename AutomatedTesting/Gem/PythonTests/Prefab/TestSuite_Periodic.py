@@ -13,32 +13,10 @@ from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorTestSuite
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomation(EditorTestSuite):
+class TestAutomationNoOverrides(EditorTestSuite):
 
-    # These tests will execute without enabling prefab overrides
+    # These tests will execute with prefab overrides enabled
     EditorTestSuite.global_extra_cmdline_args.append("--regset=O3DE/Preferences/Prefabs/EnableOverridesUx=false")
-
-    # Delete Tests
-    class test_DeleteEntity_UnderNestedEntityHierarchy(EditorBatchedTest):
-        from .tests.delete_entity import DeleteEntity_UnderNestedEntityHierarchy as test_module
-
-    # Duplicate Tests
-    class test_DuplicateEntity_WithNestedEntities(EditorBatchedTest):
-        from .tests.duplicate_prefab import DuplicateEntity_WithNestedEntities as test_module
-
-    class test_DuplicateEntity_WithNestedEntitiesAndNestedPrefabs(EditorBatchedTest):
-        from .tests.duplicate_prefab import DuplicateEntity_WithNestedEntitiesAndNestedPrefabs as test_module
-
-    # Instantiate Tests
-
-    class test_InstantiatePrefab_LevelPrefab(EditorBatchedTest):
-        from .tests.instantiate_prefab import InstantiatePrefab_LevelPrefab as test_module
-
-    class test_InstantiatePrefab_WithNestedEntities(EditorBatchedTest):
-        from .tests.instantiate_prefab import InstantiatePrefab_WithNestedEntities as test_module
-
-    class test_InstantiatePrefab_WithNestedEntitiesAndNestedPrefabs(EditorBatchedTest):
-        from .tests.instantiate_prefab import InstantiatePrefab_WithNestedEntitiesandNestedPrefabs as test_module
 
     # Spawnables Tests
 

@@ -406,7 +406,8 @@ namespace AzToolsFramework
                 if (rowEntry)
                 {
                     // Check if this entry name matches the query
-                    AZStd::string_view compareName = useDisplayName ? (const char*)(rowEntry->GetDisplayName().toUtf8()) : rowEntry->GetName().c_str();
+                    QByteArray displayName = rowEntry->GetDisplayName().toUtf8();
+                    AZStd::string_view compareName = useDisplayName ? displayName.constData() : rowEntry->GetName().c_str();
 
                     if (AzFramework::StringFunc::Equal(entry.c_str(), compareName, true))
                     {
@@ -702,7 +703,11 @@ namespace AzToolsFramework
                 toPath.ReplaceFilename(newVal.toStdString().c_str());
                 toPath.ReplaceExtension(extension);
             }
-
+            // if the source path is the same as the destintion path then we don't need to go any further
+            if (fromPath == toPath)
+            {
+                return;
+            }
             using namespace AzFramework::AssetSystem;
             AssetChangeReportRequest moveRequest(
                 AZ::OSString(fromPath.c_str()), AZ::OSString(toPath.c_str()), AssetChangeReportRequest::ChangeType::Move);

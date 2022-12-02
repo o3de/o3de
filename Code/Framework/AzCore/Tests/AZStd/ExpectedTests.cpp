@@ -13,7 +13,7 @@
 namespace UnitTest
 {
     class ExpectedTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     };
 

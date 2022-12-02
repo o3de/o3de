@@ -39,6 +39,10 @@ namespace AZ
                 return m_format;
             }
 
+            //! Get the index related to the position of the read and readwrite view within the global Bindless Argument Buffer
+            uint32_t GetBindlessReadIndex() const override;
+            uint32_t GetBindlessReadWriteIndex() const override;
+            
         private:
             ImageView() = default;
             void BuildImageSubResourceRange(const RHI::Resource& resourceBase);
@@ -56,6 +60,10 @@ namespace AZ
             
             MTLPixelFormat m_format;
             RHI::ImageSubresourceRange m_imageSubresourceRange;
+            
+            //! Index related to the position of the read and readwrite view within the global Bindless Argument Buffer
+            uint32_t m_readIndex = ~0u;
+            uint32_t m_readWriteIndex = ~0u;
         };
     }
 }

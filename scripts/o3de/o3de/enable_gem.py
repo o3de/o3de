@@ -26,7 +26,8 @@ def enable_gem_in_project(gem_name: str = None,
                           gem_path: pathlib.Path = None,
                           project_name: str = None,
                           project_path: pathlib.Path = None,
-                          enabled_gem_file: pathlib.Path = None) -> int:
+                          enabled_gem_file: pathlib.Path = None,
+                          optional: bool = False) -> int:
     """
     enable a gem in a projects enabled_gems.cmake file
     :param gem_name: name of the gem to add
@@ -34,6 +35,7 @@ def enable_gem_in_project(gem_name: str = None,
     :param project_name: name of to the project to add the gem to
     :param project_path: path to the project to add the gem to
     :param enabled_gem_file: if this dependency goes/is in a specific file
+    :param optional: mark the gem as optional
     :return: 0 for success or non 0 failure code
     """
     # we need either a project name or path
@@ -103,7 +105,8 @@ def enable_gem_in_project(gem_name: str = None,
     ret_val = 0
     # If the gem is not part of buildable set, it's gem_name should be registered to the "gem_names" field
     if gem_path not in buildable_gems:
-        ret_val = project_properties.edit_project_props(project_path, new_gem_names=gem_json_data['gem_name'])
+        ret_val = project_properties.edit_project_props(project_path, new_gem_names=gem_json_data['gem_name'],
+                                                        is_optional=optional)
 
     # add the gem if it is registered in either the project.json or engine.json
     ret_val = ret_val or cmake.add_gem_dependency(project_enabled_gem_file, gem_json_data['gem_name'])
@@ -112,9 +115,9 @@ def enable_gem_in_project(gem_name: str = None,
 
 
 def add_explicit_gem_activation_for_all_paths(gem_root_folders: list,
-                                 project_name: str = None,
-                                 project_path: pathlib.Path = None,
-                                 enabled_gem_file: pathlib.Path = None) -> int:
+                                              project_name: str = None,
+                                              project_path: pathlib.Path = None,
+                                              enabled_gem_file: pathlib.Path = None) -> int:
     """
     walks each gem root folder directory structure and adds explicit
     activation of the gems to the project
@@ -168,7 +171,8 @@ def _run_enable_gem_in_project(args: argparse) -> int:
                                      args.gem_path,
                                      args.project_name,
                                      args.project_path,
-                                     args.enabled_gem_file
+                                     args.enabled_gem_file,
+                                     args.optional
                                      )
 
 
@@ -176,7 +180,7 @@ def add_parser_args(parser):
     """
     add_parser_args is called to add arguments to each command such that it can be
     invoked locally or added by a central python file.
-    Ex. Directly run from this file alone with: python enable_gem.py --project-path "D:/TestProject" --gem-path "D:/TestGem"
+    Ex. Directly run from this file with: python enable_gem.py --project-path "D:/TestProject" --gem-path "D:/TestGem"
     :param parser: the caller passes an argparse parser like instance to this method
     """
 
@@ -196,8 +200,10 @@ def add_parser_args(parser):
     group.add_argument('-agp', '--all-gem-paths', type=pathlib.Path, nargs='*', required=False,
                        help='Explicitly activates all gems in the path recursively.')
     parser.add_argument('-egf', '--enabled-gem-file', type=pathlib.Path, required=False,
-                                   help='The cmake enabled_gem file in which the gem names are specified.'
-                                        'If not specified it will assume enabled_gems.cmake')
+                        help='The cmake enabled_gem file in which the gem names are specified.'
+                        'If not specified it will assume enabled_gems.cmake')
+    parser.add_argument('-o', '--optional', action='store_true', required=False, default=False,
+                        help='Marks the gem as optional so a project can still be configured if not found.')
 
     parser.set_defaults(func=_run_enable_gem_in_project)
 

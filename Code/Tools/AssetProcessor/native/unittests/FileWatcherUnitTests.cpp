@@ -31,9 +31,10 @@ void FileWatcherUnitTest::TearDown()
     UnitTest::AssetProcessorUnitTestBase::TearDown();
 }
 
-// File operations on Linux behave differently on Linux than Windows.
-// The system under test doesn't yet handle Linux's file operations, which surfaced as this test arbitrarily passing and failing.
-// This test is disabled on Linux until the system under test can handle Linux file system behavior correctly.
+// Linux has a maximum number of watches allowed by the system, which is set by fs.inotify.max_user_watches.
+// FileWatcher will fail to watch any more folders once it hits this limit, which causes the test failures on Linux.
+// FileWatcher has the logic in place to check the number of watches but the warning message is currently absorbed by UnitTestUtils::AssertAbsorber.
+// To change fs.inotify.max_user_watches, run command "sudo sysctl fs.inotify.max_user_watches=$VALUE" from the terminal.
 #if !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS && !defined(AZ_PLATFORM_LINUX)
 
 TEST_F(FileWatcherUnitTest, WatchFileCreation_CreateSingleFile_FileChangeFound)

@@ -140,14 +140,14 @@ namespace AZ
 namespace JsonSerializationTests
 {
     class JsonRegistrationContextTests
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         ~JsonRegistrationContextTests() override = default;
 
         void SetUp() override
         {
-            UnitTest::AllocatorsTestFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
 
             m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
         }
@@ -156,7 +156,7 @@ namespace JsonSerializationTests
         {
             m_jsonRegistrationContext.reset();
 
-            UnitTest::AllocatorsTestFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         AZStd::unique_ptr<AZ::JsonRegistrationContext> m_jsonRegistrationContext;
