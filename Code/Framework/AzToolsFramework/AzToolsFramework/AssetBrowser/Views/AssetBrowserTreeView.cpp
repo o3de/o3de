@@ -609,9 +609,9 @@ namespace AzToolsFramework
             }
         }
 
-        bool IsFolderEmpty(const char* pPath)
+        static bool IsFolderEmpty(AZStd::string_view path)
         {
-            return QDir(pPath).entryList(QDir::NoDotAndDotDot | QDir::AllEntries).count() == 0;
+            return QDir(path.data()).entryList(QDir::NoDotAndDotDot | QDir::AllEntries).count() == 0;
         }
 
         void AssetBrowserTreeView::RenameEntry()
@@ -638,7 +638,7 @@ namespace AzToolsFramework
                 {
                     // There is currently a bug in AssetProcessorBatch that doesn't handle empty folders
                     // This code is needed until that bug is fixed. GHI 13340
-                    if(IsFolderEmpty(item->GetFullPath().c_str()))
+                    if(IsFolderEmpty(item->GetFullPath()))
                     {
                         edit(currentIndex());
                         return;
@@ -699,7 +699,7 @@ namespace AzToolsFramework
             using namespace AZ::IO;
             AssetBrowserEntry* item = entries[0];
             bool isFolder = item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
-            bool isEmptyFolder = isFolder && IsFolderEmpty(item->GetFullPath().c_str());
+            bool isEmptyFolder = isFolder && IsFolderEmpty(item->GetFullPath());
             Path toPath;
             Path fromPath;
             if (isFolder)
@@ -816,7 +816,7 @@ namespace AzToolsFramework
                         for (auto entry : entries)
                         {
                             using namespace AZ::IO;
-                            bool isEmptyFolder = isFolder && IsFolderEmpty(entry->GetFullPath().c_str());
+                            bool isEmptyFolder = isFolder && IsFolderEmpty(entry->GetFullPath());
                             Path fromPath;
                             Path toPath;
                             if (isFolder)

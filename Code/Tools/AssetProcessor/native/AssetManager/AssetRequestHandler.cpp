@@ -104,7 +104,7 @@ namespace
             {
                 case AssetChangeReportRequest::ChangeType::CheckMove:
                 {
-                    auto resultCheck = relocationInterface->Move(messageData.m_message->m_fromPath, messageData.m_message->m_toPath, true, true, false, true);
+                    auto resultCheck = relocationInterface->Move(messageData.m_message->m_fromPath, messageData.m_message->m_toPath, PreviewOnlyFlag | AllowDependencyBreakingFlag | UpdateReferencesFlag);
 
                     BuildReport(relocationInterface, resultCheck, lines);
                     break;
@@ -112,21 +112,21 @@ namespace
                 case AssetChangeReportRequest::ChangeType::Move:
                 {
                     auto resultMove = relocationInterface->Move(
-                        messageData.m_message->m_fromPath, messageData.m_message->m_toPath, false, true, false, true);
+                        messageData.m_message->m_fromPath, messageData.m_message->m_toPath, AllowDependencyBreakingFlag | UpdateReferencesFlag);
 
                     BuildReport(relocationInterface, resultMove, lines);
                     break;
                 }
                 case AssetChangeReportRequest::ChangeType::CheckDelete:
                 {
-                    auto resultCheck = relocationInterface->Delete(messageData.m_message->m_fromPath, true, true, false);
+                    auto resultCheck = relocationInterface->Delete(messageData.m_message->m_fromPath, PreviewOnlyFlag | AllowDependencyBreakingFlag);
 
                     BuildReport(relocationInterface, resultCheck, lines);
                     break;
                 }
                 case AssetChangeReportRequest::ChangeType::Delete:
                 {
-                    auto resultDelete = relocationInterface->Delete(messageData.m_message->m_fromPath, false, true, false);
+                    auto resultDelete = relocationInterface->Delete(messageData.m_message->m_fromPath, AllowDependencyBreakingFlag);
 
                     BuildReport(relocationInterface, resultDelete, lines);
                     break;
