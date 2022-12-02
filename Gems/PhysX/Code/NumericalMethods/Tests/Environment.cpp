@@ -9,7 +9,6 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzFramework/Application/Application.h>
 #include <Tests/Environment.h>
 
@@ -56,7 +55,6 @@ namespace NumericalMethods
         AZ::ComponentApplication::StartupParameters startupParams;
         m_systemEntity = m_application->Create(appDesc, startupParams);
         AZ_TEST_ASSERT(m_systemEntity);
-        m_systemEntity->AddComponent(aznew AZ::MemoryComponent());
         m_systemEntity->Init();
         m_systemEntity->Activate();
     }

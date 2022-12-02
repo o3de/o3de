@@ -12,7 +12,6 @@
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Memory/AllocatorManager.h>
-#include <AzCore/Memory/MemoryComponent.h>
 
 namespace AZ
 {
@@ -114,7 +113,6 @@ namespace AZ
 
             // Some applications (e.g. ToolsApplication) already add some of these components
             // So making sure we don't duplicate them on the system entity.
-            AddComponentIfNotPresent<AZ::MemoryComponent>(m_systemEntity);
             AddComponentIfNotPresent<AZ::AssetManagerComponent>(m_systemEntity);
             AddComponentIfNotPresent<AZ::JobManagerComponent>(m_systemEntity);
             AddComponentIfNotPresent<AZ::StreamerComponent>(m_systemEntity);

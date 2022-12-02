@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/Memory/AllocationRecords.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Serialization/Utils.h>

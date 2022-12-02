@@ -11,7 +11,6 @@
 #include <AzCore/Math/Random.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/functional.h>
 

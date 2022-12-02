@@ -203,7 +203,6 @@ namespace GraphModelIntegrationTest
         // Create basic system entity
         AZ::ComponentApplication::StartupParameters startupParams;
         m_systemEntity = m_application->Create(appDesc, startupParams);
-        m_systemEntity->AddComponent(aznew AZ::MemoryComponent());
         m_systemEntity->AddComponent(aznew AZ::AssetManagerComponent());
         m_systemEntity->AddComponent(aznew AZ::JobManagerComponent());
         m_systemEntity->AddComponent(aznew AZ::StreamerComponent());
