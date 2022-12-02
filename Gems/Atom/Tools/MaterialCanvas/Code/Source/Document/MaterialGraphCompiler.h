@@ -10,56 +10,28 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/RTTI/RTTI.h>
-#include <GraphCanvas/GraphCanvasBus.h>
-#include <GraphModel/GraphModelBus.h>
-#include <GraphModel/Model/GraphContext.h>
+#include <Document/MaterialGraphCompilerRequestBus.h>
 #include <GraphModel/Model/Node.h>
-
-#include <AtomToolsFramework/Document/AtomToolsDocument.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNodeConfig.h>
-#include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
-#include <Document/MaterialCanvasDocumentRequestBus.h>
 
 namespace MaterialCanvas
 {
-    //! MaterialCanvasDocument implements support for creating, loading, saving, and manipulating graph model and canvas graphs that
-    //! represent and will be transformed into shader and material data.
-    class MaterialCanvasDocument
-        : public AtomToolsFramework::AtomToolsDocument
-        , public MaterialCanvasDocumentRequestBus::Handler
-        , public GraphModelIntegration::GraphControllerNotificationBus::Handler
-        , public GraphCanvas::SceneNotificationBus::Handler
+    //! MaterialGraphCompiler traverses a material graph, searching for and splicing shader code snippets, variable values and definitions,
+    //! and other information into complete, functional material types, materials, and shaders. Currently, the resulting files will be
+    //! generated an output into the same folder location has the source graph.
+    class MaterialGraphCompiler : public MaterialGraphCompilerRequestBus::Handler
     {
     public:
-        AZ_RTTI(MaterialCanvasDocument, "{16A936E3-6510-4E8F-8229-6BD7366A8D4B}", AtomToolsFramework::AtomToolsDocument);
-        AZ_CLASS_ALLOCATOR(MaterialCanvasDocument, AZ::SystemAllocator, 0);
-        AZ_DISABLE_COPY_MOVE(MaterialCanvasDocument);
+        AZ_RTTI(MaterialGraphCompiler, "{3A241379-0282-42FB-B23A-BAF6A44FA0F4}");
+        AZ_CLASS_ALLOCATOR(MaterialGraphCompiler, AZ::SystemAllocator, 0);
+        AZ_DISABLE_COPY_MOVE(MaterialGraphCompiler);
 
         static void Reflect(AZ::ReflectContext* context);
 
-        MaterialCanvasDocument() = default;
-        MaterialCanvasDocument(
-            const AZ::Crc32& toolId,
-            const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo,
-            AZStd::shared_ptr<GraphModel::GraphContext> graphContext);
-        virtual ~MaterialCanvasDocument();
+        MaterialGraphCompiler() = default;
+        MaterialGraphCompiler(const AZ::Crc32& toolId, const AZ::Uuid& documentId);
+        virtual ~MaterialGraphCompiler();
 
-        // AtomToolsFramework::AtomToolsDocument overrides...
-        static AtomToolsFramework::DocumentTypeInfo BuildDocumentTypeInfo();
-        AtomToolsFramework::DocumentObjectInfoVector GetObjectInfo() const override;
-        bool Open(const AZStd::string& loadPath) override;
-        bool Save() override;
-        bool SaveAsCopy(const AZStd::string& savePath) override;
-        bool SaveAsChild(const AZStd::string& savePath) override;
-        bool IsModified() const override;
-        bool BeginEdit() override;
-        bool EndEdit() override;
-        void Clear() override;
-
-        // MaterialCanvasDocumentRequestBus::Handler overrides...
-        GraphModel::GraphPtr GetGraph() const override;
-        GraphCanvas::GraphId GetGraphId() const override;
-        AZStd::string GetGraphName() const override;
+        // MaterialGraphCompilerRequestBus::Handler overrides...
         const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const override;
         bool CompileGraph() const override;
         void QueueCompileGraph() const override;
@@ -70,23 +42,6 @@ namespace MaterialCanvas
         void CompileGraphStarted() const;
         void CompileGraphFailed() const;
         void CompileGraphCompleted() const;
-
-        // GraphModelIntegration::GraphControllerNotificationBus::Handler overrides...
-        void OnGraphModelSlotModified(GraphModel::SlotPtr slot) override;
-        void OnGraphModelRequestUndoPoint() override;
-        void OnGraphModelTriggerUndo() override;
-        void OnGraphModelTriggerRedo() override;
-
-        // GraphCanvas::SceneNotificationBus::Handler overrides...
-        void OnSelectionChanged() override;
-
-        void RecordGraphState();
-        void RestoreGraphState(const AZStd::vector<AZ::u8>& graphState);
-
-        void CreateGraph(GraphModel::GraphPtr graph);
-        void DestroyGraph();
-
-        void BuildEditablePropertyGroups();
 
         // Convert the template file path into a save file path based on the document name.
         AZStd::string GetOutputPathFromTemplatePath(const AZStd::string& templatePath) const;
@@ -111,7 +66,7 @@ namespace MaterialCanvas
         // Returns the value of the slot or the slots incoming connection if present.
         AZStd::any GetValueFromSlot(GraphModel::ConstSlotPtr slot) const;
 
-        // Returns the value for the corresponding slot or the slot providing its input, if connected. 
+        // Returns the value for the corresponding slot or the slot providing its input, if connected.
         AZStd::any GetValueFromSlotOrConnection(GraphModel::ConstSlotPtr slot) const;
 
         // Convert special slot type names, like color, into one compatible with AZSL shader code.
@@ -141,7 +96,7 @@ namespace MaterialCanvas
             GraphModel::ConstNodePtr inputNode,
             const AZStd::vector<AZStd::string>& inputSlotNames) const;
 
-        // Sort a container of nodes by depth for generating instructions in execution order 
+        // Sort a container of nodes by depth for generating instructions in execution order
         template<typename NodeContainer>
         void SortNodesInExecutionOrder(NodeContainer& nodes) const;
 
@@ -181,19 +136,11 @@ namespace MaterialCanvas
             const AZStd::string& templateInputPath,
             const AZStd::string& templateOutputPath) const;
 
-        AZ::Entity* m_sceneEntity = {};
-        GraphCanvas::GraphId m_graphId;
-        GraphModel::GraphPtr m_graph;
-        AZStd::shared_ptr<GraphModel::GraphContext> m_graphContext;
-        AZStd::vector<AZ::u8> m_graphStateForUndoRedo;
-        bool m_modified = {};
+        const AZ::Crc32 m_toolId = {};
+        const AZ::Uuid m_documentId = {};
         mutable bool m_compileGraphQueued = {};
         mutable AZStd::vector<AZStd::string> m_generatedFiles;
         mutable AZStd::map<GraphModel::ConstSlotPtr, AZStd::any> m_slotValueTable;
-
-        // A container of root level dynamic property groups that represents the reflected, editable data within the document.
-        // These groups will be mapped to document object info so they can populate and be edited directly in the inspector.
-        AZStd::vector<AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup>> m_groups;
 
         // Utility type wrapping repeated load and save logic for most template files that only require basic insertions and substitutions.
         // Files will be read in and then tokenized into a vector of strings for each line in the file. This allows for easier and

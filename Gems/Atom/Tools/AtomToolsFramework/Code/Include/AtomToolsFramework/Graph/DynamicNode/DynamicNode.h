@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AtomToolsFramework/DynamicNode/DynamicNodeConfig.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeConfig.h>
 #include <GraphModel/Model/Common.h>
 #include <GraphModel/Model/Node.h>
 

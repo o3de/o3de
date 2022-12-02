@@ -6,8 +6,8 @@
  *
  */
 
-#include <AtomToolsFramework/DynamicNode/DynamicNodeManagerRequestBus.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNodeUtil.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManagerRequestBus.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeUtil.h>
 
 namespace AtomToolsFramework
 {

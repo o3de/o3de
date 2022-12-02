@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AtomToolsFramework/DynamicNode/DynamicNodeConfig.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeConfig.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/string/string.h>

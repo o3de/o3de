@@ -9,9 +9,9 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNode.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNodeManager.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNodePaletteItem.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNode.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManager.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodePaletteItem.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>

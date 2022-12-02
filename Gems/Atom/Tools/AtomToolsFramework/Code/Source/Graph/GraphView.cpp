@@ -6,7 +6,7 @@
  *
  */
 
-#include <AtomToolsFramework/GraphView/GraphView.h>
+#include <AtomToolsFramework/Graph/GraphView.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzQtComponents/Components/StyleManager.h>
@@ -721,4 +721,4 @@ namespace AtomToolsFramework
     }
 } // namespace AtomToolsFramework
 
-#include <AtomToolsFramework/GraphView/moc_GraphView.cpp>
+#include <AtomToolsFramework/Graph/moc_GraphView.cpp>

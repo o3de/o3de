@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AtomToolsFramework/DynamicNode/DynamicNodeManagerRequestBus.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManagerRequestBus.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>

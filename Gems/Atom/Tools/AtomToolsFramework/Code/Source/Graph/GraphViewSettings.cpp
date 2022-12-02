@@ -6,7 +6,7 @@
  *
  */
 
-#include <AtomToolsFramework/GraphView/GraphViewSettings.h>
+#include <AtomToolsFramework/Graph/GraphViewSettings.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>

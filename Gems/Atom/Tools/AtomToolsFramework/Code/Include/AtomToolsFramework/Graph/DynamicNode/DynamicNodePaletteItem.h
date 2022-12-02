@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AtomToolsFramework/DynamicNode/DynamicNode.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNode.h>
 #include <GraphCanvas/Widgets/GraphCanvasMimeEvent.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/DraggableNodePaletteTreeItem.h>
 #include <GraphModel/Model/Common.h>
