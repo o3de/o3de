@@ -361,7 +361,8 @@ void CLayoutViewPane::OnActionRegistrationHook()
                     currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
 
                 return currentState != AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
-            });
+            }
+        );
 
         m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
@@ -386,7 +387,8 @@ void CLayoutViewPane::OnActionRegistrationHook()
                     currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
 
                 return currentState == AZ::AtomBridge::ViewportInfoDisplayState::NormalInfo;
-            });
+            }
+        );
 
         m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
@@ -411,7 +413,8 @@ void CLayoutViewPane::OnActionRegistrationHook()
                     currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
 
                 return currentState == AZ::AtomBridge::ViewportInfoDisplayState::FullInfo;
-            });
+            }
+        );
 
         m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
@@ -436,7 +439,8 @@ void CLayoutViewPane::OnActionRegistrationHook()
                     currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
 
                 return currentState == AZ::AtomBridge::ViewportInfoDisplayState::CompactInfo;
-            });
+            }
+        );
 
         m_actionManagerInterface->AddActionToUpdater(ViewportDisplayInfoStateChangedUpdaterIdentifier, actionIdentifier);
     }
