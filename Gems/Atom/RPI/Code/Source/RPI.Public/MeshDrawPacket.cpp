@@ -348,6 +348,7 @@ namespace AZ
                 
                 ShaderData shaderData;
                 shaderData.m_shader = AZStd::move(shader);
+                shaderData.m_materialPipelineName = materialPipelineName;
                 shaderData.m_shaderTag = shaderItem.GetShaderTag();
                 shaderData.m_requestedShaderVariantId = requestedVariantId;
                 shaderData.m_activeShaderVariantId = variant.GetShaderVariantId();
