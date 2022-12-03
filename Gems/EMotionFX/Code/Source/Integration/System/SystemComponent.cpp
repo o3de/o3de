@@ -35,6 +35,7 @@
 #include <EMotionFX/Source/AnimGraphSyncTrack.h>
 #include <EMotionFX/Source/AnimGraph.h>
 #include <EMotionFX/Source/ActorManager.h>
+#include <EMotionFX/Source/ObjectId.h>
 
 #include <EMotionFX/Source/PhysicsSetup.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>
@@ -291,6 +292,8 @@ namespace EMotionFX
             MCore::ReflectionSerializer::Reflect(context);
             MCore::StringIdPoolIndex::Reflect(context);
             EMotionFX::ConstraintTransformRotationAngles::Reflect(context);
+
+            EMotionFX::ObjectId::Reflect(context);
 
             // Actor
             EMotionFX::PhysicsSetup::Reflect(context);

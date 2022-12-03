@@ -1808,7 +1808,7 @@ namespace UnitTest
         AZStd::vector<int*> vectorOfIntPointers;
 
         vectorOfInts.push_back(5);
-        vectorOfIntPointers.push_back(azcreate(int, (5), AZ::SystemAllocator, "Container Int Pointer"));
+        vectorOfIntPointers.push_back(azcreate(int, (5), AZ::SystemAllocator));
 
         // Write Vector of Int to object stream
         AZStd::vector<char> vectorIntBuffer;
@@ -2046,7 +2046,7 @@ TEST_F(SerializeBasicTest, BasicTypeTest_Succeed)
         AssociativePtrContainer testObj;
         testObj.m_setOfPointers.insert(aznew AZ::Entity("Entity1"));
         testObj.m_setOfPointers.insert(aznew AZ::Entity("Entity2"));
-        testObj.m_mapOfFloatPointers.emplace(5, azcreate(float, (3.14f), AZ::SystemAllocator, "Bob the Float"));
+        testObj.m_mapOfFloatPointers.emplace(5, azcreate(float, (3.14f), AZ::SystemAllocator));
         testObj.m_sharedEntityPointer.reset(aznew AZ::Entity("Entity3"));
 
         // XML
@@ -3237,7 +3237,7 @@ TEST_F(SerializeBasicTest, BasicTypeTest_Succeed)
         ClonableAssociativePointerContainer testObj;
         testObj.m_setOfPointers.insert(aznew AZ::Entity("Entity1"));
         testObj.m_setOfPointers.insert(aznew AZ::Entity("Entity2"));
-        testObj.m_mapOfFloatPointers.emplace(5, azcreate(float, (3.14f), AZ::SystemAllocator, "Frank the Float"));
+        testObj.m_mapOfFloatPointers.emplace(5, azcreate(float, (3.14f), AZ::SystemAllocator));
         testObj.m_sharedEntityPointer.reset(aznew AZ::Entity("Entity3"));
 
         ClonableAssociativePointerContainer* cloneObj = m_serializeContext->CloneObject(&testObj);
