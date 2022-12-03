@@ -17,6 +17,7 @@
 #include <native/utilities/UuidManager.h>
 #include <AssetManager/SourceAssetReference.h>
 #include <tests/UnitTestUtilities.h>
+#include <Tests/AZTestShared/Utils/Utils.h>
 
 namespace UnitTests
 {
@@ -25,12 +26,6 @@ namespace UnitTests
     {
         void SetUp() override
         {
-            UnitTest::TestRunner::Instance().m_suppressPrintf = false;
-            UnitTest::TestRunner::Instance().m_suppressAsserts = false;
-            UnitTest::TestRunner::Instance().m_suppressErrors = false;
-            UnitTest::TestRunner::Instance().m_suppressOutput = false;
-            UnitTest::TestRunner::Instance().m_suppressWarnings = false;
-
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
             m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
             m_componentApplication = AZStd::make_unique<testing::NiceMock<MockComponentApplication>>();
@@ -74,9 +69,21 @@ namespace UnitTests
         AssetProcessor::IUuidRequests* m_uuidInterface{};
     };
 
+    void MakeFile(const char* path)
+    {
+        AZStd::string contents("This is a unit test file");
+
+        AZ::IO::FileIOStream fileStream(path, AZ::IO::OpenMode::ModeWrite);
+        fileStream.Write(contents.size(), contents.data());
+        fileStream.Close();
+    }
+
     TEST_F(UuidManagerTests, GetUuid_FirstTime_ReturnsRandomUuid)
     {
         static constexpr const char* TestFile = "c:/somepath/mockfile.txt";
+
+        MakeFile(TestFile);
+
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
 
         EXPECT_FALSE(uuid.IsNull());
@@ -84,9 +91,49 @@ namespace UnitTests
         EXPECT_TRUE(AZ::IO::FileIOBase::GetInstance()->Exists(AZStd::string::format("%s%s", TestFile, AzToolsFramework::MetadataManager::MetadataFileExtension).c_str()));
     }
 
+    TEST_F(UuidManagerTests, GetUuid_FileDoesNotExist_Fails)
+    {
+        static constexpr const char* TestFile = "c:/somepath/mockfile.txt";
+
+        TraceBusErrorChecker errorHandler;
+        errorHandler.Begin();
+        auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
+        errorHandler.End(1);
+
+        EXPECT_TRUE(uuid.IsNull());
+    }
+
+    TEST_F(UuidManagerTests, GetUuid_ExistingFileDeleted_Fails)
+    {
+        static constexpr const char* TestFile = "c:/somepath/mockfile.txt";
+
+        MakeFile(TestFile);
+
+        auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
+
+        EXPECT_FALSE(uuid.IsNull());
+        // Make sure a metadata file was created
+        EXPECT_TRUE(AZ::IO::FileIOBase::GetInstance()->Exists(
+            AZStd::string::format("%s%s", TestFile, AzToolsFramework::MetadataManager::MetadataFileExtension).c_str()));
+
+        AZ::IO::FileIOBase::GetInstance()->Remove(TestFile);
+        AZ::IO::FileIOBase::GetInstance()->Remove(
+            (AZStd::string(TestFile) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
+        m_uuidInterface->FileRemoved((AZStd::string(TestFile) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
+
+        TraceBusErrorChecker errorHandler;
+        errorHandler.Begin();
+        uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
+        errorHandler.End(1);
+
+        EXPECT_TRUE(uuid.IsNull());
+    }
+
     TEST_F(UuidManagerTests, GetUuidTwice_ReturnsSameUuid)
     {
         static constexpr const char* TestFile = "c:/somepath/Mockfile.txt";
+
+        MakeFile(TestFile);
 
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
 
@@ -102,6 +149,9 @@ namespace UnitTests
         static constexpr const char* FileA = "c:/somepath/fileA.txt";
         static constexpr const char* FileB = "c:/somepath/fileB.txt";
 
+        MakeFile(FileA);
+        MakeFile(FileB);
+
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileA));
 
         EXPECT_FALSE(uuid.IsNull());
@@ -113,7 +163,11 @@ namespace UnitTests
 
     TEST_F(UuidManagerTests, GetLegacyUuids_UppercaseFileName_ReturnsTwoDifferentUuids)
     {
-        auto uuids = m_uuidInterface->GetLegacyUuids(AssetProcessor::SourceAssetReference("c:/somepath/Mockfile.txt"));
+        static constexpr const char* TestFile = "c:/somepath/Mockfile.txt";
+
+        MakeFile(TestFile);
+
+        auto uuids = m_uuidInterface->GetLegacyUuids(AssetProcessor::SourceAssetReference(TestFile));
 
         ASSERT_EQ(uuids.size(), 2);
         EXPECT_NE(*uuids.begin(), *++uuids.begin());
@@ -121,7 +175,11 @@ namespace UnitTests
 
     TEST_F(UuidManagerTests, GetLegacyUuids_LowercaseFileName_ReturnsOneUuid)
     {
-        auto uuids = m_uuidInterface->GetLegacyUuids(AssetProcessor::SourceAssetReference("c:/somepath/mockfile.txt"));
+        static constexpr const char* TestFile = "c:/somepath/mockfile.txt";
+
+        MakeFile(TestFile);
+
+        auto uuids = m_uuidInterface->GetLegacyUuids(AssetProcessor::SourceAssetReference(TestFile));
 
         EXPECT_EQ(uuids.size(), 1);
     }
@@ -129,6 +187,8 @@ namespace UnitTests
     TEST_F(UuidManagerTests, GetLegacyUuids_DifferentFromCanonicalUuid)
     {
         static constexpr const char* TestFile = "c:/somepath/Mockfile.txt";
+
+        MakeFile(TestFile);
 
         auto legacyUuids = m_uuidInterface->GetLegacyUuids(AssetProcessor::SourceAssetReference(TestFile));
 
@@ -143,6 +203,9 @@ namespace UnitTests
     {
         static constexpr const char* FileA = "c:/somepath/mockfile.txt";
         static constexpr const char* FileB = "c:/somepath/newfile.txt";
+
+        MakeFile(FileA);
+        MakeFile(FileB);
 
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileA));
 
@@ -162,6 +225,9 @@ namespace UnitTests
         static constexpr const char* FileA = "c:/somepath/mockfile.ext1.ext2.txt";
         static constexpr const char* FileB = "c:/somepath/newfile.txt";
 
+        MakeFile(FileA);
+        MakeFile(FileB);
+
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileA));
 
         AZ::IO::FileIOBase::GetInstance()->Rename(
@@ -179,6 +245,8 @@ namespace UnitTests
     {
         static constexpr const char* TestFile = "c:/somepath/mockfile.txt";
 
+        MakeFile(TestFile);
+
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
 
         AZ::IO::FileIOBase::GetInstance()->Remove(
@@ -195,6 +263,9 @@ namespace UnitTests
     {
         static constexpr const char* FileA = "c:/somepath/mockfile.test.txt";
         static constexpr const char* FileB = "c:/somepath/someotherfile.txt";
+
+        MakeFile(FileA);
+        MakeFile(FileB);
 
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileA));
 
@@ -216,6 +287,8 @@ namespace UnitTests
     TEST_F(UuidManagerTests, RequestUuid_DisabledType_ReturnsLegacyUuid)
     {
         static constexpr const char* TestFile = "c:/somepath/mockfile.png";
+
+        MakeFile(TestFile);
 
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
         auto legacyUuids = m_uuidInterface->GetLegacyUuids(AssetProcessor::SourceAssetReference(TestFile));

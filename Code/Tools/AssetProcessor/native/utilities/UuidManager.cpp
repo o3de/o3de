@@ -124,8 +124,11 @@ namespace AssetProcessor
 
         if (!AZ::IO::FileIOBase::GetInstance()->Exists(sourceAsset.AbsolutePath().c_str()))
         {
-            AZ_Assert(
-                false, "Programmer Error - cannot request UUID for file which does not exist - %s", sourceAsset.AbsolutePath().c_str());
+            AZ_Error(
+                "UuidManager",
+                false,
+                "Programmer Error - cannot request UUID for file which does not exist - %s",
+                sourceAsset.AbsolutePath().c_str());
             return {};
         }
 

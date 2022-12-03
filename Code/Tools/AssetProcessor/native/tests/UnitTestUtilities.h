@@ -17,6 +17,25 @@
 
 namespace UnitTests
 {
+    //! Utility class meant to check that a specific number of errors occur - will cause a test failure if any unexpected errors occur
+    //! This does not suppress anything unless Begin has been called
+    struct TraceBusErrorChecker : AZ::Debug::TraceMessageBus::Handler
+    {
+        TraceBusErrorChecker();
+        virtual ~TraceBusErrorChecker();
+
+        void Begin();
+        void End(int expectedCount);
+
+    private:
+        bool OnPreAssert(const char* fileName, int line, const char* func, const char* message) override;
+        bool OnPreError(const char* window, const char* fileName, int line, const char* func, const char* message) override;
+        bool OnPreWarning(const char* window, const char* fileName, int line, const char* func, const char* message) override;
+
+        bool m_expectingFailure = false;
+        AZStd::vector<AZStd::string> m_suppressedMessages;
+    };
+
     struct MockMultiBuilderInfoHandler : public AssetProcessor::AssetBuilderInfoBus::Handler
     {
         ~MockMultiBuilderInfoHandler() override;
