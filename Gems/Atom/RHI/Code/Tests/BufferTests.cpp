@@ -600,14 +600,9 @@ namespace UnitTest
             ParallelGetBufferViewHelper(2, 1, iterations, testCase);
             ParallelGetBufferViewHelper(4, 1, iterations, testCase);
             ParallelGetBufferViewHelper(8, 1, iterations, testCase);
-        }
-
-        for (size_t i = 0; i < attempts; ++i)
-        {
             // printf("Attempt %zu of %zu... \n", i, attempts);
 
             // Here we try a bunch of different threadCount:bufferViewCount ratios to be thorough
-            const uint32_t iterations = 1000;
             //                           threads, views, iterations
             ParallelGetBufferViewHelper(2, 1, iterations, testCase);
             ParallelGetBufferViewHelper(4, 1, iterations, testCase);
@@ -620,17 +615,17 @@ namespace UnitTest
         }
     }
 
-    TEST_F(BufferTests, ParallelGetBufferViewTests_Get)
+    TEST_F(BufferTests, DISABLED_ParallelGetBufferViewTests_Get)
     {
         ParallelGetBufferViewTest(ParallelGetBufferViewTestCases::Get);
     }
 
-    TEST_F(BufferTests, ParallelGetBufferViewTests_GetAndDeferRemoval)
+    TEST_F(BufferTests, DISABLED_ParallelGetBufferViewTests_GetAndDeferRemoval)
     {
         ParallelGetBufferViewTest(ParallelGetBufferViewTestCases::GetAndDeferRemoval);
     }
 
-    TEST_F(BufferTests, ParallelGetBufferViewTests_GetCreateAndDeferRemoval)
+    TEST_F(BufferTests, DISABLED_ParallelGetBufferViewTests_GetCreateAndDeferRemoval)
     {
         ParallelGetBufferViewTest(ParallelGetBufferViewTestCases::GetCreateAndDeferRemoval);
     }
