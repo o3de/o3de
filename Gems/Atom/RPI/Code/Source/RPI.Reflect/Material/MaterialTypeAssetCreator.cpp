@@ -165,6 +165,8 @@ namespace AZ
         const RHI::ShaderResourceGroupLayout* MaterialTypeAssetCreator::GetMaterialShaderResourceGroupLayout() const
         {
             return m_materialShaderResourceGroupLayout;
+        }
+
         void MaterialTypeAssetCreator::AddMaterialProperty(MaterialPropertyDescriptor&& materialProperty)
         {
             if (ValidateIsReady())
