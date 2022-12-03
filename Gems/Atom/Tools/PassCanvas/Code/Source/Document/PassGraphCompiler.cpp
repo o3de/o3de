@@ -11,6 +11,7 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
 #include <AtomToolsFramework/Graph/GraphDocumentRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -18,9 +19,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzCore/std/containers/vector.h>
-#include <AzCore/std/sort.h>
-#include <AzCore/std/string/regex.h>
 #include <Document/PassGraphCompiler.h>
 #include <Document/PassGraphCompilerNotificationBus.h>
 #include <GraphModel/Model/Connection.h>
