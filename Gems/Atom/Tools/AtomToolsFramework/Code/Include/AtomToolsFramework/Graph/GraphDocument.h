@@ -82,11 +82,6 @@ namespace AtomToolsFramework
         void CreateGraph(GraphModel::GraphPtr graph);
         void DestroyGraph();
 
-        template<typename NodeContainer>
-        void SortNodesInExecutionOrder(NodeContainer& nodes) const;
-
-        AZStd::string GetSymbolNameFromNode(GraphModel::ConstNodePtr node) const;
-
         void BuildEditablePropertyGroups();
 
         AZ::Entity* m_sceneEntity = {};

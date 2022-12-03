@@ -19,6 +19,7 @@
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManagerRequestBus.h>
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeUtil.h>
 #include <AtomToolsFramework/Graph/GraphDocumentRequestBus.h>
+#include <AtomToolsFramework/Graph/GraphUtil.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/IO/ByteContainerStream.h>
@@ -496,24 +497,6 @@ namespace MaterialCanvas
         return false;
     }
 
-    template<typename NodeContainer>
-    void MaterialGraphCompiler::SortNodesInExecutionOrder(NodeContainer& nodes) const
-    {
-        using NodeValueType = typename NodeContainer::value_type;
-        using NodeValueTypeRef = typename NodeContainer::const_reference;
-
-        // Pre-calculate and cache sorting scores for all nodes to avoid reprocessing during the sort
-        AZStd::map<NodeValueType, AZStd::tuple<bool, bool, uint32_t>> nodeScoreTable;
-        for (NodeValueTypeRef node : nodes)
-        {
-            nodeScoreTable[node] = AZStd::make_tuple(node->HasInputSlots(), !node->HasOutputSlots(), node->GetMaxInputDepth());
-        }
-
-        AZStd::stable_sort(nodes.begin(), nodes.end(), [&](NodeValueTypeRef nodeA, NodeValueTypeRef nodeB) {
-            return nodeScoreTable[nodeA] < nodeScoreTable[nodeB];
-        });
-    }
-
     AZStd::vector<GraphModel::ConstNodePtr> MaterialGraphCompiler::GetAllNodesInExecutionOrder() const
     {
         AZStd::vector<GraphModel::ConstNodePtr> nodes;
@@ -530,7 +513,7 @@ namespace MaterialCanvas
                 nodes.push_back(nodePair.second);
             }
 
-            SortNodesInExecutionOrder(nodes);
+            AtomToolsFramework::SortNodesInExecutionOrder(nodes);
         }
 
         return nodes;

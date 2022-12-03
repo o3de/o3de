@@ -96,10 +96,6 @@ namespace MaterialCanvas
             GraphModel::ConstNodePtr inputNode,
             const AZStd::vector<AZStd::string>& inputSlotNames) const;
 
-        // Sort a container of nodes by depth for generating instructions in execution order
-        template<typename NodeContainer>
-        void SortNodesInExecutionOrder(NodeContainer& nodes) const;
-
         // Build a list of all graph nodes sorted in execution order based on depth
         AZStd::vector<GraphModel::ConstNodePtr> GetAllNodesInExecutionOrder() const;
 
