@@ -20,3 +20,7 @@ class TestAutomation(EditorTestSuite):
 
     class SubID_WarningReported_AssetRemoved(EditorSingleTest):
         from .fbx_tests import hydra_SubID_WarningReported_AssetRemoved as test_module
+
+    # Performance testing
+    class AssetSystem_PerformanceTestingOnBasicWorkflow_AssignAssetToMeshComponentFor10kTime(EditorSingleTest):
+        from .performance_tests import AssetSystem_PerformanceTestingOnBasicWorkflow_AssignModelAssetToMeshComponentFor100kTime as test_module
