@@ -354,6 +354,14 @@ def bootstrap_MaterialCanvas():
 
 
 # -------------------------------------------------------------------------
+def bootstrap_PassCanvas():
+    """Put bootstrapping code here to execute in O3DE PassCanvas.exe"""
+    pass
+    return None
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
 def bootstrap_AssetProcessor():
     """Put boostrapping code here to execute in O3DE AssetProcessor.exe"""
     pass
@@ -392,6 +400,9 @@ if __name__ == '__main__':
             _settings = bootstrap_MaterialEditor()
 
         elif O3DE_EDITOR.stem.lower() == "materialcanvas":
+            _settings = bootstrap_MaterialEditor()
+
+        elif O3DE_EDITOR.stem.lower() == "passcanvas":
             _settings = bootstrap_MaterialEditor()
 
         elif O3DE_EDITOR.stem.lower() == "assetprocessor":
