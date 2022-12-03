@@ -50,8 +50,7 @@ namespace EMStudio
         NodeGraph* activeGraph = GetActiveGraph();
         QModelIndex currentLevelParentIndex = activeGraph->GetAnimGraphModel().GetFocus();
         EMotionFX::AnimGraphNodeId currentLevelParentId = currentLevelParentIndex.isValid()
-            ? currentLevelParentIndex.data(AnimGraphModel::ROLE_ID).value<EMotionFX::AnimGraphNodeId>()
-            : EMotionFX::AnimGraphNodeId{};
+            ? currentLevelParentIndex.data(AnimGraphModel::ROLE_ID).value<EMotionFX::AnimGraphNodeId>() : EMotionFX::AnimGraphNodeId{};
 
         for (size_t i = 0; i < numNodeGroups; ++i)
         {
