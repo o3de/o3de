@@ -11,7 +11,7 @@
 
 #include <QHBoxLayout>
 
-constexpr int FieldMargins = 16;
+constexpr int FieldMargins = 17;
 constexpr int SpinBoxWidth = 64;
 
 PropertyInputDoubleWidget::PropertyInputDoubleWidget()
