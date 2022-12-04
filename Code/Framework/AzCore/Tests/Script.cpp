@@ -1586,7 +1586,7 @@ namespace UnitTest
     void* ScriptClassAllocate(void* userData)
     {
         (void)userData;
-        return azmalloc(sizeof(ScriptClass),AZStd::alignment_of<ScriptClass>::value,AZ::SystemAllocator,"ScriptClass");
+        return azmalloc(sizeof(ScriptClass),AZStd::alignment_of<ScriptClass>::value,AZ::SystemAllocator);
     }
 
     void ScriptClassFree(void* obj, void* userData)

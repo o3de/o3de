@@ -28,7 +28,7 @@
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsRequestBus.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzFramework/Components/TransformComponent.h>
-#include <Document/MaterialCanvasDocumentRequestBus.h>
+#include <Document/MaterialGraphCompilerRequestBus.h>
 #include <Window/MaterialCanvasViewportContent.h>
 
 namespace MaterialCanvas
@@ -88,13 +88,13 @@ namespace MaterialCanvas
             });
 
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
-        MaterialCanvasDocumentNotificationBus::Handler::BusConnect(m_toolId);
+        MaterialGraphCompilerNotificationBus::Handler::BusConnect(m_toolId);
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
 
     MaterialCanvasViewportContent::~MaterialCanvasViewportContent()
     {
-        MaterialCanvasDocumentNotificationBus::Handler::BusDisconnect();
+        MaterialGraphCompilerNotificationBus::Handler::BusDisconnect();
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
     }
 
@@ -197,8 +197,8 @@ namespace MaterialCanvas
         AZ::Data::AssetId assetId;
 
         AZStd::vector<AZStd::string> generatedFiles;
-        MaterialCanvasDocumentRequestBus::EventResult(
-            generatedFiles, documentId, &MaterialCanvasDocumentRequestBus::Events::GetGeneratedFilePaths);
+        MaterialGraphCompilerRequestBus::EventResult(
+            generatedFiles, documentId, &MaterialGraphCompilerRequestBus::Events::GetGeneratedFilePaths);
 
         for (const auto& generatedFile : generatedFiles)
         {
