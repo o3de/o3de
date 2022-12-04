@@ -59,10 +59,12 @@ namespace MaterialCanvas
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
         AZ::RHI::FactoryManagerNotificationBus::Handler::BusConnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
     }
 
     MaterialCanvasApplication::~MaterialCanvasApplication()
     {
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
         AZ::RHI::FactoryManagerNotificationBus::Handler::BusDisconnect();
         m_window.reset();
@@ -104,19 +106,12 @@ namespace MaterialCanvas
         InitMaterialGraphDocumentType();
         InitMaterialGraphNodeDocumentType();
         InitShaderSourceDataDocumentType();
-
-        m_viewportSettingsSystem.reset(aznew AtomToolsFramework::EntityPreviewViewportSettingsSystem(m_toolId));
-
-        m_window.reset(aznew MaterialCanvasMainWindow(m_toolId, m_graphViewSettingsPtr));
-        m_window->show();
-
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
+        InitMainWindow();
+        InitDefaultDocument();
     }
 
     void MaterialCanvasApplication::Destroy()
     {
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
-
         // Save all of the graph view configuration settings to the settings registry.
         AtomToolsFramework::SetSettingsObject("/O3DE/Atom/MaterialCanvas/GraphViewSettings", m_graphViewSettingsPtr);
 
@@ -330,6 +325,26 @@ namespace MaterialCanvas
 
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
+    }
+
+    void MaterialCanvasApplication::InitMainWindow()
+    {
+        m_viewportSettingsSystem.reset(aznew AtomToolsFramework::EntityPreviewViewportSettingsSystem(m_toolId));
+
+        m_window.reset(aznew MaterialCanvasMainWindow(m_toolId, m_graphViewSettingsPtr));
+        m_window->show();
+    }
+
+    void MaterialCanvasApplication::InitDefaultDocument()
+    {
+        // Create an untitled, empty graph document as soon as the application starts so the user can begin creating immediately.
+        AZ::Uuid documentId = AZ::Uuid::CreateNull();
+        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::EventResult(documentId, m_toolId,
+            &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::CreateDocumentFromTypeName,
+            "Material Graph");
+
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::OnDocumentOpened, documentId);
     }
 
     void MaterialCanvasApplication::ApplyShaderBuildSettings()

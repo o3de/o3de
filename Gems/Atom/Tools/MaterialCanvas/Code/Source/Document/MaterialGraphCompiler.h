@@ -43,6 +43,9 @@ namespace MaterialCanvas
         void CompileGraphFailed() const;
         void CompileGraphCompleted() const;
 
+        // Get the graph export path based on the Graph document path or default export path.
+        AZStd::string GetGraphPath() const;
+
         // Convert the template file path into a save file path based on the document name.
         AZStd::string GetOutputPathFromTemplatePath(const AZStd::string& templatePath) const;
 

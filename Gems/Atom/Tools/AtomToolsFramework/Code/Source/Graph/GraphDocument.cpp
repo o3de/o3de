@@ -275,6 +275,11 @@ namespace AtomToolsFramework
 
     AZStd::string GraphDocument::GetGraphName() const
     {
+        if (m_absolutePath.empty())
+        {
+            return "untitled";
+        }
+
         // Sanitize the document name to remove any illegal characters that could not be used as symbols in generated code
         AZStd::string documentName;
         AZ::StringFunc::Path::GetFileName(m_absolutePath.c_str(), documentName);
