@@ -197,6 +197,9 @@ namespace AzToolsFramework
 
         if (!m_containerClearButton)
         {
+            QIcon icon = QIcon(QStringLiteral(":/Cursors/Grab_release.svg"));
+            this->setCursor(QCursor(icon.pixmap(16), 5, 2));
+
             // add those extra controls on the right hand side
             m_containerClearButton = new QToolButton(this);
             m_containerClearButton->setAutoRaise(true);
@@ -367,8 +370,6 @@ namespace AzToolsFramework
             delete m_containerClearButton;
             delete m_containerAddButton;
         }
-
-        this->unsetCursor();
 
         if ((m_parentRow) && (m_parentRow->IsContainerEditable()))
         {
