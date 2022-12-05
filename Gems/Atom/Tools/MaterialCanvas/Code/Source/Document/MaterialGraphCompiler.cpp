@@ -900,16 +900,17 @@ namespace MaterialCanvas
                 {
                     for (const auto& job : jobOutcome.GetValue())
                     {
-                        // Generate status messages then trace and send them to the status bar as the messages change 
-                        const AZStd::string assetStatusMessage = AZStd::string ::format(
+                        // Generate status messages then trace and send them to the status bar as the messages change
+                        const auto& statusMessage = AZStd::string ::format(
                             "Compiling %s (%s)", generatedFile.c_str(), AzToolsFramework::AssetSystem::JobStatusString(job.m_status));
-                        if (m_lastAssetStatusMessage != assetStatusMessage)
+
+                        if (m_lastAssetStatusMessage != statusMessage)
                         {
-                            m_lastAssetStatusMessage = assetStatusMessage;
-                            AZ_TracePrintf_IfTrue("MaterialGraphCompiler", IsCompileLoggingEnabled(), "%s\n", assetStatusMessage.c_str());
+                            m_lastAssetStatusMessage = statusMessage;
+                            AZ_TracePrintf_IfTrue("MaterialGraphCompiler", IsCompileLoggingEnabled(), "%s\n", statusMessage.c_str());
 
                             AtomToolsFramework::AtomToolsMainWindowRequestBus::Event(
-                                m_toolId, &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::SetStatusMessage, assetStatusMessage);
+                                m_toolId, &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::SetStatusMessage, statusMessage);
                         }
 
                         switch (job.m_status)
@@ -1189,12 +1190,12 @@ namespace MaterialCanvas
         m_compileAssetIndex = 0;
         m_slotValueTable.clear();
         m_generatedFiles.clear();
-        AZ_TracePrintf_IfTrue("MaterialGraphCompiler", IsCompileLoggingEnabled(), "Compiling started.\n");
+
+        const auto& statusMessage = AZStd::string::format("Compiling %s (Started)", GetGraphPath().c_str());
+        AZ_TracePrintf_IfTrue("MaterialGraphCompiler", IsCompileLoggingEnabled(), "%s.\n", statusMessage.c_str());
 
         AtomToolsFramework::AtomToolsMainWindowRequestBus::Event(
-            m_toolId,
-            &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::SetStatusMessage,
-            AZStd::string::format("Compiling %s (Started)", GetGraphPath().c_str()));
+            m_toolId, &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::SetStatusMessage, statusMessage);
 
         MaterialGraphCompilerNotificationBus::Event(
             m_toolId, &MaterialGraphCompilerNotificationBus::Events::OnCompileGraphStarted, m_documentId);
@@ -1207,12 +1208,12 @@ namespace MaterialCanvas
         m_compileAssetIndex = 0;
         m_slotValueTable.clear();
         m_generatedFiles.clear();
-        AZ_TracePrintf_IfTrue("MaterialGraphCompiler", IsCompileLoggingEnabled(), "Compiling failed.\n");
+
+        const auto& statusMessage = AZStd::string::format("Compiling %s (Failed)", GetGraphPath().c_str());
+        AZ_TracePrintf_IfTrue("MaterialGraphCompiler", IsCompileLoggingEnabled(), "%s.\n", statusMessage.c_str());
 
         AtomToolsFramework::AtomToolsMainWindowRequestBus::Event(
-            m_toolId,
-            &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::SetStatusError,
-            AZStd::string::format("Compiling %s (Failed)", GetGraphPath().c_str()));
+            m_toolId, &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::SetStatusError, statusMessage);
 
         MaterialGraphCompilerNotificationBus::Event(
             m_toolId, &MaterialGraphCompilerNotificationBus::Events::OnCompileGraphFailed, m_documentId);
@@ -1224,12 +1225,12 @@ namespace MaterialCanvas
         m_compileAssets = false;
         m_compileAssetIndex = 0;
         m_slotValueTable.clear();
-        AZ_TracePrintf_IfTrue("MaterialGraphCompiler", IsCompileLoggingEnabled(), "Compiling completed.\n");
+
+        const auto& statusMessage = AZStd::string::format("Compiling %s (Completed)", GetGraphPath().c_str());
+        AZ_TracePrintf_IfTrue("MaterialGraphCompiler", IsCompileLoggingEnabled(), "%s.\n", statusMessage.c_str());
 
         AtomToolsFramework::AtomToolsMainWindowRequestBus::Event(
-            m_toolId,
-            &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::SetStatusMessage,
-            AZStd::string::format("Compiling %s (Completed)", GetGraphPath().c_str()));
+            m_toolId, &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::SetStatusMessage, statusMessage);
 
         MaterialGraphCompilerNotificationBus::Event(
             m_toolId, &MaterialGraphCompilerNotificationBus::Events::OnCompileGraphCompleted, m_documentId);
