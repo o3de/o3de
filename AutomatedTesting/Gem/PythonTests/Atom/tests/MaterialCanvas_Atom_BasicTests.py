@@ -86,28 +86,24 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
             atom_tools_utils.close_all_documents() is True)
 
         # 4. Open multiple material graph documents then verify all material documents are opened.
-        material_graph_1_document_id = atom_tools_utils.open_document(os.path.join(test_1_material_graph))
-        material_graph_2_document_id = atom_tools_utils.open_document(os.path.join(test_2_material_graph))
-        material_graph_3_document_id = atom_tools_utils.open_document(os.path.join(test_3_material_graph))
-        material_graph_4_document_id = atom_tools_utils.open_document(os.path.join(test_4_material_graph))
-        material_graph_5_document_id = atom_tools_utils.open_document(os.path.join(test_5_material_graph))
-        Report.result(
-            Tests.verify_all_material_graphs_are_opened,
-            atom_tools_utils.is_document_open(material_graph_1_document_id) is True and
-            atom_tools_utils.is_document_open(material_graph_2_document_id) is True and
-            atom_tools_utils.is_document_open(material_graph_3_document_id) is True and
-            atom_tools_utils.is_document_open(material_graph_4_document_id) is True and
-            atom_tools_utils.is_document_open(material_graph_5_document_id) is True)
+        material_graph_document_ids = []
+        test_material_graphs = [test_1_material_graph, test_2_material_graph, test_3_material_graph,
+                                test_4_material_graph, test_5_material_graph]
+        for test_material_graph in test_material_graphs:
+            material_graph_document_id = atom_tools_utils.open_document(test_material_graph)
+            Report.result(Tests.verify_all_material_graphs_are_opened,
+                          atom_tools_utils.is_document_open(material_graph_document_id) is True)
+            material_graph_document_ids.append(material_graph_document_id)
 
         # 5. Use the CloseAllDocumentsExcept bus call to close all but one.
-        atom_tools_utils.close_all_except_selected(material_graph_1_document_id)
+        atom_tools_utils.close_all_except_selected(material_graph_document_ids[0])
         Report.result(
             Tests.close_all_opened_material_graphs_except_one,
-            atom_tools_utils.is_document_open(material_graph_1_document_id) is True and
-            atom_tools_utils.is_document_open(material_graph_2_document_id) is False and
-            atom_tools_utils.is_document_open(material_graph_3_document_id) is False and
-            atom_tools_utils.is_document_open(material_graph_4_document_id) is False and
-            atom_tools_utils.is_document_open(material_graph_5_document_id) is False)
+            atom_tools_utils.is_document_open(material_graph_document_ids[0]) is True and
+            atom_tools_utils.is_document_open(material_graph_document_ids[1]) is False and
+            atom_tools_utils.is_document_open(material_graph_document_ids[2]) is False and
+            atom_tools_utils.is_document_open(material_graph_document_ids[3]) is False and
+            atom_tools_utils.is_document_open(material_graph_document_ids[4]) is False)
 
         # 6. Verify Node Palette pane visibility.
         atom_tools_utils.set_pane_visibility("Node Palette", True)
@@ -116,7 +112,7 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
             atom_tools_utils.is_pane_visible("Node Palette") is True)
 
         # 7. Verify material graph name is 'test1'.
-        material_graph_name = material_canvas_utils.get_graph_name(material_graph_1_document_id)
+        material_graph_name = material_canvas_utils.get_graph_name(material_graph_document_ids[0])
         Report.result(
             Tests.material_graph_name_is_test1,
             material_graph_name == "test1")
