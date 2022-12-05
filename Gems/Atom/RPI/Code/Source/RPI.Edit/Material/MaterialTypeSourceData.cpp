@@ -126,10 +126,9 @@ namespace AZ
             }
         }
 
-        MaterialTypeSourceData::PropertyConnection::PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view name, int32_t shaderIndex)
+        MaterialTypeSourceData::PropertyConnection::PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view name)
             : m_type(type)
             , m_name(name)
-            , m_shaderIndex(shaderIndex)
         {
         }
 
@@ -727,15 +726,7 @@ namespace AZ
                     {
                         Name fieldName{output.m_name};
                         materialNameContext.ContextualizeShaderOption(fieldName);
-
-                        if (output.m_shaderIndex >= 0)
-                        {
-                            materialTypeAssetCreator.ConnectMaterialPropertyToShaderOption(fieldName, output.m_shaderIndex);
-                        }
-                        else
-                        {
-                            materialTypeAssetCreator.ConnectMaterialPropertyToShaderOptions(fieldName);
-                        }
+                        materialTypeAssetCreator.ConnectMaterialPropertyToShaderOptions(fieldName);
                         break;
                     }
                     case MaterialPropertyOutputType::ShaderEnabled:
@@ -801,7 +792,6 @@ namespace AZ
                         materialTypeSourceFilePath,
                         materialTypeAssetCreator.GetMaterialPropertiesLayout(),
                         materialTypeAssetCreator.GetMaterialShaderResourceGroupLayout(),
-                        materialTypeAssetCreator.GetShaderCollection(),
                         &materialNameContext
                     )
                 );
@@ -947,7 +937,6 @@ namespace AZ
                         materialTypeSourceFilePath,
                         materialTypeAssetCreator.GetMaterialPropertiesLayout(),
                         materialTypeAssetCreator.GetMaterialShaderResourceGroupLayout(),
-                        materialTypeAssetCreator.GetShaderCollection(),
                         &nameContext
                     )
                 );

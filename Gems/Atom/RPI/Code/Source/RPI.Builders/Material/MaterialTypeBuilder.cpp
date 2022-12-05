@@ -43,7 +43,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = "Material Type Builder";
-            materialBuilderDescriptor.m_version = 10; // Reorg 3
+            materialBuilderDescriptor.m_version = 21; // Material functor simplification
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialTypeBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialTypeBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);

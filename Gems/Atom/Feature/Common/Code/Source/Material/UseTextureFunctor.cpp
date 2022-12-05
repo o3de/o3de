@@ -24,8 +24,7 @@ namespace AZ
                     ->Field("texturePropertyIndex", &UseTextureFunctor::m_texturePropertyIndex)
                     ->Field("useTexturePropertyIndex", &UseTextureFunctor::m_useTexturePropertyIndex)
                     ->Field("dependentPropertyIndexes", &UseTextureFunctor::m_dependentPropertyIndexes)
-                    ->Field("shaderTags", &UseTextureFunctor::m_shaderTags)
-                    ->Field("useTextureOptionIndices", &UseTextureFunctor::m_useTextureOptionIndices)
+                    ->Field("useTextureOptionName", &UseTextureFunctor::m_useTextureOptionName)
                     ;
             }
         }
@@ -39,10 +38,7 @@ namespace AZ
 
             ShaderOptionValue useTexture{useTextureFlag && nullptr != texture};
 
-            for (const auto& shaderTag : m_shaderTags)
-            {
-                context.SetShaderOptionValue(shaderTag, m_useTextureOptionIndices[shaderTag], useTexture);
-            }
+            context.SetShaderOptionValue(m_useTextureOptionName, useTexture);
         }
 
         void UseTextureFunctor::Process(EditorContext& context)
