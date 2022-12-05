@@ -21,7 +21,7 @@
 namespace UnitTests
 {
     struct UuidManagerTests
-        : UnitTest::ScopedAllocatorSetupFixture
+        : UnitTest::LeakDetectionFixture
         , AZ::ComponentApplicationBus::Handler
     {
         //////////////////////////////////////////////////////////////////////////
