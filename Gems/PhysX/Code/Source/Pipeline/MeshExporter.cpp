@@ -381,17 +381,10 @@ namespace PhysX
             }
         }
 
-        static physx::PxMeshMidPhase::Enum GetMidPhaseStructureType(const AZStd::string& platformIdentifier)
+        static physx::PxMeshMidPhase::Enum GetMidPhaseStructureType([[maybe_unused]] const AZStd::string& platformIdentifier)
         {
             // Use by default 3.4 since 3.3 is being deprecated (despite being default)
-            physx::PxMeshMidPhase::Enum ret = physx::PxMeshMidPhase::eBVH34;
-
-            // Fallback to 3.3 on Android and iOS platforms since they don't support SSE2, which is required for 3.4
-            if (platformIdentifier == "android" || platformIdentifier == "ios")
-            {
-                ret = physx::PxMeshMidPhase::eBVH33;
-            }
-            return ret;
+            return physx::PxMeshMidPhase::eBVH34;
         }
 
         // Checks that the entire mesh is assigned (at most) one material (required for convexes and primitives).
