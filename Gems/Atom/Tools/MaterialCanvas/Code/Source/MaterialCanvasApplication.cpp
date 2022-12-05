@@ -338,13 +338,18 @@ namespace MaterialCanvas
     void MaterialCanvasApplication::InitDefaultDocument()
     {
         // Create an untitled, empty graph document as soon as the application starts so the user can begin creating immediately.
-        AZ::Uuid documentId = AZ::Uuid::CreateNull();
-        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::EventResult(documentId, m_toolId,
-            &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::CreateDocumentFromTypeName,
-            "Material Graph");
+        if (AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/CreateDefaultDocumentOnStart", true))
+        {
+            AZ::Uuid documentId = AZ::Uuid::CreateNull();
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::EventResult(
+                documentId,
+                m_toolId,
+                &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::CreateDocumentFromTypeName,
+                "Material Graph");
 
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::OnDocumentOpened, documentId);
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::OnDocumentOpened, documentId);
+        }
     }
 
     void MaterialCanvasApplication::ApplyShaderBuildSettings()
