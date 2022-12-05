@@ -13,9 +13,10 @@
 #include <GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h>
 #include <GradientSignal/Editor/GradientPreviewer.h>
 
+#include <AzFramework/PaintBrush/PaintBrushNotificationBus.h>
+
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
-#include <AzToolsFramework/PaintBrush/PaintBrushNotificationBus.h>
 
 #include <Editor/EditorImageGradientRequestBus.h>
 

@@ -25,12 +25,12 @@ static TaskDescriptor defaultTD{ "TaskGraphTestTask", "TaskGraphTests" };
 
 namespace UnitTest
 {
-    class TaskGraphTestFixture : public AllocatorsTestFixture
+    class TaskGraphTestFixture : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 
@@ -47,7 +47,7 @@ namespace UnitTest
             azdestroy(m_executor);
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
             AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
     protected:
@@ -638,6 +638,7 @@ namespace Benchmark
         void internalSetUp()
         {
             executor = new TaskExecutor;
+            TaskExecutor::SetInstance(executor);
             graph = new TaskGraph{ "BenchmarkFixture" };
         }
 
@@ -645,6 +646,7 @@ namespace Benchmark
         {
             delete graph;
             delete executor;
+            TaskExecutor::SetInstance(nullptr);
         }
 
     public:

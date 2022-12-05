@@ -218,7 +218,7 @@ namespace AzToolsFramework
 
 
     class EditorLayerComponentTest
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
         , public UnitTest::TraceBusRedirector
     {
     protected:

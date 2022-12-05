@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
@@ -94,9 +95,31 @@ namespace UnitTest
             bool shouldCompareContainerEntities = true);
 
         void DeleteInstances(const InstanceList& instancesToDelete);
+        
+        //! Helper function for finding entity alias by entity name in owning instance.
+        //! If there are multiple aliases, then return the first one it found.
+        //! @param containerEntityId The given container entity id of the owning instance.
+        //! @param entityName Entity name for the entity alias to find.
+        //! @return Entity alias for the given entity name. Returns "" if not found.
+        EntityAlias FindEntityAliasInInstance(AZ::EntityId containerEntityId, const AZStd::string& entityName);
 
-        //! Validates that all entities within a prefab instance are in 'Active' state.
+        //! Helper function for finding nested instance alias by container entity name in owning instance.
+        //! If there are multiple aliases, then return the first one it found.
+        //! @param containerEntityId The given container entity id of the owning instance.
+        //! @param nestedContainerEntityName Container entity name for the instance alias to find.
+        //! @return Nested instance alias for the given container entity name. Returns "" if not found.
+        InstanceAlias FindNestedInstanceAliasInInstance(AZ::EntityId containerEntityId, const AZStd::string& nestedContainerEntityName);
+
+        //! Helper functions for validation.
+        //! @{
+        void ValidateEntityUnderInstance(AZ::EntityId containerEntityId, const EntityAlias& entityAlias, const AZStd::string& entityName);
+        void ValidateEntityNotUnderInstance(AZ::EntityId containerEntityId, const EntityAlias& entityAlias);
+        void ValidateNestedInstanceUnderInstance(AZ::EntityId containerEntityId, const InstanceAlias& nestedInstanceAlias);
+        void ValidateNestedInstanceNotUnderInstance(AZ::EntityId containerEntityId, const InstanceAlias& nestedInstanceAlias);
+
+        // Validates that all entities within a prefab instance are in 'Active' state.
         void ValidateInstanceEntitiesActive(Instance& instance);
+        //! @}
 
         // Kicks off any updates scheduled for the next tick
         virtual void ProcessDeferredUpdates();
@@ -129,7 +152,7 @@ namespace UnitTest
         }
         //! @}
 
-        // Prefab interfaces.
+        // Prefab interfaces
         PrefabSystemComponent* m_prefabSystemComponent = nullptr;
         PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
         PrefabPublicInterface* m_prefabPublicInterface = nullptr;
@@ -138,7 +161,10 @@ namespace UnitTest
         InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
         AzToolsFramework::PrefabEditorEntityOwnershipInterface* m_prefabEditorEntityOwnershipInterface = nullptr;
 
-        // Undo Stack.
+        // SettingsRegistryInterface
+        AZ::SettingsRegistryInterface* m_settingsRegistryInterface = nullptr;
+
+        // Undo Stack
         AzToolsFramework::UndoSystem::UndoStack* m_undoStack = nullptr;
     };
-}
+} // namespace UnitTest

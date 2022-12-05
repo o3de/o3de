@@ -55,10 +55,10 @@ namespace UnitTest
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Testing the AllocatorsTestFixture base class. Testing that detects leaks
+    // Testing the LeakDetectionFixture base class. Testing that detects leaks
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     class AllocatorsTestFixtureLeakDetectionTest
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     public:
         void TearDown() override
@@ -72,7 +72,7 @@ namespace UnitTest
                 AZ::AllocatorManager::Instance().GarbageCollect();
             }
 
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void SetLeakExpected() { AZ_TEST_START_TRACE_SUPPRESSION; m_leakExpected = true; }
@@ -144,10 +144,10 @@ namespace UnitTest
 #endif // GTEST_HAS_DEATH_TEST
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Testing ScopedAllocatorSetupFixture. Testing that detects leaks
+    // Testing LeakDetectionFixture. Testing that detects leaks
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     class AllocatorSetupLeakDetectionTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         ~AllocatorSetupLeakDetectionTest() override

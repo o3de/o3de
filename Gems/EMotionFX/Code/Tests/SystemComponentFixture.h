@@ -105,13 +105,13 @@ namespace EMotionFX
     */
     template<class... Components>
     class ComponentFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
 
         void SetUp() override
         {
-            UnitTest::ScopedAllocatorSetupFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
 
             PreStart();
 
@@ -146,7 +146,7 @@ namespace EMotionFX
             // Clear the queue of messages from unit tests on our buses
             EMotionFX::Integration::ActorNotificationBus::ClearQueuedEvents();
 
-            UnitTest::ScopedAllocatorSetupFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         ~ComponentFixture() override

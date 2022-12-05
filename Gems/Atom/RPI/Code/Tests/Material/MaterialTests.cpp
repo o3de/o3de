@@ -816,7 +816,7 @@ namespace UnitTest
         RHI::Ptr<RHI::ShaderResourceGroupLayout> srgLayout = RHI::ShaderResourceGroupLayout::Create();
         srgLayout->SetName(Name("MaterialSrg"));
         srgLayout->SetBindingSlot(SrgBindingSlot::Material);
-        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{"m_color"}, 0, 12, 0});
+        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{"m_color"}, 0, 12, 0, 0});
         ASSERT_TRUE(srgLayout->Finalize());
 
         Data::Asset<ShaderAsset> shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), srgLayout);
