@@ -272,7 +272,7 @@ namespace MaterialCanvas
             { "materialgraphtemplate" },
             AtomToolsFramework::GetPathWithoutAlias(AtomToolsFramework::GetSettingsValue<AZStd::string>(
                 "/O3DE/Atom/MaterialCanvas/DefaultMaterialGraphTemplate",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/blank_graph.materialgraphtemplate")),
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/blank_graph.materialgraphtemplate")),
             m_graphContext);
 
         // Overriding documentview factory function to create graph view
