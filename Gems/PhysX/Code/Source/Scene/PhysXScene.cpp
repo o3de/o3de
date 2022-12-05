@@ -310,7 +310,7 @@ namespace PhysX
             {
                 if (castResult.hasBlock)
                 {
-                    hits.m_hits.emplace_back(SceneQueryHelpers::GetHitFromPxHit(castResult.block));
+                    hits.m_hits.emplace_back(SceneQueryHelpers::GetHitFromPxHit(castResult.block, castResult.block));
                 }
 
                 if (raycastRequest->m_reportMultipleHits)
@@ -318,7 +318,7 @@ namespace PhysX
                     for (auto i = 0u; i < castResult.getNbTouches(); ++i)
                     {
                         const auto& pxHit = castResult.getTouch(i);
-                        hits.m_hits.emplace_back(SceneQueryHelpers::GetHitFromPxHit(pxHit));
+                        hits.m_hits.emplace_back(SceneQueryHelpers::GetHitFromPxHit(pxHit, pxHit));
                     }
                 }
             }
@@ -384,7 +384,7 @@ namespace PhysX
                 {
                     if (castResult.hasBlock)
                     {
-                        results.m_hits.emplace_back(SceneQueryHelpers::GetHitFromPxHit(castResult.block));
+                        results.m_hits.emplace_back(SceneQueryHelpers::GetHitFromPxHit(castResult.block, castResult.block));
                     }
 
                     if (shapecastRequest->m_reportMultipleHits)
@@ -392,7 +392,7 @@ namespace PhysX
                         for (auto i = 0u; i < castResult.getNbTouches(); ++i)
                         {
                             const auto& pxHit = castResult.getTouch(i);
-                            results.m_hits.emplace_back(SceneQueryHelpers::GetHitFromPxHit(pxHit));
+                            results.m_hits.emplace_back(SceneQueryHelpers::GetHitFromPxHit(pxHit, pxHit));
                         }
                     }
                 }

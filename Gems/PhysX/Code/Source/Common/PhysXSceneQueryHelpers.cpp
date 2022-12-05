@@ -39,7 +39,7 @@ namespace PhysX
             return queryFlags;
         }
 
-        AzPhysics::SceneQueryHit GetHitFromPxHit(const physx::PxLocationHit& pxHit)
+        AzPhysics::SceneQueryHit GetHitFromPxHit(const physx::PxLocationHit& pxHit, const physx::PxActorShape& pxActorShape)
         {
             AzPhysics::SceneQueryHit hit;
 
@@ -58,8 +58,7 @@ namespace PhysX
                 hit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Normal;
             }
 
-            /*const ActorData* actorData = nullptr;
-            Utils::GetUserData(pxHit.actor);
+            const ActorData* actorData = Utils::GetUserData(pxActorShape.actor);
             hit.m_bodyHandle = actorData->GetBodyHandle();
             if (hit.m_bodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
             {
@@ -70,7 +69,7 @@ namespace PhysX
             {
                 hit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::EntityId;
             }
-            hit.m_shape = Utils::GetUserData(pxHit.shape);
+            hit.m_shape = Utils::GetUserData(pxActorShape.shape);
             if (hit.m_shape != nullptr)
             {
                 hit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Shape;
@@ -78,8 +77,10 @@ namespace PhysX
 
             if (pxHit.faceIndex != 0xFFFFffff)
             {
-                PHYSX_SCENE_READ_LOCK(pxHit.actor->getScene());
-                if (const auto* physicsMaterial = Utils::GetUserData(pxHit.shape->getMaterialFromInternalFaceIndex(pxHit.faceIndex));
+                PHYSX_SCENE_READ_LOCK(pxActorShape.actor->getScene());
+                physx::PxBaseMaterial* pxBaseMaterial = pxActorShape.shape->getMaterialFromInternalFaceIndex(pxHit.faceIndex);
+                AZ_Assert(pxBaseMaterial->getConcreteType() == physx::PxConcreteType::eMATERIAL, "");
+                if (const auto* physicsMaterial = Utils::GetUserData(static_cast<physx::PxMaterial*>(pxBaseMaterial));
                     physicsMaterial != nullptr)
                 {
                     hit.m_physicsMaterialId = physicsMaterial->GetId();
@@ -96,7 +97,7 @@ namespace PhysX
             if (hit.m_physicsMaterialId.IsValid())
             {
                 hit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Material;
-            }*/
+            }
 
             return hit;
         }
@@ -187,7 +188,7 @@ namespace PhysX
                         // Fill actor and shape, as they won't be filled from PxGeometryQuery
                         pxHitInfo.actor = actor;
                         pxHitInfo.shape = shape;
-                        closestHit = GetHitFromPxHit(pxHitInfo);
+                        closestHit = GetHitFromPxHit(pxHitInfo, pxHitInfo);
                         closestHitDistance = pxHitInfo.distance;
                     }
                 }

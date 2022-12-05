@@ -31,7 +31,7 @@ namespace PhysX
         physx::PxQueryHitType::Enum GetPxHitType(AzPhysics::SceneQuery::QueryHitType hitType);
 
         //! Helper function to convert from PhysX hit to AZ.
-        AzPhysics::SceneQueryHit GetHitFromPxHit(const physx::PxLocationHit& pxHit);
+        AzPhysics::SceneQueryHit GetHitFromPxHit(const physx::PxLocationHit& pxHit, const physx::PxActorShape& pxActorShape);
         AzPhysics::SceneQueryHit GetHitFromPxOverlapHit(const physx::PxOverlapHit& pxHit);
 
         //! Helper function to perform a ray cast against a PxRigidActor.

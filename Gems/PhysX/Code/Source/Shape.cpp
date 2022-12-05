@@ -362,7 +362,7 @@ namespace PhysX
             // Fill actor and shape, as they won't be filled from PxGeometryQuery
             hitInfo.actor = static_cast<physx::PxRigidActor*>(m_attachedActor); // This cast is safe since GetHitFromPxHit() only uses PxActor:: functions
             hitInfo.shape = GetPxShape();
-            return SceneQueryHelpers::GetHitFromPxHit(hitInfo);
+            return SceneQueryHelpers::GetHitFromPxHit(hitInfo, hitInfo);
         }
         return AzPhysics::SceneQueryHit();
     }
