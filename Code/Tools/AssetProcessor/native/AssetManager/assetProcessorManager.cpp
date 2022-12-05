@@ -4878,7 +4878,7 @@ namespace AssetProcessor
     {
         AZStd::string concatenatedFingerprints;
 
-        auto sourceUuid = AssetUtilities::CreateSafeSourceUUIDFromName(fileDatabaseName.c_str());
+        auto sourceUuid = AssetUtilities::CreateSafeSourceUUIDFromName(sourceAsset.RelativePath().c_str());
 
         // QSet is not ordered.
         SourceFilesForFingerprintingContainer knownDependenciesAbsolutePaths;
