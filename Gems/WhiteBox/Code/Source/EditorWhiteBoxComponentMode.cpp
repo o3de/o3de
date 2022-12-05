@@ -85,7 +85,6 @@ namespace WhiteBox
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
     }
 
-
     void EditorWhiteBoxComponentMode::Refresh()
     {
         MarkWhiteBoxIntersectionDataDirty();
@@ -281,6 +280,11 @@ namespace WhiteBox
     AZStd::string EditorWhiteBoxComponentMode::GetComponentModeName() const
     {
         return "White Box Edit Mode";
+    }
+
+    AZ::Uuid EditorWhiteBoxComponentMode::GetComponentModeType() const
+    {
+        return azrtti_typeid<EditorWhiteBoxComponentMode>();
     }
 
     AZStd::vector<AzToolsFramework::ActionOverride> EditorWhiteBoxComponentMode::PopulateActionsImpl()

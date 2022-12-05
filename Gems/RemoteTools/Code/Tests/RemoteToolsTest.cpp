@@ -26,12 +26,12 @@ namespace UnitTest
 
     static constexpr AZ::Crc32 TestToolsKey("TestRemoteTools"); 
 
-    class RemoteToolsTests : public ScopedAllocatorSetupFixture
+    class RemoteToolsTests : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            ScopedAllocatorSetupFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             AZ::NameDictionary::Create();
 
             m_timeSystem = AZStd::make_unique<AZ::TimeSystem>();
@@ -48,7 +48,7 @@ namespace UnitTest
             m_timeSystem.reset();
 
             AZ::NameDictionary::Destroy();
-            ScopedAllocatorSetupFixture::SetUp();
+            LeakDetectionFixture::SetUp();
         }
 
         AZStd::unique_ptr<AzNetworking::NetworkingSystemComponent> m_networkingSystemComponent;

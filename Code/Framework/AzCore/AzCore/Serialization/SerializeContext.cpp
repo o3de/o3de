@@ -1807,11 +1807,10 @@ namespace AZ
     // EnumerateInstance
     // [10/31/2012]
     //=========================================================================
-    bool SerializeContext::EnumerateInstance(SerializeContext::EnumerateInstanceCallContext* callContext, void* ptr, const Uuid& classId, const ClassData* classData, const ClassElement* classElement) const
+    bool SerializeContext::EnumerateInstance(SerializeContext::EnumerateInstanceCallContext* callContext, void* ptr, Uuid classId, const ClassData* classData, const ClassElement* classElement) const
     {
         // if useClassData is provided, just use it, otherwise try to find it using the classId provided.
         void* objectPtr = ptr;
-        const AZ::Uuid* classIdPtr = &classId;
         const SerializeContext::ClassData* dataClassInfo = classData;
 
         if (classElement)
@@ -1828,12 +1827,12 @@ namespace AZ
                 }
                 if (classElement->m_azRtti)
                 {
-                    const AZ::Uuid& actualClassId = classElement->m_azRtti->GetActualUuid(objectPtr);
-                    if (actualClassId != *classIdPtr)
+                    const AZ::Uuid actualClassId = classElement->m_azRtti->GetActualUuid(objectPtr);
+                    if (actualClassId != classId)
                     {
                         // we are pointing to derived type, adjust class data, uuid and pointer.
-                        classIdPtr = &actualClassId;
-                        dataClassInfo = FindClassData(actualClassId);
+                        classId = AZStd::move(actualClassId);
+                        dataClassInfo = FindClassData(classId);
                         if ( (dataClassInfo) && (dataClassInfo->m_azRtti) ) // it could be missing RTTI if its deprecated.
                         {
                             objectPtr = classElement->m_azRtti->Cast(objectPtr, dataClassInfo->m_azRtti->GetTypeId());
@@ -1858,17 +1857,18 @@ namespace AZ
 
         if (!dataClassInfo)
         {
-            dataClassInfo = FindClassData(*classIdPtr);
+            dataClassInfo = FindClassData(classId);
         }
 
     #if defined(AZ_ENABLE_SERIALIZER_DEBUG)
         {
-            DbgStackEntry de;
-            de.m_dataPtr = objectPtr;
-            de.m_uuidPtr = classIdPtr;
-            de.m_elementName = classElement ? classElement->m_name : nullptr;
-            de.m_classData = dataClassInfo;
-            de.m_classElement = classElement;
+            DbgStackEntry de{
+                /*.m_dataPtr =*/ objectPtr,
+                /*.m_uuid =*/ classId,
+                /*.m_classData =*/ dataClassInfo,
+                /*.m_elementName =*/ classElement ? classElement->m_name : nullptr,
+                /*.m_classElement =*/ classElement,
+            };
             callContext->m_errorHandler->Push(de);
         }
     #endif // AZ_ENABLE_SERIALIZER_DEBUG
@@ -1881,11 +1881,11 @@ namespace AZ
             // output an error
             if (classElement && classElement->m_flags & SerializeContext::ClassElement::FLG_BASE_CLASS)
             {
-                error = AZStd::string::format("Element with class ID '%s' was declared as a base class of another type but is not registered with the serializer.  Either remove it from the Class<> call or reflect it.", classIdPtr->ToString<AZStd::string>().c_str());
+                error = AZStd::string::format("Element with class ID '%s' was declared as a base class of another type but is not registered with the serializer.  Either remove it from the Class<> call or reflect it.", classId.ToString<AZStd::string>().c_str());
             }
             else
             {
-                error = AZStd::string::format("Element with class ID '%s' is not registered with the serializer!", classIdPtr->ToString<AZStd::string>().c_str());
+                error = AZStd::string::format("Element with class ID '%s' is not registered with the serializer!", classId.ToString<AZStd::string>().c_str());
             }
 
             callContext->m_errorHandler->ReportError(error.c_str());
@@ -2733,7 +2733,7 @@ namespace AZ
         {
             str += AZStd::string::format(" Class: '%s' Version: %d", m_classData->m_name, m_classData->m_version);
         }
-        str += AZStd::string::format(" Address: %p Uuid: %s", m_dataPtr, m_uuidPtr->ToString<AZStd::string>().c_str());
+        str += AZStd::string::format(" Address: %p Uuid: %s", m_dataPtr, m_uuid.ToString<AZStd::string>().c_str());
         str += " ]\n";
     }
 
@@ -2907,9 +2907,8 @@ namespace AZ
     // Push
     // [1/3/2013]
     //=========================================================================
-    void SerializeContext::ErrorHandler::Push(const DbgStackEntry& de)
+    void SerializeContext::ErrorHandler::Push([[maybe_unused]] const DbgStackEntry& de)
     {
-        (void)de;
     #ifdef AZ_ENABLE_SERIALIZER_DEBUG
         m_stack.push_back((de));
     #endif // AZ_ENABLE_SERIALIZER_DEBUG
@@ -3160,23 +3159,9 @@ namespace AZ
         return (reflectedClassData != nullptr);
     }
 
-    // Create the member OSAllocator and construct the unordered_map with that allocator
-    SerializeContext::PerModuleGenericClassInfo::PerModuleGenericClassInfo()
-        : m_moduleLocalGenericClassInfos(AZ::AZStdIAllocator(&m_moduleOSAllocator))
-        , m_serializeContextSet(AZ::AZStdIAllocator(&m_moduleOSAllocator))
-    {
-    }
-
     SerializeContext::PerModuleGenericClassInfo::~PerModuleGenericClassInfo()
     {
         Cleanup();
-
-        // Reconstructs the module generic info map with the OSAllocator so that it the previous allocated memory is cleared
-        // Afterwards destroy the OSAllocator
-        {
-            m_moduleLocalGenericClassInfos = GenericInfoModuleMap(AZ::AZStdIAllocator(&m_moduleOSAllocator));
-            m_serializeContextSet = SerializeContextSet(AZ::AZStdIAllocator(&m_moduleOSAllocator));
-        }
     }
 
     void SerializeContext::PerModuleGenericClassInfo::Cleanup()
@@ -3199,12 +3184,9 @@ namespace AZ
         }
 
         // Cleanup the memory for the GenericClassInfo objects.
-        // This isn't explicitly needed as the OSAllocator owned by this class will take the memory with it.
         for (const auto& [specializedTypeId, genericClassInfo] : genericClassInfoContainer)
         {
-            // Explicitly invoke the destructor and clear the memory from the module OSAllocator
-            genericClassInfo->~GenericClassInfo();
-            m_moduleOSAllocator.DeAllocate(genericClassInfo);
+            azdestroy(genericClassInfo);
         }
     }
 
@@ -3254,11 +3236,6 @@ namespace AZ
     {
         auto genericClassInfoFoundIt = m_moduleLocalGenericClassInfos.find(genericTypeId);
         return genericClassInfoFoundIt != m_moduleLocalGenericClassInfos.end() ? genericClassInfoFoundIt->second : nullptr;
-    }
-
-    AZ::IAllocator& SerializeContext::PerModuleGenericClassInfo::GetAllocator()
-    {
-        return m_moduleOSAllocator;
     }
 
     // Take advantage of static variables being unique per dll module to clean up module specific registered classes when the module unloads

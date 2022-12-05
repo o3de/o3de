@@ -25,15 +25,13 @@ namespace AZ
                 static constexpr const char type[] = "type";
                 static constexpr const char name[] = "name";
                 static constexpr const char id[] = "id"; // For backward compatibility
-                static constexpr const char shaderIndex[] = "shaderIndex";
             }
 
             static const AZStd::string_view AcceptedFields[] =
             {
                 Field::type,
                 Field::name,
-                Field::id,
-                Field::shaderIndex
+                Field::id
             };
         }
 
@@ -75,8 +73,6 @@ namespace AZ
                 result.Combine(nameResult);
             }
 
-            result.Combine(ContinueLoadingFromJsonObjectField(&propertyConnection->m_shaderIndex, azrtti_typeid<int32_t>(), inputValue, Field::shaderIndex, context));
-
             if (result.GetProcessing() == JsonSerializationResult::Processing::Completed)
             {
                 return context.Report(result, "Successfully loaded property connection.");
@@ -110,7 +106,6 @@ namespace AZ
 
             result.Combine(ContinueStoringToJsonObjectField(outputValue, Field::type, &propertyConnection->m_type, &defaultConnection.m_type, azrtti_typeid<MaterialPropertyOutputType>(), context));
             result.Combine(ContinueStoringToJsonObjectField(outputValue, Field::name, &propertyConnection->m_name, &defaultConnection.m_name, azrtti_typeid<AZStd::string>(), context));
-            result.Combine(ContinueStoringToJsonObjectField(outputValue, Field::shaderIndex, &propertyConnection->m_shaderIndex, &defaultConnection.m_shaderIndex, azrtti_typeid<int32_t>(), context));
 
             if (result.GetProcessing() == JsonSerializationResult::Processing::Completed)
             {

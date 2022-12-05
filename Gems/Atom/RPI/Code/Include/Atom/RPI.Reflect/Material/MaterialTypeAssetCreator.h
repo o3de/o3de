@@ -57,10 +57,6 @@ namespace AZ
             //! Adds an output mapping from the current material property to a ShaderResourceGroup input.
             void ConnectMaterialPropertyToShaderInput(const Name& shaderInputName);
             
-            //! Adds an output mapping from the current material property to a shader option in a specific shader.
-            //! @param shaderIndex  Index to the material type's list of shader references, according to AddShader().
-            void ConnectMaterialPropertyToShaderOption(const Name& shaderOptionName, uint32_t shaderIndex);
-
             //! Adds output mappings from the current material property to a shader option in multiple shaders.
             //! Will add one mapping for every ShaderAsset that has a matching shader option.
             void ConnectMaterialPropertyToShaderOptions(const Name& shaderOptionName);
@@ -101,11 +97,6 @@ namespace AZ
             //! is provided for convenience.
             //! @return A valid pointer if a ShaderAsset with a material ShaderResourceGroupLayout was added. Otherwise, returns nullptr.
             const RHI::ShaderResourceGroupLayout* GetMaterialShaderResourceGroupLayout() const;
-
-            //! This provides access to the ShaderCollection while the MaterialAsset is still being built.
-            //! This is needed by MaterialTypeSourceData to initialize functor objects.
-            //! @return A valid pointer when called between Begin() and End(). Otherwise, returns nullptr.
-            const ShaderCollection* GetShaderCollection() const;
 
             bool End(Data::Asset<MaterialTypeAsset>& result);
 

@@ -96,7 +96,7 @@ namespace UnitTest
     };
 
     class UiTextInputComponentTest
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     protected:
 

@@ -93,12 +93,12 @@ namespace UnitTest
     };
 
     class Arrays
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             MyCtorClass::s_numConstructedObjects = 0;
         }
     };

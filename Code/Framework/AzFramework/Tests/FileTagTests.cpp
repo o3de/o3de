@@ -72,13 +72,13 @@ namespace UnitTest
     };
 
     class FileTagTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_data = AZStd::make_unique<StaticData>();
             using namespace  AzFramework::FileTag;
@@ -139,7 +139,7 @@ namespace UnitTest
             m_data->m_application.Stop();
             m_data.reset();
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
 

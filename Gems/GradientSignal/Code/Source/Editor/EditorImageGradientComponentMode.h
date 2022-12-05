@@ -10,7 +10,7 @@
 
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
-#include <AzToolsFramework/PaintBrush/PaintBrushNotificationBus.h>
+#include <AzFramework/PaintBrush/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/PaintBrush/PaintBrushSubModeCluster.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
@@ -22,7 +22,7 @@ namespace GradientSignal
 
     class EditorImageGradientComponentMode
         : public AzToolsFramework::ComponentModeFramework::EditorBaseComponentMode
-        , private AzToolsFramework::PaintBrushNotificationBus::Handler
+        , private AzFramework::PaintBrushNotificationBus::Handler
     {
     public:
         EditorImageGradientComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
@@ -33,6 +33,7 @@ namespace GradientSignal
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl() override;
         bool HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
         AZStd::string GetComponentModeName() const override;
+        AZ::Uuid GetComponentModeType() const override;
 
     protected:
         // PaintBrushNotificationBus overrides

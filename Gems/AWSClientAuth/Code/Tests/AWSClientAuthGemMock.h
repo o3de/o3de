@@ -494,7 +494,7 @@ namespace AWSClientAuthUnitTest
     };
 
     class AWSClientAuthGemAllocatorFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public AZ::ComponentApplicationBus::Handler
         , public AWSClientAuth::AWSClientAuthRequestBus::Handler
     {
