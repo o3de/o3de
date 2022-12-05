@@ -325,7 +325,7 @@ namespace AZ
                 return iter->second;
             }
 
-            return EmplaceInstance(id, asset, param);
+            return EmplaceInstance(id, assetLocal, param);
         }
 
         template<typename Type>
