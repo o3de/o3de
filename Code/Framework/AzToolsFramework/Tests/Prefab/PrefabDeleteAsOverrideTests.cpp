@@ -162,7 +162,7 @@ namespace UnitTest
 
         // Create and rename the first car.
         AZ::EntityId tireEntityId = CreateEditorEntityUnderRoot(tireEntityName);
-        AZ::EntityId childEntityId = CreateEditorEntity(childEntityName, tireEntityId);
+        CreateEditorEntity(childEntityName, tireEntityId);
         AZ::EntityId firstCarContainerId = CreateEditorPrefab(carPrefabFilepath, { tireEntityId });
         EntityAlias tireEntityAlias = FindEntityAliasInInstance(firstCarContainerId, tireEntityName);
         EntityAlias childEntityAlias = FindEntityAliasInInstance(firstCarContainerId, childEntityName);
@@ -238,7 +238,7 @@ namespace UnitTest
         // Create and rename the first car.
         AZ::EntityId tireEntityId = CreateEditorEntityUnderRoot(tireEntityName);
         AZ::EntityId childEntityId = CreateEditorEntity(childEntityName, tireEntityId);
-        AZ::EntityId childPrefabContainerId = CreateEditorPrefab(childPrefabFilepath, { childEntityId });
+        CreateEditorPrefab(childPrefabFilepath, { childEntityId });
         AZ::EntityId firstCarContainerId = CreateEditorPrefab(carPrefabFilepath, { tireEntityId });
         EntityAlias tireEntityAlias = FindEntityAliasInInstance(firstCarContainerId, tireEntityName);
         InstanceAlias childInstanceAlias = FindNestedInstanceAliasInInstance(firstCarContainerId, childPrefabName);
