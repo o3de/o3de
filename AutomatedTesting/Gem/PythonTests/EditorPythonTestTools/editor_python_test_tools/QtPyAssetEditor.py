@@ -46,11 +46,9 @@ class QtPyAssetEditor(QtPyCommon):
         assert add_event is not None, "Failed to add new method to script event."
 
         add_event.click()
-
         helper.wait_for_condition(lambda: self.asset_editor_widget.findChild(
             QtWidgets.QFrame, DEFAULT_SCRIPT_EVENT) is not None, WAIT_TIME_SEC_3)
 
-        # Categories need to be expanded before we can manipulate fields hidden within
         self.expand_qt_container_rows(DEFAULT_SCRIPT_EVENT)
         self.expand_qt_container_rows("Name")
         self.update_new_method_name(DEFAULT_METHOD_NAME, method_name)
@@ -64,6 +62,7 @@ class QtPyAssetEditor(QtPyCommon):
         Returns: None
         """
         children = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, "Name")
+
         method_name_field = ""
         old_method_exists = False
 

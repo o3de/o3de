@@ -10,15 +10,17 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <AtomToolsFramework/Document/AtomToolsAnyDocument.h>
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystem.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNode.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNodeManager.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNodePaletteItem.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.h>
-#include <AtomToolsFramework/GraphView/GraphViewSettings.h>
-#include <AtomToolsFramework/GraphView/GraphViewConstructPresets.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNode.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManager.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodePaletteItem.h>
+#include <AtomToolsFramework/Graph/GraphDocument.h>
+#include <AtomToolsFramework/Graph/GraphViewConstructPresets.h>
+#include <AtomToolsFramework/Graph/GraphViewSettings.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AtomToolsFrameworkSystemComponent.h>
 #include <Inspector/PropertyWidgets/PropertyStringBrowseEditCtrl.h>
@@ -28,12 +30,14 @@ namespace AtomToolsFramework
     void AtomToolsFrameworkSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         AtomToolsDocument::Reflect(context);
+        AtomToolsAnyDocument::Reflect(context);
         AtomToolsDocumentSystem::Reflect(context);
         CreateDynamicNodeMimeEvent::Reflect(context);
         DynamicNode::Reflect(context);
         DynamicProperty::Reflect(context);
         DynamicPropertyGroup::Reflect(context);
         EntityPreviewViewportSettingsSystem::Reflect(context);
+        GraphDocument::Reflect(context);
         GraphViewSettings::Reflect(context);
         GraphViewConstructPresets::Reflect(context);
         InspectorWidget::Reflect(context);

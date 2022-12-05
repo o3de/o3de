@@ -10,7 +10,8 @@ Base class for QtPy classes. Contains commonly used constants and generic behavi
 import pyside_utils
 from PySide2 import QtWidgets, QtTest, QtCore
 from enum import IntEnum
-
+from editor_python_test_tools.utils import TestHelper as helper
+from consts.general import (WAIT_TIME_SEC_3)
 
 class CheckBoxStates(IntEnum):
     Off = 0
@@ -56,6 +57,6 @@ class QtPyCommon:
         for child in children:
 
             check_box = child.findChild(QtWidgets.QCheckBox)
-
             if check_box and not check_box.isChecked():
                 check_box.click()
+                helper.wait_for_condition(lambda: check_box.isChecked(), WAIT_TIME_SEC_3)
