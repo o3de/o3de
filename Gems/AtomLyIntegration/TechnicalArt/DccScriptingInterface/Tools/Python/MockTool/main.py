@@ -152,12 +152,12 @@ class MockTool(QtWidgets.QWidget):
         self.dcc_test_button.setObjectName('Primary')
         self.main_container.addWidget(self.dcc_test_button)
         self.get_dcc_apps()
-        # self.test_environment()
+        self.test_environment()
 
     def test_environment(self):
         # For project specific variables created OUTSIDE the DCCsi Dynaconf default environments (using the
         # Dynaconf .env process), access variables using this:
-        self.get_env_value()
+        # self.get_env_value()
 
         # Some environment variables are stored as custom environments within the DCCsi Dynaconf settings.json system
         # and are therefore not accessible by default. In order to gain access to those environments, run the following

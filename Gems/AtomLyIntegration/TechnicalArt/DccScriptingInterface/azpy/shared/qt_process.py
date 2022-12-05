@@ -171,6 +171,8 @@ class QtProcess(QtCore.QObject):
         the process subsequently closed.
         """
 
+        # TODO - somewhere you need to run the self.processing_script path to the socket server in order to see audit
+
         info_list = [self.input_data, self.output_data]
         command = [self.target_files]
         command.append('socket_connection') if socket_connection else command
