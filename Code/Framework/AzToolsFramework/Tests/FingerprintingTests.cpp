@@ -118,7 +118,7 @@ namespace UnitTest
         }
     };
 
-    using FingerprintTests = UnitTest::AllocatorsTestFixture;
+    using FingerprintTests = UnitTest::LeakDetectionFixture;
 
     TEST_F(FingerprintTests, IntFingerprint_IsValid)
     {

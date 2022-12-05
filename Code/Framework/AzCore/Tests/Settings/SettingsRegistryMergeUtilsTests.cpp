@@ -32,7 +32,7 @@ namespace SettingsRegistryMergeUtilsTests
     };
 
     class SettingsRegistryMergeUtilsParamFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<DumpSettingsRegistryParams>
     {
     public:
@@ -243,7 +243,7 @@ namespace SettingsRegistryMergeUtilsTests
         AZStd::fixed_vector<SettingsKeyValuePair, 20> m_expectedSettings;
     };
     class SettingsRegistryMergeUtilsConfigFileFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<ConfigFileParams>
     {
     public:
@@ -479,7 +479,7 @@ tags=tools,renderer,metal)"
     };
 
     class SettingsRegistryGemVisitFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<SettingsRegistryGemVisitParams>
     {
     public:
@@ -680,7 +680,7 @@ tags=tools,renderer,metal)"
         ::testing::ValuesIn(MakeGemVisitTestingValues()));
 
     class SettingsRegistryMergeUtilsCommandLineFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override

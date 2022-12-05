@@ -131,7 +131,7 @@ public:
 // This fixture attaches the SceneCore and SceneData libraries, and attaches
 // the AZ::Environment to them
 class SceneBuilderPhasesFixture
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public UnitTest::LeakDetectionFixture
 {
 public:
     void SetUp() override

@@ -1,0 +1,10 @@
+{
+  "O3DE": {
+    "/O3DE/AssetProcessor/SceneBuilder/defaultScripts": null,
+    "AssetProcessor": {
+      "SceneBuilder": [
+        "@temp@/default_script.py"
+      ]
+    }
+  }
+}

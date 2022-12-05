@@ -12,6 +12,7 @@
 #include <AzCore/Name/Name.h>
 #include <Atom/RHI.Reflect/Handle.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
+#include <Atom/RPI.Reflect/Limits.h>
 
 namespace AZ
 {
@@ -24,6 +25,8 @@ namespace AZ
         };
 
         using MaterialPropertyIndex = RHI::Handle<uint32_t, MaterialPropertyIndexType>;
+
+        using MaterialPropertyFlags = AZStd::bitset<Limits::Material::PropertyCountMax>;
 
         enum class MaterialPropertyOutputType
         {

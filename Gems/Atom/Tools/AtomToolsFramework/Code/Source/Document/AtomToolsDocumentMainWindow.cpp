@@ -189,37 +189,40 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocumentMainWindow::SaveDocument(const AZ::Uuid& documentId)
     {
-        const QString documentPath = GetDocumentPath(documentId);
+        AZStd::string documentPath;
+        AtomToolsDocumentRequestBus::EventResult(documentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
+        DocumentTypeInfo documentInfo;
+        AtomToolsDocumentRequestBus::EventResult(documentInfo, documentId, &AtomToolsDocumentRequestBus::Events::GetDocumentTypeInfo);
 
-        // If the file already has a path then it can be saved without user selecting a new one.
-        if (!documentPath.isEmpty())
+        // Attempt to save using the current path if it is not empty and has a supported save extension.
+        if (documentInfo.IsSupportedExtensionToSave(documentPath))
         {
             bool result = false;
             AtomToolsDocumentSystemRequestBus::EventResult(
                 result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocument, documentId);
             if (!result)
             {
-                SetStatusError(tr("Document save failed: %1").arg(documentPath));
+                SetStatusError(tr("Document save failed: %1").arg(documentPath.c_str()));
                 return false;
             }
             return true;
         }
 
-        // If the file does not have a path, meaning it was not previously saved, then we have to do a save as operation.
-        if (const auto& savePath = GetSaveDocumentParams(documentPath.toUtf8().constData(), documentId); !savePath.empty())
+        // If the path is empty or the extension is not valid for saving, do a save as operation, which prompts the user for a path.
+        if (const auto& savePath = GetSaveDocumentParams(documentPath, documentId); !savePath.empty())
         {
             bool result = false;
             AtomToolsDocumentSystemRequestBus::EventResult(
                 result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsCopy, documentId, savePath);
             if (!result)
             {
-                SetStatusError(tr("Document save failed: %1").arg(documentPath));
+                SetStatusError(tr("Document save failed: %1").arg(documentPath.c_str()));
                 return false;
             }
             return true;
         }
 
-        // save is cancel
+        // Cancel the save if no valid path was selected by this point.
         return false;
     }
 
@@ -299,8 +302,8 @@ namespace AtomToolsFramework
 
         bool isOpen = false;
         AtomToolsDocumentRequestBus::EventResult(isOpen, documentId, &AtomToolsDocumentRequestBus::Events::IsOpen);
-        bool canSave = false;
-        AtomToolsDocumentRequestBus::EventResult(canSave, documentId, &AtomToolsDocumentRequestBus::Events::CanSave);
+        bool canSaveAsChild = false;
+        AtomToolsDocumentRequestBus::EventResult(canSaveAsChild, documentId, &AtomToolsDocumentRequestBus::Events::CanSaveAsChild);
         bool canUndo = false;
         AtomToolsDocumentRequestBus::EventResult(canUndo, documentId, &AtomToolsDocumentRequestBus::Events::CanUndo);
         bool canRedo = false;
@@ -313,9 +316,10 @@ namespace AtomToolsFramework
         m_actionCloseAll->setEnabled(hasTabs);
         m_actionCloseOthers->setEnabled(hasTabs);
 
-        m_actionSave->setEnabled(canSave);
-        m_actionSaveAsCopy->setEnabled(canSave);
-        m_actionSaveAsChild->setEnabled(isOpen);
+        m_actionSave->setEnabled(isOpen);
+        m_actionSaveAsCopy->setEnabled(isOpen);
+        m_actionSaveAsChild->setEnabled(canSaveAsChild);
+        m_actionSaveAsChild->setVisible(canSaveAsChild);
         m_actionSaveAll->setEnabled(hasTabs);
 
         m_actionUndo->setEnabled(canUndo);
@@ -325,45 +329,50 @@ namespace AtomToolsFramework
         m_actionNextTab->setEnabled(m_tabWidget->count() > 1);
     }
 
-    AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> AtomToolsDocumentMainWindow::GetSettingsDialogGroups() const
+    void AtomToolsDocumentMainWindow::PopulateSettingsInspector(InspectorWidget* inspector) const
     {
-        AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> groups = Base::GetSettingsDialogGroups();
-        groups.push_back(CreateSettingsGroup(
+        Base::PopulateSettingsInspector(inspector);
+
+        m_documentSystemSettingsGroup = CreateSettingsPropertyGroup(
             "Document System Settings",
             "Document System Settings",
-            {
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayWarningMessageDialogs",
-                    "Display Warning Message Dialogs",
-                    "Display message boxes for warnings opening documents",
-                    true),
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayErrorMessageDialogs",
-                    "Display Error Message Dialogs",
-                    "Display message boxes for errors opening documents",
-                    true),
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReload",
-                    "Enable Automatic Reload",
-                    "Automatically reload documents after external modifications",
-                    true),
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReloadPrompts",
-                    "Enable Automatic Reload Prompts",
-                    "Confirm before automatically reloading modified documents",
-                    true),
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveEnabled",
-                    "Enable Auto Save",
-                    "Automatically save documents after they are modified",
-                    false),
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveInterval",
-                    "Auto Save Interval",
-                    "How often (in milliseconds) auto save occurs",
-                    aznumeric_cast<AZ::s64>(250)),
-            }));
-        return groups;
+            { CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayWarningMessageDialogs",
+                  "Display Warning Message Dialogs",
+                  "Display message boxes for warnings opening documents",
+                  true),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayErrorMessageDialogs",
+                  "Display Error Message Dialogs",
+                  "Display message boxes for errors opening documents",
+                  true),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReload",
+                  "Enable Automatic Reload",
+                  "Automatically reload documents after external modifications",
+                  true),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReloadPrompts",
+                  "Enable Automatic Reload Prompts",
+                  "Confirm before automatically reloading modified documents",
+                  true),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveEnabled",
+                  "Enable Auto Save",
+                  "Automatically save documents after they are modified",
+                  false),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveInterval",
+                  "Auto Save Interval",
+                  "How often (in milliseconds) auto save occurs",
+                  aznumeric_cast<AZ::s64>(250)) });
+
+        inspector->AddGroup(
+            m_documentSystemSettingsGroup->m_name,
+            m_documentSystemSettingsGroup->m_displayName,
+            m_documentSystemSettingsGroup->m_description,
+            new InspectorPropertyGroupWidget(
+                m_documentSystemSettingsGroup.get(), m_documentSystemSettingsGroup.get(), azrtti_typeid<DynamicPropertyGroup>()));
     }
 
     void AtomToolsDocumentMainWindow::BuildCreateMenu(QAction* insertPostion)

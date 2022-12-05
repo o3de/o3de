@@ -156,9 +156,37 @@ namespace AZ
             uint32_t minorVersion = VK_VERSION_MINOR(physicalProperties.apiVersion);
 
             // unbounded array functionality
-            auto descriptorIndexingFeatures = physicalDevice.GetPhysicalDeviceDescriptorIndexingFeatures();
-                
-            auto bufferDeviceAddressFeatures = physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures();
+            VkPhysicalDeviceDescriptorIndexingFeaturesEXT descriptorIndexingFeatures = {};
+            descriptorIndexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT;
+            const VkPhysicalDeviceDescriptorIndexingFeaturesEXT& physicalDeviceDescriptorIndexingFeatures =
+                physicalDevice.GetPhysicalDeviceDescriptorIndexingFeatures();
+            descriptorIndexingFeatures.shaderInputAttachmentArrayDynamicIndexing = physicalDeviceDescriptorIndexingFeatures.shaderInputAttachmentArrayDynamicIndexing;
+            descriptorIndexingFeatures.shaderUniformTexelBufferArrayDynamicIndexing = physicalDeviceDescriptorIndexingFeatures.shaderUniformTexelBufferArrayDynamicIndexing;
+            descriptorIndexingFeatures.shaderStorageTexelBufferArrayDynamicIndexing = physicalDeviceDescriptorIndexingFeatures.shaderStorageTexelBufferArrayDynamicIndexing;
+            descriptorIndexingFeatures.shaderUniformBufferArrayNonUniformIndexing = physicalDeviceDescriptorIndexingFeatures.shaderUniformBufferArrayNonUniformIndexing;
+            descriptorIndexingFeatures.shaderSampledImageArrayNonUniformIndexing = physicalDeviceDescriptorIndexingFeatures.shaderSampledImageArrayNonUniformIndexing;
+            descriptorIndexingFeatures.shaderStorageBufferArrayNonUniformIndexing = physicalDeviceDescriptorIndexingFeatures.shaderStorageBufferArrayNonUniformIndexing;
+            descriptorIndexingFeatures.shaderStorageImageArrayNonUniformIndexing = physicalDeviceDescriptorIndexingFeatures.shaderStorageImageArrayNonUniformIndexing;
+            descriptorIndexingFeatures.shaderInputAttachmentArrayNonUniformIndexing = physicalDeviceDescriptorIndexingFeatures.shaderInputAttachmentArrayNonUniformIndexing;
+            descriptorIndexingFeatures.shaderUniformTexelBufferArrayNonUniformIndexing = physicalDeviceDescriptorIndexingFeatures.shaderUniformTexelBufferArrayNonUniformIndexing;
+            descriptorIndexingFeatures.shaderStorageTexelBufferArrayNonUniformIndexing = physicalDeviceDescriptorIndexingFeatures.shaderStorageTexelBufferArrayNonUniformIndexing;
+            descriptorIndexingFeatures.descriptorBindingPartiallyBound = physicalDeviceDescriptorIndexingFeatures.shaderStorageTexelBufferArrayNonUniformIndexing;
+            descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount = physicalDeviceDescriptorIndexingFeatures.descriptorBindingVariableDescriptorCount;
+            descriptorIndexingFeatures.runtimeDescriptorArray = physicalDeviceDescriptorIndexingFeatures.runtimeDescriptorArray;
+            descriptorIndexingFeatures.descriptorBindingSampledImageUpdateAfterBind =
+                physicalDeviceDescriptorIndexingFeatures.descriptorBindingSampledImageUpdateAfterBind;
+            descriptorIndexingFeatures.descriptorBindingStorageImageUpdateAfterBind =
+                physicalDeviceDescriptorIndexingFeatures.descriptorBindingStorageImageUpdateAfterBind;
+            descriptorIndexingFeatures.descriptorBindingStorageBufferUpdateAfterBind =
+                physicalDeviceDescriptorIndexingFeatures.descriptorBindingStorageBufferUpdateAfterBind;
+
+            VkPhysicalDeviceBufferDeviceAddressFeaturesEXT bufferDeviceAddressFeatures = {};
+            bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT;
+            const VkPhysicalDeviceBufferDeviceAddressFeaturesEXT& physicalDeviceBufferDeviceAddressFeatures =
+                physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures();
+            bufferDeviceAddressFeatures.bufferDeviceAddress = physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddress;
+            bufferDeviceAddressFeatures.bufferDeviceAddressCaptureReplay = physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddressCaptureReplay;
+            bufferDeviceAddressFeatures.bufferDeviceAddressMultiDevice = physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddressMultiDevice;
             descriptorIndexingFeatures.pNext = &bufferDeviceAddressFeatures;
 
             auto depthClipEnabled = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures();
@@ -212,6 +240,11 @@ namespace AZ
                 vulkan12Features.runtimeDescriptorArray = physicalDevice.GetPhysicalDeviceVulkan12Features().runtimeDescriptorArray;
                 vulkan12Features.shaderSharedInt64Atomics = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderSharedInt64Atomics;
                 vulkan12Features.shaderBufferInt64Atomics = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderBufferInt64Atomics;
+                vulkan12Features.descriptorBindingSampledImageUpdateAfterBind = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingSampledImageUpdateAfterBind;
+                vulkan12Features.descriptorBindingStorageImageUpdateAfterBind = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingStorageImageUpdateAfterBind;
+                vulkan12Features.descriptorBindingStorageBufferUpdateAfterBind = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingStorageBufferUpdateAfterBind;
+                vulkan12Features.descriptorBindingPartiallyBound = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingPartiallyBound;
+                vulkan12Features.descriptorBindingUpdateUnusedWhilePending = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingUpdateUnusedWhilePending;
                 shaderImageAtomicInt64.pNext = &vulkan12Features;
                 deviceInfo.pNext = &depthClipEnabled;
             }
@@ -311,6 +344,9 @@ namespace AZ
 
             //Load device features now that we have loaded all extension info
             physicalDevice.LoadSupportedFeatures(m_context);
+
+            m_bindlessDescriptorPool.Init(*this);
+
             return RHI::ResultCode::Success;
         }
 
@@ -519,6 +555,11 @@ namespace AZ
             return *m_asyncUploadQueue;
         }        
 
+        BindlessDescriptorPool& Device::GetBindlessDescriptorPool()
+        {
+            return m_bindlessDescriptorPool;
+        }
+
         RHI::Ptr<Buffer> Device::AcquireStagingBuffer(AZStd::size_t byteCount)
         {
             RHI::Ptr<Buffer> stagingBuffer = Buffer::Create();
@@ -589,6 +630,7 @@ namespace AZ
 
             m_commandQueueContext.Shutdown();
 
+            m_bindlessDescriptorPool.Shutdown();
             m_stagingBufferPool.reset();
             m_renderPassCache.first.Clear();
             m_framebufferCache.first.Clear();
@@ -667,6 +709,7 @@ namespace AZ
             m_commandQueueContext.End();
             m_commandListAllocator.Collect();
             m_semaphoreAllocator.Collect();
+            m_bindlessDescriptorPool.GarbageCollect();
         }
 
         void Device::WaitForIdleInternal() 

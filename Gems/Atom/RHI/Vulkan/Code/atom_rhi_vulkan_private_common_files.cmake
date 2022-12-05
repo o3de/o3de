@@ -15,6 +15,8 @@ set(FILES
     Source/RHI/BufferPoolResolver.h
     Source/RHI/BufferView.cpp
     Source/RHI/BufferView.h
+    Source/RHI/BindlessDescriptorPool.cpp
+    Source/RHI/BindlessDescriptorPool.h
     Source/RHI/CommandList.cpp
     Source/RHI/CommandList.h
     Source/RHI/CommandPool.cpp

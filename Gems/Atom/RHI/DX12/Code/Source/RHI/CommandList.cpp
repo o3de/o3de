@@ -367,11 +367,11 @@ namespace AZ
 
                 for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays; ++unboundedArrayIndex)
                 {
-                    if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid()
-                        && compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex].ptr != 0)
+                    if (binding.m_bindlessTable.IsValid() 
+                        && compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex].ptr)
                     {
                         GetCommandList()->SetComputeRootDescriptorTable(
-                            binding.m_unboundedArrayResourceTables[unboundedArrayIndex].GetIndex(),
+                            binding.m_bindlessTable.GetIndex(),
                             compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex]);
                     }
                 }

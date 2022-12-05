@@ -16,23 +16,13 @@ using namespace AZStd;
 namespace UnitTest
 {
     class VectorSets
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
-
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
     };
 
     class FixedVectorSets
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
-
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
     };
 
     template <typename SetType>

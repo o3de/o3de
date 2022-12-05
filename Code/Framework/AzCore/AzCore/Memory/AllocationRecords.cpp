@@ -473,7 +473,7 @@ namespace AZ::Debug
     // EnumerateAllocations
     // [9/29/2009]
     //=========================================================================
-    void AllocationRecords::EnumerateAllocations(AllocationInfoCBType cb)
+    void AllocationRecords::EnumerateAllocations(AllocationInfoCBType cb) const
     {
         // enumerate all allocations and stop if requested.
         // Since allocations can change during the iteration (code that prints out the records could allocate, which will
