@@ -181,7 +181,6 @@ namespace AZ
             if (m_isStatic && !m_forceRenderNextFrame)
             {
                 const auto& views = m_pipeline->GetViews(GetPipelineViewTag());
-                RHI::DrawListView viewDrawList;
                 if (!views.empty())
                 {
                     const RPI::ViewPtr& view = views.front();
