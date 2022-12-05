@@ -13,6 +13,7 @@
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 namespace AZ
 {
