@@ -38,9 +38,10 @@ namespace AZ
             using RequiresCloneCallback = AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)>;
 
             Data::Asset<RPI::ModelAsset> m_modelAsset;
+            RequiresCloneCallback m_requiresCloneCallback = {};
             bool m_isRayTracingEnabled = true;
             bool m_useForwardPassIblSpecular = false;
-            RequiresCloneCallback m_requiresCloneCallback = {};
+            bool m_isAlwaysDynamic = false;
         };
 
         //! MeshFeatureProcessorInterface provides an interface to acquire and release a MeshHandle from the underlying MeshFeatureProcessor

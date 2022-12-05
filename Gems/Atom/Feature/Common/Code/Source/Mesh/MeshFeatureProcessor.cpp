@@ -310,6 +310,7 @@ namespace AZ
             meshDataHandle->m_rayTracingUuid = AZ::Uuid::CreateRandom();
             meshDataHandle->m_originalModelAsset = descriptor.m_modelAsset;
             meshDataHandle->m_meshLoader = AZStd::make_unique<ModelDataInstance::MeshLoader>(descriptor.m_modelAsset, &*meshDataHandle);
+            meshDataHandle->m_isAlwaysDynamic = descriptor.m_isAlwaysDynamic;
 
             meshDataHandle->UpdateMaterialChangeIds();
 
@@ -796,6 +797,8 @@ namespace AZ
                 // Clone the model asset to force create another model instance.
                 AZ::Data::AssetId newId(AZ::Uuid::CreateRandom(), /*subId=*/0);
                 Data::Asset<RPI::ModelAsset> clonedAsset;
+                // Assume cloned models will involve some kind of geometry deformation
+                m_parent->m_isAlwaysDynamic = true;
                 if (AZ::RPI::ModelAssetCreator::Clone(modelAsset, clonedAsset, newId))
                 {
                     model = RPI::Model::FindOrCreate(clonedAsset);
