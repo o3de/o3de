@@ -33,7 +33,7 @@ namespace UnitTest
     using namespace AssetBuilderSDK;
 
     class CopyDependencyBuilderTest
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
         , public UnitTest::TraceBusRedirector
         , private AzToolsFramework::AssetSystemRequestBus::Handler
     {

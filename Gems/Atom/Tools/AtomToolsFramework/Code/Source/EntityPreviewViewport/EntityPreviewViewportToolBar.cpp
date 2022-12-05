@@ -85,23 +85,29 @@ namespace AtomToolsFramework
         });
         displayMapperAction->setCheckable(false);
 
+        // Setting the minimum drop down with for all asset selection combo boxes to compensate for longer file names, like render
+        // pipelines.
+        const int minComboBoxDropdownWidth = 220;
+
         // Add lighting preset combo box
         m_lightingPresetComboBox = new AssetSelectionComboBox([](const AZStd::string& path) {
             return path.ends_with(AZ::Render::LightingPreset::Extension);
         }, this);
+        m_lightingPresetComboBox->view()->setMinimumWidth(minComboBoxDropdownWidth);
         addWidget(m_lightingPresetComboBox);
 
         // Add model preset combo box
         m_modelPresetComboBox = new AssetSelectionComboBox([](const AZStd::string& path) {
             return path.ends_with(AZ::Render::ModelPreset::Extension);
         }, this);
+        m_modelPresetComboBox->view()->setMinimumWidth(minComboBoxDropdownWidth);
         addWidget(m_modelPresetComboBox);
 
         // Add render pipeline combo box
-        m_renderPipelineComboBox = new AssetSelectionComboBox([](const AZStd::string& path)
-            {
-                return path.ends_with(AZ::RPI::RenderPipelineDescriptor::Extension);
-            }, this);
+        m_renderPipelineComboBox = new AssetSelectionComboBox([](const AZStd::string& path) {
+            return path.ends_with(AZ::RPI::RenderPipelineDescriptor::Extension);
+        }, this);
+        m_renderPipelineComboBox->view()->setMinimumWidth(minComboBoxDropdownWidth);
         addWidget(m_renderPipelineComboBox);
         
         // Prepopulating preset selection widgets with previously registered presets.

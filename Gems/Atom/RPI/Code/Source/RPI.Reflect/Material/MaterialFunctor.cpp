@@ -46,55 +46,52 @@ namespace AZ
             , m_psoHandling(psoHandling)
         {}
 
-        bool MaterialFunctor::RuntimeContext::SetShaderOptionValue(ShaderCollection::Item& shaderItem, ShaderOptionIndex optionIndex, ShaderOptionValue value)
+
+        template<typename ValueType>
+        bool MaterialFunctor::RuntimeContext::SetShaderOptionValueHelper(const Name& name, const ValueType& value)
         {
-            ShaderOptionGroup* shaderOptionGroup = shaderItem.GetShaderOptions();
-            const ShaderOptionGroupLayout* layout = shaderOptionGroup->GetShaderOptionLayout();
+            bool didSetOne = false;
 
-            if (optionIndex.GetIndex() >= layout->GetShaderOptionCount())
+            for (ShaderCollection::Item& shaderItem : *m_shaderCollection)
             {
-                AZ_Error("MaterialFunctor", false, "Shader option index %d is out of range.", optionIndex.GetIndex());
-            }
-            else if (shaderItem.MaterialOwnsShaderOption(optionIndex))
-            {
-                return shaderOptionGroup->SetValue(optionIndex, value);
-            }
-            else
-            {
-                AZ_Error("MaterialFunctor", false, "Shader option '%s' is not owned by this material.", layout->GetShaderOption(optionIndex).GetName().GetCStr());
+                ShaderOptionGroup* shaderOptionGroup = shaderItem.GetShaderOptions();
+                const ShaderOptionGroupLayout* layout = shaderOptionGroup->GetShaderOptionLayout();
+                ShaderOptionIndex optionIndex = layout->FindShaderOptionIndex(name);
+
+                if (!optionIndex.IsValid())
+                {
+                    continue;
+                }
+
+                if (!shaderItem.MaterialOwnsShaderOption(optionIndex))
+                {
+                    AZ_Error("MaterialFunctor", false, "Shader option '%s' is not owned by this material.", name.GetCStr());
+                    AZ_Assert(!didSetOne, "The material build pipeline should have ensured that MaterialOwnsShaderOption is consistent across all shaders.");
+                    return false;
+                }
+
+                if (shaderOptionGroup->SetValue(optionIndex, value))
+                {
+                    didSetOne = true;
+                }
             }
 
-            return false;
+            if (!didSetOne)
+            {
+                AZ_Error("MaterialFunctor", false, "Shader option '%s' not found.", name.GetCStr());
+            }
+
+            return didSetOne;
         }
 
-        bool MaterialFunctor::RuntimeContext::SetShaderOptionValue(AZStd::size_t shaderIndex, ShaderOptionIndex optionIndex, ShaderOptionValue value)
+        bool MaterialFunctor::RuntimeContext::SetShaderOptionValue(const Name& optionName, ShaderOptionValue value)
         {
-            if (shaderIndex < (*m_shaderCollection).size())
-            {
-                ShaderCollection::Item& shaderItem = (*m_shaderCollection)[shaderIndex];
-                return SetShaderOptionValue(shaderItem, optionIndex, value);
-            }
-            else
-            {
-                AZ_Error("MaterialFunctor", false, "Shader index %zu is out of range. There are %zu shaders available.", shaderIndex, (*m_shaderCollection).size());
-            }
-
-            return false;
+            return SetShaderOptionValueHelper(optionName, value);
         }
 
-        bool MaterialFunctor::RuntimeContext::SetShaderOptionValue(const AZ::Name& shaderTag, ShaderOptionIndex optionIndex, ShaderOptionValue value)
+        bool MaterialFunctor::RuntimeContext::SetShaderOptionValue(const Name& optionName, const Name& value)
         {
-            if (m_shaderCollection->HasShaderTag(shaderTag))
-            {
-                ShaderCollection::Item& shaderItem = (*m_shaderCollection)[shaderTag];
-                return SetShaderOptionValue(shaderItem, optionIndex, value);
-            }
-            else
-            {
-                AZ_Error("MaterialFunctor", false, "Shader tag '%s' is invalid.", shaderTag.GetCStr());
-            }
-
-            return false;
+            return SetShaderOptionValueHelper(optionName, value);
         }
 
         ShaderResourceGroup* MaterialFunctor::RuntimeContext::GetShaderResourceGroup()

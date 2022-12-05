@@ -40,8 +40,7 @@ namespace AZ
             AZStd::vector<RPI::MaterialPropertyIndex> m_dependentPropertyIndexes;
 
             // Shader option output...
-            AZStd::vector<AZ::Name> m_shaderTags;                  //!< Shaders identified by tags belonging to materials that this functor will affect
-            AZStd::unordered_map<AZ::Name, RPI::ShaderOptionIndex> m_useTextureOptionIndices; //!< the shader option that controls whether the texture should be sampled on a shader
+            Name m_useTextureOptionName;
         };
 
     } // namespace Render

@@ -48,6 +48,7 @@ namespace PhysX
 
         // ComponentMode overrides ...
         AZStd::string GetComponentModeName() const override;
+        AZ::Uuid GetComponentModeType() const override;
     private:
         
         // AzToolsFramework::ViewportInteraction::ViewportSelectionRequests ...

@@ -40,7 +40,7 @@ namespace UnitTest
     }
 
     AssetProcessorUnitTestBase::AssetProcessorUnitTestBase()
-        :UnitTest::ScopedAllocatorSetupFixture()
+        :UnitTest::LeakDetectionFixture()
     {
     }
 
@@ -50,7 +50,7 @@ namespace UnitTest
 
     void AssetProcessorUnitTestBase::SetUp()
     {
-        UnitTest::ScopedAllocatorSetupFixture::SetUp();
+        UnitTest::LeakDetectionFixture::SetUp();
 
         m_errorAbsorber = AZStd::make_unique<UnitTestUtils::AssertAbsorber>();
         m_assetDatabaseRequestsHandler = AZStd::make_unique<AssetProcessor::MockAssetDatabaseRequestsHandler>();
@@ -94,6 +94,6 @@ namespace UnitTest
 
         m_errorAbsorber.reset();
 
-        UnitTest::ScopedAllocatorSetupFixture::TearDown();
+        UnitTest::LeakDetectionFixture::TearDown();
     }
 }

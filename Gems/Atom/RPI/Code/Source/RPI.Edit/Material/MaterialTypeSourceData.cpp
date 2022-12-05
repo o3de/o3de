@@ -126,10 +126,9 @@ namespace AZ
             }
         }
 
-        MaterialTypeSourceData::PropertyConnection::PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view name, int32_t shaderIndex)
+        MaterialTypeSourceData::PropertyConnection::PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view name)
             : m_type(type)
             , m_name(name)
-            , m_shaderIndex(shaderIndex)
         {
         }
 
@@ -139,7 +138,7 @@ namespace AZ
 
         /*static*/ MaterialTypeSourceData::PropertyGroup* MaterialTypeSourceData::PropertyGroup::AddPropertyGroup(AZStd::string_view name, AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& toPropertyGroupList)
         {
-            if (!MaterialPropertyId::CheckIsValidName(name))
+            if (!MaterialUtils::CheckIsValidGroupName(name))
             {
                 return nullptr;
             }
@@ -212,7 +211,7 @@ namespace AZ
 
         MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::PropertyGroup::AddProperty(AZStd::string_view name)
         {
-            if (!MaterialPropertyId::CheckIsValidName(name))
+            if (!MaterialUtils::CheckIsValidPropertyName(name))
             {
                 return nullptr;
             }
@@ -667,7 +666,14 @@ namespace AZ
             MaterialNameContext materialNameContext,
             const MaterialTypeSourceData::PropertyGroup* propertyGroup) const
         {
-            if (!MaterialPropertyId::CheckIsValidName(propertyGroup->m_name))
+            if (!MaterialUtils::CheckIsValidGroupName(propertyGroup->m_name))
+            {
+                return false;
+            }
+
+            // If there were prior failures, continued processing could spam a bunch of irrelevant error messages,
+            // particularly from ResolveSourceValue() and CreateFunctor() functions.
+            if (materialTypeAssetCreator.IsFailed())
             {
                 return false;
             }
@@ -678,7 +684,7 @@ namespace AZ
             {
                 // Register the property...
 
-                if (!MaterialPropertyId::CheckIsValidName(property->GetName()))
+                if (!MaterialUtils::CheckIsValidPropertyName(property->GetName()))
                 {
                     return false;
                 }
@@ -720,15 +726,7 @@ namespace AZ
                     {
                         Name fieldName{output.m_name};
                         materialNameContext.ContextualizeShaderOption(fieldName);
-
-                        if (output.m_shaderIndex >= 0)
-                        {
-                            materialTypeAssetCreator.ConnectMaterialPropertyToShaderOption(fieldName, output.m_shaderIndex);
-                        }
-                        else
-                        {
-                            materialTypeAssetCreator.ConnectMaterialPropertyToShaderOptions(fieldName);
-                        }
+                        materialTypeAssetCreator.ConnectMaterialPropertyToShaderOptions(fieldName);
                         break;
                     }
                     case MaterialPropertyOutputType::ShaderEnabled:
@@ -762,6 +760,13 @@ namespace AZ
                         [&](const char* message){ materialTypeAssetCreator.ReportError("%s", message); });
                     materialTypeAssetCreator.SetPropertyValue(propertyId, resolvedValue);
                 }
+
+                // If there were prior failures, continued processing could spam a bunch of irrelevant error messages,
+                // particularly from ResolveSourceValue() and CreateFunctor() functions.
+                if (materialTypeAssetCreator.IsFailed())
+                {
+                    return false;
+                }
             }
 
             for (const AZStd::unique_ptr<PropertyGroup>& propertySubgroup : propertyGroup->m_propertyGroups)
@@ -787,7 +792,6 @@ namespace AZ
                         materialTypeSourceFilePath,
                         materialTypeAssetCreator.GetMaterialPropertiesLayout(),
                         materialTypeAssetCreator.GetMaterialShaderResourceGroupLayout(),
-                        materialTypeAssetCreator.GetShaderCollection(),
                         &materialNameContext
                     )
                 );
@@ -933,7 +937,6 @@ namespace AZ
                         materialTypeSourceFilePath,
                         materialTypeAssetCreator.GetMaterialPropertiesLayout(),
                         materialTypeAssetCreator.GetMaterialShaderResourceGroupLayout(),
-                        materialTypeAssetCreator.GetShaderCollection(),
                         &nameContext
                     )
                 );

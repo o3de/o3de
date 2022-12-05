@@ -190,10 +190,15 @@ namespace Terrain
             return;
         }
 
-        AZStd::vector<float> gradientValues(inPositionList.size());
+        AZStd::vector<float> gradientValues;
+
+        gradientValues.resize_no_construct(inPositionList.size());
 
         for (const auto& mapping : m_configuration.m_gradientSurfaceMappings)
         {
+            // Clear out the gradient values before every GetValues call to ensure we don't accidentally end up with stale data.
+            AZStd::fill(gradientValues.begin(), gradientValues.end(), 0.0f);
+
             GradientSignal::GradientRequestBus::Event(
                 mapping.m_gradientEntityId, &GradientSignal::GradientRequestBus::Events::GetValues, inPositionList, gradientValues);
 

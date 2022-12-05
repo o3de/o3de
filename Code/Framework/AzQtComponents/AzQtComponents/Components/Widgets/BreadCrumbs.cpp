@@ -6,31 +6,40 @@
  *
  */
 
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/numeric.h>
 #include <AzQtComponents/Components/Widgets/BreadCrumbs.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
 #include <AzQtComponents/Components/Style.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
-#include <QHBoxLayout>
-#include <QLabel>
-#include <QMenu>
-#include <QResizeEvent>
-#include <QSettings>
-#include <QToolBar>
+#include <QtMath>
 #include <QToolButton>
+#include <QToolBar>
+#include <QSettings>
+#include <QResizeEvent>
+#include <QMenu>
+#include <QLabel>
+#include <QHBoxLayout>
 AZ_POP_DISABLE_WARNING
 
 namespace AzQtComponents
 {
-    const QChar g_separator = '/';
-    const QChar g_windowsSeparator = '\\';
-    const QString g_labelName = QStringLiteral("BreadCrumbLabel");
-    const QString g_buttonName = QStringLiteral("MenuButton");
+    static const QChar g_separator = '/';
+    static const QChar g_windowsSeparator = '\\';
+    static const QString g_labelName = QStringLiteral("BreadCrumbLabel");
+    static const QString g_buttonName = QStringLiteral("MenuButton");
+    // Separator is two non-breaking spaces, Right-Pointing Angle Quotation Mark (U+203A) and two more
+    // non-breaking spaces
+    static const QString g_plainTextSeparator = QStringLiteral("\u00a0\u00a0\u203a\u00a0\u00a0");
+    static constexpr int g_iconWidth = 16;
 
     BreadCrumbs::BreadCrumbs(QWidget* parent)
         : QWidget(parent)
         , m_config(defaultConfig())
     {
+        // WARNING: If you add any any new widget to the layout, make sure that it's accounted for in ::sizeHint() and ::fillLabel()
+        
         // create the layout
         QHBoxLayout* boxLayout = new QHBoxLayout(this);
         boxLayout->setContentsMargins(0, 0, 0, 0);
@@ -44,8 +53,14 @@ namespace AzQtComponents
         // create the label
         m_label = new QLabel(this);
         m_label->setObjectName(g_labelName);
+        m_label->setTextFormat(Qt::RichText);
+        // We need to explicitly set indent. Otherwise the calculations are not correct because the
+        // style causes the frame to be positive in size (but invisible) which gives us the effective indent
+        // described in https://doc.qt.io/qt-5/qlabel.html#indent-prop
+        m_label->setIndent(0);
         boxLayout->addWidget(m_label);
-        m_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        // Horizontal policy deliberately ignored, we manage the width ourselves see ::sizeHint() and ::fillLabel()
+        m_label->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
         connect(m_label, &QLabel::linkActivated, this, &BreadCrumbs::onLinkActivated);
     }
 
@@ -85,6 +100,7 @@ namespace AzQtComponents
         m_currentPathSize = m_currentPath.split(g_separator, Qt::SkipEmptyParts).size();
         m_currentPathIcons.resize(m_currentPathSize);
 
+        updateGeometry();
         fillLabel();
     }
 
@@ -101,6 +117,8 @@ namespace AzQtComponents
         }
 
         m_currentPathIcons[index] = icon;
+        updateGeometry();
+        fillLabel();
     }
     
     QIcon BreadCrumbs::iconAt(int index)
@@ -132,6 +150,39 @@ namespace AzQtComponents
         line->setFrameShape(QFrame::VLine);
         line->setFrameShadow(QFrame::Sunken);
         return line;
+    }
+
+    QSize BreadCrumbs::sizeHint() const
+    {
+        const QFontMetrics fm(m_label->font());
+        const qreal separatorWidth = fm.horizontalAdvance(g_plainTextSeparator);
+        // Icon adds the icon itself plus two spaces, see generateIconHtml()
+        const qreal iconWidth = g_iconWidth + fm.horizontalAdvance("\u00a0\u00a0");
+
+        // TODO(Qt 5.15.2): replace with:
+        // const QList<QStringView> fullPath = QStringView(m_currentPath).split(g_separator, Qt::SkipEmptyParts);
+        // to use views for avoiding allocations
+        const QStringList fullPath = m_currentPath.split(g_separator, Qt::SkipEmptyParts);
+
+        const int noSeparatorsWidth = AZStd::accumulate(fullPath.cbegin(), fullPath.cend(), 0,
+            [&fm](int val, const QString& pathSegment ){
+                return val + fm.horizontalAdvance(pathSegment);
+            }
+        );
+
+        // separators are there only if path has more than one segment
+        const qreal separatorsOnlyWidth = fullPath.size() > 1 ? (fullPath.size() - 1) * separatorWidth : .0;
+
+        // assume that icon will be there if there's a path for a given icon or we have a default one
+        const auto numIcons = !m_defaultIcon.isEmpty() ? fullPath.size()
+            : AZStd::count_if( m_currentPathIcons.cbegin(), m_currentPathIcons.cend(), [](const QString& iconPath) {
+                return !iconPath.isEmpty();
+            }
+        );
+
+        QSize sh = QWidget::sizeHint();
+        sh.rwidth() = qCeil(noSeparatorsWidth + separatorsOnlyWidth + numIcons * iconWidth);
+        return sh;
     }
 
     QWidget* BreadCrumbs::createBackForwardToolBar()
@@ -243,6 +294,8 @@ namespace AzQtComponents
     {
         if (event->oldSize().width() != event->size().width())
         {
+            const bool needsMenu = sizeHint().width() > event->size().width();
+            m_menuButton->setVisible(needsMenu);
             fillLabel();
         }
         QWidget::resizeEvent(event);
@@ -262,10 +315,11 @@ namespace AzQtComponents
             imagePath = m_defaultIcon;
         }
 
-        return !imagePath.isEmpty() ? QStringLiteral("<img width=\"16\" height=\"16\" style=\"vertical-align: middle\" src=\"%1\">%2%2")
+        return !imagePath.isEmpty() ? QStringLiteral("<img width=\"%1\" height=\"%1\" style=\"vertical-align: middle\" src=\"%2\">%3%3")
+                                          .arg(g_iconWidth)
                                           .arg(imagePath)
                                           .arg("&nbsp;")
-                                    : "";
+                                    : QString{};
     }
 
     void BreadCrumbs::fillLabel()
@@ -274,11 +328,17 @@ namespace AzQtComponents
         const QStringList fullPath = m_currentPath.split(g_separator, Qt::SkipEmptyParts);
         m_truncatedPaths = fullPath;
 
-        // used to measure the width used by the path
-        const int availableWidth = static_cast<int>(width() * m_config.optimalPathWidth);
+        // used to measure the width used by the path.
+        const int availableWidth = width() -
+            // using sizeHint() because width() will be the QWidget's default 100px before the first layouting
+            (m_menuButton->isVisible() ? m_menuButton->sizeHint().width() + layout()->spacing() : 0);
+
         const QFontMetricsF fm(m_label->font());
-        QString plainTextPath = "";
-        m_menuButton->hide();
+
+        // Icon adds the icon itself plus two non-breaking spaces, see generateIconHtml()
+        const qreal iconSpaceWidth = g_iconWidth + fm.horizontalAdvance(QStringLiteral("\u00a0\u00a0"));
+
+        QString plainTextPath;
 
         auto formatLink = [this](const QString& fullPath, const QString& shortPath) -> QString {
             return QString("<a href=\"%1\" style=\"color: %2\">%3</a>").arg(fullPath, m_config.linkColor, shortPath);
@@ -291,31 +351,54 @@ namespace AzQtComponents
             htmlString.prepend(QStringLiteral("%1%1%2%1%1").arg(nonBreakingSpace, arrowCharacter));
         };
 
-        // last section is not clickable
-        if (!m_truncatedPaths.isEmpty())
+        if (m_truncatedPaths.isEmpty())
         {
-            plainTextPath = m_truncatedPaths.takeLast();
+            m_label->clear();
+            return;
         }
+
+        // last section is not clickable
+        plainTextPath = m_truncatedPaths.takeLast();
 
         int index = m_currentPathSize - 1;
 
+        // to estimate how much the rendered html will take, we need to take icons into account
+        qreal totalIconsWidth = .0;
+
+        const QString firstIconHtml = generateIconHtml(index);
+        totalIconsWidth += firstIconHtml.isEmpty() ? .0 : iconSpaceWidth;
         htmlString.prepend(generateIconHtml(index) + plainTextPath);
         --index;
 
-        while (!m_truncatedPaths.isEmpty())
+        if (!m_truncatedPaths.isEmpty())
         {
             prependSeparators();
-            plainTextPath.append(g_separator + m_truncatedPaths.last());
+            plainTextPath.prepend(g_plainTextSeparator);
+        }
 
-            if (fm.width(plainTextPath) > availableWidth)
+        while (!m_truncatedPaths.isEmpty())
+        {
+            const QString iconHtml = generateIconHtml(index--);
+            totalIconsWidth += iconHtml.isEmpty() ? .0 : iconSpaceWidth;
+
+            const QString plaintextWithNext = (m_truncatedPaths.size() == 1)
+                ? (m_truncatedPaths.last() + plainTextPath) // if we're on the root path segment, don't put separator before it
+                : (g_plainTextSeparator + m_truncatedPaths.last() + plainTextPath);
+
+            if ((fm.horizontalAdvance(plaintextWithNext) + totalIconsWidth) > availableWidth)
             {
-                m_menuButton->show();
                 break;
             }
+            plainTextPath = plaintextWithNext;
 
             const QString linkPath = buildPathFromList(fullPath, m_truncatedPaths.size());
             const QString& part = m_truncatedPaths.takeLast();
-            htmlString.prepend(QString("%1%2").arg(generateIconHtml(index--)).arg(formatLink(linkPath, part)));
+            htmlString.prepend(QString("%1%2").arg(iconHtml, formatLink(linkPath, part)));
+
+            if (!m_truncatedPaths.empty())
+            {
+                prependSeparators();
+            }
         }
 
         m_label->setText(htmlString);
@@ -324,6 +407,7 @@ namespace AzQtComponents
     void BreadCrumbs::changePath(const QString& newPath)
     {
         setCurrentPath(newPath);
+        updateGeometry();
 
         Q_EMIT pathChanged(m_currentPath);
     }
@@ -352,7 +436,6 @@ namespace AzQtComponents
         Config config = defaultConfig();
 
         ConfigHelpers::read<QString>(settings, QStringLiteral("LinkColor"), config.linkColor);
-        ConfigHelpers::read<float>(settings, QStringLiteral("OptimalPathWidth"), config.optimalPathWidth);
 
         return config;
     }
@@ -362,7 +445,6 @@ namespace AzQtComponents
         Config config;
 
         config.linkColor = QStringLiteral("white");
-        config.optimalPathWidth = 0.8f;
 
         return config;
     }

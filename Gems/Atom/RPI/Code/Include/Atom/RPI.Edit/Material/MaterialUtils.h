@@ -82,6 +82,15 @@ namespace AZ
 
             //! Inspects the content of the MaterialPropertyValue to see if it is a string that appears to be an image file path.
             bool LooksLikeImageFileReference(const MaterialPropertyValue& value);
+
+            //! Returns whether the name is a valid C-style identifier
+            bool IsValidName(AZStd::string_view name);
+            bool IsValidName(const AZ::Name& name);
+
+            //! Returns whether the name is a valid C-style identifier, and reports errors if it is not.
+            bool CheckIsValidPropertyName(AZStd::string_view name);
+            bool CheckIsValidGroupName(AZStd::string_view name);
+
         }
     }
 }

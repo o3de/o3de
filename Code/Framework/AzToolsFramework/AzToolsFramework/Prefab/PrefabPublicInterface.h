@@ -41,6 +41,10 @@ namespace AzToolsFramework
         public:
             AZ_RTTI(PrefabPublicInterface, "{931AAE9D-C775-4818-9070-A2DA69489CBE}");
 
+            //! O3DE_DEPRECATION_NOTICE(GHI-12956)
+            //! This function is marked for deprecation. Please use CreatePrefabAndSaveToDisk instead.
+            virtual CreatePrefabResult CreatePrefabInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
+
             /**
              * Create a prefab out of the entities provided, at the path provided, and save it in disk immediately.
              * Automatically detects descendants of entities, and discerns between entities and child instances.
@@ -50,7 +54,7 @@ namespace AzToolsFramework
              * @return An outcome object with an entityId of the new prefab's container entity;
              *  on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual CreatePrefabResult CreatePrefabInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
+            virtual CreatePrefabResult CreatePrefabAndSaveToDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
 
             /**
              * Create a prefab out of the entities provided, at the path provided, and keep it in memory.

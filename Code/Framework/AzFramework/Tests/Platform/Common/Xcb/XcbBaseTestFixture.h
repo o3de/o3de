@@ -18,7 +18,7 @@ namespace AzFramework
 {
     // Sets up mock behavior for the xcb library, providing an xcb_connection_t that is returned from a call to xcb_connect
     class XcbBaseTestFixture
-        : public ::UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override;

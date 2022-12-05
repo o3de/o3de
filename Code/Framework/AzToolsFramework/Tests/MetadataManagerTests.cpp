@@ -51,7 +51,7 @@ namespace UnitTest
     };
 
     struct MetadataManagerTests
-        : ScopedAllocatorSetupFixture
+        : LeakDetectionFixture
         , AZ::ComponentApplicationBus::Handler
     {
         //////////////////////////////////////////////////////////////////////////

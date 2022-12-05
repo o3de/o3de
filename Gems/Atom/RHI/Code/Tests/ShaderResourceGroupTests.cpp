@@ -85,22 +85,22 @@ namespace UnitTest
         {
             RHI::Ptr<RHI::ShaderResourceGroupLayout> layout = RHI::ShaderResourceGroupLayout::Create();
             layout->SetBindingSlot(0);
-            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("m_floatValue"), offsetof(ConstantBufferTest, m_floatValue), sizeof(ConstantBufferTest::m_floatValue), 0});
-            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("m_uintValue"), offsetof(ConstantBufferTest, m_uintValue), sizeof(ConstantBufferTest::m_uintValue), 0});
-            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("m_float4Value"), offsetof(ConstantBufferTest, m_float4Value), sizeof(ConstantBufferTest::m_float4Value), 0});
-            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("m_nestedData"), offsetof(ConstantBufferTest, m_nestedData), sizeof(ConstantBufferTest::m_nestedData), 0});
-            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("m_matrix3x3"), offsetof(ConstantBufferTest, m_matrix3x3), 44, 0}); // Shader packs rows into 4 floats not 3, but doesn't include the last float on the last row, hence 44
-            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("m_matrix4x4"), offsetof(ConstantBufferTest, m_matrix4x4), 64, 0});
-            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("m_matrix3x4"), offsetof(ConstantBufferTest, m_matrix3x4), 48, 0}); // Shader packs rows into 4 floats not 3, hence its 48
-            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("m_vector2"), offsetof(ConstantBufferTest, m_vector2), 8, 0});
-            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("m_vector3"), offsetof(ConstantBufferTest, m_vector3), 12, 0});
-            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("m_vector4"), offsetof(ConstantBufferTest, m_vector4), 16, 0});
-            layout->AddShaderInput(RHI::ShaderInputImageDescriptor{Name("m_readImage"), RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, ImageReadCount, 1});
-            layout->AddShaderInput(RHI::ShaderInputImageDescriptor{Name("m_readWriteImage"), RHI::ShaderInputImageAccess::ReadWrite, RHI::ShaderInputImageType::Image2D, ImageReadWriteCount, 2});
-            layout->AddShaderInput(RHI::ShaderInputBufferDescriptor{Name("m_constantBuffer"), RHI::ShaderInputBufferAccess::Constant, RHI::ShaderInputBufferType::Constant, BufferConstantCount, UINT_MAX, 3});
-            layout->AddShaderInput(RHI::ShaderInputBufferDescriptor{Name("m_readBuffer"), RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Structured, BufferReadCount, UINT_MAX, 4 });
-            layout->AddShaderInput(RHI::ShaderInputBufferDescriptor{Name("m_readWriteBuffer"), RHI::ShaderInputBufferAccess::ReadWrite, RHI::ShaderInputBufferType::Typed, BufferReadWriteCount, UINT_MAX, 5 });
-            layout->AddStaticSampler(RHI::ShaderInputStaticSamplerDescriptor{Name("m_sampler"), RHI::SamplerState::CreateAnisotropic(16, RHI::AddressMode::Wrap), 6});
+            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("m_floatValue"), offsetof(ConstantBufferTest, m_floatValue), sizeof(ConstantBufferTest::m_floatValue), 0, 0});
+            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("m_uintValue"), offsetof(ConstantBufferTest, m_uintValue), sizeof(ConstantBufferTest::m_uintValue), 0, 0});
+            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("m_float4Value"), offsetof(ConstantBufferTest, m_float4Value), sizeof(ConstantBufferTest::m_float4Value), 0, 0});
+            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("m_nestedData"), offsetof(ConstantBufferTest, m_nestedData), sizeof(ConstantBufferTest::m_nestedData), 0, 0});
+            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("m_matrix3x3"), offsetof(ConstantBufferTest, m_matrix3x3), 44, 0, 0}); // Shader packs rows into 4 floats not 3, but doesn't include the last float on the last row, hence 44
+            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("m_matrix4x4"), offsetof(ConstantBufferTest, m_matrix4x4), 64, 0, 0});
+            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("m_matrix3x4"), offsetof(ConstantBufferTest, m_matrix3x4), 48, 0, 0}); // Shader packs rows into 4 floats not 3, hence its 48
+            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("m_vector2"), offsetof(ConstantBufferTest, m_vector2), 8, 0, 0});
+            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("m_vector3"), offsetof(ConstantBufferTest, m_vector3), 12, 0, 0});
+            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("m_vector4"), offsetof(ConstantBufferTest, m_vector4), 16, 0, 0});
+            layout->AddShaderInput(RHI::ShaderInputImageDescriptor{Name("m_readImage"), RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, ImageReadCount, 1, 1});
+            layout->AddShaderInput(RHI::ShaderInputImageDescriptor{Name("m_readWriteImage"), RHI::ShaderInputImageAccess::ReadWrite, RHI::ShaderInputImageType::Image2D, ImageReadWriteCount, 2, 2});
+            layout->AddShaderInput(RHI::ShaderInputBufferDescriptor{Name("m_constantBuffer"), RHI::ShaderInputBufferAccess::Constant, RHI::ShaderInputBufferType::Constant, BufferConstantCount, UINT_MAX, 3, 3});
+            layout->AddShaderInput(RHI::ShaderInputBufferDescriptor{Name("m_readBuffer"), RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Structured, BufferReadCount, UINT_MAX, 4, 4});
+            layout->AddShaderInput(RHI::ShaderInputBufferDescriptor{Name("m_readWriteBuffer"), RHI::ShaderInputBufferAccess::ReadWrite, RHI::ShaderInputBufferType::Typed, BufferReadWriteCount, UINT_MAX, 5, 5});
+            layout->AddStaticSampler(RHI::ShaderInputStaticSamplerDescriptor{Name("m_sampler"), RHI::SamplerState::CreateAnisotropic(16, RHI::AddressMode::Wrap), 6, 6});
 
             bool success = layout->Finalize();
             if (!success)
@@ -706,20 +706,20 @@ namespace UnitTest
 
         RHI::Ptr<RHI::ShaderResourceGroupLayout> layout = RHI::ShaderResourceGroupLayout::Create();
         layout->SetBindingSlot(0);
-        layout->AddShaderInput(RHI::ShaderInputImageDescriptor{ imageName, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-        layout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ bufferName, RHI::ShaderInputBufferAccess::Constant, RHI::ShaderInputBufferType::Constant, 2, UINT_MAX, 3 });
-        layout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ samplerName, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Structured, 3, UINT_MAX, 4 });
-        layout->AddStaticSampler(RHI::ShaderInputStaticSamplerDescriptor{ constantBufferName, RHI::SamplerState::CreateAnisotropic(16, RHI::AddressMode::Wrap), 6 });
+        layout->AddShaderInput(RHI::ShaderInputImageDescriptor{ imageName, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+        layout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ bufferName, RHI::ShaderInputBufferAccess::Constant, RHI::ShaderInputBufferType::Constant, 2, UINT_MAX, 3, 3});
+        layout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ samplerName, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Structured, 3, UINT_MAX, 4, 4});
+        layout->AddStaticSampler(RHI::ShaderInputStaticSamplerDescriptor{ constantBufferName, RHI::SamplerState::CreateAnisotropic(16, RHI::AddressMode::Wrap), 6, 6});
         EXPECT_TRUE(layout->Finalize());
 
         {
             // Test change name of one shader input
             RHI::Ptr<RHI::ShaderResourceGroupLayout> otherLayout = RHI::ShaderResourceGroupLayout::Create();
             otherLayout->SetBindingSlot(0);
-            otherLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ imageName, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-            otherLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ bufferName, RHI::ShaderInputBufferAccess::Constant, RHI::ShaderInputBufferType::Constant, 2, UINT_MAX, 3 });
-            otherLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ samplerName, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Structured, 3, UINT_MAX, 4 });
-            otherLayout->AddStaticSampler(RHI::ShaderInputStaticSamplerDescriptor{ Name {"m_constantBuffer2"}, RHI::SamplerState::CreateAnisotropic(16, RHI::AddressMode::Wrap), 6 });
+            otherLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ imageName, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+            otherLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ bufferName, RHI::ShaderInputBufferAccess::Constant, RHI::ShaderInputBufferType::Constant, 2, UINT_MAX, 3, 3});
+            otherLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ samplerName, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Structured, 3, UINT_MAX, 4, 4});
+            otherLayout->AddStaticSampler(RHI::ShaderInputStaticSamplerDescriptor{ Name {"m_constantBuffer2"}, RHI::SamplerState::CreateAnisotropic(16, RHI::AddressMode::Wrap), 6, 6});
             EXPECT_TRUE(otherLayout->Finalize());
             EXPECT_NE(otherLayout->GetHash(), layout->GetHash());
         }
@@ -728,10 +728,10 @@ namespace UnitTest
             // Test change of binding slot
             RHI::Ptr<RHI::ShaderResourceGroupLayout> otherLayout = RHI::ShaderResourceGroupLayout::Create();
             otherLayout->SetBindingSlot(1);
-            otherLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ imageName, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-            otherLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ bufferName, RHI::ShaderInputBufferAccess::Constant, RHI::ShaderInputBufferType::Constant, 2, UINT_MAX, 3 });
-            otherLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ samplerName, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Structured, 3, UINT_MAX, 4 });
-            otherLayout->AddStaticSampler(RHI::ShaderInputStaticSamplerDescriptor{ constantBufferName, RHI::SamplerState::CreateAnisotropic(16, RHI::AddressMode::Wrap), 6 });
+            otherLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ imageName, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+            otherLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ bufferName, RHI::ShaderInputBufferAccess::Constant, RHI::ShaderInputBufferType::Constant, 2, UINT_MAX, 3, 3});
+            otherLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ samplerName, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Structured, 3, UINT_MAX, 4, 4});
+            otherLayout->AddStaticSampler(RHI::ShaderInputStaticSamplerDescriptor{ constantBufferName, RHI::SamplerState::CreateAnisotropic(16, RHI::AddressMode::Wrap), 6, 6});
             EXPECT_TRUE(otherLayout->Finalize());
             EXPECT_NE(otherLayout->GetHash(), layout->GetHash());
         }
@@ -740,11 +740,11 @@ namespace UnitTest
             // Test adding constants
             RHI::Ptr<RHI::ShaderResourceGroupLayout> otherLayout = RHI::ShaderResourceGroupLayout::Create();
             otherLayout->SetBindingSlot(0);
-            otherLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ imageName, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-            otherLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ bufferName, RHI::ShaderInputBufferAccess::Constant, RHI::ShaderInputBufferType::Constant, 2, UINT_MAX, 3 });
-            otherLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ samplerName, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Structured, 3, UINT_MAX, 4 });
-            otherLayout->AddStaticSampler(RHI::ShaderInputStaticSamplerDescriptor{ constantBufferName, RHI::SamplerState::CreateAnisotropic(16, RHI::AddressMode::Wrap), 6 });
-            otherLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name("m_floatValue"), 0, 4, 0 });
+            otherLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ imageName, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+            otherLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ bufferName, RHI::ShaderInputBufferAccess::Constant, RHI::ShaderInputBufferType::Constant, 2, UINT_MAX, 3, 3});
+            otherLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ samplerName, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Structured, 3, UINT_MAX, 4, 4});
+            otherLayout->AddStaticSampler(RHI::ShaderInputStaticSamplerDescriptor{ constantBufferName, RHI::SamplerState::CreateAnisotropic(16, RHI::AddressMode::Wrap), 6, 6});
+            otherLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name("m_floatValue"), 0, 4, 0, 0});
             EXPECT_TRUE(otherLayout->Finalize());
             EXPECT_NE(otherLayout->GetHash(), layout->GetHash());
         }
@@ -753,11 +753,11 @@ namespace UnitTest
             // Test adding shader variant key fallback
             RHI::Ptr<RHI::ShaderResourceGroupLayout> otherLayout = RHI::ShaderResourceGroupLayout::Create();
             otherLayout->SetBindingSlot(0);
-            otherLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ imageName, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-            otherLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ bufferName, RHI::ShaderInputBufferAccess::Constant, RHI::ShaderInputBufferType::Constant, 2, UINT_MAX, 3 });
-            otherLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ samplerName, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Structured, 3, UINT_MAX, 4 });
-            otherLayout->AddStaticSampler(RHI::ShaderInputStaticSamplerDescriptor{ constantBufferName, RHI::SamplerState::CreateAnisotropic(16, RHI::AddressMode::Wrap), 6 });
-            otherLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name("m_floatValue"), 0, 4, 0 });
+            otherLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ imageName, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+            otherLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ bufferName, RHI::ShaderInputBufferAccess::Constant, RHI::ShaderInputBufferType::Constant, 2, UINT_MAX, 3, 3});
+            otherLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ samplerName, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Structured, 3, UINT_MAX, 4, 4});
+            otherLayout->AddStaticSampler(RHI::ShaderInputStaticSamplerDescriptor{ constantBufferName, RHI::SamplerState::CreateAnisotropic(16, RHI::AddressMode::Wrap), 6, 6});
+            otherLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name("m_floatValue"), 0, 4, 0, 0});
             otherLayout->SetShaderVariantKeyFallback(Name{ "m_floatValue" }, 1);
             EXPECT_TRUE(otherLayout->Finalize());
             EXPECT_NE(otherLayout->GetHash(), layout->GetHash());

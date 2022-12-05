@@ -376,58 +376,21 @@ namespace AZ
             return propertyIndex.IsValid();
         }
 
-        bool LuaMaterialFunctorRuntimeContext::SetShaderOptionValueHelper(const char* name, AZStd::function<bool(ShaderOptionGroup*, ShaderOptionIndex)> setValueCommand)
-        {
-            bool didSetOne = false;
-
-            Name fullOptionName{name};
-            m_materialNameContext.ContextualizeShaderOption(fullOptionName);
-
-            for (AZStd::size_t i = 0; i < m_runtimeContextImpl->m_shaderCollection->size(); ++i)
-            {
-                ShaderCollection::Item& shaderItem = (*m_runtimeContextImpl->m_shaderCollection)[i];
-                ShaderOptionGroup* shaderOptionGroup = shaderItem.GetShaderOptions();
-                const ShaderOptionGroupLayout* layout = shaderOptionGroup->GetShaderOptionLayout();
-
-                ShaderOptionIndex optionIndex = layout->FindShaderOptionIndex(fullOptionName);
-                if (!optionIndex.IsValid())
-                {
-                    continue;
-                }
-
-                if (!shaderItem.MaterialOwnsShaderOption(optionIndex))
-                {
-                    LuaScriptUtilities::Error(AZStd::string::format("Shader option '%s' is not owned by this material.", fullOptionName.GetCStr()));
-                    break;
-                }
-
-                if (setValueCommand(shaderOptionGroup, optionIndex))
-                {
-                    didSetOne = true;
-                }
-            }
-
-            return didSetOne;
-        }
-
         template<>
         bool LuaMaterialFunctorRuntimeContext::SetShaderOptionValue(const char* name, const char* value)
         {
-            return SetShaderOptionValueHelper(name, [value](ShaderOptionGroup* optionGroup, ShaderOptionIndex optionIndex)
-                {
-                    return optionGroup->SetValue(optionIndex, Name{value});
-                });
+            Name optionName{name};
+            m_materialNameContext.ContextualizeShaderOption(optionName);
+            return m_runtimeContextImpl->SetShaderOptionValue(optionName, Name{value});
         }
 
         template<typename Type>
         bool LuaMaterialFunctorRuntimeContext::SetShaderOptionValue(const char* name, Type value)
         {
-            return SetShaderOptionValueHelper(name, [value](ShaderOptionGroup* optionGroup, ShaderOptionIndex optionIndex)
-                {
-                    return optionGroup->SetValue(optionIndex, ShaderOptionValue{value});
-                });
+            Name optionName{name};
+            m_materialNameContext.ContextualizeShaderOption(optionName);
+            return m_runtimeContextImpl->SetShaderOptionValue(optionName, ShaderOptionValue{value});
         }
-
 
         RHI::ShaderInputConstantIndex LuaMaterialFunctorRuntimeContext::GetShaderInputConstantIndex(const char* name, const char* functionName) const
         {
