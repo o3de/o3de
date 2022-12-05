@@ -1,0 +1,10 @@
+{
+    "Amazon": {
+        "AzCore": {
+            "Bootstrap": {
+                "assets": "ios",
+                "connect_to_remote": 1
+            }
+        }
+    }
+}
