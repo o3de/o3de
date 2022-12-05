@@ -113,8 +113,7 @@ namespace AZ
                 shaderCollection.m_shaderItems.push_back(ShaderCollection::Item{shaderAsset, finalShaderTag, shaderVariantId});
                 if (!shaderCollection.m_shaderTagIndexMap.Insert(finalShaderTag, RHI::Handle<uint32_t>(shaderCollection.m_shaderItems.size() - 1)))
                 {
-                    ReportError(AZStd::string::format("Failed to insert shader tag '%s' for pipeline '%s'. Shader tag must be unique.",
-                        finalShaderTag.GetCStr()).c_str(), materialPipelineName.GetCStr());
+                    ReportError("Failed to insert shader tag '%s' for pipeline '%s'. Shader tag must be unique.", finalShaderTag.GetCStr(), materialPipelineName.GetCStr());
                 }
 
                 UpdateShaderAssetForShaderResourceGroup(m_asset->m_shaderWithMaterialSrg, shaderAsset, SrgBindingSlot::Material, "material");
