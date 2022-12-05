@@ -38,7 +38,11 @@ namespace AZ::DocumentPropertyEditor
 
             static constexpr size_t InvalidEntry = size_t(-1);
             AZStd::vector<size_t> m_pathEntries; // per-adapter DOM index represented by AggregateNode
+
             bool m_allEntriesMatch = true;
+
+            // track the last frame when this node changed state for easy and efficient patch generation
+            unsigned int m_lastUpdateFrame = 0;
 
             // per-adapter mapping of DOM index to child
             AZStd::vector<AZStd::map<size_t, AggregateNode*>> m_pathIndexToChildMaps;
@@ -58,7 +62,7 @@ namespace AZ::DocumentPropertyEditor
         // considered the same aggregate row as a value from another adapter
         virtual bool SameRow(const Dom::Value& newRow, const Dom::Value& existingRow) = 0;
 
-        // pure virtual to determine if two row values match such that they can be editted by one PropertyHandler
+        // pure virtual to determine if two row values match such that they can be edited by one PropertyHandler
         virtual bool ValuesMatch(const Dom::Value& left, const Dom::Value& right) = 0;
 
         // message handlers for all owned adapters
@@ -69,11 +73,12 @@ namespace AZ::DocumentPropertyEditor
         // DocumentAdapter overrides
         Dom::Value GenerateContents() override;
 
-        Dom::Value GetComparisonRow(AggregateNode* aggregateNode); // <apm> return first entry from the map, assert if map is empty
+        size_t GetIndexForAdapter(const DocumentAdapterPtr& adapter);
+        AggregateNode* GetNodeAtPath(size_t adapterIndex, const Dom::Path& path);
+        Dom::Value GetComparisonRow(AggregateNode* aggregateNode);
+
         void PopulateNodesForAdapter(size_t adapterIndex);
         void PopulateChildren(size_t adapterIndex, const Dom::Value& parentValue, AggregateNode* parentNode);
-
-        AdapterBuilder m_builder;
 
         struct AdapterInfo
         {
@@ -88,6 +93,11 @@ namespace AZ::DocumentPropertyEditor
 
         // potential rows always in the row order of the first adapter in m_adapters
         AZStd::unique_ptr<AggregateNode> m_rootNode;
+
+        // monotonically increasing frame counter that increments whenever a source adapter gets an update
+        unsigned int m_updateFrame = 0;
+
+        AdapterBuilder m_builder;
     };
 
     class LabeledRowAggregateAdapter : public RowAggregateAdapter

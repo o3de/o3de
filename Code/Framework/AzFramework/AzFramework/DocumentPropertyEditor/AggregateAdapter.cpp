@@ -21,6 +21,7 @@ namespace AZ::DocumentPropertyEditor
 
     void RowAggregateAdapter::AddAdapter(DocumentAdapterPtr sourceAdapter)
     {
+        // capture the acutal adapter, not just the index, as adding or removing adapters could change the index
         auto& newAdapterInfo = m_adapters.emplace_back(AZStd::make_unique<AdapterInfo>());
         newAdapterInfo->adapter = sourceAdapter;
 
@@ -50,12 +51,14 @@ namespace AZ::DocumentPropertyEditor
 
     void RowAggregateAdapter::RemoveAdapter(DocumentAdapterPtr sourceAdapter)
     {
+        // TODO
         (void)sourceAdapter;
     }
 
     void RowAggregateAdapter::ClearAdapters()
     {
         m_adapters.clear();
+        m_rootNode = AZStd::make_unique<AggregateNode>();
     }
 
     bool RowAggregateAdapter::IsRow(const Dom::Value& domValue)
@@ -129,27 +132,108 @@ namespace AZ::DocumentPropertyEditor
 
     void RowAggregateAdapter::HandleAdapterReset(DocumentAdapterPtr adapter)
     {
+        // TODO
         (void)adapter;
     }
 
     void RowAggregateAdapter::HandleDomChange(DocumentAdapterPtr adapter, const Dom::Patch& patch)
     {
-        (void)adapter;
-        (void)patch;
+        const auto adapterIndex = GetIndexForAdapter(adapter);
+
+        for (auto operationIterator = patch.begin(), endIterator = patch.end(); operationIterator != endIterator; ++operationIterator)
+        {
+            const auto& patchPath = operationIterator->GetDestinationPath();
+            if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Remove)
+            {
+                auto* nodeAtPath = GetNodeAtPath(adapterIndex, patchPath);
+                if (nodeAtPath)
+                {
+                    // <apm> remove this entry from the node, update the "values differ"
+                }
+                else
+                {
+                    // if there's no node at that path, it was a column entry
+                    auto parentPath = patchPath;
+                    parentPath.Pop();
+                    auto* rowParentNode = GetNodeAtPath(adapterIndex, parentPath);
+                    (void)rowParentNode;
+                    /* <apm> see if the entry for rowParentNode at adapterIndex still is SameRow (NB: if adapterIndex is 0, you need to use a different GetComparisonRow),
+                    if not, remove it and place it where it actually goes. If yes, update the node's "values differ" status */
+                    // <apm> it's almost certainly simpler to remove this parent node and repopulate to see if it ends up in the same bucket, but need to track exactly
+                    // what's been updated since last frame for patching purposes
+                }
+            }
+            else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Replace)
+            {
+                // <apm>
+            }
+            else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
+            {
+                // <apm>
+            }
+        }
+
         // <apm> adds or removes cause all subsequent entries to change index. Update m_pathIndexToChildMaps of parent *and* m_pathEntries
         // of child
+        // <apm> need to only change out column children when swapping "values differ" state, so that we don't have to cull and re-add all row children
+        // <apm> it's possible / likely that a node may be removed then added in very quick succession, as more than one adapter adds or removes children
     }
 
     void RowAggregateAdapter::HandleDomMessage(
-        DocumentAdapterPtr adapter, const AZ::DocumentPropertyEditor::AdapterMessage& message, Dom::Value& value)
+        [[maybe_unused]] DocumentAdapterPtr adapter,
+        const AZ::DocumentPropertyEditor::AdapterMessage& message,
+        [[maybe_unused]] Dom::Value& value)
     {
-        (void)adapter;
-        (void)message;
-        (void)value;
+        // forward all messages unaltered... for now
+        DocumentAdapter::SendAdapterMessage(message);
+    }
+
+    size_t RowAggregateAdapter::GetIndexForAdapter(const DocumentAdapterPtr& adapter)
+    {
+        for (size_t adapterIndex = 0, numAdapters = m_adapters.size(); adapterIndex < numAdapters; ++adapterIndex)
+        {
+            if (m_adapters[adapterIndex]->adapter == adapter)
+                return adapterIndex;
+        }
+        AZ_Warning("RowAggregateAdapter", false, "GetIndexForAdapter called with unknown adapter!");
+        return size_t(-1);
+    }
+
+    RowAggregateAdapter::AggregateNode* RowAggregateAdapter::GetNodeAtPath(size_t adapterIndex, const Dom::Path& path)
+    {
+        AggregateNode* currNode = m_rootNode.get();
+        if (path.Size() < 1)
+        {
+            // path is empty, return the root node
+            return currNode;
+        }
+
+        for (const auto& pathEntry : path)
+        {
+            if (!pathEntry.IsIndex())
+            {
+                // this path includes a non-index entry, and is therefore not a row
+                return nullptr;
+            }
+            const auto index = pathEntry.GetIndex();
+            auto& pathMap = currNode->m_pathIndexToChildMaps[adapterIndex];
+            if (auto foundIter = pathMap.find(index); foundIter != pathMap.end())
+            {
+                currNode = foundIter->second;
+            }
+            else
+            {
+                // nothing for that path entry
+                return nullptr;
+            }
+        }
+
+        return currNode;
     }
 
     Dom::Value RowAggregateAdapter::GetComparisonRow(AggregateNode* aggregateNode)
     {
+        // for now, return first entry from the map, assert if map is empty
         auto removeChildRows = [](Dom::Value& rowValue)
         {
             for (auto valueIter = rowValue.MutableArrayBegin(), endIter = rowValue.MutableArrayEnd(); valueIter != endIter; /*in loop*/)
@@ -319,7 +403,11 @@ namespace AZ::DocumentPropertyEditor
 
         auto leftValue = getLastHandlerValue(left);
         auto rightValue = getLastHandlerValue(right);
-        return (true || leftValue.GetType() != AZ::Dom::Type::Null && leftValue == rightValue);
+
+        /* TODO: use actually compare these values. Currently this doesn't work because values aren't serialized into the DOM, so
+                 the below comparison doesn't work for pointer types, opaque types, container rows, etc
+        return (leftValue.GetType() != AZ::Dom::Type::Null && leftValue == rightValue); */
+        return true;
     }
 
 
