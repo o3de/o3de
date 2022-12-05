@@ -466,8 +466,7 @@ class MultiTestSuite(object):
                         # The runner must have filled the collected_test_data.results dict fixture for this test.
                         # Hitting this assert could mean if there was an error executing the runner
                         if result_key not in collected_test_data.results:
-                            logger.debug(f"\n==========Debug============\n"
-                                         f"Test Result objects - collected_test_data.results:\n"
+                            logger.debug(f"\nTest Result objects - collected_test_data.results:\n"
                                          f"{collected_test_data.results}\n")
                             raise TestResultException(f"No results found for {result_key}. "
                                                       f"Test may not have ran due to the executable "
@@ -1205,9 +1204,8 @@ class MultiTestSuite(object):
                 # If it didn't then it will have "Unknown" as the type of result.
                 results = self._get_results_using_output(test_spec_list, output, executable_log_content)
                 if not len(results) == len(test_spec_list):
-                    logger.debug("\n=============Debug===========\n"
-                                 f"List of Results: {results}\n"
-                                 f"Test Spec List: {test_spec_list}\n")
+                    print(f"\nList of Results: {results}\n"
+                          f"Test Spec List: {test_spec_list}\n")
                     raise EditorToolsFrameworkException("Error when retrieving test results, the number of results "
                                                         "don't match the number of tests that ran.")
 
@@ -1257,8 +1255,7 @@ class MultiTestSuite(object):
             # The executable timed out when running the tests, get the data from the output to find out which ones ran
             results = self._get_results_using_output(test_spec_list, output, executable_log_content)
             if not len(results) == len(test_spec_list):
-                logger.debug("\n=============Debug===========\n"
-                             f"List of Results: {results}\n"
+                logger.debug(f"\nList of Results: {results}\n"
                              f"Test Spec List: {test_spec_list}\n")
                 raise EditorToolsFrameworkException("Error when retrieving test results, the number of results "
                                                     "don't match the number of tests that ran.")
