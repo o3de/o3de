@@ -400,10 +400,10 @@ if __name__ == '__main__':
             _settings = bootstrap_MaterialEditor()
 
         elif O3DE_EDITOR.stem.lower() == "materialcanvas":
-            _settings = bootstrap_MaterialEditor()
+            _settings = bootstrap_MaterialCanvas()
 
         elif O3DE_EDITOR.stem.lower() == "passcanvas":
-            _settings = bootstrap_MaterialEditor()
+            _settings = bootstrap_PassCanvas()
 
         elif O3DE_EDITOR.stem.lower() == "assetprocessor":
             _settings = bootstrap_AssetProcessor()
