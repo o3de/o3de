@@ -90,6 +90,8 @@ namespace AZ
             RHI::FreeListAllocator m_allocators[static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::Count)];
             Device* m_device = nullptr;
             bool m_unboundedArraySupported = false;
+            // Mutex to protect bindless heap related updates
+            AZStd::mutex m_mutex;
         };
     }
 }
