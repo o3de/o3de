@@ -849,7 +849,7 @@ namespace MaterialCanvas
                 AtomToolsFramework::ConvertToExportFormat(templateOutputPath, propertyId, *property, property->m_value);
 
                 // This property connects to the material SRG member with the same name. Shader options are not yet supported.
-                property->m_outputConnections.emplace_back(AZ::RPI::MaterialPropertyOutputType::ShaderInput, variableName, -1);
+                property->m_outputConnections.emplace_back(AZ::RPI::MaterialPropertyOutputType::ShaderInput, variableName);
             }
         }
 

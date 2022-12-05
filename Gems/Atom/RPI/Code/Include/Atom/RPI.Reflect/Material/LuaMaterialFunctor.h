@@ -296,8 +296,6 @@ namespace AZ
 
         private:
 
-            bool SetShaderOptionValueHelper(const char* name, AZStd::function<bool(ShaderOptionGroup*, ShaderOptionIndex)> setValueCommand);
-
             RHI::ShaderInputConstantIndex GetShaderInputConstantIndex(const char* name, const char* functionName) const;
 
             MaterialFunctor::RuntimeContext* m_runtimeContextImpl = nullptr;
