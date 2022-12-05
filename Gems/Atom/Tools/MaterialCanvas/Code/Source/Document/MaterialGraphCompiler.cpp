@@ -98,10 +98,7 @@ namespace MaterialCanvas
         AZ::StringFunc::Path::GetFullFileName(templateInputPath.c_str(), templateInputFileName);
         AZ::StringFunc::Replace(templateInputFileName, ".template", "");
 
-        AZStd::string templateOutputPath;
-        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
-            templateOutputPath, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
-
+        AZStd::string templateOutputPath = GetGraphPath();
         AZ::StringFunc::Path::ReplaceFullName(templateOutputPath, templateInputFileName.c_str());
 
         AZStd::string graphName;
@@ -882,10 +879,6 @@ namespace MaterialCanvas
     {
         CompileGraphStarted();
 
-        AZStd::string absolutePath;
-        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
-            absolutePath, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
-
         GraphModel::GraphPtr graph;
         AtomToolsFramework::GraphDocumentRequestBus::EventResult(
             graph, m_documentId, &AtomToolsFramework::GraphDocumentRequestBus::Events::GetGraph);
@@ -895,7 +888,7 @@ namespace MaterialCanvas
             graphName, m_documentId, &AtomToolsFramework::GraphDocumentRequestBus::Events::GetGraphName);
 
         // Skip compilation if there is no graph or this is a template.
-        if (!graph || absolutePath.ends_with("materialgraphtemplate"))
+        if (!graph || graphName.empty())
         {
             CompileGraphFailed();
             return false;
@@ -1150,6 +1143,20 @@ namespace MaterialCanvas
         m_slotValueTable.clear();
         AZ_TracePrintf_IfTrue("MaterialGraphCompiler", IsCompileLoggingEnabled(), "Compile graph completed.\n");
         MaterialGraphCompilerNotificationBus::Event(m_toolId, &MaterialGraphCompilerNotificationBus::Events::OnCompileGraphCompleted, m_documentId);
+    }
+
+    AZStd::string MaterialGraphCompiler::GetGraphPath() const
+    {
+        AZStd::string absolutePath;
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
+            absolutePath, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
+
+        if (absolutePath.ends_with(".materialgraph"))
+        {
+            return absolutePath;
+        }
+
+        return AZStd::string::format("%s/Assets/Materials/Generated/untitled.materialgraph", AZ::Utils::GetProjectPath().c_str());
     }
 
     void MaterialGraphCompiler::BuildSlotValueTable() const
