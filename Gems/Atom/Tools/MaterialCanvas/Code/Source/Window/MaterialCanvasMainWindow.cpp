@@ -150,11 +150,26 @@ namespace MaterialCanvas
             "Material Canvas Settings",
             "Material Canvas Settings",
             { AtomToolsFramework::CreateSettingsPropertyValue(
-                "/O3DE/Atom/MaterialCanvas/EnableMinimalShaderBuilds",
-                "Enable Minimal Shader Builds",
-                "Improve shader and material iteration and preview times by limiting the asset processor and shader compiler to the "
-                "current platform and RHI. Changing this setting requires restarting Material Canvas and the asset processor.",
+                  "/O3DE/Atom/MaterialCanvas/EnableFasterShaderBuilds",
+                  "Enable Faster Shader Builds",
+                  "By default, some platforms perform an exhaustive compilation of shaders for multiple RHI. For example, the default "
+                  "Windows shader builder settings automatically compiles shaders for DX12, Vulkan, and the Null renderer.\n\nThis option "
+                  "overrides those registry settings and makes compilation and preview times much faster by only compiling shaders for the "
+                  "currently active platform and RHI.\n\nThis also disables automatic shader variant generation.\n\nChanging this setting "
+                  "requires restarting Material Canvas and the Asset Processor.\n\nChanging the active RHI with this setting enabled may "
+                  "require clearing the cache to regenerate shaders for the new RHI.\n\nThe settings files containing the overrides will be "
+                  "placed in the user/Registry folder for the current project.",
                   false),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/Atom/MaterialCanvas/Viewport/ClearMaterialOnCompileGraphStarted",
+                  "Clear Viewport Material When Compiling Starts",
+                  "Clear the viewport model's material whenever compiling shaders and materials starts.",
+                  true),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/Atom/MaterialCanvas/Viewport/ClearMaterialOnCompileGraphFailed",
+                  "Clear Viewport Material When Compiling Fails",
+                  "Clear the viewport model's material whenever compiling shaders and materials fails.",
+                  true),
               AtomToolsFramework::CreateSettingsPropertyValue(
                   "/O3DE/Atom/MaterialCanvas/CreateDefaultDocumentOnStart",
                   "Create Untitled Graph Document On Start",
