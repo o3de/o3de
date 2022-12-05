@@ -33,7 +33,7 @@ namespace MaterialCanvas
         // Set up the toolbar that controls the viewport settings
         m_toolBar = new AtomToolsFramework::EntityPreviewViewportToolBar(m_toolId, this);
 
-        // Create the dockable viewport widget that will be shared between all material canvas documents
+        // Create the dockable viewport widget that will be shared between all Material Canvas documents
         m_materialViewport = new AtomToolsFramework::EntityPreviewViewportWidget(m_toolId, this);
 
         // Initialize the entity context that will be used to create all of the entities displayed in the viewport
@@ -147,14 +147,19 @@ namespace MaterialCanvas
     void MaterialCanvasMainWindow::PopulateSettingsInspector(AtomToolsFramework::InspectorWidget* inspector) const
     {
         m_materialCanvasCompileSettingsGroup = AtomToolsFramework::CreateSettingsPropertyGroup(
-            "Material Canvas Compile Settings",
-            "Material Canvas Compile Settings",
+            "Material Canvas Settings",
+            "Material Canvas Settings",
             { AtomToolsFramework::CreateSettingsPropertyValue(
                 "/O3DE/Atom/MaterialCanvas/EnableMinimalShaderBuilds",
                 "Enable Minimal Shader Builds",
                 "Improve shader and material iteration and preview times by limiting the asset processor and shader compiler to the "
                 "current platform and RHI. Changing this setting requires restarting Material Canvas and the asset processor.",
-                false) });
+                  false),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/Atom/MaterialCanvas/CreateDefaultDocumentOnStart",
+                  "Create Untitled Graph Document On Start",
+                  "Create a default, untitled graph document when Material Canvas starts",
+                  true) });
 
         inspector->AddGroup(
             m_materialCanvasCompileSettingsGroup->m_name,
@@ -166,8 +171,8 @@ namespace MaterialCanvas
                 azrtti_typeid<AtomToolsFramework::DynamicPropertyGroup>()));
 
         inspector->AddGroup(
-            "Material Canvas Graph View Settings",
-            "Material Canvas Graph View Settings",
+            "Graph View Settings",
+            "Graph View Settings",
             "Configuration settings for the graph view interaction, animation, and other behavior.",
             new AtomToolsFramework::InspectorPropertyGroupWidget(
                 m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr->RTTI_Type()));

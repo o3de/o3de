@@ -12,7 +12,9 @@
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsAnyDocument.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
-#include <AtomToolsFramework/DynamicNode/DynamicNodeUtil.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeUtil.h>
+#include <AtomToolsFramework/Graph/GraphDocument.h>
+#include <AtomToolsFramework/Graph/GraphDocumentView.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector2.h>
@@ -21,10 +23,8 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <Document/MaterialCanvasDocument.h>
 #include <GraphModel/Model/DataType.h>
 #include <MaterialCanvasApplication.h>
-#include <Window/MaterialCanvasGraphView.h>
 #include <Window/MaterialCanvasMainWindow.h>
 
 #include <QLabel>
@@ -54,22 +54,26 @@ namespace MaterialCanvas
         InitMaterialCanvasResources();
 
         QApplication::setOrganizationName("O3DE");
-        QApplication::setApplicationName("O3DE Material Canvas (Experimental)");
+        QApplication::setApplicationName("O3DE Material Canvas (Preview)");
         QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
+        AZ::RHI::FactoryManagerNotificationBus::Handler::BusConnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
     }
 
     MaterialCanvasApplication::~MaterialCanvasApplication()
     {
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
+        AZ::RHI::FactoryManagerNotificationBus::Handler::BusDisconnect();
         m_window.reset();
     }
 
     void MaterialCanvasApplication::Reflect(AZ::ReflectContext* context)
     {
         Base::Reflect(context);
-        MaterialCanvasDocument::Reflect(context);
+        MaterialGraphCompiler::Reflect(context);
 
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -102,13 +106,8 @@ namespace MaterialCanvas
         InitMaterialGraphDocumentType();
         InitMaterialGraphNodeDocumentType();
         InitShaderSourceDataDocumentType();
-
-        m_viewportSettingsSystem.reset(aznew AtomToolsFramework::EntityPreviewViewportSettingsSystem(m_toolId));
-
-        m_window.reset(aznew MaterialCanvasMainWindow(m_toolId, m_graphViewSettingsPtr));
-        m_window->show();
-
-        ApplyShaderBuildSettings();
+        InitMainWindow();
+        InitDefaultDocument();
     }
 
     void MaterialCanvasApplication::Destroy()
@@ -136,12 +135,42 @@ namespace MaterialCanvas
         return m_window.get();
     }
 
+    void MaterialCanvasApplication::FactoryRegistered()
+    {
+        ApplyShaderBuildSettings();
+    }
+
+    void MaterialCanvasApplication::OnDocumentOpened(const AZ::Uuid& documentId)
+    {
+        MaterialGraphCompilerRequestBus::Event(documentId, &MaterialGraphCompilerRequestBus::Events::QueueCompileGraph);
+    }
+
+    void MaterialCanvasApplication::OnDocumentSaved(const AZ::Uuid& documentId)
+    {
+        MaterialGraphCompilerRequestBus::Event(documentId, &MaterialGraphCompilerRequestBus::Events::QueueCompileGraph);
+    }
+
+    void MaterialCanvasApplication::OnDocumentUndoStateChanged(const AZ::Uuid& documentId)
+    {
+        MaterialGraphCompilerRequestBus::Event(documentId, &MaterialGraphCompilerRequestBus::Events::QueueCompileGraph);
+    }
+
+    void MaterialCanvasApplication::OnDocumentClosed(const AZ::Uuid& documentId)
+    {
+        m_graphCompilerMap.erase(documentId);
+    }
+
+    void MaterialCanvasApplication::OnDocumentDestroyed(const AZ::Uuid& documentId)
+    {
+        m_graphCompilerMap.erase(documentId);
+    }
+
     void MaterialCanvasApplication::InitDynamicNodeManager()
     {
         // Instantiate the dynamic node manager to register all dynamic node configurations and data types used in this tool
         m_dynamicNodeManager.reset(aznew AtomToolsFramework::DynamicNodeManager(m_toolId));
 
-        // Register all data types required by material canvas nodes with the dynamic node manager
+        // Register all data types required by Material Canvas nodes with the dynamic node manager
         m_dynamicNodeManager->RegisterDataTypes({
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("bool"), bool{}, "bool"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("int"), int32_t{}, "int"),
@@ -231,21 +260,23 @@ namespace MaterialCanvas
 
     void MaterialCanvasApplication::InitMaterialGraphDocumentType()
     {
-        // Acquiring default material canvas document type info so that it can be customized before registration
-        auto documentTypeInfo = MaterialCanvasDocument::BuildDocumentTypeInfo();
-
-        // Overriding default document factory function to pass in a shared graph context
-        documentTypeInfo.m_documentFactoryCallback =
-            [this](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo)
-        {
-            return aznew MaterialCanvasDocument(toolId, documentTypeInfo, m_graphContext);
-        };
+        // Acquiring default Material Canvas document type info so that it can be customized before registration
+        auto documentTypeInfo = AtomToolsFramework::GraphDocument::BuildDocumentTypeInfo(
+            "Material Graph",
+            { "materialgraph" },
+            { "materialgraphtemplate" },
+            AtomToolsFramework::GetPathWithoutAlias(AtomToolsFramework::GetSettingsValue<AZStd::string>(
+                "/O3DE/Atom/MaterialCanvas/DefaultMaterialGraphTemplate",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/blank_graph.materialgraphtemplate")),
+            m_graphContext);
 
         // Overriding documentview factory function to create graph view
         documentTypeInfo.m_documentViewFactoryCallback = [this](const AZ::Crc32& toolId, const AZ::Uuid& documentId)
         {
-            return m_window->AddDocumentTab(
-                documentId, aznew MaterialCanvasGraphView(toolId, documentId, m_graphViewSettingsPtr, m_window.get()));
+            m_window->AddDocumentTab(
+                documentId, aznew AtomToolsFramework::GraphDocumentView(toolId, documentId, m_graphViewSettingsPtr, m_window.get()));
+            m_graphCompilerMap.emplace(documentId, AZStd::make_unique<MaterialGraphCompiler>(toolId, documentId));
+            return true;
         };
 
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
@@ -254,7 +285,7 @@ namespace MaterialCanvas
 
     void MaterialCanvasApplication::InitMaterialGraphNodeDocumentType()
     {
-        // Register document type for editing material canvas node configurations. This document type does not have a central view widget
+        // Register document type for editing Material Canvas node configurations. This document type does not have a central view widget
         // and will show a label directing users to the inspector.
         auto documentTypeInfo = AtomToolsFramework::AtomToolsAnyDocument::BuildDocumentTypeInfo(
             "Material Graph Node Config",
@@ -294,6 +325,31 @@ namespace MaterialCanvas
 
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
+    }
+
+    void MaterialCanvasApplication::InitMainWindow()
+    {
+        m_viewportSettingsSystem.reset(aznew AtomToolsFramework::EntityPreviewViewportSettingsSystem(m_toolId));
+
+        m_window.reset(aznew MaterialCanvasMainWindow(m_toolId, m_graphViewSettingsPtr));
+        m_window->show();
+    }
+
+    void MaterialCanvasApplication::InitDefaultDocument()
+    {
+        // Create an untitled, empty graph document as soon as the application starts so the user can begin creating immediately.
+        if (AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/CreateDefaultDocumentOnStart", true))
+        {
+            AZ::Uuid documentId = AZ::Uuid::CreateNull();
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::EventResult(
+                documentId,
+                m_toolId,
+                &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::CreateDocumentFromTypeName,
+                "Material Graph");
+
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::OnDocumentOpened, documentId);
+        }
     }
 
     void MaterialCanvasApplication::ApplyShaderBuildSettings()

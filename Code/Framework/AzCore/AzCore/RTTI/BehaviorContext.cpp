@@ -715,7 +715,7 @@ namespace AZ
         }
         else
         {
-            return azmalloc(m_size, m_alignment, AZ::SystemAllocator, m_name.c_str());
+            return azmalloc(m_size, m_alignment, AZ::SystemAllocator);
         }
     }
 
