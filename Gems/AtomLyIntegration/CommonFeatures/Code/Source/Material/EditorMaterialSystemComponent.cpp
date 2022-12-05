@@ -181,7 +181,7 @@ namespace AZ
                 arguments.append(QString("--project-path=%1").arg(projectPath.c_str()));
             }
 
-            AZ_TracePrintf("MaterialComponent", "Launching Material Canvas (Experimental)");
+            AZ_TracePrintf("MaterialComponent", "Launching Material Canvas (Preview)");
             AtomToolsFramework::LaunchTool("MaterialCanvas", arguments);
         }
 
@@ -357,7 +357,7 @@ namespace AZ
             }
             if (!m_openMaterialCanvasAction)
             {
-                m_openMaterialCanvasAction = new QAction("Material Canvas (Experimental)");
+                m_openMaterialCanvasAction = new QAction("Material Canvas (Preview)");
                 m_openMaterialCanvasAction->setShortcut(QKeySequence("Ctrl+Shift+M"));
                 m_openMaterialCanvasAction->setCheckable(false);
                 m_openMaterialCanvasAction->setChecked(false);

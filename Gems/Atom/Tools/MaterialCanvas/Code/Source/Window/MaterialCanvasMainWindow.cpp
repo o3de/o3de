@@ -33,7 +33,7 @@ namespace MaterialCanvas
         // Set up the toolbar that controls the viewport settings
         m_toolBar = new AtomToolsFramework::EntityPreviewViewportToolBar(m_toolId, this);
 
-        // Create the dockable viewport widget that will be shared between all material canvas documents
+        // Create the dockable viewport widget that will be shared between all Material Canvas documents
         m_materialViewport = new AtomToolsFramework::EntityPreviewViewportWidget(m_toolId, this);
 
         // Initialize the entity context that will be used to create all of the entities displayed in the viewport

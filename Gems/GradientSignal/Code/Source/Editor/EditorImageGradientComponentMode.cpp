@@ -359,6 +359,11 @@ namespace GradientSignal
         return "Image Gradient Paint Mode";
     }
 
+    AZ::Uuid EditorImageGradientComponentMode::GetComponentModeType() const
+    {
+        return azrtti_typeid<EditorImageGradientComponentMode>();
+    }
+
     bool EditorImageGradientComponentMode::HandleMouseInteraction(
         const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
