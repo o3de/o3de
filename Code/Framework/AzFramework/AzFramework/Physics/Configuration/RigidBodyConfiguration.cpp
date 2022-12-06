@@ -138,6 +138,7 @@ namespace AzPhysics
                 ->Field("Include All Shapes In Mass", &RigidBodyConfiguration::m_includeAllShapesInMassCalculation)
                 ->Field("CCD Min Advance", &RigidBodyConfiguration::m_ccdMinAdvanceCoefficient)
                 ->Field("CCD Friction", &RigidBodyConfiguration::m_ccdFrictionEnabled)
+                ->Field("Open PhysX Configuration", &RigidBodyConfiguration::m_configButton)
                 ;
         }
     }

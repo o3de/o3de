@@ -231,4 +231,26 @@ namespace PhysXEditorTests
         PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderSubdivisionCount, subdivisionsTooLarge);
         EXPECT_EQ(expectedError.GetExpectedWarningCount(), 2);
     }
+
+    TEST_F(PhysXEditorFixture, EditorRigidBodyComponent_PhysXConfigButtonVisibilityFunctionUpdatesOnSceneConfigurationChange)
+    {
+        // Create editor entity
+        EntityPtr editorEntity = CreateInactiveEditorEntity("Entity");
+        const auto* rigidBodyComponent = editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
+
+        editorEntity->Activate();
+
+        auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+        auto config = physicsSystem->GetDefaultSceneConfiguration();
+
+        config.m_enableCcd = false;
+        physicsSystem->UpdateDefaultSceneConfiguration(config);
+
+        EXPECT_EQ(rigidBodyComponent->IsSceneCCDDisabled(), true);
+
+        config.m_enableCcd = true;
+        physicsSystem->UpdateDefaultSceneConfiguration(config);
+
+        EXPECT_EQ(rigidBodyComponent->IsSceneCCDDisabled(), false);
+    }
 } // namespace PhysXEditorTests

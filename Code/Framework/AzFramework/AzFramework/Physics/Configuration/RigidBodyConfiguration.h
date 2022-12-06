@@ -57,6 +57,7 @@ namespace AzPhysics
         bool m_ccdEnabled = false; //!< Whether continuous collision detection is enabled.
         float m_ccdMinAdvanceCoefficient = 0.15f; //!< Coefficient affecting how granularly time is subdivided in CCD.
         bool m_ccdFrictionEnabled = false; //!< Whether friction is applied when resolving CCD collisions.
+        bool m_configButton = false; // required for button positioning in edit context, otherwise unused
 
         bool m_computeCenterOfMass = true;
         bool m_computeInertiaTensor = true;
