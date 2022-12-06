@@ -1204,8 +1204,8 @@ class MultiTestSuite(object):
                 # If it didn't then it will have "Unknown" as the type of result.
                 results = self._get_results_using_output(test_spec_list, output, executable_log_content)
                 if not len(results) == len(test_spec_list):
-                    print(f"\nList of Results: {results}\n"
-                          f"Test Spec List: {test_spec_list}\n")
+                    logger.debug(f"\nList of Results: {results}\n"
+                                 f"Test Spec List: {test_spec_list}\n")
                     raise EditorToolsFrameworkException("Error when retrieving test results, the number of results "
                                                         "don't match the number of tests that ran.")
 
