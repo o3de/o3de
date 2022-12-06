@@ -6,9 +6,6 @@
  *
  */
 
-#include <Atom/RHI.Reflect/SamplerState.h>
-#include <Atom/RHI/Factory.h>
-#include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsAnyDocument.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
@@ -122,7 +119,7 @@ namespace PassCanvas
 
     AZStd::vector<AZStd::string> PassCanvasApplication::GetCriticalAssetFilters() const
     {
-        return AZStd::vector<AZStd::string>({ "passes/", "config/", "PassEditor/", "PassCanvas/" });
+        return AZStd::vector<AZStd::string>({ "passes/", "config/", "MaterialEditor/", "PassCanvas/" });
     }
 
     QWidget* PassCanvasApplication::GetAppMainWindow()
@@ -175,8 +172,6 @@ namespace PassCanvas
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float4x4"), AZStd::array<AZ::Vector4, 4>{ AZ::Vector4(1.0f, 0.0f, 0.0f, 0.0f), AZ::Vector4(0.0f, 1.0f, 0.0f, 0.0f), AZ::Vector4(0.0f, 0.0f, 1.0f, 0.0f), AZ::Vector4(0.0f, 0.0f, 0.0f, 1.0f) }, "float4x4"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("color"), AZ::Color::CreateOne(), "color"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("string"), AZStd::string{}, "string"),
-            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("image"), AZ::Data::Asset<AZ::RPI::StreamingImageAsset>{}, "image"),
-            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("sampler"), AZ::RHI::SamplerState{}, "sampler"),
         });
 
         // Search the project and gems for dynamic node configurations and register them with the manager
@@ -185,28 +180,6 @@ namespace PassCanvas
 
     void PassCanvasApplication::InitDynamicNodeEditData()
     {
-        // Registering custom property handlers for dynamic node configuration settings. The settings are just a map of string data.
-        // Recognized settings will need special controls for selecting files or editing large blocks of text without taking up much real
-        // estate in the property editor.
-        AZ::Edit::ElementData editData;
-        editData.m_elementId = AZ_CRC_CE("MultilineStringDialog");
-        m_dynamicNodeManager->RegisterEditDataForSetting("instructions", editData);
-        m_dynamicNodeManager->RegisterEditDataForSetting("passInputs", editData);
-        m_dynamicNodeManager->RegisterEditDataForSetting("classDefinitions", editData);
-        m_dynamicNodeManager->RegisterEditDataForSetting("functionDefinitions", editData);
-
-        editData = {};
-        editData.m_elementId = AZ_CRC_CE("StringFilePath");
-        AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Title"), AZStd::string("Template File"));
-        AtomToolsFramework::AddEditDataAttribute(
-            editData, AZ_CRC_CE("Extensions"), AZStd::vector<AZStd::string>{ "azsl", "azsli", "pass", "passtype", "shader" });
-        m_dynamicNodeManager->RegisterEditDataForSetting("templatePaths", editData);
-
-        editData = {};
-        editData.m_elementId = AZ_CRC_CE("StringFilePath");
-        AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Title"), AZStd::string("Include File"));
-        AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Extensions"), AZStd::vector<AZStd::string>{ "azsli" });
-        m_dynamicNodeManager->RegisterEditDataForSetting("includePaths", editData);
     }
 
     void PassCanvasApplication::InitSharedGraphContext()
@@ -239,10 +212,7 @@ namespace PassCanvas
         // Initialize the default group preset names and colors needed by the graph canvas view to create node groups.
         const AZStd::map<AZStd::string, AZ::Color> defaultGroupPresets = AtomToolsFramework::GetSettingsObject(
             "/O3DE/Atom/PassCanvas/GraphViewSettings/DefaultGroupPresets",
-            AZStd::map<AZStd::string, AZ::Color>{ { "Logic", AZ::Color(0.188f, 0.972f, 0.243f, 1.0f) },
-                                                  { "Function", AZ::Color(0.396f, 0.788f, 0.788f, 1.0f) },
-                                                  { "Output", AZ::Color(0.866f, 0.498f, 0.427f, 1.0f) },
-                                                  { "Input", AZ::Color(0.396f, 0.788f, 0.549f, 1.0f) } });
+            AZStd::map<AZStd::string, AZ::Color>{});
 
         // Connect the graph view settings to the required buses so that they can be accessed throughout the application.
         m_graphViewSettingsPtr->Initialize(m_toolId, defaultGroupPresets);
