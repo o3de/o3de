@@ -192,6 +192,7 @@ namespace AZ
             }
 
             m_boxShapeInterface->SetBoxDimensions(extents);
+            m_boxChangedByGridEvent.Signal(true);
         }
 
         void DiffuseProbeGridComponentController::OnAssetReady(Data::Asset<Data::AssetData> asset)
@@ -281,6 +282,7 @@ namespace AZ
                 {
                     // restore old dimensions
                     m_boxShapeInterface->SetBoxDimensions(m_configuration.m_extents);
+                    m_boxChangedByGridEvent.Signal(true);
                 }
             }
 
@@ -290,6 +292,11 @@ namespace AZ
         AZ::Aabb DiffuseProbeGridComponentController::GetAabb() const
         {
             return m_shapeBus ? m_shapeBus->GetEncompassingAabb() : AZ::Aabb::CreateNull();
+        }
+
+        void DiffuseProbeGridComponentController::RegisterBoxChangedByGridHandler(AZ::Event<bool>::Handler& handler)
+        {
+            handler.Connect(m_boxChangedByGridEvent);
         }
 
         bool DiffuseProbeGridComponentController::ValidateProbeSpacing(const AZ::Vector3& newSpacing)
