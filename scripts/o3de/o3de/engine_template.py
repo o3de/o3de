@@ -489,6 +489,7 @@ def _instantiate_template(template_json_data: dict,
 
 def create_template(source_path: pathlib.Path,
                     template_path: pathlib.Path,
+                    template_name: str = None,
                     source_name: str = None,
                     source_restricted_path: pathlib.Path = None,
                     source_restricted_name: str = None,
@@ -505,7 +506,8 @@ def create_template(source_path: pathlib.Path,
     Create a template from a source directory using replacement
 
     :param source_path: The path to the source that you want to make into a template
-    :param template_path: the path of the template to create, can be absolute or relative to default templates path
+    :param template_path: the path of the template to create, can be absolute or relative to working directory
+    :param template_name: the name of the template to create, can be absolute or relative to default templates path
     :param source_name: Name to replace within template folder with ${Name} placeholder
             If not specified, the basename of the source_path parameter is used as the source_name instead
     :param source_restricted_path: path to the source restricted folder
@@ -544,18 +546,25 @@ def create_template(source_path: pathlib.Path,
         source_name = os.path.basename(source_path)
     sanitized_source_name = utils.sanitize_identifier_for_cpp(source_name)
 
-    # if no template path, use default_templates_folder path
-    if not template_path:
-        logger.info(f'Template path empty. Using source name {source_name}')
-        template_path = source_name
-    # if the template_path is not an absolute path, then it default to relative from the default template folder
-    if not template_path.is_absolute():
+    # if no template path or template name, then set template name to source name
+    if not template_path and not template_name:
+        logger.info(f'Template path and Template name cannot both be empty. Using source name {source_name}')
+        template_name = source_name
+    if not template_path and template_name:
         default_templates_folder = manifest.get_registered(default_folder='templates')
-        template_path = default_templates_folder / source_name
-        logger.info(f'Template path empty. Using default templates folder {template_path}')
+        new_template_path = default_templates_folder / template_name
+        logger.info(f'Only Template Name {template_name} specified, we must assume its relative'
+                    f' to default template path = {new_template_path}')
+        template_path = new_template_path
+        # template name is now the last component of the template_path, so if someone enters some/path/totemplate
+        # the destination is <default folder>/some/path/totemplate which would make the name of the template "totemplate"
+        template_name = os.path.basename(template_path)
+    template_path = template_path.resolve()
     if not force and template_path.is_dir() and len(list(template_path.iterdir())):
         logger.error(f'Template path {template_path} already exists.')
         return 1
+    else:
+        os.makedirs(template_path, exist_ok=True)
 
     # Make sure the output directory for the template is outside the source path directory
     try:
@@ -568,7 +577,12 @@ def create_template(source_path: pathlib.Path,
         return 1
 
     # template name is now the last component of the template_path
-    template_name = os.path.basename(template_path)
+    if not template_name:
+        template_name = os.path.basename(template_path)
+
+    if not utils.validate_identifier(template_name):
+        logger.error(f'Template name must be fewer than 64 characters, contain only alphanumeric, "_" or "-" characters, and start with a letter.  {template_name}')
+        return 1
 
     # template name cannot be the same as a restricted platform name
     if template_name in restricted_platforms:
@@ -1633,16 +1647,19 @@ def create_project(project_path: pathlib.Path,
         template_restricted_platform_relative_path = ''
 
     # if no project path, error
-    if not project_path:
-        logger.error('Project path cannot be empty.')
+    if not project_path and not project_name:
+        logger.error('Project path and Project name cannot both be empty.')
         return 1
-    project_path = project_path.resolve()
-    if not os.path.isabs(project_path):
+    if not project_path and project_name:
         default_projects_folder = manifest.get_registered(default_folder='projects')
-        new_project_path = default_projects_folder / project_path
-        logger.info(f'Project Path {project_path} is not a full path, we must assume its relative'
+        new_project_path = default_projects_folder / project_name
+        logger.info(f'Only Project Name {project_name} specified, we must assume its relative'
                     f' to default projects path = {new_project_path}')
         project_path = new_project_path
+        # project name is now the last component of the project_path, so if someone enters some/path/toproject
+        # the destination is <default folder>/some/path/toproject which would make the name of the gem "toproject"
+        project_name = os.path.basename(project_path)
+    project_path = project_path.resolve()
     if not force and project_path.is_dir() and len(list(project_path.iterdir())):
         logger.error(f'Project path {project_path} already exists and is not empty.')
         return 1
@@ -1815,9 +1832,9 @@ def create_project(project_path: pathlib.Path,
 
 
 def create_gem(gem_path: pathlib.Path,
+               gem_name: str = None,
                template_path: pathlib.Path = None,
                template_name: str = None,
-               gem_name: str = None,
                display_name: str = None,
                summary: str = None,
                requirements: str = None,
@@ -2035,17 +2052,20 @@ def create_gem(gem_path: pathlib.Path,
     if not template_restricted_platform_relative_path:
         template_restricted_platform_relative_path = ''
 
-    # if no gem_path, error
-    if not gem_path:
-        logger.error('Gem path cannot be empty.')
+    # if no gem_path or gem_name, error
+    if not gem_path and not gem_name:
+        logger.error('Gem path and Gem name cannot both be empty.')
         return 1
-    gem_path = gem_path.resolve()
-    if not os.path.isabs(gem_path):
+    if not gem_path and gem_name:
         default_gems_folder = manifest.get_registered(default_folder='gems')
-        new_gem_path = default_gems_folder / gem_path
-        logger.info(f'Gem Path {gem_path} is not a full path, we must assume its relative'
+        new_gem_path = default_gems_folder / gem_name
+        logger.info(f'Only Gem Name {gem_name} specified, we must assume its relative'
                     f' to default gems path = {new_gem_path}')
         gem_path = new_gem_path
+        # gem name is now the last component of the gem_path, so if someone enters some/path/togem
+        # the destination is <default folder>/some/path/togem which would make the name of the gem "togem"
+        gem_name = os.path.basename(gem_path)
+    gem_path = gem_path.resolve()
     if not force and gem_path.is_dir() and len(list(gem_path.iterdir())):
         logger.error(f'Gem path {gem_path} already exists.')
         return 1
@@ -2253,6 +2273,7 @@ def create_gem(gem_path: pathlib.Path,
 def _run_create_template(args: argparse) -> int:
     return create_template(args.source_path,
                            args.template_path,
+                           args.template_name,
                            args.source_name,
                            args.source_restricted_path,
                            args.source_restricted_name,
@@ -2309,9 +2330,9 @@ def _run_create_project(args: argparse) -> int:
 
 def _run_create_gem(args: argparse) -> int:
     return create_gem(args.gem_path,
+                      args.gem_name,
                       args.template_path,
                       args.template_name,
-                      args.gem_name,
                       args.display_name,
                       args.summary,
                       args.requirements,
@@ -2358,9 +2379,15 @@ def add_args(subparsers) -> None:
 
     create_template_subparser.add_argument('-sp', '--source-path', type=pathlib.Path, required=True,
                                            help='The path to the source that you want to make into a template')
+
     create_template_subparser.add_argument('-tp', '--template-path', type=pathlib.Path, required=False,
                                            help='The path to the template to create, can be absolute or relative'
                                                 ' to default templates path')
+    create_template_subparser.add_argument('-tn', '--template-name', type=pathlib.Path, required=False,
+                                           help='The name of the the template to create, if not supplied will be set to'
+                                            ' the last component of the path. If name only provided the template of this'
+                                            ' name will appear in the default template folder.')
+
     group = create_template_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-srp', '--source-restricted-path', type=pathlib.Path, required=False,
                        default=None,
@@ -2440,15 +2467,15 @@ def add_args(subparsers) -> None:
     create_from_template_subparser.add_argument('-dp', '--destination-path', type=pathlib.Path, required=True,
                                                 help='The path to where you want the template instantiated,'
                                                      ' can be absolute or relative to the current working directory.'
-                                                     'Ex. C:/o3de/Test'
-                                                     'Test = <destination_name>')
+                                                     ' Ex. C:/o3de/Test'
+                                                     ' Test = <destination_name>')
 
     group = create_from_template_subparser.add_mutually_exclusive_group(required=True)
     group.add_argument('-tp', '--template-path', type=pathlib.Path, required=False,
                        help='The path to the template you want to instantiate, can be absolute'
                             ' or relative to the current working directory.'
-                            'Ex. C:/o3de/Template/TestTemplate'
-                            'TestTemplate = <template_name>')
+                            ' Ex. C:/o3de/Template/TestTemplate'
+                            ' TestTemplate = <template_name>')
     group.add_argument('-tn', '--template-name', type=str, required=False,
                        help='The name to the registered template you want to instantiate. If supplied this will'
                             ' resolve the --template-path.')
@@ -2529,7 +2556,7 @@ def add_args(subparsers) -> None:
     # Sub-commands should declare their own verbosity flag, if desired
     utils.add_verbosity_arg(create_project_subparser)
 
-    create_project_subparser.add_argument('-pp', '--project-path', type=pathlib.Path, required=True,
+    create_project_subparser.add_argument('-pp', '--project-path', type=pathlib.Path, required=False,
                                           help='The location of the project you wish to create from the template,'
                                                ' can be an absolute path or relative to the current working directory.'
                                                ' Ex. C:/o3de/TestProject'
@@ -2538,7 +2565,9 @@ def add_args(subparsers) -> None:
                                           help='The name of the project you wish to use, must be alphanumeric, '
                                                ' and can contain _ and - characters.'
                                                ' If no name is provided, will use last component of project path.'
-                                               ' Ex. New_Project-123')
+                                               ' Ex. New_Project-123'
+                                               ' If no project path is provided then a project of this name will'
+                                               ' be created in the default project folder.')
 
     group = create_project_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-tp', '--template-path', type=pathlib.Path, required=False,
@@ -2633,14 +2662,16 @@ def add_args(subparsers) -> None:
     # Sub-commands should declare their own verbosity flag, if desired
     utils.add_verbosity_arg(create_gem_subparser)
 
-    create_gem_subparser.add_argument('-gp', '--gem-path', type=pathlib.Path, required=True,
+    create_gem_subparser.add_argument('-gp', '--gem-path', type=pathlib.Path, required=False,
                                       help='The gem path, can be absolute or relative to the current working directory')
-    create_gem_subparser.add_argument('-gn', '--gem-name', type=str,
+    create_gem_subparser.add_argument('-gn', '--gem-name', type=str, required=False,
                                       help='The name to use when substituting the ${Name} placeholder for the gem,'
                                            ' must be alphanumeric, '
                                            ' and can contain _ and - characters.'
                                            ' If no name is provided, will use last component of gem path.'
-                                           ' Ex. New_Gem')
+                                           ' Ex. New_Gem'
+                                           ' If no gem path is provided, then a gem of this name will be created in the'
+                                           ' default gem folder.')
 
     group = create_gem_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-tp', '--template-path', type=pathlib.Path, required=False,
