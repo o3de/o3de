@@ -126,6 +126,9 @@ namespace AZ
             // Update the baked texture assets from the configuration
             void UpdateBakedTextures();
 
+            // Computes the effective transform taking both the entity transform and the shape translation offset into account
+            AZ::Transform ComputeOverallTransform(const AZ::Transform& entityTransform) const;
+
             // box shape component, used for defining the outer extents of the probe area
             LmbrCentral::BoxShapeComponentRequests* m_boxShapeInterface = nullptr;
             LmbrCentral::ShapeComponentRequests* m_shapeBus = nullptr;
