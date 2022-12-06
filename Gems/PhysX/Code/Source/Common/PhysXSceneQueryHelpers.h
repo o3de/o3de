@@ -72,11 +72,14 @@ namespace PhysX
                 const physx::PxRigidActor* actor, physx::PxHitFlags& queryTypes) override;
 
             // Unused, we're only pre-filtering at this time
-            //physx::PxQueryHitType::Enum postFilter(
-            //    const physx::PxFilterData& filterData,
-            //    const physx::PxQueryHit& hit,
-            //    const physx::PxShape* shape,
-            //    const physx::PxRigidActor* actor) override;
+            physx::PxQueryHitType::Enum postFilter(
+                const physx::PxFilterData& filterData,
+                const physx::PxQueryHit& hit,
+                const physx::PxShape* shape,
+                const physx::PxRigidActor* actor) override;
+
+            // @deprecated Unused, we're only pre-filtering at this time
+            physx::PxQueryHitType::Enum postFilter(const physx::PxFilterData& filterData, const physx::PxQueryHit& hit) override;
 
         private:
             AzPhysics::SceneQuery::FilterCallback m_filterCallback;

@@ -124,11 +124,14 @@ namespace PhysX
         // physx::PxQueryFilterCallback
         physx::PxQueryHitType::Enum preFilter(const physx::PxFilterData& filterData, const physx::PxShape* shape,
             const physx::PxRigidActor* actor, physx::PxHitFlags& queryFlags) override;
-        //physx::PxQueryHitType::Enum postFilter(
-        //    const physx::PxFilterData& filterData,
-        //    const physx::PxQueryHit& hit,
-        //    const physx::PxShape* shape,
-        //    const physx::PxRigidActor* actor) override;
+
+        physx::PxQueryHitType::Enum postFilter(
+            const physx::PxFilterData& filterData,
+            const physx::PxQueryHit& hit,
+            const physx::PxShape* shape,
+            const physx::PxRigidActor* actor) override;
+
+        physx::PxQueryHitType::Enum postFilter(const physx::PxFilterData& filterData, const physx::PxQueryHit& hit) override;
 
         // physx::PxUserControllerHitReport
         void onShapeHit(const physx::PxControllerShapeHit& hit) override;
