@@ -13,6 +13,7 @@ from os import listdir
 import pytest
 import logging
 import os
+from pprint import pformat
 import stat
 import shutil
 
@@ -332,11 +333,19 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         7. Verify that expected product files are in the cache
         """
 
+        def run_ap_debug_skip_atom_output(asset_processor):
+            result, output = asset_processor.batch_process(capture_output=True, extra_params=["--debugOutput",
+                                                                                              "--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\""])
+            # If the test fails, it's helpful to have the output from asset processor in the logs, to track the failure down.
+            logger.info(f"Asset Processor Output: {pformat(output)}")
+            return result, output
+
         # Copying test assets to project folder
         asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "test_TwoAssetsWithSameProductName_ShouldProcessAfterRename")
-        # Launching AP, making sure it is failing
-        result, output = asset_processor.batch_process(capture_output=True)
-        assert result == False, f'AssetProcessorBatch should have failed because the generated output products should share the same name, instead output was {output}'
+        # Launching AP, verify it is failing
+        result, output = run_ap_debug_skip_atom_output(asset_processor)
+        assert result == False, \
+            'AssetProcessorBatch should have failed because the generated output products should share the same name.'
 
         # Renaming output files so they won't collide in cache after second processing
         file_to_rename = os.path.join(asset_processor.temp_asset_root(), "AutomatedTesting", "test_TwoAssetsWithSameProductName_ShouldProcessAfterRename", "a.fbx.assetinfo")
@@ -348,7 +357,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         shutil.copyfile(data_for_rename, file_to_rename)
 
         # Reprocessing files and making sure there are no failed jobs
-        result, output = asset_processor.batch_process(capture_output=True)
+        result, output = run_ap_debug_skip_atom_output(asset_processor)
         assert result, "AssetProcessorBatch failed when it should have succeeded after renaming output."
 
         num_failed_assets = asset_processor_utils.get_num_failed_processed_assets(output)
