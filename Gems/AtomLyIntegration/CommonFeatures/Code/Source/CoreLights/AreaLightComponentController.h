@@ -89,6 +89,8 @@ namespace AZ
             void SetEsmExponent(float exponent) override;
             float GetNormalShadowBias() const override;
             void SetNormalShadowBias(float bias) override;
+            AreaLightComponentConfig::ShadowCachingMode GetShadowCachingMode() const override;
+            void SetShadowCachingMode(AreaLightComponentConfig::ShadowCachingMode cachingMode) override;
 
             bool GetAffectsGI() const override;
             void SetAffectsGI(bool affectsGI) const override;
