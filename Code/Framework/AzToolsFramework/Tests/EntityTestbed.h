@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/IO/LocalFileIO.h>
@@ -39,7 +40,7 @@ namespace UnitTest
     using namespace AZ;
 
     class EntityTestbed
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
         , public QObject
     {
     public:
@@ -65,11 +66,6 @@ namespace UnitTest
         AzToolsFramework::EntityPropertyEditor* m_propertyEditor    = nullptr;
         AZ::u32 m_entityCounter                                     = 0;
         AZ::IO::LocalFileIO m_localFileIO;
-
-        EntityTestbed()
-            : AllocatorsFixture()
-        {
-        }
 
         virtual ~EntityTestbed()
         {

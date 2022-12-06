@@ -2550,14 +2550,13 @@ namespace EMStudio
                     m_nodeGroupNameLineEdit->move(m_transform.dx() + x_delta, m_transform.dy() + y_delta);
                     m_nodeGroupNameLineEdit->setBaseSize(
                         QSize(groupRect.width() - 2 * sGroupRectTextHPadding, m_groupFontMetrics->height()));
-                    m_nodeGroupNameLineEdit->setBaseFontPointSizeF(m_groupFont.pointSizeF());
+                    m_nodeGroupNameLineEdit->setBaseFontPixelSize(m_groupFont.pixelSize());
                     m_nodeGroupNameLineEdit->setScale(GetScale());
                     m_nodeGroupNameLineEdit->show();
                 }
                 else
                 {
                     // Draw group name label
-                    m_nodeGroupNameLineEdit->hide();
                     QRect textRect = groupRect;
                     textRect.setHeight(m_groupFontMetrics->height());
                     textRect.setLeft(textRect.left() + sGroupRectTextHPadding);
@@ -2598,6 +2597,10 @@ namespace EMStudio
             m_nodeGroupNameLineEdit->setText({});
             m_currentNameEditNodeGroup->SetNameEditOngoing(false);
             m_currentNameEditNodeGroup = nullptr;
+            // This needs to be done after setting m_currentNameEditNodeGroup = nullptr because
+            // it triggers the QLineEdit::editingFinished signal which this function is connected to,
+            // which is effectively a recursive function call.
+            m_nodeGroupNameLineEdit->hide();
         }
     }
 

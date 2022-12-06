@@ -56,7 +56,7 @@ using namespace AZ;
 namespace UnitTest
 {
     class Rtti
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -1060,12 +1060,12 @@ namespace UnitTest
     }
 
     class ReflectionManagerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_reflection = AZStd::make_unique<ReflectionManager>();
         }
@@ -1074,7 +1074,7 @@ namespace UnitTest
         {
             m_reflection.reset();
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
     protected:

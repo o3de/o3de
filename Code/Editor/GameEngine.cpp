@@ -26,7 +26,6 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
-#include <AzFramework/Terrain/TerrainDataRequestBus.h>      // for TerrainDataRequests
 #include <AzFramework/Archive/IArchive.h>
 
 // Editor
@@ -828,32 +827,6 @@ void CGameEngine::OnEditorNotifyEvent(EEditorNotifyEvent event)
         }
     }
     break;
-    }
-}
-
-void CGameEngine::OnTerrainModified(const Vec2& modPosition, float modAreaRadius, bool fullTerrain)
-{
-    INavigationSystem* pNavigationSystem = nullptr; // INavigationSystem will be converted to an AZInterface (LY-111343)
-
-    if (pNavigationSystem)
-    {
-        // Only report local modifications, not a change in the full terrain (probably happening during initialization)
-        if (fullTerrain == false)
-        {
-            const Vec2 offset(modAreaRadius * 1.5f, modAreaRadius * 1.5f);
-            AABB updateBox;
-            updateBox.min = modPosition - offset;
-            updateBox.max = modPosition + offset;
-            AzFramework::Terrain::TerrainDataRequests* terrain = AzFramework::Terrain::TerrainDataRequestBus::FindFirstHandler();
-            AZ_Assert(terrain != nullptr, "Expecting a valid terrain handler when the terrain is modified");
-            const float terrainHeight1 = terrain->GetHeightFromFloats(updateBox.min.x, updateBox.min.y);
-            const float terrainHeight2 = terrain->GetHeightFromFloats(updateBox.max.x, updateBox.max.y);
-            const float terrainHeight3 = terrain->GetHeightFromFloats(modPosition.x, modPosition.y);
-
-            updateBox.min.z = min(terrainHeight1, min(terrainHeight2, terrainHeight3)) - (modAreaRadius * 2.0f);
-            updateBox.max.z = max(terrainHeight1, max(terrainHeight2, terrainHeight3)) + (modAreaRadius * 2.0f);
-            pNavigationSystem->WorldChanged(updateBox);
-        }
     }
 }
 

@@ -100,8 +100,11 @@ namespace EMStudio
                             this->m_eventDataSelectionMenu->addAction(
                                 editData->m_name,
                                 this,
-                                [this, classData]() { this->AppendEventData(classData->m_typeId); }
-                            );
+                                [this, classData]
+                                {
+                                    AppendEventData(classData->m_typeId);
+                                    emit eventsChanged(GetMotion(), GetMotionEvent());
+                                });
                             break;
                         }
                     }
@@ -114,8 +117,11 @@ namespace EMStudio
         m_deleteAction = m_deleteCurrentEventDataMenu->addAction(
             "Delete",
             this,
-            [this]() { this->RemoveEventData(this->m_deleteAction->data().value<size_t>()); }
-        );
+            [this]()
+            {
+                RemoveEventData(m_deleteAction->data().value<size_t>());
+                emit eventsChanged(GetMotion(), GetMotionEvent());
+            });
 
         m_emptyLabel = new QLabel("<i>No event data added</i>");
 

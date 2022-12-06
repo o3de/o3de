@@ -27,7 +27,7 @@
  */
 template<class ApplicationT, class ModuleT>
 class ModuleReflectionTest
-    : public UnitTest::AllocatorsTestFixture
+    : public UnitTest::LeakDetectionFixture
 {
 public:
     static ApplicationT* GetApplication() { return s_application.get(); }

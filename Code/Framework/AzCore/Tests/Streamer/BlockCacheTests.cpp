@@ -35,13 +35,11 @@ namespace AZ::IO
     INSTANTIATE_TYPED_TEST_CASE_P(Streamer_BlockCacheConformityTests, StreamStackEntryConformityTests, BlockCacheTestDescription);
 
     class BlockCacheTest
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            SetupAllocator();
-
             AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 

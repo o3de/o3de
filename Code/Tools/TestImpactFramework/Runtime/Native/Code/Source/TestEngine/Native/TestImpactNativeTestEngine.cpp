@@ -143,7 +143,7 @@ namespace TestImpact
 
     NativeTestEngine::~NativeTestEngine() = default;
 
-    void NativeTestEngine::DeleteArtifactXmls() const
+    void NativeTestEngine::DeleteXmlArtifacts() const
     {
         DeleteFiles(m_artifactDir.m_testRunArtifactDirectory, "*.xml");
         DeleteFiles(m_artifactDir.m_coverageArtifactDirectory, "*.xml");
@@ -158,11 +158,13 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>> callback) const
     {
-        DeleteArtifactXmls();
+        DeleteXmlArtifacts();
 
-        return GenerateJobInfosAndRunTests(
+        const auto jobInfos = m_regularTestJobInfoGenerator->GenerateJobInfos(testTargets);
+
+        return RunTests(
             m_testRunner.get(),
-            m_regularTestJobInfoGenerator.get(),
+            jobInfos,
             testTargets,
             NativeRegularTestRunnerErrorCodeChecker,
             executionFailurePolicy,
@@ -185,12 +187,14 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>> callback) const
     {
-        DeleteArtifactXmls();
+        DeleteXmlArtifacts();
+
+        const auto jobInfos = m_instrumentedTestJobInfoGenerator->GenerateJobInfos(testTargets);
 
         return GenerateInstrumentedRunResult(
-            GenerateJobInfosAndRunTests(
+            RunTests(
                 m_instrumentedTestRunner.get(),
-                m_instrumentedTestJobInfoGenerator.get(),
+                jobInfos,
                 testTargets,
                 NativeInstrumentedTestRunnerErrorCodeChecker,
                 executionFailurePolicy,

@@ -30,7 +30,7 @@ extern char g_cachedEngineRoot[AZ_MAX_PATH_LEN];
 namespace AssetBundler
 {
     class AssetBundlerBatchUtilsTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     };
 
@@ -89,7 +89,7 @@ namespace AssetBundler
     const char DummyProjectFolder[] = "DummyProject";
 
     class AssetBundlerGemsUtilTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override

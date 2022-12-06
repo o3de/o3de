@@ -230,8 +230,8 @@ namespace AZ
                     else
                     {
                         RHI::ImageDescriptor imgDescriptor = swapChainImage->GetDescriptor();
-                        imgDescriptor.m_size.m_width = mtlDrawableTexture.width;
-                        imgDescriptor.m_size.m_height = mtlDrawableTexture.height;
+                        imgDescriptor.m_size.m_width = static_cast<uint32_t>(mtlDrawableTexture.width);
+                        imgDescriptor.m_size.m_height = static_cast<uint32_t>(mtlDrawableTexture.height);
                         swapChainImage->SetDescriptor(imgDescriptor);
                         
                         RHI::Ptr<MetalResource> resc = MetalResource::Create(MetalResourceDescriptor{mtlDrawableTexture, ResourceType::MtlTextureType, swapChainImage->m_isSwapChainImage});
