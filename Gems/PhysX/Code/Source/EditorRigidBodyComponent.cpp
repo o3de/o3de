@@ -209,7 +209,7 @@ namespace PhysX
                         AZ::Edit::UIHandlers::Button,
                         &AzPhysics::RigidBodyConfiguration::m_configButton,
                         "",
-                        "Click here to open the PhysX Configuration window, Enable global CCD to enable component CCD editing.")
+                        "Click here to open the PhysX Configuration window. Enable global CCD to enable component CCD editing.")
                         ->Attribute(AZ::Edit::Attributes::ButtonText, "Open PhysX Configuration to Enable CCD")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorRigidBodyComponent::IsSceneCCDDisabled)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::OpenPhysXConfigurationPane)
@@ -330,11 +330,7 @@ namespace PhysX
     void EditorRigidBodyComponent::Deactivate()
     {
         m_debugDisplayDataChangeHandler.Disconnect();
-
-        if (m_sceneConfigChangedHandler.IsConnected())
-        {
-            m_sceneConfigChangedHandler.Disconnect();
-        }
+        m_sceneConfigChangedHandler.Disconnect();
 
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         m_nonUniformScaleChangedHandler.Disconnect();
@@ -351,7 +347,7 @@ namespace PhysX
         }
     }
 
-    const bool EditorRigidBodyComponent::IsSceneCCDDisabled() const
+    bool EditorRigidBodyComponent::IsSceneCCDDisabled() const
     {
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {

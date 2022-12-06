@@ -92,7 +92,7 @@ namespace PhysX
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
         const AzPhysics::RigidBody* GetRigidBody() const;
-        const bool IsSceneCCDDisabled() const;
+        bool IsSceneCCDDisabled() const;
         void OpenPhysXConfigurationPane() const;
 
     private:
