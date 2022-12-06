@@ -26,6 +26,7 @@
 #include <AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/SkyBox/HDRiSkyboxBus.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsRequestBus.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <Document/MaterialGraphCompilerRequestBus.h>
@@ -135,11 +136,29 @@ namespace MaterialCanvas
         ApplyMaterial(documentId);
     }
 
+    void MaterialCanvasViewportContent::OnCompileGraphStarted(const AZ::Uuid& documentId)
+    {
+        if (m_lastOpenedDocumentId == documentId &&
+            AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/Viewport/ClearMaterialOnCompileGraphStarted", true))
+        {
+            ApplyMaterial({});
+        }
+    }
+
     void MaterialCanvasViewportContent::OnCompileGraphCompleted(const AZ::Uuid& documentId)
     {
         if (m_lastOpenedDocumentId == documentId)
         {
             ApplyMaterial(documentId);
+        }
+    }
+
+    void MaterialCanvasViewportContent::OnCompileGraphFailed(const AZ::Uuid& documentId)
+    {
+        if (m_lastOpenedDocumentId == documentId &&
+            AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/Viewport/ClearMaterialOnCompileGraphFailed", true))
+        {
+            ApplyMaterial({});
         }
     }
 
