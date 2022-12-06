@@ -10,8 +10,6 @@
 
 namespace AWSCore
 {
-    static constexpr const char NewToAWSUrl[] = "https://o3de.org/docs/user-guide/gems/reference/aws/";
-
     static constexpr const char AWSAndGettingStartedUrl[] =
         "https://o3de.org/docs/user-guide/gems/reference/aws/aws-core/getting-started/";
     static constexpr const char AWSAndResourceMappingsUrl[] =

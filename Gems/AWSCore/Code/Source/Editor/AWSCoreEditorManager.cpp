@@ -9,11 +9,17 @@
 #include <Editor/AWSCoreEditorManager.h>
 #include <Editor/UI/AWSCoreEditorMenu.h>
 
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+
 namespace AWSCore
 {
     AWSCoreEditorManager::AWSCoreEditorManager()
-        : m_awsCoreEditorMenu(new AWSCoreEditorMenu(AWS_MENU_TEXT))
     {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "AWSCoreEditorManager - could not get ActionManagerInterface on RegisterActions.");
+
+
     }
 
     AWSCoreEditorManager::~AWSCoreEditorManager()

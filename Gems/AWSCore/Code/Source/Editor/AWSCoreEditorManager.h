@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+
 namespace AWSCore
 {
     class AWSCoreEditorMenu;
@@ -19,10 +21,7 @@ namespace AWSCore
         AWSCoreEditorManager();
         virtual ~AWSCoreEditorManager();
 
-        //! Get AWSCoreEditorMenu UI component
-        AWSCoreEditorMenu* GetAWSCoreEditorMenu() const;
-
     private:
-        AWSCoreEditorMenu* m_awsCoreEditorMenu;
+
     };
 } // namespace AWSCore

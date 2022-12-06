@@ -11,13 +11,14 @@
 #include <AzCore/Component/Component.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
-#include <Editor/AWSCoreEditorManager.h>
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
+#include <Editor/UI/AWSCoreEditorMenu.h>
 
 namespace AWSCore
 {
     class AWSCoreEditorSystemComponent
         : public AZ::Component
-        , private AzToolsFramework::EditorEvents::Bus::Handler
+        , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
         static constexpr const char EDITOR_HELP_MENU_TEXT[] = "&Help";
@@ -38,10 +39,10 @@ namespace AWSCore
         void Activate() override;
         void Deactivate() override;
 
-        // AzToolsFramework::EditorEvents interface implementation
-        void NotifyMainWindowInitialized(QMainWindow* mainWindow) override;
+        // ActionManagerRegistrationNotificationBus implementation
+        void OnMenuBarRegistrationHook() override;
 
-        AZStd::unique_ptr<AWSCoreEditorManager> m_awsCoreEditorManager;
+        AZStd::unique_ptr<AWSCoreEditorMenu> m_awsCoreEditorMenu;
     };
 
 } // namespace AWSCore

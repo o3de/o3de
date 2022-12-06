@@ -9,7 +9,6 @@
 #include <AzTest/AzTest.h>
 
 #include <Editor/AWSCoreEditorManager.h>
-#include <Editor/UI/AWSCoreEditorMenu.h>
 #include <Editor/UI/AWSCoreEditorUIFixture.h>
 #include <TestFramework/AWSCoreFixture.h>
 
@@ -34,6 +33,4 @@ class AWSCoreEditorManagerTest
 
 TEST_F(AWSCoreEditorManagerTest, AWSCoreEditorManager_Constructor_HaveExpectedUIResourcesCreated)
 {
-    AWSCoreEditorManager testManager;
-    EXPECT_TRUE(testManager.GetAWSCoreEditorMenu());
 }

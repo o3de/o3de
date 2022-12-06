@@ -10,13 +10,15 @@
 #include <AzCore/Serialization/EditContext.h>
 
 #include <AWSCoreEditorSystemComponent.h>
-#include <Editor/UI/AWSCoreEditorMenu.h>
 
 #include <QMainWindow>
 #include <QMenuBar>
 #include <QAction>
 #include <QList>
 #include <QString>
+
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 
 namespace AWSCore
 {
@@ -61,42 +63,20 @@ namespace AWSCore
 
     void AWSCoreEditorSystemComponent::Init()
     {
-        m_awsCoreEditorManager = AZStd::make_unique<AWSCoreEditorManager>();
     }
 
     void AWSCoreEditorSystemComponent::Activate()
     {
-        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
     void AWSCoreEditorSystemComponent::Deactivate()
     {
-        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
     }
 
-    void AWSCoreEditorSystemComponent::NotifyMainWindowInitialized(QMainWindow* mainWindow)
+    void AWSCoreEditorSystemComponent::OnMenuBarRegistrationHook()
     {
-        QMenuBar* menuBar = mainWindow->menuBar();
-        QList<QAction*> actionList = menuBar->actions();
-        QAction* insertPivot = nullptr;
-        for (QList<QAction*>::iterator itr = actionList.begin(); itr != actionList.end(); ++itr)
-        {
-            if (QString::compare((*itr)->text(), EDITOR_HELP_MENU_TEXT) == 0)
-            {
-                insertPivot = (*itr);
-                break;
-            }
-        }
-
-        const auto menu = m_awsCoreEditorManager->GetAWSCoreEditorMenu();
-        if (insertPivot)
-        {
-            menuBar->insertMenu(insertPivot, menu);
-        }
-        else
-        {
-            menuBar->addMenu(menu);
-            AZ_Warning("AWSCoreEditorSystemComponent", false, "Failed to find Help menu, append cloud services menu to menubar directly.");
-        }
+        m_awsCoreEditorMenu = AZStd::make_unique<AWSCoreEditorMenu>();
     }
 } // namespace AWSCore
