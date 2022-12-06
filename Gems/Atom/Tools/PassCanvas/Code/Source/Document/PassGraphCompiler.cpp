@@ -21,6 +21,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <Document/PassGraphCompiler.h>
 #include <Document/PassGraphCompilerNotificationBus.h>
 #include <GraphModel/Model/Connection.h>
