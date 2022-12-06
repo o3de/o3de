@@ -47,6 +47,11 @@ namespace AZ
             //! Returns the sort key for the component.
             virtual RHI::DrawItemSortKey GetSortKey() const = 0;
 
+            //! Sets if this model should be considered to be always moving, even when the transform doesn't change. Useful for things like vertex shader animation.
+            virtual void SetIsAlwaysDynamic(bool isAlwaysDynamic) = 0;
+            //! Returns if this model is considered to always be moving.
+            virtual bool GetIsAlwaysDynamic() const = 0;
+
             //! Sets the LodType, which determines how Lods will be selected during rendering.
             virtual void SetLodType(RPI::Cullable::LodType lodType) = 0;
             //! Returns the LodType.
