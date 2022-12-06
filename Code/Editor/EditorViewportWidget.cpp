@@ -875,6 +875,15 @@ void EditorViewportWidget::SetViewportId(int id)
     );
     m_editorViewportSettingsCallbacks->SetAngleSnappingChangedEvent(m_angleSnappingHandler);
 
+    m_cameraSpeedScaleHandler = SandboxEditor::CameraSpeedScaleChangedEvent::Handler(
+        [id](const float scale)
+        {
+            AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Event(
+                id, &AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Events::OnCameraSpeedScaleChanged, scale);
+        }
+    );
+    m_editorViewportSettingsCallbacks->SetCameraSpeedScaleChangedEvent(m_cameraSpeedScaleHandler);
+
     m_perspectiveChangeHandler = SandboxEditor::PerspectiveChangedEvent::Handler(
         [this](const float fovRadians)
         {

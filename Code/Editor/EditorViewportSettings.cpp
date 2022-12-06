@@ -82,7 +82,18 @@ namespace SandboxEditor
                         {
                             m_angleSnappingChanged.Signal(AngleSnappingEnabled());
                         }
-                    });
+                    }
+                );
+
+                m_cameraSpeedScaleNotifyEventHandler = registry->RegisterNotifier(
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
+                    {
+                        if (IsPathAncestorDescendantOrEqual(CameraSpeedScaleSetting, notifyEventArgs.m_jsonKeyPath))
+                        {
+                            m_cameraSpeedScaleChanged.Signal(CameraSpeedScale());
+                        }
+                    }
+                );
 
                 m_gridSnappingNotifyEventHandler = registry->RegisterNotifier(
                     [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
@@ -91,7 +102,8 @@ namespace SandboxEditor
                         {
                             m_gridSnappingChanged.Signal(GridSnappingEnabled());
                         }
-                    });
+                    }
+                );
 
                 m_farPlaneDistanceNotifyEventHandler = registry->RegisterNotifier(
                     [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
@@ -100,7 +112,8 @@ namespace SandboxEditor
                         {
                             m_farPlaneChanged.Signal(CameraDefaultFarPlaneDistance());
                         }
-                    });
+                    }
+                );
 
                 m_nearPlaneDistanceNotifyEventHandler = registry->RegisterNotifier(
                     [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
@@ -109,7 +122,8 @@ namespace SandboxEditor
                         {
                             m_nearPlaneChanged.Signal(CameraDefaultNearPlaneDistance());
                         }
-                    });
+                    }
+                );
 
                 m_perspectiveNotifyEventHandler = registry->RegisterNotifier(
                     [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
@@ -118,13 +132,19 @@ namespace SandboxEditor
                         {
                             m_perspectiveChanged.Signal(CameraDefaultFovRadians());
                         }
-                    });
+                    }
+                );
             }
         }
 
         void SetAngleSnappingChangedEvent(AngleSnappingChangedEvent::Handler& handler) override
         {
             handler.Connect(m_angleSnappingChanged);
+        }
+
+        void SetCameraSpeedScaleChangedEvent(CameraSpeedScaleChangedEvent::Handler& handler) override
+        {
+            handler.Connect(m_cameraSpeedScaleChanged);
         }
 
         void SetGridShowingChangedEvent(GridShowingChangedEvent::Handler& handler) override
@@ -153,12 +173,14 @@ namespace SandboxEditor
         }
 
         AngleSnappingChangedEvent m_angleSnappingChanged;
+        CameraSpeedScaleChangedEvent m_cameraSpeedScaleChanged;
         GridSnappingChangedEvent m_gridShowingChanged;
         GridSnappingChangedEvent m_gridSnappingChanged;
         PerspectiveChangedEvent m_perspectiveChanged;
         NearFarPlaneChangedEvent m_farPlaneChanged;
         NearFarPlaneChangedEvent m_nearPlaneChanged;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_angleSnappingNotifyEventHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_cameraSpeedScaleNotifyEventHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_farPlaneDistanceNotifyEventHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_gridShowingNotifyEventHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_gridSnappingNotifyEventHandler;
@@ -297,9 +319,6 @@ namespace SandboxEditor
     void SetCameraSpeedScale(float speedScale)
     {
         AzToolsFramework::SetRegistry(CameraSpeedScaleSetting, speedScale);
-
-        AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-            &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnCameraSpeedScaleChanged, speedScale);
     }
 
     float CameraTranslateSpeed()
