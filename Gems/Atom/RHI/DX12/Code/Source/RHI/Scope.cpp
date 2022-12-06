@@ -255,7 +255,9 @@ namespace AZ
                         break;
 
                     case RHI::ScopeAttachmentUsage::ShadingRate:
-                        m_shadingRateAttachment = imageView;
+                        {
+                            m_shadingRateAttachment = imageView;
+                        }
                         break;
                     case RHI::ScopeAttachmentUsage::Uninitialized:
                         AZ_Assert(false, "ScopeAttachmentUsage is Uninitialized");

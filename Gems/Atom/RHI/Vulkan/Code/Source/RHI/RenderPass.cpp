@@ -32,6 +32,12 @@ namespace AZ
 
             using RenderPassResult = AZStd::tuple<VkResult, VkRenderPass>;
 
+            // Helper class to build the Vulkan native renderpass.
+            // If available at runtime, we prefer to use the Renderpass2 extension (need it for other features like shading rate attachments).
+            // This extension has different structures for declaring the attachments, subpasses, dependencies, etc. Although the logic is almost the same
+            // as the standard declaration of a renderpass, the extension has members that do not exist in the
+            // standard way. Because of this, a template approach is used to only use those members is they exist
+            // in the structure.
             template<
                 typename VkRenderPassCreateInfoTraits,
                 typename VkAttachmentDescriptionTraits,
@@ -46,16 +52,23 @@ namespace AZ
                     : m_device(device)
                 {}
 
+                // The structure for declaring the renderpass
                 using VkRenderPassCreateInfoType = typename VkRenderPassCreateInfoTraits::value_type;
+                // The structyure used for declaring attachments
                 using VkAttachmentDescriptionType = typename VkAttachmentDescriptionTraits::value_type;
+                // The structure used for referencing an attachment
                 using VkAttachmentReferenceType = typename VkAttachmentReferenceTraits::value_type;
+                // The structure used for describing a subpass
                 using VkSubpassDescriptionType = typename VkSubpassDescriptionTraits::value_type;
+                // The structure used for declaring a dependency
                 using VkSubpassDependencyType = typename VkSubpassDependencyTraits::value_type;
 
+                // Holds the information about a subpass
                 struct SubpassInfo
                 {
                     AZStd::array<AZStd::vector<VkAttachmentReferenceType>, AttachmentTypeCount> m_attachmentReferences;
                     AZStd::vector<uint32_t> m_preserveAttachments;
+                    // Used only if the pass uses fragment rate attachment.
                     VkFragmentShadingRateAttachmentInfoKHR m_shadingRateAttachmentExtension;
                 };
 
@@ -83,6 +96,10 @@ namespace AZ
                     createInfo.dependencyCount = static_cast<uint32_t>(subpassDependencies.size());
                     createInfo.pDependencies = subpassDependencies.empty() ? nullptr : subpassDependencies.data();
 
+                    // Fragment shade attachments are declared at a renderpass level (same for all subpasses), so we need to
+                    // check if we have one as part of the renderpass declaration. We check if the first subpass contains the shading rate attachment,
+                    // and use that one for the whole renderpass. If more than one is found, we raise an assert because
+                    // there can only be one fragment attachment per renderpass.
                     VkRenderPassFragmentDensityMapCreateInfoEXT fdmAttachmentCreateInfo;
                     if (m_device.GetImageShadingRageMode() == Device::ShadingRateImageMode::DensityMap)
                     {
@@ -107,7 +124,7 @@ namespace AZ
 
             private:
 
-                // Classes used for handeling setting a member that may not exist.
+                // Classes used for handling setting a member that may not exist.
                 struct general_ {};
                 struct special_ : general_{};
                 template<typename> struct int_ { typedef int type; };
@@ -115,6 +132,7 @@ namespace AZ
                 template<typename vkCreateRenderPassType>
                 RenderPassResult Create(VkRenderPassCreateInfoType& createInfo);
 
+                // Specialization for creating a renderpass using the standard function.
                 template<>
                 RenderPassResult Create<VkRenderPassCreateInfo>(VkRenderPassCreateInfoType& createInfo)
                 {
@@ -124,6 +142,7 @@ namespace AZ
                     return AZStd::make_tuple(result, renderPass);
                 }
 
+                // Specialization for creating a renderpass using the renderpass2 extension.
                 template<>
                 RenderPassResult Create<VkRenderPassCreateInfo2>(VkRenderPassCreateInfoType& createInfo)
                 {
@@ -133,6 +152,7 @@ namespace AZ
                     return AZStd::make_tuple(result, renderPass);
                 }
 
+                // Builds all attachment descriptions from the descriptor.
                 void BuildAttachmentDescriptions(AZStd::vector<VkAttachmentDescriptionType>& attachmentDescriptions) const
                 {           
                     for (uint32_t i = 0; i < m_descriptor->m_attachmentCount; ++i)
@@ -140,6 +160,7 @@ namespace AZ
                         const RenderPass::AttachmentBinding& binding = m_descriptor->m_attachments[i];
                         attachmentDescriptions.emplace_back(VkAttachmentDescriptionType{});
                         VkAttachmentDescriptionType& desc = attachmentDescriptions.back();
+                        // Set the type if the structure has one.
                         SetStructureType(desc, VkAttachmentDescriptionTraits::struct_type, special_());
                         desc.format = ConvertFormat(binding.m_format);
                         desc.samples = ConvertSampleCount(binding.m_multisampleState.m_samples);
@@ -152,6 +173,7 @@ namespace AZ
                     }
                 }
 
+                // Builds the attachments references for each subpass.
                 void BuildSubpassAttachmentReferences(AZStd::vector<SubpassInfo>& subpassInfo) const
                 {
                     subpassInfo.resize(m_descriptor->m_subpassCount);
@@ -166,6 +188,7 @@ namespace AZ
                     }
                 }
 
+                // Builds the attachment references for a specific subpass.
                 template<AttachmentType type>
                 void BuildAttachmentReferences(uint32_t subpassIndex, SubpassInfo& subpassInfo) const
                 {
@@ -190,6 +213,7 @@ namespace AZ
                     }
                 }
 
+                // Specialization for "Preserve" attachment references.
                 template<>
                 void BuildAttachmentReferences<AttachmentType::Preserve>(uint32_t subpassIndex, SubpassInfo& subpassInfo) const
                 {
@@ -202,6 +226,7 @@ namespace AZ
                         subpassDescriptor.m_preserveAttachments.begin() + subpassDescriptor.m_preserveAttachmentCount);
                 }
 
+                // Return the list of attachment depending on the type.
                 AZStd::span<const RenderPass::SubpassAttachment> GetSubpassAttachments(const uint32_t subpassIndex, const AttachmentType type) const
                 {
                     const RenderPass::SubpassDescriptor& descriptor = m_descriptor->m_subpassDescriptors[subpassIndex];
@@ -226,6 +251,7 @@ namespace AZ
                     }
                 }
 
+                // Builds the subpass descriptions using the previously built attachment references.
                 void BuildSubpassDescriptions(
                     AZStd::vector<SubpassInfo>& subpassInfo,
                     AZStd::vector<VkSubpassDescriptionType>& subpassDescriptions) const
@@ -254,6 +280,8 @@ namespace AZ
                         desc.preserveAttachmentCount = static_cast<uint32_t>(preserveAttachmentList.size());
                         desc.pPreserveAttachments = preserveAttachmentList.empty() ? nullptr : preserveAttachmentList.data();
 
+                        // Shading rate attachments are declared at subpass level.
+                        // Check if the subpass has a shading rate attachemnt and st the proper information.
                         if (!shadingRateAttachmentRefList.empty() &&
                             m_device.GetImageShadingRageMode() == Device::ShadingRateImageMode::ImageAttachment)
                         {
@@ -268,6 +296,7 @@ namespace AZ
                 void SetFragmentShadingRateAttachmentInfo(
                     [[maybe_unused]] SubpassInfo& subpassInfo, [[maybe_unused]] const VkAttachmentReferenceType* reference) const
                 {
+                    // Do nothing
                 }
 
                 template<>
@@ -281,6 +310,7 @@ namespace AZ
                         VkExtent2D{ tileSize.m_width, tileSize.m_height };
                 }
 
+                // Builds the dependencies between the subpasses.
                 void BuildSubpassDependencies(AZStd::vector<VkSubpassDependencyType>& subpassDependencies) const
                 {
                     VkPipelineStageFlags supportedStages = GetSupportedPipelineStages(RHI::PipelineStateType::Draw);
@@ -289,7 +319,6 @@ namespace AZ
                     for (uint32_t i = 0; i < m_descriptor->m_subpassDependencies.size(); ++i)
                     {
                         const VkSubpassDependency& subpassDependency = m_descriptor->m_subpassDependencies[i];
-
                         auto& dependency = subpassDependencies[i];
                         dependency = {};
                         SetStructureType(dependency, VkSubpassDependencyTraits::struct_type, special_());
@@ -351,6 +380,7 @@ namespace AZ
                 typedef T value_type;
             };
 
+            // Builder used for standard renderpass creation.
             using NativeRenderpassBuilder = VkRenderpassBuilder<
                 StructureTypeTraits<VkRenderPassCreateInfo, VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO>,
                 StructureTypeTraits<VkAttachmentDescription>,
@@ -358,6 +388,7 @@ namespace AZ
                 StructureTypeTraits<VkSubpassDescription>,
                 StructureTypeTraits<VkSubpassDependency>>;
 
+            // Builder used for creating a renderpass using the Renderpass2 extension.
             using NativeRenderpass2Builder = VkRenderpassBuilder<
                 StructureTypeTraits<VkRenderPassCreateInfo2, VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2>,
                 StructureTypeTraits<VkAttachmentDescription2, VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2>,
@@ -407,6 +438,7 @@ namespace AZ
             const PhysicalDevice& physicalDevice = static_cast<const PhysicalDevice&>(GetDevice().GetPhysicalDevice());
 
             RHI::ResultCode result;
+            // Check if we can use the renderpass2 extension for building the renderpass.
             if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::Renderpass2))
             {
                 result = BuildNativeRenderPass<Internal::NativeRenderpass2Builder>();

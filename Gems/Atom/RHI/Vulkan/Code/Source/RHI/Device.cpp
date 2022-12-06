@@ -180,13 +180,7 @@ namespace AZ
             descriptorIndexingFeatures.descriptorBindingStorageBufferUpdateAfterBind =
                 physicalDeviceDescriptorIndexingFeatures.descriptorBindingStorageBufferUpdateAfterBind;
 
-            VkPhysicalDeviceBufferDeviceAddressFeaturesEXT bufferDeviceAddressFeatures = {};
-            bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT;
-            const VkPhysicalDeviceBufferDeviceAddressFeaturesEXT& physicalDeviceBufferDeviceAddressFeatures =
-                physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures();
-            bufferDeviceAddressFeatures.bufferDeviceAddress = physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddress;
-            bufferDeviceAddressFeatures.bufferDeviceAddressCaptureReplay = physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddressCaptureReplay;
-            bufferDeviceAddressFeatures.bufferDeviceAddressMultiDevice = physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddressMultiDevice;
+            auto bufferDeviceAddressFeatures = physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures();
             descriptorIndexingFeatures.pNext = &bufferDeviceAddressFeatures;
 
             auto depthClipEnabled = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures();
@@ -204,15 +198,10 @@ namespace AZ
             robustness2.nullDescriptor = physicalDevice.GetPhysicalDeviceRobutness2Features().nullDescriptor;
             fragmenShadingRateFeatures.pNext = &robustness2;
 
-            VkPhysicalDeviceRayQueryFeaturesKHR rayQueryFeatures = {};
-            rayQueryFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR;
-            rayQueryFeatures.rayQuery = physicalDevice.GetRayQueryFeatures().rayQuery;
+            VkPhysicalDeviceRayQueryFeaturesKHR rayQueryFeatures = physicalDevice.GetRayQueryFeatures();
             robustness2.pNext = &rayQueryFeatures;
 
-            VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT shaderImageAtomicInt64 = {};
-            shaderImageAtomicInt64.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT;
-            shaderImageAtomicInt64.shaderImageInt64Atomics = physicalDevice.GetShaderImageAtomicInt64Features().shaderImageInt64Atomics;
-            shaderImageAtomicInt64.sparseImageInt64Atomics = physicalDevice.GetShaderImageAtomicInt64Features().sparseImageInt64Atomics;
+            VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT shaderImageAtomicInt64 = physicalDevice.GetShaderImageAtomicInt64Features();
             rayQueryFeatures.pNext = &shaderImageAtomicInt64;
 
             VkPhysicalDeviceVulkan12Features vulkan12Features = {};

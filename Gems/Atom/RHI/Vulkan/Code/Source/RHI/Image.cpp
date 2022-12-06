@@ -319,14 +319,20 @@ namespace AZ
                 switch (device.GetImageShadingRageMode())
                 {
                 case Device::ShadingRateImageMode::DensityMap:
+                {
                     usageFlags |= VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT;
-                    break;
+                }
+                break;
                 case Device::ShadingRateImageMode::ImageAttachment:
+                {
                     usageFlags |= VK_IMAGE_USAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
-                    break;
+                }
+                break;
                 default:
+                {
                     AZ_Error("Image", false, "Image Shading Rate mode not supported on this platform");
-                    break;
+                }
+                break;
                 }
             }
 

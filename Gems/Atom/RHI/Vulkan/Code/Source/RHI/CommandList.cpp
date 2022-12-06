@@ -616,6 +616,9 @@ namespace AZ
             m_state.m_subpassIndex = 0;
             m_state.m_framebuffer = beginInfo.m_frameBuffer;
 
+            // If a shading rate image is being used, we change the combinators to (Passthrough, Override) so the
+            // image is actually being used (if not the default of "Passthrough, Passthrough" would just
+            // ignore the shading rate attachment). If a "Per Draw" rate is used, it would need to specify the combinators.
             auto& device = static_cast<Device&>(GetDevice());
             if (RHI::CheckBitsAll(
                     device.GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerDraw | RHI::ShadingRateTypeFlags::PerImage))

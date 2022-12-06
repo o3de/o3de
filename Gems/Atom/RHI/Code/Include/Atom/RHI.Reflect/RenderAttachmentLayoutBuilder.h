@@ -124,6 +124,7 @@ namespace AZ
 
                 // Adds the use of a subpass input attachment. The "name" attachment must
                 // be already be added as by a previous pass.
+                // "aspectFlags" is used by some implementations (e.g. Vulkan) when building the renderpass
                 SubpassAttachmentLayoutBuilder* SubpassInputAttachment(
                     const AZ::Name& name,
                     RHI::ImageAspectFlags aspectFlags);

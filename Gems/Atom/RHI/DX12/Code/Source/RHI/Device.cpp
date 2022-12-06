@@ -173,16 +173,20 @@ namespace AZ
             switch (options6.VariableShadingRateTier)
             {
             case D3D12_VARIABLE_SHADING_RATE_TIER::D3D12_VARIABLE_SHADING_RATE_TIER_1:
-                m_features.m_shadingRateTypeMask = RHI::ShadingRateTypeFlags::PerDraw;
-                m_features.m_shadingRateMask = RHI::ShadingRateFlags::Rate1x1 | RHI::ShadingRateFlags::Rate1x2 |
-                    RHI::ShadingRateFlags::Rate2x1 | RHI::ShadingRateFlags::Rate2x2;
+                {
+                    m_features.m_shadingRateTypeMask = RHI::ShadingRateTypeFlags::PerDraw;
+                    m_features.m_shadingRateMask = RHI::ShadingRateFlags::Rate1x1 | RHI::ShadingRateFlags::Rate1x2 |
+                        RHI::ShadingRateFlags::Rate2x1 | RHI::ShadingRateFlags::Rate2x2;                   
+                }
                 break;
             case D3D12_VARIABLE_SHADING_RATE_TIER::D3D12_VARIABLE_SHADING_RATE_TIER_2:
-                m_features.m_shadingRateTypeMask =
-                    RHI::ShadingRateTypeFlags::PerDraw | RHI::ShadingRateTypeFlags::PerImage | RHI::ShadingRateTypeFlags::PerPrimitive;
-                m_features.m_shadingRateMask = RHI::ShadingRateFlags::Rate1x1 | RHI::ShadingRateFlags::Rate1x2 |
-                    RHI::ShadingRateFlags::Rate2x1 | RHI::ShadingRateFlags::Rate2x2;
-                m_features.m_dynamicShadingRateImage = true;
+                {
+                    m_features.m_shadingRateTypeMask =
+                        RHI::ShadingRateTypeFlags::PerDraw | RHI::ShadingRateTypeFlags::PerImage | RHI::ShadingRateTypeFlags::PerPrimitive;
+                    m_features.m_shadingRateMask = RHI::ShadingRateFlags::Rate1x1 | RHI::ShadingRateFlags::Rate1x2 |
+                        RHI::ShadingRateFlags::Rate2x1 | RHI::ShadingRateFlags::Rate2x2;
+                    m_features.m_dynamicShadingRateImage = true;
+                }
                 break;
             default:
                 break;
@@ -670,7 +674,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ShadingRateImageValue Device::ConvertShadingRate([[maybe_unused]] RHI::ShadingRate rate)
+        RHI::ShadingRateImageValue Device::ConvertShadingRate(RHI::ShadingRate rate)
         {            
             return RHI::ShadingRateImageValue{ static_cast<uint8_t>(ConvertShadingRateEnum(rate)), 0 };
         }

@@ -52,7 +52,7 @@ namespace AZ
 
             //! Attachment index that this subpass input references.
             uint32_t m_attachmentIndex = 0;
-            //! Aspects that are used by the input.
+            //! Aspects that are used by the input (needed by some implementations, like Vulkan, when creating a renderpass with a subpass input)
             RHI::ImageAspectFlags m_aspectFlags = RHI::ImageAspectFlags::None;
         };
 
