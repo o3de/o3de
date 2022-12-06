@@ -8,31 +8,13 @@
 
 #pragma once
 
-#include <AzQtComponents/Components/Widgets/SpinBox.h>
+#include <AzQtComponents/PropertyInput/PropertyInputWidgets.h>
 
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
-#include <QLabel>
-#include <QWidget>
-
-// Base Widget to allow double property value input edits.
-class PropertyInputDoubleWidget
-    : public QWidget
-{
-public:
-    PropertyInputDoubleWidget();
-    ~PropertyInputDoubleWidget();
-
-protected:
-    virtual void OnSpinBoxValueChanged(double newValue) = 0;
-
-    QLabel* m_label = nullptr;
-    AzQtComponents::DoubleSpinBox* m_spinBox = nullptr;
-};
-
 // Field of View Widget
 class ViewportFieldOfViewPropertyWidget
-    : public PropertyInputDoubleWidget
+    : public AzQtComponents::PropertyInputDoubleWidget
     , private AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler
 {
 public:
@@ -48,7 +30,7 @@ private:
 
 // Camera Speed Scale Widget
 class ViewportCameraSpeedScalePropertyWidget
-    : public PropertyInputDoubleWidget
+    : public AzQtComponents::PropertyInputDoubleWidget
     , private AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler
 {
 public:
@@ -64,7 +46,7 @@ private:
 
 // Grid Size
 class ViewportGridSnappingSizePropertyWidget
-    : public PropertyInputDoubleWidget
+    : public AzQtComponents::PropertyInputDoubleWidget
 {
 public:
     ViewportGridSnappingSizePropertyWidget();
@@ -75,7 +57,7 @@ private:
 
 // Angle Snap Interval
 class ViewportAngleSnappingSizePropertyWidget
-    : public PropertyInputDoubleWidget
+    : public AzQtComponents::PropertyInputDoubleWidget
 {
 public:
     ViewportAngleSnappingSizePropertyWidget();

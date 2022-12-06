@@ -9,46 +9,6 @@
 #include <Core/Widgets/ViewportSettingsWidgets.h>
 #include <EditorViewportSettings.h>
 
-#include <QHBoxLayout>
-
-constexpr int FieldMargins = 17;
-constexpr int SpinBoxWidth = 64;
-
-PropertyInputDoubleWidget::PropertyInputDoubleWidget()
-{
-    // Create Label.
-    m_label = new QLabel(this);
-    m_label->setContentsMargins(QMargins(0, 0, FieldMargins/2, 0));
-
-    // Create SpinBox.
-    m_spinBox = new AzQtComponents::DoubleSpinBox(this);
-    m_spinBox->setFixedWidth(SpinBoxWidth);
-
-    // Trigger OnSpinBoxValueChanged when the user changes the value.
-    connect(
-        m_spinBox,
-        QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged),
-        this,
-        [&](double value)
-        {
-            OnSpinBoxValueChanged(value);
-        }
-    );
-
-    // Clear focus when the user is done editing (especially if this is added to a menu).
-    QObject::connect(m_spinBox, &AzQtComponents::DoubleSpinBox::editingFinished, &QWidget::clearFocus);
-
-    // Add to Layout.
-    QHBoxLayout* layout = new QHBoxLayout(this);
-    layout->setContentsMargins(QMargins(FieldMargins, 0, FieldMargins, 0));
-    layout->addWidget(m_label);
-    layout->addWidget(m_spinBox);
-}
-
-PropertyInputDoubleWidget::~PropertyInputDoubleWidget()
-{
-}
-
 ViewportFieldOfViewPropertyWidget::ViewportFieldOfViewPropertyWidget()
 {
     // Set label name.
@@ -61,7 +21,7 @@ ViewportFieldOfViewPropertyWidget::ViewportFieldOfViewPropertyWidget()
     m_spinBox->setValue(SandboxEditor::CameraDefaultFovDegrees());
 
     // Set minimum and maximun.
-    // These should be set after the current value.
+    // These should be set after the starting value if the default (0.0) is outside the range.
     m_spinBox->setMinimum(30.0);
     m_spinBox->setMaximum(120.0);
 
