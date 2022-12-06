@@ -10,8 +10,10 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
 #include <AtomToolsFramework/Graph/GraphDocumentRequestBus.h>
+#include <AtomToolsFramework/Graph/GraphUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
-#include <AzCore/Component/TickBus.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
+#include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -60,12 +62,14 @@ namespace PassCanvas
         : m_toolId(toolId)
         , m_documentId(documentId)
     {
+        AZ::SystemTickBus::Handler::BusConnect();
         PassGraphCompilerRequestBus::Handler::BusConnect(documentId);
     }
 
     PassGraphCompiler::~PassGraphCompiler()
     {
         PassGraphCompilerRequestBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
     const AZStd::vector<AZStd::string>& PassGraphCompiler::GetGeneratedFilePaths() const
@@ -73,13 +77,67 @@ namespace PassCanvas
         return m_generatedFiles;
     }
 
-    bool PassGraphCompiler::CompileGraph() const
+    void PassGraphCompiler::OnSystemTick()
+    {
+        if (m_compileGraph)
+        {
+            CompileGraph();
+        }
+
+        if (m_compileAssets)
+        {
+            // Check asset processor status of each generated file
+            while (m_compileAssetIndex < m_generatedFiles.size())
+            {
+                const auto& generatedFile = m_generatedFiles[m_compileAssetIndex];
+                AZ::Outcome<AzToolsFramework::AssetSystem::JobInfoContainer> jobOutcome = AZ::Failure();
+                AzToolsFramework::AssetSystemJobRequestBus::BroadcastResult(
+                    jobOutcome, &AzToolsFramework::AssetSystemJobRequestBus::Events::GetAssetJobsInfo, generatedFile, true);
+
+                if (jobOutcome.IsSuccess())
+                {
+                    for (const auto& job : jobOutcome.GetValue())
+                    {
+                        // Generate status messages then trace and send them to the status bar as the messages change
+                        const auto& statusMessage = AZStd::string ::format(
+                            "Compiling %s (%s)", generatedFile.c_str(), AzToolsFramework::AssetSystem::JobStatusString(job.m_status));
+
+                        if (m_lastAssetStatusMessage != statusMessage)
+                        {
+                            m_lastAssetStatusMessage = statusMessage;
+                            AZ_TracePrintf_IfTrue("PassGraphCompiler", IsCompileLoggingEnabled(), "%s\n", statusMessage.c_str());
+
+                            AtomToolsFramework::AtomToolsMainWindowRequestBus::Event(
+                                m_toolId, &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::SetStatusMessage, statusMessage);
+                        }
+
+                        switch (job.m_status)
+                        {
+                        case AzToolsFramework::AssetSystem::JobStatus::Queued:
+                        case AzToolsFramework::AssetSystem::JobStatus::InProgress:
+                            // If any of the asset jobs are still processing then return early instead of allowing the completion
+                            // notification to be sent.
+                            return;
+                        case AzToolsFramework::AssetSystem::JobStatus::Failed:
+                        case AzToolsFramework::AssetSystem::JobStatus::Failed_InvalidSourceNameExceedsMaxLimit:
+                            // If any of the asset jobs failed, cancel compilation. 
+                            CompileGraphFailed();
+                            return;
+                        }
+                    }
+                }
+
+                ++m_compileAssetIndex;
+           }
+
+            // All of the jobs completed without failure so send the notification that the generated assets have been compiled.
+           CompileGraphCompleted();
+        }
+    }
+
+    bool PassGraphCompiler::CompileGraph()
     {
         CompileGraphStarted();
-
-        AZStd::string absolutePath;
-        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
-            absolutePath, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
 
         GraphModel::GraphPtr graph;
         AtomToolsFramework::GraphDocumentRequestBus::EventResult(
@@ -90,56 +148,89 @@ namespace PassCanvas
             graphName, m_documentId, &AtomToolsFramework::GraphDocumentRequestBus::Events::GetGraphName);
 
         // Skip compilation if there is no graph or this is a template.
-        if (!graph || absolutePath.ends_with("passgraphtemplate"))
+        if (!graph || graphName.empty())
         {
             CompileGraphFailed();
             return false;
         }
 
-        CompileGraphCompleted();
+        m_compileGraph = false;
+        m_compileAssets = !m_generatedFiles.empty();
+        m_compileAssetIndex = 0;
         return true;
     }
 
-    void PassGraphCompiler::CompileGraphStarted() const
+    void PassGraphCompiler::CompileGraphStarted()
     {
-        m_compileGraphQueued = false;
+        m_compileGraph = false;
+        m_compileAssets = false;
+        m_compileAssetIndex = 0;
         m_generatedFiles.clear();
-        AZ_TracePrintf_IfTrue("PassGraphCompiler", IsCompileLoggingEnabled(), "Compile graph started.\n");
-        PassGraphCompilerNotificationBus::Event(m_toolId, &PassGraphCompilerNotificationBus::Events::OnCompileGraphStarted, m_documentId);
+
+        const auto& statusMessage = AZStd::string::format("Compiling %s (Started)", GetGraphPath().c_str());
+        AZ_TracePrintf_IfTrue("PassGraphCompiler", IsCompileLoggingEnabled(), "%s.\n", statusMessage.c_str());
+
+        AtomToolsFramework::AtomToolsMainWindowRequestBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::SetStatusMessage, statusMessage);
+
+        PassGraphCompilerNotificationBus::Event(
+            m_toolId, &PassGraphCompilerNotificationBus::Events::OnCompileGraphStarted, m_documentId);
     }
 
-    void PassGraphCompiler::CompileGraphFailed() const
+    void PassGraphCompiler::CompileGraphFailed()
     {
-        m_compileGraphQueued = false;
+        m_compileGraph = false;
+        m_compileAssets = false;
+        m_compileAssetIndex = 0;
         m_generatedFiles.clear();
-        AZ_TracePrintf_IfTrue("PassGraphCompiler", IsCompileLoggingEnabled(), "Compile graph failed.\n");
-        PassGraphCompilerNotificationBus::Event(m_toolId, &PassGraphCompilerNotificationBus::Events::OnCompileGraphFailed, m_documentId);
+
+        const auto& statusMessage = AZStd::string::format("Compiling %s (Failed)", GetGraphPath().c_str());
+        AZ_TracePrintf_IfTrue("PassGraphCompiler", IsCompileLoggingEnabled(), "%s.\n", statusMessage.c_str());
+
+        AtomToolsFramework::AtomToolsMainWindowRequestBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::SetStatusError, statusMessage);
+
+        PassGraphCompilerNotificationBus::Event(
+            m_toolId, &PassGraphCompilerNotificationBus::Events::OnCompileGraphFailed, m_documentId);
     }
 
-    void PassGraphCompiler::CompileGraphCompleted() const
+    void PassGraphCompiler::CompileGraphCompleted()
     {
-        m_compileGraphQueued = false;
-        AZ_TracePrintf_IfTrue("PassGraphCompiler", IsCompileLoggingEnabled(), "Compile graph completed.\n");
-        PassGraphCompilerNotificationBus::Event(m_toolId, &PassGraphCompilerNotificationBus::Events::OnCompileGraphCompleted, m_documentId);
+        m_compileGraph = false;
+        m_compileAssets = false;
+        m_compileAssetIndex = 0;
+
+        const auto& statusMessage = AZStd::string::format("Compiling %s (Completed)", GetGraphPath().c_str());
+        AZ_TracePrintf_IfTrue("PassGraphCompiler", IsCompileLoggingEnabled(), "%s.\n", statusMessage.c_str());
+
+        AtomToolsFramework::AtomToolsMainWindowRequestBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::SetStatusMessage, statusMessage);
+
+        PassGraphCompilerNotificationBus::Event(
+            m_toolId, &PassGraphCompilerNotificationBus::Events::OnCompileGraphCompleted, m_documentId);
     }
 
-    void PassGraphCompiler::QueueCompileGraph() const
+    AZStd::string PassGraphCompiler::GetGraphPath() const
     {
-        GraphModel::GraphPtr graph;
-        AtomToolsFramework::GraphDocumentRequestBus::EventResult(
-            graph, m_documentId, &AtomToolsFramework::GraphDocumentRequestBus::Events::GetGraph);
+        AZStd::string absolutePath;
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
+            absolutePath, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
 
-        if (graph && !m_compileGraphQueued)
+        if (absolutePath.ends_with(".passgraph"))
         {
-            m_compileGraphQueued = true;
-            AZ::SystemTickBus::QueueFunction([id = m_documentId](){
-                PassGraphCompilerRequestBus::Event(id, &PassGraphCompilerRequestBus::Events::CompileGraph);
-            });
+            return absolutePath;
         }
+
+        return AZStd::string::format("%s/Assets/Passes/Generated/untitled.passgraph", AZ::Utils::GetProjectPath().c_str());
+    }
+
+    void PassGraphCompiler::QueueCompileGraph()
+    {
+        m_compileGraph = true;
     }
 
     bool PassGraphCompiler::IsCompileGraphQueued() const
     {
-        return m_compileGraphQueued;
+        return m_compileGraph;
     }
 } // namespace PassCanvas

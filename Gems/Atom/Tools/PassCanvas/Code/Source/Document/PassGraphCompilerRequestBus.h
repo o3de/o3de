@@ -24,11 +24,11 @@ namespace PassCanvas
         // Get a list of all of the generated files from the last time this graph was compiled.
         virtual const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const = 0;
 
-        // Evaluate the graph nodes, slots, values, and settings to generate and export passes.
-        virtual bool CompileGraph() const = 0;
+        // Evaluate the graph nodes, slots, values, and settings to generate and export shaders, pass types, and passes.
+        virtual bool CompileGraph() = 0;
 
         // Schedule the graph to be compiled on the next system tick.
-        virtual void QueueCompileGraph() const = 0;
+        virtual void QueueCompileGraph() = 0;
 
         // Returns true if graph compilation has already been scheduled.
         virtual bool IsCompileGraphQueued() const = 0;

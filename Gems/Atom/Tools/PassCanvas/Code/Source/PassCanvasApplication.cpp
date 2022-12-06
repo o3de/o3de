@@ -6,7 +6,11 @@
  *
  */
 
+#include <Atom/RHI.Reflect/SamplerState.h>
+#include <Atom/RHI/Factory.h>
+#include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+#include <AtomToolsFramework/Document/AtomToolsAnyDocument.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeUtil.h>
 #include <AtomToolsFramework/Graph/GraphDocument.h>
@@ -54,10 +58,12 @@ namespace PassCanvas
         QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
     }
 
     PassCanvasApplication::~PassCanvasApplication()
     {
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
         m_window.reset();
     }
@@ -96,19 +102,12 @@ namespace PassCanvas
         InitSharedGraphContext();
         InitGraphViewSettings();
         InitPassGraphDocumentType();
-
-        m_viewportSettingsSystem.reset(aznew AtomToolsFramework::EntityPreviewViewportSettingsSystem(m_toolId));
-
-        m_window.reset(aznew PassCanvasMainWindow(m_toolId, m_graphViewSettingsPtr));
-        m_window->show();
-
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
+        InitMainWindow();
+        InitDefaultDocument();
     }
 
     void PassCanvasApplication::Destroy()
     {
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
-
         // Save all of the graph view configuration settings to the settings registry.
         AtomToolsFramework::SetSettingsObject("/O3DE/Atom/PassCanvas/GraphViewSettings", m_graphViewSettingsPtr);
 
@@ -123,7 +122,7 @@ namespace PassCanvas
 
     AZStd::vector<AZStd::string> PassCanvasApplication::GetCriticalAssetFilters() const
     {
-        return AZStd::vector<AZStd::string>({ "passes/", "config/", "MaterialEditor/", "PassCanvas/" });
+        return AZStd::vector<AZStd::string>({ "passes/", "config/", "PassEditor/", "PassCanvas/" });
     }
 
     QWidget* PassCanvasApplication::GetAppMainWindow()
@@ -186,6 +185,28 @@ namespace PassCanvas
 
     void PassCanvasApplication::InitDynamicNodeEditData()
     {
+        // Registering custom property handlers for dynamic node configuration settings. The settings are just a map of string data.
+        // Recognized settings will need special controls for selecting files or editing large blocks of text without taking up much real
+        // estate in the property editor.
+        AZ::Edit::ElementData editData;
+        editData.m_elementId = AZ_CRC_CE("MultilineStringDialog");
+        m_dynamicNodeManager->RegisterEditDataForSetting("instructions", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("passInputs", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("classDefinitions", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting("functionDefinitions", editData);
+
+        editData = {};
+        editData.m_elementId = AZ_CRC_CE("StringFilePath");
+        AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Title"), AZStd::string("Template File"));
+        AtomToolsFramework::AddEditDataAttribute(
+            editData, AZ_CRC_CE("Extensions"), AZStd::vector<AZStd::string>{ "azsl", "azsli", "pass", "passtype", "shader" });
+        m_dynamicNodeManager->RegisterEditDataForSetting("templatePaths", editData);
+
+        editData = {};
+        editData.m_elementId = AZ_CRC_CE("StringFilePath");
+        AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Title"), AZStd::string("Include File"));
+        AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Extensions"), AZStd::vector<AZStd::string>{ "azsli" });
+        m_dynamicNodeManager->RegisterEditDataForSetting("includePaths", editData);
     }
 
     void PassCanvasApplication::InitSharedGraphContext()
@@ -218,7 +239,10 @@ namespace PassCanvas
         // Initialize the default group preset names and colors needed by the graph canvas view to create node groups.
         const AZStd::map<AZStd::string, AZ::Color> defaultGroupPresets = AtomToolsFramework::GetSettingsObject(
             "/O3DE/Atom/PassCanvas/GraphViewSettings/DefaultGroupPresets",
-            AZStd::map<AZStd::string, AZ::Color>{});
+            AZStd::map<AZStd::string, AZ::Color>{ { "Logic", AZ::Color(0.188f, 0.972f, 0.243f, 1.0f) },
+                                                  { "Function", AZ::Color(0.396f, 0.788f, 0.788f, 1.0f) },
+                                                  { "Output", AZ::Color(0.866f, 0.498f, 0.427f, 1.0f) },
+                                                  { "Input", AZ::Color(0.396f, 0.788f, 0.549f, 1.0f) } });
 
         // Connect the graph view settings to the required buses so that they can be accessed throughout the application.
         m_graphViewSettingsPtr->Initialize(m_toolId, defaultGroupPresets);
@@ -247,5 +271,30 @@ namespace PassCanvas
 
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
+    }
+
+    void PassCanvasApplication::InitMainWindow()
+    {
+        m_viewportSettingsSystem.reset(aznew AtomToolsFramework::EntityPreviewViewportSettingsSystem(m_toolId));
+
+        m_window.reset(aznew PassCanvasMainWindow(m_toolId, m_graphViewSettingsPtr));
+        m_window->show();
+    }
+
+    void PassCanvasApplication::InitDefaultDocument()
+    {
+        // Create an untitled, empty graph document as soon as the application starts so the user can begin creating immediately.
+        if (AtomToolsFramework::GetSettingsValue("/O3DE/Atom/PassCanvas/CreateDefaultDocumentOnStart", true))
+        {
+            AZ::Uuid documentId = AZ::Uuid::CreateNull();
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::EventResult(
+                documentId,
+                m_toolId,
+                &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::CreateDocumentFromTypeName,
+                "Pass Graph");
+
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::OnDocumentOpened, documentId);
+        }
     }
 } // namespace PassCanvas

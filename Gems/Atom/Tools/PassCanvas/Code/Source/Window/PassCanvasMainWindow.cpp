@@ -146,9 +146,48 @@ namespace PassCanvas
 
     void PassCanvasMainWindow::PopulateSettingsInspector(AtomToolsFramework::InspectorWidget* inspector) const
     {
+        m_passCanvasCompileSettingsGroup = AtomToolsFramework::CreateSettingsPropertyGroup(
+            "Pass Canvas Settings",
+            "Pass Canvas Settings",
+            { AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/Atom/PassCanvas/EnableFasterShaderBuilds",
+                  "Enable Faster Shader Builds",
+                  "By default, some platforms perform an exhaustive compilation of shaders for multiple RHI. For example, the default "
+                  "Windows shader builder settings automatically compiles shaders for DX12, Vulkan, and the Null renderer.\n\nThis option "
+                  "overrides those registry settings and makes compilation and preview times much faster by only compiling shaders for the "
+                  "currently active platform and RHI.\n\nThis also disables automatic shader variant generation.\n\nChanging this setting "
+                  "requires restarting Pass Canvas and the Asset Processor.\n\nChanging the active RHI with this setting enabled may "
+                  "require clearing the cache to regenerate shaders for the new RHI.\n\nThe settings files containing the overrides will be "
+                  "placed in the user/Registry folder for the current project.",
+                  false),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/Atom/PassCanvas/Viewport/ClearPassOnCompileGraphStarted",
+                  "Clear Viewport Pass When Compiling Starts",
+                  "Clear the viewport model's pass whenever compiling shaders and passes starts.",
+                  true),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/Atom/PassCanvas/Viewport/ClearPassOnCompileGraphFailed",
+                  "Clear Viewport Pass When Compiling Fails",
+                  "Clear the viewport model's pass whenever compiling shaders and passes fails.",
+                  true),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/Atom/PassCanvas/CreateDefaultDocumentOnStart",
+                  "Create Untitled Graph Document On Start",
+                  "Create a default, untitled graph document when Pass Canvas starts",
+                  true) });
+
         inspector->AddGroup(
-            "Pass Canvas Graph View Settings",
-            "Pass Canvas Graph View Settings",
+            m_passCanvasCompileSettingsGroup->m_name,
+            m_passCanvasCompileSettingsGroup->m_displayName,
+            m_passCanvasCompileSettingsGroup->m_description,
+            new AtomToolsFramework::InspectorPropertyGroupWidget(
+                m_passCanvasCompileSettingsGroup.get(),
+                m_passCanvasCompileSettingsGroup.get(),
+                azrtti_typeid<AtomToolsFramework::DynamicPropertyGroup>()));
+
+        inspector->AddGroup(
+            "Graph View Settings",
+            "Graph View Settings",
             "Configuration settings for the graph view interaction, animation, and other behavior.",
             new AtomToolsFramework::InspectorPropertyGroupWidget(
                 m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr->RTTI_Type()));
@@ -159,6 +198,12 @@ namespace PassCanvas
     AZStd::string PassCanvasMainWindow::GetHelpDialogText() const
     {
         return R"(<html><head/><body>
+            <p><h3><u>Shader Build Settings</u></h3></p>
+            <p>Shaders, passes, and other assets will be generated as changes are applied to the graph.
+            The viewport will update and display the generated passes and shaders once they have been
+            compiled by the Asset Processor. This can take a few seconds. Compilation times and preview
+            responsiveness can be improved by enabling the Minimal Shader Build settings in the Tools->Settings
+            menu. Changing the settings will require restarting Pass Canvas and the Asset Processor.</p>
             <p><h3><u>Camera Controls</u></h3></p>
             <p><b>LMB</b> - rotate camera</p>
             <p><b>RMB</b> or <b>Alt+LMB</b> - orbit camera around target</p>

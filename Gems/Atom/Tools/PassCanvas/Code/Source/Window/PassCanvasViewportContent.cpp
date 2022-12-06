@@ -26,6 +26,7 @@
 #include <AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/SkyBox/HDRiSkyboxBus.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsRequestBus.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <Document/PassGraphCompilerRequestBus.h>
@@ -135,11 +136,27 @@ namespace PassCanvas
         ApplyPass(documentId);
     }
 
+    void PassCanvasViewportContent::OnCompileGraphStarted([[maybe_unused]] const AZ::Uuid& documentId)
+    {
+        if (m_lastOpenedDocumentId == documentId)
+        {
+            ApplyPass({});
+        }
+    }
+
     void PassCanvasViewportContent::OnCompileGraphCompleted(const AZ::Uuid& documentId)
     {
         if (m_lastOpenedDocumentId == documentId)
         {
             ApplyPass(documentId);
+        }
+    }
+
+    void PassCanvasViewportContent::OnCompileGraphFailed([[maybe_unused]] const AZ::Uuid& documentId)
+    {
+        if (m_lastOpenedDocumentId == documentId)
+        {
+            ApplyPass({});
         }
     }
 

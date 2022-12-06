@@ -27,7 +27,7 @@
 
 namespace PassCanvas
 {
-    //! PassCanvasMainWindow creates and manages all of the graph canvas and viewport related docked windows for Pass Canvas.
+    //! PassCanvasMainWindow creates and manages all of the graph canvas and viewport related docked windows for Pass Canvas. 
     class PassCanvasMainWindow : public AtomToolsFramework::AtomToolsDocumentMainWindow
     {
         Q_OBJECT
@@ -36,7 +36,8 @@ namespace PassCanvas
 
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
-        PassCanvasMainWindow(const AZ::Crc32& toolId, AtomToolsFramework::GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent = 0);
+        PassCanvasMainWindow(
+            const AZ::Crc32& toolId, AtomToolsFramework::GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent = 0);
         ~PassCanvasMainWindow() = default;
 
     protected:
@@ -62,5 +63,6 @@ namespace PassCanvas
         GraphCanvas::NodePaletteDockWidget* m_nodePalette = {};
         GraphCanvas::StyleManager m_styleManager;
         QTranslator m_translator;
+        mutable AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup> m_passCanvasCompileSettingsGroup;
     };
 } // namespace PassCanvas

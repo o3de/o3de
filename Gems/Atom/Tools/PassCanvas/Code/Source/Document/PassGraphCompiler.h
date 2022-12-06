@@ -8,15 +8,19 @@
 
 #pragma once
 
-#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <Document/PassGraphCompilerRequestBus.h>
 #include <GraphModel/Model/Node.h>
 
 namespace PassCanvas
 {
-    //! PassGraphCompiler traverses and transforms a source graph into passes and other applicable assets.
-    class PassGraphCompiler : public PassGraphCompilerRequestBus::Handler
+    //! PassGraphCompiler traverses a pass graph, searching for and splicing shader code snippets, variable values and definitions,
+    //! and other information into complete, functional pass types, passes, and shaders. Currently, the resulting files will be
+    //! generated an output into the same folder location has the source graph.
+    class PassGraphCompiler
+        : public PassGraphCompilerRequestBus::Handler
+        , public AZ::SystemTickBus::Handler
     {
     public:
         AZ_RTTI(PassGraphCompiler, "{462AD6DF-874C-4017-9372-370B86A0A24B}");
@@ -31,18 +35,27 @@ namespace PassCanvas
 
         // PassGraphCompilerRequestBus::Handler overrides...
         const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const override;
-        bool CompileGraph() const override;
-        void QueueCompileGraph() const override;
+        bool CompileGraph() override;
+        void QueueCompileGraph() override;
         bool IsCompileGraphQueued() const override;
 
     private:
-        void CompileGraphStarted() const;
-        void CompileGraphFailed() const;
-        void CompileGraphCompleted() const;
+        void CompileGraphStarted();
+        void CompileGraphFailed();
+        void CompileGraphCompleted();
+
+        // Get the graph export path based on the Graph document path or default export path.
+        AZStd::string GetGraphPath() const;
+
+        // AZ::SystemTickBus::Handler overrides...
+        void OnSystemTick() override;
 
         const AZ::Crc32 m_toolId = {};
         const AZ::Uuid m_documentId = {};
-        mutable bool m_compileGraphQueued = {};
-        mutable AZStd::vector<AZStd::string> m_generatedFiles;
+        bool m_compileGraph = {};
+        bool m_compileAssets = {};
+        int m_compileAssetIndex = {};
+        AZStd::string m_lastAssetStatusMessage;
+        AZStd::vector<AZStd::string> m_generatedFiles;
     };
 } // namespace PassCanvas

@@ -58,6 +58,8 @@ namespace PassCanvas
         void InitSharedGraphContext();
         void InitGraphViewSettings();
         void InitPassGraphDocumentType();
+        void InitMainWindow();
+        void InitDefaultDocument();
 
         AZStd::unique_ptr<PassCanvasMainWindow> m_window;
         AZStd::unique_ptr<AtomToolsFramework::EntityPreviewViewportSettingsSystem> m_viewportSettingsSystem;
