@@ -562,12 +562,12 @@ namespace UnitTest
     };
 
     class AddComponentsTest
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
             auto projectPathKey =
@@ -610,7 +610,7 @@ namespace UnitTest
         {
             m_app.Stop();
 
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AzToolsFramework::ToolsApplication m_app;
@@ -1085,7 +1085,7 @@ namespace UnitTest
     //      Memory
     //      Serialize (and Edit) contexts
     class MockApplicationFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
         , public AZ::ComponentApplicationBus::Handler
     {
     public:
@@ -1122,13 +1122,13 @@ namespace UnitTest
         //////////////////////////////////////////////////////////////////////////
 
         MockApplicationFixture()
-            : AllocatorsFixture()
+            : LeakDetectionFixture()
         {
         }
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             ComponentApplicationBus::Handler::BusConnect();
             AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
@@ -1149,7 +1149,7 @@ namespace UnitTest
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
             ComponentApplicationBus::Handler::BusDisconnect();
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 

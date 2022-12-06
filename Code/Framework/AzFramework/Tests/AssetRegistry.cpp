@@ -11,7 +11,7 @@
 
 namespace UnitTest
 {
-    using AssetRegistry = AllocatorsFixture;
+    using AssetRegistry = LeakDetectionFixture;
 
     TEST_F(AssetRegistry, LegacyIdMappingTest)
     {

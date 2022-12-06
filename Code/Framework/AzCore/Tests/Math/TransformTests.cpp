@@ -388,18 +388,18 @@ namespace UnitTest
     INSTANTIATE_TEST_CASE_P(MATH_Transform, TransformGetEulerFixture, ::testing::ValuesIn(MathTestData::OrthogonalTransforms));
 
     class MATH_TransformApplicationFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         MATH_TransformApplicationFixture()
-            : AllocatorsFixture()
+            : LeakDetectionFixture()
         {
         }
 
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             AZ::ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
             m_app.reset(aznew AZ::ComponentApplication);
@@ -410,7 +410,7 @@ namespace UnitTest
         {
             m_app->Destroy();
             m_app.reset();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AZStd::unique_ptr<AZ::ComponentApplication> m_app;

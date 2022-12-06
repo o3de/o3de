@@ -55,7 +55,6 @@ namespace AZ
             private:
                 AZStd::vector<AZStd::string> GetMaterialPipelinePaths() const;
                 AZStd::map<AZ::IO::Path, MaterialPipelineSourceData> LoadMaterialPipelines() const;
-                bool ShouldEnableMaterialPipelineSystem() const;
             } m_pipelineStage;
 
             //! These job functions operate on .materialtype files in the "direct" format (see MaterialTypeSourceData), which includes a full list of shaders.

@@ -39,7 +39,7 @@ extern "C" AZ_DLL_EXPORT void CleanUpSceneDataGenericClassInfo();
 namespace Testing
 {
     struct SceneScriptTest
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
         static void TestExpectTrue(bool value)
         {
@@ -72,7 +72,7 @@ namespace Testing
 
         void SetUp() override
         {
-            UnitTest::AllocatorsFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
             AZ::NameDictionary::Create();
             m_data.reset(new DataMembers);
 
@@ -118,7 +118,7 @@ namespace Testing
             CleanUpSceneCoreGenericClassInfo();
 
             AZ::NameDictionary::Destroy();
-            UnitTest::AllocatorsFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         struct DataMembers

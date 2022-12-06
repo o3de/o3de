@@ -4951,7 +4951,7 @@ namespace AssetProcessor
             // it may not be necessary to actually alter the database here.
             m_remainingJobsForEachSourceFile.erase(foundTrackingInfo);
 
-            Q_EMIT FinishedAnalysis(m_remainingJobsForEachSourceFile.size());
+            Q_EMIT FinishedAnalysis(static_cast<int>(m_remainingJobsForEachSourceFile.size()));
 
             return;
         }
@@ -5024,7 +5024,7 @@ namespace AssetProcessor
 
         m_remainingJobsForEachSourceFile.erase(foundTrackingInfo);
 
-        Q_EMIT FinishedAnalysis(m_remainingJobsForEachSourceFile.size());
+        Q_EMIT FinishedAnalysis(static_cast<int>(m_remainingJobsForEachSourceFile.size()));
     }
 
     void AssetProcessorManager::SetEnableModtimeSkippingFeature(bool enable)
@@ -5148,7 +5148,30 @@ namespace AssetProcessor
                 // If the dependency is an asset, this will resolve to a valid UUID
                 // If the dependency is not an asset, this will resolve to an invalid UUID which will simply return no results for our
                 // search
-                searchUuid = AssetUtilities::CreateSafeSourceUUIDFromName(toSearch.GetPath().c_str());
+
+                if (AZ::IO::PathView(toSearch.GetPath()).IsAbsolute())
+                {
+                    QString relativePath;
+                    QString scanFolderPath;
+
+                    if(!m_platformConfig->ConvertToRelativePath(toSearch.GetPath().c_str(), relativePath, scanFolderPath))
+                    {
+                        AZ_TracePrintf(
+                            AssetProcessor::DebugChannel,
+                            "QueryAbsolutePathDependenciesRecursive: Failed to convert path %s to relative path.  Source dependency chain "
+                            "may be broken.\n",
+                            toSearch.GetPath().c_str());
+                        searchUuid = AZ::Uuid::CreateNull();
+                    }
+                    else
+                    {
+                        searchUuid = AssetUtilities::CreateSafeSourceUUIDFromName(relativePath.toUtf8().constData());
+                    }
+                }
+                else
+                {
+                    searchUuid = AssetUtilities::CreateSafeSourceUUIDFromName(toSearch.GetPath().c_str());
+                }
             }
             else
             {

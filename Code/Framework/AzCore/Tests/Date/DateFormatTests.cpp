@@ -15,7 +15,7 @@ namespace UnitTest
     // Fixtures
 
     // Fixture for non-typed tests
-    class DateFormatTest : public ScopedAllocatorSetupFixture
+    class DateFormatTest : public LeakDetectionFixture
     {
     };
 

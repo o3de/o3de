@@ -20,7 +20,7 @@
 namespace ShadowSetupNode
 {
     bool s_shadowSetupParamsInit = false;
-    StaticInstance<std::vector<CAnimNode::SParamInfo>> s_shadowSetupParams;
+    AZStd::vector<CAnimNode::SParamInfo> s_shadowSetupParams;
 
     void AddSupportedParam(const char* sName, AnimParamType paramId, AnimValueType valueType)
     {

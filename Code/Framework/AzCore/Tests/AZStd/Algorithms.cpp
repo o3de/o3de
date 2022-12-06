@@ -24,7 +24,7 @@ namespace UnitTest
 {
 #if !AZ_UNIT_TEST_SKIP_STD_ALGORITHMS_TESTS
     class Algorithms
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -32,7 +32,7 @@ namespace UnitTest
      *
      */
     class AlgorithmsFindTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         static bool SearchCompare(int i1, int i2) { return (i1 == i2); }

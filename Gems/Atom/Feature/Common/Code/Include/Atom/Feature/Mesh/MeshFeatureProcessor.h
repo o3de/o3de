@@ -80,7 +80,8 @@ namespace AZ
             };
 
             void DeInit();
-            void Init(Data::Instance<RPI::Model> model);
+            void QueueInit(const Data::Instance<RPI::Model>& model);
+            void Init();
             void BuildDrawPacketList(size_t modelLodIndex);
             void SetRayTracingData();
             void RemoveRayTracingData();
@@ -96,6 +97,8 @@ namespace AZ
             void UpdateObjectSrg();
             bool MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const;
             void SetVisible(bool isVisible);
+            void UpdateMaterialChangeIds();
+            bool CheckForMaterialChanges() const;
 
             // MaterialAssignmentNotificationBus overrides
             void OnRebuildMaterialInstance() override;
@@ -104,6 +107,9 @@ namespace AZ
 
             RPI::Cullable m_cullable;
             MaterialAssignmentMap m_materialAssignments;
+
+            typedef AZStd::unordered_map<Data::Instance<RPI::Material>, RPI::Material::ChangeId> MaterialChangeIdMap;
+            MaterialChangeIdMap m_materialChangeIds;
 
             MeshHandleDescriptor m_descriptor;
             Data::Instance<RPI::Model> m_model;
@@ -124,6 +130,7 @@ namespace AZ
 
             bool m_cullBoundsNeedsUpdate = false;
             bool m_cullableNeedsRebuild = false;
+            bool m_needsInit = false;
             bool m_objectSrgNeedsUpdate = true;
             bool m_excludeFromReflectionCubeMaps = false;
             bool m_visible = true;
