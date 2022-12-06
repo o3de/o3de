@@ -69,8 +69,7 @@ static const size_t ViewportRatiosCount = sizeof(ViewportRatios) / sizeof(Viewpo
 static const std::pair<int, int> ViewportResolutions[] =
     { { 1280, 720 }, { 1920, 1080 }, { 2560, 1440 }, { 2048, 858 }, { 1998, 1080 }, { 3480, 2160 } };
 static const size_t ViewportResolutionsCount = sizeof(ViewportResolutions) / sizeof(ViewportResolutions[0]);
-
-
+static constexpr int SortKeySpacing = 100;
 
 //////////////////////////////////////////////////////////////////////////
 // ViewportTitleExpanderWatcher
@@ -485,7 +484,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            [&, w = width, h = height]
+            [this, w = width, h = height]
             {
                 SetAspectRatio(w, h);
             }
@@ -550,7 +549,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
             EditorMainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            [&]
+            [this]
             {
                 const QRect rectViewport = GetViewport()->rect();
                 CCustomResolutionDlg resDlg(rectViewport.width(), rectViewport.height(), parentWidget());
@@ -598,13 +597,16 @@ void CLayoutViewPane::OnMenuBindingHook()
                 int height = ViewportRatios[i].second;
                 AZStd::string actionIdentifier = AZStd::string::format("o3de.action.viewport.size.ratio[%i:%i]", width, height);
 
-                m_menuManagerInterface->AddActionToMenu(ViewportSizeRatioMenuIdentifier, actionIdentifier, 100 * (aznumeric_cast<int>(i) + 1));
+                m_menuManagerInterface->AddActionToMenu(
+                    ViewportSizeRatioMenuIdentifier, actionIdentifier, SortKeySpacing * (aznumeric_cast<int>(i) + 1));
             }
             
             m_menuManagerInterface->AddSeparatorToMenu(
-                ViewportSizeRatioMenuIdentifier, 100 * (aznumeric_cast<int>(ViewportRatiosCount) + 1));
+                ViewportSizeRatioMenuIdentifier, SortKeySpacing * (aznumeric_cast<int>(ViewportRatiosCount) + 1));
             m_menuManagerInterface->AddActionToMenu(
-                ViewportSizeRatioMenuIdentifier, "o3de.action.viewport.size.ratio.custom", 100 * (aznumeric_cast<int>(ViewportRatiosCount) + 2));
+                ViewportSizeRatioMenuIdentifier,
+                "o3de.action.viewport.size.ratio.custom",
+                SortKeySpacing * (aznumeric_cast<int>(ViewportRatiosCount) + 2));
         }
         m_menuManagerInterface->AddSubMenuToMenu(ViewportSizeMenuIdentifier, ViewportSizeResolutionMenuIdentifier, 200);
         {
@@ -614,13 +616,16 @@ void CLayoutViewPane::OnMenuBindingHook()
                 int height = ViewportResolutions[i].second;
                 AZStd::string actionIdentifier = AZStd::string::format("o3de.action.viewport.size.resolution[%i:%i]", width, height);
 
-                m_menuManagerInterface->AddActionToMenu(ViewportSizeResolutionMenuIdentifier, actionIdentifier, 100 * (aznumeric_cast<int>(i) + 1));
+                m_menuManagerInterface->AddActionToMenu(
+                    ViewportSizeResolutionMenuIdentifier, actionIdentifier, SortKeySpacing * (aznumeric_cast<int>(i) + 1));
             }
 
             m_menuManagerInterface->AddSeparatorToMenu(
-                ViewportSizeResolutionMenuIdentifier, 100 * (aznumeric_cast<int>(ViewportResolutionsCount) + 1));
+                ViewportSizeResolutionMenuIdentifier, SortKeySpacing * (aznumeric_cast<int>(ViewportResolutionsCount) + 1));
             m_menuManagerInterface->AddActionToMenu(
-                ViewportSizeResolutionMenuIdentifier, "o3de.action.viewport.size.resolution.custom", 100 * (aznumeric_cast<int>(ViewportResolutionsCount) + 2));
+                ViewportSizeResolutionMenuIdentifier,
+                "o3de.action.viewport.size.resolution.custom",
+                SortKeySpacing * (aznumeric_cast<int>(ViewportResolutionsCount) + 2));
         }
     }
 

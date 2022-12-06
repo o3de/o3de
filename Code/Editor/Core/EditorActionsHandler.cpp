@@ -722,7 +722,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             {
                 SandboxEditor::SetShowingGrid(!SandboxEditor::ShowingGrid());
             },
-            []() -> bool
+            []()
             {
                 return SandboxEditor::ShowingGrid();
             }
