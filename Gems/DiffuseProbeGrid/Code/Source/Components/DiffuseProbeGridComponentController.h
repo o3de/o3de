@@ -87,6 +87,8 @@ namespace AZ
             // returns the Aabb for this grid
             AZ::Aabb GetAabb() const;
 
+            void RegisterBoxChangedByGridHandler(AZ::Event<bool>::Handler& handler);
+
         private:
 
             AZ_DISABLE_COPY(DiffuseProbeGridComponentController);
@@ -136,6 +138,9 @@ namespace AZ
             AZ::EntityId m_entityId;
             DiffuseProbeGridComponentConfig m_configuration;
             bool m_inShapeChangeHandler = false;
+
+            // event for the diffuse probe grid modifying the underlying box dimensions
+            AZ::Event<bool> m_boxChangedByGridEvent;
         };
     } // namespace Render
 } // namespace AZ
