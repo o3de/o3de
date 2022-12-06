@@ -254,8 +254,9 @@ namespace AZ
             if (memoryViews.size() == 0)
             {
                 m_mipTailMemoryBindInfo.bindCount = 0;
-                m_mipTailMemoryBindInfo.image = nullptr;
+                m_mipTailMemoryBindInfo.image = VK_NULL_HANDLE;
                 m_mipTailMemoryBindInfo.pBinds = nullptr;
+
                 return;
             }
 
@@ -341,7 +342,7 @@ namespace AZ
             bindSparseInfo.pBufferBinds = nullptr;
 
             // add mip tail binds if start mip level is part of mip tail
-            if (startMipLevel >= m_tailStartMip)
+            if (startMipLevel >= m_tailStartMip && m_mipTailBlockCount > 0)
             {
                 bindSparseInfo.imageOpaqueBindCount = 1;
                 bindSparseInfo.pImageOpaqueBinds = &m_mipTailMemoryBindInfo;
@@ -633,13 +634,13 @@ namespace AZ
                 // The mip we need to start to allocate memory from
                 const uint16_t startMip = m_highestMipLevel - 1;
                 const uint16_t endMip = AZStd::min(residentMipLevel, m_sparseImageInfo->m_tailStartMip);
-                const size_t blockSize = m_sparseImageInfo->m_blockSizeInBytes;
 
                 // allocated memory views
                 AZStd::vector<SparseImageInfo::MultiHeapTiles*> allocatedHeapTiles;
 
                 // mip tail
-                if (startMip >= m_sparseImageInfo->m_tailStartMip)
+                // Note: with certain use cases (usually image only has one mip) the m_sparseImageInfo->m_mipTailBlockCount could be zero
+                if (startMip >= m_sparseImageInfo->m_tailStartMip && m_sparseImageInfo->m_mipTailBlockCount)
                 {
                     uint32_t blockCount = m_sparseImageInfo->m_mipTailBlockCount;
                     if (!m_sparseImageInfo->m_useSingleMipTail)
@@ -797,6 +798,7 @@ namespace AZ
                 if (memoryRequirements.alignment != SparseImageInfo::StandardBlockSize)
                 {
                     device.GetContext().DestroyImage(device.GetNativeDevice(), m_vkImage, nullptr);
+                    m_vkImage = VK_NULL_HANDLE;
                     return RHI::ResultCode::Fail;
                 }
 
@@ -1058,3 +1060,4 @@ namespace AZ
 
     }
 }
+

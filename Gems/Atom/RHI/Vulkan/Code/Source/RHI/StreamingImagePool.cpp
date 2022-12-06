@@ -38,6 +38,7 @@ namespace AZ
         RHI::ResultCode StreamingImagePool::AllocateMemoryBlocks(AZStd::vector<HeapTiles>& outHeapTiles, uint32_t blockCount)
         {
             AZ_Assert(outHeapTiles.empty(), "outHeapTiles should be empty");
+            AZ_Assert(blockCount, "Try to allocate 0 block");
 
              // Check if heap memory is enough for the tiles.
             RHI::HeapMemoryLevel heapMemoryLevel = RHI::HeapMemoryLevel::Device;
