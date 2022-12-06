@@ -236,10 +236,6 @@ void AzAssetBrowserWindow::resizeEvent(QResizeEvent* resizeEvent)
 void AzAssetBrowserWindow::OnInitToolsMenuButton()
 {
     CreateToolsMenu();
-    m_ui->m_toolsMenuButton->setMenu(m_toolsMenu);
-    m_ui->m_toolsMenuButton->setPopupMode(QToolButton::InstantPopup);
-
-    connect(m_toolsMenu, &QMenu::aboutToShow, this, &AzAssetBrowserWindow::UpdateDisplayInfo);
 }
 
 void AzAssetBrowserWindow::CreateToolsMenu()
@@ -250,35 +246,45 @@ void AzAssetBrowserWindow::CreateToolsMenu()
     }
 
     m_toolsMenu = new QMenu("Asset Browser Mode Selection", this);
-
-    m_listViewMode = new QAction(tr("List View"), this);
-    m_listViewMode->setCheckable(true);
-    connect(m_listViewMode, &QAction::triggered, this, &AzAssetBrowserWindow::SetListViewMode);
-    m_toolsMenu->addAction(m_listViewMode);
-
-    m_treeViewMode = new QAction(tr("Tree View"), this);
-    m_treeViewMode->setCheckable(true);
-    connect(m_treeViewMode, &QAction::triggered, this, &AzAssetBrowserWindow::SetTreeViewMode);
-    m_toolsMenu->addAction(m_treeViewMode);
-
-    m_toolsMenu->addSeparator();
-    auto* collapseAllAction = new QAction(tr("Collapse All"), this);
-    connect(collapseAllAction, &QAction::triggered, this, [this] { m_ui->m_assetBrowserTreeViewWidget->collapseAll(); });
-    m_toolsMenu->addAction(collapseAllAction);
+    m_ui->m_toolsMenuButton->setMenu(m_toolsMenu);
+    m_ui->m_toolsMenuButton->setPopupMode(QToolButton::InstantPopup);
 
     if (ed_useWIPAssetBrowserDesign)
     {
+        auto* collapseAllAction = new QAction(tr("Collapse All"), this);
+        connect(collapseAllAction, &QAction::triggered, this, [this] { m_ui->m_assetBrowserTreeViewWidget->collapseAll(); });
+        m_toolsMenu->addAction(collapseAllAction);
+
         m_toolsMenu->addSeparator();
         auto* projectSourceAssets = new QAction(tr("Filter Project and Source Assets"), this);
         projectSourceAssets->setCheckable(true);
         projectSourceAssets->setChecked(true);
         connect(projectSourceAssets, &QAction::triggered, this, [this] { m_ui->m_searchWidget->ToggleProjectSourceAssetFilter(); });
+        m_toolsMenu->addAction(projectSourceAssets);
+
         m_ui->m_searchWidget->GetFilter()->AddFilter(m_ui->m_searchWidget->GetProjectSourceFilter());
         m_ui->m_searchWidget->AddFolderFilter();
-        m_toolsMenu->addAction(projectSourceAssets);
-    }
 
-    UpdateDisplayInfo();
+        m_assetBrowserDisplayState = AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::TreeViewMode;
+        m_ui->m_assetBrowserTableViewWidget->setVisible(false);
+        m_ui->m_assetBrowserTreeViewWidget->setVisible(true);
+    }
+    else
+    {
+        m_listViewMode = new QAction(tr("List View"), this);
+        m_listViewMode->setCheckable(true);
+        connect(m_listViewMode, &QAction::triggered, this, &AzAssetBrowserWindow::SetListViewMode);
+        m_toolsMenu->addAction(m_listViewMode);
+
+        m_treeViewMode = new QAction(tr("Tree View"), this);
+        m_treeViewMode->setCheckable(true);
+        connect(m_treeViewMode, &QAction::triggered, this, &AzAssetBrowserWindow::SetTreeViewMode);
+        m_toolsMenu->addAction(m_treeViewMode);
+
+        connect(m_toolsMenu, &QMenu::aboutToShow, this, &AzAssetBrowserWindow::UpdateDisplayInfo);
+
+        UpdateDisplayInfo();
+    }
 }
 
 void AzAssetBrowserWindow::UpdateDisplayInfo()

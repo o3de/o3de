@@ -324,4 +324,32 @@ TEST_F(FileWatcherUnitTest, WatchFileRelocation_RenameTestAsset_FileChangeFound)
         QObject::disconnect(connectionModified);
     }
 }
+
+TEST_F(FileWatcherUnitTest, WatchFolder_ValidFoldersWatched)
+{
+    // reset watched folders
+    m_fileWatcher->StopWatching();
+    m_fileWatcher->ClearFolderWatches();
+
+    QDir tempDirPath(m_assetRootPath);
+
+    // when a folder named "dir" is added
+    auto folder1 = tempDirPath.absoluteFilePath("dir1");
+    m_fileWatcher->AddFolderWatch(folder1);
+    // the folder is watched
+    EXPECT_TRUE(m_fileWatcher->HasWatchFolder(folder1));
+
+    // when a folder with a similar name is added
+    auto folder2 = tempDirPath.absoluteFilePath("dir11");
+    m_fileWatcher->AddFolderWatch(folder2);
+    // the folder is watched
+    EXPECT_TRUE(m_fileWatcher->HasWatchFolder(folder2));
+
+    // when a folder that is a subdirectory of an existing added folder
+    auto folder3 = tempDirPath.absoluteFilePath("dir1/subdir");
+    m_fileWatcher->AddFolderWatch(folder3);
+    // the folder is NOT added becuase the parent is already watched
+    EXPECT_FALSE(m_fileWatcher->HasWatchFolder(folder3));
+}
+
 #endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS

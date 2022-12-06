@@ -40,7 +40,9 @@ namespace MaterialCanvas
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
 
         // MaterialGraphCompilerNotificationBus::Handler overrides...
+        void OnCompileGraphStarted(const AZ::Uuid& documentId) override;
         void OnCompileGraphCompleted(const AZ::Uuid& documentId) override;
+        void OnCompileGraphFailed(const AZ::Uuid& documentId) override;
 
         // EntityPreviewViewportSettingsNotificationBus::Handler overrides...
         void OnViewportSettingsChanged() override;

@@ -8,6 +8,7 @@
 
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Graph/GraphDocument.h>
+#include <AtomToolsFramework/Graph/GraphUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -275,6 +276,11 @@ namespace AtomToolsFramework
 
     AZStd::string GraphDocument::GetGraphName() const
     {
+        if (m_absolutePath.empty())
+        {
+            return "untitled";
+        }
+
         // Sanitize the document name to remove any illegal characters that could not be used as symbols in generated code
         AZStd::string documentName;
         AZ::StringFunc::Path::GetFileName(m_absolutePath.c_str(), documentName);
@@ -391,29 +397,6 @@ namespace AtomToolsFramework
         GraphCanvas::GraphModelRequestBus::Event(m_graphId, &GraphCanvas::GraphModelRequests::RequestPopPreventUndoStateUpdate);
     }
 
-    template<typename NodeContainer>
-    void GraphDocument::SortNodesInExecutionOrder(NodeContainer& nodes) const
-    {
-        using NodeValueType = typename NodeContainer::value_type;
-        using NodeValueTypeRef = typename NodeContainer::const_reference;
-
-        // Pre-calculate and cache sorting scores for all nodes to avoid reprocessing during the sort
-        AZStd::map<NodeValueType, AZStd::tuple<bool, bool, uint32_t>> nodeScoreTable;
-        for (NodeValueTypeRef node : nodes)
-        {
-            nodeScoreTable[node] = AZStd::make_tuple(node->HasInputSlots(), !node->HasOutputSlots(), node->GetMaxInputDepth());
-        }
-
-        AZStd::stable_sort(nodes.begin(), nodes.end(), [&](NodeValueTypeRef nodeA, NodeValueTypeRef nodeB) {
-            return nodeScoreTable[nodeA] < nodeScoreTable[nodeB];
-        });
-    }
-
-    AZStd::string GraphDocument::GetSymbolNameFromNode(GraphModel::ConstNodePtr node) const
-    {
-        return GetSymbolNameFromText(AZStd::string::format("node%u_%s", node->GetId(), node->GetTitle()));
-    }
-
     void GraphDocument::BuildEditablePropertyGroups()
     {
         // Sort nodes according to their connection so they appear in a consistent order in the inspector
@@ -431,8 +414,8 @@ namespace AtomToolsFramework
             // Create a new property group and set up the header to match the node
             AZStd::shared_ptr<DynamicPropertyGroup> group;
             group.reset(aznew DynamicPropertyGroup);
-            group->m_name = GetSymbolNameFromNode(currentNode);
             group->m_displayName = GetDisplayNameFromText(AZStd::string::format("Node%u %s", currentNode->GetId(), currentNode->GetTitle()));
+            group->m_name = GetSymbolNameFromText(group->m_displayName);
             group->m_description = currentNode->GetSubTitle();
             group->m_properties.reserve(currentNode->GetSlotDefinitions().size());
 
