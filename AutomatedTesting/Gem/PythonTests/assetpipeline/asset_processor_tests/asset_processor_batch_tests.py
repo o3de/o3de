@@ -313,13 +313,8 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id('C1612448')
-    @pytest.mark.SUITE_sandbox
     def test_TwoAssetsWithSameProductName_ShouldProcessAfterRename(self, asset_processor, ap_setup_fixture):
         """
-        Sandboxed: Race condition on AP batch shutdown can cause the failure to not yet be registered even though it's
-        recognized as failing in the logs.  There appears to be a window where the AutoFailJob doesn't complete
-        before the shutdown completes and the failure doesn't end up counting
-
         Tests processing of two assets with the same product name, then verifies that AP will successfully process after
         renaming one of the assets' outputs.
 
