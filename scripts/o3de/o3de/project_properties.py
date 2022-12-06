@@ -187,22 +187,22 @@ def add_parser_args(parser):
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('-at', '--add-tags', type=str, nargs='*', required=False,
                        help='Adds tag(s) to user_tags property. Space delimited list (ex. -at A B C)')
-    group.add_argument('-dt', '--delete-tags', type=str, nargs ='*', required=False,
+    group.add_argument('-dt', '--delete-tags', type=str, nargs='*', required=False,
                        help='Removes tag(s) from the user_tags property. Space delimited list (ex. -dt A B C')
-    group.add_argument('-rt', '--replace-tags', type=str, nargs ='*', required=False,
+    group.add_argument('-rt', '--replace-tags', type=str, nargs='*', required=False,
                        help='Replace entirety of user_tags property with space delimited list of values')
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('-agn', '--add-gem-names', type=str, nargs='*', required=False,
-                       help='Adds gem name(s) to gem_names field. Space delimited list (ex. -at A B C)')
+                       help='Adds gem name(s) to gem_names field. Space delimited list (ex. -agn A B C)')
     group.add_argument('-dgn', '--delete-gem-names', type=str, nargs='*', required=False,
-                       help='Removes gem name(s) from the gem_names field. Space delimited list (ex. -dt A B C')
+                       help='Removes gem name(s) from the gem_names field. Space delimited list (ex. -dgn A B C')
     group.add_argument('-rgn', '--replace-gem-names', type=str, nargs='*', required=False,
                        help='Replace entirety of gem_names field with space delimited list of values')
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('-aev', '--add-compatible-engines', type=str, nargs='*', required=False,
-                       help='Add engine version(s) this project is compatible with. Space delimited list (ex. o3de>=1.2.3 o3de-sdk~=2.3).')
+                       help='Add engine version(s) this project is compatible with. Space delimited list (ex. -aev o3de>=1.2.3 o3de-sdk~=2.3).')
     group.add_argument('-dev', '--remove-compatible-engines', type=str, nargs='*', required=False,
-                       help='Removes engine version(s) from the compatible_engines property. Space delimited list (ex. o3de>=1.2.3 o3de-sdk~=2.3).')
+                       help='Removes engine version(s) from the compatible_engines property. Space delimited list (ex. -dev o3de>=1.2.3 o3de-sdk~=2.3).')
     group.add_argument('-rev', '--replace-compatible-engines', type=str, nargs='*', required=False,
                        help='Replace entirety of compatible_engines field with space delimited list of values.')
     parser.set_defaults(func=_edit_project_props)
