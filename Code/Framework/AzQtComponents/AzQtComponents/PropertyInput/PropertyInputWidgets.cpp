@@ -8,6 +8,8 @@
 
 #include <AzQtComponents/PropertyInput/PropertyInputWidgets.h>
 
+#include <QEvent>
+#include <QKeyEvent>
 #include <QHBoxLayout>
 
 constexpr int FieldMargins = 17;
@@ -48,6 +50,23 @@ namespace AzQtComponents
 
     PropertyInputDoubleWidget::~PropertyInputDoubleWidget()
     {
+    }
+
+    bool PropertyInputDoubleWidget::event(QEvent* event)
+    {
+        if (event->type() == QEvent::KeyPress)
+        {
+            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+
+            if (keyEvent->key() == Qt::Key_Enter || keyEvent->key() == Qt::Key_Return)
+            {
+                // Prevent Enter events from being propagated up.
+                event->accept();
+                return true;
+            }
+        }
+
+        return false;
     }
 
 } // namespace AzQtComponents

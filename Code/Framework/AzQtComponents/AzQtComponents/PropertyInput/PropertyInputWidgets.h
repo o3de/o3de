@@ -28,6 +28,8 @@ namespace AzQtComponents
     protected:
         virtual void OnSpinBoxValueChanged(double newValue) = 0;
 
+        bool event(QEvent* event) override;
+
         QLabel* m_label = nullptr;
         AzQtComponents::DoubleSpinBox* m_spinBox = nullptr;
     };
