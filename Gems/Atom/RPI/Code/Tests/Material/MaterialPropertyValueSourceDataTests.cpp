@@ -265,7 +265,6 @@ namespace UnitTest
                     "Dummy.materialtype",
                     m_materialTypeCreator.GetMaterialPropertiesLayout(),
                     m_materialTypeCreator.GetMaterialShaderResourceGroupLayout(),
-                    m_materialTypeCreator.GetShaderCollection(),
                     &nameContext
                 )
             );

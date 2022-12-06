@@ -65,6 +65,8 @@ namespace MaterialCanvas
         void InitMaterialGraphDocumentType();
         void InitMaterialGraphNodeDocumentType();
         void InitShaderSourceDataDocumentType();
+        void InitMainWindow();
+        void InitDefaultDocument();
         void ApplyShaderBuildSettings();
 
         AZStd::unique_ptr<MaterialCanvasMainWindow> m_window;

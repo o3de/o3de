@@ -9,15 +9,15 @@
         "titlePaletteName": "MaterialOutputNodeTitlePalette",
         "settings": {
             "templatePaths": [
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName_Common.azsli",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName_DepthPass.azsl",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName_DepthPass.shader",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName_ForwardPass.azsl",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName_ForwardPass.shader",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName_ShadowPass.azsl",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName_ShadowPass.shader",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName.materialtype",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName.material"
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName_Common.azsli",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName_DepthPass.azsl",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName_DepthPass.shader",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName_ForwardPass.azsl",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName_ForwardPass.shader",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName_ShadowPass.azsl",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName_ShadowPass.shader",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName.materialtype",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/ExperimentalPBR/MaterialGraphName.material"
             ]
         },
         "propertySlots": [

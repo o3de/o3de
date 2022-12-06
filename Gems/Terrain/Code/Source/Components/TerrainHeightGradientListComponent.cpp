@@ -19,8 +19,7 @@
 
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
-
-AZ_DECLARE_BUDGET(Terrain);
+#include <TerrainProfiler.h>
 
 namespace Terrain
 {
@@ -206,7 +205,7 @@ namespace Terrain
     void TerrainHeightGradientListComponent::GetHeights(
         AZStd::span<AZ::Vector3> inOutPositionList, AZStd::span<bool> terrainExistsList)
     {
-        AZ_PROFILE_FUNCTION(Terrain);
+        TERRAIN_PROFILE_FUNCTION_VERBOSE
 
         // Make sure we don't run queries simultaneously with changing any of the cached data.
         AZStd::shared_lock lock(m_queryMutex);

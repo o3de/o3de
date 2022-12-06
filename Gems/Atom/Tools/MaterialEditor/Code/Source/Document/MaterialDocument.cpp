@@ -306,6 +306,11 @@ namespace MaterialEditor
         return result;
     }
 
+    bool MaterialDocument::CanSaveAsChild() const
+    {
+        return true;
+    }
+
     bool MaterialDocument::BeginEdit()
     {
         // Save the current properties as a momento for undo before any changes are applied
