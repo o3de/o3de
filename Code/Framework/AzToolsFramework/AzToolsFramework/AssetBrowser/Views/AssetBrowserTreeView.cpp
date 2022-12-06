@@ -745,9 +745,7 @@ namespace AzToolsFramework
             {
                 using namespace AZ::IO;
                 Path oldPath = entry->GetFullPath();
-                AZStd::string newPath;
-                AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(
-                    oldPath.ParentPath().Native(), oldPath.Filename().Native(), newPath, "-copy");
+                AZ::IO::FixedMaxPath newPath = AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix( AZ::IO::PathView(oldPath.Native()), "-copy");
                 QFile::copy(oldPath.c_str(), newPath.c_str());
             }
         }

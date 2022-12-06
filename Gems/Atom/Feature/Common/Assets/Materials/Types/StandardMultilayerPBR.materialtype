@@ -2714,10 +2714,6 @@
                 "textureProperty": "layer1_baseColor.textureMap",
                 "useTextureProperty": "layer1_baseColor.useTexture",
                 "dependentProperties": ["layer1_baseColor.textureMapUv", "layer1_baseColor.textureBlendMode"],
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
                 "shaderOption": "o_layer1_o_baseColor_useTexture"
             }
         },
@@ -2745,10 +2741,6 @@
                 "textureProperty": "layer1_specularF0.textureMap",
                 "useTextureProperty": "layer1_specularF0.useTexture",
                 "dependentProperties": ["layer1_specularF0.textureMapUv"],
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
                 "shaderOption": "o_layer1_o_specularF0_useTexture"
             }
         },
@@ -2758,10 +2750,6 @@
                 "textureProperty": "layer1_normal.textureMap",
                 "useTextureProperty": "layer1_normal.useTexture",
                 "dependentProperties": ["layer1_normal.textureMapUv", "layer1_normal.factor", "layer1_normal.flipX", "layer1_normal.flipY"],
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
                 "shaderOption": "o_layer1_o_normal_useTexture"    
             }
         },
@@ -2847,10 +2835,6 @@
                 "textureProperty": "layer2_baseColor.textureMap",
                 "useTextureProperty": "layer2_baseColor.useTexture",
                 "dependentProperties": ["layer2_baseColor.textureMapUv", "layer2_baseColor.textureBlendMode"],
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
                 "shaderOption": "o_layer2_o_baseColor_useTexture"
             }
         },
@@ -2878,10 +2862,6 @@
                 "textureProperty": "layer2_specularF0.textureMap",
                 "useTextureProperty": "layer2_specularF0.useTexture",
                 "dependentProperties": ["layer2_specularF0.textureMapUv"],
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
                 "shaderOption": "o_layer2_o_specularF0_useTexture"
             }
         },
@@ -2891,10 +2871,6 @@
                 "textureProperty": "layer2_normal.textureMap",
                 "useTextureProperty": "layer2_normal.useTexture",
                 "dependentProperties": ["layer2_normal.textureMapUv", "layer2_normal.factor", "layer2_normal.flipX", "layer2_normal.flipY"],
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
                 "shaderOption": "o_layer2_o_normal_useTexture"    
             }
         },
@@ -2980,10 +2956,6 @@
                 "textureProperty": "layer3_baseColor.textureMap",
                 "useTextureProperty": "layer3_baseColor.useTexture",
                 "dependentProperties": [ "layer3_baseColor.textureMapUv", "layer3_baseColor.textureBlendMode" ],
-                "shaderTags": [
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
                 "shaderOption": "o_layer3_o_baseColor_useTexture"
             }
         },
@@ -3011,10 +2983,6 @@
                 "textureProperty": "layer3_specularF0.textureMap",
                 "useTextureProperty": "layer3_specularF0.useTexture",
                 "dependentProperties": ["layer3_specularF0.textureMapUv"],
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
                 "shaderOption": "o_layer3_o_specularF0_useTexture"
             }
         },
@@ -3024,10 +2992,6 @@
                 "textureProperty": "layer3_normal.textureMap",
                 "useTextureProperty": "layer3_normal.useTexture",
                 "dependentProperties": ["layer3_normal.textureMapUv", "layer3_normal.factor", "layer3_normal.flipX", "layer3_normal.flipY"],
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
                 "shaderOption": "o_layer3_o_normal_useTexture"    
             }
         },

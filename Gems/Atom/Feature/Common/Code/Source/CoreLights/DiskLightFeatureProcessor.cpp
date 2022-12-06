@@ -58,8 +58,8 @@ namespace AZ
             MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
             if (meshFeatureProcessor)
             {
-                m_lightMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("o_enableDiskLights"));
-                m_shadowMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("o_enableDiskLightShadows"));
+                m_lightMeshFlag = meshFeatureProcessor->GetShaderOptionFlagRegistry()->AcquireTag(AZ::Name("o_enableDiskLights"));
+                m_shadowMeshFlag = meshFeatureProcessor->GetShaderOptionFlagRegistry()->AcquireTag(AZ::Name("o_enableDiskLightShadows"));
             }
         }
 
@@ -394,6 +394,11 @@ namespace AZ
         void DiskLightFeatureProcessor::SetEsmExponent(LightHandle handle, float exponent)
         {
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetEsmExponent, exponent);
+        }
+
+        void DiskLightFeatureProcessor::SetUseCachedShadows(LightHandle handle, bool useCachedShadows)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetUseCachedShadows, useCachedShadows);
         }
 
         void DiskLightFeatureProcessor::SetAffectsGI(LightHandle handle, bool affectsGI)

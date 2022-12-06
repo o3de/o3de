@@ -20,8 +20,14 @@ namespace GradientSignal
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
-        virtual void StartImageModification() = 0;
+        //! Start the image modification flow for an ImageGradient that has an Editor component as well.
+        //! @return The EntityComponentIdPair for the runtime ImageGradient. This is used with the paintbrush to connect the two together.
+        virtual AZ::EntityComponentIdPair StartImageModification() = 0;
+
+        //! End the image modification flow for an ImageGradient that has an Editor component as well.
         virtual void EndImageModification() = 0;
+
+        //! Save the edited runtime image asset.
         virtual bool SaveImage() = 0;
     };
 

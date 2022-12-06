@@ -216,8 +216,8 @@ namespace UnitTest
             void Process(AZ::RPI::MaterialFunctor::RuntimeContext& context) override
             {
                 // This code isn't actually called in the unit test, but we include it here just to demonstrate what a real functor might look like.
-                context.SetShaderOptionValue(0, ShaderOptionIndex{1}/*o_foo*/, ShaderOptionValue{1});
-                context.SetShaderOptionValue(0, ShaderOptionIndex{2}/*o_bar*/, ShaderOptionValue{2});
+                context.SetShaderOptionValue(Name{"o_foo"}, ShaderOptionValue{1});
+                context.SetShaderOptionValue(Name{"o_bar"}, ShaderOptionValue{2});
             }
         };
 
@@ -991,7 +991,7 @@ namespace UnitTest
         property->m_displayName = "My Integer";
         property->m_dataType = MaterialPropertyDataType::Int;
         property->m_value = 0;
-        property->m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection{MaterialPropertyOutputType::ShaderOption, AZStd::string("o_foo"), 0});
+        property->m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection{MaterialPropertyOutputType::ShaderOption, AZStd::string("o_foo")});
         
         auto materialTypeOutcome = sourceData.CreateMaterialTypeAsset(Uuid::CreateRandom());
         EXPECT_TRUE(materialTypeOutcome.IsSuccess());
@@ -1051,7 +1051,7 @@ namespace UnitTest
         MaterialTypeSourceData::PropertyGroup* propertyGroup = sourceData.AddPropertyGroup("general");
         MaterialTypeSourceData::PropertyDefinition* property = propertyGroup->AddProperty("MyInt");
         property->m_dataType = MaterialPropertyDataType::Int;
-        property->m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection{MaterialPropertyOutputType::ShaderOption, AZStd::string("DoesNotExist"), 0});
+        property->m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection{MaterialPropertyOutputType::ShaderOption, AZStd::string("DoesNotExist")});
         
         AZ_TEST_START_TRACE_SUPPRESSION;
         auto materialTypeOutcome = sourceData.CreateMaterialTypeAsset(Uuid::CreateRandom());
@@ -1274,11 +1274,7 @@ namespace UnitTest
         property->m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection{ MaterialPropertyOutputType::ShaderInput, AZStd::string("m_int") });
         // The value also maps to m_uint in the SRG
         property->m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection{ MaterialPropertyOutputType::ShaderInput, AZStd::string("m_uint") });
-        // The value also maps to the first shader's "o_speed" option
-        property->m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection{ MaterialPropertyOutputType::ShaderOption, AZStd::string("o_speed"), 0 });
-        // The value also maps to the second shader's "o_speed" option
-        property->m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection{ MaterialPropertyOutputType::ShaderOption, AZStd::string("o_speed"), 1 });
-        // This case doesn't specify an index, so it will apply to all shaders that have a "o_efficiency", which means it will create two outputs in the property descriptor.
+        // This will apply to all shaders that have a "o_efficiency", which means it will create two outputs in the property descriptor.
         property->m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection{ MaterialPropertyOutputType::ShaderOption, AZStd::string("o_efficiency") });
         
 
@@ -1291,7 +1287,7 @@ namespace UnitTest
         const MaterialPropertyIndex propertyIndex = materialTypeAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(Name{"general.MyInt" });
         const MaterialPropertyDescriptor* propertyDescriptor = materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex);
 
-        EXPECT_EQ(propertyDescriptor->GetOutputConnections().size(), 6);
+        EXPECT_EQ(propertyDescriptor->GetOutputConnections().size(), 4);
 
         // m_int
         EXPECT_EQ(propertyDescriptor->GetOutputConnections()[0].m_containerIndex.GetIndex(), -1);
@@ -1301,21 +1297,13 @@ namespace UnitTest
         EXPECT_EQ(propertyDescriptor->GetOutputConnections()[1].m_containerIndex.GetIndex(), -1);
         EXPECT_EQ(propertyDescriptor->GetOutputConnections()[1].m_itemIndex.GetIndex(), 3); 
 
-        // shaderA's Speed option
-        EXPECT_EQ(propertyDescriptor->GetOutputConnections()[2].m_containerIndex.GetIndex(), 0);
-        EXPECT_EQ(propertyDescriptor->GetOutputConnections()[2].m_itemIndex.GetIndex(), shaderAOptions->FindShaderOptionIndex(Name{"o_speed"}).GetIndex());
-
-        // shaderB's Speed option
-        EXPECT_EQ(propertyDescriptor->GetOutputConnections()[3].m_containerIndex.GetIndex(), 1);
-        EXPECT_EQ(propertyDescriptor->GetOutputConnections()[3].m_itemIndex.GetIndex(), shaderBOptions->FindShaderOptionIndex(Name{ "o_speed" }).GetIndex());
-
         // shaderB's Efficiency option
-        EXPECT_EQ(propertyDescriptor->GetOutputConnections()[4].m_containerIndex.GetIndex(), 1);
-        EXPECT_EQ(propertyDescriptor->GetOutputConnections()[4].m_itemIndex.GetIndex(), shaderBOptions->FindShaderOptionIndex(Name{ "o_efficiency" }).GetIndex());
+        EXPECT_EQ(propertyDescriptor->GetOutputConnections()[2].m_containerIndex.GetIndex(), 1);
+        EXPECT_EQ(propertyDescriptor->GetOutputConnections()[2].m_itemIndex.GetIndex(), shaderBOptions->FindShaderOptionIndex(Name{ "o_efficiency" }).GetIndex());
 
         // shaderC's Efficiency option
-        EXPECT_EQ(propertyDescriptor->GetOutputConnections()[5].m_containerIndex.GetIndex(), 2);
-        EXPECT_EQ(propertyDescriptor->GetOutputConnections()[5].m_itemIndex.GetIndex(), shaderCOptions->FindShaderOptionIndex(Name{ "o_efficiency" }).GetIndex());
+        EXPECT_EQ(propertyDescriptor->GetOutputConnections()[3].m_containerIndex.GetIndex(), 2);
+        EXPECT_EQ(propertyDescriptor->GetOutputConnections()[3].m_itemIndex.GetIndex(), shaderCOptions->FindShaderOptionIndex(Name{ "o_efficiency" }).GetIndex());
     }
 
     TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_PropertyWithShaderInputFunctor)

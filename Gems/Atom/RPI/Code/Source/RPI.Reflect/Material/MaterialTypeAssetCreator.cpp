@@ -162,11 +162,6 @@ namespace AZ
             return m_materialShaderResourceGroupLayout;
         }
 
-        const ShaderCollection* MaterialTypeAssetCreator::GetShaderCollection() const
-        {
-            return &m_asset->m_shaderCollection;
-        }
-
         void MaterialTypeAssetCreator::AddMaterialProperty(MaterialPropertyDescriptor&& materialProperty)
         {
             if (ValidateIsReady())
@@ -328,7 +323,7 @@ namespace AZ
             m_wipMaterialProperty.m_outputConnections.push_back(outputId);
         }
 
-        void MaterialTypeAssetCreator::ConnectMaterialPropertyToShaderOption(const Name& shaderOptionName, uint32_t shaderIndex)
+        void MaterialTypeAssetCreator::ConnectMaterialPropertyToShaderOptions(const Name& shaderOptionName)
         {
             if (!ValidateBeginMaterialProperty())
             {
@@ -355,49 +350,23 @@ namespace AZ
                 return;
             }
 
-            if (shaderIndex >= m_asset->m_shaderCollection.size())
-            {
-                ReportError("Material property '%s': This material does not have a shader at index %d.", m_wipMaterialProperty.GetName().GetCStr(), shaderIndex);
-                return;
-            }
-
-            ShaderCollection::Item& shaderItem = m_asset->m_shaderCollection[shaderIndex];
-
-            auto optionsLayout = shaderItem.GetShaderAsset()->GetShaderOptionGroupLayout();
-            ShaderOptionIndex optionIndex = optionsLayout->FindShaderOptionIndex(shaderOptionName);
-            if (!optionIndex.IsValid())
-            {
-                ReportError("Material property '%s': Shader [%d] has no option '%s'.", m_wipMaterialProperty.GetName().GetCStr(), shaderIndex, shaderOptionName.GetCStr());
-                return;
-            }
-
-            MaterialPropertyOutputId outputId;
-            outputId.m_type = MaterialPropertyOutputType::ShaderOption;
-            outputId.m_containerIndex = RHI::Handle<uint32_t>{ shaderIndex };
-            outputId.m_itemIndex = RHI::Handle<uint32_t>{optionIndex.GetIndex()};
-
-            m_wipMaterialProperty.m_outputConnections.push_back(outputId);
-
-            shaderItem.m_ownedShaderOptionIndices.insert(optionIndex);
-        }
-
-        void MaterialTypeAssetCreator::ConnectMaterialPropertyToShaderOptions(const Name& shaderOptionName)
-        {
-            if (!ValidateBeginMaterialProperty())
-            {
-                return;
-            }
-
             bool foundShaderOptions = false;
-            for (int i = 0; i < m_asset->m_shaderCollection.size() && GetErrorCount() == 0; ++i)
+            for (int shaderIndex = 0; shaderIndex < m_asset->m_shaderCollection.size(); ++shaderIndex)
             {
-                ShaderCollection::Item& shaderItem = m_asset->m_shaderCollection[i];
+                ShaderCollection::Item& shaderItem = m_asset->m_shaderCollection[shaderIndex];
                 auto optionsLayout = shaderItem.GetShaderAsset()->GetShaderOptionGroupLayout();
                 ShaderOptionIndex optionIndex = optionsLayout->FindShaderOptionIndex(shaderOptionName);
                 if (optionIndex.IsValid())
                 {
                     foundShaderOptions = true;
-                    ConnectMaterialPropertyToShaderOption(shaderOptionName, i);
+
+                    MaterialPropertyOutputId outputId;
+                    outputId.m_type = MaterialPropertyOutputType::ShaderOption;
+                    outputId.m_containerIndex = RHI::Handle<uint32_t>{shaderIndex};
+                    outputId.m_itemIndex = RHI::Handle<uint32_t>{optionIndex.GetIndex()};
+
+                    m_wipMaterialProperty.m_outputConnections.push_back(outputId);
+
                     shaderItem.m_ownedShaderOptionIndices.insert(optionIndex);
                 }
             }

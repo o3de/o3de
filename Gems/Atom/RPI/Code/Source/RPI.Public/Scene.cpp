@@ -855,7 +855,27 @@ namespace AZ
             {
                 fp->OnRenderEnd();
             }
+
+            for (auto& pipeline : m_pipelines)
+            {
+                for (auto& pipelineView : pipeline->GetPipelineViews())
+                {
+                    for (auto& view : pipelineView.second.m_views)
+                    {
+                        view->ClearAllFlags();
+                    }
+                }
+            }
         }
+
+        RHI::TagBitRegistry<uint32_t>& Scene::GetViewTagBitRegistry()
+        {
+            if (m_viewTagBitRegistry == nullptr)
+            {
+                m_viewTagBitRegistry = RHI::TagBitRegistry<uint32_t>::Create();
+            }
+            return *m_viewTagBitRegistry;
+        };
 
         void Scene::UpdateSrgs()
         {
