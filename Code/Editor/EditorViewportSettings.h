@@ -19,6 +19,8 @@
 namespace SandboxEditor
 {
     using AngleSnappingChangedEvent = AZ::Event<bool>;
+    using CameraSpeedScaleChangedEvent = AZ::Event<float>;
+    using GridShowingChangedEvent = AZ::Event<bool>;
     using GridSnappingChangedEvent = AZ::Event<bool>;
     using PerspectiveChangedEvent = AZ::Event<float>;
     using NearFarPlaneChangedEvent = AZ::Event<float>;
@@ -30,6 +32,8 @@ namespace SandboxEditor
         virtual ~EditorViewportSettingsCallbacks() = default;
 
         virtual void SetAngleSnappingChangedEvent(AngleSnappingChangedEvent::Handler& handler) = 0;
+        virtual void SetCameraSpeedScaleChangedEvent(CameraSpeedScaleChangedEvent::Handler& handler) = 0;
+        virtual void SetGridShowingChangedEvent(GridShowingChangedEvent::Handler& handler) = 0;
         virtual void SetGridSnappingChangedEvent(GridSnappingChangedEvent::Handler& handler) = 0;
         virtual void SetFarPlaneDistanceChangedEvent(NearFarPlaneChangedEvent::Handler& handler) = 0;
         virtual void SetPerspectiveChangedEvent(PerspectiveChangedEvent::Handler& handler) = 0;

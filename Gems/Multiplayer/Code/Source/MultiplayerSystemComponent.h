@@ -22,6 +22,7 @@
 #include <AzCore/Threading/ThreadSafeDeque.h>
 #include <AzCore/std/string/string.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 
 namespace AzFramework
@@ -222,6 +223,25 @@ namespace Multiplayer
         bool m_blockClientLoadLevel = true;
 
         AZStd::unordered_map<AzNetworking::ConnectionId, MultiplayerPackets::Connect> m_originalConnectPackets;
+
+        void RegisterMetrics();
+        void MetricsEvent();
+        AZ::ScheduledEvent m_metricsEvent{ [this]()
+        {
+            MetricsEvent();
+        }, AZ::Name("MultiplayerSystemComponent Metrics") };
+
+        void OnPhysicsPreSimulate(float dt);
+        AzPhysics::SystemEvents::OnPresimulateEvent::Handler m_preSimulateHandler{[this](float dt)
+        {
+            OnPhysicsPreSimulate(dt);
+        }};
+        AZStd::chrono::steady_clock::time_point m_startPhysicsTickTime;
+        void OnPhysicsPostSimulate(float dt);
+        AzPhysics::SystemEvents::OnPostsimulateEvent::Handler m_postSimulateHandler{ [this](float dt)
+        {
+            OnPhysicsPostSimulate(dt);
+        } };
 
 #if !defined(AZ_RELEASE_BUILD)
         MultiplayerEditorConnection m_editorConnectionListener;

@@ -14,8 +14,7 @@
 
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <TerrainSystem/TerrainSystemBus.h>
-
-AZ_DECLARE_BUDGET(Terrain);
+#include <TerrainProfiler.h>
 
 namespace Terrain
 {
@@ -177,7 +176,7 @@ namespace Terrain
         AZStd::span<const AZ::Vector3> inPositionList,
         AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList) const
     {
-        AZ_PROFILE_FUNCTION(Terrain);
+        TERRAIN_PROFILE_FUNCTION_VERBOSE
 
         AZ_Assert(
             inPositionList.size() == outSurfaceWeightsList.size(), "The position list size doesn't match the outSurfaceWeights list size.");
