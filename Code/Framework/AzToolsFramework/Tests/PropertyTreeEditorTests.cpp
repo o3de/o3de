@@ -190,7 +190,7 @@ namespace UnitTest
     };
 
     class PropertyTreeEditorTests
-        : public ::testing::Test
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override

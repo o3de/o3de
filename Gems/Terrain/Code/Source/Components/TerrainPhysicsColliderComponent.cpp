@@ -369,8 +369,6 @@ namespace Terrain
     AZ::Data::Asset<Physics::MaterialAsset> TerrainPhysicsColliderComponent::FindMaterialAssetForSurfaceTag(const SurfaceData::SurfaceTag tag) const
     {
         AZStd::shared_lock lock(m_stateMutex);
-        
-        uint8_t index = 0;
 
         for (auto& mapping : m_configuration.m_surfaceMaterialMappings)
         {
@@ -378,7 +376,6 @@ namespace Terrain
             {
                 return mapping.m_materialAsset;
             }
-            index++;
         }
 
         // If this surface isn't mapped, use the default material.

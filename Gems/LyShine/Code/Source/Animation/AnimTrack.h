@@ -425,7 +425,7 @@ inline bool TUiAnimTrack<KeyType>::SerializeSelection(XmlNodeRef& xmlNode, bool 
         int numCur = GetNumKeys();
         int num = xmlNode->getChildCount();
 
-        int type;
+        unsigned int type;
         xmlNode->getAttr("TrackType", type);
 
         if (type != GetCurveType())

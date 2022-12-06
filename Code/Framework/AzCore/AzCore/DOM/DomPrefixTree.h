@@ -122,18 +122,50 @@ namespace AZ::Dom
         void SetValue(const Path& path, Deduced&& value);
         //! Removes the value stored at path. If removeChildren is true, also removes any values stored at subpaths.
         void EraseValue(const Path& path, bool removeChildren = false);
+
+        //! Detaches a sub tree whose root node matches the provided path.
+        //! The detach operation removes the node and its children from the existing tree.
+        //! @param path The path which corresponds to the root node of the subtree to be detached.
+        //! @return The DomPrefixTree that is detached.
+        DomPrefixTree<T> DetachSubTree(const Path& path);
+
+        //! Attaches a subtree provided at the node that matches the provided path. Attaching will overwrite the node at the path.
+        //! @param path The path which corresponds to the node at which the subtree should be attached.
+        //! @param subTree The subtree to attach at the provided path.
+        //! @return True if the subTree was attached successfully. Return false otherwise.
+        bool AttachSubTree(const Path& path, DomPrefixTree&& subTree);
         //! Removes all entries from this tree.
         void Clear();
+
+        //! Returns true if the root node is empty.
+        bool IsEmpty() const;
 
     private:
         struct Node
         {
             AZStd::unordered_map<PathEntry, Node> m_values;
             AZStd::optional<T> m_data;
+
+            bool IsEmpty() const;
         };
+
+        //! Since Node is an internal private struct in this class, this constructor that uses Node is also private.
+        explicit DomPrefixTree(Node&& node);
 
         Node* GetNodeForPath(const Path& path);
         const Node* GetNodeForPath(const Path& path) const;
+
+        //! Detaches the node that matches the provided path.
+        //! The detach operation removes the node and its children from the existing tree.
+        //! @param path The path at which the node should be detached.
+        //! @return The Node that is detached.
+        Node DetachNodeAtPath(const Path& path);
+
+        //! Attaches a node that matches the provided path. Attaching will overwrite the node at the path.
+        //! @param path The path which corresponds to the node at which the subtree should be attached.
+        //! @param node The node to be attached.
+        //! @return True if the node was attached successfully. Return false otherwise.
+        bool AttachNodeAtPath(const Path& path, Node&& node);
 
         Node m_rootNode;
     };

@@ -32,6 +32,9 @@ ly_add_target(
             .
             ${pal_dir}
             ${common_dir}
+    COMPILE_DEFINITIONS
+        PUBLIC
+            O3DE_STACK_CAPTURE_DEPTH=${O3DE_STACK_CAPTURE_DEPTH}
 )
 
 ly_add_target(

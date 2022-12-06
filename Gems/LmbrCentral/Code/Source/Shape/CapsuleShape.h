@@ -40,6 +40,8 @@ namespace LmbrCentral
         bool IsPointInside(const AZ::Vector3& point) override;
         float DistanceSquaredFromPoint(const AZ::Vector3& point) override;
         bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        AZ::Vector3 GetTranslationOffset() const override;
+        void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
 
         // CapsuleShapeComponentRequestsBus::Handler
         CapsuleShapeConfig GetCapsuleConfiguration() override { return m_capsuleShapeConfig; }

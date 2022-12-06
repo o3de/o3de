@@ -7,13 +7,6 @@
 #
 
 set(FILES
-    base.h
-    Docs.h
-    variadic.h
-    Platform.cpp
-    Platform.h
-    PlatformDef.h
-    PlatformIncl.h
     AzCoreModule.h
     AzCoreModule.cpp
     Asset/AssetCommon.cpp
@@ -34,6 +27,7 @@ set(FILES
     Asset/AssetSerializer.h
     Asset/AssetTypeInfoBus.h
     Asset/AssetInternal/WeakAsset.h
+    base.h
     Casting/lossy_cast.h
     Casting/numeric_cast.h
     Casting/numeric_cast_internal.h
@@ -63,6 +57,10 @@ set(FILES
     Component/NonUniformScaleBus.h
     Component/TickBus.h
     Component/TransformBus.h
+    Compression/compression.cpp
+    Compression/Compression.h
+    Compression/zstd_compression.cpp
+    Compression/zstd_compression.h
     Console/Console.cpp
     Console/Console.h
     Console/ConsoleDataWrapper.h
@@ -77,27 +75,15 @@ set(FILES
     Console/ILogger.h
     Console/LoggerSystemComponent.cpp
     Console/LoggerSystemComponent.h
-    Slice/SliceAsset.cpp
-    Slice/SliceAsset.h
-    Slice/SliceAssetHandler.cpp
-    Slice/SliceAssetHandler.h
-    Slice/SliceBus.h
-    Slice/SliceComponent.cpp
-    Slice/SliceComponent.h
-    Slice/SliceSystemComponent.h
-    Slice/SliceSystemComponent.cpp
-    Slice/SliceMetadataInfoBus.h
-    Slice/SliceMetadataInfoComponent.h
-    Slice/SliceMetadataInfoComponent.cpp
-    Compression/compression.cpp
-    Compression/Compression.h
-    Compression/zstd_compression.cpp
-    Compression/zstd_compression.h
+    Date/DateFormat.cpp
+    Date/DateFormat.h
     Debug/Budget.h
     Debug/Budget.cpp
     Debug/BudgetTracker.h
     Debug/BudgetTracker.cpp
     Debug/MemoryProfiler.h
+    Debug/PerformanceCollector.h
+    Debug/PerformanceCollector.cpp
     Debug/Profiler.cpp
     Debug/Profiler.inl
     Debug/Profiler.h
@@ -111,6 +97,7 @@ set(FILES
     Debug/TraceMessageBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
+    Docs.h
     DOM/DomBackend.cpp
     DOM/DomBackend.h
     DOM/DomPatch.cpp
@@ -155,6 +142,7 @@ set(FILES
     EBus/Internal/Debug.h
     EBus/Internal/Handlers.h
     EBus/Internal/StoragePolicies.h
+    Instance/InstancePool.h
     Interface/Interface.h
     IO/ByteContainerStream.h
     IO/CompressionBus.h
@@ -249,6 +237,29 @@ set(FILES
     Jobs/JobManagerDesc.h
     Jobs/MultipleDependentJob.h
     Jobs/task_group.h
+    JSON/allocators.h
+    JSON/cursorstreamwrapper.h
+    JSON/document.h
+    JSON/encodedstream.h
+    JSON/encodings.h
+    JSON/filereadstream.h
+    JSON/filewritestream.h
+    JSON/fwd.h
+    JSON/istreamwrapper.h
+    JSON/memorybuffer.h
+    JSON/memorystream.h
+    JSON/ostreamwrapper.h
+    JSON/pointer.h
+    JSON/prettywriter.h
+    JSON/rapidjson.h
+    JSON/RapidjsonAllocatorAdapter.h
+    JSON/reader.h
+    JSON/schema.h
+    JSON/stream.h
+    JSON/stringbuffer.h
+    JSON/writer.h
+    JSON/error/en.h
+    JSON/error/error.h
     Math/Aabb.cpp
     Math/Aabb.h
     Math/Aabb.inl
@@ -271,6 +282,8 @@ set(FILES
     Math/Geometry3DUtils.cpp
     Math/Geometry3DUtils.h
     Math/Guid.h
+    Math/Hemisphere.h
+    Math/Hemisphere.inl
     Math/Internal/MathTypes.h
     Math/Internal/SimdMathVec1_neon.inl
     Math/Internal/SimdMathVec1_scalar.inl
@@ -383,23 +396,18 @@ set(FILES
     Memory/AllocationRecords.h
     Memory/AllocatorBase.cpp
     Memory/AllocatorBase.h
+    Memory/AllocatorInstance.h
     Memory/AllocatorManager.cpp
     Memory/AllocatorManager.h
+    Memory/AllocatorTrackingRecorder.cpp
+    Memory/AllocatorTrackingRecorder.h
     Memory/AllocatorWrapper.h
-    Memory/AllocatorScope.h
-    Memory/BestFitExternalMapAllocator.cpp
-    Memory/BestFitExternalMapAllocator.h
-    Memory/BestFitExternalMapSchema.cpp
-    Memory/BestFitExternalMapSchema.h
+    Memory/ChildAllocatorSchema.h
     Memory/Config.h
     Memory/dlmalloc.inl
-    Memory/HeapSchema.h
-    Memory/HphaSchema.cpp
-    Memory/HphaSchema.h
-    Memory/IAllocator.cpp
+    Memory/HphaAllocator.cpp
+    Memory/HphaAllocator.h
     Memory/IAllocator.h
-    Memory/MallocSchema.cpp
-    Memory/MallocSchema.h
     Memory/Memory.cpp
     Memory/Memory.h
     Memory/MemoryComponent.cpp
@@ -408,16 +416,15 @@ set(FILES
     Memory/NewAndDelete.inl
     Memory/OSAllocator.cpp
     Memory/OSAllocator.h
-    Memory/OverrunDetectionAllocator.cpp
-    Memory/OverrunDetectionAllocator.h
+    Memory/PoolAllocator.cpp
     Memory/PoolAllocator.h
-    Memory/PoolSchema.cpp
-    Memory/PoolSchema.h
     Memory/SimpleSchemaAllocator.h
     Memory/SystemAllocator.cpp
     Memory/SystemAllocator.h
     Metrics/EventLoggerFactoryImpl.h
     Metrics/EventLoggerFactoryImpl.cpp
+    Metrics/EventLoggerUtils.cpp
+    Metrics/EventLoggerUtils.h
     Metrics/JsonTraceEventLogger.h
     Metrics/JsonTraceEventLogger.cpp
     Metrics/IEventLogger.h
@@ -433,9 +440,6 @@ set(FILES
     Module/ModuleManager.h
     Module/Internal/ModuleManagerSearchPathTool.h
     Module/Internal/ModuleManagerSearchPathTool.cpp
-    NativeUI/NativeUISystemComponent.cpp
-    NativeUI/NativeUISystemComponent.h
-    NativeUI/NativeUIRequests.h
     Name/Name.h
     Name/Name.cpp
     Name/NameDictionary.h
@@ -446,9 +450,19 @@ set(FILES
     Name/NameSerializer.cpp
     Name/Internal/NameData.h
     Name/Internal/NameData.cpp
+    NativeUI/NativeUISystemComponent.cpp
+    NativeUI/NativeUISystemComponent.h
+    NativeUI/NativeUIRequests.h
     Outcome/Outcome.h
-    Outcome/Internal/OutcomeStorage.h
     Outcome/Internal/OutcomeImpl.h
+    Platform.cpp
+    Platform.h
+    PlatformDef.h
+    PlatformId/PlatformDefaults.h
+    PlatformId/PlatformDefaults.cpp
+    PlatformId/PlatformId.h
+    PlatformId/PlatformId.cpp
+    PlatformIncl.h
     Preprocessor/CodeGen.h
     Preprocessor/Enum.h
     Preprocessor/EnumReflectUtils.h
@@ -473,6 +487,7 @@ set(FILES
     RTTI/BehaviorInterfaceProxy.h
     RTTI/BehaviorObjectSignals.h
     RTTI/TypeSafeIntegral.h
+    Script/lua/lua.h
     Script/ScriptAsset.cpp
     Script/ScriptAsset.h
     Script/ScriptContext.h
@@ -599,6 +614,21 @@ set(FILES
     Settings/SettingsRegistryScriptUtils.h
     Settings/SettingsRegistryVisitorUtils.cpp
     Settings/SettingsRegistryVisitorUtils.h
+    Slice/SliceAsset.cpp
+    Slice/SliceAsset.h
+    Slice/SliceAssetHandler.cpp
+    Slice/SliceAssetHandler.h
+    Slice/SliceBus.h
+    Slice/SliceComponent.cpp
+    Slice/SliceComponent.h
+    Slice/SliceSystemComponent.h
+    Slice/SliceSystemComponent.cpp
+    Slice/SliceMetadataInfoBus.h
+    Slice/SliceMetadataInfoComponent.h
+    Slice/SliceMetadataInfoComponent.cpp
+    Socket/AzSocket_fwd.h
+    Socket/AzSocket.cpp
+    Socket/AzSocket.h
     State/HSM.cpp
     State/HSM.h
     Statistics/NamedRunningStatistic.h
@@ -611,52 +641,6 @@ set(FILES
     Statistics/StatisticsManager.h
     StringFunc/StringFunc.cpp
     StringFunc/StringFunc.h
-    UserSettings/UserSettings.cpp
-    UserSettings/UserSettings.h
-    UserSettings/UserSettingsComponent.cpp
-    UserSettings/UserSettingsComponent.h
-    UserSettings/UserSettingsProvider.cpp
-    UserSettings/UserSettingsProvider.h
-    XML/rapidxml.h
-    XML/rapidxml_iterators.h
-    XML/rapidxml_print.h
-    XML/rapidxml_utils.h
-    JSON/allocators.h
-    JSON/cursorstreamwrapper.h
-    JSON/document.h
-    JSON/encodedstream.h
-    JSON/encodings.h
-    JSON/filereadstream.h
-    JSON/filewritestream.h
-    JSON/fwd.h
-    JSON/istreamwrapper.h
-    JSON/memorybuffer.h
-    JSON/memorystream.h
-    JSON/ostreamwrapper.h
-    JSON/pointer.h
-    JSON/prettywriter.h
-    JSON/rapidjson.h
-    JSON/RapidjsonAllocatorAdapter.h
-    JSON/reader.h
-    JSON/schema.h
-    JSON/stream.h
-    JSON/stringbuffer.h
-    JSON/writer.h
-    JSON/error/en.h
-    JSON/error/error.h
-    Utils/TypeHash.cpp
-    Utils/TypeHash.h
-    Utils/Utils.cpp
-    Utils/Utils.h
-    Script/lua/lua.h
-    Memory/HeapSchema.cpp
-    PlatformId/PlatformDefaults.h
-    PlatformId/PlatformDefaults.cpp
-    PlatformId/PlatformId.h
-    PlatformId/PlatformId.cpp
-    Socket/AzSocket_fwd.h
-    Socket/AzSocket.cpp
-    Socket/AzSocket.h
     Task/Internal/Task.cpp
     Task/Internal/Task.inl
     Task/Internal/Task.h
@@ -678,10 +662,19 @@ set(FILES
     Time/ITime.h
     Time/TimeSystem.cpp
     Time/TimeSystem.h
-)
-
-# Prevent the following files from being grouped in UNITY builds
-set(SKIP_UNITY_BUILD_INCLUSION_FILES
-    # In some platforms, dlmalloc.inl gives issues when compiled in unity because there is a getpagesize defined differently
-    Memory/HeapSchema.cpp
+    UserSettings/UserSettings.cpp
+    UserSettings/UserSettings.h
+    UserSettings/UserSettingsComponent.cpp
+    UserSettings/UserSettingsComponent.h
+    UserSettings/UserSettingsProvider.cpp
+    UserSettings/UserSettingsProvider.h
+    Utils/TypeHash.cpp
+    Utils/TypeHash.h
+    Utils/Utils.cpp
+    Utils/Utils.h
+    variadic.h
+    XML/rapidxml.h
+    XML/rapidxml_iterators.h
+    XML/rapidxml_print.h
+    XML/rapidxml_utils.h
 )

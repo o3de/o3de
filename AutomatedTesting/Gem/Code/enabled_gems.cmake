@@ -53,6 +53,7 @@ set(ENABLED_GEMS
     AWSCore
     AWSClientAuth
     AWSMetrics
+    PythonCoverage
     PrefabBuilder
     AudioSystem
     Terrain
@@ -66,4 +67,5 @@ set(ENABLED_GEMS
     ScriptAutomation
     DiffuseProbeGrid
     PythonCoverage
+    RemoteTools
 )

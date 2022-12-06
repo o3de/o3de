@@ -15,6 +15,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialVersionUpdate.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
+#include <Atom/RPI.Edit/Shader/ShaderOptionValuesSourceData.h>
 
 namespace AZ
 {
@@ -27,8 +28,8 @@ namespace AZ
         class MaterialFunctorSourceDataHolder;
         class JsonMaterialPropertySerializer;
 
-        //! This is a simple data structure for serializing in/out material type source files.
-        //! Note that there may be a mixture of public and private members, as we are gradually introducing a proper API.
+        //! This is a simple data structure for serializing in/out .materialtype source files.
+        //! The .materialtype file has two slightly different formats: "abstract" and "direct". See enum Format below.
         class MaterialTypeSourceData final
         {
         public:
@@ -39,22 +40,35 @@ namespace AZ
 
             static void Reflect(ReflectContext* context);
 
+            //! The .materialtype file has two slightly different formats, in most cases users will want to author content in the abstract format, which is 
+            //! more convenient to work with, as it hides of lot of technical details and automatically works with mulitple render pipelines.
+            enum class Format
+            {
+                Invalid,
+
+                //! In the abstract format, the material type provides only material-specific shader code and a lighting model reference.
+                //! The MaterialTypeBuilder will automatically adapt the material type to work in any render pipeline (Forward+, Deferred, VR, etc.),
+                //! by stitching it together with the available material pipelines (see MaterialPipelineSourceData). This will produce a
+                //! new intermediate material type that is not abstract, for further processing. 
+                Abstract,
+
+                //! In the direct format, the material type provides a complete list of the specific shaders that will be used for rendering.
+                //! This circumvents the material pipeline system, and the author is responsible for adapting the material type to any desired render pipelines.
+                Direct
+            };
+
             struct PropertyConnection
             {
             public:
                 AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::PropertyConnection, "{C2F37C26-D7EF-4142-A650-EF50BB18610F}");
 
                 PropertyConnection() = default;
-                PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view fieldName, int32_t shaderIndex = -1);
+                PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view name);
 
                 MaterialPropertyOutputType m_type = MaterialPropertyOutputType::Invalid;
 
-                //! The name of a specific shader setting. This will either be a ShaderResourceGroup input or a ShaderOption, depending on m_type
-                AZStd::string m_fieldName;
-
-                //! For m_type==ShaderOption, this is either the index of a specific shader in m_shaderCollection, or -1 which means every shader in m_shaderCollection.
-                //! For m_type==ShaderInput, this field is not used.
-                int32_t m_shaderIndex = -1; 
+                //! The name of a specific shader setting. This will either be a ShaderResourceGroup input, a ShaderOption, or a shader tag, depending on m_type.
+                AZStd::string m_name;
             };
 
             using PropertyConnectionList = AZStd::vector<PropertyConnection>;
@@ -184,7 +198,7 @@ namespace AZ
                 //! This list provides a way for users to set shader option values in a 'hard-coded' way rather than connecting them to material properties.
                 //! These are optional and the list will usually be empty; most options will either get set from a material property connection,
                 //! or will use the default value from the shader. 
-                AZStd::unordered_map<Name/*shaderOption*/, Name/*value*/> m_shaderOptionValues;
+                ShaderOptionValuesSourceData m_shaderOptionValues;
             };
 
             using VersionUpdateActions = AZStd::vector<MaterialVersionUpdate::Action::ActionDefinition>;
@@ -227,8 +241,20 @@ namespace AZ
             
             VersionUpdates m_versionUpdates;
 
-            //! A list of shader variants that are always used at runtime; they cannot be turned off
+            //! A list of specific shaders that will be used to render the material.
             AZStd::vector<ShaderVariantReferenceData> m_shaderCollection;
+
+            //! This indicates the name of the lighting model that this material type uses.
+            //! For example, "Standard", "Enhanced", "Skin". The actual set of available lighting models
+            //! is determined by the .materialpipeline.
+            //! This is relevant for "abstract" material type files (see IsAbstractFormat()).
+            AZStd::string m_lightingModel;
+
+            //! This indicates a .azsli file that contains only material-specific shader code.
+            //! The build system will automatically combine this code with .materialpipeline shader code
+            //! for use in each available render pipeline.
+            //! This is relevant for "abstract" material type files (see IsAbstractFormat()).
+            AZStd::string m_materialShaderCode;
 
             //! Material functors provide custom logic and calculations to configure shaders, render states, and more. See MaterialFunctor.h for details.
             AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>> m_materialFunctorSourceData;
@@ -298,11 +324,15 @@ namespace AZ
             //! Returns a MaterialNameContext for a specific path through the property group hierarchy.
             static MaterialNameContext MakeMaterialNameContext(const MaterialTypeSourceData::PropertyGroupStack& propertyGroupStack);
 
+            //! Create a MaterialTypeAsset for use at runtime. This is only valid for material types with the "direct" format (see GetFormat()).
             Outcome<Data::Asset<MaterialTypeAsset>> CreateMaterialTypeAsset(Data::AssetId assetId, AZStd::string_view materialTypeSourceFilePath = "", bool elevateWarnings = true) const;
 
-            //! If the data was loaded from an old format file (i.e. where "groups" and "properties" were separate sections),
+            //! If the data was loaded from the legacy format file (i.e. where "groups" and "properties" were separate sections),
             //! this converts to the new format where properties are listed inside property groups.
-            bool ConvertToNewDataFormat();
+            bool UpgradeLegacyFormat();
+
+            //! See enum Format
+            Format GetFormat() const;
 
         private:
                 

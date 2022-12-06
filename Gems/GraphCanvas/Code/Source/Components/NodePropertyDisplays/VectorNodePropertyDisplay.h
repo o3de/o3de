@@ -7,12 +7,10 @@
  */
 #pragma once
 
-AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
 #if !defined(Q_MOC_RUN)
 #include <QEvent>
 #include <QGraphicsWidget>
 #include <QObject>
-AZ_POP_DISABLE_WARNING
 
 #include <AzQtComponents/Components/Widgets/VectorInput.h>
 
@@ -23,7 +21,9 @@ AZ_POP_DISABLE_WARNING
 #include <GraphCanvas/Styling/StyleHelper.h>
 #endif
 
+class QGraphicsPixmapItem;
 class QGraphicsLinearLayout;
+class QPixmap;
 
 namespace GraphCanvas
 {
@@ -45,6 +45,18 @@ namespace GraphCanvas
         VectorNodePropertyDisplay* m_owner;
     };
     
+    class IconLayoutItem
+        : public QGraphicsWidget{
+    public:
+        AZ_CLASS_ALLOCATOR(IconLayoutItem, AZ::SystemAllocator, 0);
+        IconLayoutItem(QGraphicsItem *parent = nullptr);
+        ~IconLayoutItem();
+
+        void setIcon(const QPixmap& pixmap);
+    private:
+        QGraphicsPixmapItem* m_pixmap;
+    };
+
     class ReadOnlyVectorControl
         : public QGraphicsWidget
     {
@@ -108,15 +120,19 @@ namespace GraphCanvas
         void SubmitValue();
     
         Styling::StyleHelper m_styleHelper;
-        VectorDataInterface*  m_dataInterface;
-        
-        GraphCanvasLabel*                           m_disabledLabel;
-        AzQtComponents::VectorInput*                m_propertyVectorCtrl;
-        QGraphicsProxyWidget*                       m_proxyWidget;
-        
-        QGraphicsWidget*                            m_displayWidget;
-        AZStd::vector< ReadOnlyVectorControl* >     m_vectorDisplays;
+        VectorDataInterface* m_dataInterface{};
 
-        bool                                        m_releaseLayout;
+        QWidget* m_widgetContainer{};
+
+        GraphCanvasLabel* m_disabledLabel{};
+        AzQtComponents::VectorInput* m_propertyVectorCtrl{};
+        QToolButton* m_button{};
+        QGraphicsProxyWidget* m_proxyWidget{};
+
+        QGraphicsWidget* m_displayWidget{};
+        IconLayoutItem* m_iconDisplay{};
+        AZStd::vector<ReadOnlyVectorControl*> m_vectorDisplays{};
+
+        bool m_releaseLayout{};
     };
-}
+} // namespace GraphCanvas

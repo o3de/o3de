@@ -14,7 +14,7 @@ namespace UnitTest
 {
     using namespace AZ;
 
-    class MatrixUtilsTests : public AllocatorsTestFixture
+    class MatrixUtilsTests : public LeakDetectionFixture
     {
     protected:
         const float floatEpsilon = 0.001f;

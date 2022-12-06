@@ -959,7 +959,7 @@ namespace AZ
         }
 
         // Shortcut for returning a FailedSortDetails as an AZ::Failure.
-        static FailureValue<Entity::FailedSortDetails> FailureCode(Entity::DependencySortResult code, const char* formatMessage, ...)
+        static auto FailureCode(Entity::DependencySortResult code, const char* formatMessage, ...)
         {
             va_list args;
             va_start(args, formatMessage);

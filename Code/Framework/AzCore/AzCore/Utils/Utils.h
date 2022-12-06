@@ -81,10 +81,23 @@ namespace AZ
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
         AZ::IO::FixedMaxPathString GetProjectPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
+        //! Retrieves the full path to the project user path from the settings registry
+        //! This path defaults to <project-path>/user, but can be overridden via the --project-user-path option
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::IO::FixedMaxPathString GetProjectUserPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+
         //! Retrieves the project name from the settings registry
         //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
         AZ::SettingsRegistryInterface::FixedValueString GetProjectName(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+
+        //! Retrieves the project display name from the settings registry
+        //! First attempts to lookup the "display_name" field read from the project.json settings section of the
+        //! Settings Registry ! and if that is not available, the "project_name" field is read instead.
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::SettingsRegistryInterface::FixedValueString GetProjectDisplayName(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Lookups the full path for a gem, given it's name from the settings registry
         //! @param gemName path of the gem whose paths will be queried from within the settings registry

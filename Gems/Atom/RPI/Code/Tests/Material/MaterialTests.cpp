@@ -443,19 +443,19 @@ namespace UnitTest
         materialTypeCreator.Begin(Uuid::CreateRandom());
         materialTypeCreator.AddShader(shaderAsset);
         materialTypeCreator.BeginMaterialProperty(Name{"EnumA"}, MaterialPropertyDataType::Int);
-        materialTypeCreator.ConnectMaterialPropertyToShaderOption(Name{"o_enumA"}, 0);
+        materialTypeCreator.ConnectMaterialPropertyToShaderOptions(Name{"o_enumA"});
         materialTypeCreator.EndMaterialProperty();
         materialTypeCreator.BeginMaterialProperty(Name{"EnumB"}, MaterialPropertyDataType::UInt);
-        materialTypeCreator.ConnectMaterialPropertyToShaderOption(Name{"o_enumB"}, 0);
+        materialTypeCreator.ConnectMaterialPropertyToShaderOptions(Name{"o_enumB"});
         materialTypeCreator.EndMaterialProperty();
         materialTypeCreator.BeginMaterialProperty(Name{"Bool"}, MaterialPropertyDataType::Bool);
-        materialTypeCreator.ConnectMaterialPropertyToShaderOption(Name{"o_boolA"}, 0);
+        materialTypeCreator.ConnectMaterialPropertyToShaderOptions(Name{"o_boolA"});
         materialTypeCreator.EndMaterialProperty();
         materialTypeCreator.BeginMaterialProperty(Name{"RangeA"}, MaterialPropertyDataType::Int);
-        materialTypeCreator.ConnectMaterialPropertyToShaderOption(Name{"o_rangeA"}, 0);
+        materialTypeCreator.ConnectMaterialPropertyToShaderOptions(Name{"o_rangeA"});
         materialTypeCreator.EndMaterialProperty();
         materialTypeCreator.BeginMaterialProperty(Name{"RangeB"}, MaterialPropertyDataType::UInt);
-        materialTypeCreator.ConnectMaterialPropertyToShaderOption(Name{"o_rangeB"}, 0);
+        materialTypeCreator.ConnectMaterialPropertyToShaderOptions(Name{"o_rangeB"});
         materialTypeCreator.EndMaterialProperty();
         materialTypeCreator.SetPropertyValue(Name{"EnumA"}, 2);
         materialTypeCreator.SetPropertyValue(Name{"EnumB"}, 1u);
@@ -528,8 +528,6 @@ namespace UnitTest
         materialTypeCreator.AddShader(shaderAsset);
         materialTypeCreator.AddShader(shaderAsset);
         materialTypeCreator.BeginMaterialProperty(Name{"Value"}, MaterialPropertyDataType::Int);
-        materialTypeCreator.ConnectMaterialPropertyToShaderOption(Name{"o_rangeC"}, 1);
-        materialTypeCreator.ConnectMaterialPropertyToShaderOption(Name{"o_rangeA"}, 2);
         materialTypeCreator.ConnectMaterialPropertyToShaderOptions(Name{"o_rangeB"}); // Applies to all shaders
         materialTypeCreator.EndMaterialProperty();
         materialTypeCreator.SetPropertyValue(Name{"Value"}, 2);
@@ -541,24 +539,16 @@ namespace UnitTest
 
         Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
 
-        auto& optionRangeA = optionsLayout->GetShaderOption(optionsLayout->FindShaderOptionIndex(Name{"o_rangeA"}));
         auto& optionRangeB = optionsLayout->GetShaderOption(optionsLayout->FindShaderOptionIndex(Name{"o_rangeB"}));
-        auto& optionRangeC = optionsLayout->GetShaderOption(optionsLayout->FindShaderOptionIndex(Name{"o_rangeC"}));
 
         // Check the values on the underlying ShaderVariantReferences
         {
             ShaderOptionGroup options0{optionsLayout, material->GetShaderCollection()[0].GetShaderVariantId()};
             ShaderOptionGroup options1{optionsLayout, material->GetShaderCollection()[1].GetShaderVariantId()};
             ShaderOptionGroup options2{optionsLayout, material->GetShaderCollection()[2].GetShaderVariantId()};
-            EXPECT_EQ(optionRangeA.Get(options0).GetIndex(), -1);
-            EXPECT_EQ(optionRangeA.Get(options1).GetIndex(), -1);
-            EXPECT_EQ(optionRangeA.Get(options2).GetIndex(),  2);
             EXPECT_EQ(optionRangeB.Get(options0).GetIndex(),  2);
             EXPECT_EQ(optionRangeB.Get(options1).GetIndex(),  2);
             EXPECT_EQ(optionRangeB.Get(options2).GetIndex(),  2);
-            EXPECT_EQ(optionRangeC.Get(options0).GetIndex(), -1);
-            EXPECT_EQ(optionRangeC.Get(options1).GetIndex(),  2);
-            EXPECT_EQ(optionRangeC.Get(options2).GetIndex(), -1);
         }
 
         // Now call SetPropertyValue to change the values, and check again
@@ -569,16 +559,47 @@ namespace UnitTest
             ShaderOptionGroup options0{optionsLayout, material->GetShaderCollection()[0].GetShaderVariantId()};
             ShaderOptionGroup options1{optionsLayout, material->GetShaderCollection()[1].GetShaderVariantId()};
             ShaderOptionGroup options2{optionsLayout, material->GetShaderCollection()[2].GetShaderVariantId()};
-            EXPECT_EQ(optionRangeA.Get(options0).GetIndex(), -1);
-            EXPECT_EQ(optionRangeA.Get(options1).GetIndex(), -1);
-            EXPECT_EQ(optionRangeA.Get(options2).GetIndex(),  5);
             EXPECT_EQ(optionRangeB.Get(options0).GetIndex(),  5);
             EXPECT_EQ(optionRangeB.Get(options1).GetIndex(),  5);
             EXPECT_EQ(optionRangeB.Get(options2).GetIndex(),  5);
-            EXPECT_EQ(optionRangeC.Get(options0).GetIndex(), -1);
-            EXPECT_EQ(optionRangeC.Get(options1).GetIndex(),  5);
-            EXPECT_EQ(optionRangeC.Get(options2).GetIndex(), -1);
         }
+    }
+
+    TEST_F(MaterialTests, TestSetPropertyValue_ConnectedToShaderEnabled)
+    {
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, Name{"one"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, Name{"two"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, Name{"three"});
+        materialTypeCreator.BeginMaterialProperty(Name{"EnableSecondShader"}, MaterialPropertyDataType::Bool);
+        materialTypeCreator.ConnectMaterialPropertyToShaderEnabled(Name{"two"});
+        materialTypeCreator.EndMaterialProperty();
+        materialTypeCreator.End(m_testMaterialTypeAsset);
+
+        MaterialAssetCreator materialAssetCreator;
+        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
+        materialAssetCreator.End(m_testMaterialAsset);
+
+        Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
+
+        MaterialPropertyIndex enableShader = material->FindPropertyIndex(Name{"EnableSecondShader"});
+
+        EXPECT_TRUE(material->GetShaderCollection()[0].IsEnabled());
+        EXPECT_FALSE(material->GetShaderCollection()[1].IsEnabled());
+        EXPECT_TRUE(material->GetShaderCollection()[2].IsEnabled());
+
+        material->SetPropertyValue(enableShader, true);
+
+        EXPECT_TRUE(material->GetShaderCollection()[0].IsEnabled());
+        EXPECT_TRUE(material->GetShaderCollection()[1].IsEnabled());
+        EXPECT_TRUE(material->GetShaderCollection()[2].IsEnabled());
+
+        material->SetPropertyValue(enableShader, false);
+
+        EXPECT_TRUE(material->GetShaderCollection()[0].IsEnabled());
+        EXPECT_FALSE(material->GetShaderCollection()[1].IsEnabled());
+        EXPECT_TRUE(material->GetShaderCollection()[2].IsEnabled());
     }
 
 
@@ -594,15 +615,10 @@ namespace UnitTest
         materialTypeCreator.AddShader(shaderAsset);
         materialTypeCreator.AddShader(shaderAsset);
         materialTypeCreator.AddShader(shaderAsset);
-        materialTypeCreator.BeginMaterialProperty(Name{"RangeValue"}, MaterialPropertyDataType::Int);
-        materialTypeCreator.ConnectMaterialPropertyToShaderOption(Name{"o_rangeA"}, 1);
-        materialTypeCreator.ConnectMaterialPropertyToShaderOption(Name{"o_rangeB"}, 2);
-        materialTypeCreator.EndMaterialProperty();
         materialTypeCreator.BeginMaterialProperty(Name{"BoolValue"}, MaterialPropertyDataType::Bool);
         materialTypeCreator.ConnectMaterialPropertyToShaderOptions(Name{"o_boolA"}); // Applies to all shaders
         materialTypeCreator.EndMaterialProperty();
         materialTypeCreator.ClaimShaderOptionOwnership(Name{"o_boolB"});
-        materialTypeCreator.SetPropertyValue(Name{"RangeValue"}, 1);
         materialTypeCreator.End(m_testMaterialTypeAsset);
 
         MaterialAssetCreator materialAssetCreator;
@@ -617,8 +633,8 @@ namespace UnitTest
         EXPECT_FALSE(material->SetSystemShaderOption(Name{"o_boolA"}, ShaderOptionValue{1}).IsSuccess());
         EXPECT_FALSE(material->SetSystemShaderOption(Name{"o_boolB"}, ShaderOptionValue{1}).IsSuccess());
         EXPECT_EQ(3, material->SetSystemShaderOption(Name{"o_boolC"}, ShaderOptionValue{1}).GetValue());
-        EXPECT_FALSE(material->SetSystemShaderOption(Name{"o_rangeA"}, ShaderOptionValue{3}).IsSuccess());
-        EXPECT_FALSE(material->SetSystemShaderOption(Name{"o_rangeB"}, ShaderOptionValue{4}).IsSuccess());
+        EXPECT_EQ(3, material->SetSystemShaderOption(Name{"o_rangeA"}, ShaderOptionValue{3}).GetValue());
+        EXPECT_EQ(3, material->SetSystemShaderOption(Name{"o_rangeB"}, ShaderOptionValue{4}).GetValue());
         EXPECT_EQ(3, material->SetSystemShaderOption(Name{"o_rangeC"}, ShaderOptionValue{5}).GetValue());
 
         // Try setting a shader option that does not exist in this material
@@ -634,6 +650,8 @@ namespace UnitTest
             EXPECT_EQ(1, shaderItem.GetShaderOptions()->GetValue(Name{"o_enumB"}).GetIndex());
             EXPECT_EQ(2, shaderItem.GetShaderOptions()->GetValue(Name{"o_enumC"}).GetIndex());
             EXPECT_EQ(1, shaderItem.GetShaderOptions()->GetValue(Name{"o_boolC"}).GetIndex());
+            EXPECT_EQ(3, shaderItem.GetShaderOptions()->GetValue(Name{"o_rangeA"}).GetIndex());
+            EXPECT_EQ(4, shaderItem.GetShaderOptions()->GetValue(Name{"o_rangeB"}).GetIndex());
             EXPECT_EQ(5, shaderItem.GetShaderOptions()->GetValue(Name{"o_rangeC"}).GetIndex());
 
             // We don't care whether a material-owned shader option is unspecified or is initialized to its default state.
@@ -649,8 +667,6 @@ namespace UnitTest
 
             checkValueNotChanged(Name{"o_boolA"}, ShaderOptionValue{0});
             checkValueNotChanged(Name{"o_boolB"}, ShaderOptionValue{0});
-            checkValueNotChanged(Name{"o_rangeA"}, ShaderOptionValue{1});
-            checkValueNotChanged(Name{"o_rangeB"}, ShaderOptionValue{1});
         }
     }
 
@@ -779,7 +795,7 @@ namespace UnitTest
         RHI::Ptr<RHI::ShaderResourceGroupLayout> srgLayout = RHI::ShaderResourceGroupLayout::Create();
         srgLayout->SetName(Name("MaterialSrg"));
         srgLayout->SetBindingSlot(SrgBindingSlot::Material);
-        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{"m_color"}, 0, 12, 0});
+        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{"m_color"}, 0, 12, 0, 0});
         ASSERT_TRUE(srgLayout->Finalize());
 
         Data::Asset<ShaderAsset> shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), srgLayout);
@@ -818,47 +834,6 @@ namespace UnitTest
             EXPECT_EQ((float)TransformColor(inputColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg).GetElement(i), (float)colorFromSrg.GetElement(i));
             EXPECT_EQ((float)inputColor.GetElement(i), (float)colorFromMaterial.GetElement(i));
         }
-    }
-
-    TEST_F(MaterialTests, TestReinitializeForHotReload)
-    {
-        Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
-        const RHI::ShaderResourceGroupData* srgData = &material->GetRHIShaderResourceGroup()->GetData();
-        ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
-
-        // Check the default property value
-        EXPECT_EQ(material->GetPropertyValue<float>(material->FindPropertyIndex(Name{ "MyFloat" })), 1.5f);
-        EXPECT_EQ(srgData->GetConstant<float>(srgData->FindShaderInputConstantIndex(Name{ "m_float" })), 1.5f);
-        EXPECT_EQ(material->GetPropertyValue<int32_t>(material->FindPropertyIndex(Name{ "MyInt" })), -2);
-        EXPECT_EQ(srgData->GetConstant<int32_t>(srgData->FindShaderInputConstantIndex(Name{ "m_int" })), -2);
-
-        // Override a property value
-        EXPECT_TRUE(material->SetPropertyValue<float>(material->FindPropertyIndex(Name{ "MyFloat" }), 5.5f));
-
-        // Apply the changes
-        EXPECT_TRUE(material->Compile());
-        ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
-
-        // Check the updated values with one overridden
-        EXPECT_EQ(material->GetPropertyValue<float>(material->FindPropertyIndex(Name{ "MyFloat" })), 5.5f);
-        EXPECT_EQ(srgData->GetConstant<float>(srgData->FindShaderInputConstantIndex(Name{ "m_float" })), 5.5f);
-        EXPECT_EQ(material->GetPropertyValue<int32_t>(material->FindPropertyIndex(Name{ "MyInt" })), -2);
-        EXPECT_EQ(srgData->GetConstant<int32_t>(srgData->FindShaderInputConstantIndex(Name{ "m_int" })), -2);
-
-        // Pretend there was a hot-reload with new default values
-        AccessMaterialAssetPropertyValue(m_testMaterialAsset, Name{"MyFloat"}) = 0.5f;
-        AccessMaterialAssetPropertyValue(m_testMaterialAsset, Name{"MyInt"}) = -7;
-        AZ::Data::AssetBus::Event(m_testMaterialAsset.GetId(), &AZ::Data::AssetBus::Handler::OnAssetReloaded, m_testMaterialAsset);
-        srgData = &material->GetRHIShaderResourceGroup()->GetData();
-        ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
-
-        // Make sure the override values are still there
-        EXPECT_EQ(srgData->GetConstant<float>(srgData->FindShaderInputConstantIndex(Name{ "m_float" })), 5.5f);
-        EXPECT_EQ(material->GetPropertyValue<float>(material->FindPropertyIndex(Name{ "MyFloat" })), 5.5f);
-
-        // Make sure the new default value is applied where it was not overridden
-        EXPECT_EQ(material->GetPropertyValue<int32_t>(material->FindPropertyIndex(Name{ "MyInt" })), -7);
-        EXPECT_EQ(srgData->GetConstant<int32_t>(srgData->FindShaderInputConstantIndex(Name{ "m_int" })), -7);
     }
 
     TEST_F(MaterialTests, TestFindPropertyIndexUsingOldName)

@@ -181,14 +181,17 @@ void CSequenceBatchRenderDialog::OnInitDialog()
 
     // Fill the sequence combo box.
     bool activeSequenceWasSet = false;
-    for (int k = 0; k < GetIEditor()->GetMovieSystem()->GetNumSequences(); ++k)
+    if (GetIEditor()->GetMovieSystem())
     {
-        IAnimSequence* pSequence = GetIEditor()->GetMovieSystem()->GetSequence(k);
-        m_ui->m_sequenceCombo->addItem(pSequence->GetName());
-        if (pSequence->IsActivated())
+        for (int k = 0; k < GetIEditor()->GetMovieSystem()->GetNumSequences(); ++k)
         {
-            m_ui->m_sequenceCombo->setCurrentIndex(k);
-            activeSequenceWasSet = true;
+            IAnimSequence* pSequence = GetIEditor()->GetMovieSystem()->GetSequence(k);
+            m_ui->m_sequenceCombo->addItem(pSequence->GetName());
+            if (pSequence->IsActivated())
+            {
+                m_ui->m_sequenceCombo->setCurrentIndex(k);
+                activeSequenceWasSet = true;
+            }
         }
     }
     if (!activeSequenceWasSet)
@@ -521,7 +524,10 @@ void CSequenceBatchRenderDialog::OnGo()
         m_ui->m_pGoBtn->setText("Cancel");
         m_ui->m_pGoBtn->setIcon(QPixmap(":/Trackview/clapperboard_cancel.png"));
         // Inform the movie system that it soon will be in a batch-rendering mode.
-        GetIEditor()->GetMovieSystem()->EnableBatchRenderMode(true);
+        if (GetIEditor()->GetMovieSystem())
+        {
+            GetIEditor()->GetMovieSystem()->EnableBatchRenderMode(true);
+        }
 
         // Initialize the context.
         InitializeContext();
@@ -579,27 +585,30 @@ void CSequenceBatchRenderDialog::OnSequenceSelected()
 {
     // Get the selected sequence.
     const QString seqName = m_ui->m_sequenceCombo->currentText();
-    IAnimSequence* pSequence = GetIEditor()->GetMovieSystem()->FindLegacySequenceByName(seqName.toUtf8().data());
-
-    // Adjust the frame range.
-    float sFrame = pSequence->GetTimeRange().start * m_fpsForTimeToFrameConversion;
-    float eFrame = pSequence->GetTimeRange().end * m_fpsForTimeToFrameConversion;
-    m_ui->m_startFrame->setRange(0, static_cast<int>(eFrame));
-    m_ui->m_endFrame->setRange(0, static_cast<int>(eFrame));
-
-    // Set the default start/end frames properly.
-    m_ui->m_startFrame->setValue(static_cast<int>(sFrame));
-    m_ui->m_endFrame->setValue(static_cast<int>(eFrame));
-
-    m_ui->m_shotCombo->clear();
-    // Fill the shot combo box with the names of director nodes.
-    for (int i = 0; i < pSequence->GetNodeCount(); ++i)
+    IAnimSequence* pSequence = GetIEditor()->GetMovieSystem() ? GetIEditor()->GetMovieSystem()->FindLegacySequenceByName(seqName.toUtf8().data()) : nullptr;
+    if (pSequence)
     {
-        if (pSequence->GetNode(i)->GetType() == AnimNodeType::Director)
+        // Adjust the frame range.
+        float sFrame = pSequence->GetTimeRange().start * m_fpsForTimeToFrameConversion;
+        float eFrame = pSequence->GetTimeRange().end * m_fpsForTimeToFrameConversion;
+        m_ui->m_startFrame->setRange(0, static_cast<int>(eFrame));
+        m_ui->m_endFrame->setRange(0, static_cast<int>(eFrame));
+
+        // Set the default start/end frames properly.
+        m_ui->m_startFrame->setValue(static_cast<int>(sFrame));
+        m_ui->m_endFrame->setValue(static_cast<int>(eFrame));
+
+        m_ui->m_shotCombo->clear();
+        // Fill the shot combo box with the names of director nodes.
+        for (int i = 0; i < pSequence->GetNodeCount(); ++i)
         {
-            m_ui->m_shotCombo->addItem(pSequence->GetNode(i)->GetName());
+            if (pSequence->GetNode(i)->GetType() == AnimNodeType::Director)
+            {
+                m_ui->m_shotCombo->addItem(pSequence->GetNode(i)->GetName());
+            }
         }
     }
+
     m_ui->m_shotCombo->setCurrentIndex(0);
 
     CheckForEnableUpdateButton();

@@ -16,8 +16,8 @@
 #include <AzFramework/Script/ScriptComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <Builder/ScriptCanvasBuilderWorker.h>
-#include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
-#include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>

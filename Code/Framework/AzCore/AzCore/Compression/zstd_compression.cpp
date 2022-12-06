@@ -42,7 +42,7 @@ ZStd::~ZStd()
 void* ZStd::AllocateMem(void* userData, size_t size)
 {
     IAllocator* allocator = reinterpret_cast<IAllocator*>(userData);
-    return allocator->Allocate(size, 4, 0, "ZStandard", __FILE__, __LINE__);
+    return allocator->Allocate(size, 4);
 }
 
 void ZStd::FreeMem(void* userData, void* address)

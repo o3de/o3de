@@ -33,9 +33,13 @@ def edit_gem_props(gem_path: pathlib.Path = None,
                    new_compatible_engines: list or str = None,
                    remove_compatible_engines: list or str = None,
                    replace_compatible_engines: list or str = None,
+                   new_repo_uri: str = None,
                    new_tags: list or str = None,
                    remove_tags: list or str = None,
-                   replace_tags: list or str = None
+                   replace_tags: list or str = None,
+                   new_platforms: list or str = None,
+                   remove_platforms: list or str = None,
+                   replace_platforms: list or str = None
                    ) -> int:
 
     if not gem_path and not gem_name:
@@ -59,30 +63,36 @@ def edit_gem_props(gem_path: pathlib.Path = None,
                          f' characters, and start with a letter.  {new_name}')
             return 1
         update_key_dict['gem_name'] = new_name
-    if new_display:
+    if isinstance(new_display, str):
         update_key_dict['display_name'] = new_display
-    if new_origin:
+    if isinstance(new_origin, str):
         update_key_dict['origin'] = new_origin
-    if new_type:
+    if isinstance(new_type, str):
         update_key_dict['type'] = new_type
-    if new_summary:
+    if isinstance(new_summary, str):
         update_key_dict['summary'] = new_summary
-    if new_icon:
+    if isinstance(new_icon, str):
         update_key_dict['icon_path'] = new_icon
-    if new_requirements:
+    if isinstance(new_requirements, str):
         update_key_dict['requirements'] = new_requirements
-    if new_documentation_url:
+    if isinstance(new_documentation_url,str):
         update_key_dict['documentation_url'] = new_documentation_url
-    if new_license:
-        update_key_dict['license'] = new_license
-    if new_license_url:
+    if isinstance(new_license, str):
+        update_key_dict['license'] = new_license 
+    if isinstance(new_license_url, str):
         update_key_dict['license_url'] = new_license_url
-    if new_version:
+    if isinstance(new_repo_uri, str):
+        update_key_dict['repo_uri'] = new_repo_uri
+    if isinstance(new_version, str):
         update_key_dict['version'] = new_version
 
     if new_tags or remove_tags or replace_tags:
         update_key_dict['user_tags'] = utils.update_values_in_key_list(gem_json_data.get('user_tags', []), new_tags,
                                                         remove_tags, replace_tags)
+
+    if new_platforms or remove_platforms or replace_platforms:
+        update_key_dict['platforms'] = utils.update_values_in_key_list(gem_json_data.get('platforms', []), new_platforms,
+                                                        remove_platforms, replace_platforms)
 
     if new_compatible_engines and not utils.validate_version_specifier_list(new_compatible_engines):
         logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.2.3 \n {new_compatible_engines}')
@@ -123,9 +133,13 @@ def _edit_gem_props(args: argparse) -> int:
                           args.add_compatible_engines,
                           args.remove_compatible_engines,
                           args.replace_compatible_engines,
+                          None, # repo_uri
                           args.add_tags,
                           args.remove_tags,
-                          args.replace_tags)
+                          args.replace_tags,
+                          args.add_platforms,
+                          args.remove_platforms,
+                          args.replace_platforms)
 
 
 def add_parser_args(parser):
@@ -171,6 +185,12 @@ def add_parser_args(parser):
                        help='Removes tag(s) from the user_tags property. Can be specified multiple times.')
     group.add_argument('-rt', '--replace-tags', type=str, nargs='*', required=False,
                        help='Replace tag(s) in user_tags property. Can be specified multiple times.')
+    group.add_argument('-apl', '--add-platforms', type=str, nargs='*', required=False,
+                       help='Adds platform(s) to platforms property. Can be specified multiple times.')
+    group.add_argument('-dpl', '--remove-platforms', type=str, nargs='*', required=False,
+                       help='Removes platform(s) from the platforms property. Can be specified multiple times.')
+    group.add_argument('-rpl', '--replace-platforms', type=str, nargs='*', required=False,
+                       help='Replace platform(s) in platforms property. Can be specified multiple times.')
     parser.set_defaults(func=_edit_gem_props)
 
 

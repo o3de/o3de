@@ -49,7 +49,7 @@ namespace AZ::IO
         Streamer_FullFileDecompressorConformityTests, StreamStackEntryConformityTests, FullFileDecompressorTestDescription);
 
     class Streamer_FullDecompressorTest
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         enum CompressionState
@@ -68,7 +68,7 @@ namespace AZ::IO
 
         void SetUp() override
         {
-            UnitTest::AllocatorsFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
 
             AllocatorInstance<PoolAllocator>::Create();
             AllocatorInstance<ThreadPoolAllocator>::Create();
@@ -91,7 +91,7 @@ namespace AZ::IO
             AllocatorInstance<ThreadPoolAllocator>::Destroy();
             AllocatorInstance<PoolAllocator>::Destroy();
 
-            UnitTest::AllocatorsFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         void SetupEnvironment(u32 maxNumReads, u32 maxNumJobs)

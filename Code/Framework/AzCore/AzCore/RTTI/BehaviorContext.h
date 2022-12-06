@@ -1538,7 +1538,7 @@ namespace AZ
             static void* Allocate(void* userData)
             {
                 (void)userData;
-                return azmalloc(sizeof(T), AZStd::alignment_of<T>::value, AZ::SystemAllocator, AZ::AzTypeInfo<T>::Name());
+                return azmalloc(sizeof(T), AZStd::alignment_of<T>::value, AZ::SystemAllocator);
             }
 
             static void DeAllocate(void* address, void* userData)

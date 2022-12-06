@@ -127,27 +127,84 @@ namespace AZ
             m_sceneChangedEvent.Signal(scene);
         }
 
+        // This function (called from BootstrapSystemComponent::OnTick) controls the
+        // render pipelines to render or not for the launcher. In the editor the pipelines
+        // are controlled from EditorViewportWidget::UpdateScene.
         void ViewportContext::RenderTick()
         {
-            for (const auto& pipeline : m_currentPipelines)
+            auto renderPipelineOnce = [](RenderPipelinePtr& pipeline)
             {
                 // add the current pipeline to next render tick if it's not already added.
                 if (pipeline && pipeline->GetRenderMode() != RenderPipeline::RenderMode::RenderOnce)
                 {
                     pipeline->AddToRenderTickOnce();
                 }
+            };
+
+            auto stopRenderingPipeline = [](RenderPipelinePtr& pipeline)
+            {
+                if (pipeline && pipeline->GetRenderMode() != RenderPipeline::RenderMode::NoRender)
+                {
+                    pipeline->RemoveFromRenderTick();
+                }
+            };
+
+            if (auto* xrSystem = AZ::RPI::RPISystemInterface::Get()->GetXRSystem())
+            {
+                // Check wheter to render default pipeline on host or not.
+                if (xrSystem->GetRHIXRRenderingInterface()->IsDefaultRenderPipelineNeeded())
+                {
+                    if (xrSystem->GetRHIXRRenderingInterface()->IsDefaultRenderPipelineEnabledOnHost())
+                    {
+                        renderPipelineOnce(m_currentPipelines[static_cast<size_t>(AZ::RPI::ViewType::Default)]);
+                    }
+                    else
+                    {
+                        stopRenderingPipeline(m_currentPipelines[static_cast<size_t>(AZ::RPI::ViewType::Default)]);
+                    }
+                }
+
+                // Render XR pipelines
+                for (AZ::u32 i = 0; i < xrSystem->GetNumViews(); i++)
+                {
+                    const AZ::RPI::ViewType viewType = (i == 0) ? AZ::RPI::ViewType::XrLeft : AZ::RPI::ViewType::XrRight;
+                    renderPipelineOnce(m_currentPipelines[static_cast<size_t>(viewType)]);
+                }
+            }
+            else
+            {
+                // Render default pipeline
+                renderPipelineOnce(m_currentPipelines[static_cast<size_t>(AZ::RPI::ViewType::Default)]);
             }
         }
 
         void ViewportContext::OnBeginPrepareRender()
         {
+            AZ_PROFILE_FUNCTION(RPI);
             ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::OnRenderTick);
             ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::OnRenderTick);
+        }
+
+        void ViewportContext::OnEndPrepareRender()
+        {
+            AZ_PROFILE_FUNCTION(RPI);
+            ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::WaitForRender);
+            ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::WaitForRender);
         }
 
         AZ::Name ViewportContext::GetName() const
         {
             return m_name;
+        }
+
+        ViewGroupPtr ViewportContext::GetViewGroup()
+        {
+            return m_viewGroup;
+        }
+
+        ConstViewGroupPtr ViewportContext::GetViewGroup() const
+        {
+            return m_viewGroup;
         }
 
         ViewPtr ViewportContext::GetDefaultView()
@@ -158,6 +215,16 @@ namespace AZ
         ConstViewPtr ViewportContext::GetDefaultView() const
         {
             return m_viewGroup->GetView();
+        }
+
+        ViewPtr ViewportContext::GetStereoscopicView(AZ::RPI::ViewType viewType)
+        {
+            return m_viewGroup->GetView(viewType);
+        }
+
+        ConstViewPtr ViewportContext::GetStereoscopicView(AZ::RPI::ViewType viewType) const
+        {
+            return m_viewGroup->GetView(viewType);
         }
 
         AzFramework::WindowSize ViewportContext::GetViewportSize() const
@@ -267,7 +334,7 @@ namespace AZ
             }
         }
 
-        void ViewportContext::SetDefaultViewGroup(ViewGroupPtr viewGroup)
+        void ViewportContext::SetViewGroup(ViewGroupPtr viewGroup)
         {
             m_viewGroup = viewGroup;
             for (uint32_t i = 0; i < MaxViewTypes; i++)
@@ -284,15 +351,20 @@ namespace AZ
                 return;
             }
 
-            if (!m_currentPipelines[viewIndex])
+            auto& pipeline = m_currentPipelines[viewIndex];
+
+            if (!pipeline)
             {
-                m_currentPipelines[viewIndex] = m_rootScene ? m_rootScene->FindRenderPipelineForWindow(m_windowContext->GetWindowHandle(), static_cast<ViewType>(viewIndex)) : nullptr;
-                m_currentPipelineChangedEvent.Signal(m_currentPipelines[viewIndex]);
+                pipeline = m_rootScene->FindRenderPipelineForWindow(m_windowContext->GetWindowHandle(), static_cast<ViewType>(viewIndex));
+                if (pipeline)
+                {
+                    m_currentPipelineChangedEvent.Signal(pipeline);
+                }
             }
-                
-            if (m_currentPipelines[viewIndex])
+
+            if (pipeline)
             {
-                m_currentPipelines[viewIndex]->SetDefaultView(pipelineView);
+                pipeline->SetDefaultView(pipelineView);
             }
         }
 
@@ -301,26 +373,29 @@ namespace AZ
             return m_currentPipelines[DefaultViewType];
         }
 
-        void ViewportContext::OnRenderPipelineAdded([[maybe_unused]]RenderPipelinePtr pipeline)
+        void ViewportContext::OnRenderPipelineChanged(RenderPipeline* pipeline,
+            SceneNotification::RenderPipelineChangeType changeType)
         {
-            // If the pipeline is registered to our window, reset our current pipeline and do a lookup
-            // Currently, Scene just stores pipelines sequentially in a vector, but we'll attempt to be safe
-            // in the event prioritization is added later
-            if (pipeline->GetWindowHandle() == m_windowContext->GetWindowHandle())
+            if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Added)
             {
-                uint32_t viewIndex = static_cast<uint32_t>(pipeline->GetViewType());
-                m_currentPipelines[viewIndex].reset();
-                UpdatePipelineView(viewIndex);
+                // If the pipeline is registered to our window, reset our current pipeline and do a lookup
+                // Currently, Scene just stores pipelines sequentially in a vector, but we'll attempt to be safe
+                // in the event prioritization is added later
+                if (pipeline->GetWindowHandle() == m_windowContext->GetWindowHandle())
+                {
+                    uint32_t viewIndex = static_cast<uint32_t>(pipeline->GetViewType());
+                    m_currentPipelines[viewIndex].reset();
+                    UpdatePipelineView(viewIndex);
+                }
             }
-        }
-
-        void ViewportContext::OnRenderPipelineRemoved(RenderPipeline* pipeline)
-        {
-            uint32_t viewIndex = static_cast<uint32_t>(pipeline->GetViewType());
-            if (m_currentPipelines[viewIndex].get() == pipeline)
+            else if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Removed)
             {
-                m_currentPipelines[viewIndex].reset();
-                UpdatePipelineView(viewIndex);
+                 uint32_t viewIndex = static_cast<uint32_t>(pipeline->GetViewType());
+                if (m_currentPipelines[viewIndex].get() == pipeline)
+                {
+                    m_currentPipelines[viewIndex].reset();
+                    UpdatePipelineView(viewIndex);
+                }
             }
         }
 

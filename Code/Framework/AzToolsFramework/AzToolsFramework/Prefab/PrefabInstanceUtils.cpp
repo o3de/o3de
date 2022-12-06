@@ -30,6 +30,11 @@ namespace AzToolsFramework
                         result.m_climbedInstances.emplace_back(instancePtr);
                         instancePtr = &(instancePtr->GetParentInstance()->get());
                     }
+
+                    if (instancePtr == targetInstance)
+                    {
+                        result.m_isTargetInstanceReached = true;
+                    }
                 }
                 else
                 {
@@ -67,17 +72,24 @@ namespace AzToolsFramework
                 return GetRelativePathFromClimbedInstances(climbedInstances);
             }
 
-            AZStd::string GetRelativePathFromClimbedInstances(const AZStd::vector<const Instance*>& climbedInstances)
+            AZStd::string GetRelativePathFromClimbedInstances(const AZStd::vector<const Instance*>& climbedInstances,
+                bool skipTopClimbedInstance)
             {
                 AZStd::string relativePath = "";
+                if (climbedInstances.empty() && skipTopClimbedInstance)
+                {
+                    return relativePath;
+                }
 
-                for (auto instanceIter = climbedInstances.rbegin(); instanceIter != climbedInstances.rend(); ++instanceIter)
+                auto climbedInstancesBeginIter = skipTopClimbedInstance ?
+                    ++climbedInstances.crbegin() : climbedInstances.crbegin();
+                for (auto instanceIter = climbedInstancesBeginIter; instanceIter != climbedInstances.crend(); ++instanceIter)
                 {
                     relativePath.append(PrefabDomUtils::PathStartingWithInstances);
                     relativePath.append((*instanceIter)->GetInstanceAlias());
                 }
 
-                return relativePath;
+                return AZStd::move(relativePath);
             }
 
             bool IsDescendantInstance(const Instance& childInstance, const Instance& parentInstance)
@@ -95,7 +107,6 @@ namespace AzToolsFramework
 
                 return false;
             }
-
         } // namespace PrefabInstanceUtils
     } // namespace Prefab
 } // namespace AzToolsFramework

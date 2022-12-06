@@ -53,21 +53,15 @@ namespace AZ
             m_scopeMultisampleState = imageDescriptor.m_multisampleState;
             if(m_scopeMultisampleState.m_customPositionsCount > 0)
             {
+                NSUInteger numSampleLocations = m_scopeMultisampleState.m_samples;
                 AZStd::vector<MTLSamplePosition> mtlCustomSampleLocations;
                 AZStd::transform( m_scopeMultisampleState.m_customPositions.begin(),
-                                 m_scopeMultisampleState.m_customPositions.begin() + m_scopeMultisampleState.m_customPositionsCount,
+                                 m_scopeMultisampleState.m_customPositions.begin() + numSampleLocations,
                                  AZStd::back_inserter(mtlCustomSampleLocations), [&](const auto& item)
                 {
                     return ConvertSampleLocation(item);
                 });
-                
-                MTLSamplePosition samplePositions[m_scopeMultisampleState.m_customPositionsCount];
-                
-                for(int i = 0 ; i < m_scopeMultisampleState.m_customPositionsCount; i++)
-                {
-                    samplePositions[i] = mtlCustomSampleLocations[i];
-                }
-                [m_renderPassDescriptor setSamplePositions:samplePositions count:m_scopeMultisampleState.m_customPositionsCount];
+                [m_renderPassDescriptor setSamplePositions:mtlCustomSampleLocations.data() count:numSampleLocations];
             }
         }
     
@@ -301,11 +295,15 @@ namespace AZ
             
             if (isPrologue)
             {
-                for (const auto& fence : m_resourceFences[static_cast<int>(ResourceFenceAction::Wait)])
+                //Check if the scope is part of merged group (i.e FrameGraphExecuteGroupMerged). For non-merged
+                //groups (i.e FrameGraphExecuteGroup) we handle fence waiting at the start of the group within FrameGraphExecuteGroup::BeginInternal
+                //The reason for this is that you can only wait on fences before the parallel encoders (within FrameGraphExecuteGroup) are created
+                const bool isScopePartOfMergedGroup = commandListCount == 1;
+                if (isScopePartOfMergedGroup)
                 {
-                    commandList.WaitOnResourceFence(fence);
+                    WaitOnAllResourceFences(commandList);
                 }
-                
+
                 for (RHI::ResourcePoolResolver* resolvePolicyBase : GetResourcePoolResolves())
                 {
                     static_cast<ResourcePoolResolver*>(resolvePolicyBase)->Resolve(commandList);
@@ -341,19 +339,50 @@ namespace AZ
             AZ::u32 commandListCount) const
         {
             AZ_PROFILE_FUNCTION(RHI);
-            const bool isEpilogue = (commandListIndex + 1) == commandListCount;
-            
             commandList.FlushEncoder();
             
-            if (isEpilogue)
+            //Check if the scope is part of merged group (i.e FrameGraphExecuteGroupMerged). For non-merged
+            //groups (i.e FrameGraphExecuteGroup) we handle signalling at the end of the group within FrameGraphExecuteGroup::EndInternal
+            //The reason for this is that you can only signal fences once the parallel encoders (within FrameGraphExecuteGroup) are flushed
+            const bool isScopePartOfMergedGroup = commandListCount == 1;
+            if (isScopePartOfMergedGroup)
             {
-                for (const auto& fence : m_resourceFences[static_cast<int>(ResourceFenceAction::Signal)])
-                {
-                    commandList.SignalResourceFence(fence);
-                }
+                SignalAllResourceFences(commandList);
             }
         }
         
+        void Scope::SignalAllResourceFences(CommandList& commandList) const
+        {
+            for (const auto& fence : m_resourceFences[static_cast<int>(ResourceFenceAction::Signal)])
+            {
+                commandList.SignalResourceFence(fence);
+            }
+        }
+    
+        void Scope::SignalAllResourceFences(id <MTLCommandBuffer> mtlCommandBuffer) const
+        {
+            for (const auto& fence : m_resourceFences[static_cast<int>(ResourceFenceAction::Signal)])
+            {
+                fence.SignalFromGpu(mtlCommandBuffer);
+            }
+        }
+    
+        void Scope::WaitOnAllResourceFences(CommandList& commandList) const
+        {
+            for (const auto& fence : m_resourceFences[static_cast<int>(ResourceFenceAction::Wait)])
+            {
+                commandList.WaitOnResourceFence(fence);
+            }
+        }
+    
+        void Scope::WaitOnAllResourceFences(id <MTLCommandBuffer> mtlCommandBuffer) const
+        {
+            for (const auto& fence : m_resourceFences[static_cast<int>(ResourceFenceAction::Wait)])
+            {
+                fence.WaitOnGpu(mtlCommandBuffer);
+            }
+        }
+    
         MTLRenderPassDescriptor* Scope::GetRenderPassDescriptor() const
         {
             return  m_renderPassDescriptor;

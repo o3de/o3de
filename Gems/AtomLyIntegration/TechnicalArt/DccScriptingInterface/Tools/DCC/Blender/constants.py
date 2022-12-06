@@ -46,15 +46,14 @@ from DccScriptingInterface.constants import USER_HOME
 from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_TOOLS_DCC_BLENDER
 from DccScriptingInterface.Tools.DCC.Blender import ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER
 
-ENVAR_PATH_DCCSI_TOOLS_DCC = "PATH_DCCSI_TOOLS_DCC"
-ENVAR_PATH_DCCSI_TOOLS = "PATH_DCCSI_TOOLS"
+from DccScriptingInterface.constants import ENVAR_PATH_DCCSI_TOOLS_DCC
+from DccScriptingInterface.constants import ENVAR_PATH_DCCSI_TOOLS
 ENVAR_DCCSI_CONFIG_DCC_BLENDER = 'DCCSI_CONFIG_DCC_BLENDER'
 
 from DccScriptingInterface.Tools.DCC.Blender import ENVAR_DCCSI_BLENDER_VERSION
 from DccScriptingInterface.Tools.DCC.Blender import SLUG_DCCSI_BLENDER_VERSION
 
 ENVAR_DCCSI_BLENDER_PROJECT = "DCCSI_BLENDER_PROJECT"  # project name
-EBVAR_DCCSI_BLENDER_PROJECT = "DCCSI_BLENDER_PROJECT"
 
 from DccScriptingInterface.Tools.DCC.Blender import ENVAR_DCCSI_BLENDER_LOCATION
 from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_BLENDER_ROOT
@@ -62,6 +61,9 @@ from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_BLENDER_LOCATION
 
 from DccScriptingInterface.Tools.DCC.Blender import ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS
 from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS
+
+from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_TOOLS_DCC_BLENDER_SETTINGS
+from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_TOOLS_DCC_BLENDER_LOCAL_SETTINGS
 
 # I think this one will launch with a console
 SLUG_BLENDER_EXE = "blender.exe"
@@ -85,6 +87,9 @@ PATH_DCCSI_BLENDER_PY_EXE = f'{PATH_DCCSI_BLENDER_PYTHON_LOC}\\bin\\python.exe'
 from DccScriptingInterface.Tools.DCC.Blender import SLUG_DCCSI_BLENDER_BOOTSTRAP
 from DccScriptingInterface.Tools.DCC.Blender import ENVAR_PATH_DCCSI_BLENDER_BOOTSTRAP
 from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_BLENDER_BOOTSTRAP
+
+# set up user scripts envar for Blender: https://blenderartists.org/t/addons-environment-variable-linux/603145/2
+ENVAR_BLENDER_USER_SCRIPTS = 'BLENDER_USER_SCRIPTS'
 
 ENVAR_URL_DCCSI_BLENDER_WIKI = 'URL_DCCSI_BLENDER_WIKI'
 URL_DCCSI_BLENDER_WIKI = 'https://github.com/o3de/o3de/wiki/O3DE-DCCsi-Tools-DCC-Blender'

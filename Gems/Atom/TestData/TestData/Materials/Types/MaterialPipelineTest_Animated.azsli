@@ -1,0 +1,121 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+ 
+#include <scenesrg.srgi>
+#include <Atom/Features/VertexUtility.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+
+ShaderResourceGroup MaterialSrg : SRG_PerMaterial
+{
+    float3 m_baseColor;
+    float m_metallic;
+    float m_roughness;
+    float m_animationSpeed;
+    float m_amplitude;
+    float m_frequency;
+}
+
+void CalcPositions(float3 inPosition, out float3 worldPos, out float4 clipPos)
+{        
+    float amount = sin(3.14159 * 2 * (SceneSrg::m_time * MaterialSrg::m_animationSpeed + (inPosition.x + inPosition.y + inPosition.z) * MaterialSrg::m_frequency)) * MaterialSrg::m_amplitude;
+    float3 dir = normalize(inPosition);
+    worldPos = LocalSpaceToWorldSpace(inPosition + dir * amount);
+    clipPos = WorldSpaceToClipSpace(worldPos);
+}
+
+#if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
+
+    struct VsInput
+    {
+        float3 position : POSITION;
+        float3 normal : NORMAL;
+        float4 tangent : TANGENT; 
+    };
+
+    struct VsOutput
+    {
+        precise linear centroid float4 position : SV_Position;
+        float3 normal: NORMAL;
+        float4 tangent : TANGENT; 
+        float3 worldPosition : UV0;
+    };
+
+    VsOutput EvaluateVertexGeometry(VsInput IN)
+    {        
+
+        VsOutput output;
+
+        CalcPositions(IN.position, output.worldPosition, output.position);
+
+        output.normal = IN.normal;
+        output.tangent = IN.tangent;
+
+        return output;
+    }
+
+    class PixelGeometryData
+    {
+        float3 positionWS;
+        float3 vertexNormal;
+
+        //TODO(MaterialPipeline): use these or remove them
+        float3 tangents[1];
+        float3 bitangents[1];
+    };
+
+    PixelGeometryData EvaluatePixelGeometry(VsOutput IN, bool isFrontFace)
+    {
+        PixelGeometryData pgd;
+        pgd.positionWS = IN.worldPosition;
+        pgd.vertexNormal = IN.normal;
+        return pgd;
+    }
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_SurfaceData.azsli>
+
+    Surface EvaluateSurface(PixelGeometryData geoData)
+    {
+        Surface surface;
+        surface.position = geoData.positionWS.xyz;
+        surface.vertexNormal = geoData.vertexNormal;
+        surface.normal = geoData.vertexNormal;
+        surface.roughnessLinear = MaterialSrg::m_roughness;
+
+        float3 baseColor = MaterialSrg::m_baseColor;
+        float metallic = MaterialSrg::m_metallic;
+        float specularF0Factor = 0.5f;
+        surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
+    
+        surface.CalculateRoughnessA();
+
+        return surface;
+    }
+
+#else
+
+    struct VsInput
+    {
+        float3 position : POSITION;
+    };
+
+    struct VsOutput
+    {
+        precise linear centroid float4 position : SV_Position;
+    };
+
+    VsOutput EvaluateVertexGeometry(VsInput IN)
+    {
+        float3 worldPosUnused;
+
+        VsOutput output;
+        CalcPositions(IN.position, worldPosUnused, output.position);
+        return output;
+    }
+
+#endif

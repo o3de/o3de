@@ -35,20 +35,43 @@ QTabBar::tab:text {
     text-align:left;
 }
 
-#createGemTab QTabBar::tab {
-    background-color: #444444;
-    font-size:16px;
-    min-height:230px;
-    margin: 0px;
+#createAGemLHS QRadioButton{
+    font-size: 16px;
+    height: 40px;
+    min-width: 180px;
+    spacing: 10px;
+    color: #6b6b6b;
+}
+
+#createAGemLHS QRadioButton:enabled{
+    color: #aaaaaa;
+}
+
+#createAGemLHS QRadioButton:checked{
+    background-color: #333333;
+    spacing: 30px;
+    color: #FFFFFF;
+}
+
+#createAGemLHS QRadioButton::indicator{
+    image: url(:/nothing.png);
+}
+
+QStackedWidget#createAGemRHS{
+    background-color: #333333;
     text-align:left;
 }
 
-QTabWidget#createGemTab::tab-bar {
-    left: 0px;
+#createAGemRHS #formFrame{
+    margin-left: 0px;
 }
 
-QTabBar#createGemTab::tab:text {
-    text-align:left;
+#createAGemRHS #formOptionsFrame{
+    margin-left:2px;
+}
+
+#createAGemRHS #formTagField{
+    margin-left: 0px;
 }
 
 QTabWidget::pane {
@@ -110,6 +133,11 @@ QTabBar::tab:focus {
     height: 40px;
 }
 
+#formOptionsWidget QCheckBox{
+    font-size: 16px;
+    height: 40px;
+}
+
 #ToastNotification {
     background-color: black;
     border-radius: 20px;
@@ -132,6 +160,7 @@ QTabBar::tab:focus {
 
 #formLineEditWidget,
 #formBrowseEditWidget, 
+#formOptionsWidget,
 #formComboBoxWidget {
     max-width: 890px;
 }
@@ -144,6 +173,37 @@ QTabBar::tab:focus {
     padding: 0px 10px 2px 6px;
     margin-top:10px;
     margin-left:50px;
+}
+
+#formOptionsFrame {
+    max-width: 840px;
+    padding: 0px 10px 2px 6px;
+    margin-top:10px;
+    margin-left:50px;
+}
+
+#formTagField {
+    max-width: 840px;
+    background-color: #333333;
+    padding: 0px 10px 2px 6px;
+    margin-left:50px;
+}
+
+#formTagField QCheckBox{
+    background-color: #555555;
+    padding-left:7px;
+    padding-top:2px;
+    padding-bottom:2px;
+    padding-right:5px;
+    spacing:0px;
+    color:#94D2FF;
+}
+
+#formTagField QCheckBox::indicator{
+    background-color: transparent;
+    image:url(:/X.svg);
+    width: 10%;
+    padding-left:3px;
 }
 
 #createAGem #formFrame {
@@ -162,6 +222,7 @@ QTabBar::tab:focus {
     border:1px solid #959595;
 }
 
+#formOptionsFrame QLabel,
 #formFrame QLabel {
     font-size: 13px;
     color: #cccccc;
@@ -175,6 +236,16 @@ QTabBar::tab:focus {
     background-color: transparent;
     background:transparent url(:/Select_Folder.svg) no-repeat center;
     qproperty-flat: true;
+}
+
+#formFrame QPushButton#dropDownButton{
+    background-color: transparent;
+    background: url(:/CarrotArrowDown.svg) no-repeat center;
+    qproperty-flat: true;
+    qproperty-iconSize: 40px;
+    padding-bottom:2px;
+    margin-left:-10px;
+    width: 35px;
 }
 
 #formFrame QPushButton:focus {
@@ -258,6 +329,10 @@ QTabBar::tab:focus {
     qproperty-indent: 0;
 }
 
+#rightPaneDetailsHeader {
+    font-size:21px;
+}
+
 #rightPaneSubheader {
     font-size:14px;
     qproperty-indent: 0;
@@ -279,6 +354,10 @@ QTabBar::tab:focus {
     padding-bottom: 20px;
     padding-left: 23px;
     font-size: 12;
+}
+
+#createAGemRadioButtonSubFormField #formFrame{
+    margin-left: 23px;
 }
 
 /************** General (Modal windows) **************/

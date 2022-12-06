@@ -148,7 +148,7 @@ namespace AzFramework
             : BaseAssetProcessorMessage(true)
             , m_assetUuid(assetUuid)
         {
-            
+
         }
 
         // these share the same message type since they're request and response.
@@ -620,7 +620,7 @@ namespace AzFramework
         }
 
         //---------------------------------------------------------------------
-        
+
         unsigned int ShowAssetInAssetProcessorRequest::GetMessageType() const
         {
             return MessageType;
@@ -1593,6 +1593,24 @@ namespace AzFramework
                     ->Field("legacyAssetIds", &AssetNotificationMessage::m_legacyAssetIds)
                     ->Field("dependencies", &AssetNotificationMessage::m_dependencies)
                     ->Field("platform", &AssetNotificationMessage::m_platform);
+            }
+        }
+
+        //----------------------------------------------------------------------------
+        unsigned int BulkAssetNotificationMessage::GetMessageType() const
+        {
+            return MessageType;
+        }
+
+        void BulkAssetNotificationMessage::Reflect(AZ::ReflectContext* context)
+        {
+            auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
+            if (serialize)
+            {
+                serialize->Class<BulkAssetNotificationMessage, BaseAssetProcessorMessage>()
+                    ->Version(1)
+                    ->Field("Type", &BulkAssetNotificationMessage::m_type)
+                    ->Field("Messages", &BulkAssetNotificationMessage::m_messages);
             }
         }
 

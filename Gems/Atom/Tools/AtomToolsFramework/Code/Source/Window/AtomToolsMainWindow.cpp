@@ -8,10 +8,8 @@
 
 #include <Atom/RHI/Factory.h>
 #include <AtomToolsFramework/PerformanceMonitor/PerformanceMonitorRequestBus.h>
-#include <AtomToolsFramework/SettingsDialog/SettingsDialog.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
-#include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/containers/map.h>
@@ -19,6 +17,7 @@
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
 
+#include <QClipboard>
 #include <QCloseEvent>
 #include <QFileDialog>
 #include <QInputDialog>
@@ -189,13 +188,28 @@ namespace AtomToolsFramework
         return names;
     }
 
+    void AtomToolsMainWindow::SetStatusMessage(const AZStd::string& message)
+    {
+        m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(message.c_str()));
+    }
+
+    void AtomToolsMainWindow::SetStatusWarning(const AZStd::string& message)
+    {
+        m_statusMessage->setText(QString("<font color=\"Yellow\">%1</font>").arg(message.c_str()));
+    }
+
+    void AtomToolsMainWindow::SetStatusError(const AZStd::string& message)
+    {
+        m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(message.c_str()));
+    }
+
     void AtomToolsMainWindow::QueueUpdateMenus(bool rebuildMenus)
     {
         m_rebuildMenus = m_rebuildMenus || rebuildMenus;
         if (!m_updateMenus)
         {
             m_updateMenus = true;
-            QTimer::singleShot(0, [this]() {
+            QTimer::singleShot(0, this, [this]() {
                 if (m_rebuildMenus)
                 {
                     // Clearing all actions that were added directly to the menu bar
@@ -203,14 +217,14 @@ namespace AtomToolsFramework
 
                     // Instead of destroying and recreating the menu bar, destroying the individual child menus to prevent the UI from
                     // popping when the menu bar is recreated
-                    auto menus = menuBar()->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly);
-                    for (auto menu : menus)
+                    for (auto menu : menuBar()->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly))
                     {
                         delete menu;
                     }
 
                     AtomToolsMainMenuRequestBus::Event(m_toolId, &AtomToolsMainMenuRequestBus::Events::CreateMenus, menuBar());
                 }
+
                 AtomToolsMainMenuRequestBus::Event(m_toolId, &AtomToolsMainMenuRequestBus::Events::UpdateMenus, menuBar());
                 m_updateMenus = false;
                 m_rebuildMenus = false;
@@ -250,10 +264,18 @@ namespace AtomToolsFramework
 
         m_menuHelp->addAction(tr("&Help..."), [this]() {
             OpenHelpDialog();
-        });
+        }, QKeySequence::HelpContents);
 
         m_menuHelp->addAction(tr("&About..."), [this]() {
             OpenAboutDialog();
+        });
+
+        connect(m_menuEdit, &QMenu::aboutToShow, menuBar, [toolId = m_toolId](){
+            AtomToolsMainWindowRequestBus::Event(toolId, &AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, false);
+        });
+
+        connect(QApplication::clipboard(), &QClipboard::dataChanged, menuBar, [toolId = m_toolId](){
+            AtomToolsMainWindowRequestBus::Event(toolId, &AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, false);
         });
     }
 
@@ -261,75 +283,79 @@ namespace AtomToolsFramework
     {
     }
 
-    void AtomToolsMainWindow::SetStatusMessage(const QString& message)
+    void AtomToolsMainWindow::PopulateSettingsInspector(InspectorWidget* inspector) const
     {
-        m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(message));
-    }
-
-    void AtomToolsMainWindow::SetStatusWarning(const QString& message)
-    {
-        m_statusMessage->setText(QString("<font color=\"Yellow\">%1</font>").arg(message));
-    }
-
-    void AtomToolsMainWindow::SetStatusError(const QString& message)
-    {
-        m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(message));
-    }
-
-    AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> AtomToolsMainWindow::GetSettingsDialogGroups() const
-    {
-        AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> groups;
-        groups.push_back(CreateSettingsGroup(
+        m_applicationSettingsGroup = CreateSettingsPropertyGroup(
             "Application Settings",
             "Application Settings",
-            {
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/Application/ClearLogOnStart",
-                    "Clear Log On Start",
-                    "Clear the application log on startup",
-                    false),
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/Application/EnableSourceControl",
-                    "Enable Source Control",
-                    "Enable source control for the application if it is available",
-                    false),
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenActive",
-                    "Update Interval When Active",
-                    "Minimum delay between ticks (in milliseconds) when the application has focus",
-                    aznumeric_cast<AZ::s64>(1)),
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenNotActive",
-                    "Update Interval When Not Active",
-                    "Minimum delay between ticks (in milliseconds) when the application does not have focus",
-                    aznumeric_cast<AZ::s64>(250)),
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/Application/AllowMultipleInstances",
-                    "Allow Multiple Instances",
-                    "Allow multiple instances of the application to run",
-                    false),
-            }));
-        groups.push_back(CreateSettingsGroup(
+            { CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/Application/ClearLogOnStart",
+                  "Clear Log On Start",
+                  "Clear the application log on startup",
+                  false),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/Application/EnableSourceControl",
+                  "Enable Source Control",
+                  "Enable source control for the application if it is available",
+                  false),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenActive",
+                  "Update Interval When Active",
+                  "Minimum delay between ticks (in milliseconds) when the application has focus",
+                  aznumeric_cast<AZ::s64>(1)),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenNotActive",
+                  "Update Interval When Not Active",
+                  "Minimum delay between ticks (in milliseconds) when the application does not have focus",
+                  aznumeric_cast<AZ::s64>(250)),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/Application/AllowMultipleInstances",
+                  "Allow Multiple Instances",
+                  "Allow multiple instances of the application to run",
+                  false) });
+
+        inspector->AddGroup(
+            m_applicationSettingsGroup->m_name,
+            m_applicationSettingsGroup->m_displayName,
+            m_applicationSettingsGroup->m_description,
+            new InspectorPropertyGroupWidget(
+                m_applicationSettingsGroup.get(), m_applicationSettingsGroup.get(), azrtti_typeid<DynamicPropertyGroup>()));
+
+        m_assetBrowserSettingsGroup = CreateSettingsPropertyGroup(
             "Asset Browser Settings",
             "Asset Browser Settings",
-            {
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFiles",
-                    "Prompt To Open Multiple Files",
-                    "Confirm before opening multiple files",
-                    true),
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFilesThreshold",
-                    "Prompt To Open Multiple Files Threshold",
-                    "Maximum number of files that can be selected before prompting for confirmation",
-                    aznumeric_cast<AZ::s64>(10)),
-            }));
-        return groups;
+            { CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFiles",
+                  "Prompt To Open Multiple Files",
+                  "Confirm before opening multiple files",
+                  true),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFilesThreshold",
+                  "Prompt To Open Multiple Files Threshold",
+                  "Maximum number of files that can be selected before prompting for confirmation",
+                  aznumeric_cast<AZ::s64>(10)) });
+
+        inspector->AddGroup(
+            m_assetBrowserSettingsGroup->m_name,
+            m_assetBrowserSettingsGroup->m_displayName,
+            m_assetBrowserSettingsGroup->m_description,
+            new InspectorPropertyGroupWidget(
+                m_assetBrowserSettingsGroup.get(), m_assetBrowserSettingsGroup.get(), azrtti_typeid<DynamicPropertyGroup>()));
     }
 
     void AtomToolsMainWindow::OpenSettingsDialog()
     {
-        SettingsDialog dialog(GetSettingsDialogGroups(), this);
+        SettingsDialog dialog(this);
+
+        dialog.GetInspector()->AddGroupsBegin();
+        PopulateSettingsInspector(dialog.GetInspector());
+        dialog.GetInspector()->AddGroupsEnd();
+
+        // Temporarily forcing fixed size to prevent the dialog size from being overridden after being shown
+        dialog.setFixedSize(800, 400);
+        dialog.show();
+        dialog.setMinimumSize(0, 0);
+        dialog.setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
         dialog.exec();
     }
 
@@ -367,7 +393,6 @@ namespace AtomToolsFramework
         {
             const QByteArray windowState = m_advancedDockManager->saveState();
             SetSettingsObject("/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string(windowState.begin(), windowState.end()));
-            AtomToolsMainWindowNotificationBus::Event(m_toolId, &AtomToolsMainWindowNotifications::OnMainWindowClosing);
         }
 
         Base::closeEvent(closeEvent);

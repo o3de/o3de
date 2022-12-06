@@ -175,7 +175,6 @@ protected:
 
     AABB m_displayBounds;
 
-    bool m_bShowTerrain;
     bool m_bShowViewMarker;
     bool m_bShowGrid;
     bool m_bShowObjectsInfo;

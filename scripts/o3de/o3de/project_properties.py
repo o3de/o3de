@@ -26,6 +26,44 @@ def get_project_props(name: str = None, path: pathlib.Path = None) -> dict:
     return proj_json
 
 
+def _edit_gem_names(proj_json: dict,
+                    new_gem_names: str or list = None,
+                    delete_gem_names: str or list = None,
+                    replace_gem_names: str or list = None,
+                    is_optional: bool = False):
+    """
+    Edits and modifies the 'gem_names' list in the proj_json parameter.
+    :param proj_json: The project json data
+    :param new_gem_names: Any gem names to be added to the list
+    :param delete_gem_names: Any gem names to be removed from the list
+    :param replace_gem_names: A list of gem names that will completely replace the current list
+    :param is_optional: Only applies to new_gem_names, when true will add an 'optional' property to the gem(s)
+    """
+    if new_gem_names:
+        add_list = new_gem_names.split() if isinstance(new_gem_names, str) else new_gem_names
+        if is_optional:
+            add_list = [dict(name=gem_name, optional=True) for gem_name in add_list]
+        proj_json.setdefault('gem_names', []).extend(add_list)
+
+    if delete_gem_names:
+        removal_list = delete_gem_names.split() if isinstance(delete_gem_names, str) else delete_gem_names
+        if 'gem_names' in proj_json:
+            def in_list(gem: str or dict, remove_list: list) -> bool:
+                if isinstance(gem, dict):
+                    return gem.get('name', '') in remove_list
+                else:
+                    return gem in remove_list
+
+            proj_json['gem_names'] = [gem for gem in proj_json['gem_names'] if not in_list(gem, removal_list)]
+
+    if replace_gem_names:
+        tag_list = replace_gem_names.split() if isinstance(replace_gem_names, str) else replace_gem_names
+        proj_json['gem_names'] = tag_list
+
+    # Remove duplicates from list
+    proj_json['gem_names'] = utils.remove_gem_duplicates(proj_json.get('gem_names', []))
+
+
 def edit_project_props(proj_path: pathlib.Path = None,
                        proj_name: str = None,
                        new_name: str = None,
@@ -44,10 +82,11 @@ def edit_project_props(proj_path: pathlib.Path = None,
                        new_compatible_engines: str or list = None,
                        delete_compatible_engines: str or list = None,
                        replace_compatible_engines: str or list = None,
-                       new_version: str = None
+                       new_version: str = None,
+                       is_optional: bool = False
                        ) -> int:
     proj_json = get_project_props(proj_name, proj_path)
-    
+
     if not proj_json:
         return 1
     if new_name:
@@ -73,9 +112,11 @@ def edit_project_props(proj_path: pathlib.Path = None,
     if new_tags or delete_tags or replace_tags:
         proj_json['user_tags'] = utils.update_values_in_key_list(proj_json.get('user_tags', []), new_tags,
                                                         delete_tags, replace_tags)
+
+
     if new_gem_names or delete_gem_names or replace_gem_names:
-        proj_json['gem_names'] = utils.update_values_in_key_list(proj_json.get('gem_names', []), new_gem_names,
-                                                        delete_gem_names, replace_gem_names)
+        _edit_gem_names(proj_json, new_gem_names, delete_gem_names, replace_gem_names, is_optional)
+
 
     if new_compatible_engines and not utils.validate_version_specifier_list(new_compatible_engines):
         logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.2.3 \n {new_compatible_engines}')
@@ -115,7 +156,9 @@ def _edit_project_props(args: argparse) -> int:
                               args.add_compatible_engines,
                               args.delete_compatible_engines,
                               args.replace_compatible_engines,
-                              args.project_version)
+                              args.project_version,
+                              False # is_optional
+                              )
 
 
 def add_parser_args(parser):

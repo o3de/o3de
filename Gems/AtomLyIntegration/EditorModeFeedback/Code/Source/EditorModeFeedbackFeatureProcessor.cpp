@@ -47,54 +47,40 @@ namespace AZ
         {
             EnableSceneNotification();
 
-            if (!m_maskMaterial)
-            {
-                m_maskMaterial = CreateMaskMaterial();
-            }
-
             EditorStateList editorStates;
             editorStates.push_back(AZStd::make_unique<FocusedEntityState>());
             editorStates.push_back(AZStd::make_unique<SelectedEntityState>());
             m_editorStatePassSystem = AZStd::make_unique<EditorStatePassSystem>(AZStd::move(editorStates));
+            AZ::TickBus::Handler::BusConnect();
         }
 
         void EditorModeFeatureProcessor::Deactivate()
         {
+            AZ::TickBus::Handler::BusDisconnect();
             m_editorStatePassSystem.reset();
             DisableSceneNotification();
         }
 
-        void EditorModeFeatureProcessor::OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline)
+        void EditorModeFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline,
+            RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
             if (!m_editorStatePassSystem)
             {
                 return;
             }
 
-            m_editorStatePassSystem->RemoveStatePassesForPipeline(pipeline);
-        }
-
-        void EditorModeFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
-        {
-            if (!m_editorStatePassSystem)
+            if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Added
+                || changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
             {
-                return;
+                m_editorStatePassSystem->ConfigureStatePassesForPipeline(renderPipeline);
             }
-
-            m_editorStatePassSystem->ConfigureStatePassesForPipeline(pipeline.get());
-        }
-
-        void EditorModeFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
-        {
-            if (!m_editorStatePassSystem)
+            else if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Removed)
             {
-                return;
+                m_editorStatePassSystem->RemoveStatePassesForPipeline(renderPipeline);
             }
-
-            m_editorStatePassSystem->ConfigureStatePassesForPipeline(renderPipeline);
         }
 
-        void EditorModeFeatureProcessor::ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline)
+        void EditorModeFeatureProcessor::AddRenderPasses(RPI::RenderPipeline* renderPipeline)
         {
             if (!m_editorStatePassSystem)
             {
@@ -112,13 +98,13 @@ namespace AZ
             {
                 // Emplaces the mask key and mask renderer value in place for the mask renderers map
                 m_maskRenderers.emplace(
-                    AZStd::piecewise_construct, AZStd::forward_as_tuple(mask), AZStd::forward_as_tuple(mask, m_maskMaterial));
+                    AZStd::piecewise_construct, AZStd::forward_as_tuple(mask), AZStd::forward_as_tuple(mask));
             }
         }
 
         void EditorModeFeatureProcessor::Render([[maybe_unused]] const RenderPacket& packet)
         {
-            if (!m_editorStatePassSystem)
+            if (!m_editorStatePassSystem || !m_maskMaterial)
             {
                 return;
             }
@@ -129,7 +115,7 @@ namespace AZ
                 if(auto it = m_maskRenderers.find(mask);
                     it != m_maskRenderers.end())
                 {
-                    it->second.RenderMaskEntities(entities);
+                    it->second.RenderMaskEntities(m_maskMaterial, entities);
                 } 
             }
         }
@@ -142,6 +128,20 @@ namespace AZ
             }
 
             m_editorStatePassSystem->Update();
+        }
+
+        void EditorModeFeatureProcessor::OnTick(float, AZ::ScriptTimePoint)
+        {
+            // Attempt deferred loading of mask material until the asset is ready
+            if (!m_maskMaterial)
+            {
+                m_maskMaterial = CreateMaskMaterial();
+            }
+
+            if (m_maskMaterial)
+            {
+                AZ::TickBus::Handler::BusDisconnect();
+            }
         }
     } // namespace Render
 } // namespace AZ

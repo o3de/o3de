@@ -22,16 +22,53 @@ from base import TestAutomationBase
 TEST_DIRECTORY = os.path.dirname(__file__)
 
 #Bat
+@pytest.mark.REQUIRES_gpu
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestScriptCanvas(EditorTestSuite):
+
     class test_NodePalette_HappyPath_CanSelectNode(EditorBatchedTest):
         import NodePalette_HappyPath_CanSelectNode as test_module
 
     class test_EditMenu_Default_UndoRedo(EditorBatchedTest):
         import EditMenu_Default_UndoRedo as test_module
 
+
+@pytest.mark.REQUIRES_gpu
+@pytest.mark.SUITE_periodic
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+class TestAutomationQtPyTests(TestAutomationBase):
+
+    # Enable only -autotest_mode for these tests. Tests cannot run in -BatchMode due to UI interactions
+    global_extra_cmdline_args = []
+
+    def test_ScriptCanvas_ChangingAssets_ComponentStable(self, request, workspace, editor, launcher_platform):
+        from . import ScriptCanvas_ChangingAssets_ComponentStable as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_VariableManager_ExposeVarsToComponent(self, request, workspace, editor, launcher_platform):
+        from . import VariableManager_ExposeVarsToComponent as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_VariableManager_UnpinVariableType_Works(self, request, workspace, editor, launcher_platform):
+        from . import VariableManager_UnpinVariableType_Works as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_ScriptCanvas_TwoComponents_InteractSuccessfully(self, request, workspace, editor, launcher_platform):
+        from . import ScriptCanvas_TwoComponents_InteractSuccessfully as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    """
+    od3e/o3de#13481
+    This test fails in multi test. QCheckbox state change does not trigger table changes like in hydra/editor test run
+    def test_ScriptEvent_AddRemoveMethod_UpdatesInSC(self, request, workspace, editor, launcher_platform):
+        from . import ScriptEvent_AddRemoveMethod_UpdatesInSC as test_module
+        self._run_test(request, workspace, editor, test_module)
+    """
+
+@pytest.mark.REQUIRES_gpu
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
@@ -126,9 +163,25 @@ class TestAutomation(TestAutomationBase):
 @pytest.mark.parametrize("launcher_platform", ["windows_editor"])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestScriptCanvasTests(object):
+
     """
     The following tests use hydra_test_utils.py to launch the editor and validate the results.
     """
+
+    def test_ScriptEvent_AddRemoveMethod_UpdatesInSC(self, request, workspace, editor, launcher_platform):
+        expected_lines = [
+            "Node found in Node Palette",
+            "Method removed from scriptevent file",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "ScriptEvent_AddRemoveMethod_UpdatesInSC.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
 
     def test_ScriptEvents_Default_SendReceiveSuccessfully(self, request, editor, launcher_platform):
 
@@ -178,23 +231,6 @@ class TestScriptCanvasTests(object):
             TEST_DIRECTORY,
             editor,
             "NodeCategory_ExpandOnClick.py",
-            expected_lines,
-            auto_test_mode=False,
-            timeout=60,
-        )
-
-    def test_VariableManager_UnpinVariableType_Works(self, request, editor, launcher_platform):
-        expected_lines = [
-            "Success: VariableManager is opened successfully",
-            "Success: Variable is pinned",
-            "Success: Variable is unpinned",
-            "Success: Variable is unpinned after reopening create variable menu",
-        ]
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            editor,
-            "VariableManager_UnpinVariableType_Works.py",
             expected_lines,
             auto_test_mode=False,
             timeout=60,
@@ -329,33 +365,6 @@ class TestScriptCanvasTests(object):
             timeout=60,
         )
 
-    def test_ScriptEvent_AddRemoveMethod_UpdatesInSC(self, request, workspace, editor, launcher_platform):
-        def teardown():
-            file_system.delete(
-                [os.path.join(workspace.paths.project(), "TestAssets", "test_file.scriptevents")], True, True
-            )
-        request.addfinalizer(teardown)
-        file_system.delete(
-            [os.path.join(workspace.paths.project(), "TestAssets", "test_file.scriptevents")], True, True
-        )
-        expected_lines = [
-            "Success: New Script Event created",
-            "Success: Initial Child Event created",
-            "Success: Second Child Event created",
-            "Success: Script event file saved",
-            "Success: Method added to scriptevent file",
-            "Success: Method removed from scriptevent file",
-        ]
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            editor,
-            "ScriptEvent_AddRemoveMethod_UpdatesInSC.py",
-            expected_lines,
-            auto_test_mode=False,
-            timeout=60,
-        )
-
     def test_ScriptEvents_AllParamDatatypes_CreationSuccess(self, request, workspace, editor, launcher_platform):
         def teardown():
             file_system.delete(
@@ -381,6 +390,7 @@ class TestScriptCanvasTests(object):
             auto_test_mode=False,
             timeout=60,
         )
+
     def test_ScriptEvents_HappyPath_SendReceiveAcrossMultiple(self, request, workspace, editor, launcher_platform):
         expected_lines = [
             "Successfully created Entity",
@@ -398,22 +408,6 @@ class TestScriptCanvasTests(object):
             timeout=60,
         )
 
-    def test_ScriptCanvas_TwoComponents_InteractSuccessfully(self, request, workspace, editor, launcher_platform):
-        expected_lines = [
-            "New entity created",
-            "Game Mode successfully entered",
-            "Game Mode successfully exited",
-            "Expected log lines were found",
-        ]
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            editor,
-            "ScriptCanvas_TwoComponents_InteractSuccessfully.py",
-            expected_lines,
-            auto_test_mode=False,
-            timeout=60,
-        )
     def test_ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage(self, request, workspace, editor, launcher_platform):
         expected_lines = [
             "Successfully found controller entity",
@@ -434,20 +428,3 @@ class TestScriptCanvasTests(object):
             timeout=60,
         )
 
-    def test_ScriptCanvas_ChangingAssets_ComponentStable(self, request, workspace, editor, launcher_platform):
-        expected_lines = [
-            "Test Entity created",
-            "Game Mode successfully entered",
-            "Game Mode successfully exited",
-            "Script Canvas File Updated",
-            "Expected log lines were found",
-        ]
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            editor,
-            "ScriptCanvas_ChangingAssets_ComponentStable.py",
-            expected_lines,
-            auto_test_mode=False,
-            timeout=60,
-        )

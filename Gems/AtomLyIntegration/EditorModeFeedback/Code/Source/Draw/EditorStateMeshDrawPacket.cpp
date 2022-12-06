@@ -308,6 +308,7 @@ namespace AZ::Render
         }
         else
         {
+            AZ_Error("EditorStateMeshDrawPacket", false, "Invalid draw packet generated.");
             return false;
         }
     }

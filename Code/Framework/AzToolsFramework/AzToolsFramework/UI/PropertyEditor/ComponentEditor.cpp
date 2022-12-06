@@ -151,8 +151,10 @@ namespace AzToolsFramework
         {
             // Instantiate the DPE without the RPE
             m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ComponentAdapter>();
+            m_filterAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringFilter>();
             m_dpe = new DocumentPropertyEditor(this);
-            m_dpe->SetAdapter(m_adapter);
+            m_filterAdapter->SetSourceAdapter(m_adapter);
+            m_dpe->SetAdapter(m_filterAdapter);
             setContentWidget(m_dpe);
         }
         else
@@ -518,6 +520,31 @@ namespace AzToolsFramework
         }
 
         return combinedPendingComponentInfo;
+    }
+
+    bool ComponentEditor::HasContents()
+    {
+        if (m_dpe)
+        {
+            return !m_filterAdapter->IsEmpty();
+        }
+        else
+        {
+            return (!GetPropertyEditor()->HasFilteredOutNodes() || GetPropertyEditor()->HasVisibleNodes());
+        }
+    }
+
+    void ComponentEditor::SetFilterString(AZStd::string filterString)
+    {
+        if (m_dpe)
+        {
+            m_filterAdapter->SetFilterString(filterString);
+        }
+        else
+        {
+            GetPropertyEditor()->SetFilterString(filterString);
+        }
+        GetHeader()->SetFilterString(filterString);
     }
 
     void ComponentEditor::InvalidateAll(const char* filter)
@@ -897,21 +924,15 @@ namespace AzToolsFramework
 
     void ComponentEditor::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)
     {
-        // disable all component cards not matching the ComponentMode type
-        if (AZStd::find(
-            componentModeTypes.begin(),
-            componentModeTypes.end(), m_componentType) == componentModeTypes.end())
+        if (AZStd::find(componentModeTypes.begin(), componentModeTypes.end(), m_componentType) == componentModeTypes.end())
         {
+            // disable all component cards that aren't in the active component mode.
             SetWidgetInteractEnabled(this, false);
         }
-        else
-        {
-            if (!componentModeTypes.empty())
-            {
-                // only set the first item to be selected/highlighted
-                SetSelected(componentModeTypes.front() == m_componentType);
-            }
-        }
+
+        // for components that *are* in the active component mode, try to set the first one
+        // to selected, and the rest to unselected.
+        SetSelected(componentModeTypes.front() == m_componentType);
     }
 
     void ComponentEditor::LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)

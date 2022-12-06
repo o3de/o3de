@@ -21,6 +21,7 @@ VsOutput EvaluateVertexGeometry_Eye(
     float3 position,
     float3 normal,
     float4 tangent,
+    float3 bitangent,
     float2 uv0,
     float2 uv1)
 {
@@ -36,6 +37,8 @@ VsOutput EvaluateVertexGeometry_Eye(
 
     output.normal = normal;
     output.tangent = tangent;
+    // Bitangent is temporarily added back to fix the eye material screenshot test.
+    output.bitangent = bitangent;
 
     output.localPosition = position.xyz;
 
@@ -48,6 +51,7 @@ VsOutput EvaluateVertexGeometry_Eye(VsInput IN)
         IN.position,
         IN.normal,
         IN.tangent,
+        IN.bitangent,
         IN.uv0,
         IN.uv1);
 }

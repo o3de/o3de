@@ -116,7 +116,7 @@ namespace AZ::IO
         }
 
         m_cache = reinterpret_cast<u8*>(AZ::AllocatorInstance<AZ::SystemAllocator>::Get().Allocate(
-            m_cacheSize, alignment, 0, "AZ::IO::Streamer BlockCache", __FILE__, __LINE__));
+            m_cacheSize, alignment));
         m_cachedPaths = AZStd::unique_ptr<RequestPath[]>(new RequestPath[m_numBlocks]);
         m_cachedOffsets = AZStd::unique_ptr<u64[]>(new u64[m_numBlocks]);
         m_blockLastTouched = AZStd::unique_ptr<TimePoint[]>(new TimePoint[m_numBlocks]);

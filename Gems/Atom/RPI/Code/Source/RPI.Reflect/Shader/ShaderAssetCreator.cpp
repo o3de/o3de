@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/RHI.Edit/ShaderPlatformInterface.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAssetCreator.h>
 
 namespace AZ
@@ -46,6 +47,18 @@ namespace AZ
             if (ValidateIsReady())
             {
                 m_asset->m_shaderOptionGroupLayout = shaderOptionGroupLayout;
+                m_defaultShaderOptionGroup = ShaderOptionGroup{shaderOptionGroupLayout};
+            }
+        }
+
+        void ShaderAssetCreator::SetShaderOptionDefaultValue(const Name& optionName, const Name& optionValue)
+        {
+            if (ValidateIsReady())
+            {
+                if (!m_defaultShaderOptionGroup.SetValue(optionName, optionValue))
+                {
+                    ReportError("Could not set shader option '%s'.", optionName.GetCStr());
+                }
             }
         }
 
@@ -377,12 +390,18 @@ namespace AZ
                 return false;
             }
 
+            m_asset->m_defaultShaderOptionValueOverrides = m_defaultShaderOptionGroup.GetShaderVariantId();
+
             m_asset->SetReady();
 
             return EndCommon(shaderAsset);
         }
 
-        void ShaderAssetCreator::Clone(const Data::AssetId& assetId, const ShaderAsset& sourceShaderAsset, [[maybe_unused]] const ShaderSupervariants& supervariants)
+        void ShaderAssetCreator::Clone(
+            const Data::AssetId& assetId,
+            const ShaderAsset& sourceShaderAsset,
+            [[maybe_unused]] const ShaderSupervariants& supervariants,
+            const AZStd::vector<RHI::ShaderPlatformInterface*>& platformInterfaces)
         {
             BeginCommon(assetId);
 
@@ -395,6 +414,21 @@ namespace AZ
             // copy the perAPIShaderData
             for (auto& perAPIShaderData : sourceShaderAsset.m_perAPIShaderData)
             {
+                // find the API in the list of supported APIs on this platform
+                AZStd::vector<RHI::ShaderPlatformInterface*>::const_iterator itFoundAPI = AZStd::find_if(
+                    platformInterfaces.begin(),
+                    platformInterfaces.end(),
+                    [&perAPIShaderData](const RHI::ShaderPlatformInterface* shaderPlatformInterface)
+                    {
+                        return perAPIShaderData.m_APIType == shaderPlatformInterface->GetAPIType();
+                    });
+
+                if (itFoundAPI == platformInterfaces.end())
+                {
+                    // the API is not supported on this platform, skip this entry
+                    continue;
+                }
+
                 if (perAPIShaderData.m_supervariants.empty())
                 {
                     ReportWarning("Attempting to clone a shader asset that has no supervariants for API [%d]", perAPIShaderData.m_APIType);

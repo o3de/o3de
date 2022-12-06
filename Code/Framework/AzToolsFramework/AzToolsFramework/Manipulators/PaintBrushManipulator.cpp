@@ -7,14 +7,13 @@
  */
 
 #include <AzCore/Math/Geometry2DUtils.h>
+#include <AzCore/std/sort.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
-#include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsNotificationBus.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsRequestBus.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsWindow.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsRequestBus.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsWindow.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
@@ -22,97 +21,178 @@ namespace AzToolsFramework
 {
     AZ_CVAR(
         float,
-        ed_paintBrushRadiusAdjustAmount,
+        ed_paintBrushSizeAdjustAmount,
         0.25f,
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
-        "The amount to increase / decrease the paintbrush radius in meters.");
+        "The amount to increase / decrease the paintbrush size in meters.");
+
+    AZ_CVAR(
+        float,
+        ed_paintBrushHardnessPercentAdjustAmount,
+        5.0f,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "The amount to increase / decrease the paintbrush hardness in percent (0 - 100).");
+
+    AZ_CVAR(
+        AZ::Color,
+        ed_paintBrushManipulatorInnerColor,
+        AZ::Color::CreateFromRgba(255, 0, 0, 255),      // Can't use AZ::Colors::Red because there's no guarantee of initialization order.
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "The color of the paintbrush manipulator.");
+
+    AZ_CVAR(
+        AZ::Color,
+        ed_paintBrushManipulatorOuterColor,
+        AZ::Color::CreateFromRgba(255, 0, 0, 255),      // Can't use AZ::Colors::Red because there's no guarantee of initialization order.
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "The color of the paintbrush manipulator.");
 
     namespace
     {
-        static constexpr AZ::Crc32 PaintbrushIncreaseRadius = AZ_CRC_CE("org.o3de.action.paintbrush.increase_radius");
-        static constexpr AZ::Crc32 PaintbrushDecreaseRadius = AZ_CRC_CE("org.o3de.action.paintbrush.decrease_radius");
+        static constexpr AZ::Crc32 PaintbrushIncreaseSize = AZ_CRC_CE("org.o3de.action.paintbrush.increase_size");
+        static constexpr AZ::Crc32 PaintbrushDecreaseSize = AZ_CRC_CE("org.o3de.action.paintbrush.decrease_size");
+        static constexpr AZ::Crc32 PaintbrushIncreaseHardness = AZ_CRC_CE("org.o3de.action.paintbrush.increase_hardness_percent");
+        static constexpr AZ::Crc32 PaintbrushDecreaseHardness = AZ_CRC_CE("org.o3de.action.paintbrush.decrease_hardness_percent");
 
-        static constexpr const char* PaintbrushIncreaseRadiusTitle = "Increase Radius";
-        static constexpr const char* PaintbrushDecreaseRadiusTitle = "Decrease Radius";
+        static constexpr const char* PaintbrushIncreaseSizeTitle = "Increase Size";
+        static constexpr const char* PaintbrushDecreaseSizeTitle = "Decrease Size";
+        static constexpr const char* PaintbrushIncreaseHardnessTitle = "Increase Hardness Percent";
+        static constexpr const char* PaintbrushDecreaseHardnessTitle = "Decrease Hardness Percent";
 
-        static constexpr const char* PaintbrushIncreaseRadiusDesc = "Increases radius of paintbrush";
-        static constexpr const char* PaintbrushDecreaseRadiusDesc = "Decreases radius of paintbrush";
+        static constexpr const char* PaintbrushIncreaseSizeDesc = "Increases size of paintbrush";
+        static constexpr const char* PaintbrushDecreaseSizeDesc = "Decreases size of paintbrush";
+        static constexpr const char* PaintbrushIncreaseHardnessDesc = "Increases paintbrush hardness";
+        static constexpr const char* PaintbrushDecreaseHardnessDesc = "Decreases paintbrush hardness";
     } // namespace
 
     AZStd::shared_ptr<PaintBrushManipulator> PaintBrushManipulator::MakeShared(
-        const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair)
+        const AZ::Transform& worldFromLocal,
+        const AZ::EntityComponentIdPair& entityComponentIdPair, AzFramework::PaintBrushColorMode colorMode)
     {
-        return AZStd::shared_ptr<PaintBrushManipulator>(aznew PaintBrushManipulator(worldFromLocal, entityComponentIdPair));
+        return AZStd::shared_ptr<PaintBrushManipulator>(aznew PaintBrushManipulator(worldFromLocal, entityComponentIdPair, colorMode));
     }
 
     PaintBrushManipulator::PaintBrushManipulator(
-        const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair)
+        const AZ::Transform& worldFromLocal,
+        const AZ::EntityComponentIdPair& entityComponentIdPair, AzFramework::PaintBrushColorMode colorMode)
+        : m_paintBrush(entityComponentIdPair)
     {
         m_ownerEntityComponentId = entityComponentIdPair;
 
         SetSpace(worldFromLocal);
 
         // Make sure the Paint Brush Settings window is open
-        AzToolsFramework::OpenViewPane(PaintBrush::s_paintBrushSettingsName);
+        AzToolsFramework::OpenViewPane(AzToolsFramework::s_paintBrushSettingsName);
 
-        // Get the radius from the global Paint Brush Settings.
-        float radius = 0.0f;
-        PaintBrushSettingsRequestBus::BroadcastResult(radius, &PaintBrushSettingsRequestBus::Events::GetRadius);
+        // Set the paint brush settings to use the requested color mode.
+        GlobalPaintBrushSettingsRequestBus::Broadcast(&GlobalPaintBrushSettingsRequestBus::Events::SetBrushColorMode, colorMode);
 
-        // The PaintBrush manipulator uses a circle projected into world space to represent the brush.
-        const AZ::Color manipulatorColor = AZ::Colors::Red;
-        const float manipulatorWidth = 0.05f;
+        // Get the global Paint Brush Settings so that we can calculate our brush circle sizes.
+        GlobalPaintBrushSettings brushSettings;
+        GlobalPaintBrushSettingsRequestBus::BroadcastResult(brushSettings, &GlobalPaintBrushSettingsRequestBus::Events::GetSettings);
+
+        const auto [innerRadius, outerRadius] = GetBrushRadii(brushSettings);
+
+        // The PaintBrush manipulator uses two circles projected into world space to represent the brush.
+        const AZ::Color innerCircleColor = ed_paintBrushManipulatorInnerColor;
+        const AZ::Color outerCircleColor = ed_paintBrushManipulatorOuterColor;
+        const float circleWidth = 0.05f;
         SetView(
-            AzToolsFramework::CreateManipulatorViewProjectedCircle(*this, manipulatorColor, radius, manipulatorWidth));
+            AzToolsFramework::CreateManipulatorViewProjectedCircle(*this, innerCircleColor, innerRadius, circleWidth),
+            AzToolsFramework::CreateManipulatorViewProjectedCircle(*this, outerCircleColor, outerRadius, circleWidth));
 
         // Start listening for any changes to the Paint Brush Settings
-        PaintBrushSettingsNotificationBus::Handler::BusConnect();
+        GlobalPaintBrushSettingsNotificationBus::Handler::BusConnect();
 
-        // Notify listeners that we've entered the paint mode.
-        PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaintModeBegin);
+        m_paintBrush.BeginPaintMode();
     }
 
     PaintBrushManipulator::~PaintBrushManipulator()
     {
-        // Notify listeners that we've exited the paint mode.
-        PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaintModeEnd);
+        // If we're ending mid-brush-stroke, make sure to notify that the brush stroke should end.
+        if (m_paintBrush.IsInBrushStroke())
+        {
+            m_paintBrush.EndBrushStroke();
+        }
+
+        m_paintBrush.EndPaintMode();
 
         // Stop listening for any changes to the Paint Brush Settings
-        PaintBrushSettingsNotificationBus::Handler::BusDisconnect();
+        GlobalPaintBrushSettingsNotificationBus::Handler::BusDisconnect();
 
         // Make sure the Paint Brush Settings window is closed
-        AzToolsFramework::CloseViewPane(PaintBrush::s_paintBrushSettingsName);
+        AzToolsFramework::CloseViewPane(AzToolsFramework::s_paintBrushSettingsName);
+    }
+
+    AZStd::pair<float, float> PaintBrushManipulator::GetBrushRadii(const GlobalPaintBrushSettings& settings) const
+    {
+        const float outerRadius = settings.GetSize() / 2.0f;
+
+        if (settings.GetBrushMode() == AzFramework::PaintBrushMode::Eyedropper)
+        {
+            // For the eyedropper, we'll set the inner radius to an arbitrarily small percentage of the full brush size to help
+            // visualize that we're only picking from the very center of the brush.
+            const float eyedropperRadius = outerRadius * 0.02f;
+            return { eyedropperRadius, outerRadius };
+        }
+
+        // For paint/smooth brushes, the inner circle represents the start of the hardness falloff,
+        // and the outer circle is the full paintbrush size.
+        const float hardnessRadius = outerRadius * (settings.GetHardnessPercent() / 100.0f);
+        return { hardnessRadius, outerRadius };
     }
 
     void PaintBrushManipulator::Draw(
         const ManipulatorManagerState& managerState, AzFramework::DebugDisplayRequests& debugDisplay,
         const AzFramework::CameraState& cameraState, const ViewportInteraction::MouseInteraction& mouseInteraction)
     {
-        m_manipulatorView->Draw(
+        // Always set our manipulator state to say that the mouse isn't over the manipulator so that we always use our base
+        // manipulator color. The paintbrush isn't a "selectable" manipulator, so it wouldn't make sense for it to change color when the
+        // mouse is over it.
+        constexpr bool mouseOver = false;
+
+        m_innerCircle->m_color = ed_paintBrushManipulatorInnerColor;
+        m_outerCircle->m_color = ed_paintBrushManipulatorOuterColor;
+
+        m_innerCircle->Draw(
             GetManipulatorManagerId(), managerState, GetManipulatorId(),
-            { GetSpace(), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() }, debugDisplay, cameraState,
+            { GetSpace(), GetNonUniformScale(), AZ::Vector3::CreateZero(), mouseOver }, debugDisplay, cameraState,
+            mouseInteraction);
+
+        m_outerCircle->Draw(
+            GetManipulatorManagerId(), managerState, GetManipulatorId(),
+            { GetSpace(), GetNonUniformScale(), AZ::Vector3::CreateZero(), mouseOver }, debugDisplay, cameraState,
             mouseInteraction);
     }
 
-    void PaintBrushManipulator::SetView(AZStd::shared_ptr<ManipulatorViewProjectedCircle> view)
+    void PaintBrushManipulator::SetView(
+        AZStd::shared_ptr<ManipulatorViewProjectedCircle> innerCircle, AZStd::shared_ptr<ManipulatorViewProjectedCircle> outerCircle)
     {
-        m_manipulatorView = AZStd::move(view);
+        m_innerCircle = AZStd::move(innerCircle);
+        m_outerCircle = AZStd::move(outerCircle);
     }
 
-    void PaintBrushManipulator::OnRadiusChanged(float radius)
+    void PaintBrushManipulator::OnSettingsChanged(const GlobalPaintBrushSettings& newSettings)
     {
-        m_manipulatorView->SetRadius(radius);
+        const auto [innerRadius, outerRadius] = GetBrushRadii(newSettings);
+
+        m_innerCircle->SetRadius(innerRadius);
+        m_outerCircle->SetRadius(outerRadius);
     }
 
     bool PaintBrushManipulator::HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
+        AZ_PROFILE_FUNCTION(Entity);
+
         if (mouseInteraction.m_mouseEvent == AzToolsFramework::ViewportInteraction::MouseEvent::Move)
         {
-            const bool isFirstPaintedPoint = false;
             MovePaintBrush(
                 mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId,
-                mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates, isFirstPaintedPoint);
+                mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
 
             // For move events, always return false so that mouse movements with right clicks can still affect the Editor camera.
             return false;
@@ -121,13 +201,17 @@ namespace AzToolsFramework
         {
             if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
             {
-                m_isPainting = true;
-                PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaintBegin);
+                // Get the current global Paint Brush Settings 
+                GlobalPaintBrushSettings brushSettings;
+                GlobalPaintBrushSettingsRequestBus::BroadcastResult(
+                    brushSettings, &GlobalPaintBrushSettingsRequestBus::Events::GetSettings);
 
-                const bool isFirstPaintedPoint = true;
+                // Notify that a paint stroke has begun, and provide the paint color including opacity.
+                m_paintBrush.BeginBrushStroke(brushSettings);
+
                 MovePaintBrush(
                     mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId,
-                    mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates, isFirstPaintedPoint);
+                    mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
                 return true;
             }
         }
@@ -135,97 +219,69 @@ namespace AzToolsFramework
         {
             if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
             {
-                m_isPainting = false;
-                PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaintEnd);
+                // Notify that the paint stroke has ended.
+                // We need to verify that we're currently painting, because clicks/double-clicks can cause us to end up here
+                // without ever getting the mouse Down event.
+                if (m_paintBrush.IsInBrushStroke())
+                {
+                    m_paintBrush.EndBrushStroke();
+                }
 
                 return true;
             }
         }
+
         return false;
     }
 
-    void PaintBrushManipulator::MovePaintBrush(int viewportId, const AzFramework::ScreenPoint& screenCoordinates, bool isFirstPaintedPoint)
+    void PaintBrushManipulator::MovePaintBrush(
+        int viewportId, const AzFramework::ScreenPoint& screenCoordinates)
     {
         // Ray cast into the screen to find the closest collision point for the current mouse location.
         auto worldSurfacePosition =
             AzToolsFramework::FindClosestPickIntersection(viewportId, screenCoordinates, AzToolsFramework::EditorPickRayLength);
 
-        // If the mouse isn't colliding with anything, don't move the paintbrush, just leave it at its last location.
+        // If the mouse isn't colliding with anything, don't move the paintbrush, just leave it at its last location
+        // and don't perform any brush actions. We'll reset the stroke movement tracking though so that we don't draw unintended lines
+        // once the brush makes it back onto a valid surface.
         if (!worldSurfacePosition.has_value())
         {
+            m_paintBrush.ResetBrushStrokeTracking();
             return;
         }
 
         // We found a collision point, so move the paintbrush.
-        m_center = worldSurfacePosition.value();
-        AZ::Transform space = AZ::Transform::CreateTranslation(m_center);
+        AZ::Vector3 brushCenter = worldSurfacePosition.value();
+        AZ::Transform space = AZ::Transform::CreateTranslation(brushCenter);
         SetSpace(space);
-        PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnWorldSpaceChanged, space);
 
-        // If we're currently painting, send off a paint notification.
-        if (m_isPainting)
+        // If we're currently performing a brush stroke, then trigger the appropriate brush action based on our selected paint mode.
+        if (m_paintBrush.IsInBrushStroke())
         {
-            // Keep track of the previous painted point and the current one. We'll use that to create a brush stroke
-            // that covers everything in-between.
-            if (isFirstPaintedPoint)
-            {
-                m_previousCenter = m_center;
-            }
-
             // Get our current paint brush settings.
+            GlobalPaintBrushSettings brushSettings;
+            GlobalPaintBrushSettingsRequestBus::BroadcastResult(brushSettings, &GlobalPaintBrushSettingsRequestBus::Events::GetSettings);
 
-            float radius = 0.0f;
-            float intensity = 0.0f;
-            float opacity = 0.0f;
-
-            PaintBrushSettingsRequestBus::BroadcastResult(radius, &PaintBrushSettingsRequestBus::Events::GetRadius);
-            PaintBrushSettingsRequestBus::BroadcastResult(intensity, &PaintBrushSettingsRequestBus::Events::GetIntensity);
-            PaintBrushSettingsRequestBus::BroadcastResult(opacity, &PaintBrushSettingsRequestBus::Events::GetOpacity);
-
-            // Create an AABB that contains both endpoints. By definition, it will contain all of the brush stroke
-            // points that fall in-between as well.
-            AZ::Aabb strokeRegion = AZ::Aabb::CreateCenterRadius(m_center, radius);
-            strokeRegion.AddAabb(AZ::Aabb::CreateCenterRadius(m_previousCenter, radius));
-
-            const float manipulatorRadiusSq = radius * radius;
-            const AZ::Vector2 previousCenter2D(m_previousCenter);
-            const AZ::Vector2 center2D(m_center);
-
-            // Callback function that we pass into OnPaint so that paint handling code can request specific paint values
-            // for the world positions it cares about.
-            PaintBrushNotifications::ValueLookupFn valueLookupFn(
-                [manipulatorRadiusSq, previousCenter2D, center2D, intensity, opacity](
-                AZStd::span<const AZ::Vector3> points, AZStd::span<float> intensities,
-                AZStd::span<float> opacities, AZStd::span<bool> validFlags)
+            switch (brushSettings.GetBrushMode())
             {
-                for (size_t index = 0; index < points.size(); index++)
+            case AzFramework::PaintBrushMode::Paintbrush:
+                m_paintBrush.PaintToLocation(brushCenter, brushSettings);
+                break;
+            case AzFramework::PaintBrushMode::Smooth:
+                m_paintBrush.SmoothToLocation(brushCenter, brushSettings);
+                break;
+            case AzFramework::PaintBrushMode::Eyedropper:
                 {
-                    // Any point that falls within our brush stroke is considered valid. Since our brush is a circle, the brush stroke
-                    // ends up being a capsule with a circle on each end, and effectively a box connecting the two circles.
-                    // We can easily check to see if the point falls in the capsule by getting the distance between the point
-                    // and the line segment formed between the center of the start and end circles.
-                    // If this distance is less than the radius of the circle, then it falls within the brush stroke.
-                    // This works equally well whether the point is closest to an endpoint of the segment or a point along the segment.
-                    if (AZ::Geometry2DUtils::ShortestDistanceSqPointSegment(AZ::Vector2(points[index]), previousCenter2D, center2D) <=
-                         manipulatorRadiusSq)
-                    {
-                        intensities[index] = intensity;
-                        opacities[index] = opacity;
-                        validFlags[index] = true;
-                    }
-                    else
-                    {
-                        intensities[index] = 0.0f;
-                        opacities[index] = 0.0f;
-                        validFlags[index] = false;
-                    }
+                    AZ::Color eyedropperColor = m_paintBrush.UseEyedropper(brushCenter);
+
+                    // Set the color in our paintbrush settings to the color selected by the eyedropper.
+                    GlobalPaintBrushSettingsRequestBus::Broadcast(&GlobalPaintBrushSettingsRequestBus::Events::SetColor, eyedropperColor);
                 }
-            });
-
-            PaintBrushNotificationBus::Event(
-                m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaint, strokeRegion, valueLookupFn);
-
-            m_previousCenter = m_center;
+                break;
+            default:
+                AZ_Assert(false, "Unsupported brush mode type: %u", brushSettings.GetBrushMode());
+                break;
+            }
         }
     }
 
@@ -234,52 +290,67 @@ namespace AzToolsFramework
         // Paint brush manipulators should be able to easily adjust the radius of the brush with the [ and ] keys
         return {
             AzToolsFramework::ActionOverride()
-                .SetUri(PaintbrushIncreaseRadius)
+                .SetUri(PaintbrushIncreaseSize)
                 .SetKeySequence(QKeySequence{ Qt::Key_BracketRight })
-                .SetTitle(PaintbrushIncreaseRadiusTitle)
-                .SetTip(PaintbrushIncreaseRadiusDesc)
+                .SetTitle(PaintbrushIncreaseSizeTitle)
+                .SetTip(PaintbrushIncreaseSizeDesc)
                 .SetEntityComponentIdPair(m_ownerEntityComponentId)
                 .SetCallback(
                     [this]()
                     {
-                        AdjustRadius(ed_paintBrushRadiusAdjustAmount);
+                        AdjustSize(ed_paintBrushSizeAdjustAmount);
                     }),
             AzToolsFramework::ActionOverride()
-                .SetUri(PaintbrushDecreaseRadius)
+                .SetUri(PaintbrushDecreaseSize)
                 .SetKeySequence(QKeySequence{ Qt::Key_BracketLeft })
-                .SetTitle(PaintbrushDecreaseRadiusTitle)
-                .SetTip(PaintbrushDecreaseRadiusDesc)
+                .SetTitle(PaintbrushDecreaseSizeTitle)
+                .SetTip(PaintbrushDecreaseSizeDesc)
                 .SetEntityComponentIdPair(m_ownerEntityComponentId)
                 .SetCallback(
                     [this]()
                     {
-                        AdjustRadius(-ed_paintBrushRadiusAdjustAmount);
+                        AdjustSize(-ed_paintBrushSizeAdjustAmount);
+                    }),
+            AzToolsFramework::ActionOverride()
+                .SetUri(PaintbrushIncreaseHardness)
+                .SetKeySequence(QKeySequence{ Qt::Key_BraceRight })
+                .SetTitle(PaintbrushIncreaseHardnessTitle)
+                .SetTip(PaintbrushIncreaseHardnessDesc)
+                .SetEntityComponentIdPair(m_ownerEntityComponentId)
+                .SetCallback(
+                    [this]()
+                    {
+                        AdjustHardnessPercent(ed_paintBrushHardnessPercentAdjustAmount);
+                    }),
+            AzToolsFramework::ActionOverride()
+                .SetUri(PaintbrushDecreaseHardness)
+                .SetKeySequence(QKeySequence{ Qt::Key_BraceLeft })
+                .SetTitle(PaintbrushDecreaseHardnessTitle)
+                .SetTip(PaintbrushDecreaseHardnessDesc)
+                .SetEntityComponentIdPair(m_ownerEntityComponentId)
+                .SetCallback(
+                    [this]()
+                    {
+                        AdjustHardnessPercent(-ed_paintBrushHardnessPercentAdjustAmount);
                     }),
         };
     }
 
-    void PaintBrushManipulator::AdjustRadius(float radiusDelta)
+    void PaintBrushManipulator::AdjustSize(float sizeDelta)
     {
-        float radius = 0.0f;
-        PaintBrushSettingsRequestBus::BroadcastResult(radius, &PaintBrushSettingsRequestBus::Events::GetRadius);
-        radius = AZStd::clamp(radius + radiusDelta, 0.01f, 1024.0f);
-        PaintBrushSettingsRequestBus::Broadcast(&PaintBrushSettingsRequestBus::Events::SetRadius, radius);
+        float diameter = 0.0f;
+        GlobalPaintBrushSettingsRequestBus::BroadcastResult(diameter, &GlobalPaintBrushSettingsRequestBus::Events::GetSize);
+        diameter += sizeDelta;
+        GlobalPaintBrushSettingsRequestBus::Broadcast(&GlobalPaintBrushSettingsRequestBus::Events::SetSize, diameter);
     }
 
-    void PaintBrushManipulator::AdjustIntensity(float intensityDelta)
+    void PaintBrushManipulator::AdjustHardnessPercent(float hardnessPercentDelta)
     {
-        float intensity = 0.0f;
-        PaintBrushSettingsRequestBus::BroadcastResult(intensity, &PaintBrushSettingsRequestBus::Events::GetIntensity);
-        intensity = AZStd::clamp(intensity + intensityDelta, 0.0f, 1.0f);
-        PaintBrushSettingsRequestBus::Broadcast(&PaintBrushSettingsRequestBus::Events::SetIntensity, intensity);
-    }
-
-    void PaintBrushManipulator::AdjustOpacity(float opacityDelta)
-    {
-        float opacity = 0.0f;
-        PaintBrushSettingsRequestBus::BroadcastResult(opacity, &PaintBrushSettingsRequestBus::Events::GetOpacity);
-        opacity = AZStd::clamp(opacity + opacityDelta, 0.0f, 1.0f);
-        PaintBrushSettingsRequestBus::Broadcast(&PaintBrushSettingsRequestBus::Events::SetOpacity, opacity);
+        float hardnessPercent = 0.0f;
+        GlobalPaintBrushSettingsRequestBus::BroadcastResult(
+            hardnessPercent, &GlobalPaintBrushSettingsRequestBus::Events::GetHardnessPercent);
+        hardnessPercent += hardnessPercentDelta;
+        GlobalPaintBrushSettingsRequestBus::Broadcast(&GlobalPaintBrushSettingsRequestBus::Events::SetHardnessPercent, hardnessPercent);
     }
 
 } // namespace AzToolsFramework

@@ -95,6 +95,8 @@ namespace AZ
                 if (Factory::IsReady() && factory == &Factory::Get())
                 {
                     Factory::Unregister(factory);
+
+                    FactoryManagerNotificationBus::Broadcast(&FactoryManagerNotification::FactoryUnregistered);
                 }
             }
             else
@@ -119,6 +121,8 @@ namespace AZ
             AZ_Assert(factory, "Could not select factory");
 
             Factory::Register(factory);
+
+            FactoryManagerNotificationBus::Broadcast(&FactoryManagerNotification::FactoryRegistered);
         }
 
         Factory* FactoryManagerSystemComponent::GetFactoryFromCommandLine()
@@ -201,14 +205,7 @@ namespace AZ
 
         void FactoryManagerSystemComponent::UpdateValidationModeFromCommandline()
         {
-#if defined(_RELEASE)
-            m_validationMode = ValidationMode::Disabled;
-#else
-            if (auto commandLineValidation = AZ::RHI::ReadValidationModeFromCommandArgs())
-            {
-                m_validationMode = *commandLineValidation;
-            }
-#endif        
+            m_validationMode = AZ::RHI::ReadValidationMode();
         }
 
     } // namespace RHI
