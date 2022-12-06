@@ -141,7 +141,9 @@ namespace AZ
 
             // add this diffuse probe grid to the feature processor
             const AZ::Transform& transform = m_transformInterface->GetWorldTM();
-            m_handle = m_featureProcessor->AddProbeGrid(transform, m_configuration.m_extents, m_configuration.m_probeSpacing);
+
+            m_handle = m_featureProcessor->AddProbeGrid(
+                ComputeOverallTransform(transform), m_configuration.m_extents, m_configuration.m_probeSpacing);
 
             m_featureProcessor->SetAmbientMultiplier(m_handle, m_configuration.m_ambientMultiplier);
             m_featureProcessor->SetViewBias(m_handle, m_configuration.m_viewBias);
@@ -251,7 +253,7 @@ namespace AZ
                 return;
             }
 
-            m_featureProcessor->SetTransform(m_handle, world);
+            m_featureProcessor->SetTransform(m_handle, ComputeOverallTransform(world));
         }
 
         void DiffuseProbeGridComponentController::OnShapeChanged(ShapeChangeReasons changeReason)
@@ -284,6 +286,9 @@ namespace AZ
                     m_boxShapeInterface->SetBoxDimensions(m_configuration.m_extents);
                     m_boxChangedByGridEvent.Signal(true);
                 }
+
+                // the shape translation offset may have changed, which would affect the overall transform
+                m_featureProcessor->SetTransform(m_handle, ComputeOverallTransform(m_transformInterface->GetWorldTM()));
             }
 
             m_inShapeChangeHandler = false;
@@ -485,6 +490,22 @@ namespace AZ
            bakedTextures.m_probeDataImageRelativePath = m_configuration.m_bakedProbeDataTextureRelativePath;
 
            m_featureProcessor->SetBakedTextures(m_handle, bakedTextures);
+        }
+
+        AZ::Transform DiffuseProbeGridComponentController::ComputeOverallTransform(const AZ::Transform& entityTransform) const
+        {
+            const bool isTypeAxisAligned = m_boxShapeInterface ? m_boxShapeInterface->IsTypeAxisAligned() : false;
+            const AZ::Vector3 translationOffset = m_shapeBus ? m_shapeBus->GetTranslationOffset() : AZ::Vector3::CreateZero();
+            const AZ::Transform translationOffsetTransform = AZ::Transform::CreateTranslation(translationOffset);
+
+            if (isTypeAxisAligned)
+            {
+                AZ::Transform entityTransformNoRotation = entityTransform;
+                entityTransformNoRotation.SetRotation(AZ::Quaternion::CreateIdentity());
+                return entityTransformNoRotation * translationOffsetTransform;
+            }
+
+            return entityTransform * translationOffsetTransform;
         }
     } // namespace Render
 } // namespace AZ
