@@ -83,9 +83,9 @@ namespace AZ
         ThreadPoolSchema(const ThreadPoolSchema&);
         ThreadPoolSchema& operator=(const ThreadPoolSchema&);
 
-        class ThreadPoolSchemaImpl* m_impl;
         GetThreadPoolData m_threadPoolGetter;
         SetThreadPoolData m_threadPoolSetter;
+        class ThreadPoolSchemaImpl* m_impl;
     };
 
     /**
