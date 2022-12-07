@@ -125,7 +125,7 @@ namespace AZ
 
             /// Sets the Per-Draw shading rate value. This rate will be used for all subsequent draw calls of this command list.
             /// Combinators can also be specified as part of setting the rate. For ShadingRateCombinators = { Op1, Op2 },
-            /// the final value is calculated as Op2(Op1(PerDraw, PerPrimitive), PerImage)
+            /// the final value is calculated as Op2(Op1(PerDraw, PerPrimitive), PerRegion)
             virtual void SetFragmentShadingRate(
                 ShadingRate rate,
                 const ShadingRateCombinators& combinators = s_defaultShadingRateCombinators) = 0;

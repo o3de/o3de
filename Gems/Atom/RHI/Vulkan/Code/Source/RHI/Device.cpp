@@ -993,7 +993,7 @@ namespace AZ
                 const auto& shadingRateFeatures = physicalDevice.GetPhysicalDeviceFragmentShadingRateFeatures();
                 if (shadingRateFeatures.attachmentFragmentShadingRate)
                 {
-                    m_features.m_shadingRateTypeMask |= RHI::ShadingRateTypeFlags::PerImage;
+                    m_features.m_shadingRateTypeMask |= RHI::ShadingRateTypeFlags::PerRegion;
                     m_imageShadingRateMode = ShadingRateImageMode::ImageAttachment;
                     m_features.m_dynamicShadingRateImage = true;
                 }
@@ -1031,7 +1031,7 @@ namespace AZ
                 const auto& densityFeatures = physicalDevice.GetPhysicalDeviceFragmentDensityMapFeatures();
                 if (densityFeatures.fragmentDensityMap)
                 {
-                    m_features.m_shadingRateTypeMask |= RHI::ShadingRateTypeFlags::PerImage;
+                    m_features.m_shadingRateTypeMask |= RHI::ShadingRateTypeFlags::PerRegion;
                     m_imageShadingRateMode = ShadingRateImageMode::DensityMap;
                     m_features.m_dynamicShadingRateImage = densityFeatures.fragmentDensityMapDynamic;
                     for (uint32_t i = 0; i < static_cast<uint32_t>(RHI::ShadingRate::Count); ++i)

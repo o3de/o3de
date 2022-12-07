@@ -249,6 +249,9 @@ namespace AZ
                 // Signal that the global bindless heap is bound
                 bool m_bindBindlessHeap = false;
 
+                // The currently bound shading rate image
+                const ImageView* m_shadingRateImage = nullptr;
+
             } m_state;
 
             AZStd::shared_ptr<DescriptorContext> m_descriptorContext;

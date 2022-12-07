@@ -58,7 +58,7 @@ AZ_POP_DISABLE_WARNING
 
 #ifdef __ID3D12GraphicsCommandList5_INTERFACE_DEFINED__
     // This define controls whether VRS support is available on the platform
-    #define AZ_DX12_VRS_SUPPORT
+    #define O3DE_DX12_VRS_SUPPORT
 #endif
 
 using ID3D12CommandAllocatorX = ID3D12CommandAllocator;

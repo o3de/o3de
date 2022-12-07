@@ -66,7 +66,7 @@ namespace UnitTest
 
         void ObjectCollectionNotify(AZ::RHI::ObjectCollectorNotifyFunction notifyFunction) override {}
 
-        AZ::RHI::ShadingRateImageValue ConvertShadingRate(AZ::RHI::ShadingRate rate) override
+        AZ::RHI::ShadingRateImageValue ConvertShadingRate([[maybe_unused]] AZ::RHI::ShadingRate rate) override
         {
             return AZ::RHI::ShadingRateImageValue{};
         }

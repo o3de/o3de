@@ -621,7 +621,7 @@ namespace AZ
             // ignore the shading rate attachment). If a "Per Draw" rate is used, it would need to specify the combinators.
             auto& device = static_cast<Device&>(GetDevice());
             if (RHI::CheckBitsAll(
-                    device.GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerDraw | RHI::ShadingRateTypeFlags::PerImage))
+                    device.GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerDraw | RHI::ShadingRateTypeFlags::PerRegion))
             {
                 const auto& subpasses = renderpass->GetDescriptor().m_subpassDescriptors;
                 auto findIt = AZStd::find_if(

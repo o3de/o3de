@@ -167,7 +167,7 @@ namespace AZ
 
             m_features.m_unboundedArrays = true;
 
-#ifdef AZ_DX12_VRS_SUPPORT
+#ifdef O3DE_DX12_VRS_SUPPORT
             D3D12_FEATURE_DATA_D3D12_OPTIONS6 options6;
             GetDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS6, &options6, sizeof(options6));
             switch (options6.VariableShadingRateTier)
@@ -182,7 +182,7 @@ namespace AZ
             case D3D12_VARIABLE_SHADING_RATE_TIER::D3D12_VARIABLE_SHADING_RATE_TIER_2:
                 {
                     m_features.m_shadingRateTypeMask =
-                        RHI::ShadingRateTypeFlags::PerDraw | RHI::ShadingRateTypeFlags::PerImage | RHI::ShadingRateTypeFlags::PerPrimitive;
+                        RHI::ShadingRateTypeFlags::PerDraw | RHI::ShadingRateTypeFlags::PerRegion | RHI::ShadingRateTypeFlags::PerPrimitive;
                     m_features.m_shadingRateMask = RHI::ShadingRateFlags::Rate1x1 | RHI::ShadingRateFlags::Rate1x2 |
                         RHI::ShadingRateFlags::Rate2x1 | RHI::ShadingRateFlags::Rate2x2;
                     m_features.m_dynamicShadingRateImage = true;

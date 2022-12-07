@@ -18,7 +18,7 @@ namespace AZ
         {
             PerDraw,        // Allows the specification of a rate per-draw.
             PerPrimitive,   // Allows the specification of a rate per primitive, specified during shading.
-            PerImage,       // Allows the specification of a rate per-region of the framebuffer, specified in a specialized image attachment.
+            PerRegion,       // Allows the specification of a rate per-region of the framebuffer, specified in a specialized image attachment.
             Count,
             Invalid = Count
         };
@@ -30,8 +30,8 @@ namespace AZ
             None = 0,
             PerDraw = AZ_BIT(static_cast<uint32_t>(ShadingRateType ::PerDraw)),
             PerPrimitive = AZ_BIT(static_cast<uint32_t>(ShadingRateType ::PerPrimitive)),
-            PerImage = AZ_BIT(static_cast<uint32_t>(ShadingRateType ::PerImage)),
-            All = PerDraw | PerPrimitive | PerImage
+            PerRegion = AZ_BIT(static_cast<uint32_t>(ShadingRateType ::PerRegion)),
+            All = PerDraw | PerPrimitive | PerRegion
         };
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::ShadingRateTypeFlags)
@@ -75,7 +75,7 @@ namespace AZ
         };
 
         //! List of combination operations that are applied to get the final value.
-        //! For ShadingRateCombinators = { Op1, Op2 }, the final value is calculated as Op2(Op1(PerDraw, PerPrimitive), PerImage)
+        //! For ShadingRateCombinators = { Op1, Op2 }, the final value is calculated as Op2(Op1(PerDraw, PerPrimitive), PerRegion)
         using ShadingRateCombinators = AZStd::array<ShadingRateCombinerOp, 2>;
 
         //! Represents a texel value of a shading rate.

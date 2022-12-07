@@ -632,7 +632,7 @@ namespace AZ
                 return;
             }
 
-#ifdef AZ_DX12_VRS_SUPPORT
+#ifdef O3DE_DX12_VRS_SUPPORT
             auto& device = static_cast<Device&>(GetDevice());
             if (RHI::CheckBitsAll(device.GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerDraw))
             {
@@ -751,8 +751,9 @@ namespace AZ
                 GetCommandList()->OMSetRenderTargets(renderTargetCount, colorDescriptors, false, nullptr);
             }
 
-#ifdef AZ_DX12_VRS_SUPPORT
-            if (RHI::CheckBitsAll(GetDevice().GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerImage))
+#ifdef O3DE_DX12_VRS_SUPPORT
+            if (m_state.m_shadingRateImage != shadingRateAttachment &&
+                RHI::CheckBitsAll(GetDevice().GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerRegion))
             {
                 auto commandList5 = DX12ResourceCast<ID3D12GraphicsCommandList5>(GetCommandList());
                 AZ_Assert(commandList5, "Failed to cast command list to ID3D12GraphicsCommandList5");
@@ -772,6 +773,7 @@ namespace AZ
                             RHI::ShadingRate::Rate1x1,
                             RHI::ShadingRateCombinators{ RHI::ShadingRateCombinerOp::Override, RHI::ShadingRateCombinerOp::Passthrough });
                     }
+                    m_state.m_shadingRateImage = shadingRateAttachment;
                 }
             }
 #endif
