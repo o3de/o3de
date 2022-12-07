@@ -86,16 +86,19 @@ namespace AZ
                 return RHI::ResultCode::Fail;
             }
 
-            // Copy the shader collection because the material will make changes, like updating the ShaderVariantId.
-            m_shaderCollection = materialAsset.GetShaderCollection();
+            // Copy the shader collections because the material will make changes, like updating the ShaderVariantId.
+            m_shaderCollections = materialAsset.GetShaderCollections();
 
             // Register for update events related to Shader instances that own the ShaderAssets inside
             // the shader collection.
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
-            for (auto& shaderItem : m_shaderCollection)
+            for (const auto& shaderCollectionPair : m_shaderCollections)
             {
-                ShaderReloadDebugTracker::Printf("(Material has ShaderAsset %p)", shaderItem.GetShaderAsset().Get());
-                ShaderReloadNotificationBus::MultiHandler::BusConnect(shaderItem.GetShaderAsset().GetId());
+                for (const auto& shaderItem : shaderCollectionPair.second)
+                {
+                    ShaderReloadDebugTracker::Printf("(Material has ShaderAsset %p)", shaderItem.GetShaderAsset().Get());
+                    ShaderReloadNotificationBus::MultiHandler::BusConnect(shaderItem.GetShaderAsset().GetId());
+                }
             }
 
             // If this Init() is actually a re-initialize, we need to re-apply any overridden property values
@@ -160,9 +163,21 @@ namespace AZ
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
         }
 
-        const ShaderCollection& Material::GetShaderCollection() const
+        const MaterialPipelineShaderCollections& Material::GetShaderCollections() const
         {
-            return m_shaderCollection;
+            return m_shaderCollections;
+        }
+
+        const ShaderCollection& Material::GetShaderCollection(const Name& forPipeline) const
+        {
+            auto iter = m_shaderCollections.find(forPipeline);
+            if (iter == m_shaderCollections.end())
+            {
+                static ShaderCollection EmptyShaderCollection;
+                return EmptyShaderCollection;
+            }
+
+            return iter->second;
         }
 
         AZ::Outcome<uint32_t> Material::SetSystemShaderOption(const Name& shaderOptionName, RPI::ShaderOptionValue value)
@@ -171,27 +186,33 @@ namespace AZ
 
             // We won't set any shader options if the shader option is owned by any of the other shaders in this material.
             // If the material uses an option in any shader, then it owns that option for all its shaders.
-            for (auto& shaderItem : m_shaderCollection)
+            for (const auto& shaderCollectionPair : m_shaderCollections)
             {
-                const ShaderOptionGroupLayout* layout = shaderItem.GetShaderOptions()->GetShaderOptionLayout();
-                ShaderOptionIndex index = layout->FindShaderOptionIndex(shaderOptionName);
-                if (index.IsValid())
+                for (const auto& shaderItem : shaderCollectionPair.second)
                 {
-                    if (shaderItem.MaterialOwnsShaderOption(index))
+                    const ShaderOptionGroupLayout* layout = shaderItem.GetShaderOptions()->GetShaderOptionLayout();
+                    ShaderOptionIndex index = layout->FindShaderOptionIndex(shaderOptionName);
+                    if (index.IsValid())
                     {
-                        return AZ::Failure();
+                        if (shaderItem.MaterialOwnsShaderOption(index))
+                        {
+                            return AZ::Failure();
+                        }
                     }
                 }
             }
 
-            for (auto& shaderItem : m_shaderCollection)
+            for (auto& shaderCollectionPair : m_shaderCollections)
             {
-                const ShaderOptionGroupLayout* layout = shaderItem.GetShaderOptions()->GetShaderOptionLayout();
-                ShaderOptionIndex index = layout->FindShaderOptionIndex(shaderOptionName);
-                if (index.IsValid())
+                for (auto& shaderItem : shaderCollectionPair.second)
                 {
-                    shaderItem.GetShaderOptions()->SetValue(index, value);
-                    appliedCount++;
+                    const ShaderOptionGroupLayout* layout = shaderItem.GetShaderOptions()->GetShaderOptionLayout();
+                    ShaderOptionIndex index = layout->FindShaderOptionIndex(shaderOptionName);
+                    if (index.IsValid())
+                    {
+                        shaderItem.GetShaderOptions()->SetValue(index, value);
+                        appliedCount++;
+                    }
                 }
             }
 
@@ -326,12 +347,11 @@ namespace AZ
                             MaterialFunctor::RuntimeContext processContext = MaterialFunctor::RuntimeContext(
                                 m_propertyValues,
                                 m_layout,
-                                &m_shaderCollection,
+                                &m_shaderCollections,
                                 m_shaderResourceGroup.get(),
                                 &materialPropertyDependencies,
                                 psoHandling
                             );
-
 
                             functor->Process(processContext);
                         }
@@ -548,7 +568,7 @@ namespace AZ
                 }
                 else if (outputId.m_type == MaterialPropertyOutputType::ShaderOption)
                 {
-                    ShaderCollection::Item& shaderReference = m_shaderCollection[outputId.m_containerIndex.GetIndex()];
+                    ShaderCollection::Item& shaderReference = m_shaderCollections[outputId.m_materialPipelineName][outputId.m_containerIndex.GetIndex()];
                     if (!SetShaderOption(*shaderReference.GetShaderOptions(), ShaderOptionIndex{outputId.m_itemIndex.GetIndex()}, value))
                     {
                         return false;
@@ -556,7 +576,7 @@ namespace AZ
                 }
                 else if (outputId.m_type == MaterialPropertyOutputType::ShaderEnabled)
                 {
-                    ShaderCollection::Item& shaderReference = m_shaderCollection[outputId.m_containerIndex.GetIndex()];
+                    ShaderCollection::Item& shaderReference = m_shaderCollections[outputId.m_materialPipelineName][outputId.m_containerIndex.GetIndex()];
                     if (savedPropertyValue.Is<bool>())
                     {
                         shaderReference.SetEnabled(savedPropertyValue.GetValue<bool>());

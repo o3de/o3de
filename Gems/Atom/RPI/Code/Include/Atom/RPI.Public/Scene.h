@@ -186,6 +186,11 @@ namespace AZ
 
             RHI::TagBitRegistry<uint32_t>& GetViewTagBitRegistry();
             
+            RHI::Ptr<RHI::DrawFilterTagRegistry> GetDrawFilterTagRegistry() const
+            {
+                return m_drawFilterTagRegistry;
+            }
+
         protected:
             // SceneFinder overrides...
             void OnSceneNotifictaionHandlerConnected(SceneNotification* handler);
