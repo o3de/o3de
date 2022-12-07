@@ -20,6 +20,7 @@
 #include <native/utilities/ByteArrayStream.h>
 #include <native/AssetManager/AssetRequestHandler.h>
 #include <native/FileProcessor/FileProcessor.h>
+#include <native/FileWatcher/FileWatcher.h>
 #include <native/utilities/ApplicationServer.h>
 #include <native/utilities/AssetServerHandler.h>
 #include <native/InternalBuilders/SettingsRegistryBuilder.h>
@@ -418,7 +419,7 @@ void ApplicationManagerBase::DestroyPlatformConfiguration()
     }
 }
 
-void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> fileWatcher)
+void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcherBase> fileWatcher)
 {
     m_fileWatcher = AZStd::move(fileWatcher);
 
@@ -514,9 +515,9 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> file
             m_fileStateCache->RemoveFile(path);
         };
 
-        connect(m_fileWatcher.get(), &FileWatcher::fileAdded, OnFileAdded);
-        connect(m_fileWatcher.get(), &FileWatcher::fileModified, OnFileModified);
-        connect(m_fileWatcher.get(), &FileWatcher::fileRemoved, OnFileRemoved);
+        connect(m_fileWatcher.get(), &FileWatcherBase::fileAdded, OnFileAdded);
+        connect(m_fileWatcher.get(), &FileWatcherBase::fileModified, OnFileModified);
+        connect(m_fileWatcher.get(), &FileWatcherBase::fileRemoved, OnFileRemoved);
     }
 }
 

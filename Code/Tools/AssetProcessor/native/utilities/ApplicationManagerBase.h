@@ -14,7 +14,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
-#include <native/FileWatcher/FileWatcher.h>
+#include <native/FileWatcher/FileWatcherBase.h>
 #include <native/utilities/ApplicationManager.h>
 #include <native/utilities/AssetBuilderInfo.h>
 #include <native/utilities/BuilderManager.h>
@@ -152,7 +152,7 @@ protected:
     virtual void DestroyAssetScanner();
     virtual bool InitPlatformConfiguration();
     virtual void DestroyPlatformConfiguration();
-    virtual void InitFileMonitor(AZStd::unique_ptr<FileWatcher> fileWatcher);
+    virtual void InitFileMonitor(AZStd::unique_ptr<FileWatcherBase> fileWatcher);
     virtual void DestroyFileMonitor();
     virtual bool InitBuilderConfiguration();
     virtual void InitControlRequestHandler();
@@ -214,7 +214,7 @@ protected:
     bool m_sourceControlReady = false;
     bool m_fullIdle = false;
 
-    AZStd::unique_ptr<FileWatcher> m_fileWatcher;
+    AZStd::unique_ptr<FileWatcherBase> m_fileWatcher;
     AssetProcessor::PlatformConfiguration* m_platformConfiguration = nullptr;
     AssetProcessor::AssetProcessorManager* m_assetProcessorManager = nullptr;
     AssetProcessor::AssetCatalog* m_assetCatalog = nullptr;
