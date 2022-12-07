@@ -213,9 +213,6 @@ namespace AWSMetrics
 
     void AWSMetricsSystemComponent::OnMenuBindingHook()
     {
-        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
-        AZ_Assert(menuManagerInterface, "AWSCoreEditorSystemComponent - could not get MenuManagerInterface");
-
         constexpr const char* AWSMetrics[] =
         {
              "Metrics Gem" ,
@@ -295,6 +292,9 @@ namespace AWSMetrics
                 QDesktopServices::openUrl(QUrl::fromLocalFile(configFilePath.c_str()));
             });
         AZ_Assert(outcome.IsSuccess(), "Failed to register action %s", metricsSettingsIdentifier);
+
+        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        AZ_Assert(menuManagerInterface, "AWSCoreEditorSystemComponent - could not get MenuManagerInterface");
 
         menuManagerInterface->AddActionToMenu(submenuIdentifier, metricsSettingsIdentifier, 0);
 

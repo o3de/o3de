@@ -24,8 +24,6 @@
 #include <aws/cognito-idp/CognitoIdentityProviderClient.h>
 
 #include <ActionManager/Action/ActionManagerInterface.h>
-#include <ActionManager/Menu/MenuManagerInterface.h>
-#include <ActionManager/Menu/MenuManagerInternalInterface.h>
 
 #include <AWSCoreBus.h>
 
@@ -245,9 +243,6 @@ namespace AWSClientAuth
 
     void AWSClientAuthSystemComponent::OnMenuBindingHook()
     {
-        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
-        AZ_Assert(menuManagerInterface, "AWSCoreEditorSystemComponent - could not get MenuManagerInterface");
-
         constexpr const char* AWSClientAuth[] =
         {
              "Client Auth Gem" ,

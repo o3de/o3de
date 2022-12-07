@@ -27,8 +27,6 @@
 
 #include <aws/gamelift/GameLiftClient.h>
 
-#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
-
 namespace AWSGameLift
 {
     AWSGameLiftClientSystemComponent::AWSGameLiftClientSystemComponent()
@@ -242,9 +240,6 @@ namespace AWSGameLift
 
     void AWSGameLiftClientSystemComponent::OnMenuBindingHook()
     {
-        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
-        AZ_Assert(menuManagerInterface, "AWSGameLiftClientSystemComponent - could not get MenuManagerInterface");
-
         constexpr const char* AWSGameLift[] =
         {
              "Game Lift" ,
