@@ -644,7 +644,7 @@ namespace AssetProcessor
         m_sourceUUIDToSourceAssetMap.insert({ sourceUuid, sourceAsset });
 
         //adding legacy source uuid as well
-            m_sourceUUIDToSourceAssetMap.insert({ legacyUuid, sourceAsset });
+        m_sourceUUIDToSourceAssetMap.insert({ legacyUuid, sourceAsset });
 
         m_sourceAssetToSourceUUIDMap.insert({ sourceAsset, sourceUuid });
     }
@@ -660,8 +660,8 @@ namespace AssetProcessor
         }
 
         m_sourceUUIDToSourceAssetMap.erase(sourceUuid);
-            m_sourceUUIDToSourceAssetMap.erase(legacyUuid);
-        }
+        m_sourceUUIDToSourceAssetMap.erase(legacyUuid);
+    }
 
     //////////////////////////////////////////////////////////////////////////
 
