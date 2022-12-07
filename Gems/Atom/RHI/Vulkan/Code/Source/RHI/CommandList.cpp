@@ -889,19 +889,20 @@ namespace AZ
             }
 
             auto& device = static_cast<Device&>(GetDevice());
-            if (RHI::CheckBitsAll(device.GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerDraw))
-            {
-                VkExtent2D vkFragmentSize = ConvertFragmentShadingRate(m_state.m_shadingRateState.m_shadingRate);
-                AZStd::array<VkFragmentShadingRateCombinerOpKHR, RHI::ShadingRateCombinators::array_size> vkCombinators;
-                for (int i = 0; i < m_state.m_shadingRateState.m_shadingRateCombinators.size(); ++i)
-                {
-                    vkCombinators[i] = ConvertShadingRateCombiner(m_state.m_shadingRateState.m_shadingRateCombinators[i]);
-                }
+            AZ_Assert(
+                RHI::CheckBitsAll(device.GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerDraw),
+                "PerDraw shading rate is not supported on this platform");
 
-                static_cast<Device&>(GetDevice())
-                    .GetContext()
-                    .CmdSetFragmentShadingRateKHR(m_nativeCommandBuffer, &vkFragmentSize, vkCombinators.data());
+            VkExtent2D vkFragmentSize = ConvertFragmentShadingRate(m_state.m_shadingRateState.m_shadingRate);
+            AZStd::array<VkFragmentShadingRateCombinerOpKHR, RHI::ShadingRateCombinators::array_size> vkCombinators;
+            for (int i = 0; i < m_state.m_shadingRateState.m_shadingRateCombinators.size(); ++i)
+            {
+                vkCombinators[i] = ConvertShadingRateCombiner(m_state.m_shadingRateState.m_shadingRateCombinators[i]);
             }
+
+            device
+                .GetContext()
+                .CmdSetFragmentShadingRateKHR(m_nativeCommandBuffer, &vkFragmentSize, vkCombinators.data());
             m_state.m_shadingRateState.m_isDirty = false;
         }
 

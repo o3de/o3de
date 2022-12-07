@@ -633,22 +633,22 @@ namespace AZ
             }
 
 #ifdef O3DE_DX12_VRS_SUPPORT
-            auto& device = static_cast<Device&>(GetDevice());
-            if (RHI::CheckBitsAll(device.GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerDraw))
-            {
-                AZStd::array<D3D12_SHADING_RATE_COMBINER, RHI::ShadingRateCombinators::array_size> d3d12Combinators;
-                for (int i = 0; i < m_state.m_shadingRateState.m_shadingRateCombinators.size(); ++i)
-                {
-                    d3d12Combinators[i] = ConvertShadingRateCombiner(m_state.m_shadingRateState.m_shadingRateCombinators[i]);
-                }
+            AZ_Assert(
+                RHI::CheckBitsAll(GetDevice().GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerDraw),
+                "PerDraw shading rate is not supported on this platform");
 
-                auto commandList5 = DX12ResourceCast<ID3D12GraphicsCommandList5>(GetCommandList());
-                AZ_Assert(commandList5, "Failed to cast command list to ID3D12GraphicsCommandList5");
-                if (commandList5)
-                {
-                    commandList5->RSSetShadingRate(
-                        ConvertShadingRateEnum(m_state.m_shadingRateState.m_shadingRate), d3d12Combinators.data());
-                }
+            AZStd::array<D3D12_SHADING_RATE_COMBINER, RHI::ShadingRateCombinators::array_size> d3d12Combinators;
+            for (int i = 0; i < m_state.m_shadingRateState.m_shadingRateCombinators.size(); ++i)
+            {
+                d3d12Combinators[i] = ConvertShadingRateCombiner(m_state.m_shadingRateState.m_shadingRateCombinators[i]);
+            }
+
+            auto commandList5 = DX12ResourceCast<ID3D12GraphicsCommandList5>(GetCommandList());
+            AZ_Assert(commandList5, "Failed to cast command list to ID3D12GraphicsCommandList5");
+            if (commandList5)
+            {
+                commandList5->RSSetShadingRate(
+                    ConvertShadingRateEnum(m_state.m_shadingRateState.m_shadingRate), d3d12Combinators.data());
             }
 #endif
             m_state.m_shadingRateState.m_isDirty = false;

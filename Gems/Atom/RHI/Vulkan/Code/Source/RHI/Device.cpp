@@ -856,39 +856,39 @@ namespace AZ
                 // size(w) = 2^((texel/4) & 3)
                 // size(h) = 2^(texel & 3)
 
-                uint8_t rate_w, rate_h;
+                uint8_t encoded_rate_w, encoded_rate_h;
                 switch (rate)
                 {
                 case RHI::ShadingRate::Rate1x1:
-                    rate_w = rate_h = 0;
+                    encoded_rate_w = encoded_rate_h = 0;
                     break;
                 case RHI::ShadingRate::Rate1x2:
-                    rate_w = 0;
-                    rate_h = 1;
+                    encoded_rate_w = 0;
+                    encoded_rate_h = 1;
                     break;         
                 case RHI::ShadingRate::Rate2x1:
-                    rate_w = 1;
-                    rate_h = 0;
+                    encoded_rate_w = 1;
+                    encoded_rate_h = 0;
                     break;
                 case RHI::ShadingRate::Rate2x2:
-                    rate_w = rate_h = 1;
+                    encoded_rate_w = encoded_rate_h = 1;
                     break;
                 case RHI::ShadingRate::Rate2x4:
-                    rate_w = 1;
-                    rate_h = 2;
+                    encoded_rate_w = 1;
+                    encoded_rate_h = 2;
                     break;
                 case RHI::ShadingRate::Rate4x2:
-                    rate_w = 2;
-                    rate_h = 1;
+                    encoded_rate_w = 2;
+                    encoded_rate_h = 1;
                     break;
                 case RHI::ShadingRate::Rate4x4:
-                    rate_w = rate_h = 2;
+                    encoded_rate_w = encoded_rate_h = 2;
                     break;
                 default:
                     AZ_Assert(false, "Invalid shading rate enum %d", rate);
-                    rate_w = rate_h = 0;
+                    encoded_rate_w = encoded_rate_h = 0;
                 }
-                uint8_t encodedRate = rate_w << 2 | rate_h;
+                uint8_t encodedRate = encoded_rate_w << 2 | encoded_rate_h;
                 return RHI::ShadingRateImageValue{ encodedRate, 0 };
             }
             else if (mode == ShadingRateImageMode::DensityMap)
@@ -896,40 +896,40 @@ namespace AZ
                 // Horizontal rate is encoded in the first texel component.
                 // Vertical rate is encoded in the second texl component.
                 // Final density is calculated as (1/rate) and valid values must be in range (0, 1]
-                uint8_t rate_w, rate_h;
+                uint8_t encoded_rate_w, encoded_rate_h;
                 switch (rate)
                 {
                 case RHI::ShadingRate::Rate1x1:
-                    rate_w = rate_h = 0;
+                    encoded_rate_w = encoded_rate_h = 0;
                     break;
                 case RHI::ShadingRate::Rate1x2:
-                    rate_w = 0;
-                    rate_h = 1;
+                    encoded_rate_w = 0;
+                    encoded_rate_h = 1;
                     break;
                 case RHI::ShadingRate::Rate2x1:
-                    rate_w = 1;
-                    rate_h = 0;
+                    encoded_rate_w = 1;
+                    encoded_rate_h = 0;
                     break;
                 case RHI::ShadingRate::Rate2x2:
-                    rate_w = rate_h = 1;
+                    encoded_rate_w = encoded_rate_h = 1;
                     break;
                 case RHI::ShadingRate::Rate2x4:
-                    rate_w = 1;
-                    rate_h = 2;
+                    encoded_rate_w = 1;
+                    encoded_rate_h = 2;
                     break;
                 case RHI::ShadingRate::Rate4x2:
-                    rate_w = 2;
-                    rate_h = 1;
+                    encoded_rate_w = 2;
+                    encoded_rate_h = 1;
                     break;
                 case RHI::ShadingRate::Rate4x4:
-                    rate_w = rate_h = 2;
+                    encoded_rate_w = encoded_rate_h = 2;
                     break;
                 default:
                     AZ_Assert(false, "Invalid shading rate enum %d", rate);
-                    rate_w = rate_h = 0;
+                    encoded_rate_w = encoded_rate_h = 0;
                 }
-                uint8_t density_w = 0xFF >> rate_w;
-                uint8_t density_h = 0xFF >> rate_h;
+                uint8_t density_w = 0xFF >> encoded_rate_w;
+                uint8_t density_h = 0xFF >> encoded_rate_h;
                 return RHI::ShadingRateImageValue{ density_w, density_h };
             }
             AZ_Error("Vulkan", false, "Shading Rate Image is not supported on this platform");
