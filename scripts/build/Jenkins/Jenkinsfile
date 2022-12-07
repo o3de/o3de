@@ -454,16 +454,18 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             echo "Checkout Extras: ${EXTRAS_URL}"
             def setEnvCommit = false
             def the_branch = branchName
+            def remoteConfig = scm.userRemoteConfigs
             if(EXTRAS_COMMIT) {
                 //the pr is for the engine repo, so we want to use the passed in branch name and record the change id and change date
                 setEnvCommit = true
             } else {
                 //this pr is for another repo so we want to use the development branch for the engine and do not set the commit id or change date
                 the_branch = EXTRAS_DEVELOPMENT_BRANCH
+                remoteConfig = [GetExtrasRemoteConfig()]
             }
 
             //checkout the extras branch
-            CheckoutRepo(the_branch, [GetExtrasRemoteConfig()], disableSubmodules, setEnvCommit)
+            CheckoutRepo(the_branch, remoteConfig, disableSubmodules, setEnvCommit)
         }
         //get any other external repos next, set the env.CHANGE_ID and env.CHANGE_DATE only if the repo is the pr repo
         pipelineConfig.EXTERNAL_REPOS.each { repo ->
