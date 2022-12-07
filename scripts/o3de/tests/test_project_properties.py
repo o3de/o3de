@@ -18,7 +18,7 @@ TEST_PROJECT_JSON_PAYLOAD = '''
 {
     "project_name": "TestProject",
     "project_id": "{24114e69-306d-4de6-b3b4-4cb1a3eca58e}",
-    "project_version" : "0.0.0.0",
+    "version" : "0.0.0",
     "compatible_engines" : [
         "o3de-sdk==2205.01"
     ],

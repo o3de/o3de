@@ -427,7 +427,7 @@ def register_project_path(json_data: dict,
         if not project_json_data:
             return 1
 
-        engine_version = this_engine_json.get('engine_version','')
+        engine_version = this_engine_json.get('version','')
         if not force:
             # verify the project -> engine compatibility
             if (project_json_data.get('compatible_engines') or project_json_data.get('engine_api_dependencies')):
@@ -471,7 +471,7 @@ def register_project_path(json_data: dict,
         update_project_json = False
         try:
             update_project_json = project_json_data['engine'] != this_engine_json['engine_name'] or \
-                                  project_json_data['engine_version'] != this_engine_json['engine_version']
+                                  project_json_data['engine_version'] != this_engine_json['version']
         except KeyError as e:
             update_project_json = True
 

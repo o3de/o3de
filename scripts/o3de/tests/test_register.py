@@ -118,6 +118,7 @@ class TestRegisterThisEngine:
 TEST_GEM_JSON_PAYLOAD = '''
 {
     "gem_name": "TestGem",
+    "version": "0.0.0",
     "display_name": "TestGem",
     "license": "What license TestGem uses goes here: i.e. https://opensource.org/licenses/MIT",
     "origin": "The primary repo for TestGem goes here: i.e. http://www.mydomain.com",
@@ -137,6 +138,7 @@ TEST_GEM_JSON_PAYLOAD = '''
 TEST_PROJECT_JSON_PAYLOAD = '''
 {
     "project_name": "TestProject",
+    "version": "0.0.0",
     "engine": "o3de",
     "external_subdirectories": []
 }
@@ -145,6 +147,7 @@ TEST_PROJECT_JSON_PAYLOAD = '''
 TEST_ENGINE_JSON_PAYLOAD = '''
 {
     "engine_name": "o3de",
+    "version": "0.0.0",
     "external_subdirectories": [],
     "projects": [],
     "templates": []
@@ -336,9 +339,9 @@ class TestRegisterProject:
             # we want to allow for testing the case where these fields 
             # are missing or empty
             if engine_version != None:
-                engine_json_data['engine_version'] = engine_version
+                engine_json_data['version'] = engine_version
             if engine_api_versions != None:
-                engine_json_data['engine_api_versions'] = engine_api_versions
+                engine_json_data['api_versions'] = engine_api_versions
 
             return engine_json_data
 

@@ -155,6 +155,7 @@ TEST_O3DE_REPO_PROJECT_JSON_PAYLOAD = '''
 TEST_O3DE_REPO_ENGINE_JSON_PAYLOAD = '''
 {
     "engine_name": "TestEngine",
+    "version": "0.0.0",
     "license": "Apache-2.0 Or MIT",
     "origin": "Test Creator",
     "origin_uri": "http://o3derepo.org/TestEngine/engine.zip",

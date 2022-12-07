@@ -19,6 +19,7 @@ from o3de import manifest, utils
 TEST_GEM_JSON_PAYLOAD = '''
 {
     "gem_name": "TestGem",
+    "version": "0.0.0",
     "display_name": "TestGem",
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
@@ -52,6 +53,7 @@ TEST_PROJECT_JSON_PAYLOAD = '''
 {
     "project_name": "TestProject",
     "project_id": "{24114e69-306d-4de6-b3b4-4cb1a3eca58e}",
+    "version": "0.0.0",
     "origin": "The primary repo for TestProject goes here: i.e. http://www.mydomain.com",
     "license": "What license TestProject uses goes here: i.e. https://opensource.org/licenses/MIT",
     "display_name": "TestProject",
@@ -74,6 +76,7 @@ TEST_PROJECT_JSON_PAYLOAD = '''
 TEST_ENGINE_JSON_PAYLOAD = '''
 {
     "engine_name": "o3de",
+    "version": "0.0.0",
     "external_subdirectories": [
         "GemInEngine"
     ],

@@ -39,7 +39,7 @@ def engine_is_compatible(engine_name:str, engine_version:str, compatible_engines
     if not engine_name:
         # fallback to use the information from the current engine
         engine_name = engine_json_data.get('engine_name','')
-        engine_version = engine_json_data.get('engine_version','')
+        engine_version = engine_json_data.get('version','')
 
     if compatible_engines:
         if engine_version and has_compatible_version(compatible_engines, engine_name, engine_version):
@@ -48,7 +48,7 @@ def engine_is_compatible(engine_name:str, engine_version:str, compatible_engines
             # assume an engine with no version is compatible
             return True
 
-    engine_api_versions = engine_json_data.get('engine_api_versions','')
+    engine_api_versions = engine_json_data.get('api_versions','')
     if engine_api_version_specifiers and not engine_api_versions:
         # assume not compatible if no engine api version information is available
         return False

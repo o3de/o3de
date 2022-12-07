@@ -17,6 +17,7 @@ from o3de import engine_properties
 TEST_ENGINE_JSON_PAYLOAD = '''
 {
     "engine_name": "o3de",
+    "version": "0.0.0",
     "restricted_name": "o3de",
     "FileVersion": 1,
     "O3DEVersion": "0.0.0.0",

@@ -17,6 +17,7 @@ from o3de import enable_gem
 TEST_ENGINE_JSON_PAYLOAD = '''
 {
     "engine_name": "o3de",
+    "version": "0.0.0",
     "restricted_name": "o3de",
     "FileVersion": 1,
     "O3DEVersion": "0.0.0",
@@ -36,6 +37,7 @@ TEST_ENGINE_JSON_PAYLOAD = '''
 TEST_PROJECT_JSON_PAYLOAD = '''
 {
     "project_name": "TestProject",
+    "version": "0.0.0",
     "origin": "The primary repo for TestProject goes here: i.e. http://www.mydomain.com",
     "license": "What license TestProject uses goes here: i.e. https://opensource.org/licenses/MIT",
     "display_name": "TestProject",
@@ -57,6 +59,7 @@ TEST_PROJECT_JSON_PAYLOAD = '''
 TEST_GEM_JSON_PAYLOAD = '''
 {
     "gem_name": "TestGem",
+    "version": "0.0.0",
     "display_name": "TestGem",
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
@@ -264,9 +267,9 @@ class TestEnableGemCommand:
             engine_data = self.enable_gem.engine_data.copy()
             engine_data['engine_name'] = test_engine_name
             if test_engine_version != None:
-                engine_data['engine_version'] = test_engine_version
+                engine_data['version'] = test_engine_version
             if test_engine_api_versions:
-                engine_data['engine_api_versions'] = test_engine_api_versions
+                engine_data['api_versions'] = test_engine_api_versions
             return engine_data
 
         def get_project_json_data(project_name: str = None, project_path: pathlib.Path = None):
