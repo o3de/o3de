@@ -22,7 +22,7 @@ ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-ios         TARGETS TIFF   
 ly_associate_package(PACKAGE_NAME freetype-2.11.1-rev1-ios       TARGETS Freetype        PACKAGE_HASH b619eaa7da16469ae455a6418fbcd7bae8be406b69a46f5bc1706b275fb3558f)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.9.50-rev1-ios   TARGETS AWSNativeSDK    PACKAGE_HASH c3c9478c259ecb569fb2ce6fcfa733647adc3b6bd2854e8eff9de64bcd18c745)
 ly_associate_package(PACKAGE_NAME Lua-5.4.4-rev1-ios             TARGETS Lua             PACKAGE_HASH 82f27bf6c745c98395dcea7ec72f82cb5254fd19fca9f5ac7a6246527a30bacb)
-ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev5-ios  TARGETS PhysX           PACKAGE_HASH 4a5e38b385837248590018eb133444b4e440190414e6756191200a10c8fa5615)
+ly_associate_package(PACKAGE_NAME PhysX-5.1.1-rev1-ios           TARGETS PhysX           PACKAGE_HASH 3495e0bc1404a369fb6f4880ffc525c0a9d860867f5c524b33887cfd08f5c376)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-ios          TARGETS mikkelsen       PACKAGE_HASH 976aaa3ccd8582346132a10af253822ccc5d5bcc9ea5ba44d27848f65ee88a8a)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-ios      TARGETS googletest      PACKAGE_HASH 2f121ad9784c0ab73dfaa58e1fee05440a82a07cc556bec162eeb407688111a7)
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-ios TARGETS GoogleBenchmark PACKAGE_HASH c2ffaed2b658892b1bcf81dee4b44cd1cb09fc78d55584ef5cb8ab87f2d8d1ae)
