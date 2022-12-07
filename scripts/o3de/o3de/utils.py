@@ -379,7 +379,7 @@ def update_values_in_key_list(existing_values: list, new_values: list or str, re
 
     returns updated existing value list
     """
-    if replace_values:
+    if replace_values != None:
         replace_values = replace_values.split() if isinstance(replace_values, str) else replace_values
         return list(dict.fromkeys(replace_values))
 

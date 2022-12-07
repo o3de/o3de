@@ -89,11 +89,11 @@ def edit_gem_props(gem_path: pathlib.Path = None,
     if isinstance(new_version, str):
         update_key_dict['version'] = new_version
 
-    if new_tags or remove_tags or replace_tags:
+    if new_tags or remove_tags or replace_tags != None:
         update_key_dict['user_tags'] = utils.update_values_in_key_list(gem_json_data.get('user_tags', []), new_tags,
                                                         remove_tags, replace_tags)
 
-    if new_platforms or remove_platforms or replace_platforms:
+    if new_platforms or remove_platforms or replace_platforms != None:
         update_key_dict['platforms'] = utils.update_values_in_key_list(gem_json_data.get('platforms', []), new_platforms,
                                                         remove_platforms, replace_platforms)
 
@@ -103,20 +103,20 @@ def edit_gem_props(gem_path: pathlib.Path = None,
             return False
         return True
 
-    if new_compatible_engines or remove_compatible_engines or replace_compatible_engines:
+    if new_compatible_engines or remove_compatible_engines or replace_compatible_engines != None:
         if not valid_specifier(new_compatible_engines) or \
             not valid_specifier(remove_compatible_engines) or \
-            not valid_specifier(replace_compatible_engines):
+            (replace_compatible_engines and not valid_specifier(replace_compatible_engines)):
             return 1
 
         update_key_dict['compatible_engines'] = utils.update_values_in_key_list(gem_json_data.get('compatible_engines', []), 
                                                         new_compatible_engines, remove_compatible_engines, 
                                                         replace_compatible_engines)
 
-    if new_engine_api_dependencies or remove_engine_api_dependencies or replace_engine_api_dependencies: 
+    if new_engine_api_dependencies or remove_engine_api_dependencies or replace_engine_api_dependencies != None: 
         if not valid_specifier(new_engine_api_dependencies) or \
             not valid_specifier(remove_engine_api_dependencies) or \
-            not valid_specifier(replace_engine_api_dependencies):
+            (replace_engine_api_dependencies and not valid_specifier(replace_engine_api_dependencies)):
             return 1
 
         update_key_dict['engine_api_dependencies'] = utils.update_values_in_key_list(gem_json_data.get('engine_api_dependencies', []), 

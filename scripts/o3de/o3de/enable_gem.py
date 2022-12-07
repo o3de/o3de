@@ -79,7 +79,7 @@ def enable_gem_in_project(gem_name: str = None,
         logger.error(f'Gem Path {gem_path} does not exist.')
         return 1
 
-    # read gem.json from the gem path
+    # Read gem.json from the gem path
     gem_json_data = manifest.get_gem_json_data(gem_path=gem_path, project_path=project_path)
     if not gem_json_data:
         logger.error(f'Could not read gem.json content under {gem_path}.')
