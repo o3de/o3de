@@ -55,7 +55,7 @@ def engine_is_compatible(engine_name:str, engine_version:str, compatible_engines
 
     if engine_api_version_specifiers:
         for api_version_specifier in engine_api_version_specifiers:
-            api_name, unused_version_specifiers = get_object_name_and_optional_version_specifier(api_version_specifier)
+            api_name, unused_version_specifiers = utils.get_object_name_and_optional_version_specifier(api_version_specifier)
             if has_compatible_version([api_version_specifier], api_name, engine_api_versions.get(api_name,'')):
                 return True
 
@@ -98,12 +98,12 @@ def get_incompatible_gem_version_specifiers(project_path:pathlib.Path, gem_versi
     project_gem_versions = {} 
     for gem_path in gem_paths:
         json_data = manifest.get_gem_json_data(gem_path=gem_path, project_path=project_path)
-        if 'gem_name' in json_data:
+        if json_data:
             project_gem_versions[json_data['gem_name']] = json_data.get('gem_version','')
 
     incompatible_gem_version_specifiers = []
     for gem_version_specifier in gem_version_specifier_list:
-        gem_name, version_specifier = get_object_name_and_optional_version_specifier(gem_version_specifier)
+        gem_name, version_specifier = utils.get_object_name_and_optional_version_specifier(gem_version_specifier)
         if not gem_name in project_gem_versions:
             incompatible_gem_version_specifiers.append(gem_version_specifier)
             continue
@@ -159,13 +159,3 @@ def has_compatible_version(name_and_version_specifier_list:list, object_name:str
             pass
 
     return False 
-
-def get_object_name_and_optional_version_specifier(input:str):
-    """
-    Returns an object name and optional version specifier 
-    :param input: The input string
-    """
-    try:
-        return utils.get_object_name_and_version_specifier(input)
-    except Exception as e:
-        return input, None

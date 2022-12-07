@@ -420,3 +420,14 @@ def get_object_name_and_version_specifier(input:str) -> (str, str) or None:
         return None
     
     return match.group("object_name").strip(), match.group("version_specifier").strip()
+
+
+def get_object_name_and_optional_version_specifier(input:str):
+    """
+    Returns an object name and optional version specifier 
+    :param input: The input string
+    """
+    try:
+        return get_object_name_and_version_specifier(input)
+    except Exception as e:
+        return input, None
