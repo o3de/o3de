@@ -101,7 +101,7 @@ namespace AZ
                     // and use that one for the whole renderpass. If more than one is found, we raise an assert because
                     // there can only be one fragment attachment per renderpass.
                     VkRenderPassFragmentDensityMapCreateInfoEXT fdmAttachmentCreateInfo;
-                    if (m_device.GetImageShadingRageMode() == Device::ShadingRateImageMode::DensityMap)
+                    if (m_device.GetImageShadingRateMode() == Device::ShadingRateImageMode::DensityMap)
                     {
                         auto& shadingRateAttachmentRefList = subpassInfo.front()
                             .m_attachmentReferences[static_cast<uint32_t>(AttachmentType::ShadingRate)];
@@ -283,7 +283,7 @@ namespace AZ
                         // Shading rate attachments are declared at subpass level.
                         // Check if the subpass has a shading rate attachemnt and st the proper information.
                         if (!shadingRateAttachmentRefList.empty() &&
-                            m_device.GetImageShadingRageMode() == Device::ShadingRateImageMode::ImageAttachment)
+                            m_device.GetImageShadingRateMode() == Device::ShadingRateImageMode::ImageAttachment)
                         {
                             SetFragmentShadingRateAttachmentInfo<VkAttachmentReferenceType>(
                                 subpassInfo[i], shadingRateAttachmentRefList.data());
@@ -532,7 +532,7 @@ namespace AZ
                 if (subpassLayout.m_shadingRateDescriptor.IsValid())
                 {
                     VkImageLayout imageLayout;
-                    switch (device.GetImageShadingRageMode())
+                    switch (device.GetImageShadingRateMode())
                     {
                     case Device::ShadingRateImageMode::DensityMap:
                         imageLayout = VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT;
@@ -541,7 +541,7 @@ namespace AZ
                         imageLayout = VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
                         break;
                     default:
-                        AZ_Assert(false, "Invalid image shading rate mode %d", device.GetImageShadingRageMode());
+                        AZ_Assert(false, "Invalid image shading rate mode %d", device.GetImageShadingRateMode());
                         imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                         break;
                     }

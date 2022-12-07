@@ -127,7 +127,7 @@ namespace AZ
                 DensityMap      // Using VK_EXT_fragment_density_map extension
             };
 
-            ShadingRateImageMode GetImageShadingRageMode() const;
+            ShadingRateImageMode GetImageShadingRateMode() const;
 
         private:
             Device();

@@ -316,7 +316,7 @@ namespace AZ
             }
             if (RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::ShadingRate))
             {
-                switch (device.GetImageShadingRageMode())
+                switch (device.GetImageShadingRateMode())
                 {
                 case Device::ShadingRateImageMode::DensityMap:
                 {

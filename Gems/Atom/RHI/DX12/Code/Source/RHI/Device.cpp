@@ -175,16 +175,24 @@ namespace AZ
             case D3D12_VARIABLE_SHADING_RATE_TIER::D3D12_VARIABLE_SHADING_RATE_TIER_1:
                 {
                     m_features.m_shadingRateTypeMask = RHI::ShadingRateTypeFlags::PerDraw;
-                    m_features.m_shadingRateMask = RHI::ShadingRateFlags::Rate1x1 | RHI::ShadingRateFlags::Rate1x2 |
-                        RHI::ShadingRateFlags::Rate2x1 | RHI::ShadingRateFlags::Rate2x2;                   
+                    m_features.m_shadingRateMask =
+                        RHI::ShadingRateFlags::Rate1x1 |
+                        RHI::ShadingRateFlags::Rate1x2 |
+                        RHI::ShadingRateFlags::Rate2x1 |
+                        RHI::ShadingRateFlags::Rate2x2;                   
                 }
                 break;
             case D3D12_VARIABLE_SHADING_RATE_TIER::D3D12_VARIABLE_SHADING_RATE_TIER_2:
                 {
                     m_features.m_shadingRateTypeMask =
-                        RHI::ShadingRateTypeFlags::PerDraw | RHI::ShadingRateTypeFlags::PerRegion | RHI::ShadingRateTypeFlags::PerPrimitive;
-                    m_features.m_shadingRateMask = RHI::ShadingRateFlags::Rate1x1 | RHI::ShadingRateFlags::Rate1x2 |
-                        RHI::ShadingRateFlags::Rate2x1 | RHI::ShadingRateFlags::Rate2x2;
+                        RHI::ShadingRateTypeFlags::PerDraw |
+                        RHI::ShadingRateTypeFlags::PerRegion |
+                        RHI::ShadingRateTypeFlags::PerPrimitive;
+                    m_features.m_shadingRateMask =
+                        RHI::ShadingRateFlags::Rate1x1 |
+                        RHI::ShadingRateFlags::Rate1x2 |
+                        RHI::ShadingRateFlags::Rate2x1 |
+                        RHI::ShadingRateFlags::Rate2x2;
                     m_features.m_dynamicShadingRateImage = true;
                 }
                 break;
@@ -195,7 +203,9 @@ namespace AZ
             if (options6.AdditionalShadingRatesSupported)
             {
                 m_features.m_shadingRateMask |=
-                    RHI::ShadingRateFlags::Rate2x4 | RHI::ShadingRateFlags::Rate4x2 | RHI::ShadingRateFlags::Rate4x4;
+                    RHI::ShadingRateFlags::Rate2x4 |
+                    RHI::ShadingRateFlags::Rate4x2 |
+                    RHI::ShadingRateFlags::Rate4x4;
             }
 
             m_limits.m_shadingRateTileSize = RHI::Size(options6.ShadingRateImageTileSize, options6.ShadingRateImageTileSize, 1);

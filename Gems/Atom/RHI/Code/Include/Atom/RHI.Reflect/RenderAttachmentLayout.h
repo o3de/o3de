@@ -74,9 +74,9 @@ namespace AZ
             AZStd::array<RenderAttachmentDescriptor, Limits::Pipeline::AttachmentColorCountMax> m_rendertargetDescriptors;
             //! List of subpass inputs used by the subpass.
             AZStd::array<SubpassInputDescriptor, Limits::Pipeline::AttachmentColorCountMax> m_subpassInputDescriptors = { {} };
-            //! Descriptor of the depth/stencil attachment. Invalid if not used.
+            //! Descriptor of the depth/stencil attachment. If not used, the attachment index is InvalidRenderAttachmentIndex.
             RenderAttachmentDescriptor m_depthStencilDescriptor;
-            //! Descriptor of the shading rate attachment. Invalid if not used.
+            //! Descriptor of the shading rate attachment. If not used, the attachment index is InvalidRenderAttachmentIndex.
             RenderAttachmentDescriptor m_shadingRateDescriptor;
         };
 

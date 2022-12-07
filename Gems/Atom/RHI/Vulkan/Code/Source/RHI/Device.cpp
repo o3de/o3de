@@ -849,7 +849,7 @@ namespace AZ
 
         RHI::ShadingRateImageValue Device::ConvertShadingRate(RHI::ShadingRate rate)
         {
-            ShadingRateImageMode mode = GetImageShadingRageMode();
+            ShadingRateImageMode mode = GetImageShadingRateMode();
             if (mode == ShadingRateImageMode::ImageAttachment)
             {
                 // Fragment sizes are encoded in a single texel as follows:
@@ -1193,7 +1193,7 @@ namespace AZ
             m_context.DestroyBuffer(GetNativeDevice(), vkBuffer, nullptr);
         }
 
-        Device::ShadingRateImageMode Device::GetImageShadingRageMode() const
+        Device::ShadingRateImageMode Device::GetImageShadingRateMode() const
         {
             return m_imageShadingRateMode;
         }
