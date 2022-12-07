@@ -19,6 +19,7 @@ namespace AWSCore
     class AWSCoreEditorSystemComponent
         : public AZ::Component
         , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
+        , private AWSCoreEditorRequestBus::Handler
     {
     public:
         static constexpr const char EDITOR_HELP_MENU_TEXT[] = "&Help";
@@ -39,10 +40,19 @@ namespace AWSCore
         void Activate() override;
         void Deactivate() override;
 
+        // AWSCoreEditorRequestBus interface implementation
+        void CreateSubMenu(const AZStd::string& parentMenuIdentifier, const char* const menuDetails[], int sort) override;
+        void AddExternalLinkAction(const AZStd::string& menuIdentifier, const char* const actionDetails[], int sort) override;
+
         // ActionManagerRegistrationNotificationBus implementation
         void OnMenuBarRegistrationHook() override;
 
         AZStd::unique_ptr<AWSCoreEditorMenu> m_awsCoreEditorMenu;
+
+        AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
+        AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
+        AzToolsFramework::MenuManagerInternalInterface* m_menuManagerInternalInterface = nullptr;
+
     };
 
 } // namespace AWSCore

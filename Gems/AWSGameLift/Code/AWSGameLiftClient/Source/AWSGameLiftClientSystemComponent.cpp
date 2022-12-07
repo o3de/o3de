@@ -100,7 +100,7 @@ namespace AWSGameLift
         m_gameliftManager->ActivateManager();
         m_gameliftTicketTracker->ActivateTracker();
 
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::SetAWSGameLiftEnabled);
+        //AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::SetAWSGameLiftEnabled);
     }
 
     void AWSGameLiftClientSystemComponent::Deactivate()

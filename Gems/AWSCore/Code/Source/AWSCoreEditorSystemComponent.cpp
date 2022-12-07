@@ -19,6 +19,12 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
+
+#include <Editor/Constants/AWSCoreEditorMenuNames.h>
+#include <Editor/UI/AWSCoreEditorMenu.h>
+#include <QDesktopServices>
+#include <QUrl>
 
 namespace AWSCore
 {
@@ -68,15 +74,63 @@ namespace AWSCore
     void AWSCoreEditorSystemComponent::Activate()
     {
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
+
+        m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(m_actionManagerInterface, "AWSCoreEditorSystemComponent - could not get ActionManagerInterface");
+
+        m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        AZ_Assert(m_menuManagerInterface, "AWSCoreEditorSystemComponent - could not get MenuManagerInterface");
+
+        m_menuManagerInternalInterface = AZ::Interface<AzToolsFramework::MenuManagerInternalInterface>::Get();
+        AZ_Assert(m_menuManagerInterface, "AWSCoreEditorSystemComponent - could not get MenuManagerInternalInterface");
+
+        AWSCoreEditorRequestBus::Handler::BusConnect();
     }
 
     void AWSCoreEditorSystemComponent::Deactivate()
     {
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
+
+        AWSCoreEditorRequestBus::Handler::BusDisconnect();
     }
 
     void AWSCoreEditorSystemComponent::OnMenuBarRegistrationHook()
     {
         m_awsCoreEditorMenu = AZStd::make_unique<AWSCoreEditorMenu>();
+    }
+
+    void AWSCoreEditorSystemComponent::AddExternalLinkAction(const AZStd::string& menuIdentifier, const char* const actionDetails[], int sort)
+    {
+        const auto& identifier = actionDetails[IdentIndex];
+        const auto& text = actionDetails[NameIndex];
+        const auto& icon = actionDetails[IconIndex];
+        const auto& url = actionDetails[URLIndex];
+
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = text;
+        actionProperties.m_iconPath = icon;
+        auto outcome = m_actionManagerInterface->RegisterAction(ActionContext, identifier, actionProperties, [url]()
+            {
+                QDesktopServices::openUrl(QUrl(url));
+            });
+        AZ_Assert(outcome.IsSuccess(), "Failed to register action %s", identifier);
+
+        outcome = m_menuManagerInterface->AddActionToMenu(menuIdentifier, identifier, sort);
+        AZ_Assert(outcome.IsSuccess(), "Failed to add action %s to menu %s", identifier, menuIdentifier.c_str());
+    }
+
+    void AWSCoreEditorSystemComponent::CreateSubMenu(const AZStd::string& parentMenuIdentifier, const char* const menuDetails[], int sort)
+    {
+        AzToolsFramework::MenuProperties menuProperties;
+        menuProperties.m_name = menuDetails[NameIndex];
+        auto outcome = m_menuManagerInterface->RegisterMenu(menuDetails[IdentIndex], menuProperties);
+        AZ_Assert(outcome.IsSuccess(), "Failed to register '%s' Menu", menuDetails[IdentIndex]);
+
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu(menuDetails[IdentIndex]);
+        menu->setProperty("noHover", true);
+
+        outcome = m_menuManagerInterface->AddSubMenuToMenu(parentMenuIdentifier, menuDetails[IdentIndex], sort);
+        AZ_Assert(outcome.IsSuccess(), "Failed to add '%s' SubMenu to '%s' Menu", menuDetails[IdentIndex], parentMenuIdentifier.c_str());
+
     }
 } // namespace AWSCore

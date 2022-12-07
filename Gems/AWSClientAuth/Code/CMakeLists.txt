@@ -22,6 +22,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
+            AZ::AzToolsFramework
             Gem::AWSCore
             Gem::HttpRequestor
             3rdParty::AWSNativeSDK::AWSClientAuth
@@ -40,6 +41,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
+            AZ::AzToolsFramework
             Gem::AWSCore
             3rdParty::AWSNativeSDK::AWSClientAuth
             3rdParty::AWSNativeSDK::Core
@@ -106,6 +108,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 3rdParty::AWSNativeSDK::AWSClientAuth
                 AZ::AzCore
                 AZ::AzFramework
+                AZ::AzToolsFramework
                 AZ::AWSNativeSDKTestLibs
                 Gem::AWSClientAuth.Static
                 Gem::AWSCore

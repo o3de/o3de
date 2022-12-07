@@ -35,15 +35,6 @@
 
 namespace AWSCore
 {
-
-    static constexpr int IconSize = 16;
-
-    static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
-    static constexpr AZStd::string_view AWSMenuIdentifier = "o3de.menu.editor.aws";
-    static constexpr AZStd::string_view EditorMainWindowMenuBarIdentifier = "o3de.menubar.editor.mainwindow";
-    static constexpr AZStd::string_view ActionContext = "o3de.context.editor.mainwindow";
-
-
     AWSCoreEditorMenu::AWSCoreEditorMenu()
         : m_resourceMappingToolWatcher(nullptr)
     {
@@ -55,8 +46,6 @@ namespace AWSCore
 
         m_menuManagerInternalInterface = AZ::Interface<AzToolsFramework::MenuManagerInternalInterface>::Get();
         AZ_Assert(m_menuManagerInterface, "AWSCoreEditorSystemComponent - could not get MenuManagerInternalInterface");
-
-        static constexpr const char AWS_MENU_TEXT[] = "&AWS";
 
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = AWS_MENU_TEXT;
@@ -74,12 +63,10 @@ namespace AWSCore
         InitializeAWSFeatureGemActions();
         //AddSpaceForIcon(this);
 
-        AWSCoreEditorRequestBus::Handler::BusConnect();
     }
 
     AWSCoreEditorMenu::~AWSCoreEditorMenu()
     {
-        AWSCoreEditorRequestBus::Handler::BusDisconnect();
         if (m_resourceMappingToolWatcher)
         {
             if (m_resourceMappingToolWatcher->IsProcessRunning())
@@ -89,42 +76,6 @@ namespace AWSCore
             m_resourceMappingToolWatcher.reset();
         }
         //this->clear();
-    }
-
-    //void AWSCoreEditorMenu::AddExternalLinkAction(const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier, const AZStd::string& name, const AZStd::string& url, const AZStd::string& icon)
-    void AWSCoreEditorMenu::AddExternalLinkAction(const AZStd::string& menuIdentifier, const char* const actionDetails[])
-    {
-        const auto& identifier = actionDetails[IdentIndex];
-        const auto& text = actionDetails[NameIndex];
-        const auto& icon = actionDetails[IconIndex];
-        const auto& url = actionDetails[URLIndex];
-
-        AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = text;
-        actionProperties.m_iconPath = icon;
-        auto outcome = m_actionManagerInterface->RegisterAction(ActionContext, identifier, actionProperties, [url]()
-            {
-                QDesktopServices::openUrl(QUrl(url));
-            });
-        AZ_Assert(outcome.IsSuccess(), "Failed to register action %s", identifier);
-
-        outcome = m_menuManagerInterface->AddActionToMenu(menuIdentifier, identifier, 0);
-        AZ_Assert(outcome.IsSuccess(), "Failed to add action %s to menu %s", identifier, menuIdentifier.c_str());
-    }
-
-    void AWSCoreEditorMenu::CreateSubMenu(const AZStd::string& parentMenuIdentifier, const char* const menuDetails[])
-    {
-        AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = menuDetails[NameIndex];
-        auto outcome = m_menuManagerInterface->RegisterMenu(menuDetails[IdentIndex], menuProperties);
-        AZ_Assert(outcome.IsSuccess(), "Failed to register '%s' Menu", menuDetails[IdentIndex]);
-
-        QMenu* menu = m_menuManagerInternalInterface->GetMenu(menuDetails[IdentIndex]);
-        menu->setProperty("noHover", true);
-
-        outcome = m_menuManagerInterface->AddSubMenuToMenu(parentMenuIdentifier, menuDetails[IdentIndex], 0);
-        AZ_Assert(outcome.IsSuccess(), "Failed to add '%s' SubMenu to '%s' Menu", menuDetails[IdentIndex], parentMenuIdentifier.c_str());
-
     }
 
     void AWSCoreEditorMenu::InitializeResourceMappingToolAction()
@@ -172,23 +123,23 @@ namespace AWSCore
 
     void AWSCoreEditorMenu::InitializeAWSDocActions()
     {
-        AddExternalLinkAction(AWSMenuIdentifier, NewToAWS);
+        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, AWSMenuIdentifier, NewToAWS, 0);
 
         InitializeAWSGlobalDocsSubMenu();
 
-        AddExternalLinkAction(AWSMenuIdentifier, AWSCredentialConfiguration);
+        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, AWSMenuIdentifier, AWSCredentialConfiguration, 0);
     }
 
     void AWSCoreEditorMenu::InitializeAWSGlobalDocsSubMenu()
     {
-        CreateSubMenu(AWSMenuIdentifier, O3DEAndAWS);
+        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::CreateSubMenu, AWSMenuIdentifier, O3DEAndAWS, 0);
 
         const auto& submenuIdentifier = O3DEAndAWS[IdentIndex];
 
-        AddExternalLinkAction(submenuIdentifier, AWSAndO3DEGettingStarted);
-        AddExternalLinkAction(submenuIdentifier, AWSAndO3DEMappingsFile);
-        AddExternalLinkAction(submenuIdentifier, AWSAndO3DEMappingsTool);
-        AddExternalLinkAction(submenuIdentifier, AWSAndO3DEScripting);
+        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSAndO3DEGettingStarted, 0);
+        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSAndO3DEMappingsFile, 0);
+        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSAndO3DEMappingsTool, 0);
+        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSAndO3DEScripting, 0);
 
         // todo-ls: still need this
         //AddSpaceForIcon(globalDocsMenu);
@@ -201,7 +152,7 @@ namespace AWSCore
         //clientAuth->setDisabled(true);
         //this->addAction(clientAuth);
 
-        AzToolsFramework::ActionProperties actionProperties;
+        /*AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = AWSClientAuth[NameIndex];
         actionProperties.m_iconPath = AWSClientAuth[IconIndex];
         actionProperties.m_hideFromMenusWhenDisabled = false;
@@ -244,127 +195,131 @@ namespace AWSCore
             {
                 return false;
             }
-        );
+        );*/
 
 
-        CreateSubMenu(AWSMenuIdentifier, AWSMetrics);
+        //CreateSubMenu(AWSMenuIdentifier, AWSMetrics);
 
         //QAction* metrics = new QAction(QObject::tr(AWSMetricsActionText));
         //metrics->setIcon(QIcon(QString(":/Notifications/download.svg")));
         //metrics->setDisabled(true);
         //this->addAction(metrics);
 
-        QAction* gamelift = new QAction(QObject::tr(AWSGameLiftActionText));
-        gamelift->setIcon(QIcon(QString(":/Notifications/download.svg")));
-        gamelift->setDisabled(true);
+        //QAction* gamelift = new QAction(QObject::tr(AWSGameLiftActionText));
+        //gamelift->setIcon(QIcon(QString(":/Notifications/download.svg")));
+        //gamelift->setDisabled(true);
         //this->addAction(gamelift);
     }
 
-    void AWSCoreEditorMenu::SetAWSClientAuthEnabled()
-    {
-        // TODO: instead of creating submenu in core editor, aws feature gem should return submenu component directly
-        QMenu* subMenu = SetAWSFeatureSubMenu(AWSClientAuthActionText);
+    //void AWSCoreEditorMenu::SetAWSClientAuthEnabled()
+    //{
+    //    // Record that this is enabled
+    //    m_awsClientAuthEnabled = true;
 
-        CreateSubMenu(AWSMenuIdentifier, AWSClientAuth);
 
-        const auto& submenuIdentifier = AWSClientAuth[IdentIndex];
+    //    //// TODO: instead of creating submenu in core editor, aws feature gem should return submenu component directly
+    //    //QMenu* subMenu = SetAWSFeatureSubMenu(AWSClientAuthActionText);
 
-        AddExternalLinkAction(submenuIdentifier, AWSClientAuthGemOverview);
+    //    //CreateSubMenu(AWSMenuIdentifier, AWSClientAuth);
 
-        /*subMenu->addAction(AddExternalLinkAction(
-            AWSClientAuthGemOverviewActionText, AWSClientAuthGemOverviewUrl, ":/Notifications/link.svg"));
-        subMenu->addAction(AddExternalLinkAction(
-            AWSClientAuthGemSetupActionText, AWSClientAuthGemSetupUrl, ":/Notifications/link.svg"));
-        subMenu->addAction(AddExternalLinkAction(
-            AWSClientAuthCDKAndResourcesActionText, AWSClientAuthCDKAndResourcesUrl, ":/Notifications/link.svg"));
-        subMenu->addAction(AddExternalLinkAction(
-            AWSClientAuthScriptCanvasAndLuaActionText, AWSClientAuthScriptCanvasAndLuaUrl, ":/Notifications/link.svg"));
-        subMenu->addAction(AddExternalLinkAction(
-            AWSClientAuth3rdPartyAuthProviderActionText, AWSClientAuth3rdPartyAuthProviderUrl, ":/Notifications/link.svg"));
-        subMenu->addAction(AddExternalLinkAction(
-            AWSClientAuthCustomAuthProviderActionText, AWSClientAuthCustomAuthProviderUrl, ":/Notifications/link.svg"));
-        subMenu->addAction(AddExternalLinkAction(
-            AWSClientAuthAPIReferenceActionText, AWSClientAuthAPIReferenceUrl, ":/Notifications/link.svg"));*/
+    //    //const auto& submenuIdentifier = AWSClientAuth[IdentIndex];
 
-        AddSpaceForIcon(subMenu);
-    }
+    //    //AddExternalLinkAction(submenuIdentifier, AWSClientAuthGemOverview);
 
-    void AWSCoreEditorMenu::SetAWSGameLiftEnabled()
-    {
-        // TODO: instead of creating submenu in core editor, aws feature gem should return submenu component directly
-        QMenu* subMenu = SetAWSFeatureSubMenu(AWSGameLiftActionText);
+    //    ///*subMenu->addAction(AddExternalLinkAction(
+    //    //    AWSClientAuthGemOverviewActionText, AWSClientAuthGemOverviewUrl, ":/Notifications/link.svg"));
+    //    //subMenu->addAction(AddExternalLinkAction(
+    //    //    AWSClientAuthGemSetupActionText, AWSClientAuthGemSetupUrl, ":/Notifications/link.svg"));
+    //    //subMenu->addAction(AddExternalLinkAction(
+    //    //    AWSClientAuthCDKAndResourcesActionText, AWSClientAuthCDKAndResourcesUrl, ":/Notifications/link.svg"));
+    //    //subMenu->addAction(AddExternalLinkAction(
+    //    //    AWSClientAuthScriptCanvasAndLuaActionText, AWSClientAuthScriptCanvasAndLuaUrl, ":/Notifications/link.svg"));
+    //    //subMenu->addAction(AddExternalLinkAction(
+    //    //    AWSClientAuth3rdPartyAuthProviderActionText, AWSClientAuth3rdPartyAuthProviderUrl, ":/Notifications/link.svg"));
+    //    //subMenu->addAction(AddExternalLinkAction(
+    //    //    AWSClientAuthCustomAuthProviderActionText, AWSClientAuthCustomAuthProviderUrl, ":/Notifications/link.svg"));
+    //    //subMenu->addAction(AddExternalLinkAction(
+    //    //    AWSClientAuthAPIReferenceActionText, AWSClientAuthAPIReferenceUrl, ":/Notifications/link.svg"));*/
 
-        CreateSubMenu(AWSMenuIdentifier, AWSGameLift);
+    //    //AddSpaceForIcon(subMenu);
+    //}
 
-        const auto& submenuIdentifier = AWSGameLift[IdentIndex];
+    //void AWSCoreEditorMenu::SetAWSGameLiftEnabled()
+    //{
+    //    // TODO: instead of creating submenu in core editor, aws feature gem should return submenu component directly
+    //    QMenu* subMenu = SetAWSFeatureSubMenu(AWSGameLiftActionText);
 
-        AddExternalLinkAction(submenuIdentifier, AWSGameLiftOverview);
-        /*subMenu->addAction(AddExternalLinkAction(AWSGameLiftGemOverviewActionText, AWSGameLiftGemOverviewUrl, ":/Notifications/link.svg"));
-        subMenu->addAction(AddExternalLinkAction(AWSGameLiftGemSetupActionText, AWSGameLiftGemSetupUrl, ":/Notifications/link.svg"));
-        subMenu->addAction(AddExternalLinkAction(AWSMGameLiftScriptingActionText, AWSGameLiftScriptingUrl, ":/Notifications/link.svg"));
-        subMenu->addAction(AddExternalLinkAction(AWSGameLiftAPIReferenceActionText, AWSGameLiftAPIReferenceUrl, ":/Notifications/link.svg"));
-        subMenu->addAction(AddExternalLinkAction(AWSGameLiftAdvancedTopicsActionText, AWSGameLiftAdvancedTopicsUrl, ":/Notifications/link.svg"));
-        subMenu->addAction(AddExternalLinkAction(AWSGameLiftLocalTestingActionText, AWSGameLiftLocalTestingUrl, ":/Notifications/link.svg"));
-        subMenu->addAction(AddExternalLinkAction(AWSGameLiftBuildPackagingActionText, AWSGameLiftBuildPackagingUrl, ":/Notifications/link.svg"));
-        subMenu->addAction(AddExternalLinkAction(AWSGameLiftResourceManagementActionText, AWSGameLiftResourceManagementUrl, ":/Notifications/link.svg"));*/
+    //    CreateSubMenu(AWSMenuIdentifier, AWSGameLift);
 
-        AddSpaceForIcon(subMenu);
-    }
+    //    const auto& submenuIdentifier = AWSGameLift[IdentIndex];
 
-    void AWSCoreEditorMenu::SetAWSMetricsEnabled()
-    {
-        // TODO: instead of creating submenu in core editor, aws feature gem should return submenu component directly
-        //QMenu* subMenu = SetAWSFeatureSubMenu(AWSMetricsActionText);
+    //    AddExternalLinkAction(submenuIdentifier, AWSGameLiftOverview);
+    //    /*subMenu->addAction(AddExternalLinkAction(AWSGameLiftGemOverviewActionText, AWSGameLiftGemOverviewUrl, ":/Notifications/link.svg"));
+    //    subMenu->addAction(AddExternalLinkAction(AWSGameLiftGemSetupActionText, AWSGameLiftGemSetupUrl, ":/Notifications/link.svg"));
+    //    subMenu->addAction(AddExternalLinkAction(AWSMGameLiftScriptingActionText, AWSGameLiftScriptingUrl, ":/Notifications/link.svg"));
+    //    subMenu->addAction(AddExternalLinkAction(AWSGameLiftAPIReferenceActionText, AWSGameLiftAPIReferenceUrl, ":/Notifications/link.svg"));
+    //    subMenu->addAction(AddExternalLinkAction(AWSGameLiftAdvancedTopicsActionText, AWSGameLiftAdvancedTopicsUrl, ":/Notifications/link.svg"));
+    //    subMenu->addAction(AddExternalLinkAction(AWSGameLiftLocalTestingActionText, AWSGameLiftLocalTestingUrl, ":/Notifications/link.svg"));
+    //    subMenu->addAction(AddExternalLinkAction(AWSGameLiftBuildPackagingActionText, AWSGameLiftBuildPackagingUrl, ":/Notifications/link.svg"));
+    //    subMenu->addAction(AddExternalLinkAction(AWSGameLiftResourceManagementActionText, AWSGameLiftResourceManagementUrl, ":/Notifications/link.svg"));*/
 
-        CreateSubMenu(AWSMenuIdentifier, AWSMetrics);
+    //    AddSpaceForIcon(subMenu);
+    //}
 
-        const auto& submenuIdentifier = AWSMetrics[IdentIndex];
+    //void AWSCoreEditorMenu::SetAWSMetricsEnabled()
+    //{
+    //    // TODO: instead of creating submenu in core editor, aws feature gem should return submenu component directly
+    //    //QMenu* subMenu = SetAWSFeatureSubMenu(AWSMetricsActionText);
 
-        AddExternalLinkAction(submenuIdentifier, AWSMetricsGemOverview);
+    //    CreateSubMenu(AWSMenuIdentifier, AWSMetrics);
 
-        /*subMenu->addAction(AddExternalLinkAction(
-            AWSMetricsGemOverviewActionText, AWSMetricsGemOverviewUrl, ":/Notifications/link.svg"));
-        subMenu->addAction(AddExternalLinkAction(
-            AWSMetricsSetupGemActionText, AWSMetricsSetupGemUrl, ":/Notifications/link.svg"));
-        subMenu->addAction(AddExternalLinkAction(
-            AWSMetricsScriptingActionText, AWSMetricsScriptingUrl, ":/Notifications/link.svg"));
-        subMenu->addAction(AddExternalLinkAction(
-            AWSMetricsAPIReferenceActionText, AWSMetricsAPIReferenceUrl, ":/Notifications/link.svg"));
-        subMenu->addAction(AddExternalLinkAction(
-            AWSMetricsAdvancedTopicsActionText, AWSMetricsAdvancedTopicsUrl, ":/Notifications/link.svg"));*/
+    //    const auto& submenuIdentifier = AWSMetrics[IdentIndex];
 
-        AZStd::string priorAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@engroot@");
-        AZStd::string configFilePath = priorAlias + "\\Gems\\AWSMetrics\\Code\\" + AZ::SettingsRegistryInterface::RegistryFolder;
-        AzFramework::StringFunc::Path::Normalize(configFilePath);
+    //    AddExternalLinkAction(submenuIdentifier, AWSMetricsGemOverview);
 
-        /*QAction* settingsAction = new QAction(QObject::tr(AWSMetricsSettingsActionText));
-        QObject::connect(settingsAction, &QAction::triggered, this,
-            [configFilePath](){
-                QDesktopServices::openUrl(QUrl::fromLocalFile(configFilePath.c_str()));
-            });
+    //    /*subMenu->addAction(AddExternalLinkAction(
+    //        AWSMetricsGemOverviewActionText, AWSMetricsGemOverviewUrl, ":/Notifications/link.svg"));
+    //    subMenu->addAction(AddExternalLinkAction(
+    //        AWSMetricsSetupGemActionText, AWSMetricsSetupGemUrl, ":/Notifications/link.svg"));
+    //    subMenu->addAction(AddExternalLinkAction(
+    //        AWSMetricsScriptingActionText, AWSMetricsScriptingUrl, ":/Notifications/link.svg"));
+    //    subMenu->addAction(AddExternalLinkAction(
+    //        AWSMetricsAPIReferenceActionText, AWSMetricsAPIReferenceUrl, ":/Notifications/link.svg"));
+    //    subMenu->addAction(AddExternalLinkAction(
+    //        AWSMetricsAdvancedTopicsActionText, AWSMetricsAdvancedTopicsUrl, ":/Notifications/link.svg"));*/
 
-        subMenu->addAction(settingsAction);*/
-        //AddSpaceForIcon(subMenu);
-    }
+    //    AZStd::string priorAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@engroot@");
+    //    AZStd::string configFilePath = priorAlias + "\\Gems\\AWSMetrics\\Code\\" + AZ::SettingsRegistryInterface::RegistryFolder;
+    //    AzFramework::StringFunc::Path::Normalize(configFilePath);
 
-    QMenu* AWSCoreEditorMenu::SetAWSFeatureSubMenu(const AZStd::string& menuText)
-    {
-        (void)menuText;
-        //auto actionList = this->actions();
-        //for (QList<QAction*>::iterator itr = actionList.begin(); itr != actionList.end(); ++itr)
-        //{
-        //    if (QString::compare((*itr)->text(), menuText.c_str()) == 0)
-        //    {
-        //        QMenu* subMenu = new QMenu(QObject::tr(menuText.c_str()));
-        //        subMenu->setIcon(QIcon(QString(":/Notifications/checkmark.svg")));
-        //        subMenu->setProperty("noHover", true);
-        //        this->insertMenu(*itr, subMenu);
-        //        this->removeAction(*itr);
-        //        return subMenu;
-        //    }
-        //}
-        return nullptr;
-    }
+    //    /*QAction* settingsAction = new QAction(QObject::tr(AWSMetricsSettingsActionText));
+    //    QObject::connect(settingsAction, &QAction::triggered, this,
+    //        [configFilePath](){
+    //            QDesktopServices::openUrl(QUrl::fromLocalFile(configFilePath.c_str()));
+    //        });
+
+    //    subMenu->addAction(settingsAction);*/
+    //    //AddSpaceForIcon(subMenu);
+    //}
+
+    //QMenu* AWSCoreEditorMenu::SetAWSFeatureSubMenu(const AZStd::string& menuText)
+    //{
+    //    (void)menuText;
+    //    //auto actionList = this->actions();
+    //    //for (QList<QAction*>::iterator itr = actionList.begin(); itr != actionList.end(); ++itr)
+    //    //{
+    //    //    if (QString::compare((*itr)->text(), menuText.c_str()) == 0)
+    //    //    {
+    //    //        QMenu* subMenu = new QMenu(QObject::tr(menuText.c_str()));
+    //    //        subMenu->setIcon(QIcon(QString(":/Notifications/checkmark.svg")));
+    //    //        subMenu->setProperty("noHover", true);
+    //    //        this->insertMenu(*itr, subMenu);
+    //    //        this->removeAction(*itr);
+    //    //        return subMenu;
+    //    //    }
+    //    //}
+    //    return nullptr;
+    //}
 
     void AWSCoreEditorMenu::AddSpaceForIcon(QMenu *menu)
     {

@@ -20,6 +20,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
+            AZ::AzToolsFramework
         PUBLIC
             Gem::AWSCore
             3rdParty::AWSNativeSDK::Core
@@ -39,6 +40,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
+            AZ::AzToolsFramework
             Gem::AWSMetrics.Static
 )
 
@@ -96,6 +98,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzCore
                 AZ::AzFramework
+                AZ::AzToolsFramework
                 Gem::AWSMetrics.Static
         RUNTIME_DEPENDENCIES
             Gem::AWSCore

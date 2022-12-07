@@ -15,6 +15,15 @@
 #include <AWSClientAuthBus.h>
 #include <AWSCoreBus.h>
 
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
+
+namespace AzToolsFramework
+{
+    class ActionManagerInterface;
+    class MenuManagerInterface;
+    class MenuManagerInternalInterface;
+}
+
 namespace AWSClientAuth
 {
     //! Gem System Component. Responsible for instantiating and managing Authentication and Authorization Controller
@@ -22,6 +31,7 @@ namespace AWSClientAuth
         : public AZ::Component
         , public AWSCore::AWSCoreNotificationsBus::Handler
         , public AWSClientAuthRequestBus::Handler
+        , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
         ~AWSClientAuthSystemComponent() override = default;
@@ -45,6 +55,9 @@ namespace AWSClientAuth
         void OnSDKInitialized() override;
         void OnSDKShutdownStarted() override {}
 
+        // ActionManagerRegistrationNotificationBus implementation
+        void OnMenuBarRegistrationHook() override;
+
         // AWSClientAuthRequests interface
         std::shared_ptr<Aws::CognitoIdentityProvider::CognitoIdentityProviderClient> GetCognitoIDPClient() override;
         std::shared_ptr<Aws::CognitoIdentity::CognitoIdentityClient> GetCognitoIdentityClient() override;
@@ -57,6 +70,11 @@ namespace AWSClientAuth
 
         std::shared_ptr<Aws::CognitoIdentityProvider::CognitoIdentityProviderClient> m_cognitoIdentityProviderClient;
         std::shared_ptr<Aws::CognitoIdentity::CognitoIdentityClient> m_cognitoIdentityClient;
+
+        //AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
+        //AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
+        //AzToolsFramework::MenuManagerInternalInterface* m_menuManagerInternalInterface = nullptr;
+
     };
 
 } // namespace AWSClientAuth

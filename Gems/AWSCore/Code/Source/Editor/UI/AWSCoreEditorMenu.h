@@ -30,7 +30,6 @@ namespace AzToolsFramework
 namespace AWSCore
 {
     class AWSCoreEditorMenu
-        : AWSCoreEditorRequestBus::Handler
     {
     public:
         static constexpr const char AWSResourceMappingToolReadMeWarningText[] =
@@ -40,11 +39,9 @@ namespace AWSCore
             "Failed to launch Resource Mapping Tool, please check <a href=\"file:///%s\">logs</a> for details.";
 
         AWSCoreEditorMenu();
-        ~AWSCoreEditorMenu() override;
+        ~AWSCoreEditorMenu();
 
     private:
-        void AddExternalLinkAction(const AZStd::string& menuIdentifier, const char* const actionDetails[]);
-        void CreateSubMenu(const AZStd::string& parentMenuIdentifier, const char* const menuDetails[]);
 
         void InitializeResourceMappingToolAction();
         void InitializeAWSDocActions();
@@ -52,12 +49,7 @@ namespace AWSCore
         void InitializeAWSFeatureGemActions();
         void AddSpaceForIcon(QMenu* menu);
 
-        // AWSCoreEditorRequestBus interface implementation
-        void SetAWSClientAuthEnabled() override;
-        void SetAWSMetricsEnabled() override;
-        void SetAWSGameLiftEnabled() override;
-
-        QMenu* SetAWSFeatureSubMenu(const AZStd::string& menuText);
+        bool m_awsClientAuthEnabled = false;
 
         // To improve experience, use process watcher to keep track of ongoing tool process
         AZStd::unique_ptr<AzFramework::ProcessWatcher> m_resourceMappingToolWatcher;
@@ -65,5 +57,6 @@ namespace AWSCore
         AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
         AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
         AzToolsFramework::MenuManagerInternalInterface* m_menuManagerInternalInterface = nullptr;
+
     };
 } // namespace AWSCore
