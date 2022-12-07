@@ -367,6 +367,34 @@ def remove_gem_duplicates(gems: list) -> list:
     return new_list
 
 
+def update_keys_and_values_in_dict(existing_values: dict, new_values: list or str, remove_values: list or str,
+                      replace_values: list or str):
+    """
+    Updates values within a dictionary by replacing all values or by appending values in the new_values list and 
+    removing values in the remove_values
+    :param existing_values dict to modify
+    :param new_values list of key=value pairs to add to the existing dictionary 
+    :param remove_values list with keys to remove from the existing dictionary 
+    :param replace_values list with key=value pairs to replace existing dictionary with
+
+    returns updated existing dictionary
+    """
+    if replace_values != None:
+        replace_values = replace_values.split() if isinstance(replace_values, str) else replace_values
+        return dict(entry.split('=') for entry in replace_values if '=' in entry)
+    
+    if new_values:
+        new_values = new_values.split() if isinstance(new_values, str) else new_values
+        new_values = dict(entry.split('=') for entry in new_values if '=' in entry)
+        if new_values:
+            existing_values.update(new_values)
+    
+    if remove_values:
+        remove_values = remove_values.split() if isinstance(remove_values, str) else remove_values
+        [existing_values.pop(key) for key in remove_values]
+    
+    return existing_values
+
 def update_values_in_key_list(existing_values: list, new_values: list or str, remove_values: list or str,
                       replace_values: list or str):
     """

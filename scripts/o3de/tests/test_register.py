@@ -272,30 +272,30 @@ class TestRegisterProject:
         'gem_compatible_engines, gem_engine_api_dependencies,'
         'force, expected_result', [
             # passes when registering without version information
-            pytest.param('o3de', None, None, { 'gem1':'' }, None, None, ['gem1'], None, None, None, None, False, 0),
-            pytest.param('o3de', '', None, { 'gem1':'' }, None, None, ['gem1'], None, None, None, None, False, 0),
+            pytest.param('o3de1', None, None, { 'gem1':'' }, None, None, ['gem1'], None, None, None, None, False, 0),
+            pytest.param('o3de2', '', None, { 'gem1':'' }, None, None, ['gem1'], None, None, None, None, False, 0),
             # fails when compatible_engines has no match
-            pytest.param('o3de', '2.3.4', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de==1.2.3'], None, None, None,  False, 1),
-            pytest.param('o3de', '1.2.3', None, { 'gem1':'' }, "", "", ['gem1'], ['o3de1'], None, None, None, False, 1),
+            pytest.param('o3de3', '2.3.4', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de3==1.2.3'], None, None, None,  False, 1),
+            pytest.param('o3de4', '1.2.3', None, { 'gem1':'' }, "", "", ['gem1'], ['o3de1'], None, None, None, False, 1),
             # passes when forced
-            pytest.param('o3de', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de1'], None, None, None, True, 0),
+            pytest.param('o3de5', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de1'], None, None, None, True, 0),
             # passes when compatible_engines has match
-            pytest.param('o3de', '0.0.0', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de'], None, None, None, False, 0),
-            pytest.param('o3de', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de>=1.2.3','o3de-sdk==2.3.4'], None, None, None, False, 0),
+            pytest.param('o3de6', '0.0.0', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de6'], None, None, None, False, 0),
+            pytest.param('o3de7', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de7>=1.2.3','o3de-sdk==2.3.4'], None, None, None, False, 0),
             # fails when uses gem that is not known compatible with version 1.2.3 
-            pytest.param('o3de', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de'], None, ['o3de==2.3.4'], None, False, 1),
+            pytest.param('o3de8', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de8'], None, ['o3de==2.3.4'], None, False, 1),
             # passes when uses gem that is known compatible with version 1.2.3 
-            pytest.param('o3de', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de'], None, ['o3de==1.2.3'], None, False, 0),
+            pytest.param('o3de9', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de9'], None, ['o3de9==1.2.3'], None, False, 0),
             # passes when compatible engine not found but compatible api found
-            pytest.param('o3de', '1.2.3', {'api':'1.2.3'}, { 'gem1':'' }, "", "", ['gem1'], ['o3de==2.3.4'], ['api==1.2.3'], None, None, False, 0),
+            pytest.param('o3de10', '1.2.3', {'api':'1.2.3'}, { 'gem1':'' }, "", "", ['gem1'], ['o3de10==2.3.4'], ['api==1.2.3'], None, None, False, 0),
             # passes when compatible engine found and no compatible api found
-            pytest.param('o3de', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, "", "", ['gem1'], ['o3de==1.2.3'], ['api==1.2.3'], None, None, False, 0),
+            pytest.param('o3de11', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, "", "", ['gem1'], ['o3de11==1.2.3'], ['api==1.2.3'], None, None, False, 0),
             # fails when no compatible engine or api found
-            pytest.param('o3de', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, None, None, ['gem1'], ['o3de==3.4.5'], ['api==4.5.6'], None, None, False, 1),
+            pytest.param('o3de12', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, None, None, ['gem1'], ['o3de12==3.4.5'], ['api==4.5.6'], None, None, False, 1),
             # passes when uses gem with compatible engine and api found
-            pytest.param('o3de', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, None, None, ['gem1'], None, None, ['o3de>=1.0.0'], ['api~=1.2.3'] , False, 0),
+            pytest.param('o3de13', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, None, None, ['gem1'], None, None, ['o3de13>=1.0.0'], ['api~=1.2.3'] , False, 0),
             # fails when uses gem with no compatible engine or api found
-            pytest.param('o3de', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, None, None, ['gem1'], None, None, ['o3de==2.3.4'], ['api==1.2.3'] , False, 1),
+            pytest.param('o3de14', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, None, None, ['gem1'], None, None, ['o3de14==2.3.4'], ['api==1.2.3'] , False, 1),
         ]
     )
     def test_register_project(self, test_engine_name, engine_version, engine_api_versions,
@@ -322,8 +322,12 @@ class TestRegisterProject:
         def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,
                             project_path: pathlib.Path = None):
             gem_json_data = json.loads(TEST_GEM_JSON_PAYLOAD)
+            if gem_path and gem_path.name in registered_gem_versions:
+                gem_name = gem_path.name
+            if gem_name:
+                gem_json_data['gem_name'] = gem_name
             if gem_name and gem_name in registered_gem_versions:
-                gem_json_data['gem_version'] = registered_gem_versions[gem_name]
+                gem_json_data['version'] = registered_gem_versions[gem_name]
             if gem_compatible_engines:
                 gem_json_data['compatible_engines'] = gem_compatible_engines
             if gem_engine_api_dependencies:
@@ -386,15 +390,19 @@ class TestRegisterProject:
         def get_enabled_gems(cmake_file: pathlib.Path) -> set:
             return project_gems
 
+        def get_all_gems(project_path: pathlib.Path = None) -> list:
+            return project_gems
+
         with patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as _1,\
             patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as _2,\
             patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as _3,\
             patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as _4,\
             patch('o3de.manifest.get_gem_json_data', side_effect=get_gem_json_data) as _5,\
-            patch('o3de.utils.find_ancestor_dir_containing_file', side_effect=find_ancestor_dir) as _6,\
-            patch('pathlib.Path.is_dir', return_value=True) as _7,\
-            patch('o3de.validation.valid_o3de_project_json', return_value=True) as _8, \
-            patch('o3de.utils.backup_file', return_value=True) as _9, \
+            patch('o3de.manifest.get_all_gems', side_effect=get_all_gems) as _6,\
+            patch('o3de.utils.find_ancestor_dir_containing_file', side_effect=find_ancestor_dir) as _7,\
+            patch('pathlib.Path.is_dir', return_value=True) as _8,\
+            patch('o3de.validation.valid_o3de_project_json', return_value=True) as _9, \
+            patch('o3de.utils.backup_file', return_value=True) as _10, \
             patch('o3de.cmake.get_enabled_gem_cmake_file', side_effect=get_enabled_gem_cmake_file) as _11, \
             patch('o3de.cmake.get_enabled_gems', side_effect=get_enabled_gems) as _12:
 

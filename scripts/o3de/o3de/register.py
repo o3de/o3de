@@ -443,19 +443,32 @@ def register_project_path(json_data: dict,
             # verify project -> gem -> engine compatibility
             enabled_gems_file = cmake.get_enabled_gem_cmake_file(project_path=project_path)
             gem_names = cmake.get_enabled_gems(enabled_gems_file)
+
+            # it's much more efficient to get all gem data once than to query them by name one by one
+            gem_paths = manifest.get_all_gems(project_path)
+            gems = {}
+            for gem_path in gem_paths:
+                gem_path = pathlib.Path(gem_path).resolve()
+                gem_json_data = manifest.get_gem_json_data(gem_path=gem_path)
+                # only store the json data if it's a gem we're looking for and has compatibility data
+                if gem_json_data['gem_name'] in gem_names and\
+                    (gem_json_data.get('compatible_engines') or gem_json_data.get('engine_api_dependencies')):
+                    gems[gem_json_data['gem_name']] = gem_json_data
+
             incompatible_gem_found = False
             for gem_name in gem_names:
-                gem_json_data = manifest.get_gem_json_data(gem_name=gem_name, project_path=project_path)
-                if (gem_json_data.get('compatible_engines') or gem_json_data.get('engine_api_dependencies')):
-                    gem_is_compatible = compatibility.engine_is_compatible(
-                        this_engine_json['engine_name'], engine_version,
-                        gem_json_data.get('compatible_engines',''),gem_json_data.get('engine_api_dependencies'))
-                    if not gem_is_compatible:
-                        # TODO look for a registered compatible gem with same name
-                        incompatible_gem_found = True
-                        logger.error(f'{gem_name} is not known to be compatible with the '
-                                     f'engine {this_engine_json["engine_name"]} and requires the --force '
-                                     'parameter to register.')
+                if gem_name not in gems:
+                    continue
+                gem_json_data = gems[gem_name]
+                gem_is_compatible = compatibility.engine_is_compatible(
+                    this_engine_json['engine_name'], engine_version,
+                    gem_json_data.get('compatible_engines',''),gem_json_data.get('engine_api_dependencies'))
+                if not gem_is_compatible:
+                    # in the future we will look for a registered compatible gem with same name
+                    incompatible_gem_found = True
+                    logger.error(f'{gem_name} is not known to be compatible with the '
+                                    f'engine {this_engine_json["engine_name"]} and requires the --force '
+                                    'parameter to register.')
             if incompatible_gem_found:
                 return 1
 
