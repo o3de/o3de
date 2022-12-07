@@ -129,17 +129,20 @@ namespace PassCanvas
 
     void PassCanvasApplication::OnDocumentOpened(const AZ::Uuid& documentId)
     {
-        PassGraphCompilerRequestBus::Event(documentId, &PassGraphCompilerRequestBus::Events::QueueCompileGraph);
+        AtomToolsFramework::GraphCompilerRequestBus::Event(
+            documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
     }
 
     void PassCanvasApplication::OnDocumentSaved(const AZ::Uuid& documentId)
     {
-        PassGraphCompilerRequestBus::Event(documentId, &PassGraphCompilerRequestBus::Events::QueueCompileGraph);
+        AtomToolsFramework::GraphCompilerRequestBus::Event(
+            documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
     }
 
     void PassCanvasApplication::OnDocumentUndoStateChanged(const AZ::Uuid& documentId)
     {
-        PassGraphCompilerRequestBus::Event(documentId, &PassGraphCompilerRequestBus::Events::QueueCompileGraph);
+        AtomToolsFramework::GraphCompilerRequestBus::Event(
+            documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
     }
 
     void PassCanvasApplication::OnDocumentClosed(const AZ::Uuid& documentId)

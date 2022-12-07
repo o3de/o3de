@@ -8,22 +8,17 @@
 
 #pragma once
 
-#include <AzCore/Component/TickBus.h>
-#include <AzCore/RTTI/RTTI.h>
-#include <Document/PassGraphCompilerRequestBus.h>
-#include <GraphModel/Model/Node.h>
+#include <AtomToolsFramework/Graph/GraphCompiler.h>
 
 namespace PassCanvas
 {
     //! PassGraphCompiler traverses a pass graph, searching for and splicing shader code snippets, variable values and definitions,
     //! and other information into complete, functional pass types, passes, and shaders. Currently, the resulting files will be
     //! generated an output into the same folder location has the source graph.
-    class PassGraphCompiler
-        : public PassGraphCompilerRequestBus::Handler
-        , public AZ::SystemTickBus::Handler
+    class PassGraphCompiler : public AtomToolsFramework::GraphCompiler
     {
     public:
-        AZ_RTTI(PassGraphCompiler, "{462AD6DF-874C-4017-9372-370B86A0A24B}");
+        AZ_RTTI(PassGraphCompiler, "{4D9407B1-195A-404A-B97A-E2BA22207C87}", AtomToolsFramework::GraphCompiler);
         AZ_CLASS_ALLOCATOR(PassGraphCompiler, AZ::SystemAllocator, 0);
         AZ_DISABLE_COPY_MOVE(PassGraphCompiler);
 
@@ -33,29 +28,8 @@ namespace PassCanvas
         PassGraphCompiler(const AZ::Crc32& toolId, const AZ::Uuid& documentId);
         virtual ~PassGraphCompiler();
 
-        // PassGraphCompilerRequestBus::Handler overrides...
-        const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const override;
-        bool CompileGraph() override;
-        void QueueCompileGraph() override;
-        bool IsCompileGraphQueued() const override;
-
-    private:
-        void CompileGraphStarted();
-        void CompileGraphFailed();
-        void CompileGraphCompleted();
-
-        // Get the graph export path based on the Graph document path or default export path.
+        // AtomToolsFramework::GraphCompiler overrides...
         AZStd::string GetGraphPath() const;
-
-        // AZ::SystemTickBus::Handler overrides...
-        void OnSystemTick() override;
-
-        const AZ::Crc32 m_toolId = {};
-        const AZ::Uuid m_documentId = {};
-        bool m_compileGraph = {};
-        bool m_compileAssets = {};
-        int m_compileAssetIndex = {};
-        AZStd::string m_lastAssetStatusMessage;
-        AZStd::vector<AZStd::string> m_generatedFiles;
+        bool CompileGraph() override;
     };
 } // namespace PassCanvas
