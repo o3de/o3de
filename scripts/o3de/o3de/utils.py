@@ -419,5 +419,4 @@ def get_object_name_and_version_specifier(input:str) -> (str, str) or None:
     if not SpecifierSet(match.group("version_specifier")):
         return None
     
-    # TODO FIX DUPLICATE FUNCTION IN COMPATIBILITY.PY WHICH DOESN'T HAVE STRIP
     return match.group("object_name").strip(), match.group("version_specifier").strip()
