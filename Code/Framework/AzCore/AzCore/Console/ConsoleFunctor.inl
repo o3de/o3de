@@ -145,6 +145,50 @@ namespace AZ
         }
     };
 
+    template<>
+    struct ConsoleReplicateHelper<int, true>
+    {
+        static bool GetReplicationString(int& instance, const char* name, CVarFixedString& outString)
+        {
+            CVarFixedString valueString;
+            ValueToString(instance, valueString);
+            outString = CVarFixedString(name) + " " + valueString;
+            return true;
+        }
+
+        static bool StringToValue(int& instance, const ConsoleCommandContainer& arguments)
+        {
+            return ConsoleTypeHelpers::ToValue(instance, arguments);
+        }
+
+        static void ValueToString(int& instance, CVarFixedString& outString)
+        {
+            outString = ConsoleTypeHelpers::ToString(instance);
+        }
+    };
+
+    template<>
+    struct ConsoleReplicateHelper<float, true>
+    {
+        static bool GetReplicationString(float& instance, const char* name, CVarFixedString& outString)
+        {
+            CVarFixedString valueString;
+            ValueToString(instance, valueString);
+            outString = CVarFixedString(name) + " " + valueString;
+            return true;
+        }
+
+        static bool StringToValue(float& instance, const ConsoleCommandContainer& arguments)
+        {
+            return ConsoleTypeHelpers::ToValue(instance, arguments);
+        }
+
+        static void ValueToString(float& instance, CVarFixedString& outString)
+        {
+            outString = ConsoleTypeHelpers::ToString(instance);
+        }
+    };
+
     template <typename _TYPE, bool _REPLICATES_VALUE>
     inline bool ConsoleFunctor<_TYPE, _REPLICATES_VALUE>::GetReplicationString(CVarFixedString& outString) const
     {

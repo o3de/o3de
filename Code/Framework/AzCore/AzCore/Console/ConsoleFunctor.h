@@ -122,7 +122,7 @@ namespace AZ
     template<class T, class = void>
     struct ConsoleCommandMemberFunctorSignature
     {
-        using type = AZStd::monostate;
+        using type = void (*)(T&, const ConsoleCommandContainer&);
     };
 
     template<class T>
