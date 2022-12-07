@@ -336,22 +336,19 @@ private: // ----------------------------------------------------------
     template<typename T>
     struct FunctorWrapper
     {
-        explicit FunctorWrapper(const char* name, const char* desc, T initialValue)
-            : proxyValue(initialValue)
-            , m_functor(
-                  name,
-                  desc,
-                  AZ::ConsoleFunctorFlags::DontDuplicate,
-                  AZ::AzTypeInfo<T>::Uuid(),
-                  proxyValue,
-                  [](T& outValue, const AZ::ConsoleCommandContainer& arguments)
-                  {
-                      AZ::ConsoleTypeHelpers::ToValue(outValue, arguments);
-                  })
+        FunctorWrapper(const char* name, const char* desc, T initialValue)
+            : proxyValue(AZStd::move(initialValue))
+            , m_functor(name, desc, AZ::ConsoleFunctorFlags::DontDuplicate, AZ::AzTypeInfo<T>::Uuid(), proxyValue, ArgToValue)
         {
         }
         T proxyValue;
         AZ::ConsoleFunctor<T, true> m_functor;
+
+    private:
+        static void ArgToValue(T& outValue, const AZ::ConsoleCommandContainer& arguments)
+        {
+            AZ::ConsoleTypeHelpers::ToValue(outValue, arguments);
+        }
     };
 
     AZStd::vector<FunctorWrapper<float>> m_floatWrappers;
