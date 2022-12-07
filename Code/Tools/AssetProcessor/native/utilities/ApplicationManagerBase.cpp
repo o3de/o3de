@@ -480,6 +480,7 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcherBase> 
             if (!isCacheRoot)
             {
                 m_fileStateCache->UpdateFile(path);
+                m_uuidManager->FileChanged(path.toUtf8().constData());
             }
 
             [[maybe_unused]] bool result = QMetaObject::invokeMethod(
@@ -504,6 +505,8 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcherBase> 
                     m_fileProcessor->AssessDeletedFile(path);
                 }, Qt::QueuedConnection);
                 AZ_Assert(result, "Failed to invoke m_fileProcessor::AssessDeletedFile");
+
+                m_uuidManager->FileRemoved(path.toUtf8().constData());
             }
 
             result = QMetaObject::invokeMethod(m_assetProcessorManager, [this, path]()
@@ -824,6 +827,21 @@ void ApplicationManagerBase::InitFileStateCache()
     }
 
     m_fileStateCache = AZStd::make_unique<AssetProcessor::FileStateCache>();
+}
+
+void ApplicationManagerBase::InitUuidManager()
+{
+    m_uuidManager = AZStd::make_unique<AssetProcessor::UuidManager>();
+
+    AssetProcessor::UuidSettings uuidSettings;
+    AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
+    if (settingsRegistry)
+    {
+        if (settingsRegistry->GetObject(uuidSettings, "/O3DE/AssetProcessor/Settings/Metadata"))
+        {
+            AZ::Interface<AssetProcessor::IUuidRequests>::Get()->EnableGenerationForTypes(uuidSettings.m_enabledTypes);
+        }
+    }
 }
 
 ApplicationManager::BeforeRunStatus ApplicationManagerBase::BeforeRun()
@@ -1452,6 +1470,7 @@ bool ApplicationManagerBase::Activate()
     InitFileStateCache();
     InitFileProcessor();
 
+    InitUuidManager();
     InitAssetCatalog();
     InitFileMonitor(AZStd::make_unique<FileWatcher>());
     InitAssetScanner();
@@ -1569,6 +1588,18 @@ bool ApplicationManagerBase::PostActivate()
     GetAssetScanner()->StartScan();
 
     return true;
+}
+
+void ApplicationManagerBase::Reflect()
+{
+    AZ::SerializeContext* context;
+    AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+    AZ_Assert(context, "SerializeContext is not available");
+
+    ApplicationManager::Reflect();
+
+    AssetProcessor::UuidManager::Reflect(context);
 }
 
 void ApplicationManagerBase::CreateQtApplication()
