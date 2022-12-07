@@ -79,7 +79,7 @@ def project_engine_is_compatible(project_path:pathlib.Path, compatible_engines:l
     engine_version = project_json_data.get('engine_version','')
     return engine_is_compatible(engine_name, engine_version, compatible_engines, engine_api_versions)
 
-def get_incompatible_gem_version_specifiers(project_path:pathlib.Path, gem_version_specifier_list:list, gem_paths:list) -> bool:
+def get_incompatible_gem_version_specifiers(project_path:pathlib.Path, gem_version_specifier_list:list, gem_paths:list) -> list:
     """
     Returns a list of gem version specifiers that are not compatible with the gem's provided
     If a gem_version_specifier_list entry only has a gem name, it is assumed compatible with every gem version with that name.
