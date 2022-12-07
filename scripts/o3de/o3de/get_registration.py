@@ -7,6 +7,7 @@
 #
 
 import argparse
+import pathlib
 import sys
 
 from o3de import manifest
