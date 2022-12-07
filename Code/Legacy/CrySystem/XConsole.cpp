@@ -452,8 +452,20 @@ void CXConsole::RegisterVar(ICVar* pCVar, ConsoleVarFunc pChangeFunc)
     }
 
     ConsoleVariablesMapItor::value_type value = ConsoleVariablesMapItor::value_type(pCVar->GetName(), pCVar);
-
     m_mapVariables.insert(value);
+
+    auto consoleInterface = AZ::Interface<AZ::IConsole>::Get();
+    if (consoleInterface != nullptr)
+    {
+        if (pCVar->GetType() == CVAR_INT)
+        {
+            m_intWrappers.emplace_back(pCVar->GetName(), pCVar->GetHelp(), pCVar->GetIVal());
+        }
+        else if (pCVar->GetType() == CVAR_FLOAT)
+        {
+            m_floatWrappers.emplace_back(pCVar->GetName(), pCVar->GetHelp(), pCVar->GetFVal());
+        }
+    }
 
     int flags = pCVar->GetFlags();
 
