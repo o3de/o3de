@@ -428,7 +428,7 @@ namespace AZ
         {
             if (index < GetShaderCount())
             {
-                return LuaMaterialFunctorShaderItem{this, &(*m_runtimeContextImpl->m_shaderCollection)[index]};
+                return LuaMaterialFunctorShaderItem{this, &(*m_runtimeContextImpl->m_commonShaderCollection)[index]};
             }
             else
             {
@@ -440,9 +440,9 @@ namespace AZ
         LuaMaterialFunctorShaderItem LuaMaterialFunctorRuntimeContext::GetShaderByTag(const char* shaderTag)
         {
             const AZ::Name tag{shaderTag};
-            if (m_runtimeContextImpl->m_shaderCollection->HasShaderTag(tag))
+            if (m_runtimeContextImpl->m_commonShaderCollection->HasShaderTag(tag))
             {
-                return LuaMaterialFunctorShaderItem{this, &(*m_runtimeContextImpl->m_shaderCollection)[tag]};
+                return LuaMaterialFunctorShaderItem{this, &(*m_runtimeContextImpl->m_commonShaderCollection)[tag]};
             }
             else
             {
@@ -454,7 +454,7 @@ namespace AZ
         
         bool LuaMaterialFunctorRuntimeContext::HasShaderWithTag(const char* shaderTag)
         {
-            return m_runtimeContextImpl->m_shaderCollection->HasShaderTag(AZ::Name{shaderTag});
+            return m_runtimeContextImpl->m_commonShaderCollection->HasShaderTag(AZ::Name{shaderTag});
         }
 
         void LuaMaterialFunctorEditorContext::LuaMaterialFunctorEditorContext::Reflect(BehaviorContext* behaviorContext)
