@@ -86,7 +86,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_ui->setupUi(this);
     m_ui->m_searchWidget->Setup(true, true);
 
-    OnInitToolsMenuButton();
+    CreateToolsMenu();
 
     namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
 
@@ -235,11 +235,6 @@ void AzAssetBrowserWindow::resizeEvent(QResizeEvent* resizeEvent)
 
     emit SizeChangedSignal(aznumeric_cast<int>(newWidth));
     QWidget::resizeEvent(resizeEvent);
-}
-
-void AzAssetBrowserWindow::OnInitToolsMenuButton()
-{
-    CreateToolsMenu();
 }
 
 void AzAssetBrowserWindow::CreateToolsMenu()

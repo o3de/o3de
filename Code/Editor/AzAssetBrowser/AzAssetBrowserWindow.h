@@ -62,7 +62,6 @@ protected:
     void resizeEvent(QResizeEvent* resizeEvent) override;
 
 private:
-    void OnInitToolsMenuButton();
     void UpdateDisplayInfo();
     void SetNarrowMode(bool narrow);
 
