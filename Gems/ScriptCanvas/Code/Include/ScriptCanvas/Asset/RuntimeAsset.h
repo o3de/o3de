@@ -9,17 +9,19 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Script/ScriptAsset.h>
-
 #include <ScriptCanvas/Asset/AssetDescription.h>
+#include <ScriptCanvas/Asset/RuntimeInputs.h>
 #include <ScriptCanvas/Core/Core.h>
-#include <ScriptCanvas/Core/SubgraphInterface.h>
-#include <ScriptCanvas/Core/GraphData.h>
 #include <ScriptCanvas/Grammar/DebugMap.h>
-#include <ScriptCanvas/Translation/TranslationResult.h>
 #include <ScriptCanvas/Variable/VariableData.h>
 #include <ScriptCanvas/Execution/ExecutionContext.h>
 #include <ScriptCanvas/Execution/ExecutionObjectCloning.h>
 #include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
+
+namespace ScriptEvents
+{
+    class ScriptEventsAsset;
+}
 
 namespace ScriptCanvas
 {
@@ -32,9 +34,9 @@ namespace ScriptCanvas
     struct RuntimeVariable;
 
     constexpr const AZ::u32 RuntimeDataSubId = AZ_CRC_CE("RuntimeData"); // 0x163310ae
-    constexpr const AZ::u32 SubgraphInterfaceSubId = AZ_CRC_CE("SubgraphInterface"); // 0xdfe6dc72
 
-    class RuntimeAssetDescription : public AssetDescription
+    class RuntimeAssetDescription
+        : public AssetDescription
     {
     public:
 
@@ -56,7 +58,7 @@ namespace ScriptCanvas
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
-        Translation::RuntimeInputs m_input;
+        RuntimeInputs m_input;
         Grammar::DebugSymbolMap m_debugMap;
 
         // populate all and set to all to AssetLoadBehavior::Preload at build time
@@ -146,49 +148,4 @@ namespace ScriptCanvas
     using RuntimeAssetPtr = AZ::Data::Asset<RuntimeAsset>;
 
     IsPreloadedResult IsPreloaded(RuntimeAssetPtr asset);
-
-    class SubgraphInterfaceAsset;
-
-    class SubgraphInterfaceAssetDescription : public AssetDescription
-    {
-    public:
-
-        AZ_TYPE_INFO(SubgraphInterfaceAssetDescription, "{7F7BE1A5-9447-41C2-9190-18580075094C}");
-
-        SubgraphInterfaceAssetDescription();
-    };
-
-    struct SubgraphInterfaceData
-    {
-        AZ_TYPE_INFO(SubgraphInterfaceData, "{1734C569-7D40-4491-9EEE-A225E333C9BA}");
-        AZ_CLASS_ALLOCATOR(SubgraphInterfaceData, AZ::SystemAllocator, 0);
-        SubgraphInterfaceData() = default;
-        ~SubgraphInterfaceData() = default;
-        SubgraphInterfaceData(const SubgraphInterfaceData&) = default;
-        SubgraphInterfaceData& operator=(const SubgraphInterfaceData&) = default;
-        SubgraphInterfaceData(SubgraphInterfaceData&&);
-        SubgraphInterfaceData& operator=(SubgraphInterfaceData&&);
-
-        static void Reflect(AZ::ReflectContext* reflectContext);
-
-        AZStd::string m_name;
-        Grammar::SubgraphInterface m_interface;
-    };
-
-    class SubgraphInterfaceAsset
-        : public AZ::Data::AssetData
-    {
-    public:
-        AZ_RTTI(SubgraphInterfaceAsset, "{E22967AC-7673-4778-9125-AF49D82CAF9F}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(SubgraphInterfaceAsset, AZ::SystemAllocator, 0);
-
-        static const char* GetFileExtension() { return "scriptcanvas_fn_compiled"; }
-        static const char* GetFileFilter() { return "*.scriptcanvas_fn_compiled"; }
-
-        SubgraphInterfaceData m_interfaceData;
-
-        SubgraphInterfaceAsset(const AZ::Data::AssetId& assetId = AZ::Data::AssetId(), AZ::Data::AssetData::AssetStatus status = AZ::Data::AssetData::AssetStatus::NotLoaded)
-            : AZ::Data::AssetData(assetId, status)
-        {}
-    };
 }

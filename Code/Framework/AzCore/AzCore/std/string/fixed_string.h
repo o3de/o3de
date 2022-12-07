@@ -489,6 +489,9 @@ namespace AZStd
     template<class Element, size_t MaxElementCount, class Traits>
     struct hash<basic_fixed_string<Element, MaxElementCount, Traits>>;
 
+    // Extern common fixed_string types
+    extern template class basic_fixed_string<char, 1024>;
+
 } // namespace AZStd
 
 #include <AzCore/std/string/fixed_string.inl>

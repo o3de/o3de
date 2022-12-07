@@ -48,6 +48,7 @@ namespace O3DE::ProjectManager
         void TagClicked(const Tag& tag);
         void UpdateGem(const QModelIndex& modelIndex);
         void UninstallGem(const QModelIndex& modelIndex);
+        void EditGem(const QModelIndex& modelIndex);
 
     private slots:
         void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
@@ -85,6 +86,7 @@ namespace O3DE::ProjectManager
         QLabel* m_binarySizeLabel = nullptr;
 
         QPushButton* m_updateGemButton = nullptr;
+        QPushButton* m_editGemButton = nullptr;
         QPushButton* m_uninstallGemButton = nullptr;
     };
 } // namespace O3DE::ProjectManager

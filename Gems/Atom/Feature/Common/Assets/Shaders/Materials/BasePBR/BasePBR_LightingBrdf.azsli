@@ -21,6 +21,14 @@
 
 #include <Atom/Features/PBR/Microfacet/Brdf.azsli>
 
+#ifndef LightingData
+#error LightingData must be defined before including this file.
+#endif
+
+#ifndef Surface
+#error Surface must be defined before including this file.
+#endif
+
 float3 GetDiffuseLighting_BasePBR(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight)
 {
     float3 diffuse = DiffuseLambertian(surface.albedo, surface.normal, dirToLight, lightingData.diffuseResponse);

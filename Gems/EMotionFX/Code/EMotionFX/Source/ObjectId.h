@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/std/string/string.h>
 #include <EMotionFX/Source/Allocators.h>
 
@@ -82,6 +83,8 @@ namespace EMotionFX
          * @return True if the ids are different. Otherwise, false.
          */
         bool operator!=(const ObjectId& rhs) const;
+
+        static void Reflect(AZ::ReflectContext* context);
 
     protected:
         AZ::u64 m_id;

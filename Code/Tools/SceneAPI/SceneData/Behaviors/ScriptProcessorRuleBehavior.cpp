@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/std/string/regex.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -216,6 +217,16 @@ namespace AZ::SceneAPI::Behaviors
         AZStd::vector<AZStd::string> m_pythonScriptStack;
     };
 
+    void ScriptProcessorRuleBehavior::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    {
+        provided.push_back(AZ_CRC_CE("ScriptProcessorRuleBehavior"));
+    }
+
+    void ScriptProcessorRuleBehavior::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("ScriptProcessorRuleBehavior"));
+    }
+
     void ScriptProcessorRuleBehavior::Activate()
     {
         Events::AssetImportRequestBus::Handler::BusConnect();
@@ -232,10 +243,26 @@ namespace AZ::SceneAPI::Behaviors
         UnloadPython();
     }
 
-    bool ScriptProcessorRuleBehavior::LoadPython(const AZ::SceneAPI::Containers::Scene& scene, AZStd::string& scriptPath, Events::ProcessingResult& fallbackResult)
+    AZStd::optional<AZStd::string> ScriptProcessorRuleBehavior::FindMatchingDefaultScript(const AZ::SceneAPI::Containers::Scene& scene)
+    {
+        AZStd::optional<AZ::SceneAPI::Events::ScriptConfig> scriptConfig;
+        AZ::SceneAPI::Events::ScriptConfigEventBus::BroadcastResult(
+            scriptConfig,
+            &AZ::SceneAPI::Events::ScriptConfigEventBus::Events::MatchesScriptConfig,
+            scene.GetSourceFilename());
+
+        if (scriptConfig)
+        {
+            return AZStd::make_optional(scriptConfig.value().m_scriptPath.c_str());
+        }
+        return AZStd::nullopt;
+    }
+
+    AZStd::optional<AZStd::string> ScriptProcessorRuleBehavior::FindManifestScript(const AZ::SceneAPI::Containers::Scene& scene, Events::ProcessingResult& fallbackResult)
     {
         using namespace AZ::SceneAPI;
 
+        AZStd::string scriptPath;
         fallbackResult = Events::ProcessingResult::Failure;
         int scriptDiscoveryAttempts = 0;
         const Containers::SceneManifest& manifest = scene.GetManifest();
@@ -263,7 +290,7 @@ namespace AZ::SceneAPI::Behaviors
                 {
                     AZ_Error("scene", false, "With (%s) could not find Project Path during script discovery.",
                         scene.GetManifestFilename().c_str());
-                    return false;
+                    return AZStd::nullopt;
                 }
 
                 // check for script in the project folder
@@ -295,14 +322,21 @@ namespace AZ::SceneAPI::Behaviors
             AZ_Warning("scene", scriptDiscoveryAttempts == 0,
                 "The scene manifest (%s) attempted to use script rule, but no script file path could be found.",
                 scene.GetManifestFilename().c_str());
-            return false;
+            return AZStd::nullopt;
         }
         else
         {
             m_eventHandler->m_pythonScriptStack.push_back(scriptPath);
         }
 
-        // already prepared the Python VM?
+        return AZStd::make_optional(AZStd::move(scriptPath));
+    }
+
+    bool ScriptProcessorRuleBehavior::LoadPython()
+    {
+        using namespace AZ::SceneAPI;
+
+        // is the Python interface ready?
         if (m_editorPythonEventsInterface)
         {
             return true;
@@ -310,6 +344,13 @@ namespace AZ::SceneAPI::Behaviors
 
         // lazy load the Python interface
         auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
+
+        // the Python interface is ready?
+        if (editorPythonEventsInterface == nullptr)
+        {
+            return false;
+        }
+
         if (editorPythonEventsInterface->IsPythonActive() == false)
         {
             const bool silenceWarnings = false;
@@ -319,13 +360,9 @@ namespace AZ::SceneAPI::Behaviors
             }
         }
 
-        // both Python and the script need to be ready
+        // Python is ready?
         if (editorPythonEventsInterface == nullptr)
         {
-            AZ_Warning("scene", false,
-                "The scene manifest (%s) attempted to prepare Python but Python can not start",
-                scene.GetManifestFilename().c_str());
-
             return false;
         }
 
@@ -343,25 +380,26 @@ namespace AZ::SceneAPI::Behaviors
         }
     }
 
-    bool ScriptProcessorRuleBehavior::DoPrepareForExport(Events::PreExportEventContext& context)
+    void ScriptProcessorRuleBehavior::SignalScriptForExportEvent(Events::PreExportEventContext& context, AZStd::string& scriptPath)
     {
-        using namespace AzToolsFramework;
-
-        AZStd::string scriptPath;
-
         auto executeCallback = [&context, &scriptPath]()
         {
-            // set up script's hook callback
-            EditorPythonRunnerRequestBus::Broadcast(&EditorPythonRunnerRequestBus::Events::ExecuteByFilename,
+            using namespace AzToolsFramework;
+
+            // set up script's hook callback for "OnPrepareForExport"
+            EditorPythonRunnerRequestBus::Broadcast(
+                &EditorPythonRunnerRequestBus::Events::ExecuteByFilename,
                 scriptPath.c_str());
 
             // call script's callback to allow extra products
             ExportProductList extraProducts;
-            ScriptBuildingNotificationBus::BroadcastResult(extraProducts, &ScriptBuildingNotificationBus::Events::OnPrepareForExport,
+            ScriptBuildingNotificationBus::BroadcastResult(
+                extraProducts,
+                &ScriptBuildingNotificationBus::Events::OnPrepareForExport,
                 context.GetScene(),
                 context.GetOutputDirectory(),
                 context.GetPlatformIdentifier(),
-                context.GetProductList()      
+                context.GetProductList()
             );
 
             // add new products
@@ -377,11 +415,35 @@ namespace AZ::SceneAPI::Behaviors
             }
         };
 
-        [[maybe_unused]] Events::ProcessingResult fallbackResult;
-        if (LoadPython(context.GetScene(), scriptPath, fallbackResult))
+        EditorPythonConsoleNotificationHandler logger;
+        m_editorPythonEventsInterface->ExecuteWithLock(executeCallback);
+    }
+
+    bool ScriptProcessorRuleBehavior::DoPrepareForExport(Events::PreExportEventContext& context)
+    {
+        using namespace AzToolsFramework;
+
+        if (LoadPython())
         {
-            EditorPythonConsoleNotificationHandler logger;
-            m_editorPythonEventsInterface->ExecuteWithLock(executeCallback);
+            auto defaultScript = FindMatchingDefaultScript(context.GetScene());
+            if (defaultScript)
+            {
+                SignalScriptForExportEvent(context, defaultScript.value());
+            }
+
+            [[maybe_unused]] Events::ProcessingResult fallbackResult;
+            auto manifestScript = FindManifestScript(context.GetScene(), fallbackResult);
+            if (manifestScript)
+            {
+                SignalScriptForExportEvent(context, manifestScript.value());
+            }
+        }
+        else
+        {
+            AZ_Error("scene", false,
+                "The scene (%s) attempted to prepare Python but Python can not start. "
+                "Enable the EditorPythonBindings gem to fix this situation.",
+                context.GetScene().GetSourceFilename().c_str());
         }
 
         return true;
@@ -398,6 +460,31 @@ namespace AZ::SceneAPI::Behaviors
         }
     }
 
+    bool ScriptProcessorRuleBehavior::SignalScriptForUpdateManifest(Containers::Scene& scene, AZStd::string& manifestUpdate, AZStd::string& scriptPath)
+    {
+        using namespace AzToolsFramework;
+
+        auto executeCallback = [&scene, &manifestUpdate, &scriptPath]()
+        {
+            // prepare a script for 'OnUpdateManifest' hook
+            EditorPythonRunnerRequestBus::Broadcast(
+                &EditorPythonRunnerRequestBus::Events::ExecuteByFilename,
+                scriptPath.c_str());
+
+            // signal the 'OnUpdateManifest' event for Python
+            ScriptBuildingNotificationBus::BroadcastResult(
+                manifestUpdate,
+                &ScriptBuildingNotificationBus::Events::OnUpdateManifest,
+                scene);
+        };
+
+        EditorPythonConsoleNotificationHandler logger;
+        m_editorPythonEventsInterface->ExecuteWithLock(executeCallback);
+
+        // if the returned scene manifest is empty then ignore the script update
+        return (manifestUpdate.empty() == false);
+    }
+
     Events::ProcessingResult ScriptProcessorRuleBehavior::UpdateManifest(
         Containers::Scene& scene,
         Events::AssetImportRequest::ManifestAction action,
@@ -410,22 +497,22 @@ namespace AZ::SceneAPI::Behaviors
             return Events::ProcessingResult::Ignored;
         }
 
-        Events::ProcessingResult fallbackResult;
-        AZStd::string scriptPath;
-        if (LoadPython(scene, scriptPath, fallbackResult))
+        if (LoadPython())
         {
             AZStd::string manifestUpdate;
-            auto executeCallback = [&scene, &manifestUpdate, &scriptPath]()
+            Events::ProcessingResult fallbackResult = Events::ProcessingResult::Failure;
+
+            auto defaultScript = FindMatchingDefaultScript(scene);
+            if (defaultScript)
             {
-                EditorPythonRunnerRequestBus::Broadcast(&EditorPythonRunnerRequestBus::Events::ExecuteByFilename,
-                    scriptPath.c_str());
+                SignalScriptForUpdateManifest(scene, manifestUpdate, defaultScript.value());
+            }
 
-                ScriptBuildingNotificationBus::BroadcastResult(manifestUpdate, &ScriptBuildingNotificationBus::Events::OnUpdateManifest,
-                    scene);
-            };
-
-            EditorPythonConsoleNotificationHandler logger;
-            m_editorPythonEventsInterface->ExecuteWithLock(executeCallback);
+            auto manifestScriptPath = FindManifestScript(scene, fallbackResult);
+            if (manifestScriptPath)
+            {
+                SignalScriptForUpdateManifest(scene, manifestUpdate, manifestScriptPath.value());
+            }
 
             // if the returned scene manifest is empty then ignore the script update
             if (manifestUpdate.empty())
@@ -447,9 +534,15 @@ namespace AZ::SceneAPI::Behaviors
             }
             else
             {
-                // if the manifest was not updated by the script, then return back the fallback result
+                // if the manifest was not updated by the script, then return back the fall back result
                 return fallbackResult;
             }
+        }
+        else
+        {
+            AZ_Warning("scene", false,
+                "The scene manifest (%s) attempted to prepare Python but Python can not start",
+                scene.GetManifestFilename().c_str());
         }
         return Events::ProcessingResult::Ignored;
     }

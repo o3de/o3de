@@ -10,7 +10,8 @@
 
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
-#include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
+#include <AzFramework/PaintBrush/PaintBrushNotificationBus.h>
+#include <AzToolsFramework/PaintBrush/PaintBrushSubModeCluster.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 
@@ -21,7 +22,7 @@ namespace GradientSignal
 
     class EditorImageGradientComponentMode
         : public AzToolsFramework::ComponentModeFramework::EditorBaseComponentMode
-        , private AzToolsFramework::PaintBrushNotificationBus::Handler
+        , private AzFramework::PaintBrushNotificationBus::Handler
     {
     public:
         EditorImageGradientComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
@@ -32,18 +33,26 @@ namespace GradientSignal
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl() override;
         bool HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
         AZStd::string GetComponentModeName() const override;
+        AZ::Uuid GetComponentModeType() const override;
 
     protected:
         // PaintBrushNotificationBus overrides
-        void OnPaintStrokeBegin(float intensity, float opacity) override;
-        void OnPaintStrokeEnd() override;
+        void OnBrushStrokeBegin(const AZ::Color& color) override;
+        void OnBrushStrokeEnd() override;
         void OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn) override;
+        void OnSmooth(
+            const AZ::Aabb& dirtyArea,
+            ValueLookupFn& valueLookupFn,
+            AZStd::span<const AZ::Vector3> valuePointOffsets,
+            SmoothFn& smoothFn) override;
+        AZ::Color OnGetColor(const AZ::Vector3& brushCenter) override;
+
+        void OnPaintSmoothInternal(
+            const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn,
+            AZStd::function<float(const AZ::Vector3& worldPosition, float gradientValue, float opacity)> combineFn);
 
         void BeginUndoBatch();
         void EndUndoBatch();
-
-        void CreateSubModeSelectionCluster();
-        void RemoveSubModeSelectionCluster();
 
     private:
         struct PaintStrokeData
@@ -74,15 +83,17 @@ namespace GradientSignal
         //! The entity/component that owns this paintbrush.
         AZ::EntityComponentIdPair m_ownerEntityComponentId;
 
+        //! The core paintbrush manipulator and painting logic.
         AZStd::shared_ptr<AzToolsFramework::PaintBrushManipulator> m_brushManipulator;
 
         //! The undo information for the in-progress painting brush stroke.
         AzToolsFramework::UndoSystem::URSequencePoint* m_undoBatch = nullptr;
         PaintBrushUndoBuffer* m_paintBrushUndoBuffer = nullptr;
 
-        AzToolsFramework::ViewportUi::ClusterId m_paintBrushControlClusterId;
-        AzToolsFramework::ViewportUi::ButtonId m_paintBrushSettingsButtonId;
+        //! Track whether or not anything has changed while editing. If not, then don't prompt to save the image at the end.
+        bool m_anyValuesChanged = false;
 
-        AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler m_buttonSelectionHandler;
+        //! The paint brush cluster that manages switching between paint/smooth/eyedropper modes
+        AzToolsFramework::PaintBrushSubModeCluster m_subModeCluster;
     };
 } // namespace GradientSignal

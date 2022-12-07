@@ -30,23 +30,21 @@ namespace AZ
             ~ViewportContextManager();
             void Shutdown();
 
-            // IViewportContextManagerRequests interface
+            // ViewportContextRequestsInterface overrides...
             ViewportContextPtr CreateViewportContext(const Name& contextName, const CreationParameters& params) override;
             ViewportContextPtr GetViewportContextByName(const Name& contextName) const override;
             ViewportContextPtr GetViewportContextById(AzFramework::ViewportId id) const override;
             void RenameViewportContext(ViewportContextPtr viewportContext, const Name& newContextName) override;
             void EnumerateViewportContexts(AZStd::function<void(ViewportContextPtr)> visitorFunction) override;
-
             AZ::Name GetDefaultViewportContextName() const override;
-            void PushView(const Name& contextName, ViewPtr view) override;
-            void PushView(const Name& contextName, ViewGroupPtr viewGroup) override;
-            
-            bool PopView(const Name& contextName, ViewPtr view) override;
-            bool PopView(const Name& context, ViewGroupPtr viewGroup) override;
-            ViewPtr GetCurrentView(const Name& contextName) const override;
-            ViewPtr GetCurrentStereoscopicView(const Name& context, ViewType viewType) const;
+            void PushViewGroup(const Name& contextName, ViewGroupPtr viewGroup) override;
+            bool PopViewGroup(const Name& contextName, ViewGroupPtr viewGroup) override;
+            ViewGroupPtr GetCurrentViewGroup(const Name& contextName) override;
             ViewportContextPtr GetDefaultViewportContext() const override;
             ViewportContextPtr GetViewportContextByScene(const Scene* scene) const override;
+
+            ViewPtr GetCurrentView(const Name& context);
+            ViewPtr GetCurrentStereoscopicView(const Name& context, ViewType viewType);
             
         private:
             void RegisterViewportContext(const Name& contextName, ViewportContextPtr viewportContext);
@@ -66,9 +64,6 @@ namespace AZ
 
             ViewPtrStack& GetOrCreateViewStackForContext(const Name& context);
             void UpdateViewForContext(const Name& context);
-            bool EraseView(const Name& context, ViewPtr view);
-            bool EraseViewGroup(const Name& contextName, ViewGroupPtr viewGroup);
-            ViewGroupPtr GetCurrentViewGroup(const Name& contextName);
 
             AZStd::unordered_map<AzFramework::ViewportId, ViewportContextData> m_viewportContexts;
             AZStd::unordered_map<AZ::Name, ViewPtrStack> m_viewportViews;

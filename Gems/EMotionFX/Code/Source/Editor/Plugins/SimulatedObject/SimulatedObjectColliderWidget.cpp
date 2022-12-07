@@ -121,14 +121,6 @@ namespace EMotionFX
         return result;
     }
 
-    QWidget* SimulatedObjectColliderWidget::CreateNoSelectionWidget(QWidget* parent)
-    {
-        QLabel* noSelectionLabel = new QLabel("Select a joint from the Skeleton Outliner", parent);
-        noSelectionLabel->setWordWrap(true);
-
-        return noSelectionLabel;
-    }
-
     void SimulatedObjectColliderWidget::InternalReinit()
     {
         const QModelIndexList& selectedModelIndices = GetSelectedModelIndices();
@@ -162,6 +154,13 @@ namespace EMotionFX
 
         UpdateOwnershipLabel();
         UpdateColliderNotification();
+
+        emit WidgetCountChanged();
+    }
+
+    int SimulatedObjectColliderWidget::WidgetCount() const
+    {
+        return m_widgetCount;
     }
 
     void SimulatedObjectColliderWidget::UpdateOwnershipLabel()
@@ -211,7 +210,7 @@ namespace EMotionFX
         }
 
         const QModelIndexList& selectedModelIndices = GetSelectedModelIndices();
-        // Only show the notification when it is single selection. 
+        // Only show the notification when it is single selection.
         if (selectedModelIndices.size() != 1)
         {
             return;
@@ -304,7 +303,7 @@ namespace EMotionFX
 
     void AddToSimulatedObjectButton::OnCreateContextMenu()
     {
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+        AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (!selectedRowIndicesOutcome.IsSuccess())
         {
@@ -379,7 +378,7 @@ namespace EMotionFX
 
     void AddToSimulatedObjectButton::OnAddJointsToObjectActionTriggered([[maybe_unused]] bool checked)
     {
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+        AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (!selectedRowIndicesOutcome.IsSuccess())
         {
@@ -393,7 +392,7 @@ namespace EMotionFX
 
     void AddToSimulatedObjectButton::OnCreateObjectAndAddJointsActionTriggered()
     {
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+        AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (!selectedRowIndicesOutcome.IsSuccess())
         {

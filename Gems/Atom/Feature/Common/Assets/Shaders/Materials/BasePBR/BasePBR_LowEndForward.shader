@@ -1,7 +1,7 @@
 {
     "Source" : "./BasePBR_LowEndForward.azsl",
 
-    "Definitions": ["QUALITY_LOW_END=1"],
+    "Definitions": ["QUALITY_LOW_END_TIER1=1"],
 
     "DepthStencilState" :
     {

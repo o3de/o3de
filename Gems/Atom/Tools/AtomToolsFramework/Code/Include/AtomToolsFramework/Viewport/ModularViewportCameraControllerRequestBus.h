@@ -70,6 +70,8 @@ namespace AtomToolsFramework
         virtual bool AddCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs) = 0;
         //! Remove one or more camera inputs (behaviors) to stop them running for the current camera.
         virtual bool RemoveCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs) = 0;
+        //! Reset the state of all camera inputs (clear inputs from running).
+        virtual void ResetCameras() = 0;
 
     protected:
         ~ModularViewportCameraControllerRequests() = default;

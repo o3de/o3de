@@ -15,7 +15,7 @@
 namespace UnitTest
 {
     class EditorEntityHelpersTest
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
         void SetUpEditorFixtureImpl() override
         {

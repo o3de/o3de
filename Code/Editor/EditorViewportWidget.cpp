@@ -28,7 +28,6 @@
 
 // AzFramework
 #include <AzFramework/Components/CameraBus.h>
-#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Viewport/DisplayContextRequestBus.h>
 #if defined(AZ_PLATFORM_WINDOWS)
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
@@ -469,6 +468,7 @@ void EditorViewportWidget::Update()
         }
     }
 
+    if(!m_hasUpdatedVisibility)
     {
         auto start = std::chrono::steady_clock::now();
 
@@ -480,6 +480,8 @@ void EditorViewportWidget::Update()
             std::chrono::duration<double> diff = stop - start;
             AZ_Printf("Visibility", "FindVisibleEntities (new) - Duration: %f", diff);
         }
+
+        m_hasUpdatedVisibility = true;
     }
 
     QtViewport::Update();
@@ -597,14 +599,6 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
         UpdateScene();
         break;
 
-    case eNotify_OnBeginTerrainCreate:
-        PushDisableRendering();
-        break;
-
-    case eNotify_OnEndTerrainCreate:
-        PopDisableRendering();
-        break;
-
     case eNotify_OnBeginLayerExport:
     case eNotify_OnBeginSceneSave:
         PushDisableRendering();
@@ -618,6 +612,10 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
 void EditorViewportWidget::OnBeginPrepareRender()
 {
+    AZ_PROFILE_FUNCTION(Editor);
+
+    m_hasUpdatedVisibility = false;
+
     if (!m_debugDisplay)
     {
         AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
@@ -828,7 +826,7 @@ void EditorViewportWidget::SetViewportId(int id)
     }
     auto viewportContext = m_renderViewport->GetViewportContext();
     m_defaultViewportContextName = viewportContext->GetName();
-    m_defaultView = viewportContext->GetDefaultView();
+    m_defaultViewGroup = viewportContext->GetViewGroup();
     QBoxLayout* layout = new QBoxLayout(QBoxLayout::Direction::TopToBottom, this);
     layout->setContentsMargins(QMargins());
     layout->addWidget(m_renderViewport);
@@ -1369,178 +1367,6 @@ AZ::EntityId EditorViewportWidget::GetCurrentViewEntityId()
     return m_viewEntityId;
 }
 
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::RenderSelectedRegion()
-{
-    AABB box;
-    GetIEditor()->GetSelectedRegion(box);
-    if (box.IsEmpty())
-    {
-        return;
-    }
-
-    float x1 = box.min.x;
-    float y1 = box.min.y;
-    float x2 = box.max.x;
-    float y2 = box.max.y;
-
-    DisplayContext& dc = m_displayContext;
-
-    float fMaxSide = MAX(y2 - y1, x2 - x1);
-    if (fMaxSide < 0.1f)
-    {
-        return;
-    }
-    float fStep = fMaxSide / 100.0f;
-
-    float fMinZ = 0;
-    float fMaxZ = 0;
-
-    // Draw yellow border lines.
-    dc.SetColor(1, 1, 0, 1);
-    float offset = 0.01f;
-    Vec3 p1, p2;
-
-    const float defaultTerrainHeight = AzFramework::Terrain::TerrainDataRequests::GetDefaultTerrainHeight();
-    auto terrain = AzFramework::Terrain::TerrainDataRequestBus::FindFirstHandler();
-
-    for (float y = y1; y < y2; y += fStep)
-    {
-        p1.x = x1;
-        p1.y = y;
-        p1.z = terrain ? terrain->GetHeightFromFloats(p1.x, p1.y) + offset : defaultTerrainHeight + offset;
-
-        p2.x = x1;
-        p2.y = y + fStep;
-        p2.z = terrain ? terrain->GetHeightFromFloats(p2.x, p2.y) + offset : defaultTerrainHeight + offset;
-        dc.DrawLine(p1, p2);
-
-        p1.x = x2;
-        p1.y = y;
-        p1.z = terrain ? terrain->GetHeightFromFloats(p1.x, p1.y) + offset : defaultTerrainHeight + offset;
-
-        p2.x = x2;
-        p2.y = y + fStep;
-        p2.z = terrain ? terrain->GetHeightFromFloats(p2.x, p2.y) + offset : defaultTerrainHeight + offset;
-        dc.DrawLine(p1, p2);
-
-        fMinZ = min(fMinZ, min(p1.z, p2.z));
-        fMaxZ = max(fMaxZ, max(p1.z, p2.z));
-    }
-    for (float x = x1; x < x2; x += fStep)
-    {
-        p1.x = x;
-        p1.y = y1;
-        p1.z = terrain ? terrain->GetHeightFromFloats(p1.x, p1.y) + offset : defaultTerrainHeight + offset;
-
-        p2.x = x + fStep;
-        p2.y = y1;
-        p2.z = terrain ? terrain->GetHeightFromFloats(p2.x, p2.y) + offset : defaultTerrainHeight + offset;
-        dc.DrawLine(p1, p2);
-
-        p1.x = x;
-        p1.y = y2;
-        p1.z = terrain ? terrain->GetHeightFromFloats(p1.x, p1.y) + offset : defaultTerrainHeight + offset;
-
-        p2.x = x + fStep;
-        p2.y = y2;
-        p2.z = terrain ? terrain->GetHeightFromFloats(p2.x, p2.y) + offset : defaultTerrainHeight + offset;
-        dc.DrawLine(p1, p2);
-
-        fMinZ = min(fMinZ, min(p1.z, p2.z));
-        fMaxZ = max(fMaxZ, max(p1.z, p2.z));
-    }
-
-    {
-        // Draw a box area
-        float fBoxOver = fMaxSide / 5.0f;
-        float fBoxHeight = fBoxOver + fMaxZ - fMinZ;
-
-        ColorB boxColor(64, 64, 255, 128); // light blue
-        ColorB transparent(boxColor.r, boxColor.g, boxColor.b, 0);
-
-        Vec3 base[] = { Vec3(x1, y1, fMinZ), Vec3(x2, y1, fMinZ), Vec3(x2, y2, fMinZ), Vec3(x1, y2, fMinZ) };
-
-        // Generate vertices
-        static AABB boxPrev(AABB::RESET);
-        static std::vector<Vec3> verts;
-        static std::vector<ColorB> colors;
-
-        if (!IsEquivalent(boxPrev, box))
-        {
-            verts.resize(0);
-            colors.resize(0);
-            for (int i = 0; i < 4; ++i)
-            {
-                Vec3& p = base[i];
-
-                verts.push_back(p);
-                verts.push_back(Vec3(p.x, p.y, p.z + fBoxHeight));
-                verts.push_back(Vec3(p.x, p.y, p.z + fBoxHeight + fBoxOver));
-
-                colors.push_back(boxColor);
-                colors.push_back(boxColor);
-                colors.push_back(transparent);
-            }
-            boxPrev = box;
-        }
-
-        // Generate indices
-        const int numInds = 4 * 12;
-        static vtx_idx inds[numInds];
-        static bool bNeedIndsInit = true;
-        if (bNeedIndsInit)
-        {
-            vtx_idx* pInds = &inds[0];
-
-            for (int i = 0; i < 4; ++i)
-            {
-                int over = 0;
-                if (i == 3)
-                {
-                    over = -12;
-                }
-
-                int ind = i * 3;
-                *pInds++ = ind;
-                *pInds++ = ind + 3 + over;
-                *pInds++ = ind + 1;
-
-                *pInds++ = ind + 1;
-                *pInds++ = ind + 3 + over;
-                *pInds++ = ind + 4 + over;
-
-                ind = i * 3 + 1;
-                *pInds++ = ind;
-                *pInds++ = ind + 3 + over;
-                *pInds++ = ind + 1;
-
-                *pInds++ = ind + 1;
-                *pInds++ = ind + 3 + over;
-                *pInds++ = ind + 4 + over;
-            }
-            bNeedIndsInit = false;
-        }
-
-        // Draw lines
-        for (int i = 0; i < 4; ++i)
-        {
-            Vec3& p = base[i];
-
-            dc.DrawLine(p, Vec3(p.x, p.y, p.z + fBoxHeight), ColorF(1, 1, 0, 1), ColorF(1, 1, 0, 1));
-            dc.DrawLine(
-                Vec3(p.x, p.y, p.z + fBoxHeight), Vec3(p.x, p.y, p.z + fBoxHeight + fBoxOver), ColorF(1, 1, 0, 1), ColorF(1, 1, 0, 0));
-        }
-
-        // Draw volume
-        dc.DepthWriteOff();
-        dc.CullOff();
-        dc.pRenderAuxGeom->DrawTriangles(&verts[0], static_cast<uint32>(verts.size()), &inds[0], numInds, &colors[0]);
-        dc.CullOn();
-        dc.DepthWriteOn();
-    }
-}
-
 Vec3 EditorViewportWidget::WorldToView3D(const Vec3& wp, [[maybe_unused]] int nFlags) const
 {
     Vec3 out(0, 0, 0);
@@ -1803,9 +1629,9 @@ void EditorViewportWidget::SetFOV(float fov)
     }
     else
     {
-        auto m = m_defaultView->GetViewToClipMatrix();
+        auto m = m_defaultViewGroup->GetView()->GetViewToClipMatrix();
         AZ::SetPerspectiveMatrixFOV(m, fov, aznumeric_cast<float>(width()) / aznumeric_cast<float>(height()));
-        m_defaultView->SetViewToClipMatrix(m);
+        m_defaultViewGroup->GetView()->SetViewToClipMatrix(m);
     }
 }
 
@@ -1820,7 +1646,7 @@ float EditorViewportWidget::GetFOV() const
     }
     else
     {
-        return AZ::GetPerspectiveMatrixFOV(m_defaultView->GetViewToClipMatrix());
+        return AZ::GetPerspectiveMatrixFOV(m_defaultViewGroup->GetView()->GetViewToClipMatrix());
     }
 }
 
@@ -1888,7 +1714,7 @@ void EditorViewportWidget::SetDefaultCamera()
     if (auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get())
     {
         const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-        atomViewportRequests->PushView(contextName, m_defaultView);
+        atomViewportRequests->PushViewGroup(contextName, m_defaultViewGroup);
     }
 
     // check to see if we have an existing last known location for this level
@@ -1916,9 +1742,9 @@ void EditorViewportWidget::SetDefaultCamera()
 
 void EditorViewportWidget::SetDefaultCameraNearFar()
 {
-    auto viewToClip = m_defaultView->GetViewToClipMatrix();
+    auto viewToClip = m_defaultViewGroup->GetView()->GetViewToClipMatrix();
     AZ::SetPerspectiveMatrixNearFar(viewToClip, SandboxEditor::CameraDefaultNearPlaneDistance(), SandboxEditor::CameraDefaultFarPlaneDistance());
-    m_defaultView->SetViewToClipMatrix(viewToClip);
+    m_defaultViewGroup->GetView()->SetViewToClipMatrix(viewToClip);
 }
 
 
@@ -2386,7 +2212,7 @@ void EditorViewportWidget::SetAsActiveViewport()
         if (viewportContext)
         {
             // Remove the old viewport's camera from the stack, as it's no longer the owning viewport
-            viewportContextManager->PopView(defaultContextName, viewportContext->GetDefaultView());
+            viewportContextManager->PopViewGroup(defaultContextName, viewportContext->GetViewGroup());
             viewportContextManager->RenameViewportContext(viewportContext, m_pPrimaryViewport->m_defaultViewportContextName);
         }
     }
@@ -2399,7 +2225,7 @@ void EditorViewportWidget::SetAsActiveViewport()
         {
             // Push our camera onto the default viewport's view stack to preserve camera state continuity
             // Other views can still be pushed on top of our view for e.g. game mode
-            viewportContextManager->PushView(defaultContextName, viewportContext->GetDefaultView());
+            viewportContextManager->PushViewGroup(defaultContextName, viewportContext->GetViewGroup());
             viewportContextManager->RenameViewportContext(viewportContext, defaultContextName);
         }
     }

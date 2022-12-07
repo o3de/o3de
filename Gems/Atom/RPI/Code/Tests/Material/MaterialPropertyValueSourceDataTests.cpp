@@ -241,7 +241,7 @@ namespace UnitTest
         for (uint32_t i = static_cast<uint32_t>(MaterialPropertyDataType::Invalid) + 1u; i < propertyTypeCount; ++i)
         {
             MaterialPropertyDataType type = static_cast<MaterialPropertyDataType>(i);
-            azsprintf(inputJson,
+            azsnprintf(inputJson, AZ_ARRAY_SIZE(inputJson),
                 R"(
                     {
                         "propertyName": "general.%s",

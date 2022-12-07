@@ -31,7 +31,7 @@ namespace UnitTest
     int myReloadValue = 0;
 
     class ScriptComponentTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         AZ_TYPE_INFO(ScriptComponentTest, "{85CDBD49-70FF-416A-8154-B5525EDD30D4}");
