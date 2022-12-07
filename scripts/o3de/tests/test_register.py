@@ -273,7 +273,7 @@ class TestRegisterProject:
             pytest.param('o3de', '', None, { 'gem1':'' }, None, None, ['gem1'], None, None, None, None, False, 0),
             # fails when compatible_engines has no match
             pytest.param('o3de', '2.3.4', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de==1.2.3'], None, None, None,  False, 1),
-            pytest.param('o3de', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de1'], None, None, None, False, 1),
+            pytest.param('o3de', '1.2.3', None, { 'gem1':'' }, "", "", ['gem1'], ['o3de1'], None, None, None, False, 1),
             # passes when forced
             pytest.param('o3de', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de1'], None, None, None, True, 0),
             # passes when compatible_engines has match
@@ -283,6 +283,16 @@ class TestRegisterProject:
             pytest.param('o3de', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de'], None, ['o3de==2.3.4'], None, False, 1),
             # passes when uses gem that is known compatible with version 1.2.3 
             pytest.param('o3de', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de'], None, ['o3de==1.2.3'], None, False, 0),
+            # passes when compatible engine not found but compatible api found
+            pytest.param('o3de', '1.2.3', {'api':'1.2.3'}, { 'gem1':'' }, "", "", ['gem1'], ['o3de==2.3.4'], ['api==1.2.3'], None, None, False, 0),
+            # passes when compatible engine found and no compatible api found
+            pytest.param('o3de', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, "", "", ['gem1'], ['o3de==1.2.3'], ['api==1.2.3'], None, None, False, 0),
+            # fails when no compatible engine or api found
+            pytest.param('o3de', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, None, None, ['gem1'], ['o3de==3.4.5'], ['api==4.5.6'], None, None, False, 1),
+            # passes when uses gem with compatible engine and api found
+            pytest.param('o3de', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, None, None, ['gem1'], None, None, ['o3de>=1.0.0'], ['api~=1.2.3'] , False, 0),
+            # fails when uses gem with no compatible engine or api found
+            pytest.param('o3de', '1.2.3', {'api':'2.3.4'}, { 'gem1':'' }, None, None, ['gem1'], None, None, ['o3de==2.3.4'], ['api==1.2.3'] , False, 1),
         ]
     )
     def test_register_project(self, test_engine_name, engine_version, engine_api_versions,

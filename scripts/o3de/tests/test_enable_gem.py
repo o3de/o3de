@@ -229,7 +229,7 @@ class TestEnableGemCommand:
         pytest.param('1.2.3', [], {}, False, False, [], ['api==2.3.4'], 'o3de-test', '1.0.0', {'api':'1.2.3'}, 1),
         # passes when engine matches compatible_engines but engine api version doesn't match 
         pytest.param('1.2.3', [], {}, False, False, ['o3de-test>=1.0.0'], ['api==1.2.3'], 'o3de-test', '2.0.0', {'api':'2.3.4'}, 0),
-        # passes when engine name doesn't match but api version matches
+        # passes when engine version doesn't match but api version matches
         pytest.param('1.2.3', [], {}, False, False, ['o3de-test==1.0.0'], ['api~=1.0'], 'o3de-test', '2.0.0', {'api':'1.9.2'}, 0),
         ],
     )
