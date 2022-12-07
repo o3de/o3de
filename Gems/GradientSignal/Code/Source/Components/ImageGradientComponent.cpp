@@ -1091,7 +1091,7 @@ namespace GradientSignal
         {
             const AZ::Aabb bounds = m_gradientTransform.GetBounds();
             const AZ::Vector2 boundsMeters(bounds.GetExtents());
-            const AZ::Vector2 imagePixelsInBounds(width / GetTilingX(), height / GetTilingY());
+            const AZ::Vector2 imagePixelsInBounds(width * GetTilingX(), height * GetTilingY());
             return imagePixelsInBounds / boundsMeters;
         }
 
