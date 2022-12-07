@@ -7,13 +7,7 @@
  */
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
-#include <AzCore/std/string/string.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
-
 #include <AWSCoreBus.h>
-
-#include <QMenu>
 
 namespace AzFramework
 {
@@ -46,9 +40,6 @@ namespace AWSCore
         void InitializeResourceMappingToolAction();
         void InitializeAWSDocActions();
         void InitializeAWSGlobalDocsSubMenu();
-        void AddSpaceForIcon(QMenu* menu);
-
-        bool m_awsClientAuthEnabled = false;
 
         // To improve experience, use process watcher to keep track of ongoing tool process
         AZStd::unique_ptr<AzFramework::ProcessWatcher> m_resourceMappingToolWatcher;

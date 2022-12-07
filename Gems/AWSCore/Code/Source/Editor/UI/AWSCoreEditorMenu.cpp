@@ -6,31 +6,19 @@
  *
  */
 
-#include <AzCore/Debug/Trace.h>
-#include <AzCore/IO/FileIO.h>
-#include <AzCore/Jobs/JobFunction.h>
-#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzFramework/Process/ProcessWatcher.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 
-#include <AWSCoreEditor_Traits_Platform.h>
 #include <Editor/Constants/AWSCoreEditorMenuNames.h>
+
 #include <Editor/UI/AWSCoreEditorMenu.h>
 #include <Editor/UI/AWSCoreResourceMappingToolAction.h>
-
-#include <QAction>
-#include <QApplication>
-#include <QDesktopServices>
-#include <QIcon>
-#include <QList>
-#include <QMessageBox>
-#include <QObject>
-#include <QString>
-#include <QUrl>
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
+
+#include <QApplication>
+#include <QMessageBox>
 
 namespace AWSCore
 {
@@ -58,9 +46,6 @@ namespace AWSCore
         InitializeResourceMappingToolAction();
 
         m_menuManagerInterface->AddSeparatorToMenu(AWSMenuIdentifier, 0);
-        
-        //AddSpaceForIcon(this);
-
     }
 
     AWSCoreEditorMenu::~AWSCoreEditorMenu()
@@ -73,7 +58,6 @@ namespace AWSCore
             }
             m_resourceMappingToolWatcher.reset();
         }
-        //this->clear();
     }
 
     void AWSCoreEditorMenu::InitializeResourceMappingToolAction()
@@ -136,6 +120,7 @@ namespace AWSCore
         InitializeAWSGlobalDocsSubMenu();
 
         AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, AWSMenuIdentifier, AWSCredentialConfiguration, 0);
+
     }
 
     void AWSCoreEditorMenu::InitializeAWSGlobalDocsSubMenu()
@@ -149,14 +134,6 @@ namespace AWSCore
         AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSAndO3DEMappingsTool, 0);
         AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSAndO3DEScripting, 0);
 
-        // todo-ls: still need this
-        //AddSpaceForIcon(globalDocsMenu);
     }
 
-    void AWSCoreEditorMenu::AddSpaceForIcon(QMenu *menu)
-    {
-        QSize size = menu->sizeHint();
-        size.setWidth(size.width() + IconSize);
-        menu->setFixedSize(size);
-    }
 } // namespace AWSCore

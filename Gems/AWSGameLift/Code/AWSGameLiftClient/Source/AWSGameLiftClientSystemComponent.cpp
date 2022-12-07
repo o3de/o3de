@@ -6,16 +6,17 @@
  *
  */
 
-#include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <Multiplayer/Session/SessionConfig.h>
 
-#include <AWSGameLiftClientLocalTicketTracker.h>
 #include <AWSCoreBus.h>
+
+#include <AWSGameLiftClientLocalTicketTracker.h>
 #include <AWSGameLiftClientManager.h>
 #include <AWSGameLiftClientSystemComponent.h>
+
 #include <Request/AWSGameLiftAcceptMatchRequest.h>
 #include <Request/AWSGameLiftCreateSessionOnQueueRequest.h>
 #include <Request/AWSGameLiftCreateSessionRequest.h>
@@ -25,7 +26,8 @@
 #include <Request/AWSGameLiftStopMatchmakingRequest.h>
 
 #include <aws/gamelift/GameLiftClient.h>
-#include <ActionManager/Menu/MenuManagerInterface.h>
+
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 
 namespace AWSGameLift
 {

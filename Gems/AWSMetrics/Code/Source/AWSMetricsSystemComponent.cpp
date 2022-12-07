@@ -10,17 +10,13 @@
 #include <AWSMetricsSystemComponent.h>
 #include <MetricsManager.h>
 
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/EditContextConstants.inl>
-#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#include <AzToolsFramework/ActionManager/Action/ActionManager.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
-#include <ActionManager/Action/ActionManagerInterface.h>
-#include <ActionManager/Action/ActionManager.h>
+
 #include <QDesktopServices>
 #include <QUrl>
 
