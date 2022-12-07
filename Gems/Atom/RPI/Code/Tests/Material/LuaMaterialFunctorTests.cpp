@@ -757,8 +757,7 @@ namespace UnitTest
         Ptr<MaterialFunctor> functor = testData.GetMaterialTypeAsset()->GetMaterialFunctors()[0];
 
         AZ::RPI::MaterialFunctor::EditorContext context = AZ::RPI::MaterialFunctor::EditorContext(
-            testData.GetMaterial()->GetPropertyValues(),
-            testData.GetMaterial()->GetMaterialPropertiesLayout(),
+            testData.GetMaterial()->GetPropertyCollection(),
             propertyDynamicMetadata,
             propertyGroupDynamicMetadata,
             changedPropertyNames,
@@ -826,8 +825,7 @@ namespace UnitTest
         Ptr<MaterialFunctor> functor = testData.GetMaterialTypeAsset()->GetMaterialFunctors()[0];
 
         AZ::RPI::MaterialFunctor::EditorContext context = AZ::RPI::MaterialFunctor::EditorContext(
-            testData.GetMaterial()->GetPropertyValues(),
-            testData.GetMaterial()->GetMaterialPropertiesLayout(),
+            testData.GetMaterial()->GetPropertyCollection(),
             propertyDynamicMetadata,
             propertyGroupDynamicMetadata,
             changedPropertyNames,
@@ -892,8 +890,7 @@ namespace UnitTest
         Ptr<MaterialFunctor> functor = testData.GetMaterialTypeAsset()->GetMaterialFunctors()[0];
 
         AZ::RPI::MaterialFunctor::EditorContext context = AZ::RPI::MaterialFunctor::EditorContext(
-            testData.GetMaterial()->GetPropertyValues(),
-            testData.GetMaterial()->GetMaterialPropertiesLayout(),
+            testData.GetMaterial()->GetPropertyCollection(),
             propertyDynamicMetadata,
             propertyGroupDynamicMetadata,
             changedPropertyNames,
