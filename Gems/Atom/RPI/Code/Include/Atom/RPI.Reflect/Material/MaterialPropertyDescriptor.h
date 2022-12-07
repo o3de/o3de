@@ -12,6 +12,7 @@
 #include <AzCore/Name/Name.h>
 #include <Atom/RHI.Reflect/Handle.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
+#include <Atom/RPI.Reflect/Limits.h>
 
 namespace AZ
 {
@@ -24,6 +25,8 @@ namespace AZ
         };
 
         using MaterialPropertyIndex = RHI::Handle<uint32_t, MaterialPropertyIndexType>;
+
+        using MaterialPropertyFlags = AZStd::bitset<Limits::Material::PropertyCountMax>;
 
         enum class MaterialPropertyOutputType
         {
@@ -46,6 +49,8 @@ namespace AZ
             static void Reflect(ReflectContext* context);
 
             MaterialPropertyOutputType m_type = MaterialPropertyOutputType::Invalid;
+
+            Name m_materialPipelineName;
 
             //! For m_type==ShaderOption,  this is the index of a specific ShaderAsset (see MaterialTypeSourceData's ShaderCollection). 
             //! For m_type==ShaderEnabled, this is the index of a specific ShaderAsset (see MaterialTypeSourceData's ShaderCollection). 

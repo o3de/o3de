@@ -22,6 +22,7 @@ namespace UnitTests
     {
         using ApplicationManagerBase::InitFileMonitor;
         using ApplicationManagerBase::InitFileStateCache;
+        using ApplicationManagerBase::InitUuidManager;
         using ApplicationManagerBase::m_assetProcessorManager;
         using ApplicationManagerBase::m_fileProcessor;
         using ApplicationManagerBase::m_fileStateCache;

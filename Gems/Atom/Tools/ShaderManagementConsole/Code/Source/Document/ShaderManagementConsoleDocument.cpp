@@ -243,11 +243,6 @@ namespace ShaderManagementConsole
         return true;
     }
 
-    bool ShaderManagementConsoleDocument::CanSave() const
-    {
-        return true;
-    }
-
     void ShaderManagementConsoleDocument::Clear()
     {
         AtomToolsFramework::AtomToolsDocument::Clear();

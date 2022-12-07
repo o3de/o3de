@@ -89,12 +89,10 @@ def VariableManager_ExposeVarsToComponent():
                                                        VARIABLE_NAME, VariableState.UNUSEDVARIABLE, new_variable_value)
 
 
-
 if __name__ == "__main__":
-
     import ImportPathHelper as imports
 
     imports.init()
-    from editor_python_test_tools.utils import Report
+    from utils import Report
 
     Report.start_test(VariableManager_ExposeVarsToComponent)

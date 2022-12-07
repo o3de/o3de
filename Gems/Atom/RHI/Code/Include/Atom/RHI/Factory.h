@@ -16,8 +16,6 @@
 #include <renderdoc_app.h>
 #endif
 
-AZ_DECLARE_BUDGET(RHI);
-
 namespace AZ
 {
     namespace RHI

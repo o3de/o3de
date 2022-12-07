@@ -95,6 +95,8 @@ namespace AZ
                 if (Factory::IsReady() && factory == &Factory::Get())
                 {
                     Factory::Unregister(factory);
+
+                    FactoryManagerNotificationBus::Broadcast(&FactoryManagerNotification::FactoryUnregistered);
                 }
             }
             else
@@ -119,6 +121,8 @@ namespace AZ
             AZ_Assert(factory, "Could not select factory");
 
             Factory::Register(factory);
+
+            FactoryManagerNotificationBus::Broadcast(&FactoryManagerNotification::FactoryRegistered);
         }
 
         Factory* FactoryManagerSystemComponent::GetFactoryFromCommandLine()
