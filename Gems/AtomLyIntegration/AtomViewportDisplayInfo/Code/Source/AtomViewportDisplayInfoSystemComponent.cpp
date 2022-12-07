@@ -343,6 +343,7 @@ namespace AZ::Render
         float imagePoolUsedAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_usedResidentInBytes) / MB;
         float imagePoolTotalAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_totalResidentInBytes) / MB;
         float imagePoolBudgetMB = static_cast<float>(imagePoolMemoryUsage.m_budgetInBytes) / MB;
+        bool supportTiledImage = streamingImagePool->GetRHIPool()->SupportTiledImage();
         AZ::Color fontColor = AZ::Colors::White;
         if (streamingImagePool->IsMemoryLow())
         {
@@ -350,7 +351,7 @@ namespace AZ::Render
         }
 
         DrawLine(
-            AZStd::string::format("RPI SystemStreamingImagePool (used/allocated/budget): %.2f / %.2f/%.2f MiB", imagePoolUsedAllocatedMB, imagePoolTotalAllocatedMB, imagePoolBudgetMB),
+            AZStd::string::format("StreamingImagePool %s (used/allocated/budget): %.2f / %.2f/%.2f MiB", supportTiledImage?"Tiled":"", imagePoolUsedAllocatedMB, imagePoolTotalAllocatedMB, imagePoolBudgetMB),
             fontColor
         );
     }

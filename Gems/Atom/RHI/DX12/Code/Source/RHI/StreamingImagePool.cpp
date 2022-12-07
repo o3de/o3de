@@ -707,6 +707,11 @@ namespace AZ
             }
             return RHI::ResultCode::Success;
         }
+
+        bool StreamingImagePool::SupportTiledImageInternal() const
+        {
+            return m_enableTileResource;
+        }
     }
 }
 
