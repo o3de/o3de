@@ -30,6 +30,15 @@ static bool IsSubfolder(const QString& folderA, const QString& folderB)
         return c == AZ::IO::WindowsPathSeparator || c == AZ::IO::PosixPathSeparator;
     };
 
+    // if folderB doesn't end in a slash, make sure folderA has one at the appropriate location to
+    // avoid matching a partial path that isn't a folder e.g.
+    // folderA = c:/folderWithLongerName
+    // folderB = c:/folder
+    if (!isSlash(folderB[folderB.length() - 1]) && !isSlash(folderA[folderB.length()]))
+    {
+        return false;
+    }
+
     const auto firstPathSeparator = AZStd::find_if(begin(folderB), end(folderB), [&isSlash](const QChar c)
     {
         return isSlash(c);
@@ -114,6 +123,15 @@ void FileWatcher::AddFolderWatch(QString directory, bool recursive)
             return IsSubfolder(root.m_directory, directory);
         });
     }
+}
+
+bool FileWatcher::HasWatchFolder(QString directory) const
+{
+    const auto found = AZStd::find_if(begin(m_folderWatchRoots), end(m_folderWatchRoots), [directory](const WatchRoot& root)
+    {
+            return root.m_directory == directory;
+    });
+    return found != end(m_folderWatchRoots);
 }
 
 void FileWatcher::ClearFolderWatches()

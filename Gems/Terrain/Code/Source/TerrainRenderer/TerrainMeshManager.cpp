@@ -28,6 +28,7 @@
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
 #include <Atom/Feature/RenderCommon.h>
+#include <Atom/Feature/Mesh/MeshCommon.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace Terrain
@@ -195,6 +196,7 @@ namespace Terrain
     {
         // lods of sectors that need updating, separated by LOD level.
         AZStd::vector<AZStd::vector<Sector*>> sectorsToUpdate(m_sectorLods.size());
+        bool anySectorsUpdated = false;
 
         for (uint32_t lodLevel = 0; lodLevel < m_sectorLods.size(); ++lodLevel)
         {
@@ -247,13 +249,14 @@ namespace Terrain
                         {
                             sector.m_worldCoord = worldCoord;
                             sectorsToUpdate.at(lodLevel).push_back(&sector);
+                            anySectorsUpdated = true;
                         }
                     }
                 }
             }
         }
 
-        if (!sectorsToUpdate.empty())
+        if (anySectorsUpdated)
         {
             ProcessSectorUpdates(sectorsToUpdate);
             return;
@@ -407,8 +410,9 @@ namespace Terrain
         m_sectorsThatNeedSrgCompiled.clear();
 
         // Only update candidate sectors if the camera has moved. This could probably be relaxed further, but is a good starting point.
-        const float minMovedDistanceSq = m_sampleSpacing * m_sampleSpacing; 
-        if (m_candidateSectors.empty() || m_cameraPosition.GetDistanceSq(mainCameraPosition) > minMovedDistanceSq)
+        const float minMovedDistanceSq = m_sampleSpacing * m_sampleSpacing;
+        bool terrainChanged = m_candidateSectors.empty(); // candidate sectors need to be recalculated any time the terrain changes
+        if (terrainChanged || m_cameraPosition.GetDistanceSq(mainCameraPosition) > minMovedDistanceSq)
         {
             m_cameraPosition = mainCameraPosition;
             UpdateCandidateSectors();
@@ -418,9 +422,16 @@ namespace Terrain
             AZ::RPI::AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(m_parentScene) :
             nullptr;
 
+        auto meshMovedFlag = m_parentScene->GetViewTagBitRegistry().AcquireTag(AZ::Render::MeshCommon::MeshMovedName);
+
         // Compare view frustums against the list of candidate sectors and submit those sectors to draw.
         for (auto& view : process.m_views)
         {
+            if (terrainChanged)
+            {
+                view->ApplyFlags(meshMovedFlag.GetIndex());
+            }
+
             const AZ::Frustum viewFrustum = AZ::Frustum::CreateFromMatrixColumnMajor(view->GetWorldToClipMatrix());
             for (CandidateSector& candidateSector : m_candidateSectors)
             {

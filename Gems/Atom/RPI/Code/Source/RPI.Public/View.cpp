@@ -125,6 +125,33 @@ namespace AZ
             m_drawListContext.AddDrawItem(drawListTag, drawItemProperties);
         }
 
+        void View::ApplyFlags(uint32_t flags)
+        {
+            AZStd::atomic_fetch_and(&m_andFlags, flags);
+            AZStd::atomic_fetch_or(&m_orFlags, flags);
+        }
+
+        void View::ClearFlags(uint32_t flags)
+        {
+            AZStd::atomic_fetch_or(&m_andFlags, flags);
+            AZStd::atomic_fetch_and(&m_orFlags, ~flags);
+        }
+
+        void View::ClearAllFlags()
+        {
+            ClearFlags(0xFFFFFFFF);
+        }
+
+        uint32_t View::GetAndFlags()
+        {
+            return m_andFlags;
+        }
+
+        uint32_t View::GetOrFlags()
+        {
+            return m_orFlags;
+        }
+
         void View::SetWorldToViewMatrix(const AZ::Matrix4x4& worldToView)
         {
             m_viewToWorldMatrix = worldToView.GetInverseFast();

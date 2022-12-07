@@ -676,6 +676,7 @@ if PATH_O3DE_BIN:
 
     try:
         PATH_O3DE_BIN.resolve(strict=True)
+        os.add_dll_directory(f'{PATH_O3DE_BIN}')
     except Exception as e:
         _LOGGER.warning(f'{ENVAR_PATH_O3DE_BIN} not defined: {PATH_O3DE_BIN}')
         _LOGGER.warning(f'Put "set {ENVAR_PATH_O3DE_BIN}=C:\\path\\to\\o3de" in: {PATH_ENV_DEV}')

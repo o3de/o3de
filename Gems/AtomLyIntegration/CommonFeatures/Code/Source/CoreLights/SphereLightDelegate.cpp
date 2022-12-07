@@ -116,6 +116,15 @@ namespace AZ::Render
         }
     }
 
+    void SphereLightDelegate::SetShadowCachingMode(AreaLightComponentConfig::ShadowCachingMode cachingMode)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetUseCachedShadows(GetLightHandle(),
+                cachingMode == AreaLightComponentConfig::ShadowCachingMode::UpdateOnChange);
+        }
+    }
+
     void SphereLightDelegate::SetAffectsGI(bool affectsGI)
     {
         if (GetLightHandle().IsValid())
