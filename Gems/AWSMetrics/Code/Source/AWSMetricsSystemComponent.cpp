@@ -216,14 +216,6 @@ namespace AWSMetrics
         auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
         AZ_Assert(menuManagerInterface, "AWSCoreEditorSystemComponent - could not get MenuManagerInterface");
 
-        AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = AWSCore::AWS_MENU_TEXT;
-        auto outcome = menuManagerInterface->RegisterMenu(AWSCore::AWSMenuIdentifier, menuProperties);
-        AZ_Assert(outcome.IsSuccess(), "Failed to register '%s' Menu", AWSCore::AWSMenuIdentifier);
-
-        outcome = menuManagerInterface->AddMenuToMenuBar(AWSCore::EditorMainWindowMenuBarIdentifier, AWSCore::AWSMenuIdentifier, 1000);
-        AZ_Assert(outcome.IsSuccess(), "Failed to add '%s' Menu to '%s' MenuBar", AWSCore::AWSMenuIdentifier, AWSCore::EditorMainWindowMenuBarIdentifier);
-
         constexpr const char* AWSMetrics[] =
         {
              "Metrics Gem" ,
@@ -297,7 +289,7 @@ namespace AWSMetrics
 
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Metrics Settings";
-        outcome = actionManagerInterface->RegisterAction(AWSCore::ActionContext, metricsSettingsIdentifier, actionProperties,
+        auto outcome = actionManagerInterface->RegisterAction(AWSCore::ActionContext, metricsSettingsIdentifier, actionProperties,
             [configFilePath]()
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(configFilePath.c_str()));
