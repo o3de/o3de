@@ -301,20 +301,14 @@ namespace AWSMetrics
 
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Metrics Settings";
-        auto outcome = actionManagerInterface->RegisterAction(AWSCore::ActionContext, metricsSettingsIdentifier, actionProperties,
+        outcome = actionManagerInterface->RegisterAction(AWSCore::ActionContext, metricsSettingsIdentifier, actionProperties,
             [configFilePath]()
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(configFilePath.c_str()));
             });
         AZ_Assert(outcome.IsSuccess(), "Failed to register action %s", metricsSettingsIdentifier);
 
-        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
-        AZ_Assert(menuManagerInterface, "AWSMetricsSystemComponent - could not get MenuManagerInterface");
-
         menuManagerInterface->AddActionToMenu(submenuIdentifier, metricsSettingsIdentifier, 0);
-
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSMetricsSettings, 0);
-
 
     }
 
