@@ -18,6 +18,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 
 // AzQtComponents
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
@@ -154,9 +155,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     connect(m_ui->m_pathBreadCrumbs, &AzQtComponents::BreadCrumbs::linkClicked, this, [this](const QString& path) {
         m_ui->m_assetBrowserTreeViewWidget->SelectFolder(path.toUtf8().constData());
     });
-    connect(m_ui->m_pathBreadCrumbs, &AzQtComponents::BreadCrumbs::pathChanged, this, [this](const QString& path) {
-        m_ui->m_assetBrowserTreeViewWidget->SelectFolder(path.toUtf8().constData());
-    });
+    connect(m_ui->m_pathBreadCrumbs, &AzQtComponents::BreadCrumbs::pathChanged, this, &AzAssetBrowserWindow::BreadcrumbsPathChangedSlot);
 
     connect(m_ui->m_thumbnailViewButton, &QAbstractButton::clicked, this, [this] { SetTwoColumnMode(m_ui->m_thumbnailView); });
     connect(m_ui->m_tableViewButton, &QAbstractButton::clicked, this, [this] { SetTwoColumnMode(m_ui->m_tableView); });
@@ -408,7 +407,7 @@ void AzAssetBrowserWindow::UpdateBreadcrumbs(const AzToolsFramework::AssetBrowse
             return entry;
         };
 
-        const AssetBrowserEntry* folderEntry = folderForEntry(selectedEntry);
+        const AssetBrowserEntry* folderEntry = Utils::FolderForEntry(selectedEntry);
         if (folderEntry)
         {
             entryPath = QString::fromUtf8(folderEntry->GetRelativePath().c_str());
@@ -528,6 +527,24 @@ void AzAssetBrowserWindow::DoubleClickedItem([[maybe_unused]] const QModelIndex&
         {
             AzAssetBrowserRequestHandler::OpenWithOS(fullFilePath);
         }
+    }
+}
+
+//! This slot ignores path change coming from breadcrumbs if we already have a file selected directly in this folder. This may happen
+//! in the one column mode where tree view shows files too.
+void AzAssetBrowserWindow::BreadcrumbsPathChangedSlot(const QString& path) const
+{
+    using namespace AzToolsFramework::AssetBrowser;
+    const auto* currentEntry =
+        m_ui->m_assetBrowserTreeViewWidget->currentIndex().data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+
+    const AssetBrowserEntry* folderForCurrent = Utils::FolderForEntry(currentEntry);
+    const QString currentFolderPath =
+        folderForCurrent ? QString::fromUtf8(folderForCurrent->GetRelativePath().c_str()).replace('\\', '/') : QString();
+
+    if (path != currentFolderPath)
+    {
+        m_ui->m_assetBrowserTreeViewWidget->SelectFolder(path.toUtf8().constData());
     }
 }
 

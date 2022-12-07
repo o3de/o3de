@@ -98,6 +98,7 @@ private:
 private Q_SLOTS:
     void CurrentIndexChangedSlot(const QModelIndex& idx) const;
     void DoubleClickedItem(const QModelIndex& element);
+    void BreadcrumbsPathChangedSlot(const QString& path) const;
 };
 
 extern const char* AZ_ASSET_BROWSER_PREVIEW_NAME;
