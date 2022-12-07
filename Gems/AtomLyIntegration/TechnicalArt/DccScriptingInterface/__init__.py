@@ -610,6 +610,7 @@ if not PATH_O3DE_BIN:
     if O3DE_EDITOR.stem.lower() in {"editor",
                                     "materialeditor",
                                     "materialcanvas",
+                                    "passcanvas",
                                     "assetprocessor",
                                     "assetbuilder"}:
         PATH_O3DE_BIN = O3DE_EDITOR.parent
