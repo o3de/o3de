@@ -21,6 +21,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntityInspectorWidget.h>
 
 // AzQtComponents
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
@@ -316,6 +317,9 @@ void AzAssetBrowserWindow::RegisterViewClass()
     options.showInMenu = false;
     const QString name = QString("%1 (2)").arg(LyViewPane::AssetBrowser);
     AzToolsFramework::RegisterViewPane<AzAssetBrowserWindow>(qPrintable(name), LyViewPane::CategoryTools, options);
+
+    options.preferedDockingArea = Qt::RightDockWidgetArea;
+    AzToolsFramework::RegisterViewPane<AzToolsFramework::AssetBrowser::AssetBrowserEntityInspectorWidget>(LyViewPane::AssetBrowserInspector, LyViewPane::CategoryTools, options);
 }
 
 QObject* AzAssetBrowserWindow::createListenerForShowAssetEditorEvent(QObject* parent)
@@ -338,10 +342,9 @@ void AzAssetBrowserWindow::resizeEvent(QResizeEvent* resizeEvent)
     // but the resizeEvent holds the new size of the whole widget
     // So we have to save the proportions somehow
     const QWidget* leftLayout = m_ui->m_leftLayout;
-    const QVBoxLayout* rightLayout = m_ui->m_rightLayout;
 
     const float oldLeftLayoutWidth = aznumeric_cast<float>(leftLayout->geometry().width());
-    const float oldWidth = aznumeric_cast<float>(leftLayout->geometry().width() + rightLayout->geometry().width());
+    const float oldWidth = aznumeric_cast<float>(leftLayout->geometry().width());
 
     const float newWidth = oldLeftLayoutWidth * aznumeric_cast<float>(resizeEvent->size().width()) / oldWidth;
 
@@ -491,18 +494,6 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
     }
 }
 
-void AzAssetBrowserWindow::UpdatePreview(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) const
-{
-    if (selectedEntry)
-    {
-        m_ui->m_previewerFrame->Display(selectedEntry);
-    }
-    else
-    {
-        m_ui->m_previewerFrame->Clear();
-    }
-}
-
 void AzAssetBrowserWindow::UpdateBreadcrumbs(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) const
 {
     using namespace AzToolsFramework::AssetBrowser;
@@ -587,8 +578,8 @@ void AzAssetBrowserWindow::CurrentIndexChangedSlot(const QModelIndex& idx) const
     using namespace AzToolsFramework::AssetBrowser;
     auto* entry = idx.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
 
-    UpdatePreview(entry);
     UpdateBreadcrumbs(entry);
+    AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, entry);
 }
 
 // while its tempting to use Activated here, we don't actually want it to count as activation
