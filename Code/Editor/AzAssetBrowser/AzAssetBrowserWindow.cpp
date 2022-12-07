@@ -393,15 +393,6 @@ void AzAssetBrowserWindow::UpdateBreadcrumbs(const AzToolsFramework::AssetBrowse
     QString entryPath;
     if (selectedEntry)
     {
-        auto folderForEntry = [](const AssetBrowserEntry* entry)
-        {
-            while (entry && entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Folder)
-            {
-                entry = entry->GetParent();
-            }
-            return entry;
-        };
-
         const AssetBrowserEntry* folderEntry = Utils::FolderForEntry(selectedEntry);
         if (folderEntry)
         {
