@@ -50,6 +50,8 @@ namespace AZ
 
             MaterialPropertyOutputType m_type = MaterialPropertyOutputType::Invalid;
 
+            Name m_materialPipelineName;
+
             //! For m_type==ShaderOption,  this is the index of a specific ShaderAsset (see MaterialTypeSourceData's ShaderCollection). 
             //! For m_type==ShaderEnabled, this is the index of a specific ShaderAsset (see MaterialTypeSourceData's ShaderCollection). 
             //! For m_type==ShaderInput,   this field is not used (because there is only one material ShaderResourceGroup in a MaterialAsset).
