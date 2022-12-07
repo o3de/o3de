@@ -141,7 +141,6 @@ namespace AZ
 
             // add this diffuse probe grid to the feature processor
             const AZ::Transform& transform = m_transformInterface->GetWorldTM();
-
             m_handle = m_featureProcessor->AddProbeGrid(
                 ComputeOverallTransform(transform), m_configuration.m_extents, m_configuration.m_probeSpacing);
 
