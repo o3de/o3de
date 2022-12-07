@@ -99,6 +99,11 @@ namespace AWSCore
         m_awsCoreEditorMenu = AZStd::make_unique<AWSCoreEditorMenu>();
     }
 
+    void AWSCoreEditorSystemComponent::OnMenuBindingHook()
+    {
+        m_awsCoreEditorMenu->UpdateMenuBinding();
+    }
+
     void AWSCoreEditorSystemComponent::AddExternalLinkAction(const AZStd::string& menuIdentifier, const char* const actionDetails[], int sort)
     {
         const auto& identifier = actionDetails[IdentIndex];

@@ -46,6 +46,7 @@ namespace AWSCore
 
         // ActionManagerRegistrationNotificationBus implementation
         void OnMenuBarRegistrationHook() override;
+        void OnMenuBindingHook() override;
 
         AZStd::unique_ptr<AWSCoreEditorMenu> m_awsCoreEditorMenu;
 

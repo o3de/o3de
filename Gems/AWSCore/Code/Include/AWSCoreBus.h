@@ -25,6 +25,7 @@ namespace AWSCore
 {
     static constexpr AZStd::string_view AWSMenuIdentifier = "o3de.menu.editor.aws";
     static constexpr AZStd::string_view EditorMainWindowMenuBarIdentifier = "o3de.menubar.editor.mainwindow";
+    static constexpr AZStd::string_view HelpMenuIdentifier = "o3de.menu.editor.help";
     static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
     static constexpr AZStd::string_view ActionContext = "o3de.context.editor.mainwindow";
 

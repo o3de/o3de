@@ -35,6 +35,8 @@ namespace AWSCore
         AWSCoreEditorMenu();
         ~AWSCoreEditorMenu();
 
+        void UpdateMenuBinding();
+
     private:
 
         void InitializeResourceMappingToolAction();

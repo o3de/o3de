@@ -39,7 +39,19 @@ namespace AWSCore
         auto outcome = m_menuManagerInterface->RegisterMenu(AWSMenuIdentifier, menuProperties);
         AZ_Assert(outcome.IsSuccess(), "Failed to register '%s' Menu", AWSMenuIdentifier);
 
-        outcome = m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, AWSMenuIdentifier, 1000);
+    }
+
+    void AWSCoreEditorMenu::UpdateMenuBinding()
+    {
+        // Get the sort key for the "Help" menu option
+        auto sortKeyResult = m_menuManagerInterface->GetSortKeyOfMenuInMenuBar(EditorMainWindowMenuBarIdentifier, HelpMenuIdentifier);
+        int sortKey = 1000;
+        if (sortKeyResult.IsSuccess())
+        {
+            sortKey = sortKeyResult.GetValue() - 100;
+        }
+
+        auto outcome = m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, AWSMenuIdentifier, sortKey);
         AZ_Assert(outcome.IsSuccess(), "Failed to add '%s' Menu to '%s' MenuBar", AWSMenuIdentifier, EditorMainWindowMenuBarIdentifier);
 
         InitializeAWSDocActions();
