@@ -469,13 +469,6 @@ set(FILES
     Preprocessor/Enum.h
     Preprocessor/EnumReflectUtils.h
     Preprocessor/Sequences.h
-    RTTI/RTTI.h
-    RTTI/TypeInfo.h
-    RTTI/TypeInfoSimple.h
-    RTTI/ReflectContext.h
-    RTTI/ReflectContext.cpp
-    RTTI/ReflectionManager.h
-    RTTI/ReflectionManager.cpp
     RTTI/AttributeReader.h
     RTTI/AzStdOnDemandPrettyName.inl
     RTTI/AzStdOnDemandReflection.inl
@@ -484,10 +477,19 @@ set(FILES
     RTTI/BehaviorContext.cpp
     RTTI/BehaviorContext.h
     RTTI/BehaviorContextEBusEventRawSignature.inl
-    RTTI/BehaviorContextUtilities.h
     RTTI/BehaviorContextUtilities.cpp
+    RTTI/BehaviorContextUtilities.h
     RTTI/BehaviorInterfaceProxy.h
     RTTI/BehaviorObjectSignals.h
+    RTTI/ChronoReflection.cpp
+    RTTI/ChronoReflection.h
+    RTTI/ReflectContext.h
+    RTTI/ReflectContext.cpp
+    RTTI/ReflectionManager.h
+    RTTI/ReflectionManager.cpp
+    RTTI/RTTI.h
+    RTTI/TypeInfo.h
+    RTTI/TypeInfoSimple.h
     RTTI/TypeSafeIntegral.h
     Script/lua/lua.h
     Script/ScriptAsset.cpp
