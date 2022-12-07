@@ -83,7 +83,10 @@ def edit_project_props(proj_path: pathlib.Path = None,
                        delete_compatible_engines: str or list = None,
                        replace_compatible_engines: str or list = None,
                        new_version: str = None,
-                       is_optional: bool = False
+                       is_optional: bool = False,
+                       new_engine_api_dependencies: list or str = None,
+                       delete_engine_api_dependencies: list or str = None,
+                       replace_engine_api_dependencies: list or str = None
                        ) -> int:
     proj_json = get_project_props(proj_name, proj_path)
 
@@ -118,21 +121,29 @@ def edit_project_props(proj_path: pathlib.Path = None,
         _edit_gem_names(proj_json, new_gem_names, delete_gem_names, replace_gem_names, is_optional)
 
 
-    if new_compatible_engines and not utils.validate_version_specifier_list(new_compatible_engines):
-        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.2.3 \n {new_compatible_engines}')
-        return 1
-
-    if delete_compatible_engines and not utils.validate_version_specifier_list(delete_compatible_engines):
-        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.2.3 \n {delete_compatible_engines}')
-        return 1
-
-    if replace_compatible_engines and not utils.validate_version_specifier_list(replace_compatible_engines):
-        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.2.3 \n {replace_compatible_engines}')
-        return 1
+    def valid_specifier(version_specifier_list):
+        if version_specifier_list and not utils.validate_version_specifier_list(version_specifier_list):
+            logger.error(f'Version specifiers must be in the format <name><version specifiers>. e.g. name==1.2.3 \n {version_specifier_list}')
+            return False
+        return True
 
     if new_compatible_engines or delete_compatible_engines or replace_compatible_engines:
-        proj_json['compatible_engines'] = utils.update_values_in_key_list(proj_json.get('compatible_engines', []), new_compatible_engines,
-                                                        delete_compatible_engines, replace_compatible_engines)
+        if not valid_specifier(new_compatible_engines) or \
+            not valid_specifier(delete_compatible_engines) or \
+            not valid_specifier(replace_compatible_engines):
+            return 1
+
+        proj_json['compatible_engines'] = utils.update_values_in_key_list(proj_json.get('compatible_engines', []), 
+                                            new_compatible_engines, delete_compatible_engines, replace_compatible_engines)
+
+    if new_engine_api_dependencies or delete_engine_api_dependencies or replace_engine_api_dependencies:
+        if not valid_specifier(new_engine_api_dependencies) or \
+            not valid_specifier(delete_engine_api_dependencies) or \
+            not valid_specifier(replace_engine_api_dependencies):
+            return 1
+
+        proj_json['engine_api_dependencies'] = utils.update_values_in_key_list(proj_json.get('engine_api_dependencies', []), 
+                                                new_engine_api_dependencies, delete_engine_api_dependencies, replace_engine_api_dependencies)
 
     return 0 if manifest.save_o3de_manifest(proj_json, pathlib.Path(proj_path) / 'project.json') else 1
 
@@ -157,7 +168,10 @@ def _edit_project_props(args: argparse) -> int:
                               args.delete_compatible_engines,
                               args.replace_compatible_engines,
                               args.project_version,
-                              False # is_optional
+                              False, # is_optional
+                              args.add_engine_api_dependencies,
+                              args.delete_engine_api_dependencies,
+                              args.replace_engine_api_dependencies
                               )
 
 
@@ -201,10 +215,17 @@ def add_parser_args(parser):
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('-aev', '--add-compatible-engines', type=str, nargs='*', required=False,
                        help='Add engine version(s) this project is compatible with. Space delimited list (ex. -aev o3de>=1.2.3 o3de-sdk~=2.3).')
-    group.add_argument('-dev', '--remove-compatible-engines', type=str, nargs='*', required=False,
+    group.add_argument('-dev', '--delete-compatible-engines', type=str, nargs='*', required=False,
                        help='Removes engine version(s) from the compatible_engines property. Space delimited list (ex. -dev o3de>=1.2.3 o3de-sdk~=2.3).')
     group.add_argument('-rev', '--replace-compatible-engines', type=str, nargs='*', required=False,
                        help='Replace entirety of compatible_engines field with space delimited list of values.')
+    group = parser.add_mutually_exclusive_group(required=False)
+    group.add_argument('-aav', '--add-engine-api-dependencies', type=str, nargs='*', required=False,
+                       help='Add engine api dependency version(s) this gem is compatible with. Can be specified multiple times.')
+    group.add_argument('-dav', '--delete-engine-api-dependencies', type=str, nargs='*', required=False,
+                       help='Removes engine api dependency version(s) from the compatible_engines property. Can be specified multiple times.')
+    group.add_argument('-rav', '--replace-engine-api-dependencies', type=str, nargs='*', required=False,
+                       help='Replace engine api dependency(s) in the compatible_engines property. Can be specified multiple times.')
     parser.set_defaults(func=_edit_project_props)
 
 
