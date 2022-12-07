@@ -12,7 +12,7 @@ from packaging.version import Version, InvalidVersion
 from packaging.specifiers import SpecifierSet
 import re
 import pathlib
-from o3de import manifest
+from o3de import manifest, utils
 
 def engine_is_compatible(engine_name:str, engine_version:str, compatible_engines:list, engine_api_version_specifiers:list) -> bool:
     """
@@ -151,7 +151,7 @@ def has_compatible_version(name_and_version_specifier_list:list, object_name:str
             return True
 
         try:
-            name, version_specifier = get_object_name_and_version_specifier(name_and_version_specifier)
+            name, version_specifier = utils.get_object_name_and_version_specifier(name_and_version_specifier)
             if name == object_name and version in SpecifierSet(version_specifier):
                 return True
         except Exception as e:
@@ -166,33 +166,6 @@ def get_object_name_and_optional_version_specifier(input:str):
     :param input: The input string
     """
     try:
-        return get_object_name_and_version_specifier(input)
+        return utils.get_object_name_and_version_specifier(input)
     except Exception as e:
         return input, None
-
-#
-# TODO FIX DUPLICATE FUNCTION - REMOVE THIS ONE? ONLY USE UTIL VERSION?
-#
-def get_object_name_and_version_specifier(input:str):
-    """
-    Returns an object name and version specifier.
-    accepts input in the form <name><version specifier(s)>, for example:
-     o3de>=1.0.0
-     o3de-sdk==1.2.3,~=2.3.4
-    :param input: The input string
-    """
-    regex_str = r"(?P<object_name>(.*?))(?P<version_specifier>((~=|==|!=|<=|>=|<|>|===)(\s*\S+)+))"
-    regex = re.compile(r"^\s*" + regex_str + r"\s*$", re.VERBOSE | re.IGNORECASE)
-    match = regex.search(input)
-
-    if not match:
-        raise Exception(f"Invalid name and/or version specifier {input}, expected <name><version specifiers> e.g. o3de==1.2.3")
-
-    if not match.group("object_name"):
-        raise Exception(f"Invalid or missing name {input}, expected <name><version specifiers> e.g. o3de==1.2.3")
-
-    # SpecifierSet with raise an exception if invalid
-    if not SpecifierSet(match.group("version_specifier")):
-        return None
-    
-    return match.group("object_name"), match.group("version_specifier")
