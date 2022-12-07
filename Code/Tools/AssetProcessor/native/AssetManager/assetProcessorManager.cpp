@@ -2053,7 +2053,7 @@ namespace AssetProcessor
         }
     }
 
-    void AssetProcessorManager::CheckMissingJobs(const SourceAssetReference& sourceAsset, const ScanFolderInfo* scanFolder, const AZStd::vector<JobDetails>& jobsThisTime)
+    void AssetProcessorManager::CheckMissingJobs(const SourceAssetReference& sourceAsset, const ScanFolderInfo* scanFolderInfo, const AZStd::vector<JobDetails>& jobsThisTime)
     {
         // Check to see if jobs were emitted last time by this builder, but are no longer being emitted this time - in which case we must eliminate old products.
         // whats going to be in the database is fingerprints for each job last time
@@ -2067,7 +2067,7 @@ namespace AssetProcessor
 
         // find all jobs from the last time of the platforms that are currently enabled
         JobInfoContainer jobsFromLastTime;
-        for (const AssetBuilderSDK::PlatformInfo& platformInfo : scanFolder->GetPlatforms())
+        for (const AssetBuilderSDK::PlatformInfo& platformInfo : scanFolderInfo->GetPlatforms())
         {
             QString platform = QString::fromUtf8(platformInfo.m_identifier.c_str());
             m_stateData->GetJobInfoBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), jobsFromLastTime, AZ::Uuid::CreateNull(), QString(), platform);
@@ -2160,7 +2160,7 @@ namespace AssetProcessor
         }
     }
 
-    void AssetProcessorManager::CheckModifiedSourceFile(const SourceAssetReference& sourceAsset, const ScanFolderInfo* scanFolder)
+    void AssetProcessorManager::CheckModifiedSourceFile(const SourceAssetReference& sourceAsset, const ScanFolderInfo* scanFolderInfo)
     {
         // a potential input file was modified or added.  We always pass these through our filters and potentially build it.
         // before we know what to do, we need to figure out if it matches some filter we care about.
@@ -2189,11 +2189,11 @@ namespace AssetProcessor
         if (builderInfoList.size())
         {
             ++m_numSourcesNeedingFullAnalysis;
-            ProcessBuilders(sourceAsset, scanFolder, builderInfoList);
+            ProcessBuilders(sourceAsset, scanFolderInfo, builderInfoList);
         }
         else
         {
-            CheckMissingJobs(sourceAsset, scanFolder, {});
+            CheckMissingJobs(sourceAsset, scanFolderInfo, {});
 
             AZ_TracePrintf(AssetProcessor::DebugChannel, "Non-processed file: %s\n", sourceAsset.RelativePath().c_str());
             ++m_numSourcesNotHandledByAnyBuilder;

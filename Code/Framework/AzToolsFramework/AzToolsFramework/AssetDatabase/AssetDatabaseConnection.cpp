@@ -430,10 +430,10 @@ namespace AzToolsFramework
             static const char* QUERY_PRODUCT_BY_SOURCENAME_SCANFOLDERID_PLATFORM = "AzToolsFramework::AssetDatabase::QueryProductBySourceNameScanFolderIDPlatform";
             static const char* QUERY_PRODUCT_BY_SOURCENAME_SCANFOLDERID_PLATFORM_STATEMENT =
                 "SELECT Products.*, Jobs.* FROM Sources LEFT JOIN Jobs "
-                                                                                "ON Sources.SourceID = Jobs.SourcePK INNER JOIN Products "
-                                                                                "ON Jobs.JobID = Products.JobPK WHERE "
-                                                                                "Jobs.Platform = :platform AND "
-                                                                                "Sources.SourceName = :sourcename AND Sources.ScanFolderPK = :scanfolderid;";
+                "ON Sources.SourceID = Jobs.SourcePK INNER JOIN Products "
+                "ON Jobs.JobID = Products.JobPK WHERE "
+                "Jobs.Platform = :platform AND "
+                "Sources.SourceName = :sourcename AND Sources.ScanFolderPK = :scanfolderid;";
 
             static const auto s_queryProductBySourcenameScanFolderIdPlatform = MakeSqlQuery(
                 QUERY_PRODUCT_BY_SOURCENAME_SCANFOLDERID_PLATFORM,
