@@ -123,7 +123,7 @@ namespace AZ
             //! The entries in this list align with the entries in the MaterialPropertiesLayout. Each AZStd::any is guaranteed 
             //! to have a value of type that matches the corresponding MaterialPropertyDescriptor.
             //! For images, the value will be of type ImageBinding.
-            AZStd::span<const MaterialPropertyValue> GetDefaultPropertyValues() const;
+            const AZStd::vector<MaterialPropertyValue>& GetDefaultPropertyValues() const;
 
             //! Returns a map from the UV shader inputs to a custom name.
             MaterialUvNameMap GetUvNameMap() const;
