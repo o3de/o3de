@@ -142,17 +142,20 @@ namespace MaterialCanvas
 
     void MaterialCanvasApplication::OnDocumentOpened(const AZ::Uuid& documentId)
     {
-        MaterialGraphCompilerRequestBus::Event(documentId, &MaterialGraphCompilerRequestBus::Events::QueueCompileGraph);
+        AtomToolsFramework::GraphCompilerRequestBus::Event(
+            documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
     }
 
     void MaterialCanvasApplication::OnDocumentSaved(const AZ::Uuid& documentId)
     {
-        MaterialGraphCompilerRequestBus::Event(documentId, &MaterialGraphCompilerRequestBus::Events::QueueCompileGraph);
+        AtomToolsFramework::GraphCompilerRequestBus::Event(
+            documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
     }
 
     void MaterialCanvasApplication::OnDocumentUndoStateChanged(const AZ::Uuid& documentId)
     {
-        MaterialGraphCompilerRequestBus::Event(documentId, &MaterialGraphCompilerRequestBus::Events::QueueCompileGraph);
+        AtomToolsFramework::GraphCompilerRequestBus::Event(
+            documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
     }
 
     void MaterialCanvasApplication::OnDocumentClosed(const AZ::Uuid& documentId)
