@@ -48,7 +48,7 @@ namespace AWSCore
         int sortKey = 1000;
         if (sortKeyResult.IsSuccess())
         {
-            sortKey = sortKeyResult.GetValue() - 100;
+            sortKey = sortKeyResult.GetValue() - 1;
         }
 
         auto outcome = m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, AWSMenuIdentifier, sortKey);
