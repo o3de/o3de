@@ -25,6 +25,7 @@
 #include <Request/AWSGameLiftStopMatchmakingRequest.h>
 
 #include <aws/gamelift/GameLiftClient.h>
+#include <ActionManager/Menu/MenuManagerInterface.h>
 
 namespace AWSGameLift
 {
@@ -95,16 +96,17 @@ namespace AWSGameLift
     void AWSGameLiftClientSystemComponent::Activate()
     {
         AZ::Interface<IAWSGameLiftInternalRequests>::Register(this);
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
 
         m_gameliftClient.reset();
         m_gameliftManager->ActivateManager();
         m_gameliftTicketTracker->ActivateTracker();
-
-        //AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::SetAWSGameLiftEnabled);
     }
 
     void AWSGameLiftClientSystemComponent::Deactivate()
     {
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
+
         m_gameliftTicketTracker->DeactivateTracker();
         m_gameliftManager->DeactivateManager();
         m_gameliftClient.reset();
@@ -234,6 +236,102 @@ namespace AWSGameLift
                 ->Property("SessionConfigs", BehaviorValueProperty(&Multiplayer::SearchSessionsResponse::m_sessionConfigs))
                 ;
         }
+    }
+
+    void AWSGameLiftClientSystemComponent::OnMenuBarRegistrationHook()
+    {
+        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        AZ_Assert(menuManagerInterface, "AWSGameLiftClientSystemComponent - could not get MenuManagerInterface");
+
+        AzToolsFramework::MenuProperties menuProperties;
+        menuProperties.m_name = AWSCore::AWS_MENU_TEXT;
+        auto outcome = menuManagerInterface->RegisterMenu(AWSCore::AWSMenuIdentifier, menuProperties);
+        AZ_Assert(outcome.IsSuccess(), "Failed to register '%s' Menu", AWSCore::AWSMenuIdentifier);
+
+        outcome = menuManagerInterface->AddMenuToMenuBar(AWSCore::EditorMainWindowMenuBarIdentifier, AWSCore::AWSMenuIdentifier, 1000);
+        AZ_Assert(outcome.IsSuccess(), "Failed to add '%s' Menu to '%s' MenuBar", AWSCore::AWSMenuIdentifier, AWSCore::EditorMainWindowMenuBarIdentifier);
+
+        constexpr const char* AWSGameLift[] =
+        {
+             "Game Lift" ,
+             "gamelift_gem" ,
+             ":/Notifications/download.svg",
+             ""
+        };
+
+        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::CreateSubMenu, AWSCore::AWSMenuIdentifier, AWSGameLift, 300);
+
+        const auto& submenuIdentifier = AWSGameLift[1];
+
+        constexpr const char* AWSGameLiftOverview[] =
+        {
+             "GameLift Gem overview" ,
+             "gamelift_gem_overview" ,
+             ":/Notifications/link.svg",
+             "https://o3de.org/docs/user-guide/gems/reference/aws/aws-gamelift/"
+        };
+
+        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSGameLiftOverview, 0);
+
+        constexpr const char* AWSSetupGamelift[] =
+        {
+             "Setup",
+             "setup_gamelift",
+             ":/Notifications/link.svg",
+             "https://o3de.org/docs/user-guide/gems/reference/aws/aws-gamelift/gem-setup/"
+        };
+
+        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSSetupGamelift, 0);
+
+        constexpr const char* AWSGameliftScripting[] =
+        {
+             "Scripting Reference",
+             "gamelift_scripting_reference",
+             ":/Notifications/link.svg",
+             "https://o3de.org/docs/user-guide/gems/reference/aws/aws-gamelift/scripting/"
+        };
+
+        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSGameliftScripting, 0);
+
+        constexpr const char* AWSGameliftAdvancedTopics[] =
+        {
+             "Advanced Topics",
+             "gamelift_advanced_topics",
+             ":/Notifications/link.svg",
+             "https://o3de.org/docs/user-guide/gems/reference/aws/aws-gamelift/advanced-topics/"
+        };
+
+        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSGameliftAdvancedTopics, 0);
+
+        constexpr const char* AWSGameliftLocalTesting[] =
+        {
+             "Local testing",
+             "gamelift_local_testing",
+             ":/Notifications/link.svg",
+             "https://o3de.org/docs/user-guide/gems/reference/aws/aws-gamelift/local-testing/"
+        };
+
+        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSGameliftLocalTesting, 0);
+
+        constexpr const char* AWSGameliftPackagingWindows[] =
+        {
+             "Build packaging (Windows)",
+             "gamelift_build_packaging_windows",
+             ":/Notifications/link.svg",
+             "https://o3de.org/docs/user-guide/gems/reference/aws/aws-gamelift/build-packaging-for-windows/"
+        };
+
+        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSGameliftPackagingWindows, 0);
+
+        constexpr const char* AWSGameliftResourceManagement[] =
+        {
+             "Resource management",
+             "gamelift_resource_management",
+             ":/Notifications/link.svg",
+             "https://o3de.org/docs/user-guide/gems/reference/aws/aws-gamelift/resource-management/"
+        };
+
+        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSGameliftResourceManagement, 0);
     }
 
     AZStd::shared_ptr<Aws::GameLift::GameLiftClient> AWSGameLiftClientSystemComponent::GetGameLiftClient() const

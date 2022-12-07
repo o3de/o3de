@@ -81,59 +81,12 @@ namespace AWSCore
         ""
     };
 
-
-    static constexpr const char AWSResourceMappingToolActionText[] = "AWS Resource Mapping Tool...";
-
-    static constexpr const char* AWSClientAuth[] =
+    static constexpr const char* AWSResourceMappingTool[] =
     {
-         "Client Auth Gem" ,
-         "client_auth_gem" ,
-         ":/Notifications/download.svg",
-         ""
+        "AWS Resource Mapping Tool...",
+        "aws_resource_mapping_tool",
+        "",
+        ""
     };
 
-    static constexpr const char* AWSClientAuthGemOverview[] =
-    {
-         "Client Auth Gem overview" ,
-         "client_auth_gem_overview" ,
-         "",
-         "https://o3de.org/docs/user-guide/gems/reference/aws/aws-client-auth/"
-    };
-
-    static constexpr const char AWSClientAuthActionText[] = "Client Auth Gem";
-    static constexpr const char AWSClientAuthGemOverviewActionText[] = "Client Auth Gem overview";
-    static constexpr const char AWSClientAuthGemSetupActionText[] = "Setup Client Auth Gem";
-    static constexpr const char AWSClientAuthCDKAndResourcesActionText[] = "CDK application and resource mappings";
-    static constexpr const char AWSClientAuthScriptCanvasAndLuaActionText[] = "Scripting reference";
-    static constexpr const char AWSClientAuth3rdPartyAuthProviderActionText[] = "3rd Party developer authentication provider support";
-    static constexpr const char AWSClientAuthCustomAuthProviderActionText[] = "Custom developer authentication provider support";
-    static constexpr const char AWSClientAuthAPIReferenceActionText[] = "API reference";
-
-
-
-
-    static constexpr const char* AWSGameLift[] =
-    {
-         "GameLift Gem" ,
-         "gamelift_gem" ,
-         ":/Notifications/checkmark.svg",
-         ""
-    };
-
-    static constexpr const char* AWSGameLiftOverview[] =
-    {
-         "Gem overview" ,
-         "gamelift_gem_overview" ,
-         ":/Notifications/link.svg",
-         ""
-    };
-    static constexpr const char AWSGameLiftActionText[] = "GameLift Gem";
-    static constexpr const char AWSGameLiftGemOverviewActionText[] = "Gem overview";
-    static constexpr const char AWSGameLiftGemSetupActionText[] = "Setup";
-    static constexpr const char AWSMGameLiftScriptingActionText[] = "Scripting reference";
-    static constexpr const char AWSGameLiftAPIReferenceActionText[] = "API reference";
-    static constexpr const char AWSGameLiftAdvancedTopicsActionText[] = "Advanced topics";
-    static constexpr const char AWSGameLiftLocalTestingActionText[] = "Local testing";
-    static constexpr const char AWSGameLiftBuildPackagingActionText[] = "Build packaging (Windows)";
-    static constexpr const char AWSGameLiftResourceManagementActionText[] = "Resource Management";
 } // namespace AWSCore

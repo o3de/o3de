@@ -13,6 +13,8 @@
 
 #include <Request/IAWSGameLiftInternalRequests.h>
 
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
+
 namespace AWSGameLift
 {
     class AWSGameLiftClientManager;
@@ -22,6 +24,7 @@ namespace AWSGameLift
     class AWSGameLiftClientSystemComponent
         : public AZ::Component
         , public IAWSGameLiftInternalRequests
+        , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(AWSGameLiftClientSystemComponent, "{d481c15c-732a-4eea-9853-4965ed1bc2be}");
@@ -50,6 +53,9 @@ namespace AWSGameLift
 
         void SetGameLiftClientManager(AZStd::unique_ptr<AWSGameLiftClientManager> gameliftManager);
         void SetGameLiftClientTicketTracker(AZStd::unique_ptr<AWSGameLiftClientLocalTicketTracker> gameliftTicketTracker);
+
+        // ActionManagerRegistrationNotificationBus implementation
+        void OnMenuBarRegistrationHook() override;
 
     private:
         static void ReflectGameLiftMatchmaking(AZ::ReflectContext* context);

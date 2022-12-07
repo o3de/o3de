@@ -24,6 +24,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
+            AZ::AzToolsFramework
             Gem::AWSCore
             Gem::Multiplayer.Static
             3rdParty::AWSNativeSDK::GameLiftClient
@@ -40,6 +41,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
+            AZ::AzToolsFramework
             3rdParty::AWSNativeSDK::GameLiftClient
         PUBLIC
             Gem::AWSGameLift.Client.Static
@@ -85,6 +87,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
+                AZ::AzToolsFramework
                 AZ::AzTest
                 Gem::AWSCore
                 Gem::AWSGameLift.Client.Static

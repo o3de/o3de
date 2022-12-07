@@ -46,7 +46,6 @@ namespace AWSCore
         void InitializeResourceMappingToolAction();
         void InitializeAWSDocActions();
         void InitializeAWSGlobalDocsSubMenu();
-        void InitializeAWSFeatureGemActions();
         void AddSpaceForIcon(QMenu* menu);
 
         bool m_awsClientAuthEnabled = false;

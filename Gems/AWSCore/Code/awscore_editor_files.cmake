@@ -20,7 +20,6 @@ set(FILES
     Source/Editor/Attribution/AWSAttributionServiceApi.h
     Source/Editor/Attribution/AWSCoreAttributionConsentDialog.cpp
     Source/Editor/Attribution/AWSCoreAttributionConsentDialog.h
-    Source/Editor/Constants/AWSCoreEditorMenuLinks.h
     Source/Editor/Constants/AWSCoreEditorMenuNames.h
     Source/Editor/UI/AWSCoreResourceMappingToolAction.cpp
     Source/Editor/UI/AWSCoreResourceMappingToolAction.h
