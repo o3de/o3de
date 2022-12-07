@@ -223,11 +223,11 @@ def add_parser_args(parser):
                        help='Replace entirety of compatible_engines field with space delimited list of values.')
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('-aav', '--add-engine-api-dependencies', type=str, nargs='*', required=False,
-                       help='Add engine api dependency version(s) this gem is compatible with. Can be specified multiple times.')
+                       help='Add engine api dependencies this gem is compatible with. Can be specified multiple times.')
     group.add_argument('-dav', '--delete-engine-api-dependencies', type=str, nargs='*', required=False,
-                       help='Removes engine api dependency version(s) from the compatible_engines property. Can be specified multiple times.')
+                       help='Removes engine api dependencies from the compatible_engines property. Can be specified multiple times.')
     group.add_argument('-rav', '--replace-engine-api-dependencies', type=str, nargs='*', required=False,
-                       help='Replace engine api dependency(s) in the compatible_engines property. Can be specified multiple times.')
+                       help='Replace engine api dependencies in the compatible_engines property. Can be specified multiple times.')
     parser.set_defaults(func=_edit_project_props)
 
 
