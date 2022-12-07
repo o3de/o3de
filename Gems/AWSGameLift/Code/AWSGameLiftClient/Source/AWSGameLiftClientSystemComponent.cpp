@@ -240,7 +240,7 @@ namespace AWSGameLift
         }
     }
 
-    void AWSGameLiftClientSystemComponent::OnMenuBarRegistrationHook()
+    void AWSGameLiftClientSystemComponent::OnMenuBindingHook()
     {
         auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
         AZ_Assert(menuManagerInterface, "AWSGameLiftClientSystemComponent - could not get MenuManagerInterface");

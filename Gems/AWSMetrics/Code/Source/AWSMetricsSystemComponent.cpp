@@ -211,7 +211,7 @@ namespace AWSMetrics
         m_metricsManager->StartMetrics();
     }
 
-    void AWSMetricsSystemComponent::OnMenuBarRegistrationHook()
+    void AWSMetricsSystemComponent::OnMenuBindingHook()
     {
         auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
         AZ_Assert(menuManagerInterface, "AWSCoreEditorSystemComponent - could not get MenuManagerInterface");

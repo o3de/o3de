@@ -243,7 +243,7 @@ namespace AWSClientAuth
         m_cognitoIdentityClient = std::make_shared<Aws::CognitoIdentity::CognitoIdentityClient>(Aws::Auth::AWSCredentials(), clientConfiguration);
     }
 
-    void AWSClientAuthSystemComponent::OnMenuBarRegistrationHook()
+    void AWSClientAuthSystemComponent::OnMenuBindingHook()
     {
         auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
         AZ_Assert(menuManagerInterface, "AWSCoreEditorSystemComponent - could not get MenuManagerInterface");

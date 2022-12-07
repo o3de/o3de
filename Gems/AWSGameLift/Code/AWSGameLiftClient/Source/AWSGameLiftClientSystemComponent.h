@@ -55,7 +55,7 @@ namespace AWSGameLift
         void SetGameLiftClientTicketTracker(AZStd::unique_ptr<AWSGameLiftClientLocalTicketTracker> gameliftTicketTracker);
 
         // ActionManagerRegistrationNotificationBus implementation
-        void OnMenuBarRegistrationHook() override;
+        void OnMenuBindingHook() override;
 
     private:
         static void ReflectGameLiftMatchmaking(AZ::ReflectContext* context);

@@ -49,7 +49,7 @@ namespace AWSClientAuth
         void OnSDKShutdownStarted() override {}
 
         // ActionManagerRegistrationNotificationBus implementation
-        void OnMenuBarRegistrationHook() override;
+        void OnMenuBindingHook() override;
 
         // AWSClientAuthRequests interface
         std::shared_ptr<Aws::CognitoIdentityProvider::CognitoIdentityProviderClient> GetCognitoIDPClient() override;

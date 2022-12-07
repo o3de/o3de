@@ -56,7 +56,7 @@ namespace AWSMetrics
         ////////////////////////////////////////////////////////////////////////
 
         // ActionManagerRegistrationNotificationBus implementation
-        void OnMenuBarRegistrationHook() override;
+        void OnMenuBindingHook() override;
 
         using Attributes = AZStd::vector<MetricsAttribute>;
 
