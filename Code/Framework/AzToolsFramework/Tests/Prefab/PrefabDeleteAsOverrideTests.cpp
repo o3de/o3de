@@ -41,12 +41,6 @@ namespace UnitTest
         AZ::EntityId secondCarContainerId = InstantiateEditorPrefab(carPrefabFilepath, GetRootContainerEntityId());
         RenameEntity(secondCarContainerId, secondCarName);
 
-        InstanceAlias firstCarInstanceAlias = FindNestedInstanceAliasInInstance(GetRootContainerEntityId(), firstCarName);
-        ASSERT_FALSE(firstCarInstanceAlias.empty());
-
-        InstanceAlias secondCarInstanceAlias = FindNestedInstanceAliasInInstance(GetRootContainerEntityId(), secondCarName);
-        ASSERT_FALSE(secondCarInstanceAlias.empty());
-
         // Delete the tire entity in the first car.
         // Note: Level root instance is focused by default.
         auto firstCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(firstCarContainerId);
@@ -95,18 +89,11 @@ namespace UnitTest
         AZ::EntityId tireEntityId = CreateEditorEntityUnderRoot(tireEntityName);
         AZ::EntityId wheelContainerId = CreateEditorPrefab(wheelPrefabFilepath, { tireEntityId });
         AZ::EntityId firstCarContainerId = CreateEditorPrefab(carPrefabFilepath, { wheelContainerId });
-        //EntityAlias tireEntityAlias = FindEntityAliasInInstance(firstCarContainerId, tireEntityName);
         RenameEntity(firstCarContainerId, firstCarName);
 
         // Create and rename the second car.
         AZ::EntityId secondCarContainerId = InstantiateEditorPrefab(carPrefabFilepath, GetRootContainerEntityId());
         RenameEntity(secondCarContainerId, secondCarName);
-
-        InstanceAlias firstCarInstanceAlias = FindNestedInstanceAliasInInstance(GetRootContainerEntityId(), firstCarName);
-        ASSERT_FALSE(firstCarInstanceAlias.empty());
-
-        InstanceAlias secondCarInstanceAlias = FindNestedInstanceAliasInInstance(GetRootContainerEntityId(), secondCarName);
-        ASSERT_FALSE(secondCarInstanceAlias.empty());
 
         InstanceAlias wheelInstanceAlias = FindNestedInstanceAliasInInstance(firstCarContainerId, wheelPrefabName);
         ASSERT_FALSE(wheelInstanceAlias.empty());
@@ -171,12 +158,6 @@ namespace UnitTest
         // Create and rename the second car.
         AZ::EntityId secondCarContainerId = InstantiateEditorPrefab(carPrefabFilepath, GetRootContainerEntityId());
         RenameEntity(secondCarContainerId, secondCarName);
-
-        InstanceAlias firstCarInstanceAlias = FindNestedInstanceAliasInInstance(GetRootContainerEntityId(), firstCarName);
-        ASSERT_FALSE(firstCarInstanceAlias.empty());
-
-        InstanceAlias secondCarInstanceAlias = FindNestedInstanceAliasInInstance(GetRootContainerEntityId(), secondCarName);
-        ASSERT_FALSE(secondCarInstanceAlias.empty());
 
         // Delete the tire entity in the first car.
         // Note: Level root instance is focused by default.
@@ -247,12 +228,6 @@ namespace UnitTest
         // Create and rename the second car.
         AZ::EntityId secondCarContainerId = InstantiateEditorPrefab(carPrefabFilepath, GetRootContainerEntityId());
         RenameEntity(secondCarContainerId, secondCarName);
-
-        InstanceAlias firstCarInstanceAlias = FindNestedInstanceAliasInInstance(GetRootContainerEntityId(), firstCarName);
-        ASSERT_FALSE(firstCarInstanceAlias.empty());
-
-        InstanceAlias secondCarInstanceAlias = FindNestedInstanceAliasInInstance(GetRootContainerEntityId(), secondCarName);
-        ASSERT_FALSE(secondCarInstanceAlias.empty());
 
         // Delete the tire entity in the first car.
         // Note: Level root instance is focused by default.
