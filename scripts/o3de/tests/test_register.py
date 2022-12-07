@@ -263,27 +263,32 @@ class TestRegisterProject:
     project_path = pathlib.PurePath('TestProject')
 
     @pytest.mark.parametrize(
-        'engine_name, engine_version, engine_api_versions,'
+        'test_engine_name, engine_version, engine_api_versions,'
         'registered_gem_versions, project_engine_name, project_engine_version, '
         'project_gems, project_compatible_engines, project_engine_api_dependencies,'
+        'gem_compatible_engines, gem_engine_api_dependencies,'
         'force, expected_result', [
             # passes when registering without version information
-            pytest.param('o3de', None, None, { 'gem1':'' }, None, None, ['gem1'], None, None, False, 0),
-            pytest.param('o3de', '', None, { 'gem1':'' }, None, None, ['gem1'], None, None, False, 0),
+            pytest.param('o3de', None, None, { 'gem1':'' }, None, None, ['gem1'], None, None, None, None, False, 0),
+            pytest.param('o3de', '', None, { 'gem1':'' }, None, None, ['gem1'], None, None, None, None, False, 0),
             # fails when compatible_engines has no match
-            pytest.param('o3de', '2.3.4', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de==1.2.3'], None, False, 1),
-            pytest.param('o3de', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de1'], None, False, 1),
+            pytest.param('o3de', '2.3.4', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de==1.2.3'], None, None, None,  False, 1),
+            pytest.param('o3de', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de1'], None, None, None, False, 1),
             # passes when forced
-            pytest.param('o3de', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de1'], None, True, 0),
+            pytest.param('o3de', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de1'], None, None, None, True, 0),
             # passes when compatible_engines has match
-            pytest.param('o3de', '0.0.0', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de'], None, False, 0),
-            pytest.param('o3de', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de>=1.2.3','o3de-sdk==2.3.4'], None, False, 0),
-
+            pytest.param('o3de', '0.0.0', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de'], None, None, None, False, 0),
+            pytest.param('o3de', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de>=1.2.3','o3de-sdk==2.3.4'], None, None, None, False, 0),
+            # fails when uses gem that is not known compatible with version 1.2.3 
+            pytest.param('o3de', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de'], None, ['o3de==2.3.4'], None, False, 1),
+            # passes when uses gem that is known compatible with version 1.2.3 
+            pytest.param('o3de', '1.2.3', None, { 'gem1':'' }, None, None, ['gem1'], ['o3de'], None, ['o3de==1.2.3'], None, False, 0),
         ]
     )
-    def test_register_project(self, engine_name, engine_version, engine_api_versions,
+    def test_register_project(self, test_engine_name, engine_version, engine_api_versions,
                                 registered_gem_versions, project_engine_name, project_engine_version, 
                                 project_gems, project_compatible_engines, project_engine_api_dependencies,
+                                gem_compatible_engines, gem_engine_api_dependencies,
                                 force, expected_result):
         def save_o3de_manifest(manifest_data: dict, manifest_path: pathlib.Path = None) -> bool:
             if manifest_path == pathlib.Path(TestRegisterProject.project_path).resolve() / 'project.json':
@@ -295,19 +300,28 @@ class TestRegisterProject:
             return True
 
         def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
-            if manifest_path == TestRegisterGem.project_path:
+            if manifest_path == TestRegisterProject.project_path:
                 return self.project_data
-            elif manifest_path == TestRegisterGem.engine_path:
+            elif manifest_path == TestRegisterProject.engine_path:
                 return self.engine_data
             return self.o3de_manifest_data
 
-        def get_gem_json_data(gem_path: pathlib.Path = None):
+        def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,
+                            project_path: pathlib.Path = None):
             gem_json_data = json.loads(TEST_GEM_JSON_PAYLOAD)
+            if gem_name and gem_name in registered_gem_versions:
+                gem_json_data['gem_version'] = registered_gem_versions[gem_name]
+            if gem_compatible_engines:
+                gem_json_data['compatible_engines'] = gem_compatible_engines
+            if gem_engine_api_dependencies:
+                gem_json_data['engine_api_dependencies'] = gem_engine_api_dependencies
             return gem_json_data
 
-        def get_engine_json_data(engine_path: pathlib.Path = None):
+        def get_engine_json_data(engine_name: str = None,
+                                engine_path: str or pathlib.Path = None):
             engine_json_data = json.loads(TEST_ENGINE_JSON_PAYLOAD)
-            engine_json_data['engine_name'] = engine_name
+            if test_engine_name != None:
+                engine_json_data['engine_name'] = test_engine_name
 
             # we want to allow for testing the case where these fields 
             # are missing or empty
@@ -328,7 +342,7 @@ class TestRegisterProject:
             if project_engine_version != None:
                 project_json_data['engine_version'] = project_engine_version
             if project_gems != None:
-                project_json_data['gems'] = project_gems
+                project_json_data['gem_names'] = project_gems
             if project_compatible_engines != None:
                 project_json_data['compatible_engines'] = project_compatible_engines
             if project_engine_api_dependencies != None:
@@ -351,7 +365,14 @@ class TestRegisterProject:
                 pass
             return None
 
-        #parser = argparse.ArgumentParser()
+        def get_enabled_gem_cmake_file(project_name: str = None,
+                                project_path: str or pathlib.Path = None,
+                                platform: str = 'Common'):
+            return None
+
+        def get_enabled_gems(cmake_file: pathlib.Path) -> set:
+            return project_gems
+
         with patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as _1,\
             patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as _2,\
             patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as _3,\
@@ -360,7 +381,9 @@ class TestRegisterProject:
             patch('o3de.utils.find_ancestor_dir_containing_file', side_effect=find_ancestor_dir) as _6,\
             patch('pathlib.Path.is_dir', return_value=True) as _7,\
             patch('o3de.validation.valid_o3de_project_json', return_value=True) as _8, \
-            patch('o3de.utils.backup_file', return_value=True) as _9:
+            patch('o3de.utils.backup_file', return_value=True) as _9, \
+            patch('o3de.cmake.get_enabled_gem_cmake_file', side_effect=get_enabled_gem_cmake_file) as _11, \
+            patch('o3de.cmake.get_enabled_gems', side_effect=get_enabled_gems) as _12:
 
-            result = register.register(project_path=TestRegisterProject.project_path)
+            result = register.register(project_path=TestRegisterProject.project_path, force = force)
             assert result == expected_result

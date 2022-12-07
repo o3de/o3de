@@ -11,17 +11,15 @@ This file contains all the code that has to do with registering engines, project
 """
 
 import argparse
-import hashlib
 import logging
 import json
 import os
 import pathlib
-import shutil
 import sys
 import urllib.parse
 import urllib.request
 
-from o3de import get_registration, manifest, repo, utils, validation
+from o3de import manifest, repo, utils, validation, compatibility, cmake
 
 logger = logging.getLogger('o3de.register')
 logging.basicConfig(format=utils.LOG_FORMAT)
@@ -414,11 +412,52 @@ def register_gem_path(json_data: dict,
 def register_project_path(json_data: dict,
                           project_path: pathlib.Path,
                           remove: bool = False,
-                          engine_path: pathlib.Path = None) -> int:
+                          engine_path: pathlib.Path = None,
+                          force: bool = False) -> int:
     # If an engine path has not been supplied auto detect if the project should be register with the engine.json
     # or the ~/.o3de/o3de_manifest.json
     if not engine_path:
         engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), project_path)
+
+    if not remove:
+        this_engine_json = manifest.get_engine_json_data(engine_path=engine_path if engine_path else manifest.get_this_engine_path())
+        if not this_engine_json:
+            return 1
+        project_json_data = manifest.get_project_json_data(project_path=project_path)
+        if not project_json_data:
+            return 1
+
+        engine_version = this_engine_json.get('engine_version','')
+        if not force:
+            # verify the project -> engine compatibility
+            if (project_json_data.get('compatible_engines') or project_json_data.get('engine_api_dependencies')):
+                engine_is_compatible = compatibility.engine_is_compatible(
+                    this_engine_json['engine_name'], engine_version, 
+                    project_json_data.get('compatible_engines',''), project_json_data.get('engine_api_dependencies',''))
+                if not engine_is_compatible:
+                    logger.error(f'{project_json_data["project_name"]} is not known to be compatible with the '
+                                 f'engine {this_engine_json["engine_name"]} and requires the --force parameter '
+                                 'to register.')
+                    return 1
+        
+            # verify project -> gem -> engine compatibility
+            enabled_gems_file = cmake.get_enabled_gem_cmake_file(project_path=project_path)
+            gem_names = cmake.get_enabled_gems(enabled_gems_file)
+            incompatible_gem_found = False
+            for gem_name in gem_names:
+                gem_json_data = manifest.get_gem_json_data(gem_name=gem_name, project_path=project_path)
+                if (gem_json_data.get('compatible_engines') or gem_json_data.get('engine_api_dependencies')):
+                    gem_is_compatible = compatibility.engine_is_compatible(
+                        this_engine_json['engine_name'], engine_version,
+                        gem_json_data.get('compatible_engines',''),gem_json_data.get('engine_api_dependencies'))
+                    if not gem_is_compatible:
+                        # TODO look for a registered compatible gem with same name
+                        incompatible_gem_found = True
+                        logger.error(f'{gem_name} is not known to be compatible with the '
+                                     f'engine {this_engine_json["engine_name"]} and requires the --force '
+                                     'parameter to register.')
+            if incompatible_gem_found:
+                return 1
 
     result = register_o3de_object_path(json_data, project_path, 'projects', 'project.json',
                                        validation.valid_o3de_project_json, remove,
@@ -429,13 +468,6 @@ def register_project_path(json_data: dict,
 
     if not remove:
         # registering a project has the additional step of setting the project.json 'engine' field
-        this_engine_json = manifest.get_engine_json_data(engine_path=engine_path if engine_path else manifest.get_this_engine_path())
-        if not this_engine_json:
-            return 1
-        project_json_data = manifest.get_project_json_data(project_path=project_path)
-        if not project_json_data:
-            return 1
-
         update_project_json = False
         try:
             update_project_json = project_json_data['engine'] != this_engine_json['engine_name'] or \
@@ -446,7 +478,7 @@ def register_project_path(json_data: dict,
         if update_project_json:
             project_json_path = project_path / 'project.json'
             project_json_data['engine'] = this_engine_json['engine_name']
-            project_json_data['engine_version'] = this_engine_json.get('engine_version','')
+            project_json_data['engine_version'] = engine_version
             utils.backup_file(project_json_path)
             if not manifest.save_o3de_manifest(project_json_data, project_json_path):
                 return 1
@@ -752,7 +784,7 @@ def register(engine_path: pathlib.Path = None,
         if not project_path:
             logger.error(f'Project path cannot be empty.')
             return 1
-        result = result or register_project_path(json_data, project_path, remove, engine_path)
+        result = result or register_project_path(json_data, project_path, remove, engine_path, force)
 
     if isinstance(gem_path, pathlib.PurePath):
         if not gem_path:
