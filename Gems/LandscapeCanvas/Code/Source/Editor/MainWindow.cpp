@@ -1948,7 +1948,7 @@ namespace LandscapeCanvasEditor
         GraphModelIntegration::GraphControllerRequestBus::EventResult(
             nodes, graphId, &GraphModelIntegration::GraphControllerRequests::GetNodes);
 
-        AZStd::remove_if(
+        nodes.erase(AZStd::remove_if(
             nodes.begin(),
             nodes.end(),
             [entityId](const GraphModel::NodePtr& nodePtr)
@@ -1956,7 +1956,7 @@ namespace LandscapeCanvasEditor
                 auto baseNodePtr = static_cast<LandscapeCanvas::BaseNode*>(nodePtr.get());
                 return (!baseNodePtr) || (entityId != baseNodePtr->GetVegetationEntityId());
 
-            });
+            }), nodes.end());
 
         return nodes;
     }
@@ -1970,7 +1970,7 @@ namespace LandscapeCanvasEditor
         const AZ::EntityId& entityId = entityComponentId.GetEntityId();
         const AZ::ComponentId& componentId = entityComponentId.GetComponentId();
 
-        AZStd::remove_if(
+        nodes.erase(AZStd::remove_if(
             nodes.begin(),
             nodes.end(),
             [entityId, componentId](const GraphModel::NodePtr& nodePtr)
@@ -1979,7 +1979,7 @@ namespace LandscapeCanvasEditor
                 return (!baseNodePtr)
                     || (entityId != baseNodePtr->GetVegetationEntityId())
                     || (componentId != baseNodePtr->GetComponentId());
-            });
+            }), nodes.end());
 
         return nodes;
     }
