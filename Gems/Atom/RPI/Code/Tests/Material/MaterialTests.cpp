@@ -484,7 +484,7 @@ namespace UnitTest
         EXPECT_EQ(material->GetPropertyValue<uint32_t>(material->FindPropertyIndex(Name{"RangeB"})), 10u);
 
         // Check the values on the underlying ShaderCollection::Item
-        ShaderOptionGroup options{optionsLayout, material->GetShaderCollection()[0].GetShaderVariantId()};
+        ShaderOptionGroup options{optionsLayout, material->GetShaderCollection(MaterialPipelineNameCommon)[0].GetShaderVariantId()};
         EXPECT_EQ(optionEnumA.Get(options).GetIndex(), optionEnumA.FindValue(Name{"High"}).GetIndex());
         EXPECT_EQ(optionEnumB.Get(options).GetIndex(), optionEnumB.FindValue(Name{"Med"}).GetIndex());
         EXPECT_EQ(optionBoolA.Get(options).GetIndex(), optionBoolA.FindValue(Name{"True"}).GetIndex());
@@ -506,7 +506,7 @@ namespace UnitTest
         EXPECT_EQ(material->GetPropertyValue<uint32_t>(material->FindPropertyIndex(Name{"RangeB"})), 7u);
 
         // Check the values on the underlying ShaderCollection::Item
-        ShaderOptionGroup options2{optionsLayout, material->GetShaderCollection()[0].GetShaderVariantId()};
+        ShaderOptionGroup options2{optionsLayout, material->GetShaderCollection(MaterialPipelineNameCommon)[0].GetShaderVariantId()};
         EXPECT_EQ(optionEnumA.Get(options2).GetIndex(), optionEnumA.FindValue(Name{"Med"}).GetIndex());
         EXPECT_EQ(optionEnumB.Get(options2).GetIndex(), optionEnumB.FindValue(Name{"Low"}).GetIndex());
         EXPECT_EQ(optionBoolA.Get(options2).GetIndex(), optionBoolA.FindValue(Name{"False"}).GetIndex());
@@ -541,11 +541,13 @@ namespace UnitTest
 
         auto& optionRangeB = optionsLayout->GetShaderOption(optionsLayout->FindShaderOptionIndex(Name{"o_rangeB"}));
 
+        const ShaderCollection& shaderCollection = material->GetShaderCollection(MaterialPipelineNameCommon);
+
         // Check the values on the underlying ShaderVariantReferences
         {
-            ShaderOptionGroup options0{optionsLayout, material->GetShaderCollection()[0].GetShaderVariantId()};
-            ShaderOptionGroup options1{optionsLayout, material->GetShaderCollection()[1].GetShaderVariantId()};
-            ShaderOptionGroup options2{optionsLayout, material->GetShaderCollection()[2].GetShaderVariantId()};
+            ShaderOptionGroup options0{optionsLayout, shaderCollection[0].GetShaderVariantId()};
+            ShaderOptionGroup options1{optionsLayout, shaderCollection[1].GetShaderVariantId()};
+            ShaderOptionGroup options2{optionsLayout, shaderCollection[2].GetShaderVariantId()};
             EXPECT_EQ(optionRangeB.Get(options0).GetIndex(),  2);
             EXPECT_EQ(optionRangeB.Get(options1).GetIndex(),  2);
             EXPECT_EQ(optionRangeB.Get(options2).GetIndex(),  2);
@@ -556,9 +558,9 @@ namespace UnitTest
 
         // Check the values on the underlying ShaderVariantReferences
         {
-            ShaderOptionGroup options0{optionsLayout, material->GetShaderCollection()[0].GetShaderVariantId()};
-            ShaderOptionGroup options1{optionsLayout, material->GetShaderCollection()[1].GetShaderVariantId()};
-            ShaderOptionGroup options2{optionsLayout, material->GetShaderCollection()[2].GetShaderVariantId()};
+            ShaderOptionGroup options0{optionsLayout, shaderCollection[0].GetShaderVariantId()};
+            ShaderOptionGroup options1{optionsLayout, shaderCollection[1].GetShaderVariantId()};
+            ShaderOptionGroup options2{optionsLayout, shaderCollection[2].GetShaderVariantId()};
             EXPECT_EQ(optionRangeB.Get(options0).GetIndex(),  5);
             EXPECT_EQ(optionRangeB.Get(options1).GetIndex(),  5);
             EXPECT_EQ(optionRangeB.Get(options2).GetIndex(),  5);
@@ -569,9 +571,9 @@ namespace UnitTest
     {
         MaterialTypeAssetCreator materialTypeCreator;
         materialTypeCreator.Begin(Uuid::CreateRandom());
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, Name{"one"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, Name{"two"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, Name{"three"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"one"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"two"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"three"});
         materialTypeCreator.BeginMaterialProperty(Name{"EnableSecondShader"}, MaterialPropertyDataType::Bool);
         materialTypeCreator.ConnectMaterialPropertyToShaderEnabled(Name{"two"});
         materialTypeCreator.EndMaterialProperty();
@@ -585,21 +587,23 @@ namespace UnitTest
 
         MaterialPropertyIndex enableShader = material->FindPropertyIndex(Name{"EnableSecondShader"});
 
-        EXPECT_TRUE(material->GetShaderCollection()[0].IsEnabled());
-        EXPECT_FALSE(material->GetShaderCollection()[1].IsEnabled());
-        EXPECT_TRUE(material->GetShaderCollection()[2].IsEnabled());
+        const ShaderCollection& shaderCollection = material->GetShaderCollection(MaterialPipelineNameCommon);
+
+        EXPECT_TRUE(shaderCollection[0].IsEnabled());
+        EXPECT_FALSE(shaderCollection[1].IsEnabled());
+        EXPECT_TRUE(shaderCollection[2].IsEnabled());
 
         material->SetPropertyValue(enableShader, true);
 
-        EXPECT_TRUE(material->GetShaderCollection()[0].IsEnabled());
-        EXPECT_TRUE(material->GetShaderCollection()[1].IsEnabled());
-        EXPECT_TRUE(material->GetShaderCollection()[2].IsEnabled());
+        EXPECT_TRUE(shaderCollection[0].IsEnabled());
+        EXPECT_TRUE(shaderCollection[1].IsEnabled());
+        EXPECT_TRUE(shaderCollection[2].IsEnabled());
 
         material->SetPropertyValue(enableShader, false);
 
-        EXPECT_TRUE(material->GetShaderCollection()[0].IsEnabled());
-        EXPECT_FALSE(material->GetShaderCollection()[1].IsEnabled());
-        EXPECT_TRUE(material->GetShaderCollection()[2].IsEnabled());
+        EXPECT_TRUE(shaderCollection[0].IsEnabled());
+        EXPECT_FALSE(shaderCollection[1].IsEnabled());
+        EXPECT_TRUE(shaderCollection[2].IsEnabled());
     }
 
 
@@ -642,9 +646,9 @@ namespace UnitTest
         EXPECT_TRUE(result.IsSuccess());
         EXPECT_EQ(0, result.GetValue());
 
-        for (size_t i = 0; i < material->GetShaderCollection().size(); ++i)
+        for (size_t i = 0; i < material->GetShaderCollection(MaterialPipelineNameCommon).size(); ++i)
         {
-            auto& shaderItem = material->GetShaderCollection()[i];
+            auto& shaderItem = material->GetShaderCollection(MaterialPipelineNameCommon)[i];
 
             EXPECT_EQ(0, shaderItem.GetShaderOptions()->GetValue(Name{"o_enumA"}).GetIndex());
             EXPECT_EQ(1, shaderItem.GetShaderOptions()->GetValue(Name{"o_enumB"}).GetIndex());

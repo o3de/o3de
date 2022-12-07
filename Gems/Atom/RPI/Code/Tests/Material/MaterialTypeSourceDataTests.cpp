@@ -827,15 +827,17 @@ namespace UnitTest
 
         // Check the results...
 
-        EXPECT_EQ(m_testMaterialSrgLayout, materialTypeAsset->GetMaterialSrgLayout());
-        EXPECT_EQ(3, materialTypeAsset->GetShaderCollection().size());
-        EXPECT_EQ(shaderAssetA, materialTypeAsset->GetShaderCollection()[0].GetShaderAsset());
-        EXPECT_EQ(shaderAssetB, materialTypeAsset->GetShaderCollection()[1].GetShaderAsset());
-        EXPECT_EQ(shaderAssetC, materialTypeAsset->GetShaderCollection()[2].GetShaderAsset());
+        const ShaderCollection& shaderCollection = materialTypeAsset->GetShaderCollection(MaterialPipelineNameCommon);
 
-        ShaderOptionGroup shaderAOptions{shaderOptions, materialTypeAsset->GetShaderCollection()[0].GetShaderVariantId()};
-        ShaderOptionGroup shaderBOptions{shaderOptions, materialTypeAsset->GetShaderCollection()[1].GetShaderVariantId()};
-        ShaderOptionGroup shaderCOptions{shaderOptions, materialTypeAsset->GetShaderCollection()[2].GetShaderVariantId()};
+        EXPECT_EQ(m_testMaterialSrgLayout, materialTypeAsset->GetMaterialSrgLayout());
+        EXPECT_EQ(3, shaderCollection.size());
+        EXPECT_EQ(shaderAssetA, shaderCollection[0].GetShaderAsset());
+        EXPECT_EQ(shaderAssetB, shaderCollection[1].GetShaderAsset());
+        EXPECT_EQ(shaderAssetC, shaderCollection[2].GetShaderAsset());
+
+        ShaderOptionGroup shaderAOptions{shaderOptions, shaderCollection[0].GetShaderVariantId()};
+        ShaderOptionGroup shaderBOptions{shaderOptions, shaderCollection[1].GetShaderVariantId()};
+        ShaderOptionGroup shaderCOptions{shaderOptions, shaderCollection[2].GetShaderVariantId()};
         ShaderOptionIndex fooOption = shaderOptions->FindShaderOptionIndex(Name{"o_foo"});
         ShaderOptionIndex barOption = shaderOptions->FindShaderOptionIndex(Name{"o_bar"});
         EXPECT_EQ(shaderAOptions.GetValue(fooOption).GetIndex(), 1);
@@ -1436,12 +1438,14 @@ namespace UnitTest
         EXPECT_TRUE(materialTypeOutcome.IsSuccess());
         Data::Asset<MaterialTypeAsset> materialTypeAsset = materialTypeOutcome.GetValue();
 
+        const ShaderCollection& shaderCollection = materialTypeAsset->GetShaderCollection(MaterialPipelineNameCommon);
+
         // This option is not a dependency of the functor and therefore is not owned by the material
-        EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[0].MaterialOwnsShaderOption(Name{"o_quality"}));
+        EXPECT_FALSE(shaderCollection[0].MaterialOwnsShaderOption(Name{"o_quality"}));
 
         // These options are listed as dependencies of the functor, so the material owns them
-        EXPECT_TRUE(materialTypeAsset->GetShaderCollection()[0].MaterialOwnsShaderOption(Name{"o_foo"}));
-        EXPECT_TRUE(materialTypeAsset->GetShaderCollection()[0].MaterialOwnsShaderOption(Name{"o_bar"}));
+        EXPECT_TRUE(shaderCollection[0].MaterialOwnsShaderOption(Name{"o_foo"}));
+        EXPECT_TRUE(shaderCollection[0].MaterialOwnsShaderOption(Name{"o_bar"}));
     }
     
     TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_FunctorIsInsidePropertyGroup)

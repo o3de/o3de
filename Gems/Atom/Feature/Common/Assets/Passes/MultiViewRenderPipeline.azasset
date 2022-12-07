@@ -5,6 +5,7 @@
     "ClassData": {
         "Name": "MultiViewPipeline",
         "MainViewTag": "MainCamera",
+        "MaterialPipelineTag": "MultiViewPipeline",
         "RootPassTemplate": "MultiViewPipelineTemplate",
         "AllowModification": true,
         "RenderSettings": {
