@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <Document/MaterialGraphCompilerRequestBus.h>
 #include <GraphModel/Model/Node.h>
@@ -18,7 +18,9 @@ namespace MaterialCanvas
     //! MaterialGraphCompiler traverses a material graph, searching for and splicing shader code snippets, variable values and definitions,
     //! and other information into complete, functional material types, materials, and shaders. Currently, the resulting files will be
     //! generated an output into the same folder location has the source graph.
-    class MaterialGraphCompiler : public MaterialGraphCompilerRequestBus::Handler
+    class MaterialGraphCompiler
+        : public MaterialGraphCompilerRequestBus::Handler
+        , public AZ::SystemTickBus::Handler
     {
     public:
         AZ_RTTI(MaterialGraphCompiler, "{3A241379-0282-42FB-B23A-BAF6A44FA0F4}");
@@ -33,15 +35,15 @@ namespace MaterialCanvas
 
         // MaterialGraphCompilerRequestBus::Handler overrides...
         const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const override;
-        bool CompileGraph() const override;
-        void QueueCompileGraph() const override;
+        bool CompileGraph() override;
+        void QueueCompileGraph() override;
         bool IsCompileGraphQueued() const override;
 
     private:
-        void BuildSlotValueTable() const;
-        void CompileGraphStarted() const;
-        void CompileGraphFailed() const;
-        void CompileGraphCompleted() const;
+        void BuildSlotValueTable();
+        void CompileGraphStarted();
+        void CompileGraphFailed();
+        void CompileGraphCompleted();
 
         // Get the graph export path based on the Graph document path or default export path.
         AZStd::string GetGraphPath() const;
@@ -99,10 +101,6 @@ namespace MaterialCanvas
             GraphModel::ConstNodePtr inputNode,
             const AZStd::vector<AZStd::string>& inputSlotNames) const;
 
-        // Sort a container of nodes by depth for generating instructions in execution order
-        template<typename NodeContainer>
-        void SortNodesInExecutionOrder(NodeContainer& nodes) const;
-
         // Build a list of all graph nodes sorted in execution order based on depth
         AZStd::vector<GraphModel::ConstNodePtr> GetAllNodesInExecutionOrder() const;
 
@@ -139,11 +137,17 @@ namespace MaterialCanvas
             const AZStd::string& templateInputPath,
             const AZStd::string& templateOutputPath) const;
 
+        // AZ::SystemTickBus::Handler overrides...
+        void OnSystemTick() override;
+
         const AZ::Crc32 m_toolId = {};
         const AZ::Uuid m_documentId = {};
-        mutable bool m_compileGraphQueued = {};
-        mutable AZStd::vector<AZStd::string> m_generatedFiles;
-        mutable AZStd::map<GraphModel::ConstSlotPtr, AZStd::any> m_slotValueTable;
+        bool m_compileGraph = {};
+        bool m_compileAssets = {};
+        int m_compileAssetIndex = {};
+        AZStd::string m_lastAssetStatusMessage;
+        AZStd::vector<AZStd::string> m_generatedFiles;
+        AZStd::map<GraphModel::ConstSlotPtr, AZStd::any> m_slotValueTable;
 
         // Utility type wrapping repeated load and save logic for most template files that only require basic insertions and substitutions.
         // Files will be read in and then tokenized into a vector of strings for each line in the file. This allows for easier and

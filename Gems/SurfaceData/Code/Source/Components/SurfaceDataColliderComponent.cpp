@@ -305,7 +305,7 @@ namespace SurfaceData
 
     void SurfaceDataColliderComponent::UpdateColliderData()
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(SurfaceData);
 
         bool colliderValidBeforeUpdate = false;
         bool colliderValidAfterUpdate = false;
