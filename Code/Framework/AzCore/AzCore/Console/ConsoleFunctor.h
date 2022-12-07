@@ -119,6 +119,18 @@ namespace AZ
         friend class Console;
     };
 
+    template<class T, class = void>
+    struct ConsoleCommandMemberFunctorSignature
+    {
+        using type = AZStd::monostate;
+    };
+
+    template<class T>
+    struct ConsoleCommandMemberFunctorSignature <T, AZStd::enable_if_t<AZStd::is_class_v<T>>>
+    {
+        using type = void (T::*)(const ConsoleCommandContainer&);
+    };
+
     //! @class ConsoleFunctor
     //! @brief Console functor which wraps a function call into an object instance.
     template <typename _TYPE, bool _REPLICATES_VALUE>
@@ -127,8 +139,9 @@ namespace AZ
     {
     public:
 
-        using MemberFunctorSignature = void(_TYPE::*)(const ConsoleCommandContainer&);
+        using MemberFunctorSignature = typename ConsoleCommandMemberFunctorSignature<_TYPE>::type;
         using RawFunctorSignature = void(*)(_TYPE&, const ConsoleCommandContainer&);
+
         using FunctorUnion = AZStd::variant<RawFunctorSignature, MemberFunctorSignature>;
 
         //! Constructors.
