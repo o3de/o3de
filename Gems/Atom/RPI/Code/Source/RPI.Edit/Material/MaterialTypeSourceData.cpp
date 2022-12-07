@@ -108,6 +108,12 @@ namespace AZ
                     ->Field("propertyGroups", &PropertyLayout::m_propertyGroups)
                     ;
 
+                serializeContext->Class<MaterialPipelineData>()
+                    ->Version(1)
+                    ->Field("shaders", &MaterialPipelineData::m_shaderCollection)
+                    ->Field("functors", &MaterialPipelineData::m_materialFunctorSourceData)
+                    ;
+
                 serializeContext->RegisterGenericType<VersionUpdates>();
                 serializeContext->RegisterGenericType<UvNameMap>();
 
@@ -121,15 +127,15 @@ namespace AZ
                     ->Field("materialShaderCode", &MaterialTypeSourceData::m_materialShaderCode)
                     ->Field("shaders", &MaterialTypeSourceData::m_shaderCollection)
                     ->Field("functors", &MaterialTypeSourceData::m_materialFunctorSourceData)
+                    ->Field("materialPipelines", &MaterialTypeSourceData::m_pipelineData)
                     ->Field("uvNameMap", &MaterialTypeSourceData::m_uvNameMap)
                     ;
             }
         }
 
-        MaterialTypeSourceData::PropertyConnection::PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view name, int32_t shaderIndex)
+        MaterialTypeSourceData::PropertyConnection::PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view name)
             : m_type(type)
             , m_name(name)
-            , m_shaderIndex(shaderIndex)
         {
         }
 
@@ -727,15 +733,7 @@ namespace AZ
                     {
                         Name fieldName{output.m_name};
                         materialNameContext.ContextualizeShaderOption(fieldName);
-
-                        if (output.m_shaderIndex >= 0)
-                        {
-                            materialTypeAssetCreator.ConnectMaterialPropertyToShaderOption(fieldName, output.m_shaderIndex);
-                        }
-                        else
-                        {
-                            materialTypeAssetCreator.ConnectMaterialPropertyToShaderOptions(fieldName);
-                        }
+                        materialTypeAssetCreator.ConnectMaterialPropertyToShaderOptions(fieldName);
                         break;
                     }
                     case MaterialPropertyOutputType::ShaderEnabled:
@@ -801,7 +799,6 @@ namespace AZ
                         materialTypeSourceFilePath,
                         materialTypeAssetCreator.GetMaterialPropertiesLayout(),
                         materialTypeAssetCreator.GetMaterialShaderResourceGroupLayout(),
-                        materialTypeAssetCreator.GetShaderCollection(),
                         &materialNameContext
                     )
                 );
@@ -833,7 +830,7 @@ namespace AZ
 
         MaterialTypeSourceData::Format MaterialTypeSourceData::GetFormat() const
         {
-            if (m_shaderCollection.empty())
+            if (m_shaderCollection.empty() && m_pipelineData.empty())
             {
                 // Whenever there is no explicit shader collection, the material type is considered to be in the abstract format.
                 // Even if materialShaderCode and lightingModel are missing, it should still technically work as an abstract format by using
@@ -843,13 +840,126 @@ namespace AZ
             else if(!m_materialShaderCode.empty() || !m_lightingModel.empty())
             {
                 AZ_Error(MaterialTypeSourceDataDebugName, false,
-                    "Invalid material type format, an explicit shader list cannot be combined with materialShaderCode or lightingModel fields.");
+                    "Invalid material type format, an explicit shader list and pipeline data cannot be combined with materialShaderCode or lightingModel fields.");
                 return Format::Invalid;
             }
             else
             {
                 return Format::Direct;
             }
+        }
+
+        bool MaterialTypeSourceData::AddShaders(
+            MaterialTypeAssetCreator& materialTypeAssetCreator,
+            const Name& materialPipelineName,
+            const AZStd::vector<ShaderVariantReferenceData>& shaderCollection,
+            AZStd::string_view materialTypeSourceFilePath) const
+        {
+            // Used to gather all the UV streams used in this material type from its shaders in alphabetical order.
+            auto semanticComp = [](const RHI::ShaderSemantic& lhs, const RHI::ShaderSemantic& rhs) -> bool
+            {
+                return lhs.ToString() < rhs.ToString();
+            };
+            AZStd::set<RHI::ShaderSemantic, decltype(semanticComp)> uvsInThisMaterialType(semanticComp);
+
+            for (const ShaderVariantReferenceData& shaderRef : shaderCollection)
+            {
+                const auto& shaderFile = shaderRef.m_shaderFilePath;
+                auto shaderAssetResult = AssetUtils::LoadAsset<ShaderAsset>(materialTypeSourceFilePath, shaderFile, 0);
+
+                if (shaderAssetResult)
+                {
+                    auto shaderAsset = shaderAssetResult.GetValue();
+
+                    ShaderOptionGroup options = shaderAsset->GetDefaultShaderOptions();
+                    for (auto& iter : shaderRef.m_shaderOptionValues)
+                    {
+                        if (!options.SetValue(iter.first, iter.second))
+                        {
+                            materialTypeAssetCreator.ReportWarning("Could not set shader option '%s' to '%s'.", iter.first.GetCStr(), iter.second.GetCStr());
+                        }
+                    }
+
+                    materialTypeAssetCreator.AddShader(shaderAsset, options.GetShaderVariantId(), shaderRef.m_shaderTag, materialPipelineName);
+
+                    // Gather UV names
+                    const ShaderInputContract& shaderInputContract = shaderAsset->GetInputContract();
+                    for (const ShaderInputContract::StreamChannelInfo& channel : shaderInputContract.m_streamChannels)
+                    {
+                        const RHI::ShaderSemantic& semantic = channel.m_semantic;
+
+                        if (semantic.m_name.GetStringView().starts_with(RHI::ShaderSemantic::UvStreamSemantic))
+                        {
+                            uvsInThisMaterialType.insert(semantic);
+                        }
+                    }
+                }
+                else
+                {
+                    materialTypeAssetCreator.ReportError("Shader asset not found for source file '%s'. See above for details.", shaderFile.data());
+                    return false;
+                }
+            }
+
+            // Only add the UV mapping related to this material type.
+            for (const auto& uvInput : uvsInThisMaterialType)
+            {
+                // We may have cases where the uv map is empty or inconsistent (exported from other projects),
+                // So we use semantic if mapping is not found.
+                auto iter = m_uvNameMap.find(uvInput.ToString());
+                if (iter != m_uvNameMap.end())
+                {
+                    materialTypeAssetCreator.AddUvName(uvInput, Name(iter->second));
+                }
+                else
+                {
+                    materialTypeAssetCreator.AddUvName(uvInput, Name(uvInput.ToString()));
+                }
+            }
+
+            return true;
+        }
+
+        bool MaterialTypeSourceData::AddFunctors(
+            MaterialTypeAssetCreator& materialTypeAssetCreator,
+            const Name& materialPipelineName,
+            const AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>>& materialFunctorSourceData,
+            AZStd::string_view materialTypeSourceFilePath) const
+        {
+            MaterialNameContext nameContext;
+
+            for (auto& functorData : materialFunctorSourceData)
+            {
+                MaterialFunctorSourceData::FunctorResult result = functorData->CreateFunctor(
+                    MaterialFunctorSourceData::RuntimeContext(
+                        materialTypeSourceFilePath,
+                        materialTypeAssetCreator.GetMaterialPropertiesLayout(),
+                        materialTypeAssetCreator.GetMaterialShaderResourceGroupLayout(),
+                        &nameContext
+                    )
+                );
+
+                if (result.IsSuccess())
+                {
+                    Ptr<MaterialFunctor>& functor = result.GetValue();
+                    if (functor != nullptr)
+                    {
+                        materialTypeAssetCreator.AddMaterialFunctor(functor, materialPipelineName);
+
+                        for (const AZ::Name& optionName : functorData->GetActualSourceData()->GetShaderOptionDependencies())
+                        {
+                            materialTypeAssetCreator.ClaimShaderOptionOwnership(optionName);
+                        }
+                    }
+                }
+                else
+                {
+                    materialTypeAssetCreator.ReportError("Failed to create MaterialFunctor");
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         Outcome<Data::Asset<MaterialTypeAsset>> MaterialTypeSourceData::CreateMaterialTypeAsset(Data::AssetId assetId, AZStd::string_view materialTypeSourceFilePath, bool elevateWarnings) const
@@ -878,53 +988,23 @@ namespace AZ
                 return Failure();
             }
 
-            // Used to gather all the UV streams used in this material type from its shaders in alphabetical order.
-            auto semanticComp = [](const RHI::ShaderSemantic& lhs, const RHI::ShaderSemantic& rhs) -> bool
+            // All the shaders must be added before building the property list, because BuildPropertyList will attempt to connect
+            // properties to shader inputs.
+
+            if (!AddShaders(materialTypeAssetCreator, MaterialPipelineNameCommon, m_shaderCollection, materialTypeSourceFilePath))
             {
-                return lhs.ToString() < rhs.ToString();
-            };
-            AZStd::set<RHI::ShaderSemantic, decltype(semanticComp)> uvsInThisMaterialType(semanticComp);
+                return Failure();
+            }
 
-            for (const ShaderVariantReferenceData& shaderRef : m_shaderCollection)
+            for (auto& [materialPipelineName, materialPipelineData] : m_pipelineData)
             {
-                const auto& shaderFile = shaderRef.m_shaderFilePath;
-                auto shaderAssetResult = AssetUtils::LoadAsset<ShaderAsset>(materialTypeSourceFilePath, shaderFile, 0);
-
-                if (shaderAssetResult)
+                if (!AddShaders(materialTypeAssetCreator, materialPipelineName, materialPipelineData.m_shaderCollection, materialTypeSourceFilePath))
                 {
-                    auto shaderAsset = shaderAssetResult.GetValue();
-
-                    ShaderOptionGroup options = shaderAsset->GetDefaultShaderOptions();
-                    for (auto& iter : shaderRef.m_shaderOptionValues)
-                    {
-                        if (!options.SetValue(iter.first, iter.second))
-                        {
-                            materialTypeAssetCreator.ReportWarning("Could not set shader option '%s' to '%s'.", iter.first.GetCStr(), iter.second.GetCStr());
-                        }
-                    }
-
-                    materialTypeAssetCreator.AddShader(
-                        shaderAsset, options.GetShaderVariantId(),
-                        shaderRef.m_shaderTag.IsEmpty() ? AZ::Name(Uuid::CreateRandom().ToFixedString()) : shaderRef.m_shaderTag);
-
-                    // Gather UV names
-                    const ShaderInputContract& shaderInputContract = shaderAsset->GetInputContract();
-                    for (const ShaderInputContract::StreamChannelInfo& channel : shaderInputContract.m_streamChannels)
-                    {
-                        const RHI::ShaderSemantic& semantic = channel.m_semantic;
-
-                        if (semantic.m_name.GetStringView().starts_with(RHI::ShaderSemantic::UvStreamSemantic))
-                        {
-                            uvsInThisMaterialType.insert(semantic);
-                        }
-                    }
-                }
-                else
-                {
-                    materialTypeAssetCreator.ReportError("Shader asset not found for source file '%s'. See above for details.", shaderFile.data());
                     return Failure();
                 }
             }
+
+            // Now that all the shaders are in place, we can add the properties which may reference the shaders
 
             for (const AZStd::unique_ptr<PropertyGroup>& propertyGroup : m_propertyLayout.m_propertyGroups)
             {
@@ -936,55 +1016,18 @@ namespace AZ
                 }
             }
 
-            MaterialNameContext nameContext;
-
             // We cannot create the MaterialFunctor until after all the properties are added because
             // CreateFunctor() may need to look up properties in the MaterialPropertiesLayout
-            for (auto& functorData : m_materialFunctorSourceData)
+            if(!AddFunctors(materialTypeAssetCreator, MaterialPipelineNameCommon, m_materialFunctorSourceData, materialTypeSourceFilePath))
             {
-                MaterialFunctorSourceData::FunctorResult result = functorData->CreateFunctor(
-                    MaterialFunctorSourceData::RuntimeContext(
-                        materialTypeSourceFilePath,
-                        materialTypeAssetCreator.GetMaterialPropertiesLayout(),
-                        materialTypeAssetCreator.GetMaterialShaderResourceGroupLayout(),
-                        materialTypeAssetCreator.GetShaderCollection(),
-                        &nameContext
-                    )
-                );
-
-                if (result.IsSuccess())
-                {
-                    Ptr<MaterialFunctor>& functor = result.GetValue();
-                    if (functor != nullptr)
-                    {
-                        materialTypeAssetCreator.AddMaterialFunctor(functor);
-
-                        for (const AZ::Name& optionName : functorData->GetActualSourceData()->GetShaderOptionDependencies())
-                        {
-                            materialTypeAssetCreator.ClaimShaderOptionOwnership(optionName);
-                        }
-                    }
-                }
-                else
-                {
-                    materialTypeAssetCreator.ReportError("Failed to create MaterialFunctor");
-                    return Failure();
-                }
+                return Failure();
             }
 
-            // Only add the UV mapping related to this material type.
-            for (const auto& uvInput : uvsInThisMaterialType)
+            for (auto& [materialPipelineName, materialPipelineData] : m_pipelineData)
             {
-                // We may have cases where the uv map is empty or inconsistent (exported from other projects),
-                // So we use semantic if mapping is not found.
-                auto iter = m_uvNameMap.find(uvInput.ToString());
-                if (iter != m_uvNameMap.end())
+                if (!AddFunctors(materialTypeAssetCreator, materialPipelineName, materialPipelineData.m_materialFunctorSourceData, materialTypeSourceFilePath))
                 {
-                    materialTypeAssetCreator.AddUvName(uvInput, Name(iter->second));
-                }
-                else
-                {
-                    materialTypeAssetCreator.AddUvName(uvInput, Name(uvInput.ToString()));
+                    return Failure();
                 }
             }
 

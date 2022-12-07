@@ -57,9 +57,14 @@ namespace AZ
             return m_materialTypeAsset;
         }
 
-        const ShaderCollection& MaterialAsset::GetShaderCollection() const
+        const MaterialPipelineShaderCollections& MaterialAsset::GetShaderCollections() const
         {
-            return m_materialTypeAsset->GetShaderCollection();
+            return m_materialTypeAsset->GetShaderCollections();
+        }
+
+        const ShaderCollection& MaterialAsset::GetShaderCollection(const Name& forPipeline) const
+        {
+            return m_materialTypeAsset->GetShaderCollection(forPipeline);
         }
 
         const MaterialFunctorList& MaterialAsset::GetMaterialFunctors() const

@@ -207,6 +207,15 @@ namespace AZ::Render
         }
     }
 
+    void DiskLightDelegate::SetShadowCachingMode(AreaLightComponentConfig::ShadowCachingMode cachingMode)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetUseCachedShadows(GetLightHandle(),
+                cachingMode == AreaLightComponentConfig::ShadowCachingMode::UpdateOnChange);
+        }
+    }
+
     void DiskLightDelegate::SetAffectsGI(bool affectsGI)
     {
         if (GetLightHandle().IsValid())
