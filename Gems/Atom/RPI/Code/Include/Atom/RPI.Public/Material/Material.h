@@ -104,7 +104,12 @@ namespace AZ
             ChangeId GetCurrentChangeId() const;
 
             //! Return the set of shaders to be run by this material.
-            const ShaderCollection& GetShaderCollection() const;
+            const MaterialPipelineShaderCollections& GetShaderCollections() const;
+
+            //! Returns the collection of shaders that this material could run for a given pipeline.
+            //! @param forPipeline the name of the material pipeline to query for shaders. For MaterialPipelineNameCommon, 
+            //!        this returns a list of shaders that should be sent to all pipelines.
+            const ShaderCollection& GetShaderCollection(const Name& forPipeline) const;
 
             //! Attempts to set the value of a system-level shader option that is controlled by this material.
             //! This applies to all shaders in the material's ShaderCollection.
@@ -184,7 +189,7 @@ namespace AZ
             MaterialPropertyFlags m_propertyOverrideFlags;
 
             //! A copy of the MaterialAsset's ShaderCollection is stored here to allow material-specific changes to the default collection.
-            ShaderCollection m_shaderCollection;
+            MaterialPipelineShaderCollections m_shaderCollections;
 
             //! Tracks each change made to material properties.
             //! Initialized to DEFAULT_CHANGE_ID+1 to ensure that GetCurrentChangeId() will not return DEFAULT_CHANGE_ID (a value that client 

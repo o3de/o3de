@@ -32,6 +32,7 @@
         "AtomViewportDisplayIcons",
         "MaterialCanvas",
         "MaterialEditor",
+        "PassCanvas",
         "ShaderManagementConsole"
     ]
 }
