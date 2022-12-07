@@ -17,13 +17,6 @@
 
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 
-namespace AzToolsFramework
-{
-    class ActionManagerInterface;
-    class MenuManagerInterface;
-    class MenuManagerInternalInterface;
-}
-
 namespace AWSClientAuth
 {
     //! Gem System Component. Responsible for instantiating and managing Authentication and Authorization Controller
@@ -70,10 +63,6 @@ namespace AWSClientAuth
 
         std::shared_ptr<Aws::CognitoIdentityProvider::CognitoIdentityProviderClient> m_cognitoIdentityProviderClient;
         std::shared_ptr<Aws::CognitoIdentity::CognitoIdentityClient> m_cognitoIdentityClient;
-
-        //AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
-        //AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
-        //AzToolsFramework::MenuManagerInternalInterface* m_menuManagerInternalInterface = nullptr;
 
     };
 
