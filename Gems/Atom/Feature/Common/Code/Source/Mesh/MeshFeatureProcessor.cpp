@@ -38,6 +38,7 @@ namespace AZ
 {
     namespace Render
     {
+        constexpr size_t sizeOfT = sizeof(ModelDataInstance);
         void MeshFeatureProcessor::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -54,7 +55,7 @@ namespace AZ
             AZ_Assert(m_transformService, "MeshFeatureProcessor requires a TransformServiceFeatureProcessor on its parent scene.");
 
             m_rayTracingFeatureProcessor = GetParentScene()->GetFeatureProcessor<RayTracingFeatureProcessor>();
-
+            m_reflectionProbeFeatureProcessor = GetParentScene()->GetFeatureProcessor<ReflectionProbeFeatureProcessor>();
             m_handleGlobalShaderOptionUpdate = RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler
             {
                 [this](const AZ::Name&, RPI::ShaderOptionValue) { m_forceRebuildDrawPackets = true; }
@@ -84,6 +85,8 @@ namespace AZ
                 "Deactivating the MeshFeatureProcessor, but there are still outstanding mesh handles.\n"
             );
             m_transformService = nullptr;
+            m_rayTracingFeatureProcessor = nullptr;
+            m_reflectionProbeFeatureProcessor = nullptr;
             m_forceRebuildDrawPackets = false;
         }
 
@@ -126,12 +129,17 @@ namespace AZ
 
                         if (meshDataIter->m_needsInit)
                         {
-                            meshDataIter->Init(m_rayTracingFeatureProcessor);
+                            meshDataIter->Init();
                         }
 
                         if (meshDataIter->m_objectSrgNeedsUpdate)
                         {
-                            meshDataIter->UpdateObjectSrg();
+                            meshDataIter->UpdateObjectSrg(m_reflectionProbeFeatureProcessor, m_transformService);
+                        }
+
+                        if (meshDataIter->m_needsSetRayTracingData)
+                        {
+                            meshDataIter->SetRayTracingData(m_rayTracingFeatureProcessor, m_transformService);
                         }
 
                         // [GFX TODO] [ATOM-1357] Currently all of the draw packets have to be checked for material ID changes because
@@ -519,7 +527,7 @@ namespace AZ
                 if (rayTracingEnabled && !meshHandle->m_descriptor.m_isRayTracingEnabled)
                 {
                     // add to ray tracing
-                    meshHandle->SetRayTracingData(m_rayTracingFeatureProcessor);
+                    meshHandle->m_needsSetRayTracingData = true;
                 }
                 else if (!rayTracingEnabled && meshHandle->m_descriptor.m_isRayTracingEnabled)
                 {
@@ -571,7 +579,7 @@ namespace AZ
                     // now add if it's visible
                     if (visible)
                     {
-                        meshHandle->SetRayTracingData(m_rayTracingFeatureProcessor);
+                        meshHandle->m_needsSetRayTracingData = true;
                     }
                 }
             }
@@ -835,10 +843,11 @@ namespace AZ
         void ModelDataInstance::QueueInit(const Data::Instance<RPI::Model>& model)
         {
             m_model = model;
+            m_aabb = m_model->GetModelAsset()->GetAabb();
             m_needsInit = true;
         }
 
-        void ModelDataInstance::Init(RayTracingFeatureProcessor* rayTracingFeatureProcessor)
+        void ModelDataInstance::Init()
         {
             const size_t modelLodCount = m_model->GetLodCount();
             m_drawPacketListsByLod.resize(modelLodCount);
@@ -866,7 +875,7 @@ namespace AZ
 
             if (m_visible && m_descriptor.m_isRayTracingEnabled)
             {
-                SetRayTracingData(rayTracingFeatureProcessor);
+                m_needsSetRayTracingData = true;
             }
 
             m_aabb = m_model->GetModelAsset()->GetAabb();
@@ -965,7 +974,7 @@ namespace AZ
             }
         }
 
-        void ModelDataInstance::SetRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor)
+        void ModelDataInstance::SetRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor, TransformServiceFeatureProcessor* transformServiceFeatureProcessor)
         {
             RemoveRayTracingData(rayTracingFeatureProcessor);
 
@@ -1255,11 +1264,11 @@ namespace AZ
                 subMeshes.push_back(subMesh);
             }
 
-            TransformServiceFeatureProcessor* transformServiceFeatureProcessor = m_scene->GetFeatureProcessor<TransformServiceFeatureProcessor>();
             AZ::Transform transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
             AZ::Vector3 nonUniformScale = transformServiceFeatureProcessor->GetNonUniformScaleForId(m_objectId);
 
             rayTracingFeatureProcessor->AddMesh(m_rayTracingUuid, m_model->GetModelAsset()->GetId(), subMeshes, transform, nonUniformScale);
+            m_needsSetRayTracingData = false;
         }
 
         void ModelDataInstance::SetIrradianceData(
@@ -1558,12 +1567,10 @@ namespace AZ
             m_cullBoundsNeedsUpdate = false;
         }
 
-        void ModelDataInstance::UpdateObjectSrg()
+        void ModelDataInstance::UpdateObjectSrg(ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor, TransformServiceFeatureProcessor* transformServiceFeatureProcessor)
         {
             for (auto& objectSrg : m_objectSrgList)
             {
-                ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor = m_scene->GetFeatureProcessor<ReflectionProbeFeatureProcessor>();
-
                 if (reflectionProbeFeatureProcessor && (m_descriptor.m_useForwardPassIblSpecular || m_hasForwardPassIblSpecularMaterial))
                 {
                     // retrieve probe constant indices
@@ -1594,7 +1601,6 @@ namespace AZ
                     AZ_Error("ModelDataInstance", reflectionCubeMapImageIndex.IsValid(), "Failed to find shader image index [%s]", reflectionCubeMapImageName.GetCStr());
 
                     // retrieve the list of probes that overlap the mesh bounds
-                    TransformServiceFeatureProcessor* transformServiceFeatureProcessor = m_scene->GetFeatureProcessor<TransformServiceFeatureProcessor>();
                     Transform transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
 
                     Aabb aabbWS = m_aabb;
@@ -1667,8 +1673,7 @@ namespace AZ
         {
             if (m_visible && m_descriptor.m_isRayTracingEnabled)
             {
-                RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-                SetRayTracingData(rayTracingFeatureProcessor);
+                m_needsSetRayTracingData = true;
             }
         }
     } // namespace Render
