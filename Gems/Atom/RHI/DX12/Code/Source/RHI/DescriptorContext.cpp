@@ -116,6 +116,12 @@ namespace AZ
 
                     if (descriptorCountMax)
                     {
+                        m_staticDescriptorOffset = static_cast<uint64_t>((1.f - m_platformLimitsDescriptor->m_staticDescriptorRatio) * descriptorCountMax);
+
+                        AZ_Assert(
+                            m_staticDescriptorOffset < descriptorCountMax,
+                            "DX12 shader visible dynamic descriptor offset invalid: %" PRIu32, m_staticDescriptorOffset);
+
                         if (m_allowDescriptorHeapCompaction && IsShaderVisibleCbvSrvUavHeap(type, flags))
                         {
                             //Init the two heaps to help support compaction after fragmentation
@@ -127,9 +133,27 @@ namespace AZ
                                 m_device.get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE,
                                 descriptorCountMax, platformLimitsDescriptor->m_numShaderVisibleCbvSrvUavStaticHandles);
                         }
+                        else if (IsShaderVisibleCbvSrvUavHeap(type, flags))
+                        {
+                            // The shader-visible CBV_SRV_UAV heap is divided into a dynamic region and a static region. The static region
+                            // stores pinned copies of all unique resource views and is bound via m_staticTable for bindless shader access.
+
+                            // Create the first pool to manage descriptors dynamically allocated when SRGs are compiled in a contiguous region.
+                            // The entirety of the heap is created with descriptorCountMax handles, but the internal allocator sees m_staticDescriptorOffset
+                            // elements.
+                            DescriptorPool& dynamicPool = GetPool(static_cast<uint32_t>(heapTypeIdx.value()), shaderVisibleIdx);
+                            dynamicPool.Init(m_device.get(), type, flags, descriptorCountMax, m_staticDescriptorOffset);
+
+                            // The remaining elements are assigned to a second pool sharing the same descriptor heap as the first
+                            uint32_t staticDescriptorCount = descriptorCountMax - m_staticDescriptorOffset;
+                            m_staticPool.InitPooledRange(dynamicPool, m_staticDescriptorOffset, staticDescriptorCount);
+                            m_staticTable =
+                                DescriptorTable{ DescriptorHandle{ type, flags, 0 }, staticDescriptorCount };
+                        }
                         else
                         {
-                            GetPool(static_cast<uint32_t>(heapTypeIdx.value()), shaderVisibleIdx).Init(m_device.get(), type, flags, descriptorCountMax, descriptorCountMax);
+                            GetPool(static_cast<uint32_t>(heapTypeIdx.value()), shaderVisibleIdx)
+                                .Init(m_device.get(), type, flags, descriptorCountMax, descriptorCountMax);
                         }
                     }
                 }
@@ -149,7 +173,8 @@ namespace AZ
         void DescriptorContext::CreateConstantBufferView(
             const Buffer& buffer,
             const RHI::BufferViewDescriptor& bufferViewDescriptor,
-            DescriptorHandle& constantBufferView)
+            DescriptorHandle& constantBufferView,
+            DescriptorHandle& staticView)
         {
             if (constantBufferView.IsNull())
             {
@@ -160,12 +185,14 @@ namespace AZ
             D3D12_CONSTANT_BUFFER_VIEW_DESC viewDesc;
             ConvertBufferView(buffer, bufferViewDescriptor, viewDesc);
             m_device->CreateConstantBufferView(&viewDesc, descriptorHandle);
+            staticView = AllocateStaticDescriptor(descriptorHandle);
         }
 
         void DescriptorContext::CreateShaderResourceView(
             const Buffer& buffer,
             const RHI::BufferViewDescriptor& bufferViewDescriptor,
-            DescriptorHandle& shaderResourceView)
+            DescriptorHandle& shaderResourceView,
+            DescriptorHandle& staticView)
         {
             if (shaderResourceView.IsNull())
             {
@@ -179,13 +206,15 @@ namespace AZ
             bool isRayTracingAccelerationStructure = RHI::CheckBitsAll(buffer.GetDescriptor().m_bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure);
             ID3D12Resource* resource = isRayTracingAccelerationStructure ? nullptr : buffer.GetMemoryView().GetMemory();
             m_device->CreateShaderResourceView(resource, &viewDesc, descriptorHandle);
+            staticView = AllocateStaticDescriptor(descriptorHandle);
         }
 
         void DescriptorContext::CreateUnorderedAccessView(
             const Buffer& buffer,
             const RHI::BufferViewDescriptor& bufferViewDescriptor,
             DescriptorHandle& unorderedAccessView,
-            DescriptorHandle& unorderedAccessViewClear)
+            DescriptorHandle& unorderedAccessViewClear,
+            DescriptorHandle& staticView)
         {
             if (unorderedAccessView.IsNull())
             {
@@ -220,12 +249,14 @@ namespace AZ
                 }
             }
             CopyDescriptor(unorderedAccessViewClear, unorderedAccessView);
+            staticView = AllocateStaticDescriptor(unorderedAccessDescriptor);
         }
 
         void DescriptorContext::CreateShaderResourceView(
             const Image& image,
             const RHI::ImageViewDescriptor& imageViewDescriptor,
-            DescriptorHandle& shaderResourceView)
+            DescriptorHandle& shaderResourceView,
+            DescriptorHandle& staticView)
         {
             if (shaderResourceView.IsNull())
             {
@@ -236,13 +267,15 @@ namespace AZ
             D3D12_SHADER_RESOURCE_VIEW_DESC viewDesc;
             ConvertImageView(image, imageViewDescriptor, viewDesc);
             m_device->CreateShaderResourceView(image.GetMemoryView().GetMemory(), &viewDesc, descriptorHandle);
+            staticView = AllocateStaticDescriptor(descriptorHandle);
         }
 
         void DescriptorContext::CreateUnorderedAccessView(
             const Image& image,
             const RHI::ImageViewDescriptor& imageViewDescriptor,
             DescriptorHandle& unorderedAccessView,
-            DescriptorHandle& unorderedAccessViewClear)
+            DescriptorHandle& unorderedAccessViewClear,
+            DescriptorHandle& staticView)
         {
             if (unorderedAccessView.IsNull())
             {
@@ -277,6 +310,7 @@ namespace AZ
                 }
             }
             CopyDescriptor(unorderedAccessViewClear, unorderedAccessView);
+            staticView = AllocateStaticDescriptor(unorderedAccessDescriptor);
         }
 
         void DescriptorContext::CreateRenderTargetView(
@@ -348,6 +382,14 @@ namespace AZ
             }
         }
 
+        void DescriptorContext::ReleaseStaticDescriptor(DescriptorHandle handle)
+        {
+            if (!handle.IsNull())
+            {
+                m_staticPool.ReleaseHandle(handle);
+            }
+        }
+
         DescriptorTable DescriptorContext::CreateDescriptorTable(
             D3D12_DESCRIPTOR_HEAP_TYPE descriptorHeapType, uint32_t descriptorCount, ShaderResourceGroup* srg)
         {
@@ -367,6 +409,11 @@ namespace AZ
             }
 
             return GetPool(descriptorHeapType, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE).AllocateTable(descriptorCount);
+        }
+
+        D3D12_GPU_DESCRIPTOR_HANDLE DescriptorContext::GetBindlessGpuPlatformHandle() const
+        {
+            return m_staticPool.GetGpuPlatformHandleForTable(m_staticTable);
         }
 
         void DescriptorContext::ReleaseDescriptorTable(DescriptorTable table, ShaderResourceGroup* srg)
@@ -426,6 +473,16 @@ namespace AZ
             m_device->CopyDescriptorsSimple(1, GetCpuPlatformHandle(dest), GetCpuPlatformHandle(source), dest.m_type);
         }
 
+        DescriptorHandle DescriptorContext::AllocateStaticDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE handle)
+        {
+            DescriptorHandle staticHandle = m_staticPool.AllocateHandle(1);
+            AZ_Assert(!staticHandle.IsNull(), "Failed to allocate static descriptor from shader-visible CBV_SRV_UAV heap");
+
+            m_device->CopyDescriptorsSimple(
+                1, m_staticPool.GetCpuPlatformHandle(staticHandle), handle, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+            return staticHandle;
+        }
+
         void DescriptorContext::GarbageCollect()
         {
             AZ_PROFILE_SCOPE(RHI, "DescriptorContext: GarbageCollect(DX12)");
@@ -441,6 +498,8 @@ namespace AZ
                     }
                 }
             }
+
+            m_staticPool.GarbageCollect();
 
             if (m_allowDescriptorHeapCompaction)
             {

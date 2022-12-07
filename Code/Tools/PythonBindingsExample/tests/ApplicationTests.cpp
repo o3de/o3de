@@ -24,12 +24,11 @@ namespace PythonBindingsExample
     }
 
     class PythonBindingsExampleTest
-        : public ::testing::Test
-        , public ::UnitTest::AllocatorsBase
+        : public ::UnitTest::LeakDetectionFixture
     {
     public:
 
-        static void SetUpTestCase()
+        void SetUp() override
         {
             if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
             {
@@ -43,7 +42,7 @@ namespace PythonBindingsExample
             s_application->SetUp();
         }
 
-        static void TearDownTestCase()
+        void TearDown() override
         {
             s_application->TearDown();
             s_application.reset();

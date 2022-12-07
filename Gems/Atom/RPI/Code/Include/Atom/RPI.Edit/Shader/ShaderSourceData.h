@@ -70,7 +70,7 @@ namespace AZ
             // This can override the default shader option values specified in the shader code.
             ShaderOptionValuesSourceData m_shaderOptionValues;
 
-            AZStd::string m_drawListName;
+            Name m_drawListName;
 
             ProgramSettings m_programSettings;
 

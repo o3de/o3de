@@ -56,6 +56,7 @@ namespace Multiplayer
 
         if (auto multiplayerSystemComponent = AZ::Interface<IMultiplayer>::Get())
         {
+            multiplayerSystemComponent->AddVersionMismatchHandler(m_versionMismatchEventHandler);
             multiplayerSystemComponent->AddLevelLoadBlockedHandler(m_levelLoadBlockedHandler);
             multiplayerSystemComponent->AddNoServerLevelLoadedHandler(m_noServerLevelLoadedHandler);
         }
@@ -65,6 +66,7 @@ namespace Multiplayer
     {
         m_noServerLevelLoadedHandler.Disconnect();
         m_levelLoadBlockedHandler.Disconnect();
+        m_versionMismatchEventHandler.Disconnect();
         MultiplayerEditorServerNotificationBus::Handler::BusDisconnect();
         AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
     }
@@ -427,6 +429,12 @@ namespace Multiplayer
         {
             m_centerViewportDebugToastText = OnNoServerLevelLoadedMessageServerSide;
         }
+        m_centerViewportDebugToastStartTime = static_cast<AZ::TimeMs>(AZStd::GetTimeUTCMilliSecond());
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnVersionMismatchEvent()
+    {
+        m_centerViewportDebugToastText = OnVersionMismatch;
         m_centerViewportDebugToastStartTime = static_cast<AZ::TimeMs>(AZStd::GetTimeUTCMilliSecond());
     }
 }

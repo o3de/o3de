@@ -6,8 +6,8 @@
 #
 #
 
-# Cmake version 3.20 is the minimum version needed for all of Open 3D Engine's supported platforms
-cmake_minimum_required(VERSION 3.20)
+# Cmake version 3.22 is the minimum version needed for all of Open 3D Engine's supported platforms
+cmake_minimum_required(VERSION 3.22)
 
 if(NOT ${CMAKE_VERSION} VERSION_LESS "3.24") 
     # CMP0135 - controls whether, when unpacking an archive file, it should:

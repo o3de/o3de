@@ -120,7 +120,7 @@ namespace AzToolsFramework
             return ConstructLinkDomFromPatches(linkDom, allocator);
         }
 
-        bool Link::AreOverridesPresent(AZ::Dom::Path path, AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags)
+        bool Link::AreOverridesPresent(AZ::Dom::Path path, AZ::Dom::PrefixTreeTraversalFlags prefixTreeTraversalFlags) const
         {
             bool areOverridesPresent = false;
             auto visitorFn = [&areOverridesPresent](AZ::Dom::Path, const PrefabOverrideMetadata&)
@@ -133,6 +133,28 @@ namespace AzToolsFramework
 
             m_linkPatchesTree.VisitPath(path, visitorFn, prefixTreeTraversalFlags);
             return areOverridesPresent;
+        }
+
+        PrefabDomConstReference Link::GetOverridePatchAtExactPath(AZ::Dom::Path path) const
+        {
+            PrefabDomConstReference overridePatch = {};
+            const PrefabOverrideMetadata* overrideData = m_linkPatchesTree.ValueAtPath(path, AZ::Dom::PrefixTreeMatch::ExactPath);
+            if (overrideData)
+            {
+                overridePatch = overrideData->m_patch;
+            }
+
+            return overridePatch;
+        }
+        
+        PrefabOverridePrefixTree Link::RemoveOverrides(AZ::Dom::Path path)
+        {
+            return m_linkPatchesTree.DetachSubTree(path);
+        }
+
+        bool Link::AddOverrides(const AZ::Dom::Path& path, AZ::Dom::DomPrefixTree<PrefabOverrideMetadata>&& subTree)
+        {
+            return m_linkPatchesTree.AttachSubTree(path, AZStd::move(subTree));
         }
 
         PrefabDomPath Link::GetInstancePath() const

@@ -128,7 +128,6 @@ namespace AZ
             AssetBuilderSDK::ProcessJobResultCode PopulateAzslDataFromJsonFiles(
                 const char* builderName,
                 const AzslSubProducts::Paths& pathOfJsonFiles,
-                const bool platformUsesRegisterSpaces,
                 AzslData& azslData,
                 RPI::ShaderResourceGroupLayoutList& srgLayoutList,
                 RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout,
@@ -175,7 +174,7 @@ namespace AZ
                 }
 
                 // Add all Shader Resource Group Assets that were defined in the shader code to the shader asset
-                if (!SrgLayoutUtility::LoadShaderResourceGroupLayouts(builderName, azslData.m_srgData, platformUsesRegisterSpaces, srgLayoutList))
+                if (!SrgLayoutUtility::LoadShaderResourceGroupLayouts(builderName, azslData.m_srgData, srgLayoutList))
                 {
                     AZ_Error(builderName, false, "Failed to obtain shader resource group assets");
                     return AssetBuilderSDK::ProcessJobResult_Failed;
@@ -586,20 +585,24 @@ namespace AZ
                     }
 
                     RHI::ShaderResourceGroupBindingInfo srgBindingInfo;
-                    srgBindingInfo.m_spaceId = srgResources->m_registerSpace;
+
                     const RHI::ShaderResourceGroupLayout* layout = srgLayout.get();
                     // Calculate the binding in for the constant data. All constant data share the same binding info.
                     srgBindingInfo.m_constantDataBindingInfo = {
                         getRHIShaderStageMask(srgResources->m_srgConstantsDependencies.m_binding.m_dependentFunctions),
-                        srgResources->m_srgConstantsDependencies.m_binding.m_registerId};
+                        srgResources->m_srgConstantsDependencies.m_binding.m_registerId,
+                        srgResources->m_srgConstantsDependencies.m_binding.m_registerSpace
+                    };
                     // Calculate the binding info for each resource of the Shader Resource Group.
                     for (auto const& resource : srgResources->m_resources)
                     {
                         auto const& resourceInfo = resource.second;
                         srgBindingInfo.m_resourcesRegisterMap.insert(
-                            {AZ::Name(resourceInfo.m_selfName),
-                             RHI::ResourceBindingInfo(
-                                 getRHIShaderStageMask(resourceInfo.m_dependentFunctions), resourceInfo.m_registerId)});
+                            { AZ::Name(resourceInfo.m_selfName),
+                            RHI::ResourceBindingInfo(
+                                getRHIShaderStageMask(resourceInfo.m_dependentFunctions), resourceInfo.m_registerId,
+                                resourceInfo.m_registerSpace),
+                              });
                     }
                     pipelineLayoutDescriptor->AddShaderResourceGroupLayoutInfo(*layout, srgBindingInfo);
                     srgInfos.push_back(RHI::ShaderPlatformInterface::ShaderResourceGroupInfo{layout, srgBindingInfo});
@@ -610,7 +613,7 @@ namespace AZ
                 {
                     RHI::ShaderInputConstantDescriptor rootConstantDesc(
                         constantData.m_nameId, constantData.m_constantByteOffset, constantData.m_constantByteSize,
-                        rootConstantData.m_bindingInfo.m_registerId);
+                        rootConstantData.m_bindingInfo.m_registerId, rootConstantData.m_bindingInfo.m_space);
 
                     rootConstantsLayout->AddShaderInput(rootConstantDesc);
                 }

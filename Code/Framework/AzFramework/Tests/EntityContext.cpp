@@ -23,7 +23,7 @@ namespace UnitTest
     using namespace AzFramework;
 
     class EntityContextBasicTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
         , public EntityContextEventBus::Handler
     {
     public:

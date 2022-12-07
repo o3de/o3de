@@ -28,6 +28,8 @@ TEST_GEM_JSON_PAYLOAD = '''
     "user_tags": [
         "TestGem"
     ],
+    "platforms": [
+    ],
     "icon_path": "preview.png",
     "requirements": "",
     "documentation_url": "https://o3de.org/docs/",
@@ -48,30 +50,37 @@ def init_gem_json_data(request):
 class TestEditGemProperties:
     @pytest.mark.parametrize("gem_path, gem_name, gem_new_name, gem_display, gem_origin,\
                             gem_type, gem_summary, gem_icon, gem_requirements, gem_documentation_url,\
-                            gem_license, gem_license_url, add_tags, remove_tags, replace_tags,\
-                            expected_tags, expected_result", [
+                            gem_license, gem_license_url, gem_repo_uri, add_tags, remove_tags, replace_tags,\
+                            expected_tags, add_platforms, remove_platforms, replace_platforms, expected_platforms,\
+                            expected_result", [
         pytest.param(pathlib.PurePath('D:/TestProject'),
                      None, 'TestGem2', 'New Gem Name', 'O3DE', 'Code', 'Gem that exercises Default Gem Template',
                      'new_preview.png', 'Do this extra thing', 'https://o3de.org/docs/user-guide/gems/',
-                     'Apache 2.0', 'https://www.apache.org/licenses/LICENSE-2.0',
+                     'Apache 2.0', 'https://www.apache.org/licenses/LICENSE-2.0', "https://github.com/o3de/o3de.git",
                      ['Physics', 'Rendering', 'Scripting'], None, None, ['TestGem', 'Physics', 'Rendering', 'Scripting'],
+                     ['Windows', 'MacOS', 'Linux'], None, None, ['Windows', 'MacOS', 'Linux'],
                      0),
         pytest.param(None,
                      'TestGem2', None, 'New Gem Name', 'O3DE', 'Asset', 'Gem that exercises Default Gem Template',
                      'new_preview.png', 'Do this extra thing', 'https://o3de.org/docs/user-guide/gems/', 
-                     'Apache 2.0', 'https://www.apache.org/licenses/LICENSE-2.0',
-                     None, ['Physics'], None, ['TestGem', 'Rendering', 'Scripting'], 0),
+                     'Apache 2.0', 'https://www.apache.org/licenses/LICENSE-2.0', None,
+                     None, ['Physics'], None, ['TestGem', 'Rendering', 'Scripting'], 
+                     ['Windows', 'MacOS'], ['Linux'], None, ['Windows', 'MacOS'],
+                     0),
         pytest.param(None,
                      'TestGem2', None, 'New Gem Name', 'O3DE', 'Tool', 'Gem that exercises Default Gem Template',
                      'new_preview.png', 'Do this extra thing', 'https://o3de.org/docs/user-guide/gems/',
-                     'Apache 2.0', 'https://www.apache.org/licenses/LICENSE-2.0',
-                     None, None, ['Animation', 'TestGem'], ['Animation', 'TestGem'], 0)
+                     'Apache 2.0', 'https://www.apache.org/licenses/LICENSE-2.0',"https://github.com/o3de/o3de.git",
+                     None, None, ['Animation', 'TestGem'], ['Animation', 'TestGem'],
+                     ['Windows'], None, ['MacOS', 'Linux'], ['MacOS', 'Linux'],
+                     0)
         ]
     )
     def test_edit_gem_properties(self, gem_path, gem_name, gem_new_name, gem_display, gem_origin,
                                     gem_type, gem_summary, gem_icon, gem_requirements, 
-                                    gem_documentation_url, gem_license, gem_license_url, add_tags, remove_tags,
-                                    replace_tags, expected_tags, expected_result):
+                                    gem_documentation_url, gem_license, gem_license_url, gem_repo_uri, add_tags, remove_tags,
+                                    replace_tags, expected_tags, add_platforms, remove_platforms, replace_platforms,
+                                    expected_platforms, expected_result):
 
         def get_gem_json_data(gem_path: pathlib.Path) -> dict:
             return self.gem_json.data
@@ -88,8 +97,9 @@ class TestEditGemProperties:
                 patch('o3de.manifest.get_registered', side_effect=get_gem_path) as get_registered_patch:
             result = gem_properties.edit_gem_props(gem_path, gem_name, gem_new_name, gem_display, gem_origin,
                                                    gem_type, gem_summary, gem_icon, gem_requirements,
-                                                   gem_documentation_url, gem_license, gem_license_url,
-                                                   add_tags, remove_tags, replace_tags)
+                                                   gem_documentation_url, gem_license, gem_license_url, gem_repo_uri,
+                                                   add_tags, remove_tags, replace_tags,
+                                                   add_platforms, remove_platforms, replace_platforms)
             assert result == expected_result
             if gem_new_name:
                 assert self.gem_json.data.get('gem_name', '') == gem_new_name
@@ -111,5 +121,9 @@ class TestEditGemProperties:
                 assert self.gem_json.data.get('license', '') == gem_license
             if gem_license_url:
                 assert self.gem_json.data.get('license_url', '') == gem_license_url
+            if gem_repo_uri:
+                assert self.gem_json.data.get('repo_uri', '') == gem_repo_uri
 
             assert set(self.gem_json.data.get('user_tags', [])) == set(expected_tags)
+
+            assert set(self.gem_json.data.get('platforms', [])) == set(expected_platforms)

@@ -17,7 +17,7 @@
 #include <Vegetation/InstanceData.h>
 #include <AzCore/Debug/Profiler.h>
 
-#include "../VegetationProfiler.h"
+#include <VegetationProfiler.h>
 
 namespace Vegetation
 {

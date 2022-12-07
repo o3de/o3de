@@ -23,6 +23,7 @@ namespace AZ
             {
             case MaterialPropertyOutputType::ShaderInput:  return "ShaderInput";
             case MaterialPropertyOutputType::ShaderOption: return "ShaderOption";
+            case MaterialPropertyOutputType::ShaderEnabled: return "ShaderEnabled";
             default:
                 AZ_Assert(false, "Unhandled type");
                 return "<Unknown>";
@@ -154,8 +155,9 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MaterialPropertyOutputId>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("m_type", &MaterialPropertyOutputId::m_type)
+                    ->Field("m_materialPipelineName", &MaterialPropertyOutputId::m_materialPipelineName)
                     ->Field("m_containerIndex", &MaterialPropertyOutputId::m_containerIndex)
                     ->Field("m_itemIndex", &MaterialPropertyOutputId::m_itemIndex)
                     ;
@@ -169,6 +171,7 @@ namespace AZ
                 serializeContext->Enum<MaterialPropertyOutputType>()
                     ->Value(ToString(MaterialPropertyOutputType::ShaderInput), MaterialPropertyOutputType::ShaderInput)
                     ->Value(ToString(MaterialPropertyOutputType::ShaderOption), MaterialPropertyOutputType::ShaderOption)
+                    ->Value(ToString(MaterialPropertyOutputType::ShaderEnabled), MaterialPropertyOutputType::ShaderEnabled)
                     ;
 
                 serializeContext->Enum<MaterialPropertyDataType>()

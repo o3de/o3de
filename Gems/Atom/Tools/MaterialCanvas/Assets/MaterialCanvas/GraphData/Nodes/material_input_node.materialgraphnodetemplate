@@ -1,0 +1,90 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "category": "Material Inputs",
+        "title": "Input",
+        "titlePaletteName": "MaterialInputNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
+        "settings": {
+            "classDefinitions": [
+            ],
+            "functionDefinitions": [
+            ],
+            "includePaths": [
+            ]
+        },
+        "propertySlots": [
+            {
+                "name": "inGroup",
+                "displayName": "Group",
+                "description": "Group",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false
+            },
+            {
+                "name": "inName",
+                "displayName": "Name",
+                "description": "Name",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                }
+            },
+            {
+                "name": "inDescription",
+                "displayName": "Description",
+                "description": "Description",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false
+            },
+            {
+                "name": "inValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 0.0
+                },
+                "settings": {
+                    "materialInputs": [
+                        "SLOTSTANDARDSRGMEMBER"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue;"
+                    ]
+                }
+            }
+        ]
+    }
+}

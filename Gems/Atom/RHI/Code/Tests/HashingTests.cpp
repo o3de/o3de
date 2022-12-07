@@ -147,10 +147,10 @@ namespace UnitTest
 
             // The values here are just arbitrary.
             layout->SetBindingSlot(0);
-            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name("InputA"), 0, 12, 0});
-            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name("InputB"), 12, 12, 0 });
-            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name("InputC"), 24, 76, 0 });
-            layout->AddStaticSampler(RHI::ShaderInputStaticSamplerDescriptor{ Name("StaticSamplerA"), RHI::SamplerState::CreateAnisotropic(16, RHI::AddressMode::Wrap), 1 });
+            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name("InputA"), 0, 12, 0, 0});
+            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name("InputB"), 12, 12, 0, 0});
+            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name("InputC"), 24, 76, 0, 0});
+            layout->AddStaticSampler(RHI::ShaderInputStaticSamplerDescriptor{ Name("StaticSamplerA"), RHI::SamplerState::CreateAnisotropic(16, RHI::AddressMode::Wrap), 1, 1});
             layout->Finalize();
 
             return layout;
@@ -160,7 +160,7 @@ namespace UnitTest
         {
             RHI::ShaderResourceGroupBindingInfo bindingInfo;
             bindingInfo.m_constantDataBindingInfo.m_registerId = 0;
-            bindingInfo.m_resourcesRegisterMap.insert({ "StaticSamplerA", RHI::ResourceBindingInfo{RHI::ShaderStageMask::Vertex, 1} });
+            bindingInfo.m_resourcesRegisterMap.insert({ "StaticSamplerA", RHI::ResourceBindingInfo{RHI::ShaderStageMask::Vertex, 1, 1} });
 
             return bindingInfo;
         }

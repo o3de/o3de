@@ -49,7 +49,7 @@ namespace UnitTest
                                        Z
     );
 
-    class EnumTests : public AllocatorsTestFixture
+    class EnumTests : public LeakDetectionFixture
     {
     };
 

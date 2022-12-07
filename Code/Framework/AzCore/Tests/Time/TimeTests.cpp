@@ -12,19 +12,12 @@
 
 namespace UnitTest
 {
-    class TimeTests : public AllocatorsFixture
+    class TimeTests : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            SetupAllocator();
             m_timeSystem = AZStd::make_unique<AZ::TimeSystem>();
-        }
-
-        void TearDown() override
-        {
-            m_timeSystem.reset();
-            TeardownAllocator();
         }
 
         AZStd::unique_ptr<AZ::TimeSystem> m_timeSystem;

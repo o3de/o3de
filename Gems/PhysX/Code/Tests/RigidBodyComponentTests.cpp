@@ -13,6 +13,7 @@
 #include <EditorRigidBodyComponent.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <PhysX/EditorColliderComponentRequestBus.h>
+#include <PhysX/PhysXLocks.h>
 #include <Tests/EditorTestUtilities.h>
 #include <Tests/PhysXTestCommon.h>
 
@@ -136,8 +137,10 @@ namespace PhysXEditorTests
         EXPECT_TRUE(AZ::IsClose(bodyAabb.GetZExtent(), cylinderHeight));
 
         AZStd::shared_ptr<const Physics::Shape> shape = rigidBody->GetShape(0);
+        const physx::PxRigidBody* pxRigidBody = static_cast<const physx::PxRigidBody*>(rigidBody->GetNativePointer());
         const physx::PxShape* pxShape = static_cast<const physx::PxShape*>(shape->GetNativePointer());
         // Check the geometry is a type of Convex
+        PHYSX_SCENE_READ_LOCK(pxRigidBody->getScene());
         EXPECT_EQ(pxShape->getGeometryType(), physx::PxGeometryType::eCONVEXMESH);
     }
 
@@ -222,10 +225,10 @@ namespace PhysXEditorTests
         // Set collider subdivision values outside the allowed range
         const AZ::u8 subdivisionsTooSmall = PhysX::Utils::MinFrustumSubdivisions - 1;
         PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderSubdivisionCount, subdivisionsTooSmall);
-        EXPECT_EQ(expectedError.GetWarningCount(), 1);
+        EXPECT_EQ(expectedError.GetExpectedWarningCount(), 1);
 
         const AZ::u8 subdivisionsTooLarge = PhysX::Utils::MaxFrustumSubdivisions + 1;
         PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderSubdivisionCount, subdivisionsTooLarge);
-        EXPECT_EQ(expectedError.GetWarningCount(), 2);
+        EXPECT_EQ(expectedError.GetExpectedWarningCount(), 2);
     }
 } // namespace PhysXEditorTests

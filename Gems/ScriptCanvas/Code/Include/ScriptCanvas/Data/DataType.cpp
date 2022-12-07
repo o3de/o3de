@@ -189,10 +189,7 @@ namespace ScriptCanvas
                 return IsVectorType(target) || (target.GetType() == eType::BehaviorContextObject && IsVectorType(target.GetAZType()));
             };
 
-            AZ_Assert(
-                !IS_A(target),
-                "Don't mix concepts, it is too dangerous. "
-                "Check IS-A separately from conversion at all times. "
+            AZ_Assert(!IS_A(target), "Don't mix concepts, it is too dangerous. Check IS-A separately from conversion at all times. "
                 "Use IS_A || IsConvertibleTo in an expression");
 
             const auto targetEType = target.GetType();

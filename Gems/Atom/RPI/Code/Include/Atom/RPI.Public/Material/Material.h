@@ -18,7 +18,6 @@
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
-#include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
 #include <AtomCore/Instance/InstanceData.h>
@@ -50,9 +49,7 @@ namespace AZ
         //! operation is always performed.
         class Material
             : public Data::InstanceData
-            , public Data::AssetBus::Handler
             , public ShaderReloadNotificationBus::MultiHandler
-            , public MaterialReloadNotificationBus::Handler
         {
             friend class MaterialSystem;
         public:
@@ -107,7 +104,12 @@ namespace AZ
             ChangeId GetCurrentChangeId() const;
 
             //! Return the set of shaders to be run by this material.
-            const ShaderCollection& GetShaderCollection() const;
+            const MaterialPipelineShaderCollections& GetShaderCollections() const;
+
+            //! Returns the collection of shaders that this material could run for a given pipeline.
+            //! @param forPipeline the name of the material pipeline to query for shaders. For MaterialPipelineNameCommon, 
+            //!        this returns a list of shaders that should be sent to all pipelines.
+            const ShaderCollection& GetShaderCollection(const Name& forPipeline) const;
 
             //! Attempts to set the value of a system-level shader option that is controlled by this material.
             //! This applies to all shaders in the material's ShaderCollection.
@@ -142,14 +144,6 @@ namespace AZ
             //! Standard init path from asset data.
             static Data::Instance<Material> CreateInternal(MaterialAsset& materialAsset);
             RHI::ResultCode Init(MaterialAsset& materialAsset);
-
-            ///////////////////////////////////////////////////////////////////
-            // AssetBus overrides...
-            void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
-
-            ///////////////////////////////////////////////////////////////////
-            // MaterialReloadNotificationBus overrides...
-            void OnMaterialAssetReinitialized(const Data::Asset<MaterialAsset>& materialAsset) override;
 
             ///////////////////////////////////////////////////////////////////
             // ShaderReloadNotificationBus overrides...
@@ -195,7 +189,7 @@ namespace AZ
             MaterialPropertyFlags m_propertyOverrideFlags;
 
             //! A copy of the MaterialAsset's ShaderCollection is stored here to allow material-specific changes to the default collection.
-            ShaderCollection m_shaderCollection;
+            MaterialPipelineShaderCollections m_shaderCollections;
 
             //! Tracks each change made to material properties.
             //! Initialized to DEFAULT_CHANGE_ID+1 to ensure that GetCurrentChangeId() will not return DEFAULT_CHANGE_ID (a value that client 

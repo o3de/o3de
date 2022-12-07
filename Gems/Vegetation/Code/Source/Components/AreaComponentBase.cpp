@@ -13,7 +13,7 @@
 #include <Vegetation/Ebuses/AreaSystemRequestBus.h>
 #include <AzCore/Debug/Profiler.h>
 
-#include "../VegetationProfiler.h"
+#include <VegetationProfiler.h>
 
 namespace Vegetation
 {

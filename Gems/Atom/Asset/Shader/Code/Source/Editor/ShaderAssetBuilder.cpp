@@ -389,8 +389,8 @@ namespace AZ
             RPI::ShaderAssetCreator shaderAssetCreator;
             shaderAssetCreator.Begin(Uuid::CreateRandom());
 
-            shaderAssetCreator.SetName(AZ::Name{shaderFileName.c_str()});
-            shaderAssetCreator.SetDrawListName(Name(shaderSourceData.m_drawListName));
+            shaderAssetCreator.SetName(AZ::Name{shaderFileName});
+            shaderAssetCreator.SetDrawListName(shaderSourceData.m_drawListName);
             shaderAssetCreator.SetShaderAssetBuildTimestamp(shaderAssetBuildTimestamp);
 
             // The ShaderOptionGroupLayout must be the same across all supervariants because
@@ -443,13 +443,6 @@ namespace AZ
                     response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                     return;
                 }
-
-                // The register number only makes sense if the platform uses "spaces",
-                // since the register Id of the resource will not change even if the pipeline layout changes.
-                // We can pass in a default ShaderCompilerArguments because all we care about is whether the shaderPlatformInterface
-                // appends the "--use-spaces" flag.
-                const auto& azslcArguments = buildArgsManager.GetCurrentArguments().m_azslcArguments;
-                const bool platformUsesRegisterSpaces = RHI::ShaderBuildArguments::HasArgument(azslcArguments, "--use-spaces");
 
                 uint32_t supervariantIndex = 0;
                 for (const auto& supervariantInfo : supervariantList)
@@ -525,8 +518,8 @@ namespace AZ
                     BindingDependencies bindingDependencies;
                     RootConstantData rootConstantData;
                     AssetBuilderSDK::ProcessJobResultCode azslJsonReadResult = ShaderBuilderUtility::PopulateAzslDataFromJsonFiles(
-                        ShaderAssetBuilderName, subProductsPaths, platformUsesRegisterSpaces, azslData, srgLayoutList, shaderOptionGroupLayout,
-                        bindingDependencies, rootConstantData);
+                        ShaderAssetBuilderName, subProductsPaths, azslData, srgLayoutList,
+                        shaderOptionGroupLayout, bindingDependencies, rootConstantData);
                     if (azslJsonReadResult != AssetBuilderSDK::ProcessJobResult_Success)
 
                     {

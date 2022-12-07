@@ -68,7 +68,7 @@ namespace LmbrCentral
        EXPECT_EQ(dimensions, AZ::Vector3(0.37f, 0.57f, 0.66f));
     }
 
-    class EditorBoxShapeComponentFixture : public UnitTest::ToolsApplicationFixture
+    class EditorBoxShapeComponentFixture : public UnitTest::ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override;

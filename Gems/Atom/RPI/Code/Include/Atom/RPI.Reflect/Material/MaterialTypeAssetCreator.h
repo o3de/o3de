@@ -32,10 +32,14 @@ namespace AZ
             void Begin(const Data::AssetId& assetId);
 
             //! Adds a shader to the built-in shader collection, which will be run for this material.
-            //! shaderTag must be unique within the material type's list of shaders.
-            void AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const ShaderVariantId& shaderVariantId = ShaderVariantId{});
-            void AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const ShaderVariantId& shaderVariantId, const AZ::Name& shaderTag);
-            void AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& shaderTag);
+            //! @param shaderTag Must be unique within the material type's list of shaders.
+            //! @param materialPipelineName Identifies a specific material pipeline that this shader is used for.
+            //!                             For MaterialPipelineNameCommon, the shader will be used for all pipelines.
+            void AddShader(
+                const AZ::Data::Asset<ShaderAsset>& shaderAsset,
+                const ShaderVariantId& shaderVariantId = {},
+                const AZ::Name& shaderTag = {},
+                const AZ::Name& materialPipelineName = MaterialPipelineNameCommon);
 
             //! Sets the version of the MaterialTypeAsset
             void SetVersion(uint32_t version);
@@ -57,13 +61,13 @@ namespace AZ
             //! Adds an output mapping from the current material property to a ShaderResourceGroup input.
             void ConnectMaterialPropertyToShaderInput(const Name& shaderInputName);
             
-            //! Adds an output mapping from the current material property to a shader option in a specific shader.
-            //! @param shaderIndex  Index to the material type's list of shader references, according to AddShader().
-            void ConnectMaterialPropertyToShaderOption(const Name& shaderOptionName, uint32_t shaderIndex);
-
             //! Adds output mappings from the current material property to a shader option in multiple shaders.
             //! Will add one mapping for every ShaderAsset that has a matching shader option.
             void ConnectMaterialPropertyToShaderOptions(const Name& shaderOptionName);
+
+            //! Adds an output mapping from the current material property to a Enabled flag of a specific shader.
+            //! @param shaderTag  The tag name that unique identifies a shader in the material type.
+            void ConnectMaterialPropertyToShaderEnabled(const Name& shaderTag);
 
             //! Store the enum names if a property is an enum type.
             void SetMaterialPropertyEnumNames(const AZStd::vector<AZStd::string>& enumNames);
@@ -81,7 +85,9 @@ namespace AZ
 
             //! Adds a MaterialFunctor.
             //! Material functors provide custom logic and calculations to configure shaders, render states, and more.See MaterialFunctor.h for details.
-            void AddMaterialFunctor(const Ptr<MaterialFunctor>& functor);
+            //! @param materialPipelineName Identifies a specific material pipeline that this functor is used for. For MaterialPipelineNameCommon, 
+            //!                             the functor will be used for the main ShaderCollection that applies to all pipelines.
+            void AddMaterialFunctor(const Ptr<MaterialFunctor>& functor, const AZ::Name& materialPipelineName = MaterialPipelineNameCommon);
 
             //! Adds UV name for a shader input.
             void AddUvName(const RHI::ShaderSemantic& shaderInput, const Name& uvName);
@@ -98,11 +104,6 @@ namespace AZ
             //! @return A valid pointer if a ShaderAsset with a material ShaderResourceGroupLayout was added. Otherwise, returns nullptr.
             const RHI::ShaderResourceGroupLayout* GetMaterialShaderResourceGroupLayout() const;
 
-            //! This provides access to the ShaderCollection while the MaterialAsset is still being built.
-            //! This is needed by MaterialTypeSourceData to initialize functor objects.
-            //! @return A valid pointer when called between Begin() and End(). Otherwise, returns nullptr.
-            const ShaderCollection* GetShaderCollection() const;
-
             bool End(Data::Asset<MaterialTypeAsset>& result);
 
         private:
@@ -110,18 +111,18 @@ namespace AZ
             void AddMaterialProperty(MaterialPropertyDescriptor&& materialProperty);
             
             bool PropertyCheck(TypeId typeId, const Name& name);
-                
+
             //! The material type holds references to shader assets that contain SRGs that are supposed to be the same across all passes in the material.
             //! This function searches for an SRG given a @bindingSlot. If a valid one is found it makes sure it is the same across all shaders
-            //! and records in srgShaderIndexToUpdate the index of the ShaderAsset in the ShaderCollection where it was found.
-            //! @srgShaderIndexToUpdate Previously found shader index. If Invalid, this will be filled with the index of the shader Asset
-            //!     where the bindingSlot was found. If not Invalid, this will validate that the same SRG is used by
-            //!                    newShaderAsset.
-            //! @newShaderAssetIndex Corresponding index of @newShaderAsset in m_asset->m_shaderCollection.
+            //! and records it in @srgShaderAssetToUpdate.
+            //! @srgShaderAssetToUpdate Previously found shader asset with the desired SRG. If Invalid, this will be filled with the shader asset
+            //!     where the bindingSlot was found. If not Invalid, this will validate that the same SRG is used by newShaderAsset.
             //! @bindingSlot  The binding slot ID of the SRG to fetch from newShaderAsset.
-            bool UpdateShaderIndexForShaderResourceGroup(
-                uint32_t& srgShaderIndexToUpdate, const Data::Asset<ShaderAsset>& newShaderAsset, const uint32_t newShaderAssetIndex,
-                const uint32_t bindingSlot, const char* srgDebugName);
+            bool UpdateShaderAssetForShaderResourceGroup(
+                Data::Asset<ShaderAsset>& srgShaderAssetToUpdate,
+                const Data::Asset<ShaderAsset>& newShaderAsset,
+                const uint32_t bindingSlot,
+                const char* srgDebugName);
 
             //! Saves the per-material SRG layout in m_shaderResourceGroupLayout for easier access
             void CacheMaterialSrgLayout();

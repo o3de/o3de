@@ -25,7 +25,9 @@
 #include <QMetaObject>
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Jobs/JobManager.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <tests/UnitTestUtilities.h>
 

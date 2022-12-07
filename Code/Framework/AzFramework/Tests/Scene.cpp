@@ -95,7 +95,7 @@ namespace SceneUnitTest
     // Fixture that creates a bare-bones app with only the system components necesary.
 
     class SceneTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override

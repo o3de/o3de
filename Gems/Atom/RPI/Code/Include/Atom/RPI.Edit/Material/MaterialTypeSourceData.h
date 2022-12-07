@@ -63,16 +63,12 @@ namespace AZ
                 AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::PropertyConnection, "{C2F37C26-D7EF-4142-A650-EF50BB18610F}");
 
                 PropertyConnection() = default;
-                PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view fieldName, int32_t shaderIndex = -1);
+                PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view name);
 
                 MaterialPropertyOutputType m_type = MaterialPropertyOutputType::Invalid;
 
-                //! The name of a specific shader setting. This will either be a ShaderResourceGroup input or a ShaderOption, depending on m_type
-                AZStd::string m_fieldName;
-
-                //! For m_type==ShaderOption, this is either the index of a specific shader in m_shaderCollection, or -1 which means every shader in m_shaderCollection.
-                //! For m_type==ShaderInput, this field is not used.
-                int32_t m_shaderIndex = -1; 
+                //! The name of a specific shader setting. This will either be a ShaderResourceGroup input, a ShaderOption, or a shader tag, depending on m_type.
+                AZStd::string m_name;
             };
 
             using PropertyConnectionList = AZStd::vector<PropertyConnection>;
@@ -237,16 +233,26 @@ namespace AZ
                 //! Collection of all available user-facing properties
                 AZStd::vector<AZStd::unique_ptr<PropertyGroup>> m_propertyGroups;
             };
-            
+
+            //! This holds data that is specific to one material pipeline. A list of these will allow
+            //! the MaterialTypeAsset to work with multiple render pipelines.
+            struct MaterialPipelineData
+            {
+                AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::MaterialPipelineData, "{AA4648A2-4E0A-4AAB-BC85-FE762D449CA7}");
+
+                //! A list of specific shaders that will be used to render the material.
+                AZStd::vector<ShaderVariantReferenceData> m_shaderCollection;
+
+                //! Material functors provide custom logic and calculations to configure shaders, render states, and more. See MaterialFunctor.h for details.
+                AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>> m_materialFunctorSourceData;
+            };
+
             AZStd::string m_description;
 
             //! Version 1 is the default and should not contain any version update.
             uint32_t m_version = 1;
             
             VersionUpdates m_versionUpdates;
-
-            //! A list of specific shaders that will be used to render the material.
-            AZStd::vector<ShaderVariantReferenceData> m_shaderCollection;
 
             //! This indicates the name of the lighting model that this material type uses.
             //! For example, "Standard", "Enhanced", "Skin". The actual set of available lighting models
@@ -260,8 +266,15 @@ namespace AZ
             //! This is relevant for "abstract" material type files (see IsAbstractFormat()).
             AZStd::string m_materialShaderCode;
 
+            //! A list of specific shaders that will be used to render the material.
+            AZStd::vector<ShaderVariantReferenceData> m_shaderCollection;
+
             //! Material functors provide custom logic and calculations to configure shaders, render states, and more. See MaterialFunctor.h for details.
             AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>> m_materialFunctorSourceData;
+
+            //! Contains shaders and other data for use in specific render pipelines.
+            //! To apply shaders to all render pipelines, use the @m_shaderCollection and @m_materialFunctorSourceData above.
+            AZStd::unordered_map<Name, MaterialPipelineData> m_pipelineData;
 
             //! Override names for UV input in the shaders of this material type.
             //! Using ordered map to sort names on loading.
@@ -377,7 +390,19 @@ namespace AZ
             //! Groups with the same name will be consolidated into a single entry.
             //! Operates on the old format PropertyLayout::m_groups, used for conversion to the new format.
             AZStd::vector<GroupDefinition> GetOldFormatGroupDefinitionsInDisplayOrder() const;
-            
+
+            bool AddShaders(
+                MaterialTypeAssetCreator& materialTypeAssetCreator,
+                const Name& materialPipelineName,
+                const AZStd::vector<ShaderVariantReferenceData>& shaderCollection,
+                AZStd::string_view materialTypeSourceFilePath) const;
+
+            bool AddFunctors(
+                MaterialTypeAssetCreator& materialTypeAssetCreator,
+                const Name& materialPipelineName,
+                const AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>>& materialFunctorSourceData,
+                AZStd::string_view materialTypeSourceFilePath) const;
+
             PropertyLayout m_propertyLayout;
         };
         

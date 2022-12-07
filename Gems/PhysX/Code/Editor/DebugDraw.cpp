@@ -499,26 +499,17 @@ namespace PhysX
             debugDisplay.PopMatrix();
         }
 
-        void Collider::DrawBox(AzFramework::DebugDisplayRequests& debugDisplay,
+        void Collider::DrawBox(
+            AzFramework::DebugDisplayRequests& debugDisplay,
             const Physics::ColliderConfiguration& colliderConfig,
             const Physics::BoxShapeConfiguration& boxShapeConfig,
-            const AZ::Vector3& colliderScale,
-            const bool forceUniformScaling) const
+            const AZ::Vector3& colliderScale) const
         {
             // The resulting scale is the product of the scale in the entity's transform and the collider scale.
             const AZ::Vector3 resultantScale = Utils::GetTransformScale(m_entityId) * colliderScale;
 
             // Scale the box parameters using the desired method (uniform or non-uniform).
-            AZ::Vector3 scaledBoxParameters = boxShapeConfig.m_dimensions * 0.5f;
-
-            if (forceUniformScaling)
-            {
-                scaledBoxParameters *= resultantScale.GetMaxElement();
-            }
-            else
-            {
-                scaledBoxParameters *= resultantScale;
-            }
+            const AZ::Vector3 scaledBoxParameters = boxShapeConfig.m_dimensions * 0.5f * resultantScale;
 
             const AZ::Color& faceColor = CalcDebugColor(colliderConfig);
 
@@ -533,8 +524,7 @@ namespace PhysX
         void Collider::DrawCapsule(AzFramework::DebugDisplayRequests& debugDisplay,
             const Physics::ColliderConfiguration& colliderConfig,
             const Physics::CapsuleShapeConfiguration& capsuleShapeConfig,
-            const AZ::Vector3& colliderScale,
-            const bool forceUniformScaling) const
+            const AZ::Vector3& colliderScale) const
         {
             AZStd::vector<AZ::Vector3> verts;
             AZStd::vector<AZ::Vector3> points;
@@ -545,18 +535,7 @@ namespace PhysX
 
             // Scale the capsule parameters using the desired method (uniform or non-uniform).
             AZ::Vector2 scaledCapsuleParameters = AZ::Vector2(capsuleShapeConfig.m_radius, capsuleShapeConfig.m_height);
-
-            if (forceUniformScaling)
-            {
-                scaledCapsuleParameters *= resultantScale.GetMaxElement();
-            }
-            else
-            {
-                scaledCapsuleParameters *= AZ::Vector2(
-                    AZ::GetMax(resultantScale.GetX(), resultantScale.GetY()),
-                    resultantScale.GetZ()
-                );
-            }
+            scaledCapsuleParameters *= AZ::Vector2(AZ::GetMax(resultantScale.GetX(), resultantScale.GetY()), resultantScale.GetZ());
 
             debugDisplay.PushMatrix(GetColliderLocalTransform(colliderConfig, colliderScale));
 
