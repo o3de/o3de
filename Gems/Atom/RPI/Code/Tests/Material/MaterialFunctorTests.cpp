@@ -156,7 +156,9 @@ namespace UnitTest
         // Most of this data can be empty since this particular functor doesn't access it.
         AZStd::vector<MaterialPropertyValue> unusedPropertyValues;
         ShaderResourceGroup* unusedSrg = nullptr;
-        ShaderCollection shaderCollectionCopy = materialTypeAsset->GetShaderCollection();
+
+
+        MaterialPipelineShaderCollections shaderCollectionCopy = materialTypeAsset->GetShaderCollections();
 
         {
             // Successfully set o_optionA
@@ -170,9 +172,9 @@ namespace UnitTest
             };
             testFunctorSetOptionA.Process(runtimeContext);
             EXPECT_TRUE(testFunctorSetOptionA.GetProcessResult());
-            EXPECT_EQ(1, shaderCollectionCopy[0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 0 }).GetIndex());
-            EXPECT_NE(1, shaderCollectionCopy[0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 1 }).GetIndex());
-            EXPECT_NE(1, shaderCollectionCopy[0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 2 }).GetIndex());
+            EXPECT_EQ(1, shaderCollectionCopy[MaterialPipelineNameCommon][0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 0 }).GetIndex());
+            EXPECT_NE(1, shaderCollectionCopy[MaterialPipelineNameCommon][0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 1 }).GetIndex());
+            EXPECT_NE(1, shaderCollectionCopy[MaterialPipelineNameCommon][0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 2 }).GetIndex());
         }
 
         {
@@ -187,9 +189,9 @@ namespace UnitTest
             };
             testFunctorSetOptionB.Process(runtimeContext);
             EXPECT_TRUE(testFunctorSetOptionB.GetProcessResult());
-            EXPECT_EQ(1, shaderCollectionCopy[0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 0 }).GetIndex());
-            EXPECT_EQ(1, shaderCollectionCopy[0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 1 }).GetIndex());
-            EXPECT_NE(1, shaderCollectionCopy[0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 2 }).GetIndex());
+            EXPECT_EQ(1, shaderCollectionCopy[MaterialPipelineNameCommon][0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 0 }).GetIndex());
+            EXPECT_EQ(1, shaderCollectionCopy[MaterialPipelineNameCommon][0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 1 }).GetIndex());
+            EXPECT_NE(1, shaderCollectionCopy[MaterialPipelineNameCommon][0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 2 }).GetIndex());
         }
 
         {
@@ -224,9 +226,9 @@ namespace UnitTest
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
 
-        EXPECT_EQ(1, shaderCollectionCopy[0].GetShaderOptions()->GetValue(ShaderOptionIndex{0}).GetIndex());
-        EXPECT_EQ(1, shaderCollectionCopy[0].GetShaderOptions()->GetValue(ShaderOptionIndex{1}).GetIndex());
-        EXPECT_NE(1, shaderCollectionCopy[0].GetShaderOptions()->GetValue(ShaderOptionIndex{2}).GetIndex());
+        EXPECT_EQ(1, shaderCollectionCopy[MaterialPipelineNameCommon][0].GetShaderOptions()->GetValue(ShaderOptionIndex{0}).GetIndex());
+        EXPECT_EQ(1, shaderCollectionCopy[MaterialPipelineNameCommon][0].GetShaderOptions()->GetValue(ShaderOptionIndex{1}).GetIndex());
+        EXPECT_NE(1, shaderCollectionCopy[MaterialPipelineNameCommon][0].GetShaderOptions()->GetValue(ShaderOptionIndex{2}).GetIndex());
     }
 
     TEST_F(MaterialFunctorTests, ReprocessTest)
