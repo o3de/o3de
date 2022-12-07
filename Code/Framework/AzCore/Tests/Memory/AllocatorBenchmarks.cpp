@@ -204,6 +204,7 @@ namespace Benchmark
         virtual void internalSetUp(const ::benchmark::State& state)
         {
             if (state.thread_index == 0) // Only setup in the first thread
+            //if (state.thread_index() == 0)
             {
                 TestAllocatorType::SetUp();
 
@@ -218,6 +219,7 @@ namespace Benchmark
         virtual void internalTearDown(const ::benchmark::State& state)
         {
             if (state.thread_index == 0) // Only setup in the first thread
+            // if (state.thread_index() == 0)
             {
                 m_allocations.clear();
                 m_allocations.shrink_to_fit();
@@ -269,6 +271,7 @@ namespace Benchmark
                 state.PauseTiming();
 
                 AZStd::vector<void*>& perThreadAllocations = base::GetPerThreadAllocations(state.thread_index);
+                //AZStd::vector<void*>& perThreadAllocations = base::GetPerThreadAllocations(state.thread_index());
                 const size_t numberOfAllocations = perThreadAllocations.size();
                 size_t totalAllocationSize = 0;
                 for (size_t allocationIndex = 0; allocationIndex < numberOfAllocations; ++allocationIndex)
@@ -315,6 +318,7 @@ namespace Benchmark
             {
                 state.PauseTiming();
                 AZStd::vector<void*>& perThreadAllocations = base::GetPerThreadAllocations(state.thread_index);
+                // AZStd::vector<void*>& perThreadAllocations = base::GetPerThreadAllocations(state.thread_index());
 
                 const size_t numberOfAllocations = perThreadAllocations.size();
                 size_t totalAllocationSize = 0;

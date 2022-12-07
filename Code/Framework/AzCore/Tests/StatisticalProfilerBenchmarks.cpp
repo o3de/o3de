@@ -35,6 +35,7 @@ namespace Benchmark
         void RunBenchmark(benchmark::State& state)
         {
             if (state.thread_index == 0)
+            // if (state.thread_index() == 0)
             {
                 m_profiler = new ProfilerType;
 
@@ -48,6 +49,7 @@ namespace Benchmark
             }
 
             const AZStd::string statName = AZStd::string::format("thread%03d", state.thread_index);
+            //const AZStd::string statName = AZStd::string::format("thread%03d", state.thread_index());
             const auto statId = UnitTest::ConvertNameToStatId<StatIdType>(statName);
 
             for ([[maybe_unused]] auto _ : state)
@@ -57,6 +59,7 @@ namespace Benchmark
             }
 
             if (state.thread_index == 0)
+            // if (state.thread_index() == 0)
             {
                 delete m_profiler;
             }
@@ -132,6 +135,7 @@ namespace Benchmark
         void RunBenchmark(benchmark::State& state)
         {
             if (state.thread_index == 0)
+            // if (state.thread_index() == 0)
             {
                 TimedScopeType::ClearCachedProxy();
 
@@ -150,6 +154,7 @@ namespace Benchmark
             }
 
             const AZStd::string statName = AZStd::string::format("thread%03d", state.thread_index);
+            //const AZStd::string statName = AZStd::string::format("thread%03d", state.thread_index());
             const auto statId = UnitTest::ConvertNameToStatId<StatIdType>(statName);
 
             for ([[maybe_unused]] auto _ : state)
@@ -159,6 +164,7 @@ namespace Benchmark
             }
 
             if (state.thread_index == 0)
+            // if (state.thread_index() == 0)
             {
                 delete m_proxy;
             }
