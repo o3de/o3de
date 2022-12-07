@@ -101,6 +101,7 @@ set(FILES
     Include/AtomToolsFramework/Graph/GraphView.h
     Include/AtomToolsFramework/Graph/GraphViewConstructPresets.h
     Include/AtomToolsFramework/Graph/GraphViewSettings.h
+    Include/AtomToolsFramework/Graph/GraphUtil.h
     Source/Graph/GraphDocument.cpp
     Source/Graph/GraphDocumentView.cpp
     Source/Graph/GraphView.cpp
@@ -108,6 +109,7 @@ set(FILES
     Source/Graph/GraphView.qss
     Source/Graph/GraphViewConstructPresets.cpp
     Source/Graph/GraphViewSettings.cpp
+    Source/Graph/GraphUtil.cpp
 
     Include/AtomToolsFramework/Inspector/InspectorGroupHeaderWidget.h
     Include/AtomToolsFramework/Inspector/InspectorGroupWidget.h

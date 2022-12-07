@@ -649,6 +649,7 @@ namespace AZ::Render
 
             // [GFX TODO][ATOM-13067] Enable raytracing on skinned meshes
             meshDescriptor.m_isRayTracingEnabled = false;
+            meshDescriptor.m_isAlwaysDynamic = true;
 
             m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
                 m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials));

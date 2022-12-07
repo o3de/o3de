@@ -155,8 +155,9 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MaterialPropertyOutputId>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("m_type", &MaterialPropertyOutputId::m_type)
+                    ->Field("m_materialPipelineName", &MaterialPropertyOutputId::m_materialPipelineName)
                     ->Field("m_containerIndex", &MaterialPropertyOutputId::m_containerIndex)
                     ->Field("m_itemIndex", &MaterialPropertyOutputId::m_itemIndex)
                     ;

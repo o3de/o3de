@@ -31,6 +31,7 @@ namespace AZ
             struct ShaderData
             {
                 Data::Instance<Shader> m_shader;
+                Name m_materialPipelineName;
                 Name m_shaderTag;
                 ShaderVariantId m_requestedShaderVariantId;
                 ShaderVariantId m_activeShaderVariantId;

@@ -945,15 +945,13 @@ namespace AZ
             AZStd::string& AppendSeparator(AZStd::string& inout);
 
             //! MakeUniqueFilenameWithSuffix
-            /*! given a directory path, a filename and an optional extension will return a unique filename
-            *! EX: StringFunc::Path::MakeUniqueFilenameWithSuffix("c:\\folder","NewFile.txt", outPath, "-copy")
-            *! if "NewFile.txt" doesn't exist, returns "c:\\folder\\Newfile.txt" in outFilePath
-            *! if "NewFile.txt" exists, returns "c:\\folder\\Newfile-copy1.txt" in outFilePath
-            *! if both "NewFile.txt" and "NewFile-copy1.txt" exist, returns "c:\\folder\\Newfile-copy2.txt" in outFilePath
-            *! etc.
+            /*! given a directory path and an optional extension will return a unique filename
+            *! EX: StringFunc::Path::MakeUniqueFilenameWithSuffix("c:\\folder\\NewFile.txt", "-copy")
+            *! if "NewFile.txt" doesn't exist, returns "c:\\folder\\Newfile.txt"
+            *! if "NewFile.txt" exists, returns "c:\\folder\\Newfile-copy1.txt"
+            *! if both "NewFile.txt" and "NewFile-copy1.txt" exist, returns "c:\\folder\\Newfile-copy2.txt" etc.
             */
-            void MakeUniqueFilenameWithSuffix(
-                const AZStd::string& directoryPath, const AZStd::string& filename, AZStd::string& outFilePath, const AZStd::string& suffix = "");
+            AZ::IO::FixedMaxPath MakeUniqueFilenameWithSuffix(const AZ::IO::PathView& basePath, const AZStd::string_view& suffix = "");
 
         } // namespace Path
 
