@@ -11,7 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportContent.h>
-#include <Document/PassGraphCompilerNotificationBus.h>
+#include <AtomToolsFramework/Graph/GraphCompilerNotificationBus.h>
 #endif
 
 namespace PassCanvas
@@ -19,7 +19,7 @@ namespace PassCanvas
     class PassCanvasViewportContent final
         : public AtomToolsFramework::EntityPreviewViewportContent
         , public AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
-        , public PassGraphCompilerNotificationBus::Handler
+        , public AtomToolsFramework::GraphCompilerNotificationBus::Handler
     {
     public:
         PassCanvasViewportContent(
@@ -39,7 +39,7 @@ namespace PassCanvas
         void OnDocumentClosed(const AZ::Uuid& documentId) override;
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
 
-        // PassGraphCompilerNotificationBus::Handler overrides...
+        // AtomToolsFramework::GraphCompilerNotificationBus::Handler overrides...
         void OnCompileGraphStarted(const AZ::Uuid& documentId) override;
         void OnCompileGraphCompleted(const AZ::Uuid& documentId) override;
         void OnCompileGraphFailed(const AZ::Uuid& documentId) override;
