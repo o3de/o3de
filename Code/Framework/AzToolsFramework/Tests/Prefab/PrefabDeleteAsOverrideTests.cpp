@@ -43,10 +43,10 @@ namespace UnitTest
 
         // Delete the tire entity in the first car.
         // Note: Level root instance is focused by default.
-        auto firstCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(firstCarContainerId);
+        InstanceOptionalReference firstCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(firstCarContainerId);
         AZ::EntityId firstTireEntityId = firstCarInstance->get().GetEntityId(tireEntityAlias);
 
-        auto secondCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(secondCarContainerId);
+        InstanceOptionalReference secondCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(secondCarContainerId);
         AZ::EntityId secondTireEntityId = secondCarInstance->get().GetEntityId(tireEntityAlias);
 
         PrefabOperationResult result = m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance({ firstTireEntityId });
@@ -100,7 +100,7 @@ namespace UnitTest
 
         // Delete the wheel instance in the first car.
         // Note: Level root instance is focused by default.
-        auto firstCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(firstCarContainerId);
+        InstanceOptionalReference firstCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(firstCarContainerId);
         AZ::EntityId firstWheelContainerId;
         firstCarInstance->get().GetNestedInstances(
             [&firstWheelContainerId, wheelInstanceAlias](AZStd::unique_ptr<Instance>& nestedInstance)
@@ -113,7 +113,7 @@ namespace UnitTest
             });
         ASSERT_TRUE(firstWheelContainerId.IsValid()) << "Cannot get wheel container entity id in the first car.";
 
-        auto secondCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(secondCarContainerId);
+        InstanceOptionalReference secondCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(secondCarContainerId);
 
         PrefabOperationResult result = m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance({ firstWheelContainerId });
         ASSERT_TRUE(result.IsSuccess());
@@ -161,11 +161,11 @@ namespace UnitTest
 
         // Delete the tire entity in the first car.
         // Note: Level root instance is focused by default.
-        auto firstCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(firstCarContainerId);
+        InstanceOptionalReference firstCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(firstCarContainerId);
         AZ::EntityId firstTireEntityId = firstCarInstance->get().GetEntityId(tireEntityAlias);
         AZ::EntityId firstChildEntityId = firstCarInstance->get().GetEntityId(childEntityAlias);
 
-        auto secondCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(secondCarContainerId);
+        InstanceOptionalReference secondCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(secondCarContainerId);
         AZ::EntityId secondTireEntityId = secondCarInstance->get().GetEntityId(tireEntityAlias);
         AZ::EntityId secondChildEntityId = secondCarInstance->get().GetEntityId(childEntityAlias);
 
@@ -231,7 +231,7 @@ namespace UnitTest
 
         // Delete the tire entity in the first car.
         // Note: Level root instance is focused by default.
-        auto firstCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(firstCarContainerId);
+        InstanceOptionalReference firstCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(firstCarContainerId);
         AZ::EntityId firstTireEntityId = firstCarInstance->get().GetEntityId(tireEntityAlias);
         AZ::EntityId firstChildContainerId;
         firstCarInstance->get().GetNestedInstances(
@@ -245,7 +245,7 @@ namespace UnitTest
             });
         ASSERT_TRUE(firstChildContainerId.IsValid()) << "Cannot get child container entity id in the first car.";
 
-        auto secondCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(secondCarContainerId);
+        InstanceOptionalReference secondCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(secondCarContainerId);
         AZ::EntityId secondTireEntityId = secondCarInstance->get().GetEntityId(tireEntityAlias);
         AZ::EntityId secondChildContainerId;
         secondCarInstance->get().GetNestedInstances(
