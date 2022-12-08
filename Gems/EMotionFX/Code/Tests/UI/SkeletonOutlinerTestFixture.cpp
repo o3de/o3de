@@ -111,7 +111,7 @@ namespace EMotionFX
     {
         SetUpPhysics();
 
-        AddColliderViaAddComponentButton("Add Cloth Collider", "Sphere");
+        AddColliderViaAddComponentButton("Cloth Collider", "Sphere");
 
         ShowJointPropertyWidget();
 
@@ -122,7 +122,7 @@ namespace EMotionFX
     {
         SetUpPhysics();
 
-        AddColliderViaAddComponentButton("Add Cloth Collider", "Capsule");
+        AddColliderViaAddComponentButton("Cloth Collider", "Capsule");
 
         // Check the node is in the ragdoll
         EXPECT_TRUE(ColliderHelpers::NodeHasClothCollider(m_indexList[3]));
@@ -158,8 +158,6 @@ namespace EMotionFX
         // We did not crash, at least
     }
 
-    // This Test is disabled, because using AddColliderViaAddComponentButton is buggy and can only be called
-    // once
     TEST_F(SkeletonOutlinerTestFixture, CopyAndPaste)
     {
         SetUpPhysics();
