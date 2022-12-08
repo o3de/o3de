@@ -9,7 +9,8 @@
 
 #include <Atom/RPI/TangentSpace.azsli>
 
-static const uint InvalidMacroMaterialRef = 0x0000FFFF;
+static const uint InvalidMacroMaterialRef = 0x0000FFFFu;
+static const uint InvalidTextureId = 0xFFFFFFFFu;
 
 void SampleMacroTexture(float2 worldPosition, float2 positionDdx, float2 positionDdy, out float3 macroColor, inout float3 macroNormal, out bool hasNormal)
 {
@@ -61,13 +62,13 @@ void SampleMacroTexture(float2 worldPosition, float2 positionDdx, float2 positio
         float2 ddx_macroUv = positionDdx / macroUvSize;
         float2 ddy_macroUv = positionDdx / macroUvSize;
 
-        if (macroMaterialData.m_colorMapId != 0xFFFFFFFF)
+        if (macroMaterialData.m_colorMapId != InvalidTextureId)
         {
             macroColor = Bindless::GetTexture2D(macroMaterialData.m_colorMapId).SampleGrad(TerrainMaterialSrg::m_sampler, macroUv, ddx_macroUv, ddy_macroUv).rgb;
             macroColor = TransformColor(macroColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
         }
 
-        hasNormal = macroMaterialData.m_normalMapId != 0xFFFFFFFF;
+        hasNormal = macroMaterialData.m_normalMapId != InvalidTextureId;
         if (hasNormal)
         {
             bool flipX = macroMaterialData.m_flags & 1;

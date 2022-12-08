@@ -35,11 +35,6 @@ namespace Terrain
         [[maybe_unused]] const char* TerrainFPName = "TerrainFeatureProcessor";
     }
 
-    namespace TerrainSrgInputs
-    {
-        static const char* const Textures("m_textures");
-    }
-
     void TerrainFeatureProcessor::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
