@@ -29,10 +29,13 @@ namespace AZ::DocumentPropertyEditor
         ComponentAdapter(AZ::Component* componentInstance);
         ~ComponentAdapter();
 
+        // AzToolsFramework::PropertyEditorEntityChangeNotificationBus::Bus overrides
         void OnEntityComponentPropertyChanged(AZ::ComponentId componentId) override;
 
+        // AzToolsFramework::ToolsApplicationEvents::Bus overrides
         void InvalidatePropertyDisplay(AzToolsFramework::PropertyModificationRefreshLevel level) override;
 
+        // AzToolsFramework::PropertyEditorGUIMessages::Bus overrides
         void RequestRefresh(AzToolsFramework::PropertyModificationRefreshLevel level) override;
 
         //! Sets the component, connects the appropriate Bus Handlers and sets the reflect data for this instance
@@ -41,8 +44,13 @@ namespace AZ::DocumentPropertyEditor
         //! Trigger a refresh based on messages from the listeners
         void DoRefresh();
 
+        Dom::Value HandleMessage(const AdapterMessage& message) override;
+
     protected:
         AZ::Component* m_componentInstance = nullptr;
+
+        AzToolsFramework::UndoSystem::URSequencePoint* m_currentUndoNode = nullptr;
+
         enum AzToolsFramework::PropertyModificationRefreshLevel m_queuedRefreshLevel =
             AzToolsFramework::PropertyModificationRefreshLevel::Refresh_None;
     };

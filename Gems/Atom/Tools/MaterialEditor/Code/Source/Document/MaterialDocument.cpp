@@ -306,6 +306,11 @@ namespace MaterialEditor
         return result;
     }
 
+    bool MaterialDocument::CanSaveAsChild() const
+    {
+        return true;
+    }
+
     bool MaterialDocument::BeginEdit()
     {
         // Save the current properties as a momento for undo before any changes are applied
@@ -906,7 +911,7 @@ namespace MaterialEditor
             if (materialPropertyDependencies.none() || functor->NeedsProcess(dirtyFlags))
             {
                 AZ::RPI::MaterialFunctor::EditorContext context = AZ::RPI::MaterialFunctor::EditorContext(
-                    m_materialInstance->GetPropertyValues(), m_materialInstance->GetMaterialPropertiesLayout(), propertyDynamicMetadata,
+                    m_materialInstance->GetPropertyCollection(), propertyDynamicMetadata,
                     propertyGroupDynamicMetadata, updatedProperties, updatedPropertyGroups,
                     &materialPropertyDependencies);
                 functor->Process(context);

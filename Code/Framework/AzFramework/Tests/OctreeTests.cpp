@@ -19,7 +19,7 @@ using namespace AzFramework;
 namespace UnitTest
 {
     class OctreeTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override

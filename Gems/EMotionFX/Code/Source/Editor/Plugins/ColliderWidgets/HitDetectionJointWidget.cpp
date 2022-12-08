@@ -68,7 +68,7 @@ namespace EMotionFX
                     hitDetectionNodeConfig->m_shapes,
                     serializeContext);
                 m_collidersWidget->show();
-                m_widgetCount = hitDetectionNodeConfig->m_shapes.size();
+                m_widgetCount = static_cast<int>(hitDetectionNodeConfig->m_shapes.size());
             }
             else
             {

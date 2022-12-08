@@ -13,6 +13,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzFramework/Viewport/MultiViewportController.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AtomToolsFramework
 {
@@ -103,6 +104,7 @@ namespace AtomToolsFramework
     class ModularViewportCameraControllerInstance final
         : public AzFramework::MultiViewportControllerInstanceInterface<ModularViewportCameraController>
         , public ModularViewportCameraControllerRequestBus::Handler
+        , public AzToolsFramework::ViewportInteraction::ViewportInteractionNotificationBus::Handler
     {
     public:
         explicit ModularViewportCameraControllerInstance(AzFramework::ViewportId viewportId, ModularViewportCameraController* controller);
@@ -126,8 +128,12 @@ namespace AtomToolsFramework
         void SetCameraOffsetImmediate(const AZ::Vector3& offset) override;
         bool AddCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs) override;
         bool RemoveCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs) override;
+        void ResetCameras() override;
 
     private:
+        // ViewportInteractionNotificationBus overrides ...
+        void OnViewportFocusOut() override;
+
         //! Combine the current camera transform with any potential roll from the tracked
         //! transform (this is usually zero).
         AZ::Transform CombinedCameraTransform() const;

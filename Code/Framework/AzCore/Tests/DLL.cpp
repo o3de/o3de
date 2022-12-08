@@ -21,12 +21,12 @@ namespace UnitTest
 #if !AZ_UNIT_TEST_SKIP_DLL_TEST
 
     class DLL
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             AZ::NameDictionary::Create();
         }
@@ -35,7 +35,7 @@ namespace UnitTest
         {
             AZ::NameDictionary::Destroy();
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void LoadModule()

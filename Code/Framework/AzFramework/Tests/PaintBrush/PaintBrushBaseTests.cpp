@@ -22,7 +22,7 @@ This set of unit tests validates that the basic PaintBrush functionality and not
 
 namespace UnitTest
 {
-    class PaintBrushTestFixture : public ScopedAllocatorSetupFixture
+    class PaintBrushTestFixture : public LeakDetectionFixture
     {
     public:
 
