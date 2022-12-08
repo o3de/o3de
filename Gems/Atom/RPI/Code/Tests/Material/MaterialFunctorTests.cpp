@@ -155,14 +155,17 @@ namespace UnitTest
 
         // Most of this data can be empty since this particular functor doesn't access it.
         AZStd::vector<MaterialPropertyValue> unusedPropertyValues;
+        MaterialPropertyCollection properties;
+        properties.Init(materialTypeAsset->GetMaterialPropertiesLayout(), unusedPropertyValues);
         ShaderResourceGroup* unusedSrg = nullptr;
-        ShaderCollection shaderCollectionCopy = materialTypeAsset->GetShaderCollection();
+
+
+        MaterialPipelineShaderCollections shaderCollectionCopy = materialTypeAsset->GetShaderCollections();
 
         {
             // Successfully set o_optionA
             MaterialFunctor::RuntimeContext runtimeContext = MaterialFunctor::RuntimeContext{
-                unusedPropertyValues,
-                materialTypeAsset->GetMaterialPropertiesLayout(),
+                properties,
                 &shaderCollectionCopy,
                 unusedSrg,
                 &testFunctorSetOptionA.GetMaterialPropertyDependencies(),
@@ -170,16 +173,15 @@ namespace UnitTest
             };
             testFunctorSetOptionA.Process(runtimeContext);
             EXPECT_TRUE(testFunctorSetOptionA.GetProcessResult());
-            EXPECT_EQ(1, shaderCollectionCopy[0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 0 }).GetIndex());
-            EXPECT_NE(1, shaderCollectionCopy[0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 1 }).GetIndex());
-            EXPECT_NE(1, shaderCollectionCopy[0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 2 }).GetIndex());
+            EXPECT_EQ(1, shaderCollectionCopy[MaterialPipelineNameCommon][0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 0 }).GetIndex());
+            EXPECT_NE(1, shaderCollectionCopy[MaterialPipelineNameCommon][0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 1 }).GetIndex());
+            EXPECT_NE(1, shaderCollectionCopy[MaterialPipelineNameCommon][0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 2 }).GetIndex());
         }
 
         {
             // Successfully set o_optionB
             MaterialFunctor::RuntimeContext runtimeContext = MaterialFunctor::RuntimeContext{
-                unusedPropertyValues,
-                materialTypeAsset->GetMaterialPropertiesLayout(),
+                properties,
                 &shaderCollectionCopy,
                 unusedSrg,
                 &testFunctorSetOptionB.GetMaterialPropertyDependencies(),
@@ -187,17 +189,16 @@ namespace UnitTest
             };
             testFunctorSetOptionB.Process(runtimeContext);
             EXPECT_TRUE(testFunctorSetOptionB.GetProcessResult());
-            EXPECT_EQ(1, shaderCollectionCopy[0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 0 }).GetIndex());
-            EXPECT_EQ(1, shaderCollectionCopy[0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 1 }).GetIndex());
-            EXPECT_NE(1, shaderCollectionCopy[0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 2 }).GetIndex());
+            EXPECT_EQ(1, shaderCollectionCopy[MaterialPipelineNameCommon][0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 0 }).GetIndex());
+            EXPECT_EQ(1, shaderCollectionCopy[MaterialPipelineNameCommon][0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 1 }).GetIndex());
+            EXPECT_NE(1, shaderCollectionCopy[MaterialPipelineNameCommon][0].GetShaderOptions()->GetValue(ShaderOptionIndex{ 2 }).GetIndex());
         }
 
         {
             // Fail to set o_optionC because it is not owned by the material type
             AZ_TEST_START_TRACE_SUPPRESSION;
             MaterialFunctor::RuntimeContext runtimeContext = MaterialFunctor::RuntimeContext{
-                unusedPropertyValues,
-                materialTypeAsset->GetMaterialPropertiesLayout(),
+                properties,
                 &shaderCollectionCopy,
                 unusedSrg,
                 &testFunctorSetOptionC.GetMaterialPropertyDependencies(),
@@ -212,8 +213,7 @@ namespace UnitTest
             // Fail to set option index that is out of range
             AZ_TEST_START_TRACE_SUPPRESSION;
             MaterialFunctor::RuntimeContext runtimeContext = MaterialFunctor::RuntimeContext{
-                unusedPropertyValues,
-                materialTypeAsset->GetMaterialPropertiesLayout(),
+                properties,
                 &shaderCollectionCopy,
                 unusedSrg,
                 &testFunctorSetOptionInvalid.GetMaterialPropertyDependencies(),
@@ -224,9 +224,9 @@ namespace UnitTest
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
 
-        EXPECT_EQ(1, shaderCollectionCopy[0].GetShaderOptions()->GetValue(ShaderOptionIndex{0}).GetIndex());
-        EXPECT_EQ(1, shaderCollectionCopy[0].GetShaderOptions()->GetValue(ShaderOptionIndex{1}).GetIndex());
-        EXPECT_NE(1, shaderCollectionCopy[0].GetShaderOptions()->GetValue(ShaderOptionIndex{2}).GetIndex());
+        EXPECT_EQ(1, shaderCollectionCopy[MaterialPipelineNameCommon][0].GetShaderOptions()->GetValue(ShaderOptionIndex{0}).GetIndex());
+        EXPECT_EQ(1, shaderCollectionCopy[MaterialPipelineNameCommon][0].GetShaderOptions()->GetValue(ShaderOptionIndex{1}).GetIndex());
+        EXPECT_NE(1, shaderCollectionCopy[MaterialPipelineNameCommon][0].GetShaderOptions()->GetValue(ShaderOptionIndex{2}).GetIndex());
     }
 
     TEST_F(MaterialFunctorTests, ReprocessTest)

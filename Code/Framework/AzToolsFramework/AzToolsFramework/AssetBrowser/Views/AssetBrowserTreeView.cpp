@@ -360,8 +360,7 @@ namespace AzToolsFramework
                 auto productEntry = GetEntryFromIndex<ProductAssetBrowserEntry>(rowIdx);
                 if (productEntry && productEntry->GetAssetId() == assetID)
                 {
-                    selectionModel()->clear();
-                    selectionModel()->select(rowIdx, QItemSelectionModel::Select);
+                    selectionModel()->select(rowIdx, QItemSelectionModel::ClearAndSelect);
                     setCurrentIndex(rowIdx);
                     return true;
                 }
@@ -420,8 +419,7 @@ namespace AzToolsFramework
                                 expand(rowIdx);
                             }
 
-                            selectionModel()->clear();
-                            selectionModel()->select(rowIdx, QItemSelectionModel::Select);
+                            selectionModel()->select(rowIdx, QItemSelectionModel::ClearAndSelect);
                             setCurrentIndex(rowIdx);
 
                             return true;
@@ -745,9 +743,7 @@ namespace AzToolsFramework
             {
                 using namespace AZ::IO;
                 Path oldPath = entry->GetFullPath();
-                AZStd::string newPath;
-                AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(
-                    oldPath.ParentPath().Native(), oldPath.Filename().Native(), newPath, "-copy");
+                AZ::IO::FixedMaxPath newPath = AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix( AZ::IO::PathView(oldPath.Native()), "-copy");
                 QFile::copy(oldPath.c_str(), newPath.c_str());
             }
         }

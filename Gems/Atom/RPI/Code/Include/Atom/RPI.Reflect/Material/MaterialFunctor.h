@@ -26,6 +26,7 @@ namespace AZ
         class Image;
         class ShaderResourceGroup;
         class MaterialPropertiesLayout;
+        class MaterialPropertyCollection;
 
         //! Indicates how the material system should respond to any material property changes that
         //! impact Pipeline State Object configuration. This is significant because some platforms
@@ -82,6 +83,13 @@ namespace AZ
 
             static void Reflect(ReflectContext* context);
 
+            //! This execution context operates at a high level, and is not specific to a particular material pipeline.
+            //! It can read material property values.
+            //! It can configure the Material ShaderResourceGroup because there is one for the entire material,
+            //! it's not specific to a material pipeline or particular shader.
+            //! It can configure shaders that are not specific to a particular material pipeline (i.e. the MaterialPipelineNameCommon ShaderCollection).
+            //! It can set shader option values (Note this does impact the material-pipeline-specific shaders in order to automatically
+            //! propagate the values to all shaders in the material).
             class RuntimeContext
             {
                 friend class LuaMaterialFunctorRuntimeContext;
@@ -96,18 +104,18 @@ namespace AZ
                 const MaterialPropertyValue& GetMaterialPropertyValue(const Name& propertyId) const;
                 const MaterialPropertyValue& GetMaterialPropertyValue(const MaterialPropertyIndex& index) const;
 
-                const MaterialPropertiesLayout* GetMaterialPropertiesLayout() const { return m_materialPropertiesLayout.get(); }
-                
+                const MaterialPropertiesLayout* GetMaterialPropertiesLayout() const;
+
                 MaterialPropertyPsoHandling GetMaterialPropertyPsoHandling() const { return m_psoHandling; }
 
-                //! Set the value of a shader option in all applicable shaders.
+                //! Set the value of a shader option in all applicable shaders, across all material pipelines.
                 bool SetShaderOptionValue(const Name& optionName, ShaderOptionValue value);
                 bool SetShaderOptionValue(const Name& optionName, const Name& value);
 
                 //! Get the shader resource group for editing.
                 ShaderResourceGroup* GetShaderResourceGroup();
 
-                //! Return how many shaders are in this material.
+                //! Return how many shaders are in the local ShaderCollection.
                 AZStd::size_t GetShaderCount() const;
 
                 //! Enable/disable the specific shader with the index.
@@ -131,11 +139,10 @@ namespace AZ
                 //! @param renderStatesOverlay a RenderStates struct that will be merged with this shader's RenderStates (using RHI::MergeStateInto())
                 void ApplyShaderRenderStateOverlay(AZStd::size_t shaderIndex, const RHI::RenderStates& renderStatesOverlay);
                 void ApplyShaderRenderStateOverlay(const AZ::Name& shaderTag, const RHI::RenderStates& renderStatesOverlay);
-
+                
                 RuntimeContext(
-                    const AZStd::vector<MaterialPropertyValue>& propertyValues,
-                    RHI::ConstPtr<MaterialPropertiesLayout> materialPropertiesLayout,
-                    ShaderCollection* shaderCollection,
+                    const MaterialPropertyCollection& materialProperties,
+                    MaterialPipelineShaderCollections* shaderCollections,
                     ShaderResourceGroup* shaderResourceGroup,
                     const MaterialPropertyFlags* materialPropertyDependencies,
                     MaterialPropertyPsoHandling psoHandling
@@ -147,9 +154,9 @@ namespace AZ
                 template<typename ValueType>
                 bool SetShaderOptionValueHelper(const Name& name, const ValueType& value);
 
-                const AZStd::vector<MaterialPropertyValue>& m_materialPropertyValues;
-                RHI::ConstPtr<MaterialPropertiesLayout> m_materialPropertiesLayout;
-                ShaderCollection* m_shaderCollection;
+                const MaterialPropertyCollection& m_materialProperties;
+                ShaderCollection* m_commonShaderCollection;
+                MaterialPipelineShaderCollections* m_allShaderCollections;
                 ShaderResourceGroup* m_shaderResourceGroup;
                 const MaterialPropertyFlags* m_materialPropertyDependencies = nullptr;
                 MaterialPropertyPsoHandling m_psoHandling = MaterialPropertyPsoHandling::Error;
@@ -174,7 +181,7 @@ namespace AZ
                 const MaterialPropertyValue& GetMaterialPropertyValue(const Name& propertyId) const;
                 const MaterialPropertyValue& GetMaterialPropertyValue(const MaterialPropertyIndex& index) const;
 
-                const MaterialPropertiesLayout* GetMaterialPropertiesLayout() const { return m_materialPropertiesLayout.get(); }
+                const MaterialPropertiesLayout* GetMaterialPropertiesLayout() const;
                 
                 MaterialPropertyPsoHandling GetMaterialPropertyPsoHandling() const { return MaterialPropertyPsoHandling::Allowed; }
 
@@ -203,8 +210,7 @@ namespace AZ
                 // const AZStd::vector<AZStd::any>&, AZStd::unordered_map<MaterialPropertyIndex, Image*>&, RHI::ConstPtr<MaterialPropertiesLayout>
                 // can be all replaced by const Material*, but Material definition is separated in RPI.Public, we can't use it at this point.
                 EditorContext(
-                    const AZStd::vector<MaterialPropertyValue>& propertyValues,
-                    RHI::ConstPtr<MaterialPropertiesLayout> materialPropertiesLayout,
+                    const MaterialPropertyCollection& materialProperties,
                     AZStd::unordered_map<Name, MaterialPropertyDynamicMetadata>& propertyMetadata,
                     AZStd::unordered_map<Name, MaterialPropertyGroupDynamicMetadata>& propertyGroupMetadata,
                     AZStd::unordered_set<Name>& updatedPropertiesOut,
@@ -216,8 +222,7 @@ namespace AZ
                 MaterialPropertyDynamicMetadata* QueryMaterialPropertyMetadata(const Name& propertyId) const;
                 MaterialPropertyGroupDynamicMetadata* QueryMaterialPropertyGroupMetadata(const Name& propertyGroupId) const;
 
-                const AZStd::vector<MaterialPropertyValue>& m_materialPropertyValues;
-                RHI::ConstPtr<MaterialPropertiesLayout> m_materialPropertiesLayout;
+                const MaterialPropertyCollection& m_materialProperties;
                 AZStd::unordered_map<Name, MaterialPropertyDynamicMetadata>& m_propertyMetadata;
                 AZStd::unordered_map<Name, MaterialPropertyGroupDynamicMetadata>& m_propertyGroupMetadata;
                 AZStd::unordered_set<Name>& m_updatedPropertiesOut;

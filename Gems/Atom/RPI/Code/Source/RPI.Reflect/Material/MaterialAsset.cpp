@@ -57,9 +57,14 @@ namespace AZ
             return m_materialTypeAsset;
         }
 
-        const ShaderCollection& MaterialAsset::GetShaderCollection() const
+        const MaterialPipelineShaderCollections& MaterialAsset::GetShaderCollections() const
         {
-            return m_materialTypeAsset->GetShaderCollection();
+            return m_materialTypeAsset->GetShaderCollections();
+        }
+
+        const ShaderCollection& MaterialAsset::GetShaderCollection(const Name& forPipeline) const
+        {
+            return m_materialTypeAsset->GetShaderCollection(forPipeline);
         }
 
         const MaterialFunctorList& MaterialAsset::GetMaterialFunctors() const
@@ -181,7 +186,7 @@ namespace AZ
 
                         MaterialPropertyValue finalValue = value.CastToType(propertyDescriptor->GetStorageDataTypeId());
 
-                        if (ValidateMaterialPropertyDataType(finalValue.GetTypeId(), name, propertyDescriptor, reportError))
+                        if (ValidateMaterialPropertyDataType(finalValue.GetTypeId(), propertyDescriptor, reportError))
                         {
                             finalizedPropertyValues[propertyIndex.GetIndex()] = finalValue;
                         }

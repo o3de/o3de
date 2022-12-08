@@ -239,7 +239,13 @@ namespace ShaderManagementConsole
             return AZStd::vector<AZ::RPI::ShaderCollection::Item>();
         }
 
-        return AZStd::vector<AZ::RPI::ShaderCollection::Item>(
-            materialInstance->GetShaderCollection().begin(), materialInstance->GetShaderCollection().end());
+        AZStd::vector<AZ::RPI::ShaderCollection::Item> shaderItems;
+
+        for (const auto& shaderCollectionPair : materialInstance->GetShaderCollections())
+        {
+            shaderItems.insert(shaderItems.end(), shaderCollectionPair.second.begin(), shaderCollectionPair.second.end());
+        }
+
+        return shaderItems;
     }
 } // namespace ShaderManagementConsole

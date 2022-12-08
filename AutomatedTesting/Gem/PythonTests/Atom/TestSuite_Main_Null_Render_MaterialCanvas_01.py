@@ -27,3 +27,7 @@ class TestMaterialCanvas(AtomToolsTestSuite):
     class MaterialCanvas_Atom_LaunchMaterialCanvas_2(AtomToolsBatchedTest):
 
         from Atom.tests import MaterialCanvas_Atom_LaunchMaterialCanvas as test_module
+
+    class MaterialCanvas_Atom_BasicTests(AtomToolsBatchedTest):
+
+        from Atom.tests import MaterialCanvas_Atom_BasicTests as test_module

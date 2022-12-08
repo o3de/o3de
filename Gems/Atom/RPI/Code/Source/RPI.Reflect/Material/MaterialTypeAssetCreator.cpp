@@ -40,8 +40,11 @@ namespace AZ
             return EndCommon(result);
         }
 
-        bool MaterialTypeAssetCreator::UpdateShaderIndexForShaderResourceGroup(
-            uint32_t& srgShaderIndexToUpdate, const Data::Asset<ShaderAsset>& newShaderAsset, const uint32_t newShaderAssetIndex, const uint32_t bindingSlot, const char* srgDebugName)
+        bool MaterialTypeAssetCreator::UpdateShaderAssetForShaderResourceGroup(
+            Data::Asset<ShaderAsset>& srgShaderAssetToUpdate,
+            const Data::Asset<ShaderAsset>& newShaderAsset,
+            const uint32_t bindingSlot,
+            const char* srgDebugName)
         {
             const auto& newSrgLayout = newShaderAsset->FindShaderResourceGroupLayout(bindingSlot);
 
@@ -51,10 +54,11 @@ namespace AZ
                 return true;
             }
 
-            if (srgShaderIndexToUpdate != MaterialTypeAsset::InvalidShaderIndex)
+            if (srgShaderAssetToUpdate.GetId().IsValid())
             {
-                const auto& currentShaderAsset = m_asset->m_shaderCollection[srgShaderIndexToUpdate].GetShaderAsset();
-                const auto& currentSrgLayout = currentShaderAsset->FindShaderResourceGroupLayout(bindingSlot);
+                AZ_Assert(srgShaderAssetToUpdate.Get(), "srgShaderAssetToUpdate has an AssetId but is not loaded");
+
+                const auto& currentSrgLayout = srgShaderAssetToUpdate->FindShaderResourceGroupLayout(bindingSlot);
                 if (currentSrgLayout->GetHash() != newSrgLayout->GetHash())
                 {
                     ReportError("All shaders in a material must use the same %s ShaderResourceGroup.", srgDebugName);
@@ -63,7 +67,7 @@ namespace AZ
             }
             else
             {
-                srgShaderIndexToUpdate = newShaderAssetIndex;
+                srgShaderAssetToUpdate = newShaderAsset;
             }
 
             return true;
@@ -73,7 +77,7 @@ namespace AZ
         {
             if (!m_materialShaderResourceGroupLayout)
             {
-                if (m_asset->m_materialSrgShaderIndex != MaterialTypeAsset::InvalidShaderIndex)
+                if (m_asset->m_shaderWithMaterialSrg)
                 {
                     // [GFX TODO] At the moment we are using the default supervariant.
                     //            In the future it may be necessary to get the layout
@@ -94,32 +98,29 @@ namespace AZ
                 [this](const char* message){ ReportError("%s", message); });
         }
 
-        void MaterialTypeAssetCreator::AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const ShaderVariantId& shaderVariantId, const AZ::Name& shaderTag)
+        void MaterialTypeAssetCreator::AddShader(
+            const AZ::Data::Asset<ShaderAsset>& shaderAsset,
+            const ShaderVariantId& shaderVariantId,
+            const AZ::Name& shaderTag,
+            const AZ::Name& materialPipelineName)
         {
             if (ValidateIsReady() && ValidateNotNull(shaderAsset, "ShaderAsset"))
             {
-                m_asset->m_shaderCollection.m_shaderItems.push_back(ShaderCollection::Item{shaderAsset, shaderTag, shaderVariantId});
-                if (!m_asset->m_shaderCollection.m_shaderTagIndexMap.Insert(shaderTag, RHI::Handle<uint32_t>(m_asset->m_shaderCollection.m_shaderItems.size() - 1)))
+                ShaderCollection& shaderCollection = m_asset->m_shaderCollections[materialPipelineName];
+
+                AZ::Name finalShaderTag = !shaderTag.IsEmpty() ? shaderTag : AZ::Name{AZ::Uuid::CreateRandom().ToFixedString()};
+
+                shaderCollection.m_shaderItems.push_back(ShaderCollection::Item{shaderAsset, finalShaderTag, shaderVariantId});
+                if (!shaderCollection.m_shaderTagIndexMap.Insert(finalShaderTag, RHI::Handle<uint32_t>(shaderCollection.m_shaderItems.size() - 1)))
                 {
-                    ReportError(AZStd::string::format("Failed to insert shader tag '%s'. Shader tag must be unique.", shaderTag.GetCStr()).c_str());
+                    ReportError("Failed to insert shader tag '%s' for pipeline '%s'. Shader tag must be unique.", finalShaderTag.GetCStr(), materialPipelineName.GetCStr());
                 }
 
-                uint32_t newShaderIndex = aznumeric_caster(m_asset->m_shaderCollection.m_shaderItems.size() - 1);
-                UpdateShaderIndexForShaderResourceGroup(m_asset->m_materialSrgShaderIndex, shaderAsset, newShaderIndex, SrgBindingSlot::Material, "material");
-                UpdateShaderIndexForShaderResourceGroup(m_asset->m_objectSrgShaderIndex, shaderAsset, newShaderIndex, SrgBindingSlot::Object, "object");
+                UpdateShaderAssetForShaderResourceGroup(m_asset->m_shaderWithMaterialSrg, shaderAsset, SrgBindingSlot::Material, "material");
+                UpdateShaderAssetForShaderResourceGroup(m_asset->m_shaderWithObjectSrg, shaderAsset, SrgBindingSlot::Object, "object");
 
                 CacheMaterialSrgLayout();
             }
-        }
-
-        void MaterialTypeAssetCreator::AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const ShaderVariantId& shaderVariantId)
-        {
-            AddShader(shaderAsset, shaderVariantId, AZ::Name(AZ::Uuid::CreateRandom().ToFixedString()));
-        }
-
-        void MaterialTypeAssetCreator::AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& shaderTag)
-        {
-            AddShader(shaderAsset, ShaderVariantId{}, shaderTag);
         }
 
         void MaterialTypeAssetCreator::SetVersion(uint32_t version)
@@ -136,13 +137,16 @@ namespace AZ
         {
             bool optionFound = false;
 
-            for (ShaderCollection::Item& shaderItem : m_asset->m_shaderCollection)
+            for (auto& shaderCollectionPair : m_asset->m_shaderCollections)
             {
-                ShaderOptionIndex index = shaderItem.GetShaderOptions()->FindShaderOptionIndex(shaderOptionName);
-                if (index.IsValid())
+                for (ShaderCollection::Item& shaderItem : shaderCollectionPair.second)
                 {
-                    shaderItem.m_ownedShaderOptionIndices.insert(index);
-                    optionFound = true;
+                    ShaderOptionIndex index = shaderItem.GetShaderOptions()->FindShaderOptionIndex(shaderOptionName);
+                    if (index.IsValid())
+                    {
+                        shaderItem.m_ownedShaderOptionIndices.insert(index);
+                        optionFound = true;
+                    }
                 }
             }
 
@@ -351,23 +355,27 @@ namespace AZ
             }
 
             bool foundShaderOptions = false;
-            for (int shaderIndex = 0; shaderIndex < m_asset->m_shaderCollection.size(); ++shaderIndex)
+            for (auto& [materialPipelineName, shaderCollection] : m_asset->m_shaderCollections)
             {
-                ShaderCollection::Item& shaderItem = m_asset->m_shaderCollection[shaderIndex];
-                auto optionsLayout = shaderItem.GetShaderAsset()->GetShaderOptionGroupLayout();
-                ShaderOptionIndex optionIndex = optionsLayout->FindShaderOptionIndex(shaderOptionName);
-                if (optionIndex.IsValid())
+                for (int shaderIndex = 0; shaderIndex < shaderCollection.size(); ++shaderIndex)
                 {
-                    foundShaderOptions = true;
+                    ShaderCollection::Item& shaderItem = shaderCollection[shaderIndex];
+                    auto optionsLayout = shaderItem.GetShaderAsset()->GetShaderOptionGroupLayout();
+                    ShaderOptionIndex optionIndex = optionsLayout->FindShaderOptionIndex(shaderOptionName);
+                    if (optionIndex.IsValid())
+                    {
+                        foundShaderOptions = true;
 
-                    MaterialPropertyOutputId outputId;
-                    outputId.m_type = MaterialPropertyOutputType::ShaderOption;
-                    outputId.m_containerIndex = RHI::Handle<uint32_t>{shaderIndex};
-                    outputId.m_itemIndex = RHI::Handle<uint32_t>{optionIndex.GetIndex()};
+                        MaterialPropertyOutputId outputId;
+                        outputId.m_type = MaterialPropertyOutputType::ShaderOption;
+                        outputId.m_materialPipelineName = materialPipelineName;
+                        outputId.m_containerIndex = RHI::Handle<uint32_t>{shaderIndex};
+                        outputId.m_itemIndex = RHI::Handle<uint32_t>{optionIndex.GetIndex()};
 
-                    m_wipMaterialProperty.m_outputConnections.push_back(outputId);
+                        m_wipMaterialProperty.m_outputConnections.push_back(outputId);
 
-                    shaderItem.m_ownedShaderOptionIndices.insert(optionIndex);
+                        shaderItem.m_ownedShaderOptionIndices.insert(optionIndex);
+                    }
                 }
             }
 
@@ -392,21 +400,25 @@ namespace AZ
             }
 
             bool foundShader = false;
-            for (int i = 0; i < m_asset->m_shaderCollection.size() && GetErrorCount() == 0; ++i)
+            for (auto& [materialPipelineName, shaderCollection] : m_asset->m_shaderCollections)
             {
-                ShaderCollection::Item& shaderItem = m_asset->m_shaderCollection[i];
-
-                if (shaderItem.GetShaderTag() == shaderTag)
+                for (int shaderIndex = 0; shaderIndex < shaderCollection.size(); ++shaderIndex)
                 {
-                    foundShader = true;
+                    ShaderCollection::Item& shaderItem = shaderCollection[shaderIndex];
 
-                    MaterialPropertyOutputId outputId;
-                    outputId.m_type = MaterialPropertyOutputType::ShaderEnabled;
-                    outputId.m_containerIndex = RHI::Handle<uint32_t>{i};
+                    if (shaderItem.GetShaderTag() == shaderTag)
+                    {
+                        foundShader = true;
 
-                    m_wipMaterialProperty.m_outputConnections.push_back(outputId);
+                        MaterialPropertyOutputId outputId;
+                        outputId.m_materialPipelineName = materialPipelineName;
+                        outputId.m_type = MaterialPropertyOutputType::ShaderEnabled;
+                        outputId.m_containerIndex = RHI::Handle<uint32_t>{shaderIndex};
 
-                    break;
+                        m_wipMaterialProperty.m_outputConnections.push_back(outputId);
+
+                        break;
+                    }
                 }
             }
 
@@ -466,7 +478,7 @@ namespace AZ
                 return false;
             }
 
-            if (!ValidateMaterialPropertyDataType(typeId, name, materialPropertyDescriptor, [this](const char* message){ReportError("%s", message);}))
+            if (!ValidateMaterialPropertyDataType(typeId, materialPropertyDescriptor, [this](const char* message){ReportError("%s", message);}))
             {
                 return false;
             }
@@ -498,11 +510,13 @@ namespace AZ
             SetPropertyValue(name, Data::Asset<ImageAsset>(imageAsset));
         }
 
-        void MaterialTypeAssetCreator::AddMaterialFunctor(const Ptr<MaterialFunctor>& functor)
+        void MaterialTypeAssetCreator::AddMaterialFunctor(const Ptr<MaterialFunctor>& functor, const AZ::Name& /*materialPipelineName*/)
         {
             if (ValidateIsReady() && ValidateNotNull(functor, "MaterialFunctor"))
             {
                 m_asset->m_materialFunctors.emplace_back(functor);
+                //TODO(MaterialPipeline): Add support for per-pipeline material functors
+                //m_asset->m_materialFunctors[materialPipelineName].emplace_back(functor);
             }
         }
 
@@ -520,7 +534,7 @@ namespace AZ
                 {
                     m_asset->m_uvNameMap.push_back(UvNamePair(shaderInput, uvName));
                 }
-                else
+                else if (iter->m_uvName != uvName)
                 {
                     ReportError("Multiple UV names are defined for shader input %s.", shaderInput.ToString().c_str());
                 }
