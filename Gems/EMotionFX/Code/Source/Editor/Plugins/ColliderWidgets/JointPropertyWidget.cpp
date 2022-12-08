@@ -219,7 +219,7 @@ namespace EMotionFX
     AddCollidersButton::AddCollidersButton(QWidget* parent)
         : QPushButton(parent)
     {
-        setText("Add Collider");
+        setText("Add Property \342\226\276");
         connect(this, &QPushButton::clicked, this, &AddCollidersButton::OnCreateContextMenu);
     }
 
@@ -290,7 +290,7 @@ namespace EMotionFX
         for (const auto& section : sections)
         {
             auto& configType = section.type;
-            auto* sectionItem = new QStandardItem{ section.icon, QString("Add %1 Collider").arg(section.name.data()) };
+            auto* sectionItem = new QStandardItem{QString("%1 Collider").arg(section.name.data()) };
 
             for (auto& shape : m_supportedColliderTypes)
             {
@@ -306,7 +306,7 @@ namespace EMotionFX
 
                 auto capitalColliderTypeName = QString{ GetNameForColliderType(shape).c_str() };
                 capitalColliderTypeName[0] = capitalColliderTypeName[0].toUpper();
-                auto* item = new QStandardItem{ capitalColliderTypeName };
+                auto* item = new QStandardItem{ section.icon, capitalColliderTypeName };
                 item->setData(shape.ToString<AZStd::string>().c_str(), ItemRoles::Shape);
                 item->setData(static_cast<int>(configType), ItemRoles::ConfigType);
                 sectionItem->appendRow(item);
