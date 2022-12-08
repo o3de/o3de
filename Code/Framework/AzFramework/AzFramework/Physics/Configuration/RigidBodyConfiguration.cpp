@@ -179,7 +179,7 @@ namespace AzPhysics
             MassComputeFlags::INCLUDE_ALL_SHAPES == (flags & MassComputeFlags::INCLUDE_ALL_SHAPES);
     }
 
-    bool RigidBodyConfiguration::IsCCDEnabled() const
+    bool RigidBodyConfiguration::IsCcdEnabled() const
     {
         return m_ccdEnabled;
     }
@@ -237,7 +237,7 @@ namespace AzPhysics
         return Internal::GetPropertyVisibility(m_propertyVisibilityFlags, RigidBodyConfiguration::PropertyVisibility::Kinematic);
     }
 
-    AZ::Crc32 RigidBodyConfiguration::GetCCDVisibility() const
+    AZ::Crc32 RigidBodyConfiguration::GetCcdVisibility() const
     {
         return Internal::GetPropertyVisibility(m_propertyVisibilityFlags, RigidBodyConfiguration::PropertyVisibility::ContinuousCollisionDetection);
     }

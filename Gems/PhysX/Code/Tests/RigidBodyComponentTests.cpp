@@ -246,11 +246,11 @@ namespace PhysXEditorTests
         config.m_enableCcd = false;
         physicsSystem->UpdateDefaultSceneConfiguration(config);
 
-        EXPECT_TRUE(rigidBodyComponent->IsSceneCCDDisabled());
+        EXPECT_FALSE(rigidBodyComponent->IsSceneCcdEnabled());
 
         config.m_enableCcd = true;
         physicsSystem->UpdateDefaultSceneConfiguration(config);
 
-        EXPECT_FALSE(rigidBodyComponent->IsSceneCCDDisabled());
+        EXPECT_TRUE(rigidBodyComponent->IsSceneCcdEnabled());
     }
 } // namespace PhysXEditorTests

@@ -35,7 +35,7 @@ namespace AzPhysics
         MassComputeFlags GetMassComputeFlags() const;
         void SetMassComputeFlags(MassComputeFlags flags);
 
-        bool IsCCDEnabled() const;
+        bool IsCcdEnabled() const;
 
         // Basic initial settings.
         AZ::Vector3 m_initialLinearVelocity = AZ::Vector3::CreateZero();
@@ -104,7 +104,7 @@ namespace AzPhysics
         AZ::Crc32 GetInterpolationVisibility() const;
         AZ::Crc32 GetGravityVisibility() const;
         AZ::Crc32 GetKinematicVisibility() const;
-        AZ::Crc32 GetCCDVisibility() const;
+        AZ::Crc32 GetCcdVisibility() const;
         AZ::Crc32 GetMaxVelocitiesVisibility() const;
 
         AZ::u16 m_propertyVisibilityFlags = (std::numeric_limits<AZ::u16>::max)();

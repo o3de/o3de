@@ -36,6 +36,9 @@ namespace PhysX
 
         // Debug properties.
         bool m_centerOfMassDebugDraw = false;
+
+    private:
+        bool IsSceneCcdDisabled() const;
     };
 
     /// Class for in-editor PhysX Rigid Body Component.
@@ -92,8 +95,9 @@ namespace PhysX
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
         const AzPhysics::RigidBody* GetRigidBody() const;
-        bool IsSceneCCDDisabled() const;
         void OpenPhysXConfigurationPane() const;
+
+        static bool IsSceneCcdEnabled();
 
     private:
         // AzFramework::EntityDebugDisplayEventBus
