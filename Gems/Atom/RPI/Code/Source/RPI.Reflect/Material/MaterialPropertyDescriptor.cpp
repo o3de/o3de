@@ -99,7 +99,7 @@ namespace AZ
             }
         }
         
-        bool ValidateMaterialPropertyDataType(TypeId typeId, const Name& propertyName, const MaterialPropertyDescriptor* materialPropertyDescriptor, AZStd::function<void(const char*)> onError)
+        bool ValidateMaterialPropertyDataType(TypeId typeId, const MaterialPropertyDescriptor* materialPropertyDescriptor, AZStd::function<void(const char*)> onError)
         {
             auto toMaterialPropertyDataType = [](TypeId typeId)
             {
@@ -127,7 +127,7 @@ namespace AZ
                 {
                     onError(
                         AZStd::string::format("Material property '%s' is a Enum type, can only accept UInt value, input value is %s",
-                            propertyName.GetCStr(),
+                            materialPropertyDescriptor->GetName().GetCStr(),
                             ToString(actualDataType)
                         ).data());
                     return false;
@@ -139,7 +139,7 @@ namespace AZ
                 {
                     onError(
                         AZStd::string::format("Material property '%s': Type mismatch. Expected %s but was %s",
-                            propertyName.GetCStr(),
+                            materialPropertyDescriptor->GetName().GetCStr(),
                             ToString(expectedDataType),
                             ToString(actualDataType)
                         ).data());

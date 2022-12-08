@@ -588,8 +588,7 @@ namespace AZ
                     if (materialPropertyDependencies.none() || functor->NeedsProcess(m_dirtyPropertyFlags))
                     {
                         AZ::RPI::MaterialFunctor::EditorContext context = AZ::RPI::MaterialFunctor::EditorContext(
-                            m_materialInstance->GetPropertyValues(),
-                            m_materialInstance->GetMaterialPropertiesLayout(),
+                            m_materialInstance->GetPropertyCollection(),
                             propertyDynamicMetadata,
                             propertyGroupDynamicMetadata,
                             changedPropertyNames,

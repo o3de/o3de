@@ -18,18 +18,20 @@
 namespace JsonSerializationTests
 {
     class MaterialPropertySerializerTestDescription :
-        public JsonSerializerConformityTestDescriptor<AZ::RPI::MaterialTypeSourceData::PropertyDefinition>
+        public JsonSerializerConformityTestDescriptor<AZ::RPI::MaterialPropertySourceData>
     {
     public:
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             AZ::RPI::MaterialTypeSourceData::Reflect(context.get());
+            AZ::RPI::MaterialPropertySourceData::Reflect(context.get());
             AZ::RPI::MaterialPropertyDescriptor::Reflect(context.get());
             AZ::RPI::ReflectMaterialDynamicMetadata(context.get());
         }
 
         void Reflect(AZStd::unique_ptr<AZ::JsonRegistrationContext>& context) override
         {
+            AZ::RPI::MaterialPropertySourceData::Reflect(context.get());
             AZ::RPI::MaterialTypeSourceData::Reflect(context.get());
         }
 
@@ -38,14 +40,14 @@ namespace JsonSerializationTests
             return AZStd::make_shared<AZ::RPI::JsonMaterialPropertySerializer>();
         }
 
-        AZStd::shared_ptr<AZ::RPI::MaterialTypeSourceData::PropertyDefinition> CreateDefaultInstance() override
+        AZStd::shared_ptr<AZ::RPI::MaterialPropertySourceData> CreateDefaultInstance() override
         {
-            return AZStd::make_shared<AZ::RPI::MaterialTypeSourceData::PropertyDefinition>();
+            return AZStd::make_shared<AZ::RPI::MaterialPropertySourceData>();
         }
 
-        AZStd::shared_ptr<AZ::RPI::MaterialTypeSourceData::PropertyDefinition> CreatePartialDefaultInstance() override
+        AZStd::shared_ptr<AZ::RPI::MaterialPropertySourceData> CreatePartialDefaultInstance() override
         {
-            auto result = AZStd::make_shared<AZ::RPI::MaterialTypeSourceData::PropertyDefinition>("testProperty");
+            auto result = AZStd::make_shared<AZ::RPI::MaterialPropertySourceData>("testProperty");
             result->m_dataType = AZ::RPI::MaterialPropertyDataType::Float;
             result->m_step = 1.0f;
             result->m_value = 0.0f;
@@ -62,9 +64,9 @@ namespace JsonSerializationTests
             })";
         }
 
-        AZStd::shared_ptr<AZ::RPI::MaterialTypeSourceData::PropertyDefinition> CreateFullySetInstance() override
+        AZStd::shared_ptr<AZ::RPI::MaterialPropertySourceData> CreateFullySetInstance() override
         {
-            auto result = AZStd::make_shared<AZ::RPI::MaterialTypeSourceData::PropertyDefinition>("testProperty");
+            auto result = AZStd::make_shared<AZ::RPI::MaterialPropertySourceData>("testProperty");
             result->m_description = "description";
             result->m_displayName = "display_name";
             result->m_dataType = AZ::RPI::MaterialPropertyDataType::Float;
@@ -111,8 +113,8 @@ namespace JsonSerializationTests
         }
 
         bool AreEqual(
-            const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& lhs,
-            const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& rhs) override
+            const AZ::RPI::MaterialPropertySourceData& lhs,
+            const AZ::RPI::MaterialPropertySourceData& rhs) override
         {
             if (lhs.GetName() != rhs.GetName()) { return false; }
             if (lhs.m_description != rhs.m_description) { return false; }
@@ -157,6 +159,7 @@ namespace UnitTest
         void Reflect(ReflectContext* context) override
         {
             RPITestFixture::Reflect(context);
+            MaterialPropertySourceData::Reflect(context);
             MaterialTypeSourceData::Reflect(context);
         }
         
@@ -187,7 +190,7 @@ namespace UnitTest
         }
         )";
 
-        MaterialTypeSourceData::PropertyDefinition propertyData;
+        MaterialPropertySourceData propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -220,7 +223,7 @@ namespace UnitTest
         }
         )";
 
-        MaterialTypeSourceData::PropertyDefinition propertyData;
+        MaterialPropertySourceData propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -244,7 +247,7 @@ namespace UnitTest
         []
         )";
 
-        MaterialTypeSourceData::PropertyDefinition propertyData;
+        MaterialPropertySourceData propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -263,7 +266,7 @@ namespace UnitTest
         }
         )";
 
-        MaterialTypeSourceData::PropertyDefinition propertyData;
+        MaterialPropertySourceData propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
         
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -313,7 +316,7 @@ namespace UnitTest
         ]
         )";
 
-        AZStd::vector<MaterialTypeSourceData::PropertyDefinition> propertyData;
+        AZStd::vector<MaterialPropertySourceData> propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -386,7 +389,7 @@ namespace UnitTest
         ]
         )";
 
-        AZStd::vector<MaterialTypeSourceData::PropertyDefinition> propertyData;
+        AZStd::vector<MaterialPropertySourceData> propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -402,7 +405,7 @@ namespace UnitTest
         EXPECT_EQ(MaterialPropertyDataType::UInt, propertyData[2].m_dataType);
         EXPECT_EQ(AZ::RPI::MaterialPropertyValue(0u), propertyData[2].m_value);
 
-        for (const MaterialTypeSourceData::PropertyDefinition& property : propertyData)
+        for (const MaterialPropertySourceData& property : propertyData)
         {
             EXPECT_FALSE(property.m_min.IsValid());
             EXPECT_FALSE(property.m_max.IsValid());
@@ -435,7 +438,7 @@ namespace UnitTest
         ]
         )";
 
-        AZStd::vector<MaterialTypeSourceData::PropertyDefinition> propertyData;
+        AZStd::vector<MaterialPropertySourceData> propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -507,7 +510,7 @@ namespace UnitTest
         ]
         )";
 
-        AZStd::vector<MaterialTypeSourceData::PropertyDefinition> propertyData;
+        AZStd::vector<MaterialPropertySourceData> propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -556,7 +559,7 @@ namespace UnitTest
         ]
         )";
 
-        AZStd::vector<MaterialTypeSourceData::PropertyDefinition> propertyData;
+        AZStd::vector<MaterialPropertySourceData> propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -620,7 +623,7 @@ namespace UnitTest
         ]
         )";
 
-        AZStd::vector<MaterialTypeSourceData::PropertyDefinition> propertyData;
+        AZStd::vector<MaterialPropertySourceData> propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -688,7 +691,7 @@ namespace UnitTest
         ]
         )";
 
-        AZStd::vector<MaterialTypeSourceData::PropertyDefinition> propertyData;
+        AZStd::vector<MaterialPropertySourceData> propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -750,7 +753,7 @@ namespace UnitTest
         ]
         )";
 
-        AZStd::vector<MaterialTypeSourceData::PropertyDefinition> propertyData;
+        AZStd::vector<MaterialPropertySourceData> propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -787,7 +790,7 @@ namespace UnitTest
         }
         )";
 
-        MaterialTypeSourceData::PropertyDefinition propertyData;
+        MaterialPropertySourceData propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -819,7 +822,7 @@ namespace UnitTest
         }
         )";
 
-        MaterialTypeSourceData::PropertyDefinition propertyData;
+        MaterialPropertySourceData propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -855,7 +858,7 @@ namespace UnitTest
         }
         )";
 
-        MaterialTypeSourceData::PropertyDefinition propertyData;
+        MaterialPropertySourceData propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -893,7 +896,7 @@ namespace UnitTest
         }
         )";
 
-        MaterialTypeSourceData::PropertyDefinition propertyData;
+        MaterialPropertySourceData propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -922,7 +925,7 @@ namespace UnitTest
         }
         )";
 
-        MaterialTypeSourceData::PropertyDefinition propertyData;
+        MaterialPropertySourceData propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());

@@ -9,12 +9,11 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
-#include <GraphCanvas/Editor/EditorTypes.h>
-#include <GraphModel/Model/DataType.h>
 
-namespace MaterialCanvas
+namespace AtomToolsFramework
 {
-    class MaterialGraphCompilerRequests : public AZ::EBusTraits
+    //! Bus interface containing common graph compiler functions for queuing and checking the results of graph builds
+    class GraphCompilerRequests : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
@@ -24,7 +23,10 @@ namespace MaterialCanvas
         // Get a list of all of the generated files from the last time this graph was compiled.
         virtual const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const = 0;
 
-        // Evaluate the graph nodes, slots, values, and settings to generate and export shaders, material types, and materials.
+        // Get the graph export path based on the document path or default export path.
+        virtual AZStd::string GetGraphPath() const = 0;
+
+        // Evaluate the graph nodes, slots, values, and settings to generate and export data.
         virtual bool CompileGraph() = 0;
 
         // Schedule the graph to be compiled on the next system tick.
@@ -34,5 +36,5 @@ namespace MaterialCanvas
         virtual bool IsCompileGraphQueued() const = 0;
     };
 
-    using MaterialGraphCompilerRequestBus = AZ::EBus<MaterialGraphCompilerRequests>;
-} // namespace MaterialCanvas
+    using GraphCompilerRequestBus = AZ::EBus<GraphCompilerRequests>;
+} // namespace AtomToolsFramework
