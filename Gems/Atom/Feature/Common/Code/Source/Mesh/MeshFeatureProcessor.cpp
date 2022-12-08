@@ -177,11 +177,6 @@ namespace AZ
                             meshDataIter->Init();
                         }
 
-                        if (meshDataIter->m_needsInit)
-                        {
-                            meshDataIter->Init();
-                        }
-
                         if (meshDataIter->m_objectSrgNeedsUpdate)
                         {
                             meshDataIter->UpdateObjectSrg(m_reflectionProbeFeatureProcessor, m_transformService);
