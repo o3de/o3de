@@ -8,9 +8,11 @@
 
 #include <AzToolsFramework/UI/Prefab/LevelRootUiHandler.h>
 
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
+#include <AzToolsFramework/UI/Prefab/Constants.h>
 
 #include <QAbstractItemModel>
 #include <QPainter>
@@ -19,9 +21,6 @@
 
 namespace AzToolsFramework
 {
-    const QColor LevelRootUiHandler::s_levelRootBorderColor = QColor("#656565");
-    const QString LevelRootUiHandler::s_levelRootIconPath = QString(":/Level/level.svg");
-
     LevelRootUiHandler::LevelRootUiHandler()
     {
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
@@ -30,11 +29,18 @@ namespace AzToolsFramework
             AZ_Assert(false, "LevelRootUiHandler - could not get PrefabPublicInterface on LevelRootUiHandler construction.");
             return;
         }
+
+        m_prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get();
+        if (m_prefabFocusPublicInterface == nullptr)
+        {
+            AZ_Assert(false, "LevelRootUiHandler - could not get PrefabFocusPublicInterface on LevelRootUiHandler construction.");
+            return;
+        }
     }
 
     QIcon LevelRootUiHandler::GenerateItemIcon([[maybe_unused]] AZ::EntityId entityId) const
     {
-        return QIcon(s_levelRootIconPath);
+        return QIcon(m_levelRootIconPath);
     }
 
     QString LevelRootUiHandler::GenerateItemInfoString(AZ::EntityId entityId) const
@@ -79,16 +85,76 @@ namespace AzToolsFramework
             return;
         }
 
-        QPen borderLinePen(s_levelRootBorderColor, s_levelRootBorderThickness);
+        // Draw border line at the bottom
+        QPen borderLinePen(m_levelRootBorderColor, PrefabUIConstants::levelDividerThickness);
         QRect rect = option.rect;
-
-        painter->save();
-        painter->setRenderHint(QPainter::Antialiasing, true);
-
-        // Draw border at the bottom
         painter->setPen(borderLinePen);
         painter->drawLine(rect.bottomLeft(), rect.bottomRight());
 
+        if (Prefab::IsPrefabOverridesUxEnabled())
+        {
+            // Draw capsule
+            const bool isFirstColumn = index.column() == EntityOutlinerListModel::ColumnName;
+            const bool isLastColumn = index.column() == EntityOutlinerListModel::ColumnLockToggle;
+
+            QColor backgroundColor = m_prefabCapsuleColor;
+            AZ::EntityId levelContainerEntityId = m_prefabPublicInterface->GetLevelInstanceContainerEntityId();
+
+            if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(levelContainerEntityId))
+            {
+                backgroundColor = m_prefabCapsuleEditColor;
+            }
+            else if (!(option.state & QStyle::State_Enabled))
+            {
+                backgroundColor = m_prefabCapsuleDisabledColor;
+            }
+
+            QPainterPath backgroundPath;
+            backgroundPath.setFillRule(Qt::WindingFill);
+
+            QRect tempRect = option.rect;
+            tempRect.setTop(tempRect.top() + 2);
+            tempRect.setHeight(tempRect.height() - 2); // tweaking capsule height
+
+            if (isFirstColumn)
+            {
+                tempRect.setLeft(tempRect.left() + 1);
+                tempRect.setWidth(tempRect.width() + 1); // remove the gray line between columns
+            }
+
+            if (isLastColumn)
+            {
+                tempRect.setLeft(tempRect.left() - 1); // remove the gray line between columns
+                tempRect.setWidth(tempRect.width() - 1);
+            }
+
+            if (isFirstColumn || isLastColumn)
+            {
+                // Rounded rect to have rounded borders on top.
+                backgroundPath.addRoundedRect(tempRect, PrefabUIConstants::prefabCapsuleRadius, PrefabUIConstants::prefabCapsuleRadius);
+
+                // Regular rect, half height, to square the opposite border
+                QRect squareRect = tempRect;
+                if (isFirstColumn)
+                {
+                    squareRect.setLeft(tempRect.left() + (tempRect.width() / 2));
+                }
+                else if (isLastColumn)
+                {
+                    squareRect.setWidth(tempRect.width() / 2);
+                }
+                backgroundPath.addRect(squareRect);
+            }
+            else
+            {
+                backgroundPath.addRect(tempRect);
+            }
+
+            painter->save();
+            painter->setRenderHint(QPainter::Antialiasing, true);
+            painter->fillPath(backgroundPath.simplified(), backgroundColor);
+        }
+        
         painter->restore();
     }
 
@@ -104,10 +170,9 @@ namespace AzToolsFramework
     {
         AZ::EntityId entityId = GetEntityIdFromIndex(index);
 
-        if (auto prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get();
-            !prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
+        if (!m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
-            prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
+            m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
         }
 
         // Don't propagate event.
