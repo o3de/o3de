@@ -8,6 +8,11 @@
 
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+    set(additional_tool_deps AZ::AzToolsFramework)
+endif()
+
+
 ly_add_target(
     NAME AWSCore.Static STATIC
     NAMESPACE Gem
@@ -82,7 +87,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 3rdParty::Qt::Widgets
                 Gem::AWSCore.Static
             PUBLIC
-                AZ::AzToolsFramework
+                ${additional_tool_deps}
                 3rdParty::AWSNativeSDK::AWSCore
     )
 

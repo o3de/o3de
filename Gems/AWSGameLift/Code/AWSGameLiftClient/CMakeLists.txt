@@ -6,6 +6,10 @@
 #
 #
 
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+    set(additional_tool_deps AZ::AzToolsFramework)
+endif()
+
 ly_add_target(
     NAME AWSGameLift.Client.Static STATIC
     NAMESPACE Gem
@@ -24,7 +28,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            AZ::AzToolsFramework
+            ${additional_tool_deps}
             Gem::AWSCore
             Gem::Multiplayer.Static
             3rdParty::AWSNativeSDK::GameLiftClient
@@ -41,7 +45,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            AZ::AzToolsFramework
+            ${additional_tool_deps}
             3rdParty::AWSNativeSDK::GameLiftClient
         PUBLIC
             Gem::AWSGameLift.Client.Static
@@ -87,7 +91,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
-                AZ::AzToolsFramework
+                ${additional_tool_deps}
                 AZ::AzTest
                 Gem::AWSCore
                 Gem::AWSGameLift.Client.Static

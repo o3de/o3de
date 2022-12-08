@@ -8,6 +8,10 @@
 
 o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+    set(additional_tool_deps AZ::AzToolsFramework)
+endif()
+
 ly_add_target(
     NAME AWSClientAuth.Static STATIC
     NAMESPACE Gem
@@ -22,7 +26,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
-            AZ::AzToolsFramework
+            ${additional_tool_deps}
             Gem::AWSCore
             Gem::HttpRequestor
             3rdParty::AWSNativeSDK::AWSClientAuth
@@ -41,7 +45,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
-            AZ::AzToolsFramework
+            ${additional_tool_deps}
             Gem::AWSCore
             3rdParty::AWSNativeSDK::AWSClientAuth
             3rdParty::AWSNativeSDK::Core
@@ -108,7 +112,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 3rdParty::AWSNativeSDK::AWSClientAuth
                 AZ::AzCore
                 AZ::AzFramework
-                AZ::AzToolsFramework
+                ${additional_tool_deps}
                 AZ::AWSNativeSDKTestLibs
                 Gem::AWSClientAuth.Static
                 Gem::AWSCore
