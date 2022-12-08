@@ -419,13 +419,13 @@ namespace AZ
                 {
                     OpenMaterialCanvas("");
                 });
-            AZ_Assert(outcome.IsSuccess(), "Failed to RegisterAction %s", MaterialCanvasAction);
+            AZ_Assert(outcome.IsSuccess(), "Failed to RegisterAction %s", MaterialCanvasAction.data());
 
             outcome = menuManagerInterface->AddActionToMenu(ToolsMenuIdentifier, MaterialCanvasAction, 101);
-            AZ_Assert(outcome.IsSuccess(), "Failed to AddAction %s to Menu %s", MaterialCanvasAction, ToolsMenuIdentifier);
+            AZ_Assert(outcome.IsSuccess(), "Failed to AddAction %s to Menu %s", MaterialCanvasAction.data(), ToolsMenuIdentifier.data());
 
             outcome = hotKeyManagerInterface->SetActionHotKey(MaterialCanvasAction, "Ctrl+Shift+M");
-            AZ_Assert(outcome.IsSuccess(), "Failed to ActionHotKey for %s", MaterialCanvasAction);
+            AZ_Assert(outcome.IsSuccess(), "Failed to ActionHotKey for %s", MaterialCanvasAction.data());
 
         }
 
