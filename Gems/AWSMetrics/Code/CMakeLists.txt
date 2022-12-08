@@ -6,6 +6,10 @@
 #
 #
 
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+    set(additional_tool_deps AZ::AzToolsFramework)
+endif()
+
 ly_add_target(
     NAME AWSMetrics.Static STATIC
     NAMESPACE Gem
@@ -20,7 +24,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
-            AZ::AzToolsFramework
+            ${additional_tool_deps}
         PUBLIC
             Gem::AWSCore
             3rdParty::AWSNativeSDK::Core
@@ -40,7 +44,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
-            AZ::AzToolsFramework
+            ${additional_tool_deps}
             Gem::AWSMetrics.Static
 )
 
@@ -98,7 +102,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzCore
                 AZ::AzFramework
-                AZ::AzToolsFramework
+                ${additional_tool_deps}
                 Gem::AWSMetrics.Static
         RUNTIME_DEPENDENCIES
             Gem::AWSCore

@@ -37,7 +37,7 @@ namespace AWSCore
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = AWS_MENU_TEXT;
         auto outcome = m_menuManagerInterface->RegisterMenu(AWSMenuIdentifier, menuProperties);
-        AZ_Assert(outcome.IsSuccess(), "Failed to register '%s' Menu", AWSMenuIdentifier);
+        AZ_Assert(outcome.IsSuccess(), "Failed to register '%s' Menu", AWSMenuIdentifier.data());
 
     }
 
@@ -52,7 +52,7 @@ namespace AWSCore
         }
 
         auto outcome = m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, AWSMenuIdentifier, sortKey);
-        AZ_Assert(outcome.IsSuccess(), "Failed to add '%s' Menu to '%s' MenuBar", AWSMenuIdentifier, EditorMainWindowMenuBarIdentifier);
+        AZ_Assert(outcome.IsSuccess(), "Failed to add '%s' Menu to '%s' MenuBar", AWSMenuIdentifier.data(), EditorMainWindowMenuBarIdentifier.data());
 
         InitializeAWSDocActions();
         InitializeResourceMappingToolAction();
