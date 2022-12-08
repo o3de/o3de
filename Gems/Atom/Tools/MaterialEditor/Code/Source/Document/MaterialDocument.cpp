@@ -911,7 +911,7 @@ namespace MaterialEditor
             if (materialPropertyDependencies.none() || functor->NeedsProcess(dirtyFlags))
             {
                 AZ::RPI::MaterialFunctor::EditorContext context = AZ::RPI::MaterialFunctor::EditorContext(
-                    m_materialInstance->GetPropertyValues(), m_materialInstance->GetMaterialPropertiesLayout(), propertyDynamicMetadata,
+                    m_materialInstance->GetPropertyCollection(), propertyDynamicMetadata,
                     propertyGroupDynamicMetadata, updatedProperties, updatedPropertyGroups,
                     &materialPropertyDependencies);
                 functor->Process(context);
