@@ -934,9 +934,8 @@ namespace EMotionFX
                   QIcon(),
                   [&]( const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
                   {
-                      AZStd::string outFilePath;
-                      AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(
-                          fullSourceFolderNameInCallback, "NewAnimGraph.animgraph", outFilePath);
+                      AZ::IO::FixedMaxPath outFilePath = AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(
+                          AZ::IO::PathView(fullSourceFolderNameInCallback + "/NewAnimGraph.animgraph"));
 
                       EMotionFX::AnimGraph* animGraph = aznew EMotionFX::AnimGraph();
                       // create the root state machine object
@@ -951,7 +950,7 @@ namespace EMotionFX
                           animGraph->RecursiveInvalidateUniqueDatas();
                           AZ::SerializeContext* serializeContext = nullptr;
                           AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-                          animGraph->SaveToFile(outFilePath, serializeContext);
+                          animGraph->SaveToFile(outFilePath.Native().c_str(), serializeContext);
                           delete animGraph;
                       }
                   } });
@@ -962,9 +961,8 @@ namespace EMotionFX
                   QIcon(),
                   [&]( const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
                   {
-                      AZStd::string outFilePath;
-                      AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(
-                          fullSourceFolderNameInCallback, "NewMotionSet.motionset", outFilePath);
+                      AZ::IO::FixedMaxPath outFilePath = AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(
+                          AZ::IO::PathView(fullSourceFolderNameInCallback + "/NewMotionSet.motionset"));
 
                       AZ::IO::PathView filePath = outFilePath.c_str();
                       AZStd::string motionSetName = filePath.Stem().Native();
@@ -973,7 +971,7 @@ namespace EMotionFX
                       AZ::SerializeContext* serializeContext = nullptr;
                       AZ::ComponentApplicationBus::BroadcastResult(
                           serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-                      motionSet->SaveToFile(outFilePath, serializeContext);
+                      motionSet->SaveToFile(outFilePath.Native().c_str(), serializeContext);
                       delete motionSet;
                   } });
         }

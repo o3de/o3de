@@ -69,8 +69,13 @@ namespace AZ
 
             virtual ~MaterialTypeAsset();
 
-            //! Returns the collection of all shaders that this material could run.
-            const ShaderCollection& GetShaderCollection() const;
+            //! Return the set of shaders to be run by this material.
+            const MaterialPipelineShaderCollections& GetShaderCollections() const;
+
+            //! Returns the collection of shaders that this material could run for a given pipeline.
+            //! @param forPipeline the name of the material pipeline to query for shaders. For MaterialPipelineNameCommon, 
+            //!        this returns a list of shaders that should be sent to all pipelines.
+            const ShaderCollection& GetShaderCollection(const Name& forPipeline) const;
 
             //! The material may contain any number of MaterialFunctors.
             //! Material functors provide custom logic and calculations to configure shaders, render states, and more.
@@ -85,7 +90,7 @@ namespace AZ
 
             //! Same as above but accepts the supervariant name. There's a minor penalty when using this function
             //! because it will discover the index from the name.  
-            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetMaterialSrgLayout(const AZ::Name& supervariantName) const;
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetMaterialSrgLayout(const Name& supervariantName) const;
 
             //! Just like the original GetMaterialSrgLayout() where it uses the index of the default supervariant.
             //! See the definition of DefaultSupervariantIndex.
@@ -102,7 +107,7 @@ namespace AZ
 
             //! Same as above but accepts the supervariant name. There's a minor penalty when using this function
             //! because it will discover the index from the name.  
-            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetObjectSrgLayout(const AZ::Name& supervariantName) const;
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetObjectSrgLayout(const Name& supervariantName) const;
 
             //! Just like the original GetObjectSrgLayout() where it uses the index of the default supervariant.
             //! See the definition of DefaultSupervariantIndex.
@@ -118,7 +123,7 @@ namespace AZ
             //! The entries in this list align with the entries in the MaterialPropertiesLayout. Each AZStd::any is guaranteed 
             //! to have a value of type that matches the corresponding MaterialPropertyDescriptor.
             //! For images, the value will be of type ImageBinding.
-            AZStd::span<const MaterialPropertyValue> GetDefaultPropertyValues() const;
+            const AZStd::vector<MaterialPropertyValue>& GetDefaultPropertyValues() const;
 
             //! Returns a map from the UV shader inputs to a custom name.
             MaterialUvNameMap GetUvNameMap() const;
@@ -130,13 +135,11 @@ namespace AZ
 
             //! Possibly renames @propertyId based on the material version update steps.
             //! @return true if the property was renamed
-            bool ApplyPropertyRenames(AZ::Name& propertyId) const;
+            bool ApplyPropertyRenames(Name& propertyId) const;
 
         private:
-            bool PostLoadInit() override;
 
-            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetSrgLayout(uint32_t shaderIndex, const SupervariantIndex& supervariantIndex, uint32_t srgBindingSlot) const;
-            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetSrgLayout(uint32_t shaderIndex, const AZ::Name& supervariantName, uint32_t srgBindingSlot) const;
+            bool PostLoadInit() override;
 
             //! Called by asset creators to assign the asset to a ready state.
             void SetReady();
@@ -158,18 +161,18 @@ namespace AZ
             //! Defines the topology of user-facing inputs to the material
             Ptr<MaterialPropertiesLayout> m_materialPropertiesLayout;
 
-            //! The set of shaders that will be used for this material
-            ShaderCollection m_shaderCollection;
+            MaterialPipelineShaderCollections m_shaderCollections;
 
             //! Material functors provide custom logic and calculations to configure shaders, render states, and more.
             //! See MaterialFunctor.h for details.
             MaterialFunctorList m_materialFunctors;
 
-            //! Index in @m_shaderCollection of the shader asset that contains the MaterialSrg.
-            uint32_t m_materialSrgShaderIndex = InvalidShaderIndex;
-
-            //! Index in @m_shaderCollection of the shader asset that contains the ObjectSrg.
-            uint32_t m_objectSrgShaderIndex = InvalidShaderIndex;
+            //! These are shaders that hold an example of particular ShaderResourceGroups. Every shader in a material type
+            //! must use the same MaterialSrg and ObjectSrg, so we only need to store one example of each. We keep a reference
+            //! to the shader rather than duplicate the SRG layouts to avoid duplication and also because the ShaderAsset
+            //! is needed to create an instance of the SRG so it's convenient to just keep a reference to the ShaderAsset.
+            Data::Asset<ShaderAsset> m_shaderWithMaterialSrg;
+            Data::Asset<ShaderAsset> m_shaderWithObjectSrg;
 
             //! The version of this MaterialTypeAsset. If the version is greater than 1, actions performed
             //! to update this MaterialTypeAsset will be in m_materialVersionUpdateMap

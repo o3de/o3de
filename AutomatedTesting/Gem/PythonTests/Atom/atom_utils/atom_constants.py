@@ -991,7 +991,7 @@ class AtomComponentProperties:
             'Attenuation radius Radius': 'Controller|Configuration|Attenuation radius|Radius',
             'Enable shadow': 'Controller|Configuration|Shadows|Enable shadow',
             'Shadows Bias': 'Controller|Configuration|Shadows|Bias',
-            'Normal shadow bias': 'Controller|Configuration|Shadows|Normal Shadow Bias',
+            'Normal shadow bias': 'Controller|Configuration|Shadows|Normal shadow bias',
             'Shadowmap size': 'Controller|Configuration|Shadows|Shadowmap size',
             'Shadow filter method': 'Controller|Configuration|Shadows|Shadow filter method',
             'Filtering sample count': 'Controller|Configuration|Shadows|Filtering sample count',

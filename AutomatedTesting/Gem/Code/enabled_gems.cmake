@@ -43,7 +43,6 @@ set(ENABLED_GEMS
     GraphModel
     LandscapeCanvas
     NvCloth
-    Blast
     Maestro
     TextureAtlas
     LmbrCentral
