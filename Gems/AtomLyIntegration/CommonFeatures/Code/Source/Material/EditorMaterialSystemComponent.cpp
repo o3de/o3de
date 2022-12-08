@@ -106,7 +106,6 @@ namespace AZ
             EditorMaterialSystemComponentRequestBus::Handler::BusConnect();
             MaterialComponentNotificationBus::Router::BusRouterConnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
-            AzToolsFramework::EditorMenuNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
             AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
             AzFramework::AssetCatalogEventBus::Handler::BusConnect();
@@ -128,7 +127,6 @@ namespace AZ
             EditorMaterialSystemComponentRequestBus::Handler::BusDisconnect();
             MaterialComponentNotificationBus::Router::BusRouterDisconnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
-            AzToolsFramework::EditorMenuNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect(); 
             AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusDisconnect(); 
             AZ::SystemTickBus::Handler::BusDisconnect();
@@ -139,11 +137,6 @@ namespace AZ
             m_materialPreviewRequests.clear();
             m_materialPreviewModelAsset.Release();
             m_materialPreviewLightingPresetAsset.Release();
-
-            delete m_openMaterialEditorAction;
-            m_openMaterialEditorAction = nullptr;
-            delete m_openMaterialCanvasAction;
-            m_openMaterialCanvasAction = nullptr;
         }
 
         void EditorMaterialSystemComponent::OpenMaterialEditor(const AZStd::string& sourcePath)
@@ -341,14 +334,6 @@ namespace AZ
             m_materialPreviews.erase(entityId);
         }
 
-        void EditorMaterialSystemComponent::OnResetToolMenuItems()
-        {
-            delete m_openMaterialEditorAction;
-            m_openMaterialEditorAction = nullptr;
-            delete m_openMaterialCanvasAction;
-            m_openMaterialCanvasAction = nullptr;
-        }
-
         void EditorMaterialSystemComponent::NotifyRegisterViews()
         {
             AzToolsFramework::ViewPaneOptions inspectorOptions;
@@ -417,13 +402,13 @@ namespace AZ
                 {
                     OpenMaterialEditor("");
                 });
-            AZ_Assert(outcome.IsSuccess(), "Failed to RegisterAction %s", MaterialEditorAction);
+            AZ_Assert(outcome.IsSuccess(), "Failed to RegisterAction %s", MaterialEditorAction.data());
 
             outcome = menuManagerInterface->AddActionToMenu(ToolsMenuIdentifier, MaterialEditorAction, 100);
-            AZ_Assert(outcome.IsSuccess(), "Failed to AddAction %s to Menu %s", MaterialEditorAction, ToolsMenuIdentifier);
+            AZ_Assert(outcome.IsSuccess(), "Failed to AddAction %s to Menu %s", MaterialEditorAction.data(), ToolsMenuIdentifier.data());
 
             outcome = hotKeyManagerInterface->SetActionHotKey(MaterialEditorAction, "M");
-            AZ_Assert(outcome.IsSuccess(), "Failed to ActionHotKey for %s", MaterialEditorAction);
+            AZ_Assert(outcome.IsSuccess(), "Failed to ActionHotKey for %s", MaterialEditorAction.data());
 
 
             constexpr AZStd::string_view MaterialCanvasAction = "o3de.tools.material_canvas";
