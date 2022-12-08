@@ -364,6 +364,11 @@ namespace AZ
             return entityTransform * translationOffsetTransform;
         }
 
+        void ReflectionProbeComponentController::RegisterInnerExtentsChangedHandler(AZ::Event<bool>::Handler& handler)
+        {
+            handler.Connect(m_innerExtentsChangedEvent);
+        }
+
         AZ::Transform ReflectionProbeComponentController::ComputeOverallTransform(const AZ::Transform& entityTransform) const
         {
             const bool isTypeAxisAligned = m_boxShapeInterface ? m_boxShapeInterface->IsTypeAxisAligned() : false;
