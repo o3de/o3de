@@ -18,17 +18,17 @@ from PySide2 import QtWidgets
 
 PROJECT_SHADER_VARIANTS_FOLDER = "ShaderVariants"
 
-# input is Material Asset list
-def create_shadervariantlist_from_materials(materialAssetIds):
+# input is Material Asset id list
+def create_shadervariantlists_from_material(materialAssetIds):
 
     shaderVarintIdDict = {}     # Key: ShaderAssetId, Value: ShaderVarintId list
     shaderOptionGroupsDict = {} # Key: ShaderAssetId, Value: ShaderOptionGroups list
 
-    progressDialog = QtWidgets.QProgressDialog("Generating .shadervariantlist file", "Cancel", 0, len(materialAssetIds))
+    progressDialog = QtWidgets.QProgressDialog("Gather shader variant information...", "Cancel", 0, len(materialAssetIds))
     progressDialog.setMaximumWidth(400)
     progressDialog.setMaximumHeight(100)
     progressDialog.setModal(True)
-    progressDialog.setWindowTitle("Generating Shader Variant List")
+    progressDialog.setWindowTitle("Gather shader variant from material asset")
     
     # This loop collects all uniquely-identified shader items used by the materials based on its shader variant id. 
     for i, materialAssetId in enumerate(materialAssetIds):
@@ -66,8 +66,14 @@ def create_shadervariantlist_from_materials(materialAssetIds):
 
     progressDialog.close()
 
+
+    progressDialog = QtWidgets.QProgressDialog("Generating .shadervariantlist files...", "Cancel", 0, len(shaderOptionGroupsDict))
+    progressDialog.setMaximumWidth(400)
+    progressDialog.setMaximumHeight(100)
+    progressDialog.setModal(True)
+    progressDialog.setWindowTitle("Generating Shader Variant Lists")
     # Generate the shader variant list for each shader asset
-    for shaderAssetId in shaderOptionGroupsDict:
+    for i, shaderAssetId in enumerate(shaderOptionGroupsDict):
 
         shaderAssetInfo = asset.AssetCatalogRequestBus(
             azlmbr.bus.Broadcast, 
@@ -121,6 +127,12 @@ def create_shadervariantlist_from_materials(materialAssetIds):
                 os.remove(projectShaderVariantListFilePath)
             
             azlmbr.shader.SaveShaderVariantListSourceData(projectShaderVariantListFilePath, shaderVariantList)
+        
+        progressDialog.setValue(i)
+        if progressDialog.wasCanceled():
+            return
+    
+    progressDialog.close()
 
 
 # Input is .shader
@@ -196,6 +208,11 @@ def create_shadervariantlist_for_shader(filename):
 
             valueName = shaderOptionDescriptor.GetValueName(optionValue)
             options[optionName] = valueName
+            if optionName.ToString() == "o_wrinkleLayers_count":
+                #print(optionValue)
+                print("----Value")
+                print(valueName.ToString())
+                print("----Value")
 
         if len(options) != 0:
             variantInfo.options = options

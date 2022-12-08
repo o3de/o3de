@@ -36,10 +36,10 @@ namespace ShaderManagementConsole
         //! Return the id of all built material assets
         virtual AZStd::vector<AZ::Data::AssetId> GetAllMaterialAssetIds() = 0;
 
-        //! A warper to call GetFullSourcePathFromRelativeProductPath from python
+        //! A wrapper to call GetFullSourcePathFromRelativeProductPath from python
         virtual AZStd::string GetFullSourcePathFromRelativeProductPath(const AZStd::string& relativeProductPath) = 0;
 
-        //! A warper to call GenerateRelativeSourcePath from python
+        //! A wrapper to call GenerateRelativeSourcePath from python
         virtual AZStd::string GenerateRelativeSourcePath(const AZStd::string& fullShaderPath) = 0;
 
     };

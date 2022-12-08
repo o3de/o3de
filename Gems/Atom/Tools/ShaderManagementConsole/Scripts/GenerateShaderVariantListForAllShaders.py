@@ -16,7 +16,7 @@ def main():
         azlmbr.bus.Broadcast, 
         'GetAllMaterialAssetIds'
     )
-    GenerateShaderVariantListUtil.create_shadervariantlist_from_materials(assetIds)
+    GenerateShaderVariantListUtil.create_shadervariantlists_from_material(assetIds)
 
     print("==== Finish generate shader variant list for all built material assets ==========")
 
