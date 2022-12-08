@@ -189,18 +189,22 @@ namespace EditorPythonBindings
             {
                 if (!PyCallable_Check(callback.ptr()))
                 {
-                    AZ_Error("python", false, "The callback for event '%s' on bus %.*s needs to be a callable python function.", eventName.data(), AZ_STRING_ARG(m_ebus->m_name));
+                    [[maybe_unused]] AZStd::string ebusName(AZStd::string(m_ebus ? m_ebus->m_name : "invalid ebus"));
+                    AZ_Error("python", false, "The callback for event '%s' on bus '%.*s' needs to be a callable python function.",
+                        eventName.data(),
+                        AZ_STRING_ARG(ebusName));
                     return false;
                 }
 
                 if (!m_handler)
                 {
-                        AZ_Error(
-                            "python",
-                            false,
-                            "No EBus connection detected for event '%s'. Make sure to call to connect() on the %.*s bus, first.",
-                            eventName.data(),
-                            AZ_STRING_ARG(m_ebus->m_name));
+                    [[maybe_unused]] AZStd::string ebusName(m_ebus ? m_ebus->m_name : "invalid ebus");
+                    AZ_Error(
+                        "python",
+                        false,
+                        "No EBus connection detected for event '%s'. Make sure to call to connect() on the %.*s bus, first.",
+                        eventName.data(),
+                        AZ_STRING_ARG(ebusName));
                     return false;
                 }
 
