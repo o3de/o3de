@@ -619,9 +619,9 @@ namespace AzToolsFramework
 
         bool PrefabPublicHandler::IsOverrideEditing(const Instance& owningInstance) const
         {
-            auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+            AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
             EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-            auto focusedInstance = m_prefabFocusHandler.GetFocusedPrefabInstance(editorEntityContextId);
+            InstanceOptionalReference focusedInstance = m_prefabFocusHandler.GetFocusedPrefabInstance(editorEntityContextId);
             AZ_Assert(focusedInstance.has_value(), "PrefabPublicHandler::IsOverrideEditing - The focused instance is null.");
 
             return &(focusedInstance->get()) != &owningInstance;
