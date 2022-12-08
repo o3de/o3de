@@ -284,7 +284,9 @@ namespace EMStudio
                     profileFlags |= plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_POSTUPDATE) ? static_cast<AZ::u8>(EMotionFX::AnimGraphNode::ProfileMode::PostUpdate) : 0;
                     profileFlags |= plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_OUTPUT) ? static_cast<AZ::u8>(EMotionFX::AnimGraphNode::ProfileMode::Output) : 0;
                     emfxNode->SetProfileMode(profileFlags);
-                    m_qtTempString = AZStd::fixed_string<32>::format("Update = %lld (%lld) us", emfxNode->GetUpdateTime(animGraphInstance).count(), emfxNode->GetTotalUpdateTime(animGraphInstance).count()).c_str();
+                    const AZ::u32 updateTime = aznumeric_caster(emfxNode->GetUpdateTime(animGraphInstance).count());
+                    const AZ::u32 totalUpdateTime = aznumeric_caster(emfxNode->GetTotalUpdateTime(animGraphInstance).count());
+                    m_qtTempString = AZStd::fixed_string<32>::format("Update = %u (%u) us", updateTime, totalUpdateTime).c_str();
                     painter.drawText(textPosition, m_qtTempString);
                     textPosition.setY(textPosition.y() + heightSpacing);
 
