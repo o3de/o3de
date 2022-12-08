@@ -136,11 +136,9 @@ namespace AZ::Settings
 
                 AZStd::string_view line(lineStartIter, lineEndIter);
 
-                // Remove any trailing carriage returns from the line
-                if (size_t lastValidLineCharIndex = line.find_last_not_of('\r'); lastValidLineCharIndex != AZStd::string_view::npos)
-                {
-                    line = line.substr(0, lastValidLineCharIndex + 1);
-                }
+                // Remove leading and surrounding spaces and carriage returns
+                line = AZ::StringFunc::StripEnds(line, " \r");
+
                 // Retrieve non-commented portion of line
                 if (configParserSettings.m_commentPrefixFunc)
                 {

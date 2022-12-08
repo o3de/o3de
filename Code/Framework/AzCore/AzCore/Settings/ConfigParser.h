@@ -30,6 +30,14 @@ namespace AZ::Settings
     //! Settings structure which is used to determine how to parse Windows INI style config file(.cfg, .ini, etc...)
     //! It supports being able to supply a custom comment filter and section header filter
     //! The names of section headers are appended to the root Json pointer path member to form new root paths
+    //! Ex. test.ini
+    /*
+    ; This is a comment
+    # This is also a comment
+    key1 = value1 ; inline comment
+    [Section Header1]
+    sectionKey1 = value2
+    */
     struct ConfigParserSettings
     {
         //! Struct which contains a string view to the key part and the value part
@@ -53,7 +61,7 @@ namespace AZ::Settings
         //! Callback invoked with each parsed key, value `(key=value)` entry from a Windows Style INI file
         //! with the section header if available `[section header]`
         //! This is the the only member that is required to be set within this struct
-        //! All other membes are defaulted to work with INI style files
+        //! All other members are defaulted to work with INI style files
         //! IMPORTANT: Any lambda functions or class instances that are larger than 16 bytes
         //! in size requires a memory allocation to store.
         //! So it is recommmended that users binding a lambda bind at most 2 reference or pointer members
@@ -93,12 +101,16 @@ namespace AZ::Settings
 
         //! Callback function that is after a line has been filtered through the CommentPrefixFunc
         //! to determine if the text matches a section header
-        //! returns a view of the section name if the line contains a section
+        //! NOTE: Leading and trailing whitespace will be removed from the line before invoking the callback
+        //!
+        //! @return returns a view of the section name if the line contains a section
         //! Otherwise an empty view is returned
         using SectionHeaderFunc = AZStd::function<AZStd::string_view(AZStd::string_view line)>;
 
         //! Callback function which is invoked after a line has been filtered through the SectionHeaderFunc
         //! to split the key,value pair of a line
+        //! NOTE: Leading and trailing whitespace will be removed from the line before invoking the callback
+        //!
         //! @return an instance of a ConfigKeyValuePair with the split key and value with surrounding whitespaced
         //! trimmed
         using DelimiterFunc = AZStd::function<ConfigKeyValuePair(AZStd::string_view line)>;

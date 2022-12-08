@@ -30,7 +30,7 @@ namespace UnitTest
     };
 
     class ConfigParserTestFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
         AZStd::string m_configBuffer;
@@ -333,8 +333,8 @@ tags=tools,renderer,dx12,vulkan
 
 [Platform android]
 tags=android,mobile,renderer,vulkan ; With Comments at the end
-
-[Platform ios]
+; validate leading and trailing whitespace is not parsed when examining the section header
+      [Platform ios]     
 tags=mobile,renderer,metal
 
 [Platform mac]
