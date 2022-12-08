@@ -406,7 +406,7 @@ void AzAssetBrowserWindow::UpdateBreadcrumbs(const AzToolsFramework::AssetBrowse
         const AssetBrowserEntry* folderEntry = folderForEntry(selectedEntry);
         if (folderEntry)
         {
-            entryPath = QString::fromUtf8(folderEntry->GetRelativePath().c_str());
+            entryPath = QString::fromUtf8(folderEntry->GetVisiblePath().c_str());
         }
     }
     m_ui->m_pathBreadCrumbs->setCurrentPath(entryPath);
