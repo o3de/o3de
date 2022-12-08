@@ -52,9 +52,9 @@ namespace AZ::Render
     bool EditorStateMeshDrawPacket::SetShaderOption(const Name& shaderOptionName, RPI::ShaderOptionValue value)
     {
         // check if the material owns this option in any of its shaders, if so it can't be set externally
-        for (auto shaderCollectionIter : m_material->GetShaderCollections())
+        for (const auto& shaderCollectionIter : m_material->GetShaderCollections())
         {
-            for (auto& shaderItem : shaderCollectionIter.second)
+            for (const auto& shaderItem : shaderCollectionIter.second)
             {
                 const RPI::ShaderOptionGroupLayout* layout = shaderItem.GetShaderOptions()->GetShaderOptionLayout();
                 RPI::ShaderOptionIndex index = layout->FindShaderOptionIndex(shaderOptionName);
@@ -68,9 +68,9 @@ namespace AZ::Render
             }
         }
 
-        for (auto shaderCollectionIter : m_material->GetShaderCollections())
+        for (const auto& shaderCollectionIter : m_material->GetShaderCollections())
         {
-            for (auto& shaderItem : shaderCollectionIter.second)
+            for (const auto& shaderItem : shaderCollectionIter.second)
             {
                 const RPI::ShaderOptionGroupLayout* layout = shaderItem.GetShaderOptions()->GetShaderOptionLayout();
                 RPI::ShaderOptionIndex index = layout->FindShaderOptionIndex(shaderOptionName);

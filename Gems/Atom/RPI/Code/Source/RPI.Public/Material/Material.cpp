@@ -224,7 +224,7 @@ namespace AZ
             // [GFX TODO][ATOM-5625] This really needs to be optimized to put the burden on setting global shader options, not applying global shader options.
             // For example, make the shader system collect a map of all shaders and ShaderVaraintIds, and look up the shader option names at set-time.
             ShaderSystemInterface* shaderSystem = ShaderSystemInterface::Get();
-            for (auto iter : shaderSystem->GetGlobalShaderOptions())
+            for (const auto& iter : shaderSystem->GetGlobalShaderOptions())
             {
                 const Name& shaderOptionName = iter.first;
                 ShaderOptionValue value = iter.second;

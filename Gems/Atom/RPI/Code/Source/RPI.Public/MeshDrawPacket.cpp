@@ -61,9 +61,9 @@ namespace AZ
 
         void MeshDrawPacket::ForValidShaderOptionName(const Name& shaderOptionName, const AZStd::function<bool(const ShaderCollection::Item&, ShaderOptionIndex)>& callback)
         {
-            for (auto shaderCollectionIter : m_material->GetShaderCollections())
+            for (const auto& shaderCollectionIter : m_material->GetShaderCollections())
             {
-                for (auto& shaderItem : shaderCollectionIter.second)
+                for (const auto& shaderItem : shaderCollectionIter.second)
                 {
                     const ShaderOptionGroupLayout* layout = shaderItem.GetShaderOptions()->GetShaderOptionLayout();
                     ShaderOptionIndex index = layout->FindShaderOptionIndex(shaderOptionName);
