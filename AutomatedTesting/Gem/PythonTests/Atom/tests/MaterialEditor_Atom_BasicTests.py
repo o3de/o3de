@@ -117,11 +117,8 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
 
     with Tracer() as error_tracer:
         # Set constants before starting test steps.
-        material_type_path = os.path.join(
-            azlmbr.paths.engroot, "Gems", "Atom", "Feature", "Common", "Assets", "Materials", "Types",
-            "StandardPBR.materialtype")
-        test_data_path = os.path.join(
-            azlmbr.paths.engroot, "Gems", "Atom", "TestData", "TestData", "Materials", "StandardPbrTestCases")
+        standard_pbr_material_type = os.path.join(atom_tools_utils.MATERIAL_TYPES_PATH, "StandardPBR.materialtype")
+        test_data_path = os.path.join(atom_tools_utils.TEST_DATA_MATERIALS_PATH, "StandardPbrTestCases")
         test_material_1 = "001_DefaultWhite.material"
         test_material_2 = "002_BaseColorLerp.material"
         test_material_3 = "003_MetalMatte.material"
@@ -130,7 +127,7 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
         test_material_6 = "006_SpecularF0Map.material"
 
         # 1. Open an existing material document.
-        material_document_id = atom_tools_utils.open_document(material_type_path)
+        material_document_id = atom_tools_utils.open_document(standard_pbr_material_type)
         Report.result(
             Tests.open_existing_asset,
             atom_tools_utils.is_document_open(material_document_id) is True)

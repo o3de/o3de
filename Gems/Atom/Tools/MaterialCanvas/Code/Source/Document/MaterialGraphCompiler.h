@@ -8,9 +8,7 @@
 
 #pragma once
 
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/RTTI/RTTI.h>
-#include <Document/MaterialGraphCompilerRequestBus.h>
+#include <AtomToolsFramework/Graph/GraphCompiler.h>
 #include <GraphModel/Model/Node.h>
 
 namespace MaterialCanvas
@@ -18,10 +16,10 @@ namespace MaterialCanvas
     //! MaterialGraphCompiler traverses a material graph, searching for and splicing shader code snippets, variable values and definitions,
     //! and other information into complete, functional material types, materials, and shaders. Currently, the resulting files will be
     //! generated an output into the same folder location has the source graph.
-    class MaterialGraphCompiler : public MaterialGraphCompilerRequestBus::Handler
+    class MaterialGraphCompiler : public AtomToolsFramework::GraphCompiler
     {
     public:
-        AZ_RTTI(MaterialGraphCompiler, "{3A241379-0282-42FB-B23A-BAF6A44FA0F4}");
+        AZ_RTTI(MaterialGraphCompiler, "{570E3923-48C4-4B91-BC44-3145BE771E9B}", AtomToolsFramework::GraphCompiler);
         AZ_CLASS_ALLOCATOR(MaterialGraphCompiler, AZ::SystemAllocator, 0);
         AZ_DISABLE_COPY_MOVE(MaterialGraphCompiler);
 
@@ -31,21 +29,11 @@ namespace MaterialCanvas
         MaterialGraphCompiler(const AZ::Crc32& toolId, const AZ::Uuid& documentId);
         virtual ~MaterialGraphCompiler();
 
-        // MaterialGraphCompilerRequestBus::Handler overrides...
-        const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const override;
-        bool CompileGraph() const override;
-        void QueueCompileGraph() const override;
-        bool IsCompileGraphQueued() const override;
+        // AtomToolsFramework::GraphCompiler overrides...
+        AZStd::string GetGraphPath() const override;
+        bool CompileGraph() override;
 
     private:
-        void BuildSlotValueTable() const;
-        void CompileGraphStarted() const;
-        void CompileGraphFailed() const;
-        void CompileGraphCompleted() const;
-
-        // Get the graph export path based on the Graph document path or default export path.
-        AZStd::string GetGraphPath() const;
-
         // Convert the template file path into a save file path based on the document name.
         AZStd::string GetOutputPathFromTemplatePath(const AZStd::string& templatePath) const;
 
@@ -99,10 +87,6 @@ namespace MaterialCanvas
             GraphModel::ConstNodePtr inputNode,
             const AZStd::vector<AZStd::string>& inputSlotNames) const;
 
-        // Sort a container of nodes by depth for generating instructions in execution order
-        template<typename NodeContainer>
-        void SortNodesInExecutionOrder(NodeContainer& nodes) const;
-
         // Build a list of all graph nodes sorted in execution order based on depth
         AZStd::vector<GraphModel::ConstNodePtr> GetAllNodesInExecutionOrder() const;
 
@@ -139,11 +123,9 @@ namespace MaterialCanvas
             const AZStd::string& templateInputPath,
             const AZStd::string& templateOutputPath) const;
 
-        const AZ::Crc32 m_toolId = {};
-        const AZ::Uuid m_documentId = {};
-        mutable bool m_compileGraphQueued = {};
-        mutable AZStd::vector<AZStd::string> m_generatedFiles;
-        mutable AZStd::map<GraphModel::ConstSlotPtr, AZStd::any> m_slotValueTable;
+        void BuildSlotValueTable();
+
+        AZStd::map<GraphModel::ConstSlotPtr, AZStd::any> m_slotValueTable;
 
         // Utility type wrapping repeated load and save logic for most template files that only require basic insertions and substitutions.
         // Files will be read in and then tokenized into a vector of strings for each line in the file. This allows for easier and

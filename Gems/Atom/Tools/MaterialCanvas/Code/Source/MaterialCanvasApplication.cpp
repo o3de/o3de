@@ -142,17 +142,20 @@ namespace MaterialCanvas
 
     void MaterialCanvasApplication::OnDocumentOpened(const AZ::Uuid& documentId)
     {
-        MaterialGraphCompilerRequestBus::Event(documentId, &MaterialGraphCompilerRequestBus::Events::QueueCompileGraph);
+        AtomToolsFramework::GraphCompilerRequestBus::Event(
+            documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
     }
 
     void MaterialCanvasApplication::OnDocumentSaved(const AZ::Uuid& documentId)
     {
-        MaterialGraphCompilerRequestBus::Event(documentId, &MaterialGraphCompilerRequestBus::Events::QueueCompileGraph);
+        AtomToolsFramework::GraphCompilerRequestBus::Event(
+            documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
     }
 
     void MaterialCanvasApplication::OnDocumentUndoStateChanged(const AZ::Uuid& documentId)
     {
-        MaterialGraphCompilerRequestBus::Event(documentId, &MaterialGraphCompilerRequestBus::Events::QueueCompileGraph);
+        AtomToolsFramework::GraphCompilerRequestBus::Event(
+            documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
     }
 
     void MaterialCanvasApplication::OnDocumentClosed(const AZ::Uuid& documentId)
@@ -354,7 +357,7 @@ namespace MaterialCanvas
 
     void MaterialCanvasApplication::ApplyShaderBuildSettings()
     {
-        // If minimal shader build settings are enabled, copy a settings registry file stub into the user settings folder. This will
+        // If faster shader build settings are enabled, copy a settings registry file stub into the user settings folder. This will
         // override AP and shader build settings, disabling shaders and shader variant building for inactive platforms and RHI. Copying any
         // of these settings files requires restarting the application and the asset processor for the changes to be picked up.
         if (auto fileIO = AZ::IO::FileIOBase::GetInstance())
@@ -371,10 +374,10 @@ namespace MaterialCanvas
             const auto settingsPathDx12(
                 projectPath / AZ::SettingsRegistryInterface::DevUserRegistryFolder / "user_minimal_shader_build_dx12.setreg");
 
-            const bool enableMinimalShaderBuilds =
-                AtomToolsFramework::GetSettingsValue<bool>("/O3DE/Atom/MaterialCanvas/EnableMinimalShaderBuilds", false);
+            const bool enableFasterShaderBuilds =
+                AtomToolsFramework::GetSettingsValue<bool>("/O3DE/Atom/MaterialCanvas/EnableFasterShaderBuilds", false);
 
-            if (enableMinimalShaderBuilds)
+            if (enableFasterShaderBuilds)
             {
                 // Windows is the only platform with multiple, non-null RHI, supporting Vulkan and DX12. If DX12 is the active RHI then it
                 // will require copying its own settings file. Settings files for inactive RHI will be deleted from the user folder. 

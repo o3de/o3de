@@ -104,7 +104,7 @@ namespace AtomToolsFramework
                     result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsCopy, documentId, savePath);
                 if (!result)
                 {
-                    SetStatusError(tr("Document save failed: %1").arg(documentPath));
+                    SetStatusError(tr("Document save failed: %1").arg(documentPath).toUtf8().constData());
                 }
             }
         }, QKeySequence::SaveAs);
@@ -119,7 +119,7 @@ namespace AtomToolsFramework
                     result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsChild, documentId, savePath);
                 if (!result)
                 {
-                    SetStatusError(tr("Document save failed: %1").arg(documentPath));
+                    SetStatusError(tr("Document save failed: %1").arg(documentPath).toUtf8().constData());
                 }
             }
         });
@@ -160,7 +160,7 @@ namespace AtomToolsFramework
             AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsDocumentRequestBus::Events::Undo);
             if (!result)
             {
-                SetStatusError(tr("Document undo failed: %1").arg(GetDocumentPath(documentId)));
+                SetStatusError(tr("Document undo failed: %1").arg(GetDocumentPath(documentId)).toUtf8().constData());
             }
         }, QKeySequence::Undo);
 
@@ -170,7 +170,7 @@ namespace AtomToolsFramework
             AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsDocumentRequestBus::Events::Redo);
             if (!result)
             {
-                SetStatusError(tr("Document redo failed: %1").arg(GetDocumentPath(documentId)));
+                SetStatusError(tr("Document redo failed: %1").arg(GetDocumentPath(documentId)).toUtf8().constData());
             }
         }, QKeySequence::Redo);
         m_menuEdit->insertSeparator(insertPostion);
@@ -202,7 +202,7 @@ namespace AtomToolsFramework
                 result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocument, documentId);
             if (!result)
             {
-                SetStatusError(tr("Document save failed: %1").arg(documentPath.c_str()));
+                SetStatusError(tr("Document save failed: %1").arg(documentPath.c_str()).toUtf8().constData());
                 return false;
             }
             return true;
@@ -216,7 +216,7 @@ namespace AtomToolsFramework
                 result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsCopy, documentId, savePath);
             if (!result)
             {
-                SetStatusError(tr("Document save failed: %1").arg(documentPath.c_str()));
+                SetStatusError(tr("Document save failed: %1").arg(documentPath.c_str()).toUtf8().constData());
                 return false;
             }
             return true;
@@ -710,28 +710,28 @@ namespace AtomToolsFramework
             // Find and select the file path in the asset browser
             m_assetBrowser->SelectEntries(absolutePath);
 
-            SetStatusMessage(tr("Document opened: %1").arg(absolutePath.c_str()));
+            SetStatusMessage(tr("Document opened: %1").arg(absolutePath.c_str()).toUtf8().constData());
         }
     }
 
     void AtomToolsDocumentMainWindow::OnDocumentClosed(const AZ::Uuid& documentId)
     {
         RemoveDocumentTab(documentId);
-        SetStatusMessage(tr("Document closed: %1").arg(GetDocumentPath(documentId)));
+        SetStatusMessage(tr("Document closed: %1").arg(GetDocumentPath(documentId)).toUtf8().constData());
     }
 
     void AtomToolsDocumentMainWindow::OnDocumentCleared(const AZ::Uuid& documentId)
     {
         UpdateDocumentTab(documentId);
         QueueUpdateMenus(true);
-        SetStatusMessage(tr("Document cleared: %1").arg(GetDocumentPath(documentId)));
+        SetStatusMessage(tr("Document cleared: %1").arg(GetDocumentPath(documentId)).toUtf8().constData());
     }
 
     void AtomToolsDocumentMainWindow::OnDocumentError(const AZ::Uuid& documentId)
     {
         UpdateDocumentTab(documentId);
         QueueUpdateMenus(true);
-        SetStatusError(tr("Document error: %1").arg(GetDocumentPath(documentId)));
+        SetStatusError(tr("Document error: %1").arg(GetDocumentPath(documentId)).toUtf8().constData());
     }
 
     void AtomToolsDocumentMainWindow::OnDocumentDestroyed(const AZ::Uuid& documentId)
@@ -755,7 +755,7 @@ namespace AtomToolsFramework
     void AtomToolsDocumentMainWindow::OnDocumentSaved(const AZ::Uuid& documentId)
     {
         UpdateDocumentTab(documentId);
-        SetStatusMessage(tr("Document saved: %1").arg(GetDocumentPath(documentId)));
+        SetStatusMessage(tr("Document saved: %1").arg(GetDocumentPath(documentId)).toUtf8().constData());
     }
 
     void AtomToolsDocumentMainWindow::closeEvent(QCloseEvent* closeEvent)
