@@ -93,6 +93,8 @@ namespace AZ
             AZ::Aabb GetWorldBounds() override;
             AZ::Aabb GetLocalBounds() override;
 
+            void RegisterInnerExtentsChangedHandler(AZ::Event<bool>::Handler& handler);
+
         private:
 
             AZ_DISABLE_COPY(ReflectionProbeComponentController);
@@ -124,6 +126,9 @@ namespace AZ
             TransformInterface* m_transformInterface = nullptr;
             AZ::EntityId m_entityId;
             ReflectionProbeComponentConfig m_configuration;
+
+            // event fired when the inner extents change
+            AZ::Event<bool> m_innerExtentsChangedEvent;
         };
     } // namespace Render
 } // namespace AZ

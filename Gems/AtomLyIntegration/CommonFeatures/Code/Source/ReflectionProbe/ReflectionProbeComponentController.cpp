@@ -286,6 +286,8 @@ namespace AZ
             m_configuration.m_innerWidth = AZStd::min(m_configuration.m_innerWidth, m_configuration.m_outerWidth);
             m_configuration.m_innerLength = AZStd::min(m_configuration.m_innerLength, m_configuration.m_outerLength);
             m_configuration.m_innerHeight = AZStd::min(m_configuration.m_innerHeight, m_configuration.m_outerHeight);
+
+            m_innerExtentsChangedEvent.Signal(true);
         }
 
         void ReflectionProbeComponentController::SetBakeExposure(float bakeExposure)
@@ -329,6 +331,11 @@ namespace AZ
             AZ::Aabb localBounds = AZ::Aabb::CreateNull();
             m_shapeBus->GetTransformAndLocalBounds(unused, localBounds);
             return localBounds;
+        }
+
+        void ReflectionProbeComponentController::RegisterInnerExtentsChangedHandler(AZ::Event<bool>::Handler& handler)
+        {
+            handler.Connect(m_innerExtentsChangedEvent);
         }
 
         AZ::Transform ReflectionProbeComponentController::ComputeOverallTransform(const AZ::Transform& entityTransform) const
