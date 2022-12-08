@@ -204,8 +204,6 @@ namespace AzToolsFramework
         : public AZ::EBusTraits
     {
     public:
-        /// Dispatched when Editor's Tools menu is being populated so that external tools can add their actions.
-        virtual void OnPopulateToolMenuItems() = 0;
 
         /// Dispatched when Editor's Tools menu is cleared.
         virtual void OnResetToolMenuItems() = 0;

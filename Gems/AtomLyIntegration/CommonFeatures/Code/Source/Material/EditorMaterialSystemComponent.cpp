@@ -22,6 +22,9 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Application/Application.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManager.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <Editor/LyViewPaneNames.h>
@@ -107,6 +110,7 @@ namespace AZ
             AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
             AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
             AzFramework::AssetCatalogEventBus::Handler::BusConnect();
+            AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
 
             // All material previews use the same model and lighting preset assets
             // models/sphere.azmodel
@@ -129,6 +133,7 @@ namespace AZ
             AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusDisconnect(); 
             AZ::SystemTickBus::Handler::BusDisconnect();
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
+            AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
 
             m_materialBrowserInteractions.reset();
             m_materialPreviewRequests.clear();
@@ -336,44 +341,6 @@ namespace AZ
             m_materialPreviews.erase(entityId);
         }
 
-        void EditorMaterialSystemComponent::OnPopulateToolMenuItems()
-        {
-            if (!m_openMaterialEditorAction)
-            {
-                m_openMaterialEditorAction = new QAction("Material Editor");
-                m_openMaterialEditorAction->setShortcut(QKeySequence(Qt::Key_M));
-                m_openMaterialEditorAction->setCheckable(false);
-                m_openMaterialEditorAction->setChecked(false);
-                m_openMaterialEditorAction->setIcon(QIcon(":/Menu/material_editor.svg"));
-                QObject::connect(
-                    m_openMaterialEditorAction, &QAction::triggered, m_openMaterialEditorAction, [this]()
-                    {
-                        OpenMaterialEditor("");
-                    }
-                );
-
-                AzToolsFramework::EditorMenuRequestBus::Broadcast(
-                    &AzToolsFramework::EditorMenuRequestBus::Handler::AddMenuAction, "ToolMenu", m_openMaterialEditorAction, true);
-            }
-            if (!m_openMaterialCanvasAction)
-            {
-                m_openMaterialCanvasAction = new QAction("Material Canvas (Preview)");
-                m_openMaterialCanvasAction->setShortcut(QKeySequence("Ctrl+Shift+M"));
-                m_openMaterialCanvasAction->setCheckable(false);
-                m_openMaterialCanvasAction->setChecked(false);
-                m_openMaterialCanvasAction->setIcon(QIcon(":/Menu/material_canvas.svg"));
-                QObject::connect(
-                    m_openMaterialCanvasAction, &QAction::triggered, m_openMaterialCanvasAction, [this]()
-                    {
-                        OpenMaterialCanvas("");
-                    }
-                );
-
-                AzToolsFramework::EditorMenuRequestBus::Broadcast(
-                    &AzToolsFramework::EditorMenuRequestBus::Handler::AddMenuAction, "ToolMenu", m_openMaterialCanvasAction, true);
-            }
-        }
-
         void EditorMaterialSystemComponent::OnResetToolMenuItems()
         {
             delete m_openMaterialEditorAction;
@@ -426,6 +393,55 @@ namespace AZ
                 return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Menu/material_canvas.svg");
             }
             return AzToolsFramework::AssetBrowser::SourceFileDetails();
+        }
+
+        void EditorMaterialSystemComponent::OnMenuBindingHook()
+        {
+            auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+            AZ_Assert(menuManagerInterface, "EditorMaterialSystemComponent - could not get MenuManagerInterface");
+
+            auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+            AZ_Assert(menuManagerInterface, "EditorMaterialSystemComponent - could not get ActionManagerInterface");
+
+            auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+            AZ_Assert(hotKeyManagerInterface, "EditorMaterialSystemComponent - could not get HotKeyManagerInterface");
+
+            constexpr AZStd::string_view ActionContext = "o3de.context.editor.mainwindow";
+            constexpr AZStd::string_view MaterialEditorAction = "o3de.tools.material_editor";
+            constexpr AZStd::string_view ToolsMenuIdentifier = "o3de.menu.editor.tools";
+
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = "Material Editor";
+            actionProperties.m_iconPath = ":/Menu/material_editor.svg";
+            auto outcome = actionManagerInterface->RegisterAction(ActionContext, MaterialEditorAction, actionProperties, [this]()
+                {
+                    OpenMaterialEditor("");
+                });
+            AZ_Assert(outcome.IsSuccess(), "Failed to RegisterAction %s", MaterialEditorAction);
+
+            outcome = menuManagerInterface->AddActionToMenu(ToolsMenuIdentifier, MaterialEditorAction, 100);
+            AZ_Assert(outcome.IsSuccess(), "Failed to AddAction %s to Menu %s", MaterialEditorAction, ToolsMenuIdentifier);
+
+            outcome = hotKeyManagerInterface->SetActionHotKey(MaterialEditorAction, "M");
+            AZ_Assert(outcome.IsSuccess(), "Failed to ActionHotKey for %s", MaterialEditorAction);
+
+
+            constexpr AZStd::string_view MaterialCanvasAction = "o3de.tools.material_canvas";
+
+            actionProperties.m_name = "Material Canvas (Preview)";
+            actionProperties.m_iconPath = ":/Menu/material_canvas.svg";
+            outcome = actionManagerInterface->RegisterAction(ActionContext, MaterialCanvasAction, actionProperties, [this]()
+                {
+                    OpenMaterialCanvas("");
+                });
+            AZ_Assert(outcome.IsSuccess(), "Failed to RegisterAction %s", MaterialCanvasAction);
+
+            outcome = menuManagerInterface->AddActionToMenu(ToolsMenuIdentifier, MaterialCanvasAction, 101);
+            AZ_Assert(outcome.IsSuccess(), "Failed to AddAction %s to Menu %s", MaterialCanvasAction, ToolsMenuIdentifier);
+
+            outcome = hotKeyManagerInterface->SetActionHotKey(MaterialCanvasAction, "Ctrl+Shift+M");
+            AZ_Assert(outcome.IsSuccess(), "Failed to ActionHotKey for %s", MaterialCanvasAction);
+
         }
 
         void EditorMaterialSystemComponent::PurgePreviews()

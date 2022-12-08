@@ -327,8 +327,6 @@ void LevelEditorMenuHandler::ResetToolsMenus()
 
     CreateMenuOptions(&menuMap, m_toolsMenu, LyViewPane::CategoryTools);
 
-    AzToolsFramework::EditorMenuNotificationBus::Broadcast(&AzToolsFramework::EditorMenuNotificationBus::Handler::OnPopulateToolMenuItems);
-
     m_toolsMenu.AddSeparator();
 
     // Other
