@@ -151,7 +151,7 @@ protected:
     AssetProcessorAZApplication m_frameworkApp;
     QCoreApplication* m_qApp = nullptr;
 
-    virtual void Reflect() = 0;
+    virtual void Reflect() {}
     virtual const char* GetLogBaseName() = 0;
     virtual RegistryCheckInstructions PopupRegistryProblemsMessage(QString warningText) = 0;
 private:

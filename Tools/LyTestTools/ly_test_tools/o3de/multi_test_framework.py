@@ -1005,9 +1005,14 @@ class MultiTestSuite(object):
             for i in range(total_threads):
                 def make_parallel_test_func(test_spec, index, current_executable):
                     def run(request, workspace, extra_cmdline_args):
-                        results = self._exec_single_test(
-                            request, workspace, current_executable, index + 1, self.log_name, test_spec,
-                            extra_cmdline_args)
+                        try:
+                            results = self._exec_single_test(
+                                request, workspace, current_executable, index + 1, self.log_name, test_spec,
+                                extra_cmdline_args)
+                        except Exception as e:
+                            logger.warning(f"Found exception trying to run Editor tests. Current log name is "
+                                           f"{self.log_name} and test is {str(test_spec)}")
+                            raise e
                         if not results:
                             raise EditorToolsFrameworkException(f"Results not found. Current log name is "
                                                                 f"{self.log_name} and test name is {str(test_spec)}")
@@ -1069,9 +1074,14 @@ class MultiTestSuite(object):
                 def run(request, workspace, extra_cmdline_args):
                     results = None
                     if len(test_spec_list_for_executable) > 0:
-                        results = self._exec_multitest(
-                            request, workspace, current_executable, index + 1, self.log_name,
-                            test_spec_list_for_executable, extra_cmdline_args)
+                        try:
+                            results = self._exec_multitest(
+                                request, workspace, current_executable, index + 1, self.log_name,
+                                test_spec_list_for_executable, extra_cmdline_args)
+                        except Exception as e:
+                            logger.warning(f"Found exception trying to run Editor tests. Current log name is "
+                                           f"{self.log_name} and tests are {str(test_spec_list_for_executable)}")
+                            raise e
                         if not results:
                             raise EditorToolsFrameworkException(f"Results not found. Current log name is "
                                                                 f"{self.log_name} and tests are "
@@ -1204,8 +1214,8 @@ class MultiTestSuite(object):
                 # If it didn't then it will have "Unknown" as the type of result.
                 results = self._get_results_using_output(test_spec_list, output, executable_log_content)
                 if not len(results) == len(test_spec_list):
-                    print(f"\nList of Results: {results}\n"
-                          f"Test Spec List: {test_spec_list}\n")
+                    logger.debug(f"\nList of Results: {results}\n"
+                                 f"Test Spec List: {test_spec_list}\n")
                     raise EditorToolsFrameworkException("Error when retrieving test results, the number of results "
                                                         "don't match the number of tests that ran.")
 

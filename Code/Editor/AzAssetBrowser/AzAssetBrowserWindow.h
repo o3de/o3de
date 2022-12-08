@@ -62,7 +62,6 @@ protected:
     void resizeEvent(QResizeEvent* resizeEvent) override;
 
 private:
-    void OnInitToolsMenuButton();
     void UpdateDisplayInfo();
     void SetNarrowMode(bool narrow);
 
@@ -96,8 +95,9 @@ private:
     bool m_inNarrowMode = false;
 
 private Q_SLOTS:
-    void SelectionChangedSlot(const QItemSelection& selected, const QItemSelection& deselected) const;
+    void CurrentIndexChangedSlot(const QModelIndex& idx) const;
     void DoubleClickedItem(const QModelIndex& element);
+    void BreadcrumbsPathChangedSlot(const QString& path) const;
 };
 
 extern const char* AZ_ASSET_BROWSER_PREVIEW_NAME;
