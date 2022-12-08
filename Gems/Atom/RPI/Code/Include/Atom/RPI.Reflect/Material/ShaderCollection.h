@@ -123,5 +123,13 @@ namespace AZ
             AZStd::vector<Item> m_shaderItems;
             NameReflectionMapForIndex m_shaderTagIndexMap;
         };
+
+        //! An empty Name for material pipeline means apply to any render pipeline
+        static const Name MaterialPipelineNameCommon = Name{};
+
+        //! There can be a ShaderCollection for each material pipeline, to list shaders that only apply to matching render pipelines.
+        //! The shaders for pipeline name MaterialPipelineNameCommon will be sent to every render pipeline.
+        using MaterialPipelineShaderCollections = AZStd::unordered_map<Name/*pipelineName*/, ShaderCollection>;
+
     } // namespace RPI
 } // namespace AZ

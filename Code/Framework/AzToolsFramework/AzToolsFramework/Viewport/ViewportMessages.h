@@ -275,6 +275,9 @@ namespace AzToolsFramework
             virtual void OnGridSnappingChanged([[maybe_unused]] bool enabled)
             {
             }
+            virtual void OnGridShowingChanged([[maybe_unused]] bool showing)
+            {
+            }
             virtual void OnDrawHelpersChanged([[maybe_unused]] bool enabled)
             {
             }
@@ -282,6 +285,12 @@ namespace AzToolsFramework
             {
             }
             virtual void OnOnlyShowHelpersForSelectedEntitiesChanged([[maybe_unused]] bool enabled)
+            {
+            }
+            virtual void OnCameraFovChanged([[maybe_unused]] float fovRadians)
+            {
+            }
+            virtual void OnCameraSpeedScaleChanged([[maybe_unused]] float value)
             {
             }
 
