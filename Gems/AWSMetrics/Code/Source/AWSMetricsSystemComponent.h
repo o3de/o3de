@@ -14,7 +14,7 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
-#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
+#include <ActionManager/ActionManagerRegistrationNotificationBus.h>
 
 namespace AWSMetrics
 {
