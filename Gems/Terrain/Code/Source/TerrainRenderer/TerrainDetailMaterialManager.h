@@ -130,7 +130,6 @@ namespace Terrain
             uint32_t m_normalImageIndex{ InvalidImageIndex };
             uint32_t m_roughnessImageIndex{ InvalidImageIndex };
             uint32_t m_metalnessImageIndex{ InvalidImageIndex };
-
             uint32_t m_specularF0ImageIndex{ InvalidImageIndex };
             uint32_t m_occlusionImageIndex{ InvalidImageIndex };
             uint32_t m_heightImageIndex{ InvalidImageIndex };
