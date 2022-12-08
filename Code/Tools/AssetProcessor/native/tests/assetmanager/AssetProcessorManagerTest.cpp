@@ -3168,6 +3168,46 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_BasicTes
     EXPECT_NE(deps.find(m_dependsOnFile2_Source.toUtf8().constData()), deps.end());
     EXPECT_NE(deps.find(m_dependsOnFile1_Job.toUtf8().constData()), deps.end());
     EXPECT_NE(deps.find(m_dependsOnFile2_Job.toUtf8().constData()), deps.end());
+
+    AssetProcessor::SourceAssetReference sourceAsset(m_absPath);
+    auto uuid = AssetUtilities::CreateSafeSourceUUIDFromName(sourceAsset.RelativePath().c_str());
+    AZStd::vector<AzToolsFramework::AssetDatabase::SourceFileDependencyEntry> dependencyEntry;
+    m_assetProcessorManager->m_stateData->GetSourceFileDependenciesByDependsOnSource(
+        m_uuidOfA,
+        "a.txt",
+        "a.txt",
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency::DEP_Any,
+        dependencyEntry);
+
+    m_assetProcessorManager->m_stateData->GetSourceFileDependenciesByDependsOnSource(
+        m_uuidOfB,
+        "b.txt",
+        "b.txt",
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency::DEP_Any,
+        dependencyEntry);
+
+    m_assetProcessorManager->m_stateData->GetSourceFileDependenciesByDependsOnSource(
+        m_uuidOfC,
+        "c.txt",
+        "c.txt",
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency::DEP_Any,
+        dependencyEntry);
+
+    m_assetProcessorManager->m_stateData->GetSourceFileDependenciesByDependsOnSource(
+        m_uuidOfD,
+        "d.txt",
+        "d.txt",
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency::DEP_Any,
+        dependencyEntry);
+
+    ASSERT_EQ(dependencyEntry.size(), 4);
+
+    // These should be in the order queried above.  A and C are path based, so should be false, B and D are UUID based and should be true
+    EXPECT_FALSE(dependencyEntry[0].m_fromAssetId);
+    EXPECT_TRUE(dependencyEntry[1].m_fromAssetId);
+    EXPECT_FALSE(dependencyEntry[2].m_fromAssetId);
+    EXPECT_TRUE(dependencyEntry[3].m_fromAssetId);
+}
 }
 
 TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_UpdateTest)
