@@ -161,10 +161,19 @@ namespace AZ
 
             AZ::u64 entityId = (AZ::u64)GetEntityId();
             configuration.m_entityId = entityId;
+
+            m_innerExtentsChangedHandler = AZ::Event<bool>::Handler([]([[maybe_unused]] bool value)
+                {
+                    AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                        &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
+                        AzToolsFramework::Refresh_Values);
+                });
+            m_controller.RegisterInnerExtentsChangedHandler(m_innerExtentsChangedHandler);
         }
 
         void EditorReflectionProbeComponent::Deactivate()
         {
+            m_innerExtentsChangedHandler.Disconnect();
             EditorReflectionProbeBus::Handler::BusDisconnect(GetEntityId());
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
             AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
