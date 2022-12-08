@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
+#include <Atom/RPI.Reflect/Material/MaterialPropertyCollection.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Atom/RPI.Reflect/Material/ShaderCollection.h>
 #include <AzCore/Math/Vector2.h>
@@ -31,15 +32,13 @@ namespace AZ
         }
 
         MaterialFunctor::RuntimeContext::RuntimeContext(
-            const AZStd::vector<MaterialPropertyValue>& propertyValues,
-            RHI::ConstPtr<MaterialPropertiesLayout> materialPropertiesLayout,
+            const MaterialPropertyCollection& materialProperties,
             MaterialPipelineShaderCollections* shaderCollections,
             ShaderResourceGroup* shaderResourceGroup,
             const MaterialPropertyFlags* materialPropertyDependencies,
             MaterialPropertyPsoHandling psoHandling
         )
-            : m_materialPropertyValues(propertyValues)
-            , m_materialPropertiesLayout(materialPropertiesLayout)
+            : m_materialProperties(materialProperties)
             , m_allShaderCollections(shaderCollections)
             , m_shaderResourceGroup(shaderResourceGroup)
             , m_materialPropertyDependencies(materialPropertyDependencies)
@@ -149,16 +148,14 @@ namespace AZ
         }
 
         MaterialFunctor::EditorContext::EditorContext(
-            const AZStd::vector<MaterialPropertyValue>& propertyValues,
-            RHI::ConstPtr<MaterialPropertiesLayout> materialPropertiesLayout,
+            const MaterialPropertyCollection& materialProperties,
             AZStd::unordered_map<Name, MaterialPropertyDynamicMetadata>& propertyMetadata,
             AZStd::unordered_map<Name, MaterialPropertyGroupDynamicMetadata>& propertyGroupMetadata,
             AZStd::unordered_set<Name>& updatedPropertiesOut,
             AZStd::unordered_set<Name>& updatedPropertyGroupsOut,
             const MaterialPropertyFlags* materialPropertyDependencies
         )
-            : m_materialPropertyValues(propertyValues)
-            , m_materialPropertiesLayout(materialPropertiesLayout)
+            : m_materialProperties(materialProperties)
             , m_propertyMetadata(propertyMetadata)
             , m_propertyGroupMetadata(propertyGroupMetadata)
             , m_updatedPropertiesOut(updatedPropertiesOut)
@@ -173,7 +170,7 @@ namespace AZ
 
         const MaterialPropertyDynamicMetadata* MaterialFunctor::EditorContext::GetMaterialPropertyMetadata(const MaterialPropertyIndex& index) const
         {
-            const Name& name = m_materialPropertiesLayout->GetPropertyDescriptor(index)->GetName();
+            const Name& name = m_materialProperties.GetMaterialPropertiesLayout()->GetPropertyDescriptor(index)->GetName();
             return GetMaterialPropertyMetadata(name);
         }
         
@@ -218,7 +215,7 @@ namespace AZ
 
         bool MaterialFunctor::EditorContext::SetMaterialPropertyVisibility(const MaterialPropertyIndex& index, MaterialPropertyVisibility visibility)
         {
-            const Name& name = m_materialPropertiesLayout->GetPropertyDescriptor(index)->GetName();
+            const Name& name = m_materialProperties.GetMaterialPropertiesLayout()->GetPropertyDescriptor(index)->GetName();
             return SetMaterialPropertyVisibility(name, visibility);
         }
 
@@ -241,7 +238,7 @@ namespace AZ
 
         bool MaterialFunctor::EditorContext::SetMaterialPropertyDescription(const MaterialPropertyIndex& index, AZStd::string description)
         {
-            const Name& name = m_materialPropertiesLayout->GetPropertyDescriptor(index)->GetName();
+            const Name& name = m_materialProperties.GetMaterialPropertiesLayout()->GetPropertyDescriptor(index)->GetName();
             return SetMaterialPropertyDescription(name, description);
         }
 
@@ -264,7 +261,7 @@ namespace AZ
 
         bool MaterialFunctor::EditorContext::SetMaterialPropertyMinValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& min)
         {
-            const Name& name = m_materialPropertiesLayout->GetPropertyDescriptor(index)->GetName();
+            const Name& name = m_materialProperties.GetMaterialPropertiesLayout()->GetPropertyDescriptor(index)->GetName();
             return SetMaterialPropertyMinValue(name, min);
         }
 
@@ -287,7 +284,7 @@ namespace AZ
 
         bool MaterialFunctor::EditorContext::SetMaterialPropertyMaxValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& max)
         {
-            const Name& name = m_materialPropertiesLayout->GetPropertyDescriptor(index)->GetName();
+            const Name& name = m_materialProperties.GetMaterialPropertiesLayout()->GetPropertyDescriptor(index)->GetName();
             return SetMaterialPropertyMaxValue(name, max);
         }
 
@@ -310,7 +307,7 @@ namespace AZ
 
         bool MaterialFunctor::EditorContext::SetMaterialPropertySoftMinValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& min)
         {
-            const Name& name = m_materialPropertiesLayout->GetPropertyDescriptor(index)->GetName();
+            const Name& name = m_materialProperties.GetMaterialPropertiesLayout()->GetPropertyDescriptor(index)->GetName();
             return SetMaterialPropertySoftMinValue(name, min);
         }
 
@@ -333,7 +330,7 @@ namespace AZ
 
         bool MaterialFunctor::EditorContext::SetMaterialPropertySoftMaxValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& max)
         {
-            const Name& name = m_materialPropertiesLayout->GetPropertyDescriptor(index)->GetName();
+            const Name& name = m_materialProperties.GetMaterialPropertiesLayout()->GetPropertyDescriptor(index)->GetName();
             return SetMaterialPropertySoftMaxValue(name, max);
         }
 
@@ -440,30 +437,40 @@ namespace AZ
 #endif
         }
 
+        const MaterialPropertiesLayout* MaterialFunctor::RuntimeContext::GetMaterialPropertiesLayout() const
+        {
+            return m_materialProperties.GetMaterialPropertiesLayout().get();
+        }
+
         const MaterialPropertyValue& MaterialFunctor::RuntimeContext::GetMaterialPropertyValue(const MaterialPropertyIndex& index) const
         {
-            CheckPropertyAccess(index, *m_materialPropertyDependencies, *m_materialPropertiesLayout);
+            CheckPropertyAccess(index, *m_materialPropertyDependencies, *GetMaterialPropertiesLayout());
 
-            return m_materialPropertyValues[index.GetIndex()];
+            return m_materialProperties.GetPropertyValue(index);
         }
 
         const MaterialPropertyValue& MaterialFunctor::RuntimeContext::GetMaterialPropertyValue(const Name& propertyId) const
         {
-            MaterialPropertyIndex index = m_materialPropertiesLayout->FindPropertyIndex(propertyId);
+            MaterialPropertyIndex index = GetMaterialPropertiesLayout()->FindPropertyIndex(propertyId);
             return GetMaterialPropertyValue(index);
         }
 
         const MaterialPropertyValue& MaterialFunctor::EditorContext::GetMaterialPropertyValue(const MaterialPropertyIndex& index) const
         {
-            CheckPropertyAccess(index, *m_materialPropertyDependencies, *m_materialPropertiesLayout);
+            CheckPropertyAccess(index, *m_materialPropertyDependencies, *GetMaterialPropertiesLayout());
 
-            return m_materialPropertyValues[index.GetIndex()];
+            return m_materialProperties.GetPropertyValue(index);
         }
 
         const MaterialPropertyValue& MaterialFunctor::EditorContext::GetMaterialPropertyValue(const Name& propertyId) const
         {
-            MaterialPropertyIndex index = m_materialPropertiesLayout->FindPropertyIndex(propertyId);
+            MaterialPropertyIndex index = GetMaterialPropertiesLayout()->FindPropertyIndex(propertyId);
             return GetMaterialPropertyValue(index);
+        }
+
+        const MaterialPropertiesLayout* MaterialFunctor::EditorContext::GetMaterialPropertiesLayout() const
+        {
+            return m_materialProperties.GetMaterialPropertiesLayout().get();
         }
 
         bool MaterialFunctor::NeedsProcess(const MaterialPropertyFlags& propertyDirtyFlags)

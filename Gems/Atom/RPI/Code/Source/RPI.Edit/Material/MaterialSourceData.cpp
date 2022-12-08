@@ -165,7 +165,7 @@ namespace AZ
                 {
                     // In this case we need to load the material type data in preparation for the material->Finalize() step below.
                     auto materialTypeAssetOutcome = AssetUtils::LoadAsset<MaterialTypeAsset>(
-                        materialTypeAssetId.GetValue(), materialSourceFilePath.c_str(), AssetUtils::TraceLevel::Error, dontLoadImageAssets);
+                        materialTypeAssetId.GetValue(), m_materialType.c_str(), AssetUtils::TraceLevel::Error, dontLoadImageAssets);
                     if (!materialTypeAssetOutcome)
                     {
                         return Failure();

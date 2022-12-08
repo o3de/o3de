@@ -155,6 +155,8 @@ namespace UnitTest
 
         // Most of this data can be empty since this particular functor doesn't access it.
         AZStd::vector<MaterialPropertyValue> unusedPropertyValues;
+        MaterialPropertyCollection properties;
+        properties.Init(materialTypeAsset->GetMaterialPropertiesLayout(), unusedPropertyValues);
         ShaderResourceGroup* unusedSrg = nullptr;
 
 
@@ -163,8 +165,7 @@ namespace UnitTest
         {
             // Successfully set o_optionA
             MaterialFunctor::RuntimeContext runtimeContext = MaterialFunctor::RuntimeContext{
-                unusedPropertyValues,
-                materialTypeAsset->GetMaterialPropertiesLayout(),
+                properties,
                 &shaderCollectionCopy,
                 unusedSrg,
                 &testFunctorSetOptionA.GetMaterialPropertyDependencies(),
@@ -180,8 +181,7 @@ namespace UnitTest
         {
             // Successfully set o_optionB
             MaterialFunctor::RuntimeContext runtimeContext = MaterialFunctor::RuntimeContext{
-                unusedPropertyValues,
-                materialTypeAsset->GetMaterialPropertiesLayout(),
+                properties,
                 &shaderCollectionCopy,
                 unusedSrg,
                 &testFunctorSetOptionB.GetMaterialPropertyDependencies(),
@@ -198,8 +198,7 @@ namespace UnitTest
             // Fail to set o_optionC because it is not owned by the material type
             AZ_TEST_START_TRACE_SUPPRESSION;
             MaterialFunctor::RuntimeContext runtimeContext = MaterialFunctor::RuntimeContext{
-                unusedPropertyValues,
-                materialTypeAsset->GetMaterialPropertiesLayout(),
+                properties,
                 &shaderCollectionCopy,
                 unusedSrg,
                 &testFunctorSetOptionC.GetMaterialPropertyDependencies(),
@@ -214,8 +213,7 @@ namespace UnitTest
             // Fail to set option index that is out of range
             AZ_TEST_START_TRACE_SUPPRESSION;
             MaterialFunctor::RuntimeContext runtimeContext = MaterialFunctor::RuntimeContext{
-                unusedPropertyValues,
-                materialTypeAsset->GetMaterialPropertiesLayout(),
+                properties,
                 &shaderCollectionCopy,
                 unusedSrg,
                 &testFunctorSetOptionInvalid.GetMaterialPropertyDependencies(),
