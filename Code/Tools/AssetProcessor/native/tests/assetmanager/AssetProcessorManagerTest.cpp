@@ -3208,7 +3208,6 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_BasicTes
     EXPECT_FALSE(dependencyEntry[2].m_fromAssetId);
     EXPECT_TRUE(dependencyEntry[3].m_fromAssetId);
 }
-}
 
 TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_UpdateTest)
 {
