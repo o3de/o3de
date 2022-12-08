@@ -186,7 +186,7 @@ namespace AZ
 
                         MaterialPropertyValue finalValue = value.CastToType(propertyDescriptor->GetStorageDataTypeId());
 
-                        if (ValidateMaterialPropertyDataType(finalValue.GetTypeId(), name, propertyDescriptor, reportError))
+                        if (ValidateMaterialPropertyDataType(finalValue.GetTypeId(), propertyDescriptor, reportError))
                         {
                             finalizedPropertyValues[propertyIndex.GetIndex()] = finalValue;
                         }

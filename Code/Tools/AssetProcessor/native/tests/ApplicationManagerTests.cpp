@@ -57,6 +57,8 @@ namespace UnitTests
         m_applicationManager->m_fileProcessor = AZStd::move(fileProcessor); // The manager is taking ownership
         m_fileProcessorThread->start();
 
+        m_applicationManager->InitUuidManager();
+
         auto fileWatcher = AZStd::make_unique<FileWatcher>();
         m_fileWatcher = fileWatcher.get();
 

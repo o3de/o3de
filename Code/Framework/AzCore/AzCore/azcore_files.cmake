@@ -463,7 +463,6 @@ set(FILES
     PlatformId/PlatformId.h
     PlatformId/PlatformId.cpp
     PlatformIncl.h
-    Preprocessor/CodeGen.h
     Preprocessor/Enum.h
     Preprocessor/EnumReflectUtils.h
     Preprocessor/Sequences.h

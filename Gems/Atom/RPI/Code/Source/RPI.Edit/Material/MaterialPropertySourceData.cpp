@@ -1,0 +1,59 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/RPI.Edit/Material/MaterialPropertySourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialPropertySerializer.h>
+#include <Atom/RPI.Edit/Material/MaterialPropertyConnectionSerializer.h>
+#include <Atom/RPI.Edit/Material/MaterialPropertyValueSerializer.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
+
+namespace AZ
+{
+    namespace RPI
+    {
+        void MaterialPropertySourceData::Reflect(ReflectContext* context)
+        {
+            if (JsonRegistrationContext* jsonContext = azrtti_cast<JsonRegistrationContext*>(context))
+            {
+                jsonContext->Serializer<JsonMaterialPropertySerializer>()->HandlesType<MaterialPropertySourceData>();
+                jsonContext->Serializer<JsonMaterialPropertyConnectionSerializer>()->HandlesType<MaterialPropertySourceData::Connection>();
+                jsonContext->Serializer<JsonMaterialPropertyValueSerializer>()->HandlesType<MaterialPropertyValue>();
+            }
+            else if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+            {
+                serializeContext->Class<Connection>()->Version(3);
+                serializeContext->Class<MaterialPropertySourceData>()->Version(1);
+
+                serializeContext->RegisterGenericType<AZStd::unique_ptr<MaterialPropertySourceData>>();
+                serializeContext->RegisterGenericType<AZStd::vector<AZStd::unique_ptr<MaterialPropertySourceData>>>();
+                serializeContext->RegisterGenericType<ConnectionList>();
+            }
+        }
+
+        MaterialPropertySourceData::Connection::Connection(MaterialPropertyOutputType type, AZStd::string_view name)
+            : m_type(type)
+            , m_name(name)
+        {
+        }
+
+        bool MaterialPropertySourceData::Connection::operator==(const Connection& rhs) const
+        {
+            return m_type == rhs.m_type && m_name == rhs.m_name;
+        }
+
+        bool MaterialPropertySourceData::Connection::operator!=(const Connection& rhs) const
+        {
+            return!(*this == rhs);
+        }
+
+        const float MaterialPropertySourceData::DefaultMin = std::numeric_limits<float>::lowest();
+        const float MaterialPropertySourceData::DefaultMax = std::numeric_limits<float>::max();
+        const float MaterialPropertySourceData::DefaultStep = 0.1f;
+
+    } // namespace RPI
+} // namespace AZ
