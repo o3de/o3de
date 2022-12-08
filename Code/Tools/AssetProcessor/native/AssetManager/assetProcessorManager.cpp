@@ -4226,23 +4226,23 @@ namespace AssetProcessor
             for (const AssetProcessor::JobDependencyInternal& jobDependency : jobToCheck.m_jobDependencyList)
             {
                 // figure out whether we can resolve the dependency or not:
-                QStringList resolvedDependencyList;
+                QStringList resolvedWildcardDependencies;
                 QString resolvedDatabaseName;
 
                 if (!ResolveSourceFileDependencyPath(
-                    jobDependency.m_jobDependency.m_sourceFile, resolvedDatabaseName, resolvedDependencyList))
+                    jobDependency.m_jobDependency.m_sourceFile, resolvedDatabaseName, resolvedWildcardDependencies))
                 {
                     continue;
                 }
 
                 AZStd::string subIds = jobDependency.m_jobDependency.ConcatenateSubIds();
 
-                for (const auto& thisEntry : resolvedDependencyList)
+                for (const auto& thisEntry : resolvedWildcardDependencies)
                 {
                     SourceFileDependencyEntry newDependencyEntry(
                         builderId, entry.m_sourceFileInfo.m_uuid, PathOrUuid::Create(thisEntry.toUtf8().constData()),
                         JobDependencyType,
-                        false,
+                        false, // Wildcard dependencies never come from an AssetId
                         subIds.c_str());
                     newDependencies.push_back(AZStd::move(newDependencyEntry));
                 }
@@ -4259,7 +4259,7 @@ namespace AssetProcessor
                         AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards
                         ? SourceFileDependencyEntry::DEP_SourceLikeMatch
                         : JobDependencyType,
-                        !entry.m_sourceFileInfo.m_uuid.IsNull(),
+                        !jobDependency.m_jobDependency.m_sourceFile.m_sourceFileDependencyUUID.IsNull(),
                         subIds.c_str());
                     newDependencies.push_back(AZStd::move(newDependencyEntry));
                 }
@@ -4271,9 +4271,9 @@ namespace AssetProcessor
         for (const AZStd::pair<AZ::Uuid, AssetBuilderSDK::SourceFileDependency>& sourceDependency : entry.m_sourceFileDependencies)
         {
             // figure out whether we can resolve the dependency or not:
-            QStringList resolvedDependencyList;
+            QStringList resolvedWildcardDependencies;
             QString resolvedDatabaseName;
-            if (!ResolveSourceFileDependencyPath(sourceDependency.second, resolvedDatabaseName, resolvedDependencyList))
+            if (!ResolveSourceFileDependencyPath(sourceDependency.second, resolvedDatabaseName, resolvedWildcardDependencies))
             {
                 // ResolveDependencyPath should only fail in a data error, otherwise it always outputs something
                 continue;
@@ -4284,7 +4284,7 @@ namespace AssetProcessor
                 "This is unnecessary and the builder should be updated to only emit the Job Dependency.";
 
             // Handle multiple resolves (wildcard dependencies)
-            for (const auto& thisEntry : resolvedDependencyList)
+            for (const auto& thisEntry : resolvedWildcardDependencies)
             {
                 if (jobDependenciesDeduplication.contains(
                     DependencyDeduplication{ sourceDependency.first,
@@ -4312,7 +4312,7 @@ namespace AssetProcessor
                         entry.m_sourceFileInfo.m_uuid,
                         PathOrUuid::Create(thisEntry.toUtf8().constData()),
                         SourceFileDependencyEntry::DEP_SourceToSource,
-                        false,
+                        false, // Wildcard dependencies never come from an AssetId
                         "");
                     newDependencies.push_back(AZStd::move(newDependencyEntry));
                 }
