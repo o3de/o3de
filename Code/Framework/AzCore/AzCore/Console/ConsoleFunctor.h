@@ -142,7 +142,10 @@ namespace AZ
         using MemberFunctorSignature = typename ConsoleCommandMemberFunctorSignature<_TYPE>::type;
         using RawFunctorSignature = void(*)(_TYPE&, const ConsoleCommandContainer&);
 
-        using FunctorUnion = AZStd::variant<RawFunctorSignature, MemberFunctorSignature>;
+        using FunctorUnion = AZStd::conditional_t<
+            AZStd::is_same_v<RawFunctorSignature, MemberFunctorSignature>,
+            AZStd::variant<RawFunctorSignature>,
+            AZStd::variant<RawFunctorSignature, MemberFunctorSignature>>;
 
         //! Constructors.
         //! @param name   the string name of the functor, used to identify and invoke the functor through the console interface
