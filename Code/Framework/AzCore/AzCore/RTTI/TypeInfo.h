@@ -623,7 +623,7 @@ namespace AZ
     /**
     * Use this macro outside a class to allow it to be identified across modules and serialized (in different contexts).
     * The expected input is the class and the assigned uuid as a string or an instance of a uuid.
-    * Note that the AZ_TYPE_INFO_SPECIALIZE always has be declared in "namespace AZ".
+    * Note that the AZ_TYPE_INFO_SPECIALIZE always has to be declared in "namespace AZ".
     * Example:
     *   class MyClass
     *   {
@@ -1292,7 +1292,6 @@ namespace AZ
     }
 
     AZ_TYPE_INFO_SPECIALIZE(char, "{3AB0037F-AF8D-48ce-BCA0-A170D18B2C03}");
-    //    AZ_TYPE_INFO_SPECIALIZE(signed char, "{CFD606FE-41B8-4744-B79F-8A6BD97713D8}");
     AZ_TYPE_INFO_SPECIALIZE(AZ::s8, "{58422C0E-1E47-4854-98E6-34098F6FE12D}");
     AZ_TYPE_INFO_SPECIALIZE(short, "{B8A56D56-A10D-4dce-9F63-405EE243DD3C}");
     AZ_TYPE_INFO_SPECIALIZE(int, "{72039442-EB38-4d42-A1AD-CB68F7E0EEF6}");

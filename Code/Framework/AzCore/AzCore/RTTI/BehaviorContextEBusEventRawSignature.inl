@@ -115,7 +115,7 @@ namespace AZ::Internal
                 BehaviorDefaultValuePtr defaultValue = GetDefaultValue(argIndex);
                 if (!defaultValue)
                 {
-                    return ResultOutcome{ AZStd::unexpect, typename ResultOutcome::ErrorType::format(
+                    return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
                         "Not enough arguments to make call to method %s. %zu supplied, needed %zu",
                         m_name.c_str(), arguments.size(), newArguments.size()) };
                 }
@@ -126,7 +126,7 @@ namespace AZ::Internal
         }
         else if (arguments.size() > totalArguments)
         {
-            return ResultOutcome{ AZStd::unexpect, typename ResultOutcome::ErrorType::format(
+            return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
                 "Too many arguments supplied to method '%s'. Expects %zu arguments, provided %zu",
                 m_name.c_str(), totalArguments, arguments.size()) };
         }
@@ -136,7 +136,7 @@ namespace AZ::Internal
             if (!arguments[0].ConvertTo(m_parameters[1].m_typeId))
             {
                 AZ_Warning("Behavior", false, "Invalid BusIdType type can't convert! %s -> %s", arguments[0].m_name, m_parameters[1].m_name);
-                return ResultOutcome{ AZStd::unexpect, typename ResultOutcome::ErrorType::format(
+                return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
                     "Invalid BusIdType type can't convert! %s -> %s",
                     arguments[0].m_name, m_parameters[1].m_name) };
             }
@@ -149,7 +149,7 @@ namespace AZ::Internal
             bool isParameterPointer = m_parameters[i].m_traits & BehaviorParameter::Traits::TR_POINTER;
             if (!arguments[i - 1].ConvertTo(m_parameters[i].m_typeId))
             {
-                return ResultOutcome{ AZStd::unexpect, typename ResultOutcome::ErrorType::format(
+                return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
                     "Invalid parameter type for method '%s'!"
                     " Can not convert method parameter %zu from %s(%s) to %s(%s)",
                     m_name.c_str(), i - 1,
@@ -159,7 +159,7 @@ namespace AZ::Internal
             }
             else if (isArgumentPointer != isParameterPointer)
             {
-                return ResultOutcome{ AZStd::unexpect, typename ResultOutcome::ErrorType::format(
+                return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
                     R"(Argument is a "%s" type of %s, while parameter accepts a "%s" type of %s )",
                     isArgumentPointer ? "pointer" : "value", arguments[i - 1].m_name,
                     isParameterPointer ? "pointer" : "value", m_parameters[i].m_name) };
@@ -173,7 +173,7 @@ namespace AZ::Internal
                 (returnParam->m_azRtti != nullptr && returnParam->m_azRtti->IsTypeOf(result->m_typeId));
                 !canStoreResult)
             {
-                return ResultOutcome{ AZStd::unexpect, typename ResultOutcome::ErrorType::format(
+                return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
                     "The behavior argument for the return value cannot store the return type %s",
                     returnParam->m_typeId.ToFixedString().c_str()) };
             }

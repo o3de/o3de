@@ -16,7 +16,7 @@ namespace AZ
 
 namespace AZ::Metrics
 {
-    // Utility namespace contains functions/class to simpilfy calls to record events
+    // Utility namespace contains functions/class to simplify calls to record events
     // It contains functions that can perform a lookup of an EventLogger and a record command in single calls
     inline namespace Script
     {

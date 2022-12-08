@@ -55,22 +55,42 @@ namespace UnitTest::EventLoggerReflectUtilsTests
     constexpr const char* EventFieldClassName = "EventField";
     constexpr const char* EventArrayClassName = "EventArray";
     constexpr const char* EventObjectClassName = "EventObject";
+    constexpr const char* EventLoggerIdClassName = "EventLoggerId";
+    constexpr const char* EventArgsClassName = "EventArgs";
+    constexpr const char* EventPhaseClassName = "EventPhase";
+    constexpr const char* InstantEventScopeClassName = "InstantEventScope";
+    constexpr const char* EventLoggerFactoryClassName = "EventLoggerFactory";
+
+    // EventArgs Member Method Names
+    constexpr const char* EventArgsNameMember = "m_name";
+    constexpr const char* EventArgsCategoryMember = "m_cat";
+    constexpr const char* EventArgsIdMember = "m_id";
+    constexpr const char* EventArgsAppendArgMethodName = "AppendArg";
+
+    // EventFactory Member Method Names
+    constexpr const char* EventLoggerFactoryIsRegisteredMethodName = "IsRegistered";
+
+    // Global Method names
+    constexpr const char* RecordEventMethodName = "RecordEvent";
+    constexpr const char* CreateMetricsLoggerMethodName = "CreateMetricsLogger";
+    constexpr const char* IsEventLoggerRegisteredMethodName = "IsEventLoggerRegistered";
+    constexpr const char* GetGlobalEventLoggerFactoryMethodName = "GetGlobalEventLoggerFactory";
 
     TEST_F(EventLoggerReflectUtilsFixture, EventLogger_EventDataTypes_AreAccessibleInScript_Succeeds)
     {
         auto classIter = m_behaviorContext->m_classes.find(EventValueClassName);
         EXPECT_NE(m_behaviorContext->m_classes.end(), classIter);
 
-        classIter = m_behaviorContext->m_classes.find("EventLoggerId");
+        classIter = m_behaviorContext->m_classes.find(EventLoggerIdClassName);
         EXPECT_NE(m_behaviorContext->m_classes.end(), classIter);
 
-        classIter = m_behaviorContext->m_classes.find("EventArgs");
+        classIter = m_behaviorContext->m_classes.find(EventArgsClassName);
         EXPECT_NE(m_behaviorContext->m_classes.end(), classIter);
 
-        classIter = m_behaviorContext->m_classes.find("EventPhase");
+        classIter = m_behaviorContext->m_classes.find(EventPhaseClassName);
         EXPECT_NE(m_behaviorContext->m_classes.end(), classIter);
 
-        classIter = m_behaviorContext->m_classes.find("InstantEventScope");
+        classIter = m_behaviorContext->m_classes.find(InstantEventScopeClassName);
         EXPECT_NE(m_behaviorContext->m_classes.end(), classIter);
     }
 
@@ -84,7 +104,7 @@ namespace UnitTest::EventLoggerReflectUtilsTests
             EXPECT_TRUE(eventValueInst.IsValid());
         }
 
-        classIter = m_behaviorContext->m_classes.find("EventLoggerId");
+        classIter = m_behaviorContext->m_classes.find(EventLoggerIdClassName);
         ASSERT_NE(m_behaviorContext->m_classes.end(), classIter);
         {
             AZ::BehaviorClass* eventLoggerIdClass = classIter->second;
@@ -92,7 +112,7 @@ namespace UnitTest::EventLoggerReflectUtilsTests
             EXPECT_TRUE(eventLoggerIdInst.IsValid());
         }
 
-        classIter = m_behaviorContext->m_classes.find("EventArgs");
+        classIter = m_behaviorContext->m_classes.find(EventArgsClassName);
         ASSERT_NE(m_behaviorContext->m_classes.end(), classIter);
         {
             AZ::BehaviorClass* eventArgsClass = classIter->second;
@@ -100,7 +120,7 @@ namespace UnitTest::EventLoggerReflectUtilsTests
             EXPECT_TRUE(eventArgsInst.IsValid());
         }
 
-        classIter = m_behaviorContext->m_classes.find("EventPhase");
+        classIter = m_behaviorContext->m_classes.find(EventPhaseClassName);
         ASSERT_NE(m_behaviorContext->m_classes.end(), classIter);
         {
             AZ::BehaviorClass* eventPhaseClass = classIter->second;
@@ -108,7 +128,7 @@ namespace UnitTest::EventLoggerReflectUtilsTests
             EXPECT_TRUE(eventPhaseInst.IsValid());
         }
 
-        classIter = m_behaviorContext->m_classes.find("InstantEventScope");
+        classIter = m_behaviorContext->m_classes.find(InstantEventScopeClassName);
         ASSERT_NE(m_behaviorContext->m_classes.end(), classIter);
         {
             AZ::BehaviorClass* instantEventScopeClass = classIter->second;
@@ -120,7 +140,7 @@ namespace UnitTest::EventLoggerReflectUtilsTests
     TEST_F(EventLoggerReflectUtilsFixture, EventLogger_CanCreateFromIntOrString_Succeeds)
     {
         // Create an EventLoggerId instance in script that maps to Id 1
-        auto classIter = m_behaviorContext->m_classes.find("EventLoggerId");
+        auto classIter = m_behaviorContext->m_classes.find(EventLoggerIdClassName);
         ASSERT_NE(m_behaviorContext->m_classes.end(), classIter);
         {
             auto methodIter = classIter->second->m_methods.find("CreateIdFromInt");
@@ -141,12 +161,10 @@ namespace UnitTest::EventLoggerReflectUtilsTests
 
     TEST_F(EventLoggerReflectUtilsFixture, RecordEvent_CanRecordDurationEventInScript_Succeeds)
     {
-        const auto startThreadTime = AZStd::chrono::utc_clock::now();
-
-        const AZ::BehaviorClass* eventArgsClass = m_behaviorContext->FindClassByReflectedName("EventArgs");
+        const AZ::BehaviorClass* eventArgsClass = m_behaviorContext->FindClassByReflectedName(EventArgsClassName);
         ASSERT_NE(nullptr, eventArgsClass);
 
-        const AZ::BehaviorClass* eventValueClass = m_behaviorContext->FindClassByReflectedName("EventValue");
+        const AZ::BehaviorClass* eventValueClass = m_behaviorContext->FindClassByReflectedName(EventValueClassName);
         ASSERT_NE(nullptr, eventValueClass);
 
         auto eventArgsScopedObj = eventArgsClass->CreateWithScope();
@@ -158,7 +176,7 @@ namespace UnitTest::EventLoggerReflectUtilsTests
         // Use the bound behavior context properties and methods to configure the ScriptEventArgs
         {
             // Set `ScriptEventArgs::m_name` field
-            const AZ::BehaviorMethod* nameSetter = eventArgsClass->FindSetterByReflectedName("m_name");
+            const AZ::BehaviorMethod* nameSetter = eventArgsClass->FindSetterByReflectedName(EventArgsNameMember);
             ASSERT_NE(nullptr, nameSetter);
             AZStd::string eventName{ "Duration Event" };
 
@@ -169,7 +187,7 @@ namespace UnitTest::EventLoggerReflectUtilsTests
 
         {
             // Set `ScriptEventArgs::m_cat` field
-            const AZ::BehaviorMethod* nameSetter = eventArgsClass->FindSetterByReflectedName("m_cat");
+            const AZ::BehaviorMethod* nameSetter = eventArgsClass->FindSetterByReflectedName(EventArgsCategoryMember);
             ASSERT_NE(nullptr, nameSetter);
             behaviorArguments.clear();
             AZStd::string category{ "Test" };
@@ -181,7 +199,7 @@ namespace UnitTest::EventLoggerReflectUtilsTests
 
         {
             // Set `ScriptEventArgs::m_id` field
-            const AZ::BehaviorMethod* nameSetter = eventArgsClass->FindSetterByReflectedName("m_id");
+            const AZ::BehaviorMethod* nameSetter = eventArgsClass->FindSetterByReflectedName(EventArgsIdMember);
             ASSERT_NE(nullptr, nameSetter);
             behaviorArguments.clear();
             AZStd::optional<AZStd::string> eventId{ "0" };
@@ -193,7 +211,7 @@ namespace UnitTest::EventLoggerReflectUtilsTests
 
         {
             // Populate the ScriptEventArgs "args" object field
-            const AZ::BehaviorMethod* appendArgMethod = eventArgsClass->FindMethodByReflectedName("AppendArg");
+            const AZ::BehaviorMethod* appendArgMethod = eventArgsClass->FindMethodByReflectedName(EventArgsAppendArgMethodName);
             ASSERT_NE(nullptr, appendArgMethod);
 
             // Create an EventValue instance
@@ -229,7 +247,7 @@ namespace UnitTest::EventLoggerReflectUtilsTests
         }
 
         // Finally invoke the RecordEvent function
-        const AZ::BehaviorMethod* recordEventMethod = m_behaviorContext->FindMethodByReflectedName("RecordEvent");
+        const AZ::BehaviorMethod* recordEventMethod = m_behaviorContext->FindMethodByReflectedName(RecordEventMethodName);
         ASSERT_NE(nullptr, recordEventMethod);
 
         constexpr auto durationBeginPhase = AZ::Metrics::EventPhase::DurationBegin;
@@ -254,7 +272,7 @@ namespace UnitTest::EventLoggerReflectUtilsTests
 
     TEST_F(EventLoggerReflectUtilsFixture, RecordEvent_CanCreateMetricsLoggerInScript_Succeeds)
     {
-        const AZ::BehaviorMethod* createLoggerMethod = m_behaviorContext->FindMethodByReflectedName("CreateMetricsLogger");
+        const AZ::BehaviorMethod* createLoggerMethod = m_behaviorContext->FindMethodByReflectedName(CreateMetricsLoggerMethodName);
         ASSERT_NE(nullptr, createLoggerMethod);
 
         constexpr AZ::Metrics::EventLoggerId scriptLoggerId{ 2 };
@@ -269,14 +287,16 @@ namespace UnitTest::EventLoggerReflectUtilsTests
         EXPECT_TRUE(m_eventLoggerFactory->IsRegistered(scriptLoggerId));
 
         // Also validate that the script IsEventLoggerRegistered function succeeds as well
-        const AZ::BehaviorMethod* isEventLoggerRegisteredMethod = m_behaviorContext->FindMethodByReflectedName("IsEventLoggerRegistered");
+        const AZ::BehaviorMethod* isEventLoggerRegisteredMethod = m_behaviorContext->FindMethodByReflectedName(
+            IsEventLoggerRegisteredMethodName);
         ASSERT_NE(nullptr, isEventLoggerRegisteredMethod);
         bool isEventLoggerRegistered{};
         EXPECT_TRUE(isEventLoggerRegisteredMethod->InvokeResult(isEventLoggerRegistered, scriptLoggerId));
         EXPECT_TRUE(isEventLoggerRegistered);
 
         // Finally validate that the EventFactory IsRegistered member function succeeds as well
-        const AZ::BehaviorMethod* getGlobalEventLoggerFactoryMethod = m_behaviorContext->FindMethodByReflectedName("GetGlobalEventLoggerFactory");
+        const AZ::BehaviorMethod* getGlobalEventLoggerFactoryMethod = m_behaviorContext->FindMethodByReflectedName(
+            GetGlobalEventLoggerFactoryMethodName);
         ASSERT_NE(nullptr, getGlobalEventLoggerFactoryMethod);
         AZ::Metrics::IEventLoggerFactory* eventLoggerFactory{};
         EXPECT_TRUE(getGlobalEventLoggerFactoryMethod->InvokeResult(eventLoggerFactory));
@@ -287,9 +307,10 @@ namespace UnitTest::EventLoggerReflectUtilsTests
         // reset back to false;
         isEventLoggerRegistered = {};
         // Lookup the EventLoggerFactory BehaviorClass in order to lookup the IsRegistered member function
-        const AZ::BehaviorClass* eventLoggerFactoryClass = m_behaviorContext->FindClassByReflectedName("EventLoggerFactory");
+        const AZ::BehaviorClass* eventLoggerFactoryClass = m_behaviorContext->FindClassByReflectedName(EventLoggerFactoryClassName);
         ASSERT_NE(nullptr, eventLoggerFactoryClass);
-        const AZ::BehaviorMethod* isRegisteredMethod = eventLoggerFactoryClass->FindMethodByReflectedName("IsRegistered");
+        const AZ::BehaviorMethod* isRegisteredMethod = eventLoggerFactoryClass->FindMethodByReflectedName(
+            EventLoggerFactoryIsRegisteredMethodName);
         ASSERT_NE(nullptr, isRegisteredMethod);
         EXPECT_TRUE(isRegisteredMethod->InvokeResult(isEventLoggerRegistered, eventLoggerFactory, scriptLoggerId));
         EXPECT_TRUE(isEventLoggerRegistered);
