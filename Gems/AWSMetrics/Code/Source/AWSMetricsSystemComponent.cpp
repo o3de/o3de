@@ -253,7 +253,7 @@ namespace AWSMetrics
              "https://o3de.org/docs/user-guide/gems/reference/aws/aws-metrics/scripting/"
         };
 
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSMetricsSetupGem, 0);
+        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::AddExternalLinkAction, submenuIdentifier, AWSMetricsScripting, 0);
 
         static constexpr const char* AWSMetricsAPIReference[] =
         {
