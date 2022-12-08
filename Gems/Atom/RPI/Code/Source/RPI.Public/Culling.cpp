@@ -265,6 +265,7 @@ namespace AZ
                         [[maybe_unused]]
                         const uint32_t drawPacketCount = AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *worklistData->m_view);
                         c->m_isVisible = true;
+                        worklistData->m_view->ApplyFlags(c->m_flags);
 
 #ifdef AZ_CULL_DEBUG_ENABLED
                         ++numVisibleCullables;

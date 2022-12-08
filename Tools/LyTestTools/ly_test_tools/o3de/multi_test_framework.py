@@ -466,6 +466,8 @@ class MultiTestSuite(object):
                         # The runner must have filled the collected_test_data.results dict fixture for this test.
                         # Hitting this assert could mean if there was an error executing the runner
                         if result_key not in collected_test_data.results:
+                            logger.debug(f"\nTest Result objects - collected_test_data.results:\n"
+                                         f"{collected_test_data.results}\n")
                             raise TestResultException(f"No results found for {result_key}. "
                                                       f"Test may not have ran due to the executable "
                                                       f"shutting down. Check for issues in previous "
@@ -1003,11 +1005,17 @@ class MultiTestSuite(object):
             for i in range(total_threads):
                 def make_parallel_test_func(test_spec, index, current_executable):
                     def run(request, workspace, extra_cmdline_args):
-                        results = self._exec_single_test(
-                            request, workspace, current_executable, index + 1, self.log_name, test_spec, extra_cmdline_args)
-                        if results is None:
-                            raise EditorToolsFrameworkException(f"Results were None. Current log name is "
-                                                                f"{self.log_name} and test is {str(test_spec)}")
+                        try:
+                            results = self._exec_single_test(
+                                request, workspace, current_executable, index + 1, self.log_name, test_spec,
+                                extra_cmdline_args)
+                        except Exception as e:
+                            logger.warning(f"Found exception trying to run Editor tests. Current log name is "
+                                           f"{self.log_name} and test is {str(test_spec)}")
+                            raise e
+                        if not results:
+                            raise EditorToolsFrameworkException(f"Results not found. Current log name is "
+                                                                f"{self.log_name} and test name is {str(test_spec)}")
                         results_per_thread[index] = results
                     return run
 
@@ -1066,11 +1074,16 @@ class MultiTestSuite(object):
                 def run(request, workspace, extra_cmdline_args):
                     results = None
                     if len(test_spec_list_for_executable) > 0:
-                        results = self._exec_multitest(
-                            request, workspace, current_executable, index + 1, self.log_name,
-                            test_spec_list_for_executable, extra_cmdline_args)
-                        if results is None:
-                            raise EditorToolsFrameworkException(f"Results were None. Current log name is "
+                        try:
+                            results = self._exec_multitest(
+                                request, workspace, current_executable, index + 1, self.log_name,
+                                test_spec_list_for_executable, extra_cmdline_args)
+                        except Exception as e:
+                            logger.warning(f"Found exception trying to run Editor tests. Current log name is "
+                                           f"{self.log_name} and tests are {str(test_spec_list_for_executable)}")
+                            raise e
+                        if not results:
+                            raise EditorToolsFrameworkException(f"Results not found. Current log name is "
                                                                 f"{self.log_name} and tests are "
                                                                 f"{str(test_spec_list_for_executable)}")
                     else:
@@ -1201,8 +1214,10 @@ class MultiTestSuite(object):
                 # If it didn't then it will have "Unknown" as the type of result.
                 results = self._get_results_using_output(test_spec_list, output, executable_log_content)
                 if not len(results) == len(test_spec_list):
-                    raise EditorToolsFrameworkException("bug in get_results_using_output(), the number of results "
-                                                        "don't match the tests ran")
+                    logger.debug(f"\nList of Results: {results}\n"
+                                 f"Test Spec List: {test_spec_list}\n")
+                    raise EditorToolsFrameworkException("Error when retrieving test results, the number of results "
+                                                        "don't match the number of tests that ran.")
 
                 # If the executable crashed, find out in which test it happened and update the results.
                 has_crashed = return_code != self._test_fail_retcode
@@ -1250,8 +1265,10 @@ class MultiTestSuite(object):
             # The executable timed out when running the tests, get the data from the output to find out which ones ran
             results = self._get_results_using_output(test_spec_list, output, executable_log_content)
             if not len(results) == len(test_spec_list):
-                raise EditorToolsFrameworkException("bug in _get_results_using_output(), the number of results "
-                                                    "don't match the tests ran")
+                logger.debug(f"\nList of Results: {results}\n"
+                             f"Test Spec List: {test_spec_list}\n")
+                raise EditorToolsFrameworkException("Error when retrieving test results, the number of results "
+                                                    "don't match the number of tests that ran.")
 
             # Similar logic here as crashes, the first test that has no result is the one that timed out
             timed_out_result = None
