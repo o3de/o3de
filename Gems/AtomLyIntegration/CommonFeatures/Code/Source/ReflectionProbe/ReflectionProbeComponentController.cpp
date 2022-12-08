@@ -363,5 +363,21 @@ namespace AZ
 
             return entityTransform * translationOffsetTransform;
         }
+
+        AZ::Transform ReflectionProbeComponentController::ComputeOverallTransform(const AZ::Transform& entityTransform) const
+        {
+            const bool isTypeAxisAligned = m_boxShapeInterface ? m_boxShapeInterface->IsTypeAxisAligned() : false;
+            const AZ::Vector3 translationOffset = m_shapeBus ? m_shapeBus->GetTranslationOffset() : AZ::Vector3::CreateZero();
+            const AZ::Transform translationOffsetTransform = AZ::Transform::CreateTranslation(translationOffset);
+
+            if (isTypeAxisAligned)
+            {
+                AZ::Transform entityTransformNoRotation = entityTransform;
+                entityTransformNoRotation.SetRotation(AZ::Quaternion::CreateIdentity());
+                return entityTransformNoRotation * translationOffsetTransform;
+            }
+
+            return entityTransform * translationOffsetTransform;
+        }
     } // namespace Render
 } // namespace AZ
