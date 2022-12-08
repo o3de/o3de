@@ -263,6 +263,8 @@ namespace AZ
             if (changeReason == ShapeChangeReasons::ShapeChanged)
             {
                 UpdateOuterExtents();
+                // the shape translation offset may have changed, which would affect the overall transform
+                m_featureProcessor->SetTransform(m_handle, ComputeOverallTransform(m_transformInterface->GetWorldTM()));
             }
         }
 
@@ -330,7 +332,15 @@ namespace AZ
             AZ::Transform unused;
             AZ::Aabb localBounds = AZ::Aabb::CreateNull();
             m_shapeBus->GetTransformAndLocalBounds(unused, localBounds);
-            return localBounds;
+            if (!m_boxShapeInterface->IsTypeAxisAligned())
+            {
+                return localBounds;
+            }
+            else
+            {
+                return localBounds.GetTransformedAabb(
+                    AZ::Transform::CreateFromQuaternion(m_transformInterface->GetWorldTM().GetRotation().GetInverseFast()));
+            }
         }
 
         void ReflectionProbeComponentController::RegisterInnerExtentsChangedHandler(AZ::Event<bool>::Handler& handler)
