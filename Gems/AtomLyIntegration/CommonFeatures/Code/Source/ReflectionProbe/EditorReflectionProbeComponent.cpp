@@ -239,7 +239,10 @@ namespace AZ
             AZ::Vector3 position = AZ::Vector3::CreateZero();
             AZ::TransformBus::EventResult(position, GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
             AZ::Quaternion rotationQuaternion = AZ::Quaternion::CreateIdentity();
-            AZ::TransformBus::EventResult(rotationQuaternion, GetEntityId(), &AZ::TransformBus::Events::GetWorldRotationQuaternion);
+            if (m_controller.m_boxShapeInterface && !m_controller.m_boxShapeInterface->IsTypeAxisAligned())
+            {
+                AZ::TransformBus::EventResult(rotationQuaternion, GetEntityId(), &AZ::TransformBus::Events::GetWorldRotationQuaternion);
+            }
             AZ::Matrix3x3 rotationMatrix = AZ::Matrix3x3::CreateFromQuaternion(rotationQuaternion);
 
             float scale = 1.0f;
