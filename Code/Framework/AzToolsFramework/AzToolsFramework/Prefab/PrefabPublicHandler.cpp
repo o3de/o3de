@@ -106,7 +106,8 @@ namespace AzToolsFramework
             }
 
             // Block creating prefab as override since it is not supported.
-            if (commonRootEntityOwningInstance.has_value() && IsOverrideEditing(commonRootEntityOwningInstance->get()))
+            if (commonRootEntityOwningInstance.has_value() &&
+                !m_prefabFocusHandler.IsOwningPrefabBeingFocused(commonRootEntityOwningInstance->get().GetContainerEntityId()))
             {
                 return AZ::Failure<AZStd::string>("Creating prefab as an override edit is currently not supported.\n"
                     "To perform a prefab edit, please first enter Prefab Edit Mode on the direct owning prefab.");
@@ -462,7 +463,7 @@ namespace AzToolsFramework
             }
 
             // Block instantiating prefab as override since it is not supported.
-            if (IsOverrideEditing(instanceToParentUnder->get()))
+            if (!m_prefabFocusHandler.IsOwningPrefabBeingFocused(instanceToParentUnder->get().GetContainerEntityId()))
             {
                 return AZ::Failure<AZStd::string>("Instantiating prefab as an override edit is currently not supported.\n"
                     "To perform a prefab edit, please first enter Prefab Edit Mode on the direct owning prefab.");
@@ -615,16 +616,6 @@ namespace AzToolsFramework
             }
 
             return false;
-        }
-
-        bool PrefabPublicHandler::IsOverrideEditing(const Instance& owningInstance) const
-        {
-            AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-            EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-            InstanceOptionalReference focusedInstance = m_prefabFocusHandler.GetFocusedPrefabInstance(editorEntityContextId);
-            AZ_Assert(focusedInstance.has_value(), "PrefabPublicHandler::IsOverrideEditing - The focused instance is null.");
-
-            return &(focusedInstance->get()) != &owningInstance;
         }
 
         void PrefabPublicHandler::CreateLink(
@@ -1515,7 +1506,7 @@ namespace AzToolsFramework
                 const auto parentTemplateId = parentInstance.GetTemplateId();
 
                 // Block detaching prefab as override since it is not supported.
-                if (IsOverrideEditing(parentInstance))
+                if (!m_prefabFocusHandler.IsOwningPrefabBeingFocused(parentInstance.GetContainerEntityId()))
                 {
                     return AZ::Failure(AZStd::string("Detaching prefab as an override edit is currently not supported.\n"
                         "To perform a prefab edit, please first enter Prefab Edit Mode on the direct owning prefab."));

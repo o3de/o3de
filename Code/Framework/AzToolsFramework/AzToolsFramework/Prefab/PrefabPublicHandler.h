@@ -171,11 +171,6 @@ namespace AzToolsFramework
             bool IsCyclicalDependencyFound(
                 InstanceOptionalConstReference instance, const AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths);
 
-            //! Checks if it is an override edit on the focused instance.
-            //! \param The given owning instance to be checked.
-            //! \return True if it is an override editing.
-            bool IsOverrideEditing(const Instance& owningInstance) const;
-
             static void Internal_HandleContainerOverride(
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch,
                 const LinkId linkId);
