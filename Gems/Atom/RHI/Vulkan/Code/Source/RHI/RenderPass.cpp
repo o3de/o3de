@@ -103,6 +103,7 @@ namespace AZ
                     VkRenderPassFragmentDensityMapCreateInfoEXT fdmAttachmentCreateInfo;
                     if (m_device.GetImageShadingRateMode() == Device::ShadingRateImageMode::DensityMap)
                     {
+                        AZ_Assert(!subpassInfo.empty(), "Subpass info is empty");
                         auto& shadingRateAttachmentRefList = subpassInfo.front()
                             .m_attachmentReferences[static_cast<uint32_t>(AttachmentType::ShadingRate)];
 
@@ -370,7 +371,7 @@ namespace AZ
                 }
 
                 const Device& m_device;
-                const RenderPass::Descriptor* m_descriptor;
+                const RenderPass::Descriptor* m_descriptor = nullptr;
             };
 
             template<typename T, VkStructureType type = static_cast<VkStructureType>(-1)>

@@ -12,7 +12,7 @@ namespace AZ
 {
     namespace RHI
     {
-        const ShadingRateCombinators CommandList::s_defaultShadingRateCombinators = { { ShadingRateCombinerOp::Passthrough,
+        const ShadingRateCombinators CommandList::DefaultShadingRateCombinators = { { ShadingRateCombinerOp::Passthrough,
                                                                                         ShadingRateCombinerOp::Passthrough } };
 
         void CommandList::ValidateTotalSubmits([[maybe_unused]] const ScopeProducer* scopeProducer)

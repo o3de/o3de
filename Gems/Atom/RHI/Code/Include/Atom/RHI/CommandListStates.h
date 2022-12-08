@@ -54,7 +54,7 @@ namespace AZ
             //! Shading rate value
             ShadingRate m_shadingRate = RHI::ShadingRate::Rate1x1;
             //! Shading rate combinator operators
-            RHI::ShadingRateCombinators m_shadingRateCombinators = CommandList::s_defaultShadingRateCombinators;
+            RHI::ShadingRateCombinators m_shadingRateCombinators = CommandList::DefaultShadingRateCombinators;
             //! Whether the state has already been applied to the command list.
             bool m_isDirty = false;
         };

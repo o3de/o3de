@@ -121,14 +121,14 @@ namespace AZ
             void ResetTotalSubmits() { m_totalSubmits = 0; }
 
             /// Default value of shading rate combinator operations.
-            static const ShadingRateCombinators s_defaultShadingRateCombinators;
+            static const ShadingRateCombinators DefaultShadingRateCombinators;
 
             /// Sets the Per-Draw shading rate value. This rate will be used for all subsequent draw calls of this command list.
             /// Combinators can also be specified as part of setting the rate. For ShadingRateCombinators = { Op1, Op2 },
             /// the final value is calculated as Op2(Op1(PerDraw, PerPrimitive), PerRegion)
             virtual void SetFragmentShadingRate(
                 ShadingRate rate,
-                const ShadingRateCombinators& combinators = s_defaultShadingRateCombinators) = 0;
+                const ShadingRateCombinators& combinators = DefaultShadingRateCombinators) = 0;
 
         private:
             SubmitRange m_submitRange;
