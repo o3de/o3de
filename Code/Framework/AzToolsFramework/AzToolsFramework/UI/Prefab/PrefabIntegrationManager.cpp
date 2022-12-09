@@ -476,18 +476,28 @@ namespace AzToolsFramework
                         // Also don't allow to create a prefab if any of the selected entities are read-only
                         if (!layerInSelection && !readOnlyEntityInSelection)
                         {
-                            QAction* createAction = menu->addAction(QObject::tr("Create Prefab..."));
-                            createAction->setToolTip(QObject::tr("Creates a prefab out of the currently selected entities."));
+                            // Do not show the option when it is not a prefab edit.
+                            AZ::EntityId entityToCheck = selectedEntities[0];
+                            if (s_prefabPublicInterface->IsInstanceContainerEntity(entityToCheck))
+                            {
+                                // If it is a container entity, then check its parent entity's owning instance instead.
+                                AZ::TransformBus::EventResult(entityToCheck, entityToCheck, &AZ::TransformBus::Events::GetParentId);
+                            }
 
-                            QObject::connect(
-                                createAction, &QAction::triggered, createAction,
-                                [this, selectedEntities]
-                                {
-                                    ContextMenu_CreatePrefab(selectedEntities);
-                                }
-                            );
+                            if (s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityToCheck))
+                            {
+                                QAction* createAction = menu->addAction(QObject::tr("Create Prefab..."));
+                                createAction->setToolTip(QObject::tr("Creates a prefab out of the currently selected entities."));
 
-                            itemWasShown = true;
+                                QObject::connect(
+                                    createAction, &QAction::triggered, createAction,
+                                    [this, selectedEntities]
+                                    {
+                                        ContextMenu_CreatePrefab(selectedEntities);
+                                    });
+
+                                itemWasShown = true;
+                            }
                         }
                     }
                 }
@@ -497,20 +507,27 @@ namespace AzToolsFramework
             if (onlySelectedEntityIsClosedPrefabContainer)
             {
                 AZ::EntityId selectedEntityId = selectedEntities.front();
+                AZ::EntityId parentEntityId;
+                AZ::TransformBus::EventResult(parentEntityId, selectedEntityId, &AZ::TransformBus::Events::GetParentId);
 
-                QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab..."));
-                QObject::connect(
-                    detachPrefabAction, &QAction::triggered, detachPrefabAction,
-                    [this, selectedEntityId]
-                    {
-                        ContextMenu_DetachPrefab(selectedEntityId);
-                    }
-                );
+                // Do not show the option when it is not a prefab edit.
+                if (s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(parentEntityId))
+                {
+                    QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab..."));
+                    QObject::connect(
+                        detachPrefabAction, &QAction::triggered, detachPrefabAction,
+                        [this, selectedEntityId]
+                        {
+                            ContextMenu_DetachPrefab(selectedEntityId);
+                        });
+                }
             }
 
             // Instantiate Prefab
-            if (selectedEntities.size() == 0 ||
-                selectedEntities.size() == 1 && !readOnlyEntityInSelection && !onlySelectedEntityIsClosedPrefabContainer)
+            // Do not show the option when it is not a prefab edit.
+            if (selectedEntities.size() == 0 || selectedEntities.size() == 1 &&
+                !readOnlyEntityInSelection && !onlySelectedEntityIsClosedPrefabContainer &&
+                s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntities[0]))
             {
                 QAction* instantiateAction = menu->addAction(QObject::tr("Instantiate Prefab..."));
                 instantiateAction->setToolTip(QObject::tr("Instantiates a prefab file in the scene."));
