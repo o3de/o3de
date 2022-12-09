@@ -27,8 +27,9 @@ namespace AZ
 
             static void Reflect(AZ::ReflectContext* context);
 
-            void Process(RuntimeContext& context) override;
-            void Process(EditorContext& context) override;
+            using RPI::MaterialFunctor::Process;
+            void Process(RPI::MaterialFunctorAPI::RuntimeContext& context) override;
+            void Process(RPI::MaterialFunctorAPI::EditorContext& context) override;
         private:
 
             AZ::RPI::MaterialPropertyIndex m_intensityPropertyIndex;

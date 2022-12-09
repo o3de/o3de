@@ -117,6 +117,16 @@ namespace AZ
                 m_supportedPipelineStageFlagsMask &= ~(VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT | VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT);
             }
 
+            if (!physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentShadingRate))
+            {
+                m_supportedPipelineStageFlagsMask &= ~VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
+            }
+
+            if (!physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentDensityMap))
+            {
+                m_supportedPipelineStageFlagsMask &= ~VK_PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT_EXT;
+            }
+
             AZStd::vector<VkDeviceQueueCreateInfo> queueCreationInfo;
             VkDeviceQueueCreateInfo queueCreateInfo = {};
             queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -170,34 +180,28 @@ namespace AZ
             descriptorIndexingFeatures.descriptorBindingStorageBufferUpdateAfterBind =
                 physicalDeviceDescriptorIndexingFeatures.descriptorBindingStorageBufferUpdateAfterBind;
 
-            VkPhysicalDeviceBufferDeviceAddressFeaturesEXT bufferDeviceAddressFeatures = {};
-            bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT;
-            const VkPhysicalDeviceBufferDeviceAddressFeaturesEXT& physicalDeviceBufferDeviceAddressFeatures =
-                physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures();
-            bufferDeviceAddressFeatures.bufferDeviceAddress = physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddress;
-            bufferDeviceAddressFeatures.bufferDeviceAddressCaptureReplay = physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddressCaptureReplay;
-            bufferDeviceAddressFeatures.bufferDeviceAddressMultiDevice = physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddressMultiDevice;
+            auto bufferDeviceAddressFeatures = physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures();
             descriptorIndexingFeatures.pNext = &bufferDeviceAddressFeatures;
 
-            VkPhysicalDeviceDepthClipEnableFeaturesEXT depthClipEnabled = {};
-            depthClipEnabled.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT;
-            depthClipEnabled.depthClipEnable = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures().depthClipEnable;
+            auto depthClipEnabled = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures();
             bufferDeviceAddressFeatures.pNext = &depthClipEnabled;
+
+            auto fragmenDensityMapFeatures = physicalDevice.GetPhysicalDeviceFragmentDensityMapFeatures();
+            fragmenDensityMapFeatures.fragmentDensityMapDynamic = false;
+            depthClipEnabled.pNext = &fragmenDensityMapFeatures;
+
+            auto fragmenShadingRateFeatures = physicalDevice.GetPhysicalDeviceFragmentShadingRateFeatures();
+            fragmenDensityMapFeatures.pNext = &fragmenShadingRateFeatures;
 
             VkPhysicalDeviceRobustness2FeaturesEXT robustness2 = {};
             robustness2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
             robustness2.nullDescriptor = physicalDevice.GetPhysicalDeviceRobutness2Features().nullDescriptor;
-            depthClipEnabled.pNext = &robustness2;
+            fragmenShadingRateFeatures.pNext = &robustness2;
 
-            VkPhysicalDeviceRayQueryFeaturesKHR rayQueryFeatures = {};
-            rayQueryFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR;
-            rayQueryFeatures.rayQuery = physicalDevice.GetRayQueryFeatures().rayQuery;
+            VkPhysicalDeviceRayQueryFeaturesKHR rayQueryFeatures = physicalDevice.GetRayQueryFeatures();
             robustness2.pNext = &rayQueryFeatures;
 
-            VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT shaderImageAtomicInt64 = {};
-            shaderImageAtomicInt64.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT;
-            shaderImageAtomicInt64.shaderImageInt64Atomics = physicalDevice.GetShaderImageAtomicInt64Features().shaderImageInt64Atomics;
-            shaderImageAtomicInt64.sparseImageInt64Atomics = physicalDevice.GetShaderImageAtomicInt64Features().sparseImageInt64Atomics;
+            VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT shaderImageAtomicInt64 = physicalDevice.GetShaderImageAtomicInt64Features();
             rayQueryFeatures.pNext = &shaderImageAtomicInt64;
 
             VkPhysicalDeviceVulkan12Features vulkan12Features = {};
@@ -802,6 +806,20 @@ namespace AZ
                 {
                     flags |= RHI::FormatCapabilities::AtomicBuffer;
                 }
+
+                if (RHI::CheckBitsAll(
+                        properties.optimalTilingFeatures,
+                        static_cast<VkFormatFeatureFlags>(VK_FORMAT_FEATURE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR)))
+                {
+                    flags |= RHI::FormatCapabilities::ShadingRate;
+                }
+
+                if (RHI::CheckBitsAll( 
+                        properties.optimalTilingFeatures,
+                        static_cast<VkFormatFeatureFlags>(VK_FORMAT_FEATURE_FRAGMENT_DENSITY_MAP_BIT_EXT)))
+                {
+                    flags |= RHI::FormatCapabilities::ShadingRate;
+                }
             }
         }
 
@@ -828,6 +846,95 @@ namespace AZ
         {
             m_releaseQueue.Notify(notifyFunction);
         }
+
+        RHI::ShadingRateImageValue Device::ConvertShadingRate(RHI::ShadingRate rate)
+        {
+            ShadingRateImageMode mode = GetImageShadingRateMode();
+            if (mode == ShadingRateImageMode::ImageAttachment)
+            {
+                // Fragment sizes are encoded in a single texel as follows:
+                // size(w) = 2^((texel/4) & 3)
+                // size(h) = 2^(texel & 3)
+
+                uint8_t encoded_rate_w, encoded_rate_h;
+                switch (rate)
+                {
+                case RHI::ShadingRate::Rate1x1:
+                    encoded_rate_w = encoded_rate_h = 0;
+                    break;
+                case RHI::ShadingRate::Rate1x2:
+                    encoded_rate_w = 0;
+                    encoded_rate_h = 1;
+                    break;         
+                case RHI::ShadingRate::Rate2x1:
+                    encoded_rate_w = 1;
+                    encoded_rate_h = 0;
+                    break;
+                case RHI::ShadingRate::Rate2x2:
+                    encoded_rate_w = encoded_rate_h = 1;
+                    break;
+                case RHI::ShadingRate::Rate2x4:
+                    encoded_rate_w = 1;
+                    encoded_rate_h = 2;
+                    break;
+                case RHI::ShadingRate::Rate4x2:
+                    encoded_rate_w = 2;
+                    encoded_rate_h = 1;
+                    break;
+                case RHI::ShadingRate::Rate4x4:
+                    encoded_rate_w = encoded_rate_h = 2;
+                    break;
+                default:
+                    AZ_Assert(false, "Invalid shading rate enum %d", rate);
+                    encoded_rate_w = encoded_rate_h = 0;
+                }
+                uint8_t encodedRate = encoded_rate_w << 2 | encoded_rate_h;
+                return RHI::ShadingRateImageValue{ encodedRate, 0 };
+            }
+            else if (mode == ShadingRateImageMode::DensityMap)
+            {
+                // Horizontal rate is encoded in the first texel component.
+                // Vertical rate is encoded in the second texl component.
+                // Final density is calculated as (1/rate) and valid values must be in range (0, 1]
+                uint8_t encoded_rate_w, encoded_rate_h;
+                switch (rate)
+                {
+                case RHI::ShadingRate::Rate1x1:
+                    encoded_rate_w = encoded_rate_h = 0;
+                    break;
+                case RHI::ShadingRate::Rate1x2:
+                    encoded_rate_w = 0;
+                    encoded_rate_h = 1;
+                    break;
+                case RHI::ShadingRate::Rate2x1:
+                    encoded_rate_w = 1;
+                    encoded_rate_h = 0;
+                    break;
+                case RHI::ShadingRate::Rate2x2:
+                    encoded_rate_w = encoded_rate_h = 1;
+                    break;
+                case RHI::ShadingRate::Rate2x4:
+                    encoded_rate_w = 1;
+                    encoded_rate_h = 2;
+                    break;
+                case RHI::ShadingRate::Rate4x2:
+                    encoded_rate_w = 2;
+                    encoded_rate_h = 1;
+                    break;
+                case RHI::ShadingRate::Rate4x4:
+                    encoded_rate_w = encoded_rate_h = 2;
+                    break;
+                default:
+                    AZ_Assert(false, "Invalid shading rate enum %d", rate);
+                    encoded_rate_w = encoded_rate_h = 0;
+                }
+                uint8_t density_w = 0xFF >> encoded_rate_w;
+                uint8_t density_h = 0xFF >> encoded_rate_h;
+                return RHI::ShadingRateImageValue{ density_w, density_h };
+            }
+            AZ_Error("Vulkan", false, "Shading Rate Image is not supported on this platform");
+            return RHI::ShadingRateImageValue{};
+        } 
 
         void Device::InitFeaturesAndLimits(const PhysicalDevice& physicalDevice)
         {
@@ -881,6 +988,59 @@ namespace AZ
             m_features.m_rayTracing = (itRayTracingExtension != deviceExtensions.end());
             m_features.m_unboundedArrays = physicalDevice.GetPhysicalDeviceDescriptorIndexingFeatures().shaderStorageTexelBufferArrayNonUniformIndexing;
 
+            if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentShadingRate))
+            {
+                const auto& shadingRateFeatures = physicalDevice.GetPhysicalDeviceFragmentShadingRateFeatures();
+                if (shadingRateFeatures.attachmentFragmentShadingRate)
+                {
+                    m_features.m_shadingRateTypeMask |= RHI::ShadingRateTypeFlags::PerRegion;
+                    m_imageShadingRateMode = ShadingRateImageMode::ImageAttachment;
+                    m_features.m_dynamicShadingRateImage = true;
+                }
+                if (shadingRateFeatures.primitiveFragmentShadingRate)
+                {
+                    m_features.m_shadingRateTypeMask |= RHI::ShadingRateTypeFlags::PerPrimitive;
+                }
+                if (shadingRateFeatures.pipelineFragmentShadingRate)
+                {
+                    m_features.m_shadingRateTypeMask |= RHI::ShadingRateTypeFlags::PerDraw;
+                }
+
+                auto nativeDevice = physicalDevice.GetNativePhysicalDevice();
+                AZStd::vector<VkPhysicalDeviceFragmentShadingRateKHR> rates{};
+                uint32_t rateCount = 0;
+                GetContext().GetPhysicalDeviceFragmentShadingRatesKHR(nativeDevice, &rateCount, nullptr);
+                if (rateCount > 0)
+                {
+                    rates.resize(rateCount);
+                    for (VkPhysicalDeviceFragmentShadingRateKHR& fragment_shading_rate : rates)
+                    {
+                        // As per spec, the sType member of each shading rate array entry must be set
+                        fragment_shading_rate.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_KHR;
+                    }
+                    GetContext().GetPhysicalDeviceFragmentShadingRatesKHR(nativeDevice, &rateCount, rates.data());
+                    for (const auto& vkRate : rates)
+                    {
+                        m_features.m_shadingRateMask |= static_cast<RHI::ShadingRateFlags>(
+                            AZ_BIT(static_cast<uint32_t>(ConvertFragmentShadingRate(vkRate.fragmentSize))));
+                    }
+                }
+            }
+            else if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentDensityMap))
+            {
+                const auto& densityFeatures = physicalDevice.GetPhysicalDeviceFragmentDensityMapFeatures();
+                if (densityFeatures.fragmentDensityMap)
+                {
+                    m_features.m_shadingRateTypeMask |= RHI::ShadingRateTypeFlags::PerRegion;
+                    m_imageShadingRateMode = ShadingRateImageMode::DensityMap;
+                    m_features.m_dynamicShadingRateImage = densityFeatures.fragmentDensityMapDynamic;
+                    for (uint32_t i = 0; i < static_cast<uint32_t>(RHI::ShadingRate::Count); ++i)
+                    {
+                        m_features.m_shadingRateMask |= static_cast<RHI::ShadingRateFlags>(AZ_BIT(i));
+                    }
+                }
+            }
+
             const auto& deviceLimits = physicalDevice.GetDeviceLimits();
             m_limits.m_maxImageDimension1D = deviceLimits.maxImageDimension1D;
             m_limits.m_maxImageDimension2D = deviceLimits.maxImageDimension2D;
@@ -891,6 +1051,20 @@ namespace AZ
             m_limits.m_maxIndirectDrawCount = deviceLimits.maxDrawIndirectCount;
             m_limits.m_maxConstantBufferSize = deviceLimits.maxUniformBufferRange;
             m_limits.m_maxBufferSize = deviceLimits.maxStorageBufferRange;
+
+            VkExtent2D tileSize{ 1, 1 };
+            switch (m_imageShadingRateMode)
+            {
+            case ShadingRateImageMode::ImageAttachment:
+                tileSize = physicalDevice.GetPhysicalDeviceFragmentShadingRateProperties().minFragmentShadingRateAttachmentTexelSize;
+                break;
+            case ShadingRateImageMode::DensityMap:
+                tileSize = physicalDevice.GetPhysicalDeviceFragmentDensityMapProperties().minFragmentDensityTexelSize;
+                break;
+            default:
+                break;
+            }
+            m_limits.m_shadingRateTileSize = RHI::Size(tileSize.width, tileSize.height, 1);
         }
 
         void Device::BuildDeviceQueueInfo(const PhysicalDevice& physicalDevice)
@@ -1017,6 +1191,11 @@ namespace AZ
         void Device::DestroyBufferResource(VkBuffer vkBuffer) const
         {
             m_context.DestroyBuffer(GetNativeDevice(), vkBuffer, nullptr);
+        }
+
+        Device::ShadingRateImageMode Device::GetImageShadingRateMode() const
+        {
+            return m_imageShadingRateMode;
         }
     }
 }
