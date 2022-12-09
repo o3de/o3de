@@ -179,6 +179,8 @@ namespace AZ
 
             void ProcessDirectConnections();
             void ProcessMaterialFunctors();
+            void ProcessInternalDirectConnections();
+            void ProcessInternalMaterialFunctors();
 
             // Note we can't overload the ForAllShaderItems name, because the compiler fails to resolve the public
             // version of the function when a private overload is present, just based on a lambda signature.

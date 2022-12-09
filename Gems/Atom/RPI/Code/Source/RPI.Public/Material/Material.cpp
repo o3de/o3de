@@ -246,6 +246,14 @@ namespace AZ
 
         void Material::SetPsoHandlingOverride(MaterialPropertyPsoHandling psoHandlingOverride)
         {
+            // On some platforms, PipelineStateObjects must be pre-compiled and shipped with the game; they cannot be compiled at runtime. So at some
+            // point the material system needs to be smart about when it allows PSO changes and when it doesn't. There is a task scheduled to
+            // thoroughly address this in 2022, but for now we just report a warning to alert users who are using the engine in a way that might
+            // not be supported for much longer. PSO changes should only be allowed in developer tools (though we could also expose a way for users to
+            // enable dynamic PSO changes if their project only targets platforms that support this).
+            // PSO modifications are allowed during initialization because that's using the stored asset data, which the asset system can
+            // access to pre-compile the necessary PSOs.
+
             m_psoHandling = psoHandlingOverride;
         }
 
@@ -419,7 +427,7 @@ namespace AZ
 
         void Material::ProcessDirectConnections()
         {
-            AZ_PROFILE_SCOPE(RPI, "Material::ProcessDirectConnections()");
+            AZ_PROFILE_SCOPE(RPI, "Process direct connection");
 
             // Apply any changes to *main* material properties...
 
@@ -448,9 +456,11 @@ namespace AZ
                     AZ_Error(s_debugTraceName, applied, "Connections of type %s are not supported by material properties.", ToString(connection.m_type));
                 }
             }
+        }
 
-            // TODO(MaterialPipeline): The main functors need to run before processing internal property connections. It will fail if a main functor
-            // sets an internal property and then that internal property uses a direct connection to set something.
+        void Material::ProcessInternalDirectConnections()
+        {
+            AZ_PROFILE_SCOPE(RPI, "Process direct connection");
 
             // Apply any changes to *internal* material properties...
 
@@ -487,15 +497,8 @@ namespace AZ
 
         void Material::ProcessMaterialFunctors()
         {
-            AZ_PROFILE_SCOPE(RPI, "Material::ProcessMaterialFunctors()");
+            AZ_PROFILE_SCOPE(RPI, "Process material functors");
 
-            // On some platforms, PipelineStateObjects must be pre-compiled and shipped with the game; they cannot be compiled at runtime. So at some
-            // point the material system needs to be smart about when it allows PSO changes and when it doesn't. There is a task scheduled to
-            // thoroughly address this in 2022, but for now we just report a warning to alert users who are using the engine in a way that might
-            // not be supported for much longer. PSO changes should only be allowed in developer tools (though we could also expose a way for users to
-            // enable dynamic PSO changes if their project only targets platforms that support this).
-            // PSO modifications are allowed during initialization because that's using the stored asset data, which the asset system can
-            // access to pre-compile the necessary PSOs.
             MaterialPropertyPsoHandling psoHandling = m_isInitializing ? MaterialPropertyPsoHandling::Allowed : m_psoHandling;
 
             // First run the "main" MaterialPipelineNone functors, which use the MaterialFunctorAPI::RuntimeContext
@@ -527,6 +530,13 @@ namespace AZ
                     AZ_Error(s_debugTraceName, false, "Material functor is null.");
                 }
             }
+        }
+
+        void Material::ProcessInternalMaterialFunctors()
+        {
+            AZ_PROFILE_SCOPE(RPI, "Process material functors");
+
+            MaterialPropertyPsoHandling psoHandling = m_isInitializing ? MaterialPropertyPsoHandling::Allowed : m_psoHandling;
 
             // Then run the "pipeline" functors, which use the MaterialFunctorAPI::PipelineRuntimeContext
             for (auto& [materialPipelineName, materialPipeline] : m_materialAsset->GetMaterialPipelines())
@@ -576,7 +586,15 @@ namespace AZ
                 ProcessDirectConnections();
                 ProcessMaterialFunctors();
 
+                ProcessInternalDirectConnections();
+                ProcessInternalMaterialFunctors();
+
                 m_materialProperties.ClearAllPropertyDirtyFlags();
+
+                for (auto& materialPipelinePair : m_materialPipelineData)
+                {
+                    materialPipelinePair.second.m_materialProperties.ClearAllPropertyDirtyFlags();
+                }
 
                 if (m_shaderResourceGroup)
                 {
