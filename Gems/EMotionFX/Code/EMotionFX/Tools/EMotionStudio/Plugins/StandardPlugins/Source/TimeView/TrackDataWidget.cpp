@@ -1598,7 +1598,7 @@ namespace EMStudio
     // the mouse wheel is adjusted
     void TrackDataWidget::DoWheelEvent(QWheelEvent* event, TimeViewPlugin* plugin)
     {
-        if (m_dragging)
+        if (m_isScrolling || m_dragging || m_resizing)
         {
             return;
         }
