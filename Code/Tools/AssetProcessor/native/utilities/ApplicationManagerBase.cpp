@@ -999,11 +999,11 @@ void ApplicationManagerBase::HandleFileRelocation() const
     const bool doDelete = commandLine->HasSwitch(DeleteCommand);
     const bool updateReferences = commandLine->HasSwitch(UpdateReferencesCommand);
     const bool excludeMetaDataFiles = commandLine->HasSwitch(ExcludeMetaDataFiles);
-    const int flags = (allowBrokenDependencies ? AssetProcessor::AllowDependencyBreakingFlag : 0)
-        | (previewOnly ? AssetProcessor::PreviewOnlyFlag : 0)
-        | (leaveEmptyFolders ? 0 : AssetProcessor::RemoveEmptyFoldersFlag)
-        | (updateReferences ? AssetProcessor::UpdateReferencesFlag : 0)
-        | (excludeMetaDataFiles ? AssetProcessor::ExcludeMetaDataFilesFlag : 0);
+    const int flags = (allowBrokenDependencies ? AssetProcessor::RelocationParameters_AllowDependencyBreakingFlag : 0) |
+        (previewOnly ? AssetProcessor::RelocationParameters_PreviewOnlyFlag : 0) |
+        (leaveEmptyFolders ? 0 : AssetProcessor::RelocationParameters_RemoveEmptyFoldersFlag) |
+        (updateReferences ? AssetProcessor::RelocationParameters_UpdateReferencesFlag : 0) |
+        (excludeMetaDataFiles ? AssetProcessor::RelocationParameters_ExcludeMetaDataFilesFlag : 0);
 
     if(doMove || doDelete)
     {
