@@ -24,6 +24,11 @@
           "asset_type": "07f289d14dc74c4094b40a53bbcb9f0b"
         },
         {
+          "product_name" : "softnaminglod/lodtest.dbgsg.json", 
+          "sub_id" : 1220784361,
+          "asset_type" : "4342b27e0e1449c3b3b9bcdb9a5fca23"
+        },
+        {
           "product_name": "softnaminglod/lodtest.dbgsg.xml",
           "sub_id": -2036095434,
           "asset_type": "51f376140d774f369ac67ed70a0ac868"

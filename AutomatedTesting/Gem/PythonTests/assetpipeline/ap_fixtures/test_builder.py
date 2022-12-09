@@ -5,7 +5,9 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+import os
 import json
+import pytest
 from typing import List
 from dataclasses import dataclass
 
@@ -95,3 +97,28 @@ def build_test(json_file):
     )
 
     return TestParams
+
+
+def parametrize_blackbox_scene_test(dir_test_path):
+    """
+    Summary:
+    Helper function that parametrizes tests based on json files found within the test directory and all sub-folders.
+
+    :returns:
+    blackbox_scene_tests: List of parametrized tests
+    blackbox_test_ids: Name of tests to be used as IDs during parametrization
+    """
+    blackbox_scene_tests = []
+    blackbox_test_ids = []
+
+    for root, dirs, files in os.walk(dir_test_path):
+        file_list = [file for file in files if file.endswith(".json")]
+        for test in file_list:
+            test_path = os.path.join(root, os.path.relpath(test))
+            blackbox_scene_tests.append(
+                pytest.param(
+                    build_test(test_path)
+                )
+            )
+            blackbox_test_ids.append(test.split(".")[0])
+    return blackbox_scene_tests, blackbox_test_ids

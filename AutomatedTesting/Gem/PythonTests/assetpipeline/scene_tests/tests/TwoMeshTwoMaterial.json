@@ -24,6 +24,11 @@
           "asset_type": "07f289d14dc74c4094b40a53bbcb9f0b"
         },
         {
+          "product_name" : "twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg.json",
+          "sub_id" : -1300898491,
+          "asset_type" : "4342b27e0e1449c3b3b9bcdb9a5fca23"
+        },
+        {
           "product_name": "twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg.xml",
           "sub_id": -1556988544,
           "asset_type": "51f376140d774f369ac67ed70a0ac868"
@@ -49,6 +54,11 @@
           "product_name": "twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg",
           "sub_id": 896980093,
           "asset_type": "07f289d14dc74c4094b40a53bbcb9f0b"
+        },
+        {
+          "product_name" : "twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg.json",
+          "sub_id" : -1300898491,
+          "asset_type" : "4342b27e0e1449c3b3b9bcdb9a5fca23"
         },
         {
           "product_name": "twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg.xml",

@@ -7,18 +7,28 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import os
 import pytest
+import logging
+import re
+from pprint import pformat
 from ly_test_tools.o3de.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
 
 from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
 from assetpipeline.ap_fixtures.ap_setup_fixture import ap_setup_fixture as ap_setup_fixture
-from assetpipeline.ap_fixtures.ap_config_backup_fixture import ap_config_backup_fixture as ap_config_backup_fixture
-from assetpipeline.ap_fixtures.ap_config_default_platform_fixture \
-    import ap_config_default_platform_fixture as ap_config_default_platform_fixture
 
 from automatedtesting_shared import asset_database_utils as asset_db_utils
 import assetpipeline.ap_fixtures.test_builder as test_builder
+import assetpipeline.ap_fixtures.test_debug_parse_and_compare as parse_and_compare
+import ly_test_tools.o3de.pipeline_utils as utils
 
+logger = logging.getLogger(__name__)
 targetProjects = ["AutomatedTesting"]
+
+
+# Helper: Gets a case correct version of the cache folder
+def get_cache_folder(asset_processor):
+    # Make sure the folder being checked is fully lowercase.
+    # Leave the "c" in Cache uppercase.
+    return re.sub("ache[/\\\\](.*)", lambda m: m.group().lower(), asset_processor.project_test_cache_folder())
 
 
 @pytest.fixture
@@ -26,33 +36,10 @@ def local_resources(request, workspace, ap_setup_fixture):
     ap_setup_fixture["tests_dir"] = os.path.dirname(os.path.realpath(__file__))
 
 
-blackbox_scene_tests = []
-blackbox_test_ids = []
+# Set the path of the directory containing the tests, then parametrize the tests using the test_builder
+dir_test_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "tests")
+blackbox_scene_tests, blackbox_test_ids = test_builder.parametrize_blackbox_scene_test(dir_test_path)
 
-def parametrize_blackbox_scene_test():
-    """
-    Summary:
-    Helper function that parametrizes tests based on json files found within the test directory and all sub-folders.
-
-    :returns:
-    blackbox_scene_tests: List of parametrized tests
-    blackbox_test_ids: Name of tests to be used as IDs during parametrization
-    """
-    dir_test_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "tests")
-    for root, dirs, files in os.walk(dir_test_path):
-        file_list = [file for file in files if file.endswith(".json")]
-        for test in file_list:
-            test_path = os.path.join(root, os.path.relpath(test))
-            blackbox_scene_tests.append(
-                pytest.param(
-                    test_builder.build_test(test_path)
-                )
-            )
-            blackbox_test_ids.append(test.split(".")[0])
-    return blackbox_scene_tests, blackbox_test_ids
-
-
-parametrize_blackbox_scene_test()
 
 @pytest.mark.usefixtures("asset_processor")
 @pytest.mark.usefixtures("ap_setup_fixture")
@@ -66,59 +53,59 @@ class TestScene_AllPlatforms(object):
     @pytest.mark.parametrize("blackbox_param", blackbox_scene_tests, ids=blackbox_test_ids)
     def test_SceneBlackboxTest_SourceFiles_Processed_ResultInExpectedProducts(self, workspace, ap_setup_fixture,
                                                                               asset_processor, project, blackbox_param):
+        """
+        Please see run_fbx_test(...) for details
+        Test Steps:
+        1. Determine if blackbox is set to none
+        2. Run FBX Test
+        3. Determine if override assets is set to none
+        4. If not, re-run FBX test and validate the information in override assets
+        """
+
         if blackbox_param is None:
             return
         self.run_scene_test(workspace, ap_setup_fixture, asset_processor, project, blackbox_param)
 
         override_assets = blackbox_param.override_assets
+        # If override_assets is set, run the test again and validate the information in the override assets
         if override_assets is not None:
-            # If override_assets is set, run the test again and validate the information in the override assets
             self.run_scene_test(workspace, ap_setup_fixture,
                                 asset_processor, project, blackbox_param, True)
 
-    @staticmethod
-    def populate_asset_info(workspace, assets):
-
-        # Check that each given source asset resulted in the expected jobs and products.
-        for expected_source in assets:
-            for job in expected_source.jobs:
-                job.platform = ASSET_PROCESSOR_PLATFORM_MAP[workspace.asset_processor_platform]
-                for product in job.products:
-                    product.product_name = job.platform + "/" + product.product_name
-
-    @staticmethod
-    def compare_lists(asset_processor, expected_debug, actual_debug):
-        # Set dbgsg file paths.
-        expected_dbgsg_path = os.path.join(asset_processor.project_test_source_folder(), expected_debug)
-        actual_dbgsg_path = os.path.join(asset_processor.project_test_cache_folder(), actual_debug)
-
-        expected_lines = []
-
-        def populate_expected_lines():
-            with open(expected_dbgsg_path, "r") as scene_file:
-                for line in scene_file:
-                    expected_lines.append(line)
-
-        def compare_actual_with_expected_lines():
-            with open(actual_dbgsg_path, "r") as scene_file:
-                for line in scene_file:
-                    if len(expected_lines) > 0:
-                        if line in expected_lines:
-                            expected_lines.remove(line)
-                    else:
-                        break
-
-        populate_expected_lines()
-        compare_actual_with_expected_lines()
-        assert len(expected_lines) == 0, \
-            f"The following nodes were expected within the scene file but not found: {expected_lines}"
-
-    # Helper to run Asset Processor with debug output enabled and Atom output disabled
+    # Helper: Run Asset Processor with debug output enabled and Atom output disabled.
     @staticmethod
     def run_ap_debug_skip_atom_output(asset_processor):
-        result = asset_processor.batch_process(extra_params=["--debugOutput",
-                                                             "--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\""])
+        result, output = asset_processor.batch_process(capture_output=True, extra_params=["--debugOutput",
+                                                                                          "--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\""])
+        # If the test fails, it's helpful to have the output from asset processor in the logs, to track the failure down.
+        logger.info(f"Asset Processor Output: {pformat(output)}")
         assert result, "Asset Processor Failed"
+
+    # Helper: Compare expected products with products in cache, report on missing products.
+    @staticmethod
+    def check_missing_assets(expected_product_list, cache_folder):
+        missing_assets, _ = utils.compare_assets_with_cache(expected_product_list,
+                                                            cache_folder)
+
+        # If the test is going to fail, print information to help track down the cause of failure.
+        if missing_assets:
+            logger.info(f"The following assets were missing from cache: {pformat(missing_assets)}")
+            in_cache = os.listdir(cache_folder)
+            logger.info(f"The cache {cache_folder} contains this content: {pformat(in_cache)}")
+
+        assert not missing_assets, \
+            f'The following assets were expected to be in, but not found in cache: {str(missing_assets)}'
+
+    # Helper: Populates the platform info for each given source asset in the expected jobs and products.
+    @staticmethod
+    def populate_asset_info(workspace, project, assets):
+
+        for expected_source in assets:
+            for expected_job in expected_source.jobs:
+                expected_job.platform = ASSET_PROCESSOR_PLATFORM_MAP[workspace.asset_processor_platform]
+                for expected_product in expected_job.products:
+                    expected_product.product_name = expected_job.platform + "/" \
+                                           + expected_product.product_name
 
     def run_scene_test(self, workspace, ap_setup_fixture, asset_processor,
                        project, blackbox_params: "BlackboxAssetTest", overrideAsset=False):
@@ -150,24 +137,49 @@ class TestScene_AllPlatforms(object):
                                                      use_current_root=True, add_scan_folder=False,
                                                      existing_function_name=blackbox_params.asset_folder)
 
+        logger.info(f"{blackbox_params.test_name}: Processing assets in folder '"
+                    f"{test_assets_folder}' and verifying they match expected output.")
+
         # Run AP and generate scene product outputs - Skip atom product output.
         self.run_ap_debug_skip_atom_output(asset_processor)
+
+        logger.info(f"Validating assets.")
+        # Get a list of the expected product assets and compare it with the actual product assets in cache.
+        expected_product_list = parse_and_compare.populate_expected_product_assets(assets_to_validate)
+        cache_folder = get_cache_folder(asset_processor)
+        self.check_missing_assets(expected_product_list, cache_folder)
 
         # Load the asset database and cache root paths.
         db_path = os.path.join(asset_processor.temp_asset_root(), "Cache", "assetdb.sqlite")
         cache_root = os.path.dirname(os.path.join(asset_processor.temp_asset_root(), "Cache",
                                                   ASSET_PROCESSOR_PLATFORM_MAP[workspace.asset_processor_platform]))
+        actual_scene_debug_file = os.path.join(get_cache_folder(asset_processor), blackbox_params.scene_debug_file)
 
         # Compare expected and actual debug output from .dbgsg files
         if blackbox_params.scene_debug_file:
-            self.compare_lists(asset_processor, expected_scene_debug_file, blackbox_params.scene_debug_file)
+            expected_hashes_to_skip, actual_hashes_to_skip = parse_and_compare.compare_scene_debug_file(
+                asset_processor,
+                expected_scene_debug_file,
+                actual_scene_debug_file
+            )
 
+            # Run again for the .dbgsg.xml file
+            parse_and_compare.compare_scene_debug_file(
+                asset_processor,
+                expected_scene_debug_file + ".xml",
+                actual_scene_debug_file + ".xml",
+                expected_hashes_to_skip=expected_hashes_to_skip,
+                actual_hashes_to_skip=actual_hashes_to_skip
+            )
         # Check that each given source asset resulted in the expected jobs and products.
-        self.populate_asset_info(workspace, assets_to_validate)
+        self.populate_asset_info(workspace, project, assets_to_validate)
         for expected_source in assets_to_validate:
-            for job in expected_source.jobs:
-                for product in job.products:
-                    asset_db_utils.compare_expected_asset_to_actual_asset(db_path, expected_source,
-                                                                          f"{blackbox_params.asset_folder}/"
-                                                                          f"{expected_source.source_file_name}",
-                                                                          cache_root)
+            for expected_job in expected_source.jobs:
+                for expected_product in expected_job.products:
+                    asset_db_utils.compare_expected_asset_to_actual_asset(
+                        db_path,
+                        expected_source,
+                        f"{blackbox_params.asset_folder}/"
+                        f"{expected_source.source_file_name}",
+                        cache_root
+                    )
