@@ -84,12 +84,15 @@ namespace Terrain
 
     void TerrainMeshManager::SetConfiguration(const MeshConfiguration& config)
     {
-        if (m_config.CheckWouldRequireRebuild(config))
+        bool requireRebuild = m_config.CheckWouldRequireRebuild(config);
+
+        m_config = config;
+
+        if (requireRebuild)
         {
             m_rebuildSectors = true;
             OnTerrainDataChanged(AZ::Aabb::CreateNull(), TerrainDataChangedMask::HeightData);
         }
-        m_config = config;
 
         // This will trigger a draw packet rebuild later.
         AZ::RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(AZ::Name{ "o_useTerrainClod" }, AZ::RPI::ShaderOptionValue{ m_config.m_clodEnabled });
