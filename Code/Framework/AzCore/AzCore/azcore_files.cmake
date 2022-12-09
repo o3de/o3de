@@ -396,8 +396,6 @@ set(FILES
     Memory/AllocationRecords.h
     Memory/AllocatorBase.cpp
     Memory/AllocatorBase.h
-    Memory/AllocatorDebug.cpp
-    Memory/AllocatorDebug.h
     Memory/AllocatorInstance.h
     Memory/AllocatorManager.cpp
     Memory/AllocatorManager.h
@@ -465,7 +463,6 @@ set(FILES
     PlatformId/PlatformId.h
     PlatformId/PlatformId.cpp
     PlatformIncl.h
-    Preprocessor/CodeGen.h
     Preprocessor/Enum.h
     Preprocessor/EnumReflectUtils.h
     Preprocessor/Sequences.h

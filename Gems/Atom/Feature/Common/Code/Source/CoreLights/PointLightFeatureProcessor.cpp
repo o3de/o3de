@@ -64,8 +64,8 @@ namespace AZ
             MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
             if (meshFeatureProcessor)
             {
-                m_lightMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("o_enableSphereLights"));
-                m_shadowMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("o_enableSphereLightShadows"));
+                m_lightMeshFlag = meshFeatureProcessor->GetShaderOptionFlagRegistry()->AcquireTag(AZ::Name("o_enableSphereLights"));
+                m_shadowMeshFlag = meshFeatureProcessor->GetShaderOptionFlagRegistry()->AcquireTag(AZ::Name("o_enableSphereLightShadows"));
             }
         }
 
@@ -318,6 +318,11 @@ namespace AZ
         void PointLightFeatureProcessor::SetShadowBias(LightHandle handle, float bias)
         {
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowBias, bias);
+        }
+
+        void PointLightFeatureProcessor::SetUseCachedShadows(LightHandle handle, bool useCachedShadows)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetUseCachedShadows, useCachedShadows);
         }
 
         void PointLightFeatureProcessor::SetAffectsGI(LightHandle handle, bool affectsGI)

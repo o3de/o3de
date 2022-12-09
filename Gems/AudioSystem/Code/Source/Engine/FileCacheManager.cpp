@@ -106,7 +106,7 @@ namespace Audio
             AudioSystemImplementationRequestBus::BroadcastResult(fileLocation, &AudioSystemImplementationRequestBus::Events::GetAudioFileLocation, &fileEntryInfo);
             AZStd::string filePath;
             AZ::StringFunc::AssetDatabasePath::Join(fileLocation, fileEntryInfo.sFileName, filePath);
-            auto newAudioFileEntry = azcreate(CATLAudioFileEntry, (filePath.c_str(), fileEntryInfo.pImplData), Audio::AudioSystemAllocator, "ATLAudioFileEntry");
+            auto newAudioFileEntry = azcreate(CATLAudioFileEntry, (filePath.c_str(), fileEntryInfo.pImplData), Audio::AudioSystemAllocator);
 
             if (newAudioFileEntry)
             {

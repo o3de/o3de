@@ -59,6 +59,7 @@ namespace EMStudio
         {
             EMotionFX::AnimGraphNodeGroup* nodeGroup = animGraph->GetNodeGroup(i);
             auto nodeGroupParentId = nodeGroup->GetParentNodeId();
+            AZ_Assert(nodeGroupParentId.IsValid(), "Invalid nodeGroupParentId");
 
             // Check if the node group being iterated belongs to the same level currently being shown on the animation graph.
             // We only want to add it to the assignable node groups list if the levels match.

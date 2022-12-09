@@ -12,6 +12,7 @@
 #include <tests/assetmanager/MockAssetProcessorManager.h>
 #include <tests/assetmanager/MockFileProcessor.h>
 #include <AzToolsFramework/Archive/ArchiveComponent.h>
+#include <native/FileWatcher/FileWatcher.h>
 #include <native/utilities/AssetServerHandler.h>
 #include <native/resourcecompiler/rcjob.h>
 #include <AzCore/Utils/Utils.h>
@@ -55,6 +56,8 @@ namespace UnitTests
         m_mockFileProcessor = fileProcessor.get();
         m_applicationManager->m_fileProcessor = AZStd::move(fileProcessor); // The manager is taking ownership
         m_fileProcessorThread->start();
+
+        m_applicationManager->InitUuidManager();
 
         auto fileWatcher = AZStd::make_unique<FileWatcher>();
         m_fileWatcher = fileWatcher.get();

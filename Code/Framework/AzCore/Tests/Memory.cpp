@@ -747,7 +747,7 @@ namespace UnitTest
                 const Debug::AllocationRecordsType& records = sysAllocator.GetRecords()->GetMap();
                 EXPECT_TRUE(records.find(ptr)==records.end());  // our allocation is NOT in the list
             }
-            ptr = azmalloc(16*1024, 32, SystemAllocator, allocName);
+            ptr = azmalloc(16*1024, 32, SystemAllocator);
             EXPECT_EQ(0, ((size_t)ptr & 31));  // check alignment
             if (sysAllocator.GetRecords())
             {

@@ -18,6 +18,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/scoped_lock.h>
+#include <AzCore/std/allocator_stateless.h>
 
 namespace
 {
@@ -46,9 +47,9 @@ namespace
     static uint64_t s_operationCounter = 0;
 
     static unsigned int s_nextRecordId = 1;
-    using AllocatorOperationByAddress = AZStd::map<void*, AllocatorOperation, AZStd::less<void*>, DebugAllocator>;
+    using AllocatorOperationByAddress = AZStd::map<void*, AllocatorOperation, AZStd::less<void*>, AZStd::stateless_allocator>;
     static AllocatorOperationByAddress s_allocatorOperationByAddress;
-    using AvailableRecordIds = AZStd::vector<unsigned int, DebugAllocator>;
+    using AvailableRecordIds = AZStd::vector<unsigned int, AZStd::stateless_allocator>;
     AvailableRecordIds s_availableRecordIds;
 
     void RecordAllocatorOperation(AllocatorOperation::OperationType type, void* ptr, size_t size = 0, size_t alignment = 0)

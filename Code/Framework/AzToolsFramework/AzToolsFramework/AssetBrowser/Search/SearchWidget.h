@@ -33,7 +33,11 @@ namespace AzToolsFramework
 
             void Setup(bool stringFilter, bool assetTypeFilter);
 
-            void FilterProjectSourceAssets();
+            void ToggleProjectSourceAssetFilter();
+
+            void AddFolderFilter();
+
+            void RemoveFolderFilter();
 
             QSharedPointer<CompositeFilter> GetFilter() const;
 
@@ -43,6 +47,8 @@ namespace AzToolsFramework
 
             QSharedPointer<CompositeFilter> GetProjectSourceFilter() const;
 
+            QSharedPointer<CompositeFilter> GetFolderFilter() const;
+
             QString GetFilterString() const { return textFilter(); }
             void ClearStringFilter() { ClearTextFilter(); }
 
@@ -51,6 +57,7 @@ namespace AzToolsFramework
             QSharedPointer<CompositeFilter> m_stringFilter;
             QSharedPointer<CompositeFilter> m_typesFilter;
             QSharedPointer<CompositeFilter> m_projectSourceFilter;
+            QSharedPointer<CompositeFilter> m_folderFilter;
         };
 
     } // namespace AssetBrowser

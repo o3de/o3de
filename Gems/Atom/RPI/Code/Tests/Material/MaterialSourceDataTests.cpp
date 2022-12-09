@@ -46,6 +46,7 @@ namespace UnitTest
         void Reflect(AZ::ReflectContext* context) override
         {
             RPITestFixture::Reflect(context);
+            MaterialPropertySourceData::Reflect(context);
             MaterialTypeSourceData::Reflect(context);
             MaterialSourceData::Reflect(context);
         }

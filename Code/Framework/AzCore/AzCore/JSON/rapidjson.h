@@ -36,7 +36,7 @@ namespace rapidjson_ly_internal
 }
 
 
-#define RAPIDJSON_NEW(x)  new(azmalloc(sizeof(x), alignof(x), AZ::SystemAllocator, "RapidJSON")) x
+#define RAPIDJSON_NEW(x)  new(azmalloc(sizeof(x), alignof(x), AZ::SystemAllocator)) x
 #define RAPIDJSON_DELETE(x) rapidjson_ly_internal::Delete(x)
 #define RAPIDJSON_MALLOC(_size) AZ::AllocatorInstance<AZ::SystemAllocator>::Get().allocate(_size, 16)
 #define RAPIDJSON_REALLOC(_ptr, _newSize) _ptr ? AZ::AllocatorInstance<AZ::SystemAllocator>::Get().reallocate(_ptr, _newSize, 16) : RAPIDJSON_MALLOC(_newSize)
