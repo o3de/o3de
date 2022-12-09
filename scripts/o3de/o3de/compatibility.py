@@ -18,6 +18,12 @@ logger = logging.getLogger('o3de.compatibility')
 logging.basicConfig(format=utils.LOG_FORMAT)
 
 def project_engine_compatible(project_path:pathlib.Path, project_json_data:dict, engine_json_data:dict) -> bool:
+    """
+    Returns True if the project is compatible with the provided engine data.
+    :param project_path: path to the project
+    :param project_json_data: project json data dictionary
+    :param engine_json_data: engine json data dictionary
+    """
     if not o3de_object_is_compatible_with_engine(project_json_data, engine_json_data):
         logger.error(f'{project_json_data["project_name"]} is not known to be compatible with the '
                         f'engine {engine_json_data["engine_name"]}{engine_json_data.get("version","")} and requires the --force parameter '
@@ -53,6 +59,13 @@ def project_engine_compatible(project_path:pathlib.Path, project_json_data:dict,
 
 
 def gem_dependencies_compatible(gem_json_data:dict, project_path:pathlib.Path = None, gem_paths:list = [], check:bool = False) -> bool:
+    """
+    Returns True if the gem is compatible with the gems registered with the engine and optional project.
+    :param gem_json_data: gem json data dictionary
+    :param project_path: path to the project (optional)
+    :param gem_paths: paths to all gems to use for dependency checks (optional)
+    :param check: if True always return True and ouput log info about the result
+    """
     # try to avoid gem compatibility checks which incur the cost of 
     # opening many gem.json files to get version information
     gem_dependencies = gem_json_data.get('dependencies','')
@@ -83,6 +96,13 @@ def gem_dependencies_compatible(gem_json_data:dict, project_path:pathlib.Path = 
 
 
 def gem_project_compatible(gem_json_data:dict, project_path:pathlib.Path, gem_paths:list = [], check:bool = False) -> bool:
+    """
+    Returns True if the gem is compatible with the indicated project.
+    :param gem_json_data: gem json data dictionary
+    :param project_path: path to the project
+    :param gem_paths: paths to all gems to use for dependency checks (optional)
+    :param check: if True always return True and ouput log info about the result
+    """
     project_json_data = manifest.get_project_json_data(project_path=project_path)
     if not project_json_data:
         logger.error(f'Failed to load project.json data from {project_path} needed for checking compatibility')
@@ -109,6 +129,13 @@ def gem_project_compatible(gem_json_data:dict, project_path:pathlib.Path, gem_pa
 
 
 def gem_engine_compatible(gem_json_data:dict, engine_json_data:dict, gem_paths:list = None, check:bool = False) -> bool:
+    """
+    Returns True if the gem is compatible with the indicated engine.
+    :param gem_json_data: gem json data dictionary
+    :param engine_json_data: engine json data dictionary
+    :param gem_paths: paths to all gems to use for dependency checks (optional)
+    :param check: if True always return True and ouput log info about the result
+    """
     engine_compatible = o3de_object_is_compatible_with_engine(gem_json_data, engine_json_data)
     if not engine_compatible:
         error_msg = f'{gem_json_data["gem_name"]} is not known to be compatible with the '\
