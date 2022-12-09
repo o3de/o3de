@@ -7,6 +7,8 @@
  */
 
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataHolder.h>
+#include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataSerializer.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
 
 namespace AZ
 {
