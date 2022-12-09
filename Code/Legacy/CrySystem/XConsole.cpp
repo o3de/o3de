@@ -197,6 +197,9 @@ CXConsole::CXConsole()
     m_waitSeconds = 0.0f;
     m_blockCounter = 0;
 
+    m_intWrappers.reserve(128);
+    m_floatWrappers.reserve(128);
+
     AzFramework::ConsoleRequestBus::Handler::BusConnect();
     AzFramework::CommandRegistrationBus::Handler::BusConnect();
 
