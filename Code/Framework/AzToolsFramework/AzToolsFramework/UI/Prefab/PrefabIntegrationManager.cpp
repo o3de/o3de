@@ -476,27 +476,31 @@ namespace AzToolsFramework
                         // Also don't allow to create a prefab if any of the selected entities are read-only
                         if (!layerInSelection && !readOnlyEntityInSelection)
                         {
-                            // Do not show the option when it is not a prefab edit.
-                            AZ::EntityId entityToCheck = selectedEntities[0];
-                            if (s_prefabPublicInterface->IsInstanceContainerEntity(entityToCheck))
+                            if (s_prefabPublicInterface->EntitiesBelongToSameInstance(selectedEntities))
                             {
+                                AZ::EntityId entityToCheck = selectedEntities[0];
+
                                 // If it is a container entity, then check its parent entity's owning instance instead.
-                                AZ::TransformBus::EventResult(entityToCheck, entityToCheck, &AZ::TransformBus::Events::GetParentId);
-                            }
+                                if (s_prefabPublicInterface->IsInstanceContainerEntity(entityToCheck))
+                                {
+                                    AZ::TransformBus::EventResult(entityToCheck, entityToCheck, &AZ::TransformBus::Events::GetParentId);
+                                }
 
-                            if (s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityToCheck))
-                            {
-                                QAction* createAction = menu->addAction(QObject::tr("Create Prefab..."));
-                                createAction->setToolTip(QObject::tr("Creates a prefab out of the currently selected entities."));
+                                // Do not show the option when it is not a prefab edit.
+                                if (s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityToCheck))
+                                {
+                                    QAction* createAction = menu->addAction(QObject::tr("Create Prefab..."));
+                                    createAction->setToolTip(QObject::tr("Creates a prefab out of the currently selected entities."));
 
-                                QObject::connect(
-                                    createAction, &QAction::triggered, createAction,
-                                    [this, selectedEntities]
-                                    {
-                                        ContextMenu_CreatePrefab(selectedEntities);
-                                    });
+                                    QObject::connect(
+                                        createAction, &QAction::triggered, createAction,
+                                        [this, selectedEntities]
+                                        {
+                                            ContextMenu_CreatePrefab(selectedEntities);
+                                        });
 
-                                itemWasShown = true;
+                                    itemWasShown = true;
+                                }
                             }
                         }
                     }
