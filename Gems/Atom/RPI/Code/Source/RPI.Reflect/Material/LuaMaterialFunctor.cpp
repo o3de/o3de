@@ -292,7 +292,7 @@ namespace AZ
                 ->Method("GetMaterialPropertyValue_Vector4", &LuaApiClass::template GetMaterialPropertyValue<Vector4>)
                 ->Method("GetMaterialPropertyValue_Color", &LuaApiClass::template GetMaterialPropertyValue<Color>)
                 ->Method("GetMaterialPropertyValue_Image", &LuaApiClass::template GetMaterialPropertyValue<Image*>)
-                ->Method("HasMaterialProperty", &LuaApiClass::template HasMaterialValue)
+                ->Method("HasMaterialProperty", &LuaApiClass::HasMaterialValue)
                 ;
         }
 
@@ -322,10 +322,10 @@ namespace AZ
                 ->Method("SetShaderOptionValue_bool", &LuaApiClass::template SetShaderOptionValue<bool>)
                 ->Method("SetShaderOptionValue_uint", &LuaApiClass::template SetShaderOptionValue<uint32_t>)
                 ->Method("SetShaderOptionValue_enum", &LuaApiClass::template SetShaderOptionValue<const char*>)
-                ->Method("GetShaderCount", &LuaApiClass::template GetShaderCount)
-                ->Method("GetShader", &LuaApiClass::template GetShader)
-                ->Method("GetShaderByTag", &LuaApiClass::template GetShaderByTag)
-                ->Method("HasShaderWithTag", &LuaApiClass::template HasShaderWithTag)
+                ->Method("GetShaderCount", &LuaApiClass::GetShaderCount)
+                ->Method("GetShader", &LuaApiClass::GetShader)
+                ->Method("GetShaderByTag", &LuaApiClass::GetShaderByTag)
+                ->Method("HasShaderWithTag", &LuaApiClass::HasShaderWithTag)
                 ;
         }
 
