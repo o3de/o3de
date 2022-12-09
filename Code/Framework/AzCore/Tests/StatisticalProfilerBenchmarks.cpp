@@ -138,7 +138,7 @@ namespace Benchmark
                 m_proxy = new ProxyType;
                 ProfilerType& profiler = m_proxy->GetProfiler(UnitTest::ProfilerProxyGroup);
 
-                for (int i = 0; i < state.threads; ++i)
+                for (int i = 0; i < state.threads(); ++i)
                 {
                     const AZStd::string threadStatName = AZStd::string::format("thread%03d", i);
                     const auto threadStatId = UnitTest::ConvertNameToStatId<StatIdType>(threadStatName);
