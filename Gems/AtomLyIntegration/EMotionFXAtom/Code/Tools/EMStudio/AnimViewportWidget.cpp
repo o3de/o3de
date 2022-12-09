@@ -218,8 +218,8 @@ namespace EMStudio
             break;
         case RenderOptions::CameraViewMode::DEFAULT:
             // The default view mode is looking from the top left of the character.
-            const AZ::Vector3 displacementVector = AZ::Vector3::CreateOne().GetNormalized() * CameraDistance;
-            cameraPosition = targetPosition + AZ::Vector3(-displacementVector.GetX(), displacementVector.GetY(), displacementVector.GetZ());
+            const AZ::Vector3 displacement = AZ::Vector3(-1.0f, 1.0f, 1.0f).GetNormalized() * CameraDistance;
+            cameraPosition = targetPosition + displacement;
             break;
         }
 
