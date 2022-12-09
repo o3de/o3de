@@ -68,7 +68,7 @@ namespace AZ
             void BuildTopLevelAccelerationStructure(const RHI::RayTracingTlas& rayTracingTlas) override;
             void SetFragmentShadingRate(
                 [[maybe_unused]] RHI::ShadingRate rate,
-                [[maybe_unused]] const RHI::ShadingRateCombinators& combinators = s_defaultShadingRateCombinators) override {}
+                [[maybe_unused]] const RHI::ShadingRateCombinators& combinators = DefaultShadingRateCombinators) override {}
 
         private:
             
