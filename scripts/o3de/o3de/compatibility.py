@@ -149,7 +149,7 @@ def gem_engine_compatible(gem_json_data:dict, engine_json_data:dict, gem_paths:l
     if not gem_paths:
         gem_paths = manifest.get_engine_gems()
 
-    return engine_compatible and gem_dependencies_compatible(gem_json_data, gem_paths, check)
+    return engine_compatible and gem_dependencies_compatible(gem_json_data, gem_paths=gem_paths, check=check)
 
 def o3de_object_is_compatible_with_engine(object_json_data:dict, engine_json_data:dict) -> bool:
     """
