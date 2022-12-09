@@ -609,7 +609,7 @@ namespace AzToolsFramework
 
         static bool IsFolderEmpty(AZStd::string_view path)
         {
-            return QDir(path.data()).entryList(QDir::NoDotAndDotDot | QDir::AllEntries).count() == 0;
+            return QDir(path.data()).entryList(QDir::NoDotAndDotDot | QDir::AllEntries).isEmpty();
         }
 
         void AssetBrowserTreeView::RenameEntry()
