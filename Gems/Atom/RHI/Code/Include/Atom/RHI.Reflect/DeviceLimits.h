@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Base.h>
+#include <Atom/RHI.Reflect/Size.h>
 
 namespace AZ
 {
@@ -45,6 +46,10 @@ namespace AZ
 
             /// The maximum size in bytes of a buffer (BufferBindFlags::ShaderRead, BufferBindFlags::ShaderWrite or BufferBindFlags::ShaderReadWrite).
             uint64_t m_maxBufferSize = 0;
+                        
+            //! Size of the tile when specifying shading rate through an image. The size refers to the tile's width and
+            //! height in texels.
+            RHI::Size m_shadingRateTileSize;
 
             /// Additional limits here.
         };

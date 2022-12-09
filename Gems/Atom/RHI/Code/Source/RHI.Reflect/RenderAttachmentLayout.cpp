@@ -44,6 +44,7 @@ namespace AZ
 
         void SubpassRenderAttachmentLayout::Reflect(ReflectContext* context)
         {
+            SubpassInputDescriptor::Reflect(context);
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<SubpassRenderAttachmentLayout>()
@@ -51,7 +52,7 @@ namespace AZ
                     ->Field("RenderTargetCount", &SubpassRenderAttachmentLayout::m_rendertargetCount)
                     ->Field("SubpassInputCount", &SubpassRenderAttachmentLayout::m_subpassInputCount)
                     ->Field("RenderTargetDescriptors", &SubpassRenderAttachmentLayout::m_rendertargetDescriptors)
-                    ->Field("SubpasInputAttachmentIndices", &SubpassRenderAttachmentLayout::m_subpassInputIndices)
+                    ->Field("SubpasInputAttachmentDescriptors", &SubpassRenderAttachmentLayout::m_subpassInputDescriptors)
                     ->Field("DepthStencilDescriptor", &SubpassRenderAttachmentLayout::m_depthStencilDescriptor);
             }
 
@@ -77,7 +78,7 @@ namespace AZ
 
             for (uint32_t i = 0; i < m_subpassInputCount; ++i)
             {
-                if (m_subpassInputIndices[i] != other.m_subpassInputIndices[i])
+                if (m_subpassInputDescriptors[i] != other.m_subpassInputDescriptors[i])
                 {
                     return false;
                 }
@@ -166,7 +167,7 @@ namespace AZ
         Format RenderAttachmentConfiguration::GetSubpassInputFormat(uint32_t index) const
         {
             const auto& subpassAttachmentLayout = m_renderAttachmentLayout.m_subpassLayouts[m_subpassIndex];
-            return m_renderAttachmentLayout.m_attachmentFormats[subpassAttachmentLayout.m_subpassInputIndices[index]];
+            return m_renderAttachmentLayout.m_attachmentFormats[subpassAttachmentLayout.m_subpassInputDescriptors[index].m_attachmentIndex];
         }
 
         Format RenderAttachmentConfiguration::GetRenderTargetResolveFormat(uint32_t index) const
@@ -207,5 +208,26 @@ namespace AZ
             return (m_renderAttachmentLayout == other.m_renderAttachmentLayout) && (m_subpassIndex == other.m_subpassIndex);
         }
 
-    }
+        void SubpassInputDescriptor::Reflect(ReflectContext* context)
+        {
+            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
+            {
+                serializeContext->Class<SubpassInputDescriptor>()
+                    ->Version(0)
+                    ->Field("RenderAttachmentIndex", &SubpassInputDescriptor::m_attachmentIndex)
+                    ->Field("AspectFlags", &SubpassInputDescriptor::m_aspectFlags);
+            }
+        }
+
+        bool SubpassInputDescriptor::operator==(const SubpassInputDescriptor& other) const
+        {
+            return (m_attachmentIndex == other.m_attachmentIndex) && (m_aspectFlags == other.m_aspectFlags);
+        }
+
+        bool SubpassInputDescriptor::operator!=(const SubpassInputDescriptor& other) const
+        {
+            return !(*this == other);
+        }
+
+    } // namespace RHI
 }
