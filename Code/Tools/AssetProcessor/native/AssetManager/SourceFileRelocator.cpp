@@ -890,11 +890,11 @@ Please note that only those seed files will get updated that are active for your
     {
         AZStd::string normalizedSource = source;
         AZStd::string normalizedDestination = destination;
-        bool previewOnly = flags | PreviewOnlyFlag ? true : false;
-        bool allowDependencyBreaking = flags | AllowDependencyBreakingFlag ? true : false;
-        bool removeEmptyFolders = flags | RemoveEmptyFoldersFlag ? true : false;
-        bool updateReferences = flags | UpdateReferencesFlag ? true : false;
-        bool excludeMetaDataFiles = flags | ExcludeMetaDataFilesFlag ? true : false;
+        bool previewOnly = (flags & PreviewOnlyFlag) ? true : false;
+        bool allowDependencyBreaking = (flags & AllowDependencyBreakingFlag) ? true : false;
+        bool removeEmptyFolders = (flags & RemoveEmptyFoldersFlag) ? true : false;
+        bool updateReferences = (flags & UpdateReferencesFlag) ? true : false;
+        bool excludeMetaDataFiles = (flags & ExcludeMetaDataFilesFlag) ? true : false;
 
         // Just make sure we have uniform slashes, don't normalize because we need to keep slashes at the end of the path and wildcards, etc, which tend to get stripped out by normalize functions
         AZStd::replace(normalizedSource.begin(), normalizedSource.end(), AZ_WRONG_DATABASE_SEPARATOR, AZ_CORRECT_DATABASE_SEPARATOR);
@@ -975,10 +975,10 @@ Please note that only those seed files will get updated that are active for your
 
     AZ::Outcome<RelocationSuccess, AZStd::string> SourceFileRelocator::Delete(const AZStd::string& source, int flags)
     {
-        bool previewOnly = flags | PreviewOnlyFlag ? true : false;
-        bool allowDependencyBreaking = flags | AllowDependencyBreakingFlag ? true : false;
-        bool removeEmptyFolders = flags | RemoveEmptyFoldersFlag ? true : false;
-        bool excludeMetaDataFiles = flags | ExcludeMetaDataFilesFlag ? true : false;
+        bool previewOnly = (flags & PreviewOnlyFlag) ? true : false;
+        bool allowDependencyBreaking = (flags & AllowDependencyBreakingFlag) ? true : false;
+        bool removeEmptyFolders = (flags & RemoveEmptyFoldersFlag) ? true : false;
+        bool excludeMetaDataFiles = (flags & ExcludeMetaDataFilesFlag) ? true : false;
         AZStd::string normalizedSource = AssetUtilities::NormalizeFilePath(source.c_str()).toUtf8().constData();
 
         SourceFileRelocationContainer relocationContainer;
