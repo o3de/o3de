@@ -679,6 +679,12 @@ namespace AZ
                     materialTypeAssetCreator.ConnectMaterialPropertyToShaderEnabled(shaderTag);
                     break;
                 }
+                case MaterialPropertyOutputType::InternalProperty:
+                {
+                    Name propertyName{output.m_name};
+                    materialTypeAssetCreator.ConnectMaterialPropertyToInternalProperty(propertyName);
+                    break;
+                }
                 case MaterialPropertyOutputType::Invalid:
                     // Don't add any output mappings, this is the case when material functors are expected to process the property
                     break;
@@ -993,17 +999,7 @@ namespace AZ
                 }
             }
 
-            // Now that all the shaders are in place, we can add the properties which may reference the shaders
-
-            for (const AZStd::unique_ptr<PropertyGroup>& propertyGroup : m_propertyLayout.m_propertyGroups)
-            {
-                bool success = BuildPropertyList(materialTypeSourceFilePath, materialTypeAssetCreator, MaterialNameContext{}, propertyGroup.get());
-
-                if (!success)
-                {
-                    return Failure();
-                }
-            }
+            // Also add internal material pipeline properties before main properties, because the main properties might try and connect to these.
 
             for (auto& [materialPipelineName, materialPipelineData] : m_pipelineData)
             {
@@ -1015,7 +1011,19 @@ namespace AZ
                     }
                 }
             }
-            
+
+            // Now that all the shaders and material pipeline properties are in place, we can add the properties which may reference them
+
+            for (const AZStd::unique_ptr<PropertyGroup>& propertyGroup : m_propertyLayout.m_propertyGroups)
+            {
+                bool success = BuildPropertyList(materialTypeSourceFilePath, materialTypeAssetCreator, MaterialNameContext{}, propertyGroup.get());
+
+                if (!success)
+                {
+                    return Failure();
+                }
+            }
+
             // We cannot create the MaterialFunctor until after all the properties are added because
             // CreateFunctor() may need to look up properties in the MaterialPropertiesLayout
             if(!AddFunctors(materialTypeAssetCreator, MaterialPipelineNone, m_materialFunctorSourceData, materialTypeSourceFilePath))

@@ -69,6 +69,12 @@ namespace AZ
             //! @param shaderTag  The tag name that unique identifies a shader in the material type.
             void ConnectMaterialPropertyToShaderEnabled(const Name& shaderTag);
 
+            //! Adds an output mapping from the current material property to an internal material property for a material pipeline.
+            //! This connecting property must not be an internal property from a material pipeline.
+            //! The target property must have already been added to the MaterialTypeAssetCreator.
+            //! @param propertyName  The name of an internal material property to connect to.
+            void ConnectMaterialPropertyToInternalProperty(const Name& propertyName);
+
             //! Store the enum names if a property is an enum type.
             void SetMaterialPropertyEnumNames(const AZStd::vector<AZStd::string>& enumNames);
 

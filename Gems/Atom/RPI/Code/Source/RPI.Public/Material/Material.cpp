@@ -404,6 +404,19 @@ namespace AZ
             return false;
         }
 
+        bool Material::TryApplyPropertyConnectionToInternalProperty(
+            const MaterialPropertyValue& value,
+            const MaterialPropertyOutputId& connection)
+        {
+            if (connection.m_type == MaterialPropertyOutputType::InternalProperty)
+            {
+                m_materialPipelineData[connection.m_materialPipelineName].m_materialProperties.SetPropertyValue(MaterialPropertyIndex{connection.m_itemIndex.GetIndex()}, value);
+                return true;
+            }
+
+            return false;
+        }
+
         void Material::ProcessDirectConnections()
         {
             AZ_PROFILE_SCOPE(RPI, "Material::ProcessDirectConnections()");
@@ -429,12 +442,15 @@ namespace AZ
                     bool applied =
                         TryApplyPropertyConnectionToShaderInput(value, connection, propertyDescriptor) ||
                         TryApplyPropertyConnectionToShaderOption(value, connection) ||
-                        TryApplyPropertyConnectionToShaderEnable(value, connection);
+                        TryApplyPropertyConnectionToShaderEnable(value, connection) ||
+                        TryApplyPropertyConnectionToInternalProperty(value, connection);
 
                     AZ_Error(s_debugTraceName, applied, "Connections of type %s are not supported by material properties.", ToString(connection.m_type));
                 }
             }
 
+            // TODO(MaterialPipeline): The main functors need to run before processing internal property connections. It will fail if a main functor
+            // sets an internal property and then that internal property uses a direct connection to set something.
 
             // Apply any changes to *internal* material properties...
 

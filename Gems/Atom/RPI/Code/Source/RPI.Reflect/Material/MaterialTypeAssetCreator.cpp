@@ -473,6 +473,50 @@ namespace AZ
             }
         }
 
+        void MaterialTypeAssetCreator::ConnectMaterialPropertyToInternalProperty(const Name& propertyName)
+        {
+            if (!ValidateBeginMaterialProperty())
+            {
+                return;
+            }
+
+            if (!m_wipMaterialPropertyPipeline.IsEmpty())
+            {
+                ReportError("Material property '%s': Internal properties cannot be connected to other internal properties.", m_wipMaterialProperty.GetName().GetCStr());
+                return;
+            }
+
+            bool foundProperty = false;
+            for (const auto& [materialPipelineName, materialPipeline] : m_asset->m_materialPipelines)
+            {
+                MaterialPropertyIndex propertyIndex = materialPipeline.m_materialPropertiesLayout->FindPropertyIndex(propertyName);
+                if (propertyIndex.IsValid())
+                {
+                    if (m_wipMaterialProperty.GetDataType() != materialPipeline.m_materialPropertiesLayout->GetPropertyDescriptor(propertyIndex)->GetDataType())
+                    {
+                        ReportError("Material property '%s': Cannot connect to internal property '%s' because the data types do not match.",
+                            m_wipMaterialProperty.GetName().GetCStr(), propertyName.GetCStr());
+                        continue;
+                    }
+
+                    foundProperty = true;
+
+                    MaterialPropertyOutputId outputId;
+                    outputId.m_materialPipelineName = materialPipelineName;
+                    outputId.m_type = MaterialPropertyOutputType::InternalProperty;
+                    outputId.m_itemIndex = RHI::Handle<uint32_t>{propertyIndex.GetIndex()};
+
+                    m_wipMaterialProperty.m_outputConnections.push_back(outputId);
+                }
+            }
+
+            if (!foundProperty)
+            {
+                ReportError("Material property '%s': Material contains no internal property '%s'.",
+                    m_wipMaterialProperty.GetName().GetCStr(), propertyName.GetCStr());
+            }
+        }
+
         void MaterialTypeAssetCreator::SetMaterialPropertyEnumNames(const AZStd::vector<AZStd::string>& enumNames)
         {
             if (!ValidateBeginMaterialProperty())

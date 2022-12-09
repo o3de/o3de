@@ -11,5 +11,24 @@
             "tag": "forward"
         }
     ],
+    "runtime": {
+        "properties": [
+            {
+                "name": "doubleSided",
+                "type": "Bool",
+                "defaultValue": false
+            }
+        ],
+        "functors": 
+        [
+            {
+                "type": "Lua",
+                "args": {
+                    //TODO(MaterialPipeline): Make the builder touch up this path so it can be relative to the .materialtype file
+                    "file": "Materials/Pipelines/Common/DoubleSided.lua"
+                }
+            }
+        ]
+    },
     "pipelineScript": "./MultiViewPipelineScript.lua"
 }

@@ -169,6 +169,9 @@ namespace AZ
             bool TryApplyPropertyConnectionToShaderEnable(
                 const MaterialPropertyValue & value,
                 const MaterialPropertyOutputId & connection);
+            bool TryApplyPropertyConnectionToInternalProperty(
+                const MaterialPropertyValue & value,
+                const MaterialPropertyOutputId & connection);
 
             void ProcessDirectConnections();
             void ProcessMaterialFunctors();
