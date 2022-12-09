@@ -502,6 +502,7 @@ namespace UnitTest
         SandboxEditor::ResetCameraDefaultEditorPosition();
         SandboxEditor::ResetCameraDefaultOrbitDistance();
         SandboxEditor::ResetCameraDefaultEditorOrientation();
+        SandboxEditor::ResetCameraInstantGoToPosition();
 
         // store defaults
         const auto initialCameraSpeedScale = SandboxEditor::CameraSpeedScale();
@@ -522,6 +523,7 @@ namespace UnitTest
         const auto initialCameraDefaultEditorPosition = SandboxEditor::CameraDefaultEditorPosition();
         const auto initialCameraDefaultOrbitDistance = SandboxEditor::CameraDefaultOrbitDistance();
         const auto initialCameraDefaultEditorOrientation = SandboxEditor::CameraDefaultEditorOrientation();
+        const auto initialCameraInstantGoToPosition = SandboxEditor::CameraInstantGoToPosition();
 
         // modify all values to be different to default value
         SandboxEditor::SetCameraSpeedScale(SandboxEditor::CameraSpeedScale() + 10.0f);
@@ -542,6 +544,7 @@ namespace UnitTest
         SandboxEditor::SetCameraDefaultEditorPosition(SandboxEditor::CameraDefaultEditorPosition() + AZ::Vector3(10.0f));
         SandboxEditor::SetCameraDefaultOrbitDistance(SandboxEditor::CameraDefaultOrbitDistance() + 10.0f);
         SandboxEditor::SetCameraDefaultEditorOrientation(SandboxEditor::CameraDefaultEditorOrientation() + AZ::Vector2(10.0f));
+        SandboxEditor::SetCameraInstantGoToPosition(!SandboxEditor::CameraInstantGoToPosition());
 
         // ensure all values have changed vs defaults
         EXPECT_THAT(SandboxEditor::CameraSpeedScale(), Not(FloatNear(initialCameraSpeedScale, AZ::Constants::FloatEpsilon)));
@@ -564,6 +567,7 @@ namespace UnitTest
         EXPECT_THAT(
             SandboxEditor::CameraDefaultOrbitDistance(), Not(FloatNear(initialCameraDefaultOrbitDistance, AZ::Constants::FloatEpsilon)));
         EXPECT_THAT(SandboxEditor::CameraDefaultEditorOrientation(), Not(IsClose(initialCameraDefaultEditorOrientation)));
+        EXPECT_THAT(SandboxEditor::CameraInstantGoToPosition(), Not(Eq(initialCameraInstantGoToPosition)));
 
         // reset all relevant settings to defaults again
         SandboxEditor::ResetCameraSpeedScale();
@@ -584,6 +588,7 @@ namespace UnitTest
         SandboxEditor::ResetCameraDefaultEditorPosition();
         SandboxEditor::ResetCameraDefaultOrbitDistance();
         SandboxEditor::ResetCameraDefaultEditorOrientation();
+        SandboxEditor::ResetCameraInstantGoToPosition();
 
         // ensure values have been reset to defaults
         EXPECT_THAT(SandboxEditor::CameraSpeedScale(), FloatNear(initialCameraSpeedScale, AZ::Constants::FloatEpsilon));
@@ -604,6 +609,7 @@ namespace UnitTest
         EXPECT_THAT(SandboxEditor::CameraDefaultEditorPosition(), IsClose(initialCameraDefaultEditorPosition));
         EXPECT_THAT(SandboxEditor::CameraDefaultOrbitDistance(), FloatNear(initialCameraDefaultOrbitDistance, AZ::Constants::FloatEpsilon));
         EXPECT_THAT(SandboxEditor::CameraDefaultEditorOrientation(), IsClose(initialCameraDefaultEditorOrientation));
+        EXPECT_THAT(SandboxEditor::CameraInstantGoToPosition(), Eq(initialCameraInstantGoToPosition));
     }
 
     TEST_F(EditorCameraFixture, CameraSettingsRegistryInputValuesCanBeReset)
