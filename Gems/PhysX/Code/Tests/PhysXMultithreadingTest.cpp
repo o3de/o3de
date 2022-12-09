@@ -569,7 +569,7 @@ namespace PhysX
 
     // Double-buffering is removed in PhysX 5.
     // It is not allowed to add, remove or modify scene objects while the simulation is running.
-    // If this functionality is desired, the application layer needs to implement the bufferring of the changes and apply them after the fetchResults() call.
+    // If this functionality is desired, the application layer needs to implement the buffering of the changes and apply them after the fetchResults() call.
     // Disabling this test until it is implemented in the PhysX gem.
     TEST_P(PhysXMultithreadingTest, DISABLED_SetGetLocalShapeFromParallelThreads)
     {
@@ -640,7 +640,11 @@ namespace PhysX
         }
     };
 
-    TEST_P(PhysXMultithreadingTest, RigidBodyRayCaster)
+    // Double-buffering is removed in PhysX 5.
+    // It is not allowed to add, remove or modify scene objects while the simulation is running.
+    // If this functionality is desired, the application layer needs to implement the buffering of the changes and apply them after the
+    // fetchResults() call. Disabling this test until it is implemented in the PhysX gem.
+    TEST_P(PhysXMultithreadingTest, DISABLED_RigidBodyRayCaster)
     {
         const int seed = GetParam();
 
