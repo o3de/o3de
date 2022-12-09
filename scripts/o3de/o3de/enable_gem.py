@@ -218,9 +218,9 @@ def add_parser_args(parser):
                         help='The cmake enabled_gem file in which the gem names are specified.'
                         'If not specified it will assume enabled_gems.cmake')
     group = parser.add_mutually_exclusive_group(required=False)
-    group.add_argument('-f', '--force', type=bool, required=False,
+    group.add_argument('-f', '--force', required=False, action='store_true', default=False,
                        help='Bypass version compatibility checks')
-    group.add_argument('-c', '--check', type=bool, required=False,
+    group.add_argument('-c', '--check', required=False, action='store_true', default=False,
                        help='Checks if this gem can be enabled for the specified project, but does not actually enable.')
     parser.add_argument('-o', '--optional', action='store_true', required=False, default=False,
                         help='Marks the gem as optional so a project can still be configured if not found.')
