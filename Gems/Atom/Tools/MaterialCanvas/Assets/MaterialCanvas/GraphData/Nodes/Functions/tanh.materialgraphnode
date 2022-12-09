@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Tanh",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the hyperbolic tangent of the input value",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

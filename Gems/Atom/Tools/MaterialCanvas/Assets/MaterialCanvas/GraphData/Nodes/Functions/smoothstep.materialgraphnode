@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Smoothstep",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns a smooth Hermite interpolation between 0 and 1",
         "slotDataTypeGroups": [
             "inValue1|inValue2|inValue3|outValue"
         ],

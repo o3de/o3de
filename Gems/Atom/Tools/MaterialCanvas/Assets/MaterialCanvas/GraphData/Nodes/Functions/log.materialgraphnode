@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Log",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the base-e logarithm of the input value",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

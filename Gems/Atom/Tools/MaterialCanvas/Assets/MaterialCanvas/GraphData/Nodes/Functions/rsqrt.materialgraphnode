@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Rsqrt",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns 1 / sqrt(x)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Refract",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the refraction vector",
         "slotDataTypeGroups": [
             "inValue1|inValue2|inValue3|outValue"
         ],

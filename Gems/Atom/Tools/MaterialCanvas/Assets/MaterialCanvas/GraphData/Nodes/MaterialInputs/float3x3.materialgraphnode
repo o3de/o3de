@@ -15,7 +15,7 @@
             {
                 "name": "inGroup",
                 "displayName": "Group",
-                "description": "Group",
+                "description": "Group name a dded to the material type and contain the property corresponding to this input.",
                 "supportedDataTypeRegex": "string",
                 "defaultDataType": "string",
                 "defaultValue": {
@@ -28,7 +28,7 @@
             {
                 "name": "inName",
                 "displayName": "Name",
-                "description": "Name",
+                "description": "Property name that will be added to the material type for this input. The shader variable name and display name will be derived from this.",
                 "supportedDataTypeRegex": "string",
                 "defaultDataType": "string",
                 "defaultValue": {
@@ -39,7 +39,7 @@
             {
                 "name": "inDescription",
                 "displayName": "Description",
-                "description": "Description",
+                "description": "Description about what this material input does and how it should be used.",
                 "supportedDataTypeRegex": "string",
                 "defaultDataType": "string",
                 "defaultValue": {
@@ -114,7 +114,7 @@
             {
                 "name": "outValue",
                 "displayName": "Value",
-                "description": "Value",
+                "description": "Default value for the material property.",
                 "supportedDataTypeRegex": "float3x3",
                 "defaultDataType": "float3x3",
                 "settings": {

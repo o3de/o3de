@@ -11,7 +11,7 @@
             "inValue|outValue",
             "outR|outG|outB|outA"
         ],
-        "inputSlots": [
+        "propertySlots": [
             {
                 "name": "inValue",
                 "displayName": "Value",

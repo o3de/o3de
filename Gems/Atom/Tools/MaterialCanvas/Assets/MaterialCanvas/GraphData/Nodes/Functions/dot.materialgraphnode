@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Dot",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the dot product of two vectors",
         "slotDataTypeGroups": [
             "inValue1|inValue2|outValue"
         ],

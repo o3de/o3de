@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Lit",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns a lighting vector (ambient, diffuse, specular, 1)",
         "slotDataTypeGroups": [
             "inValue1|inValue2|inValue3",
             "outValue"

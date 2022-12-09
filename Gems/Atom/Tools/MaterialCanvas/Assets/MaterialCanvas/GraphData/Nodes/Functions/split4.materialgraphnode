@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Split4",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Extract all input values from a float4",
         "slotDataTypeGroups": [
             "inValue",
             "outX|outY|outZ|outW"

@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Max",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Selects the greater of x and y",
         "slotDataTypeGroups": [
             "inValue1|inValue2|outValue"
         ],

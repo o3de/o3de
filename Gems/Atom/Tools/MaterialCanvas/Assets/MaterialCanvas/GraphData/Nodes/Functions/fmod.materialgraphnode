@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Fmod",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the floating point remainder of x/y",
         "slotDataTypeGroups": [
             "inValue1|inValue2|outValue"
         ],

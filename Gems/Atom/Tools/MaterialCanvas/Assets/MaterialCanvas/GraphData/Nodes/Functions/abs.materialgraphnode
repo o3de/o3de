@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Abs",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Absolute value (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

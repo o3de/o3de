@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Lerp",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns x + s(y - x)",
         "slotDataTypeGroups": [
             "inValue1|inValue2|inValue3|outValue"
         ],

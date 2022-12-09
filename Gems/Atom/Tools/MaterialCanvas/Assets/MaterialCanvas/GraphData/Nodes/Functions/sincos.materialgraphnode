@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Sincos",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the sine and cosine of the input value",
         "slotDataTypeGroups": [
             "inValue|outSin|outCos"
         ],

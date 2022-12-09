@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Trunc",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Truncates floating-point value to integer value",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

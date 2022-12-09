@@ -10,7 +10,7 @@
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],
-        "inputSlots": [
+        "propertySlots": [
             {
                 "name": "inValue",
                 "displayName": "Value",

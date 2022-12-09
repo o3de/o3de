@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Exp2",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Base 2 exponent (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

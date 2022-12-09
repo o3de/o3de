@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Combine2",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Combine all input values into a float2",
         "slotDataTypeGroups": [
             "inX|inY",
             "outValue"

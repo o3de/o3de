@@ -11,7 +11,7 @@
             "inRow1|inRow2|inRow3",
             "outValue"
         ],
-        "inputSlots": [
+        "propertySlots": [
             {
                 "name": "inRow1",
                 "displayName": "Row1",

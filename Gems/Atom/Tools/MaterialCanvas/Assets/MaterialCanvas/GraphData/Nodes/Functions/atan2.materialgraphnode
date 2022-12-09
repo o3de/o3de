@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Atan2",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the arctangent of of two values (x,y)",
         "slotDataTypeGroups": [
             "inY|inX|outValue"
         ],

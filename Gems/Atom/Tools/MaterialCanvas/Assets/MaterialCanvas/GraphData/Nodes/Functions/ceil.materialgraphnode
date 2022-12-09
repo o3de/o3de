@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Ceil",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the smallest integer which is greater than or equal to the input value",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],
