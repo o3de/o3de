@@ -36,6 +36,15 @@ namespace SandboxEditor
         }
     }
 
+    void SetDefaultViewportCameraTransform(const AZ::Vector3& position, const float pitch, const float yaw)
+    {
+        auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        if (auto viewportContext = viewportContextManager->GetDefaultViewportContext())
+        {
+            viewportContext->SetCameraTransform(AZ::Transform::CreateFromQuaternionAndTranslation(CameraRotation(pitch, yaw), position));
+        }
+    }
+
     void InterpolateDefaultViewportCameraToTransform(const AZ::Vector3& position, const float pitch, const float yaw)
     {
         auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();

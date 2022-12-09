@@ -21,12 +21,19 @@ namespace AZ
 namespace SandboxEditor
 {
     //! Sets the default viewport camera translation/position.
+    //! @param position The new position of the camera.
     SANDBOX_API void SetDefaultViewportCameraPosition(const AZ::Vector3& position);
 
     //! Sets the default viewport camera orientation/rotation.
     //! @param pitch Amount of pitch in radians.
     //! @param yaw Amount of yaw in radians.
     SANDBOX_API void SetDefaultViewportCameraRotation(float pitch, float yaw);
+
+    //! Sets the default viewport camera translation/position and orientation/rotation.
+    //! @param position The new position of the camera.
+    //! @param pitch Amount of pitch in radians.
+    //! @param yaw Amount of yaw in radians.
+    SANDBOX_API void SetDefaultViewportCameraTransform(const AZ::Vector3& position, float pitch, float yaw);
 
     //! Sets the camera to interpolate to the given position and orientation.
     //! @param position The new position of the camera.

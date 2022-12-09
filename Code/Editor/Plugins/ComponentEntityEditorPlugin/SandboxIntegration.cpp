@@ -1718,9 +1718,16 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
             const AZ::Transform nextCameraTransform =
                 AZ::Transform::CreateLookAt(aabb.GetCenter() - (forward * distanceToLookAt), aabb.GetCenter());
 
-            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-                viewportContext->GetId(),
-                &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform, nextCameraTransform);
+            if (SandboxEditor::CameraInstantGoToPosition())
+            {
+                viewportContext->SetCameraTransform(nextCameraTransform);
+            }
+            else
+            {
+                AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                    viewportContext->GetId(),
+                    &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform, nextCameraTransform);
+            }
         }
     }
 }
