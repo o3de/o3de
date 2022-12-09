@@ -15,7 +15,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
 #include <Atom/RPI.Reflect/Material/MaterialDynamicMetadata.h>
-#include <Atom/RPI.Reflect/Material/MaterialPipelineData.h>
+#include <Atom/RPI.Reflect/Material/MaterialPipelineState.h>
 
 namespace AZ
 {

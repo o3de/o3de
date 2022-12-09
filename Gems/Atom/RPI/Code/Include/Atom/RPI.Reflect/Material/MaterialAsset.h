@@ -62,6 +62,7 @@ namespace AZ
             //! Returns the MaterialTypeAsset.
             const Data::Asset<MaterialTypeAsset>& GetMaterialTypeAsset() const;
 
+            //! Return the general purpose shader collection that applies to any render pipeline.
             const ShaderCollection& GetGeneralShaderCollection() const;
 
             //! The material may contain any number of MaterialFunctors.
@@ -69,6 +70,7 @@ namespace AZ
             //! See MaterialFunctor.h for details.
             const MaterialFunctorList& GetMaterialFunctors() const;
 
+            //! Return the collection of material pipeline data for all supported render pipelines.
             const MaterialTypeAsset::MaterialPipelineMap& GetMaterialPipelines() const;
 
             //! Returns the shader resource group layout that has per-material frequency, which indicates most of the topology

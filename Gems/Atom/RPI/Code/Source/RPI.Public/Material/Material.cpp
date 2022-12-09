@@ -90,7 +90,7 @@ namespace AZ
 
             for (auto& [materialPipelineName, materialPipeline] : materialAsset.GetMaterialPipelines())
             {
-                MaterialPipelineData& pipelineData = m_materialPipelineData[materialPipelineName];
+                MaterialPipelineState& pipelineData = m_materialPipelineData[materialPipelineName];
                 pipelineData.m_shaderCollection = materialPipeline.m_shaderCollection;
                 pipelineData.m_materialProperties.Init(materialPipeline.m_materialPropertiesLayout, materialPipeline.m_defaultPropertyValues);
                 pipelineData.m_materialProperties.SetAllPropertyDirtyFlags();
@@ -531,7 +531,7 @@ namespace AZ
             // Then run the "pipeline" functors, which use the MaterialFunctorAPI::PipelineRuntimeContext
             for (auto& [materialPipelineName, materialPipeline] : m_materialAsset->GetMaterialPipelines())
             {
-                MaterialPipelineData& materialPipelineData = m_materialPipelineData[materialPipelineName];
+                MaterialPipelineState& materialPipelineData = m_materialPipelineData[materialPipelineName];
 
                 for (const Ptr<MaterialFunctor>& functor : materialPipeline.m_materialFunctors)
                 {

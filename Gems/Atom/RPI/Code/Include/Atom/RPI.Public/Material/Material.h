@@ -11,7 +11,7 @@
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyCollection.h>
-#include <Atom/RPI.Reflect/Material/MaterialPipelineData.h>
+#include <Atom/RPI.Reflect/Material/MaterialPipelineState.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
 #include <AtomCore/Instance/InstanceData.h>
@@ -99,20 +99,24 @@ namespace AZ
             //! This gets incremented every time a change is made, like by calling SetPropertyValue().
             ChangeId GetCurrentChangeId() const;
 
+            //! Return the general purpose shader collection that applies to any render pipeline.
             const ShaderCollection& GetGeneralShaderCollection() const;
 
-            //! Returns the collection of shaders that this material could run for a given pipeline.
-            //! @param forPipeline the name of the material pipeline to query for shaders. For MaterialPipelineNameCommon, 
-            //!        this returns a list of shaders that should be sent to all pipelines.
+            //! Returns the shader collection for a specific material pipeline.
+            //! @param forPipeline the name of the material pipeline to query for shaders.
             const ShaderCollection& GetShaderCollection(const Name& forPipeline) const;
-            
+
+            //! Iterates through all shader items in the material, for all render pipelines, including the general shader collection.
+            //! @param callback function is called for each shader item
+            //! @param materialPipelineName the name of the current material pipeline, or empty (MaterialPipelineNone) for items in the general shader collection.
             void ForAllShaderItems(AZStd::function<bool(const Name& materialPipelineName, const ShaderCollection::Item& shaderItem)> callback) const;
 
+            //! Returns whether this material owns a particular shader option. In that case, SetSystemShaderOption may not be used.
             bool MaterialOwnsShaderOption(const Name& shaderOptionName) const;
 
             //! Attempts to set the value of a system-level shader option that is controlled by this material.
             //! This applies to all shaders in the material's ShaderCollection.
-            //! Note, this may only be used to set shader options that are not "owned" by the material.
+            //! Note, this may only be used to set shader options that are not "owned" by the material, see MaterialOwnsShaderOption().
             //! @param shaderOptionName the name of the shader option(s) to set
             //! @param value the new value for the shader option(s)
             //! @param return the number of shader options that were updated, or Failure if the material owns the indicated shader option.

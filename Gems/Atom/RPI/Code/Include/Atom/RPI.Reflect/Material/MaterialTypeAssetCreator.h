@@ -55,7 +55,10 @@ namespace AZ
             void ClaimShaderOptionOwnership(const Name& shaderOptionName);
 
             //! Starts creating a material property.
+            //! Note that EndMaterialProperty() must be called before calling SetMaterialPropertyValue(). Similarly,
             //! The property will not appear in GetMaterialPropertiesLayout() until EndMaterialProperty() is called.
+            //! @param materialPipelineName For internal material properties, this indicates which material pipeline the property is for.
+            //!                             For main material properties, use MaterialPipelineNone.
             void BeginMaterialProperty(const Name& materialPropertyName, MaterialPropertyDataType dataType, const AZ::Name& materialPipelineName = MaterialPipelineNone);
 
             //! Adds an output mapping from the current material property to a ShaderResourceGroup input.
@@ -80,13 +83,17 @@ namespace AZ
 
             //! Finishes creating a material property.
             void EndMaterialProperty();
-            
+
+            //! @param materialPipelineName For internal material properties, this indicates which material pipeline's property to update.
+            //!                             For main material properties, use MaterialPipelineNone.
             void SetPropertyValue(const Name& name, const Data::Asset<ImageAsset>& imageAsset, const AZ::Name& materialPipelineName = MaterialPipelineNone);
             void SetPropertyValue(const Name& name, const Data::Asset<StreamingImageAsset>& imageAsset, const AZ::Name& materialPipelineName = MaterialPipelineNone);
             void SetPropertyValue(const Name& name, const Data::Asset<AttachmentImageAsset>& imageAsset, const AZ::Name& materialPipelineName = MaterialPipelineNone);
 
             //! Sets a property value using data in AZStd::variant-based MaterialPropertyValue. The contained data must match
             //! the data type of the property. For type Image, the value must be a Data::Asset<ImageAsset>.
+            //! @param materialPipelineName For internal material properties, this indicates which material pipeline's property to update.
+            //!                             For main material properties, use MaterialPipelineNone.
             void SetPropertyValue(const Name& name, const MaterialPropertyValue& value, const AZ::Name& materialPipelineName = MaterialPipelineNone);
 
             //! Adds a MaterialFunctor.
@@ -100,6 +107,8 @@ namespace AZ
 
             //! This provides access to the MaterialPropertiesLayout while the MaterialTypeAsset is still being built.
             //! This is needed by MaterialTypeSourceData to initialize functor objects.
+            //! @param materialPipelineName For internal material properties, this indicates which material pipeline's property layout to query.
+            //!                             For main material properties, use MaterialPipelineNone.
             //! @return A valid pointer when called between Begin() and End(). Otherwise, returns nullptr.
             const MaterialPropertiesLayout* GetMaterialPropertiesLayout(const AZ::Name& materialPipelineName = MaterialPipelineNone) const;
 

@@ -120,7 +120,7 @@ namespace AZ
                 ShaderCollection* shaderCollection = nullptr;
                 if (materialPipelineName.IsEmpty())
                 {
-                    shaderCollection = &m_asset->m_shaderCollection;
+                    shaderCollection = &m_asset->m_generalShaderCollection;
                 }
                 else
                 {
@@ -405,7 +405,7 @@ namespace AZ
 
             bool foundShaderOptions = false;
             m_asset->ForAllShaderItems(
-                [&](const Name& materialPipelineName, ShaderCollection::Item& shaderItem, uint32_t shaderItemIndex)
+                [&](const Name& materialPipelineName, ShaderCollection::Item& shaderItem, uint32_t shaderIndex)
                 {
                     auto optionsLayout = shaderItem.GetShaderAsset()->GetShaderOptionGroupLayout();
                     ShaderOptionIndex optionIndex = optionsLayout->FindShaderOptionIndex(shaderOptionName);
@@ -416,7 +416,7 @@ namespace AZ
                         MaterialPropertyOutputId outputId;
                         outputId.m_type = MaterialPropertyOutputType::ShaderOption;
                         outputId.m_materialPipelineName = materialPipelineName;
-                        outputId.m_containerIndex = RHI::Handle<uint32_t>{shaderItemIndex};
+                        outputId.m_containerIndex = RHI::Handle<uint32_t>{shaderIndex};
                         outputId.m_itemIndex = RHI::Handle<uint32_t>{optionIndex.GetIndex()};
 
                         m_wipMaterialProperty.m_outputConnections.push_back(outputId);
@@ -449,7 +449,7 @@ namespace AZ
 
             bool foundShader = false;
             m_asset->ForAllShaderItems(
-                [&](const Name& materialPipelineName, ShaderCollection::Item& shaderItem, uint32_t shaderItemIndex)
+                [&](const Name& materialPipelineName, ShaderCollection::Item& shaderItem, uint32_t shaderIndex)
                 {
                     if (shaderItem.GetShaderTag() == shaderTag)
                     {
@@ -458,7 +458,7 @@ namespace AZ
                         MaterialPropertyOutputId outputId;
                         outputId.m_materialPipelineName = materialPipelineName;
                         outputId.m_type = MaterialPropertyOutputType::ShaderEnabled;
-                        outputId.m_containerIndex = RHI::Handle<uint32_t>{shaderItemIndex};
+                        outputId.m_containerIndex = RHI::Handle<uint32_t>{shaderIndex};
 
                         m_wipMaterialProperty.m_outputConnections.push_back(outputId);
                     }

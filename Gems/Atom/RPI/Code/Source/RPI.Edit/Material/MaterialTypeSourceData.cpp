@@ -83,11 +83,11 @@ namespace AZ
                     ->Field("propertyGroups", &PropertyLayout::m_propertyGroups)
                     ;
 
-                serializeContext->Class<MaterialPipelineData>()
+                serializeContext->Class<MaterialPipelineState>()
                     ->Version(1)
-                    ->Field("properties", &MaterialPipelineData::m_pipelinePropertyLayout)
-                    ->Field("shaders", &MaterialPipelineData::m_shaderCollection)
-                    ->Field("functors", &MaterialPipelineData::m_materialFunctorSourceData)
+                    ->Field("properties", &MaterialPipelineState::m_pipelinePropertyLayout)
+                    ->Field("shaders", &MaterialPipelineState::m_shaderCollection)
+                    ->Field("functors", &MaterialPipelineState::m_materialFunctorSourceData)
                     ;
 
                 serializeContext->RegisterGenericType<VersionUpdates>();

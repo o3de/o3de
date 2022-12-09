@@ -56,7 +56,7 @@ namespace AZ
                     ->Version(9) // Material pipeline functor support
                     ->Field("Version", &MaterialTypeAsset::m_version)
                     ->Field("VersionUpdates", &MaterialTypeAsset::m_materialVersionUpdates)
-                    ->Field("ShaderCollection", &MaterialTypeAsset::m_shaderCollection)
+                    ->Field("GeneralShaderCollection", &MaterialTypeAsset::m_generalShaderCollection)
                     ->Field("MaterialFunctors", &MaterialTypeAsset::m_materialFunctors)
                     ->Field("ShaderWithMaterialSrg", &MaterialTypeAsset::m_shaderWithMaterialSrg)
                     ->Field("ShaderWithObjectSrg", &MaterialTypeAsset::m_shaderWithObjectSrg)
@@ -78,7 +78,7 @@ namespace AZ
 
         const ShaderCollection& MaterialTypeAsset::GetGeneralShaderCollection() const
         {
-            return m_shaderCollection;
+            return m_generalShaderCollection;
         }
 
         const MaterialFunctorList& MaterialTypeAsset::GetMaterialFunctors() const
@@ -91,11 +91,11 @@ namespace AZ
             return m_materialPipelines;
         }
 
-        void MaterialTypeAsset::ForAllShaderItems(AZStd::function<bool(const Name& materialPipelineName, ShaderCollection::Item& shaderItem, uint32_t shaderItemIndex)> callback)
+        void MaterialTypeAsset::ForAllShaderItems(AZStd::function<bool(const Name& materialPipelineName, ShaderCollection::Item& shaderItem, uint32_t shaderIndex)> callback)
         {
-            for (int shaderIndex = 0; shaderIndex < m_shaderCollection.size(); ++shaderIndex)
+            for (int shaderIndex = 0; shaderIndex < m_generalShaderCollection.size(); ++shaderIndex)
             {
-                ShaderCollection::Item& shaderItem = m_shaderCollection[shaderIndex];
+                ShaderCollection::Item& shaderItem = m_generalShaderCollection[shaderIndex];
                 callback(MaterialPipelineNone, shaderItem, shaderIndex);
             }
 
@@ -210,7 +210,7 @@ namespace AZ
 
         bool MaterialTypeAsset::PostLoadInit()
         {
-            for (const auto& shaderItem : m_shaderCollection)
+            for (const auto& shaderItem : m_generalShaderCollection)
             {
                 Data::AssetBus::MultiHandler::BusConnect(shaderItem.GetShaderAsset().GetId());
             }
@@ -243,7 +243,7 @@ namespace AZ
             // dependency assets, this will make sure the MaterialTypeAsset gets the latest ones when they reload.
             // Or in some cases a these assets could get updated and reloaded without reloading the MaterialTypeAsset at all.
 
-            for (auto& shaderItem : m_shaderCollection)
+            for (auto& shaderItem : m_generalShaderCollection)
             {
                 TryReplaceAsset(shaderItem.m_shaderAsset, asset);
             }

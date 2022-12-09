@@ -26,6 +26,17 @@ AlphaSource_Packed = 0
 AlphaSource_Split = 1
 AlphaSource_None = 2
 
+function Process(context)
+
+    local opacityMode = OpacityMode_Opaque
+    if context:HasMaterialProperty("mode") then
+        opacityMode = context:GetMaterialPropertyValue_enum("mode")
+    end
+
+    context:SetInternalMaterialPropertyValue_bool("isTransparent", opacityMode == OpacityMode_Blended)
+    context:SetInternalMaterialPropertyValue_bool("isTintedTransparent", opacityMode == OpacityMode_TintedTransparent)
+end
+
 function ProcessEditor(context)
     local opacityMode = context:GetMaterialPropertyValue_enum("mode")
     

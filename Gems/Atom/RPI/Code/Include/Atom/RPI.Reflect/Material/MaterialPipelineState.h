@@ -14,13 +14,14 @@ namespace AZ
 {
     namespace RPI
     {
-        struct MaterialPipelineData
+        //! Tracks the runtime state for a material pipeline within a particular material
+        struct MaterialPipelineState
         {
             ShaderCollection m_shaderCollection;
             MaterialPropertyCollection m_materialProperties;
         };
 
-        using MaterialPipelineDataMap = AZStd::unordered_map<Name, MaterialPipelineData>;
+        using MaterialPipelineDataMap = AZStd::unordered_map<Name, MaterialPipelineState>;
 
     } // namespace RPI
 } // namespace AZ

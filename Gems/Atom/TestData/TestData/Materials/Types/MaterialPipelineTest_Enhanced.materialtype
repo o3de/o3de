@@ -105,13 +105,6 @@
     "lightingModel": "Enhanced",
     "materialShaderCode": "./MaterialPipelineTest_Enhanced.azsli",
     "functors": [
-        {
-            "type": "Lua",
-            "args": {
-                //TODO(MaterialPipeline): Make the builder touch up this path so it can be relative to the .materialtype file
-                "file": "TestData/Materials/Types/CommonMaterialPipelineSetup.lua"
-            }
-        }
     ],
     "uvNameMap": {
         "UV0": "Tiled",

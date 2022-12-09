@@ -1,5 +1,5 @@
 {
-    // TODO(MaterialPipeline): This file is here temporarily because it needs to connect the doubleSided flag differently.
+    // TODO(MaterialPipeline): This file is here temporarily because it needs to connect the doubleSided and castShadows flags differently.
     // Once we migrate the core material types to the material pipeline system, we can merge this with the original file.
     "name": "general",
     "displayName": "General Settings",
@@ -44,7 +44,11 @@
             "displayName": "Cast Shadows",
             "description": "Whether to cast shadows onto other objects.",
             "type": "Bool",
-            "defaultValue": true
+            "defaultValue": true,
+            "connection": {
+                "type": "InternalProperty",
+                "name": "castShadows"
+            }
         },
         {
             "name": "enableDirectionalLights",
