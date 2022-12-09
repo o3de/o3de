@@ -413,8 +413,8 @@ def register_gem_path(json_data: dict,
 
         if project_path and not compatibility.gem_project_compatible(gem_json_data, project_path):
             return 1
-        else:
-            engine_json_data = manifest.get_engine_json_data(engine_path=engine_path if engine_path else manifest.get_this_engine_path())
+        elif engine_path:
+            engine_json_data = manifest.get_engine_json_data(engine_path=engine_path)
             if not engine_json_data:
                 logger.error('Failed to load engine.json data needed for registration')
                 return 1
