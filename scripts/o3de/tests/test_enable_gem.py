@@ -130,11 +130,13 @@ class TestEnableGemCommand:
     def test_enable_gem_registers_gem_name_with_project_json(self, gem_path, project_path, gem_registered_with_project,
                                                              gem_registered_with_engine, expected_result):
 
-        def get_registered_path(project_name: str = None, gem_name: str = None) -> pathlib.Path:
+        def get_registered_path(project_name: str = None, gem_name: str = None, engine_name: str = None) -> pathlib.Path:
             if project_name:
                 return project_path
             elif gem_name:
                 return gem_path
+            elif engine_name:
+                return pathlib.PurePath('o3de')
             return None
 
         def save_o3de_manifest(new_project_data: dict, manifest_path: pathlib.Path = None) -> bool:
@@ -153,6 +155,9 @@ class TestEnableGemCommand:
         def get_gem_json_data(gem_path: pathlib.Path, project_path: pathlib.Path):
             return self.enable_gem.gem_data
 
+        def get_engine_json_data(engine_name:str = None, engine_path:pathlib.Path = None):
+            return self.enable_gem.engine_data
+
         def get_project_gems(project_path: pathlib.Path):
             return [pathlib.Path(gem_path).resolve()] if gem_registered_with_project else []
 
@@ -170,6 +175,7 @@ class TestEnableGemCommand:
                 patch('o3de.manifest.get_gem_json_data', side_effect=get_gem_json_data) as get_gem_json_data_patch,\
                 patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as get_gem_json_data_patch,\
                 patch('o3de.manifest.get_project_gems', side_effect=get_project_gems) as get_project_gems_patch,\
+                patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as get_engine_json_data_patch,\
                 patch('o3de.manifest.get_engine_gems', side_effect=get_engine_gems) as get_engine_gems_patch,\
                 patch('o3de.cmake.add_gem_dependency', side_effect=add_gem_dependency) as add_gem_dependency_patch,\
                 patch('o3de.validation.valid_o3de_gem_json', return_value=True) as valid_gem_json_patch:

@@ -186,7 +186,7 @@ class TestRegisterGem:
     project_path = pathlib.PurePath('TestProject')
 
     @staticmethod
-    def get_gem_json_data(gem_path: pathlib.Path = None):
+    def get_gem_json_data(gem_path: pathlib.Path = None, project_path: pathlib.Path = None):
         return json.loads(TEST_GEM_JSON_PAYLOAD)
 
     @pytest.mark.parametrize("gem_path, expected_manifest_file, expected_result", [
@@ -212,7 +212,7 @@ class TestRegisterGem:
                 return self.engine_data
             return self.o3de_manifest_data
 
-        def get_engine_json_data(engine_path: pathlib.Path = None):
+        def get_engine_json_data(engine_name:str = None, engine_path: pathlib.Path = None):
             return json.loads(TEST_ENGINE_JSON_PAYLOAD)
 
         def get_project_json_data(project_path: pathlib.Path = None):

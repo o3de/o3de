@@ -10,11 +10,134 @@ This file contains version utilities
 """
 from packaging.version import Version, InvalidVersion
 from packaging.specifiers import SpecifierSet
-import re
 import pathlib
-from o3de import manifest, utils
+import logging
+from o3de import manifest, utils, cmake
 
-def engine_is_compatible(engine_name:str, engine_version:str, compatible_engines:list, engine_api_version_specifiers:list) -> bool:
+logger = logging.getLogger('o3de.compatibility')
+logging.basicConfig(format=utils.LOG_FORMAT)
+
+def project_engine_compatible(project_path:pathlib.Path, project_json_data:dict, engine_json_data:dict) -> bool:
+    if not o3de_object_is_compatible_with_engine(project_json_data, engine_json_data):
+        logger.error(f'{project_json_data["project_name"]} is not known to be compatible with the '
+                        f'engine {engine_json_data["engine_name"]}{engine_json_data.get("version","")} and requires the --force parameter '
+                        'to register.')
+        return False
+
+    # verify project -> gem -> engine compatibility
+    enabled_gems_file = cmake.get_enabled_gem_cmake_file(project_path=project_path)
+    gem_names = cmake.get_enabled_gems(enabled_gems_file)
+
+    # it's much more efficient to get all gem data once than to query them by name one by one
+    gem_paths = manifest.get_all_gems(project_path)
+    gems_json_data = {}
+    for gem_path in gem_paths:
+        gem_path = pathlib.Path(gem_path).resolve()
+        gem_json_data = manifest.get_gem_json_data(gem_path=gem_path)
+        # only store the json data if it's a gem we're looking for and has compatibility data
+        if gem_json_data['gem_name'] in gem_names and\
+            (gem_json_data.get('compatible_engines') or gem_json_data.get('engine_api_dependencies')):
+            gems_json_data[gem_json_data['gem_name']] = gem_json_data
+
+    incompatible_gem_found = False
+    for gem_name in gem_names:
+        if gem_name not in gems_json_data:
+            continue
+        if not gem_engine_compatible(gems_json_data[gem_name], engine_json_data, gem_paths):
+            incompatible_gem_found = True
+            logger.error(f'{gem_name} is not known to be compatible with the '
+                            f'engine {engine_json_data["engine_name"]} and requires the --force '
+                            'parameter to register.')
+
+    return not incompatible_gem_found
+
+
+def gem_dependencies_compatible(gem_json_data:dict, project_path:pathlib.Path = None, gem_paths:list = [], check:bool = False) -> bool:
+    # try to avoid gem compatibility checks which incur the cost of 
+    # opening many gem.json files to get version information
+    gem_dependencies = gem_json_data.get('dependencies','')
+    if not gem_dependencies:
+        return True
+
+    incompatible_gem_version_specifiers = None
+
+    if not gem_paths:
+        gem_paths = manifest.get_engine_gems()
+        gem_paths.extend(manifest.get_project_gems(project_path))
+        # Convert each path to pathlib.Path object and filter out duplicates using dict.fromkeys
+        gem_paths = list(dict.fromkeys(map(lambda gem_path_string: pathlib.Path(gem_path_string), gem_paths)))
+
+    incompatible_gem_version_specifiers = get_incompatible_gem_version_specifiers(
+        project_path, gem_dependencies, gem_paths)
+    if incompatible_gem_version_specifiers:
+        if check:
+            logger.info(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
+            ' following gems used by this project and requires the --force parameter to enable.'
+            f'{incompatible_gem_version_specifiers}')
+        else:
+            logger.error(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
+            ' following gems used by this project and requires the --force parameter to enable.'
+            f'{incompatible_gem_version_specifiers}')
+            return False
+    return True
+
+
+def gem_project_compatible(gem_json_data:dict, project_path:pathlib.Path, gem_paths:list = [], check:bool = False) -> bool:
+    project_json_data = manifest.get_project_json_data(project_path=project_path)
+    if not project_json_data:
+        logger.error(f'Failed to load project.json data from {project_path} needed for checking compatibility')
+        return False
+
+    engine_name = project_json_data.get('engine','')
+    if engine_name:
+        engine_json_data = manifest.get_engine_json_data(engine_name=engine_name)
+    else:
+        engine_json_data = manifest.get_engine_json_data(engine_path=manifest.get_this_engine_path())
+    if not engine_json_data:
+        logger.error(f'Failed to load engine.json data based on the engine field in project.json or detect the engine from the current folder')
+        return False
+
+    # compatibility will be based on the engine the project uses and the gems visible to
+    # the engine and project
+    compatible = gem_engine_compatible(gem_json_data, engine_json_data, gem_paths=gem_paths)
+    if compatible and check:
+        logger.info(f'{gem_json_data["gem_name"]} is compatible with this project and engine.')
+    elif not compatible:
+        return False
+
+    return True 
+
+
+def gem_engine_compatible(gem_json_data:dict, engine_json_data:dict, gem_paths:list = None, check:bool = False) -> bool:
+    engine_compatible = o3de_object_is_compatible_with_engine(gem_json_data, engine_json_data)
+    if not engine_compatible:
+        error_msg = f'{gem_json_data["gem_name"]} is not known to be compatible with the '\
+            f'engine {engine_json_data["engine_name"]}{engine_json_data.get("version","")} '\
+             'and requires the --force parameter to enable.'
+        if check:
+            logger.info(error_msg)
+        else:
+            logger.error(error_msg)
+
+    if not gem_paths:
+        gem_paths = manifest.get_engine_gems()
+
+    return engine_compatible and gem_dependencies_compatible(gem_json_data, gem_paths, check)
+
+def o3de_object_is_compatible_with_engine(object_json_data:dict, engine_json_data:dict) -> bool:
+    """
+    Returns True if the engine is compatible with the provided object's compatible_engines and engine_api_versions information.
+    :param object_json_data: the json data for the object 
+    :param engine_json_data: the json data for the engine
+    """
+    if (object_json_data.get('compatible_engines') or object_json_data.get('engine_api_dependencies')):
+        return engine_is_compatible(
+            engine_json_data['engine_name'], engine_json_data.get('version',''), 
+            object_json_data.get('compatible_engines',''), object_json_data.get('engine_api_dependencies',''),
+            engine_json_data)
+    return True
+
+def engine_is_compatible(engine_name:str, engine_version:str, compatible_engines:list, engine_api_version_specifiers:list, engine_json_data:dict or None) -> bool:
     """
     Returns True if the engine is compatible with the provided compatible_engines and engine_api_versions information.
     If a compatible_engine entry only has an engine name, it is assumed compatible with every engine version with that name.
@@ -23,15 +146,17 @@ def engine_is_compatible(engine_name:str, engine_version:str, compatible_engines
     :param engine_version: the engine version
     :param compatible_engines: a list of engine names and (optional)version specifiers
     :param engine_api_versions: a list of engine api names and (optional)version specifiers
+    :param engine_json_data: optional engine json data to avoid extra file ops
     """
     # early out if there are no restrictions
     if not compatible_engines and not engine_api_version_specifiers:
         return True
 
-    if engine_name:
-        engine_json_data = manifest.get_engine_json_data(engine_name=engine_name)
-    else:
-        engine_json_data = manifest.get_engine_json_data(engine_path=manifest.get_this_engine_path())
+    if not engine_json_data:
+        if engine_name:
+            engine_json_data = manifest.get_engine_json_data(engine_name=engine_name)
+        else:
+            engine_json_data = manifest.get_engine_json_data(engine_path=manifest.get_this_engine_path())
 
     if not engine_json_data:
         return False
@@ -60,24 +185,6 @@ def engine_is_compatible(engine_name:str, engine_version:str, compatible_engines
                 return True
 
     return False
-
-def project_engine_is_compatible(project_path:pathlib.Path, compatible_engines:list, engine_api_versions:list) -> bool:
-    """
-    Returns True if the engine used by the provided project is compatible with the
-    provided compatible_engines and engine_api_versions information.
-    If a compatible_engine entry only has an engine name, it is assumed compatible with every engine version with that name.
-    If an engine_api_version entry only has an api name, it is assumed compatible with every engine api version with that name.
-    :param project_path: the path to the project
-    :param compatible_engines: a list of engine names and (optional)version specifiers
-    :param engine_api_versions: a list of engine api names and (optional)version specifiers
-    """
-    project_json_data = manifest.get_project_json_data(project_path=project_path)
-    if not project_json_data:
-        return False
-    
-    engine_name = project_json_data.get('engine','')
-    engine_version = project_json_data.get('engine_version','')
-    return engine_is_compatible(engine_name, engine_version, compatible_engines, engine_api_versions)
 
 def get_incompatible_gem_version_specifiers(project_path:pathlib.Path, gem_version_specifier_list:list, gem_paths:list) -> list:
     """

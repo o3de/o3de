@@ -105,44 +105,14 @@ def enable_gem_in_project(gem_name: str = None,
     # Convert each path to pathlib.Path object and filter out duplicates using dict.fromkeys
     buildable_gems = list(dict.fromkeys(map(lambda gem_path_string: pathlib.Path(gem_path_string), buildable_gems)))
 
-    # check gem and engine version compatibility
+    # check compatibility
     if force:
         logger.warning(f'Bypassing version compatibility check for {gem_json_data["gem_name"]}.')
     else:
-        gem_dependencies = gem_json_data.get('dependencies','')
-        incompatible_gem_version_specifiers = None
-
-        # try to avoid gem compatibility checks which incur the cost of 
-        # opening many gem.json files to get version information
-        if gem_dependencies:
-            # gem compatibility
-            incompatible_gem_version_specifiers = compatibility.get_incompatible_gem_version_specifiers(
-                project_path, gem_dependencies, buildable_gems)
-            if incompatible_gem_version_specifiers:
-                if check:
-                    logger.info(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
-                    ' following gems used by this project and requires the --force parameter to enable.'
-                    f'{incompatible_gem_version_specifiers}')
-                else:
-                    logger.error(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
-                    ' following gems used by this project and requires the --force parameter to enable.'
-                    f'{incompatible_gem_version_specifiers}')
-
-        # engine compatibility
-        engine_is_compatible = compatibility.project_engine_is_compatible(project_path, 
-            gem_json_data.get('compatible_engines',''), gem_json_data.get('engine_api_dependencies',''))
-        if not engine_is_compatible:
-            if check:
-                logger.info(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
-                'engine used by this project and requires the --force parameter to enable.')
-            else:
-                logger.error(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
-                'engine used by this project and requires the --force parameter to enable.')
-
-        if not incompatible_gem_version_specifiers and engine_is_compatible and check:
-            logger.info(f'{gem_json_data["gem_name"]} is compatible with this project and engine.')
+        compatible = compatibility.gem_project_compatible(gem_json_data, project_path, check=check, gem_paths=buildable_gems)
+        if check:
             return 0
-        elif not engine_is_compatible or incompatible_gem_version_specifiers:
+        elif not compatible:
             return 1
 
     ret_val = 0

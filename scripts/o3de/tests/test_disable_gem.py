@@ -14,6 +14,26 @@ from unittest.mock import patch
 from o3de import cmake, disable_gem, enable_gem
 
 
+TEST_ENGINE_JSON_PAYLOAD = '''
+{
+    "engine_name": "o3de",
+    "version": "0.0.0",
+    "restricted_name": "o3de",
+    "FileVersion": 1,
+    "O3DEVersion": "0.0.0",
+    "O3DECopyrightYear": 2021,
+    "O3DEBuildNumber": 0,
+    "external_subdirectories": [
+        "Gems/TestGem2"
+    ],
+    "projects": [
+    ],
+    "templates": [
+        "Templates/MinimalProject"
+    ]
+}
+'''
+
 TEST_PROJECT_JSON_PAYLOAD = '''
 {
     "project_name": "TestProject",
@@ -93,6 +113,7 @@ def init_disable_gem_data(request):
         def __init__(self):
             self.project_data = json.loads(TEST_PROJECT_JSON_PAYLOAD)
             self.gem_data = json.loads(TEST_GEM_JSON_PAYLOAD)
+            self.engine_data = json.loads(TEST_ENGINE_JSON_PAYLOAD)
     request.cls.disable_gem = DisableGemData()
 
 
@@ -134,6 +155,9 @@ class TestDisableGemCommand:
         def get_gem_json_data(gem_path: pathlib.Path, project_path: pathlib.Path):
             return self.disable_gem.gem_data
 
+        def get_engine_json_data(engine_name:str = None, engine_path:pathlib.Path = None):
+            return self.disable_gem.engine_data
+
         def get_project_gems(project_path: pathlib.Path):
             return [pathlib.Path(gem_path).resolve()] if gem_registered_with_project else []
 
@@ -156,6 +180,7 @@ class TestDisableGemCommand:
                 patch('pathlib.Path.is_file', return_value=True) as pathlib_is_file_patch, \
                 patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as load_o3de_manifest_patch, \
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch,\
+                patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as get_engine_json_data_patch,\
                 patch('o3de.manifest.get_registered', side_effect=get_registered_path) as get_registered_patch,\
                 patch('o3de.manifest.get_gem_json_data', side_effect=get_gem_json_data) as get_gem_json_data_patch,\
                 patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as get_gem_json_data_patch,\
