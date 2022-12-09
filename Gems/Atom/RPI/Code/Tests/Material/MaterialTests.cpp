@@ -505,6 +505,9 @@ namespace UnitTest
         EXPECT_EQ(material->GetPropertyValue<int32_t>(material->FindPropertyIndex(Name{"RangeA"})), 3);
         EXPECT_EQ(material->GetPropertyValue<uint32_t>(material->FindPropertyIndex(Name{"RangeB"})), 7u);
 
+        ProcessQueuedSrgCompilations(shaderAsset, m_testMaterialSrgLayout->GetName());
+        material->Compile();
+
         // Check the values on the underlying ShaderCollection::Item
         ShaderOptionGroup options2{optionsLayout, material->GetShaderCollection(MaterialPipelineNameCommon)[0].GetShaderVariantId()};
         EXPECT_EQ(optionEnumA.Get(options2).GetIndex(), optionEnumA.FindValue(Name{"Med"}).GetIndex());
@@ -556,6 +559,9 @@ namespace UnitTest
         // Now call SetPropertyValue to change the values, and check again
         EXPECT_TRUE(material->SetPropertyValue<int32_t>(material->FindPropertyIndex(Name{"Value"}), 5));
 
+        ProcessQueuedSrgCompilations(shaderAsset, m_testMaterialSrgLayout->GetName());
+        material->Compile();
+
         // Check the values on the underlying ShaderVariantReferences
         {
             ShaderOptionGroup options0{optionsLayout, shaderCollection[0].GetShaderVariantId()};
@@ -595,11 +601,17 @@ namespace UnitTest
 
         material->SetPropertyValue(enableShader, true);
 
+        ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
+        material->Compile();
+
         EXPECT_TRUE(shaderCollection[0].IsEnabled());
         EXPECT_TRUE(shaderCollection[1].IsEnabled());
         EXPECT_TRUE(shaderCollection[2].IsEnabled());
 
         material->SetPropertyValue(enableShader, false);
+
+        ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
+        material->Compile();
 
         EXPECT_TRUE(shaderCollection[0].IsEnabled());
         EXPECT_FALSE(shaderCollection[1].IsEnabled());
@@ -695,9 +707,20 @@ namespace UnitTest
 
         Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
 
-        AZ_TEST_START_ASSERTTEST;
-        EXPECT_FALSE(material->SetPropertyValue<int32_t>(material->FindPropertyIndex(Name{"Value"}), 100));
-        AZ_TEST_STOP_ASSERTTEST(1);
+        ErrorMessageFinder errorMessageFinder("ShaderOption value [100] is out of range");
+
+        // Depending on implementation, the error message might not actually be reported until Compile() is called.
+        // In that case, SetPropertyValue won't know about any issue and just return true after setting the property value.
+        // If we want SetPropertyValue to return false, then we would have to change the implementation to process
+        // property connections immediately instead of in Compile(), but there's little point to that as lua functors
+        // can't be processed immediately, they have to wait for Compile(). So we might as well keep all our back-end
+        // error checking in Compile().
+
+        material->SetPropertyValue<int32_t>(material->FindPropertyIndex(Name{"Value"}), 100); // 100 is out of range, max is 10
+        ProcessQueuedSrgCompilations(shaderAsset, m_testMaterialSrgLayout->GetName());
+        material->Compile();
+
+        errorMessageFinder.CheckExpectedErrorsFound();
     }
 
     TEST_F(MaterialTests, Error_ImageNotFound)

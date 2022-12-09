@@ -34,6 +34,13 @@ namespace AzQtComponents
     static const QString g_plainTextSeparator = QStringLiteral("\u00a0\u00a0\u203a\u00a0\u00a0");
     static constexpr int g_iconWidth = 16;
 
+    QString toCommonSeparators(const QString& path)
+    {
+        QString ret = path;
+        ret.replace(g_windowsSeparator, g_separator);
+        return ret;
+    }
+
     BreadCrumbs::BreadCrumbs(QWidget* parent)
         : QWidget(parent)
         , m_config(defaultConfig())
@@ -91,10 +98,8 @@ namespace AzQtComponents
 
     void BreadCrumbs::setCurrentPath(const QString& newPath)
     {
-        m_currentPath = newPath;
-
         // clean up the path to use all the first separator in the list of separators
-        m_currentPath.replace(g_windowsSeparator, g_separator);
+        m_currentPath = toCommonSeparators(newPath);
 
         // update internals
         m_currentPathSize = m_currentPath.split(g_separator, Qt::SkipEmptyParts).size();
@@ -233,6 +238,12 @@ namespace AzQtComponents
 
     void BreadCrumbs::pushPath(const QString& fullPath)
     {
+        const QString sanitizedPath = toCommonSeparators(fullPath);
+
+        if (sanitizedPath == m_currentPath)
+        {
+            return;
+        }
         BreadCrumbButtonStates buttonStates;
         getButtonStates(buttonStates);
 
@@ -243,7 +254,7 @@ namespace AzQtComponents
 
         m_forwardPaths.clear();
 
-        changePath(fullPath);
+        changePath(sanitizedPath);
 
         emitButtonSignals(buttonStates);
     }
@@ -406,6 +417,10 @@ namespace AzQtComponents
 
     void BreadCrumbs::changePath(const QString& newPath)
     {
+        if (newPath == m_currentPath)
+        {
+            return;
+        }
         setCurrentPath(newPath);
         updateGeometry();
 

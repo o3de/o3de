@@ -10,9 +10,10 @@
 
 #include <AzCore/EBus/EBus.h>
 
-namespace MaterialCanvas
+namespace AtomToolsFramework
 {
-    class MaterialGraphCompilerNotifications : public AZ::EBusTraits
+    //! Bus interface with notification about the status of an individual compile emitted from a graph compiler
+    class GraphCompilerNotifications : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
@@ -29,5 +30,5 @@ namespace MaterialCanvas
         virtual void OnCompileGraphFailed([[maybe_unused]] const AZ::Uuid& documentId){};
     };
 
-    using MaterialGraphCompilerNotificationBus = AZ::EBus<MaterialGraphCompilerNotifications>;
-} // namespace MaterialCanvas
+    using GraphCompilerNotificationBus = AZ::EBus<GraphCompilerNotifications>;
+} // namespace AtomToolsFramework

@@ -7,6 +7,7 @@
  */
 
 #include <AzTest/AzTest.h>
+#include <native/FileWatcher/FileWatcher.h>
 #include <utilities/BatchApplicationManager.h>
 #include <utilities/ApplicationServer.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
@@ -31,6 +32,16 @@ namespace AssetProcessorMessagesTests
 
     class AssetProcessorMessages;
 
+    class FileWatcherUnitTest : public FileWatcherBase
+    {
+    public:
+        void AddFolderWatch(QString, [[maybe_unused]] bool recursive = true) override {}
+        void ClearFolderWatches() override {}
+
+        void StartWatching() override {}
+        void StopWatching() override {}
+    };
+
     struct UnitTestBatchApplicationManager
         : BatchApplicationManager
     {
@@ -40,7 +51,10 @@ namespace AssetProcessorMessagesTests
 
         }
 
-        using ApplicationManagerBase::InitFileStateCache;
+        void InitFileStateCache() override
+        {
+            m_fileStateCache = AZStd::make_unique<AssetProcessor::FileStatePassthrough>();
+        }
 
         friend class AssetProcessorMessages;
     };
@@ -69,6 +83,22 @@ namespace AssetProcessorMessagesTests
             m_invoked = true;
 
             return AssetRequestHandler::InvokeHandler(message);
+        }
+
+        // Mimic the necessary behavior in the standard AssetRequestHandler, so the event gets called.
+        void OnNewIncomingRequest(unsigned int connId, unsigned int serial, QByteArray payload, QString platform) override
+        {
+            AZ::SerializeContext* serializeContext = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+            AZStd::shared_ptr<AzFramework::AssetSystem::BaseAssetProcessorMessage> message{
+                AZ::Utils::LoadObjectFromBuffer<AzFramework::AssetSystem::BaseAssetProcessorMessage>(
+                    payload.constData(), payload.size(), serializeContext)
+            };
+            NetworkRequestID key(connId, serial);
+            int fenceFileId = 0;
+            m_pendingFenceRequestMap[fenceFileId] = AZStd::move(AssetRequestHandler::RequestInfo(key, AZStd::move(message), platform));
+
+            OnFenceFileDetected(fenceFileId);
         }
 
         AZStd::atomic_bool m_invoked = false;
@@ -118,14 +148,12 @@ namespace AssetProcessorMessagesTests
             m_batchApplicationManager->m_assetCatalog = m_assetCatalog.get();
             m_batchApplicationManager->InitRCController();
             m_batchApplicationManager->InitFileStateCache();
-            m_batchApplicationManager->InitFileMonitor(AZStd::make_unique<FileWatcher>());
+            m_batchApplicationManager->InitFileMonitor(AZStd::make_unique<FileWatcherUnitTest>());
             m_batchApplicationManager->InitApplicationServer();
             m_batchApplicationManager->InitConnectionManager();
             // Note this must be constructed after InitConnectionManager is called since it will interact with the connection manager
             m_assetRequestHandler = new MockAssetRequestHandler();
             m_batchApplicationManager->InitAssetRequestHandler(m_assetRequestHandler);
-
-            m_batchApplicationManager->m_fileWatcher->StartWatching();
 
             QObject::connect(m_batchApplicationManager->m_connectionManager, &ConnectionManager::ConnectionError, [](unsigned /*connId*/, QString error)
                 {
@@ -296,16 +324,17 @@ namespace AssetProcessorMessagesTests
                     else
                     {
                         EXPECT_TRUE(SendRequest(*pair.m_request.get())) << "Message " << messageName.c_str() << " failed to send";
-                        // Since there's no response, the above line will finish immediately, so we need to wait a little bit so the message can actually be sent
-                        // before we check if it was received
-                        // We'll wait a maximum of 5 seconds, checking periodically if the message was received, to avoid failing due to slow running test servers
-                        constexpr int MaxWaitTimeSeconds = 5;
-                        auto start = AZStd::chrono::steady_clock::now();
+                    }
 
-                        while (!m_assetRequestHandler->m_invoked && AZStd::chrono::steady_clock::now() - start < AZStd::chrono::seconds(MaxWaitTimeSeconds))
-                        {
-                            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
-                        }
+                    // Even if there is a response, the send request may finish before the response finishes, so wait a few seconds to see if the message has sent.
+                    // This exits early if the message is invoked.
+                    constexpr int MaxWaitTimeSeconds = 5;
+                    auto start = AZStd::chrono::steady_clock::now();
+
+                    while (!m_assetRequestHandler->m_invoked &&
+                           AZStd::chrono::steady_clock::now() - start < AZStd::chrono::seconds(MaxWaitTimeSeconds))
+                    {
+                        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
                     }
 
                     EXPECT_TRUE(m_assetRequestHandler->m_invoked) << "Message " << messageName.c_str() << " was not received";

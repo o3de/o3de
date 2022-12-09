@@ -11,8 +11,14 @@ import time
 import azlmbr.atom
 import azlmbr.atomtools
 import azlmbr.bus as bus
+import azlmbr.paths
 
+MATERIAL_TYPES_PATH = os.path.join(
+    azlmbr.paths.engroot, "Gems", "Atom", "Feature", "Common", "Assets", "Materials", "Types")
+MATERIALCANVAS_GRAPH_PATH = os.path.join(
+    azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialCanvas", "Assets", "MaterialCanvas", "TestData")
 SCREENSHOTS_FOLDER = os.path.join(azlmbr.paths.products, "Screenshots")
+TEST_DATA_MATERIALS_PATH = os.path.join(azlmbr.paths.engroot, "Gems", "Atom", "TestData", "TestData", "Materials")
 
 
 def is_close(
@@ -127,7 +133,8 @@ def get_last_lighting_preset_path() -> str:
     "C:/git/o3de/Gems/Atom/Feature/Common/Assets/LightingPresets/LowContrast/artist_workshop.lightingpreset.azasset"
     "C:/git/o3de/Gems/Atom/TestData/TestData/LightingPresets/beach_parking.lightingpreset.azasset"
     """
-    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetLastLightingPresetPathWithoutAlias")
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
+        azlmbr.bus.Broadcast, "GetLastLightingPresetPathWithoutAlias")
 
 
 def get_last_model_preset_path() -> str:
@@ -138,7 +145,8 @@ def get_last_model_preset_path() -> str:
     "C:/git/o3de/Gems/Atom/Tools/MaterialEditor/Assets/MaterialEditor/ViewportModels/Cone.modelpreset.azasset"
     "C:/git/o3de/Gems/Atom/Tools/MaterialEditor/Assets/MaterialEditor/ViewportModels/BeveledCone.modelpreset.azasset"
     """
-    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetLastModelPresetPathWithoutAlias")
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(
+        azlmbr.bus.Broadcast, "GetLastModelPresetPathWithoutAlias")
 
 
 def get_last_model_preset_asset_id() -> azlmbr.math.Uuid:
