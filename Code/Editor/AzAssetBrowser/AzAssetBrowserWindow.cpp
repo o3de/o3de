@@ -18,6 +18,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 
 // AzQtComponents
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
@@ -85,7 +86,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_ui->setupUi(this);
     m_ui->m_searchWidget->Setup(true, true);
 
-    OnInitToolsMenuButton();
+    CreateToolsMenu();
 
     namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
 
@@ -117,8 +118,8 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         connect(m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged,
             this, &AzAssetBrowserWindow::UpdateWidgetAfterFilter);
 
-        connect(m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::selectionChangedSignal,
-            this, &AzAssetBrowserWindow::SelectionChangedSlot);
+        connect(m_ui->m_assetBrowserTableViewWidget->selectionModel(), &QItemSelectionModel::currentChanged,
+            this, &AzAssetBrowserWindow::CurrentIndexChangedSlot);
 
         connect(m_ui->m_assetBrowserTableViewWidget, &QAbstractItemView::doubleClicked,
             this, &AzAssetBrowserWindow::DoubleClickedItem);
@@ -148,10 +149,13 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_ui->horizontalLayout->setAlignment(m_ui->m_thumbnailViewButton, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->m_breadcrumbsWrapper, Qt::AlignTop);
 
-    m_ui->m_pathBreadCrumbs->setPushPathOnLinkActivation(false);
+    m_ui->m_breadcrumbsLayout->insertWidget(0, m_ui->m_pathBreadCrumbs->createSeparator());
+    m_ui->m_breadcrumbsLayout->insertWidget(0, m_ui->m_pathBreadCrumbs->createBackForwardToolBar());
+
     connect(m_ui->m_pathBreadCrumbs, &AzQtComponents::BreadCrumbs::linkClicked, this, [this](const QString& path) {
         m_ui->m_assetBrowserTreeViewWidget->SelectFolder(path.toUtf8().constData());
     });
+    connect(m_ui->m_pathBreadCrumbs, &AzQtComponents::BreadCrumbs::pathChanged, this, &AzAssetBrowserWindow::BreadcrumbsPathChangedSlot);
 
     connect(m_ui->m_thumbnailViewButton, &QAbstractButton::clicked, this, [this] { SetTwoColumnMode(m_ui->m_thumbnailView); });
     connect(m_ui->m_tableViewButton, &QAbstractButton::clicked, this, [this] { SetTwoColumnMode(m_ui->m_tableView); });
@@ -170,8 +174,8 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             m_ui->m_assetBrowserTreeViewWidget->UpdateAfterFilter(hasFilter, selectFirstFilteredIndex);
         });
 
-    connect(m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::selectionChangedSignal,
-        this, &AzAssetBrowserWindow::SelectionChangedSlot);
+    connect(m_ui->m_assetBrowserTreeViewWidget->selectionModel(), &QItemSelectionModel::currentChanged,
+        this, &AzAssetBrowserWindow::CurrentIndexChangedSlot);
 
     connect(m_ui->m_assetBrowserTreeViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItem);
 
@@ -231,11 +235,6 @@ void AzAssetBrowserWindow::resizeEvent(QResizeEvent* resizeEvent)
 
     emit SizeChangedSignal(aznumeric_cast<int>(newWidth));
     QWidget::resizeEvent(resizeEvent);
-}
-
-void AzAssetBrowserWindow::OnInitToolsMenuButton()
-{
-    CreateToolsMenu();
 }
 
 void AzAssetBrowserWindow::CreateToolsMenu()
@@ -394,22 +393,13 @@ void AzAssetBrowserWindow::UpdateBreadcrumbs(const AzToolsFramework::AssetBrowse
     QString entryPath;
     if (selectedEntry)
     {
-        auto folderForEntry = [](const AssetBrowserEntry* entry)
-        {
-            while (entry && entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Folder)
-            {
-                entry = entry->GetParent();
-            }
-            return entry;
-        };
-
-        const AssetBrowserEntry* folderEntry = folderForEntry(selectedEntry);
+        const AssetBrowserEntry* folderEntry = Utils::FolderForEntry(selectedEntry);
         if (folderEntry)
         {
-            entryPath = QString::fromUtf8(folderEntry->GetRelativePath().c_str());
+            entryPath = QString::fromUtf8(folderEntry->GetVisiblePath().c_str());
         }
     }
-    m_ui->m_pathBreadCrumbs->setCurrentPath(entryPath);
+    m_ui->m_pathBreadCrumbs->pushPath(entryPath);
 }
 
 void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
@@ -475,12 +465,10 @@ void AzAssetBrowserWindow::SelectAsset(const QString& assetPath)
     }
 }
 
-void AzAssetBrowserWindow::SelectionChangedSlot(const QItemSelection& /*selected*/, const QItemSelection& /*deselected*/) const
+void AzAssetBrowserWindow::CurrentIndexChangedSlot(const QModelIndex& idx) const
 {
-    const auto& selectedAssets = sender() == m_ui->m_assetBrowserTreeViewWidget ? m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets()
-                                                                                : m_ui->m_assetBrowserTableViewWidget->GetSelectedAssets();
-
-    AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry = selectedAssets.size() == 1 ? selectedAssets.front() : nullptr;
+    using namespace AzToolsFramework::AssetBrowser;
+    auto* entry = idx.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
 
     UpdatePreview(entry);
     UpdateBreadcrumbs(entry);
@@ -525,6 +513,24 @@ void AzAssetBrowserWindow::DoubleClickedItem([[maybe_unused]] const QModelIndex&
         {
             AzAssetBrowserRequestHandler::OpenWithOS(fullFilePath);
         }
+    }
+}
+
+//! This slot ignores path change coming from breadcrumbs if we already have a file selected directly in this folder. This may happen
+//! in the one column mode where tree view shows files too.
+void AzAssetBrowserWindow::BreadcrumbsPathChangedSlot(const QString& path) const
+{
+    using namespace AzToolsFramework::AssetBrowser;
+    const auto* currentEntry =
+        m_ui->m_assetBrowserTreeViewWidget->currentIndex().data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+
+    const AssetBrowserEntry* folderForCurrent = Utils::FolderForEntry(currentEntry);
+    const QString currentFolderPath =
+        folderForCurrent ? QString::fromUtf8(folderForCurrent->GetRelativePath().c_str()).replace('\\', '/') : QString();
+
+    if (path != currentFolderPath)
+    {
+        m_ui->m_assetBrowserTreeViewWidget->SelectFolder(path.toUtf8().constData());
     }
 }
 

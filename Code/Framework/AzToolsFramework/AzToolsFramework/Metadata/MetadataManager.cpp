@@ -258,10 +258,8 @@ namespace AzToolsFramework
         return false;
     }
 
-    AZ::IO::Path MetadataManager::ToMetadataPath(AZ::IO::PathView file)
+    AZ::IO::Path MetadataManager::ToMetadataPath(AZ::IO::Path path)
     {
-        AZ::IO::Path path = file;
-
         if (path.Extension() != MetadataFileExtension)
         {
             path.ReplaceExtension(AZ::IO::PathView(AZStd::string(path.Extension().Native()) + AZStd::string(MetadataFileExtension)));

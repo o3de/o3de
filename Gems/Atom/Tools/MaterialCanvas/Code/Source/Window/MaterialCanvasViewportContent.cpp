@@ -26,10 +26,10 @@
 #include <AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/SkyBox/HDRiSkyboxBus.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsRequestBus.h>
+#include <AtomToolsFramework/Graph/GraphCompilerRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzFramework/Components/TransformComponent.h>
-#include <Document/MaterialGraphCompilerRequestBus.h>
 #include <Window/MaterialCanvasViewportContent.h>
 
 namespace MaterialCanvas
@@ -89,13 +89,13 @@ namespace MaterialCanvas
             });
 
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
-        MaterialGraphCompilerNotificationBus::Handler::BusConnect(m_toolId);
+        AtomToolsFramework::GraphCompilerNotificationBus::Handler::BusConnect(m_toolId);
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
 
     MaterialCanvasViewportContent::~MaterialCanvasViewportContent()
     {
-        MaterialGraphCompilerNotificationBus::Handler::BusDisconnect();
+        AtomToolsFramework::GraphCompilerNotificationBus::Handler::BusDisconnect();
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
     }
 
@@ -216,8 +216,8 @@ namespace MaterialCanvas
         AZ::Data::AssetId assetId;
 
         AZStd::vector<AZStd::string> generatedFiles;
-        MaterialGraphCompilerRequestBus::EventResult(
-            generatedFiles, documentId, &MaterialGraphCompilerRequestBus::Events::GetGeneratedFilePaths);
+        AtomToolsFramework::GraphCompilerRequestBus::EventResult(
+            generatedFiles, documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::GetGeneratedFilePaths);
 
         for (const auto& generatedFile : generatedFiles)
         {
