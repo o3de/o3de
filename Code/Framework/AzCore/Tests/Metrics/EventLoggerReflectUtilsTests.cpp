@@ -52,9 +52,6 @@ namespace UnitTest::EventLoggerReflectUtilsTests
     };
 
     constexpr const char* EventValueClassName = "EventValue";
-    constexpr const char* EventFieldClassName = "EventField";
-    constexpr const char* EventArrayClassName = "EventArray";
-    constexpr const char* EventObjectClassName = "EventObject";
     constexpr const char* EventLoggerIdClassName = "EventLoggerId";
     constexpr const char* EventArgsClassName = "EventArgs";
     constexpr const char* EventPhaseClassName = "EventPhase";
