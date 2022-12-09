@@ -500,9 +500,6 @@ namespace AzToolsFramework
 
         initEntityPropertyEditorResources();
 
-        m_componentModeCollection = AZ::Interface<ComponentModeCollectionInterface>::Get();
-        AZ_Assert(m_componentModeCollection, "Could not retrieve component mode collection.");
-
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
         AZ_Assert(m_prefabPublicInterface != nullptr, "EntityPropertyEditor requires a PrefabPublicInterface instance on Initialize.");
 
@@ -5889,8 +5886,10 @@ namespace AzToolsFramework
         {
             DisableComponentActions(this, m_entityComponentActions);
             SetPropertyEditorState(m_gui, false);
-            const auto componentModeTypes = m_componentModeCollection->GetComponentTypes();
             m_disabled = true;
+
+            // note: ComponentModeCollectionInterface cannot be cached as it may change during the lifetime of the application
+            const auto componentModeTypes = AZ::Interface<ComponentModeCollectionInterface>::Get()->GetComponentTypes();
 
             
             if (!componentModeTypes.empty())
@@ -5922,7 +5921,7 @@ namespace AzToolsFramework
         {
             EnableComponentActions(this, m_entityComponentActions);
             SetPropertyEditorState(m_gui, true);
-            const auto componentModeTypes = m_componentModeCollection->GetComponentTypes();
+            const auto componentModeTypes = AZ::Interface<ComponentModeCollectionInterface>::Get()->GetComponentTypes();
             m_disabled = false;
 
             for (auto componentEditor : m_componentEditors)
