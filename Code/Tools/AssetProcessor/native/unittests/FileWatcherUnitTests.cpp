@@ -50,8 +50,9 @@ namespace FileWatcherTests
         //! Test will fail if the number of events expected is not exactly what was received.
         //! See the caveat below about modified notifications.
         void WatchUntilNoMoreEvents(int expectedAddFiles, int expectedModifyFiles, int expectedRemoveFiles);
-        virtual void AddExclusions();
+        virtual void SetupWatches();
         void Flush();
+        virtual QString GetFenceFolder(); // some tests may need to override this
 
     protected:
         AZStd::unique_ptr<FileWatcher> m_fileWatcher;
@@ -104,9 +105,8 @@ namespace FileWatcherTests
         m_assetRootPath = QFileInfo(m_tempDir->GetDirectory()).canonicalFilePath();
         m_fileWatcher = AZStd::make_unique<FileWatcher>();
 
-        AddExclusions();
+        SetupWatches();
 
-        m_fileWatcher->AddFolderWatch(m_assetRootPath);
         m_fileWatcher->StartWatching();
 
         m_addFileConnection = QObject::connect(m_fileWatcher.get(), &FileWatcher::fileAdded, [&](QString filename)
@@ -139,14 +139,21 @@ namespace FileWatcherTests
         Flush();
     }
 
-    void FileWatcherUnitTest::AddExclusions()
+    // default setup watches the asset root and ignores all files with the word ignored in them.
+    void FileWatcherUnitTest::SetupWatches()
     {
         m_fileWatcher->AddExclusion(AssetBuilderSDK::FilePatternMatcher("*ignored*", AssetBuilderSDK::AssetBuilderPattern::Wildcard));
+        m_fileWatcher->AddFolderWatch(m_assetRootPath);
+    }
+
+    QString FileWatcherUnitTest::GetFenceFolder()
+    {
+        return m_assetRootPath;
     }
 
     void FileWatcherUnitTest::CreateFenceFile()
     {
-        AZ::IO::Path fencePath = AZ::IO::Path(m_assetRootPath.toUtf8().constData()) / "__fence__";
+        AZ::IO::Path fencePath = AZ::IO::Path(GetFenceFolder().toUtf8().constData()) / "__fence__";
         AZStd::string fenceString; 
         ASSERT_TRUE(AZ::IO::CreateTempFileName(fencePath.String().c_str(), fenceString));
         m_currentFenceFilePath = QString::fromUtf8(fenceString.c_str());
@@ -653,11 +660,15 @@ namespace FileWatcherTests
         QDir m_projectFolder;
         QDir m_cacheLocation;
 
-        void AddExclusions() override
+        QString GetFenceFolder() override
+        {
+            return m_cacheLocation.absoluteFilePath("fence");
+        }
+
+        void SetupWatches() override
         {
             bool cacheIsInsideProject = GetParam();
 
-            FileWatcherUnitTest::AddExclusions();
             QDir tempDirPath(m_assetRootPath);
             m_projectFolder = QDir(tempDirPath.absoluteFilePath("ProjectRoot"));
 
@@ -670,8 +681,16 @@ namespace FileWatcherTests
                 m_cacheLocation = QDir(tempDirPath.absoluteFilePath("Cache"));
             }
 
-            m_fileWatcher->InstallDefaultExclusionRules(m_cacheLocation.absolutePath(), m_projectFolder.absolutePath());
+            // you cannot watch a non existent folder as the root.  We must make these up front and the fence has to be
+            // there for the tests to work.
+            m_cacheLocation.mkpath(".");
+            m_projectFolder.mkpath(".");
+            m_cacheLocation.mkpath("fence");
 
+            m_fileWatcher->AddFolderWatch(QDir::toNativeSeparators(m_projectFolder.absolutePath()));
+            m_fileWatcher->AddFolderWatch(QDir::toNativeSeparators(m_cacheLocation.absolutePath()));
+
+            m_fileWatcher->InstallDefaultExclusionRules(m_cacheLocation.absolutePath(), m_projectFolder.absolutePath());
         }
     };
 
@@ -698,35 +717,33 @@ namespace FileWatcherTests
         //          pc
         //            some_random_cache_file.txt *
 
-        QSet<QString> regularFiles;
-        QSet<QString> ignoredFiles;
-        QSet<QString> regularFldrs; // name chosen to make the following section easier to read
-        QSet<QString> ignoredFldrs;
+        // the order of creation here matters here for consistincy, so this has to be enforced.
+        QList<QString> regularFiles;
+        QList<QString> ignoredFiles;
+        QList<QString> regularFldrs; // name chosen to make the following section easier to read
+        QList<QString> ignoredFldrs;
+        
+        regularFldrs.push_back(m_projectFolder.absoluteFilePath("User"));
+        ignoredFiles.push_back(m_projectFolder.absoluteFilePath("User/someuserfile.txt"));
+        regularFldrs.push_back(m_projectFolder.absoluteFilePath("Assets"));
+        regularFldrs.push_back(m_projectFolder.absoluteFilePath("Assets/Cache"));
+        regularFiles.push_back(m_projectFolder.absoluteFilePath("Assets/Cache/some_file.txt"));
+        regularFldrs.push_back(m_projectFolder.absoluteFilePath("Assets/User"));
+        regularFiles.push_back(m_projectFolder.absoluteFilePath("Assets/User/some_file.txt"));
+        regularFiles.push_back(m_projectFolder.absoluteFilePath("projectrootfile.txt"));
 
-        regularFldrs.insert(m_projectFolder.absolutePath());
-        regularFldrs.insert(m_projectFolder.absoluteFilePath("User"));
-        ignoredFiles.insert(m_projectFolder.absoluteFilePath("User/someuserfile.txt"));
-        regularFldrs.insert(m_projectFolder.absoluteFilePath("Assets"));
-        regularFldrs.insert(m_projectFolder.absoluteFilePath("Assets/Cache"));
-        regularFiles.insert(m_projectFolder.absoluteFilePath("Assets/Cache/some_file.txt"));
-        regularFldrs.insert(m_projectFolder.absoluteFilePath("Assets/User"));
-        regularFiles.insert(m_projectFolder.absoluteFilePath("Assets/User/some_file.txt"));
-        regularFiles.insert(m_projectFolder.absoluteFilePath("projectrootfile.txt"));
-
-        regularFldrs.insert(m_cacheLocation.absolutePath());
-        ignoredFiles.insert(m_cacheLocation.absoluteFilePath("cacherootfile.txt"));
-        regularFldrs.insert(m_cacheLocation.absoluteFilePath("fence"));
-        regularFiles.insert(m_cacheLocation.absoluteFilePath("fence/somefence.fence"));
-        regularFldrs.insert(m_cacheLocation.absoluteFilePath("Intermediate Assets"));
-        regularFiles.insert(m_cacheLocation.absoluteFilePath("Intermediate Assets/some_intermediate.txt"));
-        ignoredFldrs.insert(m_cacheLocation.absoluteFilePath("pc"));
-        ignoredFiles.insert(m_cacheLocation.absoluteFilePath("pc/some_random_cache_file.txt"));
+        ignoredFiles.push_back(m_cacheLocation.absoluteFilePath("cacherootfile.txt"));
+        regularFiles.push_back(m_cacheLocation.absoluteFilePath("fence/somefence.fence"));
+        regularFldrs.push_back(m_cacheLocation.absoluteFilePath("Intermediate Assets"));
+        regularFiles.push_back(m_cacheLocation.absoluteFilePath("Intermediate Assets/some_intermediate.txt"));
+        ignoredFldrs.push_back(m_cacheLocation.absoluteFilePath("pc"));
+        ignoredFiles.push_back(m_cacheLocation.absoluteFilePath("pc/some_random_cache_file.txt"));
         
         int expectedCreates = 0;
         for (const auto& folderName : regularFldrs)
         {
             QDir(folderName).mkpath(".");
-            ++expectedCreates;
+            ++expectedCreates; // we expect to see each folder in regularFldrs appear.
         }
 
         for (const auto& folderName : ignoredFldrs)
@@ -737,7 +754,7 @@ namespace FileWatcherTests
         for (const auto& fileName : regularFiles)
         {
             EXPECT_TRUE(UnitTestUtils::CreateDummyFile(fileName));
-            ++expectedCreates;
+            ++expectedCreates; // we expect to see each file in regularFiles appear.
         }
 
         for (const auto& fileName : ignoredFiles)
@@ -745,16 +762,29 @@ namespace FileWatcherTests
             EXPECT_TRUE(UnitTestUtils::CreateDummyFile(fileName));
         }
 
-        WatchUntilNoMoreEvents(expectedCreates, 0, 0); // should have gotten 2 directory adds for the above 3 dirs due to ignores.
+        WatchUntilNoMoreEvents(expectedCreates, 0, 0);
 
         for (const auto& fileName : regularFiles)
         {
-            EXPECT_TRUE(m_filesAdded.contains(QDir::toNativeSeparators(fileName)));
+            QString nativeFormat = QDir::toNativeSeparators(fileName);
+            EXPECT_TRUE(m_filesAdded.contains(nativeFormat)) << "Missing file watch:" << nativeFormat.toUtf8().constData();
         }
 
         for (const auto& folderName : regularFldrs)
         {
-            EXPECT_TRUE(m_filesAdded.contains(QDir::toNativeSeparators(folderName)));
+            QString nativeFormat = QDir::toNativeSeparators(folderName);
+            EXPECT_TRUE(m_filesAdded.contains(nativeFormat)) << "Missing file watch:" << nativeFormat.toUtf8().constData();
+        }
+
+        for (const auto& fileName : ignoredFiles)
+        {
+            QString nativeFormat = QDir::toNativeSeparators(fileName);
+            EXPECT_FALSE(m_filesAdded.contains(nativeFormat)) << "Unexpected file watch:" << nativeFormat.toUtf8().constData();
+        }
+        for (const auto& folderName : ignoredFldrs)
+        {
+            QString nativeFormat = QDir::toNativeSeparators(folderName);
+            EXPECT_FALSE(m_filesAdded.contains(nativeFormat)) << "Unexpected file watch:" << nativeFormat.toUtf8().constData();
         }
     }
 

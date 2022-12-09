@@ -199,6 +199,7 @@ void FileWatcher::PlatformImplementation::AddWatchFolder(QString folder, bool re
         {
             if (!m_alreadyNotifiedCreate.contains(dirPath))
             {
+                DEBUG_FILEWATCHER("%s rawFileAdded for root AddWatchFolder\n", dirPath.toUtf8().constData());
                 source.rawFileAdded(dirPath, {});
                 m_alreadyNotifiedCreate.insert(dirPath);
             }
@@ -254,6 +255,7 @@ void FileWatcher::PlatformImplementation::AddWatchFolder(QString folder, bool re
 
                 if (!m_alreadyNotifiedCreate.contains(filePath))
                 {
+                    DEBUG_FILEWATCHER("%s rawFileAdded via recursive directory crawl for file\n", filePath.toUtf8().constData());
                     source.rawFileAdded(filePath, {});
                     m_alreadyNotifiedCreate.insert(filePath);
                 }
