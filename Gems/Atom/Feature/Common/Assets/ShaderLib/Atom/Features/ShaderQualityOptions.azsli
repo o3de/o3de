@@ -10,7 +10,7 @@
 
 // This file translates quality option macros like QUALITY_LOW_END tiers to their relevant settings
 
-#ifdef QUALITY_LOW_END_TIER1
+#if QUALITY_LOW_END_TIER1
 
     // Unifies the forward output into a single lighting buffer instead of splitting it into a GBuffer
     #ifndef UNIFIED_FORWARD_OUTPUT
@@ -28,7 +28,7 @@
     #endif
 #endif
 
-#ifdef QUALITY_LOW_END_TIER2
+#if QUALITY_LOW_END_TIER2
 
     //Disable shadow related calculations as shadow map passes are not part of the pipeline
     #ifndef ENABLE_SHADOWS

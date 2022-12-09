@@ -828,7 +828,7 @@ namespace UnitTest
 
         // Check the results...
 
-        const ShaderCollection& shaderCollection = materialTypeAsset->GetShaderCollection(MaterialPipelineNameCommon);
+        const ShaderCollection& shaderCollection = materialTypeAsset->GetGeneralShaderCollection();
 
         EXPECT_EQ(m_testMaterialSrgLayout, materialTypeAsset->GetMaterialSrgLayout());
         EXPECT_EQ(3, shaderCollection.size());
@@ -1439,7 +1439,7 @@ namespace UnitTest
         EXPECT_TRUE(materialTypeOutcome.IsSuccess());
         Data::Asset<MaterialTypeAsset> materialTypeAsset = materialTypeOutcome.GetValue();
 
-        const ShaderCollection& shaderCollection = materialTypeAsset->GetShaderCollection(MaterialPipelineNameCommon);
+        const ShaderCollection& shaderCollection = materialTypeAsset->GetGeneralShaderCollection();
 
         // This option is not a dependency of the functor and therefore is not owned by the material
         EXPECT_FALSE(shaderCollection[0].MaterialOwnsShaderOption(Name{"o_quality"}));

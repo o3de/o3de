@@ -88,9 +88,9 @@
             { 
                 "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/ParallaxPropertyGroup.json"
             },
-//            { 
-//                "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/OpacityPropertyGroup.json"
-//            },
+            { 
+                "$import": "MaterialPipelineTest_OpacityPropertyGroup.json"
+            },
             { 
                 "$import": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/MaterialInputs/UvPropertyGroup.json"
             },
@@ -105,6 +105,13 @@
     "lightingModel": "Enhanced",
     "materialShaderCode": "./MaterialPipelineTest_Enhanced.azsli",
     "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                //TODO(MaterialPipeline): Make the builder touch up this path so it can be relative to the .materialtype file
+                "file": "TestData/Materials/Types/CommonMaterialPipelineSetup.lua"
+            }
+        }
     ],
     "uvNameMap": {
         "UV0": "Tiled",

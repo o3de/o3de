@@ -28,18 +28,19 @@ namespace AZ
             : public AssetCreator<MaterialTypeAsset>
         {
         public:
+
             //! Begin creating a MaterialTypeAsset
             void Begin(const Data::AssetId& assetId);
 
             //! Adds a shader to the built-in shader collection, which will be run for this material.
             //! @param shaderTag Must be unique within the material type's list of shaders.
             //! @param materialPipelineName Identifies a specific material pipeline that this shader is used for.
-            //!                             For MaterialPipelineNameCommon, the shader will be used for all pipelines.
+            //!                             For MaterialPipelineNone, the shader will be used for all pipelines.
             void AddShader(
                 const AZ::Data::Asset<ShaderAsset>& shaderAsset,
                 const ShaderVariantId& shaderVariantId = {},
                 const AZ::Name& shaderTag = {},
-                const AZ::Name& materialPipelineName = MaterialPipelineNameCommon);
+                const AZ::Name& materialPipelineName = MaterialPipelineNone);
 
             //! Sets the version of the MaterialTypeAsset
             void SetVersion(uint32_t version);
@@ -54,10 +55,9 @@ namespace AZ
             void ClaimShaderOptionOwnership(const Name& shaderOptionName);
 
             //! Starts creating a material property.
-            //! Note that EndMaterialProperty() must be called before calling SetMaterialPropertyValue(). Similarly,
-            //! the property will not appear in GetMaterialPropertiesLayout() until EndMaterialProperty() is called.
-            void BeginMaterialProperty(const Name& materialPropertyName, MaterialPropertyDataType dataType);
-            
+            //! The property will not appear in GetMaterialPropertiesLayout() until EndMaterialProperty() is called.
+            void BeginMaterialProperty(const Name& materialPropertyName, MaterialPropertyDataType dataType, const AZ::Name& materialPipelineName = MaterialPipelineNone);
+
             //! Adds an output mapping from the current material property to a ShaderResourceGroup input.
             void ConnectMaterialPropertyToShaderInput(const Name& shaderInputName);
             
@@ -75,19 +75,19 @@ namespace AZ
             //! Finishes creating a material property.
             void EndMaterialProperty();
             
-            void SetPropertyValue(const Name& name, const Data::Asset<ImageAsset>& imageAsset);
-            void SetPropertyValue(const Name& name, const Data::Asset<StreamingImageAsset>& imageAsset);
-            void SetPropertyValue(const Name& name, const Data::Asset<AttachmentImageAsset>& imageAsset);
+            void SetPropertyValue(const Name& name, const Data::Asset<ImageAsset>& imageAsset, const AZ::Name& materialPipelineName = MaterialPipelineNone);
+            void SetPropertyValue(const Name& name, const Data::Asset<StreamingImageAsset>& imageAsset, const AZ::Name& materialPipelineName = MaterialPipelineNone);
+            void SetPropertyValue(const Name& name, const Data::Asset<AttachmentImageAsset>& imageAsset, const AZ::Name& materialPipelineName = MaterialPipelineNone);
 
             //! Sets a property value using data in AZStd::variant-based MaterialPropertyValue. The contained data must match
             //! the data type of the property. For type Image, the value must be a Data::Asset<ImageAsset>.
-            void SetPropertyValue(const Name& name, const MaterialPropertyValue& value);
+            void SetPropertyValue(const Name& name, const MaterialPropertyValue& value, const AZ::Name& materialPipelineName = MaterialPipelineNone);
 
             //! Adds a MaterialFunctor.
             //! Material functors provide custom logic and calculations to configure shaders, render states, and more.See MaterialFunctor.h for details.
-            //! @param materialPipelineName Identifies a specific material pipeline that this functor is used for. For MaterialPipelineNameCommon, 
+            //! @param materialPipelineName Identifies a specific material pipeline that this functor is used for. For MaterialPipelineNone, 
             //!                             the functor will be used for the main ShaderCollection that applies to all pipelines.
-            void AddMaterialFunctor(const Ptr<MaterialFunctor>& functor, const AZ::Name& materialPipelineName = MaterialPipelineNameCommon);
+            void AddMaterialFunctor(const Ptr<MaterialFunctor>& functor, const AZ::Name& materialPipelineName = MaterialPipelineNone);
 
             //! Adds UV name for a shader input.
             void AddUvName(const RHI::ShaderSemantic& shaderInput, const Name& uvName);
@@ -95,7 +95,7 @@ namespace AZ
             //! This provides access to the MaterialPropertiesLayout while the MaterialTypeAsset is still being built.
             //! This is needed by MaterialTypeSourceData to initialize functor objects.
             //! @return A valid pointer when called between Begin() and End(). Otherwise, returns nullptr.
-            const MaterialPropertiesLayout* GetMaterialPropertiesLayout() const;
+            const MaterialPropertiesLayout* GetMaterialPropertiesLayout(const AZ::Name& materialPipelineName = MaterialPipelineNone) const;
 
             //! This provides access to the material ShaderResourceGroupLayout being used for the MaterialTypeAsset.
             //! This is needed by MaterialTypeSourceData to initialize functor objects.
@@ -108,10 +108,10 @@ namespace AZ
 
         private:
 
-            void AddMaterialProperty(MaterialPropertyDescriptor&& materialProperty);
+            void AddMaterialProperty(MaterialPropertyDescriptor&& materialProperty, const AZ::Name& materialPipelineName);
             
-            bool PropertyCheck(TypeId typeId, const Name& name);
-
+            bool PropertyCheck(TypeId typeId, const Name& propertyName, const AZ::Name& materialPipelineName);
+                
             //! The material type holds references to shader assets that contain SRGs that are supposed to be the same across all passes in the material.
             //! This function searches for an SRG given a @bindingSlot. If a valid one is found it makes sure it is the same across all shaders
             //! and records it in @srgShaderAssetToUpdate.
@@ -131,9 +131,13 @@ namespace AZ
             bool ValidateBeginMaterialProperty();
             bool ValidateEndMaterialProperty();
 
+            MaterialTypeAsset::MaterialPipeline& GetMaterialPipeline(const AZ::Name& materialPipelineName);
+
+            
             MaterialPropertiesLayout* m_materialPropertiesLayout = nullptr; //!< Cached pointer to the MaterialPropertiesLayout being created
             const RHI::ShaderResourceGroupLayout* m_materialShaderResourceGroupLayout = nullptr; //!< The per-material ShaderResourceGroup layout
             MaterialPropertyDescriptor m_wipMaterialProperty; //!< Material property being created. Is valid between BeginMaterialProperty() and EndMaterialProperty()
+            Name m_wipMaterialPropertyPipeline; //!< Tracks which material pipeline the material property is being created for, if any.
         };
 
     } // namespace RPI

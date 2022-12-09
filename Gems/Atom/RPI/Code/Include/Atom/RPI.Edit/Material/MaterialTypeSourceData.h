@@ -129,7 +129,7 @@ namespace AZ
                 //! Path to a ".shader" file, relative to the asset root
                 AZStd::string m_shaderFilePath;
 
-                //! Unique tag to identify the shader
+                //! Unique tag to identify the shader, particularly in lua functors
                 AZ::Name m_shaderTag;
 
                 //! This list provides a way for users to set shader option values in a 'hard-coded' way rather than connecting them to material properties.
@@ -176,6 +176,9 @@ namespace AZ
             struct MaterialPipelineData
             {
                 AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::MaterialPipelineData, "{AA4648A2-4E0A-4AAB-BC85-FE762D449CA7}");
+
+                //! The list of internal properties that will be used to pass data from the main material properties to the material pipeline.
+                AZStd::vector<MaterialPropertySourceData> m_pipelinePropertyLayout;
 
                 //! A list of specific shaders that will be used to render the material.
                 AZStd::vector<ShaderVariantReferenceData> m_shaderCollection;
@@ -327,6 +330,7 @@ namespace AZ
             bool BuildProperty(
                 const AZStd::string& materialTypeSourceFilePath,
                 MaterialTypeAssetCreator& materialTypeAssetCreator,
+                const Name& materialPipelineName,
                 MaterialNameContext materialNameContext,
                 const Name& propertyId,
                 const MaterialPropertySourceData& propertySourceData) const;

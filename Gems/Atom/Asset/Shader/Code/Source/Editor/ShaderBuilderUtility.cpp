@@ -48,7 +48,7 @@ namespace AZ
         {
             [[maybe_unused]] static constexpr char ShaderBuilderUtilityName[] = "ShaderBuilderUtility";
 
-            Outcome<RPI::ShaderSourceData, AZStd::string> LoadShaderDataJson(const AZStd::string& fullPathToJsonFile)
+            Outcome<RPI::ShaderSourceData, AZStd::string> LoadShaderDataJson(const AZStd::string& fullPathToJsonFile, bool warningsAsErrors)
             {
                 RPI::ShaderSourceData shaderSourceData;
 
@@ -68,12 +68,18 @@ namespace AZ
 
                 JsonSerialization::Load(shaderSourceData, document, settings);
 
-                if (reportingHelper.WarningsReported() || reportingHelper.ErrorsReported())
+                if (reportingHelper.ErrorsReported())
                 {
                     return AZ::Failure(reportingHelper.GetErrorMessage());
                 }
-
-                return AZ::Success(shaderSourceData);
+                else if (warningsAsErrors && reportingHelper.WarningsReported())
+                {
+                    return AZ::Failure(AZStd::string("Warnings treated as error, see above."));
+                }
+                else
+                {
+                    return AZ::Success(shaderSourceData);
+                }
             }
 
             void GetAbsolutePathToAzslFile(const AZStd::string& shaderSourceFileFullPath, AZStd::string specifiedShaderPathAndName, AZStd::string& absoluteAzslPath)
@@ -850,6 +856,8 @@ namespace AZ
 
             IncludedFilesParser::IncludedFilesParser()
             {
+                // TODO(MaterialPipeline): This regex is not sufficient to find the material type source code file, because it is included through
+                // a MATERIAL_TYPE_AZSLI_FILE_PATH macro.
                 AZStd::regex regex(R"(#\s*include\s+[<|"]([\w|/|\\|\.|\-|\:]+)[>|"])", AZStd::regex::ECMAScript);
                 m_includeRegex.swap(regex);
             }

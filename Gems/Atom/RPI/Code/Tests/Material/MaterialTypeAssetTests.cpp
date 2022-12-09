@@ -1322,7 +1322,7 @@ namespace UnitTest
         tester.SerializeOut(materialTypeAsset.Get());
         materialTypeAsset = tester.SerializeIn(Data::AssetId(Uuid::CreateRandom()));
 
-        const ShaderCollection& shaderCollection = materialTypeAsset->GetShaderCollection(MaterialPipelineNameCommon);
+        const ShaderCollection& shaderCollection = materialTypeAsset->GetGeneralShaderCollection();
 
         EXPECT_EQ(3, shaderCollection.size());
         EXPECT_EQ(shaderA, shaderCollection[0].GetShaderAsset());
@@ -1667,7 +1667,7 @@ namespace UnitTest
 
         // Check ownership results...
 
-        const ShaderCollection& shaderCollection = materialTypeAsset->GetShaderCollection(MaterialPipelineNameCommon);
+        const ShaderCollection& shaderCollection = materialTypeAsset->GetGeneralShaderCollection();
 
         EXPECT_TRUE(shaderCollection[0].MaterialOwnsShaderOption(Name{"o_materialOption_inBothShaders"}));
         EXPECT_TRUE(shaderCollection[0].MaterialOwnsShaderOption(Name{"o_materialOption_inShaderA"}));

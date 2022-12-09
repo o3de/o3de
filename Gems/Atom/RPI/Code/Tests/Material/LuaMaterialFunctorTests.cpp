@@ -534,11 +534,11 @@ namespace UnitTest
 
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{true});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
-        EXPECT_EQ(1, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[0].GetShaderOptions()->GetValue(Name{"o_bool"}).GetIndex());
+        EXPECT_EQ(1, testData.GetMaterial()->GetGeneralShaderCollection()[0].GetShaderOptions()->GetValue(Name{"o_bool"}).GetIndex());
 
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{false});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
-        EXPECT_EQ(0, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[0].GetShaderOptions()->GetValue(Name{"o_bool"}).GetIndex());
+        EXPECT_EQ(0, testData.GetMaterial()->GetGeneralShaderCollection()[0].GetShaderOptions()->GetValue(Name{"o_bool"}).GetIndex());
     }
 
     TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_SetShaderOption_UInt)
@@ -568,7 +568,7 @@ namespace UnitTest
 
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{6});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
-        EXPECT_EQ(12, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[0].GetShaderOptions()->GetValue(Name{"o_uint"}).GetIndex());
+        EXPECT_EQ(12, testData.GetMaterial()->GetGeneralShaderCollection()[0].GetShaderOptions()->GetValue(Name{"o_uint"}).GetIndex());
     }
 
     TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_SetShaderOption_Enum)
@@ -602,11 +602,11 @@ namespace UnitTest
 
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{true});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
-        EXPECT_EQ(2, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[0].GetShaderOptions()->GetValue(Name{"o_enum"}).GetIndex());
+        EXPECT_EQ(2, testData.GetMaterial()->GetGeneralShaderCollection()[0].GetShaderOptions()->GetValue(Name{"o_enum"}).GetIndex());
 
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{false});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
-        EXPECT_EQ(1, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[0].GetShaderOptions()->GetValue(Name{"o_enum"}).GetIndex());
+        EXPECT_EQ(1, testData.GetMaterial()->GetGeneralShaderCollection()[0].GetShaderOptions()->GetValue(Name{"o_enum"}).GetIndex());
     }
 
     TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_ShaderItem_SetShaderOption_Bool)
@@ -637,12 +637,12 @@ namespace UnitTest
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{true});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
         EXPECT_EQ(
-            1, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[Name{"TestShader"}].GetShaderOptions()->GetValue(Name{"o_bool"}).GetIndex());
+            1, testData.GetMaterial()->GetGeneralShaderCollection()[Name{"TestShader"}].GetShaderOptions()->GetValue(Name{"o_bool"}).GetIndex());
 
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{false});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
         EXPECT_EQ(
-            0, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[Name{"TestShader"}].GetShaderOptions()->GetValue(Name{"o_bool"}).GetIndex());
+            0, testData.GetMaterial()->GetGeneralShaderCollection()[Name{"TestShader"}].GetShaderOptions()->GetValue(Name{"o_bool"}).GetIndex());
     }
 
     TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_ShaderItem_SetShaderOption_UInt)
@@ -673,7 +673,7 @@ namespace UnitTest
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{6});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
         EXPECT_EQ(
-            12, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[Name{"TestShader"}].GetShaderOptions()->GetValue(Name{"o_uint"}).GetIndex());
+            12, testData.GetMaterial()->GetGeneralShaderCollection()[Name{"TestShader"}].GetShaderOptions()->GetValue(Name{"o_uint"}).GetIndex());
     }
 
     TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_ShaderItem_SetShaderOption_Enum)
@@ -708,12 +708,12 @@ namespace UnitTest
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{true});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
         EXPECT_EQ(
-            2, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[Name{"TestShader"}].GetShaderOptions()->GetValue(Name{"o_enum"}).GetIndex());
+            2, testData.GetMaterial()->GetGeneralShaderCollection()[Name{"TestShader"}].GetShaderOptions()->GetValue(Name{"o_enum"}).GetIndex());
 
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{false});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
         EXPECT_EQ(
-            1, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[Name{"TestShader"}].GetShaderOptions()->GetValue(Name{"o_enum"}).GetIndex());
+            1, testData.GetMaterial()->GetGeneralShaderCollection()[Name{"TestShader"}].GetShaderOptions()->GetValue(Name{"o_enum"}).GetIndex());
     }
 
     TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_EditorContext_SetMaterialPropertyVisibility)
@@ -949,7 +949,7 @@ namespace UnitTest
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{true});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
 
-        const ShaderCollection& shaderCollection = testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon);
+        const ShaderCollection& shaderCollection = testData.GetMaterial()->GetGeneralShaderCollection();
 
         EXPECT_EQ(1, shaderCollection[0].GetRenderStatesOverlay()->m_multisampleState.m_customPositionsCount);
         EXPECT_EQ(2, shaderCollection[0].GetRenderStatesOverlay()->m_multisampleState.m_customPositions[0].m_x);
@@ -995,7 +995,7 @@ namespace UnitTest
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{true});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
 
-        EXPECT_EQ(true, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[Name{"TestShader"}].IsEnabled());
+        EXPECT_EQ(true, testData.GetMaterial()->GetGeneralShaderCollection()[Name{"TestShader"}].IsEnabled());
     }
 
     TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_SetShaderDrawListTagOverride)
@@ -1023,7 +1023,7 @@ namespace UnitTest
         EXPECT_TRUE(testData.GetMaterial()->Compile());
 
         RHI::DrawListTag tag = drawListTagRegistry->FindTag(Name{"TestDrawListTag"});
-        EXPECT_EQ(tag, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[Name{"TestShader"}].GetDrawListTagOverride());
+        EXPECT_EQ(tag, testData.GetMaterial()->GetGeneralShaderCollection()[Name{"TestShader"}].GetDrawListTagOverride());
 
         drawListTagRegistry->ReleaseTag(tag);
     }

@@ -484,7 +484,7 @@ namespace UnitTest
         EXPECT_EQ(material->GetPropertyValue<uint32_t>(material->FindPropertyIndex(Name{"RangeB"})), 10u);
 
         // Check the values on the underlying ShaderCollection::Item
-        ShaderOptionGroup options{optionsLayout, material->GetShaderCollection(MaterialPipelineNameCommon)[0].GetShaderVariantId()};
+        ShaderOptionGroup options{optionsLayout, material->GetGeneralShaderCollection()[0].GetShaderVariantId()};
         EXPECT_EQ(optionEnumA.Get(options).GetIndex(), optionEnumA.FindValue(Name{"High"}).GetIndex());
         EXPECT_EQ(optionEnumB.Get(options).GetIndex(), optionEnumB.FindValue(Name{"Med"}).GetIndex());
         EXPECT_EQ(optionBoolA.Get(options).GetIndex(), optionBoolA.FindValue(Name{"True"}).GetIndex());
@@ -509,7 +509,7 @@ namespace UnitTest
         material->Compile();
 
         // Check the values on the underlying ShaderCollection::Item
-        ShaderOptionGroup options2{optionsLayout, material->GetShaderCollection(MaterialPipelineNameCommon)[0].GetShaderVariantId()};
+        ShaderOptionGroup options2{optionsLayout, material->GetGeneralShaderCollection()[0].GetShaderVariantId()};
         EXPECT_EQ(optionEnumA.Get(options2).GetIndex(), optionEnumA.FindValue(Name{"Med"}).GetIndex());
         EXPECT_EQ(optionEnumB.Get(options2).GetIndex(), optionEnumB.FindValue(Name{"Low"}).GetIndex());
         EXPECT_EQ(optionBoolA.Get(options2).GetIndex(), optionBoolA.FindValue(Name{"False"}).GetIndex());
@@ -544,7 +544,7 @@ namespace UnitTest
 
         auto& optionRangeB = optionsLayout->GetShaderOption(optionsLayout->FindShaderOptionIndex(Name{"o_rangeB"}));
 
-        const ShaderCollection& shaderCollection = material->GetShaderCollection(MaterialPipelineNameCommon);
+        const ShaderCollection& shaderCollection = material->GetGeneralShaderCollection();
 
         // Check the values on the underlying ShaderVariantReferences
         {
@@ -593,7 +593,7 @@ namespace UnitTest
 
         MaterialPropertyIndex enableShader = material->FindPropertyIndex(Name{"EnableSecondShader"});
 
-        const ShaderCollection& shaderCollection = material->GetShaderCollection(MaterialPipelineNameCommon);
+        const ShaderCollection& shaderCollection = material->GetGeneralShaderCollection();
 
         EXPECT_TRUE(shaderCollection[0].IsEnabled());
         EXPECT_FALSE(shaderCollection[1].IsEnabled());
@@ -658,9 +658,9 @@ namespace UnitTest
         EXPECT_TRUE(result.IsSuccess());
         EXPECT_EQ(0, result.GetValue());
 
-        for (size_t i = 0; i < material->GetShaderCollection(MaterialPipelineNameCommon).size(); ++i)
+        for (size_t i = 0; i < material->GetGeneralShaderCollection().size(); ++i)
         {
-            auto& shaderItem = material->GetShaderCollection(MaterialPipelineNameCommon)[i];
+            auto& shaderItem = material->GetGeneralShaderCollection()[i];
 
             EXPECT_EQ(0, shaderItem.GetShaderOptions()->GetValue(Name{"o_enumA"}).GetIndex());
             EXPECT_EQ(1, shaderItem.GetShaderOptions()->GetValue(Name{"o_enumB"}).GetIndex());
