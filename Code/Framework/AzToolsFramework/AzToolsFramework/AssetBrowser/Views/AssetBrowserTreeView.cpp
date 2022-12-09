@@ -823,14 +823,14 @@ namespace AzToolsFramework
                                 // This code is needed until that bug is fixed. GHI 13340
                                 {
                                     fromPath = entry->GetFullPath();
-                                    toPath = AZStd::string::format("%.*s/.*%s", AZ_STRING_ARG(folderPath), AZ_STRING_ARG(filename.Native()));
+                                    toPath = AZStd::string::format("%.*s/%.*s", AZ_STRING_ARG(folderPath), AZ_STRING_ARG(filename.Native()));
                                     AZ::IO::SystemFile::CreateDir(toPath.c_str());
                                     AZ::IO::SystemFile::DeleteDir(fromPath.c_str()); 
                                 }
                                 else
                                 {
                                     fromPath = AZStd::string::format("%.*s/*", AZ_STRING_ARG(entry->GetFullPath()));
-                                    toPath = AZStd::string::format("%.*s/%.^s/*", AZ_STRING_ARG(folderPath), AZ_STRING_ARG(filename.Native()));
+                                    toPath = AZStd::string::format("%.*s/%.*s/*", AZ_STRING_ARG(folderPath), AZ_STRING_ARG(filename.Native()));
                                 }
                             }
                             else
