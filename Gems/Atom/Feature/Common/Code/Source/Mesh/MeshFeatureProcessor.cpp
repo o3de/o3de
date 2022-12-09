@@ -1710,20 +1710,23 @@ namespace AZ
             // Note: this should be changed to have the material automatically set the forwardPassIBLSpecular
             // property and look for that instead of the shader option.
             // [GFX TODO][ATOM-5040] Address Property Metadata Feedback Loop
-            for (auto& shaderItem : material->GetShaderCollection())
+            for (auto& shaderCollectionIter : material->GetShaderCollections())
             {
-                if (shaderItem.IsEnabled())
+                for (auto& shaderItem : shaderCollectionIter.second)
                 {
-                    RPI::ShaderOptionIndex index = shaderItem.GetShaderOptionGroup().GetShaderOptionLayout()->FindShaderOptionIndex(Name{ "o_materialUseForwardPassIBLSpecular" });
-                    if (index.IsValid())
+                    if (shaderItem.IsEnabled())
                     {
-                        RPI::ShaderOptionValue value = shaderItem.GetShaderOptionGroup().GetValue(Name{ "o_materialUseForwardPassIBLSpecular" });
-                        if (value.GetIndex() == 1)
+                        RPI::ShaderOptionIndex index = shaderItem.GetShaderOptionGroup().GetShaderOptionLayout()->FindShaderOptionIndex(Name{"o_materialUseForwardPassIBLSpecular"});
+                        if (index.IsValid())
                         {
-                            return true;
+                            RPI::ShaderOptionValue value = shaderItem.GetShaderOptionGroup().GetValue(Name{"o_materialUseForwardPassIBLSpecular"});
+                            if (value.GetIndex() == 1)
+                            {
+                                return true;
+                            }
                         }
-                    }
 
+                    }
                 }
             }
 

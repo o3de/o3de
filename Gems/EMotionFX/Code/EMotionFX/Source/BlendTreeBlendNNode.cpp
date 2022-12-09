@@ -491,7 +491,7 @@ namespace EMotionFX
         if (con)
         {
             con->GetSourceNode()->FindOrCreateUniqueNodeData(animGraphInstance)->SetGlobalWeight(uniqueData->GetGlobalWeight());
-            con->GetSourceNode()->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+            TopDownUpdateIncomingNode(animGraphInstance, con->GetSourceNode(), timePassedInSeconds);
         }
 
         // get two nodes that we receive input poses from, and get the blend weight
@@ -557,12 +557,12 @@ namespace EMotionFX
         // Top-down update the relevant nodes.
         if (nodeA)
         {
-            nodeA->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+            TopDownUpdateIncomingNode(animGraphInstance, nodeA, timePassedInSeconds);
         }
 
         if (nodeB && nodeA != nodeB)
         {
-            nodeB->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+            TopDownUpdateIncomingNode(animGraphInstance, nodeB, timePassedInSeconds);
         }
     }
 
@@ -585,7 +585,7 @@ namespace EMotionFX
         BlendTreeConnection* connection = m_inputPorts[INPUTPORT_WEIGHT].m_connection;
         if (connection)
         {
-            connection->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, connection->GetSourceNode(), timePassedInSeconds);
         }
 
         // get two nodes that we receive input poses from, and get the blend weight
@@ -608,10 +608,10 @@ namespace EMotionFX
             return;
         }
 
-        nodeA->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+        PostUpdateIncomingNode(animGraphInstance, nodeA, timePassedInSeconds);
         if (nodeB && nodeA != nodeB)
         {
-            nodeB->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, nodeB, timePassedInSeconds);
         }
 
         // request the reference counted data inside the unique data

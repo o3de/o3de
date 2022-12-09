@@ -29,7 +29,7 @@ namespace AZ
             }
         }
 
-        void UseTextureFunctor::Process(RuntimeContext& context)
+        void UseTextureFunctor::Process(RPI::MaterialFunctorAPI::RuntimeContext& context)
         {
             using namespace RPI;
 
@@ -41,7 +41,7 @@ namespace AZ
             context.SetShaderOptionValue(m_useTextureOptionName, useTexture);
         }
 
-        void UseTextureFunctor::Process(EditorContext& context)
+        void UseTextureFunctor::Process(RPI::MaterialFunctorAPI::EditorContext& context)
         {
             const bool useTextureFlag = context.GetMaterialPropertyValue<bool>(m_useTexturePropertyIndex);
             Data::Instance<RPI::Image> image = context.GetMaterialPropertyValue<Data::Instance<RPI::Image>>(m_texturePropertyIndex);

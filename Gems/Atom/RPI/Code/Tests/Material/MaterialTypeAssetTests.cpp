@@ -50,7 +50,7 @@ namespace UnitTest
             }
 
             using AZ::RPI::MaterialFunctor::Process;
-            void Process(AZ::RPI::MaterialFunctor::RuntimeContext& context) override
+            void Process(AZ::RPI::MaterialFunctorAPI::RuntimeContext& context) override
             {
                 // This code isn't actually called in the unit test, but we include it here just to demonstrate what a real functor might look like.
                 float f = context.GetMaterialPropertyValue(m_floatIndex).GetValue<float>();
@@ -78,7 +78,7 @@ namespace UnitTest
             }
 
             using AZ::RPI::MaterialFunctor::Process;
-            void Process(AZ::RPI::MaterialFunctor::RuntimeContext& context) override
+            void Process(AZ::RPI::MaterialFunctorAPI::RuntimeContext& context) override
             {
                 // This code isn't actually called in the unit test, but we include it here just to demonstrate what a real functor might look like.
 
@@ -414,9 +414,9 @@ namespace UnitTest
         MaterialTypeAssetCreator materialTypeCreator;
         materialTypeCreator.Begin(Uuid::CreateRandom());
 
-        materialTypeCreator.AddShader(m_testShaderAsset, Name{"first"});
-        materialTypeCreator.AddShader(m_testShaderAsset, Name{"second"});
-        materialTypeCreator.AddShader(m_testShaderAsset, Name{"third"});
+        materialTypeCreator.AddShader(m_testShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"first"});
+        materialTypeCreator.AddShader(m_testShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"second"});
+        materialTypeCreator.AddShader(m_testShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"third"});
 
         materialTypeCreator.BeginMaterialProperty(Name{"SecondShaderEnabled"}, MaterialPropertyDataType::Bool);
         materialTypeCreator.ConnectMaterialPropertyToShaderEnabled(Name{"second"});
@@ -1322,19 +1322,21 @@ namespace UnitTest
         tester.SerializeOut(materialTypeAsset.Get());
         materialTypeAsset = tester.SerializeIn(Data::AssetId(Uuid::CreateRandom()));
 
-        EXPECT_EQ(3, materialTypeAsset->GetShaderCollection().size());
-        EXPECT_EQ(shaderA, materialTypeAsset->GetShaderCollection()[0].GetShaderAsset());
-        EXPECT_EQ(shaderB, materialTypeAsset->GetShaderCollection()[1].GetShaderAsset());
-        EXPECT_EQ(shaderC, materialTypeAsset->GetShaderCollection()[2].GetShaderAsset());
+        const ShaderCollection& shaderCollection = materialTypeAsset->GetShaderCollection(MaterialPipelineNameCommon);
 
-        EXPECT_EQ(materialTypeAsset->GetShaderCollection()[0].GetShaderOptions()->GetValue(Name{"o_quality"}).GetIndex(),
+        EXPECT_EQ(3, shaderCollection.size());
+        EXPECT_EQ(shaderA, shaderCollection[0].GetShaderAsset());
+        EXPECT_EQ(shaderB, shaderCollection[1].GetShaderAsset());
+        EXPECT_EQ(shaderC, shaderCollection[2].GetShaderAsset());
+
+        EXPECT_EQ(shaderCollection[0].GetShaderOptions()->GetValue(Name{"o_quality"}).GetIndex(),
             m_testShaderOptionsLayout->FindValue(Name{"o_quality"}, Name{"Med"}).GetIndex());
-        EXPECT_EQ(materialTypeAsset->GetShaderCollection()[0].GetShaderOptions()->GetValue(Name{"o_lightCount"}).GetIndex(), 5);
-        EXPECT_EQ(materialTypeAsset->GetShaderCollection()[1].GetShaderOptions()->GetValue(Name{"o_quality"}).GetIndex(),
+        EXPECT_EQ(shaderCollection[0].GetShaderOptions()->GetValue(Name{"o_lightCount"}).GetIndex(), 5);
+        EXPECT_EQ(shaderCollection[1].GetShaderOptions()->GetValue(Name{"o_quality"}).GetIndex(),
             m_testShaderOptionsLayout->FindValue(Name{"o_quality"}, Name{"High"}).GetIndex());
-        EXPECT_EQ(materialTypeAsset->GetShaderCollection()[1].GetShaderOptions()->GetValue(Name{"o_lightCount"}).GetIndex(), 3);
-        EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[2].GetShaderOptions()->GetValue(Name{"o_quality"}).IsValid());
-        EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[2].GetShaderOptions()->GetValue(Name{"o_lightCount"}).IsValid());
+        EXPECT_EQ(shaderCollection[1].GetShaderOptions()->GetValue(Name{"o_lightCount"}).GetIndex(), 3);
+        EXPECT_FALSE(shaderCollection[2].GetShaderOptions()->GetValue(Name{"o_quality"}).IsValid());
+        EXPECT_FALSE(shaderCollection[2].GetShaderOptions()->GetValue(Name{"o_lightCount"}).IsValid());
 
         EXPECT_EQ(m_testMaterialSrgLayout, materialTypeAsset->GetMaterialSrgLayout());
 
@@ -1665,19 +1667,21 @@ namespace UnitTest
 
         // Check ownership results...
 
-        EXPECT_TRUE(materialTypeAsset->GetShaderCollection()[0].MaterialOwnsShaderOption(Name{"o_materialOption_inBothShaders"}));
-        EXPECT_TRUE(materialTypeAsset->GetShaderCollection()[0].MaterialOwnsShaderOption(Name{"o_materialOption_inShaderA"}));
-        EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[0].MaterialOwnsShaderOption(Name{"o_materialOption_inShaderB"}));
-        EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[0].MaterialOwnsShaderOption(Name{"o_globalOption_inBothShaders"}));
-        EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[0].MaterialOwnsShaderOption(Name{"o_globalOption_inShaderA"}));
-        EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[0].MaterialOwnsShaderOption(Name{"o_globalOption_inShaderB"}));
+        const ShaderCollection& shaderCollection = materialTypeAsset->GetShaderCollection(MaterialPipelineNameCommon);
 
-        EXPECT_TRUE(materialTypeAsset->GetShaderCollection()[1].MaterialOwnsShaderOption(Name{"o_materialOption_inBothShaders"}));
-        EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[1].MaterialOwnsShaderOption(Name{"o_materialOption_inShaderA"}));
-        EXPECT_TRUE(materialTypeAsset->GetShaderCollection()[1].MaterialOwnsShaderOption(Name{"o_materialOption_inShaderB"}));
-        EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[1].MaterialOwnsShaderOption(Name{"o_globalOption_inBothShaders"}));
-        EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[1].MaterialOwnsShaderOption(Name{"o_globalOption_inShaderA"}));
-        EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[1].MaterialOwnsShaderOption(Name{"o_globalOption_inShaderB"}));
+        EXPECT_TRUE(shaderCollection[0].MaterialOwnsShaderOption(Name{"o_materialOption_inBothShaders"}));
+        EXPECT_TRUE(shaderCollection[0].MaterialOwnsShaderOption(Name{"o_materialOption_inShaderA"}));
+        EXPECT_FALSE(shaderCollection[0].MaterialOwnsShaderOption(Name{"o_materialOption_inShaderB"}));
+        EXPECT_FALSE(shaderCollection[0].MaterialOwnsShaderOption(Name{"o_globalOption_inBothShaders"}));
+        EXPECT_FALSE(shaderCollection[0].MaterialOwnsShaderOption(Name{"o_globalOption_inShaderA"}));
+        EXPECT_FALSE(shaderCollection[0].MaterialOwnsShaderOption(Name{"o_globalOption_inShaderB"}));
+
+        EXPECT_TRUE(shaderCollection[1].MaterialOwnsShaderOption(Name{"o_materialOption_inBothShaders"}));
+        EXPECT_FALSE(shaderCollection[1].MaterialOwnsShaderOption(Name{"o_materialOption_inShaderA"}));
+        EXPECT_TRUE(shaderCollection[1].MaterialOwnsShaderOption(Name{"o_materialOption_inShaderB"}));
+        EXPECT_FALSE(shaderCollection[1].MaterialOwnsShaderOption(Name{"o_globalOption_inBothShaders"}));
+        EXPECT_FALSE(shaderCollection[1].MaterialOwnsShaderOption(Name{"o_globalOption_inShaderA"}));
+        EXPECT_FALSE(shaderCollection[1].MaterialOwnsShaderOption(Name{"o_globalOption_inShaderB"}));
     }
 
 }

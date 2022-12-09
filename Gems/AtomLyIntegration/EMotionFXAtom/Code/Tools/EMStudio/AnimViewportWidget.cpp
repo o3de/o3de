@@ -108,6 +108,14 @@ namespace EMStudio
             {
                 return m_renderer->GetCharacterCenter();
             });
+        m_orbitCamera->SetActivationEndedFn(
+            [viewportId = GetViewportId()]
+            {
+                // when the orbit camera ends, ensure that the internal camera returns to a look state
+                // (internal offset value for camera is zero)
+                AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                    viewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::LookFromOrbit);
+            });
 
         m_orbitTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
             translateCameraInputChannelIds, AzFramework::LookTranslation, AzFramework::TranslatePivotLook);
@@ -117,6 +125,7 @@ namespace EMStudio
             EMStudio::ViewportUtil::PanCameraInputChannelId(), AzFramework::LookPan, AzFramework::TranslateOffsetOrbit);
         m_orbitMotionDollyCamera =
             AZStd::make_shared<AzFramework::OrbitMotionDollyCameraInput>(EMStudio::ViewportUtil::OrbitDollyCameraInputChannelId());
+
         m_orbitCamera->m_orbitCameras.AddCamera(m_orbitRotateCamera);
         m_orbitCamera->m_orbitCameras.AddCamera(m_orbitScrollDollyCamera);
         m_orbitCamera->m_orbitCameras.AddCamera(m_orbitTranslateCamera);
@@ -209,16 +218,22 @@ namespace EMStudio
             break;
         case RenderOptions::CameraViewMode::DEFAULT:
             // The default view mode is looking from the top left of the character.
-            cameraPosition.Set(
-                targetPosition.GetX() - CameraDistance, targetPosition.GetY() + CameraDistance, targetPosition.GetZ() + CameraDistance);
+            const AZ::Vector3 displacement = AZ::Vector3(-1.0f, 1.0f, 1.0f).GetNormalized() * CameraDistance;
+            cameraPosition = targetPosition + displacement;
             break;
         }
 
         GetViewportContext()->SetCameraTransform(AZ::Transform::CreateLookAt(cameraPosition, targetPosition));
 
-        AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-            GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraOffset,
-            AZ::Vector3::CreateAxisY(-CameraDistance));
+        // only if we're in follow mode should we set the pivot to the target position
+        // (when not following, the pivot will be the camera position until alt is pressed)
+        if (m_plugin->GetRenderOptions()->GetCameraFollowUp())
+        {
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(),
+                &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraPivotDetachedImmediate,
+                targetPosition);
+        }
     }
 
     void AnimViewportWidget::UpdateCameraFollowUp(bool followUp)
@@ -240,7 +255,12 @@ namespace EMStudio
                 GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::AddCameras, followCameras);
 
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraOffset,
+                GetViewportId(),
+                &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraPivotAttachedImmediate,
+                m_renderer->GetCharacterCenter());
+
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraOffsetImmediate,
                 AZ::Vector3::CreateAxisY(-CameraDistance));
         }
         else
@@ -252,10 +272,11 @@ namespace EMStudio
                 GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::AddCameras, lookAndOrbitCameras);
 
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraOffset,
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraOffsetImmediate,
                 AZ::Vector3::CreateZero());
+
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraPivotAttached,
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraPivotAttachedImmediate,
                 GetViewportContext()->GetCameraTransform().GetTranslation());
         }
     }
@@ -420,6 +441,7 @@ namespace EMStudio
         QWidget::resizeEvent(event);
         m_renderOverlay.setGeometry(geometry());
         m_viewportUiManager.Update();
+        CalculateCameraProjection();
     }
 
     void AnimViewportWidget::OnBeginPrepareRender()

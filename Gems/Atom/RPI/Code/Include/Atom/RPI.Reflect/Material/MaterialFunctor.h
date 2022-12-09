@@ -26,6 +26,7 @@ namespace AZ
         class Image;
         class ShaderResourceGroup;
         class MaterialPropertiesLayout;
+        class MaterialPropertyCollection;
 
         //! Indicates how the material system should respond to any material property changes that
         //! impact Pipeline State Object configuration. This is significant because some platforms
@@ -45,47 +46,36 @@ namespace AZ
             Allowed
         };
 
-        //! MaterialFunctor objects provide custom logic and calculations to configure shaders, render states,
-        //! editor metadata, and more.
-        //! Atom provides a LuaMaterialFunctor subclass that uses a script to define the custom logic
-        //! for a convenient workflow. Developers may also provide their own custom hard-coded implementations
-        //! as an optimization rather than taking the scripted approach.
-        //! Any custom subclasses of MaterialFunctor will also need a corresponding MaterialFunctorSourceData subclass
-        //! to create the functor at build-time. Depending on the builder context, clients can choose to create a runtime
-        //! specific functor, an editor functor or one functor used in both circumstances (see usage examples and MaterialFunctor::Process blow).
-        //! Usage example:
-        //!     (Runtime) Modify the material's ShaderCollections;
-        //!         (This allows a material type to include custom logic that dynamically select shaders variants
-        //!         or disable specific shaders. This can result in changing the performance characteristics
-        //!         of the material by selecting alternate shader variants, or by excluding entries shaders/passes.)
-        //!     (Runtime) Perform client-specified calculations on material property values to produce shader input values;
-        //!         (For example, there may be a "RotationDegrees" material property but the underlying shader requires
-        //!         a rotation matrix, so a MaterialFunctor converts the data.)
-        //!     (Editor) Modify metadata of a property when other related properties have changed their value.
-        //!         (For example, if a flag property use texture is checked, the texture property will show up,
-        //!         otherwise, it should hide.)
-        class MaterialFunctor
-            : public AZStd::intrusive_base
+        namespace LuaMaterialFunctorAPI
         {
-            friend class MaterialFunctorSourceData;
-        private:
-            //! The material properties associated with this functor.
-            //! In another word, it defines what properties should trigger this functor to process.
-            //! Bit position uses MaterialPropertyIndex of the property.
-            MaterialPropertyFlags m_materialPropertyDependencies;
+            class ConfigureShaders;
+        }
 
-        public:
-            AZ_RTTI(AZ::RPI::MaterialFunctor, "{4F2EDF30-71C0-4E00-9CB0-9EA97587712E}");
-            AZ_CLASS_ALLOCATOR(MaterialFunctor, SystemAllocator, 0);
-
-            using ShaderAssetList = AZStd::vector<Data::Asset<ShaderAsset>>;
-
-            static void Reflect(ReflectContext* context);
-
-            class RuntimeContext
+        namespace MaterialFunctorAPI
+        {
+            //! Provides functions that are common to all runtime execution contexts
+            class CommonRuntimeConfiguration
             {
-                friend class LuaMaterialFunctorRuntimeContext;
             public:
+                virtual ~CommonRuntimeConfiguration() = default;
+
+                MaterialPropertyPsoHandling GetMaterialPropertyPsoHandling() const { return m_psoHandling; }
+
+            protected:
+                CommonRuntimeConfiguration(MaterialPropertyPsoHandling psoHandling) : m_psoHandling(psoHandling)
+                {
+                }
+
+            private:
+                MaterialPropertyPsoHandling m_psoHandling = MaterialPropertyPsoHandling::Error;
+            };
+
+            //! Provides commonly used functions for reading material property values
+            class ReadMaterialPropertyValues
+            {
+            public:
+                virtual ~ReadMaterialPropertyValues() = default;
+
                 //! Get the property value. The type must be one of those in MaterialPropertyValue.
                 //! Otherwise, a compile error will be reported.
                 template<typename Type>
@@ -96,18 +86,31 @@ namespace AZ
                 const MaterialPropertyValue& GetMaterialPropertyValue(const Name& propertyId) const;
                 const MaterialPropertyValue& GetMaterialPropertyValue(const MaterialPropertyIndex& index) const;
 
-                const MaterialPropertiesLayout* GetMaterialPropertiesLayout() const { return m_materialPropertiesLayout.get(); }
-                
-                MaterialPropertyPsoHandling GetMaterialPropertyPsoHandling() const { return m_psoHandling; }
+                const MaterialPropertiesLayout* GetMaterialPropertiesLayout() const;
+
+            protected:
+                ReadMaterialPropertyValues(
+                    const MaterialPropertyCollection& materialProperties,
+                    const MaterialPropertyFlags* materialPropertyDependencies
+                );
+
+                const MaterialPropertyCollection& m_materialProperties;
+                const MaterialPropertyFlags* m_materialPropertyDependencies = nullptr;
+            };
+
+            //! Provides commonly used functions for configuring shaders
+            class ConfigureShaders
+            {
+                friend LuaMaterialFunctorAPI::ConfigureShaders;
+
+            public:
+                virtual ~ConfigureShaders() = default;
 
                 //! Set the value of a shader option in all applicable shaders.
                 bool SetShaderOptionValue(const Name& optionName, ShaderOptionValue value);
                 bool SetShaderOptionValue(const Name& optionName, const Name& value);
 
-                //! Get the shader resource group for editing.
-                ShaderResourceGroup* GetShaderResourceGroup();
-
-                //! Return how many shaders are in this material.
+                //! Return how many shaders are in the local ShaderCollection.
                 AZStd::size_t GetShaderCount() const;
 
                 //! Enable/disable the specific shader with the index.
@@ -132,51 +135,61 @@ namespace AZ
                 void ApplyShaderRenderStateOverlay(AZStd::size_t shaderIndex, const RHI::RenderStates& renderStatesOverlay);
                 void ApplyShaderRenderStateOverlay(const AZ::Name& shaderTag, const RHI::RenderStates& renderStatesOverlay);
 
-                RuntimeContext(
-                    const AZStd::vector<MaterialPropertyValue>& propertyValues,
-                    RHI::ConstPtr<MaterialPropertiesLayout> materialPropertiesLayout,
-                    ShaderCollection* shaderCollection,
-                    ShaderResourceGroup* shaderResourceGroup,
-                    const MaterialPropertyFlags* materialPropertyDependencies,
-                    MaterialPropertyPsoHandling psoHandling
+            protected:
+                ConfigureShaders(
+                    ShaderCollection* localShaderCollection
                 );
 
-            private:
-                bool SetShaderOptionValue(ShaderCollection::Item& shaderItem, ShaderOptionIndex optionIndex, ShaderOptionValue value);
+                virtual void ForAllShaderItems(AZStd::function<bool(ShaderCollection::Item& shaderItem)> callback);
 
                 template<typename ValueType>
                 bool SetShaderOptionValueHelper(const Name& name, const ValueType& value);
 
-                const AZStd::vector<MaterialPropertyValue>& m_materialPropertyValues;
-                RHI::ConstPtr<MaterialPropertiesLayout> m_materialPropertiesLayout;
-                ShaderCollection* m_shaderCollection;
-                ShaderResourceGroup* m_shaderResourceGroup;
-                const MaterialPropertyFlags* m_materialPropertyDependencies = nullptr;
-                MaterialPropertyPsoHandling m_psoHandling = MaterialPropertyPsoHandling::Error;
+                ShaderCollection* m_localShaderCollection;
             };
 
-            class EditorContext
+            //! This execution context operates at a high level, and is not specific to a particular material pipeline.
+            //! It can read material property values.
+            //! It can configure the Material ShaderResourceGroup because there is one for the entire material,
+            //! it's not specific to a material pipeline or particular shader.
+            //! It can configure shaders that are not specific to a particular material pipeline (i.e. the MaterialPipelineNone ShaderCollection).
+            //! It can set shader option values (Note this does impact the material-pipeline-specific shaders in order to automatically
+            //! propagate the values to all shaders in the material).
+            class RuntimeContext
+                : public CommonRuntimeConfiguration
+                , public ReadMaterialPropertyValues
+                , public ConfigureShaders
             {
-                friend class LuaMaterialFunctorEditorContext;
+            public:
+
+                //! Get the shader resource group for editing.
+                ShaderResourceGroup* GetShaderResourceGroup();
+
+                RuntimeContext(
+                    const MaterialPropertyCollection& materialProperties,
+                    const MaterialPropertyFlags* materialPropertyDependencies,
+                    MaterialPropertyPsoHandling psoHandling,
+                    ShaderResourceGroup* shaderResourceGroup,
+                    MaterialPipelineShaderCollections* shaderCollections
+                );
+
+            private:
+
+                void ForAllShaderItems(AZStd::function<bool(ShaderCollection::Item& shaderItem)> callback) override;
+
+                ShaderResourceGroup* m_shaderResourceGroup;
+                MaterialPipelineShaderCollections* m_allShaderCollections;
+            };
+
+            //! This execution context is used by tools for configuring UI metadata.
+            class EditorContext
+                : public ReadMaterialPropertyValues
+            {
             public:
                 const MaterialPropertyDynamicMetadata* GetMaterialPropertyMetadata(const Name& propertyId) const;
                 const MaterialPropertyDynamicMetadata* GetMaterialPropertyMetadata(const MaterialPropertyIndex& index) const;
 
                 const MaterialPropertyGroupDynamicMetadata* GetMaterialPropertyGroupMetadata(const Name& propertyId) const;
-
-                //! Get the property value. The type must be one of those in MaterialPropertyValue.
-                //! Otherwise, a compile error will be reported.
-                template<typename Type>
-                const Type& GetMaterialPropertyValue(const Name& propertyId) const;
-                template<typename Type>
-                const Type& GetMaterialPropertyValue(const MaterialPropertyIndex& index) const;
-                //! Get the property value. GetMaterialPropertyValue<T>() is equivalent to GetMaterialPropertyValue().GetValue<T>().
-                const MaterialPropertyValue& GetMaterialPropertyValue(const Name& propertyId) const;
-                const MaterialPropertyValue& GetMaterialPropertyValue(const MaterialPropertyIndex& index) const;
-
-                const MaterialPropertiesLayout* GetMaterialPropertiesLayout() const { return m_materialPropertiesLayout.get(); }
-                
-                MaterialPropertyPsoHandling GetMaterialPropertyPsoHandling() const { return MaterialPropertyPsoHandling::Allowed; }
 
                 //! Set the visibility dynamic metadata of a material property.
                 bool SetMaterialPropertyVisibility(const Name& propertyId, MaterialPropertyVisibility visibility);
@@ -203,8 +216,7 @@ namespace AZ
                 // const AZStd::vector<AZStd::any>&, AZStd::unordered_map<MaterialPropertyIndex, Image*>&, RHI::ConstPtr<MaterialPropertiesLayout>
                 // can be all replaced by const Material*, but Material definition is separated in RPI.Public, we can't use it at this point.
                 EditorContext(
-                    const AZStd::vector<MaterialPropertyValue>& propertyValues,
-                    RHI::ConstPtr<MaterialPropertiesLayout> materialPropertiesLayout,
+                    const MaterialPropertyCollection& materialProperties,
                     AZStd::unordered_map<Name, MaterialPropertyDynamicMetadata>& propertyMetadata,
                     AZStd::unordered_map<Name, MaterialPropertyGroupDynamicMetadata>& propertyGroupMetadata,
                     AZStd::unordered_set<Name>& updatedPropertiesOut,
@@ -216,14 +228,42 @@ namespace AZ
                 MaterialPropertyDynamicMetadata* QueryMaterialPropertyMetadata(const Name& propertyId) const;
                 MaterialPropertyGroupDynamicMetadata* QueryMaterialPropertyGroupMetadata(const Name& propertyGroupId) const;
 
-                const AZStd::vector<MaterialPropertyValue>& m_materialPropertyValues;
-                RHI::ConstPtr<MaterialPropertiesLayout> m_materialPropertiesLayout;
                 AZStd::unordered_map<Name, MaterialPropertyDynamicMetadata>& m_propertyMetadata;
                 AZStd::unordered_map<Name, MaterialPropertyGroupDynamicMetadata>& m_propertyGroupMetadata;
                 AZStd::unordered_set<Name>& m_updatedPropertiesOut;
                 AZStd::unordered_set<Name>& m_updatedPropertyGroupsOut;
-                const MaterialPropertyFlags* m_materialPropertyDependencies = nullptr;
             };
+
+        }
+
+        //! MaterialFunctor objects provide custom logic and calculations to configure shaders, render states,
+        //! editor metadata, and more.
+        //! Atom also provides a LuaMaterialFunctor subclass that uses a script to define the custom logic
+        //! for a convenient workflow. Developers may also provide their own custom hard-coded implementations
+        //! as an optimization rather than taking the scripted approach.
+        //! Any custom subclasses of MaterialFunctor will also need a corresponding MaterialFunctorSourceData subclass
+        //! to create the functor at build-time. Depending on the builder context, clients can choose to create a runtime
+        //! specific functor, an editor functor or one functor used in both circumstances (see usage examples and MaterialFunctor::Process blow).
+        //! Usage example:
+        //!     (Runtime) Modify the material's main ShaderCollection;
+        //!         (This allows a material type to include custom logic that dynamically enables or disables particular shaders,
+        //!          or set shader options)
+        //!     (Runtime) Perform client-specified calculations on material property values to produce shader input values;
+        //!         (For example, there may be a "RotationDegrees" material property but the underlying shader requires
+        //!         a rotation matrix, so a MaterialFunctor converts the data.)
+        //!     (Editor) Modify metadata of a property when other related properties have changed their value.
+        //!         (For example, if a flag property use texture is checked, the texture property will show up,
+        //!         otherwise, it should hide.)
+        class MaterialFunctor :
+            public AZStd::intrusive_base
+        {
+            friend class MaterialFunctorSourceData;
+
+        public:
+            AZ_RTTI(AZ::RPI::MaterialFunctor, "{4F2EDF30-71C0-4E00-9CB0-9EA97587712E}");
+            AZ_CLASS_ALLOCATOR(MaterialFunctor, SystemAllocator, 0);
+
+            static void Reflect(ReflectContext* context);
 
             //! Check if dependent properties are dirty.
             bool NeedsProcess(const MaterialPropertyFlags& propertyDirtyFlags);
@@ -231,18 +271,20 @@ namespace AZ
             //! Get all dependent properties of this functor.
             const MaterialPropertyFlags& GetMaterialPropertyDependencies() const;
 
-            //! Process() is called at runtime to build a ShaderCollection object given some material property values.
-            //! Material properties will be accessed by MaterialPropertyIndex. The corresponding MaterialFunctorSourceData
-            //! should collect the necessary MaterialPropertyIndex values at build-time.
-            //! Or Process() is to process material property values and make changes to shader settings.
-            virtual void Process([[maybe_unused]] RuntimeContext& context) {}
+            //! Process(RuntimeContext) is called at runtime to configure the pipeline-agnostic ShaderCollection and
+            //! material ShaderResourceGroup based on material property values.
+            virtual void Process([[maybe_unused]] MaterialFunctorAPI::RuntimeContext& context) {}
 
-            //! Process metadata used in the editor, such as property visibility.
-            //! While original metadata is stored in MaterialDocument::m_propertyMetadata, this temporary context has a
-            //! a reference to it which can be accessed by MaterialPropertyIndex or property Name,
-            //! both can use the EditorContext API to convert to the other.
-            virtual void Process([[maybe_unused]] EditorContext& context) {}
+            //! Process(EditorContext) is called in tools to configure UI, such as property visibility.
+            virtual void Process([[maybe_unused]] MaterialFunctorAPI::EditorContext& context) {}
+
+        private:
+            //! The material properties associated with this functor.
+            //! It defines what properties should trigger this functor to process.
+            //! Bit position uses MaterialPropertyIndex of the property.
+            MaterialPropertyFlags m_materialPropertyDependencies;
         };
+
 
         using MaterialFunctorList = AZStd::vector<Ptr<MaterialFunctor>>;
 

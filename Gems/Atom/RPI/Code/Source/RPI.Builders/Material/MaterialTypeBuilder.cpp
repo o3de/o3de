@@ -43,7 +43,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = "Material Type Builder";
-            materialBuilderDescriptor.m_version = 21; // Material functor simplification
+            materialBuilderDescriptor.m_version = 25; // Refactored material functor code
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialTypeBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialTypeBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -227,7 +227,7 @@ namespace AZ
                 });
 
             materialTypeSourceData.EnumerateProperties(
-                [&request, &response, &outputJobDescriptor](const MaterialTypeSourceData::PropertyDefinition* property, const MaterialNameContext&)
+                [&request, &response, &outputJobDescriptor](const MaterialPropertySourceData* property, const MaterialNameContext&)
                 {
                     if (property->m_dataType == MaterialPropertyDataType::Image && MaterialUtils::LooksLikeImageFileReference(property->m_value))
                     {
@@ -239,6 +239,22 @@ namespace AZ
                     }
                     return true;
                 });
+
+            for (const auto& pipelinePair : materialTypeSourceData.m_pipelineData)
+            {
+                for (auto& shader : pipelinePair.second.m_shaderCollection)
+                {
+                    MaterialBuilderUtils::AddPossibleDependencies(request.m_sourceFile,
+                        shader.m_shaderFilePath,
+                        "Shader Asset",
+                        outputJobDescriptor.m_jobDependencyList,
+                        response.m_sourceFileDependencyList,
+                        false,
+                        0);
+                }
+
+                addFunctorDependencies(pipelinePair.second.m_materialFunctorSourceData);
+            }
 
             // Create the output jobs for each platform
             for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
@@ -350,7 +366,7 @@ namespace AZ
             MaterialTypeSourceData materialType = materialTypeLoadResult.TakeValue();
 
             // Some shader templates may be reused by multiple pipelines, so first collect a full picture of all the dependencies
-            AZStd::unordered_map<MaterialPipelineSourceData::ShaderTemplate, AZStd::vector<AZStd::string/*materialPipielineName*/>> shaderTemplateReferences;
+            AZStd::unordered_map<MaterialPipelineSourceData::ShaderTemplate, AZStd::vector<Name/*materialPipielineName*/>> shaderTemplateReferences;
             {
                 bool foundProblems = false;
 
@@ -395,7 +411,7 @@ namespace AZ
                         resolveTemplateFilePathReference(materialPipelineFilePath, normalizedShaderTemplate.m_shader);
                         resolveTemplateFilePathReference(materialPipelineFilePath, normalizedShaderTemplate.m_azsli);
 
-                        shaderTemplateReferences[normalizedShaderTemplate].push_back(materialPipelineName.c_str());
+                        shaderTemplateReferences[normalizedShaderTemplate].push_back(Name{materialPipelineName});
                     }
                 }
 
@@ -415,23 +431,25 @@ namespace AZ
             }
             materialType.m_materialShaderCode.clear();
             materialType.m_lightingModel.clear();
-            materialType.m_shaderCollection.clear(); // This should already be clear, but just in case
+            // These should already be clear, but just in case
+            materialType.m_shaderCollection.clear(); 
+            materialType.m_pipelineData.clear();
 
             // Generate the required shaders
             for (const auto& [shaderTemplate, materialPipelineList] : shaderTemplateReferences)
             {
                 AZ_TraceContext("Shader Template", shaderTemplate.m_shader.c_str());
 
-                AZStd::string materialPipelineName;
+                AZStd::string materialPipelineIndicator;
 
                 if (materialPipelineList.size() == 1)
                 {
-                    materialPipelineName = *materialPipelineList.begin();
+                    materialPipelineIndicator = materialPipelineList.begin()->GetCStr();
                 }
                 else if(materialPipelineList.size() > 1)
                 {
                     // Multiple material pipelines reference the same shader, so it should have a generic common name.
-                    materialPipelineName = PipelineNameForCommonShaders;
+                    materialPipelineIndicator = PipelineNameForCommonShaders;
                 }
                 else
                 {
@@ -466,7 +484,7 @@ namespace AZ
                 shaderName = shaderName.ReplaceExtension(""); // This will remove the ".shader" extension
 
                 AZ::IO::Path outputAzslFilePath = request.m_tempDirPath;
-                outputAzslFilePath /= AZStd::string::format("%s_%s_%s.azsl", materialTypeName.c_str(), materialPipelineName.c_str(), shaderName.c_str());
+                outputAzslFilePath /= AZStd::string::format("%s_%s_%s.azsl", materialTypeName.c_str(), materialPipelineIndicator.c_str(), shaderName.c_str());
 
                 if (AZ::Utils::WriteFile(generatedAzsl, outputAzslFilePath.c_str()).IsSuccess())
                 {
@@ -490,7 +508,7 @@ namespace AZ
                 AzFramework::StringFunc::Replace(shaderFile.GetValue(), "INSERT_AZSL_PATH_HERE", azslFileReference.c_str());
 
                 AZ::IO::Path outputShaderFilePath = request.m_tempDirPath;
-                outputShaderFilePath /= AZStd::string::format("%s_%s_%s.shader", materialTypeName.c_str(), materialPipelineName.c_str(), shaderName.c_str());
+                outputShaderFilePath /= AZStd::string::format("%s_%s_%s.shader", materialTypeName.c_str(), materialPipelineIndicator.c_str(), shaderName.c_str());
 
                 if (AZ::Utils::WriteFile(shaderFile.GetValue(), outputShaderFilePath.c_str()).IsSuccess())
                 {
@@ -506,16 +524,30 @@ namespace AZ
                     return;
                 }
 
-                // Add shader to intermediate material type
+                // Add shader to intermediate material type, for each pipeline.
 
-                materialType.m_shaderCollection.push_back({});
-                materialType.m_shaderCollection.back().m_shaderFilePath = AZ::IO::Path{outputShaderFilePath.Filename()}.c_str();
+                for (const Name& materialPipelineName : materialPipelineList)
+                {
+                    MaterialTypeSourceData::MaterialPipelineData& pipelineData = materialType.m_pipelineData[materialPipelineName];
+                    pipelineData.m_shaderCollection.push_back({});
+                    pipelineData.m_shaderCollection.back().m_shaderFilePath = AZ::IO::Path{outputShaderFilePath.Filename()}.c_str();
 
-                // Files in the cache, including intermediate files, end up using lower case for all files and folders. We have to match this
-                // in the output .materialtype file, because the asset system's source dependencies are case-sensitive on some platforms.
-                AZStd::to_lower(materialType.m_shaderCollection.back().m_shaderFilePath.begin(), materialType.m_shaderCollection.back().m_shaderFilePath.end());
+                    // Files in the cache, including intermediate files, end up using lower case for all files and folders. We have to match this
+                    // in the output .materialtype file, because the asset system's source dependencies are case-sensitive on some platforms.
+                    AZStd::to_lower(pipelineData.m_shaderCollection.back().m_shaderFilePath.begin(), pipelineData.m_shaderCollection.back().m_shaderFilePath.end());
+                }
 
                 // TODO(MaterialPipeline): We should warn the user if the shader collection has multiple shaders that use the same draw list.
+            }
+
+            // Sort the shader file reference just for convenience, for when the user inspects the intermediate .materialtype file
+            for (auto& pipelineDataPair : materialType.m_pipelineData)
+            {
+                AZStd::sort(pipelineDataPair.second.m_shaderCollection.begin(), pipelineDataPair.second.m_shaderCollection.end(),
+                    [](const MaterialTypeSourceData::ShaderVariantReferenceData& a, const MaterialTypeSourceData::ShaderVariantReferenceData& b)
+                    {
+                        return a.m_shaderFilePath < b.m_shaderFilePath;
+                    });
             }
 
             AZ::IO::Path outputMaterialTypeFilePath = request.m_tempDirPath;

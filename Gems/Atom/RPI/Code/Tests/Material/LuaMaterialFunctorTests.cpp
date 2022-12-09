@@ -97,7 +97,7 @@ namespace UnitTest
         {
             MaterialTypeAssetCreator materialTypeCreator;
             materialTypeCreator.Begin(Uuid::CreateRandom());
-            materialTypeCreator.AddShader(CreateTestShaderAsset(Uuid::CreateRandom()), Name{"TestShader"});
+            materialTypeCreator.AddShader(CreateTestShaderAsset(Uuid::CreateRandom()), AZ::RPI::ShaderVariantId{}, Name{"TestShader"});
             materialTypeCreator.BeginMaterialProperty(Name{materialPropertyName}, dataType);
             materialTypeCreator.EndMaterialProperty();
             LuaMaterialFunctorTests::AddLuaFunctor(materialTypeCreator, luaFunctorScript);
@@ -150,7 +150,7 @@ namespace UnitTest
         {
             MaterialTypeAssetCreator materialTypeCreator;
             materialTypeCreator.Begin(Uuid::CreateRandom());
-            materialTypeCreator.AddShader(CreateTestShaderAsset(Uuid::CreateRandom(), {}, shaderOptionsLayout), Name{"TestShader"});
+            materialTypeCreator.AddShader(CreateTestShaderAsset(Uuid::CreateRandom(), {}, shaderOptionsLayout), AZ::RPI::ShaderVariantId{}, Name{"TestShader"});
             materialTypeCreator.BeginMaterialProperty(Name{materialPropertyName}, dataType);
             materialTypeCreator.EndMaterialProperty();
             LuaMaterialFunctorTests::AddLuaFunctor(materialTypeCreator, luaFunctorScript);
@@ -534,11 +534,11 @@ namespace UnitTest
 
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{true});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
-        EXPECT_EQ(1, testData.GetMaterial()->GetShaderCollection()[0].GetShaderOptions()->GetValue(Name{"o_bool"}).GetIndex());
+        EXPECT_EQ(1, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[0].GetShaderOptions()->GetValue(Name{"o_bool"}).GetIndex());
 
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{false});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
-        EXPECT_EQ(0, testData.GetMaterial()->GetShaderCollection()[0].GetShaderOptions()->GetValue(Name{"o_bool"}).GetIndex());
+        EXPECT_EQ(0, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[0].GetShaderOptions()->GetValue(Name{"o_bool"}).GetIndex());
     }
 
     TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_SetShaderOption_UInt)
@@ -568,7 +568,7 @@ namespace UnitTest
 
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{6});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
-        EXPECT_EQ(12, testData.GetMaterial()->GetShaderCollection()[0].GetShaderOptions()->GetValue(Name{"o_uint"}).GetIndex());
+        EXPECT_EQ(12, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[0].GetShaderOptions()->GetValue(Name{"o_uint"}).GetIndex());
     }
 
     TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_SetShaderOption_Enum)
@@ -602,11 +602,11 @@ namespace UnitTest
 
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{true});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
-        EXPECT_EQ(2, testData.GetMaterial()->GetShaderCollection()[0].GetShaderOptions()->GetValue(Name{"o_enum"}).GetIndex());
+        EXPECT_EQ(2, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[0].GetShaderOptions()->GetValue(Name{"o_enum"}).GetIndex());
 
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{false});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
-        EXPECT_EQ(1, testData.GetMaterial()->GetShaderCollection()[0].GetShaderOptions()->GetValue(Name{"o_enum"}).GetIndex());
+        EXPECT_EQ(1, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[0].GetShaderOptions()->GetValue(Name{"o_enum"}).GetIndex());
     }
 
     TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_ShaderItem_SetShaderOption_Bool)
@@ -637,12 +637,12 @@ namespace UnitTest
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{true});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
         EXPECT_EQ(
-            1, testData.GetMaterial()->GetShaderCollection()[Name{"TestShader"}].GetShaderOptions()->GetValue(Name{"o_bool"}).GetIndex());
+            1, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[Name{"TestShader"}].GetShaderOptions()->GetValue(Name{"o_bool"}).GetIndex());
 
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{false});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
         EXPECT_EQ(
-            0, testData.GetMaterial()->GetShaderCollection()[Name{"TestShader"}].GetShaderOptions()->GetValue(Name{"o_bool"}).GetIndex());
+            0, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[Name{"TestShader"}].GetShaderOptions()->GetValue(Name{"o_bool"}).GetIndex());
     }
 
     TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_ShaderItem_SetShaderOption_UInt)
@@ -673,7 +673,7 @@ namespace UnitTest
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{6});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
         EXPECT_EQ(
-            12, testData.GetMaterial()->GetShaderCollection()[Name{"TestShader"}].GetShaderOptions()->GetValue(Name{"o_uint"}).GetIndex());
+            12, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[Name{"TestShader"}].GetShaderOptions()->GetValue(Name{"o_uint"}).GetIndex());
     }
 
     TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_ShaderItem_SetShaderOption_Enum)
@@ -708,12 +708,12 @@ namespace UnitTest
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{true});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
         EXPECT_EQ(
-            2, testData.GetMaterial()->GetShaderCollection()[Name{"TestShader"}].GetShaderOptions()->GetValue(Name{"o_enum"}).GetIndex());
+            2, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[Name{"TestShader"}].GetShaderOptions()->GetValue(Name{"o_enum"}).GetIndex());
 
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{false});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
         EXPECT_EQ(
-            1, testData.GetMaterial()->GetShaderCollection()[Name{"TestShader"}].GetShaderOptions()->GetValue(Name{"o_enum"}).GetIndex());
+            1, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[Name{"TestShader"}].GetShaderOptions()->GetValue(Name{"o_enum"}).GetIndex());
     }
 
     TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_EditorContext_SetMaterialPropertyVisibility)
@@ -756,9 +756,8 @@ namespace UnitTest
 
         Ptr<MaterialFunctor> functor = testData.GetMaterialTypeAsset()->GetMaterialFunctors()[0];
 
-        AZ::RPI::MaterialFunctor::EditorContext context = AZ::RPI::MaterialFunctor::EditorContext(
-            testData.GetMaterial()->GetPropertyValues(),
-            testData.GetMaterial()->GetMaterialPropertiesLayout(),
+        AZ::RPI::MaterialFunctorAPI::EditorContext context = AZ::RPI::MaterialFunctorAPI::EditorContext(
+            testData.GetMaterial()->GetPropertyCollection(),
             propertyDynamicMetadata,
             propertyGroupDynamicMetadata,
             changedPropertyNames,
@@ -825,9 +824,8 @@ namespace UnitTest
 
         Ptr<MaterialFunctor> functor = testData.GetMaterialTypeAsset()->GetMaterialFunctors()[0];
 
-        AZ::RPI::MaterialFunctor::EditorContext context = AZ::RPI::MaterialFunctor::EditorContext(
-            testData.GetMaterial()->GetPropertyValues(),
-            testData.GetMaterial()->GetMaterialPropertiesLayout(),
+        AZ::RPI::MaterialFunctorAPI::EditorContext context = AZ::RPI::MaterialFunctorAPI::EditorContext(
+            testData.GetMaterial()->GetPropertyCollection(),
             propertyDynamicMetadata,
             propertyGroupDynamicMetadata,
             changedPropertyNames,
@@ -891,9 +889,8 @@ namespace UnitTest
 
         Ptr<MaterialFunctor> functor = testData.GetMaterialTypeAsset()->GetMaterialFunctors()[0];
 
-        AZ::RPI::MaterialFunctor::EditorContext context = AZ::RPI::MaterialFunctor::EditorContext(
-            testData.GetMaterial()->GetPropertyValues(),
-            testData.GetMaterial()->GetMaterialPropertiesLayout(),
+        AZ::RPI::MaterialFunctorAPI::EditorContext context = AZ::RPI::MaterialFunctorAPI::EditorContext(
+            testData.GetMaterial()->GetPropertyCollection(),
             propertyDynamicMetadata,
             propertyGroupDynamicMetadata,
             changedPropertyNames,
@@ -952,26 +949,28 @@ namespace UnitTest
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{true});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
 
-        EXPECT_EQ(1, testData.GetMaterial()->GetShaderCollection()[0].GetRenderStatesOverlay()->m_multisampleState.m_customPositionsCount);
-        EXPECT_EQ(2, testData.GetMaterial()->GetShaderCollection()[0].GetRenderStatesOverlay()->m_multisampleState.m_customPositions[0].m_x);
-        EXPECT_EQ(4, testData.GetMaterial()->GetShaderCollection()[0].GetRenderStatesOverlay()->m_multisampleState.m_customPositions[0].m_y);
-        EXPECT_EQ(RHI::CullMode::None, testData.GetMaterial()->GetShaderCollection()[0].GetRenderStatesOverlay()->m_rasterState.m_cullMode);
-        EXPECT_EQ(1, testData.GetMaterial()->GetShaderCollection()[0].GetRenderStatesOverlay()->m_blendState.m_targets[1].m_enable);
-        EXPECT_EQ(-1, testData.GetMaterial()->GetShaderCollection()[0].GetRenderStatesOverlay()->m_rasterState.m_depthBias);
-        EXPECT_FLOAT_EQ(0.2, testData.GetMaterial()->GetShaderCollection()[0].GetRenderStatesOverlay()->m_rasterState.m_depthBiasClamp);
-        EXPECT_EQ(0xF0, testData.GetMaterial()->GetShaderCollection()[0].GetRenderStatesOverlay()->m_depthStencilState.m_stencil.m_writeMask);
+        const ShaderCollection& shaderCollection = testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon);
+
+        EXPECT_EQ(1, shaderCollection[0].GetRenderStatesOverlay()->m_multisampleState.m_customPositionsCount);
+        EXPECT_EQ(2, shaderCollection[0].GetRenderStatesOverlay()->m_multisampleState.m_customPositions[0].m_x);
+        EXPECT_EQ(4, shaderCollection[0].GetRenderStatesOverlay()->m_multisampleState.m_customPositions[0].m_y);
+        EXPECT_EQ(RHI::CullMode::None, shaderCollection[0].GetRenderStatesOverlay()->m_rasterState.m_cullMode);
+        EXPECT_EQ(1, shaderCollection[0].GetRenderStatesOverlay()->m_blendState.m_targets[1].m_enable);
+        EXPECT_EQ(-1, shaderCollection[0].GetRenderStatesOverlay()->m_rasterState.m_depthBias);
+        EXPECT_FLOAT_EQ(0.2, shaderCollection[0].GetRenderStatesOverlay()->m_rasterState.m_depthBiasClamp);
+        EXPECT_EQ(0xF0, shaderCollection[0].GetRenderStatesOverlay()->m_depthStencilState.m_stencil.m_writeMask);
 
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{false});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
 
-        EXPECT_EQ(RHI::RenderStates_InvalidUInt, testData.GetMaterial()->GetShaderCollection()[0].GetRenderStatesOverlay()->m_multisampleState.m_customPositionsCount);
-        EXPECT_EQ(RHI::Limits::Pipeline::MultiSampleCustomLocationGridSize, testData.GetMaterial()->GetShaderCollection()[0].GetRenderStatesOverlay()->m_multisampleState.m_customPositions[0].m_x);
-        EXPECT_EQ(RHI::Limits::Pipeline::MultiSampleCustomLocationGridSize, testData.GetMaterial()->GetShaderCollection()[0].GetRenderStatesOverlay()->m_multisampleState.m_customPositions[0].m_y);
-        EXPECT_EQ(RHI::CullMode::Invalid, testData.GetMaterial()->GetShaderCollection()[0].GetRenderStatesOverlay()->m_rasterState.m_cullMode);
-        EXPECT_EQ(RHI::RenderStates_InvalidBool, testData.GetMaterial()->GetShaderCollection()[0].GetRenderStatesOverlay()->m_blendState.m_targets[1].m_enable);
-        EXPECT_EQ(RHI::RenderStates_InvalidInt, testData.GetMaterial()->GetShaderCollection()[0].GetRenderStatesOverlay()->m_rasterState.m_depthBias);
-        EXPECT_FLOAT_EQ(RHI::RenderStates_InvalidFloat, testData.GetMaterial()->GetShaderCollection()[0].GetRenderStatesOverlay()->m_rasterState.m_depthBiasClamp);
-        EXPECT_EQ(RHI::RenderStates_InvalidUInt, testData.GetMaterial()->GetShaderCollection()[0].GetRenderStatesOverlay()->m_depthStencilState.m_stencil.m_writeMask);
+        EXPECT_EQ(RHI::RenderStates_InvalidUInt, shaderCollection[0].GetRenderStatesOverlay()->m_multisampleState.m_customPositionsCount);
+        EXPECT_EQ(RHI::Limits::Pipeline::MultiSampleCustomLocationGridSize, shaderCollection[0].GetRenderStatesOverlay()->m_multisampleState.m_customPositions[0].m_x);
+        EXPECT_EQ(RHI::Limits::Pipeline::MultiSampleCustomLocationGridSize, shaderCollection[0].GetRenderStatesOverlay()->m_multisampleState.m_customPositions[0].m_y);
+        EXPECT_EQ(RHI::CullMode::Invalid, shaderCollection[0].GetRenderStatesOverlay()->m_rasterState.m_cullMode);
+        EXPECT_EQ(RHI::RenderStates_InvalidBool, shaderCollection[0].GetRenderStatesOverlay()->m_blendState.m_targets[1].m_enable);
+        EXPECT_EQ(RHI::RenderStates_InvalidInt, shaderCollection[0].GetRenderStatesOverlay()->m_rasterState.m_depthBias);
+        EXPECT_FLOAT_EQ(RHI::RenderStates_InvalidFloat, shaderCollection[0].GetRenderStatesOverlay()->m_rasterState.m_depthBiasClamp);
+        EXPECT_EQ(RHI::RenderStates_InvalidUInt, shaderCollection[0].GetRenderStatesOverlay()->m_depthStencilState.m_stencil.m_writeMask);
     }
 
     TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_SetShaderEnabledByTag)
@@ -996,7 +995,7 @@ namespace UnitTest
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{true});
         EXPECT_TRUE(testData.GetMaterial()->Compile());
 
-        EXPECT_EQ(true, testData.GetMaterial()->GetShaderCollection()[Name{"TestShader"}].IsEnabled());
+        EXPECT_EQ(true, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[Name{"TestShader"}].IsEnabled());
     }
 
     TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_SetShaderDrawListTagOverride)
@@ -1024,7 +1023,7 @@ namespace UnitTest
         EXPECT_TRUE(testData.GetMaterial()->Compile());
 
         RHI::DrawListTag tag = drawListTagRegistry->FindTag(Name{"TestDrawListTag"});
-        EXPECT_EQ(tag, testData.GetMaterial()->GetShaderCollection()[Name{"TestShader"}].GetDrawListTagOverride());
+        EXPECT_EQ(tag, testData.GetMaterial()->GetShaderCollection(MaterialPipelineNameCommon)[Name{"TestShader"}].GetDrawListTagOverride());
 
         drawListTagRegistry->ReleaseTag(tag);
     }
