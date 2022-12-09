@@ -208,11 +208,9 @@ namespace AZ
 
                 ShaderItem(
                     ShaderCollection::Item* shaderItem,
-                    const MaterialNameContext* materialNameContext,
                     CommonRuntimeConfiguration* commonRuntimeConfiguration)
                     : m_commonRuntimeConfiguration(commonRuntimeConfiguration)
                     , m_shaderItem(shaderItem)
-                    , m_materialNameContext(materialNameContext)
                 {
                 }
 
@@ -228,7 +226,6 @@ namespace AZ
 
                 CommonRuntimeConfiguration* m_commonRuntimeConfiguration = nullptr;
                 ShaderCollection::Item* m_shaderItem = nullptr;
-                const MaterialNameContext* m_materialNameContext = nullptr;
             };
 
             //! Wraps MaterialFunctorAPI::ConfigureShaders for LuaMaterialFunctor access

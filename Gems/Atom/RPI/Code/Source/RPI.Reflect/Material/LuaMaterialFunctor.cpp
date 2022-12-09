@@ -400,7 +400,7 @@ namespace AZ
         {
             if (index < GetShaderCount())
             {
-                return LuaMaterialFunctorAPI::ShaderItem{&(*m_underlyingApi->m_localShaderCollection)[index], m_materialNameContext, m_commonRuntimeConfiguration};
+                return LuaMaterialFunctorAPI::ShaderItem{&(*m_underlyingApi->m_localShaderCollection)[index], m_commonRuntimeConfiguration};
             }
             else
             {
@@ -414,7 +414,7 @@ namespace AZ
             const AZ::Name tag{shaderTag};
             if (m_underlyingApi->m_localShaderCollection->HasShaderTag(tag))
             {
-                return LuaMaterialFunctorAPI::ShaderItem{&(*m_underlyingApi->m_localShaderCollection)[tag], m_materialNameContext, m_commonRuntimeConfiguration};
+                return LuaMaterialFunctorAPI::ShaderItem{&(*m_underlyingApi->m_localShaderCollection)[tag], m_commonRuntimeConfiguration};
             }
             else
             {
