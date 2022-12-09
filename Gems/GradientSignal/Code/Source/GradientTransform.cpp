@@ -17,6 +17,7 @@ namespace GradientSignal
         const AZ::Aabb& shapeBounds, const AZ::Matrix3x4& transform, bool use3d,
         float frequencyZoom, GradientSignal::WrappingType wrappingType)
         : m_shapeBounds(shapeBounds)
+        , m_transform(transform)
         , m_inverseTransform(transform.GetInverseFull())
         , m_frequencyZoom(frequencyZoom)
         , m_wrappingType(wrappingType)
@@ -101,6 +102,21 @@ namespace GradientSignal
     AZ::Aabb GradientTransform::GetBounds() const
     {
         return m_shapeBounds;
+    }
+
+    AZ::Vector3 GradientTransform::GetScale() const
+    {
+        return m_transform.RetrieveScale();
+    }
+
+    float GradientTransform::GetFrequencyZoom() const
+    {
+        return m_frequencyZoom;
+    }
+
+    AZ::Matrix3x4 GradientTransform::GetTransform() const
+    {
+        return m_transform;
     }
 
     AZ::Vector3 GradientTransform::NoTransform(const AZ::Vector3& point, const AZ::Aabb& /*bounds*/)
