@@ -16,7 +16,7 @@
             {
                 "name": "inGroup",
                 "displayName": "Group",
-                "description": "Group name a dded to the material type and contain the property corresponding to this input.",
+                "description": "Material type group name that will contain the property corresponding to this input.",
                 "supportedDataTypeRegex": "string",
                 "defaultDataType": "string",
                 "defaultValue": {
