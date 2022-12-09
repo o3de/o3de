@@ -7,7 +7,7 @@
         "category": "Object",
         "title": "UV",
         "titlePaletteName": "ObjectNodeTitlePalette",
-        "description": "The texture coordinate of the current vertex or fragment",
+        "description": "The texture coordinates of the current vertex or fragment",
         "slotDataTypeGroups": [
             "inIndex",
             "outUV",

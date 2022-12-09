@@ -5,7 +5,7 @@
     "ClassData": {
         "id": "{7DAE735C-CC7B-49C9-9B18-CC3314792650}",
         "category": "Math Functions",
-        "title": "Atan2",
+        "title": "Inverse Tangent 2",
         "titlePaletteName": "MathNodeTitlePalette",
         "description": "Returns the arctangent of of two values (x,y)",
         "slotDataTypeGroups": [

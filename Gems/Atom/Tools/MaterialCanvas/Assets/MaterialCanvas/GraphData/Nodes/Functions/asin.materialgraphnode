@@ -5,7 +5,7 @@
     "ClassData": {
         "id": "{1C753D24-A000-4357-98FF-3BF6F7E46883}",
         "category": "Math Functions",
-        "title": "Asin",
+        "title": "Inverse Sine",
         "titlePaletteName": "MathNodeTitlePalette",
         "description": "Returns the arcsine of each component of the input value",
         "slotDataTypeGroups": [

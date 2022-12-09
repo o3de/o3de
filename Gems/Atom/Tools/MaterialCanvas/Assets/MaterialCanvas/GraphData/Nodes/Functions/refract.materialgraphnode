@@ -5,7 +5,7 @@
     "ClassData": {
         "id": "{384DDCC9-834A-4FC0-9F7C-C340A20908FF}",
         "category": "Math Functions",
-        "title": "Refract",
+        "title": "Refraction Vector",
         "titlePaletteName": "MathNodeTitlePalette",
         "description": "Returns the refraction vector",
         "slotDataTypeGroups": [

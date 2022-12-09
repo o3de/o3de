@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Multiply",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Performs vector or scalar multiplication on individual components using x and y",
         "slotDataTypeGroups": [
             "inValue1|inValue2|outValue"
         ],
