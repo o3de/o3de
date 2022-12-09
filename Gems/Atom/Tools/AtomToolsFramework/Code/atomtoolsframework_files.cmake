@@ -95,21 +95,25 @@ set(FILES
     Source/Graph/DynamicNode/DynamicNodeSlotConfig.cpp
     Source/Graph/DynamicNode/DynamicNodeUtil.cpp
 
+    Include/AtomToolsFramework/Graph/GraphCompiler.h
+    Include/AtomToolsFramework/Graph/GraphCompilerNotificationBus.h
+    Include/AtomToolsFramework/Graph/GraphCompilerRequestBus.h
     Include/AtomToolsFramework/Graph/GraphDocument.h
     Include/AtomToolsFramework/Graph/GraphDocumentRequestBus.h
     Include/AtomToolsFramework/Graph/GraphDocumentView.h
+    Include/AtomToolsFramework/Graph/GraphUtil.h
     Include/AtomToolsFramework/Graph/GraphView.h
     Include/AtomToolsFramework/Graph/GraphViewConstructPresets.h
     Include/AtomToolsFramework/Graph/GraphViewSettings.h
-    Include/AtomToolsFramework/Graph/GraphUtil.h
+    Source/Graph/GraphCompiler.cpp
     Source/Graph/GraphDocument.cpp
     Source/Graph/GraphDocumentView.cpp
+    Source/Graph/GraphUtil.cpp
     Source/Graph/GraphView.cpp
     Source/Graph/GraphView.qrc
     Source/Graph/GraphView.qss
     Source/Graph/GraphViewConstructPresets.cpp
     Source/Graph/GraphViewSettings.cpp
-    Source/Graph/GraphUtil.cpp
 
     Include/AtomToolsFramework/Inspector/InspectorGroupHeaderWidget.h
     Include/AtomToolsFramework/Inspector/InspectorGroupWidget.h

@@ -196,7 +196,6 @@ namespace AZ
 
                     m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>(projectTitle.c_str(), AzFramework::WindowGeometry(0, 0, r_width, r_height));
                     AZ_Assert(m_nativeWindow, "Failed to create the game window\n");
-                    m_nativeWindow->SetFullScreenState(r_fullscreen);
 
                     m_nativeWindow->Activate();
 
@@ -230,6 +229,11 @@ namespace AZ
                         [this](const AZ::SettingsRegistryInterface::NotifyEventArgs&)
                         {
                             Initialize();
+                            if (m_nativeWindow)
+                            {
+                                // wait until swapchain has been created before setting fullscreen state
+                                m_nativeWindow->SetFullScreenState(r_fullscreen);
+                            }
                         },
                         "CriticalAssetsCompiled");
                 }

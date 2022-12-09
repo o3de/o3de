@@ -110,6 +110,12 @@ namespace UnitTest
         //! @return Nested instance alias for the given container entity name. Returns "" if not found.
         InstanceAlias FindNestedInstanceAliasInInstance(AZ::EntityId containerEntityId, const AZStd::string& nestedContainerEntityName);
 
+        //! Rename an entity.
+        //! Note: Renaming a container entity would be an override edit on the focused prefab.
+        //! @param entityId Entity id for entity to be renamed.
+        //! @param newName New entity name.
+        void RenameEntity(AZ::EntityId entityId, const AZStd::string& newName);
+
         //! Helper functions for validation.
         //! @{
         void ValidateEntityUnderInstance(AZ::EntityId containerEntityId, const EntityAlias& entityAlias, const AZStd::string& entityName);

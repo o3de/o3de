@@ -6,10 +6,6 @@
  *
  */
 
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
-
 #include <AtomToolsFramework/Document/AtomToolsAnyDocument.h>
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystem.h>
@@ -18,11 +14,15 @@
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNode.h>
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManager.h>
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodePaletteItem.h>
+#include <AtomToolsFramework/Graph/GraphCompiler.h>
 #include <AtomToolsFramework/Graph/GraphDocument.h>
 #include <AtomToolsFramework/Graph/GraphViewConstructPresets.h>
 #include <AtomToolsFramework/Graph/GraphViewSettings.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AtomToolsFrameworkSystemComponent.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <Inspector/PropertyWidgets/PropertyStringBrowseEditCtrl.h>
 
 namespace AtomToolsFramework
@@ -37,6 +37,7 @@ namespace AtomToolsFramework
         DynamicProperty::Reflect(context);
         DynamicPropertyGroup::Reflect(context);
         EntityPreviewViewportSettingsSystem::Reflect(context);
+        GraphCompiler::Reflect(context);
         GraphDocument::Reflect(context);
         GraphViewSettings::Reflect(context);
         GraphViewConstructPresets::Reflect(context);
