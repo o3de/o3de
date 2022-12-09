@@ -78,5 +78,14 @@
                 "name": "m_opacityAffectsSpecularFactor"
             }
         }
+    ],
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                //TODO(MaterialPipeline): Make the builder touch up this path so it can be relative to the .json file
+                "file": "TestData/Materials/Types/MaterialPipelineTest_HandleOpacityMode.lua"
+            }
+        }
     ]
 }
