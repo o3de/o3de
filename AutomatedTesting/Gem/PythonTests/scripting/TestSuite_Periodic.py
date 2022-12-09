@@ -60,6 +60,10 @@ class TestAutomationQtPyTests(TestAutomationBase):
         from . import ScriptCanvas_TwoComponents_InteractSuccessfully as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    def test_ScriptCanvas_TwoEntities_UseSimultaneously(self, request, workspace, editor, launcher_platform):
+        from . import ScriptCanvas_TwoComponents_InteractSuccessfully as test_module
+        self._run_test(request, workspace, editor, test_module)
+
     """
     od3e/o3de#13481
     This test fails in multi test. QCheckbox state change does not trigger table changes like in hydra/editor test run
@@ -95,6 +99,7 @@ class TestAutomation(TestAutomationBase):
         from . import NodePalette_HappyPath_ClearSelection as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    """
     @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
     @pytest.mark.parametrize("level", ["tmp_level"])
     def test_ScriptCanvas_TwoEntities_UseSimultaneously(self, request, workspace, editor, launcher_platform, project, level):
@@ -104,6 +109,7 @@ class TestAutomation(TestAutomationBase):
         file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
         from . import ScriptCanvas_TwoEntities_UseSimultaneously as test_module
         self._run_test(request, workspace, editor, test_module)
+    """
 
     def test_ScriptEvent_HappyPath_CreatedWithoutError(self, request, workspace, editor, launcher_platform, project):
         def teardown():
