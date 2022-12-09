@@ -112,8 +112,6 @@ class TestRegisterThisEngine:
             result = register._run_register(args)
             assert result == expected_result
 
-#@pytest.mark.usefixtures('init_manifest_data')
-
 
 TEST_GEM_JSON_PAYLOAD = '''
 {
