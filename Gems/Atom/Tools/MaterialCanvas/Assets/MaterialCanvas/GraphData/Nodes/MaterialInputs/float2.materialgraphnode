@@ -7,6 +7,7 @@
         "category": "Material Inputs",
         "title": "Float2 Input",
         "titlePaletteName": "MaterialInputNodeTitlePalette",
+        "description": "Create a shader variable with the type and default value defined by this node. It will be exposed and customizable as a material property.",
         "slotDataTypeGroups": [
             "inValue|outValue",
             "outX|outY"

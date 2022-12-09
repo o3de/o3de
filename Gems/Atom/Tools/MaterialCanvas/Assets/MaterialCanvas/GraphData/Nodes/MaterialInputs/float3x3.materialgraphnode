@@ -7,6 +7,7 @@
         "category": "Material Inputs",
         "title": "Float3x3 Input",
         "titlePaletteName": "MaterialInputNodeTitlePalette",
+        "description": "Create a shader variable with the type and default value defined by this node. It will be exposed and customizable as a material property.",
         "slotDataTypeGroups": [
             "inRow1|inRow2|inRow3",
             "outValue"
