@@ -34,25 +34,25 @@ namespace UnitTest
 
                 {
                     PositionSplineQueryResult posSplineQueryResult = linearSpline.GetNearestAddressPosition(Vector3(7.5f, 2.5f, 0.0f));
-                    EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(posSplineQueryResult.m_splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentFraction == 0.5f);
                 }
 
                 {
                     PositionSplineQueryResult posSplineQueryResult = linearSpline.GetNearestAddressPosition(Vector3(-1.0f, -1.0f, 0.0f));
-                    EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentIndex == 0);
+                    EXPECT_EQ(posSplineQueryResult.m_splineAddress.m_segmentIndex, 0);
                     EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentFraction == 0.0f);
                 }
 
                 {
                     PositionSplineQueryResult posSplineQueryResult = linearSpline.GetNearestAddressPosition(Vector3(-1.0f, 6.0f, 0.0f));
-                    EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentIndex == 2);
+                    EXPECT_EQ(posSplineQueryResult.m_splineAddress.m_segmentIndex, 2);
                     EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentFraction == 1.0f);
                 }
 
                 {
                     PositionSplineQueryResult posSplineQueryResult = linearSpline.GetNearestAddressPosition(Vector3(2.5f, 6.0f, 0.0f));
-                    EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentIndex == 2);
+                    EXPECT_EQ(posSplineQueryResult.m_splineAddress.m_segmentIndex, 2);
                     EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentFraction == 0.5f);
                 }
             }
@@ -69,13 +69,13 @@ namespace UnitTest
 
                 {
                     PositionSplineQueryResult posSplineQueryResult = linearSpline.GetNearestAddressPosition(Vector3(-2.0f, 2.5f, 0.0f));
-                    EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentIndex == 3);
+                    EXPECT_EQ(posSplineQueryResult.m_splineAddress.m_segmentIndex, 3);
                     EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentFraction == 0.5f);
                 }
 
                 {
                     PositionSplineQueryResult posSplineQueryResult = linearSpline.GetNearestAddressPosition(Vector3(-2.0f, 4.0f, 0.0f));
-                    EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentIndex == 3);
+                    EXPECT_EQ(posSplineQueryResult.m_splineAddress.m_segmentIndex, 3);
                     EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentFraction == 0.2f);
                 }
             }
@@ -94,25 +94,25 @@ namespace UnitTest
 
                 {
                     RaySplineQueryResult raySplineQueryResult = linearSpline.GetNearestAddressRay(Vector3(2.5f, -2.5f, 1.0f), Vector3(0.0f, 1.0f, 0.0f));
-                    EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentIndex == 0);
+                    EXPECT_EQ(raySplineQueryResult.m_splineAddress.m_segmentIndex, 0);
                     EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentFraction == 0.5f);
                 }
 
                 {
                     RaySplineQueryResult raySplineQueryResult = linearSpline.GetNearestAddressRay(Vector3(2.5f, -10.0f, 0.0f), Vector3(1.0f, 1.0f, 0.0f));
-                    EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentIndex == 0);
+                    EXPECT_EQ(raySplineQueryResult.m_splineAddress.m_segmentIndex, 0);
                     EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentFraction == 1.0f);
                 }
 
                 {
                     RaySplineQueryResult raySplineQueryResult = linearSpline.GetNearestAddressRay(Vector3(7.5f, 2.5f, 0.0f), Vector3(-1.0f, 1.0f, 0.0f));
-                    EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(raySplineQueryResult.m_splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentFraction == 1.0f);
                 }
 
                 {
                     RaySplineQueryResult raySplineQueryResult = linearSpline.GetNearestAddressRay(Vector3(-2.5f, 2.5f, -1.0f), Vector3(1.0f, 1.0f, 0.0f));
-                    EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentIndex == 2);
+                    EXPECT_EQ(raySplineQueryResult.m_splineAddress.m_segmentIndex, 2);
                     EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentFraction == 1.0f);
                 }
             }
@@ -129,13 +129,13 @@ namespace UnitTest
 
                 {
                     RaySplineQueryResult raySplineQueryResult = linearSpline.GetNearestAddressRay(Vector3(-2.5f, 2.5f, 0.0f), Vector3(0.0f, 0.0f, -1.0f));
-                    EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentIndex == 3);
+                    EXPECT_EQ(raySplineQueryResult.m_splineAddress.m_segmentIndex, 3);
                     EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentFraction == 0.5f);
                 }
 
                 {
                     RaySplineQueryResult raySplineQueryResult = linearSpline.GetNearestAddressRay(Vector3(-2.5f, 2.5f, 0.0f), Vector3(1.0f, 0.0f, 0.0f));
-                    EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentIndex == 3);
+                    EXPECT_EQ(raySplineQueryResult.m_splineAddress.m_segmentIndex, 3);
                     EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentFraction == 0.5f);
                 }
             }
@@ -154,43 +154,43 @@ namespace UnitTest
 
                 {
                     SplineAddress splineAddress = linearSpline.GetAddressByDistance(7.5f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.5f);
                 }
 
                 {
                     SplineAddress splineAddress = linearSpline.GetAddressByDistance(15.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 2);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 2);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 1.0f);
                 }
 
                 {
                     SplineAddress splineAddress = linearSpline.GetAddressByDistance(0.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 0);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 0);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.0f);
                 }
 
                 {
                     SplineAddress splineAddress = linearSpline.GetAddressByDistance(11.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 2);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 2);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.2f);
                 }
 
                 {
                     SplineAddress splineAddress = linearSpline.GetAddressByDistance(3.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 0);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 0);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.6f);
                 }
 
                 {
                     SplineAddress splineAddress = linearSpline.GetAddressByDistance(20.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 2);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 2);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 1.0f);
                 }
 
                 {
                     SplineAddress splineAddress = linearSpline.GetAddressByDistance(-5.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 0);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 0);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.0f);
                 }
             }
@@ -207,13 +207,13 @@ namespace UnitTest
 
                 {
                     SplineAddress splineAddress = linearSpline.GetAddressByDistance(17.5f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 3);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 3);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.5f);
                 }
 
                 {
                     SplineAddress splineAddress = linearSpline.GetAddressByDistance(20.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 3);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 3);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 1.0f);
                 }
             }
@@ -232,43 +232,43 @@ namespace UnitTest
 
                 {
                     SplineAddress splineAddress = linearSpline.GetAddressByFraction(0.5f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.5f);
                 }
 
                 {
                     SplineAddress splineAddress = linearSpline.GetAddressByFraction(1.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 2);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 2);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 1.0f);
                 }
 
                 {
                     SplineAddress splineAddress = linearSpline.GetAddressByFraction(0.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 0);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 0);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.0f);
                 }
 
                 {
                     SplineAddress splineAddress = linearSpline.GetAddressByFraction(0.6f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.8f);
                 }
 
                 {
                     SplineAddress splineAddress = linearSpline.GetAddressByFraction(0.2f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 0);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 0);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.6f);
                 }
 
                 {
                     SplineAddress splineAddress = linearSpline.GetAddressByFraction(1.5f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 2);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 2);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 1.0f);
                 }
 
                 {
                     SplineAddress splineAddress = linearSpline.GetAddressByFraction(-0.5f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 0);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 0);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.0f);
                 }
             }
@@ -285,19 +285,19 @@ namespace UnitTest
 
                 {
                     SplineAddress splineAddress = linearSpline.GetAddressByFraction(0.5f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 2);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 2);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.0f);
                 }
 
                 {
                     SplineAddress splineAddress = linearSpline.GetAddressByFraction(1.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 3);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 3);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 1.0f);
                 }
 
                 {
                     SplineAddress splineAddress = linearSpline.GetAddressByFraction(0.8f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 3);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 3);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.2f);
                 }
             }
@@ -722,25 +722,25 @@ namespace UnitTest
 
                 {
                     PositionSplineQueryResult posSplineQueryResult = catmullRomSpline.GetNearestAddressPosition(Vector3(7.5f, 2.5f, 0.0f));
-                    EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(posSplineQueryResult.m_splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentFraction == 0.5f);
                 }
 
                 {
                     PositionSplineQueryResult posSplineQueryResult = catmullRomSpline.GetNearestAddressPosition(Vector3(-1.0f, -1.0f, 0.0f));
-                    EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(posSplineQueryResult.m_splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentFraction == 0.0f);
                 }
 
                 {
                     PositionSplineQueryResult posSplineQueryResult = catmullRomSpline.GetNearestAddressPosition(Vector3(-1.0f, 6.0f, 0.0f));
-                    EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(posSplineQueryResult.m_splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentFraction == 1.0f);
                 }
 
                 {
                     PositionSplineQueryResult posSplineQueryResult = catmullRomSpline.GetNearestAddressPosition(Vector3(2.5f, 6.0f, 0.0f));
-                    EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(posSplineQueryResult.m_splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentFraction == 1.0f);
                 }
             }
@@ -757,7 +757,7 @@ namespace UnitTest
 
                 {
                     PositionSplineQueryResult posSplineQueryResult = catmullRomSpline.GetNearestAddressPosition(Vector3(5.0f, -2.5f, 0.0f));
-                    EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentIndex == 3);
+                    EXPECT_EQ(posSplineQueryResult.m_splineAddress.m_segmentIndex, 3);
                     EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentFraction == 0.5f);
                 }
             }
@@ -776,25 +776,25 @@ namespace UnitTest
 
                 {
                     RaySplineQueryResult raySplineQueryResult = catmullRomSpline.GetNearestAddressRay(Vector3(2.5f, -2.5f, 1.0f), Vector3(0.0f, 1.0f, 0.0f));
-                    EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(raySplineQueryResult.m_splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentFraction == 0.0f);
                 }
 
                 {
                     RaySplineQueryResult raySplineQueryResult = catmullRomSpline.GetNearestAddressRay(Vector3(2.5f, -10.0f, 0.0f), Vector3(1.0f, 1.0f, 0.0f));
-                    EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(raySplineQueryResult.m_splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentFraction == 0.0f);
                 }
 
                 {
                     RaySplineQueryResult raySplineQueryResult = catmullRomSpline.GetNearestAddressRay(Vector3(7.5f, 2.5f, 0.0f), Vector3(-1.0f, 0.0f, 0.0f));
-                    EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(raySplineQueryResult.m_splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentFraction == 0.5f);
                 }
 
                 {
                     RaySplineQueryResult raySplineQueryResult = catmullRomSpline.GetNearestAddressRay(Vector3(-2.5f, 7.5f, -1.0f), Vector3(1.0f, 0.0f, 0.0f));
-                    EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(raySplineQueryResult.m_splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentFraction == 1.0f);
                 }
             }
@@ -811,7 +811,7 @@ namespace UnitTest
 
                 {
                     RaySplineQueryResult raySplineQueryResult = catmullRomSpline.GetNearestAddressRay(Vector3(-2.5f, 2.5f, 0.0f), Vector3(0.0f, 1.0f, 0.0f));
-                    EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentIndex == 3);
+                    EXPECT_EQ(raySplineQueryResult.m_splineAddress.m_segmentIndex, 3);
                     EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentFraction == 0.5f);
                 }
             }
@@ -856,26 +856,26 @@ namespace UnitTest
 
                 {
                     SplineAddress splineAddress = catmullRomSpline.GetAddressByDistance(20.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 1.0f);
                 }
 
                 {
                     SplineAddress splineAddress = catmullRomSpline.GetAddressByDistance(0.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.0f);
                 }
 
                 {
                     // note: spline length is approx 10.49176
                     SplineAddress splineAddress = catmullRomSpline.GetAddressByDistance(5.24588f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 1);
                     EXPECT_NEAR(0.5f, splineAddress.m_segmentFraction, 0.0001f);
                 }
 
                 {
                     SplineAddress splineAddress = catmullRomSpline.GetAddressByDistance(-10.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.0f);
                 }
             }
@@ -892,13 +892,13 @@ namespace UnitTest
 
                 {
                     SplineAddress splineAddress = catmullRomSpline.GetAddressByDistance(50.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 3);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 3);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 1.0f);
                 }
 
                 {
                     SplineAddress splineAddress = catmullRomSpline.GetAddressByDistance(0.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 0);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 0);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.0f);
                 }
             }
@@ -917,25 +917,25 @@ namespace UnitTest
 
                 {
                     SplineAddress splineAddress = catmullRomSpline.GetAddressByFraction(0.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.0f);
                 }
 
                 {
                     SplineAddress splineAddress = catmullRomSpline.GetAddressByFraction(1.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 1.0f);
                 }
 
                 {
                     SplineAddress splineAddress = catmullRomSpline.GetAddressByFraction(0.5f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.5f);
                 }
 
                 {
                     SplineAddress splineAddress = catmullRomSpline.GetAddressByFraction(0.75f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.75f);
                 }
             }
@@ -952,19 +952,19 @@ namespace UnitTest
 
                 {
                     SplineAddress splineAddress = catmullRomSpline.GetAddressByFraction(0.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 0);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 0);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.0f);
                 }
 
                 {
                     SplineAddress splineAddress = catmullRomSpline.GetAddressByFraction(1.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 3);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 3);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 1.0f);
                 }
 
                 {
                     SplineAddress splineAddress = catmullRomSpline.GetAddressByFraction(0.5f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 2);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 2);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.0f);
                 }
             }
@@ -1363,19 +1363,19 @@ namespace UnitTest
 
                 {
                     PositionSplineQueryResult posSplineQueryResult = bezierSpline.GetNearestAddressPosition(Vector3(-1.0f, -1.0f, 0.0f));
-                    EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentIndex == 0);
+                    EXPECT_EQ(posSplineQueryResult.m_splineAddress.m_segmentIndex, 0);
                     EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentFraction == 0.0f);
                 }
 
                 {
                     PositionSplineQueryResult posSplineQueryResult = bezierSpline.GetNearestAddressPosition(Vector3(5.0f, 12.0f, 0.0f));
-                    EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(posSplineQueryResult.m_splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentFraction == 0.5f);
                 }
 
                 {
                     PositionSplineQueryResult posSplineQueryResult = bezierSpline.GetNearestAddressPosition(Vector3(12.0f, -1.0f, 0.0f));
-                    EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentIndex == 2);
+                    EXPECT_EQ(posSplineQueryResult.m_splineAddress.m_segmentIndex, 2);
                     EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentFraction == 1.0f);
                 }
             }
@@ -1392,13 +1392,13 @@ namespace UnitTest
 
                 {
                     PositionSplineQueryResult posSplineQueryResult = bezierSpline.GetNearestAddressPosition(Vector3(5.0f, -12.0f, 0.0f));
-                    EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentIndex == 3);
+                    EXPECT_EQ(posSplineQueryResult.m_splineAddress.m_segmentIndex, 3);
                     EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentFraction == 0.5f);
                 }
 
                 {
                     PositionSplineQueryResult posSplineQueryResult = bezierSpline.GetNearestAddressPosition(Vector3(12.0f, 12.0f, 0.0f));
-                    EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(posSplineQueryResult.m_splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(posSplineQueryResult.m_splineAddress.m_segmentFraction == 1.0f);
                 }
             }
@@ -1417,19 +1417,19 @@ namespace UnitTest
 
                 {
                     RaySplineQueryResult raySplineQueryResult = bezierSpline.GetNearestAddressRay(Vector3(-1.0f, -1.0f, 0.0f), Vector3(-1.0f, 1.0f, 0.0f));
-                    EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentIndex == 0);
+                    EXPECT_EQ(raySplineQueryResult.m_splineAddress.m_segmentIndex, 0);
                     EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentFraction == 0.0f);
                 }
 
                 {
                     RaySplineQueryResult raySplineQueryResult = bezierSpline.GetNearestAddressRay(Vector3(5.0f, 12.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
-                    EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(raySplineQueryResult.m_splineAddress.m_segmentIndex, 1);
                     EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentFraction == 0.5f);
                 }
 
                 {
                     RaySplineQueryResult raySplineQueryResult = bezierSpline.GetNearestAddressRay(Vector3(12.0f, -1.0f, 0.0f), Vector3(1.0f, 1.0f, 0.0f));
-                    EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentIndex == 2);
+                    EXPECT_EQ(raySplineQueryResult.m_splineAddress.m_segmentIndex, 2);
                     EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentFraction == 1.0f);
                 }
             }
@@ -1446,7 +1446,7 @@ namespace UnitTest
 
                 {
                     RaySplineQueryResult raySplineQueryResult = bezierSpline.GetNearestAddressRay(Vector3(-10.0f, -10.0f, 0.0f), Vector3(1.0f, 0.0f, 0.0f));
-                    EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentIndex == 3);
+                    EXPECT_EQ(raySplineQueryResult.m_splineAddress.m_segmentIndex, 3);
                     EXPECT_TRUE(raySplineQueryResult.m_splineAddress.m_segmentFraction == 0.5f);
                 }
             }
@@ -1465,19 +1465,19 @@ namespace UnitTest
 
                 {
                     SplineAddress splineAddress = bezierSpline.GetAddressByDistance(0.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 0);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 0);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.0f);
                 }
 
                 {
                     SplineAddress splineAddress = bezierSpline.GetAddressByDistance(-5.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 0);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 0);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.0f);
                 }
 
                 {
                     SplineAddress splineAddress = bezierSpline.GetAddressByDistance(100.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 2);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 2);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 1.0f);
                 }
             }
@@ -1494,7 +1494,7 @@ namespace UnitTest
 
                 {
                     SplineAddress splineAddress = bezierSpline.GetAddressByDistance(100.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 3);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 3);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 1.0f);
                 }
             }
@@ -1513,31 +1513,31 @@ namespace UnitTest
 
                 {
                     SplineAddress splineAddress = bezierSpline.GetAddressByFraction(0.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 0);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 0);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.0f);
                 }
 
                 {
                     SplineAddress splineAddress = bezierSpline.GetAddressByFraction(-0.5f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 0);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 0);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 0.0f);
                 }
 
                 {
                     SplineAddress splineAddress = bezierSpline.GetAddressByFraction(2.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 2);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 2);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 1.0f);
                 }
 
                 {
                     SplineAddress splineAddress = bezierSpline.GetAddressByFraction(1.0f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 2);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 2);
                     EXPECT_TRUE(splineAddress.m_segmentFraction == 1.0f);
                 }
 
                 {
                     SplineAddress splineAddress = bezierSpline.GetAddressByFraction(0.5f);
-                    EXPECT_TRUE(splineAddress.m_segmentIndex == 1);
+                    EXPECT_EQ(splineAddress.m_segmentIndex, 1);
                     EXPECT_NEAR(splineAddress.m_segmentFraction, 0.5f, Constants::Tolerance);
                 }
             }
@@ -2019,9 +2019,9 @@ namespace UnitTest
             bezierSplineSetLValueCopy.m_vertexContainer.SetVertices(bezierSplineSetLValue.GetVertices());
 
             EXPECT_TRUE(bezierSpline.GetBezierData().size() == bezierSplineSetLValue.GetBezierData().size());
-            EXPECT_TRUE(bezierSplineSetLValue.GetBezierData().size() == 4);
+            EXPECT_EQ(bezierSplineSetLValue.GetBezierData().size(), 4);
             EXPECT_TRUE(bezierSplineSetLValue.GetBezierData().size() == bezierSplineSetRValue.GetBezierData().size());
-            EXPECT_TRUE(bezierSplineSetLValueCopy.GetBezierData().size() == 4);
+            EXPECT_EQ(bezierSplineSetLValueCopy.GetBezierData().size(), 4);
             EXPECT_TRUE(bezierSplineSetLValueCopy.GetVertexCount() == vertices.size());
         }
     };
