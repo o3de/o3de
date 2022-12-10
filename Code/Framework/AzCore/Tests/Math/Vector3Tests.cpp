@@ -548,14 +548,14 @@ namespace UnitTest
 
         // compare equal
         AZ::Vector3 rEq = AZ::Vector3::CreateSelectCmpEqual(vA, vB, AZ::Vector3(1.0f), AZ::Vector3(0.0f));
-        EXPECT_TRUE(rEq.IsClose(AZ::Vector3(0.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(rEq, IsClose(AZ::Vector3(0.0f, 0.0f, 1.0f)));
 
         // compare greater equal
         AZ::Vector3 rGr = AZ::Vector3::CreateSelectCmpGreaterEqual(vA, vB, AZ::Vector3(1.0f), AZ::Vector3(0.0f));
-        EXPECT_TRUE(rGr.IsClose(AZ::Vector3(0.0f, 1.0f, 1.0f)));
+        EXPECT_THAT(rGr, IsClose(AZ::Vector3(0.0f, 1.0f, 1.0f)));
 
         // compare greater
         AZ::Vector3 rGrEq = AZ::Vector3::CreateSelectCmpGreater(vA, vB, AZ::Vector3(1.0f), AZ::Vector3(0.0f));
-        EXPECT_TRUE(rGrEq.IsClose(AZ::Vector3(0.0f, 1.0f, 0.0f)));
+        EXPECT_THAT(rGrEq, IsClose(AZ::Vector3(0.0f, 1.0f, 0.0f)));
     }
 }

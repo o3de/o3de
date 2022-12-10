@@ -340,11 +340,11 @@ namespace UnitTest
         switch (VectorType::ElementCount)
         {
         case 4:
-            EXPECT_TRUE(AZ::IsClose(testStoreValues[3], 4.0f, 0.01f));
+            EXPECT_NEAR(testStoreValues[3], 4.0f, 0.01f);
         case 3:
             EXPECT_TRUE(std::isnan(testStoreValues[2]));
         case 2:
-            EXPECT_TRUE(AZ::IsClose(testStoreValues[1], -4.0f, 0.01f));
+            EXPECT_NEAR(testStoreValues[1], -4.0f, 0.01f);
         case 1:
             EXPECT_TRUE(std::isnan(testStoreValues[0]));
             break;
@@ -1056,7 +1056,7 @@ namespace UnitTest
             float results[4] = { 0.5f, 0.25f, 0.125f, 1.0f };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_TRUE(AZ::IsClose(testStoreValues[i], results[i], 0.01f));
+                EXPECT_NEAR(testStoreValues[i], results[i], 0.01f);
             }
         }
 
@@ -1068,7 +1068,7 @@ namespace UnitTest
             float results[4] = { 0.5f, 0.25f, 0.125f, 1.0f };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
-                EXPECT_TRUE(AZ::IsClose(testStoreValues[i], results[i], 0.01f));
+                EXPECT_NEAR(testStoreValues[i], results[i], 0.01f);
             }
         }
     }

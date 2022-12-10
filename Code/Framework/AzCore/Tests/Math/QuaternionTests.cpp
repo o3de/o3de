@@ -49,43 +49,43 @@ namespace UnitTest
         AZ::Quaternion q6 = AZ::Quaternion::CreateFromVector3(Vector3(1.0f, 2.0f, 3.0f));
         EXPECT_TRUE((q6.GetX() == 1.0f) && (q6.GetY() == 2.0f) && (q6.GetZ() == 3.0f) && (q6.GetW() == 0.0f));
         AZ::Quaternion q7 = AZ::Quaternion::CreateFromAxisAngle(Vector3::CreateAxisZ(), DegToRad(45.0f));
-        EXPECT_TRUE(q7.IsClose(AZ::Quaternion::CreateRotationZ(DegToRad(45.0f))));
+        EXPECT_THAT(q7, IsClose(AZ::Quaternion::CreateRotationZ(DegToRad(45.0f))));
 
         AZ::Quaternion q8 = Transform::CreateRotationX(DegToRad(60.0f)).GetRotation();
-        EXPECT_TRUE(q8.IsClose(AZ::Quaternion(0.5f, 0.0f, 0.0f, 0.866f)));
+        EXPECT_THAT(q8, IsClose(AZ::Quaternion(0.5f, 0.0f, 0.0f, 0.866f)));
         AZ::Quaternion q9 = AZ::Quaternion::CreateFromMatrix3x3(Matrix3x3::CreateRotationX(DegToRad(120.0f)));
-        EXPECT_TRUE(q9.IsClose(AZ::Quaternion(0.866f, 0.0f, 0.0f, 0.5f)));
+        EXPECT_THAT(q9, IsClose(AZ::Quaternion(0.866f, 0.0f, 0.0f, 0.5f)));
         AZ::Quaternion q10 = AZ::Quaternion::CreateFromMatrix4x4(Matrix4x4::CreateRotationX(DegToRad(120.0f)));
-        EXPECT_TRUE(q10.IsClose(AZ::Quaternion(0.866f, 0.0f, 0.0f, 0.5f)));
+        EXPECT_THAT(q10, IsClose(AZ::Quaternion(0.866f, 0.0f, 0.0f, 0.5f)));
         AZ::Quaternion q11 = AZ::Quaternion::CreateFromMatrix3x3(Matrix3x3::CreateRotationX(DegToRad(-60.0f)));
-        EXPECT_TRUE(q11.IsClose(AZ::Quaternion(-0.5f, 0.0f, 0.0f, 0.866f)));
+        EXPECT_THAT(q11, IsClose(AZ::Quaternion(-0.5f, 0.0f, 0.0f, 0.866f)));
         AZ::Quaternion q12 = AZ::Quaternion::CreateFromMatrix4x4(Matrix4x4::CreateRotationX(DegToRad(-60.0f)));
-        EXPECT_TRUE(q12.IsClose(AZ::Quaternion(-0.5f, 0.0f, 0.0f, 0.866f)));
+        EXPECT_THAT(q12, IsClose(AZ::Quaternion(-0.5f, 0.0f, 0.0f, 0.866f)));
         AZ::Quaternion q13 = AZ::Quaternion::CreateFromMatrix3x3(Matrix3x3::CreateRotationY(DegToRad(120.0f)));
-        EXPECT_TRUE(q13.IsClose(AZ::Quaternion(0.0f, 0.866f, 0.0f, 0.5f)));
+        EXPECT_THAT(q13, IsClose(AZ::Quaternion(0.0f, 0.866f, 0.0f, 0.5f)));
         AZ::Quaternion q14 = AZ::Quaternion::CreateFromMatrix4x4(Matrix4x4::CreateRotationY(DegToRad(120.0f)));
-        EXPECT_TRUE(q14.IsClose(AZ::Quaternion(0.0f, 0.866f, 0.0f, 0.5f)));
+        EXPECT_THAT(q14, IsClose(AZ::Quaternion(0.0f, 0.866f, 0.0f, 0.5f)));
         AZ::Quaternion q15 = AZ::Quaternion::CreateFromMatrix3x3(Matrix3x3::CreateRotationY(DegToRad(-60.0f)));
-        EXPECT_TRUE(q15.IsClose(AZ::Quaternion(0.0f, -0.5f, 0.0f, 0.866f)));
+        EXPECT_THAT(q15, IsClose(AZ::Quaternion(0.0f, -0.5f, 0.0f, 0.866f)));
         AZ::Quaternion q16 = AZ::Quaternion::CreateFromMatrix4x4(Matrix4x4::CreateRotationY(DegToRad(-60.0f)));
-        EXPECT_TRUE(q16.IsClose(AZ::Quaternion(0.0f, -0.5f, 0.0f, 0.866f)));
+        EXPECT_THAT(q16, IsClose(AZ::Quaternion(0.0f, -0.5f, 0.0f, 0.866f)));
         AZ::Quaternion q17 = AZ::Quaternion::CreateFromMatrix3x3(Matrix3x3::CreateRotationZ(DegToRad(120.0f)));
-        EXPECT_TRUE(q17.IsClose(AZ::Quaternion(0.0f, 0.0f, 0.866f, 0.5f)));
+        EXPECT_THAT(q17, IsClose(AZ::Quaternion(0.0f, 0.0f, 0.866f, 0.5f)));
         AZ::Quaternion q18 = AZ::Quaternion::CreateFromMatrix4x4(Matrix4x4::CreateRotationZ(DegToRad(120.0f)));
-        EXPECT_TRUE(q18.IsClose(AZ::Quaternion(0.0f, 0.0f, 0.866f, 0.5f)));
+        EXPECT_THAT(q18, IsClose(AZ::Quaternion(0.0f, 0.0f, 0.866f, 0.5f)));
         AZ::Quaternion q19 = AZ::Quaternion::CreateFromMatrix3x3(Matrix3x3::CreateRotationZ(DegToRad(-60.0f)));
-        EXPECT_TRUE(q19.IsClose(AZ::Quaternion(0.0f, 0.0f, -0.5f, 0.866f)));
+        EXPECT_THAT(q19, IsClose(AZ::Quaternion(0.0f, 0.0f, -0.5f, 0.866f)));
         AZ::Quaternion q20 = AZ::Quaternion::CreateFromMatrix4x4(Matrix4x4::CreateRotationZ(DegToRad(-60.0f)));
-        EXPECT_TRUE(q20.IsClose(AZ::Quaternion(0.0f, 0.0f, -0.5f, 0.866f)));
+        EXPECT_THAT(q20, IsClose(AZ::Quaternion(0.0f, 0.0f, -0.5f, 0.866f)));
     }
 
     TEST(MATH_Quaternion, TestCreate)
     {
         EXPECT_TRUE(AZ::Quaternion::CreateIdentity() == AZ::Quaternion(0.0f, 0.0f, 0.0f, 1.0f));
         EXPECT_TRUE(AZ::Quaternion::CreateZero() == AZ::Quaternion(0.0f));
-        EXPECT_TRUE(AZ::Quaternion::CreateRotationX(DegToRad(60.0f)).IsClose(AZ::Quaternion(0.5f, 0.0f, 0.0f, 0.866f)));
-        EXPECT_TRUE(AZ::Quaternion::CreateRotationY(DegToRad(60.0f)).IsClose(AZ::Quaternion(0.0f, 0.5f, 0.0f, 0.866f)));
-        EXPECT_TRUE(AZ::Quaternion::CreateRotationZ(DegToRad(60.0f)).IsClose(AZ::Quaternion(0.0f, 0.0f, 0.5f, 0.866f)));
+        EXPECT_THAT(AZ::Quaternion::CreateRotationX(DegToRad(60.0f)), IsClose(AZ::Quaternion(0.5f, 0.0f, 0.0f, 0.866f)));
+        EXPECT_THAT(AZ::Quaternion::CreateRotationY(DegToRad(60.0f)), IsClose(AZ::Quaternion(0.0f, 0.5f, 0.0f, 0.866f)));
+        EXPECT_THAT(AZ::Quaternion::CreateRotationZ(DegToRad(60.0f)), IsClose(AZ::Quaternion(0.0f, 0.0f, 0.5f, 0.866f)));
     }
 
     TEST(MATH_Quaternion, TestConcatenate)
@@ -93,7 +93,7 @@ namespace UnitTest
         Quaternion q1(1.0f, 2.0f, 3.0f, 4.0f);
         Quaternion q2(-1.0f, -2.0f, -3.0f, -4.0f);
         Quaternion result = q1 * q2;
-        EXPECT_TRUE(result.IsClose(Quaternion(-8.0f, -16.0f, -24.0f, -2.0f)));
+        EXPECT_THAT(result, IsClose(Quaternion(-8.0f, -16.0f, -24.0f, -2.0f)));
     }
 
     TEST(MATH_Quaternion, TestShortestArc)
@@ -101,16 +101,16 @@ namespace UnitTest
         Vector3 v1 = Vector3(1.0f, 2.0f, 3.0f).GetNormalized();
         Vector3 v2 = Vector3(-2.0f, 7.0f, -1.0f).GetNormalized();
         Quaternion q3 = AZ::Quaternion::CreateShortestArc(v1, v2); //q3 should transform v1 into v2
-        EXPECT_TRUE(v2.IsClose(q3.TransformVector(v1), 1e-3f));
+        EXPECT_THAT(v2, IsCloseTolerance(q3.TransformVector(v1), 1e-3f));
         Quaternion q4 = AZ::Quaternion::CreateShortestArc(Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f));
-        EXPECT_TRUE((q4.TransformVector(Vector3(0.0f, 0.0f, 1.0f))).IsClose(Vector3(0.0f, 0.0f, 1.0f), 1e-3f));  //perpendicular vector should be unaffected
-        EXPECT_TRUE((q4.TransformVector(Vector3(0.0f, -1.0f, 0.0f))).IsClose(Vector3(1.0f, 0.0f, 0.0f), 1e-3f)); //make sure we rotate the right direction, i.e. actually shortest arc
+        EXPECT_THAT((q4.TransformVector(Vector3(0.0f, 0.0f, 1.0f))), IsCloseTolerance(Vector3(0.0f, 0.0f, 1.0f), 1e-3f));  //perpendicular vector should be unaffected
+        EXPECT_THAT((q4.TransformVector(Vector3(0.0f, -1.0f, 0.0f))), IsCloseTolerance(Vector3(1.0f, 0.0f, 0.0f), 1e-3f)); //make sure we rotate the right direction, i.e. actually shortest arc
         v2 = (v1 + Vector3(1e-5f, 1e-5f, 1e-5f)).GetNormalized(); // test almost parallel vectors
         Quaternion q5 = AZ::Quaternion::CreateShortestArc(v1, v2);
-        EXPECT_TRUE(v2.IsClose(q5.TransformVector(v1), 1e-3f));
+        EXPECT_THAT(v2, IsCloseTolerance(q5.TransformVector(v1), 1e-3f));
         v2 = (-v1 + Vector3(1e-5f, 1e-5f, 1e-5f)).GetNormalized(); // test almost anti-parallel vectors
         Quaternion q6 = AZ::Quaternion::CreateShortestArc(v1, v2);
-        EXPECT_TRUE(v2.IsClose(q6.TransformVector(v1), 1e-3f));
+        EXPECT_THAT(v2, IsCloseTolerance(q6.TransformVector(v1), 1e-3f));
     }
 
     TEST(MATH_Quaternion, TestGetSet)
@@ -171,20 +171,20 @@ namespace UnitTest
     TEST(MATH_Quaternion, TestInverse)
     {
         Quaternion q1 = AZ::Quaternion::CreateRotationX(DegToRad(25.0f)) * AZ::Quaternion::CreateRotationY(DegToRad(70.0f));
-        EXPECT_TRUE((q1 * q1.GetInverseFast()).IsClose(AZ::Quaternion::CreateIdentity()));
+        EXPECT_THAT((q1 * q1.GetInverseFast()), IsClose(AZ::Quaternion::CreateIdentity()));
         Quaternion q2 = q1;
         q2.InvertFast();
         EXPECT_TRUE(q1.GetX() == -q2.GetX());
         EXPECT_TRUE(q1.GetY() == -q2.GetY());
         EXPECT_TRUE(q1.GetZ() == -q2.GetZ());
         EXPECT_TRUE(q1.GetW() == q2.GetW());
-        EXPECT_TRUE((q1 * q2).IsClose(AZ::Quaternion::CreateIdentity()));
+        EXPECT_THAT((q1 * q2), IsClose(AZ::Quaternion::CreateIdentity()));
     }
 
     TEST(MATH_Quaternion, TestGetInverseFull)
     {
         Quaternion q1(1.0f, 2.0f, 3.0f, 4.0f);
-        EXPECT_TRUE((q1 * q1.GetInverseFull()).IsClose(AZ::Quaternion::CreateIdentity()));
+        EXPECT_THAT((q1 * q1.GetInverseFull()), IsClose(AZ::Quaternion::CreateIdentity()));
     }
 
     TEST(MATH_Quaternion, TestDot)
@@ -200,51 +200,51 @@ namespace UnitTest
 
     TEST(MATH_Quaternion, TestNormalize)
     {
-        EXPECT_TRUE(AZ::Quaternion(0.0f, -4.0f, 2.0f, 4.0f).GetNormalized().IsClose(AZ::Quaternion(0.0f, -0.66666f, 0.33333f, 0.66666f)));
+        EXPECT_THAT(AZ::Quaternion(0.0f, -4.0f, 2.0f, 4.0f).GetNormalized(), IsClose(AZ::Quaternion(0.0f, -0.66666f, 0.33333f, 0.66666f)));
         Quaternion q1(2.0f, 0.0f, 4.0f, -4.0f);
         q1.Normalize();
-        EXPECT_TRUE(q1.IsClose(AZ::Quaternion(0.33333f, 0.0f, 0.66666f, -0.66666f)));
+        EXPECT_THAT(q1, IsClose(AZ::Quaternion(0.33333f, 0.0f, 0.66666f, -0.66666f)));
         q1.Set(2.0f, 0.0f, 4.0f, -4.0f);
         float length = q1.NormalizeWithLength();
         EXPECT_NEAR(length, 6.0f, normalizeEpsilon);
-        EXPECT_TRUE(q1.IsClose(AZ::Quaternion(0.33333f, 0.0f, 0.66666f, -0.66666f)));
+        EXPECT_THAT(q1, IsClose(AZ::Quaternion(0.33333f, 0.0f, 0.66666f, -0.66666f)));
     }
 
     TEST(MATH_Quaternion, TestInterpolation)
     {
-        EXPECT_TRUE(AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f).Lerp(AZ::Quaternion(2.0f, 3.0f, 4.0f, 5.0f), 0.5f).IsClose(AZ::Quaternion(1.5f, 2.5f, 3.5f, 4.5f)));
-        EXPECT_TRUE(AZ::Quaternion::CreateRotationX(DegToRad(10.0f)).Slerp(AZ::Quaternion::CreateRotationY(DegToRad(60.0f)), 0.5f).IsClose(AZ::Quaternion(0.045f, 0.259f, 0.0f, 0.965f), 1e-3f));
-        EXPECT_TRUE(AZ::Quaternion::CreateRotationX(DegToRad(10.0f)).Squad(AZ::Quaternion::CreateRotationY(DegToRad(60.0f)), AZ::Quaternion::CreateRotationZ(DegToRad(35.0f)), AZ::Quaternion::CreateRotationX(DegToRad(80.0f)), 0.5f).IsClose(AZ::Quaternion(0.2f, 0.132f, 0.083f, 0.967f), 1e-3f));
+        EXPECT_THAT(AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f).Lerp(AZ::Quaternion(2.0f, 3.0f, 4.0f, 5.0f), 0.5f), IsClose(AZ::Quaternion(1.5f, 2.5f, 3.5f, 4.5f)));
+        EXPECT_THAT(AZ::Quaternion::CreateRotationX(DegToRad(10.0f)).Slerp(AZ::Quaternion::CreateRotationY(DegToRad(60.0f)), 0.5f), IsCloseTolerance(AZ::Quaternion(0.045f, 0.259f, 0.0f, 0.965f), 1e-3f));
+        EXPECT_THAT(AZ::Quaternion::CreateRotationX(DegToRad(10.0f)).Squad(AZ::Quaternion::CreateRotationY(DegToRad(60.0f)), AZ::Quaternion::CreateRotationZ(DegToRad(35.0f)), AZ::Quaternion::CreateRotationX(DegToRad(80.0f)), 0.5f), IsCloseTolerance(AZ::Quaternion(0.2f, 0.132f, 0.083f, 0.967f), 1e-3f));
     }
 
     TEST(MATH_Quaternion, TestClose)
     {
-        EXPECT_TRUE(AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f).IsClose(AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f)));
-        EXPECT_TRUE(!AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f).IsClose(AZ::Quaternion(1.0f, 2.0f, 3.0f, 5.0f)));
-        EXPECT_TRUE(AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f).IsClose(AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.4f), 0.5f));
+        EXPECT_THAT(AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f), IsClose(AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f)));
+        EXPECT_THAT(AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f), testing::Not(IsClose(AZ::Quaternion(1.0f, 2.0f, 3.0f, 5.0f))));
+        EXPECT_THAT(AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f), IsCloseTolerance(AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.4f), 0.5f));
     }
 
     TEST(MATH_Quaternion, TestOperators)
     {
         EXPECT_TRUE((-AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f)) == AZ::Quaternion(-1.0f, -2.0f, -3.0f, -4.0f));
-        EXPECT_TRUE((AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f) + AZ::Quaternion(2.0f, 3.0f, 5.0f, -1.0f)).IsClose(AZ::Quaternion(3.0f, 5.0f, 8.0f, 3.0f)));
-        EXPECT_TRUE((AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f) - AZ::Quaternion(2.0f, 3.0f, 5.0f, -1.0f)).IsClose(AZ::Quaternion(-1.0f, -1.0f, -2.0f, 5.0f)));
-        EXPECT_TRUE((AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f) * AZ::Quaternion(2.0f, 3.0f, 5.0f, -1.0f)).IsClose(AZ::Quaternion(8.0f, 11.0f, 16.0f, -27.0f)));
-        EXPECT_TRUE((AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f) * 2.0f).IsClose(AZ::Quaternion(2.0f, 4.0f, 6.0f, 8.0f)));
-        EXPECT_TRUE((2.0f * AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f)).IsClose(AZ::Quaternion(2.0f, 4.0f, 6.0f, 8.0f)));
-        EXPECT_TRUE((AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f) / 2.0f).IsClose(AZ::Quaternion(0.5f, 1.0f, 1.5f, 2.0f)));
+        EXPECT_THAT((AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f) + AZ::Quaternion(2.0f, 3.0f, 5.0f, -1.0f)), IsClose(AZ::Quaternion(3.0f, 5.0f, 8.0f, 3.0f)));
+        EXPECT_THAT((AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f) - AZ::Quaternion(2.0f, 3.0f, 5.0f, -1.0f)), IsClose(AZ::Quaternion(-1.0f, -1.0f, -2.0f, 5.0f)));
+        EXPECT_THAT((AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f) * AZ::Quaternion(2.0f, 3.0f, 5.0f, -1.0f)), IsClose(AZ::Quaternion(8.0f, 11.0f, 16.0f, -27.0f)));
+        EXPECT_THAT((AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f) * 2.0f), IsClose(AZ::Quaternion(2.0f, 4.0f, 6.0f, 8.0f)));
+        EXPECT_THAT((2.0f * AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f)), IsClose(AZ::Quaternion(2.0f, 4.0f, 6.0f, 8.0f)));
+        EXPECT_THAT((AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f) / 2.0f), IsClose(AZ::Quaternion(0.5f, 1.0f, 1.5f, 2.0f)));
         Quaternion q1(1.0f, 2.0f, 3.0f, 4.0f);
         q1 += AZ::Quaternion(5.0f, 6.0f, 7.0f, 8.0f);
-        EXPECT_TRUE(q1.IsClose(AZ::Quaternion(6.0f, 8.0f, 10.0f, 12.0f)));
+        EXPECT_THAT(q1, IsClose(AZ::Quaternion(6.0f, 8.0f, 10.0f, 12.0f)));
         q1 -= AZ::Quaternion(3.0f, -1.0f, 5.0f, 7.0f);
-        EXPECT_TRUE(q1.IsClose(AZ::Quaternion(3.0f, 9.0f, 5.0f, 5.0f)));
+        EXPECT_THAT(q1, IsClose(AZ::Quaternion(3.0f, 9.0f, 5.0f, 5.0f)));
         q1.Set(1.0f, 2.0f, 3.0f, 4.0f);
         q1 *= AZ::Quaternion(2.0f, 3.0f, 5.0f, -1.0f);
-        EXPECT_TRUE(q1.IsClose(AZ::Quaternion(8.0f, 11.0f, 16.0f, -27.0f)));
+        EXPECT_THAT(q1, IsClose(AZ::Quaternion(8.0f, 11.0f, 16.0f, -27.0f)));
         q1 *= 2.0f;
-        EXPECT_TRUE(q1.IsClose(AZ::Quaternion(16.0f, 22.0f, 32.0f, -54.0f)));
+        EXPECT_THAT(q1, IsClose(AZ::Quaternion(16.0f, 22.0f, 32.0f, -54.0f)));
         q1 /= 4.0f;
-        EXPECT_TRUE(q1.IsClose(AZ::Quaternion(4.0f, 5.5f, 8.0f, -13.5f)));
+        EXPECT_THAT(q1, IsClose(AZ::Quaternion(4.0f, 5.5f, 8.0f, -13.5f)));
     }
 
     TEST(MATH_Quaternion, TestEquality)
@@ -258,7 +258,7 @@ namespace UnitTest
 
     TEST(MATH_Quaternion, TestVectorTransform)
     {
-        EXPECT_TRUE((AZ::Quaternion::CreateRotationX(DegToRad(45.0f)).TransformVector(Vector3(4.0f, 1.0f, 0.0f))).IsClose(Vector3(4.0f, 0.7071f, 0.7071f)));
+        EXPECT_THAT((AZ::Quaternion::CreateRotationX(DegToRad(45.0f)).TransformVector(Vector3(4.0f, 1.0f, 0.0f))), IsClose(Vector3(4.0f, 0.7071f, 0.7071f)));
     }
 
     TEST(MATH_Quaternion, TestGetImaginary)
@@ -270,7 +270,7 @@ namespace UnitTest
     TEST(MATH_Quaternion, TestGetAngle)
     {
         Quaternion q1 = AZ::Quaternion::CreateRotationX(DegToRad(35.0f));
-        EXPECT_TRUE(AZ::IsClose(q1.GetAngle(), DegToRad(35.0f)));
+        EXPECT_NEAR(q1.GetAngle(), DegToRad(35.0f), AZ::Constants::Tolerance);
     }
 
     TEST(MATH_Quaternion, TestConcatenation)
@@ -278,7 +278,7 @@ namespace UnitTest
         Quaternion q1 = AZ::Quaternion::CreateRotationZ(DegToRad(90.0f));
         Quaternion q2 = AZ::Quaternion::CreateRotationX(DegToRad(90.0f));
         Vector3 v = (q2 * q1).TransformVector(Vector3(1.0f, 0.0f, 0.0f));
-        EXPECT_TRUE(v.IsClose(Vector3(0.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(v, IsClose(Vector3(0.0f, 0.0f, 1.0f)));
     }
 
     TEST(MATH_Quaternion, ToEulerDegrees)
@@ -288,10 +288,10 @@ namespace UnitTest
         float cos = cosf(halfAngle);
         AZ::Quaternion testQuat = AZ::Quaternion::CreateFromVector3AndValue(sin * AZ::Vector3::CreateAxisX(), cos);
         AZ::Vector3 resultVector = testQuat.GetEulerDegrees();
-        EXPECT_TRUE(resultVector.IsClose(AZ::Vector3(45.0f, 0.0f, 0.0f)));
+        EXPECT_THAT(resultVector, IsClose(AZ::Vector3(45.0f, 0.0f, 0.0f)));
 
         resultVector = ConvertQuaternionToEulerDegrees(testQuat);
-        EXPECT_TRUE(resultVector.IsClose(AZ::Vector3(45.0f, 0.0f, 0.0f)));
+        EXPECT_THAT(resultVector, IsClose(AZ::Vector3(45.0f, 0.0f, 0.0f)));
     }
 
     TEST(MATH_Quaternion, ToEulerRadians)
@@ -367,7 +367,7 @@ namespace UnitTest
         const AZ::Vector3 testDegrees(45.0f, 45.0f, 45.0f);
         AZ::Quaternion testQuat;
         testQuat.SetFromEulerDegrees(testDegrees);
-        EXPECT_TRUE(testQuat.IsClose(AZ::Quaternion(0.46193981170654296875f, 0.1913417130708694458f, 0.46193981170654296875f, 0.73253774642944335938f), 0.0000001f));
+        EXPECT_THAT(testQuat, IsCloseTolerance(AZ::Quaternion(0.46193981170654296875f, 0.1913417130708694458f, 0.46193981170654296875f, 0.73253774642944335938f), 0.0000001f));
     }
 
     TEST(MATH_Quaternion, FromEulerRadians)
@@ -375,20 +375,20 @@ namespace UnitTest
         const AZ::Vector3 testRadians(Constants::QuarterPi, Constants::QuarterPi, Constants::QuarterPi);
         AZ::Quaternion testQuat;
         testQuat.SetFromEulerRadians(testRadians);
-        EXPECT_TRUE(testQuat.IsClose(AZ::Quaternion(0.46193981170654296875f, 0.1913417130708694458f, 0.46193981170654296875f, 0.73253774642944335938f), 0.0000001f));
+        EXPECT_THAT(testQuat, IsCloseTolerance(AZ::Quaternion(0.46193981170654296875f, 0.1913417130708694458f, 0.46193981170654296875f, 0.73253774642944335938f), 0.0000001f));
     }
 
 
     TEST(MATH_Quaternion, FromAxisAngle)
     {
         AZ::Quaternion q10 = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), Constants::QuarterPi);
-        EXPECT_TRUE(q10.IsClose(AZ::Quaternion::CreateRotationZ(Constants::QuarterPi)));
+        EXPECT_THAT(q10, IsClose(AZ::Quaternion::CreateRotationZ(Constants::QuarterPi)));
 
         q10 = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), Constants::HalfPi);
-        EXPECT_TRUE(q10.IsClose(AZ::Quaternion::CreateRotationY(Constants::HalfPi)));
+        EXPECT_THAT(q10, IsClose(AZ::Quaternion::CreateRotationY(Constants::HalfPi)));
 
         q10 = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), Constants::TwoPi / 3.0f);
-        EXPECT_TRUE(q10.IsClose(AZ::Quaternion::CreateRotationX(Constants::TwoPi / 3.0f)));
+        EXPECT_THAT(q10, IsClose(AZ::Quaternion::CreateRotationX(Constants::TwoPi / 3.0f)));
     }
 
     TEST(MATH_Quaternion, ToAxisAngle)
@@ -399,7 +399,7 @@ namespace UnitTest
         Vector3 resultAxis = Vector3::CreateZero();
         float resultAngle{};
         testQuat.ConvertToAxisAngle(resultAxis, resultAngle);
-        EXPECT_TRUE(resultAxis.IsClose(Vector3::CreateAxisY()));
+        EXPECT_THAT(resultAxis, IsClose(Vector3::CreateAxisY()));
         EXPECT_NEAR(0.0f, resultAngle, axisAngleEpsilon);
     }
 
@@ -490,7 +490,7 @@ namespace UnitTest
 
         // Compare the scaled result to the version from the helper that directly converts it to scaled axis-angle.
         AZ::Vector3 scaledResult = axis*angle;
-        EXPECT_TRUE(scaledResult.IsClose(scaledAxisAngle, 1e-5f));
+        EXPECT_THAT(scaledResult, IsCloseTolerance(scaledAxisAngle, 1e-5f));
     }
 
     TEST_P(QuaternionScaledAxisAngleConversionFixture, CompareScaledAxisAngleConversionTests)

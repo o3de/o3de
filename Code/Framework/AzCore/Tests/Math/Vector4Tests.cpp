@@ -303,9 +303,9 @@ namespace UnitTest
 
     TEST(MATH_Vector4, TestLerpSlerpNLerp)
     {
-        EXPECT_TRUE(AZ::Vector4(4.0f, 5.0f, 6.0f, 7.0f).Lerp(AZ::Vector4(5.0f, 10.0f, 2.0f, 1.0f), 0.5f).IsClose(AZ::Vector4(4.5f, 7.5f, 4.0f, 4.0f)));
-        EXPECT_TRUE(AZ::Vector4(1.0f, 0.0f, 0.0f, 0.0f).Slerp(AZ::Vector4(0.0f, 1.0f, 0.0f, 0.0f), 0.5f).IsClose(AZ::Vector4(0.7071f, 0.7071f, 0.0f, 0.0f)));
-        EXPECT_TRUE(AZ::Vector4(1.0f, 0.0f, 0.0f, 0.0f).Nlerp(AZ::Vector4(0.0f, 1.0f, 0.0f, 0.0f), 0.5f).IsClose(AZ::Vector4(0.7071f, 0.7071f, 0.0f, 0.0f)));
+        EXPECT_THAT(AZ::Vector4(4.0f, 5.0f, 6.0f, 7.0f).Lerp(AZ::Vector4(5.0f, 10.0f, 2.0f, 1.0f), 0.5f), IsClose(AZ::Vector4(4.5f, 7.5f, 4.0f, 4.0f)));
+        EXPECT_THAT(AZ::Vector4(1.0f, 0.0f, 0.0f, 0.0f).Slerp(AZ::Vector4(0.0f, 1.0f, 0.0f, 0.0f), 0.5f), IsClose(AZ::Vector4(0.7071f, 0.7071f, 0.0f, 0.0f)));
+        EXPECT_THAT(AZ::Vector4(1.0f, 0.0f, 0.0f, 0.0f).Nlerp(AZ::Vector4(0.0f, 1.0f, 0.0f, 0.0f), 0.5f), IsClose(AZ::Vector4(0.7071f, 0.7071f, 0.0f, 0.0f)));
     }
 
     TEST(MATH_Vector4, TestDot)

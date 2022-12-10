@@ -11,6 +11,7 @@
 #include <AzCore/Math/Frustum.h>
 #include <AzCore/Math/Sphere.h>
 #include <AzCore/Math/ShapeIntersection.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
 
 namespace UnitTest
 {
@@ -50,14 +51,14 @@ namespace UnitTest
         {
             AZ::Vector3 intersectionPoint;
             EXPECT_TRUE(AZ::ShapeIntersection::IntersectThreePlanes(near_value, left, bottom, intersectionPoint));
-            EXPECT_TRUE(intersectionPoint.IsClose(AZ::Vector3(-5.f, -5.f, -5.f)));
+            EXPECT_THAT(intersectionPoint, IsClose(AZ::Vector3(-5.f, -5.f, -5.f)));
             EXPECT_FALSE(AZ::ShapeIntersection::IntersectThreePlanes(near_value, far_value, bottom, intersectionPoint));
         }
 
         {
             AZ::Vector3 intersectionPoint;
             EXPECT_TRUE(AZ::ShapeIntersection::IntersectThreePlanes(near_value, left, bottom, intersectionPoint));
-            EXPECT_TRUE(intersectionPoint.IsClose(AZ::Vector3(-5.f, -5.f, -5.f)));
+            EXPECT_THAT(intersectionPoint, IsClose(AZ::Vector3(-5.f, -5.f, -5.f)));
             EXPECT_FALSE(AZ::ShapeIntersection::IntersectThreePlanes(near_value, far_value, bottom, intersectionPoint));
         }
 

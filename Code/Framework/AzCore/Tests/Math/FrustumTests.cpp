@@ -313,9 +313,9 @@ namespace UnitTest
         AZ::Plane bottom1 = AZ::Plane::CreateFromNormalAndPoint(AZ::Vector3(0.f, 0.f, 1.f), AZ::Vector3(0.f, 0.f, -2.f));
         AZ::Frustum frustum1(near1, far1, left1, right1, top1, bottom1);
 
-        EXPECT_FALSE(frustum.IsClose(frustum1));
+        EXPECT_THAT(frustum, testing::Not(IsClose(frustum1)));
         frustum.Set(frustum1);
-        EXPECT_TRUE(frustum.IsClose(frustum1));
+        EXPECT_THAT(frustum, IsClose(frustum1));
 
         frustum.SetPlane(AZ::Frustum::PlaneId::Near, near_value);
         frustum.SetPlane(AZ::Frustum::PlaneId::Far, far_value);
@@ -332,7 +332,7 @@ namespace UnitTest
         EXPECT_TRUE(frustum.GetPlane(AZ::Frustum::PlaneId::Bottom) == bottom);
 
         frustum = frustum1;
-        EXPECT_TRUE(frustum.IsClose(frustum1));
+        EXPECT_THAT(frustum, IsClose(frustum1));
     }
 
     // TODO: Test frustum creation from View-Projection Matrices

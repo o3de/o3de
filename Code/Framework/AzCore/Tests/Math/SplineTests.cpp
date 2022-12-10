@@ -11,6 +11,7 @@
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
 
 using namespace AZ;
 
@@ -357,23 +358,23 @@ namespace UnitTest
 
                 {
                     Vector3 position = linearSpline.GetPosition(linearSpline.GetAddressByFraction(0.5f));
-                    EXPECT_TRUE(position.IsClose(Vector3(5.0f, 5.0f, 0.0f)));
+                    EXPECT_THAT(position, IsClose(Vector3(5.0f, 5.0f, 0.0f)));
                 }
 
                 {
                     Vector3 position = linearSpline.GetPosition(linearSpline.GetAddressByDistance(20.0f));
-                    EXPECT_TRUE(position.IsClose(Vector3(0.0f, 0.0f, 0.0f)));
+                    EXPECT_THAT(position, IsClose(Vector3(0.0f, 0.0f, 0.0f)));
                 }
 
                 {
                     Vector3 position = linearSpline.GetPosition(linearSpline.GetAddressByDistance(18.0f));
-                    EXPECT_TRUE(position.IsClose(Vector3(0.0f, 2.0f, 0.0f)));
+                    EXPECT_THAT(position, IsClose(Vector3(0.0f, 2.0f, 0.0f)));
                 }
 
                 {
                     // out of bounds access (return position of last/first vertex - clamped)
                     Vector3 position = linearSpline.GetPosition(SplineAddress(5, 0.0f));
-                    EXPECT_TRUE(position.IsClose(Vector3(0.0f, 0.0f, 0.0f)));
+                    EXPECT_THAT(position, IsClose(Vector3(0.0f, 0.0f, 0.0f)));
                 }
             }
         }
@@ -618,8 +619,8 @@ namespace UnitTest
                 AZ::Aabb aabb;
                 linearSpline.GetAabb(aabb);
 
-                EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(0.0f, 0.0f, 0.0f)));
-                EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(10.0f, 10.0f, 0.0f)));
+                EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(0.0f, 0.0f, 0.0f)));
+                EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(10.0f, 10.0f, 0.0f)));
             }
 
             {
@@ -635,8 +636,8 @@ namespace UnitTest
                 AZ::Aabb aabb;
                 linearSpline.GetAabb(aabb);
 
-                EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(0.0f, 0.0f, 0.0f)));
-                EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(10.0f, 10.0f, 0.0f)));
+                EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(0.0f, 0.0f, 0.0f)));
+                EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(10.0f, 10.0f, 0.0f)));
             }
 
             {
@@ -652,8 +653,8 @@ namespace UnitTest
                 AZ::Aabb aabb;
                 linearSpline.GetAabb(aabb, translation);
 
-                EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(25.0f, 25.0f, 0.0f)));
-                EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(35.0f, 35.0f, 0.0f)));
+                EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(25.0f, 25.0f, 0.0f)));
+                EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(35.0f, 35.0f, 0.0f)));
             }
         }
 
@@ -982,27 +983,27 @@ namespace UnitTest
 
                 {
                     Vector3 position = catmullRomSpline.GetPosition(SplineAddress(1, 0.125f));
-                    EXPECT_TRUE(position.IsClose(Vector3(0.83984375f, 10.546875f, 0.0f)));
+                    EXPECT_THAT(position, IsClose(Vector3(0.83984375f, 10.546875f, 0.0f)));
                 }
 
                 {
                     Vector3 position = catmullRomSpline.GetPosition(SplineAddress(1, 0.625f));
-                    EXPECT_TRUE(position.IsClose(Vector3(6.54296875f, 11.171875f, 0.0f)));
+                    EXPECT_THAT(position, IsClose(Vector3(6.54296875f, 11.171875f, 0.0f)));
                 }
 
                 {
                     Vector3 position = catmullRomSpline.GetPosition(SplineAddress(3, 0.5f));
-                    EXPECT_TRUE(position.IsClose(Vector3(10.0f, 10.0f, 0.0f)));
+                    EXPECT_THAT(position, IsClose(Vector3(10.0f, 10.0f, 0.0f)));
                 }
 
                 {
                     Vector3 position = catmullRomSpline.GetPosition(SplineAddress(0, 0.0f));
-                    EXPECT_TRUE(position.IsClose(Vector3(0.0f, 10.0f, 0.0f)));
+                    EXPECT_THAT(position, IsClose(Vector3(0.0f, 10.0f, 0.0f)));
                 }
 
                 {
                     Vector3 position = catmullRomSpline.GetPosition(SplineAddress(1, 0.0f));
-                    EXPECT_TRUE(position.IsClose(Vector3(0.0f, 10.0f, 0.0f)));
+                    EXPECT_THAT(position, IsClose(Vector3(0.0f, 10.0f, 0.0f)));
                 }
 
                 {
@@ -1029,22 +1030,22 @@ namespace UnitTest
 
                 {
                     Vector3 position = catmullRomSpline.GetPosition(SplineAddress(1, 0.125f));
-                    EXPECT_TRUE(position.IsClose(Vector3(0.83984375f, 10.546875f, 0.0f)));
+                    EXPECT_THAT(position, IsClose(Vector3(0.83984375f, 10.546875f, 0.0f)));
                 }
 
                 {
                     Vector3 position = catmullRomSpline.GetPosition(SplineAddress(1, 0.625f));
-                    EXPECT_TRUE(position.IsClose(Vector3(6.54296875f, 11.171875f, 0.0f)));
+                    EXPECT_THAT(position, IsClose(Vector3(6.54296875f, 11.171875f, 0.0f)));
                 }
 
                 {
                     Vector3 position = catmullRomSpline.GetPosition(SplineAddress(0, 0.0f));
-                    EXPECT_TRUE(position.IsClose(Vector3(0.0f, 0.0f, 0.0f)));
+                    EXPECT_THAT(position, IsClose(Vector3(0.0f, 0.0f, 0.0f)));
                 }
 
                 {
                     Vector3 position = catmullRomSpline.GetPosition(SplineAddress(3, 1.0f));
-                    EXPECT_TRUE(position.IsClose(Vector3(0.0f, 0.0f, 0.0f)));
+                    EXPECT_THAT(position, IsClose(Vector3(0.0f, 0.0f, 0.0f)));
                 }
 
                 {
@@ -1073,38 +1074,38 @@ namespace UnitTest
 
                 {
                     Vector3 normal = catmullRomSpline.GetNormal(SplineAddress());
-                    EXPECT_TRUE(normal.IsClose(Vector3(-5.0f, 5.0f, 0.0f).GetNormalized()));
+                    EXPECT_THAT(normal, IsClose(Vector3(-5.0f, 5.0f, 0.0f).GetNormalized()));
                 }
 
                 {
                     Vector3 normal = catmullRomSpline.GetNormal(SplineAddress(1, 0.0f));
-                    EXPECT_TRUE(normal.IsClose(Vector3(-5.0f, 5.0f, 0.0f).GetNormalized()));
+                    EXPECT_THAT(normal, IsClose(Vector3(-5.0f, 5.0f, 0.0f).GetNormalized()));
                 }
 
                 {
                     Vector3 normal = catmullRomSpline.GetNormal(SplineAddress(1, 1.0f));
-                    EXPECT_TRUE(normal.IsClose(Vector3(5.0f, 5.0f, 0.0f).GetNormalized()));
+                    EXPECT_THAT(normal, IsClose(Vector3(5.0f, 5.0f, 0.0f).GetNormalized()));
                 }
 
                 {
                     Vector3 normal = catmullRomSpline.GetNormal(SplineAddress(1, 0.5f));
-                    EXPECT_TRUE(normal.IsClose(Vector3(0.0f, 12.5f, 0.0f).GetNormalized()));
+                    EXPECT_THAT(normal, IsClose(Vector3(0.0f, 12.5f, 0.0f).GetNormalized()));
                 }
 
                 {
                     Vector3 normal = catmullRomSpline.GetNormal(SplineAddress(2, 0.0f));
-                    EXPECT_TRUE(normal.IsClose(Vector3(5.0f, 5.0f, 0.0f).GetNormalized()));
+                    EXPECT_THAT(normal, IsClose(Vector3(5.0f, 5.0f, 0.0f).GetNormalized()));
                 }
 
                 {
                     Vector3 normal = catmullRomSpline.GetNormal(SplineAddress(3, 0.5f));
-                    EXPECT_TRUE(normal.IsClose(Vector3(5.0f, 5.0f, 0.0f).GetNormalized()));
+                    EXPECT_THAT(normal, IsClose(Vector3(5.0f, 5.0f, 0.0f).GetNormalized()));
                 }
 
                 {
                     // out of bounds access (return normal of last vertex that is not a control point - clamped)
                     Vector3 normal = catmullRomSpline.GetNormal(SplineAddress(5, 0.0f));
-                    EXPECT_TRUE(normal.IsClose(Vector3(5.0f, 5.0f, 0.0f).GetNormalized()));
+                    EXPECT_THAT(normal, IsClose(Vector3(5.0f, 5.0f, 0.0f).GetNormalized()));
                 }
             }
 
@@ -1120,23 +1121,23 @@ namespace UnitTest
 
                 {
                     Vector3 normal = catmullRomSpline.GetNormal(SplineAddress());
-                    EXPECT_TRUE(normal.IsClose(Vector3(-5.0f, -5.0f, 0.0f).GetNormalized()));
+                    EXPECT_THAT(normal, IsClose(Vector3(-5.0f, -5.0f, 0.0f).GetNormalized()));
                 }
 
                 {
                     Vector3 normal = catmullRomSpline.GetNormal(SplineAddress(1, 0.5f));
-                    EXPECT_TRUE(normal.IsClose(Vector3(0.0f, 1.0f, 0.0f)));
+                    EXPECT_THAT(normal, IsClose(Vector3(0.0f, 1.0f, 0.0f)));
                 }
 
                 {
                     Vector3 normal = catmullRomSpline.GetNormal(SplineAddress(3, 0.5f));
-                    EXPECT_TRUE(normal.IsClose(Vector3(0.0f, -1.0f, 0.0f)));
+                    EXPECT_THAT(normal, IsClose(Vector3(0.0f, -1.0f, 0.0f)));
                 }
 
                 {
                     // out of bounds access (return normal of last vertex that is not a control point - clamped)
                     Vector3 normal = catmullRomSpline.GetNormal(SplineAddress(5, 0.0f));
-                    EXPECT_TRUE(normal.IsClose(Vector3(-5.0f, -5.0f, 0.0f).GetNormalized()));
+                    EXPECT_THAT(normal, IsClose(Vector3(-5.0f, -5.0f, 0.0f).GetNormalized()));
                 }
             }
         }
@@ -1154,27 +1155,27 @@ namespace UnitTest
 
                 {
                     Vector3 tangent = catmullRomSpline.GetTangent(SplineAddress(1, 0.0f));
-                    EXPECT_TRUE(tangent.IsClose(Vector3(5.0f, 5.0f, 0.0f).GetNormalized()));
+                    EXPECT_THAT(tangent, IsClose(Vector3(5.0f, 5.0f, 0.0f).GetNormalized()));
                 }
 
                 {
                     Vector3 tangent = catmullRomSpline.GetTangent(SplineAddress(1, 1.0f));
-                    EXPECT_TRUE(tangent.IsClose(Vector3(5.0f, -5.0f, 0.0f).GetNormalized()));
+                    EXPECT_THAT(tangent, IsClose(Vector3(5.0f, -5.0f, 0.0f).GetNormalized()));
                 }
 
                 {
                     Vector3 tangent = catmullRomSpline.GetTangent(SplineAddress(1, 0.5f));
-                    EXPECT_TRUE(tangent.IsClose(Vector3(12.5f, 0.0f, 0.0f).GetNormalized()));
+                    EXPECT_THAT(tangent, IsClose(Vector3(12.5f, 0.0f, 0.0f).GetNormalized()));
                 }
 
                 {
                     Vector3 tangent = catmullRomSpline.GetTangent(SplineAddress(2, 0.0f));
-                    EXPECT_TRUE(tangent.IsClose(Vector3(5.0f, -5.0f, 0.0f).GetNormalized()));
+                    EXPECT_THAT(tangent, IsClose(Vector3(5.0f, -5.0f, 0.0f).GetNormalized()));
                 }
 
                 {
                     Vector3 tangent = catmullRomSpline.GetTangent(SplineAddress(3, 0.5f));
-                    EXPECT_TRUE(tangent.IsClose(Vector3(5.0f, -5.0f, 0.0f).GetNormalized()));
+                    EXPECT_THAT(tangent, IsClose(Vector3(5.0f, -5.0f, 0.0f).GetNormalized()));
                 }
             }
 
@@ -1190,17 +1191,17 @@ namespace UnitTest
 
                 {
                     Vector3 tangent = catmullRomSpline.GetTangent(SplineAddress(3, 0.5f));
-                    EXPECT_TRUE(tangent.IsClose(Vector3(-1.0f, 0.0f, 0.0f)));
+                    EXPECT_THAT(tangent, IsClose(Vector3(-1.0f, 0.0f, 0.0f)));
                 }
 
                 {
                     Vector3 tangent = catmullRomSpline.GetTangent(SplineAddress(1, 0.5f));
-                    EXPECT_TRUE(tangent.IsClose(Vector3(1.0f, 0.0f, 0.0f)));
+                    EXPECT_THAT(tangent, IsClose(Vector3(1.0f, 0.0f, 0.0f)));
                 }
 
                 {
                     Vector3 tangent = catmullRomSpline.GetTangent(SplineAddress(3, 1.0f));
-                    EXPECT_TRUE(tangent.IsClose(Vector3(-5.0f, 5.0f, 0.0f).GetNormalized()));
+                    EXPECT_THAT(tangent, IsClose(Vector3(-5.0f, 5.0f, 0.0f).GetNormalized()));
                 }
             }
         }
@@ -1278,8 +1279,8 @@ namespace UnitTest
                 AZ::Aabb aabb;
                 catmullRomSpline.GetAabb(aabb);
 
-                EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(0.0f, 10.0f, 0.0f)));
-                EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(10.0f, 11.25f, 0.0f)));
+                EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(0.0f, 10.0f, 0.0f)));
+                EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(10.0f, 11.25f, 0.0f)));
             }
 
             {
@@ -1295,8 +1296,8 @@ namespace UnitTest
                 AZ::Aabb aabb;
                 catmullRomSpline.GetAabb(aabb);
 
-                EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(-1.25f, -1.25f, 0.0f)));
-                EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(11.25f, 11.25f, 0.0f)));
+                EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(-1.25f, -1.25f, 0.0f)));
+                EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(11.25f, 11.25f, 0.0f)));
             }
         }
 
@@ -1641,23 +1642,23 @@ namespace UnitTest
 
                 {
                     Vector3 normal = bezierSpline.GetNormal(SplineAddress(1, 0.5f));
-                    EXPECT_TRUE(normal.IsClose(Vector3(0.0f, 1.0f, 0.0f)));
+                    EXPECT_THAT(normal, IsClose(Vector3(0.0f, 1.0f, 0.0f)));
                 }
 
                 {
                     Vector3 normal = bezierSpline.GetNormal(SplineAddress(0, 0.0f));
-                    EXPECT_TRUE(normal.IsClose(Vector3(-0.955f, -0.294f, 0.0f), 1e-3f));
+                    EXPECT_THAT(normal, IsCloseTolerance(Vector3(-0.955f, -0.294f, 0.0f), 1e-3f));
                 }
 
                 {
                     Vector3 normal = bezierSpline.GetNormal(SplineAddress(3, 0.0f));
-                    EXPECT_TRUE(normal.IsClose(Vector3(0.955f, -0.294f, 0.0f), 1e-3f));
+                    EXPECT_THAT(normal, IsCloseTolerance(Vector3(0.955f, -0.294f, 0.0f), 1e-3f));
                 }
 
                 {
                     // out of bounds access (return normal of last vertex - clamped)
                     Vector3 normal = bezierSpline.GetNormal(SplineAddress(5, 0.5f));
-                    EXPECT_TRUE(normal.IsClose(Vector3(0.955f, -0.294f, 0.0f), 1e-3f));
+                    EXPECT_THAT(normal, IsCloseTolerance(Vector3(0.955f, -0.294f, 0.0f), 1e-3f));
                 }
             }
 
@@ -1673,28 +1674,28 @@ namespace UnitTest
 
                 {
                     Vector3 normal = bezierSpline.GetNormal(SplineAddress(3, 0.5f));
-                    EXPECT_TRUE(normal.IsClose(Vector3(0.0f, -1.0f, 0.0f)));
+                    EXPECT_THAT(normal, IsClose(Vector3(0.0f, -1.0f, 0.0f)));
                 }
 
                 {
                     Vector3 normal = bezierSpline.GetNormal(SplineAddress(0, 0.0f));
-                    EXPECT_TRUE(normal.IsClose(Vector3(-0.7071f, -0.7071f, 0.0f)));
+                    EXPECT_THAT(normal, IsClose(Vector3(-0.7071f, -0.7071f, 0.0f)));
                 }
 
                 {
                     Vector3 normal = bezierSpline.GetNormal(SplineAddress(3, 0.0f));
-                    EXPECT_TRUE(normal.IsClose(Vector3(0.7071f, -0.7071f, 0.0f)));
+                    EXPECT_THAT(normal, IsClose(Vector3(0.7071f, -0.7071f, 0.0f)));
                 }
 
                 {
                     Vector3 normal = bezierSpline.GetNormal(SplineAddress(3, 1.0f));
-                    EXPECT_TRUE(normal.IsClose(Vector3(-0.7071f, -0.7071f, 0.0f)));
+                    EXPECT_THAT(normal, IsClose(Vector3(-0.7071f, -0.7071f, 0.0f)));
                 }
 
                 {
                     // out of bounds access (return normal of last vertex - clamped)
                     Vector3 normal = bezierSpline.GetNormal(SplineAddress(5, 0.5f));
-                    EXPECT_TRUE(normal.IsClose(Vector3(-0.7071f, -0.7071f, 0.0f)));
+                    EXPECT_THAT(normal, IsClose(Vector3(-0.7071f, -0.7071f, 0.0f)));
                 }
             }
         }
@@ -1712,7 +1713,7 @@ namespace UnitTest
 
                 {
                     Vector3 tangent = bezierSpline.GetTangent(SplineAddress(1, 0.5f));
-                    EXPECT_TRUE(tangent.IsClose(Vector3(1.0f, 0.0f, 0.0f)));
+                    EXPECT_THAT(tangent, IsClose(Vector3(1.0f, 0.0f, 0.0f)));
                 }
             }
 
@@ -1728,12 +1729,12 @@ namespace UnitTest
 
                 {
                     Vector3 tangent = bezierSpline.GetTangent(SplineAddress(3, 0.5f));
-                    EXPECT_TRUE(tangent.IsClose(Vector3(-1.0f, 0.0f, 0.0f)));
+                    EXPECT_THAT(tangent, IsClose(Vector3(-1.0f, 0.0f, 0.0f)));
                 }
 
                 {
                     Vector3 tangent = bezierSpline.GetTangent(SplineAddress(2, 0.5f));
-                    EXPECT_TRUE(tangent.IsClose(Vector3(0.0f, -1.0f, 0.0f)));
+                    EXPECT_THAT(tangent, IsClose(Vector3(0.0f, -1.0f, 0.0f)));
                 }
             }
         }
@@ -1869,8 +1870,8 @@ namespace UnitTest
                 AZ::Aabb aabb;
                 bezierSpline.GetAabb(aabb);
 
-                EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(-1.2948f, 0.0f, 0.0f)));
-                EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(11.2948f, 11.7677f, 0.0f)));
+                EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(-1.2948f, 0.0f, 0.0f)));
+                EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(11.2948f, 11.7677f, 0.0f)));
             }
 
             {
@@ -1886,8 +1887,8 @@ namespace UnitTest
                 AZ::Aabb aabb;
                 bezierSpline.GetAabb(aabb);
 
-                EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(-1.7677f, -1.7677f, 0.0f)));
-                EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(11.7677f, 11.7677f, 0.0f)));
+                EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(-1.7677f, -1.7677f, 0.0f)));
+                EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(11.7677f, 11.7677f, 0.0f)));
             }
         }
 

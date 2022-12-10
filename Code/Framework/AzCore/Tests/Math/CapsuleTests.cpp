@@ -57,7 +57,7 @@ namespace UnitTest
         const float radius = 2.0f;
         AZ::Capsule capsuleA(firstHemisphereCenter, secondHemisphereCenter, radius);
         AZ::Capsule capsuleB(firstHemisphereCenter, secondHemisphereCenter, radius);
-        EXPECT_TRUE(capsuleA.IsClose(capsuleB));
+        EXPECT_THAT(capsuleA, IsClose(capsuleB));
     }
 
     TEST(MATH_Capsule, IsCloseReversedEnds)
@@ -67,7 +67,7 @@ namespace UnitTest
         const float radius = 2.0f;
         AZ::Capsule capsuleA(firstHemisphereCenter, secondHemisphereCenter, radius);
         AZ::Capsule capsuleB(secondHemisphereCenter, firstHemisphereCenter, radius);
-        EXPECT_TRUE(capsuleA.IsClose(capsuleB));
+        EXPECT_THAT(capsuleA, IsClose(capsuleB));
     }
 
     TEST(MATH_Capsule, IsCloseDifferentRadius)
@@ -78,7 +78,7 @@ namespace UnitTest
         const float radiusB = 1.5f;
         AZ::Capsule capsuleA(firstHemisphereCenter, secondHemisphereCenter, radiusA);
         AZ::Capsule capsuleB(firstHemisphereCenter, secondHemisphereCenter, radiusB);
-        EXPECT_FALSE(capsuleA.IsClose(capsuleB));
+        EXPECT_THAT(capsuleA, testing::Not(IsClose(capsuleB)));
     }
 
     TEST(MATH_Capsule, IsCloseDifferentCenter)
@@ -113,6 +113,6 @@ namespace UnitTest
         const float radius = 2.0f;
         const AZ::Capsule capsuleFromLineSegment(lineSegment, radius);
         const AZ::Capsule capsule(start, end, radius);
-        EXPECT_TRUE(capsuleFromLineSegment.IsClose(capsule));
+        EXPECT_THAT(capsuleFromLineSegment, IsClose(capsule));
     }
 } // namespace UnitTest

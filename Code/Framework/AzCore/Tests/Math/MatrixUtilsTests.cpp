@@ -36,12 +36,12 @@ namespace UnitTest
         // point on near plane
         Vector3 nearPos(0, 0, -near_value);
         Vector3 result = MatrixTransformPosition(matrix, nearPos);
-        EXPECT_TRUE(AZ::IsClose(result.GetZ(), 0, floatEpsilon));
+        EXPECT_NEAR(result.GetZ(), 0, floatEpsilon);
 
         // point on far plane
         Vector3 farPos(0, 0, -far_value);
         result = MatrixTransformPosition(matrix, farPos);
-        EXPECT_TRUE(AZ::IsClose(result.GetZ(), 1, floatEpsilon));
+        EXPECT_NEAR(result.GetZ(), 1, floatEpsilon);
 
         // point further than far plane
         Vector3 furtherFarPos(0, 0, -far_value - 1000);
@@ -85,9 +85,9 @@ namespace UnitTest
         // create a reverse depth perspective projection matrix
         MakePerspectiveFovMatrixRH(matrix, fovY, aspectRatio, near_value, far_value, true);
         result = MatrixTransformPosition(matrix, nearPos);
-        EXPECT_TRUE(AZ::IsClose(result.GetZ(), 1, floatEpsilon));
+        EXPECT_NEAR(result.GetZ(), 1, floatEpsilon);
         result = MatrixTransformPosition(matrix, farPos);
-        EXPECT_TRUE(AZ::IsClose(result.GetZ(), 0, floatEpsilon));
+        EXPECT_NEAR(result.GetZ(), 0, floatEpsilon);
         result = MatrixTransformPosition(matrix, furtherFarPos);
         EXPECT_TRUE(result.GetZ() < 0.f);
         result = MatrixTransformPosition(matrix, closerNearPos);
@@ -139,21 +139,21 @@ namespace UnitTest
 
         // center position
         result = MatrixTransformPosition(matrix, Vector3(-50, 150, -500));
-        EXPECT_TRUE(AZ::IsClose(result.GetX(), 0, floatEpsilon));
-        EXPECT_TRUE(AZ::IsClose(result.GetY(), 0, floatEpsilon));
-        EXPECT_TRUE(AZ::IsClose(result.GetZ(), 0.5f, floatEpsilon));
+        EXPECT_NEAR(result.GetX(), 0, floatEpsilon);
+        EXPECT_NEAR(result.GetY(), 0, floatEpsilon);
+        EXPECT_NEAR(result.GetZ(), 0.5f, floatEpsilon);
 
         // left top and far
         result = MatrixTransformPosition(matrix, Vector3(-100, 200, -1000));
-        EXPECT_TRUE(AZ::IsClose(result.GetX(), -1, floatEpsilon));
-        EXPECT_TRUE(AZ::IsClose(result.GetY(), 1, floatEpsilon));
-        EXPECT_TRUE(AZ::IsClose(result.GetZ(), 1, floatEpsilon));
+        EXPECT_NEAR(result.GetX(), -1, floatEpsilon);
+        EXPECT_NEAR(result.GetY(), 1, floatEpsilon);
+        EXPECT_NEAR(result.GetZ(), 1, floatEpsilon);
 
         // right bottom and near
         result = MatrixTransformPosition(matrix, Vector3(0, 100, 0));
-        EXPECT_TRUE(AZ::IsClose(result.GetX(), 1, floatEpsilon));
-        EXPECT_TRUE(AZ::IsClose(result.GetY(), -1, floatEpsilon));
-        EXPECT_TRUE(AZ::IsClose(result.GetZ(), 0, floatEpsilon));
+        EXPECT_NEAR(result.GetX(), 1, floatEpsilon);
+        EXPECT_NEAR(result.GetY(), -1, floatEpsilon);
+        EXPECT_NEAR(result.GetZ(), 0, floatEpsilon);
 
         // further than far
         result = MatrixTransformPosition(matrix, Vector3(-50, 150, -2000));
@@ -177,21 +177,21 @@ namespace UnitTest
         // left top and near
         Vector3 leftTopNear(-100, 200, -1);
         result = MatrixTransformPosition(matrix, leftTopNear);
-        EXPECT_TRUE(AZ::IsClose(result.GetX(), -1, floatEpsilon));
-        EXPECT_TRUE(AZ::IsClose(result.GetY(), 1, floatEpsilon));
-        EXPECT_TRUE(AZ::IsClose(result.GetZ(), 0, floatEpsilon));
+        EXPECT_NEAR(result.GetX(), -1, floatEpsilon);
+        EXPECT_NEAR(result.GetY(), 1, floatEpsilon);
+        EXPECT_NEAR(result.GetZ(), 0, floatEpsilon);
 
         // right bottom and near
         Vector3 rightBottomNear(0, 100, -1);
         result = MatrixTransformPosition(matrix, rightBottomNear);
-        EXPECT_TRUE(AZ::IsClose(result.GetX(), 1, floatEpsilon));
-        EXPECT_TRUE(AZ::IsClose(result.GetY(), -1, floatEpsilon));
-        EXPECT_TRUE(AZ::IsClose(result.GetZ(), 0, floatEpsilon));
+        EXPECT_NEAR(result.GetX(), 1, floatEpsilon);
+        EXPECT_NEAR(result.GetY(), -1, floatEpsilon);
+        EXPECT_NEAR(result.GetZ(), 0, floatEpsilon);
 
         // further than far
         Vector3 far_value(-50, 150, -1000);
         result = MatrixTransformPosition(matrix, far_value);
-        EXPECT_TRUE(AZ::IsClose(result.GetZ(), 1, floatEpsilon));
+        EXPECT_NEAR(result.GetZ(), 1, floatEpsilon);
         Vector3 furtherFar(-50, 150, -2000);
         result = MatrixTransformPosition(matrix, furtherFar);
         EXPECT_TRUE(result.GetZ() > 1);
@@ -204,14 +204,14 @@ namespace UnitTest
         // reverse depth
         MakeFrustumMatrixRH(matrix, -100, 0, 100, 200, 1, 1000, true);
         result = MatrixTransformPosition(matrix, leftTopNear);
-        EXPECT_TRUE(AZ::IsClose(result.GetX(), -1, floatEpsilon));
-        EXPECT_TRUE(AZ::IsClose(result.GetY(), 1, floatEpsilon));
+        EXPECT_NEAR(result.GetX(), -1, floatEpsilon);
+        EXPECT_NEAR(result.GetY(), 1, floatEpsilon);
         result = MatrixTransformPosition(matrix, rightBottomNear);
-        EXPECT_TRUE(AZ::IsClose(result.GetX(), 1, floatEpsilon));
-        EXPECT_TRUE(AZ::IsClose(result.GetY(), -1, floatEpsilon));
-        EXPECT_TRUE(AZ::IsClose(result.GetZ(), 1, floatEpsilon));
+        EXPECT_NEAR(result.GetX(), 1, floatEpsilon);
+        EXPECT_NEAR(result.GetY(), -1, floatEpsilon);
+        EXPECT_NEAR(result.GetZ(), 1, floatEpsilon);
         result = MatrixTransformPosition(matrix, far_value);
-        EXPECT_TRUE(AZ::IsClose(result.GetZ(), 0, floatEpsilon));
+        EXPECT_NEAR(result.GetZ(), 0, floatEpsilon);
 
         // bad input
         UnitTest::TestRunner::Instance().StartAssertTests();

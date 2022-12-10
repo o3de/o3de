@@ -483,15 +483,15 @@ namespace UnitTest
         Matrix3x3 m1 = Matrix3x3::CreateRotationX(AZ::DegToRad(30.0f)) * Matrix3x3::CreateScale(Vector3(2.0f, 3.0f, 4.0f));
         m1.SetElement(0, 1, 0.2f);
         Matrix3x3 m2 = m1.GetOrthogonalized();
-        AZ_TEST_ASSERT(AZ::IsClose(m2.GetRow(0).GetLength(), 1.0f));
-        AZ_TEST_ASSERT(AZ::IsClose(m2.GetRow(1).GetLength(), 1.0f));
-        AZ_TEST_ASSERT(AZ::IsClose(m2.GetRow(2).GetLength(), 1.0f));
-        AZ_TEST_ASSERT(AZ::IsClose(m2.GetRow(0).Dot(m2.GetRow(1)), 0.0f));
-        AZ_TEST_ASSERT(AZ::IsClose(m2.GetRow(0).Dot(m2.GetRow(2)), 0.0f));
-        AZ_TEST_ASSERT(AZ::IsClose(m2.GetRow(1).Dot(m2.GetRow(2)), 0.0f));
-        AZ_TEST_ASSERT(m2.GetRow(0).Cross(m2.GetRow(1)).IsClose(m2.GetRow(2)));
-        AZ_TEST_ASSERT(m2.GetRow(1).Cross(m2.GetRow(2)).IsClose(m2.GetRow(0)));
-        AZ_TEST_ASSERT(m2.GetRow(2).Cross(m2.GetRow(0)).IsClose(m2.GetRow(1)));
+        EXPECT_NEAR(m2.GetRow(0).GetLength(), 1.0f, AZ::Constants::Tolerance);
+        EXPECT_NEAR(m2.GetRow(1).GetLength(), 1.0f, AZ::Constants::Tolerance);
+        EXPECT_NEAR(m2.GetRow(2).GetLength(), 1.0f, AZ::Constants::Tolerance);
+        EXPECT_NEAR(m2.GetRow(0).Dot(m2.GetRow(1)), 0.0f, AZ::Constants::Tolerance);
+        EXPECT_NEAR(m2.GetRow(0).Dot(m2.GetRow(2)), 0.0f, AZ::Constants::Tolerance);
+        EXPECT_NEAR(m2.GetRow(1).Dot(m2.GetRow(2)), 0.0f, AZ::Constants::Tolerance);
+        EXPECT_THAT(m2.GetRow(0).Cross(m2.GetRow(1)), IsClose(m2.GetRow(2)));
+        EXPECT_THAT(m2.GetRow(1).Cross(m2.GetRow(2)), IsClose(m2.GetRow(0)));
+        EXPECT_THAT(m2.GetRow(2).Cross(m2.GetRow(0)), IsClose(m2.GetRow(1)));
         m1.Orthogonalize();
         AZ_TEST_ASSERT(m1.IsClose(m2));
     }
@@ -534,7 +534,7 @@ namespace UnitTest
         m1.SetRow(0, -1.0f, 2.0f, 3.0f);
         m1.SetRow(1, 4.0f, 5.0f, 6.0f);
         m1.SetRow(2, 7.0f, 8.0f, -9.0f);
-        AZ_TEST_ASSERT(AZ::IsClose(m1.GetDeterminant(), 240.0f));
+        EXPECT_NEAR(m1.GetDeterminant(), 240.0f, AZ::Constants::Tolerance);
     }
 
     TEST(MATH_Matrix3x3, TestAdjugate)

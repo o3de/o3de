@@ -472,8 +472,8 @@ namespace UnitTest
                     else if (!outNormal[0].IsClose(outNormal[1]) || !outNormal[0].IsClose(outNormal[2]))
                     {
                         numDifferentHits++;
-                        EXPECT_TRUE(outNormal[0].IsClose(outNormal[1]));
-                        EXPECT_TRUE(outNormal[0].IsClose(outNormal[2]));
+                        EXPECT_THAT(outNormal[0], IsClose(outNormal[1]));
+                        EXPECT_THAT(outNormal[0], IsClose(outNormal[2]));
                     }
                 }
             }
@@ -591,7 +591,7 @@ namespace UnitTest
 
             EXPECT_EQ(test.m_shouldHit, result);
             EXPECT_NEAR(test.m_hitDistance, outDistance, 0.0001f);
-            EXPECT_TRUE(test.m_hitNormal.IsClose(outNormal));
+            EXPECT_THAT(test.m_hitNormal, IsClose(outNormal));
         }
     }
 
