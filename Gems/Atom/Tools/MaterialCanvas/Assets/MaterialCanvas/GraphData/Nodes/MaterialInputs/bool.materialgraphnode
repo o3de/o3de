@@ -70,7 +70,7 @@
             {
                 "name": "outValue",
                 "displayName": "Value",
-                "description": "Output value for the material property.",
+                "description": "Configured value of the material property.",
                 "supportedDataTypeRegex": "bool",
                 "defaultDataType": "bool",
                 "settings": {
