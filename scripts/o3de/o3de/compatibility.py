@@ -54,7 +54,7 @@ def get_project_engine_incompatible_objects(project_path:pathlib.Path, project_j
 
 def get_incompatible_gem_dependencies(gem_json_data:dict, project_path:pathlib.Path = None, gem_paths:list = [], check:bool = False) -> set:
     """
-    Returns True if the gem is compatible with the gems registered with the engine and optional project.
+    Returns incompatible gem dependencies
     :param gem_json_data: gem json data dictionary
     :param project_path: path to the project (optional)
     :param gem_paths: paths to all gems to use for dependency checks (optional)
@@ -78,7 +78,7 @@ def get_incompatible_gem_dependencies(gem_json_data:dict, project_path:pathlib.P
 
 def get_gem_project_incompatible_objects(gem_json_data:dict, project_path:pathlib.Path, gem_paths:list = [], check:bool = False) -> bool:
     """
-    Returns True if the gem is compatible with the indicated project.
+    Returns any incompatible objects for this gem and project.
     :param gem_json_data: gem json data dictionary
     :param project_path: path to the project
     :param gem_paths: paths to all gems to use for dependency checks (optional)
@@ -108,7 +108,7 @@ def get_gem_project_incompatible_objects(gem_json_data:dict, project_path:pathli
 
 def get_gem_engine_incompatible_objects(gem_json_data:dict, engine_json_data:dict, gem_paths:list = None, check:bool = False) -> bool:
     """
-    Returns True if the gem is compatible with the indicated engine.
+    Returns any incompatible objects for this gem and engine.
     :param gem_json_data: gem json data dictionary
     :param engine_json_data: engine json data dictionary
     :param gem_paths: paths to all gems to use for dependency checks (optional)
@@ -123,7 +123,7 @@ def get_gem_engine_incompatible_objects(gem_json_data:dict, engine_json_data:dic
 
 def get_incompatible_objects_for_engine(object_json_data:dict, engine_json_data:dict) -> set:
     """
-    Returns True if the engine is compatible with the provided object's compatible_engines and engine_api_versions information.
+    Returns any incompatible objects for this object and engine.
     If a compatible_engine entry only has an engine name, it is assumed compatible with every engine version with that name.
     If an engine_api_version entry only has an api name, it is assumed compatible with every engine api version with that name.
     :param object_json_data: the json data for the object 
@@ -173,7 +173,7 @@ def get_incompatible_objects_for_engine(object_json_data:dict, engine_json_data:
 
 def get_incompatible_gem_version_specifiers(project_path:pathlib.Path, gem_version_specifier_list:list, gem_paths:list) -> set:
     """
-    Returns a list of gem version specifiers that are not compatible with the gem's provided
+    Returns a set of gem version specifiers that are not compatible with the gem's provided
     If a gem_version_specifier_list entry only has a gem name, it is assumed compatible with every gem version with that name.
     :param project_path: the path to the project
     :param gem_version_specifier_list: a list of gem names and (optional)version specifiers
