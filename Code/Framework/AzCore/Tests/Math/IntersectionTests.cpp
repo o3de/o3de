@@ -37,9 +37,9 @@ namespace UnitTest
             Intersect::ClosestSegmentSegment(line1Start, line1End, line2Start, line2End, line1Proportion, line2Proportion, line1ClosestPoint, line2ClosestPoint);
             float pointDifference = (line2ClosestPoint - line1ClosestPoint).GetLength();
 
-            EXPECT_TRUE(pointDifference == 5.0f);
-            EXPECT_TRUE(line1Proportion == 1.0f);
-            EXPECT_TRUE(line2Proportion == 0.0f);
+            EXPECT_NEAR(pointDifference, 5.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line1Proportion, 1.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line2Proportion, 0.0f, AZ::Constants::Tolerance);
         }
 
         // line2 halfway over the top of the line1 (overlap, parallel)
@@ -56,9 +56,9 @@ namespace UnitTest
             Intersect::ClosestSegmentSegment(line1Start, line1End, line2Start, line2End, line1Proportion, line2Proportion, line1ClosestPoint, line2ClosestPoint);
             float pointDifference = (line2ClosestPoint - line1ClosestPoint).GetLength();
 
-            EXPECT_TRUE(pointDifference == 3.0f);
-            EXPECT_TRUE(line1Proportion == 0.5f);
-            EXPECT_TRUE(line2Proportion == 0.0f);
+            EXPECT_NEAR(pointDifference, 3.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line1Proportion, 0.5f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line2Proportion, 0.0f, AZ::Constants::Tolerance);
         }
 
         // line2 over the top of the line1 (inside, parallel)
@@ -75,9 +75,9 @@ namespace UnitTest
             Intersect::ClosestSegmentSegment(line1Start, line1End, line2Start, line2End, line1Proportion, line2Proportion, line1ClosestPoint, line2ClosestPoint);
             float pointDifference = (line2ClosestPoint - line1ClosestPoint).GetLength();
 
-            EXPECT_TRUE(pointDifference == 3.0f);
-            EXPECT_TRUE(line1Proportion == 0.25f);
-            EXPECT_TRUE(line2Proportion == 0.0f);
+            EXPECT_NEAR(pointDifference, 3.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line1Proportion, 0.25f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line2Proportion, 0.0f, AZ::Constants::Tolerance);
         }
 
         // line2 over the top of the line1 (overlap, skew (cross))
@@ -94,9 +94,9 @@ namespace UnitTest
             Intersect::ClosestSegmentSegment(line1Start, line1End, line2Start, line2End, line1Proportion, line2Proportion, line1ClosestPoint, line2ClosestPoint);
             float pointDifference = (line2ClosestPoint - line1ClosestPoint).GetLength();
 
-            EXPECT_TRUE(pointDifference == 4.0f);
-            EXPECT_TRUE(line1Proportion == 0.5f);
-            EXPECT_TRUE(line2Proportion == 0.5f);
+            EXPECT_NEAR(pointDifference, 4.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line1Proportion, 0.5f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line2Proportion, 0.5f, AZ::Constants::Tolerance);
         }
 
         // line2 flat diagonal to line1 (no overlap, skew)
@@ -113,9 +113,9 @@ namespace UnitTest
             Intersect::ClosestSegmentSegment(line1Start, line1End, line2Start, line2End, line1Proportion, line2Proportion, line1ClosestPoint, line2ClosestPoint);
             float pointDifference = (line2ClosestPoint - line1ClosestPoint).GetLength();
 
-            EXPECT_TRUE(pointDifference == 2.0f);
-            EXPECT_TRUE(line1Proportion == 1.0f);
-            EXPECT_TRUE(line2Proportion == 1.0f);
+            EXPECT_NEAR(pointDifference, 2.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line1Proportion, 1.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line2Proportion, 1.0f, AZ::Constants::Tolerance);
         }
 
         // line2 perpendicular to line1 (skew, no overlap)
@@ -132,9 +132,9 @@ namespace UnitTest
             Intersect::ClosestSegmentSegment(line1Start, line1End, line2Start, line2End, line1Proportion, line2Proportion, line1ClosestPoint, line2ClosestPoint);
             float pointDifference = (line2ClosestPoint - line1ClosestPoint).GetLength();
 
-            EXPECT_TRUE(pointDifference == 1.0f);
-            EXPECT_TRUE(line1Proportion == 0.5f);
-            EXPECT_TRUE(line2Proportion == 0.0f);
+            EXPECT_NEAR(pointDifference, 1.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line1Proportion, 0.5f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line2Proportion, 0.0f, AZ::Constants::Tolerance);
         }
 
         // line 1 degenerates to point
@@ -151,9 +151,9 @@ namespace UnitTest
             Intersect::ClosestSegmentSegment(line1Start, line1End, line2Start, line2End, line1Proportion, line2Proportion, line1ClosestPoint, line2ClosestPoint);
             float pointDifference = (line2ClosestPoint - line1ClosestPoint).GetLength();
 
-            EXPECT_TRUE(pointDifference == 2.0f);
-            EXPECT_TRUE(line1Proportion == 0.0f);
-            EXPECT_TRUE(line2Proportion == 0.5f);
+            EXPECT_NEAR(pointDifference, 2.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line1Proportion, 0.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line2Proportion, 0.5f, AZ::Constants::Tolerance);
         }
 
         // line 2 degenerates to point
@@ -170,9 +170,9 @@ namespace UnitTest
             Intersect::ClosestSegmentSegment(line1Start, line1End, line2Start, line2End, line1Proportion, line2Proportion, line1ClosestPoint, line2ClosestPoint);
             float pointDifference = (line2ClosestPoint - line1ClosestPoint).GetLength();
 
-            EXPECT_TRUE(pointDifference == 1.0f);
-            EXPECT_TRUE(line1Proportion == 0.5f);
-            EXPECT_TRUE(line2Proportion == 0.0f);
+            EXPECT_NEAR(pointDifference, 1.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line1Proportion, 0.5f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line2Proportion, 0.0f, AZ::Constants::Tolerance);
         }
 
         // both lines degenerate to points
@@ -191,9 +191,9 @@ namespace UnitTest
 
             // (10, 10, 10) - (5, 5, 5) == (5, 5, 5)
             // |(5,5,5)| == sqrt(5*5+5*5+5*5) == sqrt(75)
-            EXPECT_TRUE(pointDifference == sqrtf(75.0f));
-            EXPECT_TRUE(line1Proportion == 0.0f);
-            EXPECT_TRUE(line2Proportion == 0.0f);
+            EXPECT_NEAR(pointDifference, sqrtf(75.0f), AZ::Constants::Tolerance);
+            EXPECT_NEAR(line1Proportion, 0.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(line2Proportion, 0.0f, AZ::Constants::Tolerance);
         }
     }
 
@@ -211,8 +211,8 @@ namespace UnitTest
 
             float pointDifference = (lineClosestPoint - point).GetLength();
 
-            EXPECT_TRUE(pointDifference == 2.0f);
-            EXPECT_TRUE(lineProportion == 0.5f);
+            EXPECT_NEAR(pointDifference, 2.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(lineProportion, 0.5f, AZ::Constants::Tolerance);
         }
 
         // point same height behind line
@@ -227,8 +227,8 @@ namespace UnitTest
 
             float pointDifference = (lineClosestPoint - point).GetLength();
 
-            EXPECT_TRUE(pointDifference == 2.0f);
-            EXPECT_TRUE(lineProportion == 0.0f);
+            EXPECT_NEAR(pointDifference, 2.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(lineProportion, 0.0f, AZ::Constants::Tolerance);
         }
 
         // point passed end of line
@@ -243,8 +243,8 @@ namespace UnitTest
 
             float pointDifference = (lineClosestPoint - point).GetLength();
 
-            EXPECT_TRUE(pointDifference == 5.0f);
-            EXPECT_TRUE(lineProportion == 1.0f);
+            EXPECT_NEAR(pointDifference, 5.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(lineProportion, 1.0f, AZ::Constants::Tolerance);
         }
 
         // point above part way along line
@@ -259,8 +259,8 @@ namespace UnitTest
 
             float pointDifference = (lineClosestPoint - point).GetLength();
 
-            EXPECT_TRUE(pointDifference == 1.0f);
-            EXPECT_TRUE(lineProportion == 0.75f);
+            EXPECT_NEAR(pointDifference, 1.0f, AZ::Constants::Tolerance);
+            EXPECT_NEAR(lineProportion, 0.75f, AZ::Constants::Tolerance);
         }
     }
 

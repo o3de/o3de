@@ -25,7 +25,7 @@ namespace UnitTest
 
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
         {
-            EXPECT_TRUE(testLoadValues[i] == testStoreValues[i]);
+            EXPECT_NEAR(testLoadValues[i], testStoreValues[i], 1e-6f);
         }
     }
 
@@ -40,7 +40,7 @@ namespace UnitTest
 
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
         {
-            EXPECT_TRUE(testLoadValues[i] == testStoreValues[i]);
+            EXPECT_NEAR(testLoadValues[i], testStoreValues[i], 1e-6f);
         }
     }
 
@@ -52,7 +52,7 @@ namespace UnitTest
         typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
         const float firstFloat = VectorType::SelectFirst(testVector);
 
-        EXPECT_TRUE(testLoadValues[0] == firstFloat);
+        EXPECT_NEAR(testLoadValues[0], firstFloat, 1e-6f);
     }
 
     template <typename VectorType>
@@ -63,7 +63,7 @@ namespace UnitTest
         typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
         const float firstFloat = VectorType::SelectSecond(testVector);
 
-        EXPECT_TRUE(testLoadValues[1] == firstFloat);
+        EXPECT_NEAR(testLoadValues[1], firstFloat, 1e-6f);
     }
 
     template <typename VectorType>
@@ -74,7 +74,7 @@ namespace UnitTest
         typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
         const float firstFloat = VectorType::SelectThird(testVector);
 
-        EXPECT_TRUE(testLoadValues[2] == firstFloat);
+        EXPECT_NEAR(testLoadValues[2], firstFloat, 1e-6f);
     }
 
     template <typename VectorType>
@@ -85,7 +85,7 @@ namespace UnitTest
         typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
         const float firstFloat = VectorType::SelectFourth(testVector);
 
-        EXPECT_TRUE(testLoadValues[3] == firstFloat);
+        EXPECT_NEAR(testLoadValues[3], firstFloat, 1e-6f);
     }
 
     template <typename VectorType>

@@ -81,8 +81,8 @@ namespace UnitTest
 
     TEST(MATH_Quaternion, TestCreate)
     {
-        EXPECT_TRUE(AZ::Quaternion::CreateIdentity() == AZ::Quaternion(0.0f, 0.0f, 0.0f, 1.0f));
-        EXPECT_TRUE(AZ::Quaternion::CreateZero() == AZ::Quaternion(0.0f));
+        EXPECT_THAT(AZ::Quaternion::CreateIdentity(), IsClose(AZ::Quaternion(0.0f, 0.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(AZ::Quaternion::CreateZero(), IsClose(AZ::Quaternion(0.0f)));
         EXPECT_THAT(AZ::Quaternion::CreateRotationX(DegToRad(60.0f)), IsClose(AZ::Quaternion(0.5f, 0.0f, 0.0f, 0.866f)));
         EXPECT_THAT(AZ::Quaternion::CreateRotationY(DegToRad(60.0f)), IsClose(AZ::Quaternion(0.0f, 0.5f, 0.0f, 0.866f)));
         EXPECT_THAT(AZ::Quaternion::CreateRotationZ(DegToRad(60.0f)), IsClose(AZ::Quaternion(0.0f, 0.0f, 0.5f, 0.866f)));
@@ -117,19 +117,19 @@ namespace UnitTest
     {
         Quaternion q1;
         q1.SetX(10.0f);
-        EXPECT_TRUE(q1.GetX() == 10.0f);
+        EXPECT_NEAR(q1.GetX(), 10.0f, 1e-6f);
         q1.SetY(11.0f);
-        EXPECT_TRUE(q1.GetY() == 11.0f);
+        EXPECT_NEAR(q1.GetY(), 11.0f, 1e-6f);
         q1.SetZ(12.0f);
-        EXPECT_TRUE(q1.GetZ() == 12.0f);
+        EXPECT_NEAR(q1.GetZ(), 12.0f, 1e-6f);
         q1.SetW(13.0f);
-        EXPECT_TRUE(q1.GetW() == 13.0f);
+        EXPECT_NEAR(q1.GetW(), 13.0f, 1e-6f);
         q1.Set(15.0f);
-        EXPECT_TRUE(q1 == AZ::Quaternion(15.0f));
+        EXPECT_THAT(q1, IsClose(AZ::Quaternion(15.0f)));
         q1.Set(2.0f, 3.0f, 4.0f, 5.0f);
-        EXPECT_TRUE(q1 == AZ::Quaternion(2.0f, 3.0f, 4.0f, 5.0f));
+        EXPECT_THAT(q1, IsClose(AZ::Quaternion(2.0f, 3.0f, 4.0f, 5.0f)));
         q1.Set(Vector3(5.0f, 6.0f, 7.0f), 8.0f);
-        EXPECT_TRUE(q1 == AZ::Quaternion(5.0f, 6.0f, 7.0f, 8.0f));
+        EXPECT_THAT(q1, IsClose(AZ::Quaternion(5.0f, 6.0f, 7.0f, 8.0f)));
         q1.Set(values);
         EXPECT_TRUE((q1.GetX() == 10.0f) && (q1.GetY() == 20.0f) && (q1.GetZ() == 30.0f) && (q1.GetW() == 40.0f));
     }
@@ -141,19 +141,19 @@ namespace UnitTest
         q1.SetElement(1, 2.0f);
         q1.SetElement(2, 3.0f);
         q1.SetElement(3, 4.0f);
-        EXPECT_TRUE(q1.GetElement(0) == 1.0f);
-        EXPECT_TRUE(q1.GetElement(1) == 2.0f);
-        EXPECT_TRUE(q1.GetElement(2) == 3.0f);
-        EXPECT_TRUE(q1.GetElement(3) == 4.0f);
+        EXPECT_NEAR(q1.GetElement(0), 1.0f, 1e-6f);
+        EXPECT_NEAR(q1.GetElement(1), 2.0f, 1e-6f);
+        EXPECT_NEAR(q1.GetElement(2), 3.0f, 1e-6f);
+        EXPECT_NEAR(q1.GetElement(3), 4.0f, 1e-6f);
     }
 
     TEST(MATH_Quaternion, TestIndexOperators)
     {
         Quaternion q1(1.0f, 2.0f, 3.0f, 4.0f);
-        EXPECT_TRUE(q1(0) == 1.0f);
-        EXPECT_TRUE(q1(1) == 2.0f);
-        EXPECT_TRUE(q1(2) == 3.0f);
-        EXPECT_TRUE(q1(3) == 4.0f);
+        EXPECT_NEAR(q1(0), 1.0f, 1e-6f);
+        EXPECT_NEAR(q1(1), 2.0f, 1e-6f);
+        EXPECT_NEAR(q1(2), 3.0f, 1e-6f);
+        EXPECT_NEAR(q1(3), 4.0f, 1e-6f);
     }
 
     TEST(MATH_Quaternion, TestIsIdentity)
@@ -165,7 +165,7 @@ namespace UnitTest
     TEST(MATH_Quaternion, TestConjugate)
     {
         Quaternion q1(1.0f, 2.0f, 3.0f, 4.0f);
-        EXPECT_TRUE(q1.GetConjugate() == AZ::Quaternion(-1.0f, -2.0f, -3.0f, 4.0f));
+        EXPECT_THAT(q1.GetConjugate(), IsClose(AZ::Quaternion(-1.0f, -2.0f, -3.0f, 4.0f)));
     }
 
     TEST(MATH_Quaternion, TestInverse)
@@ -174,10 +174,10 @@ namespace UnitTest
         EXPECT_THAT((q1 * q1.GetInverseFast()), IsClose(AZ::Quaternion::CreateIdentity()));
         Quaternion q2 = q1;
         q2.InvertFast();
-        EXPECT_TRUE(q1.GetX() == -q2.GetX());
-        EXPECT_TRUE(q1.GetY() == -q2.GetY());
-        EXPECT_TRUE(q1.GetZ() == -q2.GetZ());
-        EXPECT_TRUE(q1.GetW() == q2.GetW());
+        EXPECT_NEAR(q1.GetX(), -q2.GetX(), 1e-6f);
+        EXPECT_NEAR(q1.GetY(), -q2.GetY(), 1e-6f);
+        EXPECT_NEAR(q1.GetZ(), -q2.GetZ(), 1e-6f);
+        EXPECT_NEAR(q1.GetW(), q2.GetW(), 1e-6f);
         EXPECT_THAT((q1 * q2), IsClose(AZ::Quaternion::CreateIdentity()));
     }
 
@@ -226,7 +226,7 @@ namespace UnitTest
 
     TEST(MATH_Quaternion, TestOperators)
     {
-        EXPECT_TRUE((-AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f)) == AZ::Quaternion(-1.0f, -2.0f, -3.0f, -4.0f));
+        EXPECT_THAT((-AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f)), IsClose(AZ::Quaternion(-1.0f, -2.0f, -3.0f, -4.0f)));
         EXPECT_THAT((AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f) + AZ::Quaternion(2.0f, 3.0f, 5.0f, -1.0f)), IsClose(AZ::Quaternion(3.0f, 5.0f, 8.0f, 3.0f)));
         EXPECT_THAT((AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f) - AZ::Quaternion(2.0f, 3.0f, 5.0f, -1.0f)), IsClose(AZ::Quaternion(-1.0f, -1.0f, -2.0f, 5.0f)));
         EXPECT_THAT((AZ::Quaternion(1.0f, 2.0f, 3.0f, 4.0f) * AZ::Quaternion(2.0f, 3.0f, 5.0f, -1.0f)), IsClose(AZ::Quaternion(8.0f, 11.0f, 16.0f, -27.0f)));
@@ -264,7 +264,7 @@ namespace UnitTest
     TEST(MATH_Quaternion, TestGetImaginary)
     {
         Quaternion q1(21.0f, 22.0f, 23.0f, 24.0f);
-        EXPECT_TRUE(q1.GetImaginary() == Vector3(21.0f, 22.0f, 23.0f));
+        EXPECT_THAT(q1.GetImaginary(), IsClose(Vector3(21.0f, 22.0f, 23.0f)));
     }
 
     TEST(MATH_Quaternion, TestGetAngle)
