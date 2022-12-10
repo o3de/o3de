@@ -7,7 +7,7 @@
         "category": "Math Functions",
         "title": "Ceiling",
         "titlePaletteName": "MathNodeTitlePalette",
-        "description": "Returns the smallest integer which is greater than or equal to the input value",
+        "description": "Returns the smallest integer which is greater than or equal to the input value (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

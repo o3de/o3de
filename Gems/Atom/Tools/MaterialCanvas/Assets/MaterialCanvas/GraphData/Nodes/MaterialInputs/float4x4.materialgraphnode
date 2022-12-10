@@ -139,7 +139,7 @@
             {
                 "name": "outValue",
                 "displayName": "Value",
-                "description": "Default value for the material property.",
+                "description": "Configured value of the material property.",
                 "supportedDataTypeRegex": "float4x4",
                 "defaultDataType": "float4x4",
                 "settings": {

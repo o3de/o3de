@@ -7,7 +7,7 @@
         "category": "Math Functions",
         "title": "Truncate",
         "titlePaletteName": "MathNodeTitlePalette",
-        "description": "Truncates floating-point value to integer value",
+        "description": "Truncates floating-point value to integer value (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

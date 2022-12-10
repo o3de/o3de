@@ -5,9 +5,9 @@
     "ClassData": {
         "id": "{8FC3A30B-5D12-4959-A9ED-4127F2F39A13}",
         "category": "Math Functions",
-        "title": "Create Float2",
+        "title": "Float2 From Values",
         "titlePaletteName": "MathNodeTitlePalette",
-        "description": "Combine all input values into a float2",
+        "description": "Construct a float2 from input values",
         "slotDataTypeGroups": [
             "inX|inY",
             "outValue"

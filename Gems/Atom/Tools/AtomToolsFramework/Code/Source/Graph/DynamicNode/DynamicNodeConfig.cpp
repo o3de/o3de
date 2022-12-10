@@ -47,7 +47,7 @@ namespace AtomToolsFramework
                     ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeConfig::m_title, "Title", "Title that will appear at the top of the node UI in a graph.")
                     ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeConfig::m_subTitle, "Sub Title", "Secondary title that will appear below the main title on the node UI in a graph.")
                     ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeConfig::m_titlePaletteName, "Title Palette Name", "Name of the node title bar UI palette style sheet entry.")
-                    ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeConfig::m_description, "Description", "Description about this nose behavior.")
+                    ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeConfig::m_description, "Description", "Description about this node's behavior.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeConfig::m_slotDataTypeGroups, "Slot Data Type Groups", "Groups of slots that should have the same types.")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                         ->Attribute(AZ::Edit::Attributes::ClearNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)

@@ -3,13 +3,13 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "id": "{B49B9177-73FD-4ADF-B9BC-489A3E1EA0DB}",
+        "id": "{E5729A3B-D265-4ECC-B542-0BB5D6BA5829}",
         "category": "Math Functions",
-        "title": "Create Float4",
+        "title": "Float3 From Values",
         "titlePaletteName": "MathNodeTitlePalette",
-        "description": "Combine all input values into a float4",
+        "description": "Construct a float3 from input values",
         "slotDataTypeGroups": [
-            "inX|inY|inZ|inW",
+            "inX|inY|inZ",
             "outValue"
         ],
         "inputSlots": [
@@ -60,22 +60,6 @@
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
-            },
-            {
-                "name": "inW",
-                "displayName": "W",
-                "description": "W",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
-                "defaultDataType": "float",
-                "defaultValue": {
-                    "$type": "float",
-                    "Value": 0.0
-                },
-                "settings": {
-                    "instructions": [
-                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
-                    ]
-                }
             }
         ],
         "outputSlots": [
@@ -83,11 +67,11 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypeRegex": "float4",
-                "defaultDataType": "float4",
+                "supportedDataTypeRegex": "float3",
+                "defaultDataType": "float3",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = {(float)inX, (float)inY, (float)inZ, (float)inW};"
+                        "SLOTTYPE SLOTNAME = {(float)inX, (float)inY, (float)inZ};"
                     ]
                 }
             }

@@ -7,7 +7,7 @@
         "category": "Math Functions",
         "title": "Inverse Square Root",
         "titlePaletteName": "MathNodeTitlePalette",
-        "description": "Returns 1 / sqrt(x)",
+        "description": "Returns 1 / sqrt(x) (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

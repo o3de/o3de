@@ -7,7 +7,7 @@
         "category": "Math Functions",
         "title": "Log Base 2",
         "titlePaletteName": "MathNodeTitlePalette",
-        "description": "Returns the base-2 logarithm of the input value",
+        "description": "Returns the base-2 logarithm of the input value (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

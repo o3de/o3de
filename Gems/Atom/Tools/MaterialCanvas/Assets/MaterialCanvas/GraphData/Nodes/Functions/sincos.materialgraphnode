@@ -7,7 +7,7 @@
         "category": "Math Functions",
         "title": "Sine Cosine",
         "titlePaletteName": "MathNodeTitlePalette",
-        "description": "Returns the sine and cosine of the input value",
+        "description": "Returns the sine and cosine of the input value (per component)",
         "slotDataTypeGroups": [
             "inValue|outSin|outCos"
         ],

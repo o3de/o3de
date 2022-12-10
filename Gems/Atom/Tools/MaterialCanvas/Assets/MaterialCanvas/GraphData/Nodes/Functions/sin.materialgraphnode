@@ -7,7 +7,7 @@
         "category": "Math Functions",
         "title": "Sine",
         "titlePaletteName": "MathNodeTitlePalette",
-        "description": "Returns the sine of the input value",
+        "description": "Returns the sine of the input value (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

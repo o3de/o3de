@@ -7,7 +7,7 @@
         "category": "Math Functions",
         "title": "Reciprocal",
         "titlePaletteName": "MathNodeTitlePalette",
-        "description": "Calculates a fast, approximate, per-component reciprocal",
+        "description": "Calculates a fast, approximate, per-component reciprocal (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

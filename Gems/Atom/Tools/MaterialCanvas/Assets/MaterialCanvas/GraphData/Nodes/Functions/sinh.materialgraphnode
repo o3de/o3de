@@ -7,7 +7,7 @@
         "category": "Math Functions",
         "title": "Hyperbolic Sine",
         "titlePaletteName": "MathNodeTitlePalette",
-        "description": "Returns the hyperbolic sine of the input value",
+        "description": "Returns the hyperbolic sine of the input value (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

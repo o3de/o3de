@@ -7,7 +7,7 @@
         "category": "Math Functions",
         "title": "Minimum",
         "titlePaletteName": "MathNodeTitlePalette",
-        "description": "Selects the lesser of x and y",
+        "description": "Selects the lesser of x and y (per component)",
         "slotDataTypeGroups": [
             "inValue1|inValue2|outValue"
         ],

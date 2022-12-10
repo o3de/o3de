@@ -7,7 +7,7 @@
         "category": "Math Functions",
         "title": "Exponent",
         "titlePaletteName": "MathNodeTitlePalette",
-        "description": "Returns the base-e exponent",
+        "description": "Returns the base-e exponent (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

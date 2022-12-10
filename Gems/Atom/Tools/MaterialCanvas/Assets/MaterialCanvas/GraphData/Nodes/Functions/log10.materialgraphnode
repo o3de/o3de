@@ -7,7 +7,7 @@
         "category": "Math Functions",
         "title": "Log Base 10",
         "titlePaletteName": "MathNodeTitlePalette",
-        "description": "Returns the base-10 logarithm of the input value",
+        "description": "Returns the base-10 logarithm of the input value (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

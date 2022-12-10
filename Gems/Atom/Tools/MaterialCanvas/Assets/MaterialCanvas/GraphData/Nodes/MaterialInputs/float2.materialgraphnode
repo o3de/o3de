@@ -74,7 +74,7 @@
             {
                 "name": "outValue",
                 "displayName": "Value",
-                "description": "Default value for the material property.",
+                "description": "Configured value of the material property.",
                 "supportedDataTypeRegex": "float2",
                 "defaultDataType": "float2",
                 "settings": {

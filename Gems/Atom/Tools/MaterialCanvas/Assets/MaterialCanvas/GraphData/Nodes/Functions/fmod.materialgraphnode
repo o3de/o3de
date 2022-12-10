@@ -7,7 +7,7 @@
         "category": "Math Functions",
         "title": "Floating Point Remainder",
         "titlePaletteName": "MathNodeTitlePalette",
-        "description": "Returns the floating point remainder of x/y",
+        "description": "Returns the floating point remainder of x / y (per component)",
         "slotDataTypeGroups": [
             "inValue1|inValue2|outValue"
         ],

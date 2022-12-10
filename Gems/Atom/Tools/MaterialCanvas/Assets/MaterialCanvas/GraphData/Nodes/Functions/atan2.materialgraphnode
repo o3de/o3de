@@ -7,7 +7,7 @@
         "category": "Math Functions",
         "title": "Inverse Tangent 2",
         "titlePaletteName": "MathNodeTitlePalette",
-        "description": "Returns the arctangent of of two values (x,y)",
+        "description": "Returns the arctangent of of two values (x,y) (per component)",
         "slotDataTypeGroups": [
             "inY|inX|outValue"
         ],
