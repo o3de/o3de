@@ -159,6 +159,55 @@ namespace PhysX
         }
     }
 
+    TEST_F(PhysXDefaultWorldTest, CharacterController_GamePlayComponenet_GravityMovesEntity)
+    {
+        PhysX::CharacterControllerComponent* characterComponent = nullptr;
+        PhysX::CharacterGameplayComponent* gameplayComponent = nullptr;
+        AzFramework::TransformComponent* transform = nullptr;
+
+        // Create character
+        auto gameplayEntity = AZStd::make_unique<AZ::Entity>("GameplayEntity");
+        {
+            auto characterConfiguration = AZStd::make_unique<Physics::CharacterConfiguration>();
+            auto characterShapeConfiguration = AZStd::make_unique<Physics::CapsuleShapeConfiguration>();
+            auto characterGameplayConfiguration = AZStd::make_unique<PhysX::CharacterGameplayConfiguration>();
+
+            characterShapeConfiguration->m_height = 1.5f;
+            characterShapeConfiguration->m_radius = 0.5f;
+
+            characterGameplayConfiguration->m_gravityMultiplier = 1.5f;
+            characterGameplayConfiguration->m_groundDetectionBoxHeight = 0.05f;
+
+            transform = gameplayEntity->CreateComponent<AzFramework::TransformComponent>();
+            characterComponent = gameplayEntity->CreateComponent<CharacterControllerComponent>(AZStd::move(characterConfiguration), AZStd::move(characterShapeConfiguration));
+            gameplayComponent = gameplayEntity->CreateComponent<CharacterGameplayComponent>(AZStd::move(characterGameplayConfiguration));
+
+            transform->SetWorldTM(AZ::Transform::Identity());
+        }
+        gameplayEntity->Init();
+        gameplayEntity->Activate();
+
+        // Let scene run for a few moments so the entity can be manipulated by gravity from the gameplay component
+        auto startTransform = transform->GetWorldTM();
+
+        int duration = 10;
+        float totalTime = 0.0f;
+        float timeStep = AzPhysics::SystemConfiguration::DefaultFixedTimestep;
+
+        if (auto* physXSystem = GetPhysXSystem())
+        {
+            for (int i = 0; i < duration; i++)
+            {
+                physXSystem->Simulate(timeStep);
+                totalTime += timeStep;
+            }
+        }
+
+        AZ::Transform endTransform = transform->GetWorldTM();
+
+        EXPECT_FALSE(endTransform.IsClose(startTransform));
+    }
+
     TEST_F(PhysXDefaultWorldTest, CharacterController_MovingDirectlyTowardsStaticBox_StoppedByBox)
     {
         ControllerTestBasis basis(m_testSceneHandle);
