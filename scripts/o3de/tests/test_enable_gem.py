@@ -250,12 +250,15 @@ class TestEnableGemCommand:
         gem_registered_with_engine = False
         project_path = pathlib.PurePath('TestProject')
         gem_path = pathlib.PurePath('TestProject/TestGem')
+        engine_path = pathlib.PurePath('o3de')
 
-        def get_registered_path(project_name: str = None, gem_name: str = None) -> pathlib.Path:
+        def get_registered_path(engine_name: str = None, project_name: str = None, gem_name: str = None) -> pathlib.Path:
             if project_name:
                 return project_path
             elif gem_name:
                 return gem_path
+            elif engine_name:
+                return engine_path
             return None
 
         def save_o3de_manifest(new_project_data: dict, manifest_path: pathlib.Path = None) -> bool:

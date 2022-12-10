@@ -408,17 +408,28 @@ def register_gem_path(json_data: dict,
     if not remove and not force:
         gem_json_data = manifest.get_gem_json_data(gem_path=gem_path, project_path=project_path)
         if not gem_json_data:
-            logger.error(f'Failed to load gem.json data from {gem_path} needed for registration')
+            logger.error(f'Failed to load gem.json data needed for registration from {gem_path}')
             return 1
 
-        if project_path and not compatibility.gem_project_compatible(gem_json_data, project_path):
-            return 1
+        if project_path:
+            incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_json_data, project_path)
+            if incompatible_objects: 
+                logger.error(f'{gem_json_data["gem_name"]} is not known compatible with the '
+                    'following objects/APIs and requires the --force parameter to register:')
+                for element in incompatible_objects:
+                    logger.error(f'  {element}')
+                return 1
         elif engine_path:
             engine_json_data = manifest.get_engine_json_data(engine_path=engine_path)
             if not engine_json_data:
-                logger.error('Failed to load engine.json data needed for registration')
+                logger.error(f'Failed to load engine.json data needed for registration from {engine_path}')
                 return 1
-            if not compatibility.gem_engine_compatible(gem_json_data, engine_json_data): 
+            incompatible_objects = compatibility.get_gem_engine_incompatible_objects(gem_json_data, engine_json_data)
+            if incompatible_objects: 
+                logger.error(f'{gem_json_data["gem_name"]} is not known compatible with the '
+                    'following objects/APIs and requires the --force parameter to register:')
+                for element in incompatible_objects:
+                    logger.error(f'  {element}')
                 return 1
 
     return register_o3de_object_path(json_data, gem_path, 'external_subdirectories', 'gem.json',
@@ -444,11 +455,17 @@ def register_project_path(json_data: dict,
             return 1
         project_json_data = manifest.get_project_json_data(project_path=project_path)
         if not project_json_data:
-            logger.error(f'Failed to load project.json from {project_path} needed for registration')
+            logger.error(f'Failed to load project.json data needed for registration from {project_path}')
             return 1
 
-        if not force and not compatibility.project_engine_compatible(project_path, project_json_data, engine_json_data):
-            return 1
+        if not force:
+            incompatible_objects = compatibility.get_project_engine_incompatible_objects(project_path, project_json_data, engine_json_data)
+            if incompatible_objects:
+                logger.error(f'{project_json_data["project_name"]} is not known compatible with the '
+                    'following objects/APIs and requires the --force parameter to register:')
+                for element in incompatible_objects:
+                    logger.error(f'  {element}')
+                return 1
 
     result = register_o3de_object_path(json_data, project_path, 'projects', 'project.json',
                                        validation.valid_o3de_project_json, remove,

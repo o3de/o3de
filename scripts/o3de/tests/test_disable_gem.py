@@ -132,11 +132,13 @@ class TestDisableGemCommand:
 
         project_gem_dependencies = []
 
-        def get_registered_path(project_name: str = None, gem_name: str = None) -> pathlib.Path or None:
+        def get_registered_path(engine_name: str = None, project_name: str = None, gem_name: str = None) -> pathlib.Path or None:
             if project_name:
                 return project_path
             elif gem_name:
                 return gem_path
+            elif engine_name:
+                return pathlib.PurePath('o3de')
             return None
 
         def save_o3de_manifest(new_project_data: dict, manifest_path: pathlib.Path = None) -> bool:

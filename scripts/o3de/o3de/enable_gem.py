@@ -109,10 +109,21 @@ def enable_gem_in_project(gem_name: str = None,
     if force:
         logger.warning(f'Bypassing version compatibility check for {gem_json_data["gem_name"]}.')
     else:
-        compatible = compatibility.gem_project_compatible(gem_json_data, project_path, check=check, gem_paths=buildable_gems)
+        incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_json_data, project_path, check=check, gem_paths=buildable_gems)
         if check:
+            if incompatible_objects:
+                logger.info(f'{gem_json_data["gem_name"]} is not known compatible with the '
+                    'following objects/APIs and requires the --force parameter to register:')
+                for element in incompatible_objects:
+                    logger.info(f'  {element}')
+            else:
+                logger.info(f'{gem_json_data["gem_name"]} is compatible with this project')
             return 0
-        elif not compatible:
+        elif incompatible_objects:
+            logger.error(f'{gem_json_data["gem_name"]} is not known compatible with the '
+                'following objects/APIs and requires the --force parameter to register:')
+            for element in incompatible_objects:
+                logger.error(f'  {element}')
             return 1
 
     ret_val = 0

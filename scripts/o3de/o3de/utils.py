@@ -115,7 +115,7 @@ def validate_identifier(identifier: str) -> bool:
 def validate_version_specifier(version_specifier:str) -> bool:
     try:
         get_object_name_and_version_specifier(version_specifier)
-    except Exception as e:
+    except (InvalidObjectNameException, InvalidVersionSpecifierException):
         return False
     return True 
 
@@ -344,6 +344,15 @@ def find_ancestor_dir_containing_file(target_file_name: pathlib.PurePath, start_
     return ancestor_file.parent if ancestor_file else None
 
 
+def get_gem_names_set(gems: list) -> set:
+    """
+    For working with the 'gem_names' lists in project.json
+    Returns a set of gem names in a list of gems
+    :param gems: The original list of gems, strings or small dicts (json objects)
+    :return: A set of gem name strings
+    """
+    return set([gem['name'] if isinstance(gem, dict) else gem for gem in gems])
+
 def remove_gem_duplicates(gems: list) -> list:
     """
     For working with the 'gem_names' lists in project.json
@@ -421,6 +430,11 @@ def update_values_in_key_list(existing_values: list, new_values: list or str, re
     # replace duplicate values
     return list(dict.fromkeys(existing_values))
 
+class InvalidVersionSpecifierException(Exception):
+    pass
+
+class InvalidObjectNameException(Exception):
+    pass
 
 def get_object_name_and_version_specifier(input:str) -> (str, str) or None:
     """
@@ -438,10 +452,10 @@ def get_object_name_and_version_specifier(input:str) -> (str, str) or None:
     match = regex.search(input)
 
     if not match:
-        raise Exception(f"Invalid name and/or version specifier {input}, expected <name><version specifiers> e.g. o3de==1.2.3")
+        raise InvalidVersionSpecifierException(f"Invalid name and/or version specifier {input}, expected <name><version specifiers> e.g. o3de==1.2.3")
 
     if not match.group("object_name"):
-        raise Exception(f"Invalid or missing name {input}, expected <name><version specifiers> e.g. o3de==1.2.3")
+        raise InvalidObjectNameException(f"Invalid or missing name {input}, expected <name><version specifiers> e.g. o3de==1.2.3")
 
     # SpecifierSet will raise an exception if invalid
     if not SpecifierSet(match.group("version_specifier")):
@@ -457,5 +471,5 @@ def get_object_name_and_optional_version_specifier(input:str):
     """
     try:
         return get_object_name_and_version_specifier(input)
-    except Exception as e:
+    except (InvalidObjectNameException, InvalidVersionSpecifierException):
         return input, None
