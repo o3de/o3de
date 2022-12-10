@@ -47,8 +47,7 @@ def get_project_engine_incompatible_objects(project_path:pathlib.Path, project_j
     for gem_name in active_gem_names:
         if gem_name not in gem_name_to_json_data:
             continue
-        gem_incompatible_objects = get_gem_engine_incompatible_objects(gem_name_to_json_data[gem_name], engine_json_data, gem_paths=gem_paths)
-        incompatible_objects = incompatible_objects.union(gem_incompatible_objects)
+        incompatible_objects.update(get_gem_engine_incompatible_objects(gem_name_to_json_data[gem_name], engine_json_data, gem_paths=gem_paths))
 
     return incompatible_objects
 
