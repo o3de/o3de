@@ -410,9 +410,9 @@ namespace UnitTest
         v1.BuildTangentBasis(v2, v3);
         EXPECT_TRUE(v2.IsNormalized());
         EXPECT_TRUE(v3.IsNormalized());
-        EXPECT_TRUE(fabsf(v2.Dot(v1)) < 0.001f);
-        EXPECT_TRUE(fabsf(v3.Dot(v1)) < 0.001f);
-        EXPECT_TRUE(fabsf(v2.Dot(v3)) < 0.001f);
+        EXPECT_LT(fabsf(v2.Dot(v1)), 0.001f);
+        EXPECT_LT(fabsf(v3.Dot(v1)), 0.001f);
+        EXPECT_LT(fabsf(v2.Dot(v3)), 0.001f);
     }
 
     TEST(MATH_Vector3, TestMadd)
