@@ -443,9 +443,9 @@ namespace UnitTest
         Color colorSrc(1.0f, 0.0f, 0.2f, 0.8f);
         Color colorDest(0.0f, 1.0f, 0.8f, 0.2f);
 
-        AZ_TEST_ASSERT(colorSrc.Lerp(colorDest, 0.0f).IsClose(colorSrc));
+        EXPECT_THAT(colorSrc.Lerp(colorDest, 0.0f), IsClose(colorSrc));
         EXPECT_THAT(colorSrc.Lerp(colorDest, 0.5f), IsCloseTolerance(Color(0.5f, 0.5f, 0.5f, 0.5f), 0.00001f));
-        AZ_TEST_ASSERT(colorSrc.Lerp(colorDest, 1.0f).IsClose(colorDest));
+        EXPECT_THAT(colorSrc.Lerp(colorDest, 1.0f), IsClose(colorDest));
     }
 
     TEST(MATH_Color, DotProduct)

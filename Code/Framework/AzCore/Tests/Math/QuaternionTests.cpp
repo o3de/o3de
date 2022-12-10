@@ -27,11 +27,11 @@ namespace UnitTest
         // a positive rotation around z should transform the x axis to the y axis
         Matrix4x4 matrix = Matrix4x4::CreateRotationZ(DegToRad(90.0f));
         Vector3 v = matrix * Vector3(1.0f, 0.0f, 0.0f);
-        AZ_TEST_ASSERT(v.IsClose(Vector3(0.0f, 1.0f, 0.0f)));
+        EXPECT_THAT(v, IsClose(Vector3(0.0f, 1.0f, 0.0f)));
 
         AZ::Quaternion quat = AZ::Quaternion::CreateRotationZ(DegToRad(90.0f));
         v = quat.TransformVector(Vector3(1.0f, 0.0f, 0.0f));
-        AZ_TEST_ASSERT(v.IsClose(Vector3(0.0f, 1.0f, 0.0f)));
+        EXPECT_THAT(v, IsClose(Vector3(0.0f, 1.0f, 0.0f)));
     }
 
     TEST(MATH_Quaternion, TestConstruction)
@@ -409,10 +409,10 @@ namespace UnitTest
         AZ::Quaternion rotQuat = AZ::Quaternion::CreateRotationZ(DegToRad(90.0f));
 
         AZ::Quaternion q = AZ::Quaternion::CreateFromMatrix4x4(rotMatrix);
-        AZ_TEST_ASSERT(q.IsClose(rotQuat));
+        EXPECT_THAT(q, IsClose(rotQuat));
 
         Matrix4x4 m = Matrix4x4::CreateFromQuaternion(rotQuat);
-        AZ_TEST_ASSERT(m.IsClose(rotMatrix));
+        EXPECT_THAT(m, IsClose(rotMatrix));
     }
 
     class QuaternionScaledAxisAngleConversionFixture

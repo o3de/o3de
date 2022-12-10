@@ -285,10 +285,10 @@ namespace UnitTest
     TEST(MATH_Vector3, TestEquality)
     {
         AZ::Vector3 v3(1.0f, 2.0f, 3.0f);
-        AZ_TEST_ASSERT(v3 == AZ::Vector3(1.0f, 2.0f, 3.0f));
-        AZ_TEST_ASSERT(!(v3 == AZ::Vector3(1.0f, 2.0f, 4.0f)));
-        AZ_TEST_ASSERT(v3 != AZ::Vector3(1.0f, 2.0f, 5.0f));
-        AZ_TEST_ASSERT(!(v3 != AZ::Vector3(1.0f, 2.0f, 3.0f)));
+        EXPECT_TRUE(v3 == AZ::Vector3(1.0f, 2.0f, 3.0f));
+        EXPECT_FALSE((v3 == AZ::Vector3(1.0f, 2.0f, 4.0f)));
+        EXPECT_TRUE(v3 != AZ::Vector3(1.0f, 2.0f, 5.0f));
+        EXPECT_FALSE((v3 != AZ::Vector3(1.0f, 2.0f, 3.0f)));
     }
 
     TEST(MATH_Vector3, TestIsLessThan)
