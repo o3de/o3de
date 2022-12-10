@@ -76,7 +76,7 @@ def get_incompatible_gem_dependencies(gem_json_data:dict, project_path:pathlib.P
     return get_incompatible_gem_version_specifiers(project_path, gem_dependencies, gem_paths)
 
 
-def get_gem_project_incompatible_objects(gem_json_data:dict, project_path:pathlib.Path, gem_paths:list = [], check:bool = False) -> bool:
+def get_gem_project_incompatible_objects(gem_json_data:dict, project_path:pathlib.Path, gem_paths:list = [], check:bool = False) -> set:
     """
     Returns any incompatible objects for this gem and project.
     :param gem_json_data: gem json data dictionary
@@ -106,7 +106,7 @@ def get_gem_project_incompatible_objects(gem_json_data:dict, project_path:pathli
     return get_gem_engine_incompatible_objects(gem_json_data, engine_json_data, gem_paths=gem_paths)
 
 
-def get_gem_engine_incompatible_objects(gem_json_data:dict, engine_json_data:dict, gem_paths:list = None, check:bool = False) -> bool:
+def get_gem_engine_incompatible_objects(gem_json_data:dict, engine_json_data:dict, gem_paths:list = None, check:bool = False) -> set:
     """
     Returns any incompatible objects for this gem and engine.
     :param gem_json_data: gem json data dictionary
