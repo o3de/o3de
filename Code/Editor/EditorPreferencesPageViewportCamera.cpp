@@ -80,7 +80,7 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reflect(AZ::
         ->Field("DefaultOrientation", &CameraMovementSettings::m_defaultPitchYaw)
         ->Field("DefaultOrbitDistance", &CameraMovementSettings::m_defaultOrbitDistance)
         ->Field("SpeedScale", &CameraMovementSettings::m_speedScale)
-        ->Field("InstantGoToPosition", &CameraMovementSettings::m_instantGoToPosition)
+        ->Field("GoToPositionInstantly", &CameraMovementSettings::m_goToPositionInstantly)
         ->Field("Reset", &CameraMovementSettings::m_resetButton);
 
     if (AZ::EditContext* editContext = serialize.GetEditContext())
@@ -187,8 +187,8 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reflect(AZ::
             ->Attribute(AZ::Edit::Attributes::Min, minValue)
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox,
-                &CameraMovementSettings::m_instantGoToPosition,
-                "Camera Instant Go To Position",
+                &CameraMovementSettings::m_goToPositionInstantly,
+                "Camera Go To Position Instantly",
                 "Camera will instantly go to the set position and won't interpolate there")
             ->DataElement(
                 AZ::Edit::UIHandlers::Button, &CameraMovementSettings::m_resetButton, "", "Restore camera movement settings to defaults")
@@ -386,7 +386,7 @@ void CEditorPreferencesPage_ViewportCamera::OnApply()
     SandboxEditor::SetCameraDefaultEditorPosition(m_cameraMovementSettings.m_defaultPosition);
     SandboxEditor::SetCameraDefaultOrbitDistance(m_cameraMovementSettings.m_defaultOrbitDistance);
     SandboxEditor::SetCameraDefaultEditorOrientation(m_cameraMovementSettings.m_defaultPitchYaw);
-    SandboxEditor::SetCameraInstantGoToPosition(m_cameraMovementSettings.m_instantGoToPosition);
+    SandboxEditor::SetCameraGoToPositionInstantly(m_cameraMovementSettings.m_goToPositionInstantly);
 
     SandboxEditor::SetCameraTranslateForwardChannelId(m_cameraInputSettings.m_translateForwardChannelId);
     SandboxEditor::SetCameraTranslateBackwardChannelId(m_cameraInputSettings.m_translateBackwardChannelId);
@@ -433,7 +433,7 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reset()
     SandboxEditor::ResetCameraDefaultEditorPosition();
     SandboxEditor::ResetCameraDefaultOrbitDistance();
     SandboxEditor::ResetCameraDefaultEditorOrientation();
-    SandboxEditor::ResetCameraInstantGoToPosition();
+    SandboxEditor::ResetCameraGoToPositionInstantly();
 
     Initialize();
 }
@@ -458,7 +458,7 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Initialize()
     m_defaultPosition = SandboxEditor::CameraDefaultEditorPosition();
     m_defaultOrbitDistance = SandboxEditor::CameraDefaultOrbitDistance();
     m_defaultPitchYaw = SandboxEditor::CameraDefaultEditorOrientation();
-    m_instantGoToPosition = SandboxEditor::CameraInstantGoToPosition();
+    m_goToPositionInstantly = SandboxEditor::CameraGoToPositionInstantly();
 }
 
 void CEditorPreferencesPage_ViewportCamera::CameraInputSettings::Reset()

@@ -14,7 +14,9 @@
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <EditorModularViewportCameraComposer.h>
+#include <EditorViewportCamera.h>
 #include <EditorViewportSettings.h>
+#include <Mocks/MockViewportRequests.h>
 #include <Tests/Utils/Printers.h>
 
 #include <GotoPositionDlg.h>
@@ -31,6 +33,7 @@ namespace UnitTest
         AZ::Entity* m_entity = nullptr;
         AZ::ComponentDescriptor* m_transformComponent = nullptr;
         AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_settingsRegistry;
+        ::testing::NiceMock<MockViewportRequests> m_mockViewportRequests;
 
         static inline constexpr AzFramework::ViewportId TestViewportId = 2345;
         static inline constexpr float HalfInterpolateToTransformDuration =
@@ -66,10 +69,27 @@ namespace UnitTest
 
             m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
             AZ::SettingsRegistry::Register(m_settingsRegistry.get());
+
+            ON_CALL(m_mockViewportRequests, GetCameraTransform)
+                .WillByDefault(
+                    [this]
+                    {
+                        return m_cameraViewportContextView->GetCameraTransform();
+                    });
+            ON_CALL(m_mockViewportRequests, SetCameraTransform)
+                .WillByDefault(
+                    [this](const AZ::Transform& transform)
+                    {
+                        m_cameraViewportContextView->SetCameraTransform(transform);
+                    });
+
+            m_mockViewportRequests.Connect(TestViewportId);
         }
 
         void TearDown() override
         {
+            m_mockViewportRequests.Disconnect();
+
             AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
             m_settingsRegistry.reset();
 
@@ -276,6 +296,88 @@ namespace UnitTest
         EXPECT_THAT(nextInterpolationBegan, ::testing::IsTrue());
     }
 
+    TEST_F(EditorCameraFixture, CameraInterpolatesToTransformWhenGoToPositionInstantlyIsOff)
+    {
+        // Given
+        SandboxEditor::SetCameraGoToPositionInstantly(false);
+
+        // set initial camera transform
+        SandboxEditor::SetViewportCameraTransform(TestViewportId, AZ::Transform::CreateIdentity());
+
+        const auto startingPosition = AZ::Vector3(10.0f, 20.0f, 30.0f);
+        const auto pitchRadians = AZ::DegToRad(-45.0f);
+        const auto yawRadians = AZ::DegToRad(90.0f);
+        const auto expectedTransform = SandboxEditor::TransformFromPositionPitchYaw(startingPosition, pitchRadians, yawRadians);
+
+        // When
+        // camera transition (interpolation or instant based on setting)
+        SandboxEditor::HandleViewportCameraTransitionFromSetting(TestViewportId, startingPosition, pitchRadians, yawRadians);
+
+        // Then
+        // ensure camera transform did not change instantly
+        const auto actualTransformBeforeUpdate = SandboxEditor::GetViewportCameraTransform(TestViewportId);
+        EXPECT_THAT(actualTransformBeforeUpdate, ::testing::Not(IsClose(expectedTransform)));
+        EXPECT_THAT(actualTransformBeforeUpdate, IsClose(AZ::Transform::CreateIdentity()));
+
+        // simulate viewport update
+        m_controllerList->UpdateViewport(
+            { TestViewportId,
+              AzFramework::FloatSeconds(AtomToolsFramework::ModularViewportCameraControllerRequests::InterpolateToTransformDuration),
+              AZ::ScriptTimePoint() });
+
+        // ensure camera transform is at interpolated position/orientation
+        const auto actualTransformAfterUpdate = SandboxEditor::GetViewportCameraTransform(TestViewportId);
+        EXPECT_THAT(actualTransformAfterUpdate, IsClose(expectedTransform));
+    }
+
+    TEST_F(EditorCameraFixture, CameraChangesImmediatelyWhenGoToPositionInstantlyIsOn)
+    {
+        // Given
+        SandboxEditor::SetCameraGoToPositionInstantly(true);
+
+        // set initial camera transform
+        SandboxEditor::SetViewportCameraTransform(TestViewportId, AZ::Transform::CreateIdentity());
+
+        const auto startingPosition = AZ::Vector3(50.0f, 60.0f, 70.0f);
+        const auto pitchRadians = AZ::DegToRad(45.0f);
+        const auto yawRadians = AZ::DegToRad(180.0f);
+        const auto expectedTransform = SandboxEditor::TransformFromPositionPitchYaw(startingPosition, pitchRadians, yawRadians);
+
+        // When
+        // camera transition (interpolation or instant based on setting)
+        SandboxEditor::HandleViewportCameraTransitionFromSetting(TestViewportId, expectedTransform);
+
+        // Then
+        // ensure camera transform updated immediately
+        const auto actualTransformAfterUpdate = SandboxEditor::GetViewportCameraTransform(TestViewportId);
+        EXPECT_THAT(actualTransformAfterUpdate, IsClose(expectedTransform));
+    }
+
+    TEST_F(EditorCameraFixture, CameraInterpolatesToTransform)
+    {
+        // Given
+        SandboxEditor::SetViewportCameraTransform(TestViewportId, AZ::Transform::CreateIdentity());
+
+        const auto startingPosition = AZ::Vector3(1.0f, 2.0f, 3.0f);
+        const auto pitchRadians = AZ::DegToRad(30.0f);
+        const auto yawRadians = AZ::DegToRad(20.0f);
+        const auto expectedTransform = SandboxEditor::TransformFromPositionPitchYaw(startingPosition, pitchRadians, yawRadians);
+
+        // When
+        // interpolate camera to transform
+        SandboxEditor::InterpolateViewportCameraToTransform(TestViewportId, startingPosition, pitchRadians, yawRadians);
+
+        // simulate viewport update
+        m_controllerList->UpdateViewport(
+            { TestViewportId,
+              AzFramework::FloatSeconds(AtomToolsFramework::ModularViewportCameraControllerRequests::InterpolateToTransformDuration),
+              AZ::ScriptTimePoint() });
+
+        // Then
+        const auto actualTransform = SandboxEditor::GetViewportCameraTransform(TestViewportId);
+        EXPECT_THAT(actualTransform, IsClose(expectedTransform));
+    }
+
     using GotoPositionPitchConstraintsTest = UnitTest::LeakDetectionFixture;
     TEST_F(GotoPositionPitchConstraintsTest, GoToPositionPitchIsSetToPlusOrMinusNinetyDegrees)
     {
@@ -474,6 +576,14 @@ namespace UnitTest
             const bool actualCameraCaptureCursorForLook = SandboxEditor::CameraCaptureCursorForLook();
             EXPECT_THAT(expectedCameraCaptureCursorForLook, Eq(actualCameraCaptureCursorForLook));
         }
+
+        {
+            const bool existingCameraGoToPositionInstantly = SandboxEditor::CameraGoToPositionInstantly();
+            const bool expectedCameraGoToPositionInstantly = !existingCameraGoToPositionInstantly;
+            SandboxEditor::SetCameraGoToPositionInstantly(expectedCameraGoToPositionInstantly);
+            const bool actualCameraGoToPositionInstantly = SandboxEditor::CameraGoToPositionInstantly();
+            EXPECT_THAT(expectedCameraGoToPositionInstantly, Eq(actualCameraGoToPositionInstantly));
+        }
     }
 
     TEST_F(EditorCameraFixture, CameraSettingsRegistryValuesCanBeReset)
@@ -502,7 +612,7 @@ namespace UnitTest
         SandboxEditor::ResetCameraDefaultEditorPosition();
         SandboxEditor::ResetCameraDefaultOrbitDistance();
         SandboxEditor::ResetCameraDefaultEditorOrientation();
-        SandboxEditor::ResetCameraInstantGoToPosition();
+        SandboxEditor::ResetCameraGoToPositionInstantly();
 
         // store defaults
         const auto initialCameraSpeedScale = SandboxEditor::CameraSpeedScale();
@@ -523,7 +633,7 @@ namespace UnitTest
         const auto initialCameraDefaultEditorPosition = SandboxEditor::CameraDefaultEditorPosition();
         const auto initialCameraDefaultOrbitDistance = SandboxEditor::CameraDefaultOrbitDistance();
         const auto initialCameraDefaultEditorOrientation = SandboxEditor::CameraDefaultEditorOrientation();
-        const auto initialCameraInstantGoToPosition = SandboxEditor::CameraInstantGoToPosition();
+        const auto initialCameraGoToPositionInstantly = SandboxEditor::CameraGoToPositionInstantly();
 
         // modify all values to be different to default value
         SandboxEditor::SetCameraSpeedScale(SandboxEditor::CameraSpeedScale() + 10.0f);
@@ -544,7 +654,7 @@ namespace UnitTest
         SandboxEditor::SetCameraDefaultEditorPosition(SandboxEditor::CameraDefaultEditorPosition() + AZ::Vector3(10.0f));
         SandboxEditor::SetCameraDefaultOrbitDistance(SandboxEditor::CameraDefaultOrbitDistance() + 10.0f);
         SandboxEditor::SetCameraDefaultEditorOrientation(SandboxEditor::CameraDefaultEditorOrientation() + AZ::Vector2(10.0f));
-        SandboxEditor::SetCameraInstantGoToPosition(!SandboxEditor::CameraInstantGoToPosition());
+        SandboxEditor::SetCameraGoToPositionInstantly(!SandboxEditor::CameraGoToPositionInstantly());
 
         // ensure all values have changed vs defaults
         EXPECT_THAT(SandboxEditor::CameraSpeedScale(), Not(FloatNear(initialCameraSpeedScale, AZ::Constants::FloatEpsilon)));
@@ -567,7 +677,7 @@ namespace UnitTest
         EXPECT_THAT(
             SandboxEditor::CameraDefaultOrbitDistance(), Not(FloatNear(initialCameraDefaultOrbitDistance, AZ::Constants::FloatEpsilon)));
         EXPECT_THAT(SandboxEditor::CameraDefaultEditorOrientation(), Not(IsClose(initialCameraDefaultEditorOrientation)));
-        EXPECT_THAT(SandboxEditor::CameraInstantGoToPosition(), Not(Eq(initialCameraInstantGoToPosition)));
+        EXPECT_THAT(SandboxEditor::CameraGoToPositionInstantly(), Not(Eq(initialCameraGoToPositionInstantly)));
 
         // reset all relevant settings to defaults again
         SandboxEditor::ResetCameraSpeedScale();
@@ -588,7 +698,7 @@ namespace UnitTest
         SandboxEditor::ResetCameraDefaultEditorPosition();
         SandboxEditor::ResetCameraDefaultOrbitDistance();
         SandboxEditor::ResetCameraDefaultEditorOrientation();
-        SandboxEditor::ResetCameraInstantGoToPosition();
+        SandboxEditor::ResetCameraGoToPositionInstantly();
 
         // ensure values have been reset to defaults
         EXPECT_THAT(SandboxEditor::CameraSpeedScale(), FloatNear(initialCameraSpeedScale, AZ::Constants::FloatEpsilon));
@@ -609,7 +719,7 @@ namespace UnitTest
         EXPECT_THAT(SandboxEditor::CameraDefaultEditorPosition(), IsClose(initialCameraDefaultEditorPosition));
         EXPECT_THAT(SandboxEditor::CameraDefaultOrbitDistance(), FloatNear(initialCameraDefaultOrbitDistance, AZ::Constants::FloatEpsilon));
         EXPECT_THAT(SandboxEditor::CameraDefaultEditorOrientation(), IsClose(initialCameraDefaultEditorOrientation));
-        EXPECT_THAT(SandboxEditor::CameraInstantGoToPosition(), Eq(initialCameraInstantGoToPosition));
+        EXPECT_THAT(SandboxEditor::CameraGoToPositionInstantly(), Eq(initialCameraGoToPositionInstantly));
     }
 
     TEST_F(EditorCameraFixture, CameraSettingsRegistryInputValuesCanBeReset)

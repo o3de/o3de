@@ -67,7 +67,7 @@ private:
         bool m_panInvertedY;
         bool m_rotateSmoothing;
         bool m_translateSmoothing;
-        bool m_instantGoToPosition;
+        bool m_goToPositionInstantly;
 
         AZ::Crc32 RotateSmoothingVisibility() const
         {

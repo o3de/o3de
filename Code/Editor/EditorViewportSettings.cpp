@@ -66,7 +66,7 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraNearPlaneDistanceSetting = "/Amazon/Preferences/Editor/Camera/NearPlaneDistance";
     constexpr AZStd::string_view CameraFarPlaneDistanceSetting = "/Amazon/Preferences/Editor/Camera/FarPlaneDistance";
     constexpr AZStd::string_view CameraFovDegreesSetting = "/Amazon/Preferences/Editor/Camera/FovDegrees";
-    constexpr AZStd::string_view CameraInstantGoToPositionSetting = "/Amazon/Preferences/Editor/Camera/InstantGoToPosition";
+    constexpr AZStd::string_view CameraGoToPositionInstantlySetting = "/Amazon/Preferences/Editor/Camera/GoToPositionInstantly";
 
     struct EditorViewportSettingsCallbacksImpl : public EditorViewportSettingsCallbacks
     {
@@ -492,14 +492,14 @@ namespace SandboxEditor
         AzToolsFramework::SetRegistry(CameraDefaultOrbitDistanceSetting, distance);
     }
 
-    bool CameraInstantGoToPosition()
+    bool CameraGoToPositionInstantly()
     {
-        return AzToolsFramework::GetRegistry(CameraInstantGoToPositionSetting, false);
+        return AzToolsFramework::GetRegistry(CameraGoToPositionInstantlySetting, false);
     }
 
-    void SetCameraInstantGoToPosition(const bool instant)
+    void SetCameraGoToPositionInstantly(const bool instant)
     {
-        AzToolsFramework::SetRegistry(CameraInstantGoToPositionSetting, instant);
+        AzToolsFramework::SetRegistry(CameraGoToPositionInstantlySetting, instant);
     }
 
     AzFramework::InputChannelId CameraTranslateForwardChannelId()
@@ -789,9 +789,9 @@ namespace SandboxEditor
         AzToolsFramework::ClearRegistry(CameraDefaultStartingYaw);
     }
 
-    void ResetCameraInstantGoToPosition()
+    void ResetCameraGoToPositionInstantly()
     {
-        AzToolsFramework::ClearRegistry(CameraInstantGoToPositionSetting);
+        AzToolsFramework::ClearRegistry(CameraGoToPositionInstantlySetting);
     }
 
     void ResetCameraTranslateForwardChannelId()
