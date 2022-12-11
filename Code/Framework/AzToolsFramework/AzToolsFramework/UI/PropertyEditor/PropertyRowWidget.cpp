@@ -242,6 +242,8 @@ namespace AzToolsFramework
         m_treeDepth = depth;
         m_requestedLabelWidth = labelWidth;
 
+        this->unsetCursor();
+
         // discover stuff about node.
 
         AZStd::string actualName;
