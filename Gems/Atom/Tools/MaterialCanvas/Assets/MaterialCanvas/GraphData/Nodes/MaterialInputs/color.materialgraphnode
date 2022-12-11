@@ -7,6 +7,7 @@
         "category": "Material Inputs",
         "title": "Color Input",
         "titlePaletteName": "MaterialInputNodeTitlePalette",
+        "description": "Create a shader variable with the type and default value defined by this node. It will be exposed and customizable as a material property.",
         "slotDataTypeGroups": [
             "inValue|outValue",
             "outR|outG|outB|outA"
@@ -15,7 +16,7 @@
             {
                 "name": "inGroup",
                 "displayName": "Group",
-                "description": "Group",
+                "description": "Material type group name that will contain the property corresponding to this input.",
                 "supportedDataTypeRegex": "string",
                 "defaultDataType": "string",
                 "defaultValue": {
@@ -28,7 +29,7 @@
             {
                 "name": "inName",
                 "displayName": "Name",
-                "description": "Name",
+                "description": "Property name that will be added to the material type for this input. The shader variable name and display name will be derived from this.",
                 "supportedDataTypeRegex": "string",
                 "defaultDataType": "string",
                 "defaultValue": {
@@ -39,7 +40,7 @@
             {
                 "name": "inDescription",
                 "displayName": "Description",
-                "description": "Description",
+                "description": "Description about what this material input does and how it should be used.",
                 "supportedDataTypeRegex": "string",
                 "defaultDataType": "string",
                 "defaultValue": {
@@ -52,7 +53,7 @@
             {
                 "name": "inValue",
                 "displayName": "Value",
-                "description": "Value",
+                "description": "Default value for the material property.",
                 "supportedDataTypeRegex": "color",
                 "defaultDataType": "color",
                 "defaultValue": {
@@ -74,8 +75,8 @@
         "outputSlots": [
             {
                 "name": "outValue",
-                "displayName": "Value",
-                "description": "Value",
+                "displayName": "Color",
+                "description": "RGBA color output value",
                 "supportedDataTypeRegex": "color",
                 "defaultDataType": "color",
                 "settings": {
@@ -87,7 +88,7 @@
             {
                 "name": "outR",
                 "displayName": "R",
-                "description": "R",
+                "description": "Red color channel output value",
                 "supportedDataTypeRegex": "float",
                 "defaultDataType": "float",
                 "settings": {
@@ -99,7 +100,7 @@
             {
                 "name": "outG",
                 "displayName": "G",
-                "description": "G",
+                "description": "Green color channel output value",
                 "supportedDataTypeRegex": "float",
                 "defaultDataType": "float",
                 "settings": {
@@ -111,7 +112,7 @@
             {
                 "name": "outB",
                 "displayName": "B",
-                "description": "B",
+                "description": "Blue collar channel output value",
                 "supportedDataTypeRegex": "float",
                 "defaultDataType": "float",
                 "settings": {
@@ -123,7 +124,7 @@
             {
                 "name": "outA",
                 "displayName": "A",
-                "description": "A",
+                "description": "Alpha color channel output value",
                 "supportedDataTypeRegex": "float",
                 "defaultDataType": "float",
                 "settings": {
