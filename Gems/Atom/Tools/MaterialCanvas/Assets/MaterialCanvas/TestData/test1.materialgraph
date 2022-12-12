@@ -178,7 +178,7 @@
                 "Key": 12,
                 "Value": {
                     "$type": "DynamicNode",
-                    "m_inputDataSlots": [
+                    "m_propertySlots": [
                         {
                             "Key": {
                                 "m_name": "inValue"
@@ -234,6 +234,13 @@
             }
         ],
         "m_uiMetadata": {
+            "m_sceneMetadata": {
+                "ComponentData": {
+                    "{5F84B500-8C45-40D1-8EFC-A5306B241444}": {
+                        "$type": "SceneComponentSaveData"
+                    }
+                }
+            },
             "m_nodeMetadata": [
                 {
                     "Key": 1,
@@ -478,7 +485,7 @@
                                 "$type": "GeometrySaveData",
                                 "Position": [
                                     800.0,
-                                    60.0
+                                    100.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -506,7 +513,7 @@
                                 "$type": "GeometrySaveData",
                                 "Position": [
                                     1100.0,
-                                    -60.0
+                                    -20.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -533,7 +540,7 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    440.0,
+                                    520.0,
                                     -160.0
                                 ]
                             },

@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Radians",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Converts the input value from degrees to radians (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],
