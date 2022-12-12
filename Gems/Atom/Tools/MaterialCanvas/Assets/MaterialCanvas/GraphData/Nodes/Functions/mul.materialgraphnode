@@ -5,8 +5,9 @@
     "ClassData": {
         "id": "{36D2D0D2-D077-4C3F-89B7-59FE5A818633}",
         "category": "Math Functions",
-        "title": "Mul",
+        "title": "Matrix Multiply",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Performs matrix multiplication using x and y",
         "slotDataTypeGroups": [
             "inValue1|inValue2|outValue"
         ],
