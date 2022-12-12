@@ -478,7 +478,7 @@ namespace AZ
                 return false;
             }
 
-            if (!ValidateMaterialPropertyDataType(typeId, name, materialPropertyDescriptor, [this](const char* message){ReportError("%s", message);}))
+            if (!ValidateMaterialPropertyDataType(typeId, materialPropertyDescriptor, [this](const char* message){ReportError("%s", message);}))
             {
                 return false;
             }

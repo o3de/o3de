@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "FileWatcherBase.h"
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/containers/vector.h>
@@ -25,8 +27,7 @@
 /*! Class that handles creation and deletion of FolderRootWatches based on
  *! the given FolderWatches, and forwards file change signals to them.
  * */
-class FileWatcher
-    : public QObject
+class FileWatcher : public FileWatcherBase
 {
     Q_OBJECT
 
@@ -35,27 +36,13 @@ public:
     ~FileWatcher() override;
 
     //////////////////////////////////////////////////////////////////////////
-    void AddFolderWatch(QString directory, bool recursive = true);
+    void AddFolderWatch(QString directory, bool recursive = true) override;
     bool HasWatchFolder(QString directory) const; 
-    void ClearFolderWatches();
+    void ClearFolderWatches() override;
     //////////////////////////////////////////////////////////////////////////
 
-    void StartWatching();
-    void StopWatching();
-
-Q_SIGNALS:
-    // These signals are emitted when a file under a watched path changes
-    void fileAdded(QString filePath);
-    void fileRemoved(QString filePath);
-    void fileModified(QString filePath);
-
-    // These signals are emitted by the platform implementations when files
-    // change. Some platforms' file watch APIs do not support non-recursive
-    // watches, so the signals are filtered before being forwarded to the
-    // non-"raw" fileAdded/Removed/Modified signals above.
-    void rawFileAdded(QString filePath, QPrivateSignal);
-    void rawFileRemoved(QString filePath, QPrivateSignal);
-    void rawFileModified(QString filePath, QPrivateSignal);
+    void StartWatching() override;
+    void StopWatching() override;
 
 private:
     bool PlatformStart();

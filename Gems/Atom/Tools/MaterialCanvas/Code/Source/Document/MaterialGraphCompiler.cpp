@@ -12,7 +12,6 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
-#include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNode.h>
@@ -38,63 +37,279 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/string/regex.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <Document/MaterialGraphCompiler.h>
-#include <Document/MaterialGraphCompilerNotificationBus.h>
-#include <GraphCanvas/Components/SceneBus.h>
-#include <GraphCanvas/GraphCanvasBus.h>
 #include <GraphModel/Model/Connection.h>
 
 namespace MaterialCanvas
 {
-#if defined(AZ_ENABLE_TRACING)
-    namespace
-    {
-        bool IsCompileLoggingEnabled()
-        {
-            return AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialGraphCompiler/CompileLoggingEnabled", false);
-        }
-    } // namespace
-#endif // AZ_ENABLE_TRACING
-
     void MaterialGraphCompiler::Reflect(AZ::ReflectContext* context)
     {
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<MaterialGraphCompiler>()
-                ->Version(0);
-        }
-
-        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->EBus<MaterialGraphCompilerRequestBus>("MaterialGraphCompilerRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                ->Attribute(AZ::Script::Attributes::Module, "materialcanvas")
-                ->Event("GetGeneratedFilePaths", &MaterialGraphCompilerRequests::GetGeneratedFilePaths)
-                ->Event("CompileGraph", &MaterialGraphCompilerRequests::CompileGraph)
-                ->Event("QueueCompileGraph", &MaterialGraphCompilerRequests::QueueCompileGraph)
-                ->Event("IsCompileGraphQueued", &MaterialGraphCompilerRequests::IsCompileGraphQueued);
+            serialize->Class<MaterialGraphCompiler, AtomToolsFramework::GraphCompiler>()
+                ->Version(0)
+                ;
         }
     }
 
     MaterialGraphCompiler::MaterialGraphCompiler(const AZ::Crc32& toolId, const AZ::Uuid& documentId)
-        : m_toolId(toolId)
-        , m_documentId(documentId)
+        : AtomToolsFramework::GraphCompiler(toolId, documentId)
     {
-        AZ::SystemTickBus::Handler::BusConnect();
-        MaterialGraphCompilerRequestBus::Handler::BusConnect(documentId);
     }
 
     MaterialGraphCompiler::~MaterialGraphCompiler()
     {
-        MaterialGraphCompilerRequestBus::Handler::BusDisconnect();
-        AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
-    const AZStd::vector<AZStd::string>& MaterialGraphCompiler::GetGeneratedFilePaths() const
+    AZStd::string MaterialGraphCompiler::GetGraphPath() const
     {
-        return m_generatedFiles;
+        if (const auto& graphPath = AtomToolsFramework::GraphCompiler::GetGraphPath(); graphPath.ends_with(".materialgraph"))
+        {
+            return graphPath;
+        }
+
+        return AZStd::string::format("%s/Assets/Materials/Generated/untitled.materialgraph", AZ::Utils::GetProjectPath().c_str());
+    }
+
+    bool MaterialGraphCompiler::CompileGraph()
+    {
+        if (!AtomToolsFramework::GraphCompiler::CompileGraph())
+        {
+            return false;
+        }
+
+        GraphModel::GraphPtr graph;
+        AtomToolsFramework::GraphDocumentRequestBus::EventResult(
+            graph, m_documentId, &AtomToolsFramework::GraphDocumentRequestBus::Events::GetGraph);
+
+        AZStd::string graphName;
+        AtomToolsFramework::GraphDocumentRequestBus::EventResult(
+            graphName, m_documentId, &AtomToolsFramework::GraphDocumentRequestBus::Events::GetGraphName);
+
+        m_slotValueTable.clear();
+
+        // All slots and nodes will be visited to collect all of the unique include paths.
+        AZStd::set<AZStd::string> includePaths;
+
+        // There's probably no reason to distinguish between function and class definitions.
+        // This could really be any globally defined function, class, struct, define.
+        AZStd::vector<AZStd::string> classDefinitions;
+        AZStd::vector<AZStd::string> functionDefinitions;
+
+        // Visit all unique node configurations in the graph to collect their include paths, class definitions, and function definitions.
+        AZStd::unordered_set<AZ::Uuid> configIdsVisited;
+        for (const auto& nodePair : graph->GetNodes())
+        {
+            const auto& currentNode = nodePair.second;
+
+            if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(currentNode.get()))
+            {
+                if (!configIdsVisited.contains(dynamicNode->GetConfig().m_id))
+                {
+                    configIdsVisited.insert(dynamicNode->GetConfig().m_id);
+                    AtomToolsFramework::VisitDynamicNodeSettings(
+                        dynamicNode->GetConfig(),
+                        [&](const AtomToolsFramework::DynamicNodeSettingsMap& settings)
+                        {
+                            AtomToolsFramework::CollectDynamicNodeSettings(settings, "includePaths", includePaths);
+                            AtomToolsFramework::CollectDynamicNodeSettings(settings, "classDefinitions", classDefinitions);
+                            AtomToolsFramework::CollectDynamicNodeSettings(settings, "functionDefinitions", functionDefinitions);
+                        });
+                }
+            }
+        }
+
+        BuildSlotValueTable();
+
+        // Traverse all graph nodes and slots searching for settings to generate files from templates
+        for (const auto& currentNode : GetAllNodesInExecutionOrder())
+        {
+            // Search this node for any template path settings that describe files that need to be generated from the graph.
+            AZStd::set<AZStd::string> templatePaths;
+            if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(currentNode.get()))
+            {
+                AtomToolsFramework::VisitDynamicNodeSettings(
+                    dynamicNode->GetConfig(),
+                    [&templatePaths](const AtomToolsFramework::DynamicNodeSettingsMap& settings)
+                    {
+                        AtomToolsFramework::CollectDynamicNodeSettings(settings, "templatePaths", templatePaths);
+                    });
+            }
+
+            // If no template files were specified for this node then skip additional processing and continue to the next one.
+            if (templatePaths.empty())
+            {
+                continue;
+            }
+
+            // Attempt to load all of the template files referenced by this node. All of the template data will be tokenized into individual
+            // lines and stored in a container so then multiple passes can be made on each file, substituting tokens and filling in
+            // details provided by the graph. None of the files generated from this node will be saved until they have all been processed.
+            // Template files for material types will be processed in their own pass Because they require special handling and need to be
+            // saved before material file templates to not trigger asset processor dependency errors.
+            AZStd::vector<TemplateFileData> templateFileDataVec;
+            for (const auto& templatePath : templatePaths)
+            {
+                TemplateFileData templateFileData;
+                templateFileData.m_inputPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
+                templateFileData.m_outputPath = GetOutputPathFromTemplatePath(templateFileData.m_inputPath);
+                if (!templateFileData.m_outputPath.ends_with(".materialtype"))
+                {
+                    // Attempt to load the template file to do symbol substitution and inject code or data
+                    if (!templateFileData.Load())
+                    {
+                        CompileGraphFailed();
+                        return false;
+                    }
+                    templateFileDataVec.emplace_back(AZStd::move(templateFileData));
+                }
+            }
+
+            // Perform an initial pass over all template files, injecting include files, class definitions, function definitions, simple
+            // things that don't require much processing.
+            for (auto& templateFileData : templateFileDataVec)
+            {
+                // Substitute all references to the placeholder graph name with one generated from the document name
+                ReplaceSymbolsInContainer("MaterialGraphName", graphName, templateFileData.m_lines);
+
+                // Inject include files found while traversing the graph into any include file blocks in the template.
+                templateFileData.ReplaceLinesInBlock(
+                    "O3DE_GENERATED_INCLUDES_BEGIN",
+                    "O3DE_GENERATED_INCLUDES_END",
+                    [&includePaths, &templateFileData]([[maybe_unused]] const AZStd::string& blockHeader)
+                    {
+                        // Include file paths will need to be converted to include statements.
+                        AZStd::vector<AZStd::string> includeStatements;
+                        includeStatements.reserve(includePaths.size());
+                        for (const auto& path : includePaths)
+                        {
+                            // TODO Replace relative path reference function
+                            // The relative path reference function will only work for include files in the same gem.
+                            includeStatements.push_back(AZStd::string::format(
+                                "#include <%s>;",
+                                AtomToolsFramework::GetPathToExteralReference(templateFileData.m_outputPath, path).c_str()));
+                        }
+                        return includeStatements;
+                    });
+
+                // Inject class definitions found while traversing the graph.
+                templateFileData.ReplaceLinesInBlock(
+                    "O3DE_GENERATED_CLASSES_BEGIN",
+                    "O3DE_GENERATED_CLASSES_END",
+                    [&classDefinitions]([[maybe_unused]] const AZStd::string& blockHeader)
+                    {
+                        return classDefinitions;
+                    });
+
+                // Inject function definitions found while traversing the graph.
+                templateFileData.ReplaceLinesInBlock(
+                    "O3DE_GENERATED_FUNCTIONS_BEGIN",
+                    "O3DE_GENERATED_FUNCTIONS_END",
+                    [&functionDefinitions]([[maybe_unused]] const AZStd::string& blockHeader)
+                    {
+                        return functionDefinitions;
+                    });
+            }
+
+            // The next phase injects shader code instructions assembled by traversing the graph from each of the input slots on the current
+            // node. The O3DE_GENERATED_INSTRUCTIONS_BEGIN marker will be followed by a list of input slot names corresponding to required
+            // variables in the shader. Instructions will only be generated for the current node and nodes connected to the specified
+            // inputs. This will allow multiple O3DE_GENERATED_INSTRUCTIONS blocks with different inputs to be specified in multiple
+            // locations across multiple files from a single graph.
+
+            // This will also keep track of nodes with instructions and data that contribute to the final shader code. The list of
+            // contributing nodes will be used to exclude unused material inputs from generated SRGs and material types.
+            AZStd::vector<GraphModel::ConstNodePtr> instructionNodesForAllBlocks;
+            for (auto& templateFileData : templateFileDataVec)
+            {
+                templateFileData.ReplaceLinesInBlock(
+                    "O3DE_GENERATED_INSTRUCTIONS_BEGIN",
+                    "O3DE_GENERATED_INSTRUCTIONS_END",
+                    [&]([[maybe_unused]] const AZStd::string& blockHeader)
+                    {
+                        AZStd::vector<AZStd::string> inputSlotNames;
+                        AZ::StringFunc::Tokenize(blockHeader, inputSlotNames, ";:, \t\r\n\\/", false, false);
+                        return GetInstructionsFromConnectedNodes(currentNode, inputSlotNames, instructionNodesForAllBlocks);
+                    });
+            }
+
+            // At this point, all of the instructions have been generated for all of the template files used by this node. We now also have
+            // a complete list of all nodes that contributed instructions to the final shader code across all of the files. Now, we can
+            // safely generate the material SRG and material type that only contain variables referenced in the shaders. Without tracking
+            // this, all variables would be included in the SRG and material type. The shader compiler would eliminate unused variables from
+            // the compiled shader code. The material type would fail to build if it referenced any of the eliminated variables.
+            for (auto& templateFileData : templateFileDataVec)
+            {
+                templateFileData.ReplaceLinesInBlock(
+                    "O3DE_GENERATED_MATERIAL_SRG_BEGIN",
+                    "O3DE_GENERATED_MATERIAL_SRG_END",
+                    [&]([[maybe_unused]] const AZStd::string& blockHeader)
+                    {
+                        return GetMaterialInputsFromNodes(instructionNodesForAllBlocks);
+                    });
+            }
+
+            auto exportTemplatesMatchingRegex = [&](const AZStd::string& pattern)
+            {
+                const AZStd::regex patternRegex(pattern, AZStd::regex::flag_type::icase);
+                for (const auto& templateFileData : templateFileDataVec)
+                {
+                    if (AZStd::regex_match(templateFileData.m_outputPath, patternRegex))
+                    {
+                        if (!templateFileData.Save())
+                        {
+                            return false;
+                        }
+
+                        AzFramework::AssetSystemRequestBus::Broadcast(
+                            &AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, templateFileData.m_outputPath);
+                        m_generatedFiles.push_back(templateFileData.m_outputPath);
+                    }
+                }
+                return true;
+            };
+
+            // Save all of the generated files except for materials and material types. Generated material type files must be saved after
+            // generated shader files to prevent AP errors because of missing dependencies.
+            if (!exportTemplatesMatchingRegex(".*\\.azsli\\b") || !exportTemplatesMatchingRegex(".*\\.azsl\\b") ||
+                !exportTemplatesMatchingRegex(".*\\.shader\\b"))
+            {
+                CompileGraphFailed();
+                return false;
+            }
+
+            // Process material type template files, injecting properties from material input nodes.
+            for (const auto& templatePath : templatePaths)
+            {
+                // Remove any aliases to resolve the absolute path to the template file
+                const AZStd::string templateInputPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
+                const AZStd::string templateOutputPath = GetOutputPathFromTemplatePath(templateInputPath);
+                if (!templateOutputPath.ends_with(".materialtype"))
+                {
+                    continue;
+                }
+
+                if (!BuildMaterialTypeFromTemplate(currentNode, instructionNodesForAllBlocks, templateInputPath, templateOutputPath))
+                {
+                    CompileGraphFailed();
+                    return false;
+                }
+
+                AzFramework::AssetSystemRequestBus::Broadcast(
+                    &AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, templateOutputPath);
+                m_generatedFiles.push_back(templateOutputPath);
+            }
+
+            // After the material types have been processed and saved, save the materials that reference them.
+            if (!exportTemplatesMatchingRegex(".*\\.material\\b"))
+            {
+                CompileGraphFailed();
+                return false;
+            }
+        }
+
+        CompileGraphCompleted();
+        return true;
     }
 
     AZStd::string MaterialGraphCompiler::GetOutputPathFromTemplatePath(const AZStd::string& templateInputPath) const
@@ -862,377 +1077,6 @@ namespace MaterialCanvas
         return true;
     }
 
-   void MaterialGraphCompiler::OnSystemTick()
-    {
-        if (m_compileGraph)
-        {
-            CompileGraph();
-        }
-
-        if (m_compileAssets)
-        {
-            // Check asset processor status of each generated file
-            while (m_compileAssetIndex < m_generatedFiles.size())
-            {
-                const auto& generatedFile = m_generatedFiles[m_compileAssetIndex];
-                AZ::Outcome<AzToolsFramework::AssetSystem::JobInfoContainer> jobOutcome = AZ::Failure();
-                AzToolsFramework::AssetSystemJobRequestBus::BroadcastResult(
-                    jobOutcome, &AzToolsFramework::AssetSystemJobRequestBus::Events::GetAssetJobsInfo, generatedFile, true);
-
-                if (jobOutcome.IsSuccess())
-                {
-                    for (const auto& job : jobOutcome.GetValue())
-                    {
-                        // Generate status messages then trace and send them to the status bar as the messages change
-                        const auto& statusMessage = AZStd::string ::format(
-                            "Compiling %s (%s)", generatedFile.c_str(), AzToolsFramework::AssetSystem::JobStatusString(job.m_status));
-
-                        if (m_lastAssetStatusMessage != statusMessage)
-                        {
-                            m_lastAssetStatusMessage = statusMessage;
-                            AZ_TracePrintf_IfTrue("MaterialGraphCompiler", IsCompileLoggingEnabled(), "%s\n", statusMessage.c_str());
-
-                            AtomToolsFramework::AtomToolsMainWindowRequestBus::Event(
-                                m_toolId, &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::SetStatusMessage, statusMessage);
-                        }
-
-                        switch (job.m_status)
-                        {
-                        case AzToolsFramework::AssetSystem::JobStatus::Queued:
-                        case AzToolsFramework::AssetSystem::JobStatus::InProgress:
-                            // If any of the asset jobs are still processing then return early instead of allowing the completion
-                            // notification to be sent.
-                            return;
-                        case AzToolsFramework::AssetSystem::JobStatus::Failed:
-                        case AzToolsFramework::AssetSystem::JobStatus::Failed_InvalidSourceNameExceedsMaxLimit:
-                            // If any of the asset jobs failed, cancel compilation. 
-                            CompileGraphFailed();
-                            return;
-                        }
-                    }
-                }
-
-                ++m_compileAssetIndex;
-           }
-
-            // All of the jobs completed without failure so send the notification that the generated assets have been compiled.
-           CompileGraphCompleted();
-        }
-    }
-
-    bool MaterialGraphCompiler::CompileGraph()
-    {
-        CompileGraphStarted();
-
-        GraphModel::GraphPtr graph;
-        AtomToolsFramework::GraphDocumentRequestBus::EventResult(
-            graph, m_documentId, &AtomToolsFramework::GraphDocumentRequestBus::Events::GetGraph);
-
-        AZStd::string graphName;
-        AtomToolsFramework::GraphDocumentRequestBus::EventResult(
-            graphName, m_documentId, &AtomToolsFramework::GraphDocumentRequestBus::Events::GetGraphName);
-
-        // Skip compilation if there is no graph or this is a template.
-        if (!graph || graphName.empty())
-        {
-            CompileGraphFailed();
-            return false;
-        }
-
-        // All slots and nodes will be visited to collect all of the unique include paths.
-        AZStd::set<AZStd::string> includePaths;
-
-        // There's probably no reason to distinguish between function and class definitions.
-        // This could really be any globally defined function, class, struct, define.
-        AZStd::vector<AZStd::string> classDefinitions;
-        AZStd::vector<AZStd::string> functionDefinitions;
-
-        // Visit all unique node configurations in the graph to collect their include paths, class definitions, and function definitions.
-        AZStd::unordered_set<AZ::Uuid> configIdsVisited;
-        for (const auto& nodePair : graph->GetNodes())
-        {
-            const auto& currentNode = nodePair.second;
-
-            if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(currentNode.get()))
-            {
-                if (!configIdsVisited.contains(dynamicNode->GetConfig().m_id))
-                {
-                    configIdsVisited.insert(dynamicNode->GetConfig().m_id);
-                    AtomToolsFramework::VisitDynamicNodeSettings(
-                        dynamicNode->GetConfig(),
-                        [&](const AtomToolsFramework::DynamicNodeSettingsMap& settings)
-                        {
-                            AtomToolsFramework::CollectDynamicNodeSettings(settings, "includePaths", includePaths);
-                            AtomToolsFramework::CollectDynamicNodeSettings(settings, "classDefinitions", classDefinitions);
-                            AtomToolsFramework::CollectDynamicNodeSettings(settings, "functionDefinitions", functionDefinitions);
-                        });
-                }
-            }
-        }
-
-        BuildSlotValueTable();
-
-        // Traverse all graph nodes and slots searching for settings to generate files from templates
-        for (const auto& currentNode : GetAllNodesInExecutionOrder())
-        {
-            // Search this node for any template path settings that describe files that need to be generated from the graph.
-            AZStd::set<AZStd::string> templatePaths;
-            if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(currentNode.get()))
-            {
-                AtomToolsFramework::VisitDynamicNodeSettings(
-                    dynamicNode->GetConfig(),
-                    [&templatePaths](const AtomToolsFramework::DynamicNodeSettingsMap& settings)
-                    {
-                        AtomToolsFramework::CollectDynamicNodeSettings(settings, "templatePaths", templatePaths);
-                    });
-            }
-
-            // If no template files were specified for this node then skip additional processing and continue to the next one.
-            if (templatePaths.empty())
-            {
-                continue;
-            }
-
-            // Attempt to load all of the template files referenced by this node. All of the template data will be tokenized into individual
-            // lines and stored in a container so then multiple passes can be made on each file, substituting tokens and filling in
-            // details provided by the graph. None of the files generated from this node will be saved until they have all been processed.
-            // Template files for material types will be processed in their own pass Because they require special handling and need to be
-            // saved before material file templates to not trigger asset processor dependency errors.
-            AZStd::vector<TemplateFileData> templateFileDataVec;
-            for (const auto& templatePath : templatePaths)
-            {
-                TemplateFileData templateFileData;
-                templateFileData.m_inputPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
-                templateFileData.m_outputPath = GetOutputPathFromTemplatePath(templateFileData.m_inputPath);
-                if (!templateFileData.m_outputPath.ends_with(".materialtype"))
-                {
-                    // Attempt to load the template file to do symbol substitution and inject code or data
-                    if (!templateFileData.Load())
-                    {
-                        CompileGraphFailed();
-                        return false;
-                    }
-                    templateFileDataVec.emplace_back(AZStd::move(templateFileData));
-                }
-            }
-
-            // Perform an initial pass over all template files, injecting include files, class definitions, function definitions, simple
-            // things that don't require much processing.
-            for (auto& templateFileData : templateFileDataVec)
-            {
-                // Substitute all references to the placeholder graph name with one generated from the document name
-                ReplaceSymbolsInContainer("MaterialGraphName", graphName, templateFileData.m_lines);
-
-                // Inject include files found while traversing the graph into any include file blocks in the template.
-                templateFileData.ReplaceLinesInBlock(
-                    "O3DE_GENERATED_INCLUDES_BEGIN",
-                    "O3DE_GENERATED_INCLUDES_END",
-                    [&includePaths, &templateFileData]([[maybe_unused]] const AZStd::string& blockHeader)
-                    {
-                        // Include file paths will need to be converted to include statements.
-                        AZStd::vector<AZStd::string> includeStatements;
-                        includeStatements.reserve(includePaths.size());
-                        for (const auto& path : includePaths)
-                        {
-                            // TODO Replace relative path reference function
-                            // The relative path reference function will only work for include files in the same gem.
-                            includeStatements.push_back(AZStd::string::format(
-                                "#include <%s>;",
-                                AtomToolsFramework::GetPathToExteralReference(templateFileData.m_outputPath, path).c_str()));
-                        }
-                        return includeStatements;
-                    });
-
-                // Inject class definitions found while traversing the graph.
-                templateFileData.ReplaceLinesInBlock(
-                    "O3DE_GENERATED_CLASSES_BEGIN",
-                    "O3DE_GENERATED_CLASSES_END",
-                    [&classDefinitions]([[maybe_unused]] const AZStd::string& blockHeader)
-                    {
-                        return classDefinitions;
-                    });
-
-                // Inject function definitions found while traversing the graph.
-                templateFileData.ReplaceLinesInBlock(
-                    "O3DE_GENERATED_FUNCTIONS_BEGIN",
-                    "O3DE_GENERATED_FUNCTIONS_END",
-                    [&functionDefinitions]([[maybe_unused]] const AZStd::string& blockHeader)
-                    {
-                        return functionDefinitions;
-                    });
-            }
-
-            // The next phase injects shader code instructions assembled by traversing the graph from each of the input slots on the current
-            // node. The O3DE_GENERATED_INSTRUCTIONS_BEGIN marker will be followed by a list of input slot names corresponding to required
-            // variables in the shader. Instructions will only be generated for the current node and nodes connected to the specified
-            // inputs. This will allow multiple O3DE_GENERATED_INSTRUCTIONS blocks with different inputs to be specified in multiple
-            // locations across multiple files from a single graph.
-
-            // This will also keep track of nodes with instructions and data that contribute to the final shader code. The list of
-            // contributing nodes will be used to exclude unused material inputs from generated SRGs and material types.
-            AZStd::vector<GraphModel::ConstNodePtr> instructionNodesForAllBlocks;
-            for (auto& templateFileData : templateFileDataVec)
-            {
-                templateFileData.ReplaceLinesInBlock(
-                    "O3DE_GENERATED_INSTRUCTIONS_BEGIN",
-                    "O3DE_GENERATED_INSTRUCTIONS_END",
-                    [&]([[maybe_unused]] const AZStd::string& blockHeader)
-                    {
-                        AZStd::vector<AZStd::string> inputSlotNames;
-                        AZ::StringFunc::Tokenize(blockHeader, inputSlotNames, ";:, \t\r\n\\/", false, false);
-                        return GetInstructionsFromConnectedNodes(currentNode, inputSlotNames, instructionNodesForAllBlocks);
-                    });
-            }
-
-            // At this point, all of the instructions have been generated for all of the template files used by this node. We now also have
-            // a complete list of all nodes that contributed instructions to the final shader code across all of the files. Now, we can
-            // safely generate the material SRG and material type that only contain variables referenced in the shaders. Without tracking
-            // this, all variables would be included in the SRG and material type. The shader compiler would eliminate unused variables from
-            // the compiled shader code. The material type would fail to build if it referenced any of the eliminated variables.
-            for (auto& templateFileData : templateFileDataVec)
-            {
-                templateFileData.ReplaceLinesInBlock(
-                    "O3DE_GENERATED_MATERIAL_SRG_BEGIN",
-                    "O3DE_GENERATED_MATERIAL_SRG_END",
-                    [&]([[maybe_unused]] const AZStd::string& blockHeader)
-                    {
-                        return GetMaterialInputsFromNodes(instructionNodesForAllBlocks);
-                    });
-            }
-
-            auto exportTemplatesMatchingRegex = [&](const AZStd::string& pattern)
-            {
-                const AZStd::regex patternRegex(pattern, AZStd::regex::flag_type::icase);
-                for (const auto& templateFileData : templateFileDataVec)
-                {
-                    if (AZStd::regex_match(templateFileData.m_outputPath, patternRegex))
-                    {
-                        if (!templateFileData.Save())
-                        {
-                            return false;
-                        }
-
-                        AzFramework::AssetSystemRequestBus::Broadcast(
-                            &AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, templateFileData.m_outputPath);
-                        m_generatedFiles.push_back(templateFileData.m_outputPath);
-                    }
-                }
-                return true;
-            };
-
-            // Save all of the generated files except for materials and material types. Generated material type files must be saved after
-            // generated shader files to prevent AP errors because of missing dependencies.
-            if (!exportTemplatesMatchingRegex(".*\\.azsli\\b") ||
-                !exportTemplatesMatchingRegex(".*\\.azsl\\b") ||
-                !exportTemplatesMatchingRegex(".*\\.shader\\b"))
-            {
-                CompileGraphFailed();
-                return false;
-            }
-
-            // Process material type template files, injecting properties from material input nodes.
-            for (const auto& templatePath : templatePaths)
-            {
-                // Remove any aliases to resolve the absolute path to the template file
-                const AZStd::string templateInputPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
-                const AZStd::string templateOutputPath = GetOutputPathFromTemplatePath(templateInputPath);
-                if (!templateOutputPath.ends_with(".materialtype"))
-                {
-                    continue;
-                }
-
-                if (!BuildMaterialTypeFromTemplate(currentNode, instructionNodesForAllBlocks, templateInputPath, templateOutputPath))
-                {
-                    CompileGraphFailed();
-                    return false;
-                }
-
-                AzFramework::AssetSystemRequestBus::Broadcast(
-                    &AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, templateOutputPath);
-                m_generatedFiles.push_back(templateOutputPath);
-            }
-
-            // After the material types have been processed and saved, save the materials that reference them.
-            if (!exportTemplatesMatchingRegex(".*\\.material\\b"))
-            {
-                CompileGraphFailed();
-                return false;
-            }
-        }
-
-        m_compileGraph = false;
-        m_compileAssets = !m_generatedFiles.empty();
-        m_compileAssetIndex = 0;
-        return true;
-    }
-
-    void MaterialGraphCompiler::CompileGraphStarted()
-    {
-        m_compileGraph = false;
-        m_compileAssets = false;
-        m_compileAssetIndex = 0;
-        m_slotValueTable.clear();
-        m_generatedFiles.clear();
-
-        const auto& statusMessage = AZStd::string::format("Compiling %s (Started)", GetGraphPath().c_str());
-        AZ_TracePrintf_IfTrue("MaterialGraphCompiler", IsCompileLoggingEnabled(), "%s.\n", statusMessage.c_str());
-
-        AtomToolsFramework::AtomToolsMainWindowRequestBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::SetStatusMessage, statusMessage);
-
-        MaterialGraphCompilerNotificationBus::Event(
-            m_toolId, &MaterialGraphCompilerNotificationBus::Events::OnCompileGraphStarted, m_documentId);
-    }
-
-    void MaterialGraphCompiler::CompileGraphFailed()
-    {
-        m_compileGraph = false;
-        m_compileAssets = false;
-        m_compileAssetIndex = 0;
-        m_slotValueTable.clear();
-        m_generatedFiles.clear();
-
-        const auto& statusMessage = AZStd::string::format("Compiling %s (Failed)", GetGraphPath().c_str());
-        AZ_TracePrintf_IfTrue("MaterialGraphCompiler", IsCompileLoggingEnabled(), "%s.\n", statusMessage.c_str());
-
-        AtomToolsFramework::AtomToolsMainWindowRequestBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::SetStatusError, statusMessage);
-
-        MaterialGraphCompilerNotificationBus::Event(
-            m_toolId, &MaterialGraphCompilerNotificationBus::Events::OnCompileGraphFailed, m_documentId);
-    }
-
-    void MaterialGraphCompiler::CompileGraphCompleted()
-    {
-        m_compileGraph = false;
-        m_compileAssets = false;
-        m_compileAssetIndex = 0;
-        m_slotValueTable.clear();
-
-        const auto& statusMessage = AZStd::string::format("Compiling %s (Completed)", GetGraphPath().c_str());
-        AZ_TracePrintf_IfTrue("MaterialGraphCompiler", IsCompileLoggingEnabled(), "%s.\n", statusMessage.c_str());
-
-        AtomToolsFramework::AtomToolsMainWindowRequestBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::SetStatusMessage, statusMessage);
-
-        MaterialGraphCompilerNotificationBus::Event(
-            m_toolId, &MaterialGraphCompilerNotificationBus::Events::OnCompileGraphCompleted, m_documentId);
-    }
-
-    AZStd::string MaterialGraphCompiler::GetGraphPath() const
-    {
-        AZStd::string absolutePath;
-        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
-            absolutePath, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
-
-        if (absolutePath.ends_with(".materialgraph"))
-        {
-            return absolutePath;
-        }
-
-        return AZStd::string::format("%s/Assets/Materials/Generated/untitled.materialgraph", AZ::Utils::GetProjectPath().c_str());
-    }
-
     void MaterialGraphCompiler::BuildSlotValueTable()
     {
         // Build a table of all values for every slot in the graph.
@@ -1246,7 +1090,7 @@ namespace MaterialCanvas
             }
 
             // If this is a dynamic node with slot data type groups, we will search for the largest vector or other data type and convert
-            // all of the values in the group to the same type. 
+            // all of the values in the group to the same type.
             if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(currentNode.get()))
             {
                 const auto& nodeConfig = dynamicNode->GetConfig();
@@ -1255,7 +1099,7 @@ namespace MaterialCanvas
                     unsigned int vectorSize = 0;
 
                     // The slot data group string is separated by vertical bars and can be treated like a regular expression to compare
-                    // against slot names. The largest vector size is recorded for each slot group. 
+                    // against slot names. The largest vector size is recorded for each slot group.
                     const AZStd::regex slotDataTypeGroupRegex(slotDataTypeGroup, AZStd::regex::flag_type::icase);
                     for (const auto& currentSlotPair : currentNode->GetSlots())
                     {
@@ -1282,16 +1126,6 @@ namespace MaterialCanvas
                 }
             }
         }
-    }
-
-    void MaterialGraphCompiler::QueueCompileGraph()
-    {
-        m_compileGraph = true;
-    }
-
-    bool MaterialGraphCompiler::IsCompileGraphQueued() const
-    {
-        return m_compileGraph;
     }
 
     bool MaterialGraphCompiler::TemplateFileData::Load()

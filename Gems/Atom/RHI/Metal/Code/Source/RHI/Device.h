@@ -172,6 +172,7 @@ namespace AZ
             RHI::ResultCode InitializeLimits() override;
             void PreShutdown() override;
             AZStd::vector<RHI::Format> GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const override;
+            RHI::ShadingRateImageValue ConvertShadingRate([[maybe_unused]] RHI::ShadingRate rate) override { return RHI::ShadingRateImageValue{}; }
             //////////////////////////////////////////////////////////////////////////
 
             void InitFeatures();            

@@ -85,9 +85,9 @@ FileWatcher::FileWatcher()
     // The rawFileAdded signals are emitted by the watcher thread. Use a queued
     // connection so that the consumers of the notification process the
     // notification on the main thread.
-    connect(this, &FileWatcher::rawFileAdded, this, makeFilter(&FileWatcher::fileAdded), Qt::QueuedConnection);
-    connect(this, &FileWatcher::rawFileRemoved, this, makeFilter(&FileWatcher::fileRemoved), Qt::QueuedConnection);
-    connect(this, &FileWatcher::rawFileModified, this, makeFilter(&FileWatcher::fileModified), Qt::QueuedConnection);
+    connect(this, &FileWatcherBase::rawFileAdded, this, makeFilter(&FileWatcherBase::fileAdded), Qt::QueuedConnection);
+    connect(this, &FileWatcherBase::rawFileRemoved, this, makeFilter(&FileWatcherBase::fileRemoved), Qt::QueuedConnection);
+    connect(this, &FileWatcherBase::rawFileModified, this, makeFilter(&FileWatcherBase::fileModified), Qt::QueuedConnection);
 }
 
 FileWatcher::~FileWatcher()

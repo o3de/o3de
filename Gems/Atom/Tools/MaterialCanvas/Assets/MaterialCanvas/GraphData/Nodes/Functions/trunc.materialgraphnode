@@ -5,8 +5,9 @@
     "ClassData": {
         "id": "{26129B8D-5E3D-4843-B0BD-2017F2CD5AED}",
         "category": "Math Functions",
-        "title": "Trunc",
+        "title": "Truncate",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Truncates floating-point value to integer value (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

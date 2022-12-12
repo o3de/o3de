@@ -5,8 +5,9 @@
     "ClassData": {
         "id": "{7FBA0105-F37E-4E23-A884-EBBC7CB2D817}",
         "category": "Math Functions",
-        "title": "Lit",
+        "title": "Lighting Vector",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns a lighting vector (ambient, diffuse, specular, 1)",
         "slotDataTypeGroups": [
             "inValue1|inValue2|inValue3",
             "outValue"

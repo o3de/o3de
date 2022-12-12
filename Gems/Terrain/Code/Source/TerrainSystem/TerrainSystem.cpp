@@ -467,7 +467,10 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& 
                             const auto& area = m_registeredAreas.find(areaId);
                             if ((area != m_registeredAreas.end()) && area->second.m_useGroundPlane)
                             {
-                                const float areaMin = area->second.m_areaBounds.GetMin().GetZ();
+                                const float areaMin = AZStd::clamp(
+                                    area->second.m_areaBounds.GetMin().GetZ(),
+                                    m_currentSettings.m_heightRange.m_min,
+                                    m_currentSettings.m_heightRange.m_max);
 
                                 for (size_t index = 0; index < outPositions.size(); index++)
                                 {

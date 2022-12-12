@@ -126,6 +126,7 @@ namespace AtomToolsFramework
         void SetCameraPivotDetachedImmediate(const AZ::Vector3& pivot) override;
         void SetCameraOffset(const AZ::Vector3& offset) override;
         void SetCameraOffsetImmediate(const AZ::Vector3& offset) override;
+        void LookFromOrbit() override;
         bool AddCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs) override;
         bool RemoveCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs) override;
         void ResetCameras() override;

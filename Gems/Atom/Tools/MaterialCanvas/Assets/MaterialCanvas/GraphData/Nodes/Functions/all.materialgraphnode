@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "All",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Test if all components of the input value are nonzero",
         "slotDataTypeGroups": [
             "inValue",
             "outValue"

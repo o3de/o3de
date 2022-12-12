@@ -78,7 +78,7 @@ namespace Terrain
                         "Defines order macro materials are applied.  Larger numbers = higher priority")
                         ->Attribute(AZ::Edit::Attributes::Min, AreaConstants::s_priorityMin)
                         ->Attribute(AZ::Edit::Attributes::Max, AreaConstants::s_priorityMax)
-                        ->Attribute(AZ::Edit::Attributes::SoftMin, AreaConstants::s_priorityMin)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, AreaConstants::s_prioritySoftMin)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, AreaConstants::s_prioritySoftMax)
                     ;
             }

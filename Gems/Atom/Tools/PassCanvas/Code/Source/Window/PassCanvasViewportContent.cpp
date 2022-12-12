@@ -26,10 +26,10 @@
 #include <AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/SkyBox/HDRiSkyboxBus.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsRequestBus.h>
+#include <AtomToolsFramework/Graph/GraphCompilerRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzFramework/Components/TransformComponent.h>
-#include <Document/PassGraphCompilerRequestBus.h>
 #include <Window/PassCanvasViewportContent.h>
 
 namespace PassCanvas
@@ -89,13 +89,13 @@ namespace PassCanvas
             });
 
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
-        PassGraphCompilerNotificationBus::Handler::BusConnect(m_toolId);
+        AtomToolsFramework::GraphCompilerNotificationBus::Handler::BusConnect(m_toolId);
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
 
     PassCanvasViewportContent::~PassCanvasViewportContent()
     {
-        PassGraphCompilerNotificationBus::Handler::BusDisconnect();
+        AtomToolsFramework::GraphCompilerNotificationBus::Handler::BusDisconnect();
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
     }
 
@@ -212,6 +212,7 @@ namespace PassCanvas
     void PassCanvasViewportContent::ApplyPass(const AZ::Uuid& documentId)
     {
         AZStd::vector<AZStd::string> generatedFiles;
-        PassGraphCompilerRequestBus::EventResult(generatedFiles, documentId, &PassGraphCompilerRequestBus::Events::GetGeneratedFilePaths);
+        AtomToolsFramework::GraphCompilerRequestBus::EventResult(
+            generatedFiles, documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::GetGeneratedFilePaths);
     }
 } // namespace PassCanvas
