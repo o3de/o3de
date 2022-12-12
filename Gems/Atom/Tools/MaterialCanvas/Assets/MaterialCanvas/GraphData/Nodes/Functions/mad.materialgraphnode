@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Multiply Add",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Performs an arithmetic multiply/add operation on three values",
         "slotDataTypeGroups": [
             "inValue1|inValue2|inValue3|outValue"
         ],

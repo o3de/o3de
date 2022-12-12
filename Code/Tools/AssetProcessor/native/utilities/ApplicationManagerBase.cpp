@@ -999,6 +999,11 @@ void ApplicationManagerBase::HandleFileRelocation() const
     const bool doDelete = commandLine->HasSwitch(DeleteCommand);
     const bool updateReferences = commandLine->HasSwitch(UpdateReferencesCommand);
     const bool excludeMetaDataFiles = commandLine->HasSwitch(ExcludeMetaDataFiles);
+    const int flags = (allowBrokenDependencies ? AssetProcessor::RelocationParameters_AllowDependencyBreakingFlag : 0) |
+        (previewOnly ? AssetProcessor::RelocationParameters_PreviewOnlyFlag : 0) |
+        (leaveEmptyFolders ? 0 : AssetProcessor::RelocationParameters_RemoveEmptyFoldersFlag) |
+        (updateReferences ? AssetProcessor::RelocationParameters_UpdateReferencesFlag : 0) |
+        (excludeMetaDataFiles ? AssetProcessor::RelocationParameters_ExcludeMetaDataFilesFlag : 0);
 
     if(doMove || doDelete)
     {
@@ -1078,7 +1083,7 @@ void ApplicationManagerBase::HandleFileRelocation() const
 
         if(relocationInterface)
         {
-            auto result = relocationInterface->Move(source, destination, previewOnly, allowBrokenDependencies, !leaveEmptyFolders, updateReferences, excludeMetaDataFiles);
+            auto result = relocationInterface->Move(source, destination, flags);
 
             if (result.IsSuccess())
             {
@@ -1163,7 +1168,7 @@ void ApplicationManagerBase::HandleFileRelocation() const
 
         if (relocationInterface)
         {
-            auto result = relocationInterface->Delete(source, previewOnly, allowBrokenDependencies, !leaveEmptyFolders, excludeMetaDataFiles);
+            auto result = relocationInterface->Delete(source, flags);
 
             if (result.IsSuccess())
             {

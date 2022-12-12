@@ -7,11 +7,12 @@
         "category": "Constants",
         "title": "Float3 Constant",
         "titlePaletteName": "ConstantNodeTitlePalette",
+        "description": "Create a shader constant with the type and value defined by this node.",
         "slotDataTypeGroups": [
             "inValue|outValue",
             "outX|outY|outZ"
         ],
-        "inputSlots": [
+        "propertySlots": [
             {
                 "name": "inValue",
                 "displayName": "Value",
