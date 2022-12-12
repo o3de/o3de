@@ -72,6 +72,7 @@ class TestAutomationQtPyTests(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
     """
 
+
 @pytest.mark.REQUIRES_gpu
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
