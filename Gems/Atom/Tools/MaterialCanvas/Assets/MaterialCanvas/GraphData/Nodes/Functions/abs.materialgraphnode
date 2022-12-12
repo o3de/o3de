@@ -5,8 +5,9 @@
     "ClassData": {
         "id": "{2E53F7CC-3C6D-4737-B092-2FB41204ECAC}",
         "category": "Math Functions",
-        "title": "Abs",
+        "title": "Absolute Value",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Absolute value (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],
