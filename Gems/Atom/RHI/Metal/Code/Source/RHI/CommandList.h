@@ -40,6 +40,10 @@ namespace AZ
             using MetalArgumentBufferArray = AZStd::array<id<MTLBuffer>, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
             using MetalArgumentBufferArrayOffsets = AZStd::array<NSUInteger, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
             
+            //first = is the resource read only
+            //second = native mtlresource pointer
+            using ResourceProperties = AZStd::pair<bool, id<MTLResource>>;
+            
             static RHI::Ptr<CommandList> Create();
             
             void Init(RHI::HardwareQueueClass hardwareQueueClass, Device* device);

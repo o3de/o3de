@@ -274,7 +274,7 @@ namespace AZ
                 //Check explicitly for Bindless SRG. This needs to be data driven (todo)
                 if (slotIndex != RHI::Limits::Pipeline::ShaderResourceGroupCountMax && shaderResourceGroup == nullptr)
                 {
-                    // Skip in case the global static bindless heap is already bound
+                    //Skip if the global static bindless heap is already bound
                     if (m_state.m_bindBindlessHeap)
                     {
                         continue;
@@ -425,7 +425,7 @@ namespace AZ
             return true;
         }
 
-        AZStd::pair<bool, id<MTLResource>> CommandList::GetResourceInfo(RHI::ShaderResourceGroupData::BindlessResourceType resourceType,
+        CommandList::ResourceProperties CommandList::GetResourceInfo(RHI::ShaderResourceGroupData::BindlessResourceType resourceType,
                                                                         const RHI::ResourceView* resourceView)
         {
             id<MTLResource> mtlResourceView = nil;
@@ -453,7 +453,7 @@ namespace AZ
                     break;
                 }
             }
-            return AZStd::pair<bool, id<MTLResource>>(isReadOnlyResource, mtlResourceView);
+            return CommandList::ResourceProperties(isReadOnlyResource, mtlResourceView);
         }
     
         void CommandList::CollectBindlessComputeUntrackedResources(const ShaderResourceGroup* shaderResourceGroup,
@@ -465,18 +465,13 @@ namespace AZ
                 return;
             }
             
-            const AZStd::vector<RHI::ShaderResourceGroupData::BindlessResourceViews> bindlessResourcesVec =
-                                    shaderResourceGroup->GetData().GetAllBindlessViews();
-            for(const auto& it : bindlessResourcesVec)
+            for (const auto& it : shaderResourceGroup->GetData().GetBindlessResourceViews())
             {
-                // Iterate through all the ResourceViews
-                for(const auto& resourceViewsIt : it.m_bindlessResources)
+                for(const auto& resourceViewsIt : it.second.m_bindlessResources)
                 {
-                    //first = is the resource read only
-                    //second = native mtlresource pointer
-                    AZStd::pair<bool, id<MTLResource>> resourceInfo = GetResourceInfo(it.m_bindlessResourceType,
-                                                                     resourceViewsIt.get());
-                    
+                    CommandList::ResourceProperties resourceInfo = GetResourceInfo(it.second.m_bindlessResourceType,
+                                                                                    resourceViewsIt.get());
+                    //Check if the resource is read only
                     if(resourceInfo.first)
                     {
                         m_untrackedResourcesComputeRead.insert(resourceInfo.second);
@@ -498,17 +493,14 @@ namespace AZ
                 return;
             }
             
-            const AZStd::vector<RHI::ShaderResourceGroupData::BindlessResourceViews> bindlessResourcesVec =
-                                    shaderResourceGroup->GetData().GetAllBindlessViews();
-            for(const auto& it : bindlessResourcesVec)
+            for (const auto& it : shaderResourceGroup->GetData().GetBindlessResourceViews())
             {
                 // Iterate through all the ResourceViews
-                for(const auto& resourceViewsIt : it.m_bindlessResources)
+                for(const auto& resourceViewsIt : it.second.m_bindlessResources)
                 {
-                    //first = is the resource read only
-                    //second = native mtlresource pointer
-                    AZStd::pair<bool, id<MTLResource>> resourceInfo = GetResourceInfo(it.m_bindlessResourceType,
+                    CommandList::ResourceProperties resourceInfo = GetResourceInfo(it.second.m_bindlessResourceType,
                                                                      resourceViewsIt.get());
+                    //Check if the resource is read only
                     if(resourceInfo.first)
                     {
                         untrackedResourcesGfxRead[RHI::ShaderStageVertex].insert(resourceInfo.second);

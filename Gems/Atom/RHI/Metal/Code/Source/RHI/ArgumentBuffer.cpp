@@ -416,16 +416,13 @@ namespace AZ
                                                        ResourcesForCompute& untrackedResourceComputeReadWrite) const
         {
             //Cache the constant buffer associated with a srg
-            if (m_constantBufferSize)
+            if (m_constantBufferSize &&
+                static_cast<uint32_t>(srgResourcesVisInfo.m_constantDataStageMask) > 0)
             {
-                uint8_t numBitsSet = RHI::CountBitsSet(static_cast<uint32_t>(srgResourcesVisInfo.m_constantDataStageMask));
-                if( numBitsSet > 0)
+                id<MTLResource> mtlconstantBufferResource = m_constantBuffer.GetGpuAddress<id<MTLResource>>();
+                if(RHI::CheckBitsAny(srgResourcesVisInfo.m_constantDataStageMask, RHI::ShaderStageMask::Compute))
                 {
-                    id<MTLResource> mtlconstantBufferResource = m_constantBuffer.GetGpuAddress<id<MTLResource>>();
-                    if(RHI::CheckBitsAny(srgResourcesVisInfo.m_constantDataStageMask, RHI::ShaderStageMask::Compute))
-                    {
-                        untrackedResourceComputeRead.insert(mtlconstantBufferResource);
-                    }
+                    untrackedResourceComputeRead.insert(mtlconstantBufferResource);
                 }
             }
 
@@ -436,14 +433,11 @@ namespace AZ
                 auto visMaskIt = srgResourcesVisInfo.m_resourcesStageMask.find(it.first);
                 AZ_Assert(visMaskIt != srgResourcesVisInfo.m_resourcesStageMask.end(), "No Visibility information available")
 
-                uint8_t numBitsSet = RHI::CountBitsSet(static_cast<uint32_t>(visMaskIt->second));
                 //Only use this resource if it is used in one of the shaders
-                if (numBitsSet > 0)
+                if (static_cast<uint32_t>(visMaskIt->second) > 0 &&
+                    RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Compute))
                 {
-                    if(RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Compute))
-                    {
-                        CollectResourcesForCompute(it.second, untrackedResourceComputeRead, untrackedResourceComputeReadWrite);
-                    }
+                    CollectResourcesForCompute(it.second, untrackedResourceComputeRead, untrackedResourceComputeReadWrite);
                 }
             }
         }
@@ -453,18 +447,13 @@ namespace AZ
                                                        ResourcesPerStageForGraphics& untrackedResourcesReadWrite) const
         {
             //Cache the constant buffer associated with a srg
-            if (m_constantBufferSize)
+            if (m_constantBufferSize &&
+                static_cast<uint32_t>(srgResourcesVisInfo.m_constantDataStageMask) > 0 &&
+                !RHI::CheckBitsAny(srgResourcesVisInfo.m_constantDataStageMask, RHI::ShaderStageMask::Compute))
             {
-                uint8_t numBitsSet = RHI::CountBitsSet(static_cast<uint32_t>(srgResourcesVisInfo.m_constantDataStageMask));
-                if( numBitsSet > 0)
-                {
-                    id<MTLResource> mtlconstantBufferResource = m_constantBuffer.GetGpuAddress<id<MTLResource>>();
-                    if(!RHI::CheckBitsAny(srgResourcesVisInfo.m_constantDataStageMask, RHI::ShaderStageMask::Compute))
-                    {
-                        MTLRenderStages mtlRenderStages = GetRenderStages(srgResourcesVisInfo.m_constantDataStageMask);
-                        AddUntrackedResource(mtlRenderStages, mtlconstantBufferResource, untrackedResourcesRead);
-                    }
-                }
+                id<MTLResource> mtlconstantBufferResource = m_constantBuffer.GetGpuAddress<id<MTLResource>>();
+                MTLRenderStages mtlRenderStages = GetRenderStages(srgResourcesVisInfo.m_constantDataStageMask);
+                AddUntrackedResource(mtlRenderStages, mtlconstantBufferResource, untrackedResourcesRead);
             }
 
             //Cach all the resources within a srg that are used by the shader based on the visibility information
@@ -474,16 +463,13 @@ namespace AZ
                 auto visMaskIt = srgResourcesVisInfo.m_resourcesStageMask.find(it.first);
                 AZ_Assert(visMaskIt != srgResourcesVisInfo.m_resourcesStageMask.end(), "No Visibility information available")
 
-                uint8_t numBitsSet = RHI::CountBitsSet(static_cast<uint32_t>(visMaskIt->second));
                 //Only use this resource if it is used in one of the shaders
-                if (numBitsSet > 0)
+                if (static_cast<uint32_t>(visMaskIt->second) > 0 &&
+                    !RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Compute))
                 {
-                    if(!RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Compute))
-                    {
-                        [[maybe_unused]] bool isBoundToGraphics = RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Vertex) || RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Fragment);
-                        AZ_Assert(isBoundToGraphics, "The visibility mask %i is not set for Vertex or fragment stage", visMaskIt->second);
-                        CollectResourcesForGraphics(visMaskIt->second, it.second, untrackedResourcesRead, untrackedResourcesReadWrite);
-                    }
+                    [[maybe_unused]] bool isBoundToGraphics = RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Vertex) || RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Fragment);
+                    AZ_Assert(isBoundToGraphics, "The visibility mask %i is not set for Vertex or fragment stage", visMaskIt->second);
+                    CollectResourcesForGraphics(visMaskIt->second, it.second, untrackedResourcesRead, untrackedResourcesReadWrite);
                 }
             }
         }

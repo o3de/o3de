@@ -79,7 +79,7 @@ namespace AZ
             void Init(RHI::HardwareQueueClass hardwareQueueClass, Device* device);
             void Shutdown();
                 
-			//! Go through all the heaps and call UseHeap on them to make them resident for the upcoming pass.
+            //! Go through all the heaps and call UseHeap on them to make them resident for the upcoming pass.
             void MakeHeapsResident(MTLRenderStages renderStages);
 			        
             template <typename T>
