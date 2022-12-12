@@ -112,6 +112,7 @@ namespace GradientSignal
         WrappingType GetWrappingType() const;
 
         //! Return the AABB bounds for this GradientTransform
+        //! The bounds that are returned are in the local space of the shape, not world space.
         AZ::Aabb GetBounds() const;
 
         //! Return the scale for this GradientTransform
