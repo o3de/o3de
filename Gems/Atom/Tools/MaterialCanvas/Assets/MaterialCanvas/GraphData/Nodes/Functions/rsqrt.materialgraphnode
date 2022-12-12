@@ -5,8 +5,9 @@
     "ClassData": {
         "id": "{C0428164-40B8-4DC0-BD35-2A20F64E99EB}",
         "category": "Math Functions",
-        "title": "Rsqrt",
+        "title": "Inverse Square Root",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns 1 / sqrt(x) (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

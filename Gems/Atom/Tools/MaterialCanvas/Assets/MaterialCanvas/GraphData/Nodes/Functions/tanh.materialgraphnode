@@ -5,8 +5,9 @@
     "ClassData": {
         "id": "{9D1C8D6F-ED9F-4150-8D49-20295745C666}",
         "category": "Math Functions",
-        "title": "Tanh",
+        "title": "Hyperbolic Tangent",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the hyperbolic tangent of the input value (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

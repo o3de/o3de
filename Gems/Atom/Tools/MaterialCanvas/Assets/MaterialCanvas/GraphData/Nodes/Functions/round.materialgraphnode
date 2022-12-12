@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Round",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Rounds the input value to the nearest integer (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

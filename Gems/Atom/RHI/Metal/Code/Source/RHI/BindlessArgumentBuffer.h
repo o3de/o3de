@@ -69,11 +69,9 @@ namespace AZ
                                             uint32_t& bufferFragmentOrComputeRegisterIdMax);
 
             //! Add all all the bindless resource views indirectly bound to the maps passed in so that they can be made resident
-            void MakeBindlessArgumentBuffersResident(
-                                CommandEncoderType commandEncoderType,
-                                ArgumentBuffer::GraphicsResourcesToMakeResidentMap resourcesToMakeResidentGraphics,
-                                ArgumentBuffer::ComputeResourcesToMakeResidentMap resourcesToMakeResidentCompute);
-            
+            void MakeBindlessArgumentBuffersResident(CommandEncoderType commandEncoderType,
+                                                     ArgumentBuffer::ResourcesPerStageForGraphics& untrackedResourcesGfxRead,
+                                                     ArgumentBuffer::ResourcesForCompute& untrackedResourceComputeRead);
         private:
 
             //Bindless ABs + the rootAB which will act as a container. This is used for unbounded arrays.

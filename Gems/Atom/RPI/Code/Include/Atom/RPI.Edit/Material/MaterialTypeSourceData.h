@@ -17,6 +17,7 @@
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertySourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataHolder.h>
 #include <Atom/RPI.Edit/Shader/ShaderOptionValuesSourceData.h>
 
 namespace AZ
@@ -26,7 +27,6 @@ namespace AZ
     namespace RPI
     {
         class MaterialTypeAsset;
-        class MaterialFunctorSourceDataHolder;
 
         //! This is a simple data structure for serializing in/out .materialtype source files.
         //! The .materialtype file has two slightly different formats: "abstract" and "direct". See enum Format below.
@@ -351,36 +351,6 @@ namespace AZ
             PropertyLayout m_propertyLayout;
         };
         
-        //! The wrapper class for derived material functors.
-        //! It is used in deserialization so that derived material functors can be deserialized by name.
-        class MaterialFunctorSourceDataHolder final
-            : public AZStd::intrusive_base
-        {
-            friend class JsonMaterialFunctorSourceDataSerializer;
-
-        public:
-            AZ_RTTI(MaterialFunctorSourceDataHolder, "{073C98F6-9EA4-411A-A6D2-A47428A0EFD4}");
-            AZ_CLASS_ALLOCATOR(MaterialFunctorSourceDataHolder, AZ::SystemAllocator, 0);
-
-            MaterialFunctorSourceDataHolder() = default;
-            MaterialFunctorSourceDataHolder(Ptr<MaterialFunctorSourceData> actualSourceData);
-            ~MaterialFunctorSourceDataHolder() = default;
-
-            static void Reflect(AZ::ReflectContext* context);
-
-            MaterialFunctorSourceData::FunctorResult CreateFunctor(const MaterialFunctorSourceData::RuntimeContext& runtimeContext) const
-            {
-                return m_actualSourceData ? m_actualSourceData->CreateFunctor(runtimeContext) : Failure();
-            }
-            MaterialFunctorSourceData::FunctorResult CreateFunctor(const MaterialFunctorSourceData::EditorContext& editorContext) const
-            {
-                return m_actualSourceData ? m_actualSourceData->CreateFunctor(editorContext) : Failure();
-            }
-
-            Ptr<MaterialFunctorSourceData> GetActualSourceData() const { return m_actualSourceData; }
-        private:
-            Ptr<MaterialFunctorSourceData> m_actualSourceData = nullptr; // The derived material functor instance.
-        };
     } // namespace RPI
 
 } // namespace AZ

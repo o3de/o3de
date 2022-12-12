@@ -76,7 +76,14 @@ namespace AZ
             m_format = viewFormat;
 
             VkImageAspectFlags aspectFlags = ConvertImageAspectFlags(RHI::FilterBits(viewDescriptor.m_aspectFlags, image.GetAspectFlags()));
-            
+            VkImageViewCreateFlags createFlags = 0;
+            if (RHI::CheckBitsAll(image.GetUsageFlags(), static_cast<VkImageUsageFlags>(VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT)) &&
+                device.GetFeatures().m_dynamicShadingRateImage)
+            {
+                createFlags = RHI::SetBits(
+                    createFlags, static_cast<VkImageViewCreateFlags>(VK_IMAGE_VIEW_CREATE_FRAGMENT_DENSITY_MAP_DYNAMIC_BIT_EXT));
+            }
+
             const VkImageViewType imageViewType = GetImageViewType(image);
             BuildImageSubresourceRange(imageViewType, aspectFlags);
             const RHI::ImageSubresourceRange& range = GetImageSubresourceRange();
@@ -89,7 +96,7 @@ namespace AZ
             VkImageViewCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             createInfo.pNext = nullptr;
-            createInfo.flags = 0;
+            createInfo.flags = createFlags;
             createInfo.image = image.GetNativeImage();
             createInfo.viewType = imageViewType;
             createInfo.format = ConvertFormat(m_format);
@@ -105,8 +112,8 @@ namespace AZ
 
             // If a depth stencil image does not have depth or aspect flag set it is probably going to be used as
             // a render target and do not need to be added to the bindless heap
-            bool isReadOnlyDSView = RHI::CheckBitsAll(viewDescriptor.m_aspectFlags, RHI::ImageAspectFlags::Depth) ||
-                                        RHI::CheckBitsAll(viewDescriptor.m_aspectFlags, RHI::ImageAspectFlags::Stencil);
+            bool isReadOnlyDSView = viewDescriptor.m_aspectFlags == RHI::ImageAspectFlags::Depth ||
+                                    viewDescriptor.m_aspectFlags == RHI::ImageAspectFlags::Stencil;
 
             if (!viewDescriptor.m_isArray && !viewDescriptor.m_isCubemap && !isReadOnlyDSView)
             {
