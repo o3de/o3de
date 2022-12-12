@@ -80,7 +80,8 @@ namespace AZ
             };
 
             void DeInit();
-            void Init(Data::Instance<RPI::Model> model);
+            void QueueInit(const Data::Instance<RPI::Model>& model);
+            void Init();
             void BuildDrawPacketList(size_t modelLodIndex);
             void SetRayTracingData();
             void RemoveRayTracingData();
@@ -129,11 +130,15 @@ namespace AZ
 
             bool m_cullBoundsNeedsUpdate = false;
             bool m_cullableNeedsRebuild = false;
+            bool m_needsInit = false;
             bool m_objectSrgNeedsUpdate = true;
+            bool m_isAlwaysDynamic = false;
             bool m_excludeFromReflectionCubeMaps = false;
             bool m_visible = true;
             bool m_hasForwardPassIblSpecularMaterial = false;
         };
+
+        static constexpr size_t foo = sizeof(ModelDataInstance);
 
         //! This feature processor handles static and dynamic non-skinned meshes.
         class MeshFeatureProcessor final
@@ -199,13 +204,15 @@ namespace AZ
             RPI::Cullable::LodConfiguration GetMeshLodConfiguration(const MeshHandle& meshHandle) const override;
 
             void SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps) override;
+            void SetIsAlwaysDynamic(const MeshHandle& meshHandle, bool isAlwaysDynamic) override;
+            bool GetIsAlwaysDynamic(const MeshHandle& meshHandle) const override;
             void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) override;
             bool GetRayTracingEnabled(const MeshHandle& meshHandle) const override;
             void SetVisible(const MeshHandle& meshHandle, bool visible) override;
             bool GetVisible(const MeshHandle& meshHandle) const override;
             void SetUseForwardPassIblSpecular(const MeshHandle& meshHandle, bool useForwardPassIblSpecular) override;
 
-            RHI::Ptr <FlagRegistry> GetFlagRegistry();
+            RHI::Ptr <FlagRegistry> GetShaderOptionFlagRegistry();
 
             // called when reflection probes are modified in the editor so that meshes can re-evaluate their probes
             void UpdateMeshReflectionProbes();
@@ -234,6 +241,7 @@ namespace AZ
             AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
             RPI::MeshDrawPacketLods m_emptyDrawPacketLods;
             RHI::Ptr<FlagRegistry> m_flagRegistry = nullptr;
+            AZ::RHI::Handle<uint32_t> m_meshMovedFlag;
             bool m_forceRebuildDrawPackets = false;
             bool m_reportShaderOptionFlags = false;
             bool m_enablePerMeshShaderOptionFlags = false;

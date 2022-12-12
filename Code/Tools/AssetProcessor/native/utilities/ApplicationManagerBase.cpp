@@ -20,6 +20,7 @@
 #include <native/utilities/ByteArrayStream.h>
 #include <native/AssetManager/AssetRequestHandler.h>
 #include <native/FileProcessor/FileProcessor.h>
+#include <native/FileWatcher/FileWatcher.h>
 #include <native/utilities/ApplicationServer.h>
 #include <native/utilities/AssetServerHandler.h>
 #include <native/InternalBuilders/SettingsRegistryBuilder.h>
@@ -418,7 +419,7 @@ void ApplicationManagerBase::DestroyPlatformConfiguration()
     }
 }
 
-void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> fileWatcher)
+void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcherBase> fileWatcher)
 {
     m_fileWatcher = AZStd::move(fileWatcher);
 
@@ -479,6 +480,7 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> file
             if (!isCacheRoot)
             {
                 m_fileStateCache->UpdateFile(path);
+                m_uuidManager->FileChanged(path.toUtf8().constData());
             }
 
             [[maybe_unused]] bool result = QMetaObject::invokeMethod(
@@ -503,6 +505,8 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> file
                     m_fileProcessor->AssessDeletedFile(path);
                 }, Qt::QueuedConnection);
                 AZ_Assert(result, "Failed to invoke m_fileProcessor::AssessDeletedFile");
+
+                m_uuidManager->FileRemoved(path.toUtf8().constData());
             }
 
             result = QMetaObject::invokeMethod(m_assetProcessorManager, [this, path]()
@@ -514,9 +518,9 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> file
             m_fileStateCache->RemoveFile(path);
         };
 
-        connect(m_fileWatcher.get(), &FileWatcher::fileAdded, OnFileAdded);
-        connect(m_fileWatcher.get(), &FileWatcher::fileModified, OnFileModified);
-        connect(m_fileWatcher.get(), &FileWatcher::fileRemoved, OnFileRemoved);
+        connect(m_fileWatcher.get(), &FileWatcherBase::fileAdded, OnFileAdded);
+        connect(m_fileWatcher.get(), &FileWatcherBase::fileModified, OnFileModified);
+        connect(m_fileWatcher.get(), &FileWatcherBase::fileRemoved, OnFileRemoved);
     }
 }
 
@@ -825,6 +829,21 @@ void ApplicationManagerBase::InitFileStateCache()
     m_fileStateCache = AZStd::make_unique<AssetProcessor::FileStateCache>();
 }
 
+void ApplicationManagerBase::InitUuidManager()
+{
+    m_uuidManager = AZStd::make_unique<AssetProcessor::UuidManager>();
+
+    AssetProcessor::UuidSettings uuidSettings;
+    AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
+    if (settingsRegistry)
+    {
+        if (settingsRegistry->GetObject(uuidSettings, "/O3DE/AssetProcessor/Settings/Metadata"))
+        {
+            AZ::Interface<AssetProcessor::IUuidRequests>::Get()->EnableGenerationForTypes(uuidSettings.m_enabledTypes);
+        }
+    }
+}
+
 ApplicationManager::BeforeRunStatus ApplicationManagerBase::BeforeRun()
 {
     ApplicationManager::BeforeRunStatus status = ApplicationManager::BeforeRun();
@@ -980,6 +999,11 @@ void ApplicationManagerBase::HandleFileRelocation() const
     const bool doDelete = commandLine->HasSwitch(DeleteCommand);
     const bool updateReferences = commandLine->HasSwitch(UpdateReferencesCommand);
     const bool excludeMetaDataFiles = commandLine->HasSwitch(ExcludeMetaDataFiles);
+    const int flags = (allowBrokenDependencies ? AssetProcessor::RelocationParameters_AllowDependencyBreakingFlag : 0) |
+        (previewOnly ? AssetProcessor::RelocationParameters_PreviewOnlyFlag : 0) |
+        (leaveEmptyFolders ? 0 : AssetProcessor::RelocationParameters_RemoveEmptyFoldersFlag) |
+        (updateReferences ? AssetProcessor::RelocationParameters_UpdateReferencesFlag : 0) |
+        (excludeMetaDataFiles ? AssetProcessor::RelocationParameters_ExcludeMetaDataFilesFlag : 0);
 
     if(doMove || doDelete)
     {
@@ -1059,7 +1083,7 @@ void ApplicationManagerBase::HandleFileRelocation() const
 
         if(relocationInterface)
         {
-            auto result = relocationInterface->Move(source, destination, previewOnly, allowBrokenDependencies, !leaveEmptyFolders, updateReferences, excludeMetaDataFiles);
+            auto result = relocationInterface->Move(source, destination, flags);
 
             if (result.IsSuccess())
             {
@@ -1144,7 +1168,7 @@ void ApplicationManagerBase::HandleFileRelocation() const
 
         if (relocationInterface)
         {
-            auto result = relocationInterface->Delete(source, previewOnly, allowBrokenDependencies, !leaveEmptyFolders, excludeMetaDataFiles);
+            auto result = relocationInterface->Delete(source, flags);
 
             if (result.IsSuccess())
             {
@@ -1451,6 +1475,7 @@ bool ApplicationManagerBase::Activate()
     InitFileStateCache();
     InitFileProcessor();
 
+    InitUuidManager();
     InitAssetCatalog();
     InitFileMonitor(AZStd::make_unique<FileWatcher>());
     InitAssetScanner();
@@ -1568,6 +1593,18 @@ bool ApplicationManagerBase::PostActivate()
     GetAssetScanner()->StartScan();
 
     return true;
+}
+
+void ApplicationManagerBase::Reflect()
+{
+    AZ::SerializeContext* context;
+    AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+    AZ_Assert(context, "SerializeContext is not available");
+
+    ApplicationManager::Reflect();
+
+    AssetProcessor::UuidManager::Reflect(context);
 }
 
 void ApplicationManagerBase::CreateQtApplication()

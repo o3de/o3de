@@ -66,8 +66,12 @@ namespace AZ
             void EndPredication() override {}
             void BuildBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) override;
             void BuildTopLevelAccelerationStructure(const RHI::RayTracingTlas& rayTracingTlas) override;
-       
+            void SetFragmentShadingRate(
+                [[maybe_unused]] RHI::ShadingRate rate,
+                [[maybe_unused]] const RHI::ShadingRateCombinators& combinators = s_defaultShadingRateCombinators) override {}
+
         private:
+            
             void SetPipelineState(const PipelineState* pipelineState);
             void SetStreamBuffers(const RHI::StreamBufferView* descriptors, AZ::u32 count);
             void SetIndexBuffer(const RHI::IndexBufferView& descriptor);

@@ -504,6 +504,16 @@ namespace UnitTest
             return m_drawItemSortKeyOutput;
         }
 
+        bool m_isAlwaysDynamic = false;
+        void SetIsAlwaysDynamic(bool isAlwaysDynamic) override
+        {
+            m_isAlwaysDynamic = isAlwaysDynamic;
+        }
+        bool GetIsAlwaysDynamic() const override
+        {
+            return m_isAlwaysDynamic;
+        }
+
         AZ::RPI::Cullable::LodType m_lodTypeOutput;
         void SetLodType(AZ::RPI::Cullable::LodType lodType) override
         {

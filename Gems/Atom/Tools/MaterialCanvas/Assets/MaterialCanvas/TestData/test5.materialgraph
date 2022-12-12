@@ -122,7 +122,7 @@
                 "Key": 2,
                 "Value": {
                     "$type": "DynamicNode",
-                    "m_inputDataSlots": [
+                    "m_propertySlots": [
                         {
                             "Key": {
                                 "m_name": "inValue"
@@ -150,7 +150,7 @@
                 "Key": 3,
                 "Value": {
                     "$type": "DynamicNode",
-                    "m_inputDataSlots": [
+                    "m_propertySlots": [
                         {
                             "Key": {
                                 "m_name": "inValue"
@@ -807,6 +807,18 @@
             }
         ],
         "m_uiMetadata": {
+            "m_sceneMetadata": {
+                "ComponentData": {
+                    "{5F84B500-8C45-40D1-8EFC-A5306B241444}": {
+                        "$type": "SceneComponentSaveData",
+                        "ViewParams": {
+                            "Scale": 0.3613207547169811,
+                            "AnchorX": -1076.605712890625,
+                            "AnchorY": -611.6448974609375
+                        }
+                    }
+                }
+            },
             "m_nodeMetadata": [
                 {
                     "Key": 1,
@@ -850,8 +862,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    -460.0,
-                                    -180.0
+                                    -480.0,
+                                    -260.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -878,8 +890,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    -540.0,
-                                    40.0
+                                    -480.0,
+                                    0.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -906,8 +918,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    -340.0,
-                                    360.0
+                                    -360.0,
+                                    260.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -934,7 +946,7 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    -180.0,
+                                    -200.0,
                                     360.0
                                 ]
                             },
@@ -1046,7 +1058,7 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    -180.0,
+                                    -200.0,
                                     260.0
                                 ]
                             },
@@ -1126,8 +1138,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    -40.0,
-                                    -620.0
+                                    -60.0,
+                                    -700.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -1238,8 +1250,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    -180.0,
-                                    -440.0
+                                    -200.0,
+                                    -520.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
@@ -1266,8 +1278,8 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    -480.0,
-                                    -340.0
+                                    -360.0,
+                                    -700.0
                                 ]
                             },
                             "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {

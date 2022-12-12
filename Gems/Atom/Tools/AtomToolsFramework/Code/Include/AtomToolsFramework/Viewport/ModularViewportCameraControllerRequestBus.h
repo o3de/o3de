@@ -66,6 +66,8 @@ namespace AtomToolsFramework
         virtual void SetCameraOffset(const AZ::Vector3& offset) = 0;
         //! Same as SetCameraOffset only the offset is set on the current and target cameras so no interpolation occurs.
         virtual void SetCameraOffsetImmediate(const AZ::Vector3& offset) = 0;
+        //! Transitions a camera from an orbit state (pivot and non-zero offset) to a look state (pivot and zero offset).
+        virtual void LookFromOrbit() = 0;
         //! Add one or more camera inputs (behaviors) to run for the current camera.
         virtual bool AddCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs) = 0;
         //! Remove one or more camera inputs (behaviors) to stop them running for the current camera.
