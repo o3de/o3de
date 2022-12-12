@@ -5,8 +5,9 @@
     "ClassData": {
         "id": "{DD81CD4B-5FFD-4885-B897-2F9ADB6FA6AD}",
         "category": "Math Functions",
-        "title": "Min",
+        "title": "Minimum",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Selects the lesser of x and y (per component)",
         "slotDataTypeGroups": [
             "inValue1|inValue2|outValue"
         ],

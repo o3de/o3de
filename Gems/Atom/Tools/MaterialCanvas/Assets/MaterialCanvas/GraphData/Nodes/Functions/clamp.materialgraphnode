@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Clamp",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Clamps the input value to the range [min, max] (per component)",
         "slotDataTypeGroups": [
             "inValue|inMin|inMax|outValue"
         ],

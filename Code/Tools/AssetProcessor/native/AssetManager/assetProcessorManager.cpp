@@ -5001,7 +5001,7 @@ namespace AssetProcessor
         SourceDatabaseEntry source;
 
         QString databaseSourceName;
-        int scanFolderPk = -1;
+        AZ::s64 scanFolderPk = -1;
 
         bool found = false;
         m_stateData->QuerySourceBySourceNameScanFolderID(analysisTracker->m_databaseSourceName.c_str(),
@@ -5034,7 +5034,7 @@ namespace AssetProcessor
             m_stateData->SetSource(source);
 
             databaseSourceName = source.m_sourceName.c_str();
-            scanFolderPk = aznumeric_cast<int>(source.m_scanFolderPK);
+            scanFolderPk = source.m_scanFolderPK;
         }
         else
         {
@@ -5046,7 +5046,7 @@ namespace AssetProcessor
         QFileInfo fileInfo(sourceAsset.AbsolutePath().c_str());
         QDateTime lastModifiedTime = fileInfo.lastModified();
 
-        AZ_Error(AssetProcessor::ConsoleChannel, scanFolderPk > -1 && !sourceAsset.RelativePath().empty(), "FinishAnalysis: Invalid ScanFolderPk (%d) or databaseSourceName (%s) for file %s.  Cannot update file modtime in database.",
+        AZ_Error(AssetProcessor::ConsoleChannel, scanFolderPk > -1 && !sourceAsset.RelativePath().empty(), "FinishAnalysis: Invalid ScanFolderPk (%lld) or databaseSourceName (%s) for file %s.  Cannot update file modtime in database.",
             scanFolderPk, sourceAsset.RelativePath().c_str(), sourceAsset.AbsolutePath().c_str());
 
         m_stateData->UpdateFileModTimeAndHashByFileNameAndScanFolderId(databaseSourceName.toUtf8().constData(), scanFolderPk,
