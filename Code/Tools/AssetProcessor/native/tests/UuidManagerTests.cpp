@@ -18,6 +18,7 @@
 #include <AssetManager/SourceAssetReference.h>
 #include <tests/UnitTestUtilities.h>
 #include <Tests/AZTestShared/Utils/Utils.h>
+#include <unittests/UnitTestUtils.h>
 
 namespace UnitTests
 {
@@ -71,12 +72,7 @@ namespace UnitTests
 
     void MakeFile(const char* path)
     {
-        AZStd::string contents("This is a unit test file");
-
-        AZ::IO::FileIOStream fileStream(path, AZ::IO::OpenMode::ModeWrite);
-        EXPECT_TRUE(fileStream.IsOpen());
-        EXPECT_EQ(fileStream.Write(contents.size(), contents.data()), contents.size());
-        fileStream.Close();
+        ASSERT_TRUE(UnitTestUtils::CreateDummyFileAZ(path));
     }
 
     TEST_F(UuidManagerTests, GetUuid_FirstTime_ReturnsRandomUuid)
@@ -302,5 +298,37 @@ namespace UnitTests
         // Make sure no metadata file was created
         EXPECT_FALSE(AZ::IO::FileIOBase::GetInstance()->Exists(
             AZStd::string::format("%s%s", TestFile, AzToolsFramework::MetadataManager::MetadataFileExtension).c_str()));
+    }
+
+    TEST_F(UuidManagerTests, TwoFilesWithSameRelativePath_DisabledType_ReturnsSameUuid)
+    {
+        static constexpr const char* FileA = "c:/somepath/folderA/mockfile.png";
+        static constexpr const char* FileB = "c:/somepath/folderB/mockfile.png";
+
+        MakeFile(FileA);
+        MakeFile(FileB);
+
+        auto uuidA = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(1, "c:/somepath/folderA", "mockfile.png"));
+        auto uuidB = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(2, "c:/somepath/folderB", "mockfile.png"));
+
+        EXPECT_FALSE(uuidA.IsNull());
+        EXPECT_FALSE(uuidB.IsNull());
+        EXPECT_EQ(uuidA, uuidB);
+    }
+
+    TEST_F(UuidManagerTests, TwoFilesWithSameRelativePath_EnabledType_ReturnsDifferentUuid)
+    {
+        static constexpr const char* FileA = "c:/somepath/folderA/mockfile.txt";
+        static constexpr const char* FileB = "c:/somepath/folderB/mockfile.txt";
+
+        MakeFile(FileA);
+        MakeFile(FileB);
+
+        auto uuidA = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(1, "c:/somepath/folderA", "mockfile.txt"));
+        auto uuidB = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(2, "c:/somepath/folderB", "mockfile.txt"));
+
+        EXPECT_FALSE(uuidA.IsNull());
+        EXPECT_FALSE(uuidB.IsNull());
+        EXPECT_NE(uuidA, uuidB);
     }
 }
