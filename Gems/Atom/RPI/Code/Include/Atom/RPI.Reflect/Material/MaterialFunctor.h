@@ -187,7 +187,7 @@ namespace AZ
                 MaterialPipelineDataMap* m_materialPipelineData;
             };
 
-            //! This execution context operates in a specific material pipeline and its shaders.
+            //! This execution context operates on a specific MaterialPipelinePayload's shaders.
             //! It can read "internal" material properties used for passing data to the material pipeline.
             class PipelineRuntimeContext
                 : public CommonRuntimeConfiguration
@@ -323,6 +323,7 @@ namespace AZ
             virtual void Process([[maybe_unused]] MaterialFunctorAPI::PipelineRuntimeContext& context) {}
 
         private:
+
             //! The material properties associated with this functor.
             //! It defines what properties should trigger this functor to process.
             //! Bit position uses MaterialPropertyIndex of the property.

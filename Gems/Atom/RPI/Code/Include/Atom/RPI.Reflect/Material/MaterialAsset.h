@@ -70,8 +70,8 @@ namespace AZ
             //! See MaterialFunctor.h for details.
             const MaterialFunctorList& GetMaterialFunctors() const;
 
-            //! Return the collection of material pipeline data for all supported render pipelines.
-            const MaterialTypeAsset::MaterialPipelineMap& GetMaterialPipelines() const;
+            //! Return the collection of MaterialPipelinePayload data for all supported material pipelines.
+            const MaterialTypeAsset::MaterialPipelineMap& GetMaterialPipelinePayloads() const;
 
             //! Returns the shader resource group layout that has per-material frequency, which indicates most of the topology
             //! for a material's shaders.

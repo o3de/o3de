@@ -828,7 +828,7 @@ namespace AZ
             if (m_shaderCollection.empty() && m_pipelineData.empty())
             {
                 // Whenever there is no explicit shader collection, the material type is considered to be in the abstract format.
-                // Even if materialShaderCode and lightingModel are missing, it should still technically work as an abstract format by using
+                // Even if "materialShaderCode" and "lightingModel" are missing, it should still technically work as an abstract format by using
                 // the material pipeline to generate default shaders.
                 return Format::Abstract;
             }
@@ -925,11 +925,23 @@ namespace AZ
 
             for (auto& functorData : materialFunctorSourceData)
             {
+                // Material pipelines do not have access to the Material ShaderResourceGroup.
+                // The material type and material pipeline data are logically decoupled from each other, with careful separation of
+                // concerns to ensure modularity. The definition of the material's ShaderResouceGroup (usually called "MaterialSrg") is strictly the
+                // responsibility of the .materialtype file, and the .materialpipeline file cannot be aware of it. Even though the MaterialSrg *does*
+                // appear in the final ShaderCollection inside each MaterialTypeAsset::MaterialPipelinePayload object, we do not allow the MaterialPipelinePayload's
+                // properties to access it since the data originates from the .materialtype file.
+                const RHI::ShaderResourceGroupLayout* shaderResourceGroupLayout = nullptr;
+                if (materialPipelineName == MaterialPipelineNone)
+                {
+                    shaderResourceGroupLayout = materialTypeAssetCreator.GetMaterialShaderResourceGroupLayout();
+                }
+
                 MaterialFunctorSourceData::FunctorResult result = functorData->CreateFunctor(
                     MaterialFunctorSourceData::RuntimeContext(
                         materialTypeSourceFilePath,
                         materialTypeAssetCreator.GetMaterialPropertiesLayout(materialPipelineName),
-                        materialTypeAssetCreator.GetMaterialShaderResourceGroupLayout(),
+                        shaderResourceGroupLayout,
                         &nameContext
                     )
                 );

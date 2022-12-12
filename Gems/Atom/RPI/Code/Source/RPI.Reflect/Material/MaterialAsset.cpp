@@ -67,9 +67,9 @@ namespace AZ
             return m_materialTypeAsset->GetMaterialFunctors();
         }
 
-        const MaterialTypeAsset::MaterialPipelineMap& MaterialAsset::GetMaterialPipelines() const
+        const MaterialTypeAsset::MaterialPipelineMap& MaterialAsset::GetMaterialPipelinePayloads() const
         {
-            return m_materialTypeAsset->GetMaterialPipelines();
+            return m_materialTypeAsset->GetMaterialPipelinePayloads();
         }
 
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialAsset::GetMaterialSrgLayout(const SupervariantIndex& supervariantIndex) const

@@ -108,7 +108,7 @@ namespace AZ
 
             //! Iterates through all shader items in the material, for all render pipelines, including the general shader collection.
             //! @param callback function is called for each shader item
-            //! @param materialPipelineName the name of the current material pipeline, or empty (MaterialPipelineNone) for items in the general shader collection.
+            //! @param materialPipelineName the name of the shader's material pipeline, or empty (MaterialPipelineNone) for items in the general shader collection.
             void ForAllShaderItems(AZStd::function<bool(const Name& materialPipelineName, const ShaderCollection::Item& shaderItem)> callback) const;
 
             //! Returns whether this material owns a particular shader option. In that case, SetSystemShaderOption may not be used.

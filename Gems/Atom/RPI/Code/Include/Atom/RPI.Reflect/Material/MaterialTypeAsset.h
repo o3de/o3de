@@ -68,16 +68,16 @@ namespace AZ
             static constexpr uint32_t InvalidShaderIndex = static_cast<uint32_t>(-1);
 
             //! Provides data about how to render the material in a particular render pipeline.
-            struct MaterialPipeline
+            struct MaterialPipelinePayload
             {
-                AZ_TYPE_INFO(MaterialTypeAsset::MaterialPipeline, "{7179B076-70B6-4B47-9F98-BEF164396873}");
+                AZ_TYPE_INFO(MaterialTypeAsset::MaterialPipelinePayload, "{7179B076-70B6-4B47-9F98-BEF164396873}");
 
-                Ptr<MaterialPropertiesLayout> m_materialPropertiesLayout;     //!< The layout of internal properties that the material type can use to configure this material pipeline
+                Ptr<MaterialPropertiesLayout> m_materialPropertiesLayout;     //!< The layout of internal properties that the material type can use to configure this MaterialPipelinePayload
                 AZStd::vector<MaterialPropertyValue> m_defaultPropertyValues; //!< Default values for each of the internal properties.
                 ShaderCollection m_shaderCollection;                          //!< The collection of shaders that target the particular render pipeline.
                 MaterialFunctorList m_materialFunctors;                       //!< These material functors consume data from the internal properties and configure the shader collection.
             };
-            using MaterialPipelineMap = AZStd::unordered_map<Name, MaterialPipeline>;
+            using MaterialPipelineMap = AZStd::unordered_map<Name, MaterialPipelinePayload>;
 
             static void Reflect(ReflectContext* context);
 
@@ -91,8 +91,8 @@ namespace AZ
             //! See MaterialFunctor.h for details.
             const MaterialFunctorList& GetMaterialFunctors() const;
 
-            //! Return the collection of material pipeline data for all supported render pipelines.
-            const MaterialPipelineMap& GetMaterialPipelines() const;
+            //! Return the collection of MaterialPipelinePayload data for all supported material pipelines.
+            const MaterialPipelineMap& GetMaterialPipelinePayloads() const;
 
             //! Returns the shader resource group layout that has per-material frequency, which indicates most of the topology
             //! for a material's shaders.
@@ -183,7 +183,7 @@ namespace AZ
             MaterialFunctorList m_materialFunctors;
 
             //! Describes how to render the material in specific render pipelines
-            MaterialPipelineMap m_materialPipelines;
+            MaterialPipelineMap m_materialPipelinePayloads;
 
             //! These are shaders that hold an example of particular ShaderResourceGroups. Every shader in a material type
             //! must use the same MaterialSrg and ObjectSrg, so we only need to store one example of each. We keep a reference

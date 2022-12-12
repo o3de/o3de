@@ -88,11 +88,17 @@ namespace AZ
 
             m_materialProperties.SetAllPropertyDirtyFlags();
 
-            for (auto& [materialPipelineName, materialPipeline] : materialAsset.GetMaterialPipelines())
+            for (auto& [materialPipelineName, materialPipeline] : materialAsset.GetMaterialPipelinePayloads())
             {
                 MaterialPipelineState& pipelineData = m_materialPipelineData[materialPipelineName];
+
                 pipelineData.m_shaderCollection = materialPipeline.m_shaderCollection;
-                pipelineData.m_materialProperties.Init(materialPipeline.m_materialPropertiesLayout, materialPipeline.m_defaultPropertyValues);
+
+                if (!pipelineData.m_materialProperties.Init(materialPipeline.m_materialPropertiesLayout, materialPipeline.m_defaultPropertyValues))
+                {
+                    return RHI::ResultCode::Fail;
+                }
+
                 pipelineData.m_materialProperties.SetAllPropertyDirtyFlags();
             }
 
@@ -539,7 +545,7 @@ namespace AZ
             MaterialPropertyPsoHandling psoHandling = m_isInitializing ? MaterialPropertyPsoHandling::Allowed : m_psoHandling;
 
             // Then run the "pipeline" functors, which use the MaterialFunctorAPI::PipelineRuntimeContext
-            for (auto& [materialPipelineName, materialPipeline] : m_materialAsset->GetMaterialPipelines())
+            for (auto& [materialPipelineName, materialPipeline] : m_materialAsset->GetMaterialPipelinePayloads())
             {
                 MaterialPipelineState& materialPipelineData = m_materialPipelineData[materialPipelineName];
 

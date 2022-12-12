@@ -34,7 +34,7 @@ namespace AZ
 
             //! Adds a shader to the built-in shader collection, which will be run for this material.
             //! @param shaderTag Must be unique within the material type's list of shaders.
-            //! @param materialPipelineName Identifies a specific material pipeline that this shader is used for.
+            //! @param materialPipelineName Identifies a specific MaterialPipelinePayload that this shader should be added to.
             //!                             For MaterialPipelineNone, the shader will be used for all pipelines.
             void AddShader(
                 const AZ::Data::Asset<ShaderAsset>& shaderAsset,
@@ -72,8 +72,8 @@ namespace AZ
             //! @param shaderTag  The tag name that unique identifies a shader in the material type.
             void ConnectMaterialPropertyToShaderEnabled(const Name& shaderTag);
 
-            //! Adds an output mapping from the current material property to an internal material property for a material pipeline.
-            //! This connecting property must not be an internal property from a material pipeline.
+            //! Adds an output mapping from the current material property to an internal material property in a MaterialPipelinePayload.
+            //! The current property must not be an internal property from any MaterialPipelinePayload.
             //! The target property must have already been added to the MaterialTypeAssetCreator.
             //! @param propertyName  The name of an internal material property to connect to.
             void ConnectMaterialPropertyToInternalProperty(const Name& propertyName);
@@ -84,7 +84,7 @@ namespace AZ
             //! Finishes creating a material property.
             void EndMaterialProperty();
 
-            //! @param materialPipelineName For internal material properties, this indicates which material pipeline's property to update.
+            //! @param materialPipelineName For internal material properties, this indicates which MaterialPipelinePlayload's property to update.
             //!                             For main material properties, use MaterialPipelineNone.
             void SetPropertyValue(const Name& name, const Data::Asset<ImageAsset>& imageAsset, const AZ::Name& materialPipelineName = MaterialPipelineNone);
             void SetPropertyValue(const Name& name, const Data::Asset<StreamingImageAsset>& imageAsset, const AZ::Name& materialPipelineName = MaterialPipelineNone);
@@ -92,13 +92,13 @@ namespace AZ
 
             //! Sets a property value using data in AZStd::variant-based MaterialPropertyValue. The contained data must match
             //! the data type of the property. For type Image, the value must be a Data::Asset<ImageAsset>.
-            //! @param materialPipelineName For internal material properties, this indicates which material pipeline's property to update.
+            //! @param materialPipelineName For internal material properties, this indicates which MaterialPipelinePayload's property to update.
             //!                             For main material properties, use MaterialPipelineNone.
             void SetPropertyValue(const Name& name, const MaterialPropertyValue& value, const AZ::Name& materialPipelineName = MaterialPipelineNone);
 
             //! Adds a MaterialFunctor.
             //! Material functors provide custom logic and calculations to configure shaders, render states, and more.See MaterialFunctor.h for details.
-            //! @param materialPipelineName Identifies a specific material pipeline that this functor is used for. For MaterialPipelineNone, 
+            //! @param materialPipelineName Identifies a MaterialPipelinePayload that this functor should be added to. For MaterialPipelineNone, 
             //!                             the functor will be used for the main ShaderCollection that applies to all pipelines.
             void AddMaterialFunctor(const Ptr<MaterialFunctor>& functor, const AZ::Name& materialPipelineName = MaterialPipelineNone);
 
@@ -107,7 +107,7 @@ namespace AZ
 
             //! This provides access to the MaterialPropertiesLayout while the MaterialTypeAsset is still being built.
             //! This is needed by MaterialTypeSourceData to initialize functor objects.
-            //! @param materialPipelineName For internal material properties, this indicates which material pipeline's property layout to query.
+            //! @param materialPipelineName For internal material properties, this indicates which MaterialPipelinePayload's property layout to query.
             //!                             For main material properties, use MaterialPipelineNone.
             //! @return A valid pointer when called between Begin() and End(). Otherwise, returns nullptr.
             const MaterialPropertiesLayout* GetMaterialPropertiesLayout(const AZ::Name& materialPipelineName = MaterialPipelineNone) const;
@@ -146,13 +146,13 @@ namespace AZ
             bool ValidateBeginMaterialProperty();
             bool ValidateEndMaterialProperty();
 
-            MaterialTypeAsset::MaterialPipeline& GetMaterialPipeline(const AZ::Name& materialPipelineName);
+            MaterialTypeAsset::MaterialPipelinePayload& GetMaterialPipelinePayload(const AZ::Name& materialPipelineName);
 
             
             MaterialPropertiesLayout* m_materialPropertiesLayout = nullptr; //!< Cached pointer to the MaterialPropertiesLayout being created
             const RHI::ShaderResourceGroupLayout* m_materialShaderResourceGroupLayout = nullptr; //!< The per-material ShaderResourceGroup layout
             MaterialPropertyDescriptor m_wipMaterialProperty; //!< Material property being created. Is valid between BeginMaterialProperty() and EndMaterialProperty()
-            Name m_wipMaterialPropertyPipeline; //!< Tracks which material pipeline the material property is being created for, if any.
+            Name m_wipMaterialPropertyPipeline; //!< Tracks which MaterialPipelinePayload the material property is being created for, if any.
         };
 
     } // namespace RPI

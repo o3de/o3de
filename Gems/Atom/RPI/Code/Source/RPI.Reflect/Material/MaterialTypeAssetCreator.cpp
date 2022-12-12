@@ -98,9 +98,9 @@ namespace AZ
                 [this](const char* message){ ReportError("%s", message); });
         }
 
-        MaterialTypeAsset::MaterialPipeline& MaterialTypeAssetCreator::GetMaterialPipeline(const AZ::Name& materialPipelineName)
+        MaterialTypeAsset::MaterialPipelinePayload& MaterialTypeAssetCreator::GetMaterialPipelinePayload(const AZ::Name& materialPipelineName)
         {
-            MaterialTypeAsset::MaterialPipeline& pipeline = m_asset->m_materialPipelines[materialPipelineName];
+            MaterialTypeAsset::MaterialPipelinePayload& pipeline = m_asset->m_materialPipelinePayloads[materialPipelineName];
             if (!pipeline.m_materialPropertiesLayout)
             {
                 pipeline.m_materialPropertiesLayout = aznew MaterialPropertiesLayout;
@@ -124,7 +124,7 @@ namespace AZ
                 }
                 else
                 {
-                    shaderCollection = &GetMaterialPipeline(materialPipelineName).m_shaderCollection;
+                    shaderCollection = &GetMaterialPipelinePayload(materialPipelineName).m_shaderCollection;
                 }
 
                 AZ::Name finalShaderTag = !shaderTag.IsEmpty() ? shaderTag : AZ::Name{AZ::Uuid::CreateRandom().ToFixedString()};
@@ -182,8 +182,8 @@ namespace AZ
             }
             else
             {
-                auto iter = m_asset->m_materialPipelines.find(materialPipelineName);
-                if (iter == m_asset->m_materialPipelines.end())
+                auto iter = m_asset->m_materialPipelinePayloads.find(materialPipelineName);
+                if (iter == m_asset->m_materialPipelinePayloads.end())
                 {
                     return nullptr;
                 }
@@ -211,7 +211,7 @@ namespace AZ
                 }
                 else
                 {
-                    MaterialTypeAsset::MaterialPipeline& pipeline = GetMaterialPipeline(materialPipelineName);
+                    MaterialTypeAsset::MaterialPipelinePayload& pipeline = GetMaterialPipelinePayload(materialPipelineName);
                     layout = pipeline.m_materialPropertiesLayout.get();
                     propertyValues = &pipeline.m_defaultPropertyValues;
                 }
@@ -307,7 +307,7 @@ namespace AZ
                 return;
             }
 
-            const MaterialPropertiesLayout* layout = materialPipelineName.IsEmpty() ? m_materialPropertiesLayout : GetMaterialPipeline(materialPipelineName).m_materialPropertiesLayout.get();
+            const MaterialPropertiesLayout* layout = materialPipelineName.IsEmpty() ? m_materialPropertiesLayout : GetMaterialPipelinePayload(materialPipelineName).m_materialPropertiesLayout.get();
 
             if (layout->FindPropertyIndex(materialPropertyName).IsValid())
             {
@@ -330,6 +330,19 @@ namespace AZ
         {
             if (!ValidateBeginMaterialProperty())
             {
+                return;
+            }
+
+            if (m_wipMaterialPropertyPipeline != MaterialPipelineNone)
+            {
+                // Material pipelines do not have access to the Material ShaderResourceGroup.
+                // The material type and material pipeline data are logically decoupled from each other, with careful separation of
+                // concerns to ensure modularity. The definition of the material's ShaderResouceGroup (usually called "MaterialSrg") is strictly the
+                // responsibility of the .materialtype file, and the .materialpipeline file cannot be aware of it. Even though the MaterialSrg *does*
+                // appear in the final ShaderCollection inside each MaterialTypeAsset::MaterialPipelinePayload object, we do not allow the MaterialPipelinePayload's
+                // properties to access it since the data originates from the .materialtype file.
+                ReportError("Material property '%s': Connection type '%s' is not supported by internal material pipeline properties.",
+                    m_wipMaterialProperty.GetName().GetCStr(), ToString(MaterialPropertyOutputType::ShaderInput));
                 return;
             }
 
@@ -404,28 +417,51 @@ namespace AZ
             }
 
             bool foundShaderOptions = false;
-            m_asset->ForAllShaderItems(
-                [&](const Name& materialPipelineName, ShaderCollection::Item& shaderItem, uint32_t shaderIndex)
+
+            auto addConnection = [&](const Name& materialPipelineName, ShaderCollection::Item& shaderItem, uint32_t shaderIndex)
+            {
+                auto optionsLayout = shaderItem.GetShaderAsset()->GetShaderOptionGroupLayout();
+                ShaderOptionIndex optionIndex = optionsLayout->FindShaderOptionIndex(shaderOptionName);
+                if (optionIndex.IsValid())
                 {
-                    auto optionsLayout = shaderItem.GetShaderAsset()->GetShaderOptionGroupLayout();
-                    ShaderOptionIndex optionIndex = optionsLayout->FindShaderOptionIndex(shaderOptionName);
-                    if (optionIndex.IsValid())
-                    {
-                        foundShaderOptions = true;
+                    foundShaderOptions = true;
 
-                        MaterialPropertyOutputId outputId;
-                        outputId.m_type = MaterialPropertyOutputType::ShaderOption;
-                        outputId.m_materialPipelineName = materialPipelineName;
-                        outputId.m_containerIndex = RHI::Handle<uint32_t>{shaderIndex};
-                        outputId.m_itemIndex = RHI::Handle<uint32_t>{optionIndex.GetIndex()};
+                    MaterialPropertyOutputId outputId;
+                    outputId.m_type = MaterialPropertyOutputType::ShaderOption;
+                    outputId.m_materialPipelineName = materialPipelineName;
+                    outputId.m_containerIndex = RHI::Handle<uint32_t>{shaderIndex};
+                    outputId.m_itemIndex = RHI::Handle<uint32_t>{optionIndex.GetIndex()};
 
-                        m_wipMaterialProperty.m_outputConnections.push_back(outputId);
+                    m_wipMaterialProperty.m_outputConnections.push_back(outputId);
 
-                        shaderItem.m_ownedShaderOptionIndices.insert(optionIndex);
-                    }
+                    shaderItem.m_ownedShaderOptionIndices.insert(optionIndex);
+                }
 
-                    return true;
-                });
+                return true;
+            };
+
+            if (m_wipMaterialPropertyPipeline == MaterialPipelineNone)
+            {
+                // For normal material properties, we must connect to every possible shader, including the ones inside material pipelines.
+                // This is because the final compiled shaders will include a combination of code that comes from the material pipeline
+                // and the code that comes from the .materialtype file's "materialShaderCode" field. The material type's shader code can
+                // define shader options, and so these shader options must be accessible to material property connections.
+                m_asset->ForAllShaderItems(addConnection);
+            }
+            else
+            {
+                // For internal material pipeline properties, we only allow connections to the local shader collection. This is because the
+                // material pipeline should not be aware of any shader options that were defined by the material type's shader code, so
+                // there is no reason for it to "reach across" to other material pipelines. It should only be concerned with the shader options
+                // that are accessible to the material pipeline's template shader code. It is possible that other material pipelines will
+                // include the exact same shader options, but in that case the other material pipelines will be responsible for setting those
+                // shader options themselves.
+                ShaderCollection& localShaderCollection = GetMaterialPipelinePayload(m_wipMaterialPropertyPipeline).m_shaderCollection;
+                for (int shaderIndex = 0; shaderIndex < localShaderCollection.size(); ++shaderIndex)
+                {
+                    addConnection(m_wipMaterialPropertyPipeline, localShaderCollection[shaderIndex], shaderIndex);
+                }
+            }
 
             if (!foundShaderOptions)
             {
@@ -447,24 +483,34 @@ namespace AZ
                 return;
             }
 
+            // Material properties can only control shaders in their local ShaderCollection. This supports a decouple design where main
+            // material properties from the .materialtype file don't know about the shaders that are built by the material pipeline,
+            // and material pipelines cannot "reach over" and control the shaders that are in some other pipeline.
+            ShaderCollection* shaderCollection = nullptr;
+            if (m_wipMaterialPropertyPipeline == MaterialPipelineNone)
+            {
+                shaderCollection = &m_asset->m_generalShaderCollection;
+            }
+            else
+            {
+                shaderCollection = &GetMaterialPipelinePayload(m_wipMaterialPropertyPipeline).m_shaderCollection;
+            }
+
             bool foundShader = false;
-            m_asset->ForAllShaderItems(
-                [&](const Name& materialPipelineName, ShaderCollection::Item& shaderItem, uint32_t shaderIndex)
+            for (size_t shaderIndex = 0; shaderIndex < shaderCollection->size(); ++shaderIndex)
+            {
+                if ((*shaderCollection)[shaderIndex].GetShaderTag() == shaderTag)
                 {
-                    if (shaderItem.GetShaderTag() == shaderTag)
-                    {
-                        foundShader = true;
+                    foundShader = true;
 
-                        MaterialPropertyOutputId outputId;
-                        outputId.m_materialPipelineName = materialPipelineName;
-                        outputId.m_type = MaterialPropertyOutputType::ShaderEnabled;
-                        outputId.m_containerIndex = RHI::Handle<uint32_t>{shaderIndex};
+                    MaterialPropertyOutputId outputId;
+                    outputId.m_materialPipelineName = m_wipMaterialPropertyPipeline;
+                    outputId.m_type = MaterialPropertyOutputType::ShaderEnabled;
+                    outputId.m_containerIndex = RHI::Handle<uint32_t>{shaderIndex};
 
-                        m_wipMaterialProperty.m_outputConnections.push_back(outputId);
-                    }
-
-                    return true;
-                });
+                    m_wipMaterialProperty.m_outputConnections.push_back(outputId);
+                }
+            }
 
             if (!foundShader)
             {
@@ -487,19 +533,19 @@ namespace AZ
             }
 
             bool foundProperty = false;
-            for (const auto& [materialPipelineName, materialPipeline] : m_asset->m_materialPipelines)
+            for (const auto& [materialPipelineName, materialPipeline] : m_asset->m_materialPipelinePayloads)
             {
                 MaterialPropertyIndex propertyIndex = materialPipeline.m_materialPropertiesLayout->FindPropertyIndex(propertyName);
                 if (propertyIndex.IsValid())
                 {
+                    foundProperty = true;
+
                     if (m_wipMaterialProperty.GetDataType() != materialPipeline.m_materialPropertiesLayout->GetPropertyDescriptor(propertyIndex)->GetDataType())
                     {
                         ReportError("Material property '%s': Cannot connect to internal property '%s' because the data types do not match.",
                             m_wipMaterialProperty.GetName().GetCStr(), propertyName.GetCStr());
                         continue;
                     }
-
-                    foundProperty = true;
 
                     MaterialPropertyOutputId outputId;
                     outputId.m_materialPipelineName = materialPipelineName;
@@ -591,10 +637,10 @@ namespace AZ
             if (PropertyCheck(value.GetTypeId(), name, materialPipelineName))
             {
 
-                MaterialPropertiesLayout* layout = materialPipelineName.IsEmpty() ? m_materialPropertiesLayout : GetMaterialPipeline(materialPipelineName).m_materialPropertiesLayout.get();
+                MaterialPropertiesLayout* layout = materialPipelineName.IsEmpty() ? m_materialPropertiesLayout : GetMaterialPipelinePayload(materialPipelineName).m_materialPropertiesLayout.get();
                 MaterialPropertyIndex propertyIndex = layout->FindPropertyIndex(name);
 
-                AZStd::vector<MaterialPropertyValue>& propertyValues = materialPipelineName.IsEmpty() ? m_asset->m_propertyValues : GetMaterialPipeline(materialPipelineName).m_defaultPropertyValues;
+                AZStd::vector<MaterialPropertyValue>& propertyValues = materialPipelineName.IsEmpty() ? m_asset->m_propertyValues : GetMaterialPipelinePayload(materialPipelineName).m_defaultPropertyValues;
 
                 propertyValues[propertyIndex.GetIndex()] = value;
             }
@@ -620,7 +666,7 @@ namespace AZ
                 }
                 else
                 {
-                    GetMaterialPipeline(materialPipelineName).m_materialFunctors.emplace_back(functor);
+                    GetMaterialPipelinePayload(materialPipelineName).m_materialFunctors.emplace_back(functor);
                 }
             }
         }

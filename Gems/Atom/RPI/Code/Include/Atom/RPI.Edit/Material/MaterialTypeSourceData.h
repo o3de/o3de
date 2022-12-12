@@ -197,13 +197,13 @@ namespace AZ
             //! This indicates the name of the lighting model that this material type uses.
             //! For example, "Standard", "Enhanced", "Skin". The actual set of available lighting models
             //! is determined by the .materialpipeline.
-            //! This is relevant for "abstract" material type files (see IsAbstractFormat()).
+            //! This is relevant for "abstract" material type files (see GetFormat()).
             AZStd::string m_lightingModel;
 
             //! This indicates a .azsli file that contains only material-specific shader code.
             //! The build system will automatically combine this code with .materialpipeline shader code
             //! for use in each available render pipeline.
-            //! This is relevant for "abstract" material type files (see IsAbstractFormat()).
+            //! This is relevant for "abstract" material type files (see GetFormat()).
             AZStd::string m_materialShaderCode;
 
             //! A list of specific shaders that will be used to render the material.
