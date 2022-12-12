@@ -391,7 +391,7 @@ void FileWatcher::WatchFolderLoop()
                     
                     if (event->mask & IN_ISDIR)
                     {
-                        // for directories, we only only care about create or delete, not modify
+                        // for directories, we only care about create or delete, not modify
                         // so we only need to add a watch to them if they may have children we're interested in.
                         // this is only the case if they are either a child of a recursive root folder, or if they are a child
                         // of some non-root folder (because that infers that their parent is recursive)
