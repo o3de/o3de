@@ -43,7 +43,13 @@ function Process(context)
     
     TrySetShaderEnabled(context, "depth", not isTransparent and not isTintedTransparent)
     TrySetShaderEnabled(context, "shadow", not isTransparent and not isTintedTransparent and castShadows)
+
+    -- TODO(MaterialPipeline): Historically, the main lighting pass has used the "forward" shader tag. However, the
+    -- prototype deferred pipeline in AtomSampleViewer uses the tag "main". We should convert our render pipelines
+    -- to all use the "main" tag for easier compatibility of this script across multiple pipelines, and remove
+    -- this line that tries to enable the "forward" shader.
     TrySetShaderEnabled(context, "forward", not isTransparent and not isTintedTransparent)
+    TrySetShaderEnabled(context, "main", not isTransparent and not isTintedTransparent)
     
     if isTransparent and isTintedTransparent then
         Error("Material configuration conflict: isTransparent and isTintedTransparent are both true")
