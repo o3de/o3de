@@ -122,12 +122,14 @@ void GotoPositionDialog::OnUpdateNumbers()
 void GotoPositionDialog::accept()
 {
     const auto position = AZ::Vector3(
-        aznumeric_cast<float>(m_ui->m_dymX->value()), aznumeric_cast<float>(m_ui->m_dymY->value()),
+        aznumeric_cast<float>(m_ui->m_dymX->value()),
+        aznumeric_cast<float>(m_ui->m_dymY->value()),
         aznumeric_cast<float>(m_ui->m_dymZ->value()));
     const auto pitchRadians = m_gotoPositionPitchConstraints.PitchClampedRadians(aznumeric_cast<float>(m_ui->m_dymAnglePitch->value()));
     const auto yawRadians = AZ::DegToRad(aznumeric_cast<float>(m_ui->m_dymAngleYaw->value()));
 
-    SandboxEditor::InterpolateDefaultViewportCameraToTransform(position, pitchRadians, yawRadians);
+    // either set or interpolate the camera to the new position and orientation
+    SandboxEditor::HandleDefaultViewportCameraTransitionFromSetting(position, pitchRadians, yawRadians);
 
     QDialog::accept();
 }
