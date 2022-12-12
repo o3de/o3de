@@ -99,9 +99,9 @@ def disable_gem_in_project(gem_name: str = None,
 
 
 def remove_explicit_gem_activation_for_all_paths(gem_root_folders: list,
-                                 project_name: str = None,
-                                 project_path: pathlib.Path = None,
-                                 enabled_gem_file: pathlib.Path = None) -> int:
+                                                 project_name: str = None,
+                                                 project_path: pathlib.Path = None,
+                                                 enabled_gem_file: pathlib.Path = None) -> int:
     """
     walks each gem root folder directory structure and removes explicit
     activation of the gems to the project
@@ -137,9 +137,9 @@ def remove_explicit_gem_activation_for_all_paths(gem_root_folders: list,
     for gem_dir in sorted(gem_dirs_set):
         # Run the command to remove explicit activation even if previous calls failed
         ret_val = disable_gem_in_project(gem_path=gem_dir,
-                                        project_name=project_name,
-                                        project_path=project_path,
-                                        enabled_gem_file=enabled_gem_file) or ret_val
+                                         project_name=project_name,
+                                         project_path=project_path,
+                                         enabled_gem_file=enabled_gem_file) or ret_val
 
     return ret_val
 

@@ -7,11 +7,17 @@
  */
 
 #include <Atom/RHI/DrawListTagRegistry.h>
+#include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassAttachment.h>
+#include <Atom/RPI.Public/Shader/Shader.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 #include <Atom/RPI.Reflect/Pass/RasterPassData.h>
 #include <CoreLights/ProjectedShadowmapsPass.h>
 #include <AzCore/std/iterator.h>
+#include <Atom/Feature/Mesh/MeshCommon.h>
 
 namespace AZ
 {
@@ -37,9 +43,9 @@ namespace AZ
                 m_pipelineViewTagBase = passData->m_pipelineViewTag;
             }
 
-            AZStd::vector<ShadowmapSizeWithIndices> shadowmapSizes;
-            shadowmapSizes.push_back(ShadowmapSizeWithIndices{ ShadowmapSize::None, 0 });
-            UpdateShadowmapSizes(shadowmapSizes);
+            AZStd::vector<ShadowPassProperties> shadowPassProperties;
+            shadowPassProperties.push_back(ShadowPassProperties{ ShadowmapSize::None, 0, false });
+            UpdateShadowPassProperties(shadowPassProperties);
         }
 
         ProjectedShadowmapsPass::~ProjectedShadowmapsPass()
@@ -68,18 +74,27 @@ namespace AZ
             return m_childrenPipelineViewTags[childIndex];
         }
 
-        void ProjectedShadowmapsPass::UpdateShadowmapSizes(const AZStd::vector<ShadowmapSizeWithIndices>& sizes)
+        void ProjectedShadowmapsPass::UpdateShadowPassProperties(const AZStd::span<ShadowPassProperties>& properties)
         {
-            m_sizes = sizes;
+            m_shadowProperties.assign(properties.begin(), properties.end());
             m_updateChildren = true;
             QueueForBuildAndInitialization();
 
             m_atlas.Initialize();
-            for (const auto& it : m_sizes)
+            for (const auto& it : m_shadowProperties)
             {
                 m_atlas.SetShadowmapSize(it.m_shadowIndexInSrg, it.m_size);
             }
             m_atlas.Finalize();
+        }
+
+        void ProjectedShadowmapsPass::ForceRenderNextFrame(uint16_t shadowIndex) const
+        {
+            const auto& it = m_shadowIndicesToPass.find(shadowIndex);
+            if (it != m_shadowIndicesToPass.end())
+            {
+                it->second->ForceRenderNextFrame();
+            }
         }
 
         void ProjectedShadowmapsPass::UpdateChildren()
@@ -89,6 +104,7 @@ namespace AZ
                 return;
             }
             m_updateChildren = false;
+            m_shadowIndicesToPass.clear();
 
             if (m_atlas.GetBaseShadowmapSize() == ShadowmapSize::None)
             {
@@ -103,18 +119,28 @@ namespace AZ
                 return;
             }
 
-            const size_t shadowmapCount = m_sizes.size();
+            const size_t shadowmapCount = m_shadowProperties.size();
             SetChildrenCount(shadowmapCount);
-            AZStd::vector<bool> sliceIsCleared(m_atlas.GetArraySliceCount());
-            for (const auto& it : m_sizes)
+
+            struct SliceInfo
+            {
+                bool m_hasStaticShadows = false;
+                AZStd::vector<ShadowmapPass*> m_shadowPasses;
+            };
+
+            AZStd::vector<SliceInfo> sliceInfo(m_atlas.GetArraySliceCount());
+            for (const auto& it : m_shadowProperties)
             {
                 // This index indicates the execution order of the passes.
                 // The first pass to render a slice should clear the slice.
-                const ptrdiff_t index = AZStd::distance(m_sizes.cbegin(), &it);
+                const ptrdiff_t index = AZStd::distance(m_shadowProperties.cbegin(), &it);
                 auto* pass = static_cast<ShadowmapPass*>(GetChildren()[index].get());
+                m_shadowIndicesToPass[it.m_shadowIndexInSrg] = pass;
 
                 const ShadowmapAtlas::Origin origin = m_atlas.GetOrigin(it.m_shadowIndexInSrg);
                 pass->SetArraySlice(origin.m_arraySlice);
+                pass->SetIsStatic(it.m_isCached);
+                pass->ForceRenderNextFrame();
 
                 if (it.m_size != ShadowmapSize::None)
                 {
@@ -130,9 +156,32 @@ namespace AZ
                         origin.m_originInSlice[0] + sizeInInt,
                         origin.m_originInSlice[1] + sizeInInt);
                     pass->SetViewportScissor(viewport, scissor);
+                    pass->SetClearEnabled(false);
 
-                    pass->SetClearEnabled(!sliceIsCleared[origin.m_arraySlice]);
-                    sliceIsCleared[origin.m_arraySlice] = true;
+                    SliceInfo& sliceInfoItem = sliceInfo.at(origin.m_arraySlice);
+                    sliceInfoItem.m_shadowPasses.push_back(pass);
+                    sliceInfoItem.m_hasStaticShadows = sliceInfoItem.m_hasStaticShadows || it.m_isCached;
+                }
+            }
+
+            for (const auto& it : sliceInfo)
+            {
+                if (!it.m_hasStaticShadows)
+                {
+                    if (!it.m_shadowPasses.empty())
+                    {
+                        // no static shadows in this slice, so have the first pass clear the atlas on load.
+                        it.m_shadowPasses.at(0)->SetClearEnabled(true);
+                    }
+                }
+                else
+                {
+                    // There's at least one static shadow in this slice, so passes need to clear themselves using a draw.
+                    for (auto* pass : it.m_shadowPasses)
+                    {
+                        pass->SetClearShadowDrawPacket(m_clearShadowDrawPacket);
+                        pass->SetCasterMovedBit(m_casterMovedBit);
+                    }
                 }
             }
         }
@@ -176,6 +225,17 @@ namespace AZ
             Base::BuildInternal();
         }
 
+        void ProjectedShadowmapsPass::FrameBeginInternal(FramePrepareParams params)
+        {
+            if (!m_clearShadowDrawPacket)
+            {
+                CreateClearShadowDrawPacket();
+                m_updateChildren = true;
+            }
+            m_casterMovedBit = GetScene()->GetViewTagBitRegistry().FindTag(MeshCommon::MeshMovedName);
+            Base::FrameBeginInternal(params);
+        }
+
         void ProjectedShadowmapsPass::GetPipelineViewTags(RPI::SortedPipelineViewTags& outTags) const
         {
             const size_t childrenCount = GetChildren().size();
@@ -208,6 +268,44 @@ namespace AZ
             passData->m_pipelineViewTag = GetPipelineViewTagOfChild(childIndex);
 
             return ShadowmapPass::CreateWithPassRequest(passName, passData);
+        }
+
+        void ProjectedShadowmapsPass::CreateClearShadowDrawPacket()
+        {
+            // Force load of shader to clear shadow maps.
+            const AZStd::string clearShadowShaderFilePath = "Shaders/Shadow/ClearShadow.azshader";
+            Data::Asset<RPI::ShaderAsset> shaderAsset = RPI::AssetUtils::LoadCriticalAsset<RPI::ShaderAsset>
+                (clearShadowShaderFilePath, RPI::AssetUtils::TraceLevel::Assert);
+
+            m_clearShadowShader = AZ::RPI::Shader::FindOrCreate(shaderAsset);
+            const AZ::RPI::ShaderVariant& variant = m_clearShadowShader->GetRootVariant();
+
+            AZ::RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
+            variant.ConfigurePipelineState(pipelineStateDescriptor);
+
+            GetScene()->ConfigurePipelineState(m_clearShadowShader->GetDrawListTag(), pipelineStateDescriptor);
+
+            AZ::RHI::InputStreamLayoutBuilder layoutBuilder;
+            pipelineStateDescriptor.m_inputStreamLayout = layoutBuilder.End();
+
+            const AZ::RHI::PipelineState* pipelineState = m_clearShadowShader->AcquirePipelineState(pipelineStateDescriptor);
+            if (!pipelineState)
+            {
+                AZ_Assert(false, "Shader '%s'. Failed to acquire default pipeline state", shaderAsset->GetName().GetCStr());
+                return;
+            }
+
+            AZ::RHI::DrawPacketBuilder drawPacketBuilder;
+            drawPacketBuilder.Begin(nullptr);
+            drawPacketBuilder.SetDrawArguments(AZ::RHI::DrawLinear(1, 0, 3, 0));
+
+            AZ::RHI::DrawPacketBuilder::DrawRequest drawRequest;
+            drawRequest.m_listTag = m_clearShadowShader->GetDrawListTag();
+            drawRequest.m_pipelineState = pipelineState;
+            drawRequest.m_sortKey = AZStd::numeric_limits<RHI::DrawItemSortKey>::min();
+
+            drawPacketBuilder.AddDrawItem(drawRequest);
+            m_clearShadowDrawPacket = drawPacketBuilder.End();
         }
 
         void ProjectedShadowmapsPass::SetChildrenCount(size_t childrenCount)

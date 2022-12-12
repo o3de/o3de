@@ -2254,6 +2254,22 @@ namespace AssetProcessor
         return found && succeeded;
     }
 
+    bool AssetDatabaseConnection::GetProductsBySourceNameScanFolderID(QString exactSourceName, AZ::s64 scanFolderId, ProductDatabaseEntryContainer& container, AZ::Uuid builderGuid, QString jobKey, QString platform, JobStatus status)
+    {
+        bool found = false;
+        bool succeeded = QueryProductBySourceNameScanFolderID(exactSourceName.toUtf8().constData(), scanFolderId,
+                [&](ProductDatabaseEntry& product)
+            {
+                found = true;
+                container.emplace_back() = AZStd::move(product);
+                return true; // continue fetching more results.
+            }, builderGuid,
+               jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
+               platform.isEmpty() ? nullptr : platform.toUtf8().constData(),
+               status);
+        return found && succeeded;
+    }
+
     bool AssetDatabaseConnection::GetProductsLikeSourceName(QString likeSourceName, LikeType likeType, ProductDatabaseEntryContainer& container, AZ::Uuid builderGuid, QString jobKey, QString platform, JobStatus status)
     {
         if (likeSourceName.isEmpty())

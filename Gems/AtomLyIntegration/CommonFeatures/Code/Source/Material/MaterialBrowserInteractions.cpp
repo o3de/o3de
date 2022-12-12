@@ -57,7 +57,7 @@ namespace AZ
                 path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphTemplateExtensionWithDot) ||
                 path.ends_with(AZ::Render::EditorMaterialComponentUtil::ShaderExtensionWithDot))
             {
-                openers.push_back({ "Material_Canvas", "Open in Material Canvas (Experimental)...", QIcon(":/Menu/material_canvas.svg"),
+                openers.push_back({ "Material_Canvas", "Open in Material Canvas (Preview)...", QIcon(":/Menu/material_canvas.svg"),
                     [&](const char* fullSourceFileNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
                     {
                         EditorMaterialSystemComponentRequestBus::Broadcast(
@@ -131,7 +131,7 @@ namespace AZ
                       const AZStd::string defaultMaterialGraphTemplate =
                           AtomToolsFramework::GetPathWithoutAlias(AtomToolsFramework::GetSettingsValue<AZStd::string>(
                               "/O3DE/Atom/MaterialCanvas/DefaultMaterialGraphTemplate",
-                              "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/blank.materialgraphtemplate"));
+                              "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/blank_graph.materialgraphtemplate"));
 
                       QWidget* mainWindow = nullptr;
                       AzToolsFramework::EditorRequests::Bus::BroadcastResult(

@@ -81,6 +81,8 @@ void AssetProcessorManagerTest::SetUp()
 
     AssetProcessorTest::SetUp();
 
+    qRegisterMetaType<AssetProcessor::SourceAssetReference>("SourceAssetReference");
+
     AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
     AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 

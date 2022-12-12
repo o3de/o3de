@@ -1276,7 +1276,7 @@ namespace AssetProcessor
             }
             else
             {
-                // If we are here it means its a source file, first see whether there is any overriding file and than try to find products
+                // If we are here it means its a source file, first see whether there is any overriding file and then try to find products
                 QString scanFolder;
                 QString relativeName;
                 if (m_platformConfig->ConvertToRelativePath(normalizedSourceOrProductPath, relativeName, scanFolder))
@@ -1293,12 +1293,14 @@ namespace AssetProcessor
                         overridingFile = AssetUtilities::NormalizeFilePath(overridingFile);
                     }
 
-                    if (m_platformConfig->ConvertToRelativePath(overridingFile, relativeName, scanFolder))
+                    const auto* scanFolderInfo = m_platformConfig->GetScanFolderForFile(overridingFile);
+
+                    if (scanFolderInfo && m_platformConfig->ConvertToRelativePath(overridingFile, scanFolderInfo, relativeName))
                     {
                         AZStd::lock_guard<AZStd::mutex> lock(m_databaseMutex);
                         AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer products;
 
-                        if (m_db->GetProductsBySourceName(relativeName, products))
+                        if (m_db->GetProductsBySourceNameScanFolderID(relativeName, scanFolderInfo->ScanFolderID(), products))
                         {
                             resultCode = ConvertDatabaseProductPathToProductFilename(products[0].m_productName, productFileName);
                         }

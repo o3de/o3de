@@ -862,7 +862,7 @@ namespace UnitTests
     {
         QDir tempPath(m_tempDir.path());
 
-        auto result = m_data->m_reporter->Move("subfolder1/otherfile.tif", "someOtherPlace/otherfile.tif", false, false, true, true);
+        auto result = m_data->m_reporter->Move("subfolder1/otherfile.tif", "someOtherPlace/otherfile.tif", RelocationParameters_RemoveEmptyFoldersFlag | RelocationParameters_UpdateReferencesFlag);
 
         ASSERT_TRUE(result.IsSuccess());
 

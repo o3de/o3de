@@ -45,7 +45,10 @@ namespace AZ
             (CopyRead, AZ_BIT(5)),
 
             /// Supports write access for GPU copy operations.
-            (CopyWrite, AZ_BIT(6)));
+            (CopyWrite, AZ_BIT(6)),
+
+            /// Supports use as a shading rate image on a scope.
+            (ShadingRate, AZ_BIT(7)));
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::ImageBindFlags);
 
