@@ -129,7 +129,8 @@ void GotoPositionDialog::accept()
     const auto yawRadians = AZ::DegToRad(aznumeric_cast<float>(m_ui->m_dymAngleYaw->value()));
 
     // either set or interpolate the camera to the new position and orientation
-    SandboxEditor::HandleDefaultViewportCameraTransitionFromSetting(position, pitchRadians, yawRadians);
+    SandboxEditor::HandleDefaultViewportCameraTransitionFromSetting(
+        position, pitchRadians, yawRadians, SandboxEditor::CameraGoToPositionDuration());
 
     QDialog::accept();
 }

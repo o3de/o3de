@@ -61,6 +61,7 @@ private:
         float m_rotateSmoothness;
         float m_translateSmoothness;
         float m_defaultOrbitDistance;
+        float m_gotoPositionDuration;
         bool m_captureCursorLook;
         bool m_orbitYawRotationInverted;
         bool m_panInvertedX;
@@ -68,6 +69,11 @@ private:
         bool m_rotateSmoothing;
         bool m_translateSmoothing;
         bool m_goToPositionInstantly;
+
+        AZ::Crc32 GoToPositionDurationVisibility() const
+        {
+            return EditorPropertyVisibility(!m_goToPositionInstantly);
+        }
 
         AZ::Crc32 RotateSmoothingVisibility() const
         {

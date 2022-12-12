@@ -61,7 +61,7 @@ static AZStd::vector<AZStd::string> GetEditorInputNames()
 void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reflect(AZ::SerializeContext& serialize)
 {
     serialize.Class<CameraMovementSettings>()
-        ->Version(5)
+        ->Version(6)
         ->Field("TranslateSpeed", &CameraMovementSettings::m_translateSpeed)
         ->Field("RotateSpeed", &CameraMovementSettings::m_rotateSpeed)
         ->Field("BoostMultiplier", &CameraMovementSettings::m_boostMultiplier)
@@ -81,6 +81,7 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reflect(AZ::
         ->Field("DefaultOrbitDistance", &CameraMovementSettings::m_defaultOrbitDistance)
         ->Field("SpeedScale", &CameraMovementSettings::m_speedScale)
         ->Field("GoToPositionInstantly", &CameraMovementSettings::m_goToPositionInstantly)
+        ->Field("GoToPositionDuration", &CameraMovementSettings::m_gotoPositionDuration)
         ->Field("Reset", &CameraMovementSettings::m_resetButton);
 
     if (AZ::EditContext* editContext = serialize.GetEditContext())
@@ -186,10 +187,18 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reflect(AZ::
                 "The default distance to orbit about when there is no entity selected")
             ->Attribute(AZ::Edit::Attributes::Min, minValue)
             ->DataElement(
+                AZ::Edit::UIHandlers::SpinBox,
+                &CameraMovementSettings::m_gotoPositionDuration,
+                "Camera Go To Position Duration",
+                "Time it takes for the camera to interpolate to a given position")
+            ->Attribute(AZ::Edit::Attributes::Visibility, &CameraMovementSettings::GoToPositionDurationVisibility)
+            ->Attribute(AZ::Edit::Attributes::Min, minValue)
+            ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox,
                 &CameraMovementSettings::m_goToPositionInstantly,
                 "Camera Go To Position Instantly",
                 "Camera will instantly go to the set position and won't interpolate there")
+            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ->DataElement(
                 AZ::Edit::UIHandlers::Button, &CameraMovementSettings::m_resetButton, "", "Restore camera movement settings to defaults")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CameraMovementSettings::Reset)
@@ -387,6 +396,7 @@ void CEditorPreferencesPage_ViewportCamera::OnApply()
     SandboxEditor::SetCameraDefaultOrbitDistance(m_cameraMovementSettings.m_defaultOrbitDistance);
     SandboxEditor::SetCameraDefaultEditorOrientation(m_cameraMovementSettings.m_defaultPitchYaw);
     SandboxEditor::SetCameraGoToPositionInstantlyEnabled(m_cameraMovementSettings.m_goToPositionInstantly);
+    SandboxEditor::SetCameraGoToPositionDuration(m_cameraMovementSettings.m_gotoPositionDuration);
 
     SandboxEditor::SetCameraTranslateForwardChannelId(m_cameraInputSettings.m_translateForwardChannelId);
     SandboxEditor::SetCameraTranslateBackwardChannelId(m_cameraInputSettings.m_translateBackwardChannelId);
@@ -434,6 +444,7 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reset()
     SandboxEditor::ResetCameraDefaultOrbitDistance();
     SandboxEditor::ResetCameraDefaultEditorOrientation();
     SandboxEditor::ResetCameraGoToPositionInstantlyEnabled();
+    SandboxEditor::ResetCameraGoToPositionDuration();
 
     Initialize();
 }
@@ -459,6 +470,7 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Initialize()
     m_defaultOrbitDistance = SandboxEditor::CameraDefaultOrbitDistance();
     m_defaultPitchYaw = SandboxEditor::CameraDefaultEditorOrientation();
     m_goToPositionInstantly = SandboxEditor::CameraGoToPositionInstantlyEnabled();
+    m_gotoPositionDuration = SandboxEditor::CameraGoToPositionDuration();
 }
 
 void CEditorPreferencesPage_ViewportCamera::CameraInputSettings::Reset()

@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <AzCore/Math/Vector3.h>
-#include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Quaternion.h>
-#include <SandboxAPI.h>
+#include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzFramework/Viewport/ViewportId.h>
+#include <SandboxAPI.h>
 
 namespace SandboxEditor
 {
@@ -60,21 +60,22 @@ namespace SandboxEditor
     //! @param pitch Amount of pitch in radians.
     //! @param yaw Amount of yaw in radians.
     SANDBOX_API void InterpolateViewportCameraToTransform(
-        AzFramework::ViewportId viewportId, const AZ::Vector3& position, float pitch, float yaw);
+        AzFramework::ViewportId viewportId, const AZ::Vector3& position, float pitch, float yaw, float duration);
 
     //! Sets the default viewport camera to interpolate to the given position and orientation.
     //! @param position The new position of the camera in world space.
     //! @param pitch Amount of pitch in radians.
     //! @param yaw Amount of yaw in radians.
-    SANDBOX_API void InterpolateDefaultViewportCameraToTransform(const AZ::Vector3& position, float pitch, float yaw);
+    SANDBOX_API void InterpolateDefaultViewportCameraToTransform(const AZ::Vector3& position, float pitch, float yaw, float duration);
 
     //! Sets the specified viewport camera to interpolate to the given transform.
     //! @param transform The transform of the camera in world space.
-    SANDBOX_API void InterpolateViewportCameraToTransform(AzFramework::ViewportId viewportId, const AZ::Transform& transform);
+    SANDBOX_API void InterpolateViewportCameraToTransform(
+        AzFramework::ViewportId viewportId, const AZ::Transform& transform, float duration);
 
     //! Sets the default viewport camera to interpolate to the given transform.
     //! @param transform The transform of the camera in world space.
-    SANDBOX_API void InterpolateDefaultViewportCameraToTransform(const AZ::Transform& transform);
+    SANDBOX_API void InterpolateDefaultViewportCameraToTransform(const AZ::Transform& transform, float duration);
 
     //! Gets the specified viewport camera transform in world space.
     SANDBOX_API AZ::Transform GetViewportCameraTransform(AzFramework::ViewportId viewportId);
@@ -86,21 +87,23 @@ namespace SandboxEditor
     //! @param position The new position of the camera in world space.
     //! @param pitch Amount of pitch in radians.
     //! @param yaw Amount of yaw in radians.
-    SANDBOX_API void HandleViewportCameraTransitionFromSetting(AzFramework::ViewportId viewportId, const AZ::Vector3& position, float pitch, float yaw);
+    SANDBOX_API void HandleViewportCameraTransitionFromSetting(
+        AzFramework::ViewportId viewportId, const AZ::Vector3& position, float pitch, float yaw, float duration);
 
     //! Will call either Set or Interpolate camera transform depending on user setting.
     //! @param position The new position of the camera in world space.
     //! @param pitch Amount of pitch in radians.
     //! @param yaw Amount of yaw in radians.
-    SANDBOX_API void HandleDefaultViewportCameraTransitionFromSetting(const AZ::Vector3& position, float pitch, float yaw);
+    SANDBOX_API void HandleDefaultViewportCameraTransitionFromSetting(const AZ::Vector3& position, float pitch, float yaw, float duration);
 
     //! Will call either Set or Interpolate camera transform depending on user setting.
     //! @param transform The transform of the camera in world space.
-    SANDBOX_API void HandleViewportCameraTransitionFromSetting(AzFramework::ViewportId viewportId, const AZ::Transform& transform);
+    SANDBOX_API void HandleViewportCameraTransitionFromSetting(
+        AzFramework::ViewportId viewportId, const AZ::Transform& transform, float duration);
 
     //! Will call either Set or Interpolate camera transform depending on user setting.
     //! @param transform The transform of the camera in world space.
-    SANDBOX_API void HandleDefaultViewportCameraTransitionFromSetting(const AZ::Transform& transform);
+    SANDBOX_API void HandleDefaultViewportCameraTransitionFromSetting(const AZ::Transform& transform, float duration);
 
     //! Returns a quaternion representing a pitch/yaw rotation for a camera.
     //! @param pitch Amount of pitch in radians.
