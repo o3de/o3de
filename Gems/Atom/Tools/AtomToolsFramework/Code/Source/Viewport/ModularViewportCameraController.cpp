@@ -304,7 +304,6 @@ namespace AtomToolsFramework
 
         // ensure the transform we're interpolating to isn't the same as our current transform
         // and the transform we're setting isn't the same as one previously set
-
         if (!currentCameraTransform.IsClose(worldFromLocal) &&
             (!m_cameraAnimation.has_value() || !worldFromLocal.IsClose(m_cameraAnimation->m_transformEnd)))
         {
