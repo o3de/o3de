@@ -54,12 +54,11 @@ def ScriptCanvas_TwoEntities_UseSimultaneously():
     EXPECTED_LINES = ["Entity Name: test_entity_1", "Entity Name: test_entity_2"]
     WAIT_TIME = 0.5  # SECONDS
 
-    # 1) Create temp level
+    #Preconditions
     general.idle_enable(True)
-    result = general.create_level_no_prompt(LEVEL_NAME, 128, 1, 512, True)
-    Report.critical_result(Tests.level_created, result == 0)
-    TestHelper.wait_for_condition(lambda: general.get_current_level_name() == LEVEL_NAME, WAIT_TIME)
-    general.close_pane("Error Report")
+
+    # 1) Create temp level
+    TestHelper.open_level("", "Base")
 
     # 2) Create two new entities with different names
     position = math.Vector3(512.0, 512.0, 32.0)
