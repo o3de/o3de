@@ -29,8 +29,8 @@ namespace AZ
         {
         public:
             using Heap = typename Traits::ObjectType;
-            using HeapAllocator = typename ObjectPool<Traits>;
-            using HeapTiles = typename PageTiles<Heap>;
+            using HeapAllocator = ObjectPool<Traits>;
+            using HeapTiles = PageTiles<Heap>;
 
             using GetHeapMemoryUsageFunction = AZStd::function<RHI::HeapMemoryUsage*()>;
 
