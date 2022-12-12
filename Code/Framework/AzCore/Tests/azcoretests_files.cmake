@@ -226,6 +226,7 @@ set(FILES
     Serialization.cpp
     SerializeContextFixture.h
     Settings/CommandLineTests.cpp
+    Settings/ConfigParserTests.cpp
     Settings/ConfigurableStackTests.cpp
     Settings/SettingsRegistryTests.cpp
     Settings/SettingsRegistryConsoleUtilsTests.cpp

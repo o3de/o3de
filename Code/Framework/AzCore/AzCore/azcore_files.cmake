@@ -600,6 +600,8 @@ set(FILES
     Serialization/std/VariantReflection.inl
     Settings/CommandLine.cpp
     Settings/CommandLine.h
+    Settings/ConfigParser.cpp
+    Settings/ConfigParser.h
     Settings/ConfigurableStack.cpp
     Settings/ConfigurableStack.inl
     Settings/ConfigurableStack.h
