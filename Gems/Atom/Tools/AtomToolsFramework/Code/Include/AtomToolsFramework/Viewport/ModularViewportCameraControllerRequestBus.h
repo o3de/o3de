@@ -29,8 +29,6 @@ namespace AtomToolsFramework
     class ModularViewportCameraControllerRequests : public AZ::EBusTraits
     {
     public:
-        static inline constexpr float InterpolateToTransformDuration = 1.0f;
-
         using BusIdType = AzFramework::ViewportId;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
