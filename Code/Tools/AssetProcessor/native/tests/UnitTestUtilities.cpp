@@ -148,13 +148,13 @@ namespace UnitTests
 
     TraceBusErrorChecker::TraceBusErrorChecker()
     {
-        BusConnect();
+        AZ::Debug::TraceMessageBus::Handler::BusConnect();
     }
 
     TraceBusErrorChecker::~TraceBusErrorChecker()
     {
         EXPECT_FALSE(m_expectingFailure);
-        BusDisconnect();
+        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
     }
 
     void TraceBusErrorChecker::Begin()

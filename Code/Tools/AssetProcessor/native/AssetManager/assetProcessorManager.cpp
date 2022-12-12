@@ -1486,7 +1486,7 @@ namespace AssetProcessor
                 }
 
                 SourceAssetReference sourceAsset(source.m_scanFolderPK, source.m_sourceName.c_str());
-                AZStd::unordered_set<AZ::Data::AssetId> legacySourceAssetIds;
+                AZStd::unordered_set<AZ::Data::AssetId> legacySourceAssetIds; // Keep track of the legacy *asset* Ids to avoid duplicates
                 auto legacySourceUuids = AssetUtilities::GetLegacySourceUuids(sourceAsset);
                 legacySourceAssetIds.reserve(legacySourceUuids.size());
 
@@ -1510,7 +1510,7 @@ namespace AssetProcessor
                     }
                 }
 
-                Q_EMIT AssetMessage( message);
+                Q_EMIT AssetMessage(message);
 
                 AddKnownFoldersRecursivelyForFile(fullProductPath, m_cacheRootDir.absolutePath());
 
@@ -2940,7 +2940,7 @@ namespace AssetProcessor
                             AZ::OSString(scanFolderInfo->ScanPath().toUtf8().constData()),
                             AzToolsFramework::AssetSystem::SourceFileNotificationMessage::FileRemoved,
                             sourceDatabaseEntry.m_sourceGuid);
-                        EBUS_EVENT(AssetProcessor::ConnectionBus, Send, 0, message);
+                        AssetProcessor::ConnectionBus::Broadcast(&AssetProcessor::ConnectionBus::Events::Send, 0, message);
                     }
 
                     CheckDeletedSourceFile(sourceAssetReference, examineFile.m_initialProcessTime);
@@ -4687,8 +4687,7 @@ namespace AssetProcessor
                     AZ_TracePrintf(
                         AssetProcessor::DebugChannel,
                         "GetSourceFilesWhichDependOnSourceFile - source %s is not in asset database and does not exist on disk - "
-                        "dependency lookup may be "
-                        "incomplete\n",
+                        "dependency lookup may be incomplete\n",
                         sourceAsset.AbsolutePath().c_str());
                 }
             }

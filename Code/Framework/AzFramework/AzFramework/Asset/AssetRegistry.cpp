@@ -149,7 +149,7 @@ namespace AzFramework
             m_legacyAssetIdToRealAssetId.erase(rangeItr->second);
         }
 
-        // Erase the readId -> legacyId lookup
+        // Erase the realId -> legacyId lookup
         m_realAssetIdToLegacyAssetIdMap.erase(id);
     }
 
