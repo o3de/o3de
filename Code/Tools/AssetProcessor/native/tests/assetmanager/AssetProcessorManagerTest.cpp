@@ -151,6 +151,9 @@ void AssetProcessorManagerTest::SetUp()
     m_dUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/d.txt")));
 
     ASSERT_FALSE(m_aUuid.IsNull());
+    ASSERT_FALSE(m_bUuid.IsNull());
+    ASSERT_FALSE(m_cUuid.IsNull());
+    ASSERT_FALSE(m_dUuid.IsNull());
 
     AssetRecognizer rec;
     rec.m_name = "txt files";
