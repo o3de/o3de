@@ -122,7 +122,14 @@ def create_linear_nested_prefabs(entities, nested_prefabs_file_name_prefix, nest
         created_prefabs.append(current_prefab)
         created_prefab_instances.append(current_prefab_instance)
         entities = current_prefab_instance.get_direct_child_entities()
+
+        # Focus on the newly created prefab instance before next creation to perform a prefab edit rather than override edit.
+        current_prefab_instance.container_entity.focus_on_owning_prefab()
     
+    # Switch focus back on the originally focused instance.
+    parent_entity = EditorEntity(created_prefab_instances[0].container_entity.get_parent_id())
+    parent_entity.focus_on_owning_prefab()
+
     return created_prefabs, created_prefab_instances
 
 

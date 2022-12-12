@@ -88,6 +88,8 @@ namespace AZ
             AZStd::vector<SubresourceRangeLayout> GetLayout(const RHI::ImageSubresourceRange* range = nullptr) const;
             void SetLayout(VkImageLayout layout, const RHI::ImageSubresourceRange* range = nullptr);
 
+            VkImageUsageFlags GetUsageFlags() const;
+
         private:
             Image() = default;
 
@@ -96,8 +98,8 @@ namespace AZ
 
             RHI::ResultCode BuildNativeImage();
 
-            VkImageCreateFlags GetImageCreateFlags() const;
-            VkImageUsageFlags GetImageUsageFlags() const;
+            VkImageCreateFlags CalculateImageCreateFlags() const;
+            VkImageUsageFlags CalculateImageUsageFlags() const;
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::Image
@@ -147,6 +149,9 @@ namespace AZ
             // Layout of image subresources.
             ImageLayoutProperty m_layout;
             mutable AZStd::mutex m_layoutMutex;
+
+            // Usage flags used for creating the image.
+            VkImageUsageFlags m_usageFlags;
         };        
     }
 }

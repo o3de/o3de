@@ -5,8 +5,9 @@
     "ClassData": {
         "id": "{7EFA6DFB-263B-47D6-AE3E-D68CE909CEBD}",
         "category": "Math Functions",
-        "title": "Split2",
+        "title": "Split Float2",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Extract all input values from a float2",
         "slotDataTypeGroups": [
             "inValue",
             "outX|outY"

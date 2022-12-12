@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Length",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the length of the input vector",
         "slotDataTypeGroups": [
             "inValue",
             "outValue"

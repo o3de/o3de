@@ -132,6 +132,9 @@ namespace SandboxEditor
     SANDBOX_API float CameraDefaultOrbitDistance();
     SANDBOX_API void SetCameraDefaultOrbitDistance(float distance);
 
+    SANDBOX_API bool CameraGoToPositionInstantlyEnabled();
+    SANDBOX_API void SetCameraGoToPositionInstantlyEnabled(bool instant);
+
     SANDBOX_API AzFramework::InputChannelId CameraTranslateForwardChannelId();
     SANDBOX_API void SetCameraTranslateForwardChannelId(AZStd::string_view cameraTranslateForwardId);
 
@@ -204,6 +207,7 @@ namespace SandboxEditor
     SANDBOX_API void ResetCameraDefaultEditorPosition();
     SANDBOX_API void ResetCameraDefaultOrbitDistance();
     SANDBOX_API void ResetCameraDefaultEditorOrientation();
+    SANDBOX_API void ResetCameraGoToPositionInstantlyEnabled();
 
     SANDBOX_API void ResetCameraTranslateForwardChannelId();
     SANDBOX_API void ResetCameraTranslateBackwardChannelId();

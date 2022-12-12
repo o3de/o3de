@@ -910,7 +910,7 @@ namespace MaterialEditor
             // which will later get caught in Process() when trying to access a property.
             if (materialPropertyDependencies.none() || functor->NeedsProcess(dirtyFlags))
             {
-                AZ::RPI::MaterialFunctor::EditorContext context = AZ::RPI::MaterialFunctor::EditorContext(
+                AZ::RPI::MaterialFunctorAPI::EditorContext context = AZ::RPI::MaterialFunctorAPI::EditorContext(
                     m_materialInstance->GetPropertyCollection(), propertyDynamicMetadata,
                     propertyGroupDynamicMetadata, updatedProperties, updatedPropertyGroups,
                     &materialPropertyDependencies);

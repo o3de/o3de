@@ -3,12 +3,13 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "id": "{8FC3A30B-5D12-4959-A9ED-4127F2F39A13}",
+        "id": "{E5729A3B-D265-4ECC-B542-0BB5D6BA5829}",
         "category": "Math Functions",
-        "title": "Combine2",
+        "title": "Float3 From Values",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Construct a float3 from input values",
         "slotDataTypeGroups": [
-            "inX|inY",
+            "inX|inY|inZ",
             "outValue"
         ],
         "inputSlots": [
@@ -43,6 +44,22 @@
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
+            },
+            {
+                "name": "inZ",
+                "displayName": "Z",
+                "description": "Z",
+                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 0.0
+                },
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
             }
         ],
         "outputSlots": [
@@ -50,11 +67,11 @@
                 "name": "outValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypeRegex": "float2",
-                "defaultDataType": "float2",
+                "supportedDataTypeRegex": "float3",
+                "defaultDataType": "float3",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = {(float)inX, (float)inY};"
+                        "SLOTTYPE SLOTNAME = {(float)inX, (float)inY, (float)inZ};"
                     ]
                 }
             }
