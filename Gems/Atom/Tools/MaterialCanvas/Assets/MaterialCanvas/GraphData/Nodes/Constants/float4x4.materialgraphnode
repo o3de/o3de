@@ -7,11 +7,12 @@
         "category": "Constants",
         "title": "Float4x4 Constant",
         "titlePaletteName": "ConstantNodeTitlePalette",
+        "description": "Create a shader constant with the type and value defined by this node.",
         "slotDataTypeGroups": [
             "inRow1|inRow2|inRow3|inRow4",
             "outValue"
         ],
-        "inputSlots": [
+        "propertySlots": [
             {
                 "name": "inRow1",
                 "displayName": "Row1",

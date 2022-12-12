@@ -13,8 +13,6 @@ set(FILES
 
     Source/Document/PassGraphCompiler.cpp
     Source/Document/PassGraphCompiler.h
-    Source/Document/PassGraphCompilerNotificationBus.h
-    Source/Document/PassGraphCompilerRequestBus.h
 
     Source/Window/PassCanvas.qrc
     Source/Window/PassCanvasMainWindow.cpp
