@@ -3168,6 +3168,18 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_BasicTes
     EXPECT_NE(deps.find(m_dependsOnFile2_Source.toUtf8().constData()), deps.end());
     EXPECT_NE(deps.find(m_dependsOnFile1_Job.toUtf8().constData()), deps.end());
     EXPECT_NE(deps.find(m_dependsOnFile2_Job.toUtf8().constData()), deps.end());
+}
+
+TEST_F(SourceFileDependenciesTest, DependenciesSavedWithPathAndUuid_FromAssetIdIsSetCorrectly)
+{
+    AssetProcessor::AssetProcessorManager::JobToProcessEntry job;
+    SetupData(
+        { MakeSourceDependency("a.txt"), MakeSourceDependency(m_uuidOfB) },
+        { MakeJobDependency("c.txt"), MakeJobDependency(m_uuidOfD) },
+        true,
+        true,
+        true,
+        job);
 
     AssetProcessor::SourceAssetReference sourceAsset(m_absPath);
     auto uuid = AssetUtilities::CreateSafeSourceUUIDFromName(sourceAsset.RelativePath().c_str());
@@ -3202,7 +3214,7 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_BasicTes
 
     ASSERT_EQ(dependencyEntry.size(), 4);
 
-    // These should be in the order queried above.  A and C are path based, so should be false, B and D are UUID based and should be true
+    // These should be in the order queried above.  A and C are path based, so FromAssetId should be false, B and D are UUID based so FromAssetId should be true
     EXPECT_FALSE(dependencyEntry[0].m_fromAssetId);
     EXPECT_TRUE(dependencyEntry[1].m_fromAssetId);
     EXPECT_FALSE(dependencyEntry[2].m_fromAssetId);
