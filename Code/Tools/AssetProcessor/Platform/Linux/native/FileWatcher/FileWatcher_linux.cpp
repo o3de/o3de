@@ -104,6 +104,7 @@ void FileWatcher::PlatformImplementation::Finalize()
     if (m_wakeThreadHandle >= 0)
     {
         close(m_wakeThreadHandle);
+        m_wakeThreadHandle = -1;
     }
     m_handleToFolderMap.clear();
     m_alreadyNotifiedCreate.clear();
