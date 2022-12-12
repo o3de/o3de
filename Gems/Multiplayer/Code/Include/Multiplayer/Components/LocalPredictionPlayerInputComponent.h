@@ -107,19 +107,24 @@ namespace Multiplayer
         AZ::ScheduledEvent m_autonomousUpdateEvent; // Drives autonomous input collection
         ClientMigrationStartEvent::Handler m_migrateStartHandler;
         ClientMigrationEndEvent::Handler m_migrateEndHandler;
-#endif
 
         double m_moveAccumulator = 0.0;
-        double m_clientBankedTime = 0.0;
+#endif
 
+#if AZ_TRAIT_SERVER
+        double m_clientBankedTime = 0.0;
         AZ::TimeMs m_lastInputReceivedTimeMs = AZ::Time::ZeroTimeMs;
         AZ::TimeMs m_lastCorrectionSentTimeMs = AZ::Time::ZeroTimeMs;
+#endif
 
+#if AZ_TRAIT_CLIENT
         ClientInputId m_clientInputId = ClientInputId{ 0 }; // Clients incrementing inputId
-        ClientInputId m_lastClientInputId = ClientInputId{ 0 }; // Last inputId processed by the server
         ClientInputId m_lastCorrectionInputId = ClientInputId{ 0 };
+#endif
+
+        ClientInputId m_lastClientInputId = ClientInputId{ 0 }; // Last inputId processed by the server
         ClientInputId m_lastMigratedInputId = ClientInputId{ 0 }; // Used to resend inputs that were queued during a migration event
-        HostFrameId   m_serverMigrateFrameId = InvalidHostFrameId;
+        HostFrameId m_serverMigrateFrameId = InvalidHostFrameId;
 
         bool m_allowMigrateClientInput = false; // True if this component was migrated, we will allow the client to send us migrated inputs (one time only)
     };
