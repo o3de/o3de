@@ -165,6 +165,7 @@ set(FILES
     Memory/LeakDetection.cpp
     Memory.cpp
     Metrics/EventLoggerFactoryTests.cpp
+    Metrics/EventLoggerReflectUtilsTests.cpp
     Metrics/EventLoggerUtilsTests.cpp
     Metrics/JsonTraceEventLoggerTests.cpp
     Module.cpp
