@@ -5,8 +5,9 @@
     "ClassData": {
         "id": "{8C2C6CEF-76DB-4567-A9E5-F39491A23454}",
         "category": "Math Functions",
-        "title": "Smoothstep",
+        "title": "Smooth Step",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns a smooth Hermite interpolation between 0 and 1 (per component)",
         "slotDataTypeGroups": [
             "inValue1|inValue2|inValue3|outValue"
         ],
