@@ -47,7 +47,6 @@ def ScriptCanvas_TwoEntities_UseSimultaneously():
     import azlmbr.legacy.general as general
     import azlmbr.math as math
 
-    LEVEL_NAME = "tmp_level"
     TEST_ENTITY_NAME_1 = "test_entity_1"
     TEST_ENTITY_NAME_2 = "test_entity_2"
     ASSET_PATH = os.path.join("scriptcanvas", "T92563191_test.scriptcanvas")
