@@ -111,7 +111,7 @@ namespace SandboxEditor
 
     void HandleViewportCameraTransitionFromSetting(const AzFramework::ViewportId viewportId, const AZ::Transform& transform)
     {
-        if (CameraGoToPositionInstantly())
+        if (CameraGoToPositionInstantlyEnabled())
         {
             SetViewportCameraTransform(viewportId, transform);
         }

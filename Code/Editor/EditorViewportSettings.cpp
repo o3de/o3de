@@ -492,12 +492,12 @@ namespace SandboxEditor
         AzToolsFramework::SetRegistry(CameraDefaultOrbitDistanceSetting, distance);
     }
 
-    bool CameraGoToPositionInstantly()
+    bool CameraGoToPositionInstantlyEnabled()
     {
         return AzToolsFramework::GetRegistry(CameraGoToPositionInstantlySetting, false);
     }
 
-    void SetCameraGoToPositionInstantly(const bool instant)
+    void SetCameraGoToPositionInstantlyEnabled(const bool instant)
     {
         AzToolsFramework::SetRegistry(CameraGoToPositionInstantlySetting, instant);
     }
@@ -789,7 +789,7 @@ namespace SandboxEditor
         AzToolsFramework::ClearRegistry(CameraDefaultStartingYaw);
     }
 
-    void ResetCameraGoToPositionInstantly()
+    void ResetCameraGoToPositionInstantlyEnabled()
     {
         AzToolsFramework::ClearRegistry(CameraGoToPositionInstantlySetting);
     }
