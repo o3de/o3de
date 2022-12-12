@@ -74,7 +74,8 @@ namespace UnitTests
         AZStd::string contents("This is a unit test file");
 
         AZ::IO::FileIOStream fileStream(path, AZ::IO::OpenMode::ModeWrite);
-        fileStream.Write(contents.size(), contents.data());
+        EXPECT_TRUE(fileStream.IsOpen());
+        EXPECT_EQ(fileStream.Write(contents.size(), contents.data()), contents.size());
         fileStream.Close();
     }
 
@@ -271,6 +272,9 @@ namespace UnitTests
 
         // Generate another metadata file, its the easiest way to "change" a UUID in the metadata file for this test
         m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileB));
+
+        AZ::IO::FileIOBase::GetInstance()->Remove(
+            (AZStd::string(FileA) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
 
         // Copy FileB's metadata onto the FileA metadata
         AZ::IO::FileIOBase::GetInstance()->Rename(

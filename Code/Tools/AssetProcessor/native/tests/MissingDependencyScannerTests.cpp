@@ -12,6 +12,7 @@
 #include <native/utilities/MissingDependencyScanner.h>
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <AssetDatabase/AssetDatabase.h>
+#include <native/utilities/assetUtils.h>
 
 namespace AssetProcessor
 {
@@ -82,11 +83,16 @@ namespace AssetProcessor
         };
         AZ::Outcome<SourceAndProductInfo, AZStd::string> CreateSourceAndProductAsset(AZ::s64 scanFolderPK, const AZStd::string& sourceName, const AZStd::string& platform, const AZStd::string& productName)
         {
+            SourceAssetReference sourceAsset(scanFolderPK, sourceName.c_str());
+            UnitTestUtils::CreateDummyFile(sourceAsset.AbsolutePath().c_str());
+
             using namespace AzToolsFramework::AssetDatabase;
             SourceDatabaseEntry sourceEntry;
             sourceEntry.m_sourceName = sourceName;
             sourceEntry.m_scanFolderPK = scanFolderPK;
-            sourceEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(SourceAssetReference(sourceEntry.m_scanFolderPK, sourceEntry.m_sourceName.c_str()));
+            sourceEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(sourceAsset);
+
+            EXPECT_FALSE(sourceEntry.m_sourceGuid.IsNull());
 
             if (!m_data->m_dbConn->SetSource(sourceEntry))
             {
@@ -191,10 +197,13 @@ namespace AssetProcessor
         scanFolder.m_scanFolder = assetRootPath.absoluteFilePath("subfolder1").toUtf8().constData();
         ASSERT_TRUE(m_data->m_dbConn->SetScanFolder(scanFolder));
 
+        SourceAssetReference sourceAsset(1, "tests/1.source");
+        EXPECT_TRUE(UnitTestUtils::CreateDummyFile(sourceAsset.AbsolutePath().c_str()));
+
         SourceDatabaseEntry sourceEntry;
-        sourceEntry.m_sourceName = "tests/1.source";
-        sourceEntry.m_scanFolderPK = 1;
-        sourceEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(SourceAssetReference(sourceEntry.m_scanFolderPK, sourceEntry.m_sourceName.c_str()));
+        sourceEntry.m_sourceName = sourceAsset.RelativePath().c_str();
+        sourceEntry.m_scanFolderPK = sourceAsset.ScanFolderId();
+        sourceEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(sourceAsset);
         ASSERT_TRUE(m_data->m_dbConn->SetSource(sourceEntry));
 
         JobDatabaseEntry jobEntry;

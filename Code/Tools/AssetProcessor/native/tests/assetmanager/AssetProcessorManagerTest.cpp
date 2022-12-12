@@ -131,6 +131,10 @@ void AssetProcessorManagerTest::SetUp()
     m_normalizedCacheRootDir.setPath(normalizedCacheRoot);
 
     UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/assetProcessorManagerTest.txt"));
+    UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/a.txt"));
+    UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/b.txt"));
+    UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/c.txt"));
+    UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/d.txt"));
 
     m_config->EnablePlatform({ "pc", { "host", "renderer", "desktop" } }, true);
 
@@ -200,18 +204,19 @@ void AssetProcessorManagerTest::TearDown()
 void AssetProcessorManagerTest::CreateSourceAndFile(const char* tempFolderRelativePath)
 {
     auto absolutePath = m_assetRootDir.absoluteFilePath(tempFolderRelativePath);
-
     auto scanFolder = m_config->GetScanFolderForFile(absolutePath);
+
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(absolutePath));
 
     QString relPath;
     m_config->ConvertToRelativePath(absolutePath, scanFolder, relPath);
 
     auto uuid = AssetUtilities::GetSourceUuid(SourceAssetReference(absolutePath.toUtf8().constData()));
 
+    ASSERT_FALSE(uuid.IsNull());
+
     AzToolsFramework::AssetDatabase::SourceDatabaseEntry source(scanFolder->ScanFolderID(), relPath.toUtf8().constData(), uuid, "fingerprint");
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSource(source));
-
-    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(absolutePath));
 }
 
 void AssetProcessorManagerTest::PopulateDatabase()
@@ -3033,12 +3038,25 @@ void SourceFileDependenciesTest::SetUp()
     AssetProcessorManagerTest::SetUp();
 
     m_sourceFileUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/assetProcessorManagerTest.txt")));
+
+    ASSERT_FALSE(m_sourceFileUuid.IsNull());
+
+    // The files need to be created first before a UUID can be assigned
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/a.txt")));
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/b.txt")));
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/c.txt")));
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/d.txt")));
+
     m_uuidOfA = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/a.txt")));
     m_uuidOfB = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/b.txt")));
     m_uuidOfC = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/c.txt")));
     m_uuidOfD = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/d.txt")));
 
-    ASSERT_FALSE(m_sourceFileUuid.IsNull());
+    // Clean up the files, different tests have different requirements for which files should exist
+    QFile(m_assetRootDir.absoluteFilePath("subfolder1/a.txt")).remove();
+    QFile(m_assetRootDir.absoluteFilePath("subfolder1/b.txt")).remove();
+    QFile(m_assetRootDir.absoluteFilePath("subfolder1/c.txt")).remove();
+    QFile(m_assetRootDir.absoluteFilePath("subfolder1/d.txt")).remove();
 }
 
 void SourceFileDependenciesTest::SetupData(

@@ -163,6 +163,11 @@ namespace UnitTests
 
     struct MockVirtualFileIO
     {
+        static constexpr AZ::u32 ComputeHandle(AZ::IO::PathView path)
+        {
+            return AZ::u32(AZStd::hash<AZ::IO::PathView>{}(path));
+        }
+
         MockVirtualFileIO()
         {
             // Cache the existing file io instance and build our mock file io
@@ -181,9 +186,18 @@ namespace UnitTests
 
             ON_CALL(*m_fileIOMock, Open(_, _, _))
                 .WillByDefault(Invoke(
-                    [](auto filePath, auto, IO::HandleType& handle)
+                    [this](auto filePath, IO::OpenMode mode, IO::HandleType& handle)
                     {
-                        handle = AZ::u32(AZStd::hash<AZStd::string>{}(filePath));
+                        handle = ComputeHandle(filePath);
+
+                        int systemMode = AZ::IO::TranslateOpenModeToSystemFileMode(filePath, mode);
+
+                        // Any mode besides OPEN_READ_ONLY creates a file
+                        if ((systemMode & ~int(IO::SystemFile::SF_OPEN_READ_ONLY)) > 0)
+                        {
+                            m_mockFiles[handle] = "";
+                        }
+
                         return AZ::IO::Result(AZ::IO::ResultCode::Success);
                     }));
 
@@ -199,7 +213,10 @@ namespace UnitTests
                 .WillByDefault(Invoke(
                     [this](auto handle, AZ::u64& size)
                     {
-                        size = m_mockFiles[handle].size();
+                        auto itr = m_mockFiles.find(handle);
+
+                        size = itr != m_mockFiles.end() ? itr->second.size() : 0;
+
                         return AZ::IO::ResultCode::Success;
                     }));
 
@@ -207,8 +224,11 @@ namespace UnitTests
                 .WillByDefault(Invoke(
                     [this](const char* filePath, AZ::u64& size)
                     {
-                        auto handle = AZ::u32(AZStd::hash<AZStd::string>{}(filePath));
-                        size = m_mockFiles[handle].size();
+                        auto handle = ComputeHandle(filePath);
+                        auto itr = m_mockFiles.find(handle);
+
+                        size = itr != m_mockFiles.end() ? itr->second.size() : 0;
+
                         return AZ::IO::ResultCode::Success;
                     }));
 
@@ -216,17 +236,17 @@ namespace UnitTests
                 .WillByDefault(Invoke(
                     [this](const char* filePath)
                     {
-                        auto handle = AZ::u32(AZStd::hash<AZStd::string>{}(filePath));
+                        auto handle = ComputeHandle(filePath);
                         auto itr = m_mockFiles.find(handle);
-                        return itr != m_mockFiles.end() && itr->second.size() > 0;
+                        return itr != m_mockFiles.end();
                     }));
 
             ON_CALL(*m_fileIOMock, Rename(_, _))
                 .WillByDefault(Invoke(
                     [this](const char* originalPath, const char* newPath)
                     {
-                        auto originalHandle = AZ::u32(AZStd::hash<AZStd::string>{}(originalPath));
-                        auto newHandle = AZ::u32(AZStd::hash<AZStd::string>{}(newPath));
+                        auto originalHandle = ComputeHandle(originalPath);
+                        auto newHandle = ComputeHandle(newPath);
                         auto itr = m_mockFiles.find(originalHandle);
 
                         if (itr != m_mockFiles.end())
@@ -242,9 +262,9 @@ namespace UnitTests
 
             ON_CALL(*m_fileIOMock, Remove(_))
                 .WillByDefault(Invoke(
-                    [this](const char* path)
+                    [this](const char* filePath)
                     {
-                        auto handle = AZ::u32(AZStd::hash<AZStd::string>{}(path));
+                        auto handle = ComputeHandle(filePath);
 
                         m_mockFiles.erase(handle);
 

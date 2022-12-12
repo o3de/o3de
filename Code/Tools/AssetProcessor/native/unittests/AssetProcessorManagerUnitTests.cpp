@@ -2667,7 +2667,14 @@ namespace AssetProcessor
         QString sourceFileAPath = m_sourceRoot.absoluteFilePath("subfolder1/some/random/folders/FileA.txt");
         QString sourceFileBPath = m_sourceRoot.absoluteFilePath("subfolder1/FileB.txt");
         QString sourceFileCPath = m_sourceRoot.absoluteFilePath("FileC.txt");
+
+        EXPECT_TRUE(CreateDummyFile(sourceFileAPath, ""));
+        EXPECT_TRUE(CreateDummyFile(sourceFileBPath, ""));
+        EXPECT_TRUE(CreateDummyFile(sourceFileCPath, ""));
+
         sourceFileBUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(sourceFileBPath));
+
+        EXPECT_FALSE(sourceFileBUuid.IsNull());
 
         constexpr const char* productFileAFilename = "fileaproduct.txt";
         constexpr const char* productFileBFilename = "filebproduct1.txt";
@@ -2681,9 +2688,6 @@ namespace AssetProcessor
         QString productFileCPath = m_cacheRoot.filePath(QString("pc/") + productFileCFilename);
         QString product2FileCPath = m_cacheRoot.filePath(QString("pc/") + product2FileCFilename);
 
-        EXPECT_TRUE(CreateDummyFile(sourceFileAPath, ""));
-        EXPECT_TRUE(CreateDummyFile(sourceFileBPath, ""));
-        EXPECT_TRUE(CreateDummyFile(sourceFileCPath, ""));
         EXPECT_TRUE(CreateDummyFile(productFileAPath, "product"));
         EXPECT_TRUE(CreateDummyFile(productFileBPath, "product"));
         EXPECT_TRUE(CreateDummyFile(product2FileBPath, "product"));

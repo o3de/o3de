@@ -1109,8 +1109,10 @@ namespace AssetProcessor
 
     TEST_F(AssetCatalogTest_AssetInfo, FindSource_NotProcessed_NotInQueue_FindsSource)
     {
+        EXPECT_TRUE(UnitTestUtils::CreateDummyFileAZ(m_customDataMembers->m_assetAFullPath.c_str()));
         // Get accurate UUID based on source database name instead of using the one that was randomly generated
         AZ::Uuid expectedSourceUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_customDataMembers->m_assetAFullPath.c_str()));
+        EXPECT_FALSE(expectedSourceUuid.IsNull());
 
         // These calls should find the information even though the asset is not in the database and hasn't been queued up yet
         EXPECT_TRUE(GetSourceInfoBySourcePath(true, m_customDataMembers->m_assetASourceRelPath.c_str(), expectedSourceUuid, m_customDataMembers->m_assetASourceRelPath.c_str(), m_customDataMembers->m_subfolder1AbsolutePath.c_str()));
@@ -1119,8 +1121,10 @@ namespace AssetProcessor
 
     TEST_F(AssetCatalogTest_AssetInfo, FindSource_NotProcessed_NotInQueue_RegisteredAsSourceType_FindsSource)
     {
+        EXPECT_TRUE(UnitTestUtils::CreateDummyFileAZ(m_customDataMembers->m_assetAFullPath.c_str()));
         // Get accurate UUID based on source database name instead of using the one that was randomly generated
         AZ::Uuid expectedSourceUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_customDataMembers->m_assetAFullPath.c_str()));
+        EXPECT_FALSE(expectedSourceUuid.IsNull());
 
         // Register as source type
         AzToolsFramework::ToolsAssetSystemBus::Broadcast(&AzToolsFramework::ToolsAssetSystemRequests::RegisterSourceAssetType, m_customDataMembers->m_assetAType, m_customDataMembers->m_assetAFileFilter.c_str());
@@ -1148,10 +1152,13 @@ namespace AssetProcessor
 
             for (int i = 0; i < NumTestAssets; ++i)
             {
+                SourceAssetReference sourceAsset(1, AZStd::to_string(i).c_str());
+                UnitTestUtils::CreateDummyFile(sourceAsset.AbsolutePath().c_str());
+
                 SourceDatabaseEntry sourceEntry;
-                sourceEntry.m_sourceName = AZStd::to_string(i);
-                sourceEntry.m_scanFolderPK = 1;
-                sourceEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(SourceAssetReference(sourceEntry.m_scanFolderPK, sourceEntry.m_sourceName.c_str()));
+                sourceEntry.m_sourceName = sourceAsset.RelativePath().c_str();
+                sourceEntry.m_scanFolderPK = sourceAsset.ScanFolderId();
+                sourceEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(sourceAsset);
                 db.SetSource(sourceEntry);
 
                 JobDatabaseEntry jobEntry;

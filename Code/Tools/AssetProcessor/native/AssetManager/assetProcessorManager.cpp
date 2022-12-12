@@ -4669,17 +4669,30 @@ namespace AssetProcessor
         if (m_platformConfig->ConvertToRelativePath(sourcePath, databasePath, scanFolder))
         {
             SourceAssetReference sourceAsset(sourcePath);
+            AZ::Uuid uuid;
 
             AzToolsFramework::AssetDatabase::SourceDatabaseEntry databaseEntry;
-            if(!m_stateData->GetSourceBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), databaseEntry))
+            if(m_stateData->GetSourceBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), databaseEntry))
             {
-                AZ_TracePrintf(
-                    AssetProcessor::DebugChannel,
-                    "GetSourceFilesWhichDependOnSourceFile - failed to find source %s in asset database - dependency lookup may be incomplete\n",
-                    sourceAsset.AbsolutePath().c_str());
+                uuid = databaseEntry.m_sourceGuid;
+            }
+            else
+            {
+                if (AZ::IO::FileIOBase::GetInstance()->Exists(sourceAsset.AbsolutePath().c_str()))
+                {
+                    uuid = AssetUtilities::GetSourceUuid(sourceAsset);
+                }
+                else
+                {
+                    AZ_TracePrintf(
+                        AssetProcessor::DebugChannel,
+                        "GetSourceFilesWhichDependOnSourceFile - source %s is not in asset database and does not exist on disk - "
+                        "dependency lookup may be "
+                        "incomplete\n",
+                        sourceAsset.AbsolutePath().c_str());
+                }
             }
 
-            AZ::Uuid uuid = databaseEntry.m_sourceGuid;
             m_stateData->QuerySourceDependencyByDependsOnSource(
                 uuid,
                 databasePath.toUtf8().constData(),

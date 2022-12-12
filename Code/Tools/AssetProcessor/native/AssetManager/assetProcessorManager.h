@@ -262,8 +262,8 @@ namespace AssetProcessor
 
         void SourceDeleted(SourceAssetReference sourceAsset);
         void SourceFolderDeleted(QString folderPath);
-        void SourceQueued(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid, SourceAssetReference sourceAssetReference);
-        void SourceFinished(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid);
+        void SourceQueued(AZ::Uuid sourceUuid, AZStd::unordered_set<AZ::Uuid> legacyUuids, SourceAssetReference sourceAssetReference);
+        void SourceFinished(AZ::Uuid sourceUuid, AZStd::unordered_set<AZ::Uuid> legacyUuids);
         void JobRemoved(AzToolsFramework::AssetSystem::JobInfo jobInfo);
 
         void JobComplete(JobEntry jobEntry, AzToolsFramework::AssetSystem::JobStatus status);
