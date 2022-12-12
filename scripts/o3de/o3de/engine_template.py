@@ -542,7 +542,6 @@ def create_template(source_path: pathlib.Path,
     # if not specified, source_name defaults to the last component of the source_path
     if not source_name:
         source_name = os.path.basename(source_path)
-    sanitized_source_name = utils.sanitize_identifier_for_cpp(source_name)
 
     # if no template path, use default_templates_folder path
     if not template_path:
@@ -652,11 +651,17 @@ def create_template(source_path: pathlib.Path,
 
     os.makedirs(template_path, exist_ok=True)
 
+    # source name variants
+    sanitized_source_name = utils.sanitize_identifier_for_cpp(source_name)
+    sanitized_source_name_lower_first = sanitized_source_name[0].lower() + sanitized_source_name[1:]
+
     # set the src templates name as the ${Name}
     replacements.append((source_name.lower(), '${NameLower}'))
     replacements.append((source_name.upper(), '${NameUpper}'))
     replacements.append((source_name, '${Name}'))
     replacements.append((sanitized_source_name, '${SanitizedCppName}'))
+    replacements.append((sanitized_source_name_lower_first, '${SanitizedCppNameLowerFirst}'))
+
     sanitized_name_index = len(replacements) - 1
 
     def _is_cpp_file(file_path: pathlib.Path) -> bool:
@@ -1379,15 +1384,20 @@ def create_from_template(destination_path: pathlib.Path,
         with_this = replace.pop(0)
         replacements.append((replace_this, with_this))
 
+    # destination name variants
     sanitized_cpp_name = utils.sanitize_identifier_for_cpp(destination_name)
+    sanitized_cpp_name_lower_first = sanitized_cpp_name[0].lower() + sanitized_cpp_name[1:]
     lowercase_name = destination_name.lower()
     sanitized_lowercase_name = utils.sanitize_identifier_for_cpp(lowercase_name)
+
     # dst name is Name
     replacements.append(("${Name}", destination_name))
     replacements.append(("${NameUpper}", destination_name.upper()))
     replacements.append(("${NameLower}", lowercase_name))
-    replacements.append(("${SanitizedNameLower}", lowercase_name))
+    replacements.append(("${SanitizedNameLower}", sanitized_lowercase_name))
     replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
+    replacements.append(("${SanitizedCppNameLowerFirst}", sanitized_cpp_name_lower_first))
+
 
     if _instantiate_template(template_json_data,
                              destination_name,
@@ -1690,12 +1700,16 @@ def create_project(project_path: pathlib.Path,
         with_this = replace.pop(0)
         replacements.append((replace_this, with_this))
 
+    # project name variants
     sanitized_cpp_name = utils.sanitize_identifier_for_cpp(project_name)
+    sanitized_cpp_name_lower_first = sanitized_cpp_name[0].lower() + sanitized_cpp_name[1:]
+
     # project name
     replacements.append(("${Name}", project_name))
     replacements.append(("${NameUpper}", project_name.upper()))
     replacements.append(("${NameLower}", project_name.lower()))
     replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
+    replacements.append(("${SanitizedCppNameLowerFirst}", sanitized_cpp_name_lower_first))
 
     # was a project id specified
     if project_id:
@@ -2092,15 +2106,19 @@ def create_gem(gem_path: pathlib.Path,
         with_this = replace.pop(0)
         replacements.append((replace_this, with_this))
 
+    # gem name variants
     sanitized_cpp_name = utils.sanitize_identifier_for_cpp(gem_name)
+    sanitized_cpp_name_lower_first = sanitized_cpp_name[0].lower() + sanitized_cpp_name[1:]
     lowercase_name = gem_name.lower()
     sanitized_lowercase_name = utils.sanitize_identifier_for_cpp(lowercase_name)
+    
     # gem name
     replacements.append(("${Name}", gem_name))
     replacements.append(("${NameUpper}", gem_name.upper()))
     replacements.append(("${NameLower}", lowercase_name))
     replacements.append(("${SanitizedNameLower}", sanitized_lowercase_name))
     replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
+    replacements.append(("${SanitizedCppNameLowerFirst}", sanitized_cpp_name_lower_first))
 
     replacements.append(("${DisplayName}", display_name if display_name else gem_name))
     replacements.append(("${Summary}", summary if summary else ""))

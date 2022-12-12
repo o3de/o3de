@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+
+<Component
+    Name="${SanitizedCppName}" 
+    Namespace="${GemName}" 
+    OverrideComponent="true" 
+    OverrideController="true" 
+    OverrideInclude="Source/Components/${SanitizedCppName}.h"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="MultiplayerAutoComponentSchema.xsd">
+
+    <ComponentRelation Constraint="Required" HasController="true" Name="NetworkTransformComponent" Namespace="Multiplayer" Include="Multiplayer/Components/NetworkTransformComponent.h" />
+
+    <NetworkInput Type="float" Name="MyInput" Init="1.0f" />
+
+    <NetworkProperty Type="float"  Name="MyNetworkProperty" Init="0.0f" Container="Object" ReplicateFrom="Authority" ReplicateTo="Client" IsPublic="false" IsRewindable="false" IsPredictable="false" ExposeToEditor="false" GenerateEventBindings="false" Description="" />
+
+    <RemoteProcedure Name="MyRPC" InvokeFrom="Authority" HandleOn="Client" IsPublic="false" IsReliable="false" GenerateEventBindings="false" Description="" >
+        <Param Type="float" Name="MyRPCParam" />
+    </RemoteProcedure>
+
+    <ArchetypeProperty Type="AZStd::string" Name="MyArchetype" Init="" Container="Array" Count="4" ExposeToEditor="true" Description="" />
+</Component>

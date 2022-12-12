@@ -1,0 +1,38 @@
+{
+    "template_name": "DefaultMultiplayerComponent",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "display_name": "Default Multiplayer Component Template",
+    "summary": "A multiplayer component template for a typical game multiplayer component.",
+    "canonical_tags": [
+        "Template"
+    ],
+    "user_tags": [
+        "DefaultMultiplayerComponent"
+    ],
+    "icon_path": "preview.png",
+    "copyFiles": [
+        {
+            "file": "Source/Components/${Name}.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Source/Components/${Name}.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Source/AutoGen/${Name}.AutoComponent.xml",
+            "isTemplated": true
+        }
+    ],
+    "createDirectories": [
+        {
+            "dir": "Source/AutoGen"
+        },
+        {
+            "dir": "Source/Components"
+        }
+    ]
+}
