@@ -3181,8 +3181,6 @@ TEST_F(SourceFileDependenciesTest, DependenciesSavedWithPathAndUuid_FromAssetIdI
         true,
         job);
 
-    AssetProcessor::SourceAssetReference sourceAsset(m_absPath);
-    auto uuid = AssetUtilities::CreateSafeSourceUUIDFromName(sourceAsset.RelativePath().c_str());
     AZStd::vector<AzToolsFramework::AssetDatabase::SourceFileDependencyEntry> dependencyEntry;
     m_assetProcessorManager->m_stateData->GetSourceFileDependenciesByDependsOnSource(
         m_uuidOfA,
