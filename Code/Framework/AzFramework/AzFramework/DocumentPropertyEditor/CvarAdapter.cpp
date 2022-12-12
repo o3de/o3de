@@ -18,7 +18,13 @@ namespace AZ::DocumentPropertyEditor
     {
         Impl(CvarAdapter* adapter)
             : m_adapter(adapter)
+            , m_commandInvokedHandler(
+                  [adapter](AZStd::string_view, const AZ::ConsoleCommandContainer&, AZ::ConsoleFunctorFlags, AZ::ConsoleInvokedFrom)
+                  {
+                      adapter->NotifyResetDocument();
+                  })
         {
+            m_commandInvokedHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
         }
 
         template<typename T>
@@ -152,6 +158,7 @@ namespace AZ::DocumentPropertyEditor
         }
 
         CvarAdapter* m_adapter;
+        AZ::ConsoleCommandInvokedEvent::Handler m_commandInvokedHandler;
     };
 
     CvarAdapter::CvarAdapter()

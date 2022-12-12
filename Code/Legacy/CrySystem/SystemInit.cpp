@@ -620,15 +620,21 @@ public:
         }
 
         gEnv->pConsole->RemoveCommand(functor->GetName());
-        if (functor->GetTypeId() != AZ::TypeId::CreateNull())
+
+        // only add CVar versions if they are not already present
+        if (!gEnv->pConsole->GetCVar(functor->GetName()))
         {
-            AZ::CVarFixedString value;
-            functor->GetValue(value);
-            gEnv->pConsole->RegisterString(functor->GetName(), value.c_str(), cryFlags, functor->GetDesc(), AzConsoleToCryConsoleBinder::OnVarChanged);
-        }
-        else
-        {
-            gEnv->pConsole->AddCommand(functor->GetName(), AzConsoleToCryConsoleBinder::OnInvoke, cryFlags, functor->GetDesc());
+            if (functor->GetTypeId() != AZ::TypeId::CreateNull())
+            {
+                AZ::CVarFixedString value;
+                functor->GetValue(value);
+                gEnv->pConsole->RegisterString(
+                    functor->GetName(), value.c_str(), cryFlags, functor->GetDesc(), AzConsoleToCryConsoleBinder::OnVarChanged);
+            }
+            else
+            {
+                gEnv->pConsole->AddCommand(functor->GetName(), AzConsoleToCryConsoleBinder::OnInvoke, cryFlags, functor->GetDesc());
+            }
         }
     }
 

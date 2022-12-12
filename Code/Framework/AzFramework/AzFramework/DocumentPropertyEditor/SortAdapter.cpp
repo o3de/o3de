@@ -60,7 +60,7 @@ namespace AZ::DocumentPropertyEditor
         {
             GenerateFullTree();
         }
-        NotifyResetDocument(DocumentResetType::HardReset);
+        NotifyResetDocument();
     }
 
     void RowSortAdapter::HandleDomChange([[maybe_unused]] const Dom::Patch& patch)

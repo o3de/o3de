@@ -1091,11 +1091,16 @@ AZ::ConsoleCommandInvokedEvent::Handler ConsoleVariableEditor::m_commandInvokedH
             AzToolsFramework::UnregisterViewPane(LyViewPane::ConsoleVariables);
             ConsoleVariableEditor::RegisterViewClass();
         }
-        else
+
+        // find the cvar that changed and keep the console informed
+        auto changedCVar = GetIEditor()->GetSystem()->GetIConsole()->GetCVar(AZStd::string(command).c_str());
+        if (changedCVar)
         {
-            // find the cvar that changed and keep the ConsoleVariableEditor informed
-            auto changedCVar = GetIEditor()->GetSystem()->GetIConsole()->GetCVar(AZStd::string(command).c_str());
-            if (changedCVar)
+            if (AzToolsFramework::DocumentPropertyEditor::ShouldReplaceRPE())
+            {
+                // <apm> get the new CVar Editor to commit this value change to the same system that the Console uses
+            }
+            else
             {
                 OnVariableUpdated(changedCVar);
             }
@@ -1189,7 +1194,6 @@ void ConsoleVariableEditor::RegisterViewClass()
     {
         AzToolsFramework::ViewPaneOptions opts;
         opts.paneRect = QRect(100, 100, 340, 500);
-        opts.isDeletable = false;
         AzToolsFramework::RegisterViewPane<ConsoleVariableEditor>(LyViewPane::ConsoleVariables, LyViewPane::CategoryOther, opts);
     }
 }
