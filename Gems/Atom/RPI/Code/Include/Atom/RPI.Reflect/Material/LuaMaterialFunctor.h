@@ -333,9 +333,6 @@ namespace AZ
                 LuaMaterialFunctorAPI::ShaderItem GetShader(AZStd::size_t index);
                 LuaMaterialFunctorAPI::ShaderItem GetShaderByTag(const char* shaderTag);
                 bool HasShaderWithTag(const char* shaderTag);
-
-            private:
-                MaterialFunctorAPI::PipelineRuntimeContext* m_runtimeContextImpl = nullptr;
             };
 
             //! Wraps MaterialFunctorAPI::EditorContext with lua bindings

@@ -529,7 +529,6 @@ namespace AZ
             : LuaMaterialFunctorAPI::CommonRuntimeConfiguration(runtimeContextImpl->GetMaterialPropertyPsoHandling(), materialPropertyDependencies, runtimeContextImpl->GetMaterialPropertiesLayout())
             , LuaMaterialFunctorAPI::ReadMaterialPropertyValues(runtimeContextImpl, materialNameContext)
             , LuaMaterialFunctorAPI::ConfigureShaders(runtimeContextImpl, materialNameContext, this)
-            , m_runtimeContextImpl(runtimeContextImpl)
         {
         }
 
