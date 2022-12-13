@@ -749,7 +749,15 @@ namespace GradientSignal
         }
 
         // Invalid image asset or failed path creation, try creating a new name.
-        return AZStd::string::format(AZ_STRING_FORMAT "_gsi.tif", AZ_STRING_ARG(GetEntity()->GetName()));
+        AZ::IO::Path defaultPath;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            settingsRegistry->Get(defaultPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
+        }
+
+        defaultPath /= AZ::IO::FixedMaxPathString::format(AZ_STRING_FORMAT "_gsi.tif", AZ_STRING_ARG(GetEntity()->GetName()));
+
+        return defaultPath.Native();
     }
 
     bool EditorImageGradientComponent::SaveImage()

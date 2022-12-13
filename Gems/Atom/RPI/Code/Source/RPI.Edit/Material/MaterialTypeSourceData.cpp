@@ -11,6 +11,7 @@
 #include <Atom/RPI.Edit/Material/MaterialPropertyGroupSerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertySourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataHolder.h>
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAssetCreator.h>
@@ -82,10 +83,11 @@ namespace AZ
                     ->Field("propertyGroups", &PropertyLayout::m_propertyGroups)
                     ;
 
-                serializeContext->Class<MaterialPipelineData>()
+                serializeContext->Class<MaterialPipelineState>()
                     ->Version(1)
-                    ->Field("shaders", &MaterialPipelineData::m_shaderCollection)
-                    ->Field("functors", &MaterialPipelineData::m_materialFunctorSourceData)
+                    ->Field("properties", &MaterialPipelineState::m_pipelinePropertyLayout)
+                    ->Field("shaders", &MaterialPipelineState::m_shaderCollection)
+                    ->Field("functors", &MaterialPipelineState::m_materialFunctorSourceData)
                     ;
 
                 serializeContext->RegisterGenericType<VersionUpdates>();
@@ -634,11 +636,12 @@ namespace AZ
         bool MaterialTypeSourceData::BuildProperty(
             const AZStd::string& materialTypeSourceFilePath,
             MaterialTypeAssetCreator& materialTypeAssetCreator,
+            const Name& materialPipelineName,
             MaterialNameContext materialNameContext,
             const Name& propertyId,
             const MaterialPropertySourceData& propertySourceData) const
         {
-            materialTypeAssetCreator.BeginMaterialProperty(propertyId, propertySourceData.m_dataType);
+            materialTypeAssetCreator.BeginMaterialProperty(propertyId, propertySourceData.m_dataType, materialPipelineName);
 
             if (propertySourceData.m_dataType == MaterialPropertyDataType::Enum)
             {
@@ -651,6 +654,13 @@ namespace AZ
                 {
                 case MaterialPropertyOutputType::ShaderInput:
                 {
+                    if (!materialPipelineName.IsEmpty())
+                    {
+                        AZ_Error(MaterialTypeSourceDataDebugName, false, "Material pipeline '%s' property '%s' uses unsupported connection type '%s'.",
+                            materialPipelineName.GetCStr(), propertyId.GetCStr(), ToString(output.m_type));
+                        return false;
+                    }
+
                     Name fieldName{output.m_name};
                     materialNameContext.ContextualizeSrgInput(fieldName);
                     materialTypeAssetCreator.ConnectMaterialPropertyToShaderInput(fieldName);
@@ -669,6 +679,12 @@ namespace AZ
                     materialTypeAssetCreator.ConnectMaterialPropertyToShaderEnabled(shaderTag);
                     break;
                 }
+                case MaterialPropertyOutputType::InternalProperty:
+                {
+                    Name propertyName{output.m_name};
+                    materialTypeAssetCreator.ConnectMaterialPropertyToInternalProperty(propertyName);
+                    break;
+                }
                 case MaterialPropertyOutputType::Invalid:
                     // Don't add any output mappings, this is the case when material functors are expected to process the property
                     break;
@@ -685,14 +701,14 @@ namespace AZ
             {
                 materialTypeAssetCreator.ReportWarning("Default value for material property '%s' is invalid.", propertyId.GetCStr());
             }
-            else
+            else if(!materialTypeAssetCreator.IsFailed()) // If the creator failed, then ResolveSourceValue() might report misleading errors
             {
                 // Resolve value if needed
                 MaterialPropertyValue resolvedValue = ResolveSourceValue(
                     propertyId, propertySourceData.m_value, materialTypeSourceFilePath,
-                    materialTypeAssetCreator.GetMaterialPropertiesLayout(),
+                    materialTypeAssetCreator.GetMaterialPropertiesLayout(materialPipelineName),
                     [&](const char* message) { materialTypeAssetCreator.ReportError("%s", message); });
-                materialTypeAssetCreator.SetPropertyValue(propertyId, resolvedValue);
+                materialTypeAssetCreator.SetPropertyValue(propertyId, resolvedValue, materialPipelineName);
             }
 
             return true;
@@ -742,7 +758,7 @@ namespace AZ
                     return false;
                 }
 
-                if (!BuildProperty(materialTypeSourceFilePath, materialTypeAssetCreator, materialNameContext, propertyId, *property))
+                if (!BuildProperty(materialTypeSourceFilePath, materialTypeAssetCreator, MaterialPipelineNone, materialNameContext, propertyId, *property))
                 {
                     return false;
                 }
@@ -776,7 +792,7 @@ namespace AZ
                 MaterialFunctorSourceData::FunctorResult result = functorData->CreateFunctor(
                     MaterialFunctorSourceData::RuntimeContext(
                         materialTypeSourceFilePath,
-                        materialTypeAssetCreator.GetMaterialPropertiesLayout(),
+                        materialTypeAssetCreator.GetMaterialPropertiesLayout(MaterialPipelineNone),
                         materialTypeAssetCreator.GetMaterialShaderResourceGroupLayout(),
                         &materialNameContext
                     )
@@ -787,7 +803,7 @@ namespace AZ
                     Ptr<MaterialFunctor>& functor = result.GetValue();
                     if (functor != nullptr)
                     {
-                        materialTypeAssetCreator.AddMaterialFunctor(functor);
+                        materialTypeAssetCreator.AddMaterialFunctor(functor, MaterialPipelineNone);
 
                         for (AZ::Name optionName : functorData->GetActualSourceData()->GetShaderOptionDependencies())
                         {
@@ -812,7 +828,7 @@ namespace AZ
             if (m_shaderCollection.empty() && m_pipelineData.empty())
             {
                 // Whenever there is no explicit shader collection, the material type is considered to be in the abstract format.
-                // Even if materialShaderCode and lightingModel are missing, it should still technically work as an abstract format by using
+                // Even if "materialShaderCode" and "lightingModel" are missing, it should still technically work as an abstract format by using
                 // the material pipeline to generate default shaders.
                 return Format::Abstract;
             }
@@ -909,11 +925,23 @@ namespace AZ
 
             for (auto& functorData : materialFunctorSourceData)
             {
+                // Material pipelines do not have access to the Material ShaderResourceGroup.
+                // The material type and material pipeline data are logically decoupled from each other, with careful separation of
+                // concerns to ensure modularity. The definition of the material's ShaderResouceGroup (usually called "MaterialSrg") is strictly the
+                // responsibility of the .materialtype file, and the .materialpipeline file cannot be aware of it. Even though the MaterialSrg *does*
+                // appear in the final ShaderCollection inside each MaterialTypeAsset::MaterialPipelinePayload object, we do not allow the MaterialPipelinePayload's
+                // properties to access it since the data originates from the .materialtype file.
+                const RHI::ShaderResourceGroupLayout* shaderResourceGroupLayout = nullptr;
+                if (materialPipelineName == MaterialPipelineNone)
+                {
+                    shaderResourceGroupLayout = materialTypeAssetCreator.GetMaterialShaderResourceGroupLayout();
+                }
+
                 MaterialFunctorSourceData::FunctorResult result = functorData->CreateFunctor(
                     MaterialFunctorSourceData::RuntimeContext(
                         materialTypeSourceFilePath,
-                        materialTypeAssetCreator.GetMaterialPropertiesLayout(),
-                        materialTypeAssetCreator.GetMaterialShaderResourceGroupLayout(),
+                        materialTypeAssetCreator.GetMaterialPropertiesLayout(materialPipelineName),
+                        shaderResourceGroupLayout,
                         &nameContext
                     )
                 );
@@ -970,7 +998,7 @@ namespace AZ
             // All the shaders must be added before building the property list, because BuildPropertyList will attempt to connect
             // properties to shader inputs.
 
-            if (!AddShaders(materialTypeAssetCreator, MaterialPipelineNameCommon, m_shaderCollection, materialTypeSourceFilePath))
+            if (!AddShaders(materialTypeAssetCreator, MaterialPipelineNone, m_shaderCollection, materialTypeSourceFilePath))
             {
                 return Failure();
             }
@@ -983,7 +1011,20 @@ namespace AZ
                 }
             }
 
-            // Now that all the shaders are in place, we can add the properties which may reference the shaders
+            // Also add internal material pipeline properties before main properties, because the main properties might try and connect to these.
+
+            for (auto& [materialPipelineName, materialPipelineData] : m_pipelineData)
+            {
+                for (const MaterialPropertySourceData& property : materialPipelineData.m_pipelinePropertyLayout)
+                {
+                    if (!BuildProperty(materialTypeSourceFilePath, materialTypeAssetCreator, materialPipelineName, MaterialNameContext{}, Name{property.GetName()}, property))
+                    {
+                        return Failure();
+                    }
+                }
+            }
+
+            // Now that all the shaders and material pipeline properties are in place, we can add the properties which may reference them
 
             for (const AZStd::unique_ptr<PropertyGroup>& propertyGroup : m_propertyLayout.m_propertyGroups)
             {
@@ -997,7 +1038,7 @@ namespace AZ
 
             // We cannot create the MaterialFunctor until after all the properties are added because
             // CreateFunctor() may need to look up properties in the MaterialPropertiesLayout
-            if(!AddFunctors(materialTypeAssetCreator, MaterialPipelineNameCommon, m_materialFunctorSourceData, materialTypeSourceFilePath))
+            if(!AddFunctors(materialTypeAssetCreator, MaterialPipelineNone, m_materialFunctorSourceData, materialTypeSourceFilePath))
             {
                 return Failure();
             }
@@ -1013,7 +1054,7 @@ namespace AZ
             // Set materialtype version and add each version update object. We do this at the end so
             // that the MaterialPropertiesLayout is known in order to resolve values within the
             // version updates (e.g. in setValue update actions).
-            const MaterialPropertiesLayout* materialPropertiesLayout = materialTypeAssetCreator.GetMaterialPropertiesLayout();
+            const MaterialPropertiesLayout* materialPropertiesLayout = materialTypeAssetCreator.GetMaterialPropertiesLayout(MaterialPipelineNone);
             auto sourceDataResolver = [&](const Name& propertyId, const MaterialPropertyValue& sourceValue)
             {
                 return ResolveSourceValue(

@@ -1706,13 +1706,14 @@ namespace AZ
 
         bool ModelDataInstance::MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const
         {
+            bool requiresForwardPassIbl = false;
+
             // look for a shader that has the o_materialUseForwardPassIBLSpecular option set
             // Note: this should be changed to have the material automatically set the forwardPassIBLSpecular
             // property and look for that instead of the shader option.
             // [GFX TODO][ATOM-5040] Address Property Metadata Feedback Loop
-            for (auto& shaderCollectionIter : material->GetShaderCollections())
-            {
-                for (auto& shaderItem : shaderCollectionIter.second)
+            material->ForAllShaderItems(
+                [&](const Name&, const RPI::ShaderCollection::Item& shaderItem)
                 {
                     if (shaderItem.IsEnabled())
                     {
@@ -1722,15 +1723,16 @@ namespace AZ
                             RPI::ShaderOptionValue value = shaderItem.GetShaderOptionGroup().GetValue(Name{"o_materialUseForwardPassIBLSpecular"});
                             if (value.GetIndex() == 1)
                             {
-                                return true;
+                                requiresForwardPassIbl = true;
+                                return false; // break
                             }
                         }
-
                     }
-                }
-            }
 
-            return false;
+                    return true; // continue
+                });
+
+            return requiresForwardPassIbl;
         }
 
         void ModelDataInstance::SetVisible(bool isVisible)

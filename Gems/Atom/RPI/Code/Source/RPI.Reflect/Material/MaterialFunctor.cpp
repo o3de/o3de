@@ -141,13 +141,14 @@ namespace AZ
             const MaterialPropertyFlags* materialPropertyDependencies,
             MaterialPropertyPsoHandling psoHandling,
             ShaderResourceGroup* shaderResourceGroup,
-            MaterialPipelineShaderCollections* shaderCollections
+            ShaderCollection* generalShaderCollection,
+            MaterialPipelineDataMap* materialPipelineData
         )
             : MaterialFunctorAPI::CommonRuntimeConfiguration(psoHandling)
             , MaterialFunctorAPI::ReadMaterialPropertyValues(materialProperties, materialPropertyDependencies)
-            , MaterialFunctorAPI::ConfigureShaders(&(*shaderCollections)[MaterialPipelineNameCommon])
+            , MaterialFunctorAPI::ConfigureShaders(generalShaderCollection)
             , m_shaderResourceGroup(shaderResourceGroup)
-            , m_allShaderCollections(shaderCollections)
+            , m_materialPipelineData(materialPipelineData)
         {
         }
 
@@ -155,9 +156,9 @@ namespace AZ
         {
             MaterialFunctorAPI::ConfigureShaders::ForAllShaderItems(callback);
 
-            for (auto& materialPipelinePair : *m_allShaderCollections)
+            for (auto& materialPipelinePair : *m_materialPipelineData)
             {
-                for (ShaderCollection::Item& shaderItem : materialPipelinePair.second)
+                for (ShaderCollection::Item& shaderItem : materialPipelinePair.second.m_shaderCollection)
                 {
                     if (!callback(shaderItem))
                     {
@@ -166,9 +167,45 @@ namespace AZ
                 }
             }
         }
+
         ShaderResourceGroup* MaterialFunctorAPI::RuntimeContext::GetShaderResourceGroup()
         {
             return m_shaderResourceGroup;
+        }
+
+        bool MaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue(const Name& propertyId, const MaterialPropertyValue& value)
+        {
+            bool somethingWasSet = false;
+
+            for (auto& materialPipelinePair : *m_materialPipelineData)
+            {
+                MaterialPropertyCollection& properties = materialPipelinePair.second.m_materialProperties;
+
+                MaterialPropertyIndex index = properties.GetMaterialPropertiesLayout()->FindPropertyIndex(propertyId);
+                if (!index.IsValid())
+                {
+                    continue;
+                }
+
+                if (properties.SetPropertyValue(index, value))
+                {
+                    somethingWasSet = true;
+                }
+            }
+
+            return somethingWasSet;
+        }
+
+        MaterialFunctorAPI::PipelineRuntimeContext::PipelineRuntimeContext(
+            const MaterialPropertyCollection& internalProperties,
+            const MaterialPropertyFlags* internalMaterialPropertyDependencies,
+            MaterialPropertyPsoHandling psoHandling,
+            ShaderCollection* pipelineShaderCollections
+        )
+            : MaterialFunctorAPI::CommonRuntimeConfiguration(psoHandling)
+            , MaterialFunctorAPI::ReadMaterialPropertyValues(internalProperties, internalMaterialPropertyDependencies)
+            , MaterialFunctorAPI::ConfigureShaders(pipelineShaderCollections)
+        {
         }
 
         MaterialFunctorAPI::EditorContext::EditorContext(
