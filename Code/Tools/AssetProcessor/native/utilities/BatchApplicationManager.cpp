@@ -72,6 +72,7 @@ void BatchApplicationManager::OnErrorMessage([[maybe_unused]] const char* error)
 
 void BatchApplicationManager::Reflect()
 {
+    ApplicationManagerBase::Reflect();
 }
 
 const char* BatchApplicationManager::GetLogBaseName()

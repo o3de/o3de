@@ -1473,7 +1473,7 @@ namespace AZ
             else
             {
                 // Otherwise use the AZ::SystemAllocator
-                return azmalloc(sizeof(T), alignof(T), AZ::SystemAllocator, "");
+                return azmalloc(sizeof(T), alignof(T), AZ::SystemAllocator);
             }
         }
         template<typename T>
@@ -1513,12 +1513,15 @@ namespace AZ
                 }
                 case AZStd::any::Action::Construct:
                 {
-                    // Default construct the ValueType object
-                    // This occurs in the case where a Copy and Move action is invoked
-                    void* ptr = AZStd::any_cast<void>(dest);
-                    if (ptr)
+                    if constexpr (AZStd::is_default_constructible_v<ValueType>)
                     {
-                        new (ptr) ValueType();
+                        // Default construct the ValueType object
+                        // This occurs in the case where a Copy and Move action is invoked
+                        void* ptr = AZStd::any_cast<void>(dest);
+                        if (ptr)
+                        {
+                            new (ptr) ValueType();
+                        }
                     }
                     break;
                 }
@@ -1567,8 +1570,7 @@ namespace AZ
             }
             else
             {
-                ValueType instance;
-                return serializeContext ? AZStd::any(reinterpret_cast<const void*>(&instance), typeinfo) : AZStd::any();
+                return {};
             }
         }
     };
@@ -1731,7 +1733,7 @@ namespace AZ
         {
             void* Create([[maybe_unused]] const char* name) override
             {
-                return new(azmalloc(sizeof(T), AZStd::alignment_of<T>::value, AZ::SystemAllocator, name))T;
+                return new(azmalloc(sizeof(T), AZStd::alignment_of<T>::value, AZ::SystemAllocator))T;
             }
             void Destroy(void* ptr) override
             {

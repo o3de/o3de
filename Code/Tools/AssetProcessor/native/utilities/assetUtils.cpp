@@ -1466,7 +1466,7 @@ namespace AssetUtilities
 
                 // Note: This call is intentionally re-using the products array.  The new results will be appended to the end (via push_back).
                 // The array will not be cleared.  We're essentially using products as a queue
-                db->GetProductsBySourceName(productPath.GetRelativePath().c_str(), products);
+                db->GetProductsBySourceNameScanFolderID(sources.back().RelativePath().c_str(), sources.back().ScanFolderId(), products);
                 size = products.size(); // Update the loop size since the array grew
             }
         }

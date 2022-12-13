@@ -660,8 +660,6 @@ namespace AzToolsFramework
         float m_moveFadeSecondsRemaining;
         AZStd::vector<int> m_indexMapOfMovedRow;
 
-        AzToolsFramework::ComponentModeCollectionInterface* m_componentModeCollection = nullptr;
-
         // When m_initiatingPropertyChangeNotification is set to true, it means this EntityPropertyEditor is
         // broadcasting a change to all listeners about a property change for a given entity.  This is needed
         // so that we don't update the values twice for this inspector

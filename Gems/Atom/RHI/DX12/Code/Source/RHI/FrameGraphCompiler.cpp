@@ -108,10 +108,12 @@ namespace AZ
                 {
                     result += "PREDICATION|";
                 }
-                if (state & D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT)
+#ifdef O3DE_DX12_VRS_SUPPORT
+                if (state & D3D12_RESOURCE_STATE_SHADING_RATE_SOURCE)
                 {
-                    result += "INDIRECT_ARGUMENT|";
+                    result += "SHADING RATE|";
                 }
+#endif
             }
 
             if (result.size())
@@ -325,7 +327,13 @@ namespace AZ
                     mergedResourceState |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER | D3D12_RESOURCE_STATE_INDEX_BUFFER;
                     break;
                 }
-                
+#ifdef O3DE_DX12_VRS_SUPPORT
+                case RHI::ScopeAttachmentUsage::ShadingRate:
+                {
+                    mergedResourceState |= D3D12_RESOURCE_STATE_SHADING_RATE_SOURCE;
+                    break;
+                }
+#endif
                 case RHI::ScopeAttachmentUsage::Uninitialized:
                 default:
                     AZ_Assert(false, "ScopeAttachmentUsage is Uninitialized or not supported");
@@ -372,14 +380,19 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileResourceBarriers(DX12)");
 
-            for (RHI::BufferFrameAttachment* bufferFrameAttachment : attachmentDatabase.GetBufferAttachments())
             {
-                CompileBufferBarriers(rootScope, *bufferFrameAttachment);
+                AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileBufferBarriers(DX12)");
+                for (RHI::BufferFrameAttachment* bufferFrameAttachment : attachmentDatabase.GetBufferAttachments())
+                {
+                    CompileBufferBarriers(rootScope, *bufferFrameAttachment);
+                }
             }
-
-            for (RHI::ImageFrameAttachment* imageFrameAttachment : attachmentDatabase.GetImageAttachments())
             {
-                CompileImageBarriers(*imageFrameAttachment);
+                AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileImageBarriers (DX12)");
+                for (RHI::ImageFrameAttachment* imageFrameAttachment : attachmentDatabase.GetImageAttachments())
+                {
+                    CompileImageBarriers(*imageFrameAttachment);
+                }
             }
         }
 
@@ -390,8 +403,6 @@ namespace AZ
 #else
             ResourceTransitionLoggerNull logger(bufferFrameAttachment.GetId());
 #endif
-
-            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileBufferBarriers(DX12)");
 
             Buffer& buffer = static_cast<Buffer&>(*bufferFrameAttachment.GetBuffer());
             RHI::BufferScopeAttachment* scopeAttachment = bufferFrameAttachment.GetFirstScopeAttachment();
@@ -465,8 +476,6 @@ namespace AZ
 #else
             ResourceTransitionLoggerNull logger(imageFrameAttachment.GetId());
 #endif
-
-            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileImageBarriers (DX12)");
 
             Image& image = static_cast<Image&>(*imageFrameAttachment.GetImage());
             RHI::ImageScopeAttachment* scopeAttachment = imageFrameAttachment.GetFirstScopeAttachment();

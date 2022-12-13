@@ -64,7 +64,6 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h>
 
-
 #include "Objects/ComponentEntityObject.h"
 #include "ISourceControl.h"
 #include "UI/QComponentEntityEditorMainWindow.h"
@@ -82,6 +81,7 @@
 #include <Editor/StringDlg.h>
 #include <Editor/QtViewPaneManager.h>
 #include <Editor/EditorViewportSettings.h>
+#include <Editor/EditorViewportCamera.h>
 #include <Editor/Util/PathUtil.h>
 #include "CryEdit.h"
 #include "Undo/Undo.h"
@@ -1718,9 +1718,7 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
             const AZ::Transform nextCameraTransform =
                 AZ::Transform::CreateLookAt(aabb.GetCenter() - (forward * distanceToLookAt), aabb.GetCenter());
 
-            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-                viewportContext->GetId(),
-                &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform, nextCameraTransform);
+            SandboxEditor::HandleDefaultViewportCameraTransitionFromSetting(nextCameraTransform);
         }
     }
 }

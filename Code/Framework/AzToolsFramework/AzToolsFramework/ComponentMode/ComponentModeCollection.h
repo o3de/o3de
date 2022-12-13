@@ -94,6 +94,7 @@ namespace AzToolsFramework
 
             // ComponentModeCollectionInterface overrides ...
             AZStd::vector<AZ::Uuid> GetComponentTypes() const override;
+            void EnumerateActiveComponents(const ComponentModeCollectionInterface::ActiveComponentModeCB& callBack) const override;
 
         private:
             enum class ComponentModeState : uint8_t
@@ -106,7 +107,22 @@ namespace AzToolsFramework
             // Internal helper used by Select[|Prev|Next]ActiveComponentMode
             bool ActiveComponentModeChanged(const AZ::Uuid& previousComponentType);
 
+            struct ComponentModeItem
+            {
+                ComponentModeItem(
+                    AZ::EntityComponentIdPair entityComponentIdPair = AZ::EntityComponentIdPair(),
+                    AZ::Uuid componentType = AZ::Uuid::CreateNull())
+                    : m_entityComponentIdPair(entityComponentIdPair)
+                    , m_componentType(componentType)
+                {
+                }
+
+                AZ::EntityComponentIdPair m_entityComponentIdPair;
+                AZ::Uuid m_componentType;
+            };
+
             AZStd::vector<AZ::Uuid> m_activeComponentTypes; ///< What types of ComponentMode are currently active.
+            AZStd::vector<ComponentModeItem> m_activeComponentModes; ///< What Entity Components have a ComponentMode currently active.
             AZStd::vector<ComponentModeViewportUi> m_viewportUiHandlers; ///< Viewport UI handlers for each ComponentMode.
             AZStd::vector<EntityAndComponentMode> m_entitiesAndComponentModes; ///< The active ComponentModes (one per Entity).
             AZStd::vector<EntityAndComponentModeBuilders> m_entitiesAndComponentModeBuilders; ///< Factory functions to re-create specific modes

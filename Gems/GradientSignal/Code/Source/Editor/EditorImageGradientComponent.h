@@ -83,7 +83,7 @@ namespace GradientSignal
         };
 
         // EditorImageGradientRequestBus overrides ...
-        void StartImageModification() override;
+        AZ::EntityComponentIdPair StartImageModification() override;
         void EndImageModification() override;
         bool SaveImage() override;
 

@@ -33,6 +33,7 @@
 
 #include <AzQtComponents/Components/Widgets/MessageBox.h>
 
+#include <QDir>
 #include <QMenu>
 #include <QFile>
 #include <QHeaderView>
@@ -360,8 +361,7 @@ namespace AzToolsFramework
                 auto productEntry = GetEntryFromIndex<ProductAssetBrowserEntry>(rowIdx);
                 if (productEntry && productEntry->GetAssetId() == assetID)
                 {
-                    selectionModel()->clear();
-                    selectionModel()->select(rowIdx, QItemSelectionModel::Select);
+                    selectionModel()->select(rowIdx, QItemSelectionModel::ClearAndSelect);
                     setCurrentIndex(rowIdx);
                     return true;
                 }
@@ -420,8 +420,7 @@ namespace AzToolsFramework
                                 expand(rowIdx);
                             }
 
-                            selectionModel()->clear();
-                            selectionModel()->select(rowIdx, QItemSelectionModel::Select);
+                            selectionModel()->select(rowIdx, QItemSelectionModel::ClearAndSelect);
                             setCurrentIndex(rowIdx);
 
                             return true;
@@ -608,6 +607,11 @@ namespace AzToolsFramework
             }
         }
 
+        static bool IsFolderEmpty(AZStd::string_view path)
+        {
+            return QDir(path.data()).entryList(QDir::NoDotAndDotDot | QDir::AllEntries).isEmpty();
+        }
+
         void AssetBrowserTreeView::RenameEntry()
         {
             auto entries = GetSelectedAssets(false); // you cannot rename product files.
@@ -630,6 +634,13 @@ namespace AzToolsFramework
                 Path fromPath;
                 if (isFolder)
                 {
+                    // There is currently a bug in AssetProcessorBatch that doesn't handle empty folders
+                    // This code is needed until that bug is fixed. GHI 13340
+                    if(IsFolderEmpty(item->GetFullPath()))
+                    {
+                        edit(currentIndex());
+                        return;
+                    }
                     fromPath = item->GetFullPath() + "/*";
                     toPath = item->GetFullPath() + "TempFolderTestName/*";
                 }
@@ -686,14 +697,27 @@ namespace AzToolsFramework
             using namespace AZ::IO;
             AssetBrowserEntry* item = entries[0];
             bool isFolder = item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
+            bool isEmptyFolder = isFolder && IsFolderEmpty(item->GetFullPath());
             Path toPath;
             Path fromPath;
             if (isFolder)
             {
-                fromPath = item->GetFullPath() + "/*";
                 Path tempPath = item->GetFullPath();
                 tempPath.ReplaceFilename(newVal.toStdString().c_str());
-                toPath = tempPath.String() + "/*";
+                // There is currently a bug in AssetProcessorBatch that doesn't handle empty folders
+                // This code is needed until that bug is fixed. GHI 13340
+                if (isEmptyFolder)
+                {
+                    fromPath = item->GetFullPath();
+                    toPath = tempPath.String();
+                    AZ::IO::SystemFile::Rename(fromPath.c_str(), toPath.c_str());
+                    return;
+                }
+                else
+                {
+                    fromPath = item->GetFullPath() + "/*";
+                    toPath = tempPath.String() + "/*";
+                }
             }
             else
             {
@@ -745,9 +769,7 @@ namespace AzToolsFramework
             {
                 using namespace AZ::IO;
                 Path oldPath = entry->GetFullPath();
-                AZStd::string newPath;
-                AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(
-                    oldPath.ParentPath().Native(), oldPath.Filename().Native(), newPath, "-copy");
+                AZ::IO::FixedMaxPath newPath = AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix( AZ::IO::PathView(oldPath.Native()), "-copy");
                 QFile::copy(oldPath.c_str(), newPath.c_str());
             }
         }
@@ -790,13 +812,26 @@ namespace AzToolsFramework
                         for (auto entry : entries)
                         {
                             using namespace AZ::IO;
+                            bool isEmptyFolder = isFolder && IsFolderEmpty(entry->GetFullPath());
                             Path fromPath;
                             Path toPath;
                             if (isFolder)
                             {
-                                fromPath = entry->GetFullPath() + "/*";
                                 Path filename = static_cast<Path>(entry->GetFullPath()).Filename();
-                                toPath = folderPath + "/" + filename.c_str() + "/*";
+                                if (isEmptyFolder)
+                                // There is currently a bug in AssetProcessorBatch that doesn't handle empty folders
+                                // This code is needed until that bug is fixed. GHI 13340
+                                {
+                                    fromPath = entry->GetFullPath();
+                                    toPath = AZStd::string::format("%.*s/%.*s", AZ_STRING_ARG(folderPath), AZ_STRING_ARG(filename.Native()));
+                                    AZ::IO::SystemFile::CreateDir(toPath.c_str());
+                                    AZ::IO::SystemFile::DeleteDir(fromPath.c_str()); 
+                                }
+                                else
+                                {
+                                    fromPath = AZStd::string::format("%.*s/*", AZ_STRING_ARG(entry->GetFullPath()));
+                                    toPath = AZStd::string::format("%.*s/%.*s/*", AZ_STRING_ARG(folderPath), AZ_STRING_ARG(filename.Native()));
+                                }
                             }
                             else
                             {

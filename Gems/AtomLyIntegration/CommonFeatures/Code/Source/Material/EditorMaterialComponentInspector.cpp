@@ -587,9 +587,8 @@ namespace AZ
                     // which will later get caught in Process() when trying to access a property.
                     if (materialPropertyDependencies.none() || functor->NeedsProcess(m_dirtyPropertyFlags))
                     {
-                        AZ::RPI::MaterialFunctor::EditorContext context = AZ::RPI::MaterialFunctor::EditorContext(
-                            m_materialInstance->GetPropertyValues(),
-                            m_materialInstance->GetMaterialPropertiesLayout(),
+                        AZ::RPI::MaterialFunctorAPI::EditorContext context = AZ::RPI::MaterialFunctorAPI::EditorContext(
+                            m_materialInstance->GetPropertyCollection(),
                             propertyDynamicMetadata,
                             propertyGroupDynamicMetadata,
                             changedPropertyNames,

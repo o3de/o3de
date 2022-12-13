@@ -69,11 +69,9 @@ namespace AZ
                                             uint32_t& bufferFragmentOrComputeRegisterIdMax);
 
             //! Add all all the bindless resource views indirectly bound to the maps passed in so that they can be made resident
-            void MakeBindlessArgumentBuffersResident(
-                                CommandEncoderType commandEncoderType,
-                                ArgumentBuffer::GraphicsResourcesToMakeResidentMap resourcesToMakeResidentGraphics,
-                                ArgumentBuffer::ComputeResourcesToMakeResidentMap resourcesToMakeResidentCompute);
-            
+            void MakeBindlessArgumentBuffersResident(CommandEncoderType commandEncoderType,
+                                                     ArgumentBuffer::ResourcesPerStageForGraphics& untrackedResourcesGfxRead,
+                                                     ArgumentBuffer::ResourcesForCompute& untrackedResourceComputeRead);
         private:
 
             //Bindless ABs + the rootAB which will act as a container. This is used for unbounded arrays.
@@ -90,6 +88,8 @@ namespace AZ
             RHI::FreeListAllocator m_allocators[static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::Count)];
             Device* m_device = nullptr;
             bool m_unboundedArraySupported = false;
+            // Mutex to protect bindless heap related updates
+            AZStd::mutex m_mutex;
         };
     }
 }

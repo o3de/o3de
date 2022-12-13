@@ -250,7 +250,7 @@ namespace GradientSignal
                 ;
 
             behaviorContext->EBus<ImageGradientRequestBus>("ImageGradientRequestBus")
-                ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
+                ->Attribute(AZ::Script::Attributes::Category, "Vegetation/ImageGradient")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Module, "vegetation")
                 ->Event("GetImageAssetPath", &ImageGradientRequestBus::Events::GetImageAssetPath)
@@ -267,11 +267,17 @@ namespace GradientSignal
             ;
 
             behaviorContext->EBus<ImageGradientModificationBus>("ImageGradientModificationBus")
-                ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                ->Attribute(AZ::Script::Attributes::Module, "vegetation")
+                ->Attribute(AZ::Script::Attributes::Category, "Vegetation/ImageGradient/Modifications")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Module, "vegetation.imageGradient.modifications")
                 ->Event("StartImageModification", &ImageGradientModificationBus::Events::StartImageModification)
                 ->Event("EndImageModification", &ImageGradientModificationBus::Events::EndImageModification)
+                ->Event("BeginBrushStroke", &ImageGradientModificationBus::Events::BeginBrushStroke)
+                ->Event("EndBrushStroke", &ImageGradientModificationBus::Events::EndBrushStroke)
+                ->Event("IsInBrushStroke", &ImageGradientModificationBus::Events::IsInBrushStroke)
+                ->Event("ResetBrushStrokeTracking", &ImageGradientModificationBus::Events::ResetBrushStrokeTracking)
+                ->Event("PaintToLocation", &ImageGradientModificationBus::Events::PaintToLocation)
+                ->Event("SmoothToLocation", &ImageGradientModificationBus::Events::SmoothToLocation)
             ;
         }
     }
@@ -722,9 +728,11 @@ namespace GradientSignal
 
     void ImageGradientComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZStd::unique_lock lock(m_queryMutex);
-        m_configuration.m_imageAsset = asset;
-        GetSubImageData();
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_imageAsset = asset;
+            GetSubImageData();
+        }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -741,6 +749,10 @@ namespace GradientSignal
 
     void ImageGradientComponent::StartImageModification()
     {
+        m_imageModifier = AZStd::make_unique<ImageGradientModifier>(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
+        m_paintBrush = AZStd::make_unique<AzFramework::PaintBrush>(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
+        m_paintBrush->BeginPaintMode();
+
         m_configuration.m_imageModificationActive = true;
 
         if (m_modifiedImageData.empty())
@@ -751,8 +763,69 @@ namespace GradientSignal
 
     void ImageGradientComponent::EndImageModification()
     {
+        m_paintBrush->EndPaintMode();
+        m_paintBrush = {};
+        m_imageModifier = {};
         m_configuration.m_imageModificationActive = false;
     }
+
+    void ImageGradientComponent::BeginBrushStroke(const AzFramework::PaintBrushSettings& brushSettings)
+    {
+        AZ_Error("ImageGradientComponent", m_paintBrush, "StartImageModification() needs to be called first to use the paint controls.");
+        if (m_paintBrush)
+        {
+            m_paintBrush->BeginBrushStroke(brushSettings);
+        }
+    }
+
+    void ImageGradientComponent::EndBrushStroke()
+    {
+        AZ_Error("ImageGradientComponent", m_paintBrush, "StartImageModification() needs to be called first to use the paint controls.");
+        if (m_paintBrush)
+        {
+            m_paintBrush->EndBrushStroke();
+        }
+    }
+
+    bool ImageGradientComponent::IsInBrushStroke() const
+    {
+        if (m_paintBrush)
+        {
+            return m_paintBrush->IsInBrushStroke();
+        }
+
+        return false;
+    }
+
+    void ImageGradientComponent::ResetBrushStrokeTracking()
+    {
+        AZ_Error("ImageGradientComponent", m_paintBrush, "StartImageModification() needs to be called first to use the paint controls.");
+        if (m_paintBrush)
+        {
+            m_paintBrush->ResetBrushStrokeTracking();
+        }
+    }
+
+    void ImageGradientComponent::PaintToLocation(
+        const AZ::Vector3& brushCenter, const AzFramework::PaintBrushSettings& brushSettings)
+    {
+        AZ_Error("ImageGradientComponent", m_paintBrush, "StartImageModification() needs to be called first to use the paint controls.");
+        if (m_paintBrush)
+        {
+            m_paintBrush->PaintToLocation(brushCenter, brushSettings);
+        }
+    }
+
+    void ImageGradientComponent::SmoothToLocation(
+        const AZ::Vector3& brushCenter, const AzFramework::PaintBrushSettings& brushSettings)
+    {
+        AZ_Error("ImageGradientComponent", m_paintBrush, "StartImageModification() needs to be called first to use the paint controls.");
+        if (m_paintBrush)
+        {
+            m_paintBrush->SmoothToLocation(brushCenter, brushSettings);
+        }
+    }
+
 
     AZStd::vector<float>* ImageGradientComponent::GetImageModificationBuffer()
     {
@@ -1009,17 +1082,25 @@ namespace GradientSignal
 
     AZ::Vector2 ImageGradientComponent::GetImagePixelsPerMeter() const
     {
-        // Get the number of pixels in our image that maps to each meter based on the tiling settings.
+        // Get the number of pixels in our image that maps to each meter based on the tiling and gradient transform settings.
 
         const auto width = m_imageDescriptor.m_size.m_width;
         const auto height = m_imageDescriptor.m_size.m_height;
 
         if (width > 0 && height > 0)
         {
-            const AZ::Aabb bounds = m_gradientTransform.GetBounds();
-            const AZ::Vector2 boundsMeters(bounds.GetExtents());
-            const AZ::Vector2 imagePixelsInBounds(width / GetTilingX(), height / GetTilingY());
-            return imagePixelsInBounds / boundsMeters;
+            // The number of pixels per meter depends on a combination of the tiling, the scale, and the frequency zoom.
+            // All of these numbers together determine how often the image repeats within the shape bounds.
+            const AZ::Vector3 transformScale = m_gradientTransform.GetScale();
+            const float transformZoom = m_gradientTransform.GetFrequencyZoom();
+
+            // Get the local bounds for the gradient. This determines the total number of meters in each direction that the image
+            // repeats are mapped onto.
+            const AZ::Aabb localBounds = m_gradientTransform.GetBounds();
+
+            const AZ::Vector2 boundsMeters(localBounds.GetExtents());
+            const AZ::Vector2 imagePixelsInBounds(width * GetTilingX(), height * GetTilingY());
+            return (imagePixelsInBounds * transformZoom) / (boundsMeters * AZ::Vector2(transformScale));
         }
 
         return AZ::Vector2::CreateZero();
