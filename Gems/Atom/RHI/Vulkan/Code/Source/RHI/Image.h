@@ -49,8 +49,6 @@ namespace AZ
             // Memory requirements for color aspect only.
             VkSparseImageMemoryRequirements m_sparseImageMemoryRequirements;
 
-            AZStd::vector<RHI::Size> m_mipSizes;
-            
             VkImage m_image;
 
             // block size in bytes
@@ -64,21 +62,34 @@ namespace AZ
             // It the image is not single mip tail, then it's the block count for the mip tail of one array layer
             uint32_t m_mipTailBlockCount;
 
-            // block count for each non-tail mip level
-            AZStd::vector<uint32_t> m_mipBlockCount;
-
-            // Memory bind for non-tail mips
+            // Memory binding data for one non-tail mip
             using MultiHeapTiles = AZStd::vector<HeapTiles>; 
-            using MemoryViews = AZStd::vector<MemoryView>; 
-            AZStd::vector<MultiHeapTiles> m_mipHeapTiles;                           // Tiles (from multiple heaps) for each non-tail mip levels. For example: m_mipHeapTiles[0] contains all the tiles for mip level 0 (with all array layers)
+            using MemoryViews = AZStd::vector<MemoryView>;
             using MipMemoryBinds = AZStd::vector<VkSparseImageMemoryBind>;
-            AZStd::vector<MipMemoryBinds> m_mipMemoryBinds;                         // Memory binds for each non-tail mip levels
-            AZStd::vector<VkSparseImageMemoryBindInfo> m_mipMemoryBindInfos;        // Helper structure for sparse binding
-            // Cached structures for unbound memory
-            AZStd::vector<MipMemoryBinds> m_emptyMipMemoryBinds;                    // Empty binds for each non-tail mip levels. Used for unbound certain non-tail mip levels
-            AZStd::vector<VkSparseImageMemoryBindInfo> m_emptyMipMemoryBindInfos;   
+            struct NonTailMipInfo
+            {
+                // basic info
+                RHI::Size m_size;
+                uint32_t m_blockCount;
 
+                // Allocated memory blocks and corresponding bindings
+                MultiHeapTiles m_heapTiles;                             // Allocated memory tiles (from multiple heaps) for this non-tail mip level.
+                MipMemoryBinds m_memoryBinds;                           // All the sparse memory binds for this mip level
+
+                // Cached structures for unbound memory. Used for unbound certain non-tail mip levels
+                MipMemoryBinds m_emptyMemoryBinds;                      // Empty binds
+            };
+
+            // Memory binding info for each non-tail mip levels
+            AZStd::vector<NonTailMipInfo> m_nonTailMipInfos;
+
+            // Helper data for generating the final VkBindSparseInfo
+            // Note: We need the these helper info structure data to be continues for setup VkBindSparseInfo for more than one mipmaps
+            AZStd::vector<VkSparseImageMemoryBindInfo> m_mipMemoryBindInfos;
+            AZStd::vector<VkSparseImageMemoryBindInfo> m_emptyMipMemoryBindInfos;    // Bind info pointer to the empty binds
+           
             // Memory bind for mip tail
+            // (Note: mip tail uses different Vulkan memory bind structure than non-tail mips)
             uint16_t m_tailStartMip;                                                // First mip level in mip tail. mip levels from m_mipTailStart to (mipmap count - 1) are all belong to mip tail
             MultiHeapTiles m_mipTailHeapTiles;
             AZStd::vector<VkSparseMemoryBind> m_mipTailMemoryBinds;                 // Opaque memory bindings for mip tail
@@ -168,8 +179,10 @@ namespace AZ
             // Allocate memory and bind memory which can store mips up to residentMipLevel 
             RHI::ResultCode AllocateAndBindMemory(StreamingImagePool& imagePool, uint16_t residentMipLevel);
 
+            // Create a VkImage which only requires regular (one time) memory binding
             RHI::ResultCode BuildNativeImage();
 
+            // Create a VkImage with sparse memory binding support
             RHI::ResultCode BuildSparseImage();
 
             void ReleaseAllMemory(StreamingImagePool& imagePool);

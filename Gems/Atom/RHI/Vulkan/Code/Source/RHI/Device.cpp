@@ -454,7 +454,8 @@ namespace AZ
                 // Need to create an image to get the requirements.
                 // This will not allocate or bind memory.
                 Image image;
-                [[maybe_unused]] RHI::ResultCode result = image.Init(*this, descriptor, false);
+                const bool tryUseSparse = false;
+                [[maybe_unused]] RHI::ResultCode result = image.Init(*this, descriptor, tryUseSparse);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to get memory requirements");
                 auto it2 = cache.insert(hash, image.m_memoryRequirements);
                 return it2.first->second;
@@ -887,7 +888,6 @@ namespace AZ
                 && m_enabledDeviceFeatures.sparseResidencyImage3D
                 && m_enabledDeviceFeatures.sparseResidencyAliased
                 && deviceProperties.sparseProperties.residencyStandard2DBlockShape
-                && deviceProperties.sparseProperties.residencyStandard2DMultisampleBlockShape
                 && deviceProperties.sparseProperties.residencyStandard3DBlockShape;
 
             // check for the VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME in the list of physical device extensions

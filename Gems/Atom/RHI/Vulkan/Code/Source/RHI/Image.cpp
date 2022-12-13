@@ -30,17 +30,19 @@ namespace AZ
         {
             // Get image memory requirements 
             VkMemoryRequirements memoryRequirements;
-            device.GetContext().GetImageMemoryRequirements(device.GetNativeDevice(), vkImage, &memoryRequirements);
+            const GladVulkanContext& vulkanContext = device.GetContext();
+            VkDevice vkDevice = device.GetNativeDevice();
+            vulkanContext.GetImageMemoryRequirements(vkDevice, vkImage, &memoryRequirements);
             
             // get sparse memory requirement count;
             uint32_t sparseMemoryReqsCount = 0;
-            device.GetContext().GetImageSparseMemoryRequirements(device.GetNativeDevice(), vkImage, &sparseMemoryReqsCount, nullptr);
+            vulkanContext.GetImageSparseMemoryRequirements(vkDevice, vkImage, &sparseMemoryReqsCount, nullptr);
             AZ_Assert(sparseMemoryReqsCount, "Sparse memory requirements count shouldn't be 0");
 
             // Get actual requirements
             AZStd::vector<VkSparseImageMemoryRequirements> sparseImageMemoryRequirements;
             sparseImageMemoryRequirements.resize(sparseMemoryReqsCount);
-            device.GetContext().GetImageSparseMemoryRequirements(device.GetNativeDevice(), vkImage, &sparseMemoryReqsCount, sparseImageMemoryRequirements.data());
+            vulkanContext.GetImageSparseMemoryRequirements(vkDevice, vkImage, &sparseMemoryReqsCount, sparseImageMemoryRequirements.data());
 
             bool validSparseImage = false;
             for (const VkSparseImageMemoryRequirements& requirements : sparseImageMemoryRequirements)
@@ -75,26 +77,23 @@ namespace AZ
             uint32_t nonTailMipLevels = m_tailStartMip;
             if (nonTailMipLevels)
             {
-                m_mipSizes.resize(nonTailMipLevels);
-                m_mipBlockCount.resize(nonTailMipLevels);
-                m_mipHeapTiles.resize(nonTailMipLevels);
-                m_mipMemoryBinds.resize(nonTailMipLevels);
                 m_mipMemoryBindInfos.resize(nonTailMipLevels);
-                m_emptyMipMemoryBinds.resize(nonTailMipLevels);
                 m_emptyMipMemoryBindInfos.resize(nonTailMipLevels);
+                m_nonTailMipInfos.resize(nonTailMipLevels);
 
                 for (uint32_t mip = 0; mip < nonTailMipLevels; mip++)
                 {
-                    m_mipSizes[mip] = imageDescriptor.m_size.GetReducedMip(mip);
-                    m_mipBlockCount[mip] = AZ::DivideAndRoundUp(m_mipSizes[mip].m_width, imageGranularity.width)
-                        * AZ::DivideAndRoundUp(m_mipSizes[mip].m_height, imageGranularity.height)
-                        * AZ::DivideAndRoundUp(m_mipSizes[mip].m_depth, imageGranularity.depth);
+                    NonTailMipInfo& mipInfo = m_nonTailMipInfos[mip];
+                    mipInfo.m_size = imageDescriptor.m_size.GetReducedMip(mip);
+                    mipInfo.m_blockCount = AZ::DivideAndRoundUp(mipInfo.m_size.m_width, imageGranularity.width)
+                        * AZ::DivideAndRoundUp(mipInfo.m_size.m_height, imageGranularity.height)
+                        * AZ::DivideAndRoundUp(mipInfo.m_size.m_depth, imageGranularity.depth);
 
                     // fill empty bounds data
-                    m_emptyMipMemoryBinds[mip].resize(imageDescriptor.m_arraySize);
+                    mipInfo.m_emptyMemoryBinds.resize(imageDescriptor.m_arraySize);
                     for (uint16_t arrayIndex = 0; arrayIndex < imageDescriptor.m_arraySize; arrayIndex++)
                     {
-                        VkSparseImageMemoryBind& emptyBind = m_emptyMipMemoryBinds[mip][arrayIndex];
+                        VkSparseImageMemoryBind& emptyBind = mipInfo.m_emptyMemoryBinds[arrayIndex];
                         emptyBind.subresource.mipLevel = mip;
                         emptyBind.subresource.aspectMask = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
                         emptyBind.subresource.arrayLayer = arrayIndex;
@@ -102,16 +101,16 @@ namespace AZ
                         emptyBind.offset.x = 0;
                         emptyBind.offset.y = 0;
                         emptyBind.offset.z = 0;
-                        emptyBind.extent.width = m_mipSizes[mip].m_width;
-                        emptyBind.extent.height = m_mipSizes[mip].m_height;
-                        emptyBind.extent.depth = m_mipSizes[mip].m_depth;
+                        emptyBind.extent.width = mipInfo.m_size.m_width;
+                        emptyBind.extent.height = mipInfo.m_size.m_height;
+                        emptyBind.extent.depth = mipInfo.m_size.m_depth;
                         emptyBind.flags = 0;
                         emptyBind.memoryOffset = 0;
                     }
 
                     VkSparseImageMemoryBindInfo& emptyBindInfo = m_emptyMipMemoryBindInfos[mip];
-                    emptyBindInfo.bindCount = aznumeric_caster(m_emptyMipMemoryBinds[mip].size());
-                    emptyBindInfo.pBinds = m_emptyMipMemoryBinds[mip].data();
+                    emptyBindInfo.bindCount = aznumeric_caster(mipInfo.m_emptyMemoryBinds.size());
+                    emptyBindInfo.pBinds = mipInfo.m_emptyMemoryBinds.data();
                     emptyBindInfo.image = m_image;
                 }
             }
@@ -138,7 +137,7 @@ namespace AZ
             // for any resident mips which are not part of tail
             for (uint32_t mip = residentMipLevel; mip < m_tailStartMip; mip++ )
             {
-                memorySize += m_mipBlockCount[mip] * m_blockSizeInBytes;
+                memorySize += m_nonTailMipInfos[mip].m_blockCount * m_blockSizeInBytes;
             }
 
             return memorySize; 
@@ -147,13 +146,15 @@ namespace AZ
         void SparseImageInfo::UpdateMipMemoryBindInfo(uint16_t mipLevel)
         {
             AZ_Assert(mipLevel < m_tailStartMip, "Invalid mip level. Mip level should be smaller than m_tailStartMip");
+            
+            NonTailMipInfo& mipInfo = m_nonTailMipInfos[mipLevel];
 
             MemoryViews memoryViews;
-            MultiHeapTilesToMemoryViews(memoryViews, m_mipHeapTiles[mipLevel]);
+            MultiHeapTilesToMemoryViews(memoryViews, mipInfo.m_heapTiles);
 
             size_t memoryViewCount = memoryViews.size();
             auto imageGranularity = m_sparseImageMemoryRequirements.formatProperties.imageGranularity;
-            MipMemoryBinds& memoryBinds = m_mipMemoryBinds[mipLevel];
+            MipMemoryBinds& memoryBinds = mipInfo.m_memoryBinds;
             memoryBinds.clear();
 
             if (memoryViewCount == 0)
@@ -171,8 +172,8 @@ namespace AZ
             subResource.aspectMask = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
             subResource.arrayLayer = 0;
 
-            RHI::Size mipSize = m_mipSizes[mipLevel];
-            const uint32_t mipBlockCount = m_mipBlockCount[mipLevel];
+            RHI::Size mipSize = mipInfo.m_size;
+            const uint32_t mipBlockCount = mipInfo.m_blockCount;
             const uint32_t blockCountPerRow = AZ::DivideAndRoundUp(mipSize.m_width, imageGranularity.width);
             const uint32_t blockCountPerColumn = AZ::DivideAndRoundUp(mipSize.m_height, imageGranularity.height);
 
@@ -364,7 +365,8 @@ namespace AZ
                     bindSparseInfo.imageBindCount = startMip - endMipLevel + 1;
                     if (bindSparseInfo.imageBindCount > 0)
                     {
-                        if (m_mipMemoryBinds[startMip].empty())
+                        NonTailMipInfo& mipInfo = m_nonTailMipInfos[startMip];
+                        if (mipInfo.m_memoryBinds.empty())
                         {
                             bindSparseInfo.pImageBinds = m_emptyMipMemoryBindInfos.data() + endMipLevel;
                         }
@@ -585,7 +587,7 @@ namespace AZ
                         for (uint16_t mip = m_highestMipLevel; mip < adjustedTargetMipLevel; mip++)
                         {
                             // release memories
-                            pool.DeAllocateMemoryBlocks(m_sparseImageInfo->m_mipHeapTiles[mip]);
+                            pool.DeAllocateMemoryBlocks(m_sparseImageInfo->m_nonTailMipInfos[mip].m_heapTiles);
                             m_sparseImageInfo->UpdateMipMemoryBindInfo(mip);
                         }
 
@@ -665,14 +667,15 @@ namespace AZ
                     nonTailStart = AZStd::min(startMip, aznumeric_cast<uint16_t>(m_sparseImageInfo->m_tailStartMip-1));
                     for (uint16_t mipLevel = endMip; mipLevel <= nonTailStart; mipLevel++ )
                     {
-                        uint32_t blockCount = m_sparseImageInfo->m_mipBlockCount[mipLevel] * GetDescriptor().m_arraySize;
-                        result = imagePool.AllocateMemoryBlocks(m_sparseImageInfo->m_mipHeapTiles[mipLevel], blockCount);
+                        SparseImageInfo::NonTailMipInfo& mipInfo = m_sparseImageInfo->m_nonTailMipInfos[mipLevel];
+                        uint32_t blockCount = mipInfo.m_blockCount * GetDescriptor().m_arraySize;
+                        result = imagePool.AllocateMemoryBlocks(mipInfo.m_heapTiles, blockCount);
                         if (result != RHI::ResultCode::Success)
                         {
                             allocationSuccess = false;
                             break;
                         }
-                        allocatedHeapTiles.push_back(&m_sparseImageInfo->m_mipHeapTiles[mipLevel]);
+                        allocatedHeapTiles.push_back(&mipInfo.m_heapTiles);
                     }
                 }
 
@@ -869,9 +872,9 @@ namespace AZ
             {
                 imagePool.DeAllocateMemoryBlocks(m_sparseImageInfo->m_mipTailHeapTiles);
 
-                for (auto& heapTiles : m_sparseImageInfo->m_mipHeapTiles)
+                for (auto& mipInfo : m_sparseImageInfo->m_nonTailMipInfos)
                 {
-                    imagePool.DeAllocateMemoryBlocks(heapTiles);
+                    imagePool.DeAllocateMemoryBlocks(mipInfo.m_heapTiles);
                 }
             }
             else
@@ -1037,7 +1040,7 @@ namespace AZ
         bool Image::IsStreamableInternal() const
         {
             return m_isSparse && m_sparseImageInfo->m_tailStartMip > 0;
-        }        
+        }
 
         void Image::SetInitalQueueOwner()
         {

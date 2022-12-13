@@ -17,7 +17,7 @@ namespace AZ
         template<typename PageType>
         struct PageTiles
         {
-            //! The memory object which is evenly divided to multiple tiles
+            //! The memory object (heap) which is evenly divided to multiple tiles and it will contain all the tiles referenced by m_tileSpanList
             RHI::Ptr<PageType> m_heap;
             //! Multiple tile spans. Each tile span represents a continuous number of tiles in the page
             AZStd::vector<RHI::PageTileSpan> m_tileSpanList;

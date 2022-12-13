@@ -18,12 +18,12 @@ namespace AZ
     namespace Vulkan
     {
         class Device;
-        class Image;
 
         class StreamingImagePool final
             : public RHI::StreamingImagePool
         {
             using Base = RHI::StreamingImagePool;
+            friend class Image;
 
         public:
             AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator, 0);
@@ -32,10 +32,23 @@ namespace AZ
             static RHI::Ptr<StreamingImagePool> Create();
             ~StreamingImagePool() = default;
 
+        protected:
+            // Allocate non-tiled memory with specified size and alignment
+            // via the m_memoryAllocator
             MemoryView AllocateMemory(size_t size, size_t alignment);
-            RHI::ResultCode AllocateMemoryBlocks(AZStd::vector<HeapTiles>& outHeapTiles, uint32_t blockCount);
+            // Deallocate a non-tiled memory
             void DeAllocateMemory(MemoryView& memoryView);
+
+            // Allocate memory blocks via the m_tileAllocator
+            // @param [out] outHeapTiles The allocated heap tiles
+            // @param blockCount The number of memory block count to be allocated
+            // @return Returns RHI::ResultCode::Success if the allocation was successful.
+            RHI::ResultCode AllocateMemoryBlocks(AZStd::vector<HeapTiles>& outHeapTiles, uint32_t blockCount);
+
+            // Deallocate memory blocks            
+            // @param heapTiles The heap tiles to be released. After the call, the vector is cleared.
             void DeAllocateMemoryBlocks(AZStd::vector<HeapTiles>& heapTiles);
+
 
         private:
             StreamingImagePool() = default;
@@ -71,10 +84,11 @@ namespace AZ
 
             void WaitFinishUploading(const Image& image);
             
-            // for allocating other non-tile memory from heap pages
+            // For allocating non-tile memory from heap pages
+            // or unique allocation for large memory 
             MemoryAllocator m_memoryAllocator;
 
-            // for allocating tiles from heap pages
+            // For allocating tiles from heap pages
             TileAllocator m_tileAllocator;
             MemoryPageAllocator m_heapPageAllocator;
 

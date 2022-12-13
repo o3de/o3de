@@ -20,7 +20,7 @@ namespace AZ
         template<typename Traits> 
         void TileAllocator<Traits>::Init(const Descriptor& descriptor, HeapAllocator& heapAllocator)
         {
-            AZ_Assert(descriptor.m_getHeapMemoryUsageFunction, "You must supply a valid function for getting heap memory usage.");
+            AZ_Assert(descriptor.m_heapMemoryUsage, "You must supply a valid pointer of HeapMemoryUsage.");
 
             m_descriptor = descriptor;
             m_heapAllocator = &heapAllocator;
@@ -77,7 +77,7 @@ namespace AZ
             m_allocatedTileCount += tileCount;
             AZ_Assert(m_allocatedTileCount <= m_totalTileCount, "Implementation error: tile count error.");
             
-            RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
+            RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_heapMemoryUsage;
             heapMemoryUsage->m_usedResidentInBytes += tileCount * m_descriptor.m_tileSizeInBytes;
         }
         
@@ -135,7 +135,7 @@ namespace AZ
         template<typename Traits> 
         void TileAllocator<Traits>::DeAllocate(const AZStd::vector<HeapTiles>& tilesGroups)
         {
-            RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
+            RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_heapMemoryUsage;
             for (const auto& heapTiles : tilesGroups)
             {
                 auto itr = m_pageContexts.find(heapTiles.m_heap);
@@ -219,7 +219,7 @@ namespace AZ
         {
             if (TileAllocatorOutputDebugInfo)
             {
-                RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
+                RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_heapMemoryUsage;
 
                 AZ_TracePrintf(
                     "TileAllocator",

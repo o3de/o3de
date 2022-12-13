@@ -176,7 +176,7 @@ namespace AZ
                 TileAllocator::Descriptor tileAllocatorDesc;
                 tileAllocatorDesc.m_tileSizeInBytes = TileSizeInBytes;
                 // Tile allocator updates used resident memory
-                tileAllocatorDesc.m_getHeapMemoryUsageFunction = heapPageAllocatorDesc.m_getHeapMemoryUsageFunction;
+                tileAllocatorDesc.m_heapMemoryUsage = &GetDeviceHeapMemoryUsage();
                 m_tileAllocator.Init(tileAllocatorDesc, m_heapPageAllocator);
 
                 // Allocate one tile for default tile

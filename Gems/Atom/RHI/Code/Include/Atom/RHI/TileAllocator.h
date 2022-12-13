@@ -32,12 +32,10 @@ namespace AZ
             using HeapAllocator = ObjectPool<Traits>;
             using HeapTiles = PageTiles<Heap>;
 
-            using GetHeapMemoryUsageFunction = AZStd::function<RHI::HeapMemoryUsage*()>;
-
             struct Descriptor
             {
                 uint32_t m_tileSizeInBytes = 0;
-                GetHeapMemoryUsageFunction m_getHeapMemoryUsageFunction;
+                RHI::HeapMemoryUsage* m_heapMemoryUsage = nullptr;
             };
 
             struct PageContext
@@ -60,18 +58,19 @@ namespace AZ
             //! DeAllocate multiple group of tiles 
             void DeAllocate(const AZStd::vector<HeapTiles>& tiles);
 
-            //! reset the allocator to a state before initialization
+            //! Reset the allocator to a state before initialization
             void Shutdown();
 
-            //! get total number of tiles that could fit in the current set of allocated heaps
+            //! Get total number of tiles that could fit in the current set of allocated heaps
             uint32_t GetTotalTileCount() const;
             
-            //! get the number of tiles currently in use
+            //! Get the number of tiles currently in use
             uint32_t GetAllocatedTileCount() const;
 
             const Descriptor& GetDescriptor() const;
 
             //! Debug only. Print tile allocation info
+            //! @param opName A string which usually be the caller function
             void DebugPrintInfo(const char* opName) const;
 
             //! Release free heap pages to HeapAllocator and run garbage collect for HeapAllocator
@@ -83,13 +82,13 @@ namespace AZ
 
             Descriptor m_descriptor;
 
-            // the count of tiles in each heap page
+            // The count of tiles in each heap page
             uint32_t m_tileCountPerPage = 0;
 
-            // page tile allocator for each allocated heap page
+            // Page tile allocator for each allocated heap page
             AZStd::unordered_map<RHI::Ptr<Heap>, RHI::PageTileAllocator> m_pageContexts;
 
-            // a list of heaps which have free tiles
+            // A list of heaps which have free tiles
             AZStd::set<RHI::Ptr<Heap>> m_freeList;
 
             // Allocated tile count

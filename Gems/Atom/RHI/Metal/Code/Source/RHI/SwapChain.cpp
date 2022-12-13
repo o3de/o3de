@@ -139,13 +139,6 @@ namespace AZ
         void SwapChain::ShutdownResourceInternal(RHI::Resource& resourceBase)
         {
             Image& image = static_cast<Image&>(resourceBase);
-
-            const size_t sizeInBytes = image.GetMemoryView().GetSize();
-
-            RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            memoryUsage.m_totalResidentInBytes -= sizeInBytes;
-            memoryUsage.m_usedResidentInBytes -= sizeInBytes;
-
             image.m_memoryView = {};
         }
 
@@ -236,11 +229,6 @@ namespace AZ
                         
                         RHI::Ptr<MetalResource> resc = MetalResource::Create(MetalResourceDescriptor{mtlDrawableTexture, ResourceType::MtlTextureType, swapChainImage->m_isSwapChainImage});
                         swapChainImage->m_memoryView = MemoryView(resc, 0, mtlDrawableTexture.allocatedSize, 0);
-
-                        const size_t sizeInBytes = swapChainImage->m_memoryView.GetSize();
-                        RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-                        memoryUsage.m_totalResidentInBytes += sizeInBytes;
-                        memoryUsage.m_usedResidentInBytes += sizeInBytes;
                     }
                 }
                 return mtlDrawableTexture;

@@ -134,7 +134,7 @@ namespace AZ
             TileAllocator::Descriptor tileAllocatorDesc;
             tileAllocatorDesc.m_tileSizeInBytes = TileSizeInBytes;
             // Tile allocator updates used resident memory
-            tileAllocatorDesc.m_getHeapMemoryUsageFunction = [&]() { return &heapMemoryUsage; };
+            tileAllocatorDesc.m_heapMemoryUsage = &m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
             m_tileAllocator.Init(tileAllocatorDesc, m_heapPageAllocator);
 
             return RHI::ResultCode::Success;
@@ -279,8 +279,22 @@ namespace AZ
             bool releaseSuccess = true;
             while (newBudget < heapMemoryUsage.m_totalResidentInBytes && releaseSuccess)
             {
+                size_t previousTotalResidentInBytes = heapMemoryUsage.m_totalResidentInBytes;
+                size_t previousUsedResidentInBytes = heapMemoryUsage.m_usedResidentInBytes;
+
                 // Request to release some memory
                 releaseSuccess = m_memoryReleaseCallback();
+
+                // Ensure there were memory released in the m_memoryReleaseCallback() call
+                if (releaseSuccess)
+                {
+                    releaseSuccess = previousTotalResidentInBytes > heapMemoryUsage.m_totalResidentInBytes
+                        || previousUsedResidentInBytes > heapMemoryUsage.m_usedResidentInBytes;
+                    if (!releaseSuccess)
+                    {
+                        AZ_Warning("StreamingImagePool", false, "bad release function");
+                    }
+                }
             }
 
             // Failed to release memory to desired budget. Set current budget to current total resident.
@@ -302,3 +316,4 @@ namespace AZ
         }
     }
 }
+
