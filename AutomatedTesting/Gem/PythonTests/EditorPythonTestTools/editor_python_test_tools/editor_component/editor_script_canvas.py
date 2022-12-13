@@ -88,7 +88,7 @@ class ScriptCanvasComponent:
 
     def set_variable_value(self, variable_name: str, variable_state: VariableState, variable_value) -> str:
         """
-        o3de/o3de#13344. We currently only support strings and boolean variables.
+        o3de/o3de#13344. We currently only support strings, entity.id and boolean variables.
         Function for setting a value to a variable on the script canvas component.
 
         Note: The variable must be exposed to the component. this can be done through the script canvas node inspector.

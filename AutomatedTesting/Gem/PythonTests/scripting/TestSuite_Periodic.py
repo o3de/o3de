@@ -64,6 +64,10 @@ class TestAutomationQtPyTests(TestAutomationBase):
         from . import ScriptCanvas_TwoComponents_InteractSuccessfully as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    def test_ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage(self, request, workspace, editor, launcher_platform):
+        from . import ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage as test_module
+        self._run_test(request, workspace, editor, test_module)
+
     """
     od3e/o3de#13481
     This test fails in multi test. QCheckbox state change does not trigger table changes like in hydra/editor test run
@@ -403,24 +407,3 @@ class TestScriptCanvasTests(object):
             auto_test_mode=False,
             timeout=60,
         )
-
-    def test_ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage(self, request, workspace, editor, launcher_platform):
-        expected_lines = [
-            "Successfully found controller entity",
-            "Successfully found activated entity",
-            "Successfully found deactivated entity",
-            "Start states set up successfully",
-            "Successfully entered game mode",
-            "Successfully found expected prints",
-            "Successfully exited game mode",
-        ]
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            editor,
-            "ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage.py",
-            expected_lines,
-            auto_test_mode=False,
-            timeout=60,
-        )
-
