@@ -68,8 +68,8 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AzNetworking
-        PRIVATE
             Gem::Multiplayer.Common.Static
+        PRIVATE
             Gem::EMotionFXStaticLib
             Gem::PhysX.Static
     AUTOGEN_RULES
@@ -100,8 +100,8 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AzNetworking
-        PRIVATE
             Gem::Multiplayer.Common.Static
+        PRIVATE
             Gem::EMotionFXStaticLib
             Gem::PhysX.Static
     AUTOGEN_RULES
@@ -132,8 +132,8 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AzNetworking
-        PRIVATE
             Gem::Multiplayer.Common.Static
+        PRIVATE
             Gem::EMotionFXStaticLib
             Gem::PhysX.Static
     AUTOGEN_RULES
