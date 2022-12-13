@@ -55,6 +55,7 @@ set(FILES
     Include/Atom/RPI.Reflect/Material/MaterialAssetCreator.h
     Include/Atom/RPI.Reflect/Material/MaterialDynamicMetadata.h
     Include/Atom/RPI.Reflect/Material/MaterialNameContext.h
+    Include/Atom/RPI.Reflect/Material/MaterialPipelineState.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertyCollection.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h

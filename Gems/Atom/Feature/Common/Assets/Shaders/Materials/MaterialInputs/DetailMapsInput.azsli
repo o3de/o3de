@@ -125,7 +125,7 @@ float3 GetDetailedNormalInputWS(bool isFrontFace, float3 vertexNormalWS,
         normal = ApplyNormalMapOverlayWS(applyOverlay, vertexNormalWS, mainNormalTS, mainTangent, mainBitangent,
             detailNormalMap, detailSampler, detailUv, flipDetailNormalX, flipDetailNormalY, detailNormalFactor, detailTangent, detailBitangent, detailNormalUvMatrix);
 
-        AdjustBackFaceNormal(normal, isFrontFace);
+        normal = AdjustBackFaceNormal(normal, isFrontFace);
     }
     else
     {

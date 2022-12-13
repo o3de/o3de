@@ -51,7 +51,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     OUT.m_color.rgb = color;
 
-#ifndef FORCE_OPAQUE
+#if !FORCE_OPAQUE
     if (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent)
     {
         OUT.m_color.a = surface.alpha;
