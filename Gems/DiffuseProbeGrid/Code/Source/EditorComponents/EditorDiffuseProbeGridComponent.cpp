@@ -189,6 +189,13 @@ namespace AZ
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(GetEntityId());
             AZ::TickBus::Handler::BusConnect();
             AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusConnect();
+            m_boxChangedByGridHandler = AZ::Event<bool>::Handler([]([[maybe_unused]] bool value)
+                {
+                    AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                        &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
+                        AzToolsFramework::Refresh_EntireTree);
+                });
+            m_controller.RegisterBoxChangedByGridHandler(m_boxChangedByGridHandler);
 
             AZ::u64 entityId = (AZ::u64)GetEntityId();
             m_controller.m_configuration.m_entityId = entityId;
@@ -196,6 +203,7 @@ namespace AZ
 
         void EditorDiffuseProbeGridComponent::Deactivate()
         {
+            m_boxChangedByGridHandler.Disconnect();
             AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusDisconnect();
             AZ::TickBus::Handler::BusDisconnect();
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();

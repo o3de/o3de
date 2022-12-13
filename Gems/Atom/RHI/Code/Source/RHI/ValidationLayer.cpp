@@ -24,15 +24,15 @@ namespace AZ
             ConsoleFunctorFlags::Null,
             "Use this cvar to override device validation for debug builds.");
 
-        static const char* ValidationCommandLineOption = "rhi-device-validation";
-        static const char* ValidationSetting = "/O3DE/Atom/rhi-device-validation";
-
         ValidationMode ReadValidationMode()
         {
 #if defined(AZ_RELEASE_BUILD)
             // Always disabled in Release configuration.
             return ValidationMode::Disabled;
 #else
+            const char* ValidationCommandLineOption = "rhi-device-validation";
+            const char* ValidationSetting = "/O3DE/Atom/rhi-device-validation";
+
             ValidationMode mode = ValidationMode::Disabled;
 
             // Always enabled in Debug configuration by default, unless overriden by cvar, command line or setting registry.
