@@ -33,22 +33,6 @@ namespace AZ
             [[maybe_unused]] static constexpr char const MaterialTypeSourceDataDebugName[] = "MaterialTypeSourceData";
         }
 
-        MaterialFunctorSourceDataHolder::MaterialFunctorSourceDataHolder(Ptr<MaterialFunctorSourceData> actualSourceData)
-            : m_actualSourceData(actualSourceData)
-        {}
-
-        void MaterialFunctorSourceDataHolder::Reflect(AZ::ReflectContext* context)
-        {
-            if (JsonRegistrationContext* jsonContext = azrtti_cast<JsonRegistrationContext*>(context))
-            {
-                jsonContext->Serializer<JsonMaterialFunctorSourceDataSerializer>()->HandlesType<MaterialFunctorSourceDataHolder>();
-            }
-            else if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<MaterialFunctorSourceDataHolder>();
-            }
-        }
-
         void MaterialTypeSourceData::Reflect(ReflectContext* context)
         {
             if (JsonRegistrationContext* jsonContext = azrtti_cast<JsonRegistrationContext*>(context))

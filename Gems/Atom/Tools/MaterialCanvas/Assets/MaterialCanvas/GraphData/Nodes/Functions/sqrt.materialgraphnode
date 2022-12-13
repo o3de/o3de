@@ -5,8 +5,9 @@
     "ClassData": {
         "id": "{FECA6F9D-4389-4ABE-9A65-610F81F5F211}",
         "category": "Math Functions",
-        "title": "Sqrt",
+        "title": "Square Root",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Square root (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

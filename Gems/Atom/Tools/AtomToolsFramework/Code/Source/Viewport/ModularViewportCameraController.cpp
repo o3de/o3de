@@ -337,6 +337,13 @@ namespace AtomToolsFramework
         m_targetCamera.m_offset = offset;
     }
 
+    void ModularViewportCameraControllerInstance::LookFromOrbit()
+    {
+        m_targetCamera.m_pivot = m_targetCamera.Translation();
+        m_targetCamera.m_offset = AZ::Vector3::CreateZero();
+        m_camera = m_targetCamera;
+    }
+
     bool ModularViewportCameraControllerInstance::AddCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs)
     {
         return m_cameraSystem.m_cameras.AddCameras(cameraInputs);
@@ -350,10 +357,6 @@ namespace AtomToolsFramework
 
     void ModularViewportCameraControllerInstance::ResetCameras()
     {
-        // clear any pivot oribit offset and store combined
-        // translation as new pivot
-        m_targetCamera.m_pivot = m_targetCamera.Translation();
-        m_targetCamera.m_offset = AZ::Vector3::CreateZero();
         m_cameraSystem.m_cameras.Reset();
     }
 

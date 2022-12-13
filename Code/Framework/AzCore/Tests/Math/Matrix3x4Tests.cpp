@@ -117,7 +117,7 @@ namespace UnitTest
         const AZ::Vector3 vector(1.5f, -0.2f, 2.7f);
         const AZ::Vector3 rotatedVector = matrix.TransformVector(vector);
         // rotating a vector should not affect its length
-        EXPECT_TRUE(AZ::IsClose(rotatedVector.GetLengthSq(), vector.GetLengthSq()));
+        EXPECT_NEAR(rotatedVector.GetLengthSq(), vector.GetLengthSq(), AZ::Constants::Tolerance);
 
         // rotating about the X axis should not affect the X component
         EXPECT_NEAR(rotatedVector.GetX(), vector.GetX(), AZ::Constants::Tolerance);
@@ -138,7 +138,7 @@ namespace UnitTest
         const AZ::Vector3 vector(1.5f, -0.2f, 2.7f);
         const AZ::Vector3 rotatedVector = matrix.TransformVector(vector);
         // rotating a vector should not affect its length
-        EXPECT_TRUE(AZ::IsClose(rotatedVector.GetLengthSq(), vector.GetLengthSq()));
+        EXPECT_NEAR(rotatedVector.GetLengthSq(), vector.GetLengthSq(), AZ::Constants::Tolerance);
 
         // rotating about the Y axis should not affect the Y component
         EXPECT_NEAR(rotatedVector.GetY(), vector.GetY(), AZ::Constants::Tolerance);
@@ -159,7 +159,7 @@ namespace UnitTest
         const AZ::Vector3 vector(1.5f, -0.2f, 2.7f);
         const AZ::Vector3 rotatedVector = matrix.TransformVector(vector);
         // rotating a vector should not affect its length
-        EXPECT_TRUE(AZ::IsClose(rotatedVector.GetLengthSq(), vector.GetLengthSq()));
+        EXPECT_NEAR(rotatedVector.GetLengthSq(), vector.GetLengthSq(), AZ::Constants::Tolerance);
 
         // rotating about the Z axis should not affect the Z component
         EXPECT_NEAR(rotatedVector.GetZ(), vector.GetZ(), AZ::Constants::Tolerance);
@@ -474,7 +474,7 @@ namespace UnitTest
         const AZ::Vector3 from(2.5f, 0.2f, 3.6f);
         // to and from are the same, should generate an error
         AZ_TEST_START_TRACE_SUPPRESSION;
-        EXPECT_TRUE(AZ::Matrix3x4::CreateLookAt(from, from).IsClose(AZ::Matrix3x4::Identity()));
+        EXPECT_THAT(AZ::Matrix3x4::CreateLookAt(from, from), IsClose(AZ::Matrix3x4::Identity()));
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
         // to - from is parallel to usual up direction
@@ -713,7 +713,7 @@ namespace UnitTest
         const AZ::Vector3 vector(0.9f, 3.2f, -1.4f);
         EXPECT_THAT((inverse * matrix) * vector, IsClose(vector));
         EXPECT_THAT((matrix * inverse) * vector, IsClose(vector));
-        EXPECT_TRUE((inverse * matrix).IsClose(AZ::Matrix3x4::Identity()));
+        EXPECT_THAT((inverse * matrix), IsClose(AZ::Matrix3x4::Identity()));
     }
 
     TEST_P(Matrix3x4InvertFullFixture, InvertFull)
@@ -724,7 +724,7 @@ namespace UnitTest
         const AZ::Vector3 vector(2.8f, -1.3f, 2.6f);
         EXPECT_THAT((inverse * matrix) * vector, IsClose(vector));
         EXPECT_THAT((matrix * inverse) * vector, IsClose(vector));
-        EXPECT_TRUE((inverse * matrix).IsClose(AZ::Matrix3x4::Identity()));
+        EXPECT_THAT((inverse * matrix), IsClose(AZ::Matrix3x4::Identity()));
     }
 
     INSTANTIATE_TEST_CASE_P(MATH_Matrix3x4, Matrix3x4InvertFullFixture, ::testing::ValuesIn(MathTestData::NonOrthogonalMatrix3x4s));
@@ -753,8 +753,8 @@ namespace UnitTest
         const AZ::Vector3 vector(0.9f, 3.2f, -1.4f);
         EXPECT_THAT((inverseFast * matrix) * vector, IsClose(vector));
         EXPECT_THAT((matrix * inverseFast) * vector, IsClose(vector));
-        EXPECT_TRUE((inverseFast * matrix).IsClose(AZ::Matrix3x4::Identity()));
-        EXPECT_TRUE(inverseFast.IsClose(inverseFull));
+        EXPECT_THAT((inverseFast * matrix), IsClose(AZ::Matrix3x4::Identity()));
+        EXPECT_THAT(inverseFast, IsClose(inverseFull));
     }
 
     TEST_P(Matrix3x4InvertFastFixture, InvertFast)
@@ -767,8 +767,8 @@ namespace UnitTest
         const AZ::Vector3 vector(2.8f, -1.3f, 2.6f);
         EXPECT_THAT((inverseFast * matrix) * vector, IsClose(vector));
         EXPECT_THAT((matrix * inverseFast) * vector, IsClose(vector));
-        EXPECT_TRUE((inverseFast * matrix).IsClose(AZ::Matrix3x4::Identity()));
-        EXPECT_TRUE(inverseFast.IsClose(inverseFull));
+        EXPECT_THAT((inverseFast * matrix), IsClose(AZ::Matrix3x4::Identity()));
+        EXPECT_THAT(inverseFast, IsClose(inverseFull));
     }
 
     INSTANTIATE_TEST_CASE_P(MATH_Matrix3x4, Matrix3x4InvertFastFixture, ::testing::ValuesIn(MathTestData::OrthogonalMatrix3x4s));
@@ -856,7 +856,7 @@ namespace UnitTest
         // a matrix which is already orthogonal should be unchanged
         const AZ::Matrix3x4 orthogonalMatrix = AZ::Matrix3x4::CreateRotationZ(0.7f);
         EXPECT_TRUE(orthogonalMatrix.IsOrthogonal());
-        EXPECT_TRUE(orthogonalMatrix.GetOrthogonalized().IsClose(orthogonalMatrix));
+        EXPECT_THAT(orthogonalMatrix.GetOrthogonalized(), IsClose(orthogonalMatrix));
 
         // a matrix which isn't already orthogonal should be made orthogonal
         const AZ::Matrix3x4 nonOrthogonalMatrix = AZ::Matrix3x4::CreateScale(AZ::Vector3(3.0f, 4.0f, 5.0f));
@@ -870,7 +870,7 @@ namespace UnitTest
         AZ::Matrix3x4 orthogonalMatrix = AZ::Matrix3x4::CreateRotationY(-0.2f);
         EXPECT_TRUE(orthogonalMatrix.IsOrthogonal());
         orthogonalMatrix.Orthogonalize();
-        EXPECT_TRUE(orthogonalMatrix.IsClose(AZ::Matrix3x4::CreateRotationY(-0.2f)));
+        EXPECT_THAT(orthogonalMatrix, IsClose(AZ::Matrix3x4::CreateRotationY(-0.2f)));
 
         // a matrix which isn't already orthogonal should be made orthogonal
         AZ::Matrix3x4 nonOrthogonalMatrix = AZ::Matrix3x4::CreateScale(AZ::Vector3(0.7f, 0.7f, 0.2f));
@@ -887,11 +887,11 @@ namespace UnitTest
         );
 
         AZ::Matrix3x4 matrix2 = matrix1;
-        EXPECT_TRUE(matrix2.IsClose(matrix1, 1e-6f));
+        EXPECT_THAT(matrix2, IsCloseTolerance(matrix1, 1e-6f));
         matrix2.SetElement(0, 2, matrix2(0, 2) + 1e-2f);
         matrix2.SetElement(2, 3, matrix2(2, 3) + 1e-4f);
         matrix2.SetElement(1, 1, matrix2(1, 1) - 1e-6f);
-        EXPECT_TRUE(matrix2.IsClose(matrix1, 1e-1f));
+        EXPECT_THAT(matrix2, IsCloseTolerance(matrix1, 1e-1f));
         EXPECT_FALSE(matrix2.IsClose(matrix1, 1e-3f));
         EXPECT_FALSE(matrix2.IsClose(matrix1, 1e-5f));
         EXPECT_FALSE(matrix2.IsClose(matrix1, 1e-7f));
@@ -930,7 +930,7 @@ namespace UnitTest
         const AZ::Matrix3x4 rotX = AZ::Matrix3x4::CreateRotationX(eulerRadians.GetX());
         const AZ::Matrix3x4 rotY = AZ::Matrix3x4::CreateRotationY(eulerRadians.GetY());
         const AZ::Matrix3x4 rotZ = AZ::Matrix3x4::CreateRotationZ(eulerRadians.GetZ());
-        EXPECT_TRUE(matrix.IsClose(rotX * rotY * rotZ));
+        EXPECT_THAT(matrix, IsClose(rotX * rotY * rotZ));
     }
 
     INSTANTIATE_TEST_CASE_P(MATH_Matrix3x4, Matrix3x4SetFromEulerDegreesFixture, ::testing::ValuesIn(MathTestData::EulerAnglesDegrees));
@@ -945,7 +945,7 @@ namespace UnitTest
         const AZ::Matrix3x4 rotX = AZ::Matrix3x4::CreateRotationX(eulerRadians.GetX());
         const AZ::Matrix3x4 rotY = AZ::Matrix3x4::CreateRotationY(eulerRadians.GetY());
         const AZ::Matrix3x4 rotZ = AZ::Matrix3x4::CreateRotationZ(eulerRadians.GetZ());
-        EXPECT_TRUE(matrix.IsClose(rotX * rotY * rotZ));
+        EXPECT_THAT(matrix, IsClose(rotX * rotY * rotZ));
     }
 
     INSTANTIATE_TEST_CASE_P(MATH_Matrix3x4, Matrix3x4SetFromEulerRadiansFixture, ::testing::ValuesIn(MathTestData::EulerAnglesRadians));
@@ -962,11 +962,11 @@ namespace UnitTest
         const AZ::Vector3 eulerDegrees = matrix.GetEulerDegrees();
         AZ::Matrix3x4 eulerMatrix;
         eulerMatrix.SetFromEulerDegrees(eulerDegrees);
-        EXPECT_TRUE(eulerMatrix.IsClose(matrix));
+        EXPECT_THAT(eulerMatrix, IsClose(matrix));
         const AZ::Vector3 eulerRadians = matrix.GetEulerRadians();
         eulerMatrix = AZ::Matrix3x4::Identity();
         eulerMatrix.SetFromEulerRadians(eulerRadians);
-        EXPECT_TRUE(eulerMatrix.IsClose(matrix));
+        EXPECT_THAT(eulerMatrix, IsClose(matrix));
     }
 
     INSTANTIATE_TEST_CASE_P(MATH_Matrix3x4, Matrix3x4GetEulerFixture, ::testing::ValuesIn(MathTestData::OrthogonalMatrix3x4s));

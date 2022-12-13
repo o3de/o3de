@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Clip",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Discards the current pixel, if any component of the input value is less than zero",
         "slotDataTypeGroups": [
             "inValue"
         ],

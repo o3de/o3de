@@ -349,12 +349,12 @@ namespace AZ
                     // which will later get caught in Process() when trying to access a property.
                     if (materialPropertyDependencies.none() || functor->NeedsProcess(m_materialProperties.GetPropertyDirtyFlags()))
                     {
-                        MaterialFunctor::RuntimeContext processContext = MaterialFunctor::RuntimeContext(
+                        MaterialFunctorAPI::RuntimeContext processContext = MaterialFunctorAPI::RuntimeContext(
                             m_materialProperties,
-                            &m_shaderCollections,
-                            m_shaderResourceGroup.get(),
                             &materialPropertyDependencies,
-                            psoHandling
+                            psoHandling,
+                            m_shaderResourceGroup.get(),
+                            &m_shaderCollections
                         );
 
                         functor->Process(processContext);

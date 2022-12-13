@@ -40,6 +40,10 @@ namespace AZ
             using MetalArgumentBufferArray = AZStd::array<id<MTLBuffer>, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
             using MetalArgumentBufferArrayOffsets = AZStd::array<NSUInteger, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
             
+            //first = is the resource read only
+            //second = native mtlresource pointer
+            using ResourceProperties = AZStd::pair<bool, id<MTLResource>>;
+            
             static RHI::Ptr<CommandList> Create();
             
             void Init(RHI::HardwareQueueClass hardwareQueueClass, Device* device);
@@ -66,8 +70,12 @@ namespace AZ
             void EndPredication() override {}
             void BuildBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) override;
             void BuildTopLevelAccelerationStructure(const RHI::RayTracingTlas& rayTracingTlas) override;
-       
+            void SetFragmentShadingRate(
+                [[maybe_unused]] RHI::ShadingRate rate,
+                [[maybe_unused]] const RHI::ShadingRateCombinators& combinators = DefaultShadingRateCombinators) override {}
+
         private:
+            
             void SetPipelineState(const PipelineState* pipelineState);
             void SetStreamBuffers(const RHI::StreamBufferView* descriptors, AZ::u32 count);
             void SetIndexBuffer(const RHI::IndexBufferView& descriptor);
@@ -105,8 +113,27 @@ namespace AZ
                                      MetalArgumentBufferArray& mtlArgBuffers,
                                      MetalArgumentBufferArrayOffsets mtlArgBufferOffsets);
             
-            ShaderResourceBindings& GetShaderResourceBindingsByPipelineType(RHI::PipelineStateType pipelineType);            
+            //! Helper functions that help cache untracked resources (within Bindless SRG) for compute and graphics work
+            void CollectBindlessComputeUntrackedResources(const ShaderResourceGroup* shaderResourceGroup,
+                                                          ArgumentBuffer::ResourcesForCompute& untrackedResourceComputeRead,
+                                                          ArgumentBuffer::ResourcesForCompute& untrackedResourceComputeReadWrite);
             
+            void CollectBindlessGfxUntrackedResources(const ShaderResourceGroup* shaderResourceGroup,
+                                                      ArgumentBuffer::ResourcesPerStageForGraphics& untrackedResourcesGfxRead,
+                                                      ArgumentBuffer::ResourcesPerStageForGraphics& untrackedResourcesGfxReadWrite);
+            //! Helper function to return a bool to indicate if the resource is read only as well as the native resource pointer
+            AZStd::pair<bool, id<MTLResource>> GetResourceInfo(RHI::ShaderResourceGroupData::BindlessResourceType resourceType,
+                                                               const RHI::ResourceView* resourceView);
+            
+            //Returns the SRG binding based on the PSO type
+            ShaderResourceBindings& GetShaderResourceBindingsByPipelineType(RHI::PipelineStateType pipelineType);
+            
+            //Arrays to cache all the buffers and offsets (related to graphics work) in order to make batch calls
+            MetalArgumentBufferArray m_mtlVertexArgBuffers;
+            MetalArgumentBufferArrayOffsets m_mtlVertexArgBufferOffsets;
+            MetalArgumentBufferArray m_mtlFragmentOrComputeArgBuffers;
+            MetalArgumentBufferArrayOffsets m_mtlFragmentOrComputeArgBufferOffsets;
+
             //! This is kept as a separate struct so that we can robustly reset it. Every property
             //! on this struct should be in-class-initialized so that there are no "missed" states.
             //! Otherwise, it results in hard-to-track bugs down the road as it's too easy to add something

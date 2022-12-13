@@ -43,7 +43,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = "Material Type Builder";
-            materialBuilderDescriptor.m_version = 23; // Material property refactoring
+            materialBuilderDescriptor.m_version = 25; // Refactored material functor code
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialTypeBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialTypeBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -239,6 +239,22 @@ namespace AZ
                     }
                     return true;
                 });
+
+            for (const auto& pipelinePair : materialTypeSourceData.m_pipelineData)
+            {
+                for (auto& shader : pipelinePair.second.m_shaderCollection)
+                {
+                    MaterialBuilderUtils::AddPossibleDependencies(request.m_sourceFile,
+                        shader.m_shaderFilePath,
+                        "Shader Asset",
+                        outputJobDescriptor.m_jobDependencyList,
+                        response.m_sourceFileDependencyList,
+                        false,
+                        0);
+                }
+
+                addFunctorDependencies(pipelinePair.second.m_materialFunctorSourceData);
+            }
 
             // Create the output jobs for each platform
             for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
