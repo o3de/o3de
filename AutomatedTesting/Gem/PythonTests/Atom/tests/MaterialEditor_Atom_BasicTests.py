@@ -118,13 +118,18 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
     with Tracer() as error_tracer:
         # Set constants before starting test steps.
         standard_pbr_material_type = os.path.join(atom_tools_utils.MATERIAL_TYPES_PATH, "StandardPBR.materialtype")
-        test_data_path = os.path.join(atom_tools_utils.TEST_DATA_MATERIALS_PATH, "StandardPbrTestCases")
-        test_material_1 = "001_DefaultWhite.material"
-        test_material_2 = "002_BaseColorLerp.material"
-        test_material_3 = "003_MetalMatte.material"
-        test_material_4 = "004_MetalMap.material"
-        test_material_5 = "005_RoughnessMap.material"
-        test_material_6 = "006_SpecularF0Map.material"
+        test_material_1 = os.path.join(
+            atom_tools_utils.TEST_DATA_MATERIALS_PATH, "StandardPbrTestCases", "001_DefaultWhite.material")
+        test_material_2 = os.path.join(
+            atom_tools_utils.TEST_DATA_MATERIALS_PATH, "StandardPbrTestCases", "002_BaseColorLerp.material")
+        test_material_3 = os.path.join(
+            atom_tools_utils.TEST_DATA_MATERIALS_PATH, "StandardPbrTestCases", "003_MetalMatte.material")
+        test_material_4 = os.path.join(
+            atom_tools_utils.TEST_DATA_MATERIALS_PATH, "StandardPbrTestCases", "004_MetalMap.material")
+        test_material_5 = os.path.join(
+            atom_tools_utils.TEST_DATA_MATERIALS_PATH, "StandardPbrTestCases", "005_RoughnessMap.material")
+        test_material_6 = os.path.join(
+            atom_tools_utils.TEST_DATA_MATERIALS_PATH, "StandardPbrTestCases", "006_SpecularF0Map.material")
 
         # 1. Open an existing material document.
         material_document_id = atom_tools_utils.open_document(standard_pbr_material_type)
@@ -140,37 +145,32 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
 
         # 3. Open multiple material documents then use the CloseAllDocuments bus call to close them all.
         for material in [test_material_1, test_material_2, test_material_3]:
-            atom_tools_utils.open_document(os.path.join(test_data_path, material))
+            atom_tools_utils.open_document(material)
         Report.result(
             Tests.close_all_opened_assets,
             atom_tools_utils.close_all_documents() is True)
 
         # 4. Open multiple material documents then verify all material documents are opened.
-        test_material_1_document_id = atom_tools_utils.open_document(os.path.join(test_data_path, test_material_1))
-        test_material_2_document_id = atom_tools_utils.open_document(os.path.join(test_data_path, test_material_2))
-        test_material_3_document_id = atom_tools_utils.open_document(os.path.join(test_data_path, test_material_3))
-        test_material_4_document_id = atom_tools_utils.open_document(os.path.join(test_data_path, test_material_4))
-        test_material_5_document_id = atom_tools_utils.open_document(os.path.join(test_data_path, test_material_5))
-        test_material_6_document_id = atom_tools_utils.open_document(os.path.join(test_data_path, test_material_6))
+        material_document_ids = []
+        test_materials = [
+            test_material_1, test_material_2, test_material_3, test_material_4, test_material_5, test_material_6]
+        for material in test_materials:
+            material_document_id = atom_tools_utils.open_document(material)
+            material_document_ids.append(material_document_id)
         Report.result(
             Tests.verify_all_documents_are_opened,
-            atom_tools_utils.is_document_open(test_material_1_document_id) is True and
-            atom_tools_utils.is_document_open(test_material_2_document_id) is True and
-            atom_tools_utils.is_document_open(test_material_3_document_id) is True and
-            atom_tools_utils.is_document_open(test_material_4_document_id) is True and
-            atom_tools_utils.is_document_open(test_material_5_document_id) is True and
-            atom_tools_utils.is_document_open(test_material_6_document_id) is True)
+            atom_tools_utils.is_document_open(material_document_id) is True)
 
         # 5. Use the CloseAllDocumentsExcept bus call to close all but one.
-        atom_tools_utils.close_all_except_selected(test_material_1_document_id)
+        atom_tools_utils.close_all_except_selected(material_document_ids[0])
         Report.result(
             Tests.close_all_opened_assets_except_one,
-            atom_tools_utils.is_document_open(test_material_1_document_id) is True and
-            atom_tools_utils.is_document_open(test_material_2_document_id) is False and
-            atom_tools_utils.is_document_open(test_material_3_document_id) is False and
-            atom_tools_utils.is_document_open(test_material_4_document_id) is False and
-            atom_tools_utils.is_document_open(test_material_5_document_id) is False and
-            atom_tools_utils.is_document_open(test_material_6_document_id) is False)
+            atom_tools_utils.is_document_open(material_document_ids[0]) is True and
+            atom_tools_utils.is_document_open(material_document_ids[1]) is False and
+            atom_tools_utils.is_document_open(material_document_ids[2]) is False and
+            atom_tools_utils.is_document_open(material_document_ids[3]) is False and
+            atom_tools_utils.is_document_open(material_document_ids[4]) is False and
+            atom_tools_utils.is_document_open(material_document_ids[5]) is False)
 
         # 6. Verify Material Asset Browser pane visibility.
         atom_tools_utils.set_pane_visibility("Asset Browser", True)
@@ -180,7 +180,7 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
 
         # 7. Change the baseColor.color property of the test_material_1 material document.
         base_color_property_name = "baseColor.color"
-        document_id = atom_tools_utils.open_document(os.path.join(test_data_path, test_material_1))
+        document_id = atom_tools_utils.open_document(test_material_1)
         initial_color = material_editor_utils.get_property(document_id, base_color_property_name)
         expected_color = math.Color(0.25, 0.25, 0.25, 1.0)
         atom_tools_utils.begin_edit(document_id)
@@ -204,8 +204,8 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
 
         # 10. Select the lighting background and verify the selection succeeded.
         neutral_urban_asset_path = os.path.join(
-            "@gemroot:MaterialEditor@", "Assets", "MaterialEditor", "LightingPresets",
-            "neutral_urban.lightingpreset.azasset")
+            azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
+            "LightingPresets", "neutral_urban.lightingpreset.azasset")
         neutral_urban_background_loaded = atom_tools_utils.load_lighting_preset_by_path(neutral_urban_asset_path)
         Report.result(Tests.viewport_background_selected, neutral_urban_background_loaded is True)
 
@@ -213,15 +213,14 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
         neutral_urban_background_path = os.path.join(
             azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
             "LightingPresets", "neutral_urban.lightingpreset.azasset")
-        neutral_urban_background_path = neutral_urban_background_path.replace(os.sep, '/')
         Report.result(
             Tests.viewport_background_has_expected_asset,
             atom_tools_utils.get_last_lighting_preset_path() == neutral_urban_background_path)
 
         # 12. Change the lighting background again and verify the change succeeded.
         lythwood_room_asset_path = os.path.join(
-            "@gemroot:MaterialEditor@", "Assets", "MaterialEditor", "LightingPresets",
-            "lythwood_room.lightingpreset.azasset")
+            azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
+            "LightingPresets", "lythwood_room.lightingpreset.azasset")
         lythwood_room_asset_loaded = atom_tools_utils.load_lighting_preset_by_path(lythwood_room_asset_path)
         Report.result(Tests.viewport_background_changed, lythwood_room_asset_loaded is True)
 
@@ -229,37 +228,36 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
         lythwood_room_background_path = os.path.join(
             azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
             "LightingPresets", "lythwood_room.lightingpreset.azasset")
-        lythwood_room_background_path = lythwood_room_background_path.replace(os.sep, '/')
         Report.result(
             Tests.viewport_background_has_changed_asset,
             atom_tools_utils.get_last_lighting_preset_path() == lythwood_room_background_path)
 
         # 14. Select the model and verify the selection  succeeded.
         beveled_cone_model_path = os.path.join(
-            "@gemroot:MaterialEditor@", "Assets", "MaterialEditor", "ViewPortModels", "BeveledCone.modelpreset.azasset")
+            azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
+            "ViewportModels", "BeveledCone.modelpreset.azasset")
         beveled_cone_model_asset = atom_tools_utils.load_model_preset_by_path(beveled_cone_model_path)
         Report.result(Tests.viewport_model_selected, beveled_cone_model_asset is True)
 
         # 15. Verify the model asset is the expected value.
         beveled_cone_model_asset_path = os.path.join(
             azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
-            "ViewPortModels", "BeveledCone.modelpreset.azasset")
-        beveled_cone_model_asset_path = beveled_cone_model_asset_path.replace(os.sep, '/')
+            "ViewportModels", "BeveledCone.modelpreset.azasset")
         Report.result(
             Tests.viewport_model_has_expected_asset,
             atom_tools_utils.get_last_model_preset_path() == beveled_cone_model_asset_path)
 
         # 16. Change the model asset and verify the change succeeded.
         cone_model_path = os.path.join(
-            "@gemroot:MaterialEditor@", "Assets", "MaterialEditor", "ViewPortModels", "Cone.modelpreset.azasset")
+            azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
+            "ViewportModels", "Cone.modelpreset.azasset")
         cone_model_asset = atom_tools_utils.load_model_preset_by_path(cone_model_path)
         Report.result(Tests.viewport_model_changed, cone_model_asset is True)
 
         # 17. Verify the model asset is changed to a new expected value.
         cone_model_asset_path = os.path.join(
             azlmbr.paths.engroot, "Gems", "Atom", "Tools", "MaterialEditor", "Assets", "MaterialEditor",
-            "ViewPortModels", "Cone.modelpreset.azasset")
-        cone_model_asset_path = cone_model_asset_path.replace(os.sep, '/')
+            "ViewportModels", "Cone.modelpreset.azasset")
         Report.result(
             Tests.viewport_model_has_changed_asset,
             atom_tools_utils.get_last_model_preset_path() == cone_model_asset_path)
