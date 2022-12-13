@@ -156,10 +156,10 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
             test_material_1, test_material_2, test_material_3, test_material_4, test_material_5, test_material_6]
         for material in test_materials:
             material_document_id = atom_tools_utils.open_document(material)
+            Report.result(
+                Tests.verify_all_documents_are_opened,
+                atom_tools_utils.is_document_open(material_document_id) is True)
             material_document_ids.append(material_document_id)
-        Report.result(
-            Tests.verify_all_documents_are_opened,
-            atom_tools_utils.is_document_open(material_document_id) is True)
 
         # 5. Use the CloseAllDocumentsExcept bus call to close all but one.
         atom_tools_utils.close_all_except_selected(material_document_ids[0])
