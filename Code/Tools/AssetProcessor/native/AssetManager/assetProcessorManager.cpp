@@ -1383,7 +1383,7 @@ namespace AssetProcessor
                         "File \"%s\" \n"
                         "Builder UUID \"%s\" \n"
                         "requested reprocess \"%s\" \n"
-                        "but that file lives in the Cache folder.  \nIgnored.",
+                        "but that file lives in the Cache folder.  \nIgnored.\n",
                         processedAsset.m_entry.m_sourceAssetReference.AbsolutePath().c_str(),
                         processedAsset.m_entry.m_builderGuid.ToFixedString().c_str(),
                         affectedSourceFile.c_str());
@@ -1402,7 +1402,7 @@ namespace AssetProcessor
                         "File \"%s\" \n"
                         "Builder UUID \"%s\" \n"
                         "requested reprocess \"%s\" \n"
-                        "That file does not live in any folder monitored by AP. \nIgnored.",
+                        "That file does not live in any folder monitored by AP. \nIgnored.\n",
                         processedAsset.m_entry.m_sourceAssetReference.AbsolutePath().c_str(),
                         processedAsset.m_entry.m_builderGuid.ToFixedString().c_str(),
                         affectedSourceFile.c_str());
@@ -1418,7 +1418,7 @@ namespace AssetProcessor
                         "File \"%s\" \n"
                         "Builder UUID \"%s\" \n"
                         "requested reprocess \"%s\" \n"
-                        "That file is excluded by an exclude rule.  \nIgnored.",
+                        "That file is excluded by an exclude rule.  \nIgnored.\n",
                         processedAsset.m_entry.m_sourceAssetReference.AbsolutePath().c_str(),
                         processedAsset.m_entry.m_builderGuid.ToFixedString().c_str(),
                         affectedSourceFile.c_str());
