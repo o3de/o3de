@@ -15,7 +15,7 @@ namespace AZ::Render
 {
     SphereLightDelegate::SphereLightDelegate(LmbrCentral::SphereShapeComponentRequests* shapeBus, EntityId entityId, bool isVisible)
         : LightDelegateBase<PointLightFeatureProcessorInterface>(entityId, isVisible)
-        , m_shapeBus(shapeBus)
+        , m_sphereShapeBus(shapeBus)
     {
         InitBase(entityId);
     }
@@ -44,7 +44,7 @@ namespace AZ::Render
 
     float SphereLightDelegate::GetRadius() const
     {
-        return m_shapeBus->GetRadius() * GetTransform().GetUniformScale();
+        return m_sphereShapeBus->GetRadius() * GetTransform().GetUniformScale();
     }
 
     void SphereLightDelegate::DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
@@ -143,6 +143,7 @@ namespace AZ::Render
 
     Aabb SphereLightDelegate::GetLocalVisualizationBounds() const
     {
-        return Aabb::CreateCenterRadius(Vector3::CreateZero(), GetConfig()->m_attenuationRadius);
+        const AZ::Vector3 translationOffset = m_shapeBus ? m_shapeBus->GetTranslationOffset() : AZ::Vector3::CreateZero();
+        return Aabb::CreateCenterRadius(translationOffset, GetConfig()->m_attenuationRadius);
     }
 } // namespace AZ::Render
