@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Ddx",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the partial derivative of the input value with respect to the screen-space x-coordinate",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

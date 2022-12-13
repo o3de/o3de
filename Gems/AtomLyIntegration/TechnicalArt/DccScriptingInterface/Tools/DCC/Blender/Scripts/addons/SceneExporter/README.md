@@ -1,5 +1,7 @@
 # O3DE Blender, Scene Exporter AddOn
 
+# Supports: Tested on Blender 3+, Windows 10/11, Linux Ubuntu 22+ 
+
 This folder contains the Blender O3DE Scene Exporter Plugin (DCCsi) for O3DE
 
 ![SciFiDockSmall](https://user-images.githubusercontent.com/87207603/175056100-d8dc00fa-5795-4a46-b1ab-724c25fb1604.gif)

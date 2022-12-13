@@ -5,8 +5,9 @@
     "ClassData": {
         "id": "{9041104C-C659-46FB-A363-84F4E733C766}",
         "category": "Math Functions",
-        "title": "Sinh",
+        "title": "Hyperbolic Sine",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the hyperbolic sine of the input value (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

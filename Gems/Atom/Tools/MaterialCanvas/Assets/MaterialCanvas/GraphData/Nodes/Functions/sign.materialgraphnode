@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Sign",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Computes the sign of the input value (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],
