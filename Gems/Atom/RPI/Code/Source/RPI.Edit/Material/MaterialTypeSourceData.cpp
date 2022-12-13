@@ -7,12 +7,10 @@
  */
 
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
-#include <Atom/RPI.Edit/Material/MaterialPropertySerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataSerializer.h>
-#include <Atom/RPI.Edit/Material/MaterialPropertyConnectionSerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyGroupSerializer.h>
-#include <Atom/RPI.Edit/Material/MaterialPropertyValueSerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
+#include <Atom/RPI.Edit/Material/MaterialPropertySourceData.h>
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAssetCreator.h>
@@ -35,42 +33,18 @@ namespace AZ
             [[maybe_unused]] static constexpr char const MaterialTypeSourceDataDebugName[] = "MaterialTypeSourceData";
         }
 
-        MaterialFunctorSourceDataHolder::MaterialFunctorSourceDataHolder(Ptr<MaterialFunctorSourceData> actualSourceData)
-            : m_actualSourceData(actualSourceData)
-        {}
-
-        void MaterialFunctorSourceDataHolder::Reflect(AZ::ReflectContext* context)
-        {
-            if (JsonRegistrationContext* jsonContext = azrtti_cast<JsonRegistrationContext*>(context))
-            {
-                jsonContext->Serializer<JsonMaterialFunctorSourceDataSerializer>()->HandlesType<MaterialFunctorSourceDataHolder>();
-            }
-            else if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<MaterialFunctorSourceDataHolder>();
-            }
-        }
-
         void MaterialTypeSourceData::Reflect(ReflectContext* context)
         {
             if (JsonRegistrationContext* jsonContext = azrtti_cast<JsonRegistrationContext*>(context))
             {
-                jsonContext->Serializer<JsonMaterialPropertySerializer>()->HandlesType<MaterialTypeSourceData::PropertyDefinition>();
-                jsonContext->Serializer<JsonMaterialPropertyConnectionSerializer>()->HandlesType<MaterialTypeSourceData::PropertyConnection>();
                 jsonContext->Serializer<JsonMaterialPropertyGroupSerializer>()->HandlesType<MaterialTypeSourceData::GroupDefinition>();
-                jsonContext->Serializer<JsonMaterialPropertyValueSerializer>()->HandlesType<MaterialPropertyValue>();
             }
             else if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<PropertyConnection>()->Version(3);
                 serializeContext->Class<GroupDefinition>()->Version(4);
-                serializeContext->Class<PropertyDefinition>()->Version(1);
 
                 serializeContext->RegisterGenericType<AZStd::unique_ptr<PropertyGroup>>();
-                serializeContext->RegisterGenericType<AZStd::unique_ptr<PropertyDefinition>>();
                 serializeContext->RegisterGenericType<AZStd::vector<AZStd::unique_ptr<PropertyGroup>>>();
-                serializeContext->RegisterGenericType<AZStd::vector<AZStd::unique_ptr<PropertyDefinition>>>();
-                serializeContext->RegisterGenericType<PropertyConnectionList>();
 
                 serializeContext->RegisterGenericType<MaterialVersionUpdate::Action::ActionDefinition>();
                 serializeContext->RegisterGenericType<VersionUpdateActions>();
@@ -132,16 +106,6 @@ namespace AZ
                     ;
             }
         }
-
-        MaterialTypeSourceData::PropertyConnection::PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view name)
-            : m_type(type)
-            , m_name(name)
-        {
-        }
-
-        const float MaterialTypeSourceData::PropertyDefinition::DefaultMin = std::numeric_limits<float>::lowest();
-        const float MaterialTypeSourceData::PropertyDefinition::DefaultMax = std::numeric_limits<float>::max();
-        const float MaterialTypeSourceData::PropertyDefinition::DefaultStep = 0.1f;
 
         /*static*/ MaterialTypeSourceData::PropertyGroup* MaterialTypeSourceData::PropertyGroup::AddPropertyGroup(AZStd::string_view name, AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& toPropertyGroupList)
         {
@@ -216,14 +180,14 @@ namespace AZ
             m_description = description;
         }
 
-        MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::PropertyGroup::AddProperty(AZStd::string_view name)
+        MaterialPropertySourceData* MaterialTypeSourceData::PropertyGroup::AddProperty(AZStd::string_view name)
         {
             if (!MaterialUtils::CheckIsValidPropertyName(name))
             {
                 return nullptr;
             }
 
-            auto propertyIter = AZStd::find_if(m_properties.begin(), m_properties.end(), [name](const AZStd::unique_ptr<PropertyDefinition>& existingProperty)
+            auto propertyIter = AZStd::find_if(m_properties.begin(), m_properties.end(), [name](const AZStd::unique_ptr<MaterialPropertySourceData>& existingProperty)
                 {
                     return existingProperty->GetName() == name;
                 });
@@ -245,13 +209,13 @@ namespace AZ
                 return nullptr;
             }
 
-            m_properties.emplace_back(AZStd::make_unique<PropertyDefinition>(name));
+            m_properties.emplace_back(AZStd::make_unique<MaterialPropertySourceData>(name));
             return m_properties.back().get();
         }
 
         MaterialTypeSourceData::PropertyGroup* MaterialTypeSourceData::PropertyGroup::AddPropertyGroup(AZStd::string_view name)
         {
-            auto iter = AZStd::find_if(m_properties.begin(), m_properties.end(), [name](const AZStd::unique_ptr<PropertyDefinition>& existingProperty)
+            auto iter = AZStd::find_if(m_properties.begin(), m_properties.end(), [name](const AZStd::unique_ptr<MaterialPropertySourceData>& existingProperty)
                 {
                     return existingProperty->GetName() == name;
                 });
@@ -285,7 +249,7 @@ namespace AZ
             return parentPropertyGroup->AddPropertyGroup(splitPropertyGroupId[1]);
         }
 
-        MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::AddProperty(AZStd::string_view propertyId)
+        MaterialPropertySourceData* MaterialTypeSourceData::AddProperty(AZStd::string_view propertyId)
         {
             AZStd::vector<AZStd::string_view> splitPropertyId = SplitId(propertyId);
 
@@ -353,7 +317,7 @@ namespace AZ
             return FindPropertyGroup(tokens, m_propertyLayout.m_propertyGroups);
         }
 
-        const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(
+        const MaterialPropertySourceData* MaterialTypeSourceData::FindProperty(
             AZStd::span<const AZStd::string_view> parsedPropertyId,
             AZStd::span<const AZStd::unique_ptr<PropertyGroup>> inPropertyGroupList) const
         {
@@ -365,7 +329,7 @@ namespace AZ
 
                     if (subPath.size() == 1)
                     {
-                        for (AZStd::unique_ptr<PropertyDefinition>& property : propertyGroup->m_properties)
+                        for (AZStd::unique_ptr<MaterialPropertySourceData>& property : propertyGroup->m_properties)
                         {
                             if (property->GetName() == subPath[0])
                             {
@@ -375,7 +339,7 @@ namespace AZ
                     }
                     else if(subPath.size() > 1)
                     {
-                        const MaterialTypeSourceData::PropertyDefinition* property = FindProperty(subPath, propertyGroup->m_propertyGroups);
+                        const MaterialPropertySourceData* property = FindProperty(subPath, propertyGroup->m_propertyGroups);
                         if (property)
                         {
                             return property;
@@ -387,18 +351,18 @@ namespace AZ
             return nullptr;
         }
 
-        MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::span<AZStd::string_view> parsedPropertyId, AZStd::span<AZStd::unique_ptr<PropertyGroup>> inPropertyGroupList)
+        MaterialPropertySourceData* MaterialTypeSourceData::FindProperty(AZStd::span<AZStd::string_view> parsedPropertyId, AZStd::span<AZStd::unique_ptr<PropertyGroup>> inPropertyGroupList)
         {
-            return const_cast<MaterialTypeSourceData::PropertyDefinition*>(const_cast<const MaterialTypeSourceData*>(this)->FindProperty(parsedPropertyId, inPropertyGroupList));
+            return const_cast<MaterialPropertySourceData*>(const_cast<const MaterialTypeSourceData*>(this)->FindProperty(parsedPropertyId, inPropertyGroupList));
         }
 
-        const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view propertyId) const
+        const MaterialPropertySourceData* MaterialTypeSourceData::FindProperty(AZStd::string_view propertyId) const
         {
             AZStd::vector<AZStd::string_view> tokens = TokenizeId(propertyId);
             return FindProperty(tokens, m_propertyLayout.m_propertyGroups);
         }
 
-        MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view propertyId)
+        MaterialPropertySourceData* MaterialTypeSourceData::FindProperty(AZStd::string_view propertyId)
         {
             AZStd::vector<AZStd::string_view> tokens = TokenizeId(propertyId);
             return FindProperty(tokens, m_propertyLayout.m_propertyGroups);
@@ -523,7 +487,7 @@ namespace AZ
                             propertyGroup = m_propertyLayout.m_propertyGroups.back().get();
                         }
 
-                        PropertyDefinition* newProperty = propertyGroup->AddProperty(propertyDefinition.GetName());
+                        MaterialPropertySourceData* newProperty = propertyGroup->AddProperty(propertyDefinition.GetName());
 
                         *newProperty = propertyDefinition;
                     }
@@ -545,13 +509,13 @@ namespace AZ
                 enumValues.push_back(uvNamePair.second);
             }
 
-            EnumerateProperties([&enumValues](const MaterialTypeSourceData::PropertyDefinition* property, const MaterialNameContext&)
+            EnumerateProperties([&enumValues](const MaterialPropertySourceData* property, const MaterialNameContext&)
                 {
                     if (property->m_dataType == AZ::RPI::MaterialPropertyDataType::Enum && property->m_enumIsUv)
                     {
                         // const_cast is safe because this is internal to the MaterialTypeSourceData. It isn't worth complicating things
                         // by adding another version of EnumerateProperties.
-                        const_cast<MaterialTypeSourceData::PropertyDefinition*>(property)->m_enumValues = enumValues;
+                        const_cast<MaterialPropertySourceData*>(property)->m_enumValues = enumValues;
                     }
                     return true;
                 });
@@ -667,6 +631,73 @@ namespace AZ
             return sourceValue;
         }
 
+        bool MaterialTypeSourceData::BuildProperty(
+            const AZStd::string& materialTypeSourceFilePath,
+            MaterialTypeAssetCreator& materialTypeAssetCreator,
+            MaterialNameContext materialNameContext,
+            const Name& propertyId,
+            const MaterialPropertySourceData& propertySourceData) const
+        {
+            materialTypeAssetCreator.BeginMaterialProperty(propertyId, propertySourceData.m_dataType);
+
+            if (propertySourceData.m_dataType == MaterialPropertyDataType::Enum)
+            {
+                materialTypeAssetCreator.SetMaterialPropertyEnumNames(propertySourceData.m_enumValues);
+            }
+
+            for (auto& output : propertySourceData.m_outputConnections)
+            {
+                switch (output.m_type)
+                {
+                case MaterialPropertyOutputType::ShaderInput:
+                {
+                    Name fieldName{output.m_name};
+                    materialNameContext.ContextualizeSrgInput(fieldName);
+                    materialTypeAssetCreator.ConnectMaterialPropertyToShaderInput(fieldName);
+                    break;
+                }
+                case MaterialPropertyOutputType::ShaderOption:
+                {
+                    Name fieldName{output.m_name};
+                    materialNameContext.ContextualizeShaderOption(fieldName);
+                    materialTypeAssetCreator.ConnectMaterialPropertyToShaderOptions(fieldName);
+                    break;
+                }
+                case MaterialPropertyOutputType::ShaderEnabled:
+                {
+                    Name shaderTag{output.m_name};
+                    materialTypeAssetCreator.ConnectMaterialPropertyToShaderEnabled(shaderTag);
+                    break;
+                }
+                case MaterialPropertyOutputType::Invalid:
+                    // Don't add any output mappings, this is the case when material functors are expected to process the property
+                    break;
+                default:
+                    AZ_Assert(false, "Unsupported MaterialPropertyOutputType");
+                    return false;
+                }
+            }
+
+            materialTypeAssetCreator.EndMaterialProperty();
+            
+            // Parse and set the property's value...
+            if (!propertySourceData.m_value.IsValid())
+            {
+                materialTypeAssetCreator.ReportWarning("Default value for material property '%s' is invalid.", propertyId.GetCStr());
+            }
+            else
+            {
+                // Resolve value if needed
+                MaterialPropertyValue resolvedValue = ResolveSourceValue(
+                    propertyId, propertySourceData.m_value, materialTypeSourceFilePath,
+                    materialTypeAssetCreator.GetMaterialPropertiesLayout(),
+                    [&](const char* message) { materialTypeAssetCreator.ReportError("%s", message); });
+                materialTypeAssetCreator.SetPropertyValue(propertyId, resolvedValue);
+            }
+
+            return true;
+        }
+
         bool MaterialTypeSourceData::BuildPropertyList(
             const AZStd::string& materialTypeSourceFilePath,
             MaterialTypeAssetCreator& materialTypeAssetCreator,
@@ -687,7 +718,7 @@ namespace AZ
 
             ExtendNameContext(materialNameContext, *propertyGroup);
 
-            for (const AZStd::unique_ptr<PropertyDefinition>& property : propertyGroup->m_properties)
+            for (const AZStd::unique_ptr<MaterialPropertySourceData>& property : propertyGroup->m_properties)
             {
                 // Register the property...
 
@@ -711,61 +742,9 @@ namespace AZ
                     return false;
                 }
 
-                materialTypeAssetCreator.BeginMaterialProperty(propertyId, property->m_dataType);
-
-                if (property->m_dataType == MaterialPropertyDataType::Enum)
+                if (!BuildProperty(materialTypeSourceFilePath, materialTypeAssetCreator, materialNameContext, propertyId, *property))
                 {
-                    materialTypeAssetCreator.SetMaterialPropertyEnumNames(property->m_enumValues);
-                }
-
-                for (auto& output : property->m_outputConnections)
-                {
-                    switch (output.m_type)
-                    {
-                    case MaterialPropertyOutputType::ShaderInput:
-                    {
-                        Name fieldName{output.m_name};
-                        materialNameContext.ContextualizeSrgInput(fieldName);
-                        materialTypeAssetCreator.ConnectMaterialPropertyToShaderInput(fieldName);
-                        break;
-                    }
-                    case MaterialPropertyOutputType::ShaderOption:
-                    {
-                        Name fieldName{output.m_name};
-                        materialNameContext.ContextualizeShaderOption(fieldName);
-                        materialTypeAssetCreator.ConnectMaterialPropertyToShaderOptions(fieldName);
-                        break;
-                    }
-                    case MaterialPropertyOutputType::ShaderEnabled:
-                    {
-                        Name shaderTag{output.m_name};
-                        materialTypeAssetCreator.ConnectMaterialPropertyToShaderEnabled(shaderTag);
-                        break;
-                    }
-                    case MaterialPropertyOutputType::Invalid:
-                        // Don't add any output mappings, this is the case when material functors are expected to process the property
-                        break;
-                    default:
-                        AZ_Assert(false, "Unsupported MaterialPropertyOutputType");
-                        return false;
-                    }
-                }
-
-                materialTypeAssetCreator.EndMaterialProperty();
-
-                // Parse and set the property's value...
-                if (!property->m_value.IsValid())
-                {
-                    materialTypeAssetCreator.ReportWarning("Default value for material property '%s' is invalid.", propertyId.GetCStr());
-                }
-                else
-                {
-                    // Resolve value if needed
-                    MaterialPropertyValue resolvedValue = ResolveSourceValue(
-                        propertyId, property->m_value, materialTypeSourceFilePath,
-                        materialTypeAssetCreator.GetMaterialPropertiesLayout(),
-                        [&](const char* message){ materialTypeAssetCreator.ReportError("%s", message); });
-                    materialTypeAssetCreator.SetPropertyValue(propertyId, resolvedValue);
+                    return false;
                 }
 
                 // If there were prior failures, continued processing could spam a bunch of irrelevant error messages,

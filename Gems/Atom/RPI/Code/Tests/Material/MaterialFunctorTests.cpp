@@ -43,7 +43,7 @@ namespace UnitTest
             }
 
             using MaterialFunctor::Process;
-            void Process(MaterialFunctor::RuntimeContext& context) override
+            void Process(MaterialFunctorAPI::RuntimeContext& context) override
             {
                 m_processResult = context.SetShaderOptionValue(m_shaderOptionName, m_shaderOptionValue);
             }
@@ -67,7 +67,7 @@ namespace UnitTest
             MOCK_METHOD0(ProcessCalled, void());
 
             using MaterialFunctor::Process;
-            void Process(RuntimeContext& context) override
+            void Process(MaterialFunctorAPI::RuntimeContext& context) override
             {
                 ProcessCalled();
 
@@ -155,6 +155,8 @@ namespace UnitTest
 
         // Most of this data can be empty since this particular functor doesn't access it.
         AZStd::vector<MaterialPropertyValue> unusedPropertyValues;
+        MaterialPropertyCollection properties;
+        properties.Init(materialTypeAsset->GetMaterialPropertiesLayout(), unusedPropertyValues);
         ShaderResourceGroup* unusedSrg = nullptr;
 
 
@@ -162,13 +164,12 @@ namespace UnitTest
 
         {
             // Successfully set o_optionA
-            MaterialFunctor::RuntimeContext runtimeContext = MaterialFunctor::RuntimeContext{
-                unusedPropertyValues,
-                materialTypeAsset->GetMaterialPropertiesLayout(),
-                &shaderCollectionCopy,
+            MaterialFunctorAPI::RuntimeContext runtimeContext = MaterialFunctorAPI::RuntimeContext{
+                properties,
+                & testFunctorSetOptionA.GetMaterialPropertyDependencies(),
+                AZ::RPI::MaterialPropertyPsoHandling::Allowed,
                 unusedSrg,
-                &testFunctorSetOptionA.GetMaterialPropertyDependencies(),
-                AZ::RPI::MaterialPropertyPsoHandling::Allowed
+                & shaderCollectionCopy
             };
             testFunctorSetOptionA.Process(runtimeContext);
             EXPECT_TRUE(testFunctorSetOptionA.GetProcessResult());
@@ -179,13 +180,12 @@ namespace UnitTest
 
         {
             // Successfully set o_optionB
-            MaterialFunctor::RuntimeContext runtimeContext = MaterialFunctor::RuntimeContext{
-                unusedPropertyValues,
-                materialTypeAsset->GetMaterialPropertiesLayout(),
-                &shaderCollectionCopy,
-                unusedSrg,
+            MaterialFunctorAPI::RuntimeContext runtimeContext = MaterialFunctorAPI::RuntimeContext{
+                properties,
                 &testFunctorSetOptionB.GetMaterialPropertyDependencies(),
-                AZ::RPI::MaterialPropertyPsoHandling::Allowed
+                AZ::RPI::MaterialPropertyPsoHandling::Allowed,
+                unusedSrg,
+                &shaderCollectionCopy
             };
             testFunctorSetOptionB.Process(runtimeContext);
             EXPECT_TRUE(testFunctorSetOptionB.GetProcessResult());
@@ -197,13 +197,12 @@ namespace UnitTest
         {
             // Fail to set o_optionC because it is not owned by the material type
             AZ_TEST_START_TRACE_SUPPRESSION;
-            MaterialFunctor::RuntimeContext runtimeContext = MaterialFunctor::RuntimeContext{
-                unusedPropertyValues,
-                materialTypeAsset->GetMaterialPropertiesLayout(),
-                &shaderCollectionCopy,
-                unusedSrg,
+            MaterialFunctorAPI::RuntimeContext runtimeContext = MaterialFunctorAPI::RuntimeContext{
+                properties,
                 &testFunctorSetOptionC.GetMaterialPropertyDependencies(),
-                AZ::RPI::MaterialPropertyPsoHandling::Allowed
+                AZ::RPI::MaterialPropertyPsoHandling::Allowed,
+                unusedSrg,
+                &shaderCollectionCopy
             };
             testFunctorSetOptionC.Process(runtimeContext);
             EXPECT_FALSE(testFunctorSetOptionC.GetProcessResult());
@@ -213,13 +212,12 @@ namespace UnitTest
         {
             // Fail to set option index that is out of range
             AZ_TEST_START_TRACE_SUPPRESSION;
-            MaterialFunctor::RuntimeContext runtimeContext = MaterialFunctor::RuntimeContext{
-                unusedPropertyValues,
-                materialTypeAsset->GetMaterialPropertiesLayout(),
-                &shaderCollectionCopy,
+            MaterialFunctorAPI::RuntimeContext runtimeContext = MaterialFunctorAPI::RuntimeContext{
+                properties,
+                & testFunctorSetOptionInvalid.GetMaterialPropertyDependencies(),
+                AZ::RPI::MaterialPropertyPsoHandling::Allowed,
                 unusedSrg,
-                &testFunctorSetOptionInvalid.GetMaterialPropertyDependencies(),
-                AZ::RPI::MaterialPropertyPsoHandling::Allowed
+                &shaderCollectionCopy
             };
             testFunctorSetOptionInvalid.Process(runtimeContext);
             EXPECT_FALSE(testFunctorSetOptionInvalid.GetProcessResult());

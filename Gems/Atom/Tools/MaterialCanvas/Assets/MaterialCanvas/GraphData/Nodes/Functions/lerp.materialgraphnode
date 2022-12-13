@@ -5,8 +5,9 @@
     "ClassData": {
         "id": "{8DD887CA-DA8E-4F55-9DFE-1B89EA0310AB}",
         "category": "Math Functions",
-        "title": "Lerp",
+        "title": "Linear Interpolate",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns x + s(y - x)",
         "slotDataTypeGroups": [
             "inValue1|inValue2|inValue3|outValue"
         ],
