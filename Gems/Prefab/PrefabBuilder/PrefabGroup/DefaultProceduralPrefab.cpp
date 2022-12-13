@@ -22,6 +22,7 @@
 #include <SceneAPI/SceneCore/DataTypes/GraphData/ICustomPropertyData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/ITransform.h>
+#include <SceneAPI/SceneCore/DataTypes/Rules/ReadOnlyRule.h>
 #include <SceneAPI/SceneData/Groups/MeshGroup.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 #include <SceneAPI/SceneData/Rules/LodRule.h>
@@ -348,6 +349,9 @@ namespace AZ::SceneAPI
 
         // tag this mesh group as a "default mesh group" using this rule
         meshGroup->GetRuleContainer().AddRule(AZStd::make_shared<AZ::SceneAPI::SceneData::ProceduralMeshGroupRule>());
+
+        // Don't let users edit these mesh groups, because they're procedural they'll be re-generated and overwrite any changes.
+        meshGroup->GetRuleContainer().AddRule(AZStd::make_shared<AZ::SceneAPI::DataTypes::ReadOnlyRule>());
 
         // this clears out the mesh coordinates each mesh group will be rotated and translated
         // using the attached scene graph node

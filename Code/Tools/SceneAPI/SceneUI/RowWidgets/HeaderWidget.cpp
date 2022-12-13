@@ -17,6 +17,7 @@
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/ISceneNodeGroup.h>
+#include <SceneAPI/SceneCore/DataTypes/Rules/ReadOnlyRule.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
 #include <SceneAPI/SceneUI/RowWidgets/HeaderWidget.h>
@@ -197,6 +198,11 @@ namespace AZ
                 if (target->RTTI_IsTypeOf(DataTypes::IGroup::TYPEINFO_Uuid()))
                 {
                     sceneNodeGroup = azrtti_cast<const DataTypes::IGroup*>(&target);
+                    if (sceneNodeGroup &&
+                        sceneNodeGroup->GetRuleContainerConst().FindFirstByType<AZ::SceneAPI::DataTypes::ReadOnlyRule>())
+                    {
+                        this->parentWidget()->setEnabled(false); 
+                    }
                     
                     AZ::SerializeContext* serializeContext = nullptr;
                     AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
