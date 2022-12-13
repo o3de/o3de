@@ -453,7 +453,7 @@ namespace AZ
 
                 for (const MaterialPropertyOutputId& connection : propertyDescriptor->GetOutputConnections())
                 {
-                    bool applied =
+                    [[maybe_unused]] bool applied =
                         TryApplyPropertyConnectionToShaderInput(value, connection, propertyDescriptor) ||
                         TryApplyPropertyConnectionToShaderOption(value, connection) ||
                         TryApplyPropertyConnectionToShaderEnable(value, connection) ||
@@ -491,7 +491,7 @@ namespace AZ
                     {
                         // Note that ShaderInput is not supported for internal properties. Internal properties are used exclusively for the
                         // .materialpipeline which is not allowed to access to the MaterialSrg, only the .materialtype should know about the MaterialSrg.
-                        bool applied =
+                        [[maybe_unused]] bool applied =
                             TryApplyPropertyConnectionToShaderOption(value, connection) ||
                             TryApplyPropertyConnectionToShaderEnable(value, connection);
 
