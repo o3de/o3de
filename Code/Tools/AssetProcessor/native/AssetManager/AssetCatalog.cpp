@@ -496,6 +496,12 @@ namespace AssetProcessor
                         auto canonicalUuid = AssetUtilities::GetSourceUuid(sourceAsset);
                         assetId = AZ::Data::AssetId(canonicalUuid, combined.m_subID);
 
+                        if (canonicalUuid.IsNull())
+                        {
+                            // Error is already handled by GetSourceUuid
+                            return true;
+                        }
+
                         if (canonicalUuid != combined.m_sourceGuid)
                         {
                             // Canonical UUID does not match stored UUID, this entry needs to be updated
