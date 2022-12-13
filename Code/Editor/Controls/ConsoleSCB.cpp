@@ -1079,6 +1079,38 @@ void ConsoleVariableModel::ClearModifiedRows()
     m_modifiedRows.clear();
 }
 
+template<typename T, int expectedCvarType>
+static bool SetCVarFromConsoleCommand(ICVar* cvar, AZ::ConsoleFunctorBase* consoleCommand)
+{
+    if (T value; consoleCommand->GetValue(value) == AZ::GetValueResult::Success)
+    {
+        if (cvar->GetType() == expectedCvarType)
+        {
+            if constexpr (expectedCvarType == CVAR_INT)
+            {
+                cvar->Set(static_cast<int>(value));
+            }
+            else if constexpr (expectedCvarType == CVAR_FLOAT)
+            {
+                cvar->Set(static_cast<float>(value));
+            }
+            else if constexpr (expectedCvarType == CVAR_STRING)
+            {
+                cvar->Set(value.data());
+            }
+        }
+        else if (cvar->GetType() == CVAR_STRING)
+        {
+            if constexpr (expectedCvarType != CVAR_STRING)
+            {
+                cvar->Set(AZStd::to_string(value).c_str());
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
 AZ::ConsoleCommandInvokedEvent::Handler ConsoleVariableEditor::m_commandInvokedHandler(
     [](AZStd::string_view command,
        const AZ::ConsoleCommandContainer&,
@@ -1096,6 +1128,40 @@ AZ::ConsoleCommandInvokedEvent::Handler ConsoleVariableEditor::m_commandInvokedH
         auto changedCVar = GetIEditor()->GetSystem()->GetIConsole()->GetCVar(AZStd::string(command).c_str());
         if (changedCVar)
         {
+            auto console = AZ::Interface<AZ::IConsole>::Get();
+            auto azConsoleCommand = console->FindCommand(command);
+            if (azConsoleCommand)
+            {
+                // ints AZ::s8 AZ::u16, AZ::s16, 32, 64, long, unsigned long
+                // floats float, double,
+                // AZStd::string, AZ::CVarFixedString
+
+                const bool handled =
+                    (SetCVarFromConsoleCommand<AZ::s8, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::s16, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::s32, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZ::s64, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<long, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<unsigned long, CVAR_INT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<float, CVAR_FLOAT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<double, CVAR_FLOAT>(changedCVar, azConsoleCommand) ||
+                     SetCVarFromConsoleCommand<AZStd::string, CVAR_STRING>(changedCVar, azConsoleCommand));
+
+                AZ_Warning("ConsoleSCB", !handled, "an unknown type could not be read into the console!");
+
+                if (int value; azConsoleCommand->GetValue(value) == AZ::GetValueResult::Success)
+                {
+                    if (changedCVar->GetType() == CVAR_INT)
+                    {
+                        changedCVar->Set(value);
+                    }
+                    else if (changedCVar->GetType() == CVAR_STRING)
+                    {
+                        changedCVar->Set(AZStd::to_string(value).c_str());
+                    }
+                }
+            }
+
             if (AzToolsFramework::DocumentPropertyEditor::ShouldReplaceRPE())
             {
                 // <apm> get the new CVar Editor to commit this value change to the same system that the Console uses
