@@ -131,7 +131,8 @@ namespace AzToolsFramework
             //! Adds overrides at the provided path by attaching the provided subtree representing new overrides
             //! @param path The path at which new overrides should be added
             //! @param subTree The tree representing the new overrides to be added
-            void AddOverrides(const AZ::Dom::Path& path, AZ::Dom::DomPrefixTree<PrefabOverrideMetadata>&& subTree);
+            //! @return Whether the overrides are successfully added or not.
+            bool AddOverrides(const AZ::Dom::Path& path, AZ::Dom::DomPrefixTree<PrefabOverrideMetadata>&& subTree);
 
             PrefabDomPath GetInstancePath() const;
             const AZStd::string& GetInstanceName() const;

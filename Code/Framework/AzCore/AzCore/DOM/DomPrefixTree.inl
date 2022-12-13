@@ -91,17 +91,44 @@ namespace AZ::Dom
     }
 
     template<class T>
-    void DomPrefixTree<T>::AttachNodeAtPath(const Path& path, Node&& nodeToAttach)
+    bool DomPrefixTree<T>::AttachNodeAtPath(const Path& path, Node&& nodeToAttach)
     {
         Node* node = &m_rootNode;
         const size_t entriesToIterate = path.Size() - 1;
         for (size_t i = 0; i < entriesToIterate; ++i)
         {
             const PathEntry& entry = path[i];
+            auto nodeIt = node->m_values.find(entry);
+            if (nodeIt == node->m_values.end())
+            {
+                return false;
+            }
+            node = &nodeIt->second;
+        }
+
+        node->m_values[path[path.Size() - 1]] = AZStd::move(nodeToAttach);
+        return true;
+    }
+
+    template<class T>
+    bool DomPrefixTree<T>::InsertOrAttachNodeAtPath(const Path& path, Node&& nodeToAttach)
+    {
+        Node* node = &m_rootNode;
+        const size_t entriesToIterate = path.Size() - 1;
+        bool isInserted = false;
+        for (size_t i = 0; i < entriesToIterate; ++i)
+        {
+            const PathEntry& entry = path[i];
+            auto nodeIt = node->m_values.find(entry);
+            if (nodeIt == node->m_values.end())
+            {
+                isInserted = true;
+            }
             node = &node->m_values[entry]; // get or create an entry in this node
         }
 
         node->m_values[path[path.Size() - 1]] = AZStd::move(nodeToAttach);
+        return isInserted;
     }
 
     template<class T>
@@ -386,10 +413,17 @@ namespace AZ::Dom
     }
 
     template<class T>
-    void DomPrefixTree<T>::AttachSubTree(const Path& path, DomPrefixTree&& subTree)
+    bool DomPrefixTree<T>::AttachSubTree(const Path& path, DomPrefixTree&& subTree)
     {
         Node* node = subTree.GetNodeForPath(AZ::Dom::Path());
-        AttachNodeAtPath(path, AZStd::move(*node));
+        return AttachNodeAtPath(path, AZStd::move(*node));
+    }
+
+    template<class T>
+    bool DomPrefixTree<T>::InsertOrAttachSubTree(const Path& path, DomPrefixTree&& subTree)
+    {
+        Node* node = subTree.GetNodeForPath(AZ::Dom::Path());
+        return InsertOrAttachNodeAtPath(path, AZStd::move(*node));
     }
 
     template<class T>
