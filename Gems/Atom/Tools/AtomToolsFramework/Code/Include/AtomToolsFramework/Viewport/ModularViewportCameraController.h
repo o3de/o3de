@@ -153,7 +153,7 @@ namespace AtomToolsFramework
             AZ::Transform m_transformStart;
             AZ::Transform m_transformEnd; //!< The transform of the camera at the end of the animation.
             float m_time = 0.0f; //!< The interpolation amount between the start and end transforms (in the range 0.0 - 1.0).
-            float m_duration = 1.0f; //!< The length of the animation (how long it takes to completed).
+            float m_duration = 1.0f; //!< The length of the animation (how long it takes to complete).
         };
 
         AzFramework::Camera m_camera; //!< The current camera state (pitch/yaw/position/look-distance).
