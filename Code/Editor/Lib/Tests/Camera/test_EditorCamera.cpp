@@ -458,6 +458,49 @@ namespace UnitTest
         EXPECT_THAT(actualTransform, IsClose(expectedTransform));
     }
 
+    TEST_F(EditorCameraFixture, CameraInterpolatesToTransformWithZeroDurationAfterUpdate)
+    {
+        // Given
+        SandboxEditor::SetViewportCameraTransform(TestViewportId, AZ::Transform::CreateIdentity());
+
+        const auto startingPosition = AZ::Vector3(1.0f, 2.0f, 3.0f);
+        const auto pitchRadians = AZ::DegToRad(30.0f);
+        const auto yawRadians = AZ::DegToRad(20.0f);
+        const auto expectedTransform = SandboxEditor::TransformFromPositionPitchYaw(startingPosition, pitchRadians, yawRadians);
+
+        // When
+        // interpolate camera to transform (zero duration)
+        SandboxEditor::InterpolateViewportCameraToTransform(TestViewportId, startingPosition, pitchRadians, yawRadians, 0.0f);
+
+        // simulate viewport update
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(0.0166f), AZ::ScriptTimePoint() });
+
+        // Then
+        const auto actualTransform = SandboxEditor::GetViewportCameraTransform(TestViewportId);
+        EXPECT_THAT(actualTransform, IsClose(expectedTransform));
+    }
+
+    TEST_F(EditorCameraFixture, CameraDoesNotInterpolateToTransformWithZeroDurationAndNoUpdate)
+    {
+        // Given
+        SandboxEditor::SetViewportCameraTransform(TestViewportId, AZ::Transform::CreateIdentity());
+
+        const auto startingPosition = AZ::Vector3(1.0f, 2.0f, 3.0f);
+        const auto pitchRadians = AZ::DegToRad(30.0f);
+        const auto yawRadians = AZ::DegToRad(20.0f);
+        const auto expectedTransform = SandboxEditor::TransformFromPositionPitchYaw(startingPosition, pitchRadians, yawRadians);
+
+        // When
+        // interpolate camera to transform (zero duration)
+        SandboxEditor::InterpolateViewportCameraToTransform(TestViewportId, startingPosition, pitchRadians, yawRadians, 0.0f);
+
+        // no update
+
+        // Then
+        const auto actualTransform = SandboxEditor::GetViewportCameraTransform(TestViewportId);
+        EXPECT_THAT(actualTransform, IsClose(AZ::Transform::CreateIdentity()));
+    }
+
     using GotoPositionPitchConstraintsTest = UnitTest::LeakDetectionFixture;
     TEST_F(GotoPositionPitchConstraintsTest, GoToPositionPitchIsSetToPlusOrMinusNinetyDegrees)
     {
@@ -813,7 +856,7 @@ namespace UnitTest
         EXPECT_THAT(SandboxEditor::CameraDefaultOrbitDistance(), FloatNear(initialCameraDefaultOrbitDistance, AZ::Constants::FloatEpsilon));
         EXPECT_THAT(SandboxEditor::CameraDefaultEditorOrientation(), IsClose(initialCameraDefaultEditorOrientation));
         EXPECT_THAT(SandboxEditor::CameraGoToPositionInstantlyEnabled(), Eq(initialCameraGoToPositionInstantly));
-        EXPECT_THAT(SandboxEditor::CameraGoToPositionDuration(), FloatNear(initialCameraGoToPositionDuration));
+        EXPECT_THAT(SandboxEditor::CameraGoToPositionDuration(), FloatNear(initialCameraGoToPositionDuration, AZ::Constants::FloatEpsilon));
     }
 
     TEST_F(EditorCameraFixture, CameraSettingsRegistryInputValuesCanBeReset)
