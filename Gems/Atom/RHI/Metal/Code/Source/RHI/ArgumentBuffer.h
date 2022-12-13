@@ -177,8 +177,8 @@ namespace AZ
             
             // Use a cache to store and retrieve samplers
             id<MTLSamplerState> GetMtlSampler(MTLSamplerDescriptor* samplerDesc);
-			
-			//Attach argument buffer to the argument encoder
+
+            //Attach argument buffer to the argument encoder
             void SetArgumentBuffer(NSMutableArray* argBufferDecriptors, AZStd::string argBufferName);
             
             Device* m_device = nullptr;

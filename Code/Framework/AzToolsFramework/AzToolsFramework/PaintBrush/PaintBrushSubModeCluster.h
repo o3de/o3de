@@ -9,15 +9,19 @@
 #pragma once
 
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsNotificationBus.h>
 
 namespace AzToolsFramework
 {
     //! Create and manage the Viewport UI SubMode cluster of buttons that enable the user to switch between paint modes.
-    class PaintBrushSubModeCluster
+    class PaintBrushSubModeCluster : public AzToolsFramework::GlobalPaintBrushSettingsNotificationBus::Handler
     {
     public:
         PaintBrushSubModeCluster();
-        ~PaintBrushSubModeCluster();
+        ~PaintBrushSubModeCluster() override;
+
+        // GlobalPaintBrushSettingsNotificationBus overrides...
+        void OnPaintBrushModeChanged(AzFramework::PaintBrushMode newBrushMode) override;
 
     private:
         AZ::Event<ViewportUi::ButtonId>::Handler m_buttonSelectionHandler;

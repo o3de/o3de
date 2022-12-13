@@ -241,10 +241,12 @@ namespace ShaderManagementConsole
 
         AZStd::vector<AZ::RPI::ShaderCollection::Item> shaderItems;
 
-        for (const auto& shaderCollectionPair : materialInstance->GetShaderCollections())
-        {
-            shaderItems.insert(shaderItems.end(), shaderCollectionPair.second.begin(), shaderCollectionPair.second.end());
-        }
+        materialInstance->ForAllShaderItems(
+            [&](const AZ::Name&, const AZ::RPI::ShaderCollection::Item& shaderItem)
+            {
+                shaderItems.push_back(shaderItem);
+                return true;
+            });
 
         return shaderItems;
     }
