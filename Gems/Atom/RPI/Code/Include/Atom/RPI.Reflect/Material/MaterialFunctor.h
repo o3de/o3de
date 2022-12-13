@@ -15,6 +15,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
 #include <Atom/RPI.Reflect/Material/MaterialDynamicMetadata.h>
+#include <Atom/RPI.Reflect/Material/MaterialPipelineState.h>
 
 namespace AZ
 {
@@ -150,6 +151,7 @@ namespace AZ
 
             //! This execution context operates at a high level, and is not specific to a particular material pipeline.
             //! It can read material property values.
+            //! It can set internal material property values (to pass data to pipeline-specific functors which use PipelineRuntimeContext).
             //! It can configure the Material ShaderResourceGroup because there is one for the entire material,
             //! it's not specific to a material pipeline or particular shader.
             //! It can configure shaders that are not specific to a particular material pipeline (i.e. the MaterialPipelineNone ShaderCollection).
@@ -165,12 +167,16 @@ namespace AZ
                 //! Get the shader resource group for editing.
                 ShaderResourceGroup* GetShaderResourceGroup();
 
+                //! Set the value of an internal material property. These are used to pass data to one of the material pipelines.
+                bool SetInternalMaterialPropertyValue(const Name& propertyId, const MaterialPropertyValue& value);
+
                 RuntimeContext(
                     const MaterialPropertyCollection& materialProperties,
                     const MaterialPropertyFlags* materialPropertyDependencies,
                     MaterialPropertyPsoHandling psoHandling,
                     ShaderResourceGroup* shaderResourceGroup,
-                    MaterialPipelineShaderCollections* shaderCollections
+                    ShaderCollection* generalShaderCollection,
+                    MaterialPipelineDataMap* materialPipelineData
                 );
 
             private:
@@ -178,7 +184,25 @@ namespace AZ
                 void ForAllShaderItems(AZStd::function<bool(ShaderCollection::Item& shaderItem)> callback) override;
 
                 ShaderResourceGroup* m_shaderResourceGroup;
-                MaterialPipelineShaderCollections* m_allShaderCollections;
+                MaterialPipelineDataMap* m_materialPipelineData;
+            };
+
+            //! This execution context operates on a specific MaterialPipelinePayload's shaders.
+            //! It can read "internal" material properties used for passing data to the material pipeline.
+            class PipelineRuntimeContext
+                : public CommonRuntimeConfiguration
+                , public ReadMaterialPropertyValues
+                , public ConfigureShaders
+            {
+            public:
+
+                PipelineRuntimeContext(
+                    const MaterialPropertyCollection& internalProperties,
+                    const MaterialPropertyFlags* internalMaterialPropertyDependencies,
+                    MaterialPropertyPsoHandling psoHandling,
+                    ShaderCollection* pipelineShaderCollections
+                );
+
             };
 
             //! This execution context is used by tools for configuring UI metadata.
@@ -245,15 +269,31 @@ namespace AZ
         //! to create the functor at build-time. Depending on the builder context, clients can choose to create a runtime
         //! specific functor, an editor functor or one functor used in both circumstances (see usage examples and MaterialFunctor::Process blow).
         //! Usage example:
-        //!     (Runtime) Modify the material's main ShaderCollection;
+        //!     (MainRuntime) Modify the material's main ShaderCollection;
         //!         (This allows a material type to include custom logic that dynamically enables or disables particular shaders,
         //!          or set shader options)
-        //!     (Runtime) Perform client-specified calculations on material property values to produce shader input values;
+        //!     (MainRuntime) Perform client-specified calculations on material property values to produce shader input values;
         //!         (For example, there may be a "RotationDegrees" material property but the underlying shader requires
         //!         a rotation matrix, so a MaterialFunctor converts the data.)
+        //!     (MainRuntime) Set internal material property values that are passed to a material pipeline script for further processing;
+        //!         (For example, if a an "opacityValue" property is less than 1.0, set a "isTransparent" flag. Another material pipeline
+        //!          functor can use this to enable the transparent pass shader.)
         //!     (Editor) Modify metadata of a property when other related properties have changed their value.
         //!         (For example, if a flag property use texture is checked, the texture property will show up,
         //!         otherwise, it should hide.)
+        //!     (PipelineRuntime) Enable or disable material pipeline shaders.
+        //!         (The material pipeline has an "isTransparent" flag. Some other part of the material type sets this value as needed
+        //!         based on material property values from the user. If this value is true, the functor disables the depth pass and
+        //!         forward pass, and instead enables the transparent pass shader.)
+        //! Note: Although it is reasonable to have a MaterialFunctor subclass that implements both Process(RuntimeContext) and
+        //!       Process(EditorContext) (Atom has several functors that work like this), there is no reason for a functor to combine
+        //!       either of these with Process(PipelineRuntimeContext). The role of regular material functors vs pipeline material functors
+        //!       are so different it could actually be more proper to have separate MaterialFunctor and MaterialPipelineFunctor classes.
+        //!       However, we avoid making that split because in practice it would create unnecessary clutter, as it would lead to splitting
+        //!       Material[Pipeline]SourceData, JsonMaterial[Pipeline]FunctorSourceDataSerializer, LuaMaterial[Pipeline]Functor,
+        //!       LuaMaterial[Pipeline]FunctorSourceData, and all their relevant unit tests. These are so similar functionally that it ends
+        //!       up being easier to just keep them all together, and solely rely on the different execution context objections to keep the
+        //!       APIs separated.
         class MaterialFunctor :
             public AZStd::intrusive_base
         {
@@ -277,8 +317,13 @@ namespace AZ
 
             //! Process(EditorContext) is called in tools to configure UI, such as property visibility.
             virtual void Process([[maybe_unused]] MaterialFunctorAPI::EditorContext& context) {}
+            
+            //! Process(PipelineRuntimeContext) is called at runtime to configure a pipeline-specific ShaderCollection
+            //! based on some internal material property values.
+            virtual void Process([[maybe_unused]] MaterialFunctorAPI::PipelineRuntimeContext& context) {}
 
         private:
+
             //! The material properties associated with this functor.
             //! It defines what properties should trigger this functor to process.
             //! Bit position uses MaterialPropertyIndex of the property.
