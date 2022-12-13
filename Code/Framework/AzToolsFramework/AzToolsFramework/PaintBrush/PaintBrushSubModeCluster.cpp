@@ -75,13 +75,53 @@ namespace AzToolsFramework
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
             m_paintBrushControlClusterId,
             m_buttonSelectionHandler);
+
+        AzToolsFramework::GlobalPaintBrushSettingsNotificationBus::Handler::BusConnect();
+
+        // Set the initially-active brush mode button.
+        AzFramework::PaintBrushMode brushMode = AzFramework::PaintBrushMode::Paintbrush;
+        AzToolsFramework::GlobalPaintBrushSettingsRequestBus::BroadcastResult(
+            brushMode, &AzToolsFramework::GlobalPaintBrushSettingsRequestBus::Events::GetBrushMode);
+        OnPaintBrushModeChanged(brushMode);
     }
 
     PaintBrushSubModeCluster::~PaintBrushSubModeCluster()
     {
+        AzToolsFramework::GlobalPaintBrushSettingsNotificationBus::Handler::BusDisconnect();
+
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
             m_paintBrushControlClusterId);
     }
+
+    void PaintBrushSubModeCluster::OnPaintBrushModeChanged(AzFramework::PaintBrushMode newBrushMode)
+    {
+        // Change the active brush mode button based on the newly-active brush mode.
+
+        AzToolsFramework::ViewportUi::ButtonId buttonId;
+
+        switch (newBrushMode)
+        {
+        case AzFramework::PaintBrushMode::Paintbrush:
+            buttonId = m_paintModeButtonId;
+            break;
+        case AzFramework::PaintBrushMode::Eyedropper:
+            buttonId = m_eyedropperModeButtonId;
+            break;
+        case AzFramework::PaintBrushMode::Smooth:
+            buttonId = m_smoothModeButtonId;
+            break;
+        default:
+            AZ_Assert(false, "Unknown brush mode type.");
+            break;
+        }
+
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId,
+            &ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton,
+            m_paintBrushControlClusterId,
+            buttonId);
+    }
+
 } // namespace AzToolsFramework
