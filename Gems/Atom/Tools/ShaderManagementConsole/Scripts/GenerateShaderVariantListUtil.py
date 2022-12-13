@@ -28,7 +28,7 @@ def create_shadervariantlists_from_material(materialAssetIds):
     progressDialog.setMaximumWidth(400)
     progressDialog.setMaximumHeight(100)
     progressDialog.setModal(True)
-    progressDialog.setWindowTitle("Gather shader variant from material asset")
+    progressDialog.setWindowTitle("Gather shader variants from material assets")
     
     # This loop collects all uniquely-identified shader items used by the materials based on its shader variant id. 
     for i, materialAssetId in enumerate(materialAssetIds):
@@ -208,11 +208,6 @@ def create_shadervariantlist_for_shader(filename):
 
             valueName = shaderOptionDescriptor.GetValueName(optionValue)
             options[optionName] = valueName
-            if optionName.ToString() == "o_wrinkleLayers_count":
-                #print(optionValue)
-                print("----Value")
-                print(valueName.ToString())
-                print("----Value")
 
         if len(options) != 0:
             variantInfo.options = options
