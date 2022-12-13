@@ -103,19 +103,19 @@ namespace SandboxEditor
     }
 
     void HandleViewportCameraTransitionFromSetting(
-        const AzFramework::ViewportId viewportId, const AZ::Vector3& position, const float pitch, const float yaw, const float duration)
+        const AzFramework::ViewportId viewportId, const AZ::Vector3& position, const float pitch, const float yaw)
     {
-        HandleViewportCameraTransitionFromSetting(viewportId, TransformFromPositionPitchYaw(position, pitch, yaw), duration);
+        HandleViewportCameraTransitionFromSetting(viewportId, TransformFromPositionPitchYaw(position, pitch, yaw));
     }
 
     void HandleDefaultViewportCameraTransitionFromSetting(
-        const AZ::Vector3& position, const float pitch, const float yaw, const float duration)
+        const AZ::Vector3& position, const float pitch, const float yaw)
     {
-        HandleDefaultViewportCameraTransitionFromSetting(TransformFromPositionPitchYaw(position, pitch, yaw), duration);
+        HandleDefaultViewportCameraTransitionFromSetting(TransformFromPositionPitchYaw(position, pitch, yaw));
     }
 
     void HandleViewportCameraTransitionFromSetting(
-        const AzFramework::ViewportId viewportId, const AZ::Transform& transform, const float duration)
+        const AzFramework::ViewportId viewportId, const AZ::Transform& transform)
     {
         if (CameraGoToPositionInstantlyEnabled())
         {
@@ -123,16 +123,16 @@ namespace SandboxEditor
         }
         else
         {
-            InterpolateViewportCameraToTransform(viewportId, transform, duration);
+            InterpolateViewportCameraToTransform(viewportId, transform, CameraGoToPositionDuration());
         }
     }
 
-    void HandleDefaultViewportCameraTransitionFromSetting(const AZ::Transform& transform, const float duration)
+    void HandleDefaultViewportCameraTransitionFromSetting(const AZ::Transform& transform)
     {
         auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
         if (auto viewportContext = viewportContextManager->GetDefaultViewportContext())
         {
-            HandleViewportCameraTransitionFromSetting(viewportContext->GetId(), transform, duration);
+            HandleViewportCameraTransitionFromSetting(viewportContext->GetId(), transform);
         }
     }
 

@@ -81,7 +81,7 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reflect(AZ::
         ->Field("DefaultOrbitDistance", &CameraMovementSettings::m_defaultOrbitDistance)
         ->Field("SpeedScale", &CameraMovementSettings::m_speedScale)
         ->Field("GoToPositionInstantly", &CameraMovementSettings::m_goToPositionInstantly)
-        ->Field("GoToPositionDuration", &CameraMovementSettings::m_gotoPositionDuration)
+        ->Field("GoToPositionDuration", &CameraMovementSettings::m_goToPositionDuration)
         ->Field("Reset", &CameraMovementSettings::m_resetButton);
 
     if (AZ::EditContext* editContext = serialize.GetEditContext())
@@ -136,20 +136,20 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reflect(AZ::
                 "Camera Rotate Smoothness",
                 "Amount of camera smoothing to apply while rotating the camera")
             ->Attribute(AZ::Edit::Attributes::Min, minValue)
-            ->Attribute(AZ::Edit::Attributes::Visibility, &CameraMovementSettings::RotateSmoothingVisibility)
+            ->Attribute(AZ::Edit::Attributes::ReadOnly, &CameraMovementSettings::RotateSmoothingReadOnly)
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox,
                 &CameraMovementSettings::m_translateSmoothing,
                 "Camera Translate Smoothing",
                 "Is camera translation smoothing enabled or disabled")
-            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
             ->DataElement(
                 AZ::Edit::UIHandlers::SpinBox,
                 &CameraMovementSettings::m_translateSmoothness,
                 "Camera Translate Smoothness",
                 "Amount of camera smoothing to apply while translating the camera")
             ->Attribute(AZ::Edit::Attributes::Min, minValue)
-            ->Attribute(AZ::Edit::Attributes::Visibility, &CameraMovementSettings::TranslateSmoothingVisibility)
+            ->Attribute(AZ::Edit::Attributes::ReadOnly, &CameraMovementSettings::TranslateSmoothingReadOnly)
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox,
                 &CameraMovementSettings::m_orbitYawRotationInverted,
@@ -188,22 +188,22 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reflect(AZ::
             ->Attribute(AZ::Edit::Attributes::Min, minValue)
             ->DataElement(
                 AZ::Edit::UIHandlers::SpinBox,
-                &CameraMovementSettings::m_gotoPositionDuration,
+                &CameraMovementSettings::m_goToPositionDuration,
                 "Camera Go To Position Duration",
                 "Time it takes for the camera to interpolate to a given position")
-            ->Attribute(AZ::Edit::Attributes::Visibility, &CameraMovementSettings::GoToPositionDurationVisibility)
+            ->Attribute(AZ::Edit::Attributes::ReadOnly, &CameraMovementSettings::GoToPositionDurationReadOnly)
             ->Attribute(AZ::Edit::Attributes::Min, minValue)
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox,
                 &CameraMovementSettings::m_goToPositionInstantly,
                 "Camera Go To Position Instantly",
                 "Camera will instantly go to the set position and won't interpolate there")
-            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
             ->DataElement(
                 AZ::Edit::UIHandlers::Button, &CameraMovementSettings::m_resetButton, "", "Restore camera movement settings to defaults")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CameraMovementSettings::Reset)
             ->Attribute(AZ::Edit::Attributes::ButtonText, "Restore defaults")
-            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree);
+            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues);
     }
 }
 
@@ -312,7 +312,7 @@ void CEditorPreferencesPage_ViewportCamera::CameraInputSettings::Reflect(AZ::Ser
                 AZ::Edit::UIHandlers::Button, &CameraInputSettings::m_resetButton, "", "Restore camera input settings to defaults")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CameraInputSettings::Reset)
             ->Attribute(AZ::Edit::Attributes::ButtonText, "Restore defaults")
-            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree);
+            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues);
     }
 }
 
@@ -396,7 +396,7 @@ void CEditorPreferencesPage_ViewportCamera::OnApply()
     SandboxEditor::SetCameraDefaultOrbitDistance(m_cameraMovementSettings.m_defaultOrbitDistance);
     SandboxEditor::SetCameraDefaultEditorOrientation(m_cameraMovementSettings.m_defaultPitchYaw);
     SandboxEditor::SetCameraGoToPositionInstantlyEnabled(m_cameraMovementSettings.m_goToPositionInstantly);
-    SandboxEditor::SetCameraGoToPositionDuration(m_cameraMovementSettings.m_gotoPositionDuration);
+    SandboxEditor::SetCameraGoToPositionDuration(m_cameraMovementSettings.m_goToPositionDuration);
 
     SandboxEditor::SetCameraTranslateForwardChannelId(m_cameraInputSettings.m_translateForwardChannelId);
     SandboxEditor::SetCameraTranslateBackwardChannelId(m_cameraInputSettings.m_translateBackwardChannelId);
@@ -470,7 +470,7 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Initialize()
     m_defaultOrbitDistance = SandboxEditor::CameraDefaultOrbitDistance();
     m_defaultPitchYaw = SandboxEditor::CameraDefaultEditorOrientation();
     m_goToPositionInstantly = SandboxEditor::CameraGoToPositionInstantlyEnabled();
-    m_gotoPositionDuration = SandboxEditor::CameraGoToPositionDuration();
+    m_goToPositionDuration = SandboxEditor::CameraGoToPositionDuration();
 }
 
 void CEditorPreferencesPage_ViewportCamera::CameraInputSettings::Reset()

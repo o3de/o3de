@@ -1718,8 +1718,7 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
             const AZ::Transform nextCameraTransform =
                 AZ::Transform::CreateLookAt(aabb.GetCenter() - (forward * distanceToLookAt), aabb.GetCenter());
 
-            SandboxEditor::HandleDefaultViewportCameraTransitionFromSetting(
-                nextCameraTransform, SandboxEditor::CameraGoToPositionDuration());
+            SandboxEditor::HandleDefaultViewportCameraTransitionFromSetting(nextCameraTransform);
         }
     }
 }

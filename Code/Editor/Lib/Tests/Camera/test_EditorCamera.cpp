@@ -382,6 +382,7 @@ namespace UnitTest
     {
         // Given
         SandboxEditor::SetCameraGoToPositionInstantlyEnabled(false);
+        SandboxEditor::SetCameraGoToPositionDuration(InterpolateToTransformDuration);
 
         // set initial camera transform
         SandboxEditor::SetViewportCameraTransform(TestViewportId, AZ::Transform::CreateIdentity());
@@ -393,8 +394,7 @@ namespace UnitTest
 
         // When
         // camera transition (interpolation or instant based on setting)
-        SandboxEditor::HandleViewportCameraTransitionFromSetting(
-            TestViewportId, startingPosition, pitchRadians, yawRadians, InterpolateToTransformDuration);
+        SandboxEditor::HandleViewportCameraTransitionFromSetting(TestViewportId, startingPosition, pitchRadians, yawRadians);
 
         // Then
         // ensure camera transform did not change instantly
@@ -415,6 +415,7 @@ namespace UnitTest
     {
         // Given
         SandboxEditor::SetCameraGoToPositionInstantlyEnabled(true);
+        SandboxEditor::SetCameraGoToPositionDuration(InterpolateToTransformDuration);
 
         // set initial camera transform
         SandboxEditor::SetViewportCameraTransform(TestViewportId, AZ::Transform::CreateIdentity());
@@ -426,7 +427,7 @@ namespace UnitTest
 
         // When
         // camera transition (interpolation or instant based on setting)
-        SandboxEditor::HandleViewportCameraTransitionFromSetting(TestViewportId, expectedTransform, InterpolateToTransformDuration);
+        SandboxEditor::HandleViewportCameraTransitionFromSetting(TestViewportId, expectedTransform);
 
         // Then
         // ensure camera transform updated immediately
@@ -488,7 +489,6 @@ namespace UnitTest
         const auto startingPosition = AZ::Vector3(1.0f, 2.0f, 3.0f);
         const auto pitchRadians = AZ::DegToRad(30.0f);
         const auto yawRadians = AZ::DegToRad(20.0f);
-        const auto expectedTransform = SandboxEditor::TransformFromPositionPitchYaw(startingPosition, pitchRadians, yawRadians);
 
         // When
         // interpolate camera to transform (zero duration)
@@ -507,8 +507,8 @@ namespace UnitTest
         float minPitch = 0.0f;
         float maxPitch = 0.0f;
 
-        GotoPositionPitchConstraints m_gotoPositionContraints;
-        m_gotoPositionContraints.DeterminePitchRange(
+        GoToPositionPitchConstraints m_goToPositionContraints;
+        m_goToPositionContraints.DeterminePitchRange(
             [&minPitch, &maxPitch](const float minPitchDegrees, const float maxPitchDegrees)
             {
                 minPitch = minPitchDegrees;
@@ -524,9 +524,9 @@ namespace UnitTest
     {
         const auto [expectedMinPitchRadians, expectedMaxPitchRadians] = AzFramework::CameraPitchMinMaxRadiansWithTolerance();
 
-        GotoPositionPitchConstraints m_gotoPositionContraints;
-        const float minClampedPitchRadians = m_gotoPositionContraints.PitchClampedRadians(-90.0f);
-        const float maxClampedPitchRadians = m_gotoPositionContraints.PitchClampedRadians(90.0f);
+        GoToPositionPitchConstraints m_goToPositionContraints;
+        const float minClampedPitchRadians = m_goToPositionContraints.PitchClampedRadians(-90.0f);
+        const float maxClampedPitchRadians = m_goToPositionContraints.PitchClampedRadians(90.0f);
 
         using ::testing::FloatNear;
         EXPECT_THAT(minClampedPitchRadians, FloatNear(expectedMinPitchRadians, AZ::Constants::FloatEpsilon));

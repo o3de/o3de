@@ -18,11 +18,6 @@
 
 #include <QIcon>
 
-inline AZ::Crc32 EditorPropertyVisibility(const bool enabled)
-{
-    return enabled ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
-}
-
 class CEditorPreferencesPage_ViewportCamera : public IPreferencesPage
 {
 public:
@@ -61,7 +56,7 @@ private:
         float m_rotateSmoothness;
         float m_translateSmoothness;
         float m_defaultOrbitDistance;
-        float m_gotoPositionDuration;
+        float m_goToPositionDuration;
         bool m_captureCursorLook;
         bool m_orbitYawRotationInverted;
         bool m_panInvertedX;
@@ -70,19 +65,19 @@ private:
         bool m_translateSmoothing;
         bool m_goToPositionInstantly;
 
-        AZ::Crc32 GoToPositionDurationVisibility() const
+        bool GoToPositionDurationReadOnly() const
         {
-            return EditorPropertyVisibility(!m_goToPositionInstantly);
+            return m_goToPositionInstantly;
         }
 
-        AZ::Crc32 RotateSmoothingVisibility() const
+        bool RotateSmoothingReadOnly() const
         {
-            return EditorPropertyVisibility(m_rotateSmoothing);
+            return !m_rotateSmoothing;
         }
 
-        AZ::Crc32 TranslateSmoothingVisibility() const
+        bool TranslateSmoothingReadOnly() const
         {
-            return EditorPropertyVisibility(m_translateSmoothing);
+            return !m_translateSmoothing;
         }
 
         void Reset();
