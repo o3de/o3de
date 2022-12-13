@@ -22,11 +22,12 @@ public:
     void AddWatchFolder(QString folder, bool recursive, FileWatcher& source, bool notifyFiles);
     void RemoveWatchFolder(int watchHandle);
 
-    //! Try to watch the given path.
+    //! Try to watch the given directory
+    //! @param path the absolute path to the directory to watch.
     //! @param errnoPtr If provided, gets set to the errno right after the inotify_add_watch() call.
     //!                 Note: only contains valid information if we actually failed.
     //! @return Was the watch successful?
-    bool TryToWatch(const QString &path, int* errnoPtr,  FileWatcher& source);
+    bool TryToWatch(const QString &path, int* errnoPtr = nullptr);
 
     // This handle represents the handle to the entire notify tree.
     // Individual watches will be added to this same handle.

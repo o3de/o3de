@@ -42,7 +42,7 @@
 
 // Thus, if you want to guarantee that you don't miss anything you have to emit synthetic 'file was created' events by crawling
 // the directory of any new directories which show up.  However, this causes potentially duplicate events to be emitted in the case
-// where the watch IS established on that directory before the file is created.   Thus if you also want to guarantee duplicates
+// where the watch IS established on that directory before the file is created.   Thus if you also want to guarantee no duplicates
 // you have to come up with ways to cache the create events sent and not re-send them.
 
 // Note that this same problem can occur for Create->modify, Create->Delete, although Create->Delete tends to be ignorable
@@ -110,7 +110,7 @@ void FileWatcher::PlatformImplementation::Finalize()
     m_alreadyNotifiedCreate.clear();
 }
 
-bool FileWatcher::PlatformImplementation::TryToWatch(const QString &pathStr, int* errnoPtr, FileWatcher& source)
+bool FileWatcher::PlatformImplementation::TryToWatch(const QString &pathStr, int* errnoPtr)
 {
     AZ::IO::FixedMaxPathString path(pathStr.toUtf8().constData());
     // note:  IN_MASK_CREATE will set EEXIST if the directory already has a watch established on it.
@@ -125,14 +125,14 @@ bool FileWatcher::PlatformImplementation::TryToWatch(const QString &pathStr, int
         {
             // the dir being watched was deleted and replaced by a file before we managed to watch it.
             // this is okay, and absorbing this removes a race condition.
-            DEBUG_FILEWATCHER("Not adding an additional file watch for %s - it is not a directory s\n", pathStr.toUtf8().constData());
+            DEBUG_FILEWATCHER("Not adding an additional file watch for %s - it is not a directory\n", pathStr.toUtf8().constData());
             return false;
         }
         if (err == EEXIST)
         {
             // the dir already has a watch handle on it that belongs to m_inotifyHandle.
-            // avoid duplicating watches.  This is also okay to absorb but we do return true to indicate
-            // that we successfully have a watch on it.
+            // avoid duplicating watches.  Return false here, to stop the caller from recursing into the folder
+            // since it indicates it has already previously recursed.
             DEBUG_FILEWATCHER("Not adding an additional file watch for %s - already exists\n", pathStr.toUtf8().constData());
             return false;
         }
@@ -171,7 +171,7 @@ void FileWatcher::PlatformImplementation::AddWatchFolder(QString folder, bool re
         return; // don't watch excluded paths and don't recurse into them.
     }
 
-    if (!TryToWatch(cleanPath, nullptr, source))
+    if (!TryToWatch(cleanPath, nullptr))
     {
         return;
     }
@@ -213,7 +213,7 @@ void FileWatcher::PlatformImplementation::AddWatchFolder(QString folder, bool re
         }
 
         int theErrno = 0;
-        if (!TryToWatch(dirPath, &theErrno, source))
+        if (!TryToWatch(dirPath, &theErrno))
         {
             switch (theErrno)
             {
@@ -228,7 +228,7 @@ void FileWatcher::PlatformImplementation::AddWatchFolder(QString folder, bool re
                 // Other errors are usually non-recoverable: bail out to avoid warning spam
                 AZ_Warning(
                     "FileWatcher", false,
-                    "Giving up on watching %s", dirPath.toUtf8().constData());
+                    "Giving up on watching %s (ErrNo: %i)", dirPath.toUtf8().constData(), theErrno);
                 return;
             }
         }

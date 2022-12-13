@@ -255,7 +255,7 @@ void FileWatcher::InstallDefaultExclusionRules(QString cacheRootPath, QString pr
     // of this class do just that.  
     // However, on some operating systems, each monitored folder in a tree of monitored folders costs actual system resources
     // (a handle) and there are limited handles available, so excluding entire folder trees that we know we don't care about
-    // is valuable to safe resources even if it costs more in the listener.
+    // is valuable to save resources even if it costs more in the listener.
     // 
     // It is up to each implementation to make use of the list of excludes to best optimize itself for performance.  Even if the
     // implementation does absolutely nothing with this exclude list, this class itself will still filter out excludes before

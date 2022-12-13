@@ -1385,7 +1385,7 @@ namespace AssetProcessor
                         "requested reprocess \"%s\" \n"
                         "but that file lives in the Cache folder.  \nIgnored.",
                         processedAsset.m_entry.m_sourceAssetReference.AbsolutePath().c_str(),
-                        processedAsset.m_entry.m_builderGuid.ToString<AZStd::string>().c_str(),
+                        processedAsset.m_entry.m_builderGuid.ToFixedString().c_str(),
                         affectedSourceFile.c_str());
                     continue;
                 }
@@ -1404,7 +1404,7 @@ namespace AssetProcessor
                         "requested reprocess \"%s\" \n"
                         "That file does not live in any folder monitored by AP. \nIgnored.",
                         processedAsset.m_entry.m_sourceAssetReference.AbsolutePath().c_str(),
-                        processedAsset.m_entry.m_builderGuid.ToString<AZStd::string>().c_str(),
+                        processedAsset.m_entry.m_builderGuid.ToFixedString().c_str(),
                         affectedSourceFile.c_str());
                     continue;
                 }
@@ -1420,7 +1420,7 @@ namespace AssetProcessor
                         "requested reprocess \"%s\" \n"
                         "That file is excluded by an exclude rule.  \nIgnored.",
                         processedAsset.m_entry.m_sourceAssetReference.AbsolutePath().c_str(),
-                        processedAsset.m_entry.m_builderGuid.ToString<AZStd::string>().c_str(),
+                        processedAsset.m_entry.m_builderGuid.ToFixedString().c_str(),
                         affectedSourceFile.c_str());
                     continue;
                 }
