@@ -10,7 +10,6 @@
 #include <AzCore/DOM/DomPrefixTree.h>
 #include <AzCore/DOM/DomUtils.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
-#include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzFramework/DocumentPropertyEditor/Reflection/LegacyReflectionBridge.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
@@ -350,6 +349,7 @@ namespace AZ::DocumentPropertyEditor
 
                 if (!parentContainer->IsFixedSize())
                 {
+                    [[maybe_unused]] auto serializedPathAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::SerializedPath);
                     m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
                     m_builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
                     m_builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
@@ -378,6 +378,10 @@ namespace AZ::DocumentPropertyEditor
             }
 
             m_builder.BeginRow();
+
+            AZ::Reflection::AttributeDataType serializedPathAttribute =
+                attributes.Find(AZ::Reflection::DescriptorAttributes::SerializedPath);
+            m_adapter->AddIconIfPropertyOverride(&m_builder, serializedPathAttribute.GetString());
 
             for (const auto& attribute : Nodes::Row::RowAttributes)
             {

@@ -10,6 +10,7 @@
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DPEComponentAdapter.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <QtCore/QTimer>
 namespace AZ::DocumentPropertyEditor
 {
@@ -21,6 +22,12 @@ namespace AZ::DocumentPropertyEditor
                 this->GeneratePropertyEditPatch(changeInfo);
             });
         ConnectPropertyChangeHandler(m_propertyChangeHandler);
+        m_prefabOverridePublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get();
+        if (m_prefabOverridePublicInterface == nullptr)
+        {
+            AZ_Assert(false, "Could not get PrefabOverridePublicInterface on ComponentAdapter construction.");
+            return;
+        }
         
     }
 
@@ -99,6 +106,7 @@ namespace AZ::DocumentPropertyEditor
         auto entityAlias = owningInstance->get().GetEntityAlias(componentInstance->GetEntityId());
         AZ_Assert(entityAlias.has_value(), "Owning entity of component doesn't have a valid entity alias in the owning prefab.");
         m_entityAlias = entityAlias->get();
+        m_entityId = m_componentInstance->GetEntityId();
     }
 
     void ComponentAdapter::DoRefresh()
@@ -159,6 +167,21 @@ namespace AZ::DocumentPropertyEditor
         return returnValue;
     }
 
+    void ComponentAdapter::AddIconIfPropertyOverride(AdapterBuilder* adapterBuilder, const AZStd::string_view& serializedPath)
+    {
+        AZ::Dom::Path prefabPatchPath(AzToolsFramework::Prefab::PrefabDomUtils::ComponentsName);
+        prefabPatchPath /= m_componentAlias;
+        prefabPatchPath /= AZ::Dom::Path(serializedPath);
+        if (!serializedPath.empty() && m_prefabOverridePublicInterface->AreOverridesPresent(m_entityId, prefabPatchPath))
+        {
+            adapterBuilder->BeginPropertyEditor<Nodes::OverrideIcon>();
+            adapterBuilder->Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
+            adapterBuilder->Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
+            adapterBuilder->Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignLeft);
+            adapterBuilder->EndPropertyEditor();
+        }
+    }
+
     void ComponentAdapter::GeneratePropertyEditPatch(const ReflectionAdapter::PropertyChangeInfo& propertyChangeInfo)
     {
         if (propertyChangeInfo.changeType == Nodes::ValueChangeType::FinishedEdit)
@@ -216,6 +239,9 @@ namespace AZ::DocumentPropertyEditor
                     AZ_Warning("Prefab", !prefabPatchValue.IsNull(), "Prefab patch generated from DPE is null");
                 }
             }
+
+            auto* prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get();
+            AZ_Assert(prefabFocusPublicInterface, "PrefabFocusPublicInterface cannot be fetched.");
         }
     }
 

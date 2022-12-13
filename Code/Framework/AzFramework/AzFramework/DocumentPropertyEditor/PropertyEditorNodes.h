@@ -200,6 +200,11 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto OnActivate = CallbackAttributeDefinition<void()>("OnActivate");
     };
 
+    struct OverrideIcon : PropertyEditorDefinition
+    {
+        static constexpr AZStd::string_view Name = "OverrideIcon";
+    };
+
     struct CheckBox : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "CheckBox";

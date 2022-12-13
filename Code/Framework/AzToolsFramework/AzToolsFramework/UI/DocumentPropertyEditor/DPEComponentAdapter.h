@@ -10,7 +10,10 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
+#include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
+#include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
 namespace AZ::DocumentPropertyEditor
@@ -46,12 +49,15 @@ namespace AZ::DocumentPropertyEditor
 
         Dom::Value HandleMessage(const AdapterMessage& message) override;
 
+        void AddIconIfPropertyOverride(AdapterBuilder* adapterBuilder, const AZStd::string_view& serializedPath) override;
+
     protected:
 
         void GeneratePropertyEditPatch(const ReflectionAdapter::PropertyChangeInfo& propertyChangeInfo);
 
         AZStd::string m_entityAlias;
         AZStd::string m_componentAlias;
+        AZ::EntityId m_entityId;
 
         ReflectionAdapter::PropertyChangeEvent::Handler m_propertyChangeHandler;
         AZ::Component* m_componentInstance = nullptr;
@@ -60,6 +66,8 @@ namespace AZ::DocumentPropertyEditor
 
         enum AzToolsFramework::PropertyModificationRefreshLevel m_queuedRefreshLevel =
             AzToolsFramework::PropertyModificationRefreshLevel::Refresh_None;
+
+        AzToolsFramework::Prefab::PrefabOverridePublicInterface* m_prefabOverridePublicInterface = nullptr;
     };
 
 } // namespace AZ::DocumentPropertyEditor

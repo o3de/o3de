@@ -36,11 +36,15 @@ namespace AzToolsFramework
             AZ::Interface<PrefabOverridePublicInterface>::Unregister(this);
         }
 
-        bool PrefabOverridePublicHandler::AreOverridesPresent(AZ::EntityId entityId)
+        bool PrefabOverridePublicHandler::AreOverridesPresent(AZ::EntityId entityId, const AZ::Dom::Path& prefix)
         {
             AZStd::pair<AZ::Dom::Path, LinkId> pathAndLinkIdPair = GetPathAndLinkIdFromFocusedPrefab(entityId);
             if (!pathAndLinkIdPair.first.IsEmpty() && pathAndLinkIdPair.second != InvalidLinkId)
             {
+                if (!prefix.IsEmpty())
+                {
+                    pathAndLinkIdPair.first /= prefix;
+                }
                 return m_prefabOverrideHandler.AreOverridesPresent(pathAndLinkIdPair.first, pathAndLinkIdPair.second);
             }
 

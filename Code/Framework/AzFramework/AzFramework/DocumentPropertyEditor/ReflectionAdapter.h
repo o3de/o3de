@@ -8,8 +8,10 @@
 
 #pragma once
 
+#include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
 #include <AzFramework/DocumentPropertyEditor/RoutingAdapter.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/string/string_view.h>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -59,6 +61,10 @@ namespace AZ::DocumentPropertyEditor
         //! Call this to trigger a PropertyChangeEvent to notify the view that one of this adapter's
         //! property editor instances has altered its value.
         void NotifyPropertyChanged(const PropertyChangeInfo& changeInfo);
+
+        virtual void AddIconIfPropertyOverride(AdapterBuilder*, const AZStd::string_view&)
+        {
+        }
 
         void* GetInstance() { return m_instance; }
         const void* GetInstance() const { return m_instance; }
