@@ -20,6 +20,7 @@
 #include <Editor/Plugins/ColliderWidgets/RagdollOutlinerNotificationHandler.h>
 #include <Editor/Plugins/ColliderWidgets/SimulatedObjectColliderWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
+#include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
 #include <Editor/ReselectingTreeView.h>
 #include <Tests/TestAssetCode/SimpleActors.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
