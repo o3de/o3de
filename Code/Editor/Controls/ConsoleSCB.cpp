@@ -1096,7 +1096,10 @@ static bool SetCVarFromConsoleCommand(ICVar* cvar, AZ::ConsoleFunctorBase* conso
             }
             else if constexpr (expectedCvarType == CVAR_STRING)
             {
-                cvar->Set(value.data());
+                if (!value.empty())
+                {
+                    cvar->Set(value.data());
+                }
             }
         }
         else if (cvar->GetType() == CVAR_STRING)
