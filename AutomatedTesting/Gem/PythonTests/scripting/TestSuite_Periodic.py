@@ -68,8 +68,8 @@ class TestAutomationQtPyTests(TestAutomationBase):
         from . import ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    def test_ScriptEvents_Default_SendReceiveSuccesfully(self, request, workspace, editor, launcher_platform):
-        from . import ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage as test_module
+    def test_ScriptEvents_Default_SendReceiveSuccessfully(self, request, workspace, editor, launcher_platform):
+        from . import ScriptEvents_Default_SendReceiveSuccessfully as test_module
         self._run_test(request, workspace, editor, test_module)
 
     """
@@ -186,25 +186,7 @@ class TestScriptCanvasTests(object):
             auto_test_mode=False,
             timeout=60,
         )
-    """
-    def test_ScriptEvents_Default_SendReceiveSuccessfully(self, request, editor, launcher_platform):
 
-        expected_lines = [
-            "Successfully created test entity",
-            "Successfully entered game mode",
-            "Successfully found expected message",
-            "Successfully exited game mode",
-        ]
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            editor,
-            "ScriptEvents_Default_SendReceiveSuccessfully.py",
-            expected_lines,
-            auto_test_mode=False,
-            timeout=60,
-        )
-    """
     def test_ScriptEvents_ReturnSetType_Successfully(self, request, editor, launcher_platform):
 
         expected_lines = [
