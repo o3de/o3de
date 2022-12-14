@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    UnitTest/DLLTestVirtualClass.h
     UnitTest/MockComponentApplication.h
     UnitTest/MockComponentApplication.cpp
     UnitTest/UnitTest.h

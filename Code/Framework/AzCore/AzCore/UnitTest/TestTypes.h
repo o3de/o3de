@@ -10,6 +10,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/base.h>
+#include <AzCore/UnitTest/DLLTestVirtualClass.h>
 #include <AzCore/UnitTest/UnitTest.h>
 
 #include <AzCore/Debug/BudgetTracker.h>
@@ -187,16 +188,6 @@ namespace UnitTest
         bool m_ownsAllocator{};
     };
 #endif
-
-    class DLLTestVirtualClass
-    {
-    public:
-        DLLTestVirtualClass()
-            : m_data(1) {}
-        virtual ~DLLTestVirtualClass() {}
-
-        int m_data;
-    };
 
     template <AZ::u32 size, AZ::u8 instance, size_t alignment = 16>
     struct CreationCounter
