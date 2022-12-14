@@ -644,29 +644,6 @@ namespace AzToolsFramework
                 );
             }
 
-            // Revert Overrides
-            {
-                if (IsPrefabOverridesUxEnabled() && selectedEntities.size() == 1)
-                {
-                    AZ::EntityId selectedEntity = selectedEntities[0];
-                    if (!s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity) &&
-                        m_prefabOverridePublicInterface->AreOverridesPresent(selectedEntity))
-                    {
-                        QAction* revertAction = menu->addAction(QObject::tr("Revert Overrides"));
-                        QObject::connect(
-                            revertAction,
-                            &QAction::triggered,
-                            revertAction,
-                            [this, selectedEntity]
-                            {
-                                ContextMenu_RevertOverrides(selectedEntity);
-                            });
-
-                        menu->addSeparator();
-                    }
-                }
-            }
-
             menu->addSeparator();
         }
 
