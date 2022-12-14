@@ -103,18 +103,18 @@ namespace UnitTest
     {
         AZ::Vector2 vA(2.0f, 3.0f);
 
-        EXPECT_TRUE(vA == AZ::Vector2(2.0f, 3.0f));
+        EXPECT_THAT(vA, IsClose(AZ::Vector2(2.0f, 3.0f)));
         EXPECT_FLOAT_EQ(vA.GetX(), 2.0f);
         EXPECT_FLOAT_EQ(vA.GetY(), 3.0f);
 
         vA.SetX(10.0f);
-        EXPECT_TRUE(vA == AZ::Vector2(10.0f, 3.0f));
+        EXPECT_THAT(vA, IsClose(AZ::Vector2(10.0f, 3.0f)));
 
         vA.SetY(11.0f);
-        EXPECT_TRUE(vA == AZ::Vector2(10.0f, 11.0f));
+        EXPECT_THAT(vA, IsClose(AZ::Vector2(10.0f, 11.0f)));
 
         vA.Set(15.0f);
-        EXPECT_TRUE(vA == AZ::Vector2(15.0f));
+        EXPECT_THAT(vA, IsClose(AZ::Vector2(15.0f)));
 
         vA.SetElement(0, 20.0f);
         EXPECT_FLOAT_EQ(vA.GetX(), 20.0f);

@@ -5,8 +5,9 @@
     "ClassData": {
         "id": "{37B8B4B9-EDEB-424A-A486-2999C534A058}",
         "category": "Math Functions",
-        "title": "Tan",
+        "title": "Tangent",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the tangent of the input value (per component)",
         "slotDataTypeGroups": [
             "inValue|outValue"
         ],

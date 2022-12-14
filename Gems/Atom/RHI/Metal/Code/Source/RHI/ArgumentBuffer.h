@@ -56,6 +56,15 @@ namespace AZStd
    };
 }
 
+//! Function which returns the native hash instead of trying to re-calculate a new hash. Used in data structures that require hash calculation below
+struct MetalResourceHash
+{
+    size_t operator()(const id<MTLResource> m_resourcPtr) const
+    {
+        return m_resourcPtr.hash;
+    }
+};
+
 namespace AZ
 {
     namespace Metal
@@ -107,14 +116,19 @@ namespace AZ
             size_t GetOffset() const;
 
             //Map to cache all the resources based on the usage as we can batch all the resources for a given usage.
-            using ComputeResourcesToMakeResidentMap = AZStd::unordered_map<MTLResourceUsage, AZStd::unordered_set<id <MTLResource>>>;
+            using ResourcesForCompute = AZStd::unordered_set<id <MTLResource>, MetalResourceHash>;
             //Map to cache all the resources based on the usage and shader stage as we can batch all the resources for a given usage/shader usage.
-            using GraphicsResourcesToMakeResidentMap = AZStd::unordered_map<AZStd::pair<MTLResourceUsage,MTLRenderStages>, AZStd::unordered_set<id <MTLResource>>>;
-
-            //Cache all the resources bound to the SRG that needs to be made resident beofre the draw call
+            using ResourcesPerStageForGraphics = AZStd::array<AZStd::unordered_set<id <MTLResource>, MetalResourceHash>, RHI::ShaderStageGraphicsCount>;
+              
+            //Cache untracked resources we want to make resident for this argument buffer for graphics work
             void CollectUntrackedResources(const ShaderResourceGroupVisibility& srgResourcesVisInfo,
-                                           ComputeResourcesToMakeResidentMap& resourcesToMakeResidentCompute,
-                                           GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentGraphics) const;
+                                           ResourcesPerStageForGraphics& untrackedResourcesRead,
+                                           ResourcesPerStageForGraphics& untrackedResourcesReadWrite) const;
+
+            //Cache untracked resources we want to make resident for this argument buffer for compute work
+            void CollectUntrackedResources(const ShaderResourceGroupVisibility& srgResourcesVisInfo,
+                                           ResourcesForCompute& untrackedResourceComputeRead,
+                                           ResourcesForCompute& untrackedResourceComputeReadWrite) const;
 
             bool IsNullHeapNeededForVertexStage(const ShaderResourceGroupVisibility& srgResourcesVisInfo) const;
             bool IsNullDescHeapNeeded() const;
@@ -132,26 +146,39 @@ namespace AZ
 
         private:
 
-            bool CreateArgumentDescriptors(NSMutableArray * argBufferDecriptors);
-            void AttachStaticSamplers();
-            void AttachConstantBuffer();
-
-            // Use a cache to store and retrieve samplers
-            id<MTLSamplerState> GetMtlSampler(MTLSamplerDescriptor* samplerDesc);
-
+            static const int MaxEntriesInArgTable = 31;
             using ResourceBindingsSet = AZStd::unordered_set<ResourceBindingData>;
             using ResourceBindingsMap =  AZStd::unordered_map<AZ::Name, ResourceBindingsSet>;
             ResourceBindingsMap m_resourceBindings;
-
-            static const int MaxEntriesInArgTable = 31;
-
+            
+            //Helper functions that help cache untracked resources for compute and graphics work
             void CollectResourcesForCompute(const ResourceBindingsSet& resourceBindingData,
-                                            ComputeResourcesToMakeResidentMap& resourcesToMakeResidentMap) const;
+                                            ResourcesForCompute& untrackedResourceComputeRead,
+                                            ResourcesForCompute& untrackedResourceComputeReadWrite) const;
             void CollectResourcesForGraphics(RHI::ShaderStageMask visShaderMask,
                                              const ResourceBindingsSet& resourceBindingDataSet,
-                                             GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentMap) const;
-    
+                                             ResourcesPerStageForGraphics& untrackedResourcesRead,
+                                             ResourcesPerStageForGraphics& untrackedResourcesReadWrite) const;
+            void AddUntrackedResource(MTLRenderStages mtlRenderStages,
+                                      id<MTLResource> resourcPtr,
+                                      ResourcesPerStageForGraphics& resourceSet) const;
+            
+            //! Populate all the descriptors related to entries within a SRG
+            bool CreateArgumentDescriptors(NSMutableArray * argBufferDecriptors);
+            
+            //! Create and attach a static sampler within the argument buffer
+            void AttachStaticSamplers();
+            
+            //! Create and attach a constant buffer related to all the loose data within a SRG.
+            void AttachConstantBuffer();
+            
+            //! Bind null samplers in case we dont bind a proper sampler.
             void BindNullSamplers(uint32_t registerId, uint32_t samplerCount);
+            
+            // Use a cache to store and retrieve samplers
+            id<MTLSamplerState> GetMtlSampler(MTLSamplerDescriptor* samplerDesc);
+
+            //Attach argument buffer to the argument encoder
             void SetArgumentBuffer(NSMutableArray* argBufferDecriptors, AZStd::string argBufferName);
             
             Device* m_device = nullptr;
@@ -159,7 +186,7 @@ namespace AZ
 
             id <MTLArgumentEncoder> m_argumentEncoder;
             uint32_t m_constantBufferSize = 0;
-
+            bool m_useNullDescriptorHeap = false;
 #if defined(ARGUMENTBUFFER_PAGEALLOCATOR)
             BufferMemoryView m_argumentBuffer;
             BufferMemoryView m_constantBuffer;
@@ -169,7 +196,6 @@ namespace AZ
             MemoryView m_argumentBuffer;
             MemoryView m_constantBuffer;
 #endif
-            bool m_useNullDescriptorHeap = false;
         };
     }
 }
