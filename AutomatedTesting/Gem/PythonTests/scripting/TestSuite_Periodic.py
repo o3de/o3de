@@ -72,6 +72,10 @@ class TestAutomationQtPyTests(TestAutomationBase):
         from . import ScriptEvents_Default_SendReceiveSuccessfully as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    def test_ScriptEvents_HappyPath_SendReceiveAcrossMultiple(self, request, workspace, editor, launcher_platform):
+        from . import ScriptEvents_Default_SendReceiveSuccessfully as test_module
+        self._run_test(request, workspace, editor, test_module)
+
     """
     od3e/o3de#13481
     This test fails in multi test. QCheckbox state change does not trigger table changes like in hydra/editor test run
@@ -378,19 +382,3 @@ class TestScriptCanvasTests(object):
             timeout=60,
         )
 
-    def test_ScriptEvents_HappyPath_SendReceiveAcrossMultiple(self, request, workspace, editor, launcher_platform):
-        expected_lines = [
-            "Successfully created Entity",
-            "Successfully entered game mode",
-            "Successfully found expected message",
-            "Successfully exited game mode",
-        ]
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            editor,
-            "ScriptEvents_HappyPath_SendReceiveAcrossMultiple.py",
-            expected_lines,
-            auto_test_mode=False,
-            timeout=60,
-        )
