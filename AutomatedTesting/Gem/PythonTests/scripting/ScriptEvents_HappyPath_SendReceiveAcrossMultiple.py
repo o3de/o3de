@@ -67,8 +67,8 @@ def ScriptEvents_HappyPath_SendReceiveAcrossMultiple():
     for key_name in ENTITY_NAME_FILEPATH_MAP.keys():
 
         editor_entity = EditorEntity.create_editor_entity_at(position, key_name)
-        script_canvas_component = ScriptCanvasComponent(editor_entity)
-        script_canvas_component.set_component_graph_file_from_path(ENTITY_NAME_FILEPATH_MAP[key_name])
+        scriptcanvas_component = ScriptCanvasComponent(editor_entity)
+        scriptcanvas_component.set_component_graph_file_from_path(ENTITY_NAME_FILEPATH_MAP[key_name])
         TestHelper.wait_for_condition(lambda: editor_entity is not None, WAIT_TIME_3)
 
     with Tracer() as section_tracer:

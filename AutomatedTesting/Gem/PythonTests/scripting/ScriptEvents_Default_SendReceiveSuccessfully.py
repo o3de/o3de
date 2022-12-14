@@ -60,8 +60,8 @@ def ScriptEvents_Default_SendReceiveSuccessfully():
     # 2) Create test entity
     position = math.Vector3(512.0, 512.0, 32.0)
     editor_entity = EditorEntity.create_editor_entity_at(position, ENTITY_NAME)
-    script_canvas_component = ScriptCanvasComponent(editor_entity)
-    script_canvas_component.set_component_graph_file_from_path(SC_ASSET_PATH)
+    scriptcanvas_component = ScriptCanvasComponent(editor_entity)
+    scriptcanvas_component.set_component_graph_file_from_path(SC_ASSET_PATH)
 
     with Tracer() as section_tracer:
 

@@ -62,8 +62,8 @@ def ScriptEvents_ReturnSetType_Successfully():
 
     # 2) Create test entity
     editor_entity = EditorEntity.create_editor_entity_at(position, ENTITY_NAME)
-    script_canvas_component = ScriptCanvasComponent(editor_entity)
-    script_canvas_component.set_component_graph_file_from_path(SC_FILE_PATH)
+    scriptcanvas_component = ScriptCanvasComponent(editor_entity)
+    scriptcanvas_component.set_component_graph_file_from_path(SC_FILE_PATH)
 
     # 3) Start Tracer
     with Tracer() as section_tracer:

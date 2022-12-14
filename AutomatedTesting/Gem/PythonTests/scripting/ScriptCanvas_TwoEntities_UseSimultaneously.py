@@ -65,11 +65,11 @@ def ScriptCanvas_TwoEntities_UseSimultaneously():
     editor_entity_2 = EditorEntity.create_editor_entity_at(position, TEST_ENTITY_NAME_2)
 
     # 3) Set ScriptCanvas asset to both the entities
-    script_canvas_component_1 = ScriptCanvasComponent(editor_entity_1)
-    script_canvas_component_1.set_component_graph_file_from_path(ASSET_PATH)
+    scriptcanvas_component_1 = ScriptCanvasComponent(editor_entity_1)
+    scriptcanvas_component_1.set_component_graph_file_from_path(ASSET_PATH)
 
-    script_canvas_component_2 = ScriptCanvasComponent(editor_entity_2)
-    script_canvas_component_2.set_component_graph_file_from_path(ASSET_PATH)
+    scriptcanvas_component_2 = ScriptCanvasComponent(editor_entity_2)
+    scriptcanvas_component_2.set_component_graph_file_from_path(ASSET_PATH)
 
     # 4) Enter/Exit game mode and verify log lines
     with Tracer() as section_tracer:

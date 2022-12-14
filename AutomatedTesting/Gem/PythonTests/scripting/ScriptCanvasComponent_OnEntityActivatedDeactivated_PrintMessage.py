@@ -14,10 +14,14 @@ class Tests():
 # fmt: on
 
 
-def setup_level_entities(entity_dictionary):
+def setup_level_entities(dictionaries):
     """
     Helper function for setting up the 3 entities and their script canvas components needed for this test
 
+    Incomming dictionaries use the format String : String and use the keys; name, status, path.
+    name - the name of the test entity
+    status - the active status of the entity
+    path - the file path on disk to the script canvas file which will be added to the entity
     """
     import azlmbr.math as math
     import scripting_utils.scripting_tools as scripting_tools
@@ -29,26 +33,28 @@ def setup_level_entities(entity_dictionary):
 
     position = math.Vector3(512.0, 512.0, 32.0)
 
-    #create entity, give it a script canvas component and set its active status
-    editor_entity = EditorEntity.create_editor_entity_at(position, entity_dictionary["name"])
-    editor_entity_sc_component = ScriptCanvasComponent(editor_entity)
-    editor_entity_sc_component.set_component_graph_file_from_path(entity_dictionary["path"])
-    scripting_tools.change_entity_start_status(entity_dictionary["name"], entity_dictionary["status"])
-    TestHelper.wait_for_condition(lambda: editor_entity is not None, WAIT_TIME_3)
+    for entity_dictionary in dictionaries:
 
-    # the controller entity needs extra steps to be set up properly
-    if entity_dictionary["name"] == "Controller":
+        #create entity, give it a script canvas component and set its active status
+        editor_entity = EditorEntity.create_editor_entity_at(position, entity_dictionary["name"])
+        scriptcanvas_component = ScriptCanvasComponent(editor_entity)
+        scriptcanvas_component.set_component_graph_file_from_path(entity_dictionary["path"])
+        scripting_tools.change_entity_start_status(entity_dictionary["name"], entity_dictionary["status"])
+        TestHelper.wait_for_condition(lambda: editor_entity is not None, WAIT_TIME_3)
 
-        # get the ids of the two other entities we created
-        activated_entity_id = EditorEntity.find_editor_entity("ActivationTest").id
-        deactivated_entity_id = EditorEntity.find_editor_entity("DeactivationTest").id
-        # set the two variables on the sc component to point to the activated and deactivated entities
-        activated_entity_var = "EntityToActivate"
-        deactivated_entity_var = "EntityToDeactivate"
+        # the controller entity needs extra steps to be set up properly
+        if entity_dictionary["name"] == "Controller":
 
-        editor_entity_sc_component.set_variable_value(activated_entity_var, VariableState.VARIABLE, activated_entity_id)
-        editor_entity_sc_component.set_variable_value(deactivated_entity_var, VariableState.VARIABLE,
-                                                      deactivated_entity_id)
+            # get the ids of the two other entities we created
+            activated_entity_id = EditorEntity.find_editor_entity("ActivationTest").id
+            deactivated_entity_id = EditorEntity.find_editor_entity("DeactivationTest").id
+            # set the two variables on the sc component to point to the activated and deactivated entities
+            activated_entity_var = "EntityToActivate"
+            deactivated_entity_var = "EntityToDeactivate"
+
+            scriptcanvas_component.set_variable_value(activated_entity_var, VariableState.VARIABLE, activated_entity_id)
+            scriptcanvas_component.set_variable_value(deactivated_entity_var, VariableState.VARIABLE,
+                                                          deactivated_entity_id)
 
 def ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
     """
@@ -106,9 +112,8 @@ def ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
     TestHelper.open_level("", "Base")
 
     # 2) create all the entities we need for the test
-    setup_level_entities(activated_dict)
-    setup_level_entities(deactivated_dict)
-    setup_level_entities(controller_dict)
+    dictionaries = [activated_dict, deactivated_dict, controller_dict]
+    setup_level_entities(dictionaries)
 
     # 3) Start the Tracer
     with Tracer() as section_tracer:
