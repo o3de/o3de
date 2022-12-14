@@ -5,33 +5,12 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-import os
-import azlmbr.math as math
-from editor_python_test_tools.editor_entity_utils import EditorEntity
-from editor_python_test_tools.editor_component.editor_script_canvas import ScriptCanvasComponent
-from editor_python_test_tools.utils import TestHelper as TestHelper
-from editor_python_test_tools.utils import Report, Tracer
-import azlmbr.legacy.general as general
-import azlmbr.paths as paths
-import scripting_utils.scripting_tools as scripting_tools
-from scripting_utils.scripting_constants import (WAIT_TIME_3)
-
 # fmt: off
 class Tests:
     enter_game_mode = ("Successfully entered game mode",       "Failed to enter game mode")
     lines_found     = ("Successfully found expected message",  "Failed to find expected message")
     exit_game_mode  = ("Successfully exited game mode",        "Failed to exit game mode")
 # fmt: on
-
-
-ASSET_PREFIX = "T92567321"
-asset_paths = {
-    "event": os.path.join(paths.projectroot, "TestAssets", f"{ASSET_PREFIX}.scriptevents"),
-    "assetA": os.path.join(paths.projectroot, "ScriptCanvas", f"{ASSET_PREFIX}A.scriptcanvas"),
-    "assetB": os.path.join(paths.projectroot, "ScriptCanvas", f"{ASSET_PREFIX}B.scriptcanvas"),
-}
-ENTITY_NAME_FILEPATH_MAP = {"EntityA": asset_paths["assetA"], "EntityB": asset_paths["assetB"]}
-EXPECTED_LINES = ["Incoming Message Received"]
 
 
 def ScriptEvents_HappyPath_SendReceiveAcrossMultiple():
@@ -57,7 +36,25 @@ def ScriptEvents_HappyPath_SendReceiveAcrossMultiple():
 
     :return: None
     """
+    import os
+    import azlmbr.math as math
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
+    from editor_python_test_tools.editor_component.editor_script_canvas import ScriptCanvasComponent
+    from editor_python_test_tools.utils import TestHelper as TestHelper
+    from editor_python_test_tools.utils import Report, Tracer
+    import azlmbr.legacy.general as general
+    import azlmbr.paths as paths
+    import scripting_utils.scripting_tools as scripting_tools
+    from scripting_utils.scripting_constants import (WAIT_TIME_3)
 
+    ASSET_PREFIX = "T92567321"
+    asset_paths = {
+        "event": os.path.join(paths.projectroot, "TestAssets", f"{ASSET_PREFIX}.scriptevents"),
+        "assetA": os.path.join(paths.projectroot, "ScriptCanvas", f"{ASSET_PREFIX}A.scriptcanvas"),
+        "assetB": os.path.join(paths.projectroot, "ScriptCanvas", f"{ASSET_PREFIX}B.scriptcanvas"),
+    }
+    ENTITY_NAME_FILEPATH_MAP = {"EntityA": asset_paths["assetA"], "EntityB": asset_paths["assetB"]}
+    EXPECTED_LINES = ["Incoming Message Received"]
     position = math.Vector3(512.0, 512.0, 32.0)
 
     # Preconditions

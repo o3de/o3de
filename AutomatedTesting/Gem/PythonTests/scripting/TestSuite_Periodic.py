@@ -73,7 +73,11 @@ class TestAutomationQtPyTests(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     def test_ScriptEvents_HappyPath_SendReceiveAcrossMultiple(self, request, workspace, editor, launcher_platform):
-        from . import ScriptEvents_Default_SendReceiveSuccessfully as test_module
+        from . import ScriptEvents_HappyPath_SendReceiveAcrossMultiple as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_ScriptEvents_ReturnSetType_Successfully(self, request, workspace, editor, launcher_platform):
+        from . import ScriptEvents_ReturnSetType_Successfully as test_module
         self._run_test(request, workspace, editor, test_module)
 
     """
@@ -186,24 +190,6 @@ class TestScriptCanvasTests(object):
             TEST_DIRECTORY,
             editor,
             "ScriptEvent_AddRemoveMethod_UpdatesInSC.py",
-            expected_lines,
-            auto_test_mode=False,
-            timeout=60,
-        )
-
-    def test_ScriptEvents_ReturnSetType_Successfully(self, request, editor, launcher_platform):
-
-        expected_lines = [
-            "Successfully created test entity",
-            "Successfully entered game mode",
-            "Successfully found expected message",
-            "Successfully exited game mode",
-        ]
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            editor,
-            "ScriptEvents_ReturnSetType_Successfully.py",
             expected_lines,
             auto_test_mode=False,
             timeout=60,
