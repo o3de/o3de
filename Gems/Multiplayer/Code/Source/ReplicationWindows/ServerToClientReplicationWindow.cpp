@@ -114,18 +114,23 @@ namespace Multiplayer
 
         AZStd::vector<AzFramework::VisibilityEntry*> gatheredEntries;
         AZ::Sphere awarenessSphere = AZ::Sphere(controlledEntityPosition, sv_ClientAwarenessRadius);
-        AZ::Interface<AzFramework::IVisibilitySystem>::Get()->GetDefaultVisibilityScene()->Enumerate(awarenessSphere, [&gatheredEntries](const AzFramework::IVisibilityScene::NodeData& nodeData)
-            {
-                gatheredEntries.reserve(gatheredEntries.size() + nodeData.m_entries.size());
-                for (AzFramework::VisibilityEntry* visEntry : nodeData.m_entries)
+        AzFramework::IVisibilitySystem* visibilitySystem = AZ::Interface<AzFramework::IVisibilitySystem>::Get();
+        if (visibilitySystem)
+        {
+            visibilitySystem->GetDefaultVisibilityScene()->Enumerate(
+                awarenessSphere,
+                [&gatheredEntries](const AzFramework::IVisibilityScene::NodeData& nodeData)
                 {
-                    if (visEntry->m_typeFlags & AzFramework::VisibilityEntry::TypeFlags::TYPE_Entity)
+                    gatheredEntries.reserve(gatheredEntries.size() + nodeData.m_entries.size());
+                    for (AzFramework::VisibilityEntry* visEntry : nodeData.m_entries)
                     {
-                        gatheredEntries.push_back(visEntry);
+                        if (visEntry->m_typeFlags & AzFramework::VisibilityEntry::TypeFlags::TYPE_Entity)
+                        {
+                            gatheredEntries.push_back(visEntry);
+                        }
                     }
-                }
-            }
-        );
+                });
+        }
 
         NetworkEntityTracker* networkEntityTracker = GetNetworkEntityTracker();        
         IFilterEntityManager* filterEntityManager = AZ::Interface<IFilterEntityManager>::Get();
