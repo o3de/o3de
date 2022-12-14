@@ -106,9 +106,24 @@ namespace PhysX
         }
     } // namespace Internal
 
-    bool EditorRigidBodyConfiguration::IsSceneCcdDisabled() const
+    static bool IsDefaultSceneCcdEnabled()
     {
-        return !EditorRigidBodyComponent::IsSceneCcdEnabled();
+        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+        {
+            return physicsSystem->GetDefaultSceneConfiguration().m_enableCcd;
+        }
+        return false;
+    }
+
+    static bool IsSceneCcdDisabled()
+    {
+        return !IsDefaultSceneCcdEnabled();
+    }
+
+    static void OpenPhysXConfigurationPane()
+    {
+        AzToolsFramework::EditorRequestBus::Broadcast(
+            &AzToolsFramework::EditorRequests::OpenViewPane, LyViewPane::PhysXConfigurationEditor);
     }
 
     void EditorRigidBodyConfiguration::Reflect(AZ::ReflectContext* context)
@@ -197,7 +212,7 @@ namespace PhysX
                         "CCD enabled", "When active, the rigid body has continuous collision detection (CCD). Use this to ensure accurate "
                         "collision detection, particularly for fast moving rigid bodies. CCD must be activated in the global PhysX configuration.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetCcdVisibility)
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorRigidBodyConfiguration::IsSceneCcdDisabled)
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsSceneCcdDisabled)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdMinAdvanceCoefficient,
                         "Min advance coefficient", "Lower values reduce clipping but can affect simulation smoothness.")
@@ -205,19 +220,19 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                         ->Attribute(AZ::Edit::Attributes::Max, 0.99f)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::IsCcdEnabled)
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorRigidBodyConfiguration::IsSceneCcdDisabled)
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsSceneCcdDisabled)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdFrictionEnabled,
                         "CCD friction", "When active, friction is applied when continuous collision detection (CCD) collisions are resolved.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::IsCcdEnabled)
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorRigidBodyConfiguration::IsSceneCcdDisabled)
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsSceneCcdDisabled)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Button,
                         &AzPhysics::RigidBodyConfiguration::m_configButton,
                         "",
                         "Click here to open the PhysX Configuration window. Enable global CCD to enable component CCD editing.")
                         ->Attribute(AZ::Edit::Attributes::ButtonText, "Open PhysX Configuration to Enable CCD")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorRigidBodyConfiguration::IsSceneCcdDisabled)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::OpenPhysXConfigurationPane)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &IsSceneCcdDisabled)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &OpenPhysXConfigurationPane)
                     ->EndGroup()
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_maxAngularVelocity,
@@ -350,21 +365,6 @@ namespace PhysX
         {
             sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorRigidBodyHandle);
         }
-    }
-
-    bool EditorRigidBodyComponent::IsSceneCcdEnabled()
-    {
-        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
-        {
-            return physicsSystem->GetDefaultSceneConfiguration().m_enableCcd;
-        }
-        return false;
-    }
-
-    void EditorRigidBodyComponent::OpenPhysXConfigurationPane() const
-    {
-        AzToolsFramework::EditorRequestBus::Broadcast(
-            &AzToolsFramework::EditorRequests::OpenViewPane, LyViewPane::PhysXConfigurationEditor);
     }
 
     void EditorRigidBodyComponent::OnConfigurationChanged()
