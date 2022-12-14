@@ -37,6 +37,8 @@ namespace Multiplayer
 
     AZ_CVAR(bool, bg_replicationWindowImmediateAddRemove, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Update replication windows immediately on visibility Add/Removes.");
 
+    AZ_CVAR(bool, bg_useBufferPoolForNetworkEntityUpdateMessages, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Experimental memory optimization for serialization buffers.");
+
     EntityReplicationManager::EntityReplicationManager(AzNetworking::IConnection& connection, AzNetworking::IConnectionListener& connectionListener, Mode updateMode)
         : m_updateMode(updateMode)
         , m_connection(connection)
@@ -47,7 +49,10 @@ namespace Multiplayer
         , m_entityExitDomainEventHandler([this](const ConstNetworkEntityHandle& entityHandle) { OnEntityExitDomain(entityHandle); })
         , m_notifyEntityMigrationHandler([this](const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId) { OnPostEntityMigration(entityHandle, remoteHostId); })
     {
-        NetworkEntityUpdateMessage::InitializeBufferPool();
+        if (bg_useBufferPoolForNetworkEntityUpdateMessages)
+        {
+            NetworkEntityUpdateMessage::InitializeBufferPool();
+        }
 
         // Set up our remote host identifier, by default we use the IP address of the remote host
         m_remoteHostId = connection.GetRemoteAddress();
@@ -75,7 +80,10 @@ namespace Multiplayer
 
     EntityReplicationManager::~EntityReplicationManager()
     {
-        NetworkEntityUpdateMessage::ReleaseBufferPool();
+        if (bg_useBufferPoolForNetworkEntityUpdateMessages)
+        {
+            NetworkEntityUpdateMessage::ReleaseBufferPool();
+        }
     }
 
     const HostId& EntityReplicationManager::GetRemoteHostId() const
