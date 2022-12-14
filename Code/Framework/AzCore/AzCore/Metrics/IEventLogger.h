@@ -11,6 +11,7 @@
 #include <AzCore/base.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Platform.h>
+#include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/span.h>
@@ -144,10 +145,11 @@ namespace AZ::Metrics
             AZ::s64,
             AZ::u64,
             double,
-            EventArray, // Used to encapsulate a span of <EventAValue> to represent arguments to output to the Google Trace format "args" object
-            EventObject  // Used to encapsulate a span of <EventArgsValue> to represent arguments to output to the Google Trace format "args" object
+            EventArray, // Used to encapsulate a span of <EventValue> to represent arguments to output to the Google Trace format "args" object
+            EventObject  // Used to encapsulate a span of <EventField> to represent arguments to output to the Google Trace format "args" object
         >;
 
+        //! Variant instance for storing the value of an event entry(string, bool integer, double, array, object)
         ArgsVariant m_value;
     };
 
@@ -157,7 +159,9 @@ namespace AZ::Metrics
         constexpr EventField();
         constexpr EventField(AZStd::string_view name, EventValue value);
 
+        //! Name of the field
         AZStd::string_view m_name;
+        //! Value of the field
         EventValue m_value;
     };
 
@@ -166,30 +170,29 @@ namespace AZ::Metrics
     using EventArrayStorage = AZStd::fixed_vector<AZ::Metrics::EventValue, 32>;
     using EventObjectStorage = AZStd::fixed_vector<AZ::Metrics::EventField, 32>;
 
-    enum class EventPhase : char
-    {
-        DurationBegin = 'B',
-        DurationEnd = 'E',
-        Complete = 'X',
-        Instant = 'i',
-        Counter = 'C',
-        AsyncStart = 'b',
-        AsyncInstant = 'n',
-        AsyncEnd = 'e',
-        FlowStart = 's',
-        FlowInstant = 't',
-        FlowEnd = 'f',
-        ObjectCreated = 'N',
-        ObjectSnapshot = 'O',
-        ObjectDestroyed = 'D',
-        Metadata = 'M',
-        MemoryDumpGlobal = 'V',
-        MemoryDumpProcess = 'v',
-        Mark = 'R',
-        ClockSync = 'c',
-        ContextEnter = '(',
-        ContentLeave = ')'
-    };
+    AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(EventPhase, char,
+        (DurationBegin, 'B'),
+        (DurationEnd, 'E'),
+        (Complete, 'X'),
+        (Instant, 'i'),
+        (Counter, 'C'),
+        (AsyncStart, 'b'),
+        (AsyncInstant, 'n'),
+        (AsyncEnd, 'e'),
+        (FlowStart, 's'),
+        (FlowInstant, 't'),
+        (FlowEnd, 'f'),
+        (ObjectCreated, 'N'),
+        (ObjectSnapshot, 'O'),
+        (ObjectDestroyed, 'D'),
+        (Metadata, 'M'),
+        (MemoryDumpGlobal, 'V'),
+        (MemoryDumpProcess, 'v'),
+        (Mark, 'R'),
+        (ClockSync, 'c'),
+        (ContextEnter, '('),
+        (ContentLeave, ')')
+        );
 
     struct EventDesc
     {
@@ -299,12 +302,11 @@ namespace AZ::Metrics
     };
 
     //! Enums used to populate the scope key for instant events
-    enum class InstantEventScope : char
-    {
-        Global = 'g',
-        Process = 'p',
-        Thread = 't'
-    };
+    AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(InstantEventScope, char,
+        (Global, 'g'),
+        (Process, 'p'),
+        (Thread, 't')
+    );
 
     //! Structure which represents arguments associated with the complete instant events
     //! Instant events are used to record an event that has no duration associated with it

@@ -112,8 +112,8 @@ namespace AZ
 
             // If a depth stencil image does not have depth or aspect flag set it is probably going to be used as
             // a render target and do not need to be added to the bindless heap
-            bool isReadOnlyDSView = RHI::CheckBitsAll(viewDescriptor.m_aspectFlags, RHI::ImageAspectFlags::Depth) ||
-                                        RHI::CheckBitsAll(viewDescriptor.m_aspectFlags, RHI::ImageAspectFlags::Stencil);
+            bool isReadOnlyDSView = viewDescriptor.m_aspectFlags == RHI::ImageAspectFlags::Depth ||
+                                    viewDescriptor.m_aspectFlags == RHI::ImageAspectFlags::Stencil;
 
             if (!viewDescriptor.m_isArray && !viewDescriptor.m_isCubemap && !isReadOnlyDSView)
             {

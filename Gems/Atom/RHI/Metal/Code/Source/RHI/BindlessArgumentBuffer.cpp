@@ -278,29 +278,31 @@ namespace AZ::Metal
         bufferFragmentOrComputeRegisterIdMax = AZStd::max(slotIndex, bufferFragmentOrComputeRegisterIdMax);
     }
 
-    void BindlessArgumentBuffer::MakeBindlessArgumentBuffersResident(
-                        CommandEncoderType commandEncoderType,
-                        ArgumentBuffer::GraphicsResourcesToMakeResidentMap resourcesToMakeResidentGraphics,
-                        ArgumentBuffer::ComputeResourcesToMakeResidentMap resourcesToMakeResidentCompute)
+    void BindlessArgumentBuffer::MakeBindlessArgumentBuffersResident(CommandEncoderType commandEncoderType,
+                                                                     ArgumentBuffer::ResourcesPerStageForGraphics& untrackedResourcesGfxRead,
+                                                                     ArgumentBuffer::ResourcesForCompute& untrackedResourceComputeRead)
     {
         //If unbounded arrays are supported (i.e we are using rootAB approach) make all the children ABs resident
         if(m_unboundedArraySupported)
         {
             if(commandEncoderType == CommandEncoderType::Render)
             {
-                AZStd::pair <MTLResourceUsage,MTLRenderStages> key =
-                            AZStd::make_pair(MTLResourceUsageRead, MTLRenderStageVertex|MTLRenderStageFragment);
-                resourcesToMakeResidentGraphics[key].emplace(m_bindlessTextureArgBuffer->GetArgEncoderBuffer());
-                resourcesToMakeResidentGraphics[key].emplace(m_bindlessRWTextureArgBuffer->GetArgEncoderBuffer());
-                resourcesToMakeResidentGraphics[key].emplace(m_bindlessBufferArgBuffer->GetArgEncoderBuffer());
-                resourcesToMakeResidentGraphics[key].emplace(m_bindlessRWBufferArgBuffer->GetArgEncoderBuffer());
+                untrackedResourcesGfxRead[RHI::ShaderStageVertex].insert(m_bindlessTextureArgBuffer->GetArgEncoderBuffer());
+                untrackedResourcesGfxRead[RHI::ShaderStageVertex].insert(m_bindlessRWTextureArgBuffer->GetArgEncoderBuffer());
+                untrackedResourcesGfxRead[RHI::ShaderStageVertex].insert(m_bindlessBufferArgBuffer->GetArgEncoderBuffer());
+                untrackedResourcesGfxRead[RHI::ShaderStageVertex].insert(m_bindlessRWBufferArgBuffer->GetArgEncoderBuffer());
+                
+                untrackedResourcesGfxRead[RHI::ShaderStageFragment].insert(m_bindlessTextureArgBuffer->GetArgEncoderBuffer());
+                untrackedResourcesGfxRead[RHI::ShaderStageFragment].insert(m_bindlessRWTextureArgBuffer->GetArgEncoderBuffer());
+                untrackedResourcesGfxRead[RHI::ShaderStageFragment].insert(m_bindlessBufferArgBuffer->GetArgEncoderBuffer());
+                untrackedResourcesGfxRead[RHI::ShaderStageFragment].insert(m_bindlessRWBufferArgBuffer->GetArgEncoderBuffer());
             }
             else if(commandEncoderType == CommandEncoderType::Compute)
             {
-                resourcesToMakeResidentCompute[MTLResourceUsageRead].emplace(m_bindlessTextureArgBuffer->GetArgEncoderBuffer());
-                resourcesToMakeResidentCompute[MTLResourceUsageRead].emplace(m_bindlessRWTextureArgBuffer->GetArgEncoderBuffer());
-                resourcesToMakeResidentCompute[MTLResourceUsageRead].emplace(m_bindlessBufferArgBuffer->GetArgEncoderBuffer());
-                resourcesToMakeResidentCompute[MTLResourceUsageRead].emplace(m_bindlessRWBufferArgBuffer->GetArgEncoderBuffer());
+                untrackedResourceComputeRead.insert(m_bindlessTextureArgBuffer->GetArgEncoderBuffer());
+                untrackedResourceComputeRead.insert(m_bindlessRWTextureArgBuffer->GetArgEncoderBuffer());
+                untrackedResourceComputeRead.insert(m_bindlessBufferArgBuffer->GetArgEncoderBuffer());
+                untrackedResourceComputeRead.insert(m_bindlessRWBufferArgBuffer->GetArgEncoderBuffer());
             }
         }
     }
