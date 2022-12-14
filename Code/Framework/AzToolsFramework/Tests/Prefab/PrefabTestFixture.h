@@ -93,7 +93,7 @@ namespace UnitTest
 
         //! Helper function to compare two instances.
         //! @param instanceA The given first instance.
-        //! @param instanceB The given secondd instance.
+        //! @param instanceB The given second instance.
         //! @param shouldCompareLinkIds Flag of whether it compares two link ids.
         //! @param shouldCompareContainerEntities Flag of whether it compares two container entities.
         void CompareInstances(const Instance& instanceA, const Instance& instanceB, bool shouldCompareLinkIds = true,
