@@ -52,7 +52,7 @@ namespace UnitTest
         : public LeakDetectionFixture
     {
     };
-    
+
     TEST_F(Tree_RedBlack, Test)
     {
         array<int, 5> elements = {
@@ -1149,7 +1149,11 @@ namespace UnitTest
     TYPED_TEST_CASE(TreeSetDifferentAllocatorFixture, SetTemplateConfigs);
 
 #if GTEST_HAS_DEATH_TEST
+#if AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
+    TYPED_TEST(TreeSetDifferentAllocatorFixture, DISABLED_InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#else
     TYPED_TEST(TreeSetDifferentAllocatorFixture, InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#endif // AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
     {
         using ContainerType = typename TypeParam::ContainerType;
 
@@ -1610,7 +1614,11 @@ namespace UnitTest
     TYPED_TEST_CASE(TreeMapDifferentAllocatorFixture, MapTemplateConfigs);
 
 #if GTEST_HAS_DEATH_TEST
+#if AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
+    TYPED_TEST(TreeMapDifferentAllocatorFixture, DISABLED_InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#else
     TYPED_TEST(TreeMapDifferentAllocatorFixture, InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#endif // AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
     {
         using ContainerType = typename TypeParam::ContainerType;
 

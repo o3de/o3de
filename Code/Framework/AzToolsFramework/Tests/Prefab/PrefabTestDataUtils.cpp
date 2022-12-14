@@ -83,7 +83,7 @@ namespace UnitTest
         {
             PrefabDom linkDom;
             actualLink.GetLinkDom(linkDom, linkDom.GetAllocator());
-            PrefabDomValueConstReference patchesReference = PrefabDomUtils::FindPrefabDomValue(linkDom, PrefabDomUtils::PatchesName);
+            PrefabDomValueReference patchesReference = PrefabDomUtils::FindPrefabDomValue(linkDom, PrefabDomUtils::PatchesName);
 
             if (!expectedTemplatePatches.IsNull())
             {

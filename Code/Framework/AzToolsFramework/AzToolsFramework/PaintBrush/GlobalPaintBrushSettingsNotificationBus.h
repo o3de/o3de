@@ -30,6 +30,12 @@ namespace AzToolsFramework
         virtual void OnSettingsChanged([[maybe_unused]] const GlobalPaintBrushSettings& newSettings)
         {
         }
+
+        //! Notifies listeners that the paintbrush mode has changed.
+        //! @param newSettings The settings after the change
+        virtual void OnPaintBrushModeChanged([[maybe_unused]] AzFramework::PaintBrushMode newBrushMode)
+        {
+        }
     };
 
     using GlobalPaintBrushSettingsNotificationBus = AZ::EBus<GlobalPaintBrushSettingsNotifications>;
