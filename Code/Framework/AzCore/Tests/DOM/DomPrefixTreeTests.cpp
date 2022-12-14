@@ -303,6 +303,55 @@ namespace AZ::Dom::Tests
         EXPECT_FALSE(isMoved);
     }
 
+    TEST_F(DomPrefixTreeTests, MoveSubTreeAndCreateParentsAddsNewNodeAtExistingPath)
+    {
+        DomPrefixTree<int> tree;
+        tree.SetValue(Path("/foo"), 40);
+
+        DomPrefixTree<int> subtree;
+        subtree.SetValue(Path(), 80);
+        subtree.SetValue(Path("/1"), 120);
+        tree.MoveSubTreeAndCreateParents(Path("/foo/0"), AZStd::move(subtree));
+
+        // Validate that new values are present at the paths in the original tree.
+        EXPECT_EQ(80, *tree.ValueAtPath(Path("/foo/0"), PrefixTreeMatch::ExactPath));
+        EXPECT_EQ(120, *tree.ValueAtPath(Path("/foo/0/1"), PrefixTreeMatch::ExactPath));
+    }
+
+    TEST_F(DomPrefixTreeTests, MoveSubTreeAndCreateParentsReplacesExistingNodeAndChildren)
+    {
+        DomPrefixTree<int> tree;
+        tree.SetValue(Path("/foo"), 40);
+        tree.SetValue(Path("/foo/1"), 60);
+        tree.SetValue(Path("/foo/2"), 70);
+
+        DomPrefixTree<int> subtree;
+        subtree.SetValue(Path(), 80);
+        subtree.SetValue(Path("/1"), 120);
+        tree.MoveSubTreeAndCreateParents(Path("/foo"), AZStd::move(subtree));
+
+        // Validate that existing nodes are replaced in the original tree.
+        EXPECT_EQ(80, *tree.ValueAtPath(Path("/foo"), PrefixTreeMatch::ExactPath));
+        EXPECT_EQ(120, *tree.ValueAtPath(Path("/foo/1"), PrefixTreeMatch::ExactPath));
+        EXPECT_EQ(nullptr, tree.ValueAtPath(Path("/foo/2"), PrefixTreeMatch::ExactPath));
+    }
+
+    TEST_F(DomPrefixTreeTests, MoveSubTreeAndCreateParentsAddsNewNodeAtNonExistingPath)
+    {
+        DomPrefixTree<int> tree;
+        tree.SetValue(Path("/foo"), 40);
+
+        DomPrefixTree<int> subtree;
+        subtree.SetValue(Path(), 80);
+        subtree.SetValue(Path("/1"), 120);
+        // Parent entry 'bar' does not exist and will be created.
+        tree.MoveSubTreeAndCreateParents(Path("/foo/bar/baz"), AZStd::move(subtree));
+
+        // Validate that the subtree was moved and new values are present at the paths in the original tree.
+        EXPECT_EQ(80, *tree.ValueAtPath(Path("/foo/bar/baz"), PrefixTreeMatch::ExactPath));
+        EXPECT_EQ(120, *tree.ValueAtPath(Path("/foo/bar/baz/1"), PrefixTreeMatch::ExactPath));
+    }
+
     TEST_F(DomPrefixTreeTests, ClearTree)
     {
         DomPrefixTree<int> tree;

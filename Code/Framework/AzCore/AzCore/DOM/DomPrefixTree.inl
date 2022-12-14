@@ -111,6 +111,20 @@ namespace AZ::Dom
     }
 
     template<class T>
+    void DomPrefixTree<T>::MoveNodeAtPathAndCreateParents(const Path& path, Node&& nodeToMove)
+    {
+        Node* node = &m_rootNode;
+        const size_t parentEntriesToIterate = path.Size() - 1;
+        for (size_t i = 0; i < parentEntriesToIterate; ++i)
+        {
+            const PathEntry& entry = path[i];
+            node = &node->m_values[entry]; // get or create an entry in this node
+        }
+
+        node->m_values[path[path.Size() - 1]] = AZStd::move(nodeToMove);
+    }
+
+    template<class T>
     auto DomPrefixTree<T>::GetNodeForPath(const Path& path) const -> const Node*
     {
         const Node* node = &m_rootNode;
@@ -396,6 +410,13 @@ namespace AZ::Dom
     {
         Node* node = subTree.GetNodeForPath(AZ::Dom::Path());
         return MoveNodeAtPath(path, AZStd::move(*node));
+    }
+
+    template<class T>
+    void DomPrefixTree<T>::MoveSubTreeAndCreateParents(const Path& path, DomPrefixTree&& subTree)
+    {
+        Node* node = subTree.GetNodeForPath(AZ::Dom::Path());
+        MoveNodeAtPathAndCreateParents(path, AZStd::move(*node));
     }
 
     template<class T>

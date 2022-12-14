@@ -136,6 +136,12 @@ namespace AZ::Dom
         //! @return True if the subTree was moved successfully. Return false otherwise.
         bool MoveSubTree(const Path& path, DomPrefixTree&& subTree);
 
+        //! Moves a subtree to the provided path and create parent entries. It will overwrite the subtree at the path.
+        //! The subtree will always be moved. If parent path entries do not match, it will create them.
+        //! @param path The path which corresponds to the root node to which the subtree should be moved.
+        //! @param subTree The subtree to move to the provided path.
+        void MoveSubTreeAndCreateParents(const Path& path, DomPrefixTree&& subTree);
+
         //! Removes all entries from this tree.
         void Clear();
 
@@ -169,6 +175,12 @@ namespace AZ::Dom
         //! @param nodeToMove The node to move.
         //! @return True if the node was moved successfully. Return false otherwise.
         bool MoveNodeAtPath(const Path& path, Node&& nodeToMove);
+
+        //! Moves a node to the provided path and create parent entries. It will overwrite the node at the path and children nodes.
+        //! The node will always be moved. If parent path entries do not match, it will create them.
+        //! @param path The path which corresponds to where the node should be moved to.
+        //! @param nodeToMove The node to move.
+        void MoveNodeAtPathAndCreateParents(const Path& path, Node&& nodeToMove);
 
         Node m_rootNode;
     };
