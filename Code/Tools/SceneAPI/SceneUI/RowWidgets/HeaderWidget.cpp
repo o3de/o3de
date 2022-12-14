@@ -197,11 +197,14 @@ namespace AZ
                 // show have a visual divider, and potentially the icon.
                 if (target->RTTI_IsTypeOf(DataTypes::IGroup::TYPEINFO_Uuid()))
                 {
-                    sceneNodeGroup = azrtti_cast<const DataTypes::IGroup*>(&target);
+                    sceneNodeGroup = azrtti_cast<const DataTypes::IGroup*>(target);
+                    
                     if (sceneNodeGroup &&
                         sceneNodeGroup->GetRuleContainerConst().FindFirstByType<AZ::SceneAPI::DataTypes::ReadOnlyRule>())
                     {
-                        this->parentWidget()->setEnabled(false); 
+                        // Don't let users delete this group, it was marked read only.
+                        // Not disabling everything here because the group should still be able to be toggled open/closed
+                        ui->m_deleteButton->hide();
                     }
                     
                     AZ::SerializeContext* serializeContext = nullptr;
