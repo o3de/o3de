@@ -55,7 +55,7 @@ namespace AZ
                 ui->m_headerLine->hide();
                 ui->m_headerLineSpacer->hide();
                 
-                ui->m_deleteButton->setIcon(QIcon(":/PropertyEditor/Resources/cross-small.png"));
+                ui->m_deleteButton->setIcon(QIcon(":/stylesheet/img/close_small.svg"));
                 connect(ui->m_deleteButton, &QToolButton::clicked, this, &HeaderWidget::DeleteObject);
                 ui->m_deleteButton->hide();
 
