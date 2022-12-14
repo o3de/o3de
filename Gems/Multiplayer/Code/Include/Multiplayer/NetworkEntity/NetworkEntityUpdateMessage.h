@@ -8,18 +8,25 @@
 
 #pragma once
 
-#include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
-#include <AzCore/Name/Name.h>
 #include <Multiplayer/MultiplayerTypes.h>
 
 namespace Multiplayer
 {
-    struct NonOwningBuffer
+    //! @class NonOwningPointer
+    //! @brief A pointer to a buffer that is optionally managed by a pool.
+    class NonOwningPointer
     {
-        NonOwningBuffer() = default;
-        explicit NonOwningBuffer(AzNetworking::PacketEncodingBuffer* buffer) : m_buffer(buffer) {}
-        ~NonOwningBuffer();
+    public:
+        NonOwningPointer() = default;
+        explicit NonOwningPointer(AzNetworking::PacketEncodingBuffer* buffer) : m_buffer(buffer) {}
+        ~NonOwningPointer();
+
+        NonOwningPointer(NonOwningPointer&& rhs);
+        NonOwningPointer(const NonOwningPointer& rhs) = delete;
+
+        NonOwningPointer& operator =(NonOwningPointer&& rhs);
+        NonOwningPointer& operator =(const NonOwningPointer& rhs) = delete;
 
         void reset(AzNetworking::PacketEncodingBuffer* buffer);
         AzNetworking::PacketEncodingBuffer* get() const;
@@ -110,6 +117,7 @@ namespace Multiplayer
         //! @return boolean true for success, false for serialization failure
         bool Serialize(AzNetworking::ISerializer& serializer);
 
+        //! If a buffer pool is initialized, buffers will be re-used to avoid memory allocations, otherwise all buffers will be allocated at all time.
         static void InitializeBufferPool();
         static void ReleaseBufferPool();
 
@@ -122,11 +130,12 @@ namespace Multiplayer
         bool           m_hasValidPrefabId = false;
         PrefabEntityId m_prefabEntityId;
 
+        // Create a new buffer or get one from a pool of buffers
         static AzNetworking::PacketEncodingBuffer* GetNewBuffer();
 
         // Only allocated if we actually have data
         // This is to prevent blowing out stack memory if we declare an array of these EntityUpdateMessages
-        NonOwningBuffer m_data;
+        NonOwningPointer m_data;
     };
     using NetworkEntityUpdateVector = AZStd::fixed_vector<NetworkEntityUpdateMessage, MaxAggregateEntityMessages>;
 }

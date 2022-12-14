@@ -8,8 +8,6 @@
 
 #include <Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h>
 
-#pragma optimize("", off)
-
 namespace Multiplayer
 {
     NetworkEntityUpdateMessage::NetworkEntityUpdateMessage(NetworkEntityUpdateMessage&& rhs)
@@ -233,6 +231,9 @@ namespace Multiplayer
         return serializer.IsValid();
     }
 
+    // A custom pool of fairly large buffers, MaxPacketSize bytes (16k bytes by default).
+    // Buffers are not released until @ReleaseAllBuffers is called, otherwise, buffers are re-used.
+    // The largest count of buffers will be at peak load, when the largest amount of buffer are in flight.
     class GlobalBufferPool
     {
     public:
@@ -242,10 +243,15 @@ namespace Multiplayer
         void ReturnBuffer(AzNetworking::PacketEncodingBuffer* buffer);
         void ReleaseAllBuffers();
 
+        AZStd::size_t GetCurrentPoolBufferCount() const;
+
+    private:
         using BufferPtr = AZStd::unique_ptr<AzNetworking::PacketEncodingBuffer>;
 
+        // A growing pool of buffers as needed to be re-used when returned to the pool.
         AZStd::vector<BufferPtr> m_owningPool;
 
+        // Any currently unused buffers.
         AZStd::deque<AzNetworking::PacketEncodingBuffer*> m_freePool;
     };
 
@@ -261,10 +267,10 @@ namespace Multiplayer
 
     void NetworkEntityUpdateMessage::ReleaseBufferPool()
     {
-        if (!GlobalBufferPoolInstance)
+        if (GlobalBufferPoolInstance)
         {
-            const auto size = GlobalBufferPoolInstance->m_owningPool.size();
-            AZ_Printf(__FUNCTION__, "pool size was %d", size);
+            const auto size = GlobalBufferPoolInstance->GetCurrentPoolBufferCount();
+            AZ_Printf(__FUNCTION__, "pool size was %llu", size); // It seems to hover around 50-60 buffers at peak.
 
             delete GlobalBufferPoolInstance;
             GlobalBufferPoolInstance = nullptr;
@@ -281,13 +287,16 @@ namespace Multiplayer
 
         AzNetworking::PacketEncodingBuffer* buffer = m_freePool.back();
         m_freePool.pop_back();
-
         return buffer;
     }
 
     void GlobalBufferPool::ReturnBuffer(AzNetworking::PacketEncodingBuffer* buffer)
     {
-        m_freePool.push_back(buffer);
+        if (buffer)
+        {
+            buffer->Resize(0); // Clear the buffer for the next use.
+            m_freePool.push_back(buffer);
+        }
     }
 
     void GlobalBufferPool::ReleaseAllBuffers()
@@ -296,12 +305,32 @@ namespace Multiplayer
         m_owningPool.clear();
     }
 
-    NonOwningBuffer::~NonOwningBuffer()
+    AZStd::size_t GlobalBufferPool::GetCurrentPoolBufferCount() const
+    {
+        return m_owningPool.size();
+    }
+
+    NonOwningPointer::~NonOwningPointer()
     {
         ReleaseBuffer();
     }
 
-    void NonOwningBuffer::reset(AzNetworking::PacketEncodingBuffer* buffer)
+    NonOwningPointer::NonOwningPointer(NonOwningPointer&& rhs)
+    {
+        ReleaseBuffer();
+        m_buffer = rhs.m_buffer;
+        rhs.m_buffer = nullptr;
+    }
+
+    NonOwningPointer& NonOwningPointer::operator=(NonOwningPointer&& rhs)
+    {
+        ReleaseBuffer();
+        m_buffer = rhs.m_buffer;
+        rhs.m_buffer = nullptr;
+        return *this;
+    }
+
+    void NonOwningPointer::reset(AzNetworking::PacketEncodingBuffer* buffer)
     {
         if (m_buffer)
         {
@@ -311,12 +340,12 @@ namespace Multiplayer
         m_buffer = buffer;
     }
 
-    AzNetworking::PacketEncodingBuffer* NonOwningBuffer::get() const
+    AzNetworking::PacketEncodingBuffer* NonOwningPointer::get() const
     {
         return m_buffer;
     }
 
-    void NonOwningBuffer::ReleaseBuffer()
+    void NonOwningPointer::ReleaseBuffer()
     {
         if (m_buffer)
         {
@@ -339,8 +368,7 @@ namespace Multiplayer
             return GlobalBufferPoolInstance->GetNewBuffer();
         }
 
+        // Non-pool mode.
         return aznew AzNetworking::PacketEncodingBuffer;
     }
 }
-
-#pragma optimize("", on)

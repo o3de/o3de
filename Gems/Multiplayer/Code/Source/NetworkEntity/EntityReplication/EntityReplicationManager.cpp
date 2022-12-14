@@ -47,7 +47,7 @@ namespace Multiplayer
         , m_entityExitDomainEventHandler([this](const ConstNetworkEntityHandle& entityHandle) { OnEntityExitDomain(entityHandle); })
         , m_notifyEntityMigrationHandler([this](const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId) { OnPostEntityMigration(entityHandle, remoteHostId); })
     {
-        //NetworkEntityUpdateMessage::InitializeBufferPool();
+        NetworkEntityUpdateMessage::InitializeBufferPool();
 
         // Set up our remote host identifier, by default we use the IP address of the remote host
         m_remoteHostId = connection.GetRemoteAddress();
@@ -75,7 +75,7 @@ namespace Multiplayer
 
     EntityReplicationManager::~EntityReplicationManager()
     {
-        //NetworkEntityUpdateMessage::ReleaseBufferPool();
+        NetworkEntityUpdateMessage::ReleaseBufferPool();
     }
 
     const HostId& EntityReplicationManager::GetRemoteHostId() const
